@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbZJ1I1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932715AbZJ1I2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932706AbZJ1I1x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 04:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932669AbZJ1I1x
+	id S932715AbZJ1I2v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 04:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932674AbZJ1I2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 04:27:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40296
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932658AbZJ1I1w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 04:27:52 -0400
-Date: Wed, 28 Oct 2009 01:28:16 -0700 (PDT)
-Message-Id: <20091028.012816.115332412.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: is avoiding compat ioctls possible?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091028081909.GP7744@basil.fritz.box>
-References: <20091028075908.GO7744@basil.fritz.box>
-	<20091028.011141.267473962.davem@davemloft.net>
-	<20091028081909.GP7744@basil.fritz.box>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 04:28:51 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:55517 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932669AbZJ1I2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 04:28:50 -0400
+Date: Wed, 28 Oct 2009 09:28:54 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: zach.brown@oracle.com, linux-aio <linux-aio@kvack.org>,
+       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch v4 0/3] aio: implement request batching [more
+	performance numbers]
+Message-ID: <20091028082854.GU10727@kernel.dk>
+References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com> <x49eipga02o.fsf@segfault.boston.devel.redhat.com> <20091006180628.GB5216@kernel.dk> <x49y6no8jxw.fsf@segfault.boston.devel.redhat.com> <20091007105259.GD8703@kernel.dk> <x49hbtk24o9.fsf@segfault.boston.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49hbtk24o9.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: Wed, 28 Oct 2009 09:19:09 +0100
-
-> On Wed, Oct 28, 2009 at 01:11:41AM -0700, David Miller wrote:
->> From: Andi Kleen <andi@firstfloor.org>
->> Date: Wed, 28 Oct 2009 08:59:08 +0100
->> 
->> >>  	}
->> >> -	chunk_array_ptr = (uint64_t *)(unsigned long)(cs->chunks);
->> >> +#ifdef CONFIG_COMPAT
->> >> +	if (is_compat_task())
->> > 
->> > Are the COMPAT ifdefs really needed? The compiler should optimize that
->> > away anyways on non compat aware architectures, shouldn't it?
->> 
->> There are no non-compat is_compat_task() definitions, nor are there
->> non-compat build definitions of compat_uptr_t and the assosciated
->> interfaces.
+On Tue, Oct 27 2009, Jeff Moyer wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
 > 
-> That seems wrong then, better fix that too? It would be certainly better
-> than adding a lot of ifdefs.
+> >> > Nice numbers! The patch looks good to me from a quick look, if you want
+> >> > I can throw it into the testing mix tomorrow and see what kind of
+> >> > improvements I see here. With performance increase of that magnitude, we
+> >> > should get it in sooner rather than later.
+> >> 
+> > So here's a pretty basic test. It does random reads from a bunch of
+> > devices, I tested both 4kb and 64kb block sizes. Queue depth used is 32
+> > for both cases, but note that this test uses a thread per device (so the
+> > queue depth is 32 per device). Results are averaged over 3 runs.
+> > slat/clat are the submission and completion latencies, they are in
+> > microseconds here.
+> [...]
+> > So pretty close, nothing earth shattering here. What the results above
+> > do not show is that the 4kb test runs very stable with your patch.
+> > Mainline fluctuates somewhat in the bandwidth, most likely due to the
+> > varying depth.
+> 
+> OK, I don't think this patch set will see further testing without
+> pulling it into someone's tree.  Jens, would you mind putting this into
+> your for-2.6.33 queue?  Let me know if you need me to resend the
+> patches.
 
-That's usually done by seperating the compat code into a seperate
-file and "obj-$(CONFIG_COMPAT) += foo.o" in the Makefile.
+Sure, I'll pull it in. I still have the patches, will ping you if it
+doesn't apply cleanly.
 
-That's not really possible here.
+-- 
+Jens Axboe
 
-Sure, longer term we can provide those kinds of definitions to avoid
-the ifdefs, but that's not what my change is about. :-)
