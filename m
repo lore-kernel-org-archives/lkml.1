@@ -1,60 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZJ1QhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZJ1Qhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbZJ1QhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 12:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbZJ1QhM
+	id S1755204AbZJ1Qhr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 12:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbZJ1Qhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 12:37:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57357 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755051AbZJ1QhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 12:37:11 -0400
-Message-ID: <4AE87344.6030708@kernel.org>
-Date: Wed, 28 Oct 2009 17:37:24 +0100
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 28 Oct 2009 12:37:46 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36352 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755161AbZJ1Qhq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 12:37:46 -0400
+Date: Wed, 28 Oct 2009 16:37:49 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [PATCH] Fix some AB3100 regulator issues
+Message-ID: <20091028163749.GA27459@rakim.wolfsonmicro.main>
+References: <1256747415-18486-1-git-send-email-linus.walleij@stericsson.com>
 MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH -next] ia64/sn: fix percpu warnings
-References: <20091014163445.f0441473.sfr@canb.auug.org.au>	 <20091014151003.0ef42973.randy.dunlap@oracle.com>	 <4AD67C05.2030201@kernel.org> <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com> <57C9024A16AD2D4C97DC78E552063EA3E345953E@orsmsx505.amr.corp.intel.com> <4AE85D28.90809@kernel.org> <57C9024A16AD2D4C97DC78E552063EA3E34C0108@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E34C0108@orsmsx505.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256747415-18486-1-git-send-email-linus.walleij@stericsson.com>
+X-Cookie: Be careful!  Is it classified?
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Oct 28, 2009 at 05:30:15PM +0100, Linus Walleij wrote:
 
-Luck, Tony wrote:
-> That's what Randy's patch uses ... but doing it the "right" way gives
-> me the "has no CRC!" warning.
+>  	 * system is shut down. So this is handled specially.
+>  	 */
+> +	pr_info("Called ab3100_disable_regulator\n");
 
-Ah, right.  I got confused.
-
-> This seems to be a feature of exported per cpu arrays.  If I hack
-> up a driver to make use of softirq_work_list, I see a similar
-> no CRC warning for it.
-> 
-> Is this problem in the ia64 tool chain[1]?  Or do other architectures
-> have problems with exported per cpu arrays?
-
-kern/softirq.c has the followings.
-
- DEFINE_PER_CPU(struct list_head [NR_SOFTIRQS], softirq_work_list);
- EXPORT_PER_CPU_SYMBOL(softirq_work_list);
-
-and it doesn't cause any warning on x86 neither does it on ia64 with
-defconfig.  softirq_work_list doesn't trigger any warning there,
-right?
-
-Thanks.
-
--- 
-tejun
+This looks like debug trace which shouldn't be here.  Otherwise the
+patch looks OK.
