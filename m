@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZJ1SgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZJ1SgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445AbZJ1SgH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 14:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbZJ1SgG
+	id S1755489AbZJ1SgU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 14:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZJ1SgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 14:36:06 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:42620 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754357AbZJ1SgG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 14:36:06 -0400
-Date: Wed, 28 Oct 2009 18:36:07 +0000
-From: Ben Dooks <ben@fluff.org.uk>
-To: linux-kernel@vger.kernel.org, ben-linux@fluff.org,
-       linux-arm-kernel@vger.kernel.org
-Message-ID: <20091028183607.GA19048@fluff.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 28 Oct 2009 14:36:19 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43648 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754668AbZJ1SgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 14:36:16 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+m/jULng+myhDGNGo6QaNZV7yLj3DlDltTTgjHln
+	10II8Y+GTfSWN6
+Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1256714741.10387.4.camel@marge.simson.net>
+References: <20091024125853.35143117@infradead.org>
+	 <20091024130432.0c46ef27@infradead.org>
+	 <20091024130728.051c4d7c@infradead.org>
+	 <1256453725.12138.40.camel@marge.simson.net>
+	 <20091025095109.449bac9e@infradead.org>
+	 <1256492289.14241.40.camel@marge.simson.net>
+	 <20091025123319.2b76bf69@infradead.org>
+	 <1256508287.17306.14.camel@marge.simson.net>
+	 <1256522035.7356.19.camel@laptop>
+	 <1256654138.17752.7.camel@marge.simson.net>
+	 <1256714741.10387.4.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Wed, 28 Oct 2009 19:36:18 +0100
+Message-Id: <1256754978.8808.47.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 964fe080d94db82a3268443e9b9ece4c60246414:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../rusty/linux-2.6-for-linus
+On Wed, 2009-10-28 at 08:25 +0100, Mike Galbraith wrote:
 
-are available in the git repository at:
+> (i think i'm going to need that domain flag in a few minutes anyway)
 
-  git://git.fluff.org/bjdooks/linux.git fixes-s3c-2632-rc5
+Dirty trick didn't work out.
 
-Ben Dooks (8):
-      ARM: S3C: Add info for supporting circular DMA buffers
-      ARM: S3C2410: Fix link if CONFIG_S3C2410_IOTIMING is not set
-      ARM: Merge fixes-s3c64xx
-      ARM: Merge fixes-s3c64xx-dma
-      ARM: S3C2440: mini2440: Fix missing CONFIG_S3C_DEV_USB_HOST
-      ARM: S3C24XX: Fix warnings in arch/arm/plat-s3c24xx/gpio.c
-      ARM: S3C2440: mini2440: Fix spare warnings
-      ARM: S3C2410: Fix sparse warnings in arch/arm/mach-s3c2410/gpio.c
+As long as I let wake_affine() decide whether an affine wakeup should
+succeed based on the original cpu and then take the switched out cpu
+instead, it worked ok.  Try to be cleaner, and it turned to crud.
 
-Harald Welte (1):
-      ARM: S3C24XX: Introduce S3C2442B CPU
+	-Mike
 
-Julia Lawall (1):
-      ARM: S3C24XX: arch/arm/plat-s3c24xx: Move dereference after NULL test
-
-Kukjin Kim (1):
-      ARM: S3C64XX: Fix S3C64XX_CLKDIV0_ARM_MASK value
-
-Mark Brown (1):
-      ARM: S3C64XX: Set rate of crystal mux
-
-Ramax Lo (1):
-      ARM: S3C24XX: Define a macro to avoid compilation error
-
-Ryan Mallon (1):
-      ARM: S3C: Fix adc function exports
-
- arch/arm/mach-s3c2410/gpio.c                       |    1 +
- arch/arm/mach-s3c2410/include/mach/dma.h           |    7 +++++++
- arch/arm/mach-s3c2440/Kconfig                      |    1 +
- arch/arm/mach-s3c2440/mach-mini2440.c              |    4 ++--
- arch/arm/mach-s3c6400/include/mach/dma.h           |    5 +++++
- arch/arm/plat-s3c24xx/adc.c                        |    2 +-
- arch/arm/plat-s3c24xx/cpu.c                        |   10 ++++++++++
- arch/arm/plat-s3c24xx/dma.c                        |    6 +++---
- arch/arm/plat-s3c24xx/gpio.c                       |    1 +
- arch/arm/plat-s3c24xx/include/plat/cpu-freq-core.h |    9 +++++++--
- arch/arm/plat-s3c24xx/include/plat/s3c2410.h       |    1 +
- arch/arm/plat-s3c64xx/include/plat/regs-clock.h    |    4 ++--
- arch/arm/plat-s3c64xx/s3c6400-clock.c              |    3 +++
- sound/soc/s3c24xx/s3c24xx-pcm.c                    |   17 +++++++++++++++--
- 14 files changed, 59 insertions(+), 12 deletions(-)
