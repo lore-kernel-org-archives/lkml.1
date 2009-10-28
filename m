@@ -1,52 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbZJ1D4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbZJ1EIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757318AbZJ1D4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 23:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbZJ1D4a
+	id S1752344AbZJ1EIe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 00:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbZJ1EIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 23:56:30 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:47149 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757256AbZJ1D43 (ORCPT
+	Wed, 28 Oct 2009 00:08:34 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36970 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbZJ1EId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 23:56:29 -0400
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Peter Teoh" <htmldeveloper@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #14408] sysctl check failed
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-	<6dRYo8ss7vL.A.74F.Ore5KB@chimera>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 27 Oct 2009 20:56:29 -0700
-In-Reply-To: <6dRYo8ss7vL.A.74F.Ore5KB@chimera> (Rafael J. Wysocki's message of "Mon\, 26 Oct 2009 19\:55\:56 +0100 \(CET\)")
-Message-ID: <m1k4ygcgsy.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 28 Oct 2009 00:08:33 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AE7C396.7040109@jp.fujitsu.com>
+Date: Wed, 28 Oct 2009 13:07:50 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: Mike Travis <travis@sgi.com>
+CC: Roland Dreier <rdreier@cisco.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       Andi Kleen <ak@linux.intel.com>
+Subject: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
+References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com> <4AE75DB9.3040702@sgi.com>
+In-Reply-To: <4AE75DB9.3040702@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Mike Travis wrote:
+> 
+> Mike Travis wrote:
+>> Hi Roland,
+>>
+>> I've found that I'm getting one of these lines for every cpu:
+>>
+>> mce: CPU supports 0 MCE banks
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
+I believe my patch at last in this mail will solve this issue.
 
-I believe Andrew has the fix in the -mm tree.
+> A bit more info.  THe data above was from our simulator which
+> apparently is not simulating mce very well.  On a live system
+> I get 383 lines (for 383 additional cpus) with what appears to be
+> redundant lines...
+> 
+> [    4.882085] CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6
+> SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18
+> SHD:19 SHD:20 SHD:21
+> [    4.978893] CPU 2 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6
+> SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18
+> SHD:19 SHD:20 SHD:21
+> ...
+> [    4.978893] CPU 2 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6
+> SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18
+> SHD:19 SHD:20 SHD:21
 
-This is a bug but not a regression as the sysctl_check code had this bug from
-day one.
+Hum, I suppose the line for CPU 0 was slightly different from others,
+because SHD means "this bank is shared bank and controlled by other".
+Maybe:
+ CPU 0 MCA banks CMCI:0 CMCI:1 CMCI:2 CMCI:3 CMCI:5 ... CMCI:21
 
-Eric
+But I agree that we could some work for this messages...
+Is it better to change the message level to debug from info?
+How about changing the format like:
+  CPU 0 MCA banks map : CCCC PCCC CCPP CCCC CCCC CC
+  CPU 1 MCA banks map : ssCC PCss ssPP ssss ssss ss
+   :
+
+If there are no complains, I'll make another patch to do so.
+
+
+Thanks,
+H.Seto
+
+===
+
+Subject: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
+
+If cpu has no MCE banks (e.g. simulated processor on VMs), it is better to
+disable MCE support on the system since we cannot handle MCE well.
+
+Reported-by: Mike Travis <travis@sgi.com>
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 8080170..29055ab 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1228,6 +1228,10 @@ static int __cpuinit __mcheck_cpu_cap_init(void)
+ 	rdmsrl(MSR_IA32_MCG_CAP, cap);
+ 
+ 	b = cap & MCG_BANKCNT_MASK;
++	if (!b) {
++		pr_info("MCE: no MCE banks - not enabling MCE support.\n");
++		return -ENODEV;
++	}
+ 	if (!banks)
+ 		printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
+ 
+-- 
+1.6.5.2
+
+
