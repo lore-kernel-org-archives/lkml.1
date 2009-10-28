@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbZJ1QAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZJ1QGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbZJ1QAZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 12:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZJ1QAV
+	id S1754847AbZJ1QGy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 12:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZJ1QGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 12:00:21 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:35782 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754757AbZJ1QAT convert rfc822-to-8bit (ORCPT
+	Wed, 28 Oct 2009 12:06:54 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:22150 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752900AbZJ1QGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 12:00:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XTPhwtSw28hZ/XpxvNIqZ7TObblHCXF0IF5zJtPmi5046+WNVh5AJKcW8R5lf/6FCn
-         4wiMc7k16K/oG3V9ubzSCzuMENUu1lIarMZfOsUErn4S4ew2Af4ywvASobyDGWS8h+jd
-         tRA4+R51o+6UobEvCDtqmiHEtVW0AQjBE+UjY=
-MIME-Version: 1.0
-In-Reply-To: <7b6bb4a50910272007i2c931012y13d204402d65a589@mail.gmail.com>
-References: <55e03a0a0910271350r6900aaf3qed4cbf31b6359727@mail.gmail.com>
-	 <7b6bb4a50910272007i2c931012y13d204402d65a589@mail.gmail.com>
-Date: Wed, 28 Oct 2009 12:00:22 -0400
-Message-ID: <55e03a0a0910280900m55f8939ci987b7f21bb10bcda@mail.gmail.com>
-Subject: Re: 2.6.32-rc5-git3 compile problems
-From: Alex <mysqlstudent@gmail.com>
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, paulmck@linux.vnet.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 28 Oct 2009 12:06:53 -0400
+Subject: Re: [PATCH 4/5] intel-iommu: Reinstate RMRRs if a device is
+ removed from passthrough domain
+From: Alex Williamson <alex.williamson@hp.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+In-Reply-To: <1256740619.9814.141.camel@macbook.infradead.org>
+References: <20091026232401.9646.90540.stgit@nehalem.aw>
+	 <20091026232514.9646.58322.stgit@nehalem.aw>
+	 <1256631324.9814.14.camel@macbook.infradead.org>
+	 <1256658632.5937.7.camel@bling>
+	 <1256740619.9814.141.camel@macbook.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: HP OSLO R&D
+Date: Wed, 28 Oct 2009 10:06:55 -0600
+Message-ID: <1256746015.5937.128.camel@bling>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2009-10-28 at 14:36 +0000, David Woodhouse wrote:
+> On Tue, 2009-10-27 at 09:50 -0600, Alex Williamson wrote:
+> > 
+> > Yes, good point.  I'm not seeing any convenient ways to setup a new
+> > domain for a device while it's still a member of the si_domain.  It
+> > looks like I'd need to extract parts of the get_valid_domain_for_dev()
+> > path and ignore any bits about using the already existing domain.
+> 
+> That seems like a sane plan. That code wants cleaning up anyway, and
+> factoring out the 'make new domain' part of get_valid_domain_for_dev()
+> should be simple enough.
 
-> Try this patch, thanks.
-
-I believe your patch to rcutree_plugin.h and rcutree.h worked, but I'm
-now still having difficulty with con_init():
-
-  GEN     .version
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `con_init':
-vt.c:(.init.text+0x3a6b): undefined reference to `.L1626'
-make: *** [.tmp_vmlinux1] Error 1
-
-Is this also a bug, or am I doing something wrong? Is there something
-I can do to produce more debugging info, or troubleshoot it further?
-
-This is 2.6.32-rc5-git3, gcc-3.4.4, glibc-2.3.6, and binutils-2.20.51.0.2.
-
+Ok, I'll work on something along those lines.  FWIW, even though I sent
+these as a series, each one stands on it's own.  While I think
+reinstating RMRRs is the right thing to do, I don't know of any devices
+that break with the current model (the device I know of with the
+interesting RMRR usage shouldn't be demoted from the si_domain).  So
+please consider pushing patches 2, 3 & 5 upstream (particularly 2).
 Thanks,
+
 Alex
 
-> ---
-> index b40ac57..04a4272 100644
-> --- a/kernel/rcutree.h
-> +++ b/kernel/rcutree.h
-> @@ -292,8 +292,24 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
->
->  #else /* #ifdef RCU_TREE_NONCORE */
->
-> -/* Forward declarations for rcutree_plugin.h */
-> -static inline void rcu_bootup_announce(void);
-> +#ifdef CONFIG_TREE_PREEMPT_RCU
-> +/*
-> + * Tell them what RCU they are running.
-> + */
-> +static inline void rcu_bootup_announce(void)
-> +{
-> +        printk(KERN_INFO
-> +               "Experimental preemptable hierarchical RCU implementation.\n");
-> +}
-> +#else
-> +/*
-> + * Tell them what RCU they are running.
-> + */
