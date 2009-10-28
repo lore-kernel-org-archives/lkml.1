@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZJ1KYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZJ1K1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbZJ1KYQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 06:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZJ1KYP
+	id S1753280AbZJ1K1H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 06:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZJ1K1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 06:24:15 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60249 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752053AbZJ1KYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 06:24:14 -0400
-Date: Wed, 28 Oct 2009 10:24:13 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Kernel Testers List <kernel-testers@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>"@linux-foundation.org
-Subject: Re: [PATCH 2/3] page allocator: Do not allow interrupts to use
-	ALLOC_HARDER
-Message-ID: <20091028102413.GR8900@csn.ul.ie>
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <1256650833-15516-3-git-send-email-mel@csn.ul.ie> <20091027130924.fa903f5a.akpm@linux-foundation.org>
+	Wed, 28 Oct 2009 06:27:06 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:55290 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbZJ1K1E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 06:27:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=x5POOglQuO28effpZNA28/Fr+EMN/YLAB8yFhGcH5S98wr3HW2+73LdXDdwUSWm05S
+         pIdNz/MPQ5JHUyfOqLdvDwnVnZMVxh6nvegKQcBafYvqv4um0CdjQW3hQswjaFDN7pCC
+         boitiidDqLjenBLHqHXGDSQz+CU1zsbuoHDmM=
+From: Arnd Bergmann <arndbergmann@googlemail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: is avoiding compat ioctls possible?
+Date: Wed, 28 Oct 2009 11:27:04 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: David Miller <davem@davemloft.net>, airlied@gmail.com,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+References: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com> <20091027.203709.27104760.davem@davemloft.net> <20091028043611.GK7744@basil.fritz.box>
+In-Reply-To: <20091028043611.GK7744@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091027130924.fa903f5a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910281127.04755.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 01:09:24PM -0700, Andrew Morton wrote:
-> On Tue, 27 Oct 2009 13:40:32 +0000
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
-> > slightly by allowing rt_tasks that are handling an interrupt to set
-> > ALLOC_HARDER. This patch brings the watermark logic more in line with
-> > 2.6.30.
+On Wednesday 28 October 2009, Andi Kleen wrote:
+> > > However some architectures need special operations on compat pointers
+> > > (s390 iirc), but if you don't support those it might be reasonable
+> > > to not support that.
 > > 
-> > [rientjes@google.com: Spotted the problem]
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> > Reviewed-by: Rik van Riel <riel@redhat.com>
-> > Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > ---
-> >  mm/page_alloc.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index dfa4362..7f2aa3e 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
-> >  		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
-> >  		 */
-> >  		alloc_flags &= ~ALLOC_CPUSET;
-> > -	} else if (unlikely(rt_task(p)))
-> > +	} else if (unlikely(rt_task(p)) && !in_interrupt())
-> >  		alloc_flags |= ALLOC_HARDER;
-> >  
-> >  	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+> > s390 has to sign extend all 32-bit compat process pointers when
+> > processing them in the 64-bit s390 kernel.  I think one other
+> > architecture has this kind of situation too.
 > 
-> What are the runtime-observeable effects of this change?
-> 
+> Which other architure? I reviewed all the definitions in tree
+> and don't see any other than s390 doing magic there.
 
-A reduction of high-order GFP_ATOMIC allocation failures reported 
+I'm also pretty sure that s390 is the only one needing this, I
+added the compat_ptr stuff initially.
 
-http://www.gossamer-threads.com/lists/linux/kernel/1144153
+Note that a cast from pointer to unsigned long to u64 and back
+in C does the correct 31 to 64 bit extension, which btw is not
+a sign-extend but a unsigned extend clearing the upper 33 bits.
 
-> The description is a bit waffly-sounding for a -stable backportable
-> thing, IMO.  What reason do the -stable maintainers and users have to
-> believe that this patch is needed, and an improvement?
-> 
+The easier rule to remember should be to always to compat_ptr()
+on any pointer coming from user space, and to avoid pointers in
+data structures where possible, as DaveM pointed out.
 
-Allocation failure reports are occuring against 2.6.31.4 that did not
-occur in 2.6.30. The bug reporter observes no such allocation failures
-with this and the previous patch applied. The data is fuzzier than I'd
-like but both patches do appear to be required.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Arnd <><
