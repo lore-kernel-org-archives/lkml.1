@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbZJ1GyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbZJ1HDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757498AbZJ1GyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbZJ1GyW
+	id S932469AbZJ1HDc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 03:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932306AbZJ1HDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:54:22 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54076 "EHLO sh.osrg.net"
+	Wed, 28 Oct 2009 03:03:31 -0400
+Received: from mx3.orcon.net.nz ([219.88.242.53]:53066 "EHLO mx3.orcon.net.nz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757462AbZJ1GyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:54:20 -0400
-Date: Wed, 28 Oct 2009 15:53:53 +0900
-To: chrisw@sous-sol.org
-Cc: fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] allow fallback to swiotlb on hw iommu init
-	failures
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091024065712.GC14926@sequoia.sous-sol.org>
-References: <20091023163923.GA12883@sequoia.sous-sol.org>
-	<20091024120633Z.fujita.tomonori@lab.ntt.co.jp>
-	<20091024065712.GC14926@sequoia.sous-sol.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S932263AbZJ1HDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 03:03:31 -0400
+Message-ID: <4AE7ECC2.8050202@orcon.net.nz>
+Date: Wed, 28 Oct 2009 20:03:30 +1300
+From: Michael Cree <mcree@orcon.net.nz>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+MIME-Version: 1.0
+To: linux-alpha@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       David Howells <dhowells@redhat.com>
+Subject: Alpha: suspicious compiler warning in entry.S
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091028155251C.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 28 Oct 2009 15:53:53 +0900 (JST)
+X-DSPAM-Check: by mx3.orcon.net.nz on Wed, 28 Oct 2009 20:03:32 +1300
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Wed Oct 28 20:03:35 2009
+X-DSPAM-Confidence: 0.6952
+X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Oct 2009 23:57:12 -0700
-Chris Wright <chrisw@sous-sol.org> wrote:
+Compiler warning when compiling 2.6.32-rc5 as follows:
 
-> > Note that Calgary comment 'falling back to no_iommu' is misleading. It
-> > actually falls back to swiotlb or nommu properly.
-> > 
-> > Calgary doesn't set to dma_ops to calgary_dma_ops so it doesn't need
-> > to pick up swiotlb_dma_ops.
-> 
-> It does need swiotlb_dma_ops even when calgary init succeeds for the devices
-> that aren't behind Calgary to deal w/ the case of those devices having
-> dma mask smaller than physical memory (i.e those that don't get device
-> specific dma_ops set to calgary_dma_ops).
+  AS      arch/alpha/kernel/entry.o
+arch/alpha/kernel/entry.S: Assembler messages:
+arch/alpha/kernel/entry.S:326: Warning: operand out of range 
+(0x0000000000000406 is not between 0x0000000000000000 and 
+0x00000000000000ff)
+arch/alpha/kernel/entry.S:388: Warning: operand out of range 
+(0x0000000000000406 is not between 0x0000000000000000 and 
+0x00000000000000ff)
 
-I know since I wrote that code.
+One offending line (326) is:
 
+    and    $5, _TIF_WORK_MASK, $2
 
-> > > The calgary shouldn't even need to be manually setting up
-> > > nommu_dma_ops.
-> > 
-> > Yeah, but it needs because of how the dma startup code works.
-> 
-> Be much better to have the core handle all of this. Basically register
-> ops and then put the top one on the stack to actual use.  So the
-> fallback would be automatic, just pick the top of the stack and go.
-> Were you thinking of something along those lines?
+The warning occurs because commit d0420c83f39f "KEYS: Extend
+TIF_NOTIFY_RESUME to (almost) all architectures [try #6]" introduces
+TIF_NOTIFIY_RESUME which sets bit 10 in _TIF_WORK_MASK (see
+arch/alpha/include/asm/thread_info.h) but _TIF_WORK_MASK is used in the
+immediate addressing mode in the assembler instruction above. The 'and'
+instruction can only take an immediate datum in the range 0 to 255.  With
+the addition of the TIF_NOTIFY_RESUME bit, _TIF_WORK_MASK is no longer in
+the valid range for immediate addressing in the 'and' instruction.
 
-I don't know what 'register ops and then put the top one on the stack'
-means but it sounds overdoing.
+On the assumption that it is important to include the TIF_NOTIFY_RESUME bit
+one might be tempted to modify the code to:
 
-I think that we can handle this issue more simply. I've just posted
-the patchset.
+    lda    $2, _TIF_WORK_MASK
+    and    $5, $2, $2
+
+but this is time critical code.  I am wondering whether it might be better
+to rearrange the bits in the thread information flags so that _TIF_WORK_MASK
+has a value less than 255 and the single instruction to perform an and
+operation can be maintained.
+
+Comments?
+
+Cheers
+Michael.
+
