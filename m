@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbZJ1LEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbZJ1Kr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752914AbZJ1LEW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 07:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZJ1LEU
+	id S1752285AbZJ1Kr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 06:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZJ1Krz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 07:04:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39621 "EHLO
-	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752135AbZJ1LEM (ORCPT
+	Wed, 28 Oct 2009 06:47:55 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:44690 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbZJ1Krz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 07:04:12 -0400
-From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH] edac: i7core_edac produces undefined behaviour on 32bit
-To: dougthompson@xmission.com, mchehab@redhat.com,
-       linux-kernel@vger.kernel.org
-Date: Wed, 28 Oct 2009 10:52:00 +0000
-Message-ID: <20091028105200.6097.58279.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Wed, 28 Oct 2009 06:47:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Fe4NbqP9ZEt7B6X1/9+Cc+l1MDcChk9mcA8L2Ofkun2ij8v36KSYSZSdSSF5Ee2Om3
+         Bsyfn1XxEF0+EtuyVOTmBR4RCri/sxr6HAam0GThF+lNMCSKnDRxgjueRms4hRqsyfyT
+         PRKfOJCNacumd9W2RPKy4FyClcTxJScK0KrbU=
+Message-ID: <4AE823DF.8010706@gmail.com>
+Date: Wed, 28 Oct 2009 11:58:39 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] asix: fix unsetting of AX88172_MEDIUM_FD in ax88172_link_reset()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the shifts up
+struct skb->len is unsigned so the `< 0' test always fails.
+Besides, skb_pull ensures that skb->len does not wrap. Also
+correctly unset the AX88172_MEDIUM_FD bit.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
+ drivers/net/usb/asix.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
- drivers/edac/i7core_edac.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+// vi drivers/net/usb/asix.c +77
+#define AX88172_MEDIUM_FD		0x02
 
+// vi drivers/net/usb/asix.c +80
+#define AX88172_MEDIUM_DEFAULT \
+		( AX88172_MEDIUM_FD | AX88172_MEDIUM_TX | AX88172_MEDIUM_FC )
 
-diff --git a/drivers/edac/i7core_edac.c b/drivers/edac/i7core_edac.c
-index b6fce2e..bd7c727 100644
---- a/drivers/edac/i7core_edac.c
-+++ b/drivers/edac/i7core_edac.c
-@@ -916,41 +916,41 @@ static ssize_t i7core_inject_enable_store(struct mem_ctl_info *mci,
- 
- 	/* Sets pvt->inject.dimm mask */
- 	if (pvt->inject.dimm < 0)
--		mask |= 1L << 41;
-+		mask |= 1LL << 41;
- 	else {
- 		if (pvt->channel[pvt->inject.channel].dimms > 2)
--			mask |= (pvt->inject.dimm & 0x3L) << 35;
-+			mask |= (pvt->inject.dimm & 0x3LL) << 35;
- 		else
--			mask |= (pvt->inject.dimm & 0x1L) << 36;
-+			mask |= (pvt->inject.dimm & 0x1LL) << 36;
+diff --git a/drivers/net/usb/asix.c b/drivers/net/usb/asix.c
+index 6ce7f77..26a9d46 100644
+--- a/drivers/net/usb/asix.c
++++ b/drivers/net/usb/asix.c
+@@ -346,11 +346,6 @@ static int asix_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
+ 		packet = head + sizeof(header);
+ 		skb_pull(skb, 4);
  	}
+-
+-	if (skb->len < 0) {
+-		deverr(dev,"asix_rx_fixup() Bad SKB Length %d", skb->len);
+-		return 0;
+-	}
+ 	return 1;
+ }
  
- 	/* Sets pvt->inject.rank mask */
- 	if (pvt->inject.rank < 0)
--		mask |= 1L << 40;
-+		mask |= 1LL << 40;
- 	else {
- 		if (pvt->channel[pvt->inject.channel].dimms > 2)
--			mask |= (pvt->inject.rank & 0x1L) << 34;
-+			mask |= (pvt->inject.rank & 0x1LL) << 34;
- 		else
--			mask |= (pvt->inject.rank & 0x3L) << 34;
-+			mask |= (pvt->inject.rank & 0x3LL) << 34;
- 	}
+@@ -798,7 +793,7 @@ static int ax88172_link_reset(struct usbnet *dev)
+ 	mode = AX88172_MEDIUM_DEFAULT;
  
- 	/* Sets pvt->inject.bank mask */
- 	if (pvt->inject.bank < 0)
--		mask |= 1L << 39;
-+		mask |= 1LL << 39;
- 	else
--		mask |= (pvt->inject.bank & 0x15L) << 30;
-+		mask |= (pvt->inject.bank & 0x15LL) << 30;
+ 	if (ecmd.duplex != DUPLEX_FULL)
+-		mode |= ~AX88172_MEDIUM_FD;
++		mode &= ~AX88172_MEDIUM_FD;
  
- 	/* Sets pvt->inject.page mask */
- 	if (pvt->inject.page < 0)
--		mask |= 1L << 38;
-+		mask |= 1LL << 38;
- 	else
--		mask |= (pvt->inject.page & 0xffffL) << 14;
-+		mask |= (pvt->inject.page & 0xffff) << 14;
+ 	devdbg(dev, "ax88172_link_reset() speed: %d duplex: %d setting mode to 0x%04x", ecmd.speed, ecmd.duplex, mode);
  
- 	/* Sets pvt->inject.column mask */
- 	if (pvt->inject.col < 0)
--		mask |= 1L << 37;
-+		mask |= 1LL << 37;
- 	else
--		mask |= (pvt->inject.col & 0x3fffL);
-+		mask |= (pvt->inject.col & 0x3fff);
- 
- 	/*
- 	 * bit    0: REPEAT_EN
-
