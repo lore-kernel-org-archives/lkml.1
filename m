@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbZJ1R4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbZJ1R7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493AbZJ1R4e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 13:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZJ1R4d
+	id S1752038AbZJ1R7g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 13:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZJ1R7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 13:56:33 -0400
-Received: from nfitmail.nfit.au.dk ([130.225.31.129]:11650 "EHLO
-	smtp.nfit.au.dk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755430AbZJ1R4b convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 13:56:31 -0400
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl
-Subject: [PATCH 2/2] Fix debug_kmap_atomic() to also handle KM_IRQ_PTE, KM_NMI, and KM_NMI_PTE
-References: <ye84opj9zgs.fsf@camel23.daimi.au.dk>
-From: Soeren Sandmann <sandmann@daimi.au.dk>
-Date: 28 Oct 2009 18:56:35 +0100
-In-Reply-To: <ye84opj9zgs.fsf@camel23.daimi.au.dk>
-Message-ID: <ye8vdhz8krw.fsf@camel23.daimi.au.dk>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	Wed, 28 Oct 2009 13:59:35 -0400
+Received: from foo.birdnet.se ([213.88.146.6]:53469 "HELO foo.birdnet.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751645AbZJ1R7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 13:59:35 -0400
+Message-ID: <20091028175937.27472.qmail@stuge.se>
+Date: Wed, 28 Oct 2009 18:59:37 +0100
+From: Peter Stuge <peter@stuge.se>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>
+Subject: Dropped characters in serial connection without flow control
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-X-NFIT-RelayAddr: 130.225.16.142
-X-NFIT-Solido-Score: 0.
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Previously calling debug_kmap_atomic() with these types would cause
-spurious warnings.
+Peter Stuge wrote:
+> I'm writing a line discipline for a serial port multiplexing
+> hardware
 
-Signed-off-by: Søren Sandmann Pedersen <sandmann@redhat.com>
----
- mm/highmem.c |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
+There is no(!) support for flow control in the hardware.
 
-diff --git a/mm/highmem.c b/mm/highmem.c
-index 33587de..9c1e627 100644
---- a/mm/highmem.c
-+++ b/mm/highmem.c
-@@ -432,10 +432,15 @@ void debug_kmap_atomic(enum km_type type)
- 		return;
- 
- 	if (unlikely(in_interrupt())) {
--		if (in_irq()) {
-+		if (in_nmi()) {
-+			if (type != KM_NMI && type != KM_NMI_PTE) {
-+				WARN_ON(1);
-+				warn_count--;
-+			}
-+		} else if (in_irq()) {
- 			if (type != KM_IRQ0 && type != KM_IRQ1 &&
- 			    type != KM_BIO_SRC_IRQ && type != KM_BIO_DST_IRQ &&
--			    type != KM_BOUNCE_READ) {
-+			    type != KM_BOUNCE_READ && type != KM_IRQ_PTE) {
- 				WARN_ON(1);
- 				warn_count--;
- 			}
-@@ -452,7 +457,9 @@ void debug_kmap_atomic(enum km_type type)
- 	}
- 
- 	if (type == KM_IRQ0 || type == KM_IRQ1 || type == KM_BOUNCE_READ ||
--			type == KM_BIO_SRC_IRQ || type == KM_BIO_DST_IRQ) {
-+			type == KM_BIO_SRC_IRQ || type == KM_BIO_DST_IRQ ||
-+			type == KM_IRQ_PTE || type == KM_NMI ||
-+			type == KM_NMI_PTE ) {
- 		if (!irqs_disabled()) {
- 			WARN_ON(1);
- 			warn_count--;
--- 
-1.6.5.1
+Is there anything I can do to reduce serial port interrupt latency or
+otherwise try to mitigate this in my ldisc or in Linux in general? I
+realize that it will never be quite reliable without any flow
+control.
 
+Baud rate is currently 115200 but could become 57600.
+
+Is there something in particular that I can do wrong or right in
+the ldisc?
+
+Might it be a good idea to add a circ_buf in the receiver path and
+move out any and all attempts at parsing incoming data? Currently
+it has a simple message buffer and a state machine in there.
+
+Characters are dropped both going out and coming in. Nothing to do
+about the out direction, but maybe input can be made reliable?
+
+I don't expect it, but maybe you know a trick?
+
+
+//Peter
