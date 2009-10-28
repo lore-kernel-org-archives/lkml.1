@@ -1,47 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbZJ1FmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZJ1FnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbZJ1FmZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 01:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbZJ1FmY
+	id S1756728AbZJ1FnM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 01:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756662AbZJ1FnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 01:42:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:45701 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757343AbZJ1FmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 01:42:24 -0400
-Date: Wed, 28 Oct 2009 05:42:27 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: David Miller <davem@davemloft.net>
-cc: dri-devel@lists.sourceforge.net, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: is avoiding compat ioctls possible?
-In-Reply-To: <20091027.222814.137568780.davem@davemloft.net>
-Message-ID: <alpine.DEB.2.00.0910280539150.19088@skynet.skynet.ie>
-References: <alpine.DEB.2.00.0910280341331.19088@skynet.skynet.ie> <20091027.204530.142024242.davem@davemloft.net> <alpine.DEB.2.00.0910280353080.19088@skynet.skynet.ie> <20091027.222814.137568780.davem@davemloft.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 28 Oct 2009 01:43:11 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:55630 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbZJ1FnJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 01:43:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hJYIkqfEkxshNnKDrc4YF7HDXYGIRvnsfHk6FZipQEU7IKlmf6fyK2IoYrD74+5FQB
+         2QSQn2GNZIRiuOZRpFtSzncC+FIS6xnIBWZuK4DWo9rYQtBmSrtixk+CavId8pRT1UzY
+         lJFjiQ2CGopsmJctA1qQxfcIipPAGUfElMNUI=
+Date: Tue, 27 Oct 2009 22:43:10 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Vojtech Pavlik <vojtech@suse.cz>
+Subject: Re: [PATCH][RFC] input: remove bios I8042_CTR_XLATE check to make
+	keyboard usable
+Message-ID: <20091028054309.GA2368@core.coreip.homeip.net>
+References: <20091027053404.GA2241@darkstar.vlan7>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091027053404.GA2241@darkstar.vlan7>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Dave,
 
-> Please don't do this.
+On Tue, Oct 27, 2009 at 01:34:04PM +0800, Dave Young wrote:
 > 
-> This is exactly what I feared people would do when is_compat_task()
-> was added.  is_compat_task() is for situations where there is
-> otherwise no other way to handle the compat situation properly.
+> Pressing somekey at early booting phase cause keyboard to be not usable
+> (The hardware is DELL latitude e5400):
 > 
-> It's not that much work for you to hook up the compat ioctls properly,
-> and if you are clever you can do it in such a way that you'll get
-> warnings if someone accidently adds a new ioctl but forgets the
-> compat bits :-)
+> atkbd.c: Unknown key pressed (raw set 2, code 0xd3 on isa0060/serio0).
+> atkbd.c: Use 'setkeycodes e053 <keycode>' to make it known.
+> atkbd.c: Unknown key pressed (raw set 2, code 0x1d3 on isa0060/serio0).
+> atkbd.c: Use 'setkeycodes e053 <keycode>' to make it known.
+> 
+> i8042.c set i8042_direct to true when the controller init. But the result
+> is keyboard not usable, The only option is press the power button to shutdown. 
+> 
+> So here remove the bios check to fix it.
+> 
 
-There are close to 15 ioctls needing this, so I can add 15 functions to 
-unpack and repack stuff or I can add that function, sorry if I'm 
-leaning towards a lighter weight solution. I'll add this to my TODO for 
-before the next merge window as its definitely more than I can manage now.
+I would be a little hesitant to force translation by default on all
+architectures, although it may make sense on x86...
 
-Dave.
+Vojtech, you wrote the thing, do you see any issues with forcing
+translation? I think most of the x86 boxes work in translated mode and
+the only time it is in raw is when BIOS screwed up initialization.
 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> ---
+>  drivers/input/serio/i8042.c |    8 --------
+>  1 file changed, 8 deletions(-)
+> 
+> --- linux-2.6.orig/drivers/input/serio/i8042.c	2009-10-13 08:57:07.000000000 +0800
+> +++ linux-2.6/drivers/input/serio/i8042.c	2009-10-27 13:15:13.000000000 +0800
+> @@ -869,14 +869,6 @@ static int i8042_controller_init(void)
+>  	spin_unlock_irqrestore(&i8042_lock, flags);
+>  
+>  /*
+> - * If the chip is configured into nontranslated mode by the BIOS, don't
+> - * bother enabling translating and be happy.
+> - */
+> -
+> -	if (~i8042_ctr & I8042_CTR_XLATE)
+> -		i8042_direct = true;
+> -
+> -/*
+>   * Set nontranslated mode for the kbd interface if requested by an option.
+>   * After this the kbd interface becomes a simple serial in/out, like the aux
+>   * interface is. We don't do this by default, since it can confuse notebook
+
+-- 
+Dmitry
