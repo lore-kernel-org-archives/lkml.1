@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932698AbZJ1I1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbZJ1I1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932698AbZJ1I1G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 04:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbZJ1I1F
+	id S932706AbZJ1I1x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 04:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932669AbZJ1I1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 04:27:05 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55497 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932675AbZJ1I1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 04:27:03 -0400
-Date: Wed, 28 Oct 2009 09:27:07 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: [PATCH 0/5] cfq-iosched: improve latency for no-idle queues
-	(v3)
-Message-ID: <20091028082706.GT10727@kernel.dk>
-References: <200910262243.41327.czoccolo@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910262243.41327.czoccolo@gmail.com>
+	Wed, 28 Oct 2009 04:27:53 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40296
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932658AbZJ1I1w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 04:27:52 -0400
+Date: Wed, 28 Oct 2009 01:28:16 -0700 (PDT)
+Message-Id: <20091028.012816.115332412.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: is avoiding compat ioctls possible?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091028081909.GP7744@basil.fritz.box>
+References: <20091028075908.GO7744@basil.fritz.box>
+	<20091028.011141.267473962.davem@davemloft.net>
+	<20091028081909.GP7744@basil.fritz.box>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26 2009, Corrado Zoccolo wrote:
-> [rebased on top of Jeff's latest changes for 2.6.33. Various code style improvements over v1 & v2]
-> 
-> This patch series is intended to improve I/O latency, addressing an often
-> neglected, important subset of workloads: the ones for which cfq currently
-> prefers not to do any idling.
-> 
-> Those are the ones that would benefit most from having low latency, in fact
-> they are any of:
-> * processes with large think times (e.g. interactive ones like file managers)
-> * seeky (e.g. programs faulting in their code at startup)
-> * or marked as no-idle from upper levels.
-> 
-> The patch series addresses this by:
-> * reducing queues' timeslice when many queues have pending I/O
-> * separating queues with different priorities and different characteristics in
-> different service trees, each with an allocated time slice
-> * enable idling when switching between service trees, even for queues that
-> would not have idling enabled otherwise.
-> 
-> This provides various benefits:
-> * service tree insertion code is simplified, since it doesn't need to cope with
-> priorities any more.
-> * high priority no_idle queues are no longer penalized when competing with
-> lower priority, idling queues
-> * seeky and no_idle queues have their fair share of disk time, without
-> penalizing NCQ drives' performances, since they can all dispatch together,
-> filling up the available NCQ slots.
-> 
-> On a non-NCQ capable drive, a workload of 4 random readers competing with
-> sequential writer, the maximum latency experienced by readers decreased from >
-> 500ms to about 160ms.
+From: Andi Kleen <andi@firstfloor.org>
+Date: Wed, 28 Oct 2009 09:19:09 +0100
 
-Thanks Corrado, this is indeed good stuff. Only style issue left was the
-one in cfq_get_avg_queues(), I just corrected that manually.
+> On Wed, Oct 28, 2009 at 01:11:41AM -0700, David Miller wrote:
+>> From: Andi Kleen <andi@firstfloor.org>
+>> Date: Wed, 28 Oct 2009 08:59:08 +0100
+>> 
+>> >>  	}
+>> >> -	chunk_array_ptr = (uint64_t *)(unsigned long)(cs->chunks);
+>> >> +#ifdef CONFIG_COMPAT
+>> >> +	if (is_compat_task())
+>> > 
+>> > Are the COMPAT ifdefs really needed? The compiler should optimize that
+>> > away anyways on non compat aware architectures, shouldn't it?
+>> 
+>> There are no non-compat is_compat_task() definitions, nor are there
+>> non-compat build definitions of compat_uptr_t and the assosciated
+>> interfaces.
+> 
+> That seems wrong then, better fix that too? It would be certainly better
+> than adding a lot of ifdefs.
 
-I have committed this in a test branch based off for-2.6.33 and will do
-some testing with it, then merge it into for-2.6.33 if it looks good.
+That's usually done by seperating the compat code into a seperate
+file and "obj-$(CONFIG_COMPAT) += foo.o" in the Makefile.
 
--- 
-Jens Axboe
+That's not really possible here.
 
+Sure, longer term we can provide those kinds of definitions to avoid
+the ifdefs, but that's not what my change is about. :-)
