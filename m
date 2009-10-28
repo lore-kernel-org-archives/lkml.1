@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbZJ1FYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZJ1FYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbZJ1FYo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 01:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbZJ1FYn
+	id S1757409AbZJ1FYs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 01:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbZJ1FYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 01:24:43 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:38343 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757297AbZJ1FYm (ORCPT
+	Wed, 28 Oct 2009 01:24:46 -0400
+Received: from mga10.intel.com ([192.55.52.92]:30994 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757355AbZJ1FYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 01:24:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=uyVgMm+N0y+Pcb92hhyQthZmoXIC+EkxHrncOD+Jaa7r/XlZWGSI2ZhilZP8o4cek
-	KLV111Hj+Bn9PyB8RF7Tg==
-Date: Tue, 27 Oct 2009 22:24:39 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [patch v2] x86: reduce srat verbosity in the kernel log
-In-Reply-To: <20091028051925.GL7744@basil.fritz.box>
-Message-ID: <alpine.DEB.2.00.0910272220560.9448@chino.kir.corp.google.com>
-References: <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com>
- <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com> <20091028051925.GL7744@basil.fritz.box>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 28 Oct 2009 01:24:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,638,1249282800"; 
+   d="scan'208";a="741291916"
+Message-ID: <4AE7D59D.9070307@linux.intel.com>
+Date: Wed, 28 Oct 2009 06:24:45 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: Mike Travis <travis@sgi.com>, Roland Dreier <rdreier@cisco.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
+References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com> <4AE75DB9.3040702@sgi.com> <4AE7C396.7040109@jp.fujitsu.com>
+In-Reply-To: <4AE7C396.7040109@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009, Andi Kleen wrote:
+Hidetoshi Seto wrote:
+> Mike Travis wrote:
+>> Mike Travis wrote:
+>>> Hi Roland,
+>>>
+>>> I've found that I'm getting one of these lines for every cpu:
+>>>
+>>> mce: CPU supports 0 MCE banks
 
-> > +		/*
-> > +		 * If the bitmap cannot be listed in a buffer of length
-> > +		 * APICID_LIST_LEN, then it is suffixed with "...".
-> > +		 */
-> > +		len = bitmap_scnlistprintf(apicid_list, APICID_LIST_LEN,
-> > +					   apicid_map, MAX_LOCAL_APIC);
-> > +		pr_info("SRAT: PXM %u -> APIC {%s%s} -> Node %u\n",
-> > +			i, apicid_list,
-> > +			(len == APICID_LIST_LEN - 1) ? "..." : "",
-> 
-> Is the - 1 really correct? If scnlistprintf follows snprintf semantics then it would not
-> be and my understanding is it is supposed to.
-> 
+That message can be just removed I think. I don't see much value in it
+because the value is in sysfs and when you see the CPU type you can easily
+determine it anyways.
 
-It is, bitmap_scnlistprintf() returns the number of characters printed to 
-the buffer minus the trailing '\0', which is different from snprintf().  
-APICID_LIST_LEN-1 then identifies when the buffer was max'd out.  It still 
-adds a trailing "..." if the list is exactly 128 characters long, but this 
-isn't addressed to avoid added complexity.
+I don't think the patch below really solves the problem because they
+would have the same noise problem back once they switch from the simulator
+to a real box which has banks.
+
+> Hum, I suppose the line for CPU 0 was slightly different from others,
+> because SHD means "this bank is shared bank and controlled by other".
+> Maybe:
+>  CPU 0 MCA banks CMCI:0 CMCI:1 CMCI:2 CMCI:3 CMCI:5 ... CMCI:21
+> 
+> But I agree that we could some work for this messages...
+> Is it better to change the message level to debug from info?
+
+Can be made INFO yes, but I would prefer not removing them
+from the dmesg for now.
+
+Perhaps they could be also compressed a bit like SRAT.
+
+-Andi
