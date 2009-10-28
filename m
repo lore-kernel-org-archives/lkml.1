@@ -1,40 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbZJ1MQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZJ1Mz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604AbZJ1MQk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 08:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZJ1MQk
+	id S1752746AbZJ1Mz1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 08:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZJ1Mz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 08:16:40 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54249
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753293AbZJ1MQj (ORCPT
+	Wed, 28 Oct 2009 08:55:26 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:46402 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbZJ1MzY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 08:16:39 -0400
-Date: Wed, 28 Oct 2009 05:17:03 -0700 (PDT)
-Message-Id: <20091028.051703.82082932.davem@davemloft.net>
-To: arndbergmann@googlemail.com
-Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: is avoiding compat ioctls possible?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200910281313.32827.arnd@arndb.de>
-References: <20091027.230450.222178419.davem@davemloft.net>
-	<20091028.005342.60092591.davem@davemloft.net>
-	<200910281313.32827.arnd@arndb.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 08:55:24 -0400
+Date: Wed, 28 Oct 2009 13:55:26 +0100 (CET)
+From: Tobi Oetiker <tobi@oetiker.ch>
+To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+cc: Mel LKML <mel.lkml@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
+ failures V2
+In-Reply-To: <20091028114208.GA14476@bizet.domek.prywatny>
+Message-ID: <alpine.DEB.2.00.0910281353180.19210@sebohet.brgvxre.pu>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091023165810.GA4588@bizet.domek.prywatny> <20091023211239.GA6185@bizet.domek.prywatny> <9ec2d7290910240646p75b93c68v6ea1648d628a9660@mail.gmail.com>
+ <20091028114208.GA14476@bizet.domek.prywatny>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arndbergmann@googlemail.com>
-Date: Wed, 28 Oct 2009 13:13:32 +0100
+ Today Karol Lewandowski wrote:
 
-> IMHO a better way to handle the radeon specific ioctls would be to
-> avoid the compat_alloc_user_space and just define the common
-> function taking a kernel pointer, with two implementations of the
-> copy operation:
+> On Sat, Oct 24, 2009 at 02:46:56PM +0100, Mel LKML wrote:
+> > Hi,
+>
+> Hi,
+>
+> > On 10/23/09, Karol Lewandowski <karol.k.lewandowski@gmail.com> wrote:
+> > > On Fri, Oct 23, 2009 at 06:58:10PM +0200, Karol Lewandowski wrote:
+>
+> > > Ok, I've tested patches 1+2+4 and bug, while very hard to trigger, is
+> > > still present. I'll test complete 1-4 patchset as time permits.
+>
+> Sorry for silence, I've been quite busy lately.
+>
+>
+> > And also patch 5 please which is the revert. Patch 5 as pointed out is
+> > probably a red herring. Hwoever, it has changed the timing and made a
+> > difference for some testing so I'd like to know if it helps yours as
+> > well.
+>
+> I've tested patches 1+2+3+4 in my normal usage scenario (do some work,
+> suspend, do work, suspend, ...) and it failed today after 4 days (== 4
+> suspend-resume cycles).
 
-Agreed, that would be a great follow-on patch to mine.
+I have been testing 1+2,1+2+3 as well as 3+4 and have been of the
+assumption that 3+4 does help ... I have now been runing a modified
+version of 4 which prints a warning instead of doing anything ... I
+have now seen the allocation issue again without the warning being
+printed. So in other words
+
+1+2+3 make the problem less severe, but do not solve it
+4 seems to be a red hering.
+
+cheers
+tobi
+
+
+-- 
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
