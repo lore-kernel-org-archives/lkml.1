@@ -1,62 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZJ1B4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932413AbZJ1B4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbZJ1B4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 21:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbZJ1B4P
+	id S932413AbZJ1B4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 21:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbZJ1B4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 27 Oct 2009 21:56:17 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:49271 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756838AbZJ1B4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 27 Oct 2009 21:56:15 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:36108 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756821AbZJ1B4O convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 21:56:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=jUJLPkL6R2lGGGrXsI636ywWY/qEl/bfAbgHOPyhFYNvbSoMlYELwIAobXI045aswX
-         UFEvPF2QuWiy+pE0coEJDnTzUUyc89tnyarYg+6kysjMsYmv0YJkZVBgWtlaUPSASI0C
-         sYYOCoHBReljMny38Zor/BPO1dhG6MjaoqZ9s=
-MIME-Version: 1.0
-In-Reply-To: <200910280237.40268.marek.vasut@gmail.com>
-References: <20091026225930.GA18723@localhost> <f17812d70910270043q328ab091mb1d76760e674450d@mail.gmail.com> 
-	<200910280237.40268.marek.vasut@gmail.com>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 28 Oct 2009 09:55:59 +0800
-Message-ID: <f17812d70910271855m4be6e4avcf90bfbbcb7ddb20@mail.gmail.com>
-Subject: Re: [PATCH] 2.6.32-rc5 bug in Palm Tungsten C keyboard
-To: Marek Vasut <marek.vasut@gmail.com>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Date: Tue, 27 Oct 2009 18:56:13 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Stephen Hemminger <stephen.hemminger@vyatta.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] dcache: better name hash function
+Message-ID: <20091027185613.1a7e8398@nehalam>
+In-Reply-To: <alpine.LFD.2.01.0910271744560.31845@localhost.localdomain>
+References: <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
+	<4AE68E23.20205@gmail.com>
+	<4AE69829.9070207@gmail.com>
+	<4AE6A16F.4020002@gmail.com>
+	<20091027100736.5303f1ab@nehalam>
+	<alpine.LFD.2.01.0910271017170.31845@localhost.localdomain>
+	<20091027160822.384dc109@nehalam>
+	<alpine.LFD.2.01.0910271636100.31845@localhost.localdomain>
+	<20091027171035.39e18383@nehalam>
+	<alpine.LFD.2.01.0910271744560.31845@localhost.localdomain>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 9:37 AM, Marek Vasut <marek.vasut@gmail.com> wrote:
-> Dne Út 27. října 2009 08:43:44 Eric Miao napsal(a):
->> On Tue, Oct 27, 2009 at 6:59 AM, Ondrej Zajicek <santiago@crfreenet.org>
-> wrote:
->> > Palm Tungsten C keyboard structure has swapped
->> > rows/cols gpio structures and does not work.
->> > This patch fixes it.
->> >
->> > Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
->>
->> This fix looks obvious to me. Applied to 'fix'.
->
-> Just wondering ... you checked the GPIO directions, right ? I mean, it works in
-> both directions, it just works worse the other one. I can't really check now.
->
+On Tue, 27 Oct 2009 17:58:53 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-It would be good if you can have it checked and give your Ack please.
+> 
+> 
+> On Tue, 27 Oct 2009, Stephen Hemminger wrote:
+> > 
+> > Agreed. Here is the reduced version of the program.
+> > To run:
+> >   find /home -printf '%f\n' 2>/dev/null | ./htest -n 100
+> 
+> The timings are very sensitive to random I$ layout at least on Nehalem. 
+> The reason seems to be that the inner loop is _so_ tight that just 
+> depending on exactly where the loop ends up, you can get subtle 
+> interactions with the loop cache.
+> 
+> Look here:
+> 
+> 	[torvalds@nehalem ~]$ find /home -printf '%f\n' 2>/dev/null | ./htest -n 100
+> 	Algorithm             Time       Ratio       Max   StdDev
+> 	full_name_hash       1.141899     1.03      4868 263.37
+> 	djb2                 0.980200     1.03      4835 266.05
+> 	string10             0.909175     1.03      4850 262.67
+> 	string10a            0.673915     1.03      4850 262.67
+> 	string10b            0.909374     1.03      4850 262.67
+> 	string_hash17        0.966050     1.03      4805 263.68
+> 	string_hash31        1.008544     1.03      4807 259.37
+> 	fnv32                0.774806     1.03      4817 259.17
+> 
+> what do you think the difference between 'string10', 'string10a' and 
+> 'string10b' are?
+> 
+> None. None what-so-ever. The source code is identical, and gcc generates 
+> identical assembly language. Yet those timings are extremely stable for 
+> me, and 'string10b' is 25% faster than the identical string10 and 
+> string10a functions.
+> 
+> The only difference? 'string10a' starts aligned to just 16 bytes, but that 
+> in turn happens to mean that the tight inner loop ends up aligned on a 
+> 128-byte boundary. And being cacheline aligned just there seems to matters 
+> for some subtle micro-architectural reason.
+> 
+> The reason I noticed this is that I wondered what small modifications to 
+> 'string10' would do for performance, and noticed that even _without_ the 
+> small modifications, performance fluctuated.
+> 
+> Lesson? Microbenchmarks like this can be dangerous and misleading. That's 
+> _especially_ true if the loop ends up being just tight enough that it can 
+> fit in some trace cache or similar. In real life, the name hash is 
+> performance-critical, but at the same time almost certainly won't be run 
+> in a tight enough loop that you'd ever notice things like that.
+> 
+> 		Linus
 
-> Also, it'll be possibly good to use the following emails for pxa patches:
-> Eric Miao <eric.y.miao@gmail.com>
-> Linux-ARM-Kernel <linux-arm-kernel@lists.infradead.org>
-> Marek Vasut <marek.vasut@gmail.com>
->
-> Those should be enough.
->
-> Cheers!
+Thanks. I wasn't putting huge amount of stock in the micro benchmark,
+was more interested in how the distribution worked out (which is CPU
+independent) rather than the time. As long as all usage of name hashing
+fold properly, there isn't a lot of reason to change.
+
+
+
+-- 
