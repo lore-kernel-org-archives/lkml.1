@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZJ1FHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZJ1FNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371AbZJ1FHt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 01:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbZJ1FHs
+	id S1757357AbZJ1FNv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 01:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbZJ1FNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 01:07:48 -0400
-Received: from mail-px0-f180.google.com ([209.85.216.180]:63322 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757353AbZJ1FHs (ORCPT
+	Wed, 28 Oct 2009 01:13:50 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9558 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756621AbZJ1FNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 01:07:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :x-operating-system:user-agent;
-        b=hp1+6Khmyl1y/a7UGi/qJH8aMaOUQsyAfGrqo3eTgru1bxCh/mkUsZI1k+BSa/AwCl
-         Vol449aj3IFMP76o4FTSibSbh6N1wLbloH00fHdjB6e3ugffUTkjtdbvWXdzRJgWkB0a
-         rANatXZfpjITp8aA+CaEK/ziQ2ty2xPbUIllY=
-Date: Wed, 28 Oct 2009 13:07:43 +0800
-From: Li Hong <lihong.hi@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 8/8] tracing: recordmcount.pl Die if we use a weak
-	function as reference
-Message-ID: <20091028050743.GH30758@uhli>
-Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
-	linux-kernel@vger.kernel.org
-References: <20091028045532.GA30036@uhli>
+	Wed, 28 Oct 2009 01:13:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=FykVgM24yqxJfun+d+wA6sAXCRkVqEr18wUcyoIzT44CjBh9uJvw0ElWtLp7XUZmu
+	qfqEO+LozA2B7DeGDf1+A==
+Date: Tue, 27 Oct 2009 22:13:44 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+In-Reply-To: <20091028135519.805c4789.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0910272205200.7507@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+ <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com>
+ <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <20091028135519.805c4789.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028045532.GA30036@uhli>
-X-Operating-System: Linux uhli 2.6.28-11-generic 
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From fef57ba56001830adaeea6aef479c623e3bce6c6 Mon Sep 17 00:00:00 2001
-From: Li Hong <lihong.hi@gmail.com>
-Date: Tue, 27 Oct 2009 13:25:39 +0800
-Subject: [PATCH] tracing: recordmcount.pl Die if we use a weak function as reference
+On Wed, 28 Oct 2009, KAMEZAWA Hiroyuki wrote:
 
-Signed-off-by: Li Hong <lihong.hi@gmail.com>
----
- scripts/recordmcount.pl |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
+> not related to child-parent problem.
+> 
+> Seeing this number more.
+> ==
+> [97137.709272] Active_anon:671487 active_file:82 inactive_anon:132316
+> [97137.709273]  inactive_file:82 unevictable:50 dirty:0 writeback:0 unstable:0
+> [97137.709273]  free:6122 slab:17179 mapped:30661 pagetables:8052 bounce:0
+> ==
+> 
+> acitve_file + inactive_file is very low. Almost all pages are for anon.
+> But "mapped(NR_FILE_MAPPED)" is a little high. This implies remaining file caches
+> are mapped by many processes OR some mega bytes of shmem is used.
+> 
+> # of pagetables is 8052, this means
+>   8052x4096/8*4k bytes = 16Gbytes of mapped area.
+> 
+> Total available memory is near to be active/inactive + slab 
+> 671487+82+132316+82+50+6122+17179+8052=835370x4k= 3.2Gbytes ?
+> (this system is swapless)
+> 
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index ffb1123..0f733c9 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -348,15 +348,11 @@ sub update_funcs
- {
-     return unless ($ref_func and @offsets);
- 
--    # A section only had a weak function, to represent it.
--    # Unfortunately, a weak function may be overwritten by another
--    # function of the same name, making all these offsets incorrect.
--    # To be safe, we simply print a warning and bail.
-+    # Sanity check on weak function. A weak function may be overwritten by 
-+    # another function of the same name, making all these offsets incorrect.
-     if (defined $weak{$ref_func}) {
--	print STDERR
--	    "$inputfile: WARNING: referencing weak function" .
--	    " $ref_func for mcount\n";
--	return;
-+        die "$inputfile: ERROR: referencing weak function" .
-+            " $ref_func for mcount\n";
-     }
- 
-     # is this function static? If so, note this fact.
--- 
-1.6.0.4
+Yep:
 
+[97137.724965] 917504 pages RAM
+[97137.724967] 69721 pages reserved
+
+(917504 - 69721) * 4K = ~3.23G
+
+> Then, considering the pmap kosaki shows,
+> I guess killed ones had big total_vm but has not much real rss,
+> and no helps for oom.
+> 
+
+echo 1 > /proc/sys/vm/oom_dump_tasks can confirm that.
+
+The bigger issue is making the distinction between killing a rogue task 
+that is using much more memory than expected (the supposed current 
+behavior, influenced from userspace by /proc/pid/oom_adj), and killing the 
+task with the highest rss.  The latter is definitely desired if we are 
+allocating tons of memory but reduces the ability of the user to influence 
+the badness score.
