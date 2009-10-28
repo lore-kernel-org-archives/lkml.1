@@ -1,102 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZJ1Qeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZJ1Qfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbZJ1Qeg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 12:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZJ1Qeg
+	id S1755077AbZJ1Qfm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 12:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbZJ1Qfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 12:34:36 -0400
-Received: from smtp102.prem.mail.sp1.yahoo.com ([98.136.44.57]:47488 "HELO
-	smtp102.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754646AbZJ1Qef (ORCPT
+	Wed, 28 Oct 2009 12:35:42 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:42663 "EHLO
+	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754921AbZJ1Qfl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 12:34:35 -0400
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: 213JxFAVM1nX9psfsr1R6IgKD41M1fl5mAa11v.fgDKgRoT2WwLUA6ZyXp0.qZWvkspcLmZehfztfKsbmwxpEt7BD9NZMRefeClXQIMhjxWAQ..enE13ToSf.VLmD4x7H2tnlggZJz5NCRO8uwjY2xOZNl3LHJRYGd51d1Gj5js4c2LA1X8X9Y7h9XFS6HGtlOJnOiI7n5c.8SxIGIfo6ZtQg4asb1e3u9b23TKxX0wruUH.F_9HO6bmlElhfW3PqO6SKooOO14UGkePOGiv1tMat0jDiUkys7tnBa0_c6oMMGOmcF83fDGhICut9lbHJ_h7UQnF8hVyA20rR6oC7UsXBPM-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4AE87292.20802@schaufler-ca.com>
-Date: Wed, 28 Oct 2009 09:34:26 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 28 Oct 2009 12:35:41 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KS8GR9-04-91E-02
+X-M-MSG: 
+Date: Wed, 28 Oct 2009 17:35:34 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86 <x86@kernel.org>
+CC: Doug Thompson <norsk5@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] amd64_edac: syndromes loading
+Message-ID: <20091028163534.GA625@aftab>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-References: <20091025062953.GC1391@ucw.cz> <20091026163157.GB7233@duck.suse.cz> <20091026165729.GF23564@us.ibm.com> <20091026173629.GB16861@fieldses.org> <20091026174631.GD7233@duck.suse.cz> <1256579869.8576.7.camel@heimdal.trondhjem.org> <20091025093604.GA1501@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org> <20091028081653.GA18290@elf.ucw.cz>
-In-Reply-To: <20091028081653.GA18290@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 28 Oct 2009 16:35:32.0367 (UTC) FILETIME=[AAD821F0:01CA57EC]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Tue 2009-10-27 21:15:54, Eric W. Biederman wrote:
->   
->> Pavel Machek <pavel@ucw.cz> writes:
->>
->>     
->>> On Mon 2009-10-26 13:57:49, Trond Myklebust wrote:
->>>       
->>>> On Mon, 2009-10-26 at 18:46 +0100, Jan Kara wrote:
->>>>         
->>>>>   That's what I'd think as well but it does not as I've just learned and
->>>>> tested :) proc_pid_follow_link actually directly gives a dentry of the
->>>>> target file without checking permissions on the way.
->>>>>           
->>> It is weider. That symlink even has permissions. Those are not
->>> checked, either.
->>>  
->>>       
->>>> I seem to remember that is deliberate, the point being that a symlink
->>>> in /proc/*/fd/ may contain a path that refers to a private namespace.
->>>>         
->>> Well, it is unexpected and mild security hole.
->>>       
->> /proc/<pid>/fd is only viewable by the owner of the process or by
->> someone with CAP_DAC_OVERRIDE.  So there appears to be no security
->> hole exploitable by people who don't have the file open.
->>     
->
-> Please see bugtraq discussion at
-> http://seclists.org/bugtraq/2009/Oct/179 .
->
-> (In short, you get read-only fd, and you can upgrade it to read-write
-> fd. Yes, you are the owner of the process, but you are not owner of
-> the file the fd refers to.)
->
->   
->>> Part of the problem is that even  if you have read-only
->>> filedescriptor, you can upgrade it to read-write, even if path is
->>> inaccessible to you.
->>>
->>> So if someone passes you read-only filedescriptor, you can still write
->>> to it.
->>>       
->> Openly if you actually have permission to open the file again.  The actual
->> permissions on the file should not be ignored.
->>     
->
-> The actual permissions of the file are not ignored, but permissions of
-> the containing directory _are_. If there's 666 file in 700 directory,
-> you can reopen it read-write, in violation of directory's 700
-> permissions.
-> 									Pavel
->   
+Hi,
 
-There is no security violation here. Consider the case where
-the file is unlinked after it is opened. What directory permissions
-would matter in that case? Or what about the case where the file
-has a link count of 2, say /a/foo and /b/ish are hard links. If
-/a is 777 and /b is 700 what would your position be regarding
-the file descriptor obtained by opening /b/ish? The path name is
-an ethereal convenience and once traversed has no bearing on the
-security state of the object. You need to change the semantics
-of Linux (and Unix) file systems for your concern to make any
-sense at all.
+I've been pondering how to avoid adding almost 15K of syndrome tables to
+the edac driver.
+
+The syndrome tables are used for mapping a correctable ECC to the
+corresponding DIMM and thus pinpointing the DIMM about to fail. There
+are two flavors of syndromes based on the ECCs: x4 and x8. The x4 table
+of size 540 u16 values is already in the driver but the x8 is much
+bigger (4864 u16) and I wouldn't want to add it statically into the
+driver.
+
+Rather, I'd like to dynamically load them depending on the DRAM
+configuration of each node. The two attached patches do that using
+the request_firmware() interface. This way, the syndrome tables could
+be added as binary blobs in drivers/edac/ and then installed with
+'make firmware_install'. This way we avoid polluting driver code with
+humongous u16 arrays of ECC syndromes.
+
+What do you guys think, could that be an acceptable approach? Any
+suggestions/comments are welcome.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
