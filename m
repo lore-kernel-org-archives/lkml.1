@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932655AbZJ1H7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbZJ1IAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932655AbZJ1H7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 03:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932616AbZJ1H7T
+	id S932649AbZJ1IAV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 04:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932615AbZJ1IAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 03:59:19 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50927 "EHLO smtps.tip.net.au"
+	Wed, 28 Oct 2009 04:00:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51810 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932576AbZJ1H7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 03:59:17 -0400
-Date: Wed, 28 Oct 2009 18:59:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Aristeu Rozanski <aris@redhat.com>
-Subject: linux-next: i7core_edac tree build warning
-Message-Id: <20091028185914.2f26c026.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__28_Oct_2009_18_59_14_+1100_dmXa3pPLrffcAKJ0"
+	id S932576AbZJ1IAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 04:00:19 -0400
+Message-ID: <4AE7FA12.2070905@kernel.org>
+Date: Wed, 28 Oct 2009 09:00:18 +0100
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
+       joerg.roedel@amd.com, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
+References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20091028074832.GC19402@elte.hu>
+In-Reply-To: <20091028074832.GC19402@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__28_Oct_2009_18_59_14_+1100_dmXa3pPLrffcAKJ0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-Hi Mauro,
+Ingo Molnar wrote:
+> Hm, we are now further complicating the bootmem model.
+> 
+> I think we could remove the bootmem allocator middle man altogether. 
+> 
+> This can be done by initializing the page allocator sooner and by 
+> extending (already existing) 'reserve memory early on' mechanisms in 
+> architecture code. (the reserve_early*() APIs in x86 for example)
+...
+> reserve_early() might need some small amount of extra work before it can 
+> be used as a generic early allocator - like adding a node field to it 
+> (so that the buddy can then pick those ranges up in a NUMA aware 
+> fashion) - but nothing very complex.
 
-Today's linux-next build (i386 defconfig) produced this warning:
+ISTR an attempt to initialize the kmalloc allocator much earlier
+during boot such that it can completely replace the bootmem allocator,
+which would nicely remove all the complications although it may
+require the kmalloc allocator to go through more complex boot
+strapping steps.  I didn't follow how that went.  Did it prove to be
+unworkable?
 
-WARNING: arch/x86/pci/built-in.o(__ksymtab_gpl+0x8): Section mismatch in re=
-ference from the variable __ksymtab_pci_legacy_init to the function .init.t=
-ext:pci_legacy_init()
-The symbol pci_legacy_init is exported and annotated __init=20
-Fix this by removing the __init annotation of pci_legacy_init or drop the e=
-xport.
+As for percpu allocator, as long as it can grab memory in NUMA aware
+way, changing shouldn't be a problem at all.  The good thing about
+bootmem allocator is that it is generic and standardizes memory
+bootstrapping across different architectures.  As long as that can be
+maintained, makings things simpler would be great.
 
-Introduced by commit a120a84ebbc4cbc9c1addddd2b491e3683b842a6 ("pci: Add
-a probing code that seeks for an specific bus").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Thanks.
 
---Signature=_Wed__28_Oct_2009_18_59_14_+1100_dmXa3pPLrffcAKJ0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrn+dIACgkQjjKRsyhoI8xXQwCfd43/t+cVkmTGcKUDpv1N0lAj
-aQ0AnAvjMF2xVqD16ZEiPvPt99E/BaO1
-=BsHG
------END PGP SIGNATURE-----
-
---Signature=_Wed__28_Oct_2009_18_59_14_+1100_dmXa3pPLrffcAKJ0--
+-- 
+tejun
