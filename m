@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZJ1MD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbZJ1MMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbZJ1MD5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 08:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZJ1MD4
+	id S1753431AbZJ1MMu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 08:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZJ1MMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 08:03:56 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:56477 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753407AbZJ1MDz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 08:03:55 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Mike Travis <travis@sgi.com>, Roland Dreier <rdreier@cisco.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
-In-Reply-To: Your message of "Wed, 28 Oct 2009 06:24:45 BST."
-             <4AE7D59D.9070307@linux.intel.com>
-From: Valdis.Kletnieks@vt.edu
-References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com> <4AE75DB9.3040702@sgi.com> <4AE7C396.7040109@jp.fujitsu.com>
-            <4AE7D59D.9070307@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1256731383_2776P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Wed, 28 Oct 2009 08:12:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35295 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752807AbZJ1MMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 08:12:49 -0400
+Message-ID: <4AE83541.3030306@kernel.org>
+Date: Wed, 28 Oct 2009 13:12:49 +0100
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Ingo Molnar <mingo@elte.hu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
+       joerg.roedel@amd.com, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
+References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>	 <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>	 <20091028074832.GC19402@elte.hu> <4AE7FA12.2070905@kernel.org> <84144f020910280438j65bcacacq731f6076cbd8d99@mail.gmail.com>
+In-Reply-To: <84144f020910280438j65bcacacq731f6076cbd8d99@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 28 Oct 2009 08:03:03 -0400
-Message-ID: <32564.1256731383@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.34.98 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020205.4AE832F8.01D4,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1256731383_2776P
-Content-Type: text/plain; charset=us-ascii
+Hello,
 
-On Wed, 28 Oct 2009 06:24:45 BST, Andi Kleen said:
-
-> >>> mce: CPU supports 0 MCE banks
+Pekka Enberg wrote:
+> On Wed, Oct 28, 2009 at 10:00 AM, Tejun Heo <tj@kernel.org> wrote:
+>> ISTR an attempt to initialize the kmalloc allocator much earlier
+>> during boot such that it can completely replace the bootmem allocator,
+>> which would nicely remove all the complications although it may
+>> require the kmalloc allocator to go through more complex boot
+>> strapping steps.  I didn't follow how that went.  Did it prove to be
+>> unworkable?
 > 
-> That message can be just removed I think. I don't see much value in it
-> because the value is in sysfs and when you see the CPU type you can easily
-> determine it anyways.
+> We're doing it before scheduler init now but I haven't put any effort
+> into moving it earlier than that yet. I don't see any fundamental
+> reason we can't do that but the practical problem is that we're going
+> to affect architecture specific boot code which is really hard to
+> test.
 
-Maybe it should only print a message if it finds an unexpected number of banks?
-"Hey dood - we're on a Core3.5 and there should be 6 banks here, but the
-hardware says there's only 4. What's up with that?"
+Thanks for the explanation.  It would be really great if we can pull
+that off someday.  This should be doable architecture-by-architecture,
+right?  You can, for example, first convert x86 and then make bootmem
+allocator thin wrapper around the slab allocator.  After all archs
+have been converted, the wrappers can be dropped.
 
-
---==_Exmh_1256731383_2776P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK6DL3cC3lWbTT17ARAjBuAKDjuDXi1VI3ryqYxpy6C3qKcIkf3gCg6zGa
-AbttAfi7QFrbby1u5mnxU7Y=
-=gU3T
------END PGP SIGNATURE-----
-
---==_Exmh_1256731383_2776P--
-
+-- 
+tejun
