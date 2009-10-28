@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbZJ1BqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbZJ1Brp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbZJ1BqG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 21:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbZJ1BqF
+	id S1757128AbZJ1Brp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 21:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbZJ1Bro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 21:46:05 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55357 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756073AbZJ1BqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 21:46:04 -0400
-Message-ID: <4AE7A217.8030008@cn.fujitsu.com>
-Date: Wed, 28 Oct 2009 09:44:55 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing: Fix to use unused attribute
-Content-Type: text/plain; charset=UTF-8
+	Tue, 27 Oct 2009 21:47:44 -0400
+Received: from mail1.radix.net ([207.192.128.31]:56064 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756655AbZJ1Brn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 21:47:43 -0400
+Subject: Re: [PATCH 0/7] kfifo: new API v0.6
+From: Andy Walls <awalls@radix.net>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Joe Perches <joe@perches.com>, linux-media@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Content-Type: text/plain
+Date: Tue, 27 Oct 2009 21:49:31 -0400
+Message-Id: <1256694571.3131.26.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-____ftrace_check_##name() is used for compile-time check
-on F_printk() only, so it should be marked as __unused
-instead of __used.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
+> One thing is that the new API is not compatible with the old one. I
+> had a look at the current user of the old kfifo API and it is was easy
+> to adapt it to the new API. These are the files which currently use
+> the kfifo API:
+> 
+> drivers/char/nozomi.c
+> drivers/char/sonypi.c
+> drivers/infiniband/hw/cxgb3/cxio_resource.c
+> drivers/media/video/meye.c
+> drivers/net/wireless/libertas/main.c
+> drivers/platform/x86/fujitsu-laptop.c
+> drivers/platform/x86/sony-laptop.c
+> drivers/scsi/libiscsi.c
+> drivers/scsi/libiscsi_tcp.c
+> drivers/scsi/libsrp.c
+> drivers/usb/host/fhci.h
+> net/dccp/probe.c
+> drivers/usb/serial/usb-serial.c
+> drivers/usb/serial/generic.c
 
-I'm thinking about introducing __always_unused, comparing
-to __maybe_unused.
+Here's a V4L-DVB cx23885 module change, that is on its way upstream,
+that uses kfifo as is:
 
----
- kernel/trace/trace_export.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+http://linuxtv.org/hg/v4l-dvb/rev/a2d8d3d88c6d
 
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index 934d81f..85309fc 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -48,11 +48,12 @@
- struct ____ftrace_##name {					\
- 	tstruct							\
- };								\
--static void __used ____ftrace_check_##name(void)		\
-+static void __attribute__((unused))				\
-+____ftrace_check_##name(void)					\
- {								\
- 	struct ____ftrace_##name *__entry = NULL;		\
- 								\
--	/* force cmpile-time check on F_printk() */		\
-+	/* force compile-time check on F_printk() */		\
- 	printk(print);						\
- }
- 
--- 
-1.6.3
+Do you really have to break the old API?
+
+Regards,
+Andy
 
