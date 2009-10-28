@@ -1,180 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZJ1OQH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbZJ1OPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbZJ1OQH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 10:16:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZJ1OQG
+	id S1753841AbZJ1OPY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 10:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZJ1OPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 10:16:06 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:33313 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752062AbZJ1OQF convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 10:16:05 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqwEAMzq50pGGN1W/2dsb2JhbACBT9h4hD8EgWE
-Date: Wed, 28 Oct 2009 10:11:05 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: GeunSik Lim <leemgs1@gmail.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, Jesper Juhl <jj@chaosbits.net>,
-       Adrian Bunk <bunk@stusta.de>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       Michel Dagenais <michel.dagenais@polymtl.ca>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL
-	v2,headers to Dual BSD/GPL
-Message-ID: <20091028141105.GA20031@Krystal>
-References: <20091023160257.GA30447@Krystal> <20091023160632.GA2198@Krystal> <alpine.LNX.2.00.0910242300510.16628@swampdragon.chaosbits.net> <20091026015357.GA6033@localhost> <023001ca55e1$436e38e0$808410ac@zhaoleiwin> <49b7c2350910252203o69811000w4551c01e6e2a10c7@mail.gmail.com> <20091026073048.GC8162@elte.hu>
+	Wed, 28 Oct 2009 10:15:23 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:57761 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbZJ1OPW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 10:15:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WBk7nrzjmcy1ADIqfc046uIWmxkQAhcKYKqB8yX49wAPU+Yxh7SRZdjOwWqrnE7tCq
+         aYLHiRPHIwMjD2gfgOWfcjlBnvkCVODolbP27/4wHpaEPPRq7ZF4QjRJM5N7mSFNvBKV
+         CdWQttFAkFEzF7TXiXBPrq76VeoowHNpVbxMw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+In-Reply-To: <1256460376.15273.31.camel@Palantir>
+References: <e932a33e0910210833j1fab6129m23b55101c5978c4a@mail.gmail.com>
+	 <e932a33e0910210838j3be9286bo3953c4cae3f0e12e@mail.gmail.com>
+	 <1256198088.6700.76.camel@Palantir>
+	 <e932a33e0910220742v5d99adbere9fc9c31f72b6b95@mail.gmail.com>
+	 <1256460376.15273.31.camel@Palantir>
+Date: Wed, 28 Oct 2009 19:45:26 +0530
+Message-ID: <e932a33e0910280715u1722b8b4k9dabda45c61151ad@mail.gmail.com>
+Subject: Re: [PATCH] DRTL kernel 2.6.32-rc3 : SCHED_EDF, DI RT-Mutex, Deadline 
+	Based Interrupt Handlers
+From: Soumya K S <ssks.mt@gmail.com>
+To: Raistlin <raistlin@linux.it>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Claudio Scordino <claudio@evidence.eu.com>,
+       michael trimarchi <trimarchi@gandalf.sssup.it>,
+       Juri Lelli <juri.lelli@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20091026073048.GC8162@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 09:53:31 up 71 days, 43 min,  2 users,  load average: 0.55, 0.44,
-	0.38
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * GeunSik Lim <leemgs1@gmail.com> wrote:
-> 
-> > On Mon, Oct 26, 2009 at 11:08 AM, Zhaolei <zhaolei@cn.fujitsu.com> wrote:
-> > > * From: "Wu Fengguang" <fengguang.wu@intel.com>
-> > > Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL v2,headers to Dual BSD/GPL
-> > >
-> > >
-> > >> On Sun, Oct 25, 2009 at 05:03:52AM +0800, Jesper Juhl wrote:
-> > >>> On Fri, 23 Oct 2009, Mathieu Desnoyers wrote:
-> > >>>
-> > >>> > (updated email for Jesper Juhl)
-> > >>> >
-> > >>> > * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> > >>> > > Hi,
-> > >>> > >
-> > >>> > > I would like to re-license the tracepoint.c/marker.c files from GPL to:
-> > >>> > >
-> > >>> > > * Dual LGPL v2.1/GPL v2 license.
-> > >>> > >
-> > >>> > > And re-license tracepoint.h/marker.h to:
-> > >>> > >
-> > >>> > > * Dual BSD/GPL v2 license.
-> > >>> > >
-> > >>> > > The goal is to allow sharing code between the kernel tracer and UST
-> > >>> > > (User-Space Tracer) project, which is a LGPL v2.1 library. Tracepoint
-> > >>> > > and marker headers might need to be included by proprietary or BSD
-> > >>> > > applications, hence the dual BSD/GPL v2 license for these two.
-> > >>> > >
-> > >>> > > I currently have the OK from Kosaki Motohiro for Fujitsu contributions,
-> > >>> > > which includes Zhao Lei and Lai Jiangshan.
-> > >>> > >
-> > >>> > > The missing approvals for Dual LGPL v2.1/GPL v2 relicensing are:
-> > >>> > >
-> > >>> > > For tracepoint.c:
-> > >>> > >
-> > >>> > > Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > >>> > >
-> > >>> > > For marker.c:
-> > >>> > >
-> > >>> > > "Robert P. J. Day" <rpjday@mindspring.com>
-> > >>> > > Adrian Bunk <bunk@stusta.de>
-> > >>> > > Harvey Harrison <harvey.harrison@gmail.com>
-> > >>> >
-> > >>> > Jesper Juhl <jj@chaosbits.net>
-> > >>> >
-> > >>>
-> > >>> I don't think I have enough significant changes in there to actually
-> > >>> require my approval for relicensing, but since you ask; I personally
-> > >>> do not have a problem with that file being Dual LGPL v2.1/GPL v2
-> > >>> licensed.
-> > >>
-> > >> Me too.
-> > >>
-> > >> Thanks,
-> > >> Fengguang
-> > >
-> > > Me too.
-> > >
-> > > Thanks,
-> > > Zhaolei
-> > 
-> > Sorry for the late reply. Why do we need a different license to GPLV2
-> > sources that  contributors submitted.?  As Mathieu mentioned, I think
-> > that  GPLV2 based some sources needs  to be relicense  to  trace
-> > non-GPL applications
-> > for some developers and some companies.
-> > 
-> > In real, Some open source  like QT, MySQL is licensed using dual
-> > license for business strategy. tracepoint.c/marker.c file is GPLv2
-> > currently.
-> > 
-> > Can  we re-distribute with dual license (e.g: bsd/gplv2 or lgpl
-> > 2.1/gplv2)   about some source of linux kernel source? I think that
-> > linux kernel source is GPLv2 only. Frankly speaking, I am not know
-> > exactly about  legal issues of your questions.
-> 
-> Yes, the legality of such relicensing is questionable as that code was 
-> never developed outside of the kernel but as part of the kernel.
-> 
-> But i also disagree with it on a technical level: code duplication is 
-> _bad_. Why does the code have to be duplicated in user-space like that? 
-> I'd like Linux tracing code to be in the kernel repo. Why isnt this done 
-> properly, as part of the kernel project - to make sure it all stays in 
-> sync?
-> 
+On Sun, Oct 25, 2009 at 2:16 PM, Raistlin <raistlin@linux.it> wrote:
+> On Thu, 2009-10-22 at 20:12 +0530, Soumya K S wrote:
+>> Hi Dario,
+> Hi again,
+>
+How you duin...
+>> we needed a deadline based scheduler for DRTL and we zeroed
+>> in upon SCHED_EDF. We see that the threads here are fairly new too :-P
+>>
+> Yes, we are not far from the starting point as well... :-)
+>
+>> > Nice, from here, it seemed we were working on very similar things, and I
+>> > was wondering if we could somehow collaborate... :-)
+>> >
+>> Sure! That would be good :)
+>>
+> So... I looked at the code and, even if the aim of our two projects are
+> quite the same, our implementations are very different.
+>
+> The main difference is the bandwidth reservation thing.
+> I strongly think that, on a system like Linux, it should be very
+> important to have --at least as a possibility-- the following features:
+> - tasks can request for a guaranteed runtime over some time interval
+>  (bandwidth),
 
-Hi Ingo,
+We can specify the bandwidth reservation of an RT class and we use the
+reservation policy of the RT scheduling class itself. By increasing
+the static priority of the EDF task, we can guarantee that EDF tasks
+always get the required runtime. If the user puts all his EDF tasks in
+priority 1 , only his tasks run. In that case the entire RT bandwidth
+is reserved for the EDF tasks. In a way your patch also does the same
+thing by placing itself above the RT scheduling class. Only thing what
+we don't have in place is partitioning of RT bandwidth across RR/FIFO
+and EDF, which right now, we overcome by intelligently placing the
+tasks with different policies in different priority levels.
+If you are asking bandwidth reservation for guaranteeing determinism,
+we definitely have determinism in place, but bandwidth reservation for
+other real-time scheduling policies is not in place. This is something
+which we can surely work on.
 
-I would like to know more about what role you think a kernel vDSO can
-have in static instrumentation of user-space applications.
+> - admission test should guarantee no oversubscription
 
-Basically, static instrumentation has to be declared in the
-application. In the current Ftrace scheme (same for LTTng), probes have
-to be specifically built for each instrumentation site (this is the
-purpose of TRACE_EVENT). Given this has to be integrated with the
-application build/link phases, I do not see the gain in doing static
-instrumentation through a vDSO.
+So, you are calculating the WCET online in the scheduler right? Can it
+calculate the amount of CPU time with the  required preciseness? Here,
+you are increasing the enqueue time by adding an O(n) calculation for
+every task that you enqueue. That is the reason why for a small
+system, pushing this to architect made better sense in terms of
+decreased latencies where the turn around time from when the task
+enters till it gets the desired result matters, e.g., reading a sensor
+2 times in 1ms.
 
-Data extraction is a separate topic though, and could possibly benefit
-from being done from within the kernel. However, the tracer
-implementations for kernel vs user-space contexts will differ due to
-locking which has to be done slightly differently in both contexts (e.g.
-RCU read-side cannot be used from a vDSO). If we find a way to keep the
-difference between the kernel and user-space implementation to a
-minimum, which can be expressed using preprocessor macros, maybe it
-could be worth it. But in any case, I think it will be useful to
-prototype this in a stand-alone userspace library first and get it in
-the hand of users ASAP. Then we can compare and decide which is the
-optimal technical solution.
+> - bandwidth enforcing must avoid reciprocal tasks interferences.
+> Maybe we can make the second and third configurable/optional (already
+> thought about that, and it should be quite easy), but they need to be
+> there, at least to avoid extending the interface again when we'll
+> realize they'll needed! :-P
+>
+> I don't know how much you, and other people here, are familiar with such
+> idea... We implemented it using one of the many existing algorithm. I
+> can give you pointers to papers and other implementations of it if
+> interested.
 
-Technical aspect aside, I'm concerned about your attitude of blocking
-progress of competitive technical solutions through licensing arguments.
-It is not really helping global progress here. I'd much prefer to
-discuss on a technical ground and not mix that with licensing goo.
+Surely, we would like to look into this if you can provide some more pointers.
 
-Thanks,
+> To keep it short and practical, you can think at it as something similar
+> to what MacOS-X (and I think Solaris) already have --and actively use,
+> e.g., for the Jack Audio Connection Kit-- and call
+> THREAD_TIME_CONSTRAINT (very poor docs, I think, but it gives the big
+> picture):
+> http://developer.apple.com/mac/library/documentation/Darwin/Conceptual/KernelProgramming/scheduler/scheduler.html#//apple_ref/doc/uid/TP30000905-CH211-BEHJDFCA
+>
+> Moreover, as Peter pointed out, coming out with an interface which is
+> too much tightly tied to EDF, or to any other specific algorithm,
+> wouldn't be the best idea. What would happen if somewhere in the future
+> we decide to change from the EDF algorithm to some other deadline based
+> one?
 
-Mathieu
+Hmm on a lighter note, we would rather say you would just need to
+replace 3 functions then :))
 
-> So for those two grounds i cannot give my permission for this 
-> relicensing, sorry.
-> 
-> 	Ingo
+> That's why we changed the name and the interface from _EDF/_edf (yep, it
+> has been our first choice too! :-P) to _DEADLINE/_deadline, and that's
+> why I think we should continue striving for even more
+> interface-algorithm independence.
+>
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+True, but we really think its a matter of trade-off between how much
+response time you can guarantee for a real-time task v/s how much
+scalable you want your design to be. The deterministic response times
+that you might have achieved by having all these features might be
+good enough (Not sure of your numbers here) in a soft real time
+scenario, but wondering if it would meet ends otherwise.
+
+> Obviously, also SMP has to be there! :-P
+> We have it in fully partitioned right now, but I'll become global (with
+> support for cpu-affinity) in very short time I hope (Juri, from ReTiS
+> Lab in Pisa is already working on it).
+>
+> For rt-mutexes/deadline inheritance, the big issue is that, it works if
+> you only have EDF, but with a "bandwidth aware scheduler", you need
+> something more, which is why we don't have it yet... However, I think it
+> could be a nice starting point.
+
+Yes, we too think without a DI in place, its not a complete real-time solution.
+
+>
+> Finally, I like the idea of deadline IRQ handling and I think it would
+> be worth to mind it some more. :-)
+>
+
+We found many use cases for this feature where real-time tasks have
+higher priority than lower priority interrupts generated as a result
+of say audio streaming, etc Being able to configure these was
+extremely important to maintain the deterministic property of an EDF
+task in the system.
+
+>> > Even from the implementation point of view, I see you didn't used a new
+>> > scheduling class.
+>> >
+>> A simple system where there a few real-time tasks and a few non-real
+>> time tasks, the timelines can be architected out for each real-time
+>> task in the system. In such a case, given the RT bandwidth in the
+>> system, the task with the lowest deadline gets to be scheduled first
+>> till it is there in the system.
+>> In short, for such simple systems, we shifted the burden of admission
+>> control to the architect and kept close to the existing code.
+>>
+> Well, I kind of agree on both, _iff_ you're target is _only_ such small
+> embedded systems. However, my very humble opinion is that, on Linux, you
+> need something more general and, since we are talking about real-time,
+> as much predictable and analyzable as you can get... And I think a
+> separate scheduling class would be better suited for this. What do you
+> think?
+>
+
+Yes, the target was industrial control systems where we needed
+deterministic real-time response and also the responsiveness of the
+task was critical. Here, the demanding real-time tasks were not too
+many (~4/5 at a given point in time) and also, there were other user
+tasks which had to update the results of this real-time task remotely.
+Hence, we were very vary of introducing latencies in the system.
+Instead, we focused on bringing in determinism into the system without
+increasing its latency! Also, the concept of a deadline miss handler
+was very handy, for a task missing its deadline not to interfere with
+the determinism of the other tasks. In this approach, we were able to
+meet the demanding response times with determinism in place.
+However, I do understand that this approach puts the system designer
+in a hot spot! :)
+
+
+>> > I'm right in the opposite situation, I've got SMP (partitioned for now,
+>> > but we're working on migrations) and also CGROUPS support, but we are
+>> > still wondering how deadline (or something more sophisticated, like
+>> > bandwidth) inheritance could work in such a case...
+>> >
+>> That's right, we are still working on SMP and hope there are no
+>> scalability issues in this patch w.r.t SMP.
+>>
+> Well, I don't know. I guess achieving something similar to what we
+> already have now (partitioned SMP) should not be impossible even with
+> your approach... But if you want something different, such has global
+> (EDF) scheduling, where task can migrate among CPUs according to their
+> affinity, would but a major headache!! :-O
+>
+>> > Do you already have any numbers or testcase? I have some (well, a few!)
+>> > of them... I'll try to find the time to give it a try to your patch with
+>> > them...
+>> >
+>> We have tested Co-operative context switch time, Pre-emptive context
+>> switch time and Interrupt Latency, all of them are of ~130us for
+>> OMAP3530.
+>>
+> Mmm... I'm not sure I see why and how your patch should affect context
+> switches duration... However, do you have the testcases for such tests?
+>
+
+Well we are actually saying that it does _not_ effect the context
+switch time :).
+We are measuring the time when a task is entered in the system till it
+gets scheduled both in preemptive and non-preemptive modes. This
+figure does not change even for a loaded system which shows the
+deterministic turn around time for a task in terms of scheduling
+latencies.
+
+Regards,
+Shubhro
+Soumya
