@@ -1,199 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbZJ1Gwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbZJ1HGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757435AbZJ1Gwr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbZJ1Gwq
+	id S1757443AbZJ1HGw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 03:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbZJ1HGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:52:46 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:65023 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756903AbZJ1Gwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:52:45 -0400
-Date: Wed, 28 Oct 2009 15:37:20 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH] memcg: make memcg's file mapped consistent with global
- VM
-Message-Id: <20091028153720.70762849.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20091028121619.c094e9c0.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091028121619.c094e9c0.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 03:06:52 -0400
+Received: from londo.lunn.ch ([80.238.139.98]:43542 "EHLO londo.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753727AbZJ1HGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 03:06:51 -0400
+X-Greylist: delayed 1690 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Oct 2009 03:06:51 EDT
+Date: Wed, 28 Oct 2009 07:37:21 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       user-mode-linux-user@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [patch] uml: IRQ register race condition
+Message-ID: <20091028063721.GA4513@lunn.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+From: Andrew Lunn <andrew@lunn.ch>
 
-On Wed, 28 Oct 2009 12:16:19 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Based on mmotm-Oct13 + some patches in -mm queue.
-> 
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> memcg-cleanup-file-mapped-consistent-with-globarl-vm-stat.patch
-> 
-> In global VM, FILE_MAPPED is used but memcg uses MAPPED_FILE.
-> This makes grep difficult. Replace memcg's MAPPED_FILE with FILE_MAPPED
-> 
-> And in global VM, mapped shared memory is accounted into FILE_MAPPED.
-> But memcg doesn't. fix it.
-> Note:
->   page_is_file_cache() just checks SwapBacked or not.
->   So, we need to check PageAnon.
-> 
-> Cc: Balbir Singh <balbir@in.ibm.com>
-> Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/memcontrol.h |    4 ++--
->  mm/memcontrol.c            |   21 +++++++++------------
->  mm/rmap.c                  |    4 ++--
->  3 files changed, 13 insertions(+), 16 deletions(-)
-> 
-> Index: mm-test-kernel/mm/memcontrol.c
-> ===================================================================
-> --- mm-test-kernel.orig/mm/memcontrol.c
-> +++ mm-test-kernel/mm/memcontrol.c
-> @@ -67,7 +67,7 @@ enum mem_cgroup_stat_index {
->  	 */
->  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
->  	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon rss */
-> -	MEM_CGROUP_STAT_MAPPED_FILE,  /* # of pages charged as file rss */
-> +	MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
->  	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
->  	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
->  	MEM_CGROUP_STAT_EVENTS,	/* sum of pagein + pageout for internal use */
-> @@ -1227,7 +1227,7 @@ static void record_last_oom(struct mem_c
->   * Currently used to update mapped file statistics, but the routine can be
->   * generalized to update other statistics as well.
->   */
-> -void mem_cgroup_update_mapped_file_stat(struct page *page, int val)
-> +void mem_cgroup_update_file_mapped(struct page *page, int val)
->  {
->  	struct mem_cgroup *mem;
->  	struct mem_cgroup_stat *stat;
-> @@ -1235,9 +1235,6 @@ void mem_cgroup_update_mapped_file_stat(
->  	int cpu;
->  	struct page_cgroup *pc;
->  
-> -	if (!page_is_file_cache(page))
-> -		return;
-> -
-I think it would be better to add VM_BUG_ON(PageAnon(page)) here.
-Otherwise looks good to me.
+There is a race condition in um_request_irq(). The SIGIO handling is
+first enabled with the call to activate_fd(). The irq handler is then
+registered with request_irq(). What can happen is that directly after
+activate_fd() the SIGIO goes off and the IRQ source is disabled at the
+low level, the pollfd is set to -1. Since no irq handler has yet been
+registered, the interrupt it left disabled at the low level. The
+interrupt handler is then registered, but its too late, the interrupt
+source has been disabled at the lower level and is never re-enabled.
+To fix this race condition i swapped the order. First request_irq()
+then activate_fd() the interrupt sources.
 
-	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+There is a second bug. In 2.6.31 there was a change to the way
+__do_IRQ() and friends work for chained interrupt sources. The old way
+was that all chained interrupt handlers were called. The new way is
+that the chain is walked only until a handler returns IRQ_HANDLED or
+IRQ_WAKE_THREAD. uml_net_interrupt() would always return IRQ_HANDLED,
+irrespective of if the device really did receive an interrupt or
+not. This mean with the new code only the first device on a chained
+interrupt ever got its interrupts handled. The second/third/... device
+never got any interrupts processed. I changed uml_net_interrupt() to
+always return IRQ_NONE so that all handlers get called on a chained
+interrupt.
 
-Thanks,
-Daisuke Nishimura.
-
->  	pc = lookup_page_cgroup(page);
->  	if (unlikely(!pc))
->  		return;
-> @@ -1257,7 +1254,7 @@ void mem_cgroup_update_mapped_file_stat(
->  	stat = &mem->stat;
->  	cpustat = &stat->cpustat[cpu];
->  
-> -	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
-> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_FILE_MAPPED, val);
->  done:
->  	unlock_page_cgroup(pc);
->  }
-> @@ -1654,18 +1651,18 @@ static int mem_cgroup_move_account(struc
->  	mem_cgroup_charge_statistics(from, pc, false);
->  
->  	page = pc->page;
-> -	if (page_is_file_cache(page) && page_mapped(page)) {
-> +	if (page_mapped(page) && !PageAnon(page)) {
->  		cpu = smp_processor_id();
->  		/* Update mapped_file data for mem_cgroup "from" */
->  		stat = &from->stat;
->  		cpustat = &stat->cpustat[cpu];
-> -		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE,
-> +		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_FILE_MAPPED,
->  						-1);
->  
->  		/* Update mapped_file data for mem_cgroup "to" */
->  		stat = &to->stat;
->  		cpustat = &stat->cpustat[cpu];
-> -		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE,
-> +		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_FILE_MAPPED,
->  						1);
->  	}
->  
-> @@ -2887,7 +2884,7 @@ static int mem_cgroup_reset(struct cgrou
->  enum {
->  	MCS_CACHE,
->  	MCS_RSS,
-> -	MCS_MAPPED_FILE,
-> +	MCS_FILE_MAPPED,
->  	MCS_PGPGIN,
->  	MCS_PGPGOUT,
->  	MCS_SWAP,
-> @@ -2931,8 +2928,8 @@ static int mem_cgroup_get_local_stat(str
->  	s->stat[MCS_CACHE] += val * PAGE_SIZE;
->  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_RSS);
->  	s->stat[MCS_RSS] += val * PAGE_SIZE;
-> -	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_MAPPED_FILE);
-> -	s->stat[MCS_MAPPED_FILE] += val * PAGE_SIZE;
-> +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_FILE_MAPPED);
-> +	s->stat[MCS_FILE_MAPPED] += val * PAGE_SIZE;
->  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGIN_COUNT);
->  	s->stat[MCS_PGPGIN] += val;
->  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
-> Index: mm-test-kernel/include/linux/memcontrol.h
-> ===================================================================
-> --- mm-test-kernel.orig/include/linux/memcontrol.h
-> +++ mm-test-kernel/include/linux/memcontrol.h
-> @@ -122,7 +122,7 @@ static inline bool mem_cgroup_disabled(v
->  }
->  
->  extern bool mem_cgroup_oom_called(struct task_struct *task);
-> -void mem_cgroup_update_mapped_file_stat(struct page *page, int val);
-> +void mem_cgroup_update_file_mapped(struct page *page, int val);
->  unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
->  						gfp_t gfp_mask, int nid,
->  						int zid);
-> @@ -287,7 +287,7 @@ mem_cgroup_print_oom_info(struct mem_cgr
->  {
->  }
->  
-> -static inline void mem_cgroup_update_mapped_file_stat(struct page *page,
-> +static inline void mem_cgroup_update_file_mapped(struct page *page,
->  							int val)
->  {
->  }
-> Index: mm-test-kernel/mm/rmap.c
-> ===================================================================
-> --- mm-test-kernel.orig/mm/rmap.c
-> +++ mm-test-kernel/mm/rmap.c
-> @@ -711,7 +711,7 @@ void page_add_file_rmap(struct page *pag
->  {
->  	if (atomic_inc_and_test(&page->_mapcount)) {
->  		__inc_zone_page_state(page, NR_FILE_MAPPED);
-> -		mem_cgroup_update_mapped_file_stat(page, 1);
-> +		mem_cgroup_update_file_mapped(page, 1);
->  	}
->  }
->  
-> @@ -743,8 +743,8 @@ void page_remove_rmap(struct page *page)
->  		__dec_zone_page_state(page, NR_ANON_PAGES);
->  	} else {
->  		__dec_zone_page_state(page, NR_FILE_MAPPED);
-> +		mem_cgroup_update_file_mapped(page, -1);
->  	}
-> -	mem_cgroup_update_mapped_file_stat(page, -1);
->  	/*
->  	 * It would be tidy to reset the PageAnon mapping here,
->  	 * but that might overwrite a racing page_add_anon_rmap
-> 
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+---
+diff --git a/arch/um/drivers/net_kern.c b/arch/um/drivers/net_kern.c
+index 9483c19..2b0748e 100644
+--- a/arch/um/drivers/net_kern.c
++++ b/arch/um/drivers/net_kern.c
+@@ -145,7 +145,7 @@ static irqreturn_t uml_net_interrupt(int irq, void *dev_id)
+ 
+ out:
+ 	spin_unlock(&lp->lock);
+-	return IRQ_HANDLED;
++	return IRQ_NONE;
+ }
+ 
+ static int uml_net_open(struct net_device *dev)
+diff --git a/arch/um/kernel/irq.c b/arch/um/kernel/irq.c
+index 454cdb4..3a31d57 100644
+--- a/arch/um/kernel/irq.c
++++ b/arch/um/kernel/irq.c
+@@ -345,13 +345,12 @@ int um_request_irq(unsigned int irq, int fd, int type,
+ {
+ 	int err;
+ 
+-	if (fd != -1) {
++	err = request_irq(irq, handler, irqflags, devname, dev_id);
++
++	if (!err && (fd != -1))
+ 		err = activate_fd(irq, fd, type, dev_id);
+-		if (err)
+-			return err;
+-	}
+ 
+-	return request_irq(irq, handler, irqflags, devname, dev_id);
++	return err;
+ }
+ 
+ EXPORT_SYMBOL(um_request_irq);
