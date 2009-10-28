@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZJ1Dew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbZJ1Dgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZJ1Dew (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 23:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZJ1Dew
+	id S1757252AbZJ1Dgr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 23:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbZJ1Dgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 23:34:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55647 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755645AbZJ1Dev (ORCPT
+	Tue, 27 Oct 2009 23:36:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40361
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756643AbZJ1Dgq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 23:34:51 -0400
-Date: Wed, 28 Oct 2009 04:34:55 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       DRI Development Mailing List 
-	<dri-devel@lists.sourceforge.net>,
-       Arnd Bergmann <arnd@arndb.de>, David Miller <davem@davemloft.net>
+	Tue, 27 Oct 2009 23:36:46 -0400
+Date: Tue, 27 Oct 2009 20:37:09 -0700 (PDT)
+Message-Id: <20091027.203709.27104760.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: airlied@gmail.com, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, arnd@arndb.de
 Subject: Re: is avoiding compat ioctls possible?
-Message-ID: <20091028033455.GF7744@basil.fritz.box>
-References: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com> <87hbtkjkki.fsf@basil.nowhere.org> <21d7e9970910272005mbb268r7b16493a22ca275a@mail.gmail.com> <20091028031904.GA7744@basil.fritz.box> <21d7e9970910272028n6eaa21fap51f15511d51145a2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21d7e9970910272028n6eaa21fap51f15511d51145a2@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <87hbtkjkki.fsf@basil.nowhere.org>
+References: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com>
+	<87hbtkjkki.fsf@basil.nowhere.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 01:28:10PM +1000, Dave Airlie wrote:
-> You mean its impossible to design a 32/64-bit safe ioctl no matter what?
+From: Andi Kleen <andi@firstfloor.org>
+Date: Wed, 28 Oct 2009 03:53:17 +0100
 
-Not impossible, but there's always a rate of mistakes.
-
-> and we should live with having compat ioctls? This isn't something that was very
-> clearly stated or documented, the advice we had previously was that
-> compat ioctls
-> were only required for old ioctls or ioctls with design problems. compat_*64
-> didn't exist when this code we designed, and we worked around that, but it was
-> in no way mistaken, manually aligning 64-bit values is a perfectly
-> good solution,
-> not sure why you imply it isn't.
-
-It's true, just saying that even people who try to avoid creating
-them often (but not always) need them anyways in the end.
-
+> Dave Airlie <airlied@gmail.com> writes:
 > 
-> >
-> >> and reviewed to do 32/64-bit properly. The s390 was something I didn't
-> >> know about but KMS on s390 is probably never going to be something
-> >> that sees the light of day.
-> >
-> > Well in theory there might be more architectures in the future
-> > which rely on compat_ptr
-> >
+>> Now I thought cool I don't need to worry about compat ioctl hackery I can
+>> run 32 on 64 bit apps fine and it'll all just work.
+>>
+>> Now Dave Miller points out that I'm obivously deluded and we really need
+>> to add compat ioctls so that the kernel can truncate correctly 32-bit address
+>> in case userspace shoves garbage into the top 32bits of the u64.
 > 
-> Well this was what I was trying to gather, so maybe I just need to write
-> something up to state that compat_ioctl is always required for new ioctls
-> that pass pointers or 64-bit values hiding pointers, so more people
-> don't make this mistake going forward. I can say when we inquired about this
-> 2 or so years ago when designing kms I didn't get this answer, which is a pity.
+> When the user space sees a u64 field it should never shove garbage here.
 
-Right now you could probably ignore it (if you document it), since
-there are no non s390 architectures with this problem, just
-prepare mentally that you might need to revisit this at some point.
+The problem is that it can if it wants to.
 
--Andi
+On sparc64, in order to make debugging easier, we trap any time
+the kernel does a userspace access to a compat task and any
+of the upper 32-bits are non-zero.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+That's more than a reasonable assumption to make because user
+pointers are either:
+
+1) Zero chopped when passed in via register arguments to a syscall.
+
+2) Go through the compat_uptr() interface which chops the upper bits.
+
+So whether userland should or should not do something, we still have
+to guard against it.
+
+> You just have to cast on 32bit for this, which is a bit ugly.
+
+Right, via the compat_*() interfaces.
+
+> However some architectures need special operations on compat pointers
+> (s390 iirc), but if you don't support those it might be reasonable
+> to not support that.
+
+s390 has to sign extend all 32-bit compat process pointers when
+processing them in the 64-bit s390 kernel.  I think one other
+architecture has this kind of situation too.
