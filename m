@@ -1,137 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbZJ1TNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZJ1TON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbZJ1TNJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 15:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZJ1TNI
+	id S1753220AbZJ1TON (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 15:14:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZJ1TOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 15:13:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60961 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752407AbZJ1TNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 15:13:07 -0400
-Message-ID: <4AE897B4.9030206@kernel.org>
-Date: Wed, 28 Oct 2009 12:12:52 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 28 Oct 2009 15:14:12 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:45747 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752940AbZJ1TOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 15:14:10 -0400
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 1/4] trivial/staging: fix typos "enalbe" -> "enable"
+Date: Wed, 28 Oct 2009 20:14:04 +0100
+Message-Id: <1256757247-13851-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
- for pcie devices
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org> <m1ljivibrt.fsf@fess.ebiederm.org>
-In-Reply-To: <m1ljivibrt.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
-> 
->> Kenji Kaneshige wrote:
->>> Yinghai Lu wrote:
->>>> Yinghai Lu wrote:
->>>>> Kenji Kaneshige wrote:
->>>>>> I understand you need to touch I/O base/limit and Mem base/limit. But
->>>>>> I don't understand why you also need to update bridge's BARs. Could
->>>>>> you please explain a little more about it?
->>>>>>
->>>>>> Just in case, my terminology "bridge's BARs" is Base Address Register
->>>>>> 0 (offset 0x10) and Base Address Register 1 (offset 0x14) in the
->>>>>> (type 1) configuration space header of the bridge.
->>>>> i mean 0x1c, 0x20, 0x28
->>>>>
->>>>> did not notice that bridge device's 0x10, 0x14 are used...
->>>>> if port service need to use 0x10, 0x14, and the device is enabled, we
->>>>> should touch 0x10, and 0x14.
->>>> after check the code, if
->>>> pci_bridge_assign_resources ==> pdev_assign_resources_sorted ==> 
->>>> pdev_sort_resources
->>>>
->>>> will not touch 0x10 and 0x14, if those resource is claimed by port
->>>> service.
->>>>
->>>> /* Sort resources by alignment */
->>>> void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
->>>> {               int i;
->>>>                         for (i = 0; i < PCI_NUM_RESOURCES; i++) {
->>>>                 struct resource *r;
->>>>                 struct resource_list *list, *tmp;
->>>>                 resource_size_t r_align;
->>>>                                 r = &dev->resource[i];
->>>>                                         if (r->flags &
->>>> IORESOURCE_PCI_FIXED)
->>>>                         continue;
->>>>                         if (!(r->flags) || r->parent)
->>>>                         continue;
->>>>                
->>>> r->parent != NULL, will make it skip those two.
->>>>
->>>> So -v3 should be safe.
->>>>
->>> Thank you for the clarification.
->>>
->>> But I still don't understand the whole picture of your set of
->>> changes. Let me ask some questions.
->>>
->>> In my understanding of your set of changes, if there is a PCIe
->>> switch with some hot-plug slots and all of those slots are empty,
->>> I/O and Memory resources assigned by BIOS are all released at
->>> the boot time. For example, suppose the following case.
->>>
->>>                bridge(A)
->>>                   |
->>>        -----------------------
->>>        |                     |
->>>     bridge(B)             bridge(C)
->>>        |                     |
->>>      slot(1)               slot(2)
->>>      (empty)               (empty)
->>>
->>>   bridge(A): P2P bridge for switch upstream port
->>>   bridge(B): P2P bridge for switch downstream port
->>>   bridge(C): P2P bridge for switch downstream port
->>>
->>> In the above example, I/O and Mem resource assigned to bridge(A),
->>> bridge(B) and bridge(C) are all released at the boot time. Correct?
->>>
->>> Then, when a adapter card is hot-added to slot(1), I/O and Mem
->>> resources enough for enabling the hot-added adapter card is assigned
->>> to bridge(A), bridge(B) and the adapter card. Correct?
->>>
->>> Then, when an another adpater card is hot-added to slot(2), we
->>> need to assign enough resource to bridge(C) and the new card.
->>> But bridge(A) doesn't have enough resource for bridge(C) and
->>> the new card. In addition, all bridge(A) and bridge(B) and the
->>> adapter card on slot(1) are already working. How do you assign
->>> resource to bridge(C) and the card on slot(2)?
->>>
->> thanks, will update the patches to only handle leaf bridge, and don't touch min_size etc.
-> 
-> Tell me what is your expected behavior if I plug a bridge with hotplug
-> slots into a leaf hotplug slot?  Will you assign me enough resources so
-> that I can plug in additional devices?
+This patch was generated by
 
-no.
+	git grep -E -l 'enalbe' drivers/staging | xargs -r perl -p -i -e 's/enalbe/enable/g'
 
-you need to plug device in those slots and then insert it into a leaf hotplug slot.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/otus/80211core/ccmd.c              |    2 +-
+ drivers/staging/rt2860/rtmp.h                      |    2 +-
+ drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c |    2 +-
+ drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c  |    2 +-
+ drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c |    2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
-> 
-> Today I make plugging in a hotplug bridge work by having the firmware
-> reserve at one level and having the kernel reserve at the next level.
-> 
-> Windows handles the issue in theory by performing some kind of
-> hot-unplugging of drivers that already have assigned resources and
-> then replugging them.  Which allows a full renumbering of busses.
-> We don't have the infrastructure to do that safely today.
+diff --git a/drivers/staging/otus/80211core/ccmd.c b/drivers/staging/otus/80211core/ccmd.c
+index 83dd8ba..d4a7389 100644
+--- a/drivers/staging/otus/80211core/ccmd.c
++++ b/drivers/staging/otus/80211core/ccmd.c
+@@ -1659,7 +1659,7 @@ void zfiWlanSetPacketTypePromiscuous(zdev_t *dev, u32_t setValue)
+ 	if (setValue) {
+ 		/* write register for sniffer mode */
+ 		zfHpSetSnifferMode(dev, 1);
+-		zm_msg0_mm(ZM_LV_1, "enalbe sniffer mode");
++		zm_msg0_mm(ZM_LV_1, "enable sniffer mode");
+ 	} else {
+ 		zfHpSetSnifferMode(dev, 0);
+ 		zm_msg0_mm(ZM_LV_0, "disalbe sniffer mode");
+diff --git a/drivers/staging/rt2860/rtmp.h b/drivers/staging/rt2860/rtmp.h
+index 90fd40f..b3d940b 100644
+--- a/drivers/staging/rt2860/rtmp.h
++++ b/drivers/staging/rt2860/rtmp.h
+@@ -3108,7 +3108,7 @@ __inline    VOID    NICEnableInterrupt(
+ {
+ 	//
+ 	// Flag "fOP_STATUS_DOZE" On, means ASIC put to sleep, else means ASIC WakeUp
+-	// To prevent System hang, we should enalbe the interrupt when
++	// To prevent System hang, we should enable the interrupt when
+ 	// ASIC is already Wake Up.
+ 	//
+     // RT2661 => when ASIC is sleeping, MAC register cannot be read and written.
+diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
+index 8d8bdd0..38ad5d7 100644
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
+@@ -702,7 +702,7 @@ int ieee80211_wx_set_auth(struct ieee80211_device *ieee,
+ #if 1
+ 	case IW_AUTH_WPA_ENABLED:
+ 		ieee->wpa_enabled = (data->value)?1:0;
+-		//printk("enalbe wpa:%d\n", ieee->wpa_enabled);
++		//printk("enable wpa:%d\n", ieee->wpa_enabled);
+ 		break;
+ 
+ #endif
+diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c
+index 2234831..17900de 100644
+--- a/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c
++++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c
+@@ -944,7 +944,7 @@ int ieee80211_wx_set_auth(struct ieee80211_device *ieee,
+ #if 1
+ 	case IW_AUTH_WPA_ENABLED:
+ 		ieee->wpa_enabled = (data->value)?1:0;
+-		//printk("enalbe wpa:%d\n", ieee->wpa_enabled);
++		//printk("enable wpa:%d\n", ieee->wpa_enabled);
+ 		break;
+ 
+ #endif
+diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
+index 1077590..653703b 100644
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
+@@ -739,7 +739,7 @@ int ieee80211_wx_set_auth(struct ieee80211_device *ieee,
+ #if 1
+ 	case IW_AUTH_WPA_ENABLED:
+ 		ieee->wpa_enabled = (data->value)?1:0;
+-		//printk("enalbe wpa:%d\n", ieee->wpa_enabled);
++		//printk("enable wpa:%d\n", ieee->wpa_enabled);
+ 		break;
+ 
+ #endif
+-- 
+1.6.5
 
-that will take some drivers offline at first ?
-
-YH
