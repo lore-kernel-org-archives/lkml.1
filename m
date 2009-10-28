@@ -1,52 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZJ1U4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbZJ1U5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbZJ1U4X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 16:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZJ1U4W
+	id S1754629AbZJ1U5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 16:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZJ1U5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 16:56:22 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:48442 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754042AbZJ1U4W (ORCPT
+	Wed, 28 Oct 2009 16:57:19 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60089 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbZJ1U5T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 16:56:22 -0400
-Date: Wed, 28 Oct 2009 21:56:23 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Matt Turner <mattst88@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Michael Cree <mcree@orcon.net.nz>,
-       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [alpha] Add minimal support for software performance
-	events.
-Message-ID: <20091028205623.GB20363@merkur.ravnborg.org>
-References: <1256545926-6972-1-git-send-email-mcree@orcon.net.nz> <20091026084854.GA26990@elte.hu> <b4198de60910271129v5765c963rad8d2f4522112986@mail.gmail.com>
+	Wed, 28 Oct 2009 16:57:19 -0400
+Message-ID: <4AE8B02C.3060706@austin.ibm.com>
+Date: Wed, 28 Oct 2009 15:57:16 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b4198de60910271129v5765c963rad8d2f4522112986@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 4/6 v5] Memory DLPAR Handling
+References: <4AE8ADCF.6090104@austin.ibm.com>
+In-Reply-To: <4AE8ADCF.6090104@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 02:29:52PM -0400, Matt Turner wrote:
-> On Mon, Oct 26, 2009 at 4:48 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > Is there a tree for Alpha bits?
-> 
-> No, but really other than a very few scattered patches we don't have
-> much activity.
-> 
-> Maybe it's worth creating one at git.kernel.org? I don't think Richard
-> or Ivan are interested in doing it. Could Michael or I do it without
-> being maintainers?
-If you start handling alpha related stuff then you are automatically becoming
-maintainers.
-Officially in MAINTAINERS would preferably be with OK from rth and Ivan.
+This adds the capability to DLPAR add and remove memory from the kernel.  The
+patch registers handlers for the arch-specific probe and release memory 
+callouts to handle addition/removal of memory to the system and the associated
+device tree updates. 
 
-So do not be shy and create such a tree.
+Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com> 
+---
 
-	Sam
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-10-28 15:21:38.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-28 15:21:49.000000000 -0500
+@@ -16,6 +16,10 @@
+ #include <linux/notifier.h>
+ #include <linux/proc_fs.h>
+ #include <linux/spinlock.h>
++#include <linux/memory_hotplug.h>
++#include <linux/sysdev.h>
++#include <linux/sysfs.h>
++
+ 
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+@@ -404,11 +408,189 @@
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_MEMORY_HOTPLUG
++
++static struct property *clone_property(struct property *old_prop)
++{
++	struct property *new_prop;
++
++	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
++	if (!new_prop)
++		return NULL;
++
++	new_prop->name = kstrdup(old_prop->name, GFP_KERNEL);
++	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
++	if (!new_prop->name || !new_prop->value) {
++		free_property(new_prop);
++		return NULL;
++	}
++
++	memcpy(new_prop->value, old_prop->value, old_prop->length);
++	new_prop->length = old_prop->length;
++
++	return new_prop;
++}
++
++#ifdef CONFIG_ARCH_MEMORY_PROBE
++
++int memory_probe(u64 phys_addr)
++{
++	struct device_node *dn = NULL;
++	struct property *new_prop;
++	struct property *old_prop;
++	struct of_drconf_cell *drmem;
++	const u64 *lmb_size;
++	int num_entries, i;
++	int rc = -EINVAL;
++
++	if (!phys_addr)
++		goto memory_probe_exit;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		goto memory_probe_exit;
++
++	lmb_size = of_get_property(dn, "ibm,lmb-size", NULL);
++	if (!lmb_size)
++		goto memory_probe_exit;
++
++	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++	if (!old_prop)
++		goto memory_probe_exit;
++
++	num_entries = *(u32 *)old_prop->value;
++	drmem = (struct of_drconf_cell *)
++				((char *)old_prop->value + sizeof(u32));
++
++	for (i = 0; i < num_entries; i++) {
++		u64 lmb_end_addr = drmem[i].base_addr + *lmb_size;
++		if (phys_addr >= drmem[i].base_addr
++		    && phys_addr < lmb_end_addr)
++			break;
++	}
++
++	if (i >= num_entries)
++		goto memory_probe_exit;
++
++	if (drmem[i].flags & DRCONF_MEM_ASSIGNED) {
++		/* This lmb is already adssigned to the system, nothing to do */
++		rc = 0;
++		goto memory_probe_exit;
++	}
++
++	rc = acquire_drc(drmem[i].drc_index);
++	if (rc) {
++		rc = -EINVAL;
++		goto memory_probe_exit;
++	}
++
++	new_prop = clone_property(old_prop);
++	drmem = (struct of_drconf_cell *)
++				((char *)new_prop->value + sizeof(u32));
++
++	drmem[i].flags |= DRCONF_MEM_ASSIGNED;
++	rc = prom_update_property(dn, new_prop, old_prop);
++	if (rc) {
++		free_property(new_prop);
++		rc = -EINVAL;
++		goto memory_probe_exit;
++	}
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_DRCONF_MEM_ADD,
++					  &drmem[i].base_addr);
++	if (rc == NOTIFY_BAD) {
++		prom_update_property(dn, old_prop, new_prop);
++		release_drc(drmem[i].drc_index);
++		rc = -EINVAL;
++	} else
++		rc = 0;
++
++memory_probe_exit:
++	of_node_put(dn);
++	return rc;
++}
++
++#endif /* CONFIG_ARCH_MEMORY_PROBE */
++
++#ifdef CONFIG_ARCH_MEMORY_RELEASE
++
++static int memory_release(const char *buf, size_t count)
++{
++	unsigned long drc_index;
++	struct device_node *dn;
++	struct property *new_prop, *old_prop;
++	struct of_drconf_cell *drmem;
++	int num_entries;
++	int i;
++	int rc = -EINVAL;
++
++	rc = strict_strtoul(buf, 0, &drc_index);
++	if (rc)
++		return rc;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return rc;
++
++	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++	if (!old_prop)
++		goto memory_release_exit;
++
++	num_entries = *(u32 *)old_prop->value;
++	drmem = (struct of_drconf_cell *)
++				((char *)old_prop->value + sizeof(u32));
++
++	for (i = 0; i < num_entries; i++) {
++		if (drmem[i].drc_index == drc_index)
++			break;
++	}
++
++	if (i >= num_entries)
++		goto memory_release_exit;
++
++	new_prop = clone_property(old_prop);
++	drmem = (struct of_drconf_cell *)
++				((char *)new_prop->value + sizeof(u32));
++
++	drmem[i].flags &= ~DRCONF_MEM_ASSIGNED;
++	rc = prom_update_property(dn, new_prop, old_prop);
++	if (rc) {
++		free_property(new_prop);
++		rc = -EINVAL;
++		goto memory_release_exit;
++	}
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_DRCONF_MEM_REMOVE,
++					  &drmem[i].base_addr);
++	if (rc != NOTIFY_BAD)
++		rc = release_drc(drc_index);
++
++	if (rc) {
++		prom_update_property(dn, old_prop, new_prop);
++		rc = -EINVAL;
++	}
++
++memory_release_exit:
++	of_node_put(dn);
++	return rc ? rc : count;
++}
++#endif /* CONFIG_ARCH_MEMORY_RELEASE */
++#endif /* CONFIG_MEMORY_HOTPLUG */
++
+ static int pseries_dlpar_init(void)
+ {
+ 	if (!machine_is(pseries))
+ 		return 0;
+ 
++#ifdef CONFIG_ARCH_MEMORY_RELEASE
++	ppc_md.memory_release = memory_release;
++#endif
++#ifdef CONFIG_ARCH_MEMORY_PROBE
++	ppc_md.memory_probe = memory_probe;
++#endif
++
+ 	return 0;
+ }
+ device_initcall(pseries_dlpar_init);
