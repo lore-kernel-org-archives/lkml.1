@@ -1,83 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZJ1P4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZJ1P5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbZJ1P4O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 11:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbZJ1P4N
+	id S1754752AbZJ1P5a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 11:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbZJ1P53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 11:56:13 -0400
-Received: from kroah.org ([198.145.64.141]:35764 "EHLO coco.kroah.org"
+	Wed, 28 Oct 2009 11:57:29 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:56073 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754699AbZJ1P4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 11:56:12 -0400
-Date: Wed, 28 Oct 2009 08:51:16 -0700
-From: Greg KH <greg@kroah.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>
-Subject: Re: staging/dream: add gpio and pmem support
-Message-ID: <20091028155116.GA1434@kroah.com>
-References: <20091022091333.GA31023@elf.ucw.cz>
- <20091026234332.GB26583@kroah.com>
- <20091027001702.GA5019@elf.ucw.cz>
- <20091027030039.GA6195@kroah.com>
- <20091027081921.GG5019@elf.ucw.cz>
- <20091027165750.GA24477@kroah.com>
- <20091027193330.GB19379@elf.ucw.cz>
- <20091027204445.GA28878@kroah.com>
- <20091027232521.GA16782@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091027232521.GA16782@elf.ucw.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754634AbZJ1P52 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 11:57:28 -0400
+Date: Wed, 28 Oct 2009 08:57:27 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, opurdila@ixiacom.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: [PATCH] net: fold network name hash (v2)
+Message-ID: <20091028085727.7fc09ab0@nehalam>
+In-Reply-To: <4AE7DF8E.3020607@gmail.com>
+References: <9986527.24561256620662709.JavaMail.root@tahiti.vyatta.com>
+	<19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
+	<20091026.222428.80364204.davem@davemloft.net>
+	<20091027102251.244ee681@nehalam>
+	<20091027150436.56e673cd@nehalam>
+	<4AE7DF8E.3020607@gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 12:25:22AM +0100, Pavel Machek wrote:
-> Hi!
-> 
-> > > What is so wrong with wakelocks? They are just nops in this case.
+On Wed, 28 Oct 2009 07:07:10 +0100
+Eric Dumazet <eric.dumazet@gmail.com> wrote:
+
+> Stephen Hemminger a écrit :
+> > The full_name_hash does not produce a value that is evenly distributed
+> > over the lower 8 bits. This causes name hash to be unbalanced with large
+> > number of names. There is a standard function to fold in upper bits
+> > so use that.
 > > 
-> > Are they really?  Then why is the whole large file needed?
+> > This is independent of possible improvements to full_name_hash()
+> > in future.
 > 
-> It is probably not, I went to "submit vendor code, then clean it up"
-> mode. CONFIG_HAS_WAKELOCK should be disabled, so it basically stubs
-> itself out.
+> >  static inline struct hlist_head *dev_name_hash(struct net *net, const char *name)
+> >  {
+> >  	unsigned hash = full_name_hash(name, strnlen(name, IFNAMSIZ));
+> > -	return &net->dev_name_head[hash & ((1 << NETDEV_HASHBITS) - 1)];
+> > +	return &net->dev_name_head[hash_long(hash, NETDEV_HASHBITS)];
+> >  }
+> >  
+> >  static inline struct hlist_head *dev_index_hash(struct net *net, int ifindex)
 > 
-> > > 2) you submit it
-> > 
-> > Wait, it has to BUILD!  This code has never been able to be built.  Only
-> > after I disabled it from the CONFIG_ANDROID have I noticed this, which
-> > is my fault.  But it needs to get fixed, and taking a bunch of code in
-> > addition to the mess we have now, seems like the wrong way to do it.
+> full_name_hash() returns an "unsigned int", which is guaranteed to be 32 bits
 > 
-> It seems to be the only reasonable way. gpio is used from all the
-> other stuff, and removing it is not really an option.
-> 
-> > > Now, I see that wakelocks are show-stopper for merging into kernel
-> > > proper, but what is the problem for staging? We merged drivers with
-> > > OS_MEMORY_ALLOCATE(); wakelocks are just nops in this case.
-> > > 
-> > > Could we please clean this driver in-tree? (Wakelocks are already nops
-> > > due to #ifdef magic, cleaning them incrementally is easy.)
-> > 
-> > With this patch, will it build properly?
-> 
-> Its certainly way closer to building... it builds for me, with
-> something like below; platform devices really are initialized from
-> board-* files and get passed parameters.
+> You should therefore use hash_32(hash, NETDEV_HASHBITS),
+> not hash_long() that maps to hash_64() on 64 bit arches, which is
+> slower and certainly not any better with a 32bits input.
 
-Ick.  This isn't ok, we can't take patches for staging stuff in files
-outside of drivers/staging/
+OK, I was following precedent. Only a couple places use hash_32, most use
+hash_long().
 
-So for now, I've deleted the drivers/staging/dream/ directory from my
-tree, which will get pushed for 2.6.33.  Please clean the code up and
-get it into buildable shape and I will be glad to add the drivers back
-into the staging directory at that time.
+Using the upper bits does give better distribution.
+With 100,000 network names:
 
-thanks,
+               Time       Ratio       Max   StdDev
+hash_32       0.002123     1.00       422  11.07
+hash_64       0.002927     1.00       400   3.97
 
-greg k-h
+The time field is pretty meaningless for such a small sample
