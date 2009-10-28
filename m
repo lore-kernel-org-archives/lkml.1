@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZJ1HOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbZJ1HS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757518AbZJ1HOr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 03:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbZJ1HOr
+	id S932564AbZJ1HS4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 03:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932547AbZJ1HS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 03:14:47 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56316 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757450AbZJ1HOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 03:14:46 -0400
-Date: Wed, 28 Oct 2009 18:14:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: tip tree build warning
-Message-Id: <20091028181443.50a09dbb.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__28_Oct_2009_18_14_43_+1100_J.=z8wB9j5=o1bhG"
+	Wed, 28 Oct 2009 03:18:56 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:56439 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932524AbZJ1HSx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 03:18:53 -0400
+Date: Wed, 28 Oct 2009 12:48:54 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] memcg: make memcg's file mapped consistent with global
+ VM
+Message-ID: <20091028071854.GL16378@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091028121619.c094e9c0.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091028121619.c094e9c0.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__28_Oct_2009_18_14_43_+1100_J.=z8wB9j5=o1bhG
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-10-28 12:16:19]:
 
-Hi all,
+> Based on mmotm-Oct13 + some patches in -mm queue.
+> 
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> memcg-cleanup-file-mapped-consistent-with-globarl-vm-stat.patch
+> 
+> In global VM, FILE_MAPPED is used but memcg uses MAPPED_FILE.
+> This makes grep difficult. Replace memcg's MAPPED_FILE with FILE_MAPPED
+> 
+> And in global VM, mapped shared memory is accounted into FILE_MAPPED.
+> But memcg doesn't. fix it.
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+I wanted to explicitly avoid this since I wanted to do an iterative
+correct accounting of shared memory. The renaming is fine with me
+since we don't break ABI in user space.
 
-In file included from arch/x86/include/asm/smp.h:13,
-                 from arch/x86/include/asm/mmzone_64.h:12,
-                 from arch/x86/include/asm/mmzone.h:4,
-                 from include/linux/mmzone.h:783,
-                 from include/linux/gfp.h:4,
-                 from include/linux/kmod.h:22,
-                 from include/linux/module.h:13,
-                 from arch/x86/kernel/apic/apic_noop.c:14:
-arch/x86/include/asm/apic.h: In function 'default_apicid_to_cpu_present':
-arch/x86/include/asm/apic.h:591: warning: the frame size of 8192 bytes is l=
-arger than 2048 bytes
 
-It may not have been caused by the tip tree, but I can't find what
-changed to cause this and a commit from the tip tree has exposed it
-(9844ab11c763bfed9f054c82366b19dcda66aca9 "x86, apic: Introduce the NOOP
-apic driver").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__28_Oct_2009_18_14_43_+1100_J.=z8wB9j5=o1bhG
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrn72QACgkQjjKRsyhoI8xKpACfclt8tyVD70IodF/OnNsRbv2/
-c/AAoIwdTq2BUM4FVEncr8nvw6/IABqy
-=3WQR
------END PGP SIGNATURE-----
-
---Signature=_Wed__28_Oct_2009_18_14_43_+1100_J.=z8wB9j5=o1bhG--
+-- 
+	Balbir
