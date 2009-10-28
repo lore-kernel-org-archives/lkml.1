@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932484AbZJ1BSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbZJ1BWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932484AbZJ1BSi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 21:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbZJ1BSh
+	id S1757142AbZJ1BWP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 21:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbZJ1BWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 21:18:37 -0400
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:34613 "EHLO
+	Tue, 27 Oct 2009 21:22:14 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:32865 "EHLO
 	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757107AbZJ1BSh convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757114AbZJ1BWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 21:18:37 -0400
+	Tue, 27 Oct 2009 21:22:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tHK4gAXYm0dFyaZSRTiv4p2l5ICSPJkkUa3vEUuraVq+rHz4xcJDW0TxNIJNU5aCbD
-         pmpTe4APCpXc2RWwx4gWCbHGUks9JhMBiD1gXm7PigJW5KnsTqQfsQrTClRtj0Y/g7PR
-         Z08gYXCM39ZHyHcGBvTrNLn7I4Cwq7ZfrzSX8=
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=gg5CcWqC+Dx5VBOCKMAW+sub2HvAXj3KJ0BmWNWZJOjCPtk99ruRxSkQrtlhLdiezJ
+         oGVb0hP6H/0Wg/zKYTenYbyFjQAGmag/4CeSCczHgKFeS77v74K3xUWWMO664RiozEu6
+         jMKiBUvTr9Gs9RMQVdjThZB2PV+njlc3iWhEs=
 MIME-Version: 1.0
-In-Reply-To: <20091027211951.GA21967@elf.ucw.cz>
-References: <20091027211951.GA21967@elf.ucw.cz>
-Date: Wed, 28 Oct 2009 09:18:41 +0800
-Message-ID: <2674af740910271818s62307532l9e74b37f439f6206@mail.gmail.com>
-Subject: Re: 2.6.32-rc5: surprise removal of USB mass storage, and whole 
-	system goes to hell
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Date: Wed, 28 Oct 2009 11:22:18 +1000
+Message-ID: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com>
+Subject: is avoiding compat ioctls possible?
+From: Dave Airlie <airlied@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       DRI Development Mailing List 
+	<dri-devel@lists.sourceforge.net>,
+       Arnd Bergmann <arnd@arndb.de>, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 5:19 AM, Pavel Machek <pavel@ucw.cz> wrote:
->
-> I did remove one harddrive w/o unmounting, and now the whole system
-> becomes unusable :-(: (whole dmesg attached).
->
-> Stuff like "sync" hangs, and I'll probably have to reboot soon.
->                                                                Pavel
+So for drm KMS we wrote a bunch of ioctls that were 64-bit clean in theory.
 
-This a known bug(Bug #14481).
+They used uint64_t to represent userspace pointers and userspace
+casted into those and the kernel casts back out and passes it to copy_*_user
 
-Cc'ed Rafael
+Now I thought cool I don't need to worry about compat ioctl hackery I can
+run 32 on 64 bit apps fine and it'll all just work.
+
+Now Dave Miller points out that I'm obivously deluded and we really need
+to add compat ioctls so that the kernel can truncate correctly 32-bit address
+in case userspace shoves garbage into the top 32bits of the u64.
+
+Is there really no way to avoid compat ioctls? was I delusional in
+thinking there was?
+
+Dave.
