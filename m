@@ -1,99 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbZJ1TIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbZJ1TKB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752567AbZJ1TIj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 15:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZJ1TIi
+	id S1752801AbZJ1TKB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 15:10:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbZJ1TKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 15:08:38 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:35980 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbZJ1TIi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 15:08:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ovnQabYJ488mV13JDTZViNCVpwiYeHit7qL2JbzLiWcIkY2MHMKjmpQPdFZGQx6VL1
-         fvfBDIFsYgKDtcn4YQQ1Aqr3PuWtG0b3bQCr3kY8oq0ckwD+lQbpu8+3g1HOQuWmsZOS
-         GS7ZzcfDUneIfwtaCY9oFlM3c+alchA//LXcY=
+	Wed, 28 Oct 2009 15:10:00 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:53284 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752545AbZJ1TKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 15:10:00 -0400
+Date: Wed, 28 Oct 2009 20:10:04 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] block fixes for 2.6.32-rc
+Message-ID: <20091028191004.GU10727@kernel.dk>
+References: <20091028185101.GS10727@kernel.dk> <alpine.LFD.2.01.0910281157160.31845@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <1256743153-17252-1-git-send-email-linus.walleij@stericsson.com>
-References: <1256743153-17252-1-git-send-email-linus.walleij@stericsson.com>
-Date: Wed, 28 Oct 2009 12:08:40 -0700
-X-Google-Sender-Auth: dd2eadefef2c069d
-Message-ID: <e9c3a7c20910281208w54ddc859wb650f6527dae2d08@mail.gmail.com>
-Subject: Re: [PATCH 2/2] Add COH 901 318 DMA driver platform config for U300 
-	v3
-From: Dan Williams <dan.j.williams@intel.com>
-To: Linus Walleij <linus.walleij@stericsson.com>
-Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0910281157160.31845@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 8:19 AM, Linus Walleij
-<linus.walleij@stericsson.com> wrote:
-[..]
-> +#define flags_memcpy_config (COH901318_CX_CFG_CH_DISABLE | \
-> +                       COH901318_CX_CFG_RM_MEMORY_TO_MEMORY | \
-> +                       COH901318_CX_CFG_LCR_DISABLE | \
-> +                       COH901318_CX_CFG_TC_IRQ_ENABLE | \
-> +                       COH901318_CX_CFG_BE_IRQ_ENABLE)
-> +#define flags_memcpy_lli_chained (COH901318_CX_CTRL_TC_ENABLE | \
-> +                       COH901318_CX_CTRL_BURST_COUNT_32_BYTES | \
-> +                       COH901318_CX_CTRL_SRC_BUS_SIZE_32_BITS | \
-> +                       COH901318_CX_CTRL_SRC_ADDR_INC_ENABLE | \
-> +                       COH901318_CX_CTRL_DST_BUS_SIZE_32_BITS | \
-> +                       COH901318_CX_CTRL_DST_ADDR_INC_ENABLE | \
-> +                       COH901318_CX_CTRL_MASTER_MODE_M1RW | \
-> +                       COH901318_CX_CTRL_TCP_DISABLE | \
-> +                       COH901318_CX_CTRL_TC_IRQ_DISABLE | \
-> +                       COH901318_CX_CTRL_HSP_DISABLE | \
-> +                       COH901318_CX_CTRL_HSS_DISABLE | \
-> +                       COH901318_CX_CTRL_DDMA_LEGACY | \
-> +                       COH901318_CX_CTRL_PRDD_SOURCE)
-> +#define flags_memcpy_lli (COH901318_CX_CTRL_TC_ENABLE | \
-> +                       COH901318_CX_CTRL_BURST_COUNT_32_BYTES | \
-> +                       COH901318_CX_CTRL_SRC_BUS_SIZE_32_BITS | \
-> +                       COH901318_CX_CTRL_SRC_ADDR_INC_ENABLE | \
-> +                       COH901318_CX_CTRL_DST_BUS_SIZE_32_BITS | \
-> +                       COH901318_CX_CTRL_DST_ADDR_INC_ENABLE | \
-> +                       COH901318_CX_CTRL_MASTER_MODE_M1RW | \
-> +                       COH901318_CX_CTRL_TCP_DISABLE | \
-> +                       COH901318_CX_CTRL_TC_IRQ_DISABLE | \
-> +                       COH901318_CX_CTRL_HSP_DISABLE | \
-> +                       COH901318_CX_CTRL_HSS_DISABLE | \
-> +                       COH901318_CX_CTRL_DDMA_LEGACY | \
-> +                       COH901318_CX_CTRL_PRDD_SOURCE)
-> +#define flags_memcpy_lli_last (COH901318_CX_CTRL_TC_ENABLE | \
-> +                       COH901318_CX_CTRL_BURST_COUNT_32_BYTES | \
-> +                       COH901318_CX_CTRL_SRC_BUS_SIZE_32_BITS | \
-> +                       COH901318_CX_CTRL_SRC_ADDR_INC_ENABLE | \
-> +                       COH901318_CX_CTRL_DST_BUS_SIZE_32_BITS | \
-> +                       COH901318_CX_CTRL_DST_ADDR_INC_ENABLE | \
-> +                       COH901318_CX_CTRL_MASTER_MODE_M1RW | \
-> +                       COH901318_CX_CTRL_TCP_DISABLE | \
-> +                       COH901318_CX_CTRL_TC_IRQ_ENABLE | \
-> +                       COH901318_CX_CTRL_HSP_DISABLE | \
-> +                       COH901318_CX_CTRL_HSS_DISABLE | \
-> +                       COH901318_CX_CTRL_DDMA_LEGACY | \
-> +                       COH901318_CX_CTRL_PRDD_SOURCE)
+On Wed, Oct 28 2009, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 28 Oct 2009, Jens Axboe wrote:
+> > 
+> > Neil Brown (1):
+> >       block: use after free bug in __blkdev_get
+> >
+> > diff --git a/fs/block_dev.c b/fs/block_dev.c
+> > index 9cf4b92..8bed055 100644
+> > --- a/fs/block_dev.c
+> > +++ b/fs/block_dev.c
+> > @@ -1248,8 +1248,8 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
+> >  			bd_set_size(bdev, (loff_t)bdev->bd_part->nr_sects << 9);
+> >  		}
+> >  	} else {
+> > -		put_disk(disk);
+> >  		module_put(disk->fops->owner);
+> > +		put_disk(disk);
+> >  		disk = NULL;
+> >  		if (bdev->bd_contains == bdev) {
+> >  			if (bdev->bd_disk->fops->open) {
+> 
+> Is this really right? You do the module-put while the disk is still 
+> available..
+> 
+> I get the feeling that it might have been better to do
+> 
+> 	struct module *mod = disk->fops->owner;
+> 	put_disk(disk);
+> 	module_put(mod);
+> 
+> instead, which tries to make sure that the module is put only after we've 
+> gotten rid of the disk entirely.
+> 
+> But I dunno. Maybe there is some reason why it's safe either way. You're 
+> sure the kobject_put() in put_disk will never call to the module?
 
-You go through the hassle of defining these flag combination sets...
+Hmm good point. The general use case in block_dev.c is indeed to put the
+module after the disk, which does seem a bit backwards (at least
+logically). I'd say pull the patch since it fixes Neil's problem and
+follows the general pattern, then I'll investigate whether that use
+pattern is indeed safe. It wont make things worse and the current usage
+being fixed is definitely wrong.
 
-> +               .param.config = COH901318_CX_CFG_CH_DISABLE |
-> +                               COH901318_CX_CFG_RM_MEMORY_TO_PRIMARY |
-> +                               COH901318_CX_CFG_LCR_DISABLE |
-> +                               COH901318_CX_CFG_TC_IRQ_ENABLE |
-> +                               COH901318_CX_CFG_BE_IRQ_ENABLE,
+-- 
+Jens Axboe
 
-...but then don't use them to cut down on the line count in the
-definition of these parameters?
-
---
-Dan
