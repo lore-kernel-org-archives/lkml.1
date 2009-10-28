@@ -1,109 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZJ1Pdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbZJ1Pfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbZJ1Pdl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 11:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbZJ1Pdk
+	id S1754629AbZJ1Pfy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 11:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZJ1Pfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 11:33:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37526 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751360AbZJ1Pdk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 11:33:40 -0400
-Date: Wed, 28 Oct 2009 15:35:03 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Walleij <linus.walleij@stericsson.com>
-Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org,
-       Linus Walleij <linus.walleij@stericsson.com>
-Subject: Re: [PATCH 1/2] Add COH 901 318 DMA block driver v3
-Message-ID: <20091028153503.11018cbe@lxorguk.ukuu.org.uk>
-In-Reply-To: <1256743137-16987-1-git-send-email-linus.walleij@stericsson.com>
-References: <1256743137-16987-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 11:35:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:36101 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754505AbZJ1Pfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 11:35:53 -0400
+From: Chris Lalancette <clalance@redhat.com>
+To: mingo@elte.hu
+Cc: x86@kernel.org, mingo@redhat.com, kvm@vger.kernel.org, pbonzini@redhat.com,
+       linux-kernel@vger.kernel.org, Chris Lalancette <clalance@redhat.com>
+Subject: [PATCH] x86: Make sure get_user_desc() doesn't sign extend.
+Date: Wed, 28 Oct 2009 16:35:27 +0100
+Message-Id: <1256744127-9056-1-git-send-email-clalance@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +struct dma_chan;
-> +struct platform_device;
-> +struct dma_chan;
-> +struct dma_async_tx_descriptor;
-> +enum dma_data_direction;
+The current implementation of get_user_desc() sign extends
+the return value because of integer promotion rules.  For
+the most part, this doesn't matter, because the top bit of
+base2 is usually 0.  If, however, that bit is 1, then the
+entire value will be 0xffff... which is probably not what
+the caller intended.  This patch casts the entire thing
+to unsigned before returning, which generates almost the
+same assembly as the current code but replaces the final
+"cltq" (sign extend) with a "mov %eax %eax" (zero-extend).
+This fixes booting certain guests under KVM.
 
-Surely it would be better to get the headers included in the right order ?
+(2nd resend, since no response to the last two submissions)
 
-> +	dev_buf = kmalloc(4*1024, GFP_KERNEL);
-> +
-> +	snprintf(tmp, 50, "DMA -- enable dma channels\n");
-> +	strcat(dev_buf, tmp);
+Signed-off-by: Chris Lalancette <clalance@redhat.com>
+---
+ arch/x86/include/asm/desc.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Out of memory - NULL - bang
-
-> +
-> +	for (i = 0; i < debugfs_dma_base->platform->max_channels; i++) {
-> +		if (started_channels & (1 << i)) {
-> +			snprintf(tmp, 50, "channel %d\n", i);
-> +			strcat(dev_buf, tmp);
-
-Why not do this without the copies ? 
-
-		x += snprintf(x, .., .....)
-
-> +	if (*f_pos + count > dev_size)
-> +		count = dev_size - *f_pos;
-
-Overflow ? or is your offset protected elsewhere from lseek/large count ?
-
-
-
-> +	pm->started_channels &= ~((u64)1 << cohc->id);
-
-1ULL is perhaps cleaner ?
-
-
-> +	void *virtbase = cohc->base->virtbase;
-
-These should probably be __iomem to keep sparse happy ?
-
-
-> +static int __init coh901318_probe(struct platform_device *pdev)
-> +{
-
-> +	base = kmalloc(ALIGN(sizeof(struct coh901318_base), 4) +
-> +		       pdata->max_channels *
-> +		       sizeof(struct coh901318_chan),
-> +		       GFP_KERNEL);
-> +	base->chans = ((void *)base) + ALIGN(sizeof(struct coh901318_base), 4);
-> +
-> +	if (!base)
-> +		goto err_alloc_coh_dma_channels;
-
-I'd swap those two over 8)
-
-> +	err = request_irq(irq, dma_irq_handler, IRQF_DISABLED,
-> +			  "coh901318", base);
-
-You pass base here
-
-
-> + err_pool_create:
-> +	free_irq(platform_get_irq(pdev, 0), NULL);
-
-So need to do likewise here
-
-> +static int __exit coh901318_remove(struct platform_device *pdev)
-> +{
-> +	struct coh901318_base *base = platform_get_drvdata(pdev);
-> +
-> +	dma_async_device_unregister(&base->dma_memcpy);
-> +	dma_async_device_unregister(&base->dma_slave);
-> +	coh901318_pool_destroy(&base->pool);
-> +	free_irq(platform_get_irq(pdev, 0), NULL);
-
-and here
+diff --git a/arch/x86/include/asm/desc.h b/arch/x86/include/asm/desc.h
+index e8de2f6..617bd56 100644
+--- a/arch/x86/include/asm/desc.h
++++ b/arch/x86/include/asm/desc.h
+@@ -288,7 +288,7 @@ static inline void load_LDT(mm_context_t *pc)
+ 
+ static inline unsigned long get_desc_base(const struct desc_struct *desc)
+ {
+-	return desc->base0 | ((desc->base1) << 16) | ((desc->base2) << 24);
++	return (unsigned)(desc->base0 | ((desc->base1) << 16) | ((desc->base2) << 24));
+ }
+ 
+ static inline void set_desc_base(struct desc_struct *desc, unsigned long base)
+-- 
+1.6.0.6
 
