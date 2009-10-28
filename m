@@ -1,101 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbZJ1LZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbZJ1Lhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbZJ1LZb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 07:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZJ1LZb
+	id S1752826AbZJ1Lhd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 07:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZJ1Lhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 07:25:31 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:53076 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040AbZJ1LZ3 (ORCPT
+	Wed, 28 Oct 2009 07:37:32 -0400
+Received: from aa001msb.fastweb.it ([85.18.95.80]:43993 "EHLO
+	aa001msb.fastweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbZJ1Lhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 07:25:29 -0400
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-References: <20091025062953.GC1391@ucw.cz>
-	<20091026163157.GB7233@duck.suse.cz>
-	<20091026165729.GF23564@us.ibm.com>
-	<20091026173629.GB16861@fieldses.org>
-	<20091026174631.GD7233@duck.suse.cz>
-	<1256579869.8576.7.camel@heimdal.trondhjem.org>
-	<20091025093604.GA1501@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org>
-	<20091028081653.GA18290@elf.ucw.cz>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 28 Oct 2009 04:25:23 -0700
-In-Reply-To: <20091028081653.GA18290@elf.ucw.cz> (Pavel Machek's message of "Wed\, 28 Oct 2009 09\:16\:53 +0100")
-Message-ID: <m1k4yfkbfg.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 28 Oct 2009 07:37:32 -0400
+Message-ID: <4AE82CDC.4080409@evidence.eu.com>
+Date: Wed, 28 Oct 2009 12:37:00 +0100
+From: Claudio Scordino <claudio@evidence.eu.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: linux-kernel@vger.kernel.org, rmk+kernel@arm.linux.org.uk,
+       linux-arm-kernel@lists.arm.linux.org.uk, akpm@linux-foundation.org
+Subject: Re: [PATCH][RE-SUBMIT] Default setting of the ARM_UNWIND option
+References: <4AD73DA4.4050006@evidence.eu.com>	 <1255620333.10164.77.camel@pc1117.cambridge.arm.com>	 <4AE55D83.7080608@evidence.eu.com> <1256555452.5282.21.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <1256555452.5282.21.camel@pc1117.cambridge.arm.com>
+Content-Type: multipart/mixed;
+ boundary="------------080506050702010701090201"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
+This is a multi-part message in MIME format.
+--------------080506050702010701090201
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> On Tue 2009-10-27 21:15:54, Eric W. Biederman wrote:
->> Pavel Machek <pavel@ucw.cz> writes:
->> 
->> > On Mon 2009-10-26 13:57:49, Trond Myklebust wrote:
->> >> On Mon, 2009-10-26 at 18:46 +0100, Jan Kara wrote:
->> >> >   That's what I'd think as well but it does not as I've just learned and
->> >> > tested :) proc_pid_follow_link actually directly gives a dentry of the
->> >> > target file without checking permissions on the way.
->> >
->> > It is weider. That symlink even has permissions. Those are not
->> > checked, either.
->> >  
->> >> I seem to remember that is deliberate, the point being that a symlink
->> >> in /proc/*/fd/ may contain a path that refers to a private namespace.
->> >
->> > Well, it is unexpected and mild security hole.
->> 
->> /proc/<pid>/fd is only viewable by the owner of the process or by
->> someone with CAP_DAC_OVERRIDE.  So there appears to be no security
->> hole exploitable by people who don't have the file open.
+Catalin Marinas ha scritto:
+> On Mon, 2009-10-26 at 09:27 +0100, Claudio Scordino wrote:
+>   
+>> My ARM board hanged at the initial "Calibrating delay loop" message.
+>>
+>> After some inspection, I found out the problem to be with commit
+>> adf8b37bafc1495393201a2ae4235846371870d0. This commit introduces stack
+>> unwinding for ARM, and set it enabled by default. However, it seems to
+>> not work with buggy or not-EABI compilers.
+>>
+>> My suggestion is to keep the feature (which is fine) but change the
+>> default setting of the option (see the attached patch).
+>>     
 >
-> Please see bugtraq discussion at
-> http://seclists.org/bugtraq/2009/Oct/179 .
+> The option still depends on EXPERIMENTAL, so you get ARM_UNWIND on when
+> enabling that.
 >
-> (In short, you get read-only fd, and you can upgrade it to read-write
-> fd. Yes, you are the owner of the process, but you are not owner of
-> the file the fd refers to.)
+> I'm more in favour of a #warning on #error in the unwind.c file based on
+> the compiler version rather than not having it on by default. The reason
+> is that people reported performance improvements when compiling the
+> kernel without frame pointers.
+>   
+This solution is fine too (even if I still think that changing the 
+default setting is better).
 
-Assuming you have permission to open it read-write.
+Please, consider the patch in attachment: is it like you would have it ?
 
->> > Part of the problem is that even  if you have read-only
->> > filedescriptor, you can upgrade it to read-write, even if path is
->> > inaccessible to you.
->> >
->> > So if someone passes you read-only filedescriptor, you can still write
->> > to it.
->> 
->> Openly if you actually have permission to open the file again.  The actual
->> permissions on the file should not be ignored.
->
-> The actual permissions of the file are not ignored, but permissions of
-> the containing directory _are_. If there's 666 file in 700 directory,
-> you can reopen it read-write, in violation of directory's 700
-> permissions.
+BTW, do we have any list of buggy or not-EABI versions of the gcc compiler ?
 
-I can see how all of this can come as a surprise.  However I don't see
-how any coder who is taking security seriously and being paranoid about
-security would actually write code that would have a problem with this.
+Many thanks,
 
-Do you know of any cases where this difference matters in practice?
+            Claudio
 
-It looks to me like it has been this way for better than a decade
-without problems so there is no point in changing it now.  
 
-Eric
+--------------080506050702010701090201
+Content-Type: text/x-patch;
+ name="0001-Disable-stack-unwinding-support-by-default-since-it.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-Disable-stack-unwinding-support-by-default-since-it.pat";
+ filename*1="ch"
+
+From: Claudio Scordino <claudio@evidence.eu.com>
+Date: Mon, 19 Oct 2009 11:59:16 +0200
+Subject: [PATCH 1/1] Disable stack unwinding support by default, since it does not work on some buggy or not-EABI compilers.
+
+Disable stack unwinding support by default, since it does not work on some
+buggy or not-EABI compilers.
+
+Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+---
+ arch/arm/Kconfig.debug |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
+index 1a6f70e..925e3fd 100644
+--- a/arch/arm/Kconfig.debug
++++ b/arch/arm/Kconfig.debug
+@@ -19,13 +19,13 @@ config FRAME_POINTER
+ config ARM_UNWIND
+ 	bool "Enable stack unwinding support"
+ 	depends on AEABI && EXPERIMENTAL
+-	default y
++	default n
+ 	help
+ 	  This option enables stack unwinding support in the kernel
+ 	  using the information automatically generated by the
+ 	  compiler. The resulting kernel image is slightly bigger but
+ 	  the performance is not affected. Currently, this feature
+-	  only works with EABI compilers. If unsure say Y.
++	  only works with EABI compilers. If unsure say N.
+ 
+ config DEBUG_USER
+ 	bool "Verbose user fault messages"
+-- 
+1.6.0.4
+
+
+
+
+
+
+
+
+--------------080506050702010701090201--
