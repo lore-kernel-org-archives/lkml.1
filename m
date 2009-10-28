@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbZJ1JvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbZJ1JvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752204AbZJ1JvG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 05:51:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZJ1JvE
+	id S1752571AbZJ1JvK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 05:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZJ1JvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 05:51:04 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:35231 "EHLO
+	Wed, 28 Oct 2009 05:51:09 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:43455 "EHLO
 	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbZJ1Ju7 (ORCPT
+	with ESMTP id S1752183AbZJ1JvC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 05:50:59 -0400
+	Wed, 28 Oct 2009 05:51:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:references:user-agent:date:from:to:cc:subject
          :content-disposition;
-        b=ZuQZ/JB8Jwg123wqlpLUEJdF+bU1o6flab4cvOalaesvgh6k/fqEaJ+Ca6CW1ZWvDA
-         ZQ9lZQpl41yJw6YjfU9Oizv33/lAWbn3JxMEZpVnmWFuENgd2lx37OjgUGUef8L4jarq
-         z9lbfyS7+ugbqijXn+xxeWjcVngD8/Y9WLSPI=
-Message-Id: <20091028095100.332743686@gmail.com>
+        b=s7EjnXi+p1CjVzvFmU49N2ma/7YQB1+FtdJJARKweAQqoRwl6CMrTf3XsEMSYpDDQ3
+         EA3bORqJIKEEiK7h1Pc9b4LlPA3c3rpQz723N2hX7hNsMHuNCQ4xqh8Xv0YtSlYBmTYu
+         KH4Y9Ng0+IRlQhOTSyY9paujgz+YpqXw8gbOE=
+Message-Id: <20091028095102.949784052@gmail.com>
 References: <20091028094324.010816897@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 28 Oct 2009 10:43:25 +0100
+Date: Wed, 28 Oct 2009 10:43:26 +0100
 From: bart.hartgers@gmail.com
 To: Greg Kroah-Hartman <gregkh@suse.de>, Mike McCormack <mikem@ring3k.org>
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        Bart Hartgers <bart.hartgers@gmail.com>
-Subject: [PATCH 1/6] ark3116: (v2) Setup some basic infrastructure for new ark3116 driver.
-Content-Disposition: inline; filename=0000_ark3116_infrastructure.patch
+Subject: [PATCH 2/6] ark3116: (v2) Make existing functions 16450-aware and add close and release functions.
+Content-Disposition: inline; filename=0010_ark3116_replace_existing.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,243 +35,599 @@ Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
 ---
 Index: linux-2.6.32-rc4/drivers/usb/serial/ark3116.c
 ===================================================================
---- linux-2.6.32-rc4.orig/drivers/usb/serial/ark3116.c	2009-10-28 10:22:33.000000000 +0100
-+++ linux-2.6.32-rc4/drivers/usb/serial/ark3116.c	2009-10-28 10:22:42.000000000 +0100
-@@ -1,4 +1,6 @@
- /*
-+ * Copyright (C) 2009 by Bart Hartgers (bart.hartgers+ark3116@gmail.com)
-+ * Original version:
-  * Copyright (C) 2006
-  *   Simon Schulz (ark3116_driver <at> auctionant.de)
-  *
-@@ -6,10 +8,13 @@
-  * - implements a driver for the arkmicro ark3116 chipset (vendor=0x6547,
-  *   productid=0x0232) (used in a datacable called KQ-U8A)
-  *
-- * - based on code by krisfx -> thanks !!
-- *   (see http://www.linuxquestions.org/questions/showthread.php?p=2184457#post2184457)
-+ * Supports full modem status lines, break, hardware flow control. Does not
-+ * support software flow control, since I do not know how to enable it in hw.
-  *
-- *  - based on logs created by usbsnoopy
-+ * This driver is a essentially new implementation. I initially dug
-+ * into the old ark3116.c driver and suddenly realized the ark3116 is
-+ * a 16450 with a USB interface glued to it. See comments at the
-+ * bottom of this file.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the
-@@ -19,15 +24,31 @@
+--- linux-2.6.32-rc4.orig/drivers/usb/serial/ark3116.c	2009-10-28 10:19:41.000000000 +0100
++++ linux-2.6.32-rc4/drivers/usb/serial/ark3116.c	2009-10-28 10:19:42.000000000 +0100
+@@ -152,79 +152,105 @@ static inline void ARK3116_RCV_QUIET(str
+ 			buf, 0x0000001, 1000);
+ }
  
- #include <linux/kernel.h>
- #include <linux/init.h>
-+#include <linux/ioctl.h>
- #include <linux/tty.h>
-+#include <linux/tty_flip.h>
- #include <linux/module.h>
- #include <linux/usb.h>
- #include <linux/usb/serial.h>
- #include <linux/serial.h>
-+#include <linux/serial_reg.h>
- #include <linux/uaccess.h>
++static inline int calc_divisor(int bps)
++{
++	/* Original ark3116 made some exceptions in rounding here
++	 * because windows did the same. Assume that is not really
++	 * necessary.
++	 * Crystal is 12MHz, probably because of USB, but we divide by 4?
++	 */
++	return (12000000 + 2*bps) / (4*bps);
++}
++
+ static int ark3116_attach(struct usb_serial *serial)
+ {
+-	char *buf;
++	struct usb_serial_port *port = serial->port[0];
++	struct ark3116_private *priv;
+ 
+-	buf = kmalloc(1, GFP_KERNEL);
+-	if (!buf) {
+-		dbg("error kmalloc -> out of mem?");
+-		return -ENOMEM;
++	/* make sure we have our end-points */
++	if ((serial->num_bulk_in == 0) ||
++	    (serial->num_bulk_out == 0) ||
++	    (serial->num_interrupt_in == 0)) {
++		dev_err(&serial->dev->dev,
++			"%s - missing endpoint - "
++			"bulk in: %d, bulk out: %d, int in %d\n",
++			KBUILD_MODNAME,
++			serial->num_bulk_in,
++			serial->num_bulk_out,
++			serial->num_interrupt_in);
++		return -EINVAL;
+ 	}
+ 
+-	if (is_irda(serial))
+-		dbg("IrDA mode");
++	priv = kzalloc(sizeof(struct ark3116_private),
++		       GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
+ 
+-	/* 3 */
+-	ARK3116_SND(serial, 3, 0xFE, 0x40, 0x0008, 0x0002);
+-	ARK3116_SND(serial, 4, 0xFE, 0x40, 0x0008, 0x0001);
+-	ARK3116_SND(serial, 5, 0xFE, 0x40, 0x0000, 0x0008);
+-	ARK3116_SND(serial, 6, 0xFE, 0x40, is_irda(serial) ? 0x0001 : 0x0000,
+-		    0x000B);
 -
-+#include <linux/mutex.h>
-+#include <linux/spinlock.h>
- 
- static int debug;
-+/*
-+ * Version information
-+ */
+-	if (is_irda(serial)) {
+-		ARK3116_SND(serial, 1001, 0xFE, 0x40, 0x0000, 0x000C);
+-		ARK3116_SND(serial, 1002, 0xFE, 0x40, 0x0041, 0x000D);
+-		ARK3116_SND(serial, 1003, 0xFE, 0x40, 0x0001, 0x000A);
+-	}
+-
+-	/* <-- seq7 */
+-	ARK3116_RCV(serial,  7, 0xFE, 0xC0, 0x0000, 0x0003, 0x00, buf);
+-	ARK3116_SND(serial,  8, 0xFE, 0x40, 0x0080, 0x0003);
+-	ARK3116_SND(serial,  9, 0xFE, 0x40, 0x001A, 0x0000);
+-	ARK3116_SND(serial, 10, 0xFE, 0x40, 0x0000, 0x0001);
+-	ARK3116_SND(serial, 11, 0xFE, 0x40, 0x0000, 0x0003);
+-
+-	/* <-- seq12 */
+-	ARK3116_RCV(serial, 12, 0xFE, 0xC0, 0x0000, 0x0004, 0x00, buf);
+-	ARK3116_SND(serial, 13, 0xFE, 0x40, 0x0000, 0x0004);
+-
+-	/* 14 */
+-	ARK3116_RCV(serial, 14, 0xFE, 0xC0, 0x0000, 0x0004, 0x00, buf);
+-	ARK3116_SND(serial, 15, 0xFE, 0x40, 0x0000, 0x0004);
+-
+-	/* 16 */
+-	ARK3116_RCV(serial, 16, 0xFE, 0xC0, 0x0000, 0x0004, 0x00, buf);
+-	/* --> seq17 */
+-	ARK3116_SND(serial, 17, 0xFE, 0x40, 0x0001, 0x0004);
+-
+-	/* <-- seq18 */
+-	ARK3116_RCV(serial, 18, 0xFE, 0xC0, 0x0000, 0x0004, 0x01, buf);
+-
+-	/* --> seq19 */
+-	ARK3116_SND(serial, 19, 0xFE, 0x40, 0x0003, 0x0004);
+-
+-	/* <-- seq20 */
+-	/* seems like serial port status info (RTS, CTS, ...) */
+-	/* returns modem control line status?! */
+-	ARK3116_RCV(serial, 20, 0xFE, 0xC0, 0x0000, 0x0006, 0xFF, buf);
+-
+-	/* set 9600 baud & do some init?! */
+-	ARK3116_SND(serial, 147, 0xFE, 0x40, 0x0083, 0x0003);
+-	ARK3116_SND(serial, 148, 0xFE, 0x40, 0x0038, 0x0000);
+-	ARK3116_SND(serial, 149, 0xFE, 0x40, 0x0001, 0x0001);
+-	if (is_irda(serial))
+-		ARK3116_SND(serial, 1004, 0xFE, 0x40, 0x0000, 0x0009);
+-	ARK3116_SND(serial, 150, 0xFE, 0x40, 0x0003, 0x0003);
+-	ARK3116_RCV(serial, 151, 0xFE, 0xC0, 0x0000, 0x0004, 0x03, buf);
+-	ARK3116_SND(serial, 152, 0xFE, 0x40, 0x0000, 0x0003);
+-	ARK3116_RCV(serial, 153, 0xFE, 0xC0, 0x0000, 0x0003, 0x00, buf);
+-	ARK3116_SND(serial, 154, 0xFE, 0x40, 0x0003, 0x0003);
++	init_waitqueue_head(&priv->delta_msr_wait);
++	mutex_init(&priv->hw_lock);
++	spin_lock_init(&priv->status_lock);
 +
-+#define DRIVER_VERSION "v0.5"
-+#define DRIVER_AUTHOR "Bart Hartgers <bart.hartgers+ark3116@gmail.com>"
-+#define DRIVER_DESC "USB ARK3116 serial/IrDA driver"
-+#define DRIVER_DEV_DESC "ARK3116 RS232/IrDA"
-+#define DRIVER_NAME "ark3116"
++	priv->irda = is_irda(serial);
 +
-+/* usb timeout of 1 second */
-+#define ARK_TIMEOUT (1*HZ)
++	usb_set_serial_port_data(port, priv);
++
++	/* setup the hardware */
++	ark3116_write_reg(serial, UART_IER, 0);
++	/* disable DMA */
++	ark3116_write_reg(serial, UART_FCR, 0);
++	/* handshake control */
++	priv->hcr = 0;
++	ark3116_write_reg(serial, 0x8     , 0);
++	/* modem control */
++	priv->mcr = 0;
++	ark3116_write_reg(serial, UART_MCR, 0);
  
- static struct usb_device_id id_table [] = {
- 	{ USB_DEVICE(0x6547, 0x0232) },
-@@ -45,6 +66,53 @@ static int is_irda(struct usb_serial *se
+-	kfree(buf);
++	if (!(priv->irda)) {
++		ark3116_write_reg(serial, 0xb , 0);
++	} else {
++		ark3116_write_reg(serial, 0xb , 1);
++		ark3116_write_reg(serial, 0xc , 0);
++		ark3116_write_reg(serial, 0xd , 0x41);
++		ark3116_write_reg(serial, 0xa , 1);
++	}
++
++	/* setup baudrate */
++	ark3116_write_reg(serial, UART_LCR, UART_LCR_DLAB);
++
++	/* setup for 9600 8N1 */
++	priv->quot = calc_divisor(9600);
++	ark3116_write_reg(serial, UART_DLL, priv->quot & 0xff);
++	ark3116_write_reg(serial, UART_DLM, (priv->quot>>8) & 0xff);
++
++	priv->lcr = UART_LCR_WLEN8;
++	ark3116_write_reg(serial, UART_LCR, UART_LCR_WLEN8);
++
++	ark3116_write_reg(serial, 0xe, 0);
++
++	if (priv->irda)
++		ark3116_write_reg(serial, 0x9, 0);
++
++	dev_info(&serial->dev->dev,
++		"%s using %s mode\n",
++		KBUILD_MODNAME,
++		priv->irda ? "IrDA" : "RS232");
  	return 0;
  }
  
-+struct ark3116_private {
-+	wait_queue_head_t       delta_msr_wait;
-+	struct async_icount	icount;
-+	int			irda;	/* 1 for irda device */
-+
-+	/* protects hw register updates */
-+	struct mutex		hw_lock;
-+
-+	int			quot;	/* baudrate divisor */
-+	__u32			lcr;	/* line control register value */
-+	__u32			hcr;	/* handshake control register (0x8)
-+					 * value */
-+	__u32			mcr;	/* modem contol register value */
-+
-+	/* protects the status values below */
-+	spinlock_t		status_lock;
-+	__u32			msr;	/* modem status register value */
-+	__u32			lsr;	/* line status register value */
-+};
-+
-+static int ark3116_write_reg(struct usb_serial *serial,
-+			     unsigned reg, __u8 val)
++static void ark3116_release(struct usb_serial *serial)
 +{
-+	int result;
-+	 /* 0xfe 0x40 are magic values taken from original driver */
-+	result = usb_control_msg(serial->dev,
-+				 usb_sndctrlpipe(serial->dev, 0),
-+				 0xfe, 0x40, val, reg,
-+				 NULL, 0, ARK_TIMEOUT);
-+	return result;
++	struct usb_serial_port *port = serial->port[0];
++	struct ark3116_private *priv = usb_get_serial_port_data(port);
++
++	/* device is closed, so URBs and DMA should be down */
++
++	usb_set_serial_port_data(port, NULL);
++
++	mutex_destroy(&priv->hw_lock);
++
++	kfree(priv);
 +}
 +
-+static int ark3116_read_reg(struct usb_serial *serial,
-+			    unsigned reg, unsigned char *buf)
-+{
-+	int result;
-+	/* 0xfe 0xc0 are magic values taken from original driver */
-+	result = usb_control_msg(serial->dev,
-+				 usb_rcvctrlpipe(serial->dev, 0),
-+				 0xfe, 0xc0, 0, reg,
-+				 buf, 1, ARK_TIMEOUT);
-+	if (result < 0)
-+		return result;
-+	else
-+		return buf[0];
-+}
+ static void ark3116_init_termios(struct tty_struct *tty)
+ {
+ 	struct ktermios *termios = tty->termios;
+@@ -240,200 +266,189 @@ static void ark3116_set_termios(struct t
+ 				struct ktermios *old_termios)
+ {
+ 	struct usb_serial *serial = port->serial;
++	struct ark3116_private *priv = usb_get_serial_port_data(port);
+ 	struct ktermios *termios = tty->termios;
+ 	unsigned int cflag = termios->c_cflag;
+-	int baud;
+-	int ark3116_baud;
+-	char *buf;
+-	char config;
+-
+-	config = 0;
+-
+-	dbg("%s - port %d", __func__, port->number);
+-
++	int bps = tty_get_baud_rate(tty);
++	int quot;
++	__u8 lcr, hcr, eval;
 +
- static inline void ARK3116_SND(struct usb_serial *serial, int seq,
- 			       __u8 request, __u8 requesttype,
- 			       __u16 value, __u16 index)
-@@ -465,7 +533,12 @@ static int __init ark3116_init(void)
- 	if (retval)
- 		return retval;
- 	retval = usb_register(&ark3116_driver);
--	if (retval)
-+	if (retval == 0) {
-+		printk(KERN_INFO "%s:"
-+		       DRIVER_VERSION ":"
-+		       DRIVER_DESC "\n",
-+		       KBUILD_MODNAME);
-+	} else
- 		usb_serial_deregister(&ark3116_device);
- 	return retval;
++	/* set data bit count */
++	switch (cflag & CSIZE) {
++	case CS5:
++		lcr = UART_LCR_WLEN5;
++		break;
++	case CS6:
++		lcr = UART_LCR_WLEN6;
++		break;
++	case CS7:
++		lcr = UART_LCR_WLEN7;
++		break;
++	default:
++	case CS8:
++		lcr = UART_LCR_WLEN8;
++		break;
++	}
++	if (cflag & CSTOPB)
++		lcr |= UART_LCR_STOP;
++	if (cflag & PARENB)
++		lcr |= UART_LCR_PARITY;
++	if (!(cflag & PARODD))
++		lcr |= UART_LCR_EPAR;
++#ifdef CMSPAR
++	if (cflag & CMSPAR)
++		lcr |= UART_LCR_SPAR;
++#endif
++	/* handshake control */
++	hcr = (cflag & CRTSCTS) ? 0x03 : 0x00;
++
++	/* calc baudrate */
++	dbg("%s - setting bps to %d", __func__, bps);
++	eval = 0;
++	switch (bps) {
++	case 0:
++		quot = calc_divisor(9600);
++		break;
++	default:
++		if ((bps < 75) || (bps > 3000000))
++			bps = 9600;
++		quot = calc_divisor(bps);
++		break;
++	case 460800:
++		eval = 1;
++		quot = calc_divisor(bps);
++		break;
++	case 921600:
++		eval = 2;
++		quot = calc_divisor(bps);
++		break;
++	}
+ 
+-	cflag = termios->c_cflag;
+-	termios->c_cflag &= ~(CMSPAR|CRTSCTS);
++	/* Update state: synchronize */
++	mutex_lock(&priv->hw_lock);
+ 
+-	buf = kmalloc(1, GFP_KERNEL);
+-	if (!buf) {
+-		dbg("error kmalloc");
+-		*termios = *old_termios;
+-		return;
+-	}
++	/* keep old LCR_SBC bit */
++	lcr |= (priv->lcr & UART_LCR_SBC);
+ 
+-	/* set data bit count (8/7/6/5) */
+-	if (cflag & CSIZE) {
+-		switch (cflag & CSIZE) {
+-		case CS5:
+-			config |= 0x00;
+-			dbg("setting CS5");
+-			break;
+-		case CS6:
+-			config |= 0x01;
+-			dbg("setting CS6");
+-			break;
+-		case CS7:
+-			config |= 0x02;
+-			dbg("setting CS7");
+-			break;
+-		default:
+-			dbg("CSIZE was set but not CS5-CS8, using CS8!");
+-			/* fall through */
+-		case CS8:
+-			config |= 0x03;
+-			dbg("setting CS8");
+-			break;
+-		}
+-	}
++	dbg("%s - setting hcr:0x%02x,lcr:0x%02x,quot:%d",
++	    __func__, hcr, lcr, quot);
+ 
+-	/* set parity (NONE/EVEN/ODD) */
+-	if (cflag & PARENB) {
+-		if (cflag & PARODD) {
+-			config |= 0x08;
+-			dbg("setting parity to ODD");
+-		} else {
+-			config |= 0x18;
+-			dbg("setting parity to EVEN");
+-		}
+-	} else {
+-		dbg("setting parity to NONE");
++	/* handshake control */
++	if (priv->hcr != hcr) {
++		priv->hcr = hcr;
++		ark3116_write_reg(serial, 0x8, hcr);
+ 	}
+ 
+-	/* set stop bit (1/2) */
+-	if (cflag & CSTOPB) {
+-		config |= 0x04;
+-		dbg("setting 2 stop bits");
+-	} else {
+-		dbg("setting 1 stop bit");
++	/* baudrate */
++	if (priv->quot != quot) {
++		priv->quot = quot;
++		priv->lcr = lcr; /* need to write lcr anyway */
++
++		/* disable DMA since transmit/receive is
++		 * shadowed by UART_DLL
++		 */
++		ark3116_write_reg(serial, UART_FCR, 0);
++
++		ark3116_write_reg(serial, UART_LCR,
++				  lcr|UART_LCR_DLAB);
++		ark3116_write_reg(serial, UART_DLL, quot & 0xff);
++		ark3116_write_reg(serial, UART_DLM, (quot>>8) & 0xff);
++
++		/* restore lcr */
++		ark3116_write_reg(serial, UART_LCR, lcr);
++		/* magic baudrate thingy: not sure what it does,
++		 * but windows does this as well.
++		 */
++		ark3116_write_reg(serial, 0xe, eval);
++
++		/* enable DMA */
++		ark3116_write_reg(serial, UART_FCR, UART_FCR_DMA_SELECT);
++	} else if (priv->lcr != lcr) {
++		priv->lcr = lcr;
++		ark3116_write_reg(serial, UART_LCR, lcr);
+ 	}
+ 
+-	/* set baudrate */
+-	baud = tty_get_baud_rate(tty);
++	mutex_unlock(&priv->hw_lock);
+ 
+-	switch (baud) {
+-	case 75:
+-	case 150:
+-	case 300:
+-	case 600:
+-	case 1200:
+-	case 1800:
+-	case 2400:
+-	case 4800:
+-	case 9600:
+-	case 19200:
+-	case 38400:
+-	case 57600:
+-	case 115200:
+-	case 230400:
+-	case 460800:
+-		/* Report the resulting rate back to the caller */
+-		tty_encode_baud_rate(tty, baud, baud);
+-		break;
+-	/* set 9600 as default (if given baudrate is invalid for example) */
+-	default:
+-		tty_encode_baud_rate(tty, 9600, 9600);
+-	case 0:
+-		baud = 9600;
++	/* check for software flow control */
++	if (I_IXOFF(tty) || I_IXON(tty)) {
++		dev_warn(&serial->dev->dev,
++			 "%s: don't know how to do software flow control\n",
++			 KBUILD_MODNAME);
+ 	}
+ 
+-	/*
+-	 * found by try'n'error, be careful, maybe there are other options
+-	 * for multiplicator etc! (3.5 for example)
+-	 */
+-	if (baud == 460800)
+-		/* strange, for 460800 the formula is wrong
+-		 * if using round() then 9600baud is wrong) */
+-		ark3116_baud = 7;
+-	else
+-		ark3116_baud = 3000000 / baud;
+-
+-	/* ? */
+-	ARK3116_RCV(serial, 0, 0xFE, 0xC0, 0x0000, 0x0003, 0x03, buf);
+-
+-	/* offset = buf[0]; */
+-	/* offset = 0x03; */
+-	/* dbg("using 0x%04X as target for 0x0003:", 0x0080 + offset); */
+-
+-	/* set baudrate */
+-	dbg("setting baudrate to %d (->reg=%d)", baud, ark3116_baud);
+-	ARK3116_SND(serial, 147, 0xFE, 0x40, 0x0083, 0x0003);
+-	ARK3116_SND(serial, 148, 0xFE, 0x40,
+-			    (ark3116_baud & 0x00FF), 0x0000);
+-	ARK3116_SND(serial, 149, 0xFE, 0x40,
+-			    (ark3116_baud & 0xFF00) >> 8, 0x0001);
+-	ARK3116_SND(serial, 150, 0xFE, 0x40, 0x0003, 0x0003);
+-
+-	/* ? */
+-	ARK3116_RCV(serial, 151, 0xFE, 0xC0, 0x0000, 0x0004, 0x03, buf);
+-	ARK3116_SND(serial, 152, 0xFE, 0x40, 0x0000, 0x0003);
+-
+-	/* set data bit count, stop bit count & parity: */
+-	dbg("updating bit count, stop bit or parity (cfg=0x%02X)", config);
+-	ARK3116_RCV(serial, 153, 0xFE, 0xC0, 0x0000, 0x0003, 0x00, buf);
+-	ARK3116_SND(serial, 154, 0xFE, 0x40, config, 0x0003);
+-
+-	if (cflag & CRTSCTS)
+-		dbg("CRTSCTS not supported by chipset?!");
+-
+-	/* TEST ARK3116_SND(154, 0xFE, 0x40, 0xFFFF, 0x0006); */
++	/* Don't rewrite B0 */
++	if (tty_termios_baud_rate(termios))
++		tty_termios_encode_baud_rate(termios, bps, bps);
++}
+ 
+-	kfree(buf);
++static void ark3116_close(struct usb_serial_port *port)
++{
++	struct usb_serial *serial = port->serial;
+ 
+-	return;
++	if (serial->dev) {
++		/* disable DMA */
++		ark3116_write_reg(serial, UART_FCR, 0);
++
++		/* deactivate interrupts */
++		ark3116_write_reg(serial, UART_IER, 0);
++
++		/* shutdown any bulk reads that might be going on */
++		if (serial->num_bulk_out)
++			usb_kill_urb(port->write_urb);
++		if (serial->num_bulk_in)
++			usb_kill_urb(port->read_urb);
++		if (serial->num_interrupt_in)
++			usb_kill_urb(port->interrupt_in_urb);
++	}
  }
-@@ -480,6 +553,109 @@ module_init(ark3116_init);
- module_exit(ark3116_exit);
- MODULE_LICENSE("GPL");
  
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_DESCRIPTION(DRIVER_DESC);
+ static int ark3116_open(struct tty_struct *tty, struct usb_serial_port *port)
+ {
+-	struct ktermios tmp_termios;
++	struct ark3116_private *priv = usb_get_serial_port_data(port);
+ 	struct usb_serial *serial = port->serial;
+-	char *buf;
+-	int result = 0;
+-
+-	dbg("%s - port %d", __func__, port->number);
++	unsigned char *buf;
++	int result;
+ 
+ 	buf = kmalloc(1, GFP_KERNEL);
+-	if (!buf) {
+-		dbg("error kmalloc -> out of mem?");
++	if (buf == NULL)
+ 		return -ENOMEM;
+-	}
+ 
+ 	result = usb_serial_generic_open(tty, port);
+-	if (result)
++	if (result) {
++		dbg("%s - usb_serial_generic_open failed: %d",
++		    __func__, result);
+ 		goto err_out;
++	}
+ 
+-	/* open */
+-	ARK3116_RCV(serial, 111, 0xFE, 0xC0, 0x0000, 0x0003, 0x02, buf);
+-
+-	ARK3116_SND(serial, 112, 0xFE, 0x40, 0x0082, 0x0003);
+-	ARK3116_SND(serial, 113, 0xFE, 0x40, 0x001A, 0x0000);
+-	ARK3116_SND(serial, 114, 0xFE, 0x40, 0x0000, 0x0001);
+-	ARK3116_SND(serial, 115, 0xFE, 0x40, 0x0002, 0x0003);
+-
+-	ARK3116_RCV(serial, 116, 0xFE, 0xC0, 0x0000, 0x0004, 0x03, buf);
+-	ARK3116_SND(serial, 117, 0xFE, 0x40, 0x0002, 0x0004);
+-
+-	ARK3116_RCV(serial, 118, 0xFE, 0xC0, 0x0000, 0x0004, 0x02, buf);
+-	ARK3116_SND(serial, 119, 0xFE, 0x40, 0x0000, 0x0004);
+-
+-	ARK3116_RCV(serial, 120, 0xFE, 0xC0, 0x0000, 0x0004, 0x00, buf);
+-
+-	ARK3116_SND(serial, 121, 0xFE, 0x40, 0x0001, 0x0004);
++	/* setup termios */
++	if (tty)
++		ark3116_set_termios(tty, port, NULL);
+ 
+-	ARK3116_RCV(serial, 122, 0xFE, 0xC0, 0x0000, 0x0004, 0x01, buf);
++	/* remove any data still left: also clears error state */
++	ark3116_read_reg(serial, UART_RX, buf);
+ 
+-	ARK3116_SND(serial, 123, 0xFE, 0x40, 0x0003, 0x0004);
++	/* read modem status */
++	priv->msr = ark3116_read_reg(serial, UART_MSR, buf);
++	/* read line status */
++	priv->lsr = ark3116_read_reg(serial, UART_LSR, buf);
 +
- module_param(debug, bool, S_IRUGO | S_IWUSR);
--MODULE_PARM_DESC(debug, "Debug enabled or not");
-+MODULE_PARM_DESC(debug, "Enable debug");
++	result = usb_submit_urb(port->interrupt_in_urb, GFP_KERNEL);
++	if (result) {
++		dev_err(&port->dev, "submit irq_in urb failed %d\n",
++			result);
++		ark3116_close(port);
++		goto err_out;
++	}
  
-+/*
-+ * The following describes what I learned from studying the old
-+ * ark3116.c driver, disassembling the windows driver, and some lucky
-+ * guesses. Since I do not have any datasheet or other
-+ * documentation, inaccuracies are almost guaranteed.
-+ *
-+ * Some specs for the ARK3116 can be found here:
-+ * http://web.archive.org/web/20060318000438/
-+ *   www.arkmicro.com/en/products/view.php?id=10
-+ * On that page, 2 GPIO pins are mentioned: I assume these are the
-+ * OUT1 and OUT2 pins of the UART, so I added support for those
-+ * through the MCR. Since the pins are not available on my hardware,
-+ * I could not verify this.
-+ * Also, it states there is "on-chip hardware flow control". I have
-+ * discovered how to enable that. Unfortunately, I do not know how to
-+ * enable XON/XOFF (software) flow control, which would need support
-+ * from the chip as well to work. Because of the wording on the web
-+ * page there is a real possibility the chip simply does not support
-+ * software flow control.
-+ *
-+ * I got my ark3116 as part of a mobile phone adapter cable. On the
-+ * PCB, the following numbered contacts are present:
-+ *
-+ *  1:- +5V
-+ *  2:o DTR
-+ *  3:i RX
-+ *  4:i DCD
-+ *  5:o RTS
-+ *  6:o TX
-+ *  7:i RI
-+ *  8:i DSR
-+ * 10:- 0V
-+ * 11:i CTS
-+ *
-+ * On my chip, all signals seem to be 3.3V, but 5V tolerant. But that
-+ * may be different for the one you have ;-).
-+ *
-+ * The windows driver limits the registers to 0-F, so I assume there
-+ * are actually 16 present on the device.
-+ *
-+ * On an UART interrupt, 4 bytes of data come in on the interrupt
-+ * endpoint. The bytes are 0xe8 IIR LSR MSR.
-+ *
-+ * The baudrate seems to be generated from the 12MHz crystal, using
-+ * 4-times subsampling. So quot=12e6/(4*baud). Also see description
-+ * of register E.
-+ *
-+ * Registers 0-7:
-+ * These seem to be the same as for a regular 16450. The FCR is set
-+ * to UART_FCR_DMA_SELECT (0x8), I guess to enable transfers between
-+ * the UART and the USB bridge/DMA engine.
-+ *
-+ * Register 8:
-+ * By trial and error, I found out that bit 0 enables hardware CTS,
-+ * stopping TX when CTS is +5V. Bit 1 does the same for RTS, making
-+ * RTS +5V when the 3116 cannot transfer the data to the USB bus
-+ * (verified by disabling the reading URB). Note that as far as I can
-+ * tell, the windows driver does NOT use this, so there might be some
-+ * hardware bug or something.
-+ *
-+ * According to a patch provided here
-+ * (http://lkml.org/lkml/2009/7/26/56), the ARK3116 can also be used
-+ * as an IrDA dongle. Since I do not have such a thing, I could not
-+ * investigate that aspect. However, I can speculate ;-).
-+ *
-+ * - IrDA encodes data differently than RS232. Most likely, one of
-+ *   the bits in registers 9..E enables the IR ENDEC (encoder/decoder).
-+ * - Depending on the IR transceiver, the input and output need to be
-+ *   inverted, so there are probably bits for that as well.
-+ * - IrDA is half-duplex, so there should be a bit for selecting that.
-+ *
-+ * This still leaves at least two registers unaccounted for. Perhaps
-+ * The chip can do XON/XOFF or CRC in HW?
-+ *
-+ * Register 9:
-+ * Set to 0x00 for IrDA, when the baudrate is initialised.
-+ *
-+ * Register A:
-+ * Set to 0x01 for IrDA, at init.
-+ *
-+ * Register B:
-+ * Set to 0x01 for IrDA, 0x00 for RS232, at init.
-+ *
-+ * Register C:
-+ * Set to 00 for IrDA, at init.
-+ *
-+ * Register D:
-+ * Set to 0x41 for IrDA, at init.
-+ *
-+ * Register E:
-+ * Somekind of baudrate override. The windows driver seems to set
-+ * this to 0x00 for normal baudrates, 0x01 for 460800, 0x02 for 921600.
-+ * Since 460800 and 921600 cannot be obtained by dividing 3MHz by an integer,
-+ * it could be somekind of subdivisor thingy.
-+ * However,it does not seem to do anything: selecting 921600 (divisor 3,
-+ * reg E=2), still gets 1 MHz. I also checked if registers 9, C or F would
-+ * work, but they don't.
-+ *
-+ * Register F: unknown
-+ */
+-	/* returns different values (control lines?!) */
+-	ARK3116_RCV(serial, 124, 0xFE, 0xC0, 0x0000, 0x0006, 0xFF, buf);
++	/* activate interrupts */
++	ark3116_write_reg(port->serial, UART_IER, UART_IER_MSI|UART_IER_RLSI);
+ 
+-	/* initialise termios */
+-	if (tty)
+-		ark3116_set_termios(tty, port, &tmp_termios);
++	/* enable DMA */
++	ark3116_write_reg(port->serial, UART_FCR, UART_FCR_DMA_SELECT);
+ 
+ err_out:
+ 	kfree(buf);
+-
+ 	return result;
+ }
+ 
+@@ -441,6 +456,7 @@ static int ark3116_ioctl(struct tty_stru
+ 			 unsigned int cmd, unsigned long arg)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
++	struct ark3116_private *priv = usb_get_serial_port_data(port);
+ 	struct serial_struct serstruct;
+ 	void __user *user_arg = (void __user *)arg;
+ 
+@@ -462,9 +478,48 @@ static int ark3116_ioctl(struct tty_stru
+ 		if (copy_from_user(&serstruct, user_arg, sizeof(serstruct)))
+ 			return -EFAULT;
+ 		return 0;
+-	default:
+-		dbg("%s cmd 0x%04x not supported", __func__, cmd);
++	case TIOCMIWAIT:
++		for (;;) {
++			struct async_icount prev = priv->icount;
++			interruptible_sleep_on(&priv->delta_msr_wait);
++			/* see if a signal did it */
++			if (signal_pending(current))
++				return -ERESTARTSYS;
++			if ((prev.rng == priv->icount.rng) &&
++			    (prev.dsr == priv->icount.dsr) &&
++			    (prev.dcd == priv->icount.dcd) &&
++			    (prev.cts == priv->icount.cts))
++				return -EIO;
++			if ((arg & TIOCM_RNG &&
++			     (prev.rng != priv->icount.rng)) ||
++			    (arg & TIOCM_DSR &&
++			     (prev.dsr != priv->icount.dsr)) ||
++			    (arg & TIOCM_CD  &&
++			     (prev.dcd != priv->icount.dcd)) ||
++			    (arg & TIOCM_CTS &&
++			     (prev.cts != priv->icount.cts)))
++				return 0;
++		}
+ 		break;
++	case TIOCGICOUNT: {
++		struct serial_icounter_struct icount;
++		struct async_icount cnow = priv->icount;
++		memset(&icount, 0, sizeof(icount));
++		icount.cts = cnow.cts;
++		icount.dsr = cnow.dsr;
++		icount.rng = cnow.rng;
++		icount.dcd = cnow.dcd;
++		icount.rx = cnow.rx;
++		icount.tx = cnow.tx;
++		icount.frame = cnow.frame;
++		icount.overrun = cnow.overrun;
++		icount.parity = cnow.parity;
++		icount.brk = cnow.brk;
++		icount.buf_overrun = cnow.buf_overrun;
++		if (copy_to_user(user_arg, &icount, sizeof(icount)))
++			return -EFAULT;
++		return 0;
++	}
+ 	}
+ 
+ 	return -ENOIOCTLCMD;
+@@ -518,11 +573,13 @@ static struct usb_serial_driver ark3116_
+ 	.usb_driver =		&ark3116_driver,
+ 	.num_ports =		1,
+ 	.attach =		ark3116_attach,
++	.release =		ark3116_release,
+ 	.set_termios =		ark3116_set_termios,
+ 	.init_termios =		ark3116_init_termios,
+ 	.ioctl =		ark3116_ioctl,
+ 	.tiocmget =		ark3116_tiocmget,
+ 	.open =			ark3116_open,
++	.close =		ark3116_close,
+ };
+ 
+ static int __init ark3116_init(void)
 
 -- 
