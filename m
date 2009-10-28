@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932807AbZJ1JKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932772AbZJ1JDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932807AbZJ1JKU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 05:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932748AbZJ1JKT
+	id S932772AbZJ1JDq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 05:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932740AbZJ1JDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 05:10:19 -0400
-Received: from darkstar.wilibox.com ([195.14.175.138]:50723 "EHLO
-	darkstar.wilibox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932747AbZJ1JKS (ORCPT
+	Wed, 28 Oct 2009 05:03:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:34729 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932695AbZJ1JDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 05:10:18 -0400
-X-Greylist: delayed 643 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Oct 2009 05:10:18 EDT
-Message-ID: <4AE807F8.2040909@gmail.com>
-Date: Wed, 28 Oct 2009 10:59:36 +0200
-From: Paulius Zaleckas <paulius.zaleckas@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 28 Oct 2009 05:03:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Lq71quemDlxSKUVxSrZioe7RGfFbF1TCSRd0Tfo6FMxr8OnV86WyFP+Kf+fNcMnFk
+	uo1OTflyinD1f5IQDKJYA==
+Date: Wed, 28 Oct 2009 02:03:41 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: Alex Chiang <achiang@hp.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Badari Pulavarty <pbadari@us.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2 1/5] mm: add numa node symlink for memory section in
+ sysfs
+In-Reply-To: <20091028083137.GA24140@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.DEB.2.00.0910280159380.7122@chino.kir.corp.google.com>
+References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041510.15705.5410.stgit@bob.kio> <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com> <20091027195907.GJ14102@ldl.fc.hp.com> <alpine.DEB.2.00.0910271422090.22335@chino.kir.corp.google.com>
+ <20091028083137.GA24140@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>, greg@kroah.com
-Subject: Re: staging/dream: add gpio and pmem support
-References: <20091022091333.GA31023@elf.ucw.cz>
-In-Reply-To: <20091022091333.GA31023@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22/2009 12:13 PM, Pavel Machek wrote:
->
-> This adds generic_gpio and pmem support, both are needed for other
-> dream drivers.
+On Wed, 28 Oct 2009, Heiko Carstens wrote:
 
-Why you are not using existing gpiolib? That would make your driver a
-lot smaller and cleaner... and possibly with less bugs...
+> The short answer is: s390 doesn't support NUMA, because the hardware doesn't
+> tell us to which node (book in s390 terms) a memory range belongs to.
+> 
+> Memory layout for a logical partition is striped: first x mbyte belong to
+> node 0, next x mbyte belong to node 1, etc...
+> 
+> Also, since there is always a hypervisor running below Linux I don't think
+> it would make too much sense if we would know to which node a piece of
+> memory belongs to: if the hypervisor decides to schedule a virtual cpu of
+> a logical partition to a different node then what?
+> 
 
-Why not split gpio and pmem into separate patches?
+Ok, so the patchset is a no-op for s390 since it only utilizes the 
+!CONFIG_NUMA code.
 
-> Signed-off-by: Pavel Machek<pavel@ucw.cz>
+Alex, I think the safest thing to do in unregister_mem_sect_under_nodes() 
+is to iterate though the section pfns and remove links to the node_device 
+kobjs for all the distinct pfn_to_nid()'s that it encounters.
