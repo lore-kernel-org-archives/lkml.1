@@ -1,103 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZJ1UP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZJ1Ugk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbZJ1UP5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 16:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755040AbZJ1UP4
+	id S1755540AbZJ1Ugk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 16:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZJ1Ugj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 16:15:56 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47257 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755056AbZJ1UPz (ORCPT
+	Wed, 28 Oct 2009 16:36:39 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:4716 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755213AbZJ1Ugi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 16:15:55 -0400
-Subject: Re: [PATCH] [GIT PULL] tracing: allow to change permissions for
- text with dynamic ftrace enabled
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1256759778.2683.185.camel@sbs-t61.sc.intel.com>
-References: <1256666023.26028.411.camel@gandalf.stny.rr.com>
-	 <1256671227.2691.15.camel@sbs-t61.sc.intel.com>
-	 <1256668438.26028.414.camel@gandalf.stny.rr.com>
-	 <1256682364.2691.33.camel@sbs-t61.sc.intel.com>
-	 <1256679318.26028.468.camel@gandalf.stny.rr.com>
-	 <1256685826.15873.41.camel@sbs-t61.sc.intel.com>
-	 <1256686285.26028.487.camel@gandalf.stny.rr.com>
-	 <1256759778.2683.185.camel@sbs-t61.sc.intel.com>
+	Wed, 28 Oct 2009 16:36:38 -0400
+Subject: Re: [dm-devel] [PATCH] block: silently error unsupported empty
+ barriers too
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Alasdair G Kergon <agk@redhat.com>, Mark McLoughlin <markmc@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       ". troy.heber"@hp.com
+In-Reply-To: <Pine.LNX.4.64.0908062148060.8764@hs20-bc2-1.build.redhat.com>
+References: <1249557257.3721.55.camel@blaa>
+	 <20090806114550.GL29899@agk-dp.fab.redhat.com>
+	 <Pine.LNX.4.64.0908062148060.8764@hs20-bc2-1.build.redhat.com>
 Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 28 Oct 2009 16:15:53 -0400
-Message-Id: <1256760953.26028.1770.camel@gandalf.stny.rr.com>
+Date: Wed, 28 Oct 2009 20:19:01 +0000
+Message-Id: <1256761141.5830.79.camel@grinch>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-28 at 11:56 -0800, Suresh Siddha wrote:
-> On Tue, 2009-10-27 at 16:31 -0700, Steven Rostedt wrote: 
-> > On Tue, 2009-10-27 at 15:23 -0800, Suresh Siddha wrote:
+On Thu, 2009-08-06 at 21:50 -0400, Mikulas Patocka wrote:
+> On Thu, 6 Aug 2009, Alasdair G Kergon wrote:
+> 
+> > On Thu, Aug 06, 2009 at 12:14:17PM +0100, Mark McLoughlin wrote:
+> > > We should error all barriers, even empty barriers, on devices like
+> > > virtio_blk which don't support them.
+> >  
+> > Have you considered whether or not virtio_blk actually needs to
+> > support empty barriers?
 > > 
-> > > > 
-> > > > I'll test it out, and if it does work, you can write up a formal patch
-> > > > and remove the !define that I added.
-> > > 
-> > > I just saw one more place calling do_ftrace_mod_code(). So moved this
-> > > check inside the do_ftrace_mod_code(). Does this cover all the cases?
-> > > Thanks.
-> > 
-> > For ftrace, probably. But I just realized this may have other
-> > consequences. The CPA_DEBUG tests setting a bit in the page table at
-> > random locations.
+> > Alasdair
 > 
-> CPA_DEBUG is setting/clearing unused bit 9. It has no interaction with
-> RW bits. Though the random page and random length selections may end up
-
-Actually it does. When you call the clear_page_attribute, and go to set
-or clear bit 9, the static_protections() function is called against the
-new_prot. This will clear the RW bit if it is set, even if the original
-caller did not touch that bit.
-
-> splitting the large page mappings for kernel text. This is a different
-> issue that needs to be addressed (perhaps I can ignore this bit 9 as
-> well for the kernel text mapping. In general it sounds like a bad idea
-> to break any large page mappings to small page mappings for cpa debug
-> tests, especially when we don't restore the large page mapping when we
-> clear those unused bits once the test is done. Will look into this).
+> This is only for request-based drivers, where it is the responsibility of 
+> blk-core to translate barriers. I think the empty barrier request anyway 
+> in blk_do_ordered, but with an error message. So the patch changes it to 
+> discard it early and queitly. It seems ok.
 > 
-> > The code you added makes any change to kernel text
-> > page attributes remove the RW bit.
-> 
-> Only for CONFIG_DEBUG_RODATA.
-> 
-> > On boot up, it is considered that
-> > kernel text is writable.
-> 
-> For CONFIG_DEBUG_RODATA, during the boot we change it to RO.
+> Mikulas
+> --
 
-We do that at the end of boot up. I'm sure there's a reason for this :-/
+This patch seems to have been dropped.  I can reproduce the error using
+the following:
 
-> 
-> > Perhaps you need to add a check in your if statement to only prevent
-> > that bit when kernel_set_to_readonly is not true.
-> 
-> Are you worried that kernel_set_to_readonly might not be true but we
-> might have the kernel text mapping read-only?
+     1. Create an LVM logical volume on top of a cciss device (note that
+        the cciss driver does not support barriers)
+     2. Create an ext3 file system on top of the logical volume
+     3. Mount the file-system using -obarrier=1
+     4. Copy some files onto the file-system
+     5. Run sync (dm_flush is called)
 
-Yes, because the code clears the RW bit whenever something changes any
-attribute of that page table. Including bit 9.
+If I apply the patch (with some munging), the 
 
-> 
-> As ftrace is now using kernel identity mapping on 64-bit, we can change
-> the semantics of kernel_set_to_readonly to reflect the status of kernel
-> identity mapping for 64-bit. I can update the comments.
+"end_request: I/O error, dev cciss/cXdY, sector 0"
 
-Well, the identity mapping should still be set to readonly after boot
-up, right?
+messages go away.
 
--- Steve
+This is not strictly a regression, given that the problem was introduced
+in 2.6.31, but I think it should still be fixed for 2.6.32.
 
+Andrew
+
+-- 
+Andrew Patterson
+Hewlett-Packard
 
