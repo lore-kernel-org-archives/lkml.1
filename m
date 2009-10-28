@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbZJ1XBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZJ1XEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754604AbZJ1XBd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 19:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZJ1XBc
+	id S1754759AbZJ1XEK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 19:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZJ1XEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 19:01:32 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35774 "EHLO mx1.suse.de"
+	Wed, 28 Oct 2009 19:04:10 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53304 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751862AbZJ1XBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 19:01:32 -0400
-Date: Wed, 28 Oct 2009 15:58:41 -0700
+	id S1751499AbZJ1XEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 19:04:09 -0400
+Date: Wed, 28 Oct 2009 16:01:20 -0700
 From: Greg KH <gregkh@suse.de>
-To: Hank Janssen <hjanssen@microsoft.com>
-Cc: Milan Dadok <milan@dadok.name>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>
-Subject: Re: [PATCH] 1/4 staging: hv: fix oops in vmbus - udev events
-Message-ID: <20091028225841.GA15420@suse.de>
-References: <001401ca581d$456c45e0$d044d1a0$@name>
- <8AFC7968D54FB448A30D8F38F259C5620E7EE9FF@TK5EX14MBXC114.redmond.corp.microsoft.com>
+To: Milan Dadok <milan@dadok.name>
+Cc: linux-kernel@vger.kernel.org, "'Hank Janssen'" <hjanssen@microsoft.com>,
+       "'Haiyang Zhang'" <haiyangz@microsoft.com>
+Subject: Re: [PATCH] 3/3 staging: hv: fix oops in vmbus - missing #include
+Message-ID: <20091028230120.GB15420@suse.de>
+References: <001601ca581d$5390e0e0$fab2a2a0$@name>
+ <20091028223114.GA25962@suse.de>
+ <001701ca5821$8a52aec0$9ef80c40$@name>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8AFC7968D54FB448A30D8F38F259C5620E7EE9FF@TK5EX14MBXC114.redmond.corp.microsoft.com>
+In-Reply-To: <001701ca5821$8a52aec0$9ef80c40$@name>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A: No.
-Q: Should I include quotations after my reply?
-
-http://daringfireball.net/2007/07/on_top
-
-This is seriously annoying, and is something that the lkml mailing list
-operators have said they will start blocking soon.  Please remember it.
-
-On Wed, Oct 28, 2009 at 10:48:06PM +0000, Hank Janssen wrote:
+On Wed, Oct 28, 2009 at 11:54:00PM +0100, Milan Dadok wrote:
+> It's gentoo
+> Primary I was working on linux-2.6.31-gentoo 
+> gcc-config  -l
+>  [1] i686-pc-linux-gnu-4.3.2 *
 > 
-> Milan,
+> 10 Sep 2009; Mike Pagano <mpagano@gentoo.org>
+>   +gentoo-sources-2.6.31.ebuild:
+>   Initial 2.6.31 release including the fbcondecor patch,, a paoatch to
+>   enable control of the unaligned access control policy from sysctl and a
+>   patch for bad block relocation support for LiveCD users.
 > 
-> First of all thanks for these patches!
+> I already suspected some error on my side, therefor I installed vanilla
+> 2.6.32-r5
+> Because I cannot made it to compile without #include, I send third patch.
 > 
-> Greg, I do have a request though. But I am not sure what the right
-> approach is. This Patch removes more than I would like. It takes out a
-> few things that I would like to Keep in because I need them for prior
-> versions of the kernel that we also have this Running on.
+> Now I tried it again - and it look like only #include in osd.h is missing.
+> In ChannelMgmt.h is not ...
+> 
+> My error is (#include workqueue.h commented in osd.h)
+> # make SUBDIR=drivers/staging/hv CONFIG_DEBUG_SECTION_MISMATCH=y modules
+> 
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   SYMLINK include/asm -> include/asm-x86
+>   CALL    scripts/checksyscalls.sh
+>   CC [M]  drivers/staging/hv/blkvsc_drv.o
+>   CC [M]  drivers/staging/hv/BlkVsc.o
+> In file included from drivers/staging/hv/BlkVsc.c:24:
+> drivers/staging/hv/osd.h:68: warning: 'struct workqueue_struct' declared
+> inside parameter list
+> drivers/staging/hv/osd.h:68: warning: its scope is only this definition or
+> declaration, which is probably not what you want
 
-I don't understand, what in this patch is needed for older kernels?
-This patch only fixes a bug that was preventing uevents from being sent
-to userspace.
+Wierd.  Can you send me your .config file?  I can't duplicate this on
+Linus's current git tree at all.
 
-Also, we don't support older kernel versions in the in-kernel version of
-the code, that just does not make any sense, and is why all of that old
-stuff was ripped out.
+> PS. I have another error with 2.6.32-rc5 - if there is some WARNING mismatch
+> in reference, then *.ko is not copied to
+> /lib/modules/2.6.32-rc5/kernel/drivers/staging/hv/
+> It is correct behaivour of kernel build system?
+> 2.6.31 without warning always copied .ko files to /lib
 
-> What is the suggested approach in this case. Can I submit a patch
-> instead of this one That keeps some of these items still in?
-
-Sure, what does the patch look like?
+I don't know, I think that means an error is happening somewhere else.
 
 thanks,
 
