@@ -1,198 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757264AbZJ1Exd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbZJ1E5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757264AbZJ1Exd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 00:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbZJ1Exb
+	id S1757320AbZJ1E5y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 00:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbZJ1E5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 00:53:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:7581 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754326AbZJ1Exa (ORCPT
+	Wed, 28 Oct 2009 00:57:52 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39388 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757292AbZJ1E5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 00:53:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Gpr38WaDRzZWNw6E09eaY7C6s/wtDM6LQhzIMMNG3A60eHw00f18LeN+/XMb8pKqD
-	w4vdei0olwY88qcmotT6Q==
-Date: Tue, 27 Oct 2009 21:53:27 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-cc: Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Wed, 28 Oct 2009 00:57:49 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 28 Oct 2009 13:55:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: [patch v2] x86: reduce srat verbosity in the kernel log
-In-Reply-To: <20091028041159.GI7744@basil.fritz.box>
-Message-ID: <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
- <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+Message-Id: <20091028135519.805c4789.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org>
+	<20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>
+	<hb2cfu$r08$2@ger.gmane.org>
+	<20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>
+	<4ADE3121.6090407@gmail.com>
+	<20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+	<4AE5CB4E.4090504@gmail.com>
+	<20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0910271843510.11372@sister.anvils>
+	<alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com>
+	<4AE78B8F.9050201@gmail.com>
+	<alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com>
+	<4AE792B8.5020806@gmail.com>
+	<alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009, Andi Kleen wrote:
+On Tue, 27 Oct 2009 21:08:56 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-> For now at least seems reasonable to limit to 128 or so yes (and go
-> back to the stack). if we ever have sparse apic ids for nodes 
-> then that might change; but in this case could still just do
-> a acpidump or teach the printer to be more clever and support
-> strides.
+> On Wed, 28 Oct 2009, Vedran Furac wrote:
 > 
-
-It'll support sparse apicids, which was shown in Mike's example, although 
-it only becomes a problem when they cannot be represented in a 128 
-character buffer.  I doubt there are many machines where that happens 
-given the way they are formed.
-
-> It would be just good to have some indication in the output
-> if there was a overflow.
+> > > This is wrong; it doesn't "emulate oom" since oom_kill_process() always 
+> > > kills a child of the selected process instead if they do not share the 
+> > > same memory.  The chosen task in that case is untouched.
+> > 
+> > OK, I stand corrected then. Thanks! But, while testing this I lost X
+> > once again and "test" survived for some time (check the timestamps):
+> > 
+> > http://pastebin.com/d5c9d026e
+> > 
+> > - It started by killing gkrellm(!!!)
+> > - Then I lost X (kdeinit4 I guess)
+> > - Then 103 seconds after the killing started, it killed "test" - the
+> > real culprit.
+> > 
+> > I mean... how?!
+> > 
 > 
+> Here are the five oom kills that occurred in your log, and notice that the 
+> first four times it kills a child and not the actual task as I explained:
+> 
+> [97137.724971] Out of memory: kill process 21485 (VBoxSVC) score 1564940 or a child
+> [97137.725017] Killed process 21503 (VirtualBox)
+> [97137.864622] Out of memory: kill process 11141 (kdeinit4) score 1196178 or a child
+> [97137.864656] Killed process 11142 (klauncher)
+> [97137.888146] Out of memory: kill process 11141 (kdeinit4) score 1184308 or a child
+> [97137.888180] Killed process 11151 (ksmserver)
+> [97137.972875] Out of memory: kill process 11141 (kdeinit4) score 1146255 or a child
+> [97137.972888] Killed process 11224 (audacious2)
+> 
+> Those are practically happening simultaneously with very little memory 
+> being available between each oom kill.  Only later is "test" killed:
+> 
+> [97240.203228] Out of memory: kill process 5005 (test) score 256912 or a child
+> [97240.206832] Killed process 5005 (test)
+> 
+> Notice how the badness score is less than 1/4th of the others.  So while 
+> you may find it to be hogging a lot of memory, there were others that 
+> consumed much more.
 
-Agreed, a trailing "..." would be appropriate.
+not related to child-parent problem.
 
+Seeing this number more.
+==
+[97137.709272] Active_anon:671487 active_file:82 inactive_anon:132316
+[97137.709273]  inactive_file:82 unevictable:50 dirty:0 writeback:0 unstable:0
+[97137.709273]  free:6122 slab:17179 mapped:30661 pagetables:8052 bounce:0
+==
 
+acitve_file + inactive_file is very low. Almost all pages are for anon.
+But "mapped(NR_FILE_MAPPED)" is a little high. This implies remaining file caches
+are mapped by many processes OR some mega bytes of shmem is used.
 
-x86: reduce srat verbosity in the kernel log
+# of pagetables is 8052, this means
+  8052x4096/8*4k bytes = 16Gbytes of mapped area.
 
-It's possible to reduce the number of SRAT messages emitted to the kernel
-log by printing each valid pxm once and then creating bitmaps to represent
-the apic ids that map to the same node.
+Total available memory is near to be active/inactive + slab 
+671487+82+132316+82+50+6122+17179+8052=835370x4k= 3.2Gbytes ?
+(this system is swapless)
 
-This reduces lines such as
+Then, considering the pmap kosaki shows,
+I guess killed ones had big total_vm but has not much real rss,
+and no helps for oom.
 
-	SRAT: PXM 0 -> APIC 0 -> Node 0
-	SRAT: PXM 0 -> APIC 1 -> Node 0
-	SRAT: PXM 1 -> APIC 2 -> Node 1
-	SRAT: PXM 1 -> APIC 3 -> Node 1
+Thanks,
+-Kame
 
-to
-
-	SRAT: PXM 0 -> APIC {0-1} -> Node 0
-	SRAT: PXM 1 -> APIC {2-3} -> Node 1
-
-The buffer used to store the apic id list is 128 characters in length.
-If that is too small to represent all the apic id ranges that are bound
-to a single pxm, a trailing "..." is added.  APICID_LIST_LEN should be
-manually increased for such configurations.
-
-Acked-by: Mike Travis <travis@sgi.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- arch/x86/mm/srat_64.c |   41 +++++++++++++++++++++++++++++++++++++----
- drivers/acpi/numa.c   |    5 +++++
- include/linux/acpi.h  |    3 ++-
- 3 files changed, 44 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -36,6 +36,9 @@ static int num_node_memblks __initdata;
- static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
- static int memblk_nodeid[NR_NODE_MEMBLKS] __initdata;
- 
-+static DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC) __initdata;
-+#define APICID_LIST_LEN	(128)
-+
- static __init int setup_node(int pxm)
- {
- 	return acpi_map_pxm_to_node(pxm);
-@@ -136,8 +139,6 @@ acpi_numa_x2apic_affinity_init(struct acpi_srat_x2apic_cpu_affinity *pa)
- 	apicid_to_node[apic_id] = node;
- 	node_set(node, cpu_nodes_parsed);
- 	acpi_numa = 1;
--	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
--	       pxm, apic_id, node);
- }
- 
- /* Callback for Proximity Domain -> LAPIC mapping */
-@@ -170,8 +171,40 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
- 	apicid_to_node[apic_id] = node;
- 	node_set(node, cpu_nodes_parsed);
- 	acpi_numa = 1;
--	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
--	       pxm, apic_id, node);
-+}
-+
-+void __init acpi_numa_print_srat_mapping(void)
-+{
-+	char apicid_list[APICID_LIST_LEN];
-+	int i, j;
-+
-+	for (i = 0; i < MAX_PXM_DOMAINS; i++) {
-+		int len;
-+		int nid;
-+
-+		nid = pxm_to_node(i);
-+		if (nid == NUMA_NO_NODE)
-+			continue;
-+
-+		bitmap_zero(apicid_map, MAX_LOCAL_APIC);
-+		for (j = 0; j < MAX_LOCAL_APIC; j++)
-+			if (apicid_to_node[j] == nid)
-+				set_bit(j, apicid_map);
-+
-+		if (bitmap_empty(apicid_map, MAX_LOCAL_APIC))
-+			continue;
-+
-+		/*
-+		 * If the bitmap cannot be listed in a buffer of length
-+		 * APICID_LIST_LEN, then it is suffixed with "...".
-+		 */
-+		len = bitmap_scnlistprintf(apicid_list, APICID_LIST_LEN,
-+					   apicid_map, MAX_LOCAL_APIC);
-+		pr_info("SRAT: PXM %u -> APIC {%s%s} -> Node %u\n",
-+			i, apicid_list,
-+			(len == APICID_LIST_LEN - 1) ? "..." : "",
-+			nid);
-+	}
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
---- a/drivers/acpi/numa.c
-+++ b/drivers/acpi/numa.c
-@@ -281,6 +281,10 @@ acpi_table_parse_srat(enum acpi_srat_type id,
- 					    handler, max_entries);
- }
- 
-+void __init __attribute__((weak)) acpi_numa_print_srat_mapping(void)
-+{
-+}
-+
- int __init acpi_numa_init(void)
- {
- 	/* SRAT: Static Resource Affinity Table */
-@@ -292,6 +296,7 @@ int __init acpi_numa_init(void)
- 		acpi_table_parse_srat(ACPI_SRAT_TYPE_MEMORY_AFFINITY,
- 				      acpi_parse_memory_affinity,
- 				      NR_NODE_MEMBLKS);
-+		acpi_numa_print_srat_mapping();
- 	}
- 
- 	/* SLIT: System Locality Information Table */
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -92,12 +92,13 @@ int acpi_table_parse_madt (enum acpi_madt_type id, acpi_table_entry_handler hand
- int acpi_parse_mcfg (struct acpi_table_header *header);
- void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
- 
--/* the following four functions are architecture-dependent */
-+/* the following six functions are architecture-dependent */
- void acpi_numa_slit_init (struct acpi_table_slit *slit);
- void acpi_numa_processor_affinity_init (struct acpi_srat_cpu_affinity *pa);
- void acpi_numa_x2apic_affinity_init(struct acpi_srat_x2apic_cpu_affinity *pa);
- void acpi_numa_memory_affinity_init (struct acpi_srat_mem_affinity *ma);
- void acpi_numa_arch_fixup(void);
-+void acpi_numa_print_srat_mapping(void);
- 
- #ifdef CONFIG_ACPI_HOTPLUG_CPU
- /* Arch dependent functions for cpu hotplug support */
