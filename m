@@ -1,62 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbZJ1LEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbZJ1LE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752805AbZJ1LEM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 07:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZJ1LEM
+	id S1752762AbZJ1LE5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 07:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZJ1LE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 07:04:12 -0400
-Received: from gateway-1237.mvista.com ([206.112.117.35]:39234 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751770AbZJ1LEL (ORCPT
+	Wed, 28 Oct 2009 07:04:57 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41175 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752291AbZJ1LE4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 07:04:11 -0400
-Message-ID: <4AE82520.4090607@ru.mvista.com>
-Date: Wed, 28 Oct 2009 14:04:00 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 28 Oct 2009 07:04:56 -0400
+Message-ID: <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
+    <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
+Date: Wed, 28 Oct 2009 20:04:54 +0900 (JST)
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "David Rientjes" <rientjes@google.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Andrea Arcangeli" <aarcange@redhat.com>, vedran.furac@gmail.com,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-To: Shmulik Ladkani <jungoshmulik@gmail.com>
-Cc: myuboot@fastmail.fm, Florian Fainelli <florian@openwrt.org>,
-       linux-kernel@vger.kernel.org, linux-mips <linux-mips@linux-mips.org>,
-       shmulik@jungo.com
-Subject: Re: serial port 8250 messed up after coverting from little endian
- to big endian on kernel  2.6.31
-References: <1255735395.30097.1340523469@webmail.messagingengine.com>	<4AD906D8.3020404@caviumnetworks.com>	<1255996564.10560.1340920621@webmail.messagingengine.com>	<200910200817.24018.florian@openwrt.org>	<1256676013.24305.1342273367@webmail.messagingengine.com> <20091028103551.0b4052d8@pixies.home.jungo.com>
-In-Reply-To: <20091028103551.0b4052d8@pixies.home.jungo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;charset=iso-2022-jp
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Shmulik Ladkani wrote:
-
->> Thanks, Florian. I found the cause of the problem. My board is 32 bit
->> based, so each serial port register is 32bit even only 8 bit is used. So
->> when the board is switched endianess, I need to change the address
->> offset to access the same registers.
->> For example, original RHR register address is 0x8001000 with little
->> endian mode. With big endian, I need to access it as 0x8001003.
->>     
+David Rientjes さんは書きました：
+> On Wed, 28 Oct 2009, KAMEZAWA Hiroyuki wrote:
 >
-> I assume your uart_port's iotype is defined as UPIO_MEM32.
->   
+>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>> It's reported that OOM-Killer kills Gnone/KDE at first...
+>> And yes, we can reproduce it easily.
+>>
+>> Now, oom-killer uses mm->total_vm as its base value. But in recent
+>> applications, there are a big gap between VM size and RSS size.
+>> Because
+>>   - Applications attaches much dynamic libraries. (Gnome, KDE, etc...)
+>>   - Applications may alloc big VM area but use small part of them.
+>>     (Java, and multi-threaded applications has this tendency because
+>>      of default-size of stack.)
+>>
+>> I think using mm->total_vm as score for oom-kill is not good.
+>> By the same reason, overcommit memory can't work as expected.
+>> (In other words, if we depends on total_vm, using overcommit more
+>> positive
+>>  is a good choice.)
+>>
+>> This patch uses mm->anon_rss/file_rss as base value for calculating
+>> badness.
+>>
+>
+> How does this affect the ability of the user to tune the badness score of
+> individual threads?
+Threads ? process ?
 
-   He wouldn't have to add 3 to the register addresses then.
+> It seems like there will now only be two polarizing
+> options: the equivalent of an oom_adj value of +15 or -17.  It is now
+> heavily dependent on the rss which may be unclear at the time of oom and
+> very dynamic.
+>
+yes. and that's "dynamic" is good thing.
 
-> UPIO_MEM32 makes 8250 access serial registers using readl/writel (which might
-> be a problem for big-endian), while UPIO_MEM makes 8250 access the registers
-> using readb/writeb.
->   
+I think one of problems for oom now is that user says "oom-killer kills
+process at random." And yes, it's correct. mm->total_vm is not related
+to memory usage. Then, oom-killer seems to kill processes at random.
 
-   Both may be a problem for big endian.
+For example, as Vetran shows, even if memory eater runs, processes are
+killed _at random_.
 
-> Maybe you should try UPIO_MEM (assuming hardware allows byte access).
+After this patch, the biggest memory user will be the fist candidate
+and it's reasonable. Users will know "The process is killed because
+it uses much memory.", (seems not random) He can consider he should
+use oom_adj for memory eater or not.
 
-   Contrarywise, I think he now has UPIO_MEM and needs to try UPIO_MEM32.
 
-WBR, Sergei
+
+> I think a longer-term solution may rely more on the difference in
+> get_mm_hiwater_rss() and get_mm_rss() instead to know the difference
+> between what is resident in RAM at the time of oom compared to what has
+> been swaped.  Using this with get_mm_hiwater_vm() would produce a nice
+> picture for the pattern of each task's memory consumption.
+>
+Hmm, I don't want complicated calculation (it makes oom_adj usage worse.)
+but yes, bare rss may be too simple.
+Anyway, as I shown, I'll add swap statistics regardless of this patch.
+That may adds new hint.
+For example)
+   if (vm_swap_full())
+       points += mm->swap_usage
+
+>> Following is changes to OOM score(badness) on an environment with 1.6G
+>> memory
+>> plus memory-eater(500M & 1G).
+>>
+>> Top 10 of badness score. (The highest one is the first candidate to be
+>> killed)
+>> Before
+>> badness program
+>> 91228	gnome-settings-
+>> 94210	clock-applet
+>> 103202	mixer_applet2
+>> 106563	tomboy
+>> 112947	gnome-terminal
+>> 128944	mmap              <----------- 500M malloc
+>> 129332	nautilus
+>> 215476	bash              <----------- parent of 2 mallocs.
+>> 256944	mmap              <----------- 1G malloc
+>> 423586	gnome-session
+>>
+>> After
+>> badness
+>> 1911	mixer_applet2
+>> 1955	clock-applet
+>> 1986	xinit
+>> 1989	gnome-session
+>> 2293	nautilus
+>> 2955	gnome-terminal
+>> 4113	tomboy
+>> 104163	mmap             <----------- 500M malloc.
+>> 168577	bash             <----------- parent of 2 mallocs
+>> 232375	mmap             <----------- 1G malloc
+>>
+>> seems good for me.
+>>
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> ---
+>>  mm/oom_kill.c |   10 +++++++---
+>>  1 file changed, 7 insertions(+), 3 deletions(-)
+>>
+>> Index: mm-test-kernel/mm/oom_kill.c
+>> ===================================================================
+>> --- mm-test-kernel.orig/mm/oom_kill.c
+>> +++ mm-test-kernel/mm/oom_kill.c
+>> @@ -93,7 +93,7 @@ unsigned long badness(struct task_struct
+>>  	/*
+>>  	 * The memory size of the process is the basis for the badness.
+>>  	 */
+>> -	points = mm->total_vm;
+>> +	points = get_mm_counter(mm, anon_rss) + get_mm_counter(mm, file_rss);
+>>
+>>  	/*
+>>  	 * After this unlock we can no longer dereference local variable `mm'
+>> @@ -116,8 +116,12 @@ unsigned long badness(struct task_struct
+>>  	 */
+>>  	list_for_each_entry(child, &p->children, sibling) {
+>>  		task_lock(child);
+>> -		if (child->mm != mm && child->mm)
+>> -			points += child->mm->total_vm/2 + 1;
+>> +		if (child->mm != mm && child->mm) {
+>> +			unsigned long cpoints;
+>> +			cpoints = get_mm_counter(child->mm, anon_rss);
+>> +				  + get_mm_counter(child->mm, file_rss);
+>
+> That shouldn't compile.
+Oh, yes...thanks.
+
+>
+>> +			points += cpoints/2 + 1;
+>> +		}
+>>  		task_unlock(child);
+>>  	}
+>>
+>
+> This can all be simplified by just using get_mm_rss(mm) and
+> get_mm_rss(child->mm).
+>
+will use that.
+
+I'll wait until the next week to post a new patch.
+We don't need rapid way.
+
+Thanks,
+-Kame
+
 
 
