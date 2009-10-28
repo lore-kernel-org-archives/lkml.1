@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932715AbZJ1I2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbZJ1Iab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932715AbZJ1I2v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 04:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932674AbZJ1I2v
+	id S932712AbZJ1Iab (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 04:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932656AbZJ1Iaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 04:28:51 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55517 "EHLO kernel.dk"
+	Wed, 28 Oct 2009 04:30:30 -0400
+Received: from borg.medozas.de ([188.40.89.202]:60157 "EHLO borg.medozas.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932669AbZJ1I2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 04:28:50 -0400
-Date: Wed, 28 Oct 2009 09:28:54 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: zach.brown@oracle.com, linux-aio <linux-aio@kvack.org>,
-       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch v4 0/3] aio: implement request batching [more
-	performance numbers]
-Message-ID: <20091028082854.GU10727@kernel.dk>
-References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com> <x49eipga02o.fsf@segfault.boston.devel.redhat.com> <20091006180628.GB5216@kernel.dk> <x49y6no8jxw.fsf@segfault.boston.devel.redhat.com> <20091007105259.GD8703@kernel.dk> <x49hbtk24o9.fsf@segfault.boston.devel.redhat.com>
+	id S932652AbZJ1Iaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 04:30:30 -0400
+Date: Wed, 28 Oct 2009 09:30:33 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Yuhong Bao <yuhongbao_386@hotmail.com>
+cc: macro@linux-mips.org, davej@redhat.com, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
+Subject: RE: [X86] Fix up silly i1586 boot message.
+In-Reply-To: <SNT125-W471F856F2358A53E59A13BC3B80@phx.gbl>
+Message-ID: <alpine.LSU.2.00.0910280914590.28170@obet.zrqbmnf.qr>
+References: <20080528165713.GA412@redhat.com> <alpine.LNX.1.10.0805281943330.19264@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.55.0805281850540.29522@cliff.in.clinika.pl> <alpine.LNX.1.10.0805282001180.19264@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.55.0805281916480.29522@c
+ <SNT125-W471F856F2358A53E59A13BC3B80@phx.gbl>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49hbtk24o9.fsf@segfault.boston.devel.redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27 2009, Jeff Moyer wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
-> 
-> >> > Nice numbers! The patch looks good to me from a quick look, if you want
-> >> > I can throw it into the testing mix tomorrow and see what kind of
-> >> > improvements I see here. With performance increase of that magnitude, we
-> >> > should get it in sooner rather than later.
-> >> 
-> > So here's a pretty basic test. It does random reads from a bunch of
-> > devices, I tested both 4kb and 64kb block sizes. Queue depth used is 32
-> > for both cases, but note that this test uses a thread per device (so the
-> > queue depth is 32 per device). Results are averaged over 3 runs.
-> > slat/clat are the submission and completion latencies, they are in
-> > microseconds here.
-> [...]
-> > So pretty close, nothing earth shattering here. What the results above
-> > do not show is that the 4kb test runs very stable with your patch.
-> > Mainline fluctuates somewhat in the bandwidth, most likely due to the
-> > varying depth.
-> 
-> OK, I don't think this patch set will see further testing without
-> pulling it into someone's tree.  Jens, would you mind putting this into
-> your for-2.6.33 queue?  Let me know if you need me to resend the
-> patches.
 
-Sure, I'll pull it in. I still have the patches, will ping you if it
-doesn't apply cleanly.
+On Wednesday 2009-10-28 04:08, Yuhong Bao wrote:
+> <Pine.LNX.4.55.0805290102340.29522@cliff.in.clinika.pl>
+>
+>> Intel started it first with picking up a ridiculous number for the family
+>> ID for the P4 line. There is no technical justification for not keeping
+>> these numbers consecutive.
 
--- 
-Jens Axboe
+Once one knows that there are 4 bits for the family field, 15 is not
+such a strange value - it is the last value, one could take it as
+"reserved, and look elsewhere".
 
+>[...] Intel has assigned family 7 for the original Itanium processor
+>[...] there was a bug in original NT 4 truncating family IDs
+>returned by CPUID [...]
+
+That would explain why Intel still shows an oldfashioned family=6 on
+many contemporary processors (e.g. core i7). BUT, AMD64 processors
+have family=15 "almost throughout", and so seem to have at least some
+Intel models. So that tells us that either NT4 works, or nobody uses
+NT4 on fam15s.
