@@ -1,232 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbZJ1OPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZJ1ORf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbZJ1OPY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 10:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZJ1OPX
+	id S1754042AbZJ1ORf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 10:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbZJ1ORe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 10:15:23 -0400
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:57761 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbZJ1OPW convert rfc822-to-8bit (ORCPT
+	Wed, 28 Oct 2009 10:17:34 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33428 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753680AbZJ1ORc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 10:15:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WBk7nrzjmcy1ADIqfc046uIWmxkQAhcKYKqB8yX49wAPU+Yxh7SRZdjOwWqrnE7tCq
-         aYLHiRPHIwMjD2gfgOWfcjlBnvkCVODolbP27/4wHpaEPPRq7ZF4QjRJM5N7mSFNvBKV
-         CdWQttFAkFEzF7TXiXBPrq76VeoowHNpVbxMw=
-MIME-Version: 1.0
-In-Reply-To: <1256460376.15273.31.camel@Palantir>
-References: <e932a33e0910210833j1fab6129m23b55101c5978c4a@mail.gmail.com>
-	 <e932a33e0910210838j3be9286bo3953c4cae3f0e12e@mail.gmail.com>
-	 <1256198088.6700.76.camel@Palantir>
-	 <e932a33e0910220742v5d99adbere9fc9c31f72b6b95@mail.gmail.com>
-	 <1256460376.15273.31.camel@Palantir>
-Date: Wed, 28 Oct 2009 19:45:26 +0530
-Message-ID: <e932a33e0910280715u1722b8b4k9dabda45c61151ad@mail.gmail.com>
-Subject: Re: [PATCH] DRTL kernel 2.6.32-rc3 : SCHED_EDF, DI RT-Mutex, Deadline 
-	Based Interrupt Handlers
-From: Soumya K S <ssks.mt@gmail.com>
-To: Raistlin <raistlin@linux.it>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Claudio Scordino <claudio@evidence.eu.com>,
-       michael trimarchi <trimarchi@gandalf.sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 28 Oct 2009 10:17:32 -0400
+Date: Wed, 28 Oct 2009 16:17:36 +0200 (EET)
+From: "=?ISO-8859-15?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wel-95.cs.helsinki.fi
+To: Andreas Petlund <apetlund@simula.no>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       shemminger@vyatta.com, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 3/3] net: TCP thin dupack
+In-Reply-To: <4AE7207D.8090402@simula.no>
+Message-ID: <alpine.DEB.2.00.0910281611290.19761@wel-95.cs.helsinki.fi>
+References: <4AE7207D.8090402@simula.no>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 25, 2009 at 2:16 PM, Raistlin <raistlin@linux.it> wrote:
-> On Thu, 2009-10-22 at 20:12 +0530, Soumya K S wrote:
->> Hi Dario,
-> Hi again,
->
-How you duin...
->> we needed a deadline based scheduler for DRTL and we zeroed
->> in upon SCHED_EDF. We see that the threads here are fairly new too :-P
->>
-> Yes, we are not far from the starting point as well... :-)
->
->> > Nice, from here, it seemed we were working on very similar things, and I
->> > was wondering if we could somehow collaborate... :-)
->> >
->> Sure! That would be good :)
->>
-> So... I looked at the code and, even if the aim of our two projects are
-> quite the same, our implementations are very different.
->
-> The main difference is the bandwidth reservation thing.
-> I strongly think that, on a system like Linux, it should be very
-> important to have --at least as a possibility-- the following features:
-> - tasks can request for a guaranteed runtime over some time interval
->  (bandwidth),
+On Tue, 27 Oct 2009, Andreas Petlund wrote:
 
-We can specify the bandwidth reservation of an RT class and we use the
-reservation policy of the RT scheduling class itself. By increasing
-the static priority of the EDF task, we can guarantee that EDF tasks
-always get the required runtime. If the user puts all his EDF tasks in
-priority 1 , only his tasks run. In that case the entire RT bandwidth
-is reserved for the EDF tasks. In a way your patch also does the same
-thing by placing itself above the RT scheduling class. Only thing what
-we don't have in place is partitioning of RT bandwidth across RR/FIFO
-and EDF, which right now, we overcome by intelligently placing the
-tasks with different policies in different priority levels.
-If you are asking bandwidth reservation for guaranteeing determinism,
-we definitely have determinism in place, but bandwidth reservation for
-other real-time scheduling policies is not in place. This is something
-which we can surely work on.
+> This patch enables fast retransmissions after one dupACK for TCP if the 
+> stream is identified as thin. This will reduce latencies for thin 
+> streams that are not able to trigger fast retransmissions due to high 
+> packet interarrival time. This mechanism is only active if enabled by 
+> iocontrol or syscontrol and the stream is identified as thin. 
+> 
+> 
+> Signed-off-by: Andreas Petlund <apetlund@simula.no>
+> ---
+>  include/linux/tcp.h        |    4 +++-
+>  include/net/tcp.h          |    1 +
+>  net/ipv4/sysctl_net_ipv4.c |    8 ++++++++
+>  net/ipv4/tcp.c             |    5 +++++
+>  net/ipv4/tcp_input.c       |    8 ++++++++
+>  5 files changed, 25 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/tcp.h b/include/linux/tcp.h
+> index e64368d..f4a05ff 100644
+> --- a/include/linux/tcp.h
+> +++ b/include/linux/tcp.h
+> @@ -97,6 +97,7 @@ enum {
+>  #define TCP_CONGESTION		13	/* Congestion control algorithm */
+>  #define TCP_MD5SIG		14	/* TCP MD5 Signature (RFC2385) */
+>  #define TCP_THIN_RM_EXPB        15      /* Remove exp. backoff for thin streams*/
+> +#define TCP_THIN_DUPACK         16      /* Fast retrans. after 1 dupack */
+>  
+>  #define TCPI_OPT_TIMESTAMPS	1
+>  #define TCPI_OPT_SACK		2
+> @@ -301,7 +302,8 @@ struct tcp_sock {
+>  	u8	frto_counter;	/* Number of new acks after RTO */
+>  	u8	nonagle;	/* Disable Nagle algorithm?             */
+>  	u8      thin_rm_expb:1, /* Remove exp. backoff for thin streams */
+> -		thin_undef : 7;
+> +		thin_dupack : 1,/* Fast retransmit on first dupack      */
+> +		thin_undef : 6;
+>  
+>  /* RTT measurement */
+>  	u32	srtt;		/* smoothed round trip time << 3	*/
+> diff --git a/include/net/tcp.h b/include/net/tcp.h
+> index 412c1bd..41f3a5e 100644
+> --- a/include/net/tcp.h
+> +++ b/include/net/tcp.h
+> @@ -238,6 +238,7 @@ extern int sysctl_tcp_workaround_signed_windows;
+>  extern int sysctl_tcp_slow_start_after_idle;
+>  extern int sysctl_tcp_max_ssthresh;
+>  extern int sysctl_tcp_force_thin_rm_expb;
+> +extern int sysctl_tcp_force_thin_dupack;
+>  
+>  extern atomic_t tcp_memory_allocated;
+>  extern struct percpu_counter tcp_sockets_allocated;
+> diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
+> index 7458f37..8653867 100644
+> --- a/net/ipv4/sysctl_net_ipv4.c
+> +++ b/net/ipv4/sysctl_net_ipv4.c
+> @@ -721,6 +721,14 @@ static struct ctl_table ipv4_table[] = {
+>  		.proc_handler   = proc_dointvec
+>  	},
+>  	{
+> +		.ctl_name       = CTL_UNNUMBERED,
+> +		.procname       = "tcp_force_thin_dupack",
+> +		.data           = &sysctl_tcp_force_thin_dupack,
+> +		.maxlen         = sizeof(int),
+> +		.mode           = 0644,
+> +		.proc_handler   = proc_dointvec
+> +	},
+> +	{
+>  		.ctl_name	= CTL_UNNUMBERED,
+>  		.procname	= "udp_mem",
+>  		.data		= &sysctl_udp_mem,
+> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+> index b4b0931..de190db 100644
+> --- a/net/ipv4/tcp.c
+> +++ b/net/ipv4/tcp.c
+> @@ -2139,6 +2139,11 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
+>  			tp->thin_rm_expb = 1;
+>  		break;
+>  
+> +	case TCP_THIN_DUPACK:
+> +		if (val)
+> +			tp->thin_dupack = 1;
+> +		break;
+> +
+>  	case TCP_CORK:
+>  		/* When set indicates to always queue non-full frames.
+>  		 * Later the user clears this option and we transmit
+> diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+> index d86784b..b71eb89 100644
+> --- a/net/ipv4/tcp_input.c
+> +++ b/net/ipv4/tcp_input.c
+> @@ -89,6 +89,8 @@ int sysctl_tcp_frto __read_mostly = 2;
+>  int sysctl_tcp_frto_response __read_mostly;
+>  int sysctl_tcp_nometrics_save __read_mostly;
+>  
+> +int sysctl_tcp_force_thin_dupack __read_mostly;
+> +
+>  int sysctl_tcp_moderate_rcvbuf __read_mostly = 1;
+>  int sysctl_tcp_abc __read_mostly;
+>  
+> @@ -2447,6 +2449,12 @@ static int tcp_time_to_recover(struct sock *sk)
+>  		return 1;
+>  	}
+>  
+> +	/* If a thin stream is detected, retransmit after first
+> +	 * received dupack */
+> +	if ((tp->thin_dupack || sysctl_tcp_force_thin_dupack) &&
+> +	    tcp_dupack_heurestics(tp) > 1 && tcp_stream_is_thin(tp))
+> +		return 1;
+> +
+>  	return 0;
+>  }
 
-> - admission test should guarantee no oversubscription
+Have you tested it? ...I doubt this will work like you say and retransmit 
+something when the window is small. ...Besides, you should have built this 
+patch on top of the function rename you submitted earlier as after DaveM 
+applied that this will no longer even compile...
 
-So, you are calculating the WCET online in the scheduler right? Can it
-calculate the amount of CPU time with the  required preciseness? Here,
-you are increasing the enqueue time by adding an O(n) calculation for
-every task that you enqueue. That is the reason why for a small
-system, pushing this to architect made better sense in terms of
-decreased latencies where the turn around time from when the task
-enters till it gets the desired result matters, e.g., reading a sensor
-2 times in 1ms.
-
-> - bandwidth enforcing must avoid reciprocal tasks interferences.
-> Maybe we can make the second and third configurable/optional (already
-> thought about that, and it should be quite easy), but they need to be
-> there, at least to avoid extending the interface again when we'll
-> realize they'll needed! :-P
->
-> I don't know how much you, and other people here, are familiar with such
-> idea... We implemented it using one of the many existing algorithm. I
-> can give you pointers to papers and other implementations of it if
-> interested.
-
-Surely, we would like to look into this if you can provide some more pointers.
-
-> To keep it short and practical, you can think at it as something similar
-> to what MacOS-X (and I think Solaris) already have --and actively use,
-> e.g., for the Jack Audio Connection Kit-- and call
-> THREAD_TIME_CONSTRAINT (very poor docs, I think, but it gives the big
-> picture):
-> http://developer.apple.com/mac/library/documentation/Darwin/Conceptual/KernelProgramming/scheduler/scheduler.html#//apple_ref/doc/uid/TP30000905-CH211-BEHJDFCA
->
-> Moreover, as Peter pointed out, coming out with an interface which is
-> too much tightly tied to EDF, or to any other specific algorithm,
-> wouldn't be the best idea. What would happen if somewhere in the future
-> we decide to change from the EDF algorithm to some other deadline based
-> one?
-
-Hmm on a lighter note, we would rather say you would just need to
-replace 3 functions then :))
-
-> That's why we changed the name and the interface from _EDF/_edf (yep, it
-> has been our first choice too! :-P) to _DEADLINE/_deadline, and that's
-> why I think we should continue striving for even more
-> interface-algorithm independence.
->
-
-True, but we really think its a matter of trade-off between how much
-response time you can guarantee for a real-time task v/s how much
-scalable you want your design to be. The deterministic response times
-that you might have achieved by having all these features might be
-good enough (Not sure of your numbers here) in a soft real time
-scenario, but wondering if it would meet ends otherwise.
-
-> Obviously, also SMP has to be there! :-P
-> We have it in fully partitioned right now, but I'll become global (with
-> support for cpu-affinity) in very short time I hope (Juri, from ReTiS
-> Lab in Pisa is already working on it).
->
-> For rt-mutexes/deadline inheritance, the big issue is that, it works if
-> you only have EDF, but with a "bandwidth aware scheduler", you need
-> something more, which is why we don't have it yet... However, I think it
-> could be a nice starting point.
-
-Yes, we too think without a DI in place, its not a complete real-time solution.
-
->
-> Finally, I like the idea of deadline IRQ handling and I think it would
-> be worth to mind it some more. :-)
->
-
-We found many use cases for this feature where real-time tasks have
-higher priority than lower priority interrupts generated as a result
-of say audio streaming, etc Being able to configure these was
-extremely important to maintain the deterministic property of an EDF
-task in the system.
-
->> > Even from the implementation point of view, I see you didn't used a new
->> > scheduling class.
->> >
->> A simple system where there a few real-time tasks and a few non-real
->> time tasks, the timelines can be architected out for each real-time
->> task in the system. In such a case, given the RT bandwidth in the
->> system, the task with the lowest deadline gets to be scheduled first
->> till it is there in the system.
->> In short, for such simple systems, we shifted the burden of admission
->> control to the architect and kept close to the existing code.
->>
-> Well, I kind of agree on both, _iff_ you're target is _only_ such small
-> embedded systems. However, my very humble opinion is that, on Linux, you
-> need something more general and, since we are talking about real-time,
-> as much predictable and analyzable as you can get... And I think a
-> separate scheduling class would be better suited for this. What do you
-> think?
->
-
-Yes, the target was industrial control systems where we needed
-deterministic real-time response and also the responsiveness of the
-task was critical. Here, the demanding real-time tasks were not too
-many (~4/5 at a given point in time) and also, there were other user
-tasks which had to update the results of this real-time task remotely.
-Hence, we were very vary of introducing latencies in the system.
-Instead, we focused on bringing in determinism into the system without
-increasing its latency! Also, the concept of a deadline miss handler
-was very handy, for a task missing its deadline not to interfere with
-the determinism of the other tasks. In this approach, we were able to
-meet the demanding response times with determinism in place.
-However, I do understand that this approach puts the system designer
-in a hot spot! :)
-
-
->> > I'm right in the opposite situation, I've got SMP (partitioned for now,
->> > but we're working on migrations) and also CGROUPS support, but we are
->> > still wondering how deadline (or something more sophisticated, like
->> > bandwidth) inheritance could work in such a case...
->> >
->> That's right, we are still working on SMP and hope there are no
->> scalability issues in this patch w.r.t SMP.
->>
-> Well, I don't know. I guess achieving something similar to what we
-> already have now (partitioned SMP) should not be impossible even with
-> your approach... But if you want something different, such has global
-> (EDF) scheduling, where task can migrate among CPUs according to their
-> affinity, would but a major headache!! :-O
->
->> > Do you already have any numbers or testcase? I have some (well, a few!)
->> > of them... I'll try to find the time to give it a try to your patch with
->> > them...
->> >
->> We have tested Co-operative context switch time, Pre-emptive context
->> switch time and Interrupt Latency, all of them are of ~130us for
->> OMAP3530.
->>
-> Mmm... I'm not sure I see why and how your patch should affect context
-> switches duration... However, do you have the testcases for such tests?
->
-
-Well we are actually saying that it does _not_ effect the context
-switch time :).
-We are measuring the time when a task is entered in the system till it
-gets scheduled both in preemptive and non-preemptive modes. This
-figure does not change even for a loaded system which shows the
-deterministic turn around time for a task in terms of scheduling
-latencies.
-
-Regards,
-Shubhro
-Soumya
+-- 
+ i.
