@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZJ1RWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbZJ1RP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZJ1RWZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 13:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZJ1RWY
+	id S1753633AbZJ1RP6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 13:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZJ1RP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 13:22:24 -0400
-Received: from web50110.mail.re2.yahoo.com ([206.190.38.38]:24931 "HELO
-	web50110.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753496AbZJ1RWX convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 13:22:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=ig0p3yDfbkaS/8vAoWlgv3WO15xvJQ8WvgfBXBKzKbOZ/iB7rNONNvuZnPveMk2bEqMwJ1D9h7MCPIj4ZH9oJ3E3AmI61OTf73sKDBimzd0mfiZ+66rZnVey8ACJ0GqQqdv/6M2Z8AJBenIzJzIgezZeBPVg0nTEb0HZ64wz6Ag=;
-Message-ID: <143841.81095.qm@web50110.mail.re2.yahoo.com>
-X-YMail-OSG: afXWSgIVM1nZORgtoF7DdT8MlsCez9Eqjj03XDpefufDyBgnYafrfFoh5QzxRCsbUuLRvm3QRtAsco_kkg3QWkoNz24_KkFNYrgX2jjGkK3xwAHCWJ7CKlw.FUH.te_2.A9ixapGTKU9fgU5aY.qo9QDoyZfx3cczImZb5Re_oEXuSb9zsrTAFGrIeOcfLE_2yk7ijO9rnnS_Y45fBEA6Vezo9gn41vjwSd7XFU2Vn.rplbjgoPogE15O0i86iHZZl7Z3CFI9vv0W6LzHl5_Ntnd5UO4vW5u28bHHC0_gqQg03Lse5JG5ir6WQp472dgj7A31nxsqfeHmCLjJX52
-X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.7.361.4
-Date: Wed, 28 Oct 2009 10:15:03 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [RFC] amd64_edac: syndromes loading
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86 <x86@kernel.org>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091028163534.GA625@aftab>
+	Wed, 28 Oct 2009 13:15:57 -0400
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:33096 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbZJ1RP4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 13:15:56 -0400
+Date: Wed, 28 Oct 2009 11:15:58 -0600
+From: Alex Chiang <achiang@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Badari Pulavarty <pbadari@us.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2 1/5] mm: add numa node symlink for memory section in
+	sysfs
+Message-ID: <20091028171558.GB22743@ldl.fc.hp.com>
+References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041510.15705.5410.stgit@bob.kio> <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com> <20091027195907.GJ14102@ldl.fc.hp.com> <alpine.DEB.2.00.0910271422090.22335@chino.kir.corp.google.com> <20091028083137.GA24140@osiris.boeblingen.de.ibm.com> <alpine.DEB.2.00.0910280159380.7122@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910280159380.7122@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* David Rientjes <rientjes@google.com>:
+> On Wed, 28 Oct 2009, Heiko Carstens wrote:
+> 
+> > The short answer is: s390 doesn't support NUMA, because the hardware doesn't
+> > tell us to which node (book in s390 terms) a memory range belongs to.
+> > 
+> > Memory layout for a logical partition is striped: first x mbyte belong to
+> > node 0, next x mbyte belong to node 1, etc...
+> > 
+> > Also, since there is always a hypervisor running below Linux I don't think
+> > it would make too much sense if we would know to which node a piece of
+> > memory belongs to: if the hypervisor decides to schedule a virtual cpu of
+> > a logical partition to a different node then what?
+> > 
+> 
+> Ok, so the patchset is a no-op for s390 since it only utilizes the 
+> !CONFIG_NUMA code.
 
+Sounds good.
 
---- On Wed, 10/28/09, Borislav Petkov <borislav.petkov@amd.com> wrote:
+> Alex, I think the safest thing to do in unregister_mem_sect_under_nodes() 
+> is to iterate though the section pfns and remove links to the node_device 
+> kobjs for all the distinct pfn_to_nid()'s that it encounters.
 
-> From: Borislav Petkov <borislav.petkov@amd.com>
-> Subject: [RFC] amd64_edac: syndromes loading
-> To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, "x86" <x86@kernel.org>
-> Cc: "Doug Thompson" <norsk5@yahoo.com>, "LKML" <linux-kernel@vger.kernel.org>
-> Date: Wednesday, October 28, 2009, 10:35 AM
-> Hi,
-> 
-> I've been pondering how to avoid adding almost 15K of
-> syndrome tables to
-> the edac driver.
-> 
-> The syndrome tables are used for mapping a correctable ECC
-> to the
-> corresponding DIMM and thus pinpointing the DIMM about to
-> fail. There
-> are two flavors of syndromes based on the ECCs: x4 and x8.
-> The x4 table
-> of size 540 u16 values is already in the driver but the x8
-> is much
-> bigger (4864 u16) and I wouldn't want to add it statically
-> into the
-> driver.
-> 
-> Rather, I'd like to dynamically load them depending on the
-> DRAM
-> configuration of each node. The two attached patches do
-> that using
-> the request_firmware() interface. This way, the syndrome
-> tables could
-> be added as binary blobs in drivers/edac/ and then
-> installed with
-> 'make firmware_install'. This way we avoid polluting driver
-> code with
-> humongous u16 arrays of ECC syndromes.
+Ok, I will respin.
 
-Great idea. Load only when needed, based on hardware presence by triggered by probing, instead of an implicit always loaded.
-
-Where does the syndrome table/module/firmware live in the file system? In with the amd64 module area or elsewhere?
-
-doug t
-
-> 
-> What do you guys think, could that be an acceptable
-> approach? Any
-> suggestions/comments are welcome.
-> 
-> Thanks.
-> 
-> -- 
-> Regards/Gruss,
-> Boris.
-> 
-> Operating | Advanced Micro Devices GmbH
->   System  | Karl-Hammerschmidt-Str. 34, 85609
-> Dornach b. München, Germany
->  Research | Geschäftsführer: Andrew Bowd, Thomas M.
-> McCoy, Giuliano Meroni
->   Center  | Sitz: Dornach, Gemeinde Aschheim,
-> Landkreis München
->   (OSRC)  | Registergericht München, HRB Nr.
-> 43632
-> 
-> 
+Thanks!
+/ac
