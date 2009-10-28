@@ -1,122 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZJ1NxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbZJ1OH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbZJ1NxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 09:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbZJ1NxW
+	id S1753754AbZJ1OH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 10:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbZJ1OH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 09:53:22 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:56760 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753009AbZJ1NxV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 09:53:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=cdFWVhgkkp0Ii7KXdMlOe5tATzQuVug7yvRMruooiB/Yhaep8JrHeKiu6uO+g+1ld/
-         9qtEfDgmKNoOr57lmioS91jPVpSNvyqFQvwDB80sHfIGrweP6j7aROco/hw4R579K5JJ
-         rh+wONa4mxRXeIIajbbxb13bnhHZZnjYURJIc=
-Message-ID: <4AE84F57.9030902@gmail.com>
-Date: Wed, 28 Oct 2009 15:04:07 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 28 Oct 2009 10:07:28 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:40832 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753240AbZJ1OH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 10:07:27 -0400
+Date: Wed, 28 Oct 2009 15:07:31 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.32-rc5: surprise removal of USB mass storage, and whole
+	system goes to hell
+Message-ID: <20091028140731.GP10727@kernel.dk>
+References: <20091027211951.GA21967@elf.ucw.cz> <alpine.LRH.2.00.0910280212510.25075@twin.jikos.cz> <20091028095537.GD10727@kernel.dk>
 MIME-Version: 1.0
-To: joe@perches.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] scripts/get_maintainer.pl: display frequently used tags
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091028095537.GD10727@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the flag --tags, show frequently used tags.
+On Wed, Oct 28 2009, Jens Axboe wrote:
+> On Wed, Oct 28 2009, Jiri Kosina wrote:
+> > On Tue, 27 Oct 2009, Pavel Machek wrote:
+> > 
+> > > I did remove one harddrive w/o unmounting, and now the whole system
+> > > becomes unusable :-(: (whole dmesg attached).
+> > > 
+> > > Stuff like "sync" hangs, and I'll probably have to reboot soon.
+> > 
+> > From the traces it seems that it might be related to the new per-bdi 
+> > writeback stuff ... adding Jens to CC.
+> 
+> It looks like the IO isn't being errored on the device side, or perhaps
+> it just got stuck. Pavel, if you can reproduce, please try with this
+> tracing patch. Apply it, and then do something ala:
+> 
+> # cd /sys/kernel/debug/tracing
+> # echo 0 events/enable
+> # echo 1 events/writeback/enable
+> # echo 0 > trace
+> 
+> then start the act of reproducing, and finally
+> 
+> # cat trace > /tmp/foo
+> 
+> and send the output of foo here. Thanks!
 
-$ ./scripts/get_maintainer.pl --tags -f ./sound/core/
-71 times observed tag ALSA:
+I can reproduce this. The writeback work gets queued, we notice the task
+isn't there and wake up the default task. And then nothing happens, I
+wonder if the bdi is gone.
 
-[maintainer and list email addresses]
+I'll fiddle around with this.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-What do you think of this?
+-- 
+Jens Axboe
 
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index 4673873..89c237d 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -37,6 +37,7 @@ my $scm = 0;
- my $web = 0;
- my $subsystem = 0;
- my $status = 0;
-+my $show_tags = 0;
- my $from_filename = 0;
- my $pattern_depth = 0;
- my $version = 0;
-@@ -81,6 +82,7 @@ if (!GetOptions(
- 		'separator=s' => \$output_separator,
- 		'subsystem!' => \$subsystem,
- 		'status!' => \$status,
-+		'tags!' => \$show_tags,
- 		'scm!' => \$scm,
- 		'web!' => \$web,
- 		'pattern-depth=i' => \$pattern_depth,
-@@ -381,6 +383,7 @@ Output type options:
-   --separator [, ] => separator for multiple entries on 1 line
-     using --separator also sets --nomultiline if --separator is not [, ]
-   --multiline => print 1 entry per line
-+  --tags display frequently used tags
- 
- Other options:
-   --pattern-depth => Number of pattern directory traversals (default: 0 (all))
-@@ -661,6 +664,38 @@ sub mailmap {
-     return @lines;
- }
- 
-+sub show_tag_counts {
-+    my @lines = @_;
-+    my @tags;
-+    my %hash;
-+    my $tot_count = 0;
-+    my $tag_count = "";
-+    my $i;
-+    for ($i=0; $i <= $#lines; $i++) {
-+    	# tag is below `Date:.*'
-+	if ((grep(/^Date:\s+/, $lines[$i])) && ++$i <= $#lines) {
-+    	    if ((grep(/^(\[[^]]*\]\s*)*((([^:[:space:]]+\s+){0,2}[^:[:space:]]+:)+)/, $lines[$i]))) {
-+		push(@tags, $lines[$i]);
-+		$tot_count++;
-+	    }
-+	}
-+    }
-+    if ($tot_count == 0) {
-+	return;
-+    }
-+    # cut -d":" -f1
-+    s/^([^:]*:).*$/$1/ for (@tags);
-+
-+    @tags = sort(@tags);
-+    $hash{$_}++ for @tags;
-+    foreach my $tag (sort {$hash{$b} <=> $hash{$a}} keys %hash) {
-+	my $tag_count = $hash{$tag};
-+	last if (100 * $tag_count/$tot_count < 50);
-+	printf("$tag_count times observed tag $tag\n");
-+    }
-+    printf("\n");
-+}
-+
- sub recent_git_signoffs {
-     my ($file) = @_;
- 
-@@ -689,6 +724,10 @@ sub recent_git_signoffs {
- 
-     @lines = split("\n", $output);
- 
-+    if ($show_tags) {
-+	show_tag_counts(@lines);
-+    }
-+
-     @lines = grep(/^[-_ 	a-z]+by:.*\@.*$/i, @lines);
-     if (!$email_git_penguin_chiefs) {
- 	@lines = grep(!/${penguin_chiefs}/i, @lines);
