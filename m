@@ -1,106 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbZJ1Cry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbZJ1CxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbZJ1Cry (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 22:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbZJ1Crx
+	id S932451AbZJ1CxR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 22:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932101AbZJ1CxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 22:47:53 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50190 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756468AbZJ1Crx convert rfc822-to-8bit (ORCPT
+	Tue, 27 Oct 2009 22:53:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37349 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932075AbZJ1CxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 22:47:53 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: Memory overcommit
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       vedran.furac@gmail.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
-       akpm@linux-foundation.org, rientjes@google.com, aarcange@redhat.com
-In-Reply-To: <Pine.LNX.4.64.0910271843510.11372@sister.anvils>
-References: <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils>
-Message-Id: <20091028113713.FD85.A69D9226@jp.fujitsu.com>
+	Tue, 27 Oct 2009 22:53:16 -0400
+To: Dave Airlie <airlied@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       DRI Development Mailing List 
+	<dri-devel@lists.sourceforge.net>,
+       Arnd Bergmann <arnd@arndb.de>, David Miller <davem@davemloft.net>
+Subject: Re: is avoiding compat ioctls possible?
+From: Andi Kleen <andi@firstfloor.org>
+References: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com>
+Date: Wed, 28 Oct 2009 03:53:17 +0100
+In-Reply-To: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com> (Dave Airlie's message of "Wed, 28 Oct 2009 11:22:18 +1000")
+Message-ID: <87hbtkjkki.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 28 Oct 2009 11:47:55 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 2.  I started out running my mlock test program as root (later
-> switched to use "ulimit -l unlimited" first).  But badness() reckons
-> CAP_SYS_ADMIN or CAP_SYS_RESOURCE is a reason to quarter your points;
-> and CAP_SYS_RAWIO another reason to quarter your points: so running
-> as root makes you sixteen times less likely to be killed.  Quartering
-> is anyway debatable, but sixteenthing seems utterly excessive to me.
-> 
-> I moved the CAP_SYS_RAWIO test in with the others, so it does no
-> more than quartering; but is quartering appropriate anyway?  I did
-> wonder if I was right to be "subverting" the fine-grained CAPs in
-> this way, but have since seen unrelated mail from one who knows
-> better, implying they're something of a fantasy, that su and sudo
-> are indeed what's used in the real world.  Maybe this patch was okay.
+Dave Airlie <airlied@gmail.com> writes:
 
-I agree quartering is debatable.
-At least, killing quartering is worth for any user, and it can be push into -stable.
+> They used uint64_t to represent userspace pointers and userspace
+> casted into those and the kernel casts back out and passes it to copy_*_user
 
+uint64_t is actually dangerous due to different alignment on x86-32 vs 64,
+better use compat_u64/s64
 
+> Now I thought cool I don't need to worry about compat ioctl hackery I can
+> run 32 on 64 bit apps fine and it'll all just work.
+>
+> Now Dave Miller points out that I'm obivously deluded and we really need
+> to add compat ioctls so that the kernel can truncate correctly 32-bit address
+> in case userspace shoves garbage into the top 32bits of the u64.
 
+When the user space sees a u64 field it should never shove garbage here.
+You just have to cast on 32bit for this, which is a bit ugly.
 
->From 27331555366c908a93c2cdd780b77e421869c5af Mon Sep 17 00:00:00 2001
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Wed, 28 Oct 2009 11:28:39 +0900
-Subject: [PATCH] oom: Mitigate suer-user's bonus of oom-score
+However some architectures need special operations on compat pointers
+(s390 iirc), but if you don't support those it might be reasonable
+to not support that.
 
-Currently, badness calculation code of oom contemplate following bonus.
- - Super-user have quartering oom-score
- - CAP_SYS_RAWIO process (e.g. database) also have quartering oom-score
+> Is there really no way to avoid compat ioctls? was I delusional in
+> thinking there was?
 
-The problem is, Super-users have CAP_SYS_RAWIO too. Then, they have
-sixteenthing bonus. it's obviously too excessive and meaningless.
+Experience shows that people make mistakes and you sooner or
+later need them anyways to work around them.
 
-This patch fixes it.
+-Andi
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/oom_kill.c |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
-
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index ea2147d..40d323d 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -152,18 +152,15 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
- 	/*
- 	 * Superuser processes are usually more important, so we make it
- 	 * less likely that we kill those.
--	 */
--	if (has_capability_noaudit(p, CAP_SYS_ADMIN) ||
--	    has_capability_noaudit(p, CAP_SYS_RESOURCE))
--		points /= 4;
--
--	/*
--	 * We don't want to kill a process with direct hardware access.
-+	 *
-+	 * Plus, We don't want to kill a process with direct hardware access.
- 	 * Not only could that mess up the hardware, but usually users
- 	 * tend to only have this flag set on applications they think
- 	 * of as important.
- 	 */
--	if (has_capability_noaudit(p, CAP_SYS_RAWIO))
-+	if (has_capability_noaudit(p, CAP_SYS_ADMIN) ||
-+	    has_capability_noaudit(p, CAP_SYS_RESOURCE) ||
-+	    has_capability_noaudit(p, CAP_SYS_RAWIO))
- 		points /= 4;
- 
- 	/*
 -- 
-1.6.2.5
-
-
-
-
+ak@linux.intel.com -- Speaking for myself only.
