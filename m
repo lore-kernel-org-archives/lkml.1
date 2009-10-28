@@ -1,96 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932199AbZJ1GIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZJ1GHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932199AbZJ1GIG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbZJ1GIG
+	id S1757404AbZJ1GHS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 02:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZJ1GHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:08:06 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42396 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756741AbZJ1GIF (ORCPT
+	Wed, 28 Oct 2009 02:07:17 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:45489 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756777AbZJ1GHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:08:05 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 28 Oct 2009 15:05:36 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: Memory overcommit
-Message-Id: <20091028150536.674abe68.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0910272205200.7507@chino.kir.corp.google.com>
-References: <hav57c$rso$1@ger.gmane.org>
-	<20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>
-	<hb2cfu$r08$2@ger.gmane.org>
-	<20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>
-	<4ADE3121.6090407@gmail.com>
-	<20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AE5CB4E.4090504@gmail.com>
-	<20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0910271843510.11372@sister.anvils>
-	<alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com>
-	<4AE78B8F.9050201@gmail.com>
-	<alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com>
-	<4AE792B8.5020806@gmail.com>
-	<alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com>
-	<20091028135519.805c4789.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0910272205200.7507@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 02:07:16 -0400
+Message-ID: <4AE7DF8E.3020607@gmail.com>
+Date: Wed, 28 Oct 2009 07:07:10 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, opurdila@ixiacom.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: [PATCH] net: fold network name hash (v2)
+References: <9986527.24561256620662709.JavaMail.root@tahiti.vyatta.com>	<19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>	<20091026.222428.80364204.davem@davemloft.net>	<20091027102251.244ee681@nehalam> <20091027150436.56e673cd@nehalam>
+In-Reply-To: <20091027150436.56e673cd@nehalam>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 28 Oct 2009 07:07:12 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009 22:13:44 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
-
-> Yep:
+Stephen Hemminger a écrit :
+> The full_name_hash does not produce a value that is evenly distributed
+> over the lower 8 bits. This causes name hash to be unbalanced with large
+> number of names. There is a standard function to fold in upper bits
+> so use that.
 > 
-> [97137.724965] 917504 pages RAM
-> [97137.724967] 69721 pages reserved
-> 
-> (917504 - 69721) * 4K = ~3.23G
-> 
-> > Then, considering the pmap kosaki shows,
-> > I guess killed ones had big total_vm but has not much real rss,
-> > and no helps for oom.
-> > 
-> 
-> echo 1 > /proc/sys/vm/oom_dump_tasks can confirm that.
-> 
-yes.
+> This is independent of possible improvements to full_name_hash()
+> in future.
 
-> The bigger issue is making the distinction between killing a rogue task 
-> that is using much more memory than expected (the supposed current 
-> behavior, influenced from userspace by /proc/pid/oom_adj), and killing the 
-> task with the highest rss. 
+>  static inline struct hlist_head *dev_name_hash(struct net *net, const char *name)
+>  {
+>  	unsigned hash = full_name_hash(name, strnlen(name, IFNAMSIZ));
+> -	return &net->dev_name_head[hash & ((1 << NETDEV_HASHBITS) - 1)];
+> +	return &net->dev_name_head[hash_long(hash, NETDEV_HASHBITS)];
+>  }
+>  
+>  static inline struct hlist_head *dev_index_hash(struct net *net, int ifindex)
 
-All kernel engineers know "than expected or not" can be never known to the kernel.
-So, oom_adj workaround is used now. (by some special users.)
-OOM Killer itself is also a workaround, too.
-"No kill" is the best thing but we know there are tend to be memory-leaker on bad
-systems and all systems in this world are not perfect.
+full_name_hash() returns an "unsigned int", which is guaranteed to be 32 bits
 
-In the kernel view, there is no difference between rogue one and highest rss one.
-As heuristics, "time" is used now. But it's not very trustable.
+You should therefore use hash_32(hash, NETDEV_HASHBITS),
+not hash_long() that maps to hash_64() on 64 bit arches, which is
+slower and certainly not any better with a 32bits input.
 
-> The latter is definitely desired if we are 
-> allocating tons of memory but reduces the ability of the user to influence 
-> the badness score.
-> 
 
-Yes, some more trustable values other than vmsize/rss/time are appriciated.
-I wonder recent memory consumption speed can be an another key value.
 
-Anyway, current bahavior of "killing X" is a bad thing.
-We need some fixes.
+/* Compute the hash for a name string. */
+static inline unsigned int
+full_name_hash(const unsigned char *name, unsigned int len)
+{
+        unsigned long hash = init_name_hash();
+        while (len--)
+                hash = partial_name_hash(*name++, hash);
+        return end_name_hash(hash);
+}
 
-Thanks,
--Kame
+static inline u32 hash_32(u32 val, unsigned int bits)
+{
+        /* On some cpus multiply is faster, on others gcc will do shifts */
+        u32 hash = val * GOLDEN_RATIO_PRIME_32;
 
+        /* High bits are more random, so use them. */
+        return hash >> (32 - bits);
+}
+
+
+static inline u64 hash_64(u64 val, unsigned int bits)
+{
+        u64 hash = val;
+
+        /*  Sigh, gcc can't optimise this alone like it does for 32 bits. */
+        u64 n = hash;
+        n <<= 18;
+        hash -= n;
+        n <<= 33;
+        hash -= n;
+        n <<= 3;
+        hash += n;
+        n <<= 3;
+        hash -= n;
+        n <<= 4;
+        hash += n;
+        n <<= 2;
+        hash += n;
+
+        /* High bits are more random, so use them. */
+        return hash >> (64 - bits);
+}
