@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZJ1SiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZJ1Sh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbZJ1SiG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 14:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZJ1SiE
+	id S1755482AbZJ1Sh4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 14:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZJ1Shz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 14:38:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54625 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755411AbZJ1SiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 14:38:02 -0400
-Message-ID: <4AE88F7B.5090505@kernel.org>
-Date: Wed, 28 Oct 2009 11:37:47 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 28 Oct 2009 14:37:55 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:42630 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755395AbZJ1Shz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 14:37:55 -0400
+Date: Wed, 28 Oct 2009 18:38:00 +0000
+From: Ben Dooks <ben@fluff.org.uk>
+To: linux-kernel@vger.kernel.org, ben-linux@fluff.org,
+       linux-arm-kernel@vger.kernel.org
+Subject: Pull request for fixes-s3c-2632-rc5
+Message-ID: <20091028183759.GA19140@fluff.org.uk>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big	range
- for pcie devices
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	 <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	 <4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	 <4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	 <4AE80170.6030402@jp.fujitsu.com>  <4AE88305.8020207@kernel.org> <1256752359.30701.12.camel@dc7800.home>
-In-Reply-To: <1256752359.30701.12.camel@dc7800.home>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Wed, 2009-10-28 at 10:44 -0700, Yinghai Lu wrote:
->>>
->> thanks, will update the patches to only handle leaf bridge, and don't touch min_size etc.
-> 
-> When you do, can you please add printks showing the changes you're
-> making to bridge resources?  I think these events are infrequent, and
-> knowing about the changes is vital to debugging problems.
+The following changes since commit 964fe080d94db82a3268443e9b9ece4c60246414:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../rusty/linux-2.6-for-linus
 
-sure.
+are available in the git repository at:
 
-[   91.762205] pci 0000:00:07.0: resource 15 [mem 0x91800000-0x91ffffff 64bit pref] released
-[   91.771715] pci 0000:00:07.0: PCI bridge, secondary bus 0000:0e
-[   91.783297] pci 0000:00:07.0:   IO window: 0x2000-0x2fff
-[   91.791564] pci 0000:00:07.0:   MEM window: 0x90000000-0x917fffff
-[   91.806376] pci 0000:00:07.0:   PREFETCH window: disabled
-[   91.811537] pci 0000:40:07.0: resource 15 [mem 0xb1800000-0xb1ffffff 64bit pref] released
-[   91.826760] pci 0000:40:07.0: PCI bridge, secondary bus 0000:50
-[   91.841288] pci 0000:40:07.0:   IO window: 0x7000-0x7fff
-[   91.847605] pci 0000:40:07.0:   MEM window: 0xb0000000-0xb17fffff
-[   91.861572] pci 0000:40:07.0:   PREFETCH window: disabled
-[   91.868426] pci 0000:80:07.0: resource 15 [mem 0xd1800000-0xd1ffffff 64bit pref] released
-[   91.884552] pci 0000:80:07.0: PCI bridge, secondary bus 0000:90
-[   91.892898] pci 0000:80:07.0:   IO window: 0xa000-0xafff
-[   91.905952] pci 0000:80:07.0:   MEM window: 0xd0000000-0xd17fffff
-[   91.912304] pci 0000:80:07.0:   PREFETCH window: disabled
-[   91.925909] pci 0000:c0:07.0: resource 15 [mem 0xf1800000-0xf1ffffff 64bit pref] released
-[   91.942305] pci 0000:c0:07.0: PCI bridge, secondary bus 0000:d0
-[   91.950273] pci 0000:c0:07.0:   IO window: 0xf000-0xffff
-[   91.961687] pci 0000:c0:07.0:   MEM window: 0xf0000000-0xf17fffff
-[   91.969438] pci 0000:c0:07.0:   PREFETCH window: disabled
+  git://git.fluff.org/bjdooks/linux.git fixes-s3c-2632-rc5
 
-YH
+Ben Dooks (8):
+      ARM: S3C: Add info for supporting circular DMA buffers
+      ARM: S3C2410: Fix link if CONFIG_S3C2410_IOTIMING is not set
+      ARM: Merge fixes-s3c64xx
+      ARM: Merge fixes-s3c64xx-dma
+      ARM: S3C2440: mini2440: Fix missing CONFIG_S3C_DEV_USB_HOST
+      ARM: S3C24XX: Fix warnings in arch/arm/plat-s3c24xx/gpio.c
+      ARM: S3C2440: mini2440: Fix spare warnings
+      ARM: S3C2410: Fix sparse warnings in arch/arm/mach-s3c2410/gpio.c
+
+Harald Welte (1):
+      ARM: S3C24XX: Introduce S3C2442B CPU
+
+Julia Lawall (1):
+      ARM: S3C24XX: arch/arm/plat-s3c24xx: Move dereference after NULL test
+
+Kukjin Kim (1):
+      ARM: S3C64XX: Fix S3C64XX_CLKDIV0_ARM_MASK value
+
+Mark Brown (1):
+      ARM: S3C64XX: Set rate of crystal mux
+
+Ramax Lo (1):
+      ARM: S3C24XX: Define a macro to avoid compilation error
+
+Ryan Mallon (1):
+      ARM: S3C: Fix adc function exports
+
+ arch/arm/mach-s3c2410/gpio.c                       |    1 +
+ arch/arm/mach-s3c2410/include/mach/dma.h           |    7 +++++++
+ arch/arm/mach-s3c2440/Kconfig                      |    1 +
+ arch/arm/mach-s3c2440/mach-mini2440.c              |    4 ++--
+ arch/arm/mach-s3c6400/include/mach/dma.h           |    5 +++++
+ arch/arm/plat-s3c24xx/adc.c                        |    2 +-
+ arch/arm/plat-s3c24xx/cpu.c                        |   10 ++++++++++
+ arch/arm/plat-s3c24xx/dma.c                        |    6 +++---
+ arch/arm/plat-s3c24xx/gpio.c                       |    1 +
+ arch/arm/plat-s3c24xx/include/plat/cpu-freq-core.h |    9 +++++++--
+ arch/arm/plat-s3c24xx/include/plat/s3c2410.h       |    1 +
+ arch/arm/plat-s3c64xx/include/plat/regs-clock.h    |    4 ++--
+ arch/arm/plat-s3c64xx/s3c6400-clock.c              |    3 +++
+ sound/soc/s3c24xx/s3c24xx-pcm.c                    |   17 +++++++++++++++--
+ 14 files changed, 59 insertions(+), 12 deletions(-)
