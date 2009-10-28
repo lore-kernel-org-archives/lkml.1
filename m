@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZJ1Mz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZJ1M61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbZJ1Mz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 08:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZJ1Mz0
+	id S1752929AbZJ1M61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 08:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZJ1M60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 08:55:26 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:46402 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752225AbZJ1MzY (ORCPT
+	Wed, 28 Oct 2009 08:58:26 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:45867 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752032AbZJ1M6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 08:55:24 -0400
-Date: Wed, 28 Oct 2009 13:55:26 +0100 (CET)
-From: Tobi Oetiker <tobi@oetiker.ch>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-cc: Mel LKML <mel.lkml@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
- failures V2
-In-Reply-To: <20091028114208.GA14476@bizet.domek.prywatny>
-Message-ID: <alpine.DEB.2.00.0910281353180.19210@sebohet.brgvxre.pu>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091023165810.GA4588@bizet.domek.prywatny> <20091023211239.GA6185@bizet.domek.prywatny> <9ec2d7290910240646p75b93c68v6ea1648d628a9660@mail.gmail.com>
- <20091028114208.GA14476@bizet.domek.prywatny>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Oct 2009 08:58:25 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 8BIT
+Content-type: text/plain; charset=ISO-8859-1
+X-IronPort-AV: E=Sophos;i="4.44,639,1249250400";   d="scan'208";a="31502626"
+Message-id: <4AE83FE4.1050309@nets.rwth-aachen.de>
+Date: Wed, 28 Oct 2009 13:58:12 +0100
+From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Andreas Petlund <apetlund@simula.no>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
+       ilpo.jarvinen@helsinki.fi, davem@davemloft.net
+Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
+References: <4AE72079.4030504@simula.no> <4AE7262B.1060703@gmail.com>
+In-reply-to: <4AE7262B.1060703@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Today Karol Lewandowski wrote:
+Eric Dumazet schrieb:
+> Andreas Petlund a écrit :
+>> This patch will make TCP use only linear timeouts if the stream is thin. This will help to avoid the very high latencies that thin stream suffer because of exponential backoff. This mechanism is only active if enabled by iocontrol or syscontrol and the stream is identified as thin.
+>>
+> 
+> Wont this reduce the session timeout to something very small, ie 15 retransmits, way under the minute ?
 
-> On Sat, Oct 24, 2009 at 02:46:56PM +0100, Mel LKML wrote:
-> > Hi,
->
-> Hi,
->
-> > On 10/23/09, Karol Lewandowski <karol.k.lewandowski@gmail.com> wrote:
-> > > On Fri, Oct 23, 2009 at 06:58:10PM +0200, Karol Lewandowski wrote:
->
-> > > Ok, I've tested patches 1+2+4 and bug, while very hard to trigger, is
-> > > still present. I'll test complete 1-4 patchset as time permits.
->
-> Sorry for silence, I've been quite busy lately.
->
->
-> > And also patch 5 please which is the revert. Patch 5 as pointed out is
-> > probably a red herring. Hwoever, it has changed the timing and made a
-> > difference for some testing so I'd like to know if it helps yours as
-> > well.
->
-> I've tested patches 1+2+3+4 in my normal usage scenario (do some work,
-> suspend, do work, suspend, ...) and it failed today after 4 days (== 4
-> suspend-resume cycles).
+The session timeout no longer depends on the actual number of retransmits. Instead its a time interval,
+which is roughly equivalent to the time a TCP, performing exponential backoff would need to perform
+15 retransmits.
 
-I have been testing 1+2,1+2+3 as well as 3+4 and have been of the
-assumption that 3+4 does help ... I have now been runing a modified
-version of 4 which prints a warning instead of doing anything ... I
-have now seen the allocation issue again without the warning being
-printed. So in other words
+However, addressing the proposal:
+I wonder how one can seriously suggest to just skip congestion response during timeout-based
+loss recovery? I believe that in a heavily congested scenarios, this would lead to a goodput
+goodput disaster... Not to mention that in a heavily congested scenario, suddenly every flow
+will become "thin", so this will even amplify the problems. Or did I miss something?
 
-1+2+3 make the problem less severe, but do not solve it
-4 seems to be a red hering.
-
-cheers
-tobi
-
-
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+Best regards,
+Arnd
