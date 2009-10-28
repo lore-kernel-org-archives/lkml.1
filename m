@@ -1,84 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZJ1N0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbZJ1N2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbZJ1N0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 09:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZJ1N0U
+	id S1752316AbZJ1N2F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 09:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZJ1N2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 09:26:20 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:49589 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753727AbZJ1N0T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 09:26:19 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: "Leonidas ." <leonidas137@gmail.com>, Chris Friesen <cfriesen@nortel.com>,
-       Noah Watkins <noah@noahdesu.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Difference between atomic operations and memory barriers
-In-Reply-To: Your message of "Wed, 28 Oct 2009 12:00:05 +0200."
-             <4AE81625.5000500@panasas.com>
-From: Valdis.Kletnieks@vt.edu
-References: <f22d86810910261019yc77dbf0sa7688a98e7b98267@mail.gmail.com> <7ADB5FD7-9C97-4987-BC20-997258B25FD2@noahdesu.com> <f22d86810910261122j6c9e57e8pd4a257090f65c727@mail.gmail.com> <4AE5F04E.3050908@nortel.com> <f22d86810910261200n130fda06r46fdbcc808195002@mail.gmail.com> <45208.1256644303@turing-police.cc.vt.edu>
-            <4AE81625.5000500@panasas.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1256736377_2776P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Wed, 28 Oct 2009 09:28:05 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:19617 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751449AbZJ1N2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 09:28:04 -0400
+Message-ID: <4AE846D6.6020505@redhat.com>
+Date: Wed, 28 Oct 2009 15:27:50 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [Alacrityvm-devel] [KVM PATCH v2 1/2] KVM: export lockless GSI
+ attribute
+References: <20091023023512.3891.65889.stgit@dev.haskins.net>	<20091023023845.3891.36857.stgit@dev.haskins.net> <4AE460F4.2090905@redhat.com> <4AE5A336.4010801@gmail.com> <4AE5C26A.9000400@gmail.com> <4AE81710.1080103@redhat.com> <4AE844FA.4070408@gmail.com>
+In-Reply-To: <4AE844FA.4070408@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 28 Oct 2009 09:26:17 -0400
-Message-ID: <36159.1256736377@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.34.98 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020203.4AE8467A.0358,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1256736377_2776P
-Content-Type: text/plain; charset=us-ascii
+On 10/28/2009 03:19 PM, Gregory Haskins wrote:
+>> Yes, and it also contains the work_struct.
+>>
+>> What if we make the work_struct (and any additional state) part of the
+>> set_atomic() argument list?  Does it simplify things?
+>>      
+> Hmmm, that might not, but we could do a kmalloc(GFP_ATOMIC) for such
+> parameters.  Considering this is just a safety net, perhaps this would
+> work fine.
+>    
 
-On Wed, 28 Oct 2009 12:00:05 +0200, Boaz Harrosh said:
+Can't you simply pass the same work_struct from irqfd as we use now?
 
-> What don't you know? the CPU that started it all was like that, the x86 16-bit
-> "large" and "huge" model had a double register seg:offset set, also in-memory
-> was double-ints(2*16) even the i386 was running 16 bit modes for a long time.
+>>> So while generalizing this perhaps makes sense at some point, especially
+>>> if irqfd-like interfaces get added, it probably doesn't make a ton of
+>>> sense to expend energy on it ATM.  It is basically a generalization of
+>>> the irqfd deferrment code.  Lets just wait until we have a user beyond
+>>> irqfd for now.  Sound acceptable?
+>>>
+>>>        
+>> I'll look at v3, but would really like to disentangle this.
+>>      
+> Ok, I will see what I can do.  I need at least a v4 to get rid of the
+> dependency on the now defunct v3:1/3 patch per yesterdays discussion.
+>    
 
-Yes, but there were instructions to load segment registers, and those were
-atomic, and there were instructions to compute effective addresses based on the
-segment registers, and those were basically atomic. But you never had a chance
-to see a partly loaded segment register (just like in today's virtual memory
-equivalents, a PTE's effect is basically atomic - you never see half the
-address bits of a PTE take effect and not the other half).
+There's another alternative - make ioapic and pic irq-safe by switching 
+irq locking to spinlocks and using spin_lock_irqsave().
 
-Yes, if a segment register wasn't set right, you'd load/store from the wrong
-place in memory (we *still* have that, playing with %fs and %gs).  But that's
-different than an actual load or store only half-happening, or happening partly
-to an old place and partly to a new one, because a segment register is only
-half-finished laoding.
+I've long opposed this since the ioapic loops on all vcpus when 
+injecting some irqs and this will increase irqoff times with large 
+guests.  But we don't have large guests now, and we need irq-safe 
+injection in three places now:
 
+- irqfd
+- pit - we now signal vcpu0 to handle the injection, but this has its 
+problems
+- device assignment
 
---==_Exmh_1256736377_2776P
-Content-Type: application/pgp-signature
+so it may be better to have irq-safe injection, and deal with the loop 
+later (would be good to have an idea how exactly).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK6EZ5cC3lWbTT17ARAsOnAJ0V8POCw3yu9K/xKmmnwAt49NdjFQCgs+pF
-JJHtfv/0NUs4qMLQAqzv4EU=
-=adak
------END PGP SIGNATURE-----
-
---==_Exmh_1256736377_2776P--
+-- 
+error compiling committee.c: too many arguments to function
 
