@@ -1,75 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZJ1RMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZJ1RWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbZJ1RMo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 13:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZJ1RMo
+	id S1755239AbZJ1RWZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 13:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZJ1RWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 13:12:44 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:16874 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbZJ1RMn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 13:12:43 -0400
-Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAD4Y6EqrR7Hu/2dsb2JhbADCQJgxhD8E
-X-IronPort-AV: E=Sophos;i="4.44,641,1249257600"; 
-   d="scan'208";a="262840397"
-From: Roland Dreier <rdreier@cisco.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
-References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com>
-	<4AE75DB9.3040702@sgi.com> <4AE7C396.7040109@jp.fujitsu.com>
-	<4AE7D59D.9070307@linux.intel.com> <4AE7E40F.20602@jp.fujitsu.com>
-	<4AE7E931.6040703@linux.intel.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 28 Oct 2009 10:12:47 -0700
-In-Reply-To: <4AE7E931.6040703@linux.intel.com> (Andi Kleen's message of "Wed,
-	28 Oct 2009 07:48:17 +0100")
-Message-ID: <ada8wevtpbk.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Wed, 28 Oct 2009 13:22:24 -0400
+Received: from web50110.mail.re2.yahoo.com ([206.190.38.38]:24931 "HELO
+	web50110.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753496AbZJ1RWX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 13:22:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=ig0p3yDfbkaS/8vAoWlgv3WO15xvJQ8WvgfBXBKzKbOZ/iB7rNONNvuZnPveMk2bEqMwJ1D9h7MCPIj4ZH9oJ3E3AmI61OTf73sKDBimzd0mfiZ+66rZnVey8ACJ0GqQqdv/6M2Z8AJBenIzJzIgezZeBPVg0nTEb0HZ64wz6Ag=;
+Message-ID: <143841.81095.qm@web50110.mail.re2.yahoo.com>
+X-YMail-OSG: afXWSgIVM1nZORgtoF7DdT8MlsCez9Eqjj03XDpefufDyBgnYafrfFoh5QzxRCsbUuLRvm3QRtAsco_kkg3QWkoNz24_KkFNYrgX2jjGkK3xwAHCWJ7CKlw.FUH.te_2.A9ixapGTKU9fgU5aY.qo9QDoyZfx3cczImZb5Re_oEXuSb9zsrTAFGrIeOcfLE_2yk7ijO9rnnS_Y45fBEA6Vezo9gn41vjwSd7XFU2Vn.rplbjgoPogE15O0i86iHZZl7Z3CFI9vv0W6LzHl5_Ntnd5UO4vW5u28bHHC0_gqQg03Lse5JG5ir6WQp472dgj7A31nxsqfeHmCLjJX52
+X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.7.361.4
+Date: Wed, 28 Oct 2009 10:15:03 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [RFC] amd64_edac: syndromes loading
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86 <x86@kernel.org>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091028163534.GA625@aftab>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Oct 2009 17:12:47.0732 (UTC) FILETIME=[DF39C340:01CA57F1]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
- > Perhaps they could be also compressed a bit like SRAT.
 
-Seems like a good idea... but I wonder what the best way to represent
-things is.  For example I have a 2-socket Nehalem system that shows:
+--- On Wed, 10/28/09, Borislav Petkov <borislav.petkov@amd.com> wrote:
 
- 2 times:  MCA banks CMCI:2 CMCI:3 CMCI:5 CMCI:6 SHD:8
- 6 times:  MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
- 8 times:  MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
+> From: Borislav Petkov <borislav.petkov@amd.com>
+> Subject: [RFC] amd64_edac: syndromes loading
+> To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, "x86" <x86@kernel.org>
+> Cc: "Doug Thompson" <norsk5@yahoo.com>, "LKML" <linux-kernel@vger.kernel.org>
+> Date: Wednesday, October 28, 2009, 10:35 AM
+> Hi,
+> 
+> I've been pondering how to avoid adding almost 15K of
+> syndrome tables to
+> the edac driver.
+> 
+> The syndrome tables are used for mapping a correctable ECC
+> to the
+> corresponding DIMM and thus pinpointing the DIMM about to
+> fail. There
+> are two flavors of syndromes based on the ECCs: x4 and x8.
+> The x4 table
+> of size 540 u16 values is already in the driver but the x8
+> is much
+> bigger (4864 u16) and I wouldn't want to add it statically
+> into the
+> driver.
+> 
+> Rather, I'd like to dynamically load them depending on the
+> DRAM
+> configuration of each node. The two attached patches do
+> that using
+> the request_firmware() interface. This way, the syndrome
+> tables could
+> be added as binary blobs in drivers/edac/ and then
+> installed with
+> 'make firmware_install'. This way we avoid polluting driver
+> code with
+> humongous u16 arrays of ECC syndromes.
 
-presumably the first line is once per package, the next line is for the
-first sibling in all the other cores in a package, and the last line is
-for the SMT siblings of all the cores.
+Great idea. Load only when needed, based on hardware presence by triggered by probing, instead of an implicit always loaded.
 
-But would we want to accumulate all the different combinations of banks
-along with a CPU mask and then print something like:
+Where does the syndrome table/module/firmware live in the file system? In with the amd64 module area or elsewhere?
 
- CPUs 0 4: MCA banks CMCI:2 CMCI:3 CMCI:5 CMCI:6 SHD:8
- CPUs 1 2 3 5 6 7: MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
- CPUs 8 9 10 11 12 13 14 15: MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
+doug t
 
-of course output like that is going to lead to super-long lines on a
-64-thread system.
-
-Also I'm not sure of a clean way to implement this; unlike the SRAT
-stuff, we need to deal with CPU hotplug so all this at best could be
-__cpuinitdata, ie we can't discard it in most configs.
-
-However the "MCA banks" output definitely is annoying on a 64-thread
-system -- the amount of output is far greater than the utility of said
-output.  So ideas on the best way to reduce this would be appreciated.
-
-Thanks,
-  Roland
+> 
+> What do you guys think, could that be an acceptable
+> approach? Any
+> suggestions/comments are welcome.
+> 
+> Thanks.
+> 
+> -- 
+> Regards/Gruss,
+> Boris.
+> 
+> Operating | Advanced Micro Devices GmbH
+>   System  | Karl-Hammerschmidt-Str. 34, 85609
+> Dornach b. München, Germany
+>  Research | Geschäftsführer: Andrew Bowd, Thomas M.
+> McCoy, Giuliano Meroni
+>   Center  | Sitz: Dornach, Gemeinde Aschheim,
+> Landkreis München
+>   (OSRC)  | Registergericht München, HRB Nr.
+> 43632
+> 
+> 
