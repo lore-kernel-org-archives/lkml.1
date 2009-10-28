@@ -1,154 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932371AbZJ1G4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZJ1Gya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932371AbZJ1G4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932092AbZJ1G4i
+	id S1757540AbZJ1Gya (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 02:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbZJ1Gy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:56:38 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54078 "EHLO sh.osrg.net"
+	Wed, 28 Oct 2009 02:54:27 -0400
+Received: from sh.osrg.net ([192.16.179.4]:54081 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757463AbZJ1GyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:54:22 -0400
+	id S1757497AbZJ1GyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 02:54:24 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: chrisw@sous-sol.org, dwmw2@infradead.org, joerg.roedel@amd.com,
        mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH 03/10] GART: convert gart_iommu_hole_init to use iommu_init hook
-Date: Wed, 28 Oct 2009 15:47:37 +0900
-Message-Id: <1256712464-21472-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 04/10] amd_iommu: convert amd_iommu_detect to use iommu_init hook
+Date: Wed, 28 Oct 2009 15:47:38 +0900
+Message-Id: <1256712464-21472-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 28 Oct 2009 15:53:49 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 28 Oct 2009 15:53:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This changes gart_iommu_hole_init() to set gart_iommu_init() to
-iommu_init hook if gart_iommu_hole_init() finds the GART IOMMU.
+This changes amd_iommu_detect() to set amd_iommu_init to
+iommu_init hook if amd_iommu_detect() finds the AMD IOMMU.
 
 We can kill the code to check if we found the IOMMU in
-gart_iommu_init() since gart_iommu_hole_init() sets gart_iommu_init()
-only when it found the IOMMU.
+amd_iommu_init() since amd_iommu_detect() sets amd_iommu_init() only
+when it found the IOMMU.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/x86/include/asm/gart.h   |    5 +----
- arch/x86/kernel/aperture_64.c |    2 ++
- arch/x86/kernel/pci-dma.c     |    2 --
- arch/x86/kernel/pci-gart_64.c |   15 +++++----------
- 4 files changed, 8 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/amd_iommu.h |    2 --
+ arch/x86/kernel/amd_iommu_init.c |   17 +++--------------
+ arch/x86/kernel/pci-dma.c        |    2 --
+ 3 files changed, 3 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/include/asm/gart.h b/arch/x86/include/asm/gart.h
-index 6cfdafa..51d28a0 100644
---- a/arch/x86/include/asm/gart.h
-+++ b/arch/x86/include/asm/gart.h
-@@ -35,7 +35,7 @@ extern int gart_iommu_aperture_allowed;
- extern int gart_iommu_aperture_disabled;
+diff --git a/arch/x86/include/asm/amd_iommu.h b/arch/x86/include/asm/amd_iommu.h
+index ac95995..240617e 100644
+--- a/arch/x86/include/asm/amd_iommu.h
++++ b/arch/x86/include/asm/amd_iommu.h
+@@ -23,7 +23,6 @@
+ #include <linux/irqreturn.h>
  
- extern void early_gart_iommu_check(void);
--extern void gart_iommu_init(void);
-+extern int gart_iommu_init(void);
- extern void gart_iommu_shutdown(void);
- extern void __init gart_parse_options(char *);
- extern void gart_iommu_hole_init(void);
-@@ -48,9 +48,6 @@ extern void gart_iommu_hole_init(void);
- static inline void early_gart_iommu_check(void)
- {
- }
--static inline void gart_iommu_init(void)
--{
--}
- static inline void gart_iommu_shutdown(void)
- {
- }
-diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-index 128111d..03933cf 100644
---- a/arch/x86/kernel/aperture_64.c
-+++ b/arch/x86/kernel/aperture_64.c
-@@ -28,6 +28,7 @@
- #include <asm/pci-direct.h>
- #include <asm/dma.h>
- #include <asm/k8.h>
+ #ifdef CONFIG_AMD_IOMMU
+-extern int amd_iommu_init(void);
+ extern int amd_iommu_init_dma_ops(void);
+ extern int amd_iommu_init_passthrough(void);
+ extern void amd_iommu_detect(void);
+@@ -32,7 +31,6 @@ extern void amd_iommu_flush_all_domains(void);
+ extern void amd_iommu_flush_all_devices(void);
+ extern void amd_iommu_shutdown(void);
+ #else
+-static inline int amd_iommu_init(void) { return -ENODEV; }
+ static inline void amd_iommu_detect(void) { }
+ static inline void amd_iommu_shutdown(void) { }
+ #endif
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index b4b61d4..52bf59f 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -29,6 +29,7 @@
+ #include <asm/amd_iommu.h>
+ #include <asm/iommu.h>
+ #include <asm/gart.h>
 +#include <asm/x86_init.h>
  
- int gart_iommu_aperture;
- int gart_iommu_aperture_disabled __initdata;
-@@ -400,6 +401,7 @@ void __init gart_iommu_hole_init(void)
+ /*
+  * definitions for the ACPI scanning code
+@@ -1154,19 +1155,10 @@ static struct sys_device device_amd_iommu = {
+  * functions. Finally it prints some information about AMD IOMMUs and
+  * the driver state and enables the hardware.
+  */
+-int __init amd_iommu_init(void)
++static int __init amd_iommu_init(void)
+ {
+ 	int i, ret = 0;
  
- 			iommu_detected = 1;
- 			gart_iommu_aperture = 1;
-+			x86_init.iommu.iommu_init = gart_iommu_init;
+-
+-	if (no_iommu) {
+-		printk(KERN_INFO "AMD-Vi disabled by kernel command line\n");
+-		return 0;
+-	}
+-
+-	if (!amd_iommu_detected)
+-		return -ENODEV;
+-
+ 	/*
+ 	 * First parse ACPI tables to find the largest Bus/Dev/Func
+ 	 * we need to handle. Upon this information the shared data
+@@ -1326,10 +1318,7 @@ void __init amd_iommu_detect(void)
+ 	if (acpi_table_parse("IVRS", early_amd_iommu_detect) == 0) {
+ 		iommu_detected = 1;
+ 		amd_iommu_detected = 1;
+-#ifdef CONFIG_GART_IOMMU
+-		gart_iommu_aperture_disabled = 1;
+-		gart_iommu_aperture = 0;
+-#endif
++		x86_init.iommu.iommu_init = amd_iommu_init;
+ 	}
+ }
  
- 			aper_order = (read_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL) >> 1) & 7;
- 			aper_size = (32 * 1024 * 1024) << aper_order;
 diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 1b06714..9830f12 100644
+index 9830f12..6abb8c2 100644
 --- a/arch/x86/kernel/pci-dma.c
 +++ b/arch/x86/kernel/pci-dma.c
-@@ -298,8 +298,6 @@ static int __init pci_iommu_init(void)
+@@ -296,8 +296,6 @@ static int __init pci_iommu_init(void)
  
- 	amd_iommu_init();
+ 	intel_iommu_init();
  
--	gart_iommu_init();
+-	amd_iommu_init();
 -
  	no_iommu_init();
  	return 0;
  }
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index a7f1b64..3bcae8f 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -708,7 +708,7 @@ void gart_iommu_shutdown(void)
- 	}
- }
- 
--void __init gart_iommu_init(void)
-+int __init gart_iommu_init(void)
- {
- 	struct agp_kern_info info;
- 	unsigned long iommu_start;
-@@ -718,7 +718,7 @@ void __init gart_iommu_init(void)
- 	long i;
- 
- 	if (cache_k8_northbridges() < 0 || num_k8_northbridges == 0)
--		return;
-+		return 0;
- 
- #ifndef CONFIG_AGP_AMD64
- 	no_agp = 1;
-@@ -730,13 +730,6 @@ void __init gart_iommu_init(void)
- 		(agp_copy_info(agp_bridge, &info) < 0);
- #endif
- 
--	if (swiotlb)
--		return;
--
--	/* Did we detect a different HW IOMMU? */
--	if (iommu_detected && !gart_iommu_aperture)
--		return;
--
- 	if (no_iommu ||
- 	    (!force_iommu && max_pfn <= MAX_DMA32_PFN) ||
- 	    !gart_iommu_aperture ||
-@@ -746,7 +739,7 @@ void __init gart_iommu_init(void)
- 			       "but GART IOMMU not available.\n");
- 			printk(KERN_WARNING "falling back to iommu=soft.\n");
- 		}
--		return;
-+		return 0;
- 	}
- 
- 	/* need to map that range */
-@@ -838,6 +831,8 @@ void __init gart_iommu_init(void)
- 
- 	flush_gart();
- 	dma_ops = &gart_dma_ops;
-+
-+	return 0;
- }
- 
- void __init gart_parse_options(char *p)
 -- 
 1.5.6.5
 
