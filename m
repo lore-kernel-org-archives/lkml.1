@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932667AbZJ1IK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932671AbZJ1ILT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932667AbZJ1IK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 04:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932640AbZJ1IK2
+	id S932671AbZJ1ILT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 04:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932637AbZJ1ILS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 04:10:28 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:40244 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932638AbZJ1IK1 (ORCPT
+	Wed, 28 Oct 2009 04:11:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55633
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932620AbZJ1ILR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 04:10:27 -0400
-X-Trace: 276746418/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.58.43/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.58.43
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjsBAK+Z50pPRTor/2dsb2JhbAAI2VKEPwQ
-X-IronPort-AV: E=Sophos;i="4.44,638,1249254000"; 
-   d="scan'208";a="276746418"
-Date: Wed, 28 Oct 2009 08:10:35 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: David Rientjes <rientjes@google.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       vedran.furac@gmail.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: Memory overcommit
-In-Reply-To: <alpine.DEB.2.00.0910272111400.8988@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0910280801240.20397@sister.anvils>
-References: <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
- <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <20091028113713.FD85.A69D9226@jp.fujitsu.com>
- <alpine.DEB.2.00.0910272111400.8988@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Oct 2009 04:11:17 -0400
+Date: Wed, 28 Oct 2009 01:11:41 -0700 (PDT)
+Message-Id: <20091028.011141.267473962.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: is avoiding compat ioctls possible?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091028075908.GO7744@basil.fritz.box>
+References: <20091027.230450.222178419.davem@davemloft.net>
+	<20091028.005342.60092591.davem@davemloft.net>
+	<20091028075908.GO7744@basil.fritz.box>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009, David Rientjes wrote:
+From: Andi Kleen <andi@firstfloor.org>
+Date: Wed, 28 Oct 2009 08:59:08 +0100
+
+>>  	}
+>> -	chunk_array_ptr = (uint64_t *)(unsigned long)(cs->chunks);
+>> +#ifdef CONFIG_COMPAT
+>> +	if (is_compat_task())
 > 
-> Not sure where the -stable reference came from, I don't think this is a 
-> candidate.
+> Are the COMPAT ifdefs really needed? The compiler should optimize that
+> away anyways on non compat aware architectures, shouldn't it?
 
-I agree with David, this is only one little piece of a messy puzzle,
-there's no good reason to rush this into -stable.
-
-> > +	if (has_capability_noaudit(p, CAP_SYS_ADMIN) ||
-> > +	    has_capability_noaudit(p, CAP_SYS_RESOURCE) ||
-> > +	    has_capability_noaudit(p, CAP_SYS_RAWIO))
-> 
-> Acked-by: David Rientjes <rientjes@google.com>
-
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-(as far as it goes: the whole thing of quartering badness here
-because "we don't want to kill" and "important" is questionable;
-but definitely much more open to argument both ways than sixteenthing).
+There are no non-compat is_compat_task() definitions, nor are there
+non-compat build definitions of compat_uptr_t and the assosciated
+interfaces.
