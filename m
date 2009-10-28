@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbZJ1OrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbZJ1Ox2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754243AbZJ1OrD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 10:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbZJ1Oq5
+	id S1754240AbZJ1Ox2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 10:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZJ1Ox1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 10:46:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:40387 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754197AbZJ1Oqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 10:46:55 -0400
-Message-ID: <4AE8595F.1080404@redhat.com>
-Date: Wed, 28 Oct 2009 10:46:55 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	Wed, 28 Oct 2009 10:53:27 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:44213 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbZJ1Ox0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 10:53:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mssvcc6xSgyJQC7Nwr7F0epWKy5NWELvtO9aAgGidU+MeGyA5wwE2UUtdqX0prx7BV
+         M4zpqaaEod6rccgQgHPukhyiO4ydfzM5RWFVnAMSFjKoIx3k1uiSjEqcS/IwuO1xQ1L2
+         BBwxZdUqHb3nX5C0seeau2ZAX+2+3B5XHRGBU=
+Date: Wed, 28 Oct 2009 17:53:25 +0300
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-numa@vger.kernel.org,
+       Len Brown <lenb@kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch -mm] acpi: remove NID_INVAL
+Message-ID: <20091028145325.GA5316@lenovo>
+References: <20091008162454.23192.91832.sendpatchset@localhost.localdomain> <20091008162533.23192.71981.sendpatchset@localhost.localdomain> <alpine.DEB.1.10.0910081616040.8030@gentwo.org> <alpine.DEB.1.00.0910081325200.6998@chino.kir.corp.google.com> <alpine.DEB.2.00.0910271442250.30270@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org
-CC: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Carlson <mcarlson@broadcom.com>, Michael Chan <mchan@broadcom.com>,
-       KVM list <kvm@vger.kernel.org>
-Subject: TG3, kvm, ipv6 & tso data corruption bug?
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910271442250.30270@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been tracking down what I thought was a KVM related network
-issue for a while, however it appears it could be a hardware issue.
+[David Rientjes - Tue, Oct 27, 2009 at 02:44:14PM -0700]
+| NUMA_NO_NODE has been exported globally and thus it can replace NID_INVAL
+| in the acpi code.
+| 
+| Also removes the unused acpi_unmap_pxm_to_node() function.
+| 
+| Cc: Len Brown <lenb@kernel.org>
+| Cc: Cyrill Gorcunov <gorcunov@openvz.org>
+| Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+| Signed-off-by: David Rientjes <rientjes@google.com>
+| ---
+|  Depends on Lee Schermerhorn's hugetlb patchset in mmotm-10132113.
+| 
 
-The symptom is that data in network packets gets corrupted, before
-the checksum is calculated.  This means the remote host can get
-corrupted data, with no way to calculate it (except application
-level checksums).  Luckily ssh has such checksums, so my rsync over
-ssh backup script discovered this issue.
+Thanks David! My Ack if needed.
 
-On a very regular basis, I got this message from ssh:
-
-	Corrupted MAC on input.
-
-I have played around a bit and narrowed it down to the following:
-
-ipv4          => no problem
-ipv6 w/o tso  => no problem
-ipv6 with tso => occasional data corruption
-
-Disabling tso with ethtool -K eth0 tso off makes the problem stop.
-
-I am running Fedora 12's 2.6.31.1-56.fc12.x86_64 kernel, with the
-following hardware:
-
-05:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5761 
-Gigabit Ethernet PCIe (rev 10)
-
-I do not know enough about the network layer to know whether this is
-fixable in software or whether TSO offloading for ipv6 should just
-be disabled on this model.
-
--- 
-All rights reversed.
+	-- Cyrill
