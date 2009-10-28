@@ -1,88 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZJ1UhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbZJ1Uns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbZJ1UhZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 16:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbZJ1UhX
+	id S1755579AbZJ1Uns (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 16:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZJ1Uns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 16:37:23 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:60039 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755230AbZJ1UhW (ORCPT
+	Wed, 28 Oct 2009 16:43:48 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:26173 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755560AbZJ1Unp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 16:37:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=YNxb7zX0kHKFSEMEgLc5upzAiWIy89MTOGlqL52WaMf1SYSLEu3uY5dhfM8Xfc0b1e
-         QvfiVZVavOPx1ZbXx5Dzz2gFxvZAyS2Pc0IHq2pAbpH/DeNVcmi88tEgUBKCImIltwJ/
-         87Dlgz5k/mlun/FNT9by4AvvyA4acgVim9jt0=
-From: Manuel Lauss <manuel.lauss@googlemail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Manuel Lauss <manuel.lauss@gmail.com>
-Subject: [PATCH] serial 8250: fixes for Alchemy uarts.
-Date: Wed, 28 Oct 2009 21:37:28 +0100
-Message-Id: <1256762248-4305-1-git-send-email-manuel.lauss@gmail.com>
-X-Mailer: git-send-email 1.6.5
+	Wed, 28 Oct 2009 16:43:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=mQ7B/wbaIi35sP4tHL20pJS+QEhMFJnm3lT6/IxlYLdnAxq0ICNsyQedwN9Nkt6ob
+	zygPoROXCDxmoLMnyT2Kg==
+Date: Wed, 28 Oct 2009 13:43:42 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Badari Pulavarty <pbadari@us.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Alex Chiang <achiang@hp.com>
+Subject: [patch -mm] mm: slab allocate memory section nodemask for large
+ systems
+In-Reply-To: <20091028183905.GF22743@ldl.fc.hp.com>
+Message-ID: <alpine.DEB.2.00.0910281315370.23279@chino.kir.corp.google.com>
+References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041510.15705.5410.stgit@bob.kio> <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com> <20091027195907.GJ14102@ldl.fc.hp.com> <alpine.DEB.2.00.0910271422090.22335@chino.kir.corp.google.com>
+ <20091028083137.GA24140@osiris.boeblingen.de.ibm.com> <alpine.DEB.2.00.0910280159380.7122@chino.kir.corp.google.com> <20091028183905.GF22743@ldl.fc.hp.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Limit the amount of address space claimed for Alchemy serial ports
-to 0x1000.  On the Au1300, ports are only 0x1000 apart, and the
-registers only extend to 0x110 at most on all supported alchemy models.
+On Wed, 28 Oct 2009, Alex Chiang wrote:
 
-On the Au1300 the autodetect logic no longer works and this makes
-it necessary to specify the port type through platform data.  Because
-of this the MSR quirk needs to be moved outside the autoconfig()
-function which will no longer be called when UPF_FIXED_TYPE is
-specified.
+> Am I not understanding the code? It looks like we do this
+> already...
+> 
+> /* unregister memory section under all nodes that it spans */
+> int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+> {
+> 	nodemask_t unlinked_nodes;
+> 	unsigned long pfn, sect_start_pfn, sect_end_pfn;
+> 
+> 	if (!mem_blk)
+> 		return -EFAULT;
+> 	nodes_clear(unlinked_nodes);
+> 	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
+> 	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
+> 	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
+> 		int nid;
+> 
+> 		nid = get_nid_for_pfn(pfn);
+> 		if (nid < 0)
+> 			continue;
+> 		if (!node_online(nid))
+> 			continue;
+> 		if (node_test_and_set(nid, unlinked_nodes))
+> 			continue;
+> 		sysfs_remove_link(&node_devices[nid].sysdev.kobj,
+> 			 kobject_name(&mem_blk->sysdev.kobj));
+> 		sysfs_remove_link(&mem_blk->sysdev.kobj,
+> 			 kobject_name(&node_devices[nid].sysdev.kobj));
+> 	}
+> 	return 0;
+> }
+> 
 
-Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
+That shound be sufficient with the exception that allocating nodemask_t 
+on the stack is usually dangerous because it can be extremely large; we 
+typically use NODEMASK_ALLOC() for such code.  It's had some changes in 
+-mm, but since this patchset will likely be going through that tree anyway 
+we can fix it now with the patch below.
+
+Otherwise, it looks like the iteration is already there and will remove 
+links for memory sections bound to multiple nodes if they exist through 
+hotplug.
+
+
+
+mm: slab allocate memory section nodemask for large systems
+
+Nodemasks should not be allocated on the stack for large systems (when it
+is larger than 256 bytes) since there is a threat of overflow.
+
+This patch causes the unregister_mem_sect_under_nodes() nodemask to be
+allocated on the stack for smaller systems and be allocated by slab for
+larger systems.
+
+GFP_KERNEL is used since remove_memory_block() can block.
+
+Cc: Gary Hade <garyhade@us.ibm.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- drivers/serial/8250.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+ Depends on NODEMASK_ALLOC() changes currently present only in -mm.
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index b1ae774..9538e5b 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1214,12 +1214,6 @@ static void autoconfig(struct uart_8250_port *up, unsigned int probeflags)
- 	}
- #endif
- 
--#ifdef CONFIG_SERIAL_8250_AU1X00
--	/* if access method is AU, it is a 16550 with a quirk */
--	if (up->port.type == PORT_16550A && up->port.iotype == UPIO_AU)
--		up->bugs |= UART_BUG_NOMSR;
--#endif
--
- 	serial_outp(up, UART_LCR, save_lcr);
- 
- 	if (up->capabilities != uart_config[up->port.type].flags) {
-@@ -2429,7 +2423,7 @@ serial8250_pm(struct uart_port *port, unsigned int state,
- static unsigned int serial8250_port_size(struct uart_8250_port *pt)
+ drivers/base/node.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/base/node.c b/drivers/base/node.c
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -363,12 +363,14 @@ int register_mem_sect_under_node(struct memory_block *mem_blk, int nid)
+ /* unregister memory section under all nodes that it spans */
+ int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
  {
- 	if (pt->port.iotype == UPIO_AU)
--		return 0x100000;
-+		return 0x1000;
- #ifdef CONFIG_ARCH_OMAP
- 	if (is_omap_port(pt))
- 		return 0x16 << pt->port.regshift;
-@@ -2586,6 +2580,13 @@ static void serial8250_config_port(struct uart_port *port, int flags)
+-	nodemask_t unlinked_nodes;
++	NODEMASK_ALLOC(nodemask_t, unlinked_nodes, GFP_KERNEL);
+ 	unsigned long pfn, sect_start_pfn, sect_end_pfn;
  
- 	if (flags & UART_CONFIG_TYPE)
- 		autoconfig(up, probeflags);
-+
-+#ifdef CONFIG_SERIAL_8250_AU1X00
-+	/* if access method is AU, it is a 16550 with a quirk */
-+	if (up->port.type == PORT_16550A && up->port.iotype == UPIO_AU)
-+		up->bugs |= UART_BUG_NOMSR;
-+#endif
-+
- 	if (up->port.type != PORT_UNKNOWN && flags & UART_CONFIG_IRQ)
- 		autoconfig_irq(up);
+-	if (!mem_blk)
++	if (!mem_blk) {
++		NODEMASK_FREE(unlinked_nodes);
+ 		return -EFAULT;
+-	nodes_clear(unlinked_nodes);
++	}
++	nodes_clear(*unlinked_nodes);
+ 	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
+ 	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
+ 	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
+@@ -379,13 +381,14 @@ int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+ 			continue;
+ 		if (!node_online(nid))
+ 			continue;
+-		if (node_test_and_set(nid, unlinked_nodes))
++		if (node_test_and_set(nid, *unlinked_nodes))
+ 			continue;
+ 		sysfs_remove_link(&node_devices[nid].sysdev.kobj,
+ 			 kobject_name(&mem_blk->sysdev.kobj));
+ 		sysfs_remove_link(&mem_blk->sysdev.kobj,
+ 			 kobject_name(&node_devices[nid].sysdev.kobj));
+ 	}
++	NODEMASK_FREE(unlinked_nodes);
+ 	return 0;
+ }
  
--- 
-1.6.5
-
