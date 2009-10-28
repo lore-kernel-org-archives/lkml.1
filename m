@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbZJ1Bc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbZJ1Bio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932496AbZJ1Bc4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 21:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbZJ1Bcz
+	id S1757138AbZJ1Bio (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 21:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbZJ1Bin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 21:32:55 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:46543 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757113AbZJ1Bcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 21:32:55 -0400
-Date: Wed, 28 Oct 2009 01:32:57 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: [git pull] drm-fixes
-Message-ID: <alpine.DEB.2.00.0910280130330.19088@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 27 Oct 2009 21:38:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:33587 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756686AbZJ1Bin convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 21:38:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references
+         :in-reply-to:mime-version:content-type:content-transfer-encoding
+         :message-id;
+        b=Xdxk6QDLAsJMIcxcxqWqqtct8pOdVBGVrUlMHr9Ncj2bnSgPXcT97q6u3hYKt5DNr5
+         vXQu0mrJAksNrPSCzYa1wN9VLJX8l/CVqHQyyAKSi36sWHhznp1wD7ycK37dy9nSkVgx
+         tiADvw7CHVDsb535yBgWa5VIkyB7uoJqOYQBg=
+From: Marek Vasut <marek.vasut@gmail.com>
+Organization: Hack&Dev
+To: Eric Miao <eric.y.miao@gmail.com>
+Subject: Re: [PATCH] 2.6.32-rc5 bug in Palm Tungsten C keyboard
+Date: Wed, 28 Oct 2009 02:37:40 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.30-2-amd64; KDE/4.3.2; x86_64; ; )
+Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+References: <20091026225930.GA18723@localhost> <f17812d70910270043q328ab091mb1d76760e674450d@mail.gmail.com>
+In-Reply-To: <f17812d70910270043q328ab091mb1d76760e674450d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910280237.40268.marek.vasut@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dne Út 27. října 2009 08:43:44 Eric Miao napsal(a):
+> On Tue, Oct 27, 2009 at 6:59 AM, Ondrej Zajicek <santiago@crfreenet.org> 
+wrote:
+> > Palm Tungsten C keyboard structure has swapped
+> > rows/cols gpio structures and does not work.
+> > This patch fixes it.
+> >
+> > Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+> 
+> This fix looks obvious to me. Applied to 'fix'.
 
-Hi Linus,
+Just wondering ... you checked the GPIO directions, right ? I mean, it works in 
+both directions, it just works worse the other one. I can't really check now.
 
-Please pull the 'drm-fixes' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
+Also, it'll be possibly good to use the following emails for pxa patches:
+Eric Miao <eric.y.miao@gmail.com>
+Linux-ARM-Kernel <linux-arm-kernel@lists.infradead.org>
+Marek Vasut <marek.vasut@gmail.com>
 
-This is just 3 fast track fixes, one for the colormap issues with 1.7 and
-2.9.0 intel driver (note final 1.7 + 2.9.1 is fine, and 1.6 is fine with 
-any Intel). The other is a mode validation fix, and the last one at least
-lets davem load the kms radeon driver.
+Those should be enough.
 
-I have some radeon KMS fixes queued but will leave them until tomorrow 
-just in case.
-
-Dave.
-
- drivers/gpu/drm/drm_edid.c             |   15 +++++++++++
- drivers/gpu/drm/drm_fb_helper.c        |   42 ++++++++++++++++++++++----------
- drivers/gpu/drm/radeon/radeon_device.c |    7 ++---
- 3 files changed, 47 insertions(+), 17 deletions(-)
-
-commit 77de0846aed9d7a1b0ea65090620900d66fb5cfb
-Author: Dave Airlie <airlied@redhat.com>
-Date:   Fri Oct 23 18:49:03 2009 +1000
-
-    drm/kms: fix kms/fbdev colormap support properly.
-    
-    This sets the fbcon to use TRUECOLOR by default, it then
-    only modifies the pseudo palette for fbcon, and only touches
-    the real palette when in 8-bit pseudo color mode.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit fcb45611448098a36b893bda71e72bd39730a3dd
-Author: Zhao Yakui <yakui.zhao@intel.com>
-Date:   Wed Oct 14 09:11:25 2009 +0800
-
-    drm: Add the basic check for the detailed timing in EDID
-    
-    Sometimes we will get the incorrect display modeline when parsing the detailed
-    timing in EDID. For example:
-       >hsync/vsync width is zero
-       >sync is beyond the blank.
-    
-    So add the basic check for the detailed timing in EDID to avoid the incorrect
-    display modeline.
-    
-    Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 93239ea158368016a017200cb133e1057fb3ef89
-Author: Dave Airlie <airlied@redhat.com>
-Date:   Wed Oct 28 11:09:58 2009 +1000
-
-    drm/radeon/kms: ignore vga arbiter return.
-    
-    Since we register all radeon devices, and the arbiter only cares about
-    VGA class ones, we will fail to startup on display controller class devices.
-    We don't gain anything by using the return value here.
-    
-    this helps kms on sparc64 get started.
-    
-    Reported-by: David S. Miller <davem@davemloft.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+Cheers!
+> 
+> > diff -uprN linux-2.6.32-rc5-old/arch/arm/mach-pxa/palmtc.c
+> > linux-2.6.32-rc5/arch/arm/mach-pxa/palmtc.c ---
+> > linux-2.6.32-rc5-old/arch/arm/mach-pxa/palmtc.c     2009-10-16
+> > 02:41:50.000000000 +0200 +++ linux-2.6.32-rc5/arch/arm/mach-pxa/palmtc.c
+> > 2009-10-26 20:56:44.000000000 +0100 @@ -292,10 +292,10 @@ const static
+> > unsigned int palmtc_keypad_
+> >
+> >  static struct matrix_keypad_platform_data palmtc_keypad_platform_data =
+> > { .keymap_data    = &palmtc_keymap_data,
+> > -       .col_gpios      = palmtc_keypad_row_gpios,
+> > -       .num_col_gpios  = 12,
+> > -       .row_gpios      = palmtc_keypad_col_gpios,
+> > -       .num_row_gpios  = 4,
+> > +       .row_gpios      = palmtc_keypad_row_gpios,
+> > +       .num_row_gpios  = ARRAY_SIZE(palmtc_keypad_row_gpios),
+> > +       .col_gpios      = palmtc_keypad_col_gpios,
+> > +       .num_col_gpios  = ARRAY_SIZE(palmtc_keypad_col_gpios),
+> >        .active_low     = 1,
+> >
+> >        .debounce_ms            = 20,
+> >
+> >
+> > --
+> > Elen sila lumenn' omentielvo
+> >
+> > Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
+> > OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+> > "To err is human -- to blame it on a computer is even more so."
+> 
