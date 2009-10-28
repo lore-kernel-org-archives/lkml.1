@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbZJ1NCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZJ1NTC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbZJ1NCY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 09:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZJ1NCY
+	id S1753584AbZJ1NTC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 09:19:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZJ1NTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 09:02:24 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:8541 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbZJ1NCW (ORCPT
+	Wed, 28 Oct 2009 09:19:01 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:55323 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752719AbZJ1NTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 09:02:22 -0400
+	Wed, 28 Oct 2009 09:19:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=B3mw1o+jGSxME0CSDJ2VgNfTz5eXqXz8Fk6eNJeSLhTfEoi0aEl8VIMvyYCLBjNFaz
-         59FMEEYJx0MLsBdmWkLxwK1Ti9P/IuRQg9tH2eFW4poz6qql8gL22TVgTj+aeX1yj1xs
-         ptwAHz26JWSQKRYBHWZsS7e5/C+eS2H13fYRQ=
-Date: Wed, 28 Oct 2009 14:02:23 +0100
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 0/3] Reduce GFP_ATOMIC allocation failures, partial fix
-	V3
-Message-ID: <20091028130223.GB14476@bizet.domek.prywatny>
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256650833-15516-1-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=date:from:to:cc:references:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=t8QmJgKOIysLvzIzgQ9XeGjfKLzIm069N8kPDwE1rubkWjPdD76cDeV33KIOIA/x+o
+         5t3OyjQdN8PVv0vhLKP+vM7hW+xp47cqgC7e1OZ0c3LSJBtoNs8UktCatBvwLM4T8NCV
+         kcf2EjoYCYneKGU4nbr3NCAsjdqh1JhV+36Ns=
+Date: Wed, 28 Oct 2009 21:18:59 +0800
+From: "=?utf-8?B?TGl1d2VuaQ==?=" <qingshenlwy@gmail.com>
+To: "=?utf-8?B?SmlyaSBLb3NpbmE=?=" <jkosina@suse.cz>
+Cc: "=?utf-8?B?bGludXgta2VybmVs?=" <linux-kernel@vger.kernel.org>
+References: <b3657a100910260622w37cc2ab6nc0b52ce6e1a19f37@mail.gmail.com>
+Subject: =?utf-8?B?UmU6IFJlOiBbUEFUQ0hda2VybmVsL2lycS9jaGlwLmM6VGhlIGNvZGUgbm90ZXMgaXMgbm90IGZpdCBmb3IgdGhlZnVuY3Rpb24u?=
+Message-ID: <200910282118548280083@gmail.com>
+X-mailer: Foxmail 6, 15, 201, 22 [cn]
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n9SDJN16031422
 
-On Tue, Oct 27, 2009 at 01:40:30PM +0000, Mel Gorman wrote:
-> The following bug becomes very difficult to reproduce with these patches;
+hi Jiri Kosina,
+
+Thanks for your help. This is my first upload my patch.
+
+I had repatched it to Linux kernel with Signed-off-by.
+http://lkml.org/lkml/2009/10/28/12
+
+
+
+Any problem, please let me kown. 
+
+2009-10-28 
+
+Best Regards
+ 
+Liuweni
+ 
+
+
+
+Âèë‰ª∂‰∫∫Ôºö Jiri Kosina 
+ÂèëÈÄÅÊó∂Èó¥Ôºö 2009-10-27  20:53:43 
+Êî∂‰ª∂‰∫∫Ôºö liu weni 
+ÊäÑÈÄÅÔºö linux-kernel 
+‰∏ªÈ¢òÔºö Re: [PATCH]kernel/irq/chip.c:The code notes is not fit for thefunction. 
+ 
+On Mon, 26 Oct 2009, liu weni wrote:
+> In the origin, the code notes are not fit for set_irq_msi.
+> I modify the code notes, and no any changes for the code.
 > 
-> [Bug #14265] ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
-
-Minor clarification -- bug becomes difficult to reproduce _quickly_.
-
-I've always saw this bug after many suspend-resume cycles (interlaved
-with "real work").  Since testing one kernel in normal usage scenario
-would take many days I've tried to immitate "real work" by lots of
-memory intensive/fragmenting processes.
-
-Hovewer, this bug shows itself (sooner or later) in every kernel
-except 2.6.30 (or earlier).
-
-Thanks.
+> 
+> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+> index c166019..da2f254 100644
+> --- a/kernel/irq/chip.c
+> +++ b/kernel/irq/chip.c
+> @@ -166,11 +166,11 @@ int set_irq_data(unsigned int irq, void *data)
+>  EXPORT_SYMBOL(set_irq_data);
+> 
+>  /**
+> - * set_irq_data - set irq type data for an irq
+> + * set_irq_msi - set MSI descriptor data for an irq
+>   * @irq: Interrupt number
+>   * @entry: Pointer to MSI descriptor data
+>   *
+> - * Set the hardware irq controller data for an irq
+> + * Set the MSI descriptor entry for an irq
+>   */
+>  int set_irq_msi(unsigned int irq, struct msi_desc *entry)
+>  {
+Please send the patch with proper Signed-off-by: line so that I can queue 
+it in my tree.
+Thanks,
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
