@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbZJ1Fh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbZJ1FmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757406AbZJ1Fh3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 01:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbZJ1Fh2
+	id S1757423AbZJ1FmZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 01:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbZJ1FmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 01:37:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44900 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757334AbZJ1Fh2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 01:37:28 -0400
-Date: Wed, 28 Oct 2009 03:36:36 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andy Walls <awalls@radix.net>, Stefani Seibold <stefani@seibold.net>,
-       Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Joe Perches <joe@perches.com>, linux-media@vger.kernel.org
-Subject: Re: [PATCH 0/7] kfifo: new API v0.6
-Message-ID: <20091028033636.07e547b4@pedra.chehab.org>
-In-Reply-To: <20091028032049.GB7744@basil.fritz.box>
-References: <1256694571.3131.26.camel@palomino.walls.org>
-	<20091028032049.GB7744@basil.fritz.box>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 28 Oct 2009 01:42:24 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:45701 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757343AbZJ1FmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 01:42:24 -0400
+Date: Wed, 28 Oct 2009 05:42:27 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: David Miller <davem@davemloft.net>
+cc: dri-devel@lists.sourceforge.net, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: is avoiding compat ioctls possible?
+In-Reply-To: <20091027.222814.137568780.davem@davemloft.net>
+Message-ID: <alpine.DEB.2.00.0910280539150.19088@skynet.skynet.ie>
+References: <alpine.DEB.2.00.0910280341331.19088@skynet.skynet.ie> <20091027.204530.142024242.davem@davemloft.net> <alpine.DEB.2.00.0910280353080.19088@skynet.skynet.ie> <20091027.222814.137568780.davem@davemloft.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, 28 Oct 2009 04:20:49 +0100
-Andi Kleen <andi@firstfloor.org> escreveu:
 
-With respect to the kfifo series of patches:
-
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-> > Here's a V4L-DVB cx23885 module change, that is on its way upstream,
-> > that uses kfifo as is:
-> > 
-> > http://linuxtv.org/hg/v4l-dvb/rev/a2d8d3d88c6d
-> > 
-> > Do you really have to break the old API?
+> Please don't do this.
 > 
-> That was extensively discussed in the original patch kit submission,
-> and yes there are good reasons. You will just have to adapt
-> the driver if it gets in after the new kfifo patches; if kfifo
-> gets in later it'll have to adapt it.
+> This is exactly what I feared people would do when is_compat_task()
+> was added.  is_compat_task() is for situations where there is
+> otherwise no other way to handle the compat situation properly.
+> 
+> It's not that much work for you to hook up the compat ioctls properly,
+> and if you are clever you can do it in such a way that you'll get
+> warnings if someone accidently adds a new ioctl but forgets the
+> compat bits :-)
 
-I agree. The current kfifo implementation is very limited that can't be
-used on several places. Changing its implementation to be generic enough
-requires changing the API, since, on several places, we don't want to have
-a spinlock. So, as we'll need to change the API anyway, better to do it at the
-right way.
+There are close to 15 ioctls needing this, so I can add 15 functions to 
+unpack and repack stuff or I can add that function, sorry if I'm 
+leaning towards a lighter weight solution. I'll add this to my TODO for 
+before the next merge window as its definitely more than I can manage now.
 
-That's said, i7core_edac will also need the new kfifo API for 2.6.33, so I'll
-have to handle this upstream change anyway. So, the faster this change went into
-upstream, the better, since I'll hold my pull requests to happen after it.
+Dave.
 
-Since I'll have 2 -git trees depending on this change (i7core_edac and v4l-dvb),
-the better is if you could put the kfifo code on a git tree that won't be
-rebased. This way, we can make our trees based on kfifo -git tree, having
-everything rebased there to avoid any merge or bisect conflict (in my case,
-cx23885 will need to be rebased, and i7core_edac will need kfifo -git objects
-for a new NMI-aware fifo implementation using kfifo)
-
-
-
-Cheers,
-Mauro
