@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932613AbZJ1H10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932589AbZJ1HZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932613AbZJ1H10 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 03:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932505AbZJ1H1Z
+	id S932589AbZJ1HZp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 03:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932342AbZJ1HZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 03:27:25 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46574 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932357AbZJ1H1Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 03:27:24 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 28 Oct 2009 16:24:58 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] memcg: make memcg's file mapped consistent with global
- VM
-Message-Id: <20091028162458.45865281.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091028071854.GL16378@balbir.in.ibm.com>
-References: <20091028121619.c094e9c0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091028071854.GL16378@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 28 Oct 2009 03:25:44 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60700 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932219AbZJ1HZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 03:25:44 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19Flu05VpJFmnx5ISZjmy5hL9tbUrKmeirsGbFT4H
+	2gj+fcK2y9B90E
+Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1256654138.17752.7.camel@marge.simson.net>
+References: <20091024125853.35143117@infradead.org>
+	 <20091024130432.0c46ef27@infradead.org>
+	 <20091024130728.051c4d7c@infradead.org>
+	 <1256453725.12138.40.camel@marge.simson.net>
+	 <20091025095109.449bac9e@infradead.org>
+	 <1256492289.14241.40.camel@marge.simson.net>
+	 <20091025123319.2b76bf69@infradead.org>
+	 <1256508287.17306.14.camel@marge.simson.net>
+	 <1256522035.7356.19.camel@laptop>
+	 <1256654138.17752.7.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Wed, 28 Oct 2009 08:25:41 +0100
+Message-Id: <1256714741.10387.4.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009 12:48:54 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-10-28 12:16:19]:
+On Tue, 2009-10-27 at 15:35 +0100, Mike Galbraith wrote:
+> On Mon, 2009-10-26 at 02:53 +0100, Peter Zijlstra wrote:
+> > On Sun, 2009-10-25 at 23:04 +0100, Mike Galbraith wrote:
+> > >                 if (want_affine && (tmp->flags & SD_WAKE_AFFINE) &&
+> > > -                   cpumask_test_cpu(prev_cpu, sched_domain_span(tmp))) {
+> > > +                               (level == SD_LV_SIBLING || level == SD_LV_MC)) {
+> > 
+> > quick comment without actually having looked at the patch, we should
+> > really get rid of sd->level and encode properties of the sched domains
+> > in sd->flags.
 > 
-> > Based on mmotm-Oct13 + some patches in -mm queue.
-> > 
-> > ==
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > memcg-cleanup-file-mapped-consistent-with-globarl-vm-stat.patch
-> > 
-> > In global VM, FILE_MAPPED is used but memcg uses MAPPED_FILE.
-> > This makes grep difficult. Replace memcg's MAPPED_FILE with FILE_MAPPED
-> > 
-> > And in global VM, mapped shared memory is accounted into FILE_MAPPED.
-> > But memcg doesn't. fix it.
-> 
-> I wanted to explicitly avoid this since I wanted to do an iterative
-> correct accounting of shared memory. The renaming is fine with me
-> since we don't break ABI in user space.
-> 
-To do that, FILE_MAPPED is not correct.
-Because MAPPED includes shmem in global VM, no valid reason to do different
-style of counting.
+> I used SD_PREFER_SIBLING in the below.  Did I break anything?
 
-For shmem, we have a charge type as MEM_CGROUP_CHARGE_TYPE_SHMEM and 
-we can set "PCG_SHMEM" flag onto page_cgroup or some.
-Then, we can count it in explicit way. 
+Um, other than taskset.
 
-Thanks,
--Kame
+> +				if (candidate == -1 || candidate == cpu) {
+> +					for_each_cpu(i, sched_domain_span(tmp)) {
+
+                                                if (!cpumask_test_cpu(i, &p->cpus_allowed))
+                                                        continue;
+
+(i think i'm going to need that domain flag in a few minutes anyway)
+
+	-Mike
 
