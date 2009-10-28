@@ -1,160 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbZJ1Tgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbZJ1TpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbZJ1Tgr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 15:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZJ1Tgq
+	id S1754055AbZJ1TpD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 15:45:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZJ1TpC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 15:36:46 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:54552 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753473AbZJ1Tgp (ORCPT
+	Wed, 28 Oct 2009 15:45:02 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:59469 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753875AbZJ1TpB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 15:36:45 -0400
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci\@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range for pcie devices
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>
-	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>
-	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>
-	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>
-	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>
-	<m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 28 Oct 2009 12:36:49 -0700
-In-Reply-To: <4AE897B4.9030206@kernel.org> (Yinghai Lu's message of "Wed\, 28 Oct 2009 12\:12\:52 -0700")
-Message-ID: <m1eionia3y.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 28 Oct 2009 15:45:01 -0400
+Date: Wed, 28 Oct 2009 19:44:51 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: symlinks with permissions
+Message-ID: <20091028194451.GC17475@shareable.org>
+References: <20091025062953.GC1391@ucw.cz> <20091026163157.GB7233@duck.suse.cz> <20091026165729.GF23564@us.ibm.com> <20091026173629.GB16861@fieldses.org> <20091026174631.GD7233@duck.suse.cz> <1256579869.8576.7.camel@heimdal.trondhjem.org> <20091025093604.GA1501@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org> <20091028081653.GA18290@elf.ucw.cz> <4AE87292.20802@schaufler-ca.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <4AE87292.20802@schaufler-ca.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
+Casey Schaufler wrote:
+> Pavel Machek wrote:
+> > The actual permissions of the file are not ignored, but permissions of
+> > the containing directory _are_. If there's 666 file in 700 directory,
+> > you can reopen it read-write, in violation of directory's 700
+> > permissions.
+> > 									Pavel
+> 
+> There is no security violation here. Consider the case where
+> the file is unlinked after it is opened. What directory permissions
+> would matter in that case?
 
-> Eric W. Biederman wrote:
->> Yinghai Lu <yinghai@kernel.org> writes:
->> 
->>> Kenji Kaneshige wrote:
->>>> Yinghai Lu wrote:
->>>>> Yinghai Lu wrote:
->>>>>> Kenji Kaneshige wrote:
->>>>>>> I understand you need to touch I/O base/limit and Mem base/limit. But
->>>>>>> I don't understand why you also need to update bridge's BARs. Could
->>>>>>> you please explain a little more about it?
->>>>>>>
->>>>>>> Just in case, my terminology "bridge's BARs" is Base Address Register
->>>>>>> 0 (offset 0x10) and Base Address Register 1 (offset 0x14) in the
->>>>>>> (type 1) configuration space header of the bridge.
->>>>>> i mean 0x1c, 0x20, 0x28
->>>>>>
->>>>>> did not notice that bridge device's 0x10, 0x14 are used...
->>>>>> if port service need to use 0x10, 0x14, and the device is enabled, we
->>>>>> should touch 0x10, and 0x14.
->>>>> after check the code, if
->>>>> pci_bridge_assign_resources ==> pdev_assign_resources_sorted ==> 
->>>>> pdev_sort_resources
->>>>>
->>>>> will not touch 0x10 and 0x14, if those resource is claimed by port
->>>>> service.
->>>>>
->>>>> /* Sort resources by alignment */
->>>>> void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
->>>>> {               int i;
->>>>>                         for (i = 0; i < PCI_NUM_RESOURCES; i++) {
->>>>>                 struct resource *r;
->>>>>                 struct resource_list *list, *tmp;
->>>>>                 resource_size_t r_align;
->>>>>                                 r = &dev->resource[i];
->>>>>                                         if (r->flags &
->>>>> IORESOURCE_PCI_FIXED)
->>>>>                         continue;
->>>>>                         if (!(r->flags) || r->parent)
->>>>>                         continue;
->>>>>                
->>>>> r->parent != NULL, will make it skip those two.
->>>>>
->>>>> So -v3 should be safe.
->>>>>
->>>> Thank you for the clarification.
->>>>
->>>> But I still don't understand the whole picture of your set of
->>>> changes. Let me ask some questions.
->>>>
->>>> In my understanding of your set of changes, if there is a PCIe
->>>> switch with some hot-plug slots and all of those slots are empty,
->>>> I/O and Memory resources assigned by BIOS are all released at
->>>> the boot time. For example, suppose the following case.
->>>>
->>>>                bridge(A)
->>>>                   |
->>>>        -----------------------
->>>>        |                     |
->>>>     bridge(B)             bridge(C)
->>>>        |                     |
->>>>      slot(1)               slot(2)
->>>>      (empty)               (empty)
->>>>
->>>>   bridge(A): P2P bridge for switch upstream port
->>>>   bridge(B): P2P bridge for switch downstream port
->>>>   bridge(C): P2P bridge for switch downstream port
->>>>
->>>> In the above example, I/O and Mem resource assigned to bridge(A),
->>>> bridge(B) and bridge(C) are all released at the boot time. Correct?
->>>>
->>>> Then, when a adapter card is hot-added to slot(1), I/O and Mem
->>>> resources enough for enabling the hot-added adapter card is assigned
->>>> to bridge(A), bridge(B) and the adapter card. Correct?
->>>>
->>>> Then, when an another adpater card is hot-added to slot(2), we
->>>> need to assign enough resource to bridge(C) and the new card.
->>>> But bridge(A) doesn't have enough resource for bridge(C) and
->>>> the new card. In addition, all bridge(A) and bridge(B) and the
->>>> adapter card on slot(1) are already working. How do you assign
->>>> resource to bridge(C) and the card on slot(2)?
->>>>
->>> thanks, will update the patches to only handle leaf bridge, and don't touch min_size etc.
->> 
->> Tell me what is your expected behavior if I plug a bridge with hotplug
->> slots into a leaf hotplug slot?  Will you assign me enough resources so
->> that I can plug in additional devices?
->
-> no.
->
-> you need to plug device in those slots and then insert it into a leaf hotplug slot.
+That's an even worse security violation.
 
-Scenario.
+If you have a file opened read-only which is unlinked (and there's no
+other file descriptors to it), it is impossible to modify the file
+except through this quirk of /proc/NN/fd.  In traditional unix, it is
+impossible to modify full stop.  Even root can't write to it.
 
-I insert a bridge with pci hotplug slots into a leaf hotplug slot.
-Which adds more leave hotplug slots.
+Paths are in this discussion as an *example* of something that cannot
+be done except through /proc/NN/fd.  Paths are not the issue.
 
-Since the bridge itself is no longer a leaf slot it's resources will not
-get reassigned.
+As you've noticed, the same security hole occurs for files which have
+been unlinked and don't have any path.
 
-Then I will have no resources to assign to the leaves?
+The real issue is gaining more access to an open file than you had before.
 
->> Today I make plugging in a hotplug bridge work by having the firmware
->> reserve at one level and having the kernel reserve at the next level.
->> 
->> Windows handles the issue in theory by performing some kind of
->> hot-unplugging of drivers that already have assigned resources and
->> then replugging them.  Which allows a full renumbering of busses.
->> We don't have the infrastructure to do that safely today.
->
-> that will take some drivers offline at first ?
+> Or what about the case where the file
+> has a link count of 2, say /a/foo and /b/ish are hard links. If
+> /a is 777 and /b is 700 what would your position be regarding
+> the file descriptor obtained by opening /b/ish?
 
-I believe windows only does that for drivers that support being temporarily
-disconnected from their hardware.
+It depends on the flag passed to open() when the file descriptor is
+obtained.  That's where the pseudo-symlink permission comes from,
+which is what Pavel is getting it.
 
-Eric
+> The path name is an ethereal convenience and once traversed has no
+> bearing on the security state of the object.
+
+That's right.  The security state should depend _only_ on the
+file open mode, that is O_RDONLY/WRONLY/RDWR/APPEND.
+
+That is more or less what Pavel is saying too, because the
+pseudo-symlink permission is calculated from the file open mode
+(except for O_APPEND, which is why it shouldn't be done using the
+pseudo-symlink permission).  Ignore the path aspect, it's just a distraction.
+
+-- Jamie
