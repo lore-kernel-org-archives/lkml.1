@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbZJ1R7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZJ1SDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752038AbZJ1R7g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 13:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZJ1R7f
+	id S1752483AbZJ1SDH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 14:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZJ1SDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 13:59:35 -0400
-Received: from foo.birdnet.se ([213.88.146.6]:53469 "HELO foo.birdnet.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751645AbZJ1R7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 13:59:35 -0400
-Message-ID: <20091028175937.27472.qmail@stuge.se>
-Date: Wed, 28 Oct 2009 18:59:37 +0100
-From: Peter Stuge <peter@stuge.se>
-To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>
-Subject: Dropped characters in serial connection without flow control
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>
+	Wed, 28 Oct 2009 14:03:06 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:57807 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752275AbZJ1SDF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 14:03:05 -0400
+Authentication-Results: sj-iport-3.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAPYj6EqrR7Ht/2dsb2JhbADCIpguhD8E
+X-IronPort-AV: E=Sophos;i="4.44,641,1249257600"; 
+   d="scan'208";a="199444381"
+From: Roland Dreier <rdreier@cisco.com>
+To: Mike Travis <travis@sgi.com>
+Cc: Andi Kleen <ak@linux.intel.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
+References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com>
+	<4AE75DB9.3040702@sgi.com> <4AE7C396.7040109@jp.fujitsu.com>
+	<4AE7D59D.9070307@linux.intel.com> <4AE7E40F.20602@jp.fujitsu.com>
+	<4AE7E931.6040703@linux.intel.com> <ada8wevtpbk.fsf@cisco.com>
+	<4AE88151.8000608@sgi.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 28 Oct 2009 11:03:07 -0700
+In-Reply-To: <4AE88151.8000608@sgi.com> (Mike Travis's message of "Wed, 28 Oct
+	2009 10:37:21 -0700")
+Message-ID: <adar5sns8f8.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+X-OriginalArrivalTime: 28 Oct 2009 18:03:08.0020 (UTC) FILETIME=[E7752340:01CA57F8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Stuge wrote:
-> I'm writing a line discipline for a serial port multiplexing
-> hardware
 
-There is no(!) support for flow control in the hardware.
+ > > But would we want to accumulate all the different combinations of banks
+ > > along with a CPU mask and then print something like:
+ > >
+ > >  CPUs 0 4: MCA banks CMCI:2 CMCI:3 CMCI:5 CMCI:6 SHD:8
+ > >  CPUs 1 2 3 5 6 7: MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
+ > >  CPUs 8 9 10 11 12 13 14 15: MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
+ > 
+ > Or use a cpumask and cpulist_scnprintf which condenses the cpu list nicely.
 
-Is there anything I can do to reduce serial port interrupt latency or
-otherwise try to mitigate this in my ldisc or in Linux in general? I
-realize that it will never be quite reliable without any flow
-control.
+Thanks!  I didn't know about that API.
 
-Baud rate is currently 115200 but could become 57600.
+However with that said I think the real issue is whether that style of
+output is a good idea, no matter how nicely the CPU list is formatted :)
 
-Is there something in particular that I can do wrong or right in
-the ldisc?
-
-Might it be a good idea to add a circ_buf in the receiver path and
-move out any and all attempts at parsing incoming data? Currently
-it has a simple message buffer and a state machine in there.
-
-Characters are dropped both going out and coming in. Nothing to do
-about the out direction, but maybe input can be made reliable?
-
-I don't expect it, but maybe you know a trick?
-
-
-//Peter
+ - R.
