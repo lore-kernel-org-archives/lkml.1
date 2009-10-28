@@ -1,70 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZJ1Rgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZJ1RpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbZJ1Rgz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 13:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZJ1Rgy
+	id S1755356AbZJ1RpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 13:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbZJ1Ro7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 13:36:54 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:35457 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755266AbZJ1Rgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 13:36:54 -0400
-Message-ID: <4AE88151.8000608@sgi.com>
-Date: Wed, 28 Oct 2009 10:37:21 -0700
-From: Mike Travis <travis@sgi.com>
+	Wed, 28 Oct 2009 13:44:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48633 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755333AbZJ1Ro6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 13:44:58 -0400
+Message-ID: <4AE88305.8020207@kernel.org>
+Date: Wed, 28 Oct 2009 10:44:37 -0700
+From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Andi Kleen <ak@linux.intel.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
-References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com>	<4AE75DB9.3040702@sgi.com> <4AE7C396.7040109@jp.fujitsu.com>	<4AE7D59D.9070307@linux.intel.com> <4AE7E40F.20602@jp.fujitsu.com>	<4AE7E931.6040703@linux.intel.com> <ada8wevtpbk.fsf@cisco.com>
-In-Reply-To: <ada8wevtpbk.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
+ for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com> <4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com> <4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org> <4AE80170.6030402@jp.fujitsu.com>
+In-Reply-To: <4AE80170.6030402@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kenji Kaneshige wrote:
+> Yinghai Lu wrote:
+>> Yinghai Lu wrote:
+>>> Kenji Kaneshige wrote:
+>>>> I understand you need to touch I/O base/limit and Mem base/limit. But
+>>>> I don't understand why you also need to update bridge's BARs. Could
+>>>> you please explain a little more about it?
+>>>>
+>>>> Just in case, my terminology "bridge's BARs" is Base Address Register
+>>>> 0 (offset 0x10) and Base Address Register 1 (offset 0x14) in the
+>>>> (type 1) configuration space header of the bridge.
+>>> i mean 0x1c, 0x20, 0x28
+>>>
+>>> did not notice that bridge device's 0x10, 0x14 are used...
+>>> if port service need to use 0x10, 0x14, and the device is enabled, we
+>>> should touch 0x10, and 0x14.
+>>
+>> after check the code, if
+>> pci_bridge_assign_resources ==> pdev_assign_resources_sorted ==> 
+>> pdev_sort_resources
+>>
+>> will not touch 0x10 and 0x14, if those resource is claimed by port
+>> service.
+>>
+>> /* Sort resources by alignment */
+>> void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
+>> {               int i;
+>>                         for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+>>                 struct resource *r;
+>>                 struct resource_list *list, *tmp;
+>>                 resource_size_t r_align;
+>>                                 r = &dev->resource[i];
+>>                                         if (r->flags &
+>> IORESOURCE_PCI_FIXED)
+>>                         continue;
+>>                         if (!(r->flags) || r->parent)
+>>                         continue;
+>>                
+>> r->parent != NULL, will make it skip those two.
+>>
+>> So -v3 should be safe.
+>>
+> 
+> Thank you for the clarification.
+> 
+> But I still don't understand the whole picture of your set of
+> changes. Let me ask some questions.
+> 
+> In my understanding of your set of changes, if there is a PCIe
+> switch with some hot-plug slots and all of those slots are empty,
+> I/O and Memory resources assigned by BIOS are all released at
+> the boot time. For example, suppose the following case.
+> 
+>                bridge(A)
+>                   |
+>        -----------------------
+>        |                     |
+>     bridge(B)             bridge(C)
+>        |                     |
+>      slot(1)               slot(2)
+>      (empty)               (empty)
+> 
+>   bridge(A): P2P bridge for switch upstream port
+>   bridge(B): P2P bridge for switch downstream port
+>   bridge(C): P2P bridge for switch downstream port
+> 
+> In the above example, I/O and Mem resource assigned to bridge(A),
+> bridge(B) and bridge(C) are all released at the boot time. Correct?
+> 
+> Then, when a adapter card is hot-added to slot(1), I/O and Mem
+> resources enough for enabling the hot-added adapter card is assigned
+> to bridge(A), bridge(B) and the adapter card. Correct?
+> 
+> Then, when an another adpater card is hot-added to slot(2), we
+> need to assign enough resource to bridge(C) and the new card.
+> But bridge(A) doesn't have enough resource for bridge(C) and
+> the new card. In addition, all bridge(A) and bridge(B) and the
+> adapter card on slot(1) are already working. How do you assign
+> resource to bridge(C) and the card on slot(2)?
+> 
 
+thanks, will update the patches to only handle leaf bridge, and don't touch min_size etc.
 
-Roland Dreier wrote:
->  > Perhaps they could be also compressed a bit like SRAT.
-> 
-> Seems like a good idea... but I wonder what the best way to represent
-> things is.  For example I have a 2-socket Nehalem system that shows:
-> 
->  2 times:  MCA banks CMCI:2 CMCI:3 CMCI:5 CMCI:6 SHD:8
->  6 times:  MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
->  8 times:  MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-> 
-> presumably the first line is once per package, the next line is for the
-> first sibling in all the other cores in a package, and the last line is
-> for the SMT siblings of all the cores.
-> 
-> But would we want to accumulate all the different combinations of banks
-> along with a CPU mask and then print something like:
-> 
->  CPUs 0 4: MCA banks CMCI:2 CMCI:3 CMCI:5 CMCI:6 SHD:8
->  CPUs 1 2 3 5 6 7: MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
->  CPUs 8 9 10 11 12 13 14 15: MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-
-Or use a cpumask and cpulist_scnprintf which condenses the cpu list nicely.
-
-> 
-> of course output like that is going to lead to super-long lines on a
-> 64-thread system.
-> 
-> Also I'm not sure of a clean way to implement this; unlike the SRAT
-> stuff, we need to deal with CPU hotplug so all this at best could be
-> __cpuinitdata, ie we can't discard it in most configs.
-> 
-> However the "MCA banks" output definitely is annoying on a 64-thread
-> system -- the amount of output is far greater than the utility of said
-> output.  So ideas on the best way to reduce this would be appreciated.
-> 
-> Thanks,
->   Roland
+YH
