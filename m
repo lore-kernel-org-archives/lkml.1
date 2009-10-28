@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZJ1TYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZJ1TdC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbZJ1TYy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 15:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZJ1TYx
+	id S1753880AbZJ1TdC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 15:33:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZJ1TdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 15:24:53 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:44057 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbZJ1TYw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 15:24:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=o6kuA+921JTARW8CDlyJO7iYqDw4mMur5Oe0zfdZZl0oCJ47N2MAkr6yIqvv6emAx6
-         E5V08GSFIGkinUE81IkuMpsGApiTkWVKCgG3pWshRBXi/vxNpvf7QlxykU6j2Kukwrfb
-         N5D/07Zv6cB56gPF2FS1NmH0vEK9C7xpOnKUk=
+	Wed, 28 Oct 2009 15:33:01 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:36921 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753497AbZJ1TdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 15:33:00 -0400
+Date: Wed, 28 Oct 2009 20:33:04 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] block fixes for 2.6.32-rc
+Message-ID: <20091028193304.GV10727@kernel.dk>
+References: <20091028185101.GS10727@kernel.dk> <alpine.LFD.2.01.0910281157160.31845@localhost.localdomain> <20091028191004.GU10727@kernel.dk>
 MIME-Version: 1.0
-Date: Wed, 28 Oct 2009 14:24:53 -0500
-Message-ID: <e86b7d350910281224i7e91a1ecp9f3d15d9c36f19cb@mail.gmail.com>
-Subject: Hyperthreading on 4 core CPU DECREASES performance???
-From: Igor Chudov <ichudov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091028191004.GU10727@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At work, we have some users who run a multithreaded app, and they need
- every single bit of performance we can squeeze from computers
-(financial).
+On Wed, Oct 28 2009, Jens Axboe wrote:
+> On Wed, Oct 28 2009, Linus Torvalds wrote:
+> > 
+> > 
+> > On Wed, 28 Oct 2009, Jens Axboe wrote:
+> > > 
+> > > Neil Brown (1):
+> > >       block: use after free bug in __blkdev_get
+> > >
+> > > diff --git a/fs/block_dev.c b/fs/block_dev.c
+> > > index 9cf4b92..8bed055 100644
+> > > --- a/fs/block_dev.c
+> > > +++ b/fs/block_dev.c
+> > > @@ -1248,8 +1248,8 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
+> > >  			bd_set_size(bdev, (loff_t)bdev->bd_part->nr_sects << 9);
+> > >  		}
+> > >  	} else {
+> > > -		put_disk(disk);
+> > >  		module_put(disk->fops->owner);
+> > > +		put_disk(disk);
+> > >  		disk = NULL;
+> > >  		if (bdev->bd_contains == bdev) {
+> > >  			if (bdev->bd_disk->fops->open) {
+> > 
+> > Is this really right? You do the module-put while the disk is still 
+> > available..
+> > 
+> > I get the feeling that it might have been better to do
+> > 
+> > 	struct module *mod = disk->fops->owner;
+> > 	put_disk(disk);
+> > 	module_put(mod);
+> > 
+> > instead, which tries to make sure that the module is put only after we've 
+> > gotten rid of the disk entirely.
+> > 
+> > But I dunno. Maybe there is some reason why it's safe either way. You're 
+> > sure the kobject_put() in put_disk will never call to the module?
+> 
+> Hmm good point. The general use case in block_dev.c is indeed to put the
+> module after the disk, which does seem a bit backwards (at least
+> logically). I'd say pull the patch since it fixes Neil's problem and
+> follows the general pattern, then I'll investigate whether that use
+> pattern is indeed safe. It wont make things worse and the current usage
+> being fixed is definitely wrong.
 
-We are looking into whether we can obtain additional speed performance
- from using Intel hyperthreading, as opposed to disabling
-hyperthreading.
+So if I'm following the convoluted mazes of the kobjects correctly, the
+release is disk_release() and it only does a free+release of the disk,
+partition, and related partition table. So doing the module_put() before
+the put_disk() is safe, even if it does look odd.
 
-If we are able to get benefits from hyperthreading, it will be a huge
-argument towards converting certain high end users desktops to Linux
-from Windows XP.
+-- 
+Jens Axboe
 
-I wrote a test perl script, that starts several tasks in parallel. All
-these tasks perform a certain amount of calculations and exit. The
-test completes when all of them exit.
-
-The results were actually a disappointment, if the number of tasks was
-equal to the number of physical cores. For the test with four parallel
-subprocesses, on four CPUs, It takes longer to run it with HT than
-without HT.
-
-I think that I understand why.
-
-What I found is that not all of these parallel tasks finish at the
-same time. This happens because often times, two tasks are assigned to
-two logical CPUs that share the same core, and some tasks are assigned
- to only one core, whereas some cores are idling.
-
-I cannot believe that I am the only guy with this problem, and hope
-that the Linux community has found a solution. For example, perhaps
-they can assign higher priority to some logical CPUs (say, to 0, 2, 4,
-6) and lower priority to others. This way the higher priority ones
-would be filled with tunning tasks, before fake "shadow processors"
-1,3,5,7 are utilized.
-
-I would like to know if perhaps there is a boot option to this effect.
-
-This is Ubuntu Hardy, 2.6.24 kernel. I tried the same with 2.6.31,
-with the same effect.
-
-This article from Intel:
-
-http://software.intel.com/sites/oss/pdfs/mclinux.pdf
-
-It talks about intelligent handling of multiple cores as a done deal,
-but in my experience that did not actually occur.
-
-I would like to know how can I make the scheduler to prefer to spread
-the tasks across physical cores as opposed to bundling two on one core
-and leaving some cores idle.
