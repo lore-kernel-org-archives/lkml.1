@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZJ1P5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZJ1P6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZJ1P5a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 11:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbZJ1P53
+	id S1754768AbZJ1P6e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 11:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZJ1P6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 11:57:29 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:56073 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754634AbZJ1P52 convert rfc822-to-8bit (ORCPT
+	Wed, 28 Oct 2009 11:58:33 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:41650 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754725AbZJ1P6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 11:57:28 -0400
-Date: Wed, 28 Oct 2009 08:57:27 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, opurdila@ixiacom.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [PATCH] net: fold network name hash (v2)
-Message-ID: <20091028085727.7fc09ab0@nehalam>
-In-Reply-To: <4AE7DF8E.3020607@gmail.com>
-References: <9986527.24561256620662709.JavaMail.root@tahiti.vyatta.com>
-	<19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
-	<20091026.222428.80364204.davem@davemloft.net>
-	<20091027102251.244ee681@nehalam>
-	<20091027150436.56e673cd@nehalam>
-	<4AE7DF8E.3020607@gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 28 Oct 2009 11:58:33 -0400
+Date: Wed, 28 Oct 2009 21:28:27 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [RFC Patch 0/4] Enhance perf-events to profile memory accesses
+	using hw-breakpoints - ver II
+Message-ID: <20091028155827.GA8604@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009 07:07:10 +0100
-Eric Dumazet <eric.dumazet@gmail.com> wrote:
+Hi All,
+	Please find version II of the patchset that enables perf-events to
+place hw-breakpoints over kernel symbols (along with requisite enhancements to
+the hw-breakpoint layer).
 
-> Stephen Hemminger a écrit :
-> > The full_name_hash does not produce a value that is evenly distributed
-> > over the lower 8 bits. This causes name hash to be unbalanced with large
-> > number of names. There is a standard function to fold in upper bits
-> > so use that.
-> > 
-> > This is independent of possible improvements to full_name_hash()
-> > in future.
-> 
-> >  static inline struct hlist_head *dev_name_hash(struct net *net, const char *name)
-> >  {
-> >  	unsigned hash = full_name_hash(name, strnlen(name, IFNAMSIZ));
-> > -	return &net->dev_name_head[hash & ((1 << NETDEV_HASHBITS) - 1)];
-> > +	return &net->dev_name_head[hash_long(hash, NETDEV_HASHBITS)];
-> >  }
-> >  
-> >  static inline struct hlist_head *dev_index_hash(struct net *net, int ifindex)
-> 
-> full_name_hash() returns an "unsigned int", which is guaranteed to be 32 bits
-> 
-> You should therefore use hash_32(hash, NETDEV_HASHBITS),
-> not hash_long() that maps to hash_64() on 64 bit arches, which is
-> slower and certainly not any better with a 32bits input.
+Changelog version II
+---------------------
+Version I: http://lkml.org/lkml/2009/10/26/461
 
-OK, I was following precedent. Only a couple places use hash_32, most use
-hash_long().
+- Fixed parsing issues that disallowed other perf events to be invoked
+- Fixed user-space breakpoint usage which was broken due to patch 2/4
+- Introduced an instance of perf_sample_data for use by do_perf_sw_event()
 
-Using the upper bits does give better distribution.
-With 100,000 network names:
+An edited log of 'perf stat' and 'perf record' output is shown below for your
+reference.
 
-               Time       Ratio       Max   StdDev
-hash_32       0.002123     1.00       422  11.07
-hash_64       0.002927     1.00       400   3.97
+Kindly let me know your suggestions/feedback about the same.
 
-The time field is pretty meaningless for such a small sample
+Thanks,
+K.Prasad
+
+Screen logs
+------------
+# perf stat -v -i -e breakpoint-readwrite:pid_max -e breakpoint-write:jiffies make kernel/futex.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    scripts/checksyscalls.sh
+  CC      kernel/futex.o
+breakpoint-readwrite: 68 298512531 298512531
+breakpoint-write: 235 298512531 298512531
+
+ Performance counter stats for 'make kernel/futex.o':
+
+             68  breakpoint-readwrite     #      0.000 M/sec
+            235  breakpoint-write         #      0.000 M/sec
+
+   14.571235288  seconds time elapsed
+
+#
+#
+# perf record -v -i -e breakpoint-readwrite:jiffies top
+
+[Ran 'top' for about 10 seconds]
+
+# perf report -i perf.data
+# Samples: 2022950155
+#
+# Overhead  Command  Shared Object  Symbol
+# ........  .......  .............  ......
+#
+    99.99%      top  [kernel]       [k] scheduler_tick
+     0.01%     perf  [kernel]       [k] scheduler_tick
+     0.00%      top  [kernel]       [k] set_track
+     0.00%      top  [kernel]       [k] run_timer_softirq
+     0.00%     perf  [kernel]       [k] set_track
+     0.00%      top  [kernel]       [k] __call_rcu
+     0.00%      top  [kernel]       [k] calc_global_load
+     0.00%      top  [kernel]       [k] do_timer
+     0.00%      top  [kernel]       [k] __rcu_process_callbacks
+#
+# (For a higher level overview, try: perf report --sort comm,dso)
+#
