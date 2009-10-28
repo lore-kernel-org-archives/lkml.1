@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZJ1ARt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbZJ1AIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbZJ1ARt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 20:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756938AbZJ1ARt
+	id S1756921AbZJ1AIz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 20:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbZJ1AIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 20:17:49 -0400
-Received: from sg2ehsobe005.messaging.microsoft.com ([207.46.51.79]:8264 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756902AbZJ1ARs convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 20:17:48 -0400
-X-Greylist: delayed 905 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Oct 2009 20:17:48 EDT
-X-SpamScore: 3
-X-BigFish: VPS3(zz4015Lzz1202hzzz2dh6bh68o)
-X-Spam-TCS-SCL: 7:0
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Tue, 27 Oct 2009 20:08:54 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58672 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756911AbZJ1AIx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 20:08:53 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4AE78B88.5000105@s5r6.in-berlin.de>
+Date: Wed, 28 Oct 2009 01:08:40 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: benchmarking no-mmu and mmu Linux system
-Date: Tue, 27 Oct 2009 18:01:38 -0600
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: benchmarking no-mmu and mmu Linux system
-Thread-Index: AcpXYdI4PgGFdHshT4evlm3Xj1dmWQ==
-From: John Linn <John.Linn@xilinx.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Oct 2009 00:01:39.0229 (UTC) FILETIME=[D2B964D0:01CA5761]
-Message-ID: <8381b111-ae73-4ff4-8496-95f0ad7a5930@SG2EHSMHS010.ehs.local>
-X-Reverse-DNS: unknown-60-83.xilinx.com
+To: Joe Perches <joe@perches.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] Re: Zillions of warnings in -next
+References: <20091027152530.75ca60e4@lxorguk.ukuu.org.uk>	 <4AE7258D0200005A000576F6@sinclair.provo.novell.com>	 <20091027222112.74058162@lxorguk.ukuu.org.uk>	 <20091027153651.6d636fe8.randy.dunlap@oracle.com> <1256685917.29938.79.camel@Joe-Laptop.home>
+In-Reply-To: <1256685917.29938.79.camel@Joe-Laptop.home>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to figure out a good tool to use to benchmark embedded
-systems running Linux (MMU and no-MMU) in a disk-less system.
+Joe Perches wrote:
+> On Tue, 2009-10-27 at 15:36 -0700, Randy Dunlap wrote:
+[...]
+>> @@ -643,7 +644,7 @@ eventq_wakeup(struct ioq_notifier *notif
+>>  		struct ioq_ring_desc *desc  = iter.desc;
+>>  		struct vbus_pci_event *event;
+>>  
+>> -		event = (struct vbus_pci_event *)desc->cookie;
+>> +		event = (struct vbus_pci_event *)(unsigned long)desc->cookie;
+>>  
+>>  		switch (event->eventid) {
+>>  		case VBUS_PCI_EVENT_DEVADD:
+> 
+> #define cast_cookie(type, cookie) ((type)(unsigned long)(cookie))
+> #define assign_cookie(var, cookie) (var) = ((typeof(var))(unsigned
+> long)(cookie))
 
-It would be nice for the tool to support no-MMU without changes.
-
-Lmbench and unixbench are the two I have seen used by others.
-
-Thanks,
-John
-
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-
-
+C is usually preferred over cpp. :-)
+-- 
+Stefan Richter
+-=====-==--= =-=- ===--
+http://arcgraph.de/sr/
