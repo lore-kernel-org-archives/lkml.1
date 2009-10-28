@@ -1,95 +1,343 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZJ1AIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbZJ1AKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbZJ1AIr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 20:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756884AbZJ1AIr
+	id S1756924AbZJ1AKi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 20:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbZJ1AKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 20:08:47 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:35192 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756541AbZJ1AIq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 20:08:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:reply-to:organization:user-agent
-         :mime-version:to:cc:subject:references:in-reply-to:x-age:x-location
-         :x-os:x-face:content-type:content-transfer-encoding;
-        b=IHqnghA9B+KgAsGiqg0bkOLQymu/tqpAciZnURg8mePGEGdLL1A/uN118F/yTzkePB
-         tWO1xOKVE3Vy9zQo/uoFeOF4615IonLnUC4EzNbxo+VtymZIoe1TbnGDrevcXa2mCkVW
-         nPeLXCWuYAlRcEl5I+hUOf1LDCoXOr7oP14LE=
-Message-ID: <4AE78B8F.9050201@gmail.com>
-Date: Wed, 28 Oct 2009 01:08:47 +0100
-From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
-Reply-To: vedran.furac@gmail.com
-Organization: Home
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+	Tue, 27 Oct 2009 20:10:37 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:44484 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756891AbZJ1AKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 20:10:36 -0400
+Date: Tue, 27 Oct 2009 17:10:35 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Stephen Hemminger <stephen.hemminger@vyatta.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: Memory overcommit
-References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com> <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com>
-X-Age: 25
-X-Location: Lovran, Croatia
-X-OS: Debian GNU/Linux
-X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] dcache: better name hash function
+Message-ID: <20091027171035.39e18383@nehalam>
+In-Reply-To: <alpine.LFD.2.01.0910271636100.31845@localhost.localdomain>
+References: <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
+	<4AE68E23.20205@gmail.com>
+	<4AE69829.9070207@gmail.com>
+	<4AE6A16F.4020002@gmail.com>
+	<20091027100736.5303f1ab@nehalam>
+	<alpine.LFD.2.01.0910271017170.31845@localhost.localdomain>
+	<20091027160822.384dc109@nehalam>
+	<alpine.LFD.2.01.0910271636100.31845@localhost.localdomain>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="MP_/Kn6XsOHmPAZ2/5dnk/PtF0g"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
+--MP_/Kn6XsOHmPAZ2/5dnk/PtF0g
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> There's advantages to either approach, but it depends on the contextual 
-> goal of the oom killer when it's called: kill a rogue task that is 
-> allocating more memory than expected,
+On Tue, 27 Oct 2009 16:41:52 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-But it is wrong at counting allocated memory!
-Come on, it kills /usr/lib/icedove/run-mozilla.sh. Parent, a shell
-script, instead of its child(s) which allocated memory. Look, "test"
-allocates some (0.1GB) memory, and you have:
+> 
+> 
+> On Tue, 27 Oct 2009, Stephen Hemminger wrote:
+> > 
+> > Going back to basics. Run tests across different input sets.
+> > Dropping off the slow ones like crc, md5, ...
+> > Not using jhash because it doesn't have good character at a time
+> > interface.
+> > 
+> > Also, the folding algorithm used matters. Since the kernel
+> > already uses hash_long() to fold back to N bits, all the
+> > tests were rerun with that.
+> 
+> Yeah, the 'hash_long()' folding matters for anything that doesn't multiply 
+> big some big number to spread the bits out, because otherwise the bits 
+> from the last character hashed will always be in the low bits.
+> 
+> That explains why our current hash looked so bad with your previous code.
+> 
+> From your numbers, I think we can dismiss 'kr_hash()' as having horrible 
+> behavior with names like pppXXX (and that isn't just a special case: it's 
+> also noticeably worse for your /home directory case, which means that the 
+> bad behavior shows up in practice too, not just in some special cases).
+> 
+> 'elf' and 'pjw' don't have quite the same bad case, but the stddev for the 
+> pppXXX cases are still clearly worse than the other alternatives. They 
+> also seem to always be slower than what we already have. 
+> 
+> The 'fnv32' algorithm gets fairly good behavior, but seems bad on Itanium. 
+> Looks like it depends on a fast multiplication unit, and all even your 
+> "slow" ULV chip seems to be a Core2 one, so all your x86 targets have 
+> that. And our current name hash still actually seems to do better in all 
+> cases (maybe I missed some case) even if fnv32 is slightly faster on x86.
+> 
+> From your list 'string10' seems to get consistently good results and is at 
+> or near the top of performance too. It seems to be the one that 
+> consistently beats 'full_name_hash()' both in performance and in behavior 
+> (string_hash17/31 come close, but aren't as clearly better performing).
+> 
+> But I haven't actually seen the hashes. Maybe there's something that makes 
+> string10 bad?
+> 
+> Regardless, one thing your new numbers do say is that our current hash 
+> really isn't that bad.
+> 
+> 		Linus
 
-% cat test.sh
+Agreed. Here is the reduced version of the program.
+To run:
+  find /home -printf '%f\n' 2>/dev/null | ./htest -n 100
 
-#!/bin/sh
-./test&
-./test&
-./test&
-./test
+--MP_/Kn6XsOHmPAZ2/5dnk/PtF0g
+Content-Type: text/x-c++src; name=htest.c
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=htest.c
 
-% perl check_badness.pl|sort -n|g test
+#include <stdio.h>
+#include <stdint.h>
+#include <malloc.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include <getopt.h>
 
-26511   7884    test
-26511   7885    test
-26511   7886    test
-26511   7887    test
-53994   7883    test.sh
+#define init_name_hash()                0
 
-// great, so test.sh "is" the bad ass, ok, emulate OOMK:
+/* partial hash update function. Assume roughly 4 bits per character */
+static inline unsigned long
+partial_name_hash(unsigned long c, unsigned long prevhash)
+{
+        return (prevhash + (c << 4) + (c >> 4)) * 11;
+}
 
-% kill -9 7883
+/* Compute the hash for a name string. */
+static unsigned int
+full_name_hash(const unsigned char *name, unsigned int len)
+{
+        unsigned long hash = 0;
+        while (len--)
+                hash = partial_name_hash(*name++, hash);
+        return hash;
+}
 
-// did we kill "a rogue task"
+static unsigned int
+djb2(const unsigned char *str, unsigned int len)
+{
+	unsigned long hash = 5381;
 
-% perl check_badness.pl|sort -n|g test
+        while (len--)
+		hash = ((hash << 5) + hash) + *str++; /* hash * 33 + c */
 
-26511   7884    test
-26511   7885    test
-26511   7886    test
-26511   7887    test
+        return hash;
+}
 
-// nooo, they are still alive and eating our memory!
+static unsigned int
+string_hash31(const unsigned char *name, unsigned int len)
+{
+        unsigned hash = 0;
+        int i;
 
-QED by newbie. ;)
+        for (i = 0; i < len; ++i)
+                hash = 31 * hash + name[i];
+        return hash;
+}
 
-> or kill a task that will free the most memory.
+static unsigned int
+string_hash17(const unsigned char *name, unsigned int len)
+{
+        unsigned hash = 0;
+        int i;
 
-.
+        for (i = 0; i < len; ++i)
+                hash = 17 * hash + name[i];
+        return hash;
+}
 
+static unsigned int 
+string10(const unsigned char *name, unsigned int len)
+{
+        unsigned hash = 0;
+        int i;
+
+        for (i = 0; i < len; ++i)
+		hash = hash * 10 + name[i] - '0';
+
+        return hash;
+}
+
+static const uint32_t FNV_32_PRIME = 16777619u;
+static const uint32_t FNV1_32_INIT = 2166136261u;
+
+static unsigned int fnv32(const unsigned char *key, unsigned int len)
+{
+	uint32_t hval = FNV1_32_INIT;
+	unsigned int i;
+
+	for (i = 0; i < len; i++) {
+		hval ^= key[i];
+#if defined(NO_FNV_GCC_OPTIMIZATION)
+		hval *= FNV_32_PRIME;
+#else
+		hval += (hval<<1) + (hval<<4) + (hval<<7)
+			+ (hval<<8) + (hval<<24);
+#endif
+	}
+
+	return hval;
+}
+
+static unsigned order = 8;
+static unsigned iterations = 10000;
+static char **names;
+static unsigned num_names;
+
+static void read_names(void)
+{
+	char line[1024];
+	unsigned int n = 0;
+	
+	/* Read input to create name set */
+	while (fgets(line, sizeof line, stdin) != NULL) {
+		names = realloc(names, (n + 1) * sizeof(char *));
+		names[n] = malloc(strlen(line) + 1);
+		strcpy(names[n], line);
+		++n;
+	}
+	num_names = n;
+}
+
+/* 2^31 + 2^29 - 2^25 + 2^22 - 2^19 - 2^16 + 1 */
+#define GOLDEN_RATIO_PRIME_32 0x9e370001UL
+/*  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1 */
+#define GOLDEN_RATIO_PRIME_64 0x9e37fffffffc0001UL
+
+/* Unrolled version of hash_long() */
+static inline unsigned int fold(unsigned int val, unsigned int bits)
+{
+	if (sizeof(val) == 8) {
+		uint64_t hash = val;
+		/*  Sigh, gcc can't optimise this alone like it does for 32 bits. */
+		uint64_t n = hash;
+		n <<= 18;
+		hash -= n;
+		n <<= 33;
+		hash -= n;
+		n <<= 3;
+		hash += n;
+		n <<= 3;
+		hash -= n;
+		n <<= 4;
+		hash += n;
+		n <<= 2;
+		hash += n;
+
+		/* High bits are more random, so use them. */
+		return hash >> (64 - bits);
+	} else {
+		/* On some cpus multiply is faster, on others gcc will do shifts */
+		uint32_t hash = val * GOLDEN_RATIO_PRIME_32;
+
+		/* High bits are more random, so use them. */
+		return hash >> (32 - bits);
+	}
+}
+
+static void measure(const char *name,  
+		    unsigned int (*hash)(const unsigned char *, unsigned int))
+{
+	unsigned int i;
+	struct timeval t0, t1;
+	unsigned int hashsz = 1 << order;
+	unsigned int dist[hashsz];
+	unsigned long long probes = 0;
+	double t;
+	unsigned long m = 0;
+	const double avg = num_names / hashsz;
+	double ideal = hashsz * (avg * (1 + avg)) / 2;
+	double std = 0;
+
+	memset(dist, 0, sizeof(unsigned int) * hashsz);
+
+	gettimeofday(&t0, NULL);
+	for (i = 0; i < num_names; i++) {
+		unsigned char *name = (unsigned char *) names[i];
+		size_t len = strlen(names[i]);
+		unsigned int h = 0, j;
+
+		for (j = 0; j < iterations; j++)
+			h = hash(name, len);
+
+		/* fold in extra bits */
+		++dist[fold(h, order)];
+	}
+	gettimeofday(&t1, NULL);
+	t = (double) (t1.tv_sec - t0.tv_sec);
+	t += (double) (t1.tv_usec - t0.tv_usec) / 1000000.;
+
+	for (i = 0; i < hashsz; i++) {
+		unsigned int n = dist[i];
+		double delta = (n - avg);
+
+		if (n > m) m = n;	/* longest chain */
+		
+		std += delta * delta;	/* compute standard deviation */
+		
+		/* number of probes used when accessing 
+		   is same as sum of arithmetic series */
+		probes += ((uint64_t) n * (1 + n)) / 2;
+	}
+
+
+	printf("%-20s %f", name, t);
+	printf(" %8.2f %9lu %6.2f\n",
+	       (double) probes / ideal, m, sqrt(std / hashsz));
+
+}
+#define MEASURE(func)	measure(#func, &func)
+
+int main(int argc, char **argv)
+{
+	int f;
+
+	while ((f = getopt(argc, argv, "h:n:")) != -1)
+		switch (f) {
+		case 'n':
+			iterations = strtoul(optarg, NULL, 0);
+			break;
+
+		case 'h':
+			order = strtoul(optarg, NULL, 0);
+			break;
+
+		default:
+			fprintf(stderr, 
+				"Usage: %s -a -h hash -n testsize\n",
+				argv[0]);
+			return 1;
+		}
+
+	read_names();
+
+	printf("Algorithm             Time       Ratio       Max   StdDev\n");
+
+	MEASURE(full_name_hash);
+	MEASURE(djb2);
+	MEASURE(string10);
+	MEASURE(string_hash17);
+	MEASURE(string_hash31);
+
+	MEASURE(fnv32);
+
+        return 0;
+}
+
+--MP_/Kn6XsOHmPAZ2/5dnk/PtF0g--
