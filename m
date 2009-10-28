@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbZJ1MQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbZJ1MQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753564AbZJ1MQJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 08:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZJ1MQI
+	id S1753604AbZJ1MQk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 08:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZJ1MQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 08:16:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35938
+	Wed, 28 Oct 2009 08:16:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54249
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753455AbZJ1MQI (ORCPT
+	by vger.kernel.org with ESMTP id S1753293AbZJ1MQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 08:16:08 -0400
-Date: Wed, 28 Oct 2009 05:16:31 -0700 (PDT)
-Message-Id: <20091028.051631.212225494.davem@davemloft.net>
+	Wed, 28 Oct 2009 08:16:39 -0400
+Date: Wed, 28 Oct 2009 05:17:03 -0700 (PDT)
+Message-Id: <20091028.051703.82082932.davem@davemloft.net>
 To: arndbergmann@googlemail.com
 Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net, andi@firstfloor.org,
        linux-kernel@vger.kernel.org
@@ -32,15 +32,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Arnd Bergmann <arndbergmann@googlemail.com>
 Date: Wed, 28 Oct 2009 13:13:32 +0100
 
-> The ioctl argument actually needs a compat_ptr() conversion as well.
-> For the s390 case, we can't do that in common code, because some
-> ioctl methods put a 32 bit integer into the argument. Not sure if we
-> want to fix that everywhere, the problem is very common and the
-> impact is minimal.
+> IMHO a better way to handle the radeon specific ioctls would be to
+> avoid the compat_alloc_user_space and just define the common
+> function taking a kernel pointer, with two implementations of the
+> copy operation:
 
-What does s390 do with the 'arg' argument to sys_ioctl()?
-
-That assumption that you can cast this to a pointer is everywhere.
-
-If someone wants to fix this up, feel free to do an audit and go
-over that seperately from my work :-)
+Agreed, that would be a great follow-on patch to mine.
