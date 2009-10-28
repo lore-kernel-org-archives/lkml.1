@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbZJ1Ojf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZJ1Ooh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbZJ1Ojf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 10:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZJ1Oje
+	id S1754156AbZJ1Ooh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 10:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZJ1Ooh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 10:39:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60554 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753727AbZJ1Oje (ORCPT
+	Wed, 28 Oct 2009 10:44:37 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37933 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbZJ1Oog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 10:39:34 -0400
-Subject: Re: [PATCH] tracing/filters: Fix to make system filter work
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AE810BD.3070009@cn.fujitsu.com>
-References: <4AE810BD.3070009@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 28 Oct 2009 10:39:36 -0400
-Message-Id: <1256740776.26028.1320.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 10:44:36 -0400
+Date: Wed, 28 Oct 2009 10:44:26 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, nhorman@tuxdriver.com
+Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
+	external to a process (v7)
+Message-ID: <20091028144426.GA7422@hmsreliant.think-freely.org>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091012161342.GA32088@hmsreliant.think-freely.org> <20091012201304.GG32088@hmsreliant.think-freely.org> <20091020005214.GA8886@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091020005214.GA8886@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.2 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-28 at 17:37 +0800, Li Zefan wrote:
-> commit fce29d15b59245597f7f320db4a9f2be0f5fb512
-> ("tracing/filters: Refactor subsystem filter code")
-> broke system filter accidentally.
+On Mon, Oct 19, 2009 at 08:52:15PM -0400, Neil Horman wrote:
+> Ok, I give.  I was hoping that some of the requestors of this feature would pipe
+> up and support the use case for the proc file interface to set limits.  clearly
+> they're not that interested, but I still think theres merit in the patch.  So
+> heres version 7 of this patch set.  Its the same as before, but the proc
+> interface has been dropped, leaving only the syscall interface behind.  I've
+> tested the interface on intel 32 and 64 bit, with success
+> 
+> Summary:
+> 
+> Its been requested often that we have the ability to read and modify process
+> rlimit values from contexts external to the owning process.  Ideally this allows
+> sysadmins to adjust rlimits on long running processes wihout the need to stop
+> and restart those processes, which incurs undesireable downtime.  This patch
+> enables that functionality,  It does so in two places.  First it enables process
+> limit setting by writing to the /proc/pid/limits file a string in the format:
+> <limit> <current limit> <max limit> > /proc/<pid>/limits
+> where limit is one of
+> [as,core,cpu,data,fsize,locks,memlock,msgqueue,nice,nofile,nproc,rss,rtprio,rttime]
+> 
+> Secondly it allows for programatic setting of these limits via 2 new syscalls,
+> getprlimit, and setprlimit, which act in an identical fashion to getrlimit and
+> setrlimit respectively, except that they except a process id as an extra
+> argument, to specify the process id of the rlimit values that you wish to
+> read/write
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+>  
+>  
+>  
+>  
+> 
 
-Thanks Li!
-
-I'll pull this in and send it off to Ingo, in case he has not already
-done so.
-
--- Steve
-
+Ping?  Any thoughts
+Regards
+Neil
 
