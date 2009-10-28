@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932585AbZJ1HtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbZJ1Hsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932585AbZJ1HtH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 03:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbZJ1HtF
+	id S1757563AbZJ1Hsy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 03:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756915AbZJ1Hsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 03:49:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48014 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Oct 2009 03:48:54 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42864 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756915AbZJ1HtC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 03:49:02 -0400
-Date: Wed, 28 Oct 2009 08:48:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
-       joerg.roedel@amd.com, Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <tj@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
-Message-ID: <20091028074832.GC19402@elte.hu>
-References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1756771AbZJ1Hsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 03:48:53 -0400
+Date: Wed, 28 Oct 2009 18:48:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: tip tree build warning
+Message-Id: <20091028184851.504752ef.sfr@canb.auug.org.au>
+In-Reply-To: <20091028184126.b5f52d1b.sfr@canb.auug.org.au>
+References: <20091028181443.50a09dbb.sfr@canb.auug.org.au>
+	<20091028073145.GD6353@elte.hu>
+	<20091028184126.b5f52d1b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__28_Oct_2009_18_48_51_+1100_yghw_zaPAgMySmut"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__28_Oct_2009_18_48_51_+1100_yghw_zaPAgMySmut
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+Hi all,
 
-> From: Chris Wright <chrisw@sous-sol.org>
-> 
-> Add a new function for freeing bootmem after the bootmem allocator has
-> been released and the unreserved pages given to the page allocator.
-> This allows us to reserve bootmem and then release it if we later
-> discover it was not needed.
-> 
-> Reviewed-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-> ---
->  include/linux/bootmem.h |    1 +
->  mm/bootmem.c            |   43 ++++++++++++++++++++++++++++++++++++++-----
->  2 files changed, 39 insertions(+), 5 deletions(-)
+On Wed, 28 Oct 2009 18:41:26 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> static inline physid_mask_t default_apicid_to_cpu_present(int phys_apicid)
+> {
+>         return physid_mask_of_physid(phys_apicid);
+> }
 
-Hm, we are now further complicating the bootmem model.
+I just noticed that this function (default_apicid_to_cpu_present) is
+declared "static inline in a header" but looks like it is only used by
+assigning its address to a function pointer.  Its only use for x86_64 is
+in arch/x86/kernel/apic/apic_noop.c ...
 
-I think we could remove the bootmem allocator middle man altogether. 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-This can be done by initializing the page allocator sooner and by 
-extending (already existing) 'reserve memory early on' mechanisms in 
-architecture code. (the reserve_early*() APIs in x86 for example)
+--Signature=_Wed__28_Oct_2009_18_48_51_+1100_yghw_zaPAgMySmut
+Content-Type: application/pgp-signature
 
-Right now we have 5 memory allocation models on x86, initialized 
-gradually:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
- - allocator                        (buddy)                 [generic]
- - early allocator                  (bootmem)               [generic]
- - very early allocator             (reserve_early*())      [x86]
- - very very early allocator        (early brk model)       [x86]
- - very very very early allocator   (build time .data/.bss) [generic]
+iEYEARECAAYFAkrn92MACgkQjjKRsyhoI8yTvQCfaWInS0M1wTxR4OrzyA7oCPTY
+LT0An2vO79TWjrbso7EOkJLnBkpssLVn
+=UFiw
+-----END PGP SIGNATURE-----
 
-Seems excessive.
-
-The reserve_early() method is list/range based and can handle vast 
-amounts of not very fragmented memory - perfect for basically all the 
-real bootmem purposes (which is to bootstrap the buddy).
-
-reserve_early() allocated memory could be freed into the buddy later on 
-as well. The main reason why bootmem is 'destroyed' during free-to-buddy 
-is because it has excessive internal bitmaps we want to free. With a 
-list/range based reserve_early() mechanism there's no such problem - 
-they can linger indefinitely and there's near zero allocation management 
-overhead.
-
-reserve_early() might need some small amount of extra work before it can 
-be used as a generic early allocator - like adding a node field to it 
-(so that the buddy can then pick those ranges up in a NUMA aware 
-fashion) - but nothing very complex.
-
-Thoughts?
-
-	Ingo
+--Signature=_Wed__28_Oct_2009_18_48_51_+1100_yghw_zaPAgMySmut--
