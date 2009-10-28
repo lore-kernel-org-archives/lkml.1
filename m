@@ -1,240 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbZJ1TVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZJ1TYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbZJ1TVo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 15:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbZJ1TVn
+	id S1753763AbZJ1TYy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 15:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZJ1TYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 15:21:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38102 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbZJ1TVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 15:21:40 -0400
-Message-ID: <4AE899A0.3020006@kernel.org>
-Date: Wed, 28 Oct 2009 12:21:04 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 28 Oct 2009 15:24:53 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:44057 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbZJ1TYw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 15:24:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=o6kuA+921JTARW8CDlyJO7iYqDw4mMur5Oe0zfdZZl0oCJ47N2MAkr6yIqvv6emAx6
+         E5V08GSFIGkinUE81IkuMpsGApiTkWVKCgG3pWshRBXi/vxNpvf7QlxykU6j2Kukwrfb
+         N5D/07Zv6cB56gPF2FS1NmH0vEK9C7xpOnKUk=
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Chiang <achiang@hp.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH 1/2] pci: pciehp update the slot bridge res to get big range
- for pcie devices - v4
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org> <m1ljivibrt.fsf@fess.ebiederm.org>
-In-Reply-To: <m1ljivibrt.fsf@fess.ebiederm.org>
+Date: Wed, 28 Oct 2009 14:24:53 -0500
+Message-ID: <e86b7d350910281224i7e91a1ecp9f3d15d9c36f19cb@mail.gmail.com>
+Subject: Hyperthreading on 4 core CPU DECREASES performance???
+From: Igor Chudov <ichudov@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+At work, we have some users who run a multithreaded app, and they need
+ every single bit of performance we can squeeze from computers
+(financial).
 
+We are looking into whether we can obtain additional speed performance
+ from using Intel hyperthreading, as opposed to disabling
+hyperthreading.
 
-move out bus_size_bridges and assign resources out of pciehp_add_bridge()
-and at last do them all together one time including slot bridge, to avoid to
-call assign resources several times, when there are several bridges under the
-slot bridge.
+If we are able to get benefits from hyperthreading, it will be a huge
+argument towards converting certain high end users desktops to Linux
+from Windows XP.
 
-need to introduce pci_bridge_assign_resources there.
+I wrote a test perl script, that starts several tasks in parallel. All
+these tasks perform a certain amount of calculations and exit. The
+test completes when all of them exit.
 
-handle the case the slot bridge that doesn't get pre-allocated big enough res
-from FW.
-for example pcie devices need 256M, but the bridge only get preallocated 2M...
+The results were actually a disappointment, if the number of tasks was
+equal to the number of physical cores. For the test with four parallel
+subprocesses, on four CPUs, It takes longer to run it with HT than
+without HT.
 
-pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
-update res is not updated to bridge BAR. that is bridge is enabled already for
-port service.
+I think that I understand why.
 
--v2: address Alex's concern about pci remove/rescan feature about pci_setup_bridge changes.
--v3: Kenji pointed out that pci_config_slot need to be called before pci_bus_add_devices()
--v4: move out pci_is_enabled checkout of pci_setup_bridge()
+What I found is that not all of these parallel tasks finish at the
+same time. This happens because often times, two tasks are assigned to
+two logical CPUs that share the same core, and some tasks are assigned
+ to only one core, whereas some cores are idling.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+I cannot believe that I am the only guy with this problem, and hope
+that the Linux community has found a solution. For example, perhaps
+they can assign higher priority to some logical CPUs (say, to 0, 2, 4,
+6) and lower priority to others. This way the higher priority ones
+would be filled with tunning tasks, before fake "shadow processors"
+1,3,5,7 are utilized.
 
----
- drivers/pci/hotplug/pciehp_pci.c |   29 ++++++++++++---
- drivers/pci/setup-bus.c          |   73 ++++++++++++++++++++++++++++++++++++---
- include/linux/pci.h              |    1 
- 3 files changed, 93 insertions(+), 10 deletions(-)
+I would like to know if perhaps there is a boot option to this effect.
 
-Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
-+++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
-@@ -53,19 +53,18 @@ static int __ref pciehp_add_bridge(struc
- 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
- 	if (!dev->subordinate)
- 		return -1;
--	pci_bus_size_bridges(dev->subordinate);
--	pci_bus_assign_resources(parent);
--	pci_enable_bridges(parent);
--	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
- 
- int pciehp_configure_device(struct slot *p_slot)
- {
- 	struct pci_dev *dev;
--	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
-+	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
-+	struct pci_bus *parent = bridge->subordinate;
- 	int num, fn;
- 	struct controller *ctrl = p_slot->ctrl;
-+	int retval;
- 
- 	dev = pci_get_slot(parent, PCI_DEVFN(0, 0));
- 	if (dev) {
-@@ -96,12 +95,30 @@ int pciehp_configure_device(struct slot
- 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
- 			pciehp_add_bridge(dev);
- 		}
-+		pci_dev_put(dev);
-+	}
-+
-+	pci_bus_size_bridges(parent);
-+	pci_clear_master(bridge);
-+	pci_bridge_assign_resources(bridge);
-+	retval = pci_reenable_device(bridge);
-+	pci_set_master(bridge);
-+	pci_enable_bridges(parent);
-+
-+	for (fn = 0; fn < 8; fn++) {
-+		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
-+		if (!dev)
-+			continue;
-+		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
-+			pci_dev_put(dev);
-+			continue;
-+		}
- 		pci_configure_slot(dev);
- 		pci_dev_put(dev);
- 	}
- 
--	pci_bus_assign_resources(parent);
- 	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/pci/setup-bus.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -27,6 +27,44 @@
- #include <linux/slab.h>
- #include "pci.h"
- 
-+static void pdev_assign_resources_sorted(struct pci_dev *dev)
-+{
-+	struct resource *res;
-+	struct resource_list head, *list, *tmp;
-+	int idx;
-+	u16 class = dev->class >> 8;
-+
-+	head.next = NULL;
-+
-+	/* Don't touch classless devices or host bridges or ioapics.  */
-+	if (class == PCI_CLASS_NOT_DEFINED ||
-+	    class == PCI_CLASS_BRIDGE_HOST)
-+		return;
-+
-+	/* Don't touch ioapic devices already enabled by firmware */
-+	if (class == PCI_CLASS_SYSTEM_PIC) {
-+		u16 command;
-+		pci_read_config_word(dev, PCI_COMMAND, &command);
-+		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
-+			return;
-+	}
-+
-+	pdev_sort_resources(dev, &head);
-+
-+	for (list = head.next; list;) {
-+		res = list->res;
-+		idx = res - &list->dev->resource[0];
-+		if (pci_assign_resource(list->dev, idx)) {
-+			res->start = 0;
-+			res->end = 0;
-+			res->flags = 0;
-+		}
-+		tmp = list;
-+		list = list->next;
-+		kfree(tmp);
-+	}
-+}
-+
- static void pbus_assign_resources_sorted(const struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
-@@ -144,9 +182,6 @@ static void pci_setup_bridge(struct pci_
- 	u32 l, bu, lu, io_upper16;
- 	int pref_mem64;
- 
--	if (pci_is_enabled(bridge))
--		return;
--
- 	dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
- 		 pci_domain_nr(bus), bus->number);
- 
-@@ -541,6 +576,35 @@ void __ref pci_bus_size_bridges(struct p
- }
- EXPORT_SYMBOL(pci_bus_size_bridges);
- 
-+void __ref pci_bridge_assign_resources(const struct pci_dev *bridge)
-+{
-+	struct pci_bus *b;
-+
-+	pdev_assign_resources_sorted((struct pci_dev *)bridge);
-+
-+	b = bridge->subordinate;
-+	if (!b)
-+		return;
-+
-+	pci_bus_assign_resources(b);
-+
-+	switch (bridge->class >> 8) {
-+	case PCI_CLASS_BRIDGE_PCI:
-+		pci_setup_bridge(b);
-+		break;
-+
-+	case PCI_CLASS_BRIDGE_CARDBUS:
-+		pci_setup_cardbus(b);
-+		break;
-+
-+	default:
-+		dev_info(&bridge->dev, "not setting up bridge for bus "
-+			 "%04x:%02x\n", pci_domain_nr(b), b->number);
-+		break;
-+	}
-+}
-+EXPORT_SYMBOL(pci_bridge_assign_resources);
-+
- void __ref pci_bus_assign_resources(const struct pci_bus *bus)
- {
- 	struct pci_bus *b;
-@@ -557,7 +621,8 @@ void __ref pci_bus_assign_resources(cons
- 
- 		switch (dev->class >> 8) {
- 		case PCI_CLASS_BRIDGE_PCI:
--			pci_setup_bridge(b);
-+			if (!pci_is_enabled(dev))
-+				pci_setup_bridge(b);
- 			break;
- 
- 		case PCI_CLASS_BRIDGE_CARDBUS:
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -756,6 +756,7 @@ ssize_t pci_write_vpd(struct pci_dev *de
- int pci_vpd_truncate(struct pci_dev *dev, size_t size);
- 
- /* Helper functions for low-level code (drivers/pci/setup-[bus,res].c) */
-+void pci_bridge_assign_resources(const struct pci_dev *bridge);
- void pci_bus_assign_resources(const struct pci_bus *bus);
- void pci_bus_size_bridges(struct pci_bus *bus);
- int pci_claim_resource(struct pci_dev *, int);
+This is Ubuntu Hardy, 2.6.24 kernel. I tried the same with 2.6.31,
+with the same effect.
 
+This article from Intel:
+
+http://software.intel.com/sites/oss/pdfs/mclinux.pdf
+
+It talks about intelligent handling of multiple cores as a done deal,
+but in my experience that did not actually occur.
+
+I would like to know how can I make the scheduler to prefer to spread
+the tasks across physical cores as opposed to bundling two on one core
+and leaving some cores idle.
