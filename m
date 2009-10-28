@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbZJ1QaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZJ1Qce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbZJ1QaV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 12:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZJ1QaV
+	id S1754969AbZJ1Qce (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 12:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbZJ1Qcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 12:30:21 -0400
-Received: from mail.df.lth.se ([194.47.250.12]:59901 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754230AbZJ1QaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 12:30:20 -0400
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH] Fix some AB3100 regulator issues
-Date: Wed, 28 Oct 2009 17:30:15 +0100
-Message-Id: <1256747415-18486-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+	Wed, 28 Oct 2009 12:32:33 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:4136 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753479AbZJ1Qcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 12:32:32 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Date: Wed, 28 Oct 2009 09:32:26 -0700
+From: "Matt Carlson" <mcarlson@broadcom.com>
+To: "Rik van Riel" <riel@redhat.com>
+cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Linux kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Matthew Carlson" <mcarlson@broadcom.com>,
+       "Michael Chan" <mchan@broadcom.com>, "KVM list" <kvm@vger.kernel.org>
+Subject: Re: TG3, kvm, ipv6 & tso data corruption bug?
+Message-ID: <20091028163226.GA8556@xw6200.broadcom.net>
+References: <4AE8595F.1080404@redhat.com>
+MIME-Version: 1.0
+In-Reply-To: <4AE8595F.1080404@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-WSS-ID: 66F6AD905KG34295712-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch will remove surplus register writes on shut down of
-LDO D (this magic was not needed), remove an unnecessary (!) error
-check and really unregister the regulators when the module is
-unloaded.
+On Wed, Oct 28, 2009 at 07:46:55AM -0700, Rik van Riel wrote:
+> I have been tracking down what I thought was a KVM related network
+> issue for a while, however it appears it could be a hardware issue.
+> 
+> The symptom is that data in network packets gets corrupted, before
+> the checksum is calculated.  This means the remote host can get
+> corrupted data, with no way to calculate it (except application
+> level checksums).  Luckily ssh has such checksums, so my rsync over
+> ssh backup script discovered this issue.
+> 
+> On a very regular basis, I got this message from ssh:
+> 
+> 	Corrupted MAC on input.
+> 
+> I have played around a bit and narrowed it down to the following:
+> 
+> ipv4          => no problem
+> ipv6 w/o tso  => no problem
+> ipv6 with tso => occasional data corruption
+> 
+> Disabling tso with ethtool -K eth0 tso off makes the problem stop.
+> 
+> I am running Fedora 12's 2.6.31.1-56.fc12.x86_64 kernel, with the
+> following hardware:
+> 
+> 05:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5761 
+> Gigabit Ethernet PCIe (rev 10)
+> 
+> I do not know enough about the network layer to know whether this is
+> fixable in software or whether TSO offloading for ipv6 should just
+> be disabled on this model.
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
----
- drivers/regulator/ab3100.c |   23 ++---------------------
- 1 files changed, 2 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/regulator/ab3100.c b/drivers/regulator/ab3100.c
-index 5da127b..b349db4 100644
---- a/drivers/regulator/ab3100.c
-+++ b/drivers/regulator/ab3100.c
-@@ -241,24 +241,12 @@ static int ab3100_disable_regulator(struct regulator_dev *reg)
- 	 * LDO D is a special regulator. When it is disabled, the entire
- 	 * system is shut down. So this is handled specially.
- 	 */
-+	pr_info("Called ab3100_disable_regulator\n");
- 	if (abreg->regreg == AB3100_LDO_D) {
--		int i;
--
- 		dev_info(&reg->dev, "disabling LDO D - shut down system\n");
--		/*
--		 * Set regulators to default values, ignore any errors,
--		 * we're going DOWN
--		 */
--		for (i = 0; i < ARRAY_SIZE(ab3100_reg_init_order); i++) {
--			(void) ab3100_set_register_interruptible(abreg->ab3100,
--					ab3100_reg_init_order[i],
--					abreg->plfdata->reg_initvals[i]);
--		}
--
- 		/* Setting LDO D to 0x00 cuts the power to the SoC */
- 		return ab3100_set_register_interruptible(abreg->ab3100,
- 							 AB3100_LDO_D, 0x00U);
--
- 	}
- 
- 	/*
-@@ -607,13 +595,6 @@ static int __init ab3100_regulators_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	if (err) {
--		dev_err(&pdev->dev,
--			"LDO D regulator initialization failed with error %d\n",
--			err);
--		return err;
--	}
--
- 	/* Register the regulators */
- 	for (i = 0; i < AB3100_NUM_REGULATORS; i++) {
- 		struct ab3100_regulator *reg = &ab3100_regulators[i];
-@@ -688,7 +669,7 @@ static __init int ab3100_regulators_init(void)
- 
- static __exit void ab3100_regulators_exit(void)
- {
--	platform_driver_register(&ab3100_regulators_driver);
-+	platform_driver_unregister(&ab3100_regulators_driver);
- }
- 
- subsys_initcall(ab3100_regulators_init);
--- 
-1.6.3.3
+This problem sounds familiar.  There are chip bugs in this area, but as
+far as I know, they should have been worked around.  Let me see if this
+is indeed the same bug resurfacing.
 
