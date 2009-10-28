@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbZJ1RSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZJ1RSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbZJ1RSU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 13:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbZJ1RSS
+	id S1755277AbZJ1RSZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 13:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbZJ1RSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 13:18:18 -0400
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:33412 "EHLO
+	Wed, 28 Oct 2009 13:18:23 -0400
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:33416 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755163AbZJ1RSR (ORCPT
+	by vger.kernel.org with ESMTP id S1755167AbZJ1RSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 13:18:17 -0400
-Subject: [PATCH 1/3] kmemleak: Release the object lock before calling
-	put_object()
+	Wed, 28 Oct 2009 13:18:22 -0400
+Subject: [PATCH 2/3] kmemleak: Show the age of an unreferenced object
 To: linux-kernel@vger.kernel.org
 From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Wed, 28 Oct 2009 17:18:20 +0000
-Message-ID: <20091028171820.19220.70957.stgit@pc1117.cambridge.arm.com>
+Date: Wed, 28 Oct 2009 17:18:26 +0000
+Message-ID: <20091028171826.19220.54561.stgit@pc1117.cambridge.arm.com>
 In-Reply-To: <20091028171426.19220.658.stgit@pc1117.cambridge.arm.com>
 References: <20091028171426.19220.658.stgit@pc1117.cambridge.arm.com>
 User-Agent: StGit/0.15-1-g9f9ed
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Oct 2009 17:18:21.0149 (UTC) FILETIME=[A5F528D0:01CA57F2]
+X-OriginalArrivalTime: 28 Oct 2009 17:18:26.0774 (UTC) FILETIME=[A94F7760:01CA57F2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The put_object() function may free the object if the use_count
-dropped to 0. There shouldn't be further accesses to such object unless
-it is known that the use_count is non-zero.
+The jiffies shown for unreferenced objects isn't always meaningful to
+people debugging kernel memory leaks. This patch adds the age as well to
+the displayed information.
 
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- mm/kmemleak.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+ mm/kmemleak.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 9610635..f06c092 100644
+index f06c092..ce79d91 100644
 --- a/mm/kmemleak.c
 +++ b/mm/kmemleak.c
-@@ -1025,11 +1025,14 @@ static void scan_block(void *_start, void *_end,
- 		 * added to the gray_list.
- 		 */
- 		object->count++;
--		if (color_gray(object))
-+		if (color_gray(object)) {
- 			list_add_tail(&object->gray_list, &gray_list);
--		else
--			put_object(object);
-+			spin_unlock_irqrestore(&object->lock, flags);
-+			continue;
-+		}
-+
- 		spin_unlock_irqrestore(&object->lock, flags);
-+		put_object(object);
- 	}
- }
+@@ -346,11 +346,13 @@ static void print_unreferenced(struct seq_file *seq,
+ 			       struct kmemleak_object *object)
+ {
+ 	int i;
++	unsigned int msecs_age = jiffies_to_msecs(jiffies - object->jiffies);
+ 
+ 	seq_printf(seq, "unreferenced object 0x%08lx (size %zu):\n",
+ 		   object->pointer, object->size);
+-	seq_printf(seq, "  comm \"%s\", pid %d, jiffies %lu\n",
+-		   object->comm, object->pid, object->jiffies);
++	seq_printf(seq, "  comm \"%s\", pid %d, jiffies %lu (age %d.%03ds)\n",
++		   object->comm, object->pid, object->jiffies,
++		   msecs_age / 1000, msecs_age % 1000);
+ 	hex_dump_object(seq, object);
+ 	seq_printf(seq, "  backtrace:\n");
  
 
