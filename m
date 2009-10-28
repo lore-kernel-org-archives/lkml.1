@@ -1,49 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbZJ1Iab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932724AbZJ1Ib2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712AbZJ1Iab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 04:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932656AbZJ1Iaa
+	id S932724AbZJ1Ib2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 04:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbZJ1Ib1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 04:30:30 -0400
-Received: from borg.medozas.de ([188.40.89.202]:60157 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932652AbZJ1Iaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 04:30:30 -0400
-Date: Wed, 28 Oct 2009 09:30:33 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Yuhong Bao <yuhongbao_386@hotmail.com>
-cc: macro@linux-mips.org, davej@redhat.com, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Subject: RE: [X86] Fix up silly i1586 boot message.
-In-Reply-To: <SNT125-W471F856F2358A53E59A13BC3B80@phx.gbl>
-Message-ID: <alpine.LSU.2.00.0910280914590.28170@obet.zrqbmnf.qr>
-References: <20080528165713.GA412@redhat.com> <alpine.LNX.1.10.0805281943330.19264@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.55.0805281850540.29522@cliff.in.clinika.pl> <alpine.LNX.1.10.0805282001180.19264@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.55.0805281916480.29522@c
- <SNT125-W471F856F2358A53E59A13BC3B80@phx.gbl>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Wed, 28 Oct 2009 04:31:27 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:40032 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932674AbZJ1IbZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 04:31:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lrvi2Ltg3WaHgb4ORIKsJw3SPDvRoSDyPzCttL2KiS0Cmh1Q+1UxAXvjn/Plhsn61/
+         ZKXGbdRKGfD+WSKSVVSCuKmHkb0s158zJ+SXj8q4IGogJWTcBH/N+nXd1ijO6MyX/VnN
+         fg6bPabZcHWxev3oSyuEzx+BOGr+2GU+u6wOc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <e9c3a7c20910121524l5a2207b9h840142c6793dad6e@mail.gmail.com>
+References: <1255078843-24958-1-git-send-email-linus.walleij@stericsson.com>
+	 <e9c3a7c20910121524l5a2207b9h840142c6793dad6e@mail.gmail.com>
+Date: Wed, 28 Oct 2009 09:31:29 +0100
+Message-ID: <63386a3d0910280131k5043648fu600a223936cd081a@mail.gmail.com>
+Subject: Re: [PATCH] Add COH 901 318 DMA block driver v2
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Dan, thanks *a lot* for the review, a v3 version will follow
+shortly, hopefully
+this will be mainline material. Most remarks have been fixed, some notices
+below...
 
-On Wednesday 2009-10-28 04:08, Yuhong Bao wrote:
-> <Pine.LNX.4.55.0805290102340.29522@cliff.in.clinika.pl>
+2009/10/13 Dan Williams <dan.j.williams@intel.com>:
+
+>> +       if (cohc_chan_conf(cohc)->priority_high)
+>> +               tasklet_hi_schedule(&cohc->tasklet);
+>> +       else
+>> +               tasklet_schedule(&cohc->tasklet);
+>> +}
+>> +
 >
->> Intel started it first with picking up a ridiculous number for the family
->> ID for the P4 line. There is no technical justification for not keeping
->> these numbers consecutive.
+> Just curious, can you say a bit about why this driver needs two
+> tasklet priority levels?
 
-Once one knows that there are 4 bits for the family field, 15 is not
-such a strange value - it is the last value, one could take it as
-"reserved, and look elsewhere".
+It is a safety precaution but perhaps we're overdoing it.
+The high prio channels are used to transfer audio data during a
+voice call from the application subsystem to the modem in the
+U300 platforms (one of the most user-annoying things in an interactive
+system is when audio skips so this must never happen). We haven't
+really made any measurements to see if this is a real-world issue
+and whether the tasklet prio levels helps in some corner case.
+(Having the entire audio path under DMA helps a lot though.)
 
->[...] Intel has assigned family 7 for the original Itanium processor
->[...] there was a bug in original NT 4 truncating family IDs
->returned by CPUID [...]
+Also see next answer...
 
-That would explain why Intel still shows an oldfashioned family=6 on
-many contemporary processors (e.g. core i7). BUT, AMD64 processors
-have family=15 "almost throughout", and so seem to have at least some
-Intel models. So that tells us that either NT4 works, or nobody uses
-NT4 on fam15s.
+>> +int coh901318_channel_link(struct dma_chan *chan, struct dma_chan *chan_dest,
+>> +                          int size)
+>> +{
+>> +       struct coh901318_chan *cohc = to_coh901318_chan(chan);
+>> +       struct coh901318_chan *cohc_dst = to_coh901318_chan(chan_dest);
+>> +       int err = 0;
+>> +       u32 ctrl = cohc_chan_param(cohc)->ctrl_lli_chained;
+>> +       u32 config = cohc_chan_param(cohc)->config;
+>> +       struct coh901318_lli lli;
+>> +       unsigned long flags;
+>> +       spin_lock_irqsave(&cohc->lock, flags);
+>> +
+>> +       dev_vdbg(COHC_2_DEV(cohc),
+>> +                "[%s] chan_src %d chan_dst %d, size %d\n",
+>> +                __func__, cohc->id, cohc_dst->id, size);
+>> +
+>> +       /* TODO: Add support for size != -1 */
+>> +       if (size != -1) {
+>> +               err = -EINVAL;
+>> +               goto out;
+>> +       }
+>> +
+>> +       ctrl &= ~COH901318_CX_CTRL_MASTER_MODE_MASK;
+>> +       ctrl |= cohc_chan_param(cohc_dst)->ctrl_lli_chained &
+>> +               COH901318_CX_CTRL_MASTER_MODE_MASK;
+>> +
+>> +       /* transfer between two peripheral, src and dest is constant */
+>> +       ctrl &= ~COH901318_CX_CTRL_SRC_ADDR_INC_ENABLE;
+>> +       ctrl &= ~COH901318_CX_CTRL_DST_ADDR_INC_ENABLE;
+>> +
+>> +       /* set COH901318_CX_CTRL_PRDD_SOURCE */
+>> +       ctrl &= ~COH901318_CX_CTRL_PRDD_DEST;
+>> +
+>> +       /* Handshake both two primary and secondary peripheral */
+>> +       ctrl |= COH901318_CX_CTRL_HSP_ENABLE;
+>> +       ctrl |= COH901318_CX_CTRL_HSS_ENABLE;
+>> +
+>> +       config |= COH901318_CX_CFG_RM_PRIMARY_TO_SECONDARY;
+>> +       config |= cohc_dst->id << COH901318_CX_CFG_LCRF_SHIFT;
+>> +
+>> +       if (size == -1)
+>> +               ctrl &= ~COH901318_CX_CTRL_TC_ENABLE;
+>> +
+>> +       coh901318_set_conf(cohc, config);
+>> +       lli.control = ctrl;
+>> +       lli.src_addr = cohc_dev_addr(cohc);
+>> +       lli.dst_addr = cohc_dev_addr(cohc_dst);
+>> +       lli.link_addr = 0;
+>> +
+>> +       coh901318_list_print(cohc, &lli);
+>> +
+>> +       coh901318_prep_linked_list(cohc, &lli);
+>> +
+>> +       coh901318_start(cohc);
+>> +
+>> + out:
+>> +       spin_unlock_irqrestore(&cohc->lock, flags);
+>> +       return err;
+>> +}
+>> +EXPORT_SYMBOL(coh901318_channel_link);
+>
+> ??
+>
+> What scenario would you use this functionality?  Let's defer this
+> piece and the other exported symbols to the (upcoming?) patches that
+> add users for these exports.
+
+This is used to let the DMA transfer data between two devices without
+involving the CPU. For example we use this to transfer audio data
+directly from a modem interface to an I2S channel. No memory is
+involved, it's just the AMBA bus transmitting bursts from one device to
+the other. This offloads the CPU of the entire data shuffle task.
+
+This is a typical feature of embedded DMA and something the we
+believe will find its way into the DMAengine sooner or later so we'll
+be happy to refactor the code at that point.
+
+We've removed this function and also coh901318_prep_single while
+keeping some of the internals like coh901318_get_bytes_left,
+coh901318_stop and coh901318_continue.
+
+>> diff --git a/include/linux/coh901318.h b/include/linux/coh901318.h
+>> new file mode 100644
+>> index 0000000..ca9ab68
+>> --- /dev/null
+>> +++ b/include/linux/coh901318.h
+>
+> I do not think this file belongs in include/linux/.  How about
+> arch/arm/mach-u300/include/mach/?
+
+This was based on the fact that the other embedded architectures
+using the DMA engine has its include file in
+
+include/linux/dw_dmac.h
+include/linux/at_hdmac.h
+
+We've moved the header to the mach-u300 include, though this
+block can theoretically be used in other hardware.
+
+Do you want a patch moving
+
+include/linux/dw_dmac.h -> arch/avr32/mach-at32ap/include/mach
+include/linux/at_hdmac.h ->  arch/arm/mach-at91/include/mach
+
+as well? I can probably fix that, I just love patching up archs I know
+nothing about just as entertainment :-)
+
+Linus Walleij
