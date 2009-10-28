@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbZJ1Q6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZJ1RCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbZJ1Q6g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 12:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbZJ1Q6f
+	id S1755233AbZJ1RCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 13:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZJ1RCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 12:58:35 -0400
-Received: from mga09.intel.com ([134.134.136.24]:31818 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754972AbZJ1Q6e convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 12:58:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,640,1249282800"; 
-   d="scan'208";a="462315302"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Tejun Heo <tj@kernel.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Date: Wed, 28 Oct 2009 09:58:37 -0700
-Subject: RE: [PATCH -next] ia64/sn: fix percpu warnings
-Thread-Topic: [PATCH -next] ia64/sn: fix percpu warnings
-Thread-Index: AcpX7OZRI6sGjgDuQdmbaILQAqdA8QAATHwQ
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E34C018B@orsmsx505.amr.corp.intel.com>
-References: <20091014163445.f0441473.sfr@canb.auug.org.au>
-	 <20091014151003.0ef42973.randy.dunlap@oracle.com>
-	 <4AD67C05.2030201@kernel.org>
- <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com>
- <57C9024A16AD2D4C97DC78E552063EA3E345953E@orsmsx505.amr.corp.intel.com>
- <4AE85D28.90809@kernel.org>
- <57C9024A16AD2D4C97DC78E552063EA3E34C0108@orsmsx505.amr.corp.intel.com>
- <4AE87344.6030708@kernel.org>
-In-Reply-To: <4AE87344.6030708@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 28 Oct 2009 13:02:20 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:51498 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752683AbZJ1RCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 13:02:20 -0400
+Message-ID: <4AE8792F.8070200@sgi.com>
+Date: Wed, 28 Oct 2009 10:02:39 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch] x86: reduce srat verbosity in the kernel log
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box>
+In-Reply-To: <20091028041159.GI7744@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> DEFINE_PER_CPU(struct list_head [NR_SOFTIRQS], softirq_work_list);
-> EXPORT_PER_CPU_SYMBOL(softirq_work_list);
->
-> and it doesn't cause any warning on x86 neither does it on ia64 with
-> defconfig.  softirq_work_list doesn't trigger any warning there,
-> right?
 
-Of the 10 EXPORT_PER_CPU_SYMBOL and 4 EXPORT_PER_CPU_SYMBOL_GPL
-items on ia64, only __sn_cnodeid_to_nasid and softirq_work_list are
-arrays.  The latter appears not to be actually used by any in-tree
-modules (janitors: does it need to be exported?).
 
-The CRC warning only shows up on a module that uses an exported
-per-cpu array.  There seems to be nothing special about the
-__sn_cnodeid_to_nasid.  When I hacked a module to make a random
-use of softirq_work_list, it too gave a CRC error.
+Andi Kleen wrote:
+>> MAX_LOCAL_APIC was definitely an arbitrary choice here and has very little 
+>> relevance.  scnlistprintf will protect against overflow, but we still need 
+>> to decide upon a constant that will emit the most information possible 
+>> while not overly polluting the printk and saving on bss, as you mentioned.  
+>> I suspect we could agree on a value as little as 128 and it would work for 
+>> the overwhelming majority (all?) of users.
+> 
+> For now at least seems reasonable to limit to 128 or so yes (and go
+> back to the stack). if we ever have sparse apic ids for nodes 
+> then that might change; but in this case could still just do
+> a acpidump or teach the printer to be more clever and support
+> strides.
+> 
+> It would be just good to have some indication in the output
+> if there was a overflow.
+> 
+> -Andi
+> 
 
-I just tried an x86_64 build with a module also modified to access
-softirq_work_list.  It did NOT get a CRC error.  So the x86_64
-toolchain doesn't seem to have the same issue as ia64.
+I don't understand the importance of this when the memory is given back
+after the system starts up anyway...?
 
--Tony
+Thanks,
+Mike
