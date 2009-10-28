@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZJ1E0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZJ1EgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbZJ1E0Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 00:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbZJ1E0Q
+	id S1755508AbZJ1EgJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 00:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZJ1EgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 00:26:16 -0400
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:61901 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752248AbZJ1E0P (ORCPT
+	Wed, 28 Oct 2009 00:36:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51086 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754028AbZJ1EgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 00:26:15 -0400
-Authentication-Results: sj-iport-4.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqQEALZk50qrR7Hu/2dsb2JhbACcQKR8mFmEPwQ
-X-IronPort-AV: E=Sophos;i="4.44,637,1249257600"; 
-   d="scan'208";a="47191840"
-From: Roland Dreier <rdreier@cisco.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [PATCH] x86: Don't print number of MCE banks for every CPU
-References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com>
-	<4AE75DB9.3040702@sgi.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 27 Oct 2009 21:26:17 -0700
-In-Reply-To: <4AE75DB9.3040702@sgi.com> (Mike Travis's message of "Tue, 27 Oct
-	2009 13:53:13 -0700")
-Message-ID: <adaeioota8m.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Wed, 28 Oct 2009 00:36:07 -0400
+Date: Wed, 28 Oct 2009 05:36:11 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Miller <davem@davemloft.net>
+Cc: andi@firstfloor.org, airlied@gmail.com, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, arnd@arndb.de
+Subject: Re: is avoiding compat ioctls possible?
+Message-ID: <20091028043611.GK7744@basil.fritz.box>
+References: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com> <87hbtkjkki.fsf@basil.nowhere.org> <20091027.203709.27104760.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Oct 2009 04:26:19.0126 (UTC) FILETIME=[CBE16160:01CA5786]
+Content-Disposition: inline
+In-Reply-To: <20091027.203709.27104760.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 27, 2009 at 08:37:09PM -0700, David Miller wrote:
+> On sparc64, in order to make debugging easier, we trap any time
+> the kernel does a userspace access to a compat task and any
+> of the upper 32-bits are non-zero.
 
- > [    4.882085] CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+Interesting. That definitely means Dave needs a special path.
 
-Yes, we should probably kill that debug output as well, that was on my
-list of things to do.
+> > However some architectures need special operations on compat pointers
+> > (s390 iirc), but if you don't support those it might be reasonable
+> > to not support that.
+> 
+> s390 has to sign extend all 32-bit compat process pointers when
+> processing them in the 64-bit s390 kernel.  I think one other
+> architecture has this kind of situation too.
 
- - R.
+Which other architure? I reviewed all the definitions in tree
+and don't see any other than s390 doing magic there.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
