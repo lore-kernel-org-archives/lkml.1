@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbZJ1H7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932655AbZJ1H7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbZJ1H7I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 03:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932628AbZJ1H7H
+	id S932655AbZJ1H7U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 03:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932616AbZJ1H7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 03:59:07 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47608 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932608AbZJ1H7G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 03:59:06 -0400
-Date: Wed, 28 Oct 2009 08:59:08 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: David Miller <davem@davemloft.net>
-Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: is avoiding compat ioctls possible?
-Message-ID: <20091028075908.GO7744@basil.fritz.box>
-References: <20091027.222814.137568780.davem@davemloft.net> <alpine.DEB.2.00.0910280539150.19088@skynet.skynet.ie> <20091027.230450.222178419.davem@davemloft.net> <20091028.005342.60092591.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028.005342.60092591.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 28 Oct 2009 03:59:19 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50927 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932576AbZJ1H7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 03:59:17 -0400
+Date: Wed, 28 Oct 2009 18:59:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Aristeu Rozanski <aris@redhat.com>
+Subject: linux-next: i7core_edac tree build warning
+Message-Id: <20091028185914.2f26c026.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__28_Oct_2009_18_59_14_+1100_dmXa3pPLrffcAKJ0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  	}
-> -	chunk_array_ptr = (uint64_t *)(unsigned long)(cs->chunks);
-> +#ifdef CONFIG_COMPAT
-> +	if (is_compat_task())
+--Signature=_Wed__28_Oct_2009_18_59_14_+1100_dmXa3pPLrffcAKJ0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Are the COMPAT ifdefs really needed? The compiler should optimize that
-away anyways on non compat aware architectures, shouldn't it?
+Hi Mauro,
 
--Andi
+Today's linux-next build (i386 defconfig) produced this warning:
 
+WARNING: arch/x86/pci/built-in.o(__ksymtab_gpl+0x8): Section mismatch in re=
+ference from the variable __ksymtab_pci_legacy_init to the function .init.t=
+ext:pci_legacy_init()
+The symbol pci_legacy_init is exported and annotated __init=20
+Fix this by removing the __init annotation of pci_legacy_init or drop the e=
+xport.
+
+Introduced by commit a120a84ebbc4cbc9c1addddd2b491e3683b842a6 ("pci: Add
+a probing code that seeks for an specific bus").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__28_Oct_2009_18_59_14_+1100_dmXa3pPLrffcAKJ0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrn+dIACgkQjjKRsyhoI8xXQwCfd43/t+cVkmTGcKUDpv1N0lAj
+aQ0AnAvjMF2xVqD16ZEiPvPt99E/BaO1
+=BsHG
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__28_Oct_2009_18_59_14_+1100_dmXa3pPLrffcAKJ0--
