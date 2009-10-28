@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbZJ1FHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZJ1FHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbZJ1FHK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 01:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbZJ1FHJ
+	id S1757371AbZJ1FHt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 01:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbZJ1FHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 01:07:09 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:39982 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757344AbZJ1FHI (ORCPT
+	Wed, 28 Oct 2009 01:07:48 -0400
+Received: from mail-px0-f180.google.com ([209.85.216.180]:63322 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757353AbZJ1FHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 01:07:08 -0400
+	Wed, 28 Oct 2009 01:07:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mail-followup-to:references
          :mime-version:content-type:content-disposition:in-reply-to
          :x-operating-system:user-agent;
-        b=nhW7ELyqvrNl6Oh++R9TjItcJia3P9mn+L7EcQHD2dDRrfReD8q5eO6Q1e4on3F3eR
-         Dz7Mlge+XtwDYcnMmuV4zRKSGaI+jnPJW5vsbR6MZDJ9tkXaEgPpwNT3VDSHOIC6yBKF
-         f6jbZSODoORyWRg2k+HbS88G/UQsTzZbmvxRU=
-Date: Wed, 28 Oct 2009 13:07:03 +0800
+        b=hp1+6Khmyl1y/a7UGi/qJH8aMaOUQsyAfGrqo3eTgru1bxCh/mkUsZI1k+BSa/AwCl
+         Vol449aj3IFMP76o4FTSibSbh6N1wLbloH00fHdjB6e3ugffUTkjtdbvWXdzRJgWkB0a
+         rANatXZfpjITp8aA+CaEK/ziQ2ty2xPbUIllY=
+Date: Wed, 28 Oct 2009 13:07:43 +0800
 From: Li Hong <lihong.hi@gmail.com>
 To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 7/8] tracing: recordmcount.pl Combine the condition
-	validation in update_funcs
-Message-ID: <20091028050703.GG30758@uhli>
+Subject: [PATCH v3 8/8] tracing: recordmcount.pl Die if we use a weak
+	function as reference
+Message-ID: <20091028050743.GH30758@uhli>
 Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
 	linux-kernel@vger.kernel.org
 References: <20091028045532.GA30036@uhli>
@@ -37,53 +37,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From c40f78d26c171732e6b3546d1f2141274a48c42b Mon Sep 17 00:00:00 2001
+>From fef57ba56001830adaeea6aef479c623e3bce6c6 Mon Sep 17 00:00:00 2001
 From: Li Hong <lihong.hi@gmail.com>
-Date: Tue, 27 Oct 2009 13:20:48 +0800
-Subject: [PATCH] tracing: recordmcount.pl Combine the condition validation in update_funcs
-
-Move all the condition validation into function update_funcs. Also
-update_funcs shouldn't die if $ref_func is undefined for there may be
-more than one valid sections in an object file.
+Date: Tue, 27 Oct 2009 13:25:39 +0800
+Subject: [PATCH] tracing: recordmcount.pl Die if we use a weak function as reference
 
 Signed-off-by: Li Hong <lihong.hi@gmail.com>
 ---
- scripts/recordmcount.pl |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ scripts/recordmcount.pl |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
 diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 0f1107d..ffb1123 100755
+index ffb1123..0f733c9 100755
 --- a/scripts/recordmcount.pl
 +++ b/scripts/recordmcount.pl
-@@ -346,9 +346,7 @@ my $offset = 0;		# offset of ref_func to section beginning
- #
- sub update_funcs
+@@ -348,15 +348,11 @@ sub update_funcs
  {
--    return if ($#offsets < 0);
--
--    defined($ref_func) || die "No function to reference";
-+    return unless ($ref_func and @offsets);
+     return unless ($ref_func and @offsets);
  
-     # A section only had a weak function, to represent it.
-     # Unfortunately, a weak function may be overwritten by another
-@@ -423,7 +421,7 @@ while (<IN>) {
- 	    $read_function = 0;
- 	}
- 	# print out any recorded offsets
--	update_funcs() if (defined($ref_func));
-+	update_funcs();
+-    # A section only had a weak function, to represent it.
+-    # Unfortunately, a weak function may be overwritten by another
+-    # function of the same name, making all these offsets incorrect.
+-    # To be safe, we simply print a warning and bail.
++    # Sanity check on weak function. A weak function may be overwritten by 
++    # another function of the same name, making all these offsets incorrect.
+     if (defined $weak{$ref_func}) {
+-	print STDERR
+-	    "$inputfile: WARNING: referencing weak function" .
+-	    " $ref_func for mcount\n";
+-	return;
++        die "$inputfile: ERROR: referencing weak function" .
++            " $ref_func for mcount\n";
+     }
  
- 	# reset all markers and arrays
- 	$text_found = 0;
-@@ -460,7 +458,7 @@ while (<IN>) {
- }
- 
- # dump out anymore offsets that may have been found
--update_funcs() if (defined($ref_func));
-+update_funcs();
- 
- # If we did not find any mcount callers, we are done (do nothing).
- if (!$opened) {
+     # is this function static? If so, note this fact.
 -- 
 1.6.0.4
 
