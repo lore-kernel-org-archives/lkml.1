@@ -1,493 +1,407 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbZJ1Uxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZJ1VBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755745AbZJ1Uxl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 16:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZJ1Uxk
+	id S1755027AbZJ1VBY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 17:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbZJ1VBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 16:53:40 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35535 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755534AbZJ1Uxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 16:53:39 -0400
-Message-ID: <4AE8AF4D.4030403@austin.ibm.com>
-Date: Wed, 28 Oct 2009 15:53:33 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 28 Oct 2009 17:01:20 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:41764 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754121AbZJ1VBR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 17:01:17 -0400
+Date: Wed, 28 Oct 2009 16:53:46 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2009-10-28
+Message-ID: <20091028205346.GE2856@tuxdriver.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/6 v5] Kernel DLPAR Infrastructure
-References: <4AE8ADCF.6090104@austin.ibm.com>
-In-Reply-To: <4AE8ADCF.6090104@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides the kernel DLPAR infrastructure in a new filed named
-dlpar.c.  The functionality provided is for acquiring and releasing a resource
-from firmware and the parsing of information returned from the
-ibm,configure-connector rtas call.  Additionally this exports the pSeries
-reconfiguration notifier chain so that it can be invoked when device tree 
-updates are made.
+Dave,
 
-Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com> 
+Here is a collection of fixes (mostly (almost-)one-liners) intended
+for 2.6.32.  There are a couple of fixes relating to behavior when an
+association failes, as well as spelling fixes, simply endian fixes,
+a MAINTAINERS change...I don't think there is anything controversial
+here...
+
+Please let me know if there are problems!
+
+Thanks,
+
+John
+
 ---
 
-Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-28 15:21:38.000000000 -0500
-@@ -0,0 +1,414 @@
-+/*
-+ * dlpar.c - support for dynamic reconfiguration (including PCI
-+ * Hotplug and Dynamic Logical Partitioning on RPA platforms).
-+ *
-+ * Copyright (C) 2009 Nathan Fontenot
-+ * Copyright (C) 2009 IBM Corporation
-+ *
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version
-+ * 2 as published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/kref.h>
-+#include <linux/notifier.h>
-+#include <linux/proc_fs.h>
-+#include <linux/spinlock.h>
-+
-+#include <asm/prom.h>
-+#include <asm/machdep.h>
-+#include <asm/uaccess.h>
-+#include <asm/rtas.h>
-+#include <asm/pSeries_reconfig.h>
-+
-+#define CFG_CONN_WORK_SIZE	4096
-+static char workarea[CFG_CONN_WORK_SIZE];
-+static DEFINE_SPINLOCK(workarea_lock);
-+
-+struct cc_workarea {
-+	u32	drc_index;
-+	u32	zero;
-+	u32	name_offset;
-+	u32	prop_length;
-+	u32	prop_offset;
-+};
-+
-+static struct property *parse_cc_property(char *workarea)
-+{
-+	struct property *prop;
-+	struct cc_workarea *ccwa;
-+	char *name;
-+	char *value;
-+
-+	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-+	if (!prop)
-+		return NULL;
-+
-+	ccwa = (struct cc_workarea *)workarea;
-+	name = workarea + ccwa->name_offset;
-+	prop->name = kzalloc(strlen(name) + 1, GFP_KERNEL);
-+	if (!prop->name) {
-+		kfree(prop);
-+		return NULL;
-+	}
-+
-+	strcpy(prop->name, name);
-+
-+	prop->length = ccwa->prop_length;
-+	value = workarea + ccwa->prop_offset;
-+	prop->value = kzalloc(prop->length, GFP_KERNEL);
-+	if (!prop->value) {
-+		kfree(prop->name);
-+		kfree(prop);
-+		return NULL;
-+	}
-+
-+	memcpy(prop->value, value, prop->length);
-+	return prop;
-+}
-+
-+static void free_property(struct property *prop)
-+{
-+	kfree(prop->name);
-+	kfree(prop->value);
-+	kfree(prop);
-+}
-+
-+static struct device_node *parse_cc_node(char *work_area)
-+{
-+	struct device_node *dn;
-+	struct cc_workarea *ccwa;
-+	char *name;
-+
-+	dn = kzalloc(sizeof(*dn), GFP_KERNEL);
-+	if (!dn)
-+		return NULL;
-+
-+	ccwa = (struct cc_workarea *)work_area;
-+	name = work_area + ccwa->name_offset;
-+	dn->full_name = kzalloc(strlen(name) + 1, GFP_KERNEL);
-+	if (!dn->full_name) {
-+		kfree(dn);
-+		return NULL;
-+	}
-+
-+	strcpy(dn->full_name, name);
-+	return dn;
-+}
-+
-+static void free_one_cc_node(struct device_node *dn)
-+{
-+	struct property *prop;
-+
-+	while (dn->properties) {
-+		prop = dn->properties;
-+		dn->properties = prop->next;
-+		free_property(prop);
-+	}
-+
-+	kfree(dn->full_name);
-+	kfree(dn);
-+}
-+
-+static void free_cc_nodes(struct device_node *dn)
-+{
-+	if (dn->child)
-+		free_cc_nodes(dn->child);
-+
-+	if (dn->sibling)
-+		free_cc_nodes(dn->sibling);
-+
-+	free_one_cc_node(dn);
-+}
-+
-+#define NEXT_SIBLING    1
-+#define NEXT_CHILD      2
-+#define NEXT_PROPERTY   3
-+#define PREV_PARENT     4
-+#define MORE_MEMORY     5
-+#define CALL_AGAIN	-2
-+#define ERR_CFG_USE     -9003
-+
-+struct device_node *configure_connector(u32 drc_index)
-+{
-+	struct device_node *dn;
-+	struct device_node *first_dn = NULL;
-+	struct device_node *last_dn = NULL;
-+	struct property *property;
-+	struct property *last_property = NULL;
-+	struct cc_workarea *ccwa;
-+	int cc_token;
-+	int rc;
-+
-+	cc_token = rtas_token("ibm,configure-connector");
-+	if (cc_token == RTAS_UNKNOWN_SERVICE)
-+		return NULL;
-+
-+	spin_lock(&workarea_lock);
-+
-+	ccwa = (struct cc_workarea *)&workarea[0];
-+	ccwa->drc_index = drc_index;
-+	ccwa->zero = 0;
-+
-+	rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
-+	while (rc) {
-+		switch (rc) {
-+		case NEXT_SIBLING:
-+			dn = parse_cc_node(workarea);
-+			if (!dn)
-+				goto cc_error;
-+
-+			dn->parent = last_dn->parent;
-+			last_dn->sibling = dn;
-+			last_dn = dn;
-+			break;
-+
-+		case NEXT_CHILD:
-+			dn = parse_cc_node(workarea);
-+			if (!dn)
-+				goto cc_error;
-+
-+			if (!first_dn)
-+				first_dn = dn;
-+			else {
-+				dn->parent = last_dn;
-+				if (last_dn)
-+					last_dn->child = dn;
-+			}
-+
-+			last_dn = dn;
-+			break;
-+
-+		case NEXT_PROPERTY:
-+			property = parse_cc_property(workarea);
-+			if (!property)
-+				goto cc_error;
-+
-+			if (!last_dn->properties)
-+				last_dn->properties = property;
-+			else
-+				last_property->next = property;
-+
-+			last_property = property;
-+			break;
-+
-+		case PREV_PARENT:
-+			last_dn = last_dn->parent;
-+			break;
-+
-+		case CALL_AGAIN:
-+			break;
-+
-+		case MORE_MEMORY:
-+		case ERR_CFG_USE:
-+		default:
-+			printk(KERN_ERR "Unexpected Error (%d) "
-+			       "returned from configure-connector\n", rc);
-+			goto cc_error;
-+		}
-+
-+		rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
-+	}
-+
-+	spin_unlock(&workarea_lock);
-+	return first_dn;
-+
-+cc_error:
-+	spin_unlock(&workarea_lock);
-+
-+	if (first_dn)
-+		free_cc_nodes(first_dn);
-+
-+	return NULL;
-+}
-+
-+static struct device_node *derive_parent(const char *path)
-+{
-+	struct device_node *parent;
-+	char parent_path[128];
-+	int parent_path_len;
-+
-+	parent_path_len = strrchr(path, '/') - path + 1;
-+	strlcpy(parent_path, path, parent_path_len);
-+
-+	parent = of_find_node_by_path(parent_path);
-+
-+	return parent;
-+}
-+
-+static int add_one_node(struct device_node *dn)
-+{
-+	struct proc_dir_entry *ent;
-+	int rc;
-+
-+	of_node_set_flag(dn, OF_DYNAMIC);
-+	kref_init(&dn->kref);
-+	dn->parent = derive_parent(dn->full_name);
-+
-+	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
-+					  PSERIES_RECONFIG_ADD, dn);
-+	if (rc == NOTIFY_BAD) {
-+		printk(KERN_ERR "Failed to add device node %s\n",
-+		       dn->full_name);
-+		return -ENOMEM; /* For now, safe to assume kmalloc failure */
-+	}
-+
-+	of_attach_node(dn);
-+
-+#ifdef CONFIG_PROC_DEVICETREE
-+	ent = proc_mkdir(strrchr(dn->full_name, '/') + 1, dn->parent->pde);
-+	if (ent)
-+		proc_device_tree_add_node(dn, ent);
-+#endif
-+
-+	of_node_put(dn->parent);
-+	return 0;
-+}
-+
-+int add_device_tree_nodes(struct device_node *dn)
-+{
-+	struct device_node *child = dn->child;
-+	struct device_node *sibling = dn->sibling;
-+	int rc;
-+
-+	dn->child = NULL;
-+	dn->sibling = NULL;
-+	dn->parent = NULL;
-+
-+	rc = add_one_node(dn);
-+	if (rc)
-+		return rc;
-+
-+	if (child) {
-+		rc = add_device_tree_nodes(child);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	if (sibling)
-+		rc = add_device_tree_nodes(sibling);
-+
-+	return rc;
-+}
-+
-+static int remove_one_node(struct device_node *dn)
-+{
-+	struct device_node *parent = dn->parent;
-+	struct property *prop = dn->properties;
-+
-+#ifdef CONFIG_PROC_DEVICETREE
-+	while (prop) {
-+		remove_proc_entry(prop->name, dn->pde);
-+		prop = prop->next;
-+	}
-+
-+	if (dn->pde)
-+		remove_proc_entry(dn->pde->name, parent->pde);
-+#endif
-+
-+	blocking_notifier_call_chain(&pSeries_reconfig_chain,
-+			    PSERIES_RECONFIG_REMOVE, dn);
-+	of_detach_node(dn);
-+	of_node_put(dn); /* Must decrement the refcount */
-+
-+	return 0;
-+}
-+
-+static int _remove_device_tree_nodes(struct device_node *dn)
-+{
-+	int rc;
-+
-+	if (dn->child) {
-+		rc = _remove_device_tree_nodes(dn->child);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	if (dn->sibling) {
-+		rc = _remove_device_tree_nodes(dn->sibling);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	rc = remove_one_node(dn);
-+	return rc;
-+}
-+
-+int remove_device_tree_nodes(struct device_node *dn)
-+{
-+	int rc;
-+
-+	if (dn->child) {
-+		rc = _remove_device_tree_nodes(dn->child);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	rc = remove_one_node(dn);
-+	return rc;
-+}
-+
-+#define DR_ENTITY_SENSE		9003
-+#define DR_ENTITY_PRESENT	1
-+#define DR_ENTITY_UNUSABLE	2
-+#define ALLOCATION_STATE	9003
-+#define ALLOC_UNUSABLE		0
-+#define ALLOC_USABLE		1
-+#define ISOLATION_STATE		9001
-+#define ISOLATE			0
-+#define UNISOLATE		1
-+
-+int acquire_drc(u32 drc_index)
-+{
-+	int dr_status, rc;
-+
-+	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
-+		       DR_ENTITY_SENSE, drc_index);
-+	if (rc || dr_status != DR_ENTITY_UNUSABLE)
-+		return -1;
-+
-+	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_USABLE);
-+	if (rc)
-+		return rc;
-+
-+	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
-+	if (rc) {
-+		rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
-+		return rc;
-+	}
-+
-+	return 0;
-+}
-+
-+int release_drc(u32 drc_index)
-+{
-+	int dr_status, rc;
-+
-+	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
-+		       DR_ENTITY_SENSE, drc_index);
-+	if (rc || dr_status != DR_ENTITY_PRESENT)
-+		return -1;
-+
-+	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, ISOLATE);
-+	if (rc)
-+		return rc;
-+
-+	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
-+	if (rc) {
-+		rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
-+		return rc;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pseries_dlpar_init(void)
-+{
-+	if (!machine_is(pseries))
-+		return 0;
-+
-+	return 0;
-+}
-+device_initcall(pseries_dlpar_init);
-Index: powerpc/arch/powerpc/platforms/pseries/Makefile
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/Makefile	2009-10-28 15:20:38.000000000 -0500
-+++ powerpc/arch/powerpc/platforms/pseries/Makefile	2009-10-28 15:21:38.000000000 -0500
-@@ -8,7 +8,7 @@
+Individual patches are available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit 66ed1e5ec1d979e572554643063734a7664261bb:
+  Eric Dumazet (1):
+        pktgen: Dont leak kernel memory
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Andrey Yurovsky (1):
+      mac80211: trivial: fix spelling in mesh_hwmp
+
+Bartlomiej Zolnierkiewicz (1):
+      MAINTAINERS: rt2x00 list is moderated
+
+Benoit PAPILLAULT (1):
+      rt2x00: Fix crypto in TX frame for rt2800usb
+
+Björn Smedman (1):
+      mac80211: fix for incorrect sequence number on hostapd injected frames
+
+Holger Schurig (1):
+      libertas spi: fix sparse errors
+
+Johannes Berg (2):
+      mac80211: keep auth state when assoc fails
+      cfg80211: sme: deauthenticate on assoc failure
+
+Larry Finger (1):
+      b43: Fix Bugzilla #14181 and the bug from the previous 'fix'
+
+Miguel Boton (1):
+      b43: add 'struct b43_wl' missing declaration
+
+Reinette Chatre (1):
+      mac80211: fix ibss joining
+
+Roel Kluin (1):
+      airo: Reorder tests, check bounds before element
+
+ MAINTAINERS                             |    2 +-
+ drivers/net/wireless/airo.c             |    5 ++---
+ drivers/net/wireless/b43/leds.h         |    1 +
+ drivers/net/wireless/b43/main.c         |    1 -
+ drivers/net/wireless/b43/rfkill.c       |    3 ++-
+ drivers/net/wireless/libertas/if_spi.c  |   10 +++++-----
+ drivers/net/wireless/rt2x00/rt2800usb.c |    2 +-
+ net/mac80211/ibss.c                     |    6 ++----
+ net/mac80211/mesh_hwmp.c                |    2 +-
+ net/mac80211/mlme.c                     |    3 +--
+ net/mac80211/tx.c                       |    2 +-
+ net/wireless/core.h                     |    1 +
+ net/wireless/mlme.c                     |    9 +++++++++
+ net/wireless/sme.c                      |   21 +++++++++++++++++++--
+ 14 files changed, 46 insertions(+), 22 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 70bc7de..cdbbaf5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4280,7 +4280,7 @@ F:	drivers/video/aty/aty128fb.c
+ RALINK RT2X00 WIRELESS LAN DRIVER
+ P:	rt2x00 project
+ L:	linux-wireless@vger.kernel.org
+-L:	users@rt2x00.serialmonkey.com
++L:	users@rt2x00.serialmonkey.com (moderated for non-subscribers)
+ W:	http://rt2x00.serialmonkey.com/
+ S:	Maintained
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ivd/rt2x00.git
+diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
+index 7116a1a..abf896a 100644
+--- a/drivers/net/wireless/airo.c
++++ b/drivers/net/wireless/airo.c
+@@ -4790,9 +4790,8 @@ static int proc_stats_rid_open( struct inode *inode,
+ static int get_dec_u16( char *buffer, int *start, int limit ) {
+ 	u16 value;
+ 	int valid = 0;
+-	for( value = 0; buffer[*start] >= '0' &&
+-		     buffer[*start] <= '9' &&
+-		     *start < limit; (*start)++ ) {
++	for (value = 0; *start < limit && buffer[*start] >= '0' &&
++			buffer[*start] <= '9'; (*start)++) {
+ 		valid = 1;
+ 		value *= 10;
+ 		value += buffer[*start] - '0';
+diff --git a/drivers/net/wireless/b43/leds.h b/drivers/net/wireless/b43/leds.h
+index 4c56187..32b66d5 100644
+--- a/drivers/net/wireless/b43/leds.h
++++ b/drivers/net/wireless/b43/leds.h
+@@ -1,6 +1,7 @@
+ #ifndef B43_LEDS_H_
+ #define B43_LEDS_H_
  
- obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   setup.o iommu.o ras.o rtasd.o \
--			   firmware.o power.o
-+			   firmware.o power.o dlpar.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_XICS)	+= xics.o
- obj-$(CONFIG_SCANLOG)	+= scanlog.o
-Index: powerpc/arch/powerpc/include/asm/pSeries_reconfig.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/pSeries_reconfig.h	2009-10-28 15:20:38.000000000 -0500
-+++ powerpc/arch/powerpc/include/asm/pSeries_reconfig.h	2009-10-28 15:21:38.000000000 -0500
-@@ -17,6 +17,7 @@
- #ifdef CONFIG_PPC_PSERIES
- extern int pSeries_reconfig_notifier_register(struct notifier_block *);
- extern void pSeries_reconfig_notifier_unregister(struct notifier_block *);
-+extern struct blocking_notifier_head pSeries_reconfig_chain;
- #else /* !CONFIG_PPC_PSERIES */
- static inline int pSeries_reconfig_notifier_register(struct notifier_block *nb)
++struct b43_wl;
+ struct b43_wldev;
+ 
+ #ifdef CONFIG_B43_LEDS
+diff --git a/drivers/net/wireless/b43/main.c b/drivers/net/wireless/b43/main.c
+index df6b26a..86f3582 100644
+--- a/drivers/net/wireless/b43/main.c
++++ b/drivers/net/wireless/b43/main.c
+@@ -4501,7 +4501,6 @@ static void b43_op_stop(struct ieee80211_hw *hw)
+ 
+ 	cancel_work_sync(&(wl->beacon_update_trigger));
+ 
+-	wiphy_rfkill_stop_polling(hw->wiphy);
+ 	mutex_lock(&wl->mutex);
+ 	if (b43_status(dev) >= B43_STAT_STARTED) {
+ 		dev = b43_wireless_core_stop(dev);
+diff --git a/drivers/net/wireless/b43/rfkill.c b/drivers/net/wireless/b43/rfkill.c
+index 7a3218c..ffdce6f 100644
+--- a/drivers/net/wireless/b43/rfkill.c
++++ b/drivers/net/wireless/b43/rfkill.c
+@@ -33,7 +33,8 @@ bool b43_is_hw_radio_enabled(struct b43_wldev *dev)
+ 		      & B43_MMIO_RADIO_HWENABLED_HI_MASK))
+ 			return 1;
+ 	} else {
+-		if (b43_read16(dev, B43_MMIO_RADIO_HWENABLED_LO)
++		if (b43_status(dev) >= B43_STAT_STARTED &&
++		    b43_read16(dev, B43_MMIO_RADIO_HWENABLED_LO)
+ 		    & B43_MMIO_RADIO_HWENABLED_LO_MASK)
+ 			return 1;
+ 	}
+diff --git a/drivers/net/wireless/libertas/if_spi.c b/drivers/net/wireless/libertas/if_spi.c
+index cb8be8d..5b3672c 100644
+--- a/drivers/net/wireless/libertas/if_spi.c
++++ b/drivers/net/wireless/libertas/if_spi.c
+@@ -134,7 +134,7 @@ static void spu_transaction_finish(struct if_spi_card *card)
+ static int spu_write(struct if_spi_card *card, u16 reg, const u8 *buf, int len)
  {
-Index: powerpc/arch/powerpc/platforms/pseries/reconfig.c
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/reconfig.c	2009-10-28 15:20:38.000000000 -0500
-+++ powerpc/arch/powerpc/platforms/pseries/reconfig.c	2009-10-28 15:21:38.000000000 -0500
-@@ -96,7 +96,7 @@
- 	return parent;
+ 	int err = 0;
+-	u16 reg_out = cpu_to_le16(reg | IF_SPI_WRITE_OPERATION_MASK);
++	__le16 reg_out = cpu_to_le16(reg | IF_SPI_WRITE_OPERATION_MASK);
+ 	struct spi_message m;
+ 	struct spi_transfer reg_trans;
+ 	struct spi_transfer data_trans;
+@@ -166,7 +166,7 @@ static int spu_write(struct if_spi_card *card, u16 reg, const u8 *buf, int len)
+ 
+ static inline int spu_write_u16(struct if_spi_card *card, u16 reg, u16 val)
+ {
+-	u16 buff;
++	__le16 buff;
+ 
+ 	buff = cpu_to_le16(val);
+ 	return spu_write(card, reg, (u8 *)&buff, sizeof(u16));
+@@ -188,7 +188,7 @@ static int spu_read(struct if_spi_card *card, u16 reg, u8 *buf, int len)
+ {
+ 	unsigned int delay;
+ 	int err = 0;
+-	u16 reg_out = cpu_to_le16(reg | IF_SPI_READ_OPERATION_MASK);
++	__le16 reg_out = cpu_to_le16(reg | IF_SPI_READ_OPERATION_MASK);
+ 	struct spi_message m;
+ 	struct spi_transfer reg_trans;
+ 	struct spi_transfer dummy_trans;
+@@ -235,7 +235,7 @@ static int spu_read(struct if_spi_card *card, u16 reg, u8 *buf, int len)
+ /* Read 16 bits from an SPI register */
+ static inline int spu_read_u16(struct if_spi_card *card, u16 reg, u16 *val)
+ {
+-	u16 buf;
++	__le16 buf;
+ 	int ret;
+ 
+ 	ret = spu_read(card, reg, (u8 *)&buf, sizeof(buf));
+@@ -248,7 +248,7 @@ static inline int spu_read_u16(struct if_spi_card *card, u16 reg, u16 *val)
+  * The low 16 bits are read first. */
+ static int spu_read_u32(struct if_spi_card *card, u16 reg, u32 *val)
+ {
+-	u32 buf;
++	__le32 buf;
+ 	int err;
+ 
+ 	err = spu_read(card, reg, (u8 *)&buf, sizeof(buf));
+diff --git a/drivers/net/wireless/rt2x00/rt2800usb.c b/drivers/net/wireless/rt2x00/rt2800usb.c
+index a084077..9fe770f 100644
+--- a/drivers/net/wireless/rt2x00/rt2800usb.c
++++ b/drivers/net/wireless/rt2x00/rt2800usb.c
+@@ -1994,7 +1994,7 @@ static void rt2800usb_write_tx_desc(struct rt2x00_dev *rt2x00dev,
+ 	rt2x00_set_field32(&word, TXWI_W1_BW_WIN_SIZE, txdesc->ba_size);
+ 	rt2x00_set_field32(&word, TXWI_W1_WIRELESS_CLI_ID,
+ 			   test_bit(ENTRY_TXD_ENCRYPT, &txdesc->flags) ?
+-			       (skbdesc->entry->entry_idx + 1) : 0xff);
++			   txdesc->key_idx : 0xff);
+ 	rt2x00_set_field32(&word, TXWI_W1_MPDU_TOTAL_BYTE_COUNT,
+ 			   skb->len - txdesc->l2pad);
+ 	rt2x00_set_field32(&word, TXWI_W1_PACKETID,
+diff --git a/net/mac80211/ibss.c b/net/mac80211/ibss.c
+index 6eaf698..ca8ecce 100644
+--- a/net/mac80211/ibss.c
++++ b/net/mac80211/ibss.c
+@@ -538,13 +538,12 @@ static void ieee80211_sta_find_ibss(struct ieee80211_sub_if_data *sdata)
+ 				       WLAN_CAPABILITY_PRIVACY,
+ 				       capability);
+ 
++	if (bss) {
+ #ifdef CONFIG_MAC80211_IBSS_DEBUG
+-	if (bss)
+ 		printk(KERN_DEBUG "   sta_find_ibss: selected %pM current "
+ 		       "%pM\n", bss->cbss.bssid, ifibss->bssid);
+ #endif /* CONFIG_MAC80211_IBSS_DEBUG */
+ 
+-	if (bss && !memcmp(ifibss->bssid, bss->cbss.bssid, ETH_ALEN)) {
+ 		printk(KERN_DEBUG "%s: Selected IBSS BSSID %pM"
+ 		       " based on configured SSID\n",
+ 		       sdata->dev->name, bss->cbss.bssid);
+@@ -552,8 +551,7 @@ static void ieee80211_sta_find_ibss(struct ieee80211_sub_if_data *sdata)
+ 		ieee80211_sta_join_ibss(sdata, bss);
+ 		ieee80211_rx_bss_put(local, bss);
+ 		return;
+-	} else if (bss)
+-		ieee80211_rx_bss_put(local, bss);
++	}
+ 
+ #ifdef CONFIG_MAC80211_IBSS_DEBUG
+ 	printk(KERN_DEBUG "   did not try to join ibss\n");
+diff --git a/net/mac80211/mesh_hwmp.c b/net/mac80211/mesh_hwmp.c
+index e12a786..29b82e9 100644
+--- a/net/mac80211/mesh_hwmp.c
++++ b/net/mac80211/mesh_hwmp.c
+@@ -259,7 +259,7 @@ static u32 airtime_link_metric_get(struct ieee80211_local *local,
+  * @hwmp_ie: hwmp information element (PREP or PREQ)
+  *
+  * This function updates the path routing information to the originator and the
+- * transmitter of a HWMP PREQ or PREP fram.
++ * transmitter of a HWMP PREQ or PREP frame.
+  *
+  * Returns: metric to frame originator or 0 if the frame should not be further
+  * processed
+diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
+index 8d26e9b..dc5049d 100644
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -1457,8 +1457,7 @@ ieee80211_rx_mgmt_assoc_resp(struct ieee80211_sub_if_data *sdata,
+ 	if (status_code != WLAN_STATUS_SUCCESS) {
+ 		printk(KERN_DEBUG "%s: AP denied association (code=%d)\n",
+ 		       sdata->dev->name, status_code);
+-		list_del(&wk->list);
+-		kfree(wk);
++		wk->state = IEEE80211_MGD_STATE_IDLE;
+ 		return RX_MGMT_CFG80211_ASSOC;
+ 	}
+ 
+diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
+index db4bda6..eaa4118 100644
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -1445,7 +1445,7 @@ static void ieee80211_xmit(struct ieee80211_sub_if_data *sdata,
+ 				if (tmp_sdata->vif.type != NL80211_IFTYPE_AP)
+ 					continue;
+ 				if (compare_ether_addr(tmp_sdata->dev->dev_addr,
+-						       hdr->addr2)) {
++						       hdr->addr2) == 0) {
+ 					dev_hold(tmp_sdata->dev);
+ 					dev_put(sdata->dev);
+ 					sdata = tmp_sdata;
+diff --git a/net/wireless/core.h b/net/wireless/core.h
+index 2a33d8b..68b3219 100644
+--- a/net/wireless/core.h
++++ b/net/wireless/core.h
+@@ -358,6 +358,7 @@ int cfg80211_mgd_wext_connect(struct cfg80211_registered_device *rdev,
+ 			      struct wireless_dev *wdev);
+ 
+ void cfg80211_conn_work(struct work_struct *work);
++void cfg80211_sme_failed_assoc(struct wireless_dev *wdev);
+ bool cfg80211_sme_failed_reassoc(struct wireless_dev *wdev);
+ 
+ /* internal helpers */
+diff --git a/net/wireless/mlme.c b/net/wireless/mlme.c
+index 79d2eec..0a6b7a0 100644
+--- a/net/wireless/mlme.c
++++ b/net/wireless/mlme.c
+@@ -62,6 +62,7 @@ void cfg80211_send_rx_assoc(struct net_device *dev, const u8 *buf, size_t len)
+ 	u8 *ie = mgmt->u.assoc_resp.variable;
+ 	int i, ieoffs = offsetof(struct ieee80211_mgmt, u.assoc_resp.variable);
+ 	struct cfg80211_internal_bss *bss = NULL;
++	bool need_connect_result = true;
+ 
+ 	wdev_lock(wdev);
+ 
+@@ -94,6 +95,14 @@ void cfg80211_send_rx_assoc(struct net_device *dev, const u8 *buf, size_t len)
+ 		}
+ 
+ 		WARN_ON(!bss);
++	} else if (wdev->conn) {
++		cfg80211_sme_failed_assoc(wdev);
++		need_connect_result = false;
++		/*
++		 * do not call connect_result() now because the
++		 * sme will schedule work that does it later.
++		 */
++		goto out;
+ 	}
+ 
+ 	if (!wdev->conn && wdev->sme_state == CFG80211_SME_IDLE) {
+diff --git a/net/wireless/sme.c b/net/wireless/sme.c
+index 93c3ed3..ece378d 100644
+--- a/net/wireless/sme.c
++++ b/net/wireless/sme.c
+@@ -26,6 +26,7 @@ struct cfg80211_conn {
+ 		CFG80211_CONN_AUTHENTICATING,
+ 		CFG80211_CONN_ASSOCIATE_NEXT,
+ 		CFG80211_CONN_ASSOCIATING,
++		CFG80211_CONN_DEAUTH_ASSOC_FAIL,
+ 	} state;
+ 	u8 bssid[ETH_ALEN], prev_bssid[ETH_ALEN];
+ 	u8 *ie;
+@@ -148,6 +149,12 @@ static int cfg80211_conn_do_work(struct wireless_dev *wdev)
+ 					       NULL, 0,
+ 					       WLAN_REASON_DEAUTH_LEAVING);
+ 		return err;
++	case CFG80211_CONN_DEAUTH_ASSOC_FAIL:
++		__cfg80211_mlme_deauth(rdev, wdev->netdev, params->bssid,
++				       NULL, 0,
++				       WLAN_REASON_DEAUTH_LEAVING);
++		/* return an error so that we call __cfg80211_connect_result() */
++		return -EINVAL;
+ 	default:
+ 		return 0;
+ 	}
+@@ -158,6 +165,7 @@ void cfg80211_conn_work(struct work_struct *work)
+ 	struct cfg80211_registered_device *rdev =
+ 		container_of(work, struct cfg80211_registered_device, conn_work);
+ 	struct wireless_dev *wdev;
++	u8 bssid[ETH_ALEN];
+ 
+ 	rtnl_lock();
+ 	cfg80211_lock_rdev(rdev);
+@@ -173,10 +181,10 @@ void cfg80211_conn_work(struct work_struct *work)
+ 			wdev_unlock(wdev);
+ 			continue;
+ 		}
++		memcpy(bssid, wdev->conn->params.bssid, ETH_ALEN);
+ 		if (cfg80211_conn_do_work(wdev))
+ 			__cfg80211_connect_result(
+-					wdev->netdev,
+-					wdev->conn->params.bssid,
++					wdev->netdev, bssid,
+ 					NULL, 0, NULL, 0,
+ 					WLAN_STATUS_UNSPECIFIED_FAILURE,
+ 					false, NULL);
+@@ -337,6 +345,15 @@ bool cfg80211_sme_failed_reassoc(struct wireless_dev *wdev)
+ 	return true;
  }
  
--static BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
-+BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
- 
- int pSeries_reconfig_notifier_register(struct notifier_block *nb)
- {
++void cfg80211_sme_failed_assoc(struct wireless_dev *wdev)
++{
++	struct wiphy *wiphy = wdev->wiphy;
++	struct cfg80211_registered_device *rdev = wiphy_to_dev(wiphy);
++
++	wdev->conn->state = CFG80211_CONN_DEAUTH_ASSOC_FAIL;
++	schedule_work(&rdev->conn_work);
++}
++
+ void __cfg80211_connect_result(struct net_device *dev, const u8 *bssid,
+ 			       const u8 *req_ie, size_t req_ie_len,
+ 			       const u8 *resp_ie, size_t resp_ie_len,
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
