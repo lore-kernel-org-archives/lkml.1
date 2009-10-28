@@ -1,123 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbZJ1IcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932730AbZJ1If4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932743AbZJ1IcJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 04:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932696AbZJ1IcH
+	id S932730AbZJ1If4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 04:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932682AbZJ1If4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 04:32:07 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46659 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932687AbZJ1IcE (ORCPT
+	Wed, 28 Oct 2009 04:35:56 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:35616 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932665AbZJ1Ifz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 04:32:04 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AE80170.6030402@jp.fujitsu.com>
-Date: Wed, 28 Oct 2009 17:31:44 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
- for pcie devices
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com> <4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com> <4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>
-In-Reply-To: <4AE5EFDB.2060908@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 28 Oct 2009 04:35:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=waA70LkxkcQAnjDKZEexB7fdW0fn64BGDuAm1OALqd7q1ybc9Zz9x034kA1SLnBbFH
+         7Hs5DqrTLxlpFZcXtZ4ytluFcoje13zmU3D2w8pREmRGlcCi2RCY+J13GYwlMCLiQrXC
+         nDaYiShDhSfNqsUjCoLqKP+W60pIa5u/hHiMw=
+Date: Wed, 28 Oct 2009 10:35:51 +0200
+From: Shmulik Ladkani <jungoshmulik@gmail.com>
+To: myuboot@fastmail.fm
+Cc: "Florian Fainelli" <florian@openwrt.org>, linux-kernel@vger.kernel.org,
+       "linux-mips" <linux-mips@linux-mips.org>, shmulik@jungo.com
+Subject: Re: serial port 8250 messed up after coverting from little endian
+ to big endian on kernel  2.6.31
+Message-ID: <20091028103551.0b4052d8@pixies.home.jungo.com>
+In-Reply-To: <1256676013.24305.1342273367@webmail.messagingengine.com>
+References: <1255735395.30097.1340523469@webmail.messagingengine.com>
+	<4AD906D8.3020404@caviumnetworks.com>
+	<1255996564.10560.1340920621@webmail.messagingengine.com>
+	<200910200817.24018.florian@openwrt.org>
+	<1256676013.24305.1342273367@webmail.messagingengine.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Yinghai Lu wrote:
->> Kenji Kaneshige wrote:
->>> I understand you need to touch I/O base/limit and Mem base/limit. But
->>> I don't understand why you also need to update bridge's BARs. Could
->>> you please explain a little more about it?
->>>
->>> Just in case, my terminology "bridge's BARs" is Base Address Register
->>> 0 (offset 0x10) and Base Address Register 1 (offset 0x14) in the
->>> (type 1) configuration space header of the bridge.
->> i mean 0x1c, 0x20, 0x28
->>
->> did not notice that bridge device's 0x10, 0x14 are used...
->> if port service need to use 0x10, 0x14, and the device is enabled, we should touch 0x10, and 0x14.
-> 
-> after check the code, if 
-> 
-> pci_bridge_assign_resources ==> pdev_assign_resources_sorted ==>  pdev_sort_resources
-> 
-> will not touch 0x10 and 0x14, if those resource is claimed by port service.
-> 
-> /* Sort resources by alignment */
-> void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
-> {       
->         int i;
->                 
->         for (i = 0; i < PCI_NUM_RESOURCES; i++) {
->                 struct resource *r;
->                 struct resource_list *list, *tmp;
->                 resource_size_t r_align;
->                 
->                 r = &dev->resource[i];
->                         
->                 if (r->flags & IORESOURCE_PCI_FIXED)
->                         continue;
->         
->                 if (!(r->flags) || r->parent)
->                         continue;
->                 
-> 
-> r->parent != NULL, will make it skip those two.
-> 
-> So -v3 should be safe.
-> 
+On Tue, 27 Oct 2009 15:40:13 -0500 myuboot@fastmail.fm wrote:
+> Thanks, Florian. I found the cause of the problem. My board is 32 bit
+> based, so each serial port register is 32bit even only 8 bit is used. So
+> when the board is switched endianess, I need to change the address
+> offset to access the same registers.
+> For example, original RHR register address is 0x8001000 with little
+> endian mode. With big endian, I need to access it as 0x8001003.
 
-Thank you for the clarification.
+I assume your uart_port's iotype is defined as UPIO_MEM32.
+UPIO_MEM32 makes 8250 access serial registers using readl/writel (which might
+be a problem for big-endian), while UPIO_MEM makes 8250 access the registers
+using readb/writeb.
+Maybe you should try UPIO_MEM (assuming hardware allows byte access).
 
-But I still don't understand the whole picture of your set of
-changes. Let me ask some questions.
-
-In my understanding of your set of changes, if there is a PCIe
-switch with some hot-plug slots and all of those slots are empty,
-I/O and Memory resources assigned by BIOS are all released at
-the boot time. For example, suppose the following case.
-
-                bridge(A)
-                   |
-        -----------------------
-        |                     |
-     bridge(B)             bridge(C)
-        |                     |
-      slot(1)               slot(2)
-      (empty)               (empty)
-
-   bridge(A): P2P bridge for switch upstream port
-   bridge(B): P2P bridge for switch downstream port
-   bridge(C): P2P bridge for switch downstream port
-
-In the above example, I/O and Mem resource assigned to bridge(A),
-bridge(B) and bridge(C) are all released at the boot time. Correct?
-
-Then, when a adapter card is hot-added to slot(1), I/O and Mem
-resources enough for enabling the hot-added adapter card is assigned
-to bridge(A), bridge(B) and the adapter card. Correct?
-
-Then, when an another adpater card is hot-added to slot(2), we
-need to assign enough resource to bridge(C) and the new card.
-But bridge(A) doesn't have enough resource for bridge(C) and
-the new card. In addition, all bridge(A) and bridge(B) and the
-adapter card on slot(1) are already working. How do you assign
-resource to bridge(C) and the card on slot(2)?
-
-Thanks,
-Kenji Kaneshige
-
-
-
-
+-- 
+Shmulik Ladkani		Jungo Ltd.
