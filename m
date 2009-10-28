@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZJ1KES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZJ1KYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753496AbZJ1KES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 06:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbZJ1KES
+	id S1753265AbZJ1KYQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 06:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZJ1KYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 06:04:18 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37883 "EHLO mx1.redhat.com"
+	Wed, 28 Oct 2009 06:24:15 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:60249 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752918AbZJ1KER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 06:04:17 -0400
-Message-ID: <4AE81710.1080103@redhat.com>
-Date: Wed, 28 Oct 2009 12:04:00 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	id S1752053AbZJ1KYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 06:24:14 -0400
+Date: Wed, 28 Oct 2009 10:24:13 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Kernel Testers List <kernel-testers@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>"@linux-foundation.org
+Subject: Re: [PATCH 2/3] page allocator: Do not allow interrupts to use
+	ALLOC_HARDER
+Message-ID: <20091028102413.GR8900@csn.ul.ie>
+References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <1256650833-15516-3-git-send-email-mel@csn.ul.ie> <20091027130924.fa903f5a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [Alacrityvm-devel] [KVM PATCH v2 1/2] KVM: export lockless GSI
- attribute
-References: <20091023023512.3891.65889.stgit@dev.haskins.net>	<20091023023845.3891.36857.stgit@dev.haskins.net> <4AE460F4.2090905@redhat.com> <4AE5A336.4010801@gmail.com> <4AE5C26A.9000400@gmail.com>
-In-Reply-To: <4AE5C26A.9000400@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091027130924.fa903f5a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/26/2009 05:38 PM, Gregory Haskins wrote:
->>> Instead of a lockless attribute, how about a ->set_atomic() method.  For
->>> msi this can be the same as ->set(), for non-msi it can be a function
->>> that schedules the work (which will eventually call ->set()).
->>>
->>> The benefit is that we make a decision only once, when preparing the
->>> routing entry, and install that decision in the routing entry instead of
->>> making it again and again later.
->>>        
->> Yeah, I like this idea.  I think we can also get rid of the custom
->> workqueue if we do this as well, TBD.
->>      
-> So I looked into this.  It isn't straight forward because you need to
-> retain some kind of state across the deferment on a per-request basis
-> (not per-GSI).  Today, this state is neatly tracked into the irqfd
-> object itself (e.g. it knows to toggle the GSI).
->    
+On Tue, Oct 27, 2009 at 01:09:24PM -0700, Andrew Morton wrote:
+> On Tue, 27 Oct 2009 13:40:32 +0000
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
+> > slightly by allowing rt_tasks that are handling an interrupt to set
+> > ALLOC_HARDER. This patch brings the watermark logic more in line with
+> > 2.6.30.
+> > 
+> > [rientjes@google.com: Spotted the problem]
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> > Reviewed-by: Rik van Riel <riel@redhat.com>
+> > Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> >  mm/page_alloc.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index dfa4362..7f2aa3e 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
+> >  		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+> >  		 */
+> >  		alloc_flags &= ~ALLOC_CPUSET;
+> > -	} else if (unlikely(rt_task(p)))
+> > +	} else if (unlikely(rt_task(p)) && !in_interrupt())
+> >  		alloc_flags |= ALLOC_HARDER;
+> >  
+> >  	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+> 
+> What are the runtime-observeable effects of this change?
+> 
 
-Yes, and it also contains the work_struct.
+A reduction of high-order GFP_ATOMIC allocation failures reported 
 
-What if we make the work_struct (and any additional state) part of the 
-set_atomic() argument list?  Does it simplify things?
+http://www.gossamer-threads.com/lists/linux/kernel/1144153
 
-> So while generalizing this perhaps makes sense at some point, especially
-> if irqfd-like interfaces get added, it probably doesn't make a ton of
-> sense to expend energy on it ATM.  It is basically a generalization of
-> the irqfd deferrment code.  Lets just wait until we have a user beyond
-> irqfd for now.  Sound acceptable?
->    
+> The description is a bit waffly-sounding for a -stable backportable
+> thing, IMO.  What reason do the -stable maintainers and users have to
+> believe that this patch is needed, and an improvement?
+> 
 
-I'll look at v3, but would really like to disentangle this.
-
-> In the meantime, I found a bug in the irq_routing code, so I will submit
-> a v3 with this fix, as well as a few other things I improved in the v2
-> series.
->
->    
-
+Allocation failure reports are occuring against 2.6.31.4 that did not
+occur in 2.6.30. The bug reporter observes no such allocation failures
+with this and the previous patch applied. The data is fuzzier than I'd
+like but both patches do appear to be required.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
