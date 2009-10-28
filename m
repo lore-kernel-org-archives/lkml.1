@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbZJ1FEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbZJ1FF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbZJ1FEa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 01:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbZJ1FE3
+	id S1757338AbZJ1FF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 01:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbZJ1FF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 01:04:29 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:40930 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755354AbZJ1FE3 (ORCPT
+	Wed, 28 Oct 2009 01:05:28 -0400
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:45071 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755392AbZJ1FF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 01:04:29 -0400
+	Wed, 28 Oct 2009 01:05:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mail-followup-to:references
          :mime-version:content-type:content-disposition:in-reply-to
          :x-operating-system:user-agent;
-        b=MOnVtU/vspP6gt8S3nDQNY1seArBpYmJ/VY3sv/Zr8zPoEoVfNn0R5KDazSLdDApMx
-         mlhUkmQO+Lo+YqEuwaE7VhHv7p3rhKaZ0jsrZPl3+m72XbNQzbhgFDj9uCs3AxhRo0YB
-         QqXAQ78H7w6KHGxyOPpjcbxyNR0paw8FcERwQ=
-Date: Wed, 28 Oct 2009 13:04:21 +0800
+        b=boBieEMpYuoLK9dRu6GpbMf24Ct+BIoomn9p6W5VoWbcKKS71mEA/Xms7Dn0AvmSIt
+         /XnbcU8fFeLOBQII3VuapDkz5Poi4R86+8FouHeu9VbExBujQKRA0MA4qnB/4T06hPv+
+         7Oc749Uwb9k05XOvWn3297NP/BnWg33pc1yl8=
+Date: Wed, 28 Oct 2009 13:05:23 +0800
 From: Li Hong <lihong.hi@gmail.com>
 To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 4/8] tracing: recordmcount.pl Objcopy check should
-	disable local reference correctly
-Message-ID: <20091028050421.GD30758@uhli>
+Subject: [PATCH v3 5/8] tracing: recordmcount.pl Clarify the logic on
+	mcount section check
+Message-ID: <20091028050523.GE30758@uhli>
 Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
 	linux-kernel@vger.kernel.org
 References: <20091028045532.GA30036@uhli>
@@ -37,99 +37,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ceb80d8ba4fc55916c5f88d8c0a7655b869702cf Mon Sep 17 00:00:00 2001
+>From 7cff5ca3e0cdad6fcb4933ef290e5e2bf90e26fb Mon Sep 17 00:00:00 2001
 From: Li Hong <lihong.hi@gmail.com>
-Date: Tue, 27 Oct 2009 12:41:22 +0800
-Subject: [PATCH] tracing: recordmcount.pl Objcopy check should disable local reference correctly
+Date: Tue, 27 Oct 2009 12:53:52 +0800
+Subject: [PATCH] tracing: recordmcount.pl Clarify the logic on mcount section check
 
-Use a function to do objcopy version check. Disable the local reference if
-copy can't support it. Remove some unused variables.
+Move the mcount section check to the beginning of the objdump read loop.
+It is clearer, because mcount section check uses headers dump part of objdump
+to identify a mcount section, which goes before the section parts.
 
 Signed-off-by: Li Hong <lihong.hi@gmail.com>
 ---
- scripts/recordmcount.pl |   55 ++++++++++++++++++++++------------------------
- 1 files changed, 26 insertions(+), 29 deletions(-)
+ scripts/recordmcount.pl |   34 +++++++++++++++++++---------------
+ 1 files changed, 19 insertions(+), 15 deletions(-)
 
 diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 8ff9eab..1de9826 100755
+index 1de9826..f4117d6 100755
 --- a/scripts/recordmcount.pl
 +++ b/scripts/recordmcount.pl
-@@ -158,6 +158,30 @@ my $function_regex;	# Find the name of a function
- my $mcount_regex;	# Find the call site to mcount (return offset)
- my $alignment;		# The .align value to use for $mcount_section
- my $section_type;	# Section header plus possible alignment command
-+my $can_use_local = 0; 	# If we can use local function references
+@@ -389,9 +389,27 @@ open(IN, "$objdump -hdr $inputfile|") || die "error running $objdump";
+ 
+ my $text;
+ 
 +
-+##
-+# check_objcopy - whether objcopy supports --globalize-symbols
-+#
-+#  --globalize-symbols came out in 2.17, we must test the version
-+#  of objcopy, and if it is less than 2.17, then we can not
-+#  record local functions.
-+sub check_objcopy
-+{
-+    open (IN, "$objcopy --version |") or die "error running $objcopy";
-+    while (<IN>) {
-+        if (/objcopy.*\s(\d+)\.(\d+)/) {
-+            $can_use_local = 1 if ($1 > 2 || ($1 == 2 && $2 >= 17)); 
-+            last;
-+        }
-+    }
-+    close (IN);
++# read headers first
+ my $read_headers = 1;
+ 
+ while (<IN>) {
 +
-+    if (!$can_use_local) {
-+        print STDERR "WARNING: could not find objcopy version or version is less than 2.17.\n" .
-+	"\tLocal function references is disabled.\n"  
++    if ($read_headers && /$mcount_section/) {
++	#
++	# Somehow the make process can execute this script on an
++	# object twice. If it does, we would duplicate the mcount
++	# section and it will cause the function tracer self test
++	# to fail. Check if the mcount section exists, and if it does,
++	# warn and exit.
++	#
++	print STDERR "ERROR: $mcount_section already in $inputfile\n" .
++	    "\tThis may be an indication that your build is corrupted.\n" .
++	    "\tDelete $inputfile and try again. If the same object file\n" .
++	    "\tstill causes an issue, then disable CONFIG_DYNAMIC_FTRACE.\n";
++	exit(-1);
 +    }
-+}
- 
- if ($arch eq "x86") {
-     if ($bits == 64) {
-@@ -292,34 +316,7 @@ if ($filename =~ m,^(.*)(\.\S),) {
- my $mcount_s = $dirname . "/.tmp_mc_" . $prefix . ".s";
- my $mcount_o = $dirname . "/.tmp_mc_" . $prefix . ".o";
- 
--#
--# --globalize-symbols came out in 2.17, we must test the version
--# of objcopy, and if it is less than 2.17, then we can not
--# record local functions.
--my $use_locals = 01;
--my $local_warn_once = 0;
--my $found_version = 0;
--
--open (IN, "$objcopy --version |") || die "error running $objcopy";
--while (<IN>) {
--    if (/objcopy.*\s(\d+)\.(\d+)/) {
--	my $major = $1;
--	my $minor = $2;
--
--	$found_version = 1;
--	if ($major < 2 ||
--	    ($major == 2 && $minor < 17)) {
--	    $use_locals = 0;
--	}
--	last;
--    }
--}
--close (IN);
--
--if (!$found_version) {
--    print STDERR "WARNING: could not find objcopy version.\n" .
--	"\tDisabling local function references.\n";
--}
-+check_objcopy();
- 
- #
- # Step 1: find all the local (static functions) and weak symbols.
-@@ -366,7 +363,7 @@ sub update_funcs
-     if (defined $locals{$ref_func}) {
- 
- 	# only use locals if objcopy supports globalize-symbols
--	if (!$use_locals) {
-+	if (!$can_use_local) {
- 	    return;
++
+     # is it a section?
+     if (/$section_regex/) {
+ 	$read_headers = 0;
+@@ -432,21 +450,7 @@ while (<IN>) {
+ 		$offset = hex $1;
+ 	    }
  	}
- 	$convert{$ref_func} = 1;
+-    } elsif ($read_headers && /$mcount_section/) {
+-	#
+-	# Somehow the make process can execute this script on an
+-	# object twice. If it does, we would duplicate the mcount
+-	# section and it will cause the function tracer self test
+-	# to fail. Check if the mcount section exists, and if it does,
+-	# warn and exit.
+-	#
+-	print STDERR "ERROR: $mcount_section already in $inputfile\n" .
+-	    "\tThis may be an indication that your build is corrupted.\n" .
+-	    "\tDelete $inputfile and try again. If the same object file\n" .
+-	    "\tstill causes an issue, then disable CONFIG_DYNAMIC_FTRACE.\n";
+-	exit(-1);
+-    }
+-
++    } 
+     # is this a call site to mcount? If so, record it to print later
+     if ($text_found && /$mcount_regex/) {
+ 	$offsets[$#offsets + 1] = hex $1;
 -- 
 1.6.0.4
 
