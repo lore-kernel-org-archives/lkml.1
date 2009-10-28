@@ -1,81 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbZJ1TpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZJ1Tts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbZJ1TpD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 15:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZJ1TpC
+	id S1754110AbZJ1Tts (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 15:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZJ1Tts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 15:45:02 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:59469 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753875AbZJ1TpB (ORCPT
+	Wed, 28 Oct 2009 15:49:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60328 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753934AbZJ1Ttr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 15:45:01 -0400
-Date: Wed, 28 Oct 2009 19:44:51 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: symlinks with permissions
-Message-ID: <20091028194451.GC17475@shareable.org>
-References: <20091025062953.GC1391@ucw.cz> <20091026163157.GB7233@duck.suse.cz> <20091026165729.GF23564@us.ibm.com> <20091026173629.GB16861@fieldses.org> <20091026174631.GD7233@duck.suse.cz> <1256579869.8576.7.camel@heimdal.trondhjem.org> <20091025093604.GA1501@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org> <20091028081653.GA18290@elf.ucw.cz> <4AE87292.20802@schaufler-ca.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE87292.20802@schaufler-ca.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 28 Oct 2009 15:49:47 -0400
+Date: Wed, 28 Oct 2009 12:47:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 3/3] vmscan: Force kswapd to take notice faster when
+ high-order watermarks are being hit
+Message-Id: <20091028124756.7af44b6b.akpm@linux-foundation.org>
+In-Reply-To: <20091028102936.GS8900@csn.ul.ie>
+References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie>
+	<1256650833-15516-4-git-send-email-mel@csn.ul.ie>
+	<20091027131905.410ec04a.akpm@linux-foundation.org>
+	<20091028102936.GS8900@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> Pavel Machek wrote:
-> > The actual permissions of the file are not ignored, but permissions of
-> > the containing directory _are_. If there's 666 file in 700 directory,
-> > you can reopen it read-write, in violation of directory's 700
-> > permissions.
-> > 									Pavel
+On Wed, 28 Oct 2009 10:29:36 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
+
+> On Tue, Oct 27, 2009 at 01:19:05PM -0700, Andrew Morton wrote:
+> > On Tue, 27 Oct 2009 13:40:33 +0000
+> > Mel Gorman <mel@csn.ul.ie> wrote:
+> > 
+> > > When a high-order allocation fails, kswapd is kicked so that it reclaims
+> > > at a higher-order to avoid direct reclaimers stall and to help GFP_ATOMIC
+> > > allocations. Something has changed in recent kernels that affect the timing
+> > > where high-order GFP_ATOMIC allocations are now failing with more frequency,
+> > > particularly under pressure. This patch forces kswapd to notice sooner that
+> > > high-order allocations are occuring.
+> > > 
+> > 
+> > "something has changed"?  Shouldn't we find out what that is?
+> > 
 > 
-> There is no security violation here. Consider the case where
-> the file is unlinked after it is opened. What directory permissions
-> would matter in that case?
+> We've been trying but the answer right now is "lots". There were some
+> changes in the allocator itself which were unintentional and fixed in
+> patches 1 and 2 of this series. The two other major changes are
+> 
+> iwlagn is now making high order GFP_ATOMIC allocations which didn't
+> help. This is being addressed separetly and I believe the relevant
+> patches are now in mainline.
+> 
+> The other major change appears to be in page writeback. Reverting
+> commits 373c0a7e + 8aa7e847 significantly helps one bug reporter but
+> it's still unknown as to why that is.
 
-That's an even worse security violation.
+Peculiar.  Those changes are fairly remote from large-order-GFP_ATOMIC
+allocations.
 
-If you have a file opened read-only which is unlinked (and there's no
-other file descriptors to it), it is impossible to modify the file
-except through this quirk of /proc/NN/fd.  In traditional unix, it is
-impossible to modify full stop.  Even root can't write to it.
+> ...
+>
+> Wireless drivers in particularly seem to be very
+> high-order GFP_ATOMIC happy.
 
-Paths are in this discussion as an *example* of something that cannot
-be done except through /proc/NN/fd.  Paths are not the issue.
+It would be nice if we could find a way of preventing people from
+attempting high-order atomic allocations in the first place - it's a bit
+of a trap.
 
-As you've noticed, the same security hole occurs for files which have
-been unlinked and don't have any path.
+Maybe add a runtime warning which is suppressable by GFP_NOWARN (or a
+new flag), then either fix existing callers or, after review, add the
+flag.
 
-The real issue is gaining more access to an open file than you had before.
+Of course, this might just end up with people adding these hopeless
+allocation attempts and just setting the nowarn flag :(
 
-> Or what about the case where the file
-> has a link count of 2, say /a/foo and /b/ish are hard links. If
-> /a is 777 and /b is 700 what would your position be regarding
-> the file descriptor obtained by opening /b/ish?
+> > If one where to whack a printk in that `if' block, how often would it
+> > trigger, and under what circumstances?
+> 
+> I don't know the frequency. The circumstances are "under load" when
+> there are drivers depending on high-order allocations but the
+> reproduction cases are unreliable.
+> 
+> Do you want me to slap together a patch that adds a vmstat counter for
+> this? I can then ask future bug reporters to examine that counter and see
+> if it really is a major factor for a lot of people or not.
 
-It depends on the flag passed to open() when the file descriptor is
-obtained.  That's where the pseudo-symlink permission comes from,
-which is what Pavel is getting it.
+Something like that, if it will help us understand what's going on.  I
+don't see a permanent need for that instrumentation but while this
+problem is still in the research stage, sure, lard it up with debug
+stuff?
 
-> The path name is an ethereal convenience and once traversed has no
-> bearing on the security state of the object.
 
-That's right.  The security state should depend _only_ on the
-file open mode, that is O_RDONLY/WRONLY/RDWR/APPEND.
 
-That is more or less what Pavel is saying too, because the
-pseudo-symlink permission is calculated from the file open mode
-(except for O_APPEND, which is why it shouldn't be done using the
-pseudo-symlink permission).  Ignore the path aspect, it's just a distraction.
-
--- Jamie
+It's very important to understand _why_ the VM got worse.  And, of
+course, to fix that up.  But, separately, we should find a way of
+preventing developers from using these very unreliable allocations.
