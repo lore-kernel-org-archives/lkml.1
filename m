@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZJ1M61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbZJ1M7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZJ1M61 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 08:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZJ1M60
+	id S1753420AbZJ1M7F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 08:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZJ1M7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 08:58:26 -0400
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:45867 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752032AbZJ1M6Z (ORCPT
+	Wed, 28 Oct 2009 08:59:04 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:39350 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752568AbZJ1M7C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 08:58:25 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 8BIT
-Content-type: text/plain; charset=ISO-8859-1
-X-IronPort-AV: E=Sophos;i="4.44,639,1249250400";   d="scan'208";a="31502626"
-Message-id: <4AE83FE4.1050309@nets.rwth-aachen.de>
-Date: Wed, 28 Oct 2009 13:58:12 +0100
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+	Wed, 28 Oct 2009 08:59:02 -0400
+Message-ID: <4AE84017.7040101@hp.com>
+Date: Wed, 28 Oct 2009 08:59:03 -0400
+From: jim owens <jowens@hp.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Andreas Petlund <apetlund@simula.no>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
-       ilpo.jarvinen@helsinki.fi, davem@davemloft.net
-Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
-References: <4AE72079.4030504@simula.no> <4AE7262B.1060703@gmail.com>
-In-reply-to: <4AE7262B.1060703@gmail.com>
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Eric Paris <eparis@parisplace.org>, Robert Hancock <hancockrwd@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14474] restorecond going crazy on 2.6.31.4 - inotify regression?
+References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <200910270924.41037.rjw@sisk.pl> <7e0fb38c0910270732p3a7098d3jc6334e417320295d@mail.gmail.com> <200910272127.40587.rjw@sisk.pl>
+In-Reply-To: <200910272127.40587.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet schrieb:
-> Andreas Petlund a écrit :
->> This patch will make TCP use only linear timeouts if the stream is thin. This will help to avoid the very high latencies that thin stream suffer because of exponential backoff. This mechanism is only active if enabled by iocontrol or syscontrol and the stream is identified as thin.
+Rafael J. Wysocki wrote:
+> On Tuesday 27 October 2009, Eric Paris wrote:
+>> It's a restorecond bug.  restorecon acted as if watch descriptors
+>> could never be reused.  They weren't on old kernels and it's possible
+>> they are reused now.  Restorecon was fixed.
 >>
+>> http://marc.info/?l=selinux&m=125380417916233&w=2
+>>
+>> a change in the kernel caused a buggy userspace program to break.  I
+>> know how to put the kernel back the way it was, but I don't know if we
+>> call this a regression, you guys tell me.
 > 
-> Wont this reduce the session timeout to something very small, ie 15 retransmits, way under the minute ?
+> Yes, we do, AFAICS.  The policy is not to break user space, even if it happens
+> to work by accident.
 
-The session timeout no longer depends on the actual number of retransmits. Instead its a time interval,
-which is roughly equivalent to the time a TCP, performing exponential backoff would need to perform
-15 retransmits.
+But if we make a rule of "never break even bad user programs" then
+we also should never plug security holes because that breaks a
+user program expecting that attack vector :)
 
-However, addressing the proposal:
-I wonder how one can seriously suggest to just skip congestion response during timeout-based
-loss recovery? I believe that in a heavily congested scenarios, this would lead to a goodput
-goodput disaster... Not to mention that in a heavily congested scenario, suddenly every flow
-will become "thin", so this will even amplify the problems. Or did I miss something?
+Silly example, but the point is we need to decide if the
+user program would have done something wrong eventually
+anyway (as in if the system was up long enough, they would
+have hit a duplicate id and failed with the old kernel) so
+the kernel change just makes it easy to hit the user code bug.
 
-Best regards,
-Arnd
+jim
