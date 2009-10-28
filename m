@@ -1,49 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbZJ1CnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZJ1Cp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757180AbZJ1CnQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 22:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbZJ1CnQ
+	id S1757218AbZJ1Cp3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 22:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbZJ1Cp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 22:43:16 -0400
-Received: from mail-gx0-f216.google.com ([209.85.217.216]:45676 "EHLO
-	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755995AbZJ1CnP (ORCPT
+	Tue, 27 Oct 2009 22:45:28 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:55373 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756451AbZJ1Cp1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 22:43:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=efsAQHfFl08eDbz8g3d+tckrIp55vGpT6DZRS/DTy2K+3rL2j74Qac9mm2k/P1efk+
-         Ep1gk/seX1WmHhgFRIHHnt9Sqk0dp+5QP5xQ0vTClrhEkq/rOjOX9NrZTvAo2EMIM2Uz
-         OEkJALt+2YXQPW6w+5+SbxHV7eYyWi38/9cmM=
-Message-ID: <4AE7AFC4.3040805@gmail.com>
-Date: Tue, 27 Oct 2009 22:43:16 -0400
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 27 Oct 2009 22:45:27 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:sender:in-reply-to:references:date:
+	x-google-sender-auth:message-id:subject:from:to:cc:content-type:
+	content-transfer-encoding:x-system-of-record;
+	b=M9CRz8RrZ6LnpEmZVryiqP26/ySKBXrOCf+M8jmGsdHl5ngQGIA5nRK8FSkISp676
+	TwB/C6UK0kB6BXC/g7/eA==
 MIME-Version: 1.0
-To: Andreas Petlund <apetlund@simula.no>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       shemminger@vyatta.com, ilpo.jarvinen@helsinki.fi, davem@davemloft.net
-Subject: Re: [PATCH 3/3] net: TCP thin dupack
-References: <4AE7207D.8090402@simula.no>
-In-Reply-To: <4AE7207D.8090402@simula.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1253817781.8653.3.camel@dyn531367.br.ibm.com>
+References: <1246410255-6839-1-git-send-email-adi@vmware.com>
+	 <20090701110136.576a1d14@lxorguk.ukuu.org.uk>
+	 <1246455920.9140.28.camel@blackbox>
+	 <20090720182732.GL6370@hexapodia.org>
+	 <1252609714.4837.87.camel@blackbox>
+	 <1252612471.4837.107.camel@blackbox>
+	 <1252612709.30578.219.camel@desktop>
+	 <1252613375.4837.121.camel@blackbox>
+	 <f02dbbe70909111634q24df8746o8589394f7c30b28@mail.gmail.com>
+	 <1253817781.8653.3.camel@dyn531367.br.ibm.com>
+Date: Wed, 28 Oct 2009 11:45:24 +0900
+X-Google-Sender-Auth: 8851e992ff895ae9
+Message-ID: <b8394ab90910271945j10bd0aduda01cdc0610271f4@mail.gmail.com>
+Subject: Re: [PATCH] tpm_tis: TPM_STS_DATA_EXPECT workaround
+From: David Smith <david.daniel.smith@gmail.com>
+To: tpmdd-devel@lists.sourceforge.net
+Cc: Seiji Munetoh <seiji.munetoh@gmail.com>, akpm@linux-foundation.org,
+       Daniel Walker <dwalker@fifo99.com>, Andy Isaacson <adi@hexapodia.org>,
+       jmorris@namei.org, len.brown@intel.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Isaacson <adi@vmware.com>,
+       linux-kernel@vger.kernel.org, Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Petlund wrote:
-> diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-> index e64368d..f4a05ff 100644
-> --- a/include/linux/tcp.h
-> +++ b/include/linux/tcp.h
-> @@ -97,6 +97,7 @@ enum {
->  #define TCP_CONGESTION		13	/* Congestion control algorithm */
->  #define TCP_MD5SIG		14	/* TCP MD5 Signature (RFC2385) */
->  #define TCP_THIN_RM_EXPB        15      /* Remove exp. backoff for thin streams*/
-> +#define TCP_THIN_DUPACK         16      /* Fast retrans. after 1 dupack */
->  
-I've not had the chance to examine the rest, but I've been poking at a
-patch series that's used 15 for over a year, so could you try 16 and 17?
+Hi, can this be merged, please? Using the module parameter is not
+optimal but it's better than the complete lack of support today.
+
+On Fri, Sep 25, 2009 at 3:43 AM, Rajiv Andrade
+<srajiv@linux.vnet.ibm.com> wrote:
+> This was already tested and, given no more comments on it, finally
+> reviewed. Can it already be merged?
+>
+> Thanks,
+> Rajiv
+>
+> On Sat, 2009-09-12 at 08:34 +0900, Seiji Munetoh wrote:
+>> On Fri, Sep 11, 2009 at 5:09 AM, Rajiv Andrade
+>> <srajiv@linux.vnet.ibm.com> wrote:
+>> > Some newer Lenovo models are shipped with a TPM that doesn't seem to set the TPM_STS_DATA_EXPECT status bit
+>> > when sending it a burst of data, so the code understands it as a failure and doesn't proceed sending the chip
+>> > the intended data. In this patch we bypass this bit check in case the itpm module parameter was set.
+>> >
+>> > This patch is based on Andy Isaacson's one:
+>> >
+>> > http://marc.info/?l=linux-kernel&m=124650185023495&w=2
+>> >
+>> > It was heavily discussed how should we deal with identifying the chip in kernel space, but the required
+>> > patch to do so was NACK'd:
+>> >
+>> > http://marc.info/?l=linux-kernel&m=124650186423711&w=2
+>> >
+>> > This way we let the user choose using this workaround or not based on his
+>> > observations on this code behavior when trying to use the TPM.
+>> >
+>> > Fixed a checkpatch issue present on the previous patch, thanks to Daniel Walker.
+>> >
+>> > Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+>>
+>> As far as I know, only the intel tpm has this PNP issue, so I'm fine with it.
+>>
+>> Tested-by: Seiji Munetoh <seiji.munetoh@gmail.com>
+>>
+>> > ---
+>> > diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+>> > index aec1931..c9990db 100644
+>> > --- a/drivers/char/tpm/tpm_tis.c
+>> > +++ b/drivers/char/tpm/tpm_tis.c
+>> > @@ -257,6 +257,10 @@ out:
+>> >        return size;
+>> >  }
+>> >
+>> > +static int itpm;
+>> > +module_param(itpm, bool, 0444);
+>> > +MODULE_PARM_DESC(itpm, "Force iTPM workarounds (found on some Lenovo laptops)");
+>> > +
+>> >  /*
+>> >  * If interrupts are used (signaled by an irq set in the vendor structure)
+>> >  * tpm.c can skip polling for the data to be available as the interrupt is
+>> > @@ -293,7 +297,7 @@ static int tpm_tis_send(struct tpm_chip *chip, u8 *buf, size_t len)
+>> >                wait_for_stat(chip, TPM_STS_VALID, chip->vendor.timeout_c,
+>> >                              &chip->vendor.int_queue);
+>> >                status = tpm_tis_status(chip);
+>> > -               if ((status & TPM_STS_DATA_EXPECT) == 0) {
+>> > +               if (!itpm && (status & TPM_STS_DATA_EXPECT) == 0) {
+>> >                        rc = -EIO;
+>> >                        goto out_err;
+>> >                }
+>> > @@ -467,6 +471,10 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
+>> >                 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
+>> >                 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
+>> >
+>> > +       if (itpm)
+>> > +               dev_info(dev, "Intel iTPM workaround enabled\n");
+>> > +
+>> > +
+>> >        /* Figure out the capabilities */
+>> >        intfcaps =
+>> >            ioread32(chip->vendor.iobase +
+>> >
+>> >
+>> >
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
