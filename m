@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757007AbZJ1GyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbZJ1Gze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757007AbZJ1GyR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757079AbZJ1GyQ
+	id S932238AbZJ1Gze (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 02:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbZJ1Gy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:54:16 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54071 "EHLO sh.osrg.net"
+	Wed, 28 Oct 2009 02:54:26 -0400
+Received: from sh.osrg.net ([192.16.179.4]:54077 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756907AbZJ1GyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:54:15 -0400
+	id S1757459AbZJ1GyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 02:54:21 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: chrisw@sous-sol.org, dwmw2@infradead.org, joerg.roedel@amd.com,
        mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH 01/10] Add iommu_init to x86_init_ops
-Date: Wed, 28 Oct 2009 15:47:35 +0900
-Message-Id: <1256712464-21472-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 02/10] Calgary: convert detect_calgary to use iommu_init hook
+Date: Wed, 28 Oct 2009 15:47:36 +0900
+Message-Id: <1256712464-21472-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
@@ -24,97 +24,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We call the detections functions of all the IOMMUs then all their
-initialization functions. THe latter is pointless since we don't
-detect multiple different IOMMUs. What we need to do is calling the
-initialization function of the detected IOMMU.
+This changes detect_calgary() to set init_calgary() to iommu_init hook
+if detect_calgary() finds the Calgary IOMMU.
 
-This adds iommu_init hook to x86_init_ops so if an IOMMU detection
-function can set its initialization function to the hook.
+We can kill the code to check if we found the IOMMU in init_calgary()
+since detect_calgary() sets init_calgary() only when it found the
+IOMMU.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/x86/include/asm/iommu.h    |    1 +
- arch/x86/include/asm/x86_init.h |    9 +++++++++
- arch/x86/kernel/pci-dma.c       |    2 ++
- arch/x86/kernel/x86_init.c      |    5 +++++
- 4 files changed, 17 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/calgary.h   |    2 --
+ arch/x86/kernel/pci-calgary_64.c |   11 +++++------
+ arch/x86/kernel/pci-dma.c        |    2 --
+ 3 files changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
-index fd6d21b..42aa977 100644
---- a/arch/x86/include/asm/iommu.h
-+++ b/arch/x86/include/asm/iommu.h
-@@ -3,6 +3,7 @@
+diff --git a/arch/x86/include/asm/calgary.h b/arch/x86/include/asm/calgary.h
+index b03bedb..0918654 100644
+--- a/arch/x86/include/asm/calgary.h
++++ b/arch/x86/include/asm/calgary.h
+@@ -62,10 +62,8 @@ struct cal_chipset_ops {
+ extern int use_calgary;
  
- extern void pci_iommu_shutdown(void);
- extern void no_iommu_init(void);
-+static inline int iommu_init_noop(void) { return 0; }
- extern struct dma_map_ops nommu_dma_ops;
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
-diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
-index 2c756fd..a58644a 100644
---- a/arch/x86/include/asm/x86_init.h
-+++ b/arch/x86/include/asm/x86_init.h
-@@ -91,6 +91,14 @@ struct x86_init_timers {
- };
- 
- /**
-+ * struct x86_init_iommu - platform specific iommu setup
-+ * @iommu_init:			platform specific iommu setup
-+ */
-+struct x86_init_iommu {
-+	int (*iommu_init)(void);
-+};
-+
-+/**
-  * struct x86_init_ops - functions for platform specific setup
-  *
-  */
-@@ -101,6 +109,7 @@ struct x86_init_ops {
- 	struct x86_init_oem		oem;
- 	struct x86_init_paging		paging;
- 	struct x86_init_timers		timers;
-+	struct x86_init_iommu		iommu;
- };
- 
- /**
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index b2a71dc..5609973 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -292,6 +292,8 @@ static int __init pci_iommu_init(void)
- 	dma_debug_add_bus(&pci_bus_type);
+ #ifdef CONFIG_CALGARY_IOMMU
+-extern int calgary_iommu_init(void);
+ extern void detect_calgary(void);
+ #else
+-static inline int calgary_iommu_init(void) { return 1; }
+ static inline void detect_calgary(void) { return; }
  #endif
  
-+	x86_init.iommu.iommu_init();
-+
- 	calgary_iommu_init();
+diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+index 971a3be..47bd419 100644
+--- a/arch/x86/kernel/pci-calgary_64.c
++++ b/arch/x86/kernel/pci-calgary_64.c
+@@ -46,6 +46,7 @@
+ #include <asm/dma.h>
+ #include <asm/rio.h>
+ #include <asm/bios_ebda.h>
++#include <asm/x86_init.h>
  
+ #ifdef CONFIG_CALGARY_IOMMU_ENABLED_BY_DEFAULT
+ int use_calgary __read_mostly = 1;
+@@ -1344,6 +1345,8 @@ static void __init get_tce_space_from_tar(void)
+ 	return;
+ }
+ 
++int __init calgary_iommu_init(void);
++
+ void __init detect_calgary(void)
+ {
+ 	int bus;
+@@ -1445,6 +1448,8 @@ void __init detect_calgary(void)
+ 		/* swiotlb for devices that aren't behind the Calgary. */
+ 		if (max_pfn > MAX_DMA32_PFN)
+ 			swiotlb = 1;
++
++		x86_init.iommu.iommu_init = calgary_iommu_init;
+ 	}
+ 	return;
+ 
+@@ -1461,12 +1466,6 @@ int __init calgary_iommu_init(void)
+ {
+ 	int ret;
+ 
+-	if (no_iommu || (swiotlb && !calgary_detected))
+-		return -ENODEV;
+-
+-	if (!calgary_detected)
+-		return -ENODEV;
+-
+ 	/* ok, we're trying to use Calgary - let's roll */
+ 	printk(KERN_INFO "PCI-DMA: Using Calgary IOMMU\n");
+ 
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 5609973..1b06714 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -294,8 +294,6 @@ static int __init pci_iommu_init(void)
+ 
+ 	x86_init.iommu.iommu_init();
+ 
+-	calgary_iommu_init();
+-
  	intel_iommu_init();
-diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
-index 4449a4a..d89ce53 100644
---- a/arch/x86/kernel/x86_init.c
-+++ b/arch/x86/kernel/x86_init.c
-@@ -14,6 +14,7 @@
- #include <asm/time.h>
- #include <asm/irq.h>
- #include <asm/tsc.h>
-+#include <asm/iommu.h>
  
- void __cpuinit x86_init_noop(void) { }
- void __init x86_init_uint_noop(unsigned int unused) { }
-@@ -62,6 +63,10 @@ struct x86_init_ops x86_init __initdata = {
- 		.tsc_pre_init		= x86_init_noop,
- 		.timer_init		= hpet_time_init,
- 	},
-+
-+	.iommu = {
-+		.iommu_init		= iommu_init_noop,
-+	},
- };
- 
- struct x86_cpuinit_ops x86_cpuinit __cpuinitdata = {
+ 	amd_iommu_init();
 -- 
 1.5.6.5
 
