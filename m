@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZJ1FOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZJ1FTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbZJ1FOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 01:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757272AbZJ1FOU
+	id S1757386AbZJ1FTZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 01:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbZJ1FTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 01:14:20 -0400
-Received: from mail.atheros.com ([12.36.123.2]:14782 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757313AbZJ1FOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 01:14:19 -0400
-From: <jie.yang@atheros.com>
-To: <davem@davemloft.net>
-CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       Jie Yang <jie.yang@atheros.com>
-Subject: [patch net-next]atl1c: duplicate atl1c_get_tpd
-Date: Wed, 28 Oct 2009 13:14:15 +0800
-Message-ID: <12567068551959-git-send-email-jie.yang@atheros.com>
-X-Mailer: git-send-email 1.5.2.2
+	Wed, 28 Oct 2009 01:19:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50112 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757239AbZJ1FTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 01:19:23 -0400
+Date: Wed, 28 Oct 2009 06:19:25 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch v2] x86: reduce srat verbosity in the kernel log
+Message-ID: <20091028051925.GL7744@basil.fritz.box>
+References: <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jie Yang <jie.yang@atheros.com>
+> +		/*
+> +		 * If the bitmap cannot be listed in a buffer of length
+> +		 * APICID_LIST_LEN, then it is suffixed with "...".
+> +		 */
+> +		len = bitmap_scnlistprintf(apicid_list, APICID_LIST_LEN,
+> +					   apicid_map, MAX_LOCAL_APIC);
+> +		pr_info("SRAT: PXM %u -> APIC {%s%s} -> Node %u\n",
+> +			i, apicid_list,
+> +			(len == APICID_LIST_LEN - 1) ? "..." : "",
 
-remove duplicate atl1c_get_tpd, it may cause hardware to send wrong packets.
+Is the - 1 really correct? If scnlistprintf follows snprintf semantics then it would not
+be and my understanding is it is supposed to.
 
-Signed-off-by: Jie Yang <jie.yang@atheros.com>
+Other than that it looks good.
 
----
+-Andi
 
- drivers/net/atl1c/atl1c_main.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/atl1c/atl1c_main.c b/drivers/net/atl1c/atl1c_main.c
-index 1372e9a..3b8801a 100644
---- a/drivers/net/atl1c/atl1c_main.c
-+++ b/drivers/net/atl1c/atl1c_main.c
-@@ -1981,8 +1981,6 @@ static void atl1c_tx_map(struct atl1c_adapter *adapter,
- 		else {
- 			use_tpd = atl1c_get_tpd(adapter, type);
- 			memcpy(use_tpd, tpd, sizeof(struct atl1c_tpd_desc));
--			use_tpd = atl1c_get_tpd(adapter, type);
--			memcpy(use_tpd, tpd, sizeof(struct atl1c_tpd_desc));
- 		}
- 		buffer_info = atl1c_get_tx_buffer(adapter, use_tpd);
- 		buffer_info->length = buf_len - mapped_len;
+-- 
+ak@linux.intel.com -- Speaking for myself only.
