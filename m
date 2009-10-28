@@ -1,108 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbZJ1Hq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbZJ1HtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbZJ1Hq5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 03:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbZJ1Hq4
+	id S1757579AbZJ1HtE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 03:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbZJ1HtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 03:46:56 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44546 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754938AbZJ1Hq4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 03:46:56 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 28 Oct 2009 16:44:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] memcg: make memcg's file mapped consistent with global
- VM
-Message-Id: <20091028164430.bc660f25.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091028073212.GO16378@balbir.in.ibm.com>
-References: <20091028121619.c094e9c0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091028071854.GL16378@balbir.in.ibm.com>
-	<20091028162458.45865281.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091028073212.GO16378@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 03:49:01 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:4375 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757566AbZJ1Hs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 03:48:59 -0400
+Date: Wed, 28 Oct 2009 09:46:23 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [KVM PATCH v3 2/3] KVM: export lockless GSI attribute
+Message-ID: <20091028074623.GB22784@redhat.com>
+References: <20091026162148.23704.47286.stgit@dev.haskins.net> <20091026162202.23704.8727.stgit@dev.haskins.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026162202.23704.8727.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009 13:02:12 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-10-28 16:24:58]:
+On Mon, Oct 26, 2009 at 12:22:03PM -0400, Gregory Haskins wrote:
+> Certain GSI's support lockless injecton, but we have no way to detect
+> which ones at the GSI level.  Knowledge of this attribute will be
+> useful later in the series so that we can optimize irqfd injection
+> paths for cases where we know the code will not sleep.  Therefore,
+> we provide an API to query a specific GSI.
 > 
-> > On Wed, 28 Oct 2009 12:48:54 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-10-28 12:16:19]:
-> > > 
-> > > > Based on mmotm-Oct13 + some patches in -mm queue.
-> > > > 
-> > > > ==
-> > > > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > > 
-> > > > memcg-cleanup-file-mapped-consistent-with-globarl-vm-stat.patch
-> > > > 
-> > > > In global VM, FILE_MAPPED is used but memcg uses MAPPED_FILE.
-> > > > This makes grep difficult. Replace memcg's MAPPED_FILE with FILE_MAPPED
-> > > > 
-> > > > And in global VM, mapped shared memory is accounted into FILE_MAPPED.
-> > > > But memcg doesn't. fix it.
-> > > 
-> > > I wanted to explicitly avoid this since I wanted to do an iterative
-> > > correct accounting of shared memory. The renaming is fine with me
-> > > since we don't break ABI in user space.
-> > > 
-> > To do that, FILE_MAPPED is not correct.
-> > Because MAPPED includes shmem in global VM, no valid reason to do different
-> > style of counting.
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
 > 
-> OK, fair enough! Lets count shmem in FILE_MAPPED
+>  include/linux/kvm_host.h |    2 ++
+>  virt/kvm/irq_comm.c      |   35 ++++++++++++++++++++++++++++++++++-
+>  2 files changed, 36 insertions(+), 1 deletions(-)
 > 
-> > 
-> > For shmem, we have a charge type as MEM_CGROUP_CHARGE_TYPE_SHMEM and 
-> > we can set "PCG_SHMEM" flag onto page_cgroup or some.
-> > Then, we can count it in explicit way. 
-> >
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 1fe135d..01151a6 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -119,6 +119,7 @@ struct kvm_memory_slot {
+>  struct kvm_kernel_irq_routing_entry {
+>  	u32 gsi;
+>  	u32 type;
+> +	bool lockless;
+
+So lockless is the same as type == MSI from below?
+If the idea is to make it extensible for the future,
+let's just add an inline function, we don't need a field for this.
+
+>  	int (*set)(struct kvm_kernel_irq_routing_entry *e,
+>  		   struct kvm *kvm, int irq_source_id, int level);
+>  	union {
+> @@ -420,6 +421,7 @@ void kvm_get_intr_delivery_bitmask(struct kvm_ioapic *ioapic,
+>  				   unsigned long *deliver_bitmask);
+>  #endif
+>  int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level);
+> +int kvm_irq_check_lockless(struct kvm *kvm, u32 irq);
+>  void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin);
+>  void kvm_register_irq_ack_notifier(struct kvm *kvm,
+>  				   struct kvm_irq_ack_notifier *kian);
+> diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
+> index db2553f..a7fd487 100644
+> --- a/virt/kvm/irq_comm.c
+> +++ b/virt/kvm/irq_comm.c
+> @@ -173,6 +173,35 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level)
+>  	return ret;
+>  }
+>  
+> +int kvm_irq_check_lockless(struct kvm *kvm, u32 irq)
+> +{
+> +	struct kvm_kernel_irq_routing_entry *e;
+> +	struct kvm_irq_routing_table *irq_rt;
+> +	struct hlist_node *n;
+> +	int ret = -ENOENT;
+> +	int idx;
+> +
+> +	idx = srcu_read_lock(&kvm->irq_routing.srcu);
+> +	irq_rt = rcu_dereference(kvm->irq_routing.table);
+> +	if (irq < irq_rt->nr_rt_entries)
+> +		hlist_for_each_entry(e, n, &irq_rt->map[irq], link) {
+> +			if (!e->lockless) {
+> +				/*
+> +				 * all destinations need to be lockless to
+> +				 * declare that the GSI as a whole is also
+> +				 * lockless
+> +				 */
+> +				ret = 0;
+> +				break;
+> +			}
+> +
+> +			ret = 1;
+> +		}
+> +	srcu_read_unlock(&kvm->irq_routing.srcu, idx);
+> +
+> +	return ret;
+> +}
+> +
+>  void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin)
+>  {
+>  	struct kvm_irq_ack_notifier *kian;
+> @@ -310,18 +339,22 @@ static int setup_routing_entry(struct kvm_irq_routing_table *rt,
+>  	int delta;
+>  	struct kvm_kernel_irq_routing_entry *ei;
+>  	struct hlist_node *n;
+> +	bool lockless = ue->type == KVM_IRQ_ROUTING_MSI;
+>  
+>  	/*
+>  	 * Do not allow GSI to be mapped to the same irqchip more than once.
+>  	 * Allow only one to one mapping between GSI and MSI.
+> +	 * Do not allow mixed lockless vs locked variants to coexist.
+
+Userspace has no idea which entries are lockless and which are not:
+this is an implementation detail - so it might not be able to avoid
+illegal combinations.
+Since this is called on an ioctl, can the rule be formulated in a way
+that makes sense for userspace?
+
+>  	 */
+>  	hlist_for_each_entry(ei, n, &rt->map[ue->gsi], link)
+>  		if (ei->type == KVM_IRQ_ROUTING_MSI ||
+> -		    ue->u.irqchip.irqchip == ei->irqchip.irqchip)
+> +		    ue->u.irqchip.irqchip == ei->irqchip.irqchip ||
+> +		    ei->lockless != lockless)
+
+So this check seems like it does nothing, because lockless is same as
+MSI, and MSI is always 1:1? Intentional?
+
+>  			return r;
+>  
+>  	e->gsi = ue->gsi;
+>  	e->type = ue->type;
+> +	e->lockless = lockless;
+>  	switch (ue->type) {
+>  	case KVM_IRQ_ROUTING_IRQCHIP:
+>  		delta = 0;
 > 
-> Apart from shmem, I want to count all memory that is shared (mapcount > 1),
-> I'll send out an RFC once I have the implementation.
-
-I recommend you to start from adding new statistics to global VM to show that.
-(Then, we don't need to say "this is a special counter for memcg.....)
-
-> For now, I
-> want to focus on testing memcg a bit more and start looking at some
-> aspects of dirty accounting.
-> 
-I'm now cleaning up and test array counter (I posted before.) which works as
-vm_stat[] for memcg. Maybe it will be useful.
-
-A bit off-topic, let me show my current TO-DO-LIST.
-
-  - implementing a counter like vm_stat[]
-  - wait for Nishimura's task move patches.
-  - implementing dirty_page accounting in very simple style.
-  - implementing dirty_page limiting or kicking flusher thread for memcg.
-  - fix oom-killer related things.
-  - some necessary clean-ups.
-  - implementing memory usage notifier or oom-notifier to userland.
-  - helping I/O controller for buffered I/O tracking.
-
-Because I don't fix priority of each jobs, someone unknown may finish
-before I start ;)
-
-Thanks,
--Kame
-
-
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
