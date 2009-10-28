@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZJ1Njn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZJ1NoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbZJ1Njn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 09:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbZJ1Njn
+	id S1753833AbZJ1NoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 09:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZJ1NoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 09:39:43 -0400
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:38517 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753650AbZJ1Njm (ORCPT
+	Wed, 28 Oct 2009 09:44:23 -0400
+Received: from mga12.intel.com ([143.182.124.36]:56408 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751739AbZJ1NoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 09:39:42 -0400
-Date: Wed, 28 Oct 2009 15:38:42 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
-       joerg.roedel@amd.com, mingo@elte.hu
-Subject: Re: [PATCH 02/10] Calgary: convert detect_calgary to use
-	iommu_init hook
-Message-ID: <20091028133842.GP7133@il.ibm.com>
-References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1256712464-21472-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	Wed, 28 Oct 2009 09:44:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,639,1249282800"; 
+   d="scan'208";a="204710075"
+Message-ID: <4AE84AB6.7010808@linux.intel.com>
+Date: Wed, 28 Oct 2009 14:44:22 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256712464-21472-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Valdis.Kletnieks@vt.edu
+CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Mike Travis <travis@sgi.com>, Roland Dreier <rdreier@cisco.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
+References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com> <4AE75DB9.3040702@sgi.com> <4AE7C396.7040109@jp.fujitsu.com>            <4AE7D59D.9070307@linux.intel.com> <32564.1256731383@turing-police.cc.vt.edu>
+In-Reply-To: <32564.1256731383@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 03:47:36PM +0900, FUJITA Tomonori wrote:
-> This changes detect_calgary() to set init_calgary() to iommu_init hook
-> if detect_calgary() finds the Calgary IOMMU.
+Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 28 Oct 2009 06:24:45 BST, Andi Kleen said:
 > 
-> We can kill the code to check if we found the IOMMU in init_calgary()
-> since detect_calgary() sets init_calgary() only when it found the
-> IOMMU.
+>>>>> mce: CPU supports 0 MCE banks
+>> That message can be just removed I think. I don't see much value in it
+>> because the value is in sysfs and when you see the CPU type you can easily
+>> determine it anyways.
+> 
+> Maybe it should only print a message if it finds an unexpected number of banks?
+> "Hey dood - we're on a Core3.5 and there should be 6 banks here, but the
+> hardware says there's only 4. What's up with that?"
 
-I like this patchset a lot. Our with the old cruft!
+The kernel doesn't know what number of banks are expected, just humans do.
 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+-Andi
 
-Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
 
-Cheers,
-Muli
