@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbZJ1GzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbZJ1Gy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561AbZJ1GzD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbZJ1Gy7
+	id S1757526AbZJ1Gy3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 02:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbZJ1Gy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:54:59 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54085 "EHLO sh.osrg.net"
+	Wed, 28 Oct 2009 02:54:27 -0400
+Received: from sh.osrg.net ([192.16.179.4]:54083 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757507AbZJ1Gy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:54:26 -0400
+	id S1757465AbZJ1GyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 02:54:25 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: chrisw@sous-sol.org, dwmw2@infradead.org, joerg.roedel@amd.com,
        mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH 07/10] bootmem: add free_bootmem_late
-Date: Wed, 28 Oct 2009 15:47:41 +0900
-Message-Id: <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 08/10] swiotlb: add swiotlb_free function
+Date: Wed, 28 Oct 2009 15:47:42 +0900
+Message-Id: <1256712464-21472-9-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
@@ -24,103 +24,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Wright <chrisw@sous-sol.org>
+swiotlb_free function frees all allocated memory for swiotlb.
 
-Add a new function for freeing bootmem after the bootmem allocator has
-been released and the unreserved pages given to the page allocator.
-This allows us to reserve bootmem and then release it if we later
-discover it was not needed.
+We need to initialize swiotlb before IOMMU initialization (x86 and
+powerpc needs to allocate memory from bootmem allocator). If IOMMU
+initialization is successful, we need to free swiotlb resource (don't
+want to waste 64MB).
 
-Reviewed-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- include/linux/bootmem.h |    1 +
- mm/bootmem.c            |   43 ++++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 39 insertions(+), 5 deletions(-)
+ include/linux/swiotlb.h |    1 +
+ lib/swiotlb.c           |   30 ++++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index dd97fb8..b10ec49 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -53,6 +53,7 @@ extern void free_bootmem_node(pg_data_t *pgdat,
- 			      unsigned long addr,
- 			      unsigned long size);
- extern void free_bootmem(unsigned long addr, unsigned long size);
-+extern void free_bootmem_late(unsigned long addr, unsigned long size);
+diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+index 73b1f1c..51b6cc2 100644
+--- a/include/linux/swiotlb.h
++++ b/include/linux/swiotlb.h
+@@ -88,4 +88,5 @@ swiotlb_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr);
+ extern int
+ swiotlb_dma_supported(struct device *hwdev, u64 mask);
  
- /*
-  * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
-diff --git a/mm/bootmem.c b/mm/bootmem.c
-index 94ef2e7..6c04e6e 100644
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -151,7 +151,9 @@ unsigned long __init init_bootmem(unsigned long start, unsigned long pages)
-  *
-  * This will free the pages in the range @start to @end, making them
-  * available to the page allocator.  The @map will be used to skip
-- * reserved pages.  Returns the count of pages freed.
-+ * reserved pages.  In the case that @map is NULL, the bootmem allocator
-+ * is already free and the range is contiguous.  Returns the count of
-+ * pages freed.
++extern void __init swiotlb_free(void);
+ #endif /* __LINUX_SWIOTLB_H */
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index ac25cd2..eee512b 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -97,6 +97,8 @@ static phys_addr_t *io_tlb_orig_addr;
   */
- static unsigned long __init free_bootmem_pages(unsigned long start,
- 					       unsigned long end,
-@@ -164,13 +166,23 @@ static unsigned long __init free_bootmem_pages(unsigned long start,
- 	 * If the start is aligned to the machines wordsize, we might
- 	 * be able to free pages in bulks of that order.
- 	 */
--	aligned = !(start & (BITS_PER_LONG - 1));
-+	if (map)
-+		aligned = !(start & (BITS_PER_LONG - 1));
-+	else
-+		aligned = 1;
+ static DEFINE_SPINLOCK(io_tlb_lock);
  
- 	for (cursor = start; cursor < end; cursor += BITS_PER_LONG) {
--		unsigned long idx, vec;
-+		unsigned long vec;
++static int late_alloc;
++
+ static int __init
+ setup_io_tlb_npages(char *str)
+ {
+@@ -262,6 +264,8 @@ swiotlb_late_init_with_default_size(size_t default_size)
  
--		idx = cursor - start;
--		vec = ~map[idx / BITS_PER_LONG];
-+		if (map) {
-+			unsigned long idx = cursor - start;
-+			vec = ~map[idx / BITS_PER_LONG];
-+		} else {
-+			if (end - cursor >= BITS_PER_LONG)
-+				vec = ~0UL;
-+			else
-+				vec = (1UL << (end - cursor)) - 1;
-+		}
+ 	swiotlb_print_info(bytes);
  
- 		if (aligned && vec == ~0UL && cursor + BITS_PER_LONG < end) {
- 			int order = ilog2(BITS_PER_LONG);
-@@ -387,6 +399,27 @@ void __init free_bootmem(unsigned long addr, unsigned long size)
++	late_alloc = 1;
++
+ 	return 0;
+ 
+ cleanup4:
+@@ -281,6 +285,32 @@ cleanup1:
+ 	return -ENOMEM;
  }
  
- /**
-+ * free_bootmem_late - free bootmem pages directly to page allocator
-+ * @addr: starting address of the range
-+ * @size: size of the range in bytes
-+ *
-+ * This is only useful when the bootmem allocator has already been torn
-+ * down, but we are still initializing the system.  Pages are given directly
-+ * to the page allocator, no bootmem metadata is updated because it is gone.
-+ */
-+void __init free_bootmem_late(unsigned long addr, unsigned long size)
++void __init swiotlb_free(void)
 +{
-+	unsigned long start, end;
++	if (!io_tlb_overflow_buffer)
++		return;
 +
-+	kmemleak_free_part(__va(addr), size);
-+
-+	start = PFN_UP(addr);
-+	end = PFN_DOWN(addr + size);
-+
-+	totalram_pages += free_bootmem_pages(start, end, NULL);
++	if (late_alloc) {
++		free_pages((unsigned long)io_tlb_overflow_buffer,
++			   get_order(io_tlb_overflow));
++		free_pages((unsigned long)io_tlb_orig_addr,
++			   get_order(io_tlb_nslabs * sizeof(phys_addr_t)));
++		free_pages((unsigned long)io_tlb_list, get_order(io_tlb_nslabs *
++								 sizeof(int)));
++		free_pages((unsigned long)io_tlb_start,
++			   get_order(io_tlb_nslabs << IO_TLB_SHIFT));
++	} else {
++		free_bootmem_late(__pa(io_tlb_overflow_buffer),
++				  io_tlb_overflow);
++		free_bootmem_late(__pa(io_tlb_orig_addr),
++				  io_tlb_nslabs * sizeof(phys_addr_t));
++		free_bootmem_late(__pa(io_tlb_list),
++				  io_tlb_nslabs * sizeof(int));
++		free_bootmem_late(__pa(io_tlb_start),
++				  io_tlb_nslabs << IO_TLB_SHIFT);
++	}
 +}
 +
-+/**
-  * reserve_bootmem_node - mark a page range as reserved
-  * @pgdat: node the range resides on
-  * @physaddr: starting address of the range
+ static int is_swiotlb_buffer(phys_addr_t paddr)
+ {
+ 	return paddr >= virt_to_phys(io_tlb_start) &&
 -- 
 1.5.6.5
 
