@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZJ1GsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbZJ1GyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbZJ1GsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbZJ1GsR
+	id S1757498AbZJ1GyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 02:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbZJ1GyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:48:17 -0400
-Received: from mga07.intel.com ([143.182.124.22]:39790 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756597AbZJ1GsR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:48:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,638,1249282800"; 
-   d="scan'208";a="204562168"
-Message-ID: <4AE7E931.6040703@linux.intel.com>
-Date: Wed, 28 Oct 2009 07:48:17 +0100
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-CC: Mike Travis <travis@sgi.com>, Roland Dreier <rdreier@cisco.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
-References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com> <4AE75DB9.3040702@sgi.com> <4AE7C396.7040109@jp.fujitsu.com> <4AE7D59D.9070307@linux.intel.com> <4AE7E40F.20602@jp.fujitsu.com>
-In-Reply-To: <4AE7E40F.20602@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 28 Oct 2009 02:54:22 -0400
+Received: from sh.osrg.net ([192.16.179.4]:54076 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757462AbZJ1GyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 02:54:20 -0400
+Date: Wed, 28 Oct 2009 15:53:53 +0900
+To: chrisw@sous-sol.org
+Cc: fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] allow fallback to swiotlb on hw iommu init
+	failures
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091024065712.GC14926@sequoia.sous-sol.org>
+References: <20091023163923.GA12883@sequoia.sous-sol.org>
+	<20091024120633Z.fujita.tomonori@lab.ntt.co.jp>
+	<20091024065712.GC14926@sequoia.sous-sol.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20091028155251C.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 28 Oct 2009 15:53:53 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hidetoshi Seto wrote:
+On Fri, 23 Oct 2009 23:57:12 -0700
+Chris Wright <chrisw@sous-sol.org> wrote:
 
+> > Note that Calgary comment 'falling back to no_iommu' is misleading. It
+> > actually falls back to swiotlb or nommu properly.
+> > 
+> > Calgary doesn't set to dma_ops to calgary_dma_ops so it doesn't need
+> > to pick up swiotlb_dma_ops.
 > 
-> Without disabling, what can we do on MCE with no bank?
+> It does need swiotlb_dma_ops even when calgary init succeeds for the devices
+> that aren't behind Calgary to deal w/ the case of those devices having
+> dma mask smaller than physical memory (i.e those that don't get device
+> specific dma_ops set to calgary_dma_ops).
 
-Nothing, but is it really worth adding a special case?
+I know since I wrote that code.
 
-> I found that do_machine_check() does nothing if banks==0 ... it is better
-> to let system to panic with "Machine check from unknown source"?
 
-IMHO yes. In this case the system must be very confused and panic is the
-best you can do. Otherwise it won't do anything interesting anyways.
-
+> > > The calgary shouldn't even need to be manually setting up
+> > > nommu_dma_ops.
+> > 
+> > Yeah, but it needs because of how the dma startup code works.
 > 
->>> Hum, I suppose the line for CPU 0 was slightly different from others,
->>> because SHD means "this bank is shared bank and controlled by other".
->>> Maybe:
->>>  CPU 0 MCA banks CMCI:0 CMCI:1 CMCI:2 CMCI:3 CMCI:5 ... CMCI:21
->>>
->>> But I agree that we could some work for this messages...
->>> Is it better to change the message level to debug from info?
->> Can be made INFO yes, but I would prefer not removing them
->> from the dmesg for now.
->>
->> Perhaps they could be also compressed a bit like SRAT.
-> 
-> Like SRAT?  I could not catch the meaning ... For example?
+> Be much better to have the core handle all of this. Basically register
+> ops and then put the top one on the stack to actual use.  So the
+> fallback would be automatic, just pick the top of the stack and go.
+> Were you thinking of something along those lines?
 
-See the recent patches from David Rientjes in the same original thread.
+I don't know what 'register ops and then put the top one on the stack'
+means but it sounds overdoing.
 
--Andi
-
+I think that we can handle this issue more simply. I've just posted
+the patchset.
