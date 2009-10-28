@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932589AbZJ1HZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932605AbZJ1HZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932589AbZJ1HZp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 03:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932342AbZJ1HZo
+	id S932605AbZJ1HZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 03:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932342AbZJ1HZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 03:25:44 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60700 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932219AbZJ1HZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 03:25:44 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19Flu05VpJFmnx5ISZjmy5hL9tbUrKmeirsGbFT4H
-	2gj+fcK2y9B90E
-Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1256654138.17752.7.camel@marge.simson.net>
-References: <20091024125853.35143117@infradead.org>
-	 <20091024130432.0c46ef27@infradead.org>
-	 <20091024130728.051c4d7c@infradead.org>
-	 <1256453725.12138.40.camel@marge.simson.net>
-	 <20091025095109.449bac9e@infradead.org>
-	 <1256492289.14241.40.camel@marge.simson.net>
-	 <20091025123319.2b76bf69@infradead.org>
-	 <1256508287.17306.14.camel@marge.simson.net>
-	 <1256522035.7356.19.camel@laptop>
-	 <1256654138.17752.7.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Wed, 28 Oct 2009 08:25:41 +0100
-Message-Id: <1256714741.10387.4.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+	Wed, 28 Oct 2009 03:25:58 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:47294 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932505AbZJ1HZ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 03:25:57 -0400
+Date: Wed, 28 Oct 2009 15:25:59 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: padlock-aes: Use the correct mask when
+	checking whether copying is required
+Message-ID: <20091028072559.GA15131@gondor.apana.org.au>
+References: <200910272325.n9RNPYfr002918@int-mx08.intmail.prod.int.phx2.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910272325.n9RNPYfr002918@int-mx08.intmail.prod.int.phx2.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 15:35 +0100, Mike Galbraith wrote:
-> On Mon, 2009-10-26 at 02:53 +0100, Peter Zijlstra wrote:
-> > On Sun, 2009-10-25 at 23:04 +0100, Mike Galbraith wrote:
-> > >                 if (want_affine && (tmp->flags & SD_WAKE_AFFINE) &&
-> > > -                   cpumask_test_cpu(prev_cpu, sched_domain_span(tmp))) {
-> > > +                               (level == SD_LV_SIBLING || level == SD_LV_MC)) {
-> > 
-> > quick comment without actually having looked at the patch, we should
-> > really get rid of sd->level and encode properties of the sched domains
-> > in sd->flags.
+On Tue, Oct 27, 2009 at 07:25:33PM -0400, Chuck Ebbert wrote:
+> crypto: padlock-aes: Use the correct mask when checking whether copying is required
 > 
-> I used SD_PREFER_SIBLING in the below.  Did I break anything?
+> Masking with PAGE_SIZE is just wrong... and there's no need for the braces and return
 
-Um, other than taskset.
+Thanks for the patch, that does indeed look wrong.
 
-> +				if (candidate == -1 || candidate == cpu) {
-> +					for_each_cpu(i, sched_domain_span(tmp)) {
+> statement either.
 
-                                                if (!cpumask_test_cpu(i, &p->cpus_allowed))
-                                                        continue;
+But can we please keep unrelated stylistic changes in a separate
+patch? In this case I'm not even sure that it is better than the
+original.
 
-(i think i'm going to need that domain flag in a few minutes anyway)
-
-	-Mike
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
