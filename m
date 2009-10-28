@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZJ1Sh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbZJ1SjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZJ1Sh4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 14:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZJ1Shz
+	id S1755511AbZJ1SjE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 14:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZJ1SjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 14:37:55 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:42630 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755395AbZJ1Shz (ORCPT
+	Wed, 28 Oct 2009 14:39:03 -0400
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:48934 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755464AbZJ1SjC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 14:37:55 -0400
-Date: Wed, 28 Oct 2009 18:38:00 +0000
-From: Ben Dooks <ben@fluff.org.uk>
-To: linux-kernel@vger.kernel.org, ben-linux@fluff.org,
-       linux-arm-kernel@vger.kernel.org
-Subject: Pull request for fixes-s3c-2632-rc5
-Message-ID: <20091028183759.GA19140@fluff.org.uk>
+	Wed, 28 Oct 2009 14:39:02 -0400
+Date: Wed, 28 Oct 2009 12:39:05 -0600
+From: Alex Chiang <achiang@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Badari Pulavarty <pbadari@us.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2 1/5] mm: add numa node symlink for memory section in
+	sysfs
+Message-ID: <20091028183905.GF22743@ldl.fc.hp.com>
+References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041510.15705.5410.stgit@bob.kio> <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com> <20091027195907.GJ14102@ldl.fc.hp.com> <alpine.DEB.2.00.0910271422090.22335@chino.kir.corp.google.com> <20091028083137.GA24140@osiris.boeblingen.de.ibm.com> <alpine.DEB.2.00.0910280159380.7122@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.DEB.2.00.0910280159380.7122@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 964fe080d94db82a3268443e9b9ece4c60246414:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../rusty/linux-2.6-for-linus
+* David Rientjes <rientjes@google.com>:
+> 
+> Alex, I think the safest thing to do in unregister_mem_sect_under_nodes() 
+> is to iterate though the section pfns and remove links to the node_device 
+> kobjs for all the distinct pfn_to_nid()'s that it encounters.
 
-are available in the git repository at:
+Am I not understanding the code? It looks like we do this
+already...
 
-  git://git.fluff.org/bjdooks/linux.git fixes-s3c-2632-rc5
+/* unregister memory section under all nodes that it spans */
+int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+{
+	nodemask_t unlinked_nodes;
+	unsigned long pfn, sect_start_pfn, sect_end_pfn;
 
-Ben Dooks (8):
-      ARM: S3C: Add info for supporting circular DMA buffers
-      ARM: S3C2410: Fix link if CONFIG_S3C2410_IOTIMING is not set
-      ARM: Merge fixes-s3c64xx
-      ARM: Merge fixes-s3c64xx-dma
-      ARM: S3C2440: mini2440: Fix missing CONFIG_S3C_DEV_USB_HOST
-      ARM: S3C24XX: Fix warnings in arch/arm/plat-s3c24xx/gpio.c
-      ARM: S3C2440: mini2440: Fix spare warnings
-      ARM: S3C2410: Fix sparse warnings in arch/arm/mach-s3c2410/gpio.c
+	if (!mem_blk)
+		return -EFAULT;
+	nodes_clear(unlinked_nodes);
+	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
+	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
+	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
+		int nid;
 
-Harald Welte (1):
-      ARM: S3C24XX: Introduce S3C2442B CPU
+		nid = get_nid_for_pfn(pfn);
+		if (nid < 0)
+			continue;
+		if (!node_online(nid))
+			continue;
+		if (node_test_and_set(nid, unlinked_nodes))
+			continue;
+		sysfs_remove_link(&node_devices[nid].sysdev.kobj,
+			 kobject_name(&mem_blk->sysdev.kobj));
+		sysfs_remove_link(&mem_blk->sysdev.kobj,
+			 kobject_name(&node_devices[nid].sysdev.kobj));
+	}
+	return 0;
+}
 
-Julia Lawall (1):
-      ARM: S3C24XX: arch/arm/plat-s3c24xx: Move dereference after NULL test
+Thanks,
+/ac
 
-Kukjin Kim (1):
-      ARM: S3C64XX: Fix S3C64XX_CLKDIV0_ARM_MASK value
-
-Mark Brown (1):
-      ARM: S3C64XX: Set rate of crystal mux
-
-Ramax Lo (1):
-      ARM: S3C24XX: Define a macro to avoid compilation error
-
-Ryan Mallon (1):
-      ARM: S3C: Fix adc function exports
-
- arch/arm/mach-s3c2410/gpio.c                       |    1 +
- arch/arm/mach-s3c2410/include/mach/dma.h           |    7 +++++++
- arch/arm/mach-s3c2440/Kconfig                      |    1 +
- arch/arm/mach-s3c2440/mach-mini2440.c              |    4 ++--
- arch/arm/mach-s3c6400/include/mach/dma.h           |    5 +++++
- arch/arm/plat-s3c24xx/adc.c                        |    2 +-
- arch/arm/plat-s3c24xx/cpu.c                        |   10 ++++++++++
- arch/arm/plat-s3c24xx/dma.c                        |    6 +++---
- arch/arm/plat-s3c24xx/gpio.c                       |    1 +
- arch/arm/plat-s3c24xx/include/plat/cpu-freq-core.h |    9 +++++++--
- arch/arm/plat-s3c24xx/include/plat/s3c2410.h       |    1 +
- arch/arm/plat-s3c64xx/include/plat/regs-clock.h    |    4 ++--
- arch/arm/plat-s3c64xx/s3c6400-clock.c              |    3 +++
- sound/soc/s3c24xx/s3c24xx-pcm.c                    |   17 +++++++++++++++--
- 14 files changed, 59 insertions(+), 12 deletions(-)
