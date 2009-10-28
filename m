@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbZJ1VDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbZJ1VDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbZJ1VDa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 17:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbZJ1VD2
+	id S1755855AbZJ1VDj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 17:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755839AbZJ1VDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 17:03:28 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34496 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755788AbZJ1VD1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 17:03:27 -0400
-Date: Wed, 28 Oct 2009 22:03:24 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-Message-ID: <20091028210323.GA4159@elf.ucw.cz>
-References: <20091025062953.GC1391@ucw.cz>
- <20091026163157.GB7233@duck.suse.cz>
- <20091026165729.GF23564@us.ibm.com>
- <20091026173629.GB16861@fieldses.org>
- <20091026174631.GD7233@duck.suse.cz>
- <1256579869.8576.7.camel@heimdal.trondhjem.org>
- <20091025093604.GA1501@ucw.cz>
- <m1zl7cb1c5.fsf@fess.ebiederm.org>
- <20091028081653.GA18290@elf.ucw.cz>
- <m1k4yfkbfg.fsf@fess.ebiederm.org>
+	Wed, 28 Oct 2009 17:03:38 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:18780 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755585AbZJ1VDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 17:03:36 -0400
+Date: Wed, 28 Oct 2009 17:03:25 -0400
+From: Mike Snitzer <snitzer@redhat.com>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: Mikulas Patocka <mpatocka@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>, ". troy.heber"@hp.com,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>
+Subject: Re: block: silently error unsupported empty barriers too
+Message-ID: <20091028210325.GC1143@redhat.com>
+References: <1249557257.3721.55.camel@blaa>
+ <20090806114550.GL29899@agk-dp.fab.redhat.com>
+ <Pine.LNX.4.64.0908062148060.8764@hs20-bc2-1.build.redhat.com>
+ <1256761141.5830.79.camel@grinch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1k4yfkbfg.fsf@fess.ebiederm.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1256761141.5830.79.camel@grinch>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, Oct 28 2009 at  4:19pm -0400,
+Andrew Patterson <andrew.patterson@hp.com> wrote:
 
-> >> > Well, it is unexpected and mild security hole.
-> >> 
-> >> /proc/<pid>/fd is only viewable by the owner of the process or by
-> >> someone with CAP_DAC_OVERRIDE.  So there appears to be no security
-> >> hole exploitable by people who don't have the file open.
-> >
-> > Please see bugtraq discussion at
-> > http://seclists.org/bugtraq/2009/Oct/179 .
-> >
-> > (In short, you get read-only fd, and you can upgrade it to read-write
-> > fd. Yes, you are the owner of the process, but you are not owner of
-> > the file the fd refers to.)
+> On Thu, 2009-08-06 at 21:50 -0400, Mikulas Patocka wrote:
+> > On Thu, 6 Aug 2009, Alasdair G Kergon wrote:
+> > 
+> > > On Thu, Aug 06, 2009 at 12:14:17PM +0100, Mark McLoughlin wrote:
+> > > > We should error all barriers, even empty barriers, on devices like
+> > > > virtio_blk which don't support them.
+> > >  
+> > > Have you considered whether or not virtio_blk actually needs to
+> > > support empty barriers?
+> > > 
+> > > Alasdair
+> > 
+> > This is only for request-based drivers, where it is the responsibility of 
+> > blk-core to translate barriers. I think the empty barrier request anyway 
+> > in blk_do_ordered, but with an error message. So the patch changes it to 
+> > discard it early and queitly. It seems ok.
+> > 
+> > Mikulas
+> > --
 > 
-> Assuming you have permission to open it read-write.
-
-Please see the bugtraq discussion.
-
-It works even if you would not have permission to write to it with
-/proc unmounted.
-
-> >> Openly if you actually have permission to open the file again.  The actual
-> >> permissions on the file should not be ignored.
-> >
-> > The actual permissions of the file are not ignored, but permissions of
-> > the containing directory _are_. If there's 666 file in 700 directory,
-> > you can reopen it read-write, in violation of directory's 700
-> > permissions.
+> This patch seems to have been dropped.  I can reproduce the error using
+> the following:
 > 
-> I can see how all of this can come as a surprise.  However I don't see
-> how any coder who is taking security seriously and being paranoid about
-> security would actually write code that would have a problem with
-> this.
+>      1. Create an LVM logical volume on top of a cciss device (note that
+>         the cciss driver does not support barriers)
+>      2. Create an ext3 file system on top of the logical volume
+>      3. Mount the file-system using -obarrier=1
+>      4. Copy some files onto the file-system
+>      5. Run sync (dm_flush is called)
+> 
+> If I apply the patch (with some munging), the 
+> 
+> "end_request: I/O error, dev cciss/cXdY, sector 0"
+> 
+> messages go away.
+> 
+> This is not strictly a regression, given that the problem was introduced
+> in 2.6.31, but I think it should still be fixed for 2.6.32.
 
-So, there's "surprise" that gives _you_ write access to my files. You
-agree that it is surprising, and you would not have write access to my
-file if /proc was not mounted.
+It was resubmitted last Friday:
+http://lkml.org/lkml/2009/10/23/196
 
-Call it "security surprise" if you prefer. But many people call it
-"security hole".
+And is queued in Jens' 'for-linus' branch (meaning it should get
+upstream in time for 2.6.32), see:
+http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git;a=commit;h=6cafb12dc85a5bdc722791cc5070968413264909
 
-> Do you know of any cases where this difference matters in practice?
-
-No. Do you have a proof that it does not matter anywhere?
-
-> It looks to me like it has been this way for better than a decade
-> without problems so there is no point in changing it now.  
-
-Unix compatibility?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mike
