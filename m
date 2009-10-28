@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZJ1DnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbZJ1Dms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbZJ1DnG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 23:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbZJ1DnF
+	id S1757269AbZJ1Dms (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 23:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZJ1Dmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 23:43:05 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34649 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756302AbZJ1DnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 23:43:04 -0400
-Date: Wed, 28 Oct 2009 03:43:07 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: David Miller <davem@davemloft.net>
-cc: airlied@gmail.com, andi@firstfloor.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+	Tue, 27 Oct 2009 23:42:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47781
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756212AbZJ1Dmq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 23:42:46 -0400
+Date: Tue, 27 Oct 2009 20:43:10 -0700 (PDT)
+Message-Id: <20091027.204310.170866512.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: airlied@gmail.com, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, arnd@arndb.de
 Subject: Re: is avoiding compat ioctls possible?
-In-Reply-To: <20091027.203838.21218679.davem@davemloft.net>
-Message-ID: <alpine.DEB.2.00.0910280341331.19088@skynet.skynet.ie>
-References: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com> <87hbtkjkki.fsf@basil.nowhere.org> <21d7e9970910272005mbb268r7b16493a22ca275a@mail.gmail.com> <20091027.203838.21218679.davem@davemloft.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091028033455.GF7744@basil.fritz.box>
+References: <20091028031904.GA7744@basil.fritz.box>
+	<21d7e9970910272028n6eaa21fap51f15511d51145a2@mail.gmail.com>
+	<20091028033455.GF7744@basil.fritz.box>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andi Kleen <andi@firstfloor.org>
+Date: Wed, 28 Oct 2009 04:34:55 +0100
+
+> On Wed, Oct 28, 2009 at 01:28:10PM +1000, Dave Airlie wrote:
+>> Well this was what I was trying to gather, so maybe I just need to write
+>> something up to state that compat_ioctl is always required for new ioctls
+>> that pass pointers or 64-bit values hiding pointers, so more people
+>> don't make this mistake going forward. I can say when we inquired about this
+>> 2 or so years ago when designing kms I didn't get this answer, which is a pity.
 > 
-> > DrNick on irc suggested just doing:
-> > if (is_compat_task()) ptr &= 0x00000000FFFFFFFF;
-> > 
-> > Is there a one liner I can just do in the actual ioctls instead of
-> > adding 20 compat
-> > ones?
-> 
-> Just do the right thing and pass all userland compat pointers
-> through the correct compat_*() macros.
+> Right now you could probably ignore it (if you document it), since
+> there are no non s390 architectures with this problem, just
+> prepare mentally that you might need to revisit this at some point.
 
-I wondered why the other ioctls worked,
+You can't ignore it on sparc64, it already OOPS's, and I refuse to
+live with that "if (is_compat_task())" masking hack, no way.
 
-(uint32_t __user *)(unsigned long)card_res->fb_id_ptr;
-
-we already opencoded this (probably before it was macroisied or we just 
-pasted it), so the radeon one is buggy, I should just go and compat_* all 
-of these then and we should be all happy?
-
-Dave.
+We designed portable interfaces for doing this stuff, please use it.
