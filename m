@@ -1,54 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbZJ1U6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZJ1U7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbZJ1U6o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 16:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbZJ1U6n
+	id S1755652AbZJ1U7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 16:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZJ1U7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 16:58:43 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:58343 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754883AbZJ1U6l (ORCPT
+	Wed, 28 Oct 2009 16:59:18 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:35404 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753897AbZJ1U7S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 16:58:41 -0400
-Date: Wed, 28 Oct 2009 21:58:44 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, mingo@redhat.com, hpa@zytor.com,
-       paulus@samba.org, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       ink@jurassic.park.msu.ru, tglx@linutronix.de, rth@twiddle.net,
-       mcree@orcon.net.nz, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perf/core] perf tools, Alpha: Add Alpha support to perf.h
-Message-ID: <20091028205844.GC20363@merkur.ravnborg.org>
-References: <1256545926-6972-1-git-send-email-mcree@orcon.net.nz> <tip-fcd14b3203b538dca04a2b065c774c0b57863eec@git.kernel.org> <84144f020910260508n47ef067ci4adfd02cd3f87edd@mail.gmail.com> <20091026122247.GA31982@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091026122247.GA31982@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 28 Oct 2009 16:59:18 -0400
+Subject: Re: [PATCH v3 4/8] tracing: recordmcount.pl Objcopy check should
+ disable local reference correctly
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Hong <lihong.hi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20091028050421.GD30758@uhli>
+References: <20091028045532.GA30036@uhli>  <20091028050421.GD30758@uhli>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 28 Oct 2009 16:59:20 -0400
+Message-Id: <1256763560.26028.1825.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > OK, I'll bite. We tell userspace developers not to include kernel 
-> > headers. Why is it okay for perf to do it (especially for something 
-> > that's in asm)?
+On Wed, 2009-10-28 at 13:04 +0800, Li Hong wrote:
+> >From ceb80d8ba4fc55916c5f88d8c0a7655b869702cf Mon Sep 17 00:00:00 2001
+> From: Li Hong <lihong.hi@gmail.com>
+> Date: Tue, 27 Oct 2009 12:41:22 +0800
+> Subject: [PATCH] tracing: recordmcount.pl Objcopy check should disable local reference correctly
 > 
-> The main counter-argument against inclusion was always "what if we break 
-> them accidentally". I.e. it can become a semi-ABI - stuff we cannot 
-> change because we cannot change the outside projects. With perf this 
-> cannot occur - it's all in one Git tree and can always be fixed/changed.
+> Use a function to do objcopy version check. Disable the local reference if
+> copy can't support it. Remove some unused variables.
+
+Note, a lot of your patches have whitespace issues (white space at the
+end of the line, etc). I've cleaned them up, but you want to be more
+careful next time.
+
 > 
-> Note that we reuse a couple of other facilities in tools/perf as well - 
-> linux/list.h, rbtree.c, etc. - and this is good - you can code perf as 
-> if you were hacking on the kernel! ;-)
+> Signed-off-by: Li Hong <lihong.hi@gmail.com>
+> ---
+>  scripts/recordmcount.pl |   55 ++++++++++++++++++++++------------------------
+>  1 files changed, 26 insertions(+), 29 deletions(-)
+> 
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index 8ff9eab..1de9826 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -158,6 +158,30 @@ my $function_regex;	# Find the name of a function
+>  my $mcount_regex;	# Find the call site to mcount (return offset)
+>  my $alignment;		# The .align value to use for $mcount_section
+>  my $section_type;	# Section header plus possible alignment command
+> +my $can_use_local = 0; 	# If we can use local function references
+> +
+> +##
+> +# check_objcopy - whether objcopy supports --globalize-symbols
+> +#
+> +#  --globalize-symbols came out in 2.17, we must test the version
+> +#  of objcopy, and if it is less than 2.17, then we can not
+> +#  record local functions.
+> +sub check_objcopy
+> +{
+> +    open (IN, "$objcopy --version |") or die "error running $objcopy";
+> +    while (<IN>) {
+> +        if (/objcopy.*\s(\d+)\.(\d+)/) {
+> +            $can_use_local = 1 if ($1 > 2 || ($1 == 2 && $2 >= 17)); 
+> +            last;
+> +        }
+> +    }
+> +    close (IN);
+> +
+> +    if (!$can_use_local) {
+> +        print STDERR "WARNING: could not find objcopy version or version is less than 2.17.\n" .
+> +	"\tLocal function references is disabled.\n"  
 
-I see no reasons why perf should not use the exported headers
-in the default case. unistd.h from alpha is indeed exported.
+Missing a ';' above. I've fixed this too, and broke the first line up
+too, to be less than 80 characters.
 
-If perf then on top of that uses some kernel internal
-stuff - then pick it up there.
-But having perf in the kernel is not an excuse for avoinding
-the exported headers.
+Thanks,
 
-	Sam
+-- Steve
+
+
+
+> +    }
+> +}
+>  
+>  if ($arch eq "x86") {
+>      if ($bits == 64) {
+
+
