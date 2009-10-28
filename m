@@ -1,135 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309AbZJ1Vr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZJ1V5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752309AbZJ1Vr6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 17:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZJ1Vr5
+	id S1752779AbZJ1V5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 17:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZJ1V5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 17:47:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33232 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751375AbZJ1Vr4 (ORCPT
+	Wed, 28 Oct 2009 17:57:18 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:18486 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566AbZJ1V5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 17:47:56 -0400
-Date: Wed, 28 Oct 2009 14:47:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Kara <jack@suse.cz>
-Cc: WU Fengguang <wfg@mail.ustc.edu.cn>, npiggin@suse.de,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       hch@infradead.org, chris.mason@oracle.com
-Subject: Re: [RFC] [PATCH] Avoid livelock for fsync
-Message-Id: <20091028144731.b46a3341.akpm@linux-foundation.org>
-In-Reply-To: <20091026181314.GE7233@duck.suse.cz>
-References: <20091026181314.GE7233@duck.suse.cz>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Oct 2009 17:57:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=nfm0oEd3cr1aRUHxd64vurxUuZdd4ssgPB748vNt0Jp5xaKwk8WmqqPki4DTchS8co
+         Kk4tScXvy/uwofHk6hmUucv5gwsjl5YVKpKxjOIMDxlXaOs8Fqhkihg4GI4oxdK4Hlua
+         xpcZpSUzdGya06R1hzkiGR18mdmW0qzTd+I8Y=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Date: Wed, 28 Oct 2009 22:56:00 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20091028211031.GF2856@tuxdriver.com>
+In-Reply-To: <20091028211031.GF2856@tuxdriver.com>
+MIME-Version: 1.0
+Message-Id: <200910282256.00407.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 19:13:14 +0100
-Jan Kara <jack@suse.cz> wrote:
-
->   Hi,
+On Wednesday 28 October 2009 22:10:32 John W. Linville wrote:
+> Dave,
 > 
->   on my way back from Kernel Summit, I've coded the attached patch which
-> implements livelock avoidance for write_cache_pages. We tag patches that
-> should be written in the beginning of write_cache_pages and then write
-> only tagged pages (see the patch for details). The patch is based on Nick's
-> idea.
->   The next thing I've aimed at with this patch is a simplification of
-> current writeback code. Basically, with this patch I think we can just rip
-> out all the range_cyclic and nr_to_write (or other "fairness logic"). The
-> rationalle is following:
->   What we want to achieve with fairness logic is that when a page is
-> dirtied, it gets written to disk within some reasonable time (like 30s or
-> so). We track dirty time on per-inode basis only because keeping it
-> per-page is simply too expensive. So in this setting fairness between
-> inodes really does not make any sence - why should be a page in a file
-> penalized and written later only because there are lots of other dirty
-> pages in the file? It is enough to make sure that we don't write one file
-> indefinitely when there are new dirty pages continuously created - and my
-> patch achieves that.
->   So with my patch we can make write_cache_pages always write from
-> range_start (or 0) to range_end (or EOF) and write all tagged pages. Also
-> after changing balance_dirty_pages() so that a throttled process does not
-> directly submit the IO (Fengguang has the patches for this), we can
-> completely remove the nr_to_write logic because nothing really uses it
-> anymore. Thus also the requeue_io logic should go away etc...
->   Fengguang, do you have the series somewhere publicly available? You had
-> there a plenty of changes and quite some of them are not needed when the
-> above is done. So could you maybe separate out the balance_dirty_pages
-> change and I'd base my patch and further simplifications on top of that?
-> Thanks.
+> I let my patches pile-up!  Yikes!!
 > 
+> This request includes the usual ton of stuff for -next -- driver
+> updates, fixes for some earlier -next stuff, a few cfg80211 changes to
+> accomodate the libertas driver, etc.  Of note is the rt2800pci support
+> added to the rt2x00 family.
 
-I need to think about this.  Hard.
+Unfortunately rt2800pci support is non-functioning at the moment... :(
 
-So I'll defer that and nitpick the implementation instead ;)
+> Pleaset let me know if there are problems!
 
-My MUA doesn't understand text/x-patch.  Please use text/plain if you
-must use attachments?
+I find it rather disappointing that all my review comments regarding
+rt2800pci support were just completely ignored and then the initial
+patch was merged just as it was..
 
-	
- /**
-> + * tag_pages_for_writeback - tag pages to be written by write_cache_pages
-> + * @mapping: address space structure to write
-> + * @start: starting page index
-> + * @end: ending page index (inclusive)
-> + *
-> + * This function scans the page range from @start to @end and tags all pages
-> + * that have DIRTY tag set with a special TOWRITE tag. The idea is that
-> + * write_cache_pages (or whoever calls this function) will then use TOWRITE tag
-> + * to identify pages eligible for writeback.  This mechanism is used to avoid
-> + * livelocking of writeback by a process steadily creating new dirty pages in
-> + * the file (thus it is important for this function to be damn quick so that it
-> + * can tag pages faster than a dirtying process can create them).
-> + */
-> +void tag_pages_for_writeback(struct address_space *mapping,
-> +			     pgoff_t start, pgoff_t end)
-> +{
-> +	struct pagevec pvec;
-> +	int nr_pages, i;
-> +	struct page *page;
-> +
-> +	pagevec_init(&pvec, 0);
-> +	while (start <= end) {
-> +		nr_pages = pagevec_lookup_tag(&pvec, mapping, &start,
-> +			      PAGECACHE_TAG_DIRTY,
-> +			      min(end - start, (pgoff_t)PAGEVEC_SIZE-1) + 1);
-> +		if (!nr_pages)
-> +			return;
-> +
-> +		spin_lock_irq(&mapping->tree_lock);
-> +		for (i = 0; i < nr_pages; i++) {
-> +			page = pvec.pages[i];
-> +			/* Raced with someone freeing the page? */
-> +			if (page->mapping != mapping)
-> +				continue;
-> +			if (page->index > end)
-> +				break;
-> +			radix_tree_tag_set(&mapping->page_tree,
-> +				page_index(page), PAGECACHE_TAG_TOWRITE);
-> +		}
-> +		spin_unlock_irq(&mapping->tree_lock);
-> +	}
-> +}
-> +EXPORT_SYMBOL(tag_pages_for_writeback);
+The way rt2800usb and rt2800pci drivers are designed really results
+in making the task of adding working support for RT28x0 and RT30x0
+chipsets to rt2x00 infrastructure more difficult and time consuming
+than it should be... :(
 
-This is really inefficient.  We do a full tree descent for each dirty
-page.
-
-It would be far more efficient to do a combined lookup and set
-operation.  Bascially that's the same as pagevec_lookup_tag(), only we
-set the PAGECACHE_TAG_TOWRITE on each page instead of taking a copy
-into the pagevec.
-
-Which makes one wonder: would such an operation require ->tree_lock? 
-pagevec_lookup_tag() just uses rcu_read_lock() - what do we need to do
-to use lighter locking in the new
-radix_tree_gang_lookup_tag_slot_then_set_a_flag()?  Convert tag_set()
-and tag_clear() to atomic ops, perhaps?
-
-
-
+-- 
+Bartlomiej Zolnierkiewicz
