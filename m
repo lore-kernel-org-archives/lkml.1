@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbZJ1EQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZJ1E0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932390AbZJ1EQA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 00:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbZJ1EP7
+	id S1755202AbZJ1E0Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 00:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbZJ1E0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 00:15:59 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:40233 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbZJ1EP6 (ORCPT
+	Wed, 28 Oct 2009 00:26:16 -0400
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:61901 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbZJ1E0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 00:15:58 -0400
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-References: <20091025062953.GC1391@ucw.cz>
-	<20091026163157.GB7233@duck.suse.cz>
-	<20091026165729.GF23564@us.ibm.com>
-	<20091026173629.GB16861@fieldses.org>
-	<20091026174631.GD7233@duck.suse.cz>
-	<1256579869.8576.7.camel@heimdal.trondhjem.org>
-	<20091025093604.GA1501@ucw.cz>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 27 Oct 2009 21:15:54 -0700
-In-Reply-To: <20091025093604.GA1501@ucw.cz> (Pavel Machek's message of "Sun\, 25 Oct 2009 10\:36\:04 +0100")
-Message-ID: <m1zl7cb1c5.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 28 Oct 2009 00:26:15 -0400
+Authentication-Results: sj-iport-4.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqQEALZk50qrR7Hu/2dsb2JhbACcQKR8mFmEPwQ
+X-IronPort-AV: E=Sophos;i="4.44,637,1249257600"; 
+   d="scan'208";a="47191840"
+From: Roland Dreier <rdreier@cisco.com>
+To: Mike Travis <travis@sgi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH] x86: Don't print number of MCE banks for every CPU
+References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com>
+	<4AE75DB9.3040702@sgi.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 27 Oct 2009 21:26:17 -0700
+In-Reply-To: <4AE75DB9.3040702@sgi.com> (Mike Travis's message of "Tue, 27 Oct
+	2009 13:53:13 -0700")
+Message-ID: <adaeioota8m.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+X-OriginalArrivalTime: 28 Oct 2009 04:26:19.0126 (UTC) FILETIME=[CBE16160:01CA5786]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
 
-> On Mon 2009-10-26 13:57:49, Trond Myklebust wrote:
->> On Mon, 2009-10-26 at 18:46 +0100, Jan Kara wrote:
->> >   That's what I'd think as well but it does not as I've just learned and
->> > tested :) proc_pid_follow_link actually directly gives a dentry of the
->> > target file without checking permissions on the way.
->
-> It is weider. That symlink even has permissions. Those are not
-> checked, either.
->  
->> I seem to remember that is deliberate, the point being that a symlink
->> in /proc/*/fd/ may contain a path that refers to a private namespace.
->
-> Well, it is unexpected and mild security hole.
+ > [    4.882085] CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
 
-/proc/<pid>/fd is only viewable by the owner of the process or by
-someone with CAP_DAC_OVERRIDE.  So there appears to be no security
-hole exploitable by people who don't have the file open.
+Yes, we should probably kill that debug output as well, that was on my
+list of things to do.
 
-> Part of the problem is that even  if you have read-only
-> filedescriptor, you can upgrade it to read-write, even if path is
-> inaccessible to you.
->
-> So if someone passes you read-only filedescriptor, you can still write
-> to it.
-
-Openly if you actually have permission to open the file again.  The actual
-permissions on the file should not be ignored.
-
-Eric
+ - R.
