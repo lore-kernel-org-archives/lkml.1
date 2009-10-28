@@ -1,70 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZJ1Qce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZJ1Qeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbZJ1Qce (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 12:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbZJ1Qcd
+	id S1755027AbZJ1Qeg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 12:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZJ1Qeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 12:32:33 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:4136 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753479AbZJ1Qcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 12:32:32 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Date: Wed, 28 Oct 2009 09:32:26 -0700
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: "Rik van Riel" <riel@redhat.com>
-cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Linux kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Matthew Carlson" <mcarlson@broadcom.com>,
-       "Michael Chan" <mchan@broadcom.com>, "KVM list" <kvm@vger.kernel.org>
-Subject: Re: TG3, kvm, ipv6 & tso data corruption bug?
-Message-ID: <20091028163226.GA8556@xw6200.broadcom.net>
-References: <4AE8595F.1080404@redhat.com>
+	Wed, 28 Oct 2009 12:34:36 -0400
+Received: from smtp102.prem.mail.sp1.yahoo.com ([98.136.44.57]:47488 "HELO
+	smtp102.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754646AbZJ1Qef (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 12:34:35 -0400
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: 213JxFAVM1nX9psfsr1R6IgKD41M1fl5mAa11v.fgDKgRoT2WwLUA6ZyXp0.qZWvkspcLmZehfztfKsbmwxpEt7BD9NZMRefeClXQIMhjxWAQ..enE13ToSf.VLmD4x7H2tnlggZJz5NCRO8uwjY2xOZNl3LHJRYGd51d1Gj5js4c2LA1X8X9Y7h9XFS6HGtlOJnOiI7n5c.8SxIGIfo6ZtQg4asb1e3u9b23TKxX0wruUH.F_9HO6bmlElhfW3PqO6SKooOO14UGkePOGiv1tMat0jDiUkys7tnBa0_c6oMMGOmcF83fDGhICut9lbHJ_h7UQnF8hVyA20rR6oC7UsXBPM-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AE87292.20802@schaufler-ca.com>
+Date: Wed, 28 Oct 2009 09:34:26 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <4AE8595F.1080404@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-WSS-ID: 66F6AD905KG34295712-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+To: Pavel Machek <pavel@ucw.cz>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       jamie@shareable.org
+Subject: Re: symlinks with permissions
+References: <20091025062953.GC1391@ucw.cz> <20091026163157.GB7233@duck.suse.cz> <20091026165729.GF23564@us.ibm.com> <20091026173629.GB16861@fieldses.org> <20091026174631.GD7233@duck.suse.cz> <1256579869.8576.7.camel@heimdal.trondhjem.org> <20091025093604.GA1501@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org> <20091028081653.GA18290@elf.ucw.cz>
+In-Reply-To: <20091028081653.GA18290@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 07:46:55AM -0700, Rik van Riel wrote:
-> I have been tracking down what I thought was a KVM related network
-> issue for a while, however it appears it could be a hardware issue.
-> 
-> The symptom is that data in network packets gets corrupted, before
-> the checksum is calculated.  This means the remote host can get
-> corrupted data, with no way to calculate it (except application
-> level checksums).  Luckily ssh has such checksums, so my rsync over
-> ssh backup script discovered this issue.
-> 
-> On a very regular basis, I got this message from ssh:
-> 
-> 	Corrupted MAC on input.
-> 
-> I have played around a bit and narrowed it down to the following:
-> 
-> ipv4          => no problem
-> ipv6 w/o tso  => no problem
-> ipv6 with tso => occasional data corruption
-> 
-> Disabling tso with ethtool -K eth0 tso off makes the problem stop.
-> 
-> I am running Fedora 12's 2.6.31.1-56.fc12.x86_64 kernel, with the
-> following hardware:
-> 
-> 05:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5761 
-> Gigabit Ethernet PCIe (rev 10)
-> 
-> I do not know enough about the network layer to know whether this is
-> fixable in software or whether TSO offloading for ipv6 should just
-> be disabled on this model.
+Pavel Machek wrote:
+> On Tue 2009-10-27 21:15:54, Eric W. Biederman wrote:
+>   
+>> Pavel Machek <pavel@ucw.cz> writes:
+>>
+>>     
+>>> On Mon 2009-10-26 13:57:49, Trond Myklebust wrote:
+>>>       
+>>>> On Mon, 2009-10-26 at 18:46 +0100, Jan Kara wrote:
+>>>>         
+>>>>>   That's what I'd think as well but it does not as I've just learned and
+>>>>> tested :) proc_pid_follow_link actually directly gives a dentry of the
+>>>>> target file without checking permissions on the way.
+>>>>>           
+>>> It is weider. That symlink even has permissions. Those are not
+>>> checked, either.
+>>>  
+>>>       
+>>>> I seem to remember that is deliberate, the point being that a symlink
+>>>> in /proc/*/fd/ may contain a path that refers to a private namespace.
+>>>>         
+>>> Well, it is unexpected and mild security hole.
+>>>       
+>> /proc/<pid>/fd is only viewable by the owner of the process or by
+>> someone with CAP_DAC_OVERRIDE.  So there appears to be no security
+>> hole exploitable by people who don't have the file open.
+>>     
+>
+> Please see bugtraq discussion at
+> http://seclists.org/bugtraq/2009/Oct/179 .
+>
+> (In short, you get read-only fd, and you can upgrade it to read-write
+> fd. Yes, you are the owner of the process, but you are not owner of
+> the file the fd refers to.)
+>
+>   
+>>> Part of the problem is that even  if you have read-only
+>>> filedescriptor, you can upgrade it to read-write, even if path is
+>>> inaccessible to you.
+>>>
+>>> So if someone passes you read-only filedescriptor, you can still write
+>>> to it.
+>>>       
+>> Openly if you actually have permission to open the file again.  The actual
+>> permissions on the file should not be ignored.
+>>     
+>
+> The actual permissions of the file are not ignored, but permissions of
+> the containing directory _are_. If there's 666 file in 700 directory,
+> you can reopen it read-write, in violation of directory's 700
+> permissions.
+> 									Pavel
+>   
 
-This problem sounds familiar.  There are chip bugs in this area, but as
-far as I know, they should have been worked around.  Let me see if this
-is indeed the same bug resurfacing.
+There is no security violation here. Consider the case where
+the file is unlinked after it is opened. What directory permissions
+would matter in that case? Or what about the case where the file
+has a link count of 2, say /a/foo and /b/ish are hard links. If
+/a is 777 and /b is 700 what would your position be regarding
+the file descriptor obtained by opening /b/ish? The path name is
+an ethereal convenience and once traversed has no bearing on the
+security state of the object. You need to change the semantics
+of Linux (and Unix) file systems for your concern to make any
+sense at all.
 
