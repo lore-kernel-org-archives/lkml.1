@@ -1,94 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbZJ1GJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbZJ1GPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757425AbZJ1GJl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbZJ1GJl
+	id S1757432AbZJ1GPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 02:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbZJ1GPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:09:41 -0400
-Received: from mga11.intel.com ([192.55.52.93]:22733 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756794AbZJ1GJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:09:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,638,1249282800"; 
-   d="scan'208";a="508295602"
-From: "Ma, Ling" <ling.ma@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 28 Oct 2009 14:09:26 +0800
-Subject: FW: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S
- by avoid memory miss predication.
-Thread-Topic: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S
- by avoid memory miss predication.
-Thread-Index: AcpWFeUp58zm1h1GRQuSWnpWUjUi5QBe2IvAAADhZiAAABTQIA==
-Message-ID: <8FED46E8A9CA574792FC7AACAC38FE7714FCDE2430@PDSMSX501.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Wed, 28 Oct 2009 02:15:17 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57966 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757229AbZJ1GPQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 02:15:16 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AE7E164.80408@jp.fujitsu.com>
+Date: Wed, 28 Oct 2009 15:15:00 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Alex Chiang <achiang@hp.com>, Mark Lord <lkml@rtr.ca>,
+       Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+References: <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk> <20091013172731.GB22797@ldl.fc.hp.com> <20091014081309.GM9228@kernel.dk> <20091020190707.GA25615@ldl.fc.hp.com> <20091026105419.GA10727@kernel.dk> <4AE693D9.3070100@jp.fujitsu.com> <20091027082720.GT10727@kernel.dk>
+In-Reply-To: <20091027082720.GT10727@kernel.dk>
+Content-Type: multipart/mixed;
+ boundary="------------030504090803000402000700"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n9S69t16027246
 
-Hi Ingo
-There are another test cases we need to do or comments?
+This is a multi-part message in MIME format.
+--------------030504090803000402000700
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Best Regards
-Ma Ling
+Jens Axboe wrote:
+> On Tue, Oct 27 2009, Kenji Kaneshige wrote:
+>> Jens Axboe wrote:
+>>> On Tue, Oct 20 2009, Alex Chiang wrote:
+>>>> * Jens Axboe <jens.axboe@oracle.com>:
+>>>>> On Tue, Oct 13 2009, Alex Chiang wrote:
+>>>>>>>> Can you modprobe acpiphp with debug=1? And send the output?
+>>>>>>> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+>>>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:05.0
+>>>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:08:00
+>>>>>>> acpiphp: Slot [1] registered
+>>>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:07.0
+>>>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:0b:00
+>>>>>>> acpiphp: Slot [2] registered
+>>>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:07.0
+>>>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:84:00
+>>>>>>> acpiphp: Slot [6] registered
+>>>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:09.0
+>>>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 7 at PCI 0000:87:00
+>>>>>>> acpiphp: Slot [7] registered
+>>>>>>> acpiphp_glue: Bus 0000:87 has 1 slot
+>>>>>>> acpiphp_glue: Bus 0000:84 has 1 slot
+>>>>>>> acpiphp_glue: Bus 0000:0b has 1 slot
+>>>>>>> acpiphp_glue: Bus 0000:08 has 1 slot
+>>>>>>> acpiphp_glue: Total 4 slots
+>>>>>> You mentioned in another mail that you echoed 1 into the various
+>>>>>> slots' power files.
+>>>>>>
+>>>>>> Did you do that after modprobing acpiphp with debug=1?
+>>>>>>
+>>>>>> If so, there should be debug output when you try and turn them
+>>>>>> on.
+>>>>> It produces:
+>>>>>
+>>>>> acpiphp: enable_slot - physical_slot = 1
+>>>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+>>>>> acpiphp: enable_slot - physical_slot = 2
+>>>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+>>>>> acpiphp: enable_slot - physical_slot = 6
+>>>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+>>>>> acpiphp: enable_slot - physical_slot = 7
+>>>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+>>>> Hm, so for some reason, firmware on your machine is telling us
+>>>> that it doesn't think cards are present and/or enabled.
+>>>>
+>>>> Unfortunately, I don't know why your firmware would be saying
+>>>> that. We could add some more debug printks to see what firmware
+>>>> thinks about your system... Or we could just wait and see what
+>>>> happens after you get your hardware replaced.
+>>> New board, the exact same thing happens.
+>>>
+>>>>> I have a card in one of the slots only this time.
+>>>>>
+>>>>>> Also, quick dummy check, you are trying to power on populated
+>>>>>> slots, right? :)
+>>>>> Yes :-)
+>>>>>
+>>>>>> Can you send the output of lspci -vv? And I like the output of
+>>>>>> lspci -vt as well... Both before and after loading acpiphp
+>>>>>> please.
+>>>>> Send privately.
+>>>> No difference in before and after. Odd.
+>>>>
+>>>> If you want to poke us again after your hardware swap, please do
+>>>> so. Sorry for being not so helpful. :-/
+>>> Poke :-)
+>>>
+>>> One more thing I tried was pushing the power button on the slot
+>>> manually. With acpiphp, I get the same messages as above. Using pciehp,
+>>> I get the same power fault bit interrupt storm. So no difference from
+>>> using the sysfs interface or doing it on the box side, doesn't work
+>>> either way.
+>>>
+>> I'd like to confirm power fault interrupt storm, just in case.
+>> Could you get /proc/interrupts information after power fault
+>> problem happens and send it to me?
+> 
+> The box pretty much hangs when I try to power on a slot with pciehp, so
+> it's not easy to do... It doesn't hang with acpiphp, but doesn't work
+> either (see previous reply to Alex).
+> 
 
-________________________________________
-From: Ma, Ling 
-Sent: 2009年10月26日 16:26
-To: 'mingo@elte.hu'
-Cc: 'hpa@zytor.com'; 'tglx@linutronix.de'; 'linux-kernel@vger.kernel.org'
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by avoid memory miss predication.
+Could you try the attached debugging patch? With this patch, power
+fault interrupt would be disabled after 100 power fault detected (
+I hope so). You can get /proc/interrupts after that.
+
+Thanks,
+Kenji Kaneshige
 
 
-We generate new report for another case when src offset is 0x45010, dst is 0x34020.
-by 'perf stat --repeat 10 ./static_rsi_45010_rdi_34020_old/new' .
- 
-The test program I wrote:
- for (i = 64; i < 4096 *4; i ++)
-      do_memcpy(src, dst, i);
- 
- 
-Before the patch:
-Performance counter stats for './static_rsi_45010_rdi_34020_old' (10 runs):          
-                                                                                     
-  54014.766012  task-clock-msecs         #      0.999 CPUs    ( +-   0.016% )        
-             80  context-switches         #      0.000 M/sec   ( +-   7.894% )        
-              0  CPU-migrations           #      0.000 M/sec   ( +-  66.667% )        
-          4429  page-faults              #      0.000 M/sec   ( +-   0.002% )        
- 136855571663  cycles                   #   2533.670 M/sec   ( +-   0.016% )        
-  44524796868  instructions             #      0.325 IPC     ( +-   0.008% )        
-        771000  cache-references         #      0.014 M/sec   ( +-  10.397% )        
-        541785  cache-misses             #      0.010 M/sec   ( +-   4.203% )        
-                                                                                     
-  54.062799203  seconds time elapsed   ( +-   0.021% )                               
-                                                                                     
-After the patch                                                                                     
-Performance counter stats for './static_rsi_45010_rdi_34020_new' (10 runs):          
-                                                                                     
-   7570.357661  task-clock-msecs         #      0.999 CPUs    ( +-   0.350% )        
-            13  context-switches         #      0.000 M/sec   ( +-   9.320% )        
-             0  CPU-migrations           #      0.000 M/sec   ( +-     nan% )        
-         4429  page-faults              #      0.001 M/sec   ( +-   0.004% )        
- 19180782064  cycles                   #   2533.669 M/sec   ( +-   0.349% )        
- 44462001104  instructions             #      2.318 IPC     ( +-   0.001% )        
-       383673  cache-references         #      0.051 M/sec   ( +-   4.112% )        
-       317436  cache-misses             #      0.042 M/sec   ( +-   1.607% )        
-                                                                                     
-   7.581541785  seconds time elapsed   ( +-   0.343% )      
-                          
-The patch got performance improvement 54.062799203/ 7.581541785  = 7.13x.
-If you need any other test reports, please let me know
- 
-Thanks
-Ma Ling
 
+--------------030504090803000402000700
+Content-Type: text/plain;
+ name="pciehp-power-fault-debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pciehp-power-fault-debug.patch"
 
-���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+---
+ drivers/pci/hotplug/pciehp_hpc.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+Index: 20091026/drivers/pci/hotplug/pciehp_hpc.c
+===================================================================
+--- 20091026.orig/drivers/pci/hotplug/pciehp_hpc.c
++++ 20091026/drivers/pci/hotplug/pciehp_hpc.c
+@@ -612,6 +612,7 @@ static irqreturn_t pcie_isr(int irq, voi
+ 	struct controller *ctrl = (struct controller *)dev_id;
+ 	struct slot *slot = ctrl->slot;
+ 	u16 detected, intr_loc;
++	static int nr_power_faults = 0;
+ 
+ 	/*
+ 	 * In order to guarantee that all interrupt events are
+@@ -664,6 +665,13 @@ static irqreturn_t pcie_isr(int irq, voi
+ 	if (intr_loc & PCI_EXP_SLTSTA_PDC)
+ 		pciehp_handle_presence_change(slot);
+ 
++	if ((intr_loc & PCI_EXP_SLTSTA_PFD) && (++nr_power_faults > 100)) {
++		u16 reg16;
++		pciehp_readw(ctrl, PCI_EXP_SLTCTL, &reg16);
++		reg16 &= ~PCI_EXP_SLTCTL_PFDE;
++		pciehp_writew(ctrl, PCI_EXP_SLTCTL, reg16);
++	}
++
+ 	/* Check Power Fault Detected */
+ 	if ((intr_loc & PCI_EXP_SLTSTA_PFD) && !ctrl->power_fault_detected) {
+ 		ctrl->power_fault_detected = 1;
+
+--------------030504090803000402000700--
+
