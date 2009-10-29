@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZJ2ULI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZJ2ULY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbZJ2ULI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 16:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZJ2ULG
+	id S1755202AbZJ2ULY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 16:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755076AbZJ2ULX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 16:11:06 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51990 "EHLO e4.ny.us.ibm.com"
+	Thu, 29 Oct 2009 16:11:23 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:51512 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754609AbZJ2ULF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 16:11:05 -0400
-Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
-From: Mingming <cmm@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Theodore Tso <tytso@mit.edu>, Parag Warudkar <parag.lkml@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       bugzilla-daemon@bugzilla.kernel.org
-In-Reply-To: <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
-References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
-	 <20091016091558.GA10184@mit.edu>
-	 <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 29 Oct 2009 13:10:38 -0700
-Message-Id: <1256847038.4341.0.camel@mingming-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1755056AbZJ2ULW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 16:11:22 -0400
+Message-ID: <4AE9F6BF.8000501@redhat.com>
+Date: Thu, 29 Oct 2009 16:10:39 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?ISO-8859-1?Q?Fr=E9d=E9r?= =?ISO-8859-1?Q?ic_Weisbecker?= 
+	<fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
+References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu> <4AE9C919.4070003@redhat.com>
+In-Reply-To: <4AE9C919.4070003@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 15:45 +0530, Aneesh Kumar K.V wrote:
-> Can you try this patch ?
-> 
-> commit a8836b1d6f92273e001012c7705ae8f4c3d5fb65
-> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Date:   Tue Oct 27 15:36:38 2009 +0530
-> 
->     ext4: discard preallocation during truncate
->     
->     We need to make sure when we drop and reacquire the inode's
->     i_data_sem we discard the inode preallocation. Otherwise we
->     could have blocks marked as free in bitmap but still belonging
->     to prealloc space.
->     
->     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> 
+Masami Hiramatsu wrote:
+> Ingo Molnar wrote:
+>> Another problem i noticed is that a vmlinux without DEBUG_INFO will fail
+>> in this way:
+>>
+>>    aldebaran:~/linux/linux>   perf probe schedule
+>>      Fatal: Failed to call dwarf_init(). Maybe, not a dwarf file.
+>
+> Ah, really? I think I broke need_dwarf logic somehow...
 
-Make sense, reviewed-by: Mingming Cao <cmm@us.ibm.com>
+Hmm, I've found that is for searching (implicitly) inlined symbols,
+this means "the behavior is by (bad) design" :-(
 
-> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> index 5c5bc5d..a1ef1c3 100644
-> --- a/fs/ext4/inode.c
-> +++ b/fs/ext4/inode.c
-> @@ -209,6 +209,12 @@ static int try_to_extend_transaction(handle_t *handle, struct inode *inode)
->  	up_write(&EXT4_I(inode)->i_data_sem);
->  	ret = ext4_journal_restart(handle, blocks_for_truncate(inode));
->  	down_write(&EXT4_I(inode)->i_data_sem);
-> +	/*
-> +	 * We have dropped i_data_sem. So somebody else could have done
-> +	 * block allocation. So discard the prealloc space created as a
-> +	 * part of block allocation
-> +	 */
-> +	ext4_discard_preallocations(inode);
-> 
->  	return ret;
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I think it should be search the symbol in Elf (or kallsyms) first,
+and only if it fails, use Dwarf for searching the symbol again.
 
+Or, it may be enough that just trying to setup probe and if it fails
+use Dwarf. This way doesn't require any vmlinux access.
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
