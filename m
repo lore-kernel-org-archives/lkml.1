@@ -1,55 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbZJ2Qsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZJ2QuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755735AbZJ2Qsj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbZJ2Qsi
+	id S1755753AbZJ2QuN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZJ2QuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:48:38 -0400
-Received: from outbound-mail-27.bluehost.com ([69.89.17.193]:51156 "HELO
-	outbound-mail-27.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755678AbZJ2Qsh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:48:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=VadQM9gqnUVHKcIsJYYtAHAD/bbWtXdvXfjIm/b8yBH7RJRSXUbGyxbXXgFSO8Yug7wxH7rcseWfQ/2EcfGonqE30bK5YW+9sQDnTRTLDstPnqsCNx7mQCTWEse8trnT;
-Date: Thu, 29 Oct 2009 09:48:39 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Zhang Yanmin <yanmin.zhang@intel.com>, linux-kernel@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Huong_Nguyen@dell.com
-Subject: Re: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
-Message-ID: <20091029094839.143186ac@jbarnes-g45>
-In-Reply-To: <20091029141559.GB13809@auslistsprd01.us.dell.com>
-References: <20091006173311.GA15751@auslistsprd01.us.dell.com>
-	<4ACEE220.1020705@jp.fujitsu.com>
-	<20091009182810.GB24889@mock.linuxdev.us.dell.com>
-	<20091009183319.GC24889@mock.linuxdev.us.dell.com>
-	<20091029141559.GB13809@auslistsprd01.us.dell.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Oct 2009 12:50:12 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:34023 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752703AbZJ2QuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:50:10 -0400
+Message-ID: <4AE9C7BF.3060509@sgi.com>
+Date: Thu, 29 Oct 2009 09:50:07 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Andrea Arcangeli <aarcange@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       linux-mm@kvack.org, Marcelo Tosatti <mtosatti@redhat.com>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       Izik Eidus <ieidus@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Karl Feind <kaf@sgi.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: RFC: Transparent Hugepage support
+References: <20091026185130.GC4868@random.random> <87ljiwk8el.fsf@basil.nowhere.org> <20091027193007.GA6043@random.random> <20091028042805.GJ7744@basil.fritz.box> <20091029094344.GA1068@elte.hu> <20091029103658.GJ9640@random.random>
+In-Reply-To: <20091029103658.GJ9640@random.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Oct 2009 09:15:59 -0500
-Matt Domsch <Matt_Domsch@dell.com> wrote:
+Hi Andrea,
 
-> On Fri, Oct 09, 2009 at 01:33:20PM -0500, Matt Domsch wrote:
-> > For review and comment.  Feedback from Hidetoshi Seto and Kenji
-> > Kaneshige incorporated.
-> 
-> With no more comments received, I would like to see this applied.
+I will find some time soon to test out your patch on a
+(relatively) huge machine and let you know the results.
 
-Kenji-san and Hidetoshi-san, are you ok with me adding your Reviewed-by
-tags to this patch?
+The memory size on this machine:
+
+	480,700,399,616 bytes of system memory tested OK
+
+This translates to ~240k available 2Mb pages.
 
 Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Mike
+
+Andrea Arcangeli wrote:
+> Hello Ingo, Andi, everyone,
+> 
+> On Thu, Oct 29, 2009 at 10:43:44AM +0100, Ingo Molnar wrote:
+>> * Andi Kleen <andi@firstfloor.org> wrote:
+>>
+>>>> 1GB pages can't be handled by this code, and clearly it's not 
+>>>> practical to hope 1G pages to materialize in the buddy (even if we
+>>> That seems short sightened. You do this because 2MB pages give you x% 
+>>> performance advantage, but then it's likely that 1GB pages will give 
+>>> another y% improvement and why should people stop at the smaller 
+>>> improvement?
+>>>
+>>> Ignoring the gigantic pages now would just mean that this would need 
+>>> to be revised later again or that users still need to use hacks like 
+>>> libhugetlbfs.
+>> I've read the patch and have read through this discussion and you are 
+>> missing the big point that it's best to do such things gradually - one 
+>> step at a time.
+>>
+>> Just like we went from 2 level pagetables to 3 level pagetables, then to 
+>> 4 level pagetables - and we might go to 5 level pagetables in the 
+>> future. We didnt go from 2 level pagetables to 5 level page tables in 
+>> one go, despite predictions clearly pointing out the exponentially 
+>> increasing need for RAM.
+> 
+> I totally agree with your assessment.
+> 
+>> So your obsession with 1GB pages is misguided. If indeed transparent 
+>> largepages give us real benefits we can extend it to do transparent 
+>> gbpages as well - should we ever want to. There's nothing 'shortsighted' 
+>> about being gradual - the change is already ambitious enough as-is, and 
+>> brings very clear benefits to a difficult, decade-old problem no other 
+>> person was able to address.
+>>
+>> In fact introducing transparent 2MBpages makes 1GB pages support 
+>> _easier_ to merge: as at that point we'll already have a (finally..) 
+>> successful hugetlb facility happility used by an increasing range of 
+>> applications.
+> 
+> Agreed.
+> 
+>> Hugetlbfs's big problem was always that it wasnt transparent and hence 
+>> wasnt gradual for applications. It was an opt-in and constituted an 
+>> interface/ABI change - that is always a big barrier to app adoption.
+>>
+>> So i give Andrea's patch a very big thumbs up - i hope it gets reviewed 
+>> in fine detail and added to -mm ASAP. Our lack of decent, automatic 
+>> hugepage support is sticking out like a sore thumb and is hurting us in 
+>> high-performance setups. If largepage support within Linux has a chance, 
+>> this might be the way to do it.
+> 
+> Thanks a lot for your review!
+> 
+>> A small comment regarding the patch itself: i think it could be 
+>> simplified further by eliminating CONFIG_TRANSPARENT_HUGEPAGE and by 
+>> making it a natural feature of hugepage support. If the code is correct 
+>> i cannot see any scenario under which i wouldnt want a hugepage enabled 
+>> kernel i'm booting to not have transparent hugepage support as well.
+> 
+> The two reasons why I added a config option are:
+> 
+> 1) because it was easy enough, gcc is smart enough to eliminate the
+> external calls so I didn't need to add ifdefs with the exception of
+> returning 0 from pmd_trans_huge and pmd_trans_frozen. I only had to
+> make the exports of huge_memory.c visible unconditionally so it doesn't
+> warn, after that I don't need to build and link huge_memory.o.
+> 
+> 2) to avoid breaking build of archs not implementing pmd_trans_huge
+> and that may never be able to take advantage of it
+> 
+> But we could move CONFIG_TRANSPARENT_HUGEPAGE to an arch define forced
+> to Y on x86-64 and N on power.
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
