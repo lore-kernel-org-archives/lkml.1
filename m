@@ -1,62 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZJ2QeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbZJ2Qkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755527AbZJ2QeG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZJ2QeF
+	id S1755586AbZJ2Qkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbZJ2Qkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:34:05 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:50394 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753950AbZJ2QeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:34:03 -0400
-Message-ID: <4AE9C3FA.4000305@sgi.com>
-Date: Thu, 29 Oct 2009 09:34:02 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 29 Oct 2009 12:40:39 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:39489 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbZJ2Qki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:40:38 -0400
+Date: Thu, 29 Oct 2009 11:40:17 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: linux-security-module@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] define convenient securebits masks for prctl users (v2)
+Message-ID: <20091029164016.GA21797@us.ibm.com>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [patch] x86: reduce srat verbosity in the kernel log
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <4AE8792F.8070200@sgi.com> <alpine.DEB.2.00.0910281348590.24785@chino.kir.corp.google.com> <4AE8B933.5020103@sgi.com> <alpine.DEB.2.00.0910281440580.32315@chino.kir.corp.google.com> <4AE8C764.90705@sgi.com> <alpine.DEB.2.00.0910290117020.11476@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0910290117020.11476@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi James, would you mind taking the following into
+security-testing?
 
+The securebits are used by passing them to prctl with the
+PR_{S,G}ET_SECUREBITS commands.  But the defines must be
+shifted to be used in prctl, which begs to be confused and
+misused by userspace.  So define some more convenient
+values for userspace to specify.  This way userspace does
 
-David Rientjes wrote:
-> On Wed, 28 Oct 2009, Mike Travis wrote:
-> 
->>> I'm not saying it would be illegal, merely that it would be harm
->>> readability.  Based on how apic id's are formed from processor ids, though,
->>> I think we're really talking about an upper limit (128) that will never be
->>> reached.
->> We actually have many, many more than that by adding on some extra bits
->> to the CPU's apicid.  These select which blade in the system to target.
->>
-> 
-> Maybe I've been vague in my rationale for why this limit will probably 
-> never be reached.  The way apic ids are constructed, with physical and 
-> logical processor ids, it tends to lend itself to ranges where 
-> bitmap_scnlistprintf() can specify a large number of apic ids with 
-> relatively few ASCII characters because logical processors typically do 
-> not have differing pxms.  For us to reach the 128 character upper bound, 
-> scnlistprintf() would need to have many, many distinct ranges; your 
-> example showed two ranges per pxm (many more machines would have only a 
-> single range).  In other words, we're not predicting to have 
-> "1-2,4-6,8-9,11-13,15-17," etc, that we often have with nodemasks.
+	prctl(PR_SET_SECUREBITS, SECBIT_NOROOT);
 
-Yes, you are correct.  (I was confused... ;-)
+instead of
 
-I believe the disjointed ranges came from the hyperthread cpus..?  Which if
-true means there'll probably be as many distinct ranges as there are threads
-per core?
+	prctl(PR_SET_SECUREBITS, 1 << SECURE_NOROOT);
+
+(Thanks to Michael for the idea)
+
+This patch also adds include/linux/securebits to the installed headers.
+Then perhaps it can be included by glibc's sys/prctl.h.
+
+Changelog:
+	Oct 29: Stephen Rothwell points out that issecure can
+		be under __KERNEL__.
+	Oct 14: (Suggestions by Michael Kerrisk):
+		1. spell out SETUID in SECBIT_NO_SETUID*
+		2. SECBIT_X_LOCKED does not imply SECBIT_X
+		3. add definitions for keepcaps
+        Oct 14: As suggested by Michael Kerrisk, don't
+		use SB_* as that convention is already in
+		use.  Use SECBIT_ prefix instead.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
+Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Cc: James Morris <jmorris@namei.org>
+---
+ include/linux/Kbuild       |    1 +
+ include/linux/securebits.h |   24 ++++++++++++++++++------
+ 2 files changed, 19 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 1feed71..5a53857 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -330,6 +330,7 @@ unifdef-y += scc.h
+ unifdef-y += sched.h
+ unifdef-y += screen_info.h
+ unifdef-y += sdla.h
++unifdef-y += securebits.h
+ unifdef-y += selinux_netlink.h
+ unifdef-y += sem.h
+ unifdef-y += serial_core.h
+diff --git a/include/linux/securebits.h b/include/linux/securebits.h
+index d2c5ed8..3340617 100644
+--- a/include/linux/securebits.h
++++ b/include/linux/securebits.h
+@@ -1,6 +1,15 @@
+ #ifndef _LINUX_SECUREBITS_H
+ #define _LINUX_SECUREBITS_H 1
+ 
++/* Each securesetting is implemented using two bits. One bit specifies
++   whether the setting is on or off. The other bit specify whether the
++   setting is locked or not. A setting which is locked cannot be
++   changed from user-level. */
++#define issecure_mask(X)	(1 << (X))
++#ifdef __KERNEL__
++#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
++#endif
++
+ #define SECUREBITS_DEFAULT 0x00000000
+ 
+ /* When set UID 0 has no special privileges. When unset, we support
+@@ -12,6 +21,9 @@
+ #define SECURE_NOROOT			0
+ #define SECURE_NOROOT_LOCKED		1  /* make bit-0 immutable */
+ 
++#define SECBIT_NOROOT		(issecure_mask(SECURE_NOROOT))
++#define SECBIT_NOROOT_LOCKED	(issecure_mask(SECURE_NOROOT_LOCKED))
++
+ /* When set, setuid to/from uid 0 does not trigger capability-"fixup".
+    When unset, to provide compatiblility with old programs relying on
+    set*uid to gain/lose privilege, transitions to/from uid 0 cause
+@@ -19,6 +31,10 @@
+ #define SECURE_NO_SETUID_FIXUP		2
+ #define SECURE_NO_SETUID_FIXUP_LOCKED	3  /* make bit-2 immutable */
+ 
++#define SECBIT_NO_SETUID_FIXUP	(issecure_mask(SECURE_NO_SETUID_FIXUP))
++#define SECBIT_NO_SETUID_FIXUP_LOCKED \
++			(issecure_mask(SECURE_NO_SETUID_FIXUP_LOCKED))
++
+ /* When set, a process can retain its capabilities even after
+    transitioning to a non-root user (the set-uid fixup suppressed by
+    bit 2). Bit-4 is cleared when a process calls exec(); setting both
+@@ -27,12 +43,8 @@
+ #define SECURE_KEEP_CAPS		4
+ #define SECURE_KEEP_CAPS_LOCKED		5  /* make bit-4 immutable */
+ 
+-/* Each securesetting is implemented using two bits. One bit specifies
+-   whether the setting is on or off. The other bit specify whether the
+-   setting is locked or not. A setting which is locked cannot be
+-   changed from user-level. */
+-#define issecure_mask(X)	(1 << (X))
+-#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
++#define SECBIT_KEEP_CAPS	(issecure_mask(SECURE_KEEP_CAPS))
++#define SECBIT_KEEP_CAPS_LOCKED (issecure_mask(SECURE_KEEP_CAPS_LOCKED))
+ 
+ #define SECURE_ALL_BITS		(issecure_mask(SECURE_NOROOT) | \
+ 				 issecure_mask(SECURE_NO_SETUID_FIXUP) | \
+-- 
+1.6.1
+
