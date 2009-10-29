@@ -1,81 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZJ2BAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZJ2BDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbZJ2BAd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 21:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbZJ2BAc
+	id S1756156AbZJ2BDM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 21:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZJ2BDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 21:00:32 -0400
-Received: from mga09.intel.com ([134.134.136.24]:49783 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756025AbZJ2BAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 21:00:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,642,1249282800"; 
-   d="scan'208";a="462442680"
-Date: Thu, 29 Oct 2009 09:00:35 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: "lenb@kernel.org" <lenb@kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v4 0/6] ACPI: dock: code hygiene
-Message-ID: <20091029010035.GA29998@sli10-desk.sh.intel.com>
-References: <20091019211132.5412.80438.stgit@bob.kio> <20091029000743.GA3602@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091029000743.GA3602@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 28 Oct 2009 21:03:11 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41453 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756037AbZJ2BDK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 21:03:10 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 29 Oct 2009 10:00:42 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "David Rientjes" <rientjes@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Andrea Arcangeli" <aarcange@redhat.com>, vedran.furac@gmail.com,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+Message-Id: <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
+	<abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 08:07:43AM +0800, Alex Chiang wrote:
-> Hi Len, Shaohua,
+> I'll wait until the next week to post a new patch.
+> We don't need rapid way.
 > 
-> Any comments on this patch series?
-> 
-> I did fat-finger Shaohua's email address when I sent out v4, but
-> I thought I bounced all the mails to him privately, off-list.
-I'm ok with the series.
+I wrote above...but for my mental health, this is bug-fixed version.
+Sorry for my carelessness. David, thank you for your review.
+Regards,
+-Kame
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Thanks,
-Shaohua
-> * Alex Chiang <achiang@hp.com>:
-> > This is v4 of a modest attempt to clean up the dock driver.
-> > 
-> > As before, compile tested only, since I don't have any machines
-> > that provide _DCK.
-> > 
-> > Thanks.
-> > /ac
-> > 
-> > v3 -> v4:
-> > 	- defensively code in case sysfs_create_group() fails and
-> > 	  sysfs_remove_group() can't handle removing a non-existent group;
-> > 	  suggested by Dmitry Torokhov
-> > 
-> > v2 -> v3:
-> > 	- now using an attribute_group, as suggested by Dmitry Torokhov
-> > 
-> > v1 -> v2:
-> > 	- changed how we add platform device data, based on Shaohua Li's
-> >   	  review
-> > ---
-> > 
-> > Alex Chiang (6):
-> >       ACPI: dock: convert sysfs attributes to an attribute_group
-> >       ACPI: dock: combine add|alloc_dock_dependent_device
-> >       ACPI: dock: remove global 'dock_device_name'
-> >       ACPI: dock: dock_add - hoist up platform_device_register_simple()
-> >       ACPI: dock: add struct dock_station * directly to platform device data
-> >       ACPI: dock: minor whitespace and style cleanups
-> > 
-> > 
-> >  drivers/acpi/dock.c |  266 ++++++++++++++++++---------------------------------
-> >  1 files changed, 93 insertions(+), 173 deletions(-)
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+It's reported that OOM-Killer kills Gnone/KDE at first...
+And yes, we can reproduce it easily.
+
+Now, oom-killer uses mm->total_vm as its base value. But in recent
+applications, there are a big gap between VM size and RSS size.
+Because
+  - Applications attaches much dynamic libraries. (Gnome, KDE, etc...)
+  - Applications may alloc big VM area but use small part of them.
+    (Java, and multi-threaded applications has this tendency because
+     of default-size of stack.)
+
+I think using mm->total_vm as score for oom-kill is not good.
+By the same reason, overcommit memory can't work as expected.
+(In other words, if we depends on total_vm, using overcommit more positive
+ is a good choice.)
+
+This patch uses mm->anon_rss/file_rss as base value for calculating badness.
+
+Following is changes to OOM score(badness) on an environment with 1.6G memory
+plus memory-eater(500M & 1G).
+
+Top 10 of badness score. (The highest one is the first candidate to be killed)
+Before
+badness program
+91228	gnome-settings-
+94210	clock-applet
+103202	mixer_applet2
+106563	tomboy
+112947	gnome-terminal
+128944	mmap              <----------- 500M malloc
+129332	nautilus
+215476	bash              <----------- parent of 2 mallocs.
+256944	mmap              <----------- 1G malloc
+423586	gnome-session
+
+After
+badness 
+1911	mixer_applet2
+1955	clock-applet
+1986	xinit
+1989	gnome-session
+2293	nautilus
+2955	gnome-terminal
+4113	tomboy
+104163	mmap             <----------- 500M malloc.
+168577	bash             <----------- parent of 2 mallocs
+232375	mmap             <----------- 1G malloc
+
+seems good for me. Maybe we can tweak this patch more,
+but this one will be a good one as a start point.
+
+Changelog: 2009/10/29
+ - use get_mm_rss() instead of get_mm_counter()
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/oom_kill.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: mm-test-kernel/mm/oom_kill.c
+===================================================================
+--- mm-test-kernel.orig/mm/oom_kill.c
++++ mm-test-kernel/mm/oom_kill.c
+@@ -93,7 +93,7 @@ unsigned long badness(struct task_struct
+ 	/*
+ 	 * The memory size of the process is the basis for the badness.
+ 	 */
+-	points = mm->total_vm;
++	points = get_mm_rss(mm);
+ 
+ 	/*
+ 	 * After this unlock we can no longer dereference local variable `mm'
+@@ -117,7 +117,7 @@ unsigned long badness(struct task_struct
+ 	list_for_each_entry(child, &p->children, sibling) {
+ 		task_lock(child);
+ 		if (child->mm != mm && child->mm)
+-			points += child->mm->total_vm/2 + 1;
++			points += get_mm_rss(child->mm)/2 + 1;
+ 		task_unlock(child);
+ 	}
+ 
+
+
