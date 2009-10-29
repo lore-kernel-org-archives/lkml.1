@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZJ2QvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbZJ2Q46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbZJ2QvE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZJ2QvC
+	id S1755582AbZJ2Q46 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZJ2Q45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:51:02 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:12880 "EHLO
-	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755906AbZJ2Qu7 (ORCPT
+	Thu, 29 Oct 2009 12:56:57 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:20485 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752997AbZJ2Q44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:50:59 -0400
-X-SpamScore: -2
-X-BigFish: VPS-2(zz936eMzz1202hzzz32i6bh43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KSAC3Z-04-FK2-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       Pavel Vasilyev <pavel@pavlinux.ru>, Dave Jones <davej@redhat.com>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 4/4] agp/amd64: Remove GART dependency on AGP_AMD64
-Date: Thu, 29 Oct 2009 17:50:12 +0100
-Message-ID: <1256835012-31410-5-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.5
-In-Reply-To: <1256835012-31410-1-git-send-email-joerg.roedel@amd.com>
-References: <1256835012-31410-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 29 Oct 2009 16:50:17.0683 (UTC) FILETIME=[E4F26230:01CA58B7]
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+	Thu, 29 Oct 2009 12:56:56 -0400
+Date: Thu, 29 Oct 2009 09:52:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging: fix wireless drivers depends
+Message-Id: <20091029095202.09161c1e.randy.dunlap@oracle.com>
+In-Reply-To: <20091029182919.4d6ec52c.sfr@canb.auug.org.au>
+References: <20091029182919.4d6ec52c.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AE9C952.00B0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pavel Vasilyev <pavel@pavlinux.ru>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The GART IOMMU code has no strong dependency to the AMD64
-AGP code. So the automatic selection of AGP_AMD64 for GART
-can be removed.
+These drivers can (erroneously) be enabled even when
+CONFIG_NET=n, CONFIG_NETDEVICES=n, CONFIG_WLAN=n, etc.
+Stop this.
 
-Cc: Dave Jones <davej@redhat.com>
-Signed-off-by: Pavel Vasilyev <pavel@pavlinux.ru>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/char/agp/Kconfig |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/staging/rtl8187se/Kconfig |    2 +-
+ drivers/staging/rtl8192e/Kconfig  |    2 +-
+ drivers/staging/rtl8192su/Kconfig |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/agp/Kconfig b/drivers/char/agp/Kconfig
-index ccb1fa8..2fb3a48 100644
---- a/drivers/char/agp/Kconfig
-+++ b/drivers/char/agp/Kconfig
-@@ -56,9 +56,8 @@ config AGP_AMD
- 	  X on AMD Irongate, 761, and 762 chipsets.
- 
- config AGP_AMD64
--	tristate "AMD Opteron/Athlon64 on-CPU GART support" if !GART_IOMMU
-+	tristate "AMD Opteron/Athlon64 on-CPU GART support"
- 	depends on AGP && X86
--	default y if GART_IOMMU
- 	help
- 	  This option gives you AGP support for the GLX component of
- 	  X using the on-CPU northbridge of the AMD Athlon64/Opteron CPUs.
--- 
-1.6.5
-
-
+--- linux-next-20091029.orig/drivers/staging/rtl8187se/Kconfig
++++ linux-next-20091029/drivers/staging/rtl8187se/Kconfig
+@@ -1,6 +1,6 @@
+ config RTL8187SE
+ 	tristate "RealTek RTL8187SE Wireless LAN NIC driver"
+-	depends on PCI
++	depends on PCI && WLAN
+ 	select WIRELESS_EXT
+ 	select WEXT_PRIV
+ 	default N
+--- linux-next-20091029.orig/drivers/staging/rtl8192e/Kconfig
++++ linux-next-20091029/drivers/staging/rtl8192e/Kconfig
+@@ -1,6 +1,6 @@
+ config RTL8192E
+ 	tristate "RealTek RTL8192E Wireless LAN NIC driver"
+-	depends on PCI
++	depends on PCI && WLAN
+ 	select WIRELESS_EXT
+ 	select WEXT_PRIV
+ 	default N
+--- linux-next-20091029.orig/drivers/staging/rtl8192su/Kconfig
++++ linux-next-20091029/drivers/staging/rtl8192su/Kconfig
+@@ -1,6 +1,6 @@
+ config RTL8192SU
+ 	tristate "RealTek RTL8192SU Wireless LAN NIC driver"
+-	depends on PCI
++	depends on PCI && WLAN
+ 	depends on WIRELESS_EXT
+ 	default N
+ 	---help---
