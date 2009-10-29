@@ -1,418 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZJ2IzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbZJ2I4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548AbZJ2IzA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZJ2Iy7
+	id S1753658AbZJ2I4H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZJ2I4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:54:59 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55863 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752104AbZJ2Iy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:54:57 -0400
-Date: Thu, 29 Oct 2009 09:55:01 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: jack@suse.cz, wfg@mail.ustc.edu.cn, chris.mason@oracle.com
-Subject: writeback tracing
-Message-ID: <20091029085501.GA10727@kernel.dk>
+	Thu, 29 Oct 2009 04:56:06 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54218 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752188AbZJ2I4E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 04:56:04 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AE9588E.90708@jp.fujitsu.com>
+Date: Thu, 29 Oct 2009 17:55:42 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Chiang <achiang@hp.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/2] pci: pciehp update the slot bridge res to get big
+ range for pcie devices - v4
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org> <m1ljivibrt.fsf@fess.ebiederm.org> <4AE899A0.3020006@kernel.org> <4AE95247.8080401@jp.fujitsu.com> <4AE952B9.1010603@kernel.org>
+In-Reply-To: <4AE952B9.1010603@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Yinghai Lu wrote:
+> Kenji Kaneshige wrote:
+>> Yinghai Lu wrote:
+>>> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+>>> and at last do them all together one time including slot bridge, to
+>>> avoid to
+>>> call assign resources several times, when there are several bridges
+>>> under the
+>>> slot bridge.
+>>>
+>>> need to introduce pci_bridge_assign_resources there.
+>>>
+>>> handle the case the slot bridge that doesn't get pre-allocated big
+>>> enough res
+>>> from FW.
+>>> for example pcie devices need 256M, but the bridge only get
+>>> preallocated 2M...
+>>>
+>>> pci_setup_bridge() will take extra check_enabled for the slot bridge,
+>>> otherwise
+>>> update res is not updated to bridge BAR. that is bridge is enabled
+>>> already for
+>>> port service.
+>>>
+>>> -v2: address Alex's concern about pci remove/rescan feature about
+>>> pci_setup_bridge changes.
+>>> -v3: Kenji pointed out that pci_config_slot need to be called before
+>>> pci_bus_add_devices()
+>>> -v4: move out pci_is_enabled checkout of pci_setup_bridge()
+>>>
+>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>
+>>> ---
+>>>  drivers/pci/hotplug/pciehp_pci.c |   29 ++++++++++++---
+>>>  drivers/pci/setup-bus.c          |   73
+>>> ++++++++++++++++++++++++++++++++++++---
+>>>  include/linux/pci.h              |    1  3 files changed, 93
+>>> insertions(+), 10 deletions(-)
+>>>
+>>> Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
+>>> +++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+>>> @@ -53,19 +53,18 @@ static int __ref pciehp_add_bridge(struc
+>>>          busnr = pci_scan_bridge(parent, dev, busnr, pass);
+>>>      if (!dev->subordinate)
+>>>          return -1;
+>>> -    pci_bus_size_bridges(dev->subordinate);
+>>> -    pci_bus_assign_resources(parent);
+>>> -    pci_enable_bridges(parent);
+>>> -    pci_bus_add_devices(parent);
+>>> +
+>>>      return 0;
+>>>  }
+>>>  
+>>>  int pciehp_configure_device(struct slot *p_slot)
+>>>  {
+>>>      struct pci_dev *dev;
+>>> -    struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
+>>> +    struct pci_dev *bridge = p_slot->ctrl->pcie->port;
+>>> +    struct pci_bus *parent = bridge->subordinate;
+>>>      int num, fn;
+>>>      struct controller *ctrl = p_slot->ctrl;
+>>> +    int retval;
+>>>  
+>>>      dev = pci_get_slot(parent, PCI_DEVFN(0, 0));
+>>>      if (dev) {
+>>> @@ -96,12 +95,30 @@ int pciehp_configure_device(struct slot
+>>>                  (dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
+>>>              pciehp_add_bridge(dev);
+>>>          }
+>>> +        pci_dev_put(dev);
+>>> +    }
+>>> +
+>>> +    pci_bus_size_bridges(parent);
+>>> +    pci_clear_master(bridge);
+>>> +    pci_bridge_assign_resources(bridge);
+>>> +    retval = pci_reenable_device(bridge);
+>>> +    pci_set_master(bridge);
+>>> +    pci_enable_bridges(parent);
+>>> +
+>>> +    for (fn = 0; fn < 8; fn++) {
+>>> +        dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
+>>> +        if (!dev)
+>>> +            continue;
+>>> +        if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
+>>> +            pci_dev_put(dev);
+>>> +            continue;
+>>> +        }
+>>>          pci_configure_slot(dev);
+>>>          pci_dev_put(dev);
+>>>      }
+>>>  
+>>> -    pci_bus_assign_resources(parent);
+>>>      pci_bus_add_devices(parent);
+>>> +
+>>>      return 0;
+>>>  }
+>>>  
+>>> Index: linux-2.6/drivers/pci/setup-bus.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/drivers/pci/setup-bus.c
+>>> +++ linux-2.6/drivers/pci/setup-bus.c
+>>> @@ -27,6 +27,44 @@
+>>>  #include <linux/slab.h>
+>>>  #include "pci.h"
+>>>  
+>>> +static void pdev_assign_resources_sorted(struct pci_dev *dev)
+>>> +{
+>>> +    struct resource *res;
+>>> +    struct resource_list head, *list, *tmp;
+>>> +    int idx;
+>>> +    u16 class = dev->class >> 8;
+>>> +
+>>> +    head.next = NULL;
+>>> +
+>>> +    /* Don't touch classless devices or host bridges or ioapics.  */
+>>> +    if (class == PCI_CLASS_NOT_DEFINED ||
+>>> +        class == PCI_CLASS_BRIDGE_HOST)
+>>> +        return;
+>>> +
+>>> +    /* Don't touch ioapic devices already enabled by firmware */
+>>> +    if (class == PCI_CLASS_SYSTEM_PIC) {
+>>> +        u16 command;
+>>> +        pci_read_config_word(dev, PCI_COMMAND, &command);
+>>> +        if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
+>>> +            return;
+>>> +    }
+>>> +
+>>> +    pdev_sort_resources(dev, &head);
+>>> +
+>>> +    for (list = head.next; list;) {
+>>> +        res = list->res;
+>>> +        idx = res - &list->dev->resource[0];
+>>> +        if (pci_assign_resource(list->dev, idx)) {
+>>> +            res->start = 0;
+>>> +            res->end = 0;
+>>> +            res->flags = 0;
+>>> +        }
+>>> +        tmp = list;
+>>> +        list = list->next;
+>>> +        kfree(tmp);
+>>> +    }
+>>> +}
+>>> +
+>>>  static void pbus_assign_resources_sorted(const struct pci_bus *bus)
+>>>  {
+>>>      struct pci_dev *dev;
+>>> @@ -144,9 +182,6 @@ static void pci_setup_bridge(struct pci_
+>>>      u32 l, bu, lu, io_upper16;
+>>>      int pref_mem64;
+>>>  
+>>> -    if (pci_is_enabled(bridge))
+>>> -        return;
+>>> -
+>>>      dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
+>>>           pci_domain_nr(bus), bus->number);
+>>>  
+>>> @@ -541,6 +576,35 @@ void __ref pci_bus_size_bridges(struct p
+>>>  }
+>>>  EXPORT_SYMBOL(pci_bus_size_bridges);
+>>>  
+>>> +void __ref pci_bridge_assign_resources(const struct pci_dev *bridge)
+>>> +{
+>>> +    struct pci_bus *b;
+>>> +
+>>> +    pdev_assign_resources_sorted((struct pci_dev *)bridge);
+>>> +
+>>> +    b = bridge->subordinate;
+>>> +    if (!b)
+>>> +        return;
+>>> +
+>>> +    pci_bus_assign_resources(b);
+>>> +
+>>> +    switch (bridge->class >> 8) {
+>>> +    case PCI_CLASS_BRIDGE_PCI:
+>>> +        pci_setup_bridge(b);
+>>> +        break;
+>>> +
+>>> +    case PCI_CLASS_BRIDGE_CARDBUS:
+>>> +        pci_setup_cardbus(b);
+>>> +        break;
+>>> +
+>>> +    default:
+>>> +        dev_info(&bridge->dev, "not setting up bridge for bus "
+>>> +             "%04x:%02x\n", pci_domain_nr(b), b->number);
+>>> +        break;
+>>> +    }
+>>> +}
+>>> +EXPORT_SYMBOL(pci_bridge_assign_resources);
+>>> +
+>>>  void __ref pci_bus_assign_resources(const struct pci_bus *bus)
+>>>  {
+>>>      struct pci_bus *b;
+>>> @@ -557,7 +621,8 @@ void __ref pci_bus_assign_resources(cons
+>>>  
+>>>          switch (dev->class >> 8) {
+>>>          case PCI_CLASS_BRIDGE_PCI:
+>>> -            pci_setup_bridge(b);
+>>> +            if (!pci_is_enabled(dev))
+>>> +                pci_setup_bridge(b);
+>>>              break;
+>>>  
+>>>          case PCI_CLASS_BRIDGE_CARDBUS:
+>>> Index: linux-2.6/include/linux/pci.h
+>>> ===================================================================
+>>> --- linux-2.6.orig/include/linux/pci.h
+>>> +++ linux-2.6/include/linux/pci.h
+>>> @@ -756,6 +756,7 @@ ssize_t pci_write_vpd(struct pci_dev *de
+>>>  int pci_vpd_truncate(struct pci_dev *dev, size_t size);
+>>>  
+>>>  /* Helper functions for low-level code
+>>> (drivers/pci/setup-[bus,res].c) */
+>>> +void pci_bridge_assign_resources(const struct pci_dev *bridge);
+>>>  void pci_bus_assign_resources(const struct pci_bus *bus);
+>>>  void pci_bus_size_bridges(struct pci_bus *bus);
+>>>  int pci_claim_resource(struct pci_dev *, int);
+>>>
+>> Does this patch work without [PATCH 2/2]? I don't understand who
+>> releases resouces? Does find_free_bus_resource() still release
+>> resources?
+> 
+> need to work with [2/2].
+> 
 
-This is a first stab at providing some general writeback tracing
-infrastructure. I'd like some input on whatever trace points you think
-would be interesting. The goal would be to ensure that we never again
-have to do debug printk() patches to trace this stuff.
+Ok. Could you rearrange the set of patches with the right pieces and 
+with the right order? It's very difficult for me to understand and
+review the current patches.
 
-Patch is against latest -git.
+By the way, is release_resource() in find_free_bus_resource() already
+removed?
 
-commit 607eadcebf9f137ec445cb9883312c821b37a3a7
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Thu Oct 29 10:54:00 2009 +0100
+Thanks,
+Kenji Kaneshige
 
-    writeback: initial tracing support
-    
-    Trace queue/sched/exec parts of the writeback loop.
-    
-    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 9d5360c..056dd07 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -25,7 +25,9 @@
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
- #include <linux/buffer_head.h>
-+#include <linux/ftrace.h>
- #include "internal.h"
-+#include <trace/events/writeback.h>
- 
- #define inode_to_bdi(inode)	((inode)->i_mapping->backing_dev_info)
- 
-@@ -34,33 +36,6 @@
-  */
- int nr_pdflush_threads;
- 
--/*
-- * Passed into wb_writeback(), essentially a subset of writeback_control
-- */
--struct wb_writeback_args {
--	long nr_pages;
--	struct super_block *sb;
--	enum writeback_sync_modes sync_mode;
--	int for_kupdate:1;
--	int range_cyclic:1;
--	int for_background:1;
--};
--
--/*
-- * Work items for the bdi_writeback threads
-- */
--struct bdi_work {
--	struct list_head list;		/* pending work list */
--	struct rcu_head rcu_head;	/* for RCU free/clear of work */
--
--	unsigned long seen;		/* threads that have seen this work */
--	atomic_t pending;		/* number of threads still to do work */
--
--	struct wb_writeback_args args;	/* writeback arguments */
--
--	unsigned long state;		/* flag bits, see WS_* */
--};
--
- enum {
- 	WS_USED_B = 0,
- 	WS_ONSTACK_B,
-@@ -135,6 +110,8 @@ static void wb_work_complete(struct bdi_work *work)
- 
- static void wb_clear_pending(struct bdi_writeback *wb, struct bdi_work *work)
- {
-+	trace_writeback_clear(work);
-+
- 	/*
- 	 * The caller has retrieved the work arguments from this work,
- 	 * drop our reference. If this is the last ref, delete and free it
-@@ -170,12 +147,16 @@ static void bdi_queue_work(struct backing_dev_info *bdi, struct bdi_work *work)
- 	 * If the default thread isn't there, make sure we add it. When
- 	 * it gets created and wakes up, we'll run this work.
- 	 */
--	if (unlikely(list_empty_careful(&bdi->wb_list)))
-+	if (unlikely(list_empty_careful(&bdi->wb_list))) {
-+		trace_writeback_sched(bdi, work, "default");
- 		wake_up_process(default_backing_dev_info.wb.task);
--	else {
-+	} else {
- 		struct bdi_writeback *wb = &bdi->wb;
-+		struct task_struct *task = wb->task;
- 
--		if (wb->task)
-+		trace_writeback_sched(bdi, work, task ? "task" : "notask");
-+
-+		if (task)
- 			wake_up_process(wb->task);
- 	}
- }
-@@ -202,6 +183,7 @@ static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
- 	work = kmalloc(sizeof(*work), GFP_ATOMIC);
- 	if (work) {
- 		bdi_work_init(work, args);
-+		trace_writeback_queue(bdi, args);
- 		bdi_queue_work(bdi, work);
- 	} else {
- 		struct bdi_writeback *wb = &bdi->wb;
-@@ -235,6 +217,7 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
- 	bdi_work_init(&work, &args);
- 	work.state |= WS_ONSTACK;
- 
-+	trace_writeback_queue(bdi, &args);
- 	bdi_queue_work(bdi, &work);
- 	bdi_wait_on_work_clear(&work);
- }
-@@ -901,6 +884,8 @@ long wb_do_writeback(struct bdi_writeback *wb, int force_wait)
- 		if (force_wait)
- 			work->args.sync_mode = args.sync_mode = WB_SYNC_ALL;
- 
-+		trace_writeback_exec(work);
-+
- 		/*
- 		 * If this isn't a data integrity operation, just notify
- 		 * that we have seen this work and we are now starting it.
-@@ -936,9 +921,13 @@ int bdi_writeback_task(struct bdi_writeback *wb)
- 	unsigned long wait_jiffies = -1UL;
- 	long pages_written;
- 
-+	trace_writeback_thread_start(1);
-+
- 	while (!kthread_should_stop()) {
- 		pages_written = wb_do_writeback(wb, 0);
- 
-+		trace_writeback_pages_written(pages_written);
-+
- 		if (pages_written)
- 			last_active = jiffies;
- 		else if (wait_jiffies != -1UL) {
-@@ -959,6 +948,8 @@ int bdi_writeback_task(struct bdi_writeback *wb)
- 		try_to_freeze();
- 	}
- 
-+	trace_writeback_thread_start(0);
-+
- 	return 0;
- }
- 
-diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-index 66ebddc..b12a077 100644
---- a/include/linux/writeback.h
-+++ b/include/linux/writeback.h
-@@ -22,6 +22,33 @@ enum writeback_sync_modes {
- };
- 
- /*
-+ * Passed into wb_writeback(), essentially a subset of writeback_control
-+ */
-+struct wb_writeback_args {
-+	long nr_pages;
-+	struct super_block *sb;
-+	enum writeback_sync_modes sync_mode;
-+	int for_kupdate:1;
-+	int range_cyclic:1;
-+	int for_background:1;
-+};
-+
-+/*
-+ * Work items for the bdi_writeback threads
-+ */
-+struct bdi_work {
-+	struct list_head list;		/* pending work list */
-+	struct rcu_head rcu_head;	/* for RCU free/clear of work */
-+
-+	unsigned long seen;		/* threads that have seen this work */
-+	atomic_t pending;		/* number of threads still to do work */
-+
-+	struct wb_writeback_args args;	/* writeback arguments */
-+
-+	unsigned long state;		/* flag bits, see WS_* */
-+};
-+
-+/*
-  * A control structure which tells the writeback code what to do.  These are
-  * always on the stack, and hence need no locking.  They are always initialised
-  * in a manner such that unspecified fields are set to zero.
-diff --git a/include/trace/events/writeback.h b/include/trace/events/writeback.h
-new file mode 100644
-index 0000000..d58c75b
---- /dev/null
-+++ b/include/trace/events/writeback.h
-@@ -0,0 +1,172 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM writeback
-+
-+#if !defined(_TRACE_WRITEBACK_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_WRITEBACK_H
-+
-+#include <linux/backing-dev.h>
-+#include <linux/writeback.h>
-+
-+TRACE_EVENT(writeback_queue,
-+
-+	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_args *args),
-+
-+	TP_ARGS(bdi, args),
-+
-+	TP_STRUCT__entry(
-+		__array(char,		name,		16)
-+		__field(long,		nr_pages)
-+		__field(int,		sb)
-+		__field(int,		sync_mode)
-+		__field(int,		for_kupdate)
-+		__field(int,		range_cyclic)
-+		__field(int,		for_background)
-+	),
-+
-+	TP_fast_assign(
-+		strncpy(__entry->name, dev_name(bdi->dev), 16);
-+		__entry->nr_pages	= args->nr_pages;
-+		__entry->sb		= !!args->sb;
-+		__entry->for_kupdate	= args->for_kupdate;
-+		__entry->range_cyclic	= args->range_cyclic;
-+		__entry->for_background	= args->for_background;
-+	),
-+
-+	TP_printk("%s: pages=%ld, sb=%d, kupdate=%d, range_cyclic=%d "
-+		  "for_background=%d", __entry->name, __entry->nr_pages,
-+			__entry->sb, __entry->for_kupdate,
-+			__entry->range_cyclic, __entry->for_background)
-+);
-+
-+TRACE_EVENT(writeback_sched,
-+
-+	TP_PROTO(struct backing_dev_info *bdi, struct bdi_work *work,
-+		 const char *msg),
-+
-+	TP_ARGS(bdi, work, msg),
-+
-+	TP_STRUCT__entry(
-+		__array(char,			name,		16)
-+		__field(unsigned int,		work)
-+		__array(char,			task,		8)
-+	),
-+
-+	TP_fast_assign(
-+		strncpy(__entry->name, dev_name(bdi->dev), 16);
-+		__entry->work = (unsigned long) work & 0xffff;
-+		snprintf(__entry->task, 8, "%s", msg);
-+	),
-+
-+	TP_printk("work=%x, task=%s", __entry->work, __entry->task)
-+);
-+
-+TRACE_EVENT(writeback_exec,
-+
-+	TP_PROTO(struct bdi_work *work),
-+
-+	TP_ARGS(work),
-+
-+	TP_STRUCT__entry(
-+		__field(unsigned int,	work)
-+		__field(long,		nr_pages)
-+		__field(int,		sb)
-+		__field(int,		sync_mode)
-+		__field(int,		for_kupdate)
-+		__field(int,		range_cyclic)
-+		__field(int,		for_background)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->work		= (unsigned long) work & 0xffff;
-+		__entry->nr_pages	= work->args.nr_pages;
-+		__entry->sb		= !!work->args.sb;
-+		__entry->for_kupdate	= work->args.for_kupdate;
-+		__entry->range_cyclic	= work->args.range_cyclic;
-+		__entry->for_background	= work->args.for_background;
-+
-+	),
-+
-+	TP_printk("work=%x pages=%ld, sb=%d, kupdate=%d, range_cyclic=%d"
-+		  " for_background=%d", __entry->work,
-+			__entry->nr_pages, __entry->sb, __entry->for_kupdate,
-+			__entry->range_cyclic, __entry->for_background)
-+);
-+
-+TRACE_EVENT(writeback_clear,
-+
-+	TP_PROTO(struct bdi_work *work),
-+
-+	TP_ARGS(work),
-+
-+	TP_STRUCT__entry(
-+		__field(struct bdi_work *,	work)
-+		__field(int,			refs)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->work		= work;
-+		__entry->refs		= atomic_read(&work->pending);
-+	),
-+
-+	TP_printk("work=%p, refs=%d", __entry->work, __entry->refs)
-+);
-+
-+TRACE_EVENT(writeback_pages_written,
-+
-+	TP_PROTO(long pages_written),
-+
-+	TP_ARGS(pages_written),
-+
-+	TP_STRUCT__entry(
-+		__field(long,		pages)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->pages		= pages_written;
-+	),
-+
-+	TP_printk("%ld", __entry->pages)
-+);
-+
-+
-+TRACE_EVENT(writeback_thread_start,
-+
-+	TP_PROTO(int start),
-+
-+	TP_ARGS(start),
-+
-+	TP_STRUCT__entry(
-+		__field(int,	start)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->start = start;
-+	),
-+
-+	TP_printk("%s", __entry->start ? "started" : "exited")
-+);
-+
-+TRACE_EVENT(writeback_bdi_register,
-+
-+	TP_PROTO(const char *name, int start),
-+
-+	TP_ARGS(name, start),
-+
-+	TP_STRUCT__entry(
-+		__array(char,	name,		16)
-+		__field(int,	start)
-+	),
-+
-+	TP_fast_assign(
-+		strncpy(__entry->name, name, 16);
-+		__entry->start = start;
-+	),
-+
-+	TP_printk("%s: %s", __entry->name,
-+			__entry->start ? "registered" : "unregistered")
-+);
-+
-+#endif /* _TRACE_WRITEBACK_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 5a37e20..4f53a6d 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -11,6 +11,9 @@
- #include <linux/writeback.h>
- #include <linux/device.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/writeback.h>
-+
- void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
- {
- }
-@@ -570,6 +573,7 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- 
- 	bdi_debug_register(bdi, dev_name(dev));
- 	set_bit(BDI_registered, &bdi->state);
-+	trace_writeback_bdi_register(dev_name(dev), 1);
- exit:
- 	return ret;
- }
-@@ -613,6 +617,7 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
- void bdi_unregister(struct backing_dev_info *bdi)
- {
- 	if (bdi->dev) {
-+		trace_writeback_bdi_register(dev_name(bdi->dev), 0);
- 		if (!bdi_cap_flush_forker(bdi))
- 			bdi_wb_shutdown(bdi);
- 		bdi_debug_unregister(bdi);
-
--- 
-Jens Axboe
 
