@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZJ2PKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZJ2PNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbZJ2PKz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbZJ2PKy
+	id S1755220AbZJ2PNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbZJ2PNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:10:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40217 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755160AbZJ2PKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:10:54 -0400
-Message-ID: <4AE9B090.9090107@kernel.org>
-Date: Thu, 29 Oct 2009 16:11:12 +0100
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 29 Oct 2009 11:13:17 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:56356 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754318AbZJ2PNQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:13:16 -0400
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci\@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>
+	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>
+	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>
+	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>
+	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>
+	<m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>
+	<m1eionia3y.fsf@fess.ebiederm.org> <4AE8A080.1040208@kernel.org>
+	<m1pr87cilf.fsf@fess.ebiederm.org> <4AE8BA1D.5030908@kernel.org>
+	<4AE8C4BF.8040306@kernel.org> <m1my3aboon.fsf@fess.ebiederm.org>
+	<1256822508.30701.41.camel@dc7800.home>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 29 Oct 2009 08:13:12 -0700
+In-Reply-To: <1256822508.30701.41.camel@dc7800.home> (Bjorn Helgaas's message of "Thu\, 29 Oct 2009 07\:21\:48 -0600")
+Message-ID: <m1bpjqb5dj.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Bug #14467] Linker errors on ia64 with NR_CPUS=4096
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.nnF.Cre5KB@chimera> <alpine.DEB.1.10.0910271623210.20363@V090114053VZO-1> <alpine.LSU.2.00.0910271922490.19847@wotan.suse.de> <alpine.DEB.1.10.0910291435420.18197@V090114053VZO-1> <4AE9AB23.8010207@kernel.org> <alpine.DEB.1.10.0910291455400.19555@V090114053VZO-1>
-In-Reply-To: <alpine.DEB.1.10.0910291455400.19555@V090114053VZO-1>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 29 Oct 2009, Tejun Heo wrote:
-> 
->> It's just for sched_init() which has irq off but is not really in
->> atomic context and does GFP_KERNEL allocations.  The following comment
->> has been added to the first patch to explain it.
-> 
-> Uhmm.. Is the page allocator available at that point? If you are
-> constricted to the reserved per cpu area then IA64 can still run out of
-> space if its booted with 4096 actual cpus.
+Bjorn Helgaas <bjorn.helgaas@hp.com> writes:
 
-sched_init() is after mm_init() so it should work.
+> On Thu, 2009-10-29 at 01:16 -0700, Eric W. Biederman wrote:
+>> Yinghai Lu <yinghai@kernel.org> writes:
+>> >
+>> > after closing look up the code, it looks it will not break your setup.
+>> >
+>> > 1. before the patches:
+>> > a. when master card is inserted, all bridge in that card will get assigned with min_size
+>> > b. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+>> >
+>> > 2. after the patches: v5
+>> > a. booted up, all leaf bridge mmio get clearred.
+>> > b. when master card is inserted, all bridge in that card will get assigned with min_size, and master bridge will be sum of them
+>> > c. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+>> >
+>> > can you check those two patches in your setup to verify it?
+>> 
+>> I have a much simpler case I will break, as I tried something similar by accident.
+>> 
+>> AMD cpu MCP55 with one pcie port setup as hotplug.
+>> The system only has 2GB of RAM.  So plenty of space for pcie devices.
+>> 
+>> If the firmware assigns nothing and linux at boot time assigns the pci mmio space:
+>> Reads from the bar of the hotplugged device work
+>> Writes to the bar of the hotplugged device, cause further writes to go to lala land.
+>> 
+>> So I had to have the firmware make the assignment, because only it knows the
+>> details of the hidden AMD bar registers for each hypertransport chain etc.
+>
+> Do you mean you had to have firmware program a hot-added device, or just
+> that firmware had to program the apertures of the root port that was
+> present at boot, even though it had no devices below it?
 
->> + * allocations are done using GFP_KERNEL with pcpu_lock released.  In
->> + * general, percpu memory can't be allocated with irq off but
->> + * irqsave/restore are still used in alloc path so that it can be used
->> + * from early init path - sched_init() specifically.
-> 
-> Maybe make the patch a bit more general so that it can operate in an
-> atomic context and handles gfp flags nicely?
+Firmware had to program the apertures of the root port that was present
+at boot, even though it had no devices below it.
 
-That would be nice but currently, we have no user which needs anything
-other than GFP_KERNEL although lack of users could have been caused by
-the lack of the functionality and the non-atomic irq disabled state is
-an exception case which is handled differently by might_sleep() too.
-So, I'm not sure whether adding GFP_* parameter would worth the
-effort.  Also, adding that is a bit too late for 2.6.32 at this point.
+> Firmware normally supplies ACPI _CRS information that tells us how it
+> programmed the host bridge windows.  On x86, Linux normally ignores that
+> and just assumes a range based on memory size.  If we paid attention to
+> it (as with "pci=use_crs"), it's likely that we could do a better job of
+> doing this setup.
+>
+> Or, of course, we could add a Linux driver that knows about "the hidden
+> AMD bar registers."  But I think that should be a last resort, for when
+> firmware supplied incorrect _CRS information.
 
-Thanks.
+In this case there was no ACPI, and even if there was correct _CRS information
+it would have said only those addresses routed to bars/apertures on the
+root bridge was routed to the MCP55.  So while it looked like we had gobs
+of unallocated space we could use.  In practice we did not.
 
--- 
-tejun
+Eric
