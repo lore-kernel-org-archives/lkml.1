@@ -1,110 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZJ2Khx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbZJ2Kse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbZJ2Khx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 06:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZJ2Khw
+	id S1754064AbZJ2Kse (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 06:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbZJ2Kse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 06:37:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:61880 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752550AbZJ2Khw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 06:37:52 -0400
-Date: Thu, 29 Oct 2009 11:36:58 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
+	Thu, 29 Oct 2009 06:48:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57029 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750810AbZJ2Ksd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 06:48:33 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX199U5V4s2l9NwxzkZjTySKqyuMDfJXJLPOpbhnhZZ
+	Mmiw/3UYhBnc/G
+Subject: Re: [patch] Re: [regression bisect -next] BUG: using
+ smp_processor_id() in preemptible [00000000] code: rmmod
+From: Mike Galbraith <efault@gmx.de>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       Marcelo Tosatti <mtosatti@redhat.com>, Adam Litke <agl@us.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: Transparent Hugepage support
-Message-ID: <20091029103658.GJ9640@random.random>
-References: <20091026185130.GC4868@random.random>
- <87ljiwk8el.fsf@basil.nowhere.org>
- <20091027193007.GA6043@random.random>
- <20091028042805.GJ7744@basil.fritz.box>
- <20091029094344.GA1068@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091029094344.GA1068@elte.hu>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, a.p.zijlstra@chello.nl, tglx@linutronix.de
+In-Reply-To: <1256807967.7158.58.camel@marge.simson.net>
+References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
+	 <1256805552.7158.22.camel@marge.simson.net>
+	 <20091029091411.GE22963@elte.hu>
+	 <1256807967.7158.58.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 29 Oct 2009 11:48:30 +0100
+Message-Id: <1256813310.7574.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo, Andi, everyone,
-
-On Thu, Oct 29, 2009 at 10:43:44AM +0100, Ingo Molnar wrote:
+On Thu, 2009-10-29 at 10:19 +0100, Mike Galbraith wrote:
+> On Thu, 2009-10-29 at 10:14 +0100, Ingo Molnar wrote:
 > 
-> * Andi Kleen <andi@firstfloor.org> wrote:
+> > hm, the problem is kthread_bind(). It is rummaging around in scheduler 
+> > internals without holding the runqueue lock - and this now got exposed. 
+> > Even though it is operating on (supposedly ...) inactive tasks, the guts 
+> > of that function should be moved into sched.c and it should be fixed to 
+> > have proper locking.
 > 
-> > > 1GB pages can't be handled by this code, and clearly it's not 
-> > > practical to hope 1G pages to materialize in the buddy (even if we
-> > 
-> > That seems short sightened. You do this because 2MB pages give you x% 
-> > performance advantage, but then it's likely that 1GB pages will give 
-> > another y% improvement and why should people stop at the smaller 
-> > improvement?
-> > 
-> > Ignoring the gigantic pages now would just mean that this would need 
-> > to be revised later again or that users still need to use hacks like 
-> > libhugetlbfs.
-> 
-> I've read the patch and have read through this discussion and you are 
-> missing the big point that it's best to do such things gradually - one 
-> step at a time.
-> 
-> Just like we went from 2 level pagetables to 3 level pagetables, then to 
-> 4 level pagetables - and we might go to 5 level pagetables in the 
-> future. We didnt go from 2 level pagetables to 5 level page tables in 
-> one go, despite predictions clearly pointing out the exponentially 
-> increasing need for RAM.
+> Yeah, I was thinking that nobody should ever be able to hit that without
+> it being a bug.. but wimped out.
 
-I totally agree with your assessment.
+How about so?
 
-> So your obsession with 1GB pages is misguided. If indeed transparent 
-> largepages give us real benefits we can extend it to do transparent 
-> gbpages as well - should we ever want to. There's nothing 'shortsighted' 
-> about being gradual - the change is already ambitious enough as-is, and 
-> brings very clear benefits to a difficult, decade-old problem no other 
-> person was able to address.
-> 
-> In fact introducing transparent 2MBpages makes 1GB pages support 
-> _easier_ to merge: as at that point we'll already have a (finally..) 
-> successful hugetlb facility happility used by an increasing range of 
-> applications.
+sched: Move the body of kthread_bind() to sched.c.
 
-Agreed.
+Eric Paris reported that commit f685ceacab07d3f6c236f04803e2f2f0dbcc5afb
+causes boot time PREEMPT_DEBUG complaints.
 
-> Hugetlbfs's big problem was always that it wasnt transparent and hence 
-> wasnt gradual for applications. It was an opt-in and constituted an 
-> interface/ABI change - that is always a big barrier to app adoption.
-> 
-> So i give Andrea's patch a very big thumbs up - i hope it gets reviewed 
-> in fine detail and added to -mm ASAP. Our lack of decent, automatic 
-> hugepage support is sticking out like a sore thumb and is hurting us in 
-> high-performance setups. If largepage support within Linux has a chance, 
-> this might be the way to do it.
+[    4.590699] BUG: using smp_processor_id() in preemptible [00000000] code: rmmod/1314
+[    4.593043] caller is task_hot+0x86/0xd0
+[    4.593872] Pid: 1314, comm: rmmod Tainted: G        W  2.6.32-rc3-fanotify #127
+[    4.595443] Call Trace:
+[    4.596177]  [<ffffffff812ad35b>] debug_smp_processor_id+0x11b/0x120
+[    4.597337]  [<ffffffff81051d66>] task_hot+0x86/0xd0
+[    4.598320]  [<ffffffff81066275>] set_task_cpu+0x115/0x270
+[    4.599368]  [<ffffffff810985ab>] kthread_bind+0x6b/0x100
+[    4.600354]  [<ffffffff810914f0>] start_workqueue_thread+0x30/0x60
+[    4.601545]  [<ffffffff810941dd>] __create_workqueue_key+0x18d/0x2f0
+[    4.602526]  [<ffffffff810d9bee>] stop_machine_create+0x4e/0xd0
+[    4.603811]  [<ffffffff810c5818>] sys_delete_module+0x98/0x250
+[    4.604922]  [<ffffffff810e2505>] ? audit_syscall_entry+0x205/0x290
+[    4.606202]  [<ffffffff81013202>] system_call_fastpath+0x16/0x1b
 
-Thanks a lot for your review!
+Since kthread_bind() messes with scheduler internals, move the body to sched.c,
+and lock the runqueue.
 
-> A small comment regarding the patch itself: i think it could be 
-> simplified further by eliminating CONFIG_TRANSPARENT_HUGEPAGE and by 
-> making it a natural feature of hugepage support. If the code is correct 
-> i cannot see any scenario under which i wouldnt want a hugepage enabled 
-> kernel i'm booting to not have transparent hugepage support as well.
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Reported-by: Eric Paris <eparis@redhat.com>
+LKML-Reference: <new-submission>
 
-The two reasons why I added a config option are:
+---
+ kernel/kthread.c |   15 ++++++---------
+ kernel/sched.c   |   31 +++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+), 9 deletions(-)
 
-1) because it was easy enough, gcc is smart enough to eliminate the
-external calls so I didn't need to add ifdefs with the exception of
-returning 0 from pmd_trans_huge and pmd_trans_frozen. I only had to
-make the exports of huge_memory.c visible unconditionally so it doesn't
-warn, after that I don't need to build and link huge_memory.o.
+Index: linux-2.6/kernel/kthread.c
+===================================================================
+--- linux-2.6.orig/kernel/kthread.c
++++ linux-2.6/kernel/kthread.c
+@@ -149,6 +149,8 @@ struct task_struct *kthread_create(int (
+ }
+ EXPORT_SYMBOL(kthread_create);
+ 
++extern void sched_kthread_bind(struct task_struct *k, unsigned int cpu);
++
+ /**
+  * kthread_bind - bind a just-created kthread to a cpu.
+  * @k: thread created by kthread_create().
+@@ -157,18 +159,13 @@ EXPORT_SYMBOL(kthread_create);
+  * Description: This function is equivalent to set_cpus_allowed(),
+  * except that @cpu doesn't need to be online, and the thread must be
+  * stopped (i.e., just returned from kthread_create()).
++ *
++ * The runqueue must be locked, ergo move the body if this function
++ * to sched.c
+  */
+ void kthread_bind(struct task_struct *k, unsigned int cpu)
+ {
+-	/* Must have done schedule() in kthread() before we set_task_cpu */
+-	if (!wait_task_inactive(k, TASK_UNINTERRUPTIBLE)) {
+-		WARN_ON(1);
+-		return;
+-	}
+-	set_task_cpu(k, cpu);
+-	k->cpus_allowed = cpumask_of_cpu(cpu);
+-	k->rt.nr_cpus_allowed = 1;
+-	k->flags |= PF_THREAD_BOUND;
++	sched_kthread_bind(k, cpu);
+ }
+ EXPORT_SYMBOL(kthread_bind);
+ 
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -2063,6 +2063,37 @@ void set_task_cpu(struct task_struct *p,
+ 	__set_task_cpu(p, new_cpu);
+ }
+ 
++/**
++ * sched_kthread_bind - bind a just-created kthread to a cpu.
++ * @k: thread created by kthread_create().
++ * @cpu: cpu (might not be online, must be possible) for @k to run on.
++ *
++ * Description: This function is equivalent to set_cpus_allowed(),
++ * except that @cpu doesn't need to be online, and the thread must be
++ * stopped (i.e., just returned from kthread_create()).
++ *
++ * Function lives here instead of kthread.c because it messes with
++ * scheduler internals which require locking.
++ */
++void sched_kthread_bind(struct task_struct *p, unsigned int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++	unsigned long flags;
++
++	/* Must have done schedule() in kthread() before we set_task_cpu */
++	if (!wait_task_inactive(p, TASK_UNINTERRUPTIBLE)) {
++		WARN_ON(1);
++		return;
++	}
++
++	spin_lock_irqsave(&rq->lock, flags);
++	set_task_cpu(p, cpu);
++	p->cpus_allowed = cpumask_of_cpu(cpu);
++	p->rt.nr_cpus_allowed = 1;
++	p->flags |= PF_THREAD_BOUND;
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
+ struct migration_req {
+ 	struct list_head list;
+ 
 
-2) to avoid breaking build of archs not implementing pmd_trans_huge
-and that may never be able to take advantage of it
 
-But we could move CONFIG_TRANSPARENT_HUGEPAGE to an arch define forced
-to Y on x86-64 and N on power.
