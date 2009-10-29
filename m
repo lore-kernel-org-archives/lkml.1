@@ -1,127 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZJ2QuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbZJ2Quh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755753AbZJ2QuN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZJ2QuM
+	id S1755864AbZJ2Quh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbZJ2Quf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:50:12 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:34023 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752703AbZJ2QuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:50:10 -0400
-Message-ID: <4AE9C7BF.3060509@sgi.com>
-Date: Thu, 29 Oct 2009 09:50:07 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 29 Oct 2009 12:50:35 -0400
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:41438
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755804AbZJ2Qud (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:50:33 -0400
+X-SpamScore: -12
+X-BigFish: VPS-12(z21eWzzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KSAC42-03-DYH-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@redhat.com>
+CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: [GIT PULL] IOMMU updates for 2.6.32-rc5
+Date: Thu, 29 Oct 2009 17:50:08 +0100
+Message-ID: <1256835012-31410-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.5
+X-OriginalArrivalTime: 29 Oct 2009 16:50:17.0652 (UTC) FILETIME=[E4EDA740:01CA58B7]
 MIME-Version: 1.0
-To: Andrea Arcangeli <aarcange@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       linux-mm@kvack.org, Marcelo Tosatti <mtosatti@redhat.com>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       Izik Eidus <ieidus@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Karl Feind <kaf@sgi.com>, Jack Steiner <steiner@sgi.com>
-Subject: Re: RFC: Transparent Hugepage support
-References: <20091026185130.GC4868@random.random> <87ljiwk8el.fsf@basil.nowhere.org> <20091027193007.GA6043@random.random> <20091028042805.GJ7744@basil.fritz.box> <20091029094344.GA1068@elte.hu> <20091029103658.GJ9640@random.random>
-In-Reply-To: <20091029103658.GJ9640@random.random>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrea,
+Hi Ingo,
 
-I will find some time soon to test out your patch on a
-(relatively) huge machine and let you know the results.
+The following changes since commit 012abeea669ea49636cf952d13298bb68654146a:
+  Linus Torvalds (1):
+        Linux 2.6.32-rc5
 
-The memory size on this machine:
+are available in the git repository at:
 
-	480,700,399,616 bytes of system memory tested OK
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu/fixes
 
-This translates to ~240k available 2Mb pages.
+Joerg Roedel (4):
+      x86/amd-iommu: Workaround for erratum 63
+      x86/amd-iommu: Un__init function required on shutdown
+      dma-debug: Fix compile warning with PAE enabled
+      Merge branches 'amd-iommu/fixes', 'dma-debug/fixes' and 'gart/fixes' into iommu/fixes
 
-Thanks,
-Mike
+Pavel Vasilyev (1):
+      agp/amd64: Remove GART dependency on AGP_AMD64
 
-Andrea Arcangeli wrote:
-> Hello Ingo, Andi, everyone,
-> 
-> On Thu, Oct 29, 2009 at 10:43:44AM +0100, Ingo Molnar wrote:
->> * Andi Kleen <andi@firstfloor.org> wrote:
->>
->>>> 1GB pages can't be handled by this code, and clearly it's not 
->>>> practical to hope 1G pages to materialize in the buddy (even if we
->>> That seems short sightened. You do this because 2MB pages give you x% 
->>> performance advantage, but then it's likely that 1GB pages will give 
->>> another y% improvement and why should people stop at the smaller 
->>> improvement?
->>>
->>> Ignoring the gigantic pages now would just mean that this would need 
->>> to be revised later again or that users still need to use hacks like 
->>> libhugetlbfs.
->> I've read the patch and have read through this discussion and you are 
->> missing the big point that it's best to do such things gradually - one 
->> step at a time.
->>
->> Just like we went from 2 level pagetables to 3 level pagetables, then to 
->> 4 level pagetables - and we might go to 5 level pagetables in the 
->> future. We didnt go from 2 level pagetables to 5 level page tables in 
->> one go, despite predictions clearly pointing out the exponentially 
->> increasing need for RAM.
-> 
-> I totally agree with your assessment.
-> 
->> So your obsession with 1GB pages is misguided. If indeed transparent 
->> largepages give us real benefits we can extend it to do transparent 
->> gbpages as well - should we ever want to. There's nothing 'shortsighted' 
->> about being gradual - the change is already ambitious enough as-is, and 
->> brings very clear benefits to a difficult, decade-old problem no other 
->> person was able to address.
->>
->> In fact introducing transparent 2MBpages makes 1GB pages support 
->> _easier_ to merge: as at that point we'll already have a (finally..) 
->> successful hugetlb facility happility used by an increasing range of 
->> applications.
-> 
-> Agreed.
-> 
->> Hugetlbfs's big problem was always that it wasnt transparent and hence 
->> wasnt gradual for applications. It was an opt-in and constituted an 
->> interface/ABI change - that is always a big barrier to app adoption.
->>
->> So i give Andrea's patch a very big thumbs up - i hope it gets reviewed 
->> in fine detail and added to -mm ASAP. Our lack of decent, automatic 
->> hugepage support is sticking out like a sore thumb and is hurting us in 
->> high-performance setups. If largepage support within Linux has a chance, 
->> this might be the way to do it.
-> 
-> Thanks a lot for your review!
-> 
->> A small comment regarding the patch itself: i think it could be 
->> simplified further by eliminating CONFIG_TRANSPARENT_HUGEPAGE and by 
->> making it a natural feature of hugepage support. If the code is correct 
->> i cannot see any scenario under which i wouldnt want a hugepage enabled 
->> kernel i'm booting to not have transparent hugepage support as well.
-> 
-> The two reasons why I added a config option are:
-> 
-> 1) because it was easy enough, gcc is smart enough to eliminate the
-> external calls so I didn't need to add ifdefs with the exception of
-> returning 0 from pmd_trans_huge and pmd_trans_frozen. I only had to
-> make the exports of huge_memory.c visible unconditionally so it doesn't
-> warn, after that I don't need to build and link huge_memory.o.
-> 
-> 2) to avoid breaking build of archs not implementing pmd_trans_huge
-> and that may never be able to take advantage of it
-> 
-> But we could move CONFIG_TRANSPARENT_HUGEPAGE to an arch define forced
-> to Y on x86-64 and N on power.
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+ arch/x86/include/asm/amd_iommu.h |    1 +
+ arch/x86/kernel/amd_iommu.c      |    2 ++
+ arch/x86/kernel/amd_iommu_init.c |   24 +++++++++++++++++++++++-
+ drivers/char/agp/Kconfig         |    3 +--
+ lib/dma-debug.c                  |    6 ++++--
+ 5 files changed, 31 insertions(+), 5 deletions(-)
+
+The patches contain two important fixes for the AMD IOMMU driver (one
+erratum workaround and a section mismatch that only shows when the
+compiler does not inline the iommu_feature_disable function).
+Also included in this pull request is da dma-debug fix for a compilation
+warning on 32bit with PAE enabled and a previously missed patch which
+removes the build dependency between GART and AGP_AMD64 code.
+Please pull.
+
+	Joerg
+
+
