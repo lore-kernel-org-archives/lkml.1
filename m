@@ -1,104 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZJ2BH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZJ2BLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbZJ2BH5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 21:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbZJ2BH4
+	id S1756182AbZJ2BLw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 21:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbZJ2BLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 21:07:56 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41669 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756086AbZJ2BH4 (ORCPT
+	Wed, 28 Oct 2009 21:11:51 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:36912 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756116AbZJ2BLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 21:07:56 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 29 Oct 2009 10:05:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       Lee.Schermerhorn@hp.com,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH] memcg: fix wrong pointer initialization at page
- migration when memcg is disabled.
-Message-Id: <20091029100530.c8bafc53.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091029095051.7812e5ad.nishimura@mxp.nes.nec.co.jp>
-References: <20091029093013.cd58f3a5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091029095051.7812e5ad.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Oct 2009 21:11:51 -0400
+Message-ID: <4AE8EBCB.5030102@canonical.com>
+Date: Thu, 29 Oct 2009 09:11:39 +0800
+From: Bryan Wu <bryan.wu@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Brian Swetland <swetland@google.com>, Eric Miao <eric.miao@canonical.com>,
+       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Staging: Android logger: fix compiling error
+References: <1256316741-14053-1-git-send-email-bryan.wu@canonical.com> <f17812d70910262140i63e4d2f0x708521a9287ca386@mail.gmail.com> <20091027140558.GA17208@suse.de> <4AE8E953.6090504@canonical.com> <20091029010419.GA18410@suse.de>
+In-Reply-To: <20091029010419.GA18410@suse.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Oct 2009 09:50:51 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > Index: linux-2.6.32-rc5/mm/memcontrol.c
-> > ===================================================================
-> > --- linux-2.6.32-rc5.orig/mm/memcontrol.c
-> > +++ linux-2.6.32-rc5/mm/memcontrol.c
-> > @@ -1990,7 +1990,8 @@ int mem_cgroup_prepare_migration(struct 
-> >  	struct page_cgroup *pc;
-> >  	struct mem_cgroup *mem = NULL;
-> >  	int ret = 0;
-> > -
-> > +	/* this pointer will be checked at end_migration */
-> > +	*ptr = NULL;
-> >  	if (mem_cgroup_disabled())
-> >  		return 0;
-> >  
-> > 
-> I thought unmap_and_move() itself initializes "mem" to NULL, but it doesn't...
-> I personaly prefer initializing "mem" to NULL in unmap_and_move(), but anyway
-> I think this patch is also correct.
+Greg KH wrote:
+> On Thu, Oct 29, 2009 at 09:01:07AM +0800, Bryan Wu wrote:
+>> Greg KH wrote:
+>>> On Tue, Oct 27, 2009 at 12:40:07PM +0800, Eric Miao wrote:
+>>>>> Compiling broke since commit a99bbaf5ee6bad1aca0c88ea65ec6e5373e86184
+>>>>>    headers: remove sched.h from poll.h
+>>>>>
+>>>>> Adding <linux/sched.h> to fix this compiling bug.
+>>> I have now just marked the android drivers as broken, as this is not the
+>>> only build error in them at the moment :(
+>>>
+>> Yeah, actually the drivers/staging/android/lowmemorykiller.c has been
+>> failing to compile for a long time, because that struct mm_struct does
+>> not have a field named oom_adj. All the Android drivers are compiled
+>> as modules in Ubuntu kernel package, except this one.
+>>
+>> Although Android public kernel is still in 2.6.29, it's own driver is
+>> totally different with our mainline staging version. Is there any plan
+>> to sync with it?
 > 
-> 	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> No, Google has abandoned any current effort to push code upstream for
+> the past year :(
 > 
-Ok, here
-> And I think we should send a fix for this bug to -stable too.
-I think so, too.
+> The android drivers are deleted in linux-next and will go away in 2.6.33
+> because of this.
+> 
 
+Thanks a lot for this update. It looks like we need to consider to drop Android 
+modules in our Ubuntu kernel building somehow.
 
-==
-Lee Schermerhorn reported that he saw bad pointer dereference
-in mem_cgroup_end_migration() when he disabled memcg by boot option.
-
-memcg's page migration logic works as
-
-	mem_cgroup_prepare_migration(page, &ptr);
-	do page migration
-	mem_cgroup_end_migration(page, ptr);
-
-Now, ptr is not initialized when memcg is disabled by boot option.
-This patch fixes it.
-
-Changelog: 2009/10/29
- - modified "fix" from memcontrol.c to migrate.c
-
-
-Reported-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Balbir Singh <balbir@in.ibm.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/migrate.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.32-rc5/mm/migrate.c
-===================================================================
---- linux-2.6.32-rc5.orig/mm/migrate.c
-+++ linux-2.6.32-rc5/mm/migrate.c
-@@ -602,7 +602,7 @@ static int unmap_and_move(new_page_t get
- 	struct page *newpage = get_new_page(page, private, &result);
- 	int rcu_locked = 0;
- 	int charge = 0;
--	struct mem_cgroup *mem;
-+	struct mem_cgroup *mem = NULL;
- 
- 	if (!newpage)
- 		return -ENOMEM;
-
+Cheers,
+-Bryan
