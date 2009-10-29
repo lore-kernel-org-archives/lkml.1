@@ -1,85 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZJ2BxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbZJ2BxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbZJ2BxQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 21:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZJ2BxO
+	id S1756256AbZJ2BxR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 21:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbZJ2BxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 21:53:14 -0400
-Received: from mga09.intel.com ([134.134.136.24]:60455 "EHLO mga09.intel.com"
+	Wed, 28 Oct 2009 21:53:12 -0400
+Received: from mga11.intel.com ([192.55.52.93]:57859 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755033AbZJ2BxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754925AbZJ2BxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Oct 2009 21:53:09 -0400
 X-ExtLoop1: 1
-Message-Id: <20091029024821.080941108@sbs-t61.sc.intel.com>
+Message-Id: <20091029024821.164525222@sbs-t61.sc.intel.com>
 User-Agent: quilt/0.47-1
-Date: Wed, 28 Oct 2009 18:46:57 -0800
+Date: Wed, 28 Oct 2009 18:46:58 -0800
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: mingo@elte.hu, hpa@zytor.com, linux-kernel@vger.kernel.org
 Cc: Steven Rostedt <rostedt@goodmis.org>,
        Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 2/3] x86_64, ftrace: make ftrace use kernel identity mapping to modify code
+Subject: [patch 3/3] x86_64, cpa: use only text section in set_kernel_text_rw/ro
 References: <20091029024820.996634347@sbs-t61.sc.intel.com>
-Content-Disposition: inline; filename=fix_ftrace_rodata.patch
+Content-Disposition: inline; filename=fix_kernel_text_ro_rw.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On x86_64, kernel text mappings are mapped read-only with CONFIG_DEBUG_RODATA.
-So use the kernel identity mapping instead of the kernel text mapping to modify
-the kernel text.
+set_kernel_text_rw()/set_kernel_text_ro() are marking pages starting
+from _text to __start_rodata as RW or RO.
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Tested-by: Steven Rostedt <rostedt@goodmis.org>
+With CONFIG_DEBUG_RODATA, there might be free pages (associated with
+padding the sections to 2MB large page boundary) between text
+and rodata sections that are given back to page allocator. So we should
+use only use the start (__text) and end (__stop___ex_table) of the
+text section in set_kernel_text_rw()/set_kernel_text_ro().
+
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
- arch/x86/kernel/ftrace.c |   17 +++++++++++++++++
- arch/x86/mm/pageattr.c   |    3 +--
- 2 files changed, 18 insertions(+), 2 deletions(-)
+ arch/x86/mm/init_64.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-Index: tip/arch/x86/kernel/ftrace.c
+Index: tip/arch/x86/mm/init_64.c
 ===================================================================
---- tip.orig/arch/x86/kernel/ftrace.c
-+++ tip/arch/x86/kernel/ftrace.c
-@@ -189,9 +189,26 @@ static void wait_for_nmi(void)
- 	nmi_wait_count++;
+--- tip.orig/arch/x86/mm/init_64.c
++++ tip/arch/x86/mm/init_64.c
+@@ -700,7 +700,7 @@ int kernel_set_to_readonly;
+ void set_kernel_text_rw(void)
+ {
+ 	unsigned long start = PFN_ALIGN(_text);
+-	unsigned long end = PFN_ALIGN(__start_rodata);
++	unsigned long end = PFN_ALIGN(__stop___ex_table);
+ 
+ 	if (!kernel_set_to_readonly)
+ 		return;
+@@ -708,13 +708,18 @@ void set_kernel_text_rw(void)
+ 	pr_debug("Set kernel text: %lx - %lx for read write\n",
+ 		 start, end);
+ 
++	/*
++	 * Make the kernel identity mapping for text RW. Kernel text
++	 * mapping will always be RO. Refer to the comment in
++	 * static_protections() in pageattr.c
++	 */
+ 	set_memory_rw(start, (end - start) >> PAGE_SHIFT);
  }
  
-+static inline int
-+within(unsigned long addr, unsigned long start, unsigned long end)
-+{
-+	return addr >= start && addr < end;
-+}
-+
- static int
- do_ftrace_mod_code(unsigned long ip, void *new_code)
+ void set_kernel_text_ro(void)
  {
+ 	unsigned long start = PFN_ALIGN(_text);
+-	unsigned long end = PFN_ALIGN(__start_rodata);
++	unsigned long end = PFN_ALIGN(__stop___ex_table);
+ 
+ 	if (!kernel_set_to_readonly)
+ 		return;
+@@ -722,6 +727,9 @@ void set_kernel_text_ro(void)
+ 	pr_debug("Set kernel text: %lx - %lx for read only\n",
+ 		 start, end);
+ 
 +	/*
-+	 * On x86_64, kernel text mappings are mapped read-only with
-+	 * CONFIG_DEBUG_RODATA. So we use the kernel identity mapping instead
-+	 * of the kernel text mapping to modify the kernel text.
-+	 *
-+	 * For 32bit kernels, these mappings are same and we can use
-+	 * kernel identity mapping to modify code.
-+	 */
-+	if (within(ip, (unsigned long)_text, (unsigned long)_etext))
-+		ip = (unsigned long)__va(__pa(ip));
-+
- 	mod_code_ip = (void *)ip;
- 	mod_code_newcode = new_code;
++ 	 * Set the kernel identity mapping for text RO.
++ 	 */
+ 	set_memory_ro(start, (end - start) >> PAGE_SHIFT);
+ }
  
-Index: tip/arch/x86/mm/pageattr.c
-===================================================================
---- tip.orig/arch/x86/mm/pageattr.c
-+++ tip/arch/x86/mm/pageattr.c
-@@ -279,8 +279,7 @@ static inline pgprot_t static_protection
- 		   __pa((unsigned long)__end_rodata) >> PAGE_SHIFT))
- 		pgprot_val(forbidden) |= _PAGE_RW;
- 
--#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA) && \
--	!defined(CONFIG_DYNAMIC_FTRACE)
-+#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
- 	/*
- 	 * Once the kernel maps the text as RO (kernel_set_to_readonly is set),
- 	 * kernel text mappings for the large page aligned text, rodata sections
 
 
