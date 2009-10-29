@@ -1,130 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZJ2BDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZJ2BBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbZJ2BDM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 21:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZJ2BDL
+	id S1756146AbZJ2BBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 21:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbZJ2BBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 21:03:11 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41453 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756037AbZJ2BDK (ORCPT
+	Wed, 28 Oct 2009 21:01:22 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:45856 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756029AbZJ2BBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 21:03:10 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 29 Oct 2009 10:00:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "David Rientjes" <rientjes@google.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "Andrea Arcangeli" <aarcange@redhat.com>, vedran.furac@gmail.com,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-Message-Id: <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
-References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
-	<abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Oct 2009 21:01:21 -0400
+Message-ID: <4AE8E953.6090504@canonical.com>
+Date: Thu, 29 Oct 2009 09:01:07 +0800
+From: Bryan Wu <bryan.wu@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>, Brian Swetland <swetland@google.com>
+CC: Eric Miao <eric.miao@canonical.com>, kernel-team@lists.ubuntu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Staging: Android logger: fix compiling error
+References: <1256316741-14053-1-git-send-email-bryan.wu@canonical.com> <f17812d70910262140i63e4d2f0x708521a9287ca386@mail.gmail.com> <20091027140558.GA17208@suse.de>
+In-Reply-To: <20091027140558.GA17208@suse.de>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'll wait until the next week to post a new patch.
-> We don't need rapid way.
+Greg KH wrote:
+> On Tue, Oct 27, 2009 at 12:40:07PM +0800, Eric Miao wrote:
+>>> Compiling broke since commit a99bbaf5ee6bad1aca0c88ea65ec6e5373e86184
+>>>    headers: remove sched.h from poll.h
+>>>
+>>> Adding <linux/sched.h> to fix this compiling bug.
 > 
-I wrote above...but for my mental health, this is bug-fixed version.
-Sorry for my carelessness. David, thank you for your review.
-Regards,
--Kame
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> I have now just marked the android drivers as broken, as this is not the
+> only build error in them at the moment :(
+> 
 
-It's reported that OOM-Killer kills Gnone/KDE at first...
-And yes, we can reproduce it easily.
+Yeah, actually the drivers/staging/android/lowmemorykiller.c has been failing to compile for a long 
+time, because that struct mm_struct does not have a field named oom_adj. All the Android drivers are 
+compiled as modules in Ubuntu kernel package, except this one.
 
-Now, oom-killer uses mm->total_vm as its base value. But in recent
-applications, there are a big gap between VM size and RSS size.
-Because
-  - Applications attaches much dynamic libraries. (Gnome, KDE, etc...)
-  - Applications may alloc big VM area but use small part of them.
-    (Java, and multi-threaded applications has this tendency because
-     of default-size of stack.)
+Although Android public kernel is still in 2.6.29, it's own driver is totally different with our 
+mainline staging version. Is there any plan to sync with it?
 
-I think using mm->total_vm as score for oom-kill is not good.
-By the same reason, overcommit memory can't work as expected.
-(In other words, if we depends on total_vm, using overcommit more positive
- is a good choice.)
-
-This patch uses mm->anon_rss/file_rss as base value for calculating badness.
-
-Following is changes to OOM score(badness) on an environment with 1.6G memory
-plus memory-eater(500M & 1G).
-
-Top 10 of badness score. (The highest one is the first candidate to be killed)
-Before
-badness program
-91228	gnome-settings-
-94210	clock-applet
-103202	mixer_applet2
-106563	tomboy
-112947	gnome-terminal
-128944	mmap              <----------- 500M malloc
-129332	nautilus
-215476	bash              <----------- parent of 2 mallocs.
-256944	mmap              <----------- 1G malloc
-423586	gnome-session
-
-After
-badness 
-1911	mixer_applet2
-1955	clock-applet
-1986	xinit
-1989	gnome-session
-2293	nautilus
-2955	gnome-terminal
-4113	tomboy
-104163	mmap             <----------- 500M malloc.
-168577	bash             <----------- parent of 2 mallocs
-232375	mmap             <----------- 1G malloc
-
-seems good for me. Maybe we can tweak this patch more,
-but this one will be a good one as a start point.
-
-Changelog: 2009/10/29
- - use get_mm_rss() instead of get_mm_counter()
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/oom_kill.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: mm-test-kernel/mm/oom_kill.c
-===================================================================
---- mm-test-kernel.orig/mm/oom_kill.c
-+++ mm-test-kernel/mm/oom_kill.c
-@@ -93,7 +93,7 @@ unsigned long badness(struct task_struct
- 	/*
- 	 * The memory size of the process is the basis for the badness.
- 	 */
--	points = mm->total_vm;
-+	points = get_mm_rss(mm);
- 
- 	/*
- 	 * After this unlock we can no longer dereference local variable `mm'
-@@ -117,7 +117,7 @@ unsigned long badness(struct task_struct
- 	list_for_each_entry(child, &p->children, sibling) {
- 		task_lock(child);
- 		if (child->mm != mm && child->mm)
--			points += child->mm->total_vm/2 + 1;
-+			points += get_mm_rss(child->mm)/2 + 1;
- 		task_unlock(child);
- 	}
- 
-
-
+Thanks,
+-Bryan
