@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZJ2QsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbZJ2Qsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbZJ2QsP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbZJ2QsO
+	id S1755735AbZJ2Qsj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbZJ2Qsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:48:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:26703 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755495AbZJ2QsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:48:14 -0400
-Message-ID: <4AE9C74C.2040309@redhat.com>
-Date: Thu, 29 Oct 2009 12:48:12 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for October 29 (x86 posttest)
-References: <20091029182919.4d6ec52c.sfr@canb.auug.org.au> <20091029090627.7857ed08.rdunlap@xenotime.net>
-In-Reply-To: <20091029090627.7857ed08.rdunlap@xenotime.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 29 Oct 2009 12:48:38 -0400
+Received: from outbound-mail-27.bluehost.com ([69.89.17.193]:51156 "HELO
+	outbound-mail-27.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755678AbZJ2Qsh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:48:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=VadQM9gqnUVHKcIsJYYtAHAD/bbWtXdvXfjIm/b8yBH7RJRSXUbGyxbXXgFSO8Yug7wxH7rcseWfQ/2EcfGonqE30bK5YW+9sQDnTRTLDstPnqsCNx7mQCTWEse8trnT;
+Date: Thu, 29 Oct 2009 09:48:39 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Tom Long Nguyen <tom.l.nguyen@intel.com>,
+       Zhang Yanmin <yanmin.zhang@intel.com>, linux-kernel@vger.kernel.org,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Huong_Nguyen@dell.com
+Subject: Re: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
+Message-ID: <20091029094839.143186ac@jbarnes-g45>
+In-Reply-To: <20091029141559.GB13809@auslistsprd01.us.dell.com>
+References: <20091006173311.GA15751@auslistsprd01.us.dell.com>
+	<4ACEE220.1020705@jp.fujitsu.com>
+	<20091009182810.GB24889@mock.linuxdev.us.dell.com>
+	<20091009183319.GC24889@mock.linuxdev.us.dell.com>
+	<20091029141559.GB13809@auslistsprd01.us.dell.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Thu, 29 Oct 2009 18:29:19 +1100 Stephen Rothwell wrote:
->
->> Hi all,
->>
->> [I accidentally deleted my merge log today, so sorry to anyone who
->> actually reads them :-), the summary still appears below.]
->
->
-> I'm getting this on x86_64:
->
->    TEST    posttest
-> Error: ffffffff810299e2:	f2 41 0f 28 52 b0    	repnz movaps -0x50(%r10),%xmm2
-> Error: objdump says 6 bytes, but insn_get_length() says 4 (attr:0)
-> make[2]: *** [posttest] Error 2
+On Thu, 29 Oct 2009 09:15:59 -0500
+Matt Domsch <Matt_Domsch@dell.com> wrote:
 
-Ah, that's should be fixed by AVX support patch which I've posted.
-http://git.kernel.org/tip/e0e492e99b372c6990a5daca9e4683c341f1330e
+> On Fri, Oct 09, 2009 at 01:33:20PM -0500, Matt Domsch wrote:
+> > For review and comment.  Feedback from Hidetoshi Seto and Kenji
+> > Kaneshige incorporated.
+> 
+> With no more comments received, I would like to see this applied.
 
-Thank you,
+Kenji-san and Hidetoshi-san, are you ok with me adding your Reviewed-by
+tags to this patch?
 
-
+Thanks,
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Jesse Barnes, Intel Open Source Technology Center
