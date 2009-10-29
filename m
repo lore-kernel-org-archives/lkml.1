@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbZJ2Que@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZJ2Qui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbZJ2Que (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbZJ2Que
+	id S1755873AbZJ2Qui (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZJ2Qug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:50:34 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:1294 "EHLO
-	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755805AbZJ2Quc (ORCPT
+	Thu, 29 Oct 2009 12:50:36 -0400
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:41438
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755768AbZJ2Qud (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:50:32 -0400
+	Thu, 29 Oct 2009 12:50:33 -0400
 X-SpamScore: -2
 X-BigFish: VPS-2(zz936eMzz1202hzzz32i6bh43j62h)
 X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KSAC40-04-FK3-02
+X-WSS-ID: 0KSAC3U-04-FJY-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@redhat.com>
 CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        Joerg Roedel <joerg.roedel@amd.com>, stable@kernel.org
-Subject: [PATCH 1/4] x86/amd-iommu: Workaround for erratum 63
-Date: Thu, 29 Oct 2009 17:50:09 +0100
-Message-ID: <1256835012-31410-2-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 2/4] x86/amd-iommu: Un__init function required on shutdown
+Date: Thu, 29 Oct 2009 17:50:10 +0100
+Message-ID: <1256835012-31410-3-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.5
 In-Reply-To: <1256835012-31410-1-git-send-email-joerg.roedel@amd.com>
 References: <1256835012-31410-1-git-send-email-joerg.roedel@amd.com>
@@ -33,87 +33,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is an erratum for IOMMU hardware which documents
-undefined behavior when forwarding SMI requests from
-peripherals and the DTE of that peripheral has a sysmgt
-value of 01b. This problem caused weird IO_PAGE_FAULTS in my
-case.
-This patch implements the suggested workaround for that
-erratum into the AMD IOMMU driver.  The erratum is
-documented with number 63.
+The function iommu_feature_disable is required on system
+shutdown to disable the IOMMU but it is marked as __init.
+This may result in a panic if the memory is reused. This
+patch fixes this bug.
 
 Cc: stable@kernel.org
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/amd_iommu.h |    1 +
- arch/x86/kernel/amd_iommu.c      |    2 ++
- arch/x86/kernel/amd_iommu_init.c |   22 ++++++++++++++++++++++
- 3 files changed, 25 insertions(+), 0 deletions(-)
+ arch/x86/kernel/amd_iommu_init.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/amd_iommu.h b/arch/x86/include/asm/amd_iommu.h
-index bdf96f1..9dbd403 100644
---- a/arch/x86/include/asm/amd_iommu.h
-+++ b/arch/x86/include/asm/amd_iommu.h
-@@ -30,6 +30,7 @@ extern irqreturn_t amd_iommu_int_handler(int irq, void *data);
- extern void amd_iommu_flush_all_domains(void);
- extern void amd_iommu_flush_all_devices(void);
- extern void amd_iommu_shutdown(void);
-+extern void amd_iommu_apply_erratum_63(u16 devid);
- #else
- static inline int amd_iommu_init(void) { return -ENODEV; }
- static inline void amd_iommu_detect(void) { }
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 6c99f50..f95dfe5 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -1114,6 +1114,8 @@ static void __detach_device(struct protection_domain *domain, u16 devid)
- 	amd_iommu_dev_table[devid].data[1] = 0;
- 	amd_iommu_dev_table[devid].data[2] = 0;
- 
-+	amd_iommu_apply_erratum_63(devid);
-+
- 	/* decrease reference counter */
- 	domain->dev_cnt -= 1;
- 
 diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index c1b17e9..498c8c7 100644
+index 498c8c7..1e423b2 100644
 --- a/arch/x86/kernel/amd_iommu_init.c
 +++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -509,6 +509,26 @@ static void set_dev_entry_bit(u16 devid, u8 bit)
- 	amd_iommu_dev_table[devid].data[i] |= (1 << _bit);
+@@ -240,7 +240,7 @@ static void iommu_feature_enable(struct amd_iommu *iommu, u8 bit)
+ 	writel(ctrl, iommu->mmio_base + MMIO_CONTROL_OFFSET);
  }
  
-+static int get_dev_entry_bit(u16 devid, u8 bit)
-+{
-+	int i = (bit >> 5) & 0x07;
-+	int _bit = bit & 0x1f;
-+
-+	return (amd_iommu_dev_table[devid].data[i] & (1 << _bit)) >> _bit;
-+}
-+
-+
-+void amd_iommu_apply_erratum_63(u16 devid)
-+{
-+	int sysmgt;
-+
-+	sysmgt = get_dev_entry_bit(devid, DEV_ENTRY_SYSMGT1) |
-+		 (get_dev_entry_bit(devid, DEV_ENTRY_SYSMGT2) << 1);
-+
-+	if (sysmgt == 0x01)
-+		set_dev_entry_bit(devid, DEV_ENTRY_IW);
-+}
-+
- /* Writes the specific IOMMU for a device into the rlookup table */
- static void __init set_iommu_for_device(struct amd_iommu *iommu, u16 devid)
+-static void __init iommu_feature_disable(struct amd_iommu *iommu, u8 bit)
++static void iommu_feature_disable(struct amd_iommu *iommu, u8 bit)
  {
-@@ -537,6 +557,8 @@ static void __init set_dev_entry_from_acpi(struct amd_iommu *iommu,
- 	if (flags & ACPI_DEVFLAG_LINT1)
- 		set_dev_entry_bit(devid, DEV_ENTRY_LINT1_PASS);
- 
-+	amd_iommu_apply_erratum_63(devid);
-+
- 	set_iommu_for_device(iommu, devid);
- }
+ 	u32 ctrl;
  
 -- 
 1.6.5
