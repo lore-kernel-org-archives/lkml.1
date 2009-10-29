@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbZJ2Q46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZJ2QyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbZJ2Q46 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZJ2Q45
+	id S1755913AbZJ2QyO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbZJ2QyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:56:57 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:20485 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752997AbZJ2Q44 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:56:56 -0400
-Date: Thu, 29 Oct 2009 09:52:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] staging: fix wireless drivers depends
-Message-Id: <20091029095202.09161c1e.randy.dunlap@oracle.com>
-In-Reply-To: <20091029182919.4d6ec52c.sfr@canb.auug.org.au>
-References: <20091029182919.4d6ec52c.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Thu, 29 Oct 2009 12:54:13 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:45849 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755856AbZJ2QyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:54:11 -0400
+Message-ID: <d4374087ea190adaab597d765096a0ed.squirrel@webmail.uio.no>
+Date: Thu, 29 Oct 2009 17:54:15 +0100
+Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
+From: apetlund@simula.no
+To: "Arnd Hannemann" <hannemann@nets.rwth-aachen.de>
+Cc: "Andreas Petlund" <apetlund@simula.no>,
+       "Eric Dumazet" <eric.dumazet@gmail.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
+       "davem@davemloft.net" <davem@davemloft.net>
+User-Agent: SquirrelMail/1.4.19
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4AE9C952.00B0:SCFMA4539814,ss=1,fgs=0
+Content-Transfer-Encoding: 7BIT
+X-UiO-Ratelimit-Test: rcpts/h 9 msgs/h 2 sum rcpts/h 28 sum msgs/h 4 total rcpts 441 max rcpts/h 37 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: CAA65BCFD2B7CEA7A68578F0C3FA146E8F31577B
+X-UiO-SPAM-Test: remote_host: 129.240.4.214 spam_score: -49 maxlevel 80 minaction 1 bait 0 mail/h: 261 total 1920329 max/h 678 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> Andreas Petlund schrieb:
+>> We have found no noticeable degradation of the goodput in a series of
+experiments we have performed in order to map the effects of the
+modifications. Furthermore, the modifications implemented in the
+patches
+>> are explicitly enabled only for applications where the developer knows
+that streams will be thin, thus only a small subset of the streams will
+apply the modifications.
+>> Graphs presenting results from experiments performed to analyse latency
+and fairness issues can be found here:
+>> http://folk.uio.no/apetlund/lktmp/
+>
+> How often did you hit consecutive RTOs in these measurements?
+> As I see you did a measurement with 512 thick vs. 512 thin streams. Lets
+do a hypothetical calculation with only 512 "thin" streams. Lets further
+assume the rtt is low, so that RTO is around 200ms. Assume each segment
+has 128 Bytes (already very small...).
+> Assume after a period of normal operation all streams are in
+> timeout-based loss recovery. (e.g. because destination endpoint
+> suddenly behaves like a black hole)
+> As all streams are in timeout-based loss recovery, each stream
+> will transmit 5 segments each second with your modification.
+> This would result in a throughput around 512*5*1024bit = 2560 kbit/s and
+a goodput of 0 kbit/s (because the receiver is a black hole). So you can
+easily saturate a 2 MBit/s link, only with retransmissions.
 
-These drivers can (erroneously) be enabled even when
-CONFIG_NET=n, CONFIG_NETDEVICES=n, CONFIG_WLAN=n, etc.
-Stop this.
+I have not yet performed experiments where the receiver becomes a black
+hole, but I recognise the problem. Eric Dumazet suggested that the
+mechanism switch to exponential backoff after 6 linear retries. This would
+avoid situation where the link stays congested indefinitely, and I will
+implement this in the next iteration.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/staging/rtl8187se/Kconfig |    2 +-
- drivers/staging/rtl8192e/Kconfig  |    2 +-
- drivers/staging/rtl8192su/Kconfig |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+> Unfortunately in Germany an ADSL uplink of 786 kbit/s is still quite
+common, and its already called "broadband"...
 
---- linux-next-20091029.orig/drivers/staging/rtl8187se/Kconfig
-+++ linux-next-20091029/drivers/staging/rtl8187se/Kconfig
-@@ -1,6 +1,6 @@
- config RTL8187SE
- 	tristate "RealTek RTL8187SE Wireless LAN NIC driver"
--	depends on PCI
-+	depends on PCI && WLAN
- 	select WIRELESS_EXT
- 	select WEXT_PRIV
- 	default N
---- linux-next-20091029.orig/drivers/staging/rtl8192e/Kconfig
-+++ linux-next-20091029/drivers/staging/rtl8192e/Kconfig
-@@ -1,6 +1,6 @@
- config RTL8192E
- 	tristate "RealTek RTL8192E Wireless LAN NIC driver"
--	depends on PCI
-+	depends on PCI && WLAN
- 	select WIRELESS_EXT
- 	select WEXT_PRIV
- 	default N
---- linux-next-20091029.orig/drivers/staging/rtl8192su/Kconfig
-+++ linux-next-20091029/drivers/staging/rtl8192su/Kconfig
-@@ -1,6 +1,6 @@
- config RTL8192SU
- 	tristate "RealTek RTL8192SU Wireless LAN NIC driver"
--	depends on PCI
-+	depends on PCI && WLAN
- 	depends on WIRELESS_EXT
- 	default N
- 	---help---
+I believe that a subscriber for such an uplink would not keep several
+hundred thin-stream connections, though accidents do happen.
+
+> Regarding the "small subset", why have a global sysctl option, then? And
+I think "tcp_stream_is_thin(tp)" will be true for every flow in the RTO
+case, at least for consecutive RTOs.
+
+The sysctl is ment for cases of proprietary code that will benefit from
+the modifications. In our experiments, we have found it useful in many
+cases for such applications (like game clients).
+
+Regards,
+Andreas
+
+
+
+
