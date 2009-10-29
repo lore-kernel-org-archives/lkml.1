@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZJ2Ii2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753607AbZJ2IjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbZJ2Ii2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZJ2Ii1
+	id S1753607AbZJ2IjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbZJ2IjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:38:27 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:3720 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752833AbZJ2Ii0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:38:26 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=w5svUaswcy7CI2KhV7Y3oVjNcmYDQHn8z26bgeo3YCE8FwD3l8qHk6YzUw8n77LbT
-	KkaurYFZCSHtkBwPZhCDg==
-Date: Thu, 29 Oct 2009 01:38:24 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: Memory overcommit
-In-Reply-To: <20091028152015.3d383cd6.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0910290136000.11476@chino.kir.corp.google.com>
-References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
- <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com>
- <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <20091028135519.805c4789.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910272205200.7507@chino.kir.corp.google.com>
- <20091028150536.674abe68.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910272311001.15462@chino.kir.corp.google.com> <20091028152015.3d383cd6.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 29 Oct 2009 04:39:12 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47163 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751939AbZJ2IjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 04:39:11 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+cEtJwBAWc0gcuWE3XJE5pDkl6iRtPrpLTgPcaK2
+	ORGzjvUMwja8F3
+Subject: [patch] Re: [regression bisect -next] BUG: using
+ smp_processor_id() in preemptible [00000000] code: rmmod
+From: Mike Galbraith <efault@gmx.de>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
+References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
+Content-Type: text/plain
+Date: Thu, 29 Oct 2009 09:39:12 +0100
+Message-Id: <1256805552.7158.22.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009, KAMEZAWA Hiroyuki wrote:
+On Wed, 2009-10-28 at 22:42 -0400, Eric Paris wrote:
+> I get a slew of these on boot.
 
-> It's _not_ special to X.
-> 
-> Almost all applications which uses many dynamica libraries can be affected by this,
-> total_vm. And, as I explained to Vedran, multi-threaded program like Java can easily
-> increase total_vm without using many anon_rss.
-> And it's the reason I hate overcommit_memory. size of VM doesn't tell anything.
-> 
+Ouch.  This fix it up for you?
 
-Right, because in Vedran's latest oom log it shows that Xorg is preferred 
-more than any other thread other than the memory hogging test program with 
-your patch than without.  I pointed out a clear distinction in the killing 
-order using both total_vm and rss in that log and in my opinion killing 
-Xorg as opposed to krunner would be undesireable.
+sched: protect task_hot() buddy check.
+
+Eric Paris reported that commit f685ceacab07d3f6c236f04803e2f2f0dbcc5afb
+causes boot time PREEMPT_DEBUG complaints.
+
+[    4.590699] BUG: using smp_processor_id() in preemptible [00000000] code: rmmod/1314
+[    4.593043] caller is task_hot+0x86/0xd0
+[    4.593872] Pid: 1314, comm: rmmod Tainted: G        W  2.6.32-rc3-fanotify #127
+[    4.595443] Call Trace:
+[    4.596177]  [<ffffffff812ad35b>] debug_smp_processor_id+0x11b/0x120
+[    4.597337]  [<ffffffff81051d66>] task_hot+0x86/0xd0
+[    4.598320]  [<ffffffff81066275>] set_task_cpu+0x115/0x270
+[    4.599368]  [<ffffffff810985ab>] kthread_bind+0x6b/0x100
+[    4.600354]  [<ffffffff810914f0>] start_workqueue_thread+0x30/0x60
+[    4.601545]  [<ffffffff810941dd>] __create_workqueue_key+0x18d/0x2f0
+[    4.602526]  [<ffffffff810d9bee>] stop_machine_create+0x4e/0xd0
+[    4.603811]  [<ffffffff810c5818>] sys_delete_module+0x98/0x250
+[    4.604922]  [<ffffffff810e2505>] ? audit_syscall_entry+0x205/0x290
+[    4.606202]  [<ffffffff81013202>] system_call_fastpath+0x16/0x1b
+
+Don't use this_rq() when preemptible.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Reported-by: Eric Paris <eparis@redhat.com>
+LKML-Reference: <new-submission>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 91ffb01..21f52c4 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2008,7 +2008,8 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+ 	/*
+ 	 * Buddy candidates are cache hot:
+ 	 */
+-	if (sched_feat(CACHE_HOT_BUDDY) && this_rq()->nr_running &&
++	if (sched_feat(CACHE_HOT_BUDDY) && 
++			(preempt_count() ? this_rq()->nr_running : 1) &&
+ 			(&p->se == cfs_rq_of(&p->se)->next ||
+ 			 &p->se == cfs_rq_of(&p->se)->last))
+ 		return 1;
+
+
