@@ -1,100 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZJ2PNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZJ2POQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZJ2PNS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbZJ2PNR
+	id S1755243AbZJ2POQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbZJ2POP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:13:17 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:56356 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754318AbZJ2PNQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:13:16 -0400
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci\@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range for pcie devices
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>
-	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>
-	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>
-	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>
-	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>
-	<m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>
-	<m1eionia3y.fsf@fess.ebiederm.org> <4AE8A080.1040208@kernel.org>
-	<m1pr87cilf.fsf@fess.ebiederm.org> <4AE8BA1D.5030908@kernel.org>
-	<4AE8C4BF.8040306@kernel.org> <m1my3aboon.fsf@fess.ebiederm.org>
-	<1256822508.30701.41.camel@dc7800.home>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 29 Oct 2009 08:13:12 -0700
-In-Reply-To: <1256822508.30701.41.camel@dc7800.home> (Bjorn Helgaas's message of "Thu\, 29 Oct 2009 07\:21\:48 -0600")
-Message-ID: <m1bpjqb5dj.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 29 Oct 2009 11:14:15 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:38563 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754384AbZJ2POP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:14:15 -0400
+Message-ID: <66f580dbbf814a9c4b9710f13d8661d8.squirrel@webmail.uio.no>
+Date: Thu, 29 Oct 2009 16:14:18 +0100
+Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
+From: apetlund@simula.no
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: "Andreas Petlund" <apetlund@simula.no>, "Netdev" <netdev@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       "David Miller" <davem@davemloft.net>
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 17 sum msgs/h 3 total rcpts 410 max rcpts/h 37 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: D3250C2E5AA8C28BBEC75A13D10D9360798DB2C1
+X-UiO-SPAM-Test: remote_host: 129.240.4.214 spam_score: -49 maxlevel 80 minaction 1 bait 0 mail/h: 113 total 1919790 max/h 678 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas <bjorn.helgaas@hp.com> writes:
+I apologise that some of you received this mail more than once. My email
+client played a HTML-trick on me.
 
-> On Thu, 2009-10-29 at 01:16 -0700, Eric W. Biederman wrote:
->> Yinghai Lu <yinghai@kernel.org> writes:
->> >
->> > after closing look up the code, it looks it will not break your setup.
->> >
->> > 1. before the patches:
->> > a. when master card is inserted, all bridge in that card will get assigned with min_size
->> > b. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
->> >
->> > 2. after the patches: v5
->> > a. booted up, all leaf bridge mmio get clearred.
->> > b. when master card is inserted, all bridge in that card will get assigned with min_size, and master bridge will be sum of them
->> > c. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
->> >
->> > can you check those two patches in your setup to verify it?
->> 
->> I have a much simpler case I will break, as I tried something similar by accident.
->> 
->> AMD cpu MCP55 with one pcie port setup as hotplug.
->> The system only has 2GB of RAM.  So plenty of space for pcie devices.
->> 
->> If the firmware assigns nothing and linux at boot time assigns the pci mmio space:
->> Reads from the bar of the hotplugged device work
->> Writes to the bar of the hotplugged device, cause further writes to go to lala land.
->> 
->> So I had to have the firmware make the assignment, because only it knows the
->> details of the hidden AMD bar registers for each hypertransport chain etc.
+>> +		icsk->icsk_backoff = 0;
+>> +		icsk->icsk_rto = min(((tp->srtt >> 3) + tp->rttvar), TCP_RTO_MAX);
 >
-> Do you mean you had to have firmware program a hot-added device, or just
-> that firmware had to program the apertures of the root port that was
-> present at boot, even though it had no devices below it?
-
-Firmware had to program the apertures of the root port that was present
-at boot, even though it had no devices below it.
-
-> Firmware normally supplies ACPI _CRS information that tells us how it
-> programmed the host bridge windows.  On x86, Linux normally ignores that
-> and just assumes a range based on memory size.  If we paid attention to
-> it (as with "pci=use_crs"), it's likely that we could do a better job of
-> doing this setup.
+> The first part is nowadays done with __tcp_set_rto(tp).
 >
-> Or, of course, we could add a Linux driver that knows about "the hidden
-> AMD bar registers."  But I think that should be a last resort, for when
-> firmware supplied incorrect _CRS information.
+> --
+>  i.
+>
 
-In this case there was no ACPI, and even if there was correct _CRS information
-it would have said only those addresses routed to bars/apertures on the
-root bridge was routed to the MCP55.  So while it looked like we had gobs
-of unallocated space we could use.  In practice we did not.
+I will address this in the next iteration of the patch.
 
-Eric
+-AP
+
+
+
+
