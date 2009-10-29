@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZJ2MmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZJ2MqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbZJ2MmS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 08:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZJ2MmR
+	id S1752960AbZJ2MqF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 08:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZJ2MqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 08:42:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1541 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392AbZJ2MmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 08:42:17 -0400
-Subject: Re: [patch] Re: [regression bisect -next] BUG: using
- smp_processor_id() in preemptible [00000000] code: rmmod
-From: Eric Paris <eparis@redhat.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de
-In-Reply-To: <1256813310.7574.3.camel@marge.simson.net>
-References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
-	 <1256805552.7158.22.camel@marge.simson.net>
-	 <20091029091411.GE22963@elte.hu>
-	 <1256807967.7158.58.camel@marge.simson.net>
-	 <1256813310.7574.3.camel@marge.simson.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 29 Oct 2009 08:41:45 -0400
-Message-Id: <1256820105.2848.14.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+	Thu, 29 Oct 2009 08:46:04 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:46576 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752656AbZJ2MqC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 08:46:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=AQoYF8/jD9w+XsTcYMp6bkfuAWcEmcy+m3FkKTq2kQge+//Mu+GI1FizMAsnRhIaRk
+         JL2F+zyP7snyo59VE4dlitK2dph4fT2lDoVuO+UhwTMr1GYgY0q7SKM9jToMWU9L4NHj
+         4qCidqK27R5yz3bnLLiaEysUctJpBPTw1aOh4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Date: Thu, 29 Oct 2009 13:45:05 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com
+References: <20091028211031.GF2856@tuxdriver.com> <200910291212.41656.bzolnier@gmail.com> <20091029.051509.119751790.davem@davemloft.net>
+In-Reply-To: <20091029.051509.119751790.davem@davemloft.net>
+MIME-Version: 1.0
+Message-Id: <200910291345.05888.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-29 at 11:48 +0100, Mike Galbraith wrote:
-> On Thu, 2009-10-29 at 10:19 +0100, Mike Galbraith wrote:
-> > On Thu, 2009-10-29 at 10:14 +0100, Ingo Molnar wrote:
-> > 
-> > > hm, the problem is kthread_bind(). It is rummaging around in scheduler 
-> > > internals without holding the runqueue lock - and this now got exposed. 
-> > > Even though it is operating on (supposedly ...) inactive tasks, the guts 
-> > > of that function should be moved into sched.c and it should be fixed to 
-> > > have proper locking.
-> > 
-> > Yeah, I was thinking that nobody should ever be able to hit that without
-> > it being a bug.. but wimped out.
+On Thursday 29 October 2009 13:15:09 David Miller wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date: Thu, 29 Oct 2009 12:12:41 +0100
 > 
-> How about so?
+> > What is even more disappointing (especially after all that "working with"
+> > preaching) is that the patch is now in net-next-2.6..
 > 
-> sched: Move the body of kthread_bind() to sched.c.
+> John is the wireless maintainer, I take his tree in since the changes
+> in there have his blessing.
 > 
-> Eric Paris reported that commit f685ceacab07d3f6c236f04803e2f2f0dbcc5afb
-> causes boot time PREEMPT_DEBUG complaints.
-> 
-> [    4.590699] BUG: using smp_processor_id() in preemptible [00000000] code: rmmod/1314
-> [    4.593043] caller is task_hot+0x86/0xd0
-> [    4.593872] Pid: 1314, comm: rmmod Tainted: G        W  2.6.32-rc3-fanotify #127
-> [    4.595443] Call Trace:
-> [    4.596177]  [<ffffffff812ad35b>] debug_smp_processor_id+0x11b/0x120
-> [    4.597337]  [<ffffffff81051d66>] task_hot+0x86/0xd0
-> [    4.598320]  [<ffffffff81066275>] set_task_cpu+0x115/0x270
-> [    4.599368]  [<ffffffff810985ab>] kthread_bind+0x6b/0x100
-> [    4.600354]  [<ffffffff810914f0>] start_workqueue_thread+0x30/0x60
-> [    4.601545]  [<ffffffff810941dd>] __create_workqueue_key+0x18d/0x2f0
-> [    4.602526]  [<ffffffff810d9bee>] stop_machine_create+0x4e/0xd0
-> [    4.603811]  [<ffffffff810c5818>] sys_delete_module+0x98/0x250
-> [    4.604922]  [<ffffffff810e2505>] ? audit_syscall_entry+0x205/0x290
-> [    4.606202]  [<ffffffff81013202>] system_call_fastpath+0x16/0x1b
-> 
-> Since kthread_bind() messes with scheduler internals, move the body to sched.c,
-> and lock the runqueue.
-> 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Reported-by: Eric Paris <eparis@redhat.com>
+> If you have a problem with some change in there, work it out with him
+> and he'll send the fixed up changes to me thereafterwards.
 
-Nothing complains.
+What do you mean by that?
 
-Tested-by: Eric Paris <eparis@redhat.com>
+That *I* should be fixing the patch in question instead of the submitter?
 
-Now if I just knew why -next kernels under kvm seem to randomly corrupt
-memory and eventually start taking NMI's, then I'd be happy.
+Do some different rules apply in the networking than in other parts of
+the kernel that I'm not aware of?
 
--Eric
+There were valid concerns raised on the initial rt2800pci patch submission,
+yet two days later patch is in John's tree, after few more days it is in yours
+tree and happily on his way into 2.6.33.
 
+Until issues mentioned in:
+
+	http://lkml.org/lkml/2009/10/17/81
+
+are addressed rt2800pci shouldn't be queued for Linus' tree.
+
+[ Please note that this driver doesn't work at all currently so the standard
+  argument of having hardware support early upstream cannot be applied here. ]
+
+--
+Bartlomiej Zolnierkiewicz
