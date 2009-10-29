@@ -1,99 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZJ2OnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZJ2Omc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbZJ2OnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 10:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZJ2OnS
+	id S1754821AbZJ2Omc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 10:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbZJ2Omb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 10:43:18 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:61943 "EHLO poutre.nerim.net"
+	Thu, 29 Oct 2009 10:42:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42789 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754335AbZJ2OnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 10:43:16 -0400
-Date: Thu, 29 Oct 2009 15:43:17 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mika Kuoppala <mika.kuoppala@nokia.com>,
-       Ben Hutchings <bhutchings@solarflare.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>
-Subject: Shared i2c adapter locking (Was: linux-next: manual merge of the
- net tree with the i2c tree)
-Message-ID: <20091029154317.651904b9@hyperion.delvare>
-In-Reply-To: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753470AbZJ2Oma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 10:42:30 -0400
+Message-ID: <4AE9AA0E.5070104@kernel.org>
+Date: Thu, 29 Oct 2009 15:43:26 +0100
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Luck, Tony" <tony.luck@intel.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] ia64/sn: fix percpu warnings
+References: <20091014163445.f0441473.sfr@canb.auug.org.au>	 <20091014151003.0ef42973.randy.dunlap@oracle.com>	 <4AD67C05.2030201@kernel.org> <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com> <57C9024A16AD2D4C97DC78E552063EA3E345953E@orsmsx505.amr.corp.intel.com> <4AE85D28.90809@kernel.org> <57C9024A16AD2D4C97DC78E552063EA3E34C0108@orsmsx505.amr.corp.intel.com> <4AE87344.6030708@kernel.org> <57C9024A16AD2D4C97DC78E552063EA3E34C018B@orsmsx505.amr.corp.intel.com> <57C9024A16AD2D4C97DC78E552063EA3E34C0629@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E34C0629@orsmsx505.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+Hello,
 
-On Mon, 26 Oct 2009 13:37:57 +1100, Stephen Rothwell wrote:
-> Today's linux-next merge of the net tree got a conflict in
-> drivers/net/sfc/sfe4001.c between commit
-> 3f7c0648f727a6d5baf6117653e4001dc877b90b ("i2c: Prevent priority
-> inversion on top of bus lock") from the i2c tree and commit
-> c9597d4f89565b6562bd3026adbe6eac6c317f47 ("sfc: Merge sfe4001.c into
-> falcon_boards.c") from the net tree.
+Luck, Tony wrote:
+> Ok.  x86 doesn't see this because the defconfig has
+>   CONFIG_MODVERSIONS is not set
 > 
-> I have applied the following merge fixup patch (after removing
-> drivers/net/sfc/sfe4001.c) and can carry it as necessary.
+> If I turn MODVERSION off, then the problem disappears for me.
+> 
+> If I turn MODVERSIONS on for x86 (and fudge a driver to make use of
+> softirq_work_list), then x86 gets the CRC warning too.
 
-Thanks for fixing it. The core problem here IMHO is that the sfc
-network driver touches i2c internals which it would rather leave alone.
-This is the only driver I know of which does this.
+Right, I can reproduce it here too.
 
-I can think of 3 different ways to address the issue.
+> So this isn't a tool chain problem. Neither x86 nor ia64
+> can handle exported per-cpu array objects when CONFIG_MODVERSIONS
+> is set.
+> 
+> Looking at the __crc symbols in the vmlinux for x86 with
+> CONFIG_MODVERSIONS=y I see:
+> 
+> 000000006dcaeb88 A __crc_per_cpu__kernel_stack
+> 00000000b3994c7a A __crc_per_cpu__kstat
+> 00000000d917c158 A __crc_per_cpu__node_number
+>                  w __crc_per_cpu__softirq_work_list
+> 0000000036a1f502 A __crc_per_cpu__softnet_data
+> 0000000057adf756 A __crc_per_cpu__this_cpu_off
+> 
+> which explains why "modpost" is unable to find a CRC.
+> 
+> Maybe the comments in <linux/module.h> are supposed to be a
+> clue? :
+> 
+> #ifdef CONFIG_MODVERSIONS
+> /* Mark the CRC weak since genksyms apparently decides not to
+>  * generate a checksums for some symbols */
+> #define __CRC_SYMBOL(sym, sec)                                  \
+>         extern void *__crc_##sym __attribute__((weak));         \
+>         static const unsigned long __kcrctab_##sym              \
+>         __used                                                  \
+>         __attribute__((section("__kcrctab" sec), unused))       \
+>         = (unsigned long) &__crc_##sym;
+> 
+> But not enough of a clue for me :-(
 
-Method #1: add a public API to grab/release an I2C segment.
+I have no idea either.  I'll dig a bit and try to find out what's
+going on.
 
-void i2c_adapter_lock(struct i2c_adapter *adapter)
-{
-	rt_mutex_lock(&adapter->bus_lock);
-}
-
-void i2c_adapter_unlock(struct i2c_adapter *adapter)
-{
-	rt_mutex_unlock(&adapter->bus_lock);
-}
-
-It has the advantage of simplicity. The problem is that it is not
-symmetric. Whatever shares the pins with I2C, I2C is considered the
-main user in that its mutex is used to guarantee mutual exclusion. If
-the other subsystem also has a mandatory locking mechanism, there will
-have to be a decision on who is locked first. If not all drivers agree,
-lockdep will get confused.
-
-Method #2: let the driver implement its own "main" locking, and have
-all pin users (i2c etc.) take it in addition to any subsystem-specific
-mutex. As far as the sfc network driver is concerned, that would mean
-adding pre-xfer and post-xfer hooks to i2c-algo-bit, where the "main"
-mutex in question would be taken resp. released.
-
-It has the advantage of symmetry. The problem is performance, as
-regular operation will require to take and release two mutexes instead
-of just one. But it is a fairly generic approach which could solve
-other issues too.
-
-Method #3: let individual bus drivers implement segment locking
-themselves, with custom locking/unlocking hooks. This way, a device
-sharing pins between several functions can have its own mutex
-protecting these pins globally, and all user subsystems (i2c etc.) use
-this single mutex.
-
-It has the advantage of performance and symmetry, at the price of
-fragility. If the i2c bus driver implements locking improperly... I am
-also worried by inconsistencies that may arise, if different i2c
-adapters are protected by different mutex types (mutex vs. real-time
-mutex vs. spinlock etc.) but maybe this will be seen as an advantage
-rather than a problem.
-
-I'm not really sure if I have a preference yet, so please speak up if
-you do.
+Thanks.
 
 -- 
-Jean Delvare
+tejun
