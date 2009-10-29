@@ -1,65 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbZJ2TYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZJ2T2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756650AbZJ2TYM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 15:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbZJ2TYL
+	id S1756653AbZJ2T2R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 15:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZJ2T2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 15:24:11 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:46991 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756474AbZJ2TYK (ORCPT
+	Thu, 29 Oct 2009 15:28:16 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:42844 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756587AbZJ2T2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 15:24:10 -0400
-Date: Thu, 29 Oct 2009 13:24:14 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Tejun Heo <teheo@suse.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 2/3] Sysfs: Allow directories to be populated dynamically
-Message-ID: <20091029192414.GN10555@parisc-linux.org>
-References: <20091020054740.GC29158@parisc-linux.org> <20091020055021.GE29158@parisc-linux.org> <4AE9C0B0.3030304@suse.de> <20091029162145.GM10555@parisc-linux.org> <4AE9C29E.6090706@suse.de>
+	Thu, 29 Oct 2009 15:28:14 -0400
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci\@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>
+	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>
+	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>
+	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>
+	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>
+	<m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>
+	<m1eionia3y.fsf@fess.ebiederm.org> <4AE8A080.1040208@kernel.org>
+	<m1pr87cilf.fsf@fess.ebiederm.org> <4AE8BA1D.5030908@kernel.org>
+	<4AE8C4BF.8040306@kernel.org> <m1my3aboon.fsf@fess.ebiederm.org>
+	<1256822508.30701.41.camel@dc7800.home>
+	<m1bpjqb5dj.fsf@fess.ebiederm.org>
+	<1256830988.30701.55.camel@dc7800.home>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 29 Oct 2009 12:28:10 -0700
+In-Reply-To: <1256830988.30701.55.camel@dc7800.home> (Bjorn Helgaas's message of "Thu\, 29 Oct 2009 09\:43\:08 -0600")
+Message-ID: <m1639yyp85.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE9C29E.6090706@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 05:28:14PM +0100, Tejun Heo wrote:
->  struct sysfs_dirent {
-> 	 atomic_t		s_count;
-> 	 atomic_t		s_active;
-> 	 struct sysfs_dirent	*s_parent;
-> 	 struct sysfs_dirent	*s_sibling;
-> 	 const char		*s_name;
-> 
-> 	 union {
-> 		 struct sysfs_elem_dir		s_dir;
-> 		 struct sysfs_elem_symlink	s_symlink;
-> 		 struct sysfs_elem_attr		s_attr;
-> 		 struct sysfs_elem_bin_attr	s_bin_attr;
-> 	 };
-> 
-> 	 unsigned int		s_flags;
-> 	 ino_t			s_ino;
-> 	 umode_t			s_mode;
-> 	 struct sysfs_inode_attrs *s_iattr;
-> 	                          ^^
+Bjorn Helgaas <bjorn.helgaas@hp.com> writes:
 
-Oh, ouch.  That does change the calculus somewhat.
+> On Thu, 2009-10-29 at 08:13 -0700, Eric W. Biederman wrote:
+>> Bjorn Helgaas <bjorn.helgaas@hp.com> writes:
+>> 
+>> > On Thu, 2009-10-29 at 01:16 -0700, Eric W. Biederman wrote:
+>> >> Yinghai Lu <yinghai@kernel.org> writes:
+>> >> >
+>> >> > after closing look up the code, it looks it will not break your setup.
+>> >> >
+>> >> > 1. before the patches:
+>> >> > a. when master card is inserted, all bridge in that card will get assigned with min_size
+>> >> > b. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+>> >> >
+>> >> > 2. after the patches: v5
+>> >> > a. booted up, all leaf bridge mmio get clearred.
+>> >> > b. when master card is inserted, all bridge in that card will get assigned with min_size, and master bridge will be sum of them
+>> >> > c. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+>> >> >
+>> >> > can you check those two patches in your setup to verify it?
+>> >> 
+>> >> I have a much simpler case I will break, as I tried something similar by accident.
+>> >> 
+>> >> AMD cpu MCP55 with one pcie port setup as hotplug.
+>> >> The system only has 2GB of RAM.  So plenty of space for pcie devices.
+>> >> 
+>> >> If the firmware assigns nothing and linux at boot time assigns the pci mmio space:
+>> >> Reads from the bar of the hotplugged device work
+>> >> Writes to the bar of the hotplugged device, cause further writes to go to lala land.
+>> >> 
+>> >> So I had to have the firmware make the assignment, because only it knows the
+>> >> details of the hidden AMD bar registers for each hypertransport chain etc.
+>> >
+>> > Do you mean you had to have firmware program a hot-added device, or just
+>> > that firmware had to program the apertures of the root port that was
+>> > present at boot, even though it had no devices below it?
+>> 
+>> Firmware had to program the apertures of the root port that was present
+>> at boot, even though it had no devices below it.
+>> 
+>> > Firmware normally supplies ACPI _CRS information that tells us how it
+>> > programmed the host bridge windows.  On x86, Linux normally ignores that
+>> > and just assumes a range based on memory size.  If we paid attention to
+>> > it (as with "pci=use_crs"), it's likely that we could do a better job of
+>> > doing this setup.
+>> >
+>> > Or, of course, we could add a Linux driver that knows about "the hidden
+>> > AMD bar registers."  But I think that should be a last resort, for when
+>> > firmware supplied incorrect _CRS information.
+>> 
+>> In this case there was no ACPI, and even if there was correct _CRS information
+>> it would have said only those addresses routed to bars/apertures on the
+>> root bridge was routed to the MCP55.  So while it looked like we had gobs
+>> of unallocated space we could use.  In practice we did not.
+>
+> I know this is a hypothetical case since you don't have ACPI, but I'm
+> curious about this.
+>
+> I assume the magic AMD BARs only affect the host bridge, and that the
+> downstream root ports look like standard PCI-to-PCI bridges.  If that's
+> the case, and if we have correct descriptions of the host bridge
+> apertures, Linux should theoretically be able to do as well as firmware.
+>
+> But you seem to be suggesting that even with a correct host bridge
+> description, there's space that *looks* available but is not.  I don't
+> understand how this can be.
 
-> It feels a bit too convoluted to me.  sysfs is already pretty
-> convoluted and adding yet more convolution would require pretty good
-> justification, so I'm curious about the numbers.
+What I meant was simply that not all of the non-memory space was
+routed down the hypertransport chain to the mcp55.  If you have an
+accurate description of that you should be fine.
 
-It is convoluted.  The advantage of this is that we get to create many
-fewer dirents.  I wonder if we can do away with the dirents entirely, and
-have dentries constructed dynamically instead.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Eric
