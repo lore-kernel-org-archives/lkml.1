@@ -1,265 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbZJ2JYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZJ2Jbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753099AbZJ2JYv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 05:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbZJ2JYu
+	id S1753344AbZJ2Jbo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 05:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZJ2Jbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 05:24:50 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54175 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751830AbZJ2JYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 05:24:49 -0400
-Date: Thu, 29 Oct 2009 10:24:53 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Alex Chiang <achiang@hp.com>, Mark Lord <lkml@rtr.ca>,
-       Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-Message-ID: <20091029092453.GD10727@kernel.dk>
-References: <20091014081309.GM9228@kernel.dk> <20091020190707.GA25615@ldl.fc.hp.com> <20091026105419.GA10727@kernel.dk> <4AE693D9.3070100@jp.fujitsu.com> <20091027082720.GT10727@kernel.dk> <4AE7E164.80408@jp.fujitsu.com> <20091028092324.GB10727@kernel.dk> <4AE947D3.5070500@jp.fujitsu.com> <20091029085824.GC10727@kernel.dk> <4AE95EFA.7000009@jp.fujitsu.com>
+	Thu, 29 Oct 2009 05:31:43 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:45671 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbZJ2Jbn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 05:31:43 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=jIPxbwDgvs92YzhKbeH88R6hIKn4DE6p/N1SnOhhlvokinMmZYUH+X7sfSw0LA3DV
+	jW8I2o5ShJY0OZLFHflaQ==
+Date: Thu, 29 Oct 2009 02:31:23 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, x86@kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -next] k8.h: add struct bootnode
+In-Reply-To: <20091028160955.d27ccb16.randy.dunlap@oracle.com>
+Message-ID: <alpine.DEB.2.00.0910290229490.21298@chino.kir.corp.google.com>
+References: <20091028190643.627f10aa.sfr@canb.auug.org.au> <20091028160955.d27ccb16.randy.dunlap@oracle.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE95EFA.7000009@jp.fujitsu.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29 2009, Kenji Kaneshige wrote:
-> Jens Axboe wrote:
->> On Thu, Oct 29 2009, Kenji Kaneshige wrote:
->>> Jens Axboe wrote:
->>>> On Wed, Oct 28 2009, Kenji Kaneshige wrote:
->>>>> Jens Axboe wrote:
->>>>>> On Tue, Oct 27 2009, Kenji Kaneshige wrote:
->>>>>>> Jens Axboe wrote:
->>>>>>>> On Tue, Oct 20 2009, Alex Chiang wrote:
->>>>>>>>> * Jens Axboe <jens.axboe@oracle.com>:
->>>>>>>>>> On Tue, Oct 13 2009, Alex Chiang wrote:
->>>>>>>>>>>>> Can you modprobe acpiphp with debug=1? And send the output?
->>>>>>>>>>>> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
->>>>>>>>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:05.0
->>>>>>>>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:08:00
->>>>>>>>>>>> acpiphp: Slot [1] registered
->>>>>>>>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:07.0
->>>>>>>>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:0b:00
->>>>>>>>>>>> acpiphp: Slot [2] registered
->>>>>>>>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:07.0
->>>>>>>>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:84:00
->>>>>>>>>>>> acpiphp: Slot [6] registered
->>>>>>>>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:09.0
->>>>>>>>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 7 at PCI 0000:87:00
->>>>>>>>>>>> acpiphp: Slot [7] registered
->>>>>>>>>>>> acpiphp_glue: Bus 0000:87 has 1 slot
->>>>>>>>>>>> acpiphp_glue: Bus 0000:84 has 1 slot
->>>>>>>>>>>> acpiphp_glue: Bus 0000:0b has 1 slot
->>>>>>>>>>>> acpiphp_glue: Bus 0000:08 has 1 slot
->>>>>>>>>>>> acpiphp_glue: Total 4 slots
->>>>>>>>>>> You mentioned in another mail that you echoed 1 into the various
->>>>>>>>>>> slots' power files.
->>>>>>>>>>>
->>>>>>>>>>> Did you do that after modprobing acpiphp with debug=1?
->>>>>>>>>>>
->>>>>>>>>>> If so, there should be debug output when you try and turn them
->>>>>>>>>>> on.
->>>>>>>>>> It produces:
->>>>>>>>>>
->>>>>>>>>> acpiphp: enable_slot - physical_slot = 1
->>>>>>>>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
->>>>>>>>>> acpiphp: enable_slot - physical_slot = 2
->>>>>>>>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
->>>>>>>>>> acpiphp: enable_slot - physical_slot = 6
->>>>>>>>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
->>>>>>>>>> acpiphp: enable_slot - physical_slot = 7
->>>>>>>>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
->>>>>>>>> Hm, so for some reason, firmware on your machine is telling us
->>>>>>>>> that it doesn't think cards are present and/or enabled.
->>>>>>>>>
->>>>>>>>> Unfortunately, I don't know why your firmware would be saying
->>>>>>>>> that. We could add some more debug printks to see what firmware
->>>>>>>>> thinks about your system... Or we could just wait and see what
->>>>>>>>> happens after you get your hardware replaced.
->>>>>>>> New board, the exact same thing happens.
->>>>>>>>
->>>>>>>>>> I have a card in one of the slots only this time.
->>>>>>>>>>
->>>>>>>>>>> Also, quick dummy check, you are trying to power on populated
->>>>>>>>>>> slots, right? :)
->>>>>>>>>> Yes :-)
->>>>>>>>>>
->>>>>>>>>>> Can you send the output of lspci -vv? And I like the output of
->>>>>>>>>>> lspci -vt as well... Both before and after loading acpiphp
->>>>>>>>>>> please.
->>>>>>>>>> Send privately.
->>>>>>>>> No difference in before and after. Odd.
->>>>>>>>>
->>>>>>>>> If you want to poke us again after your hardware swap, please do
->>>>>>>>> so. Sorry for being not so helpful. :-/
->>>>>>>> Poke :-)
->>>>>>>>
->>>>>>>> One more thing I tried was pushing the power button on the slot
->>>>>>>> manually. With acpiphp, I get the same messages as above. Using pciehp,
->>>>>>>> I get the same power fault bit interrupt storm. So no difference from
->>>>>>>> using the sysfs interface or doing it on the box side, doesn't work
->>>>>>>> either way.
->>>>>>>>
->>>>>>> I'd like to confirm power fault interrupt storm, just in case.
->>>>>>> Could you get /proc/interrupts information after power fault
->>>>>>> problem happens and send it to me?
->>>>>> The box pretty much hangs when I try to power on a slot with pciehp, so
->>>>>> it's not easy to do... It doesn't hang with acpiphp, but doesn't work
->>>>>> either (see previous reply to Alex).
->>>>>>
->>>>> Could you try the attached debugging patch? With this patch, power
->>>>> fault interrupt would be disabled after 100 power fault detected (
->>>>> I hope so). You can get /proc/interrupts after that.
->>>> Here is the output of doing the power on with that patch applied.
->>>>
->>>> pciehp 0000:00:05.0:pcie04: enable_slot: physical_slot = 1
->>>> pciehp 0000:00:05.0:pcie04: pciehp_get_power_status: SLOTCTRL a8 value read 77b
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 10
->>>> pciehp 0000:00:05.0:pcie04: pciehp_power_on_slot: SLOTCTRL a8 write cmd 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 10
->>>> pciehp 0000:00:05.0:pcie04: pciehp_green_led_blink: SLOTCTRL a8 write cmd 200
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: Power fault interrupt received
->>>> pciehp 0000:00:05.0:pcie04: Power fault on Slot(1)
->>>> pciehp 0000:00:05.0:pcie04: Power fault bit 0 set
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
->>>> pciehp 0000:00:05.0:pcie04: Data Link Layer Link Active not set in 1000 msec
->>>> pciehp 0000:00:05.0:pcie04: pciehp_check_link_status: lnk_status = 1001
->>>> pciehp 0000:00:05.0:pcie04: Link Training Error occurs pciehp  
->>>> 0000:00:05.0:pcie04: Failed to check link status
->>>> pciehp 0000:00:05.0:pcie04: Command not completed in 1000 msec
->>>> pciehp 0000:00:05.0:pcie04: pciehp_set_attention_status: SLOTCTRL a8 write cmd 40
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 12
->>>> pciehp 0000:00:05.0:pcie04: pciehp_green_led_off: SLOTCTRL a8 write cmd 300
->>>> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 12
->>>> pciehp 0000:00:05.0:pcie04: pciehp_power_off_slot: SLOTCTRL a8 write cmd 400
->>>> pciehp 0000:00:05.0:pcie04: Command not completed in 1000 msec
->>>> pciehp 0000:00:05.0:pcie04: pciehp_green_led_off: SLOTCTRL a8 write cmd 300
->>>> pciehp 0000:00:05.0:pcie04: Command not completed in 1000 msec
->>>> pciehp 0000:00:05.0:pcie04: pciehp_set_attention_status: SLOTCTRL a8 write cmd 40
->>>> pciehp 0000:00:05.0:pcie04: pciehp_get_power_status: SLOTCTRL a8 value read 779
->>>> pciehp 0000:00:05.0:pcie04: pciehp_get_attention_status: SLOTCTRL a8, value read 779
->>>>
->>> From the console log, it seems that my debug patch worked as I expected
->>> (power fault event interrupts ware disabled after 100 power fault event).
->>> But for some reasons, /proc/interrupts indicates only 5 interrupts of
->>> pciehp. Just in case, did you get /proc/interrupts after doing power on?
->>
->> Nope, it was captured post the power on attempt and the above log dump.
->>
->
-> Can I confirm that? (sorry for my poor English skill)
->
-> The /proc/interrupt was captured *before* the power on attempt and the log.
-> Correct?
+On Wed, 28 Oct 2009, Randy Dunlap wrote:
 
-No, the /proc/interrupt output was captured AFTER the power on attempt
-and the log capture shown above.
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> k8.h uses struct bootnode but does not #include a header file
+> for it, so provide a simple declaration for it.
+> 
+> arch/x86/include/asm/k8.h:13: warning: 'struct bootnode' declared inside parameter list
+> arch/x86/include/asm/k8.h:13: warning: its scope is only this definition or declaration, which is probably not what you want
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
--- 
-Jens Axboe
+Acked-by: David Rientjes <rientjes@google.com>
 
+This is probably my fault originating from my patchset in Ingo's x86/mm 
+tree with some unexpected config option combination.  Thanks Randy!
+
+> ---
+>  arch/x86/include/asm/k8.h |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linux-next-20091028.orig/arch/x86/include/asm/k8.h
+> +++ linux-next-20091028/arch/x86/include/asm/k8.h
+> @@ -4,6 +4,7 @@
+>  #include <linux/pci.h>
+>  
+>  extern struct pci_device_id k8_nb_ids[];
+> +struct bootnode;
+>  
+>  extern int early_is_k8_nb(u32 value);
+>  extern struct pci_dev **k8_northbridges;
