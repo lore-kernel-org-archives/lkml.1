@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZJ2Omc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZJ2Ool@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbZJ2Omc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 10:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbZJ2Omb
+	id S1754895AbZJ2Ool (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 10:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbZJ2Ook
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 10:42:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42789 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753470AbZJ2Oma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 10:42:30 -0400
-Message-ID: <4AE9AA0E.5070104@kernel.org>
-Date: Thu, 29 Oct 2009 15:43:26 +0100
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 29 Oct 2009 10:44:40 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:33896 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752390AbZJ2Ooj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 10:44:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ovUdx5YgaJcBHNRgNKKx2o5YpYjEDZgiBtqnmxBHajVFkHLGyXvNCVEySxgUzoThjs
+         KL+3hmouGmSw8Q7+rKJnPhHWrLR6A/nZFlxCI2VssUlmLoTW45HNjeXsPmkGvoUK+XYL
+         R5pBHpTh0I0CEHKls5gHOYVY0neBKblJAGCvY=
 MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH -next] ia64/sn: fix percpu warnings
-References: <20091014163445.f0441473.sfr@canb.auug.org.au>	 <20091014151003.0ef42973.randy.dunlap@oracle.com>	 <4AD67C05.2030201@kernel.org> <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com> <57C9024A16AD2D4C97DC78E552063EA3E345953E@orsmsx505.amr.corp.intel.com> <4AE85D28.90809@kernel.org> <57C9024A16AD2D4C97DC78E552063EA3E34C0108@orsmsx505.amr.corp.intel.com> <4AE87344.6030708@kernel.org> <57C9024A16AD2D4C97DC78E552063EA3E34C018B@orsmsx505.amr.corp.intel.com> <57C9024A16AD2D4C97DC78E552063EA3E34C0629@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E34C0629@orsmsx505.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.7
+In-Reply-To: <200910291539.16476.mb@bu3sch.de>
+References: <200910291435.54203.bzolnier@gmail.com>
+	 <200910291514.40318.bzolnier@gmail.com>
+	 <20091029.072101.109209962.davem@davemloft.net>
+	 <200910291539.16476.mb@bu3sch.de>
+Date: Thu, 29 Oct 2009 15:44:42 +0100
+Message-ID: <14add3d10910290744n3abd1cf8w42a6311108eb2fa7@mail.gmail.com>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+From: Gertjan van Wingerde <gwingerde@gmail.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: David Miller <davem@davemloft.net>, bzolnier@gmail.com,
+       penberg@cs.helsinki.fi, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linville@tuxdriver.com
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, Oct 29, 2009 at 3:39 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Thursday 29 October 2009 15:21:01 David Miller wrote:
+>> The issue is that John disagrees with you can you can't handle
+>> that.
+>>
+>> So instead of continuing to discuss things with him and the
+>> other wireless folks, you want me to just overreach everybody
+>> and revert someone else's work.
+>
+> In the end this results in the driver maintainer being forced to maintain
+> code and handle bugreports for code that he disagrees with in the first place.
+> This is unacceptable and has to be resolved in some way.
+> If it's not possible to get it reverted through John (for whatever reason),
+> you're in charge to help the actual code maintainer out.
+>
+>> I'm not going to do that sorry, learn how to work with the
+>> wireless people instead.
+>
+> This is not the problem.
+> The problem is that stuff is merged without ack from the maintainer
+> and it's virtually impossible to get the stuff reverted. The only real
+> way for the maintainer to resolve this is 1) live with it or 2) fix it.
+> And that's bad, because it completely invalidates his priority queue.
+>
+> Just like you must not bypass John, the driver maintainers must not be bypassed, too.
+> The quality control does _only_ work if nobody in the chain is bypassed.
+> But in this situation the quality control did already fail and it should be
+> tried hard to resolve (=revert) the situation instead of pointing at John.
+>
 
-Luck, Tony wrote:
-> Ok.  x86 doesn't see this because the defconfig has
->   CONFIG_MODVERSIONS is not set
-> 
-> If I turn MODVERSION off, then the problem disappears for me.
-> 
-> If I turn MODVERSIONS on for x86 (and fudge a driver to make use of
-> softirq_work_list), then x86 gets the CRC warning too.
+Hold on here. In this case it is the driver maintainer (i.e. Ivo for
+the rt2x00 project) that
+submitted this driver for inclusion, so the driver maintainer has not
+been bypassed in
+this case.
 
-Right, I can reproduce it here too.
+Apparently Bart has issues with the code submitted by the maintainers
+and has been
+unsuccessful in convincing others about these issues.
 
-> So this isn't a tool chain problem. Neither x86 nor ia64
-> can handle exported per-cpu array objects when CONFIG_MODVERSIONS
-> is set.
-> 
-> Looking at the __crc symbols in the vmlinux for x86 with
-> CONFIG_MODVERSIONS=y I see:
-> 
-> 000000006dcaeb88 A __crc_per_cpu__kernel_stack
-> 00000000b3994c7a A __crc_per_cpu__kstat
-> 00000000d917c158 A __crc_per_cpu__node_number
->                  w __crc_per_cpu__softirq_work_list
-> 0000000036a1f502 A __crc_per_cpu__softnet_data
-> 0000000057adf756 A __crc_per_cpu__this_cpu_off
-> 
-> which explains why "modpost" is unable to find a CRC.
-> 
-> Maybe the comments in <linux/module.h> are supposed to be a
-> clue? :
-> 
-> #ifdef CONFIG_MODVERSIONS
-> /* Mark the CRC weak since genksyms apparently decides not to
->  * generate a checksums for some symbols */
-> #define __CRC_SYMBOL(sym, sec)                                  \
->         extern void *__crc_##sym __attribute__((weak));         \
->         static const unsigned long __kcrctab_##sym              \
->         __used                                                  \
->         __attribute__((section("__kcrctab" sec), unused))       \
->         = (unsigned long) &__crc_##sym;
-> 
-> But not enough of a clue for me :-(
-
-I have no idea either.  I'll dig a bit and try to find out what's
-going on.
-
-Thanks.
-
--- 
-tejun
+---
+Gertjan.
