@@ -1,81 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbZJ2Mca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbZJ2Mj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752615AbZJ2Mca (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 08:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZJ2Mc3
+	id S1752552AbZJ2Mj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 08:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZJ2MjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 08:32:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:21036 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752170AbZJ2Mc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 08:32:29 -0400
-Date: Thu, 29 Oct 2009 08:31:54 -0400
-From: Josef Bacik <josef@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Hommey <mh@glandium.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Whitehouse <swhiteho@redhat.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Josef Bacik <jbacik@redhat.com>, Mark Fasheh <mfasheh@suse.com>
-Subject: Re: [PATCH] Fix generic_block_fiemap for files bigger than 4GB
-Message-ID: <20091029123153.GA7436@localhost.localdomain>
-References: <1256577868-30484-1-git-send-email-mh@glandium.org> <20091028230022.e15b1e9c.akpm@linux-foundation.org>
+	Thu, 29 Oct 2009 08:39:25 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:60216 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbZJ2MjY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 08:39:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QAbPv8qh0HTujPoA9eBIqcK6W77vg77GGF871asPN8xD8VhuQVmtNVx4JXz0Yq9eqC
+         LGmWCPw5aifWZe9WdLlM0ZqCJ9pDSropijReR95lOncXeBwNIPGFAFaJI1OJhXA2F1V7
+         dghFw978L2YJYoiSY1eRzx4avSJmVsP4SPmsw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028230022.e15b1e9c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <e9c3a7c20910281208w54ddc859wb650f6527dae2d08@mail.gmail.com>
+References: <1256743153-17252-1-git-send-email-linus.walleij@stericsson.com>
+	 <e9c3a7c20910281208w54ddc859wb650f6527dae2d08@mail.gmail.com>
+Date: Thu, 29 Oct 2009 13:39:27 +0100
+Message-ID: <63386a3d0910290539y1fb39cefj92bee7b37fe062a1@mail.gmail.com>
+Subject: Re: [PATCH 2/2] Add COH 901 318 DMA driver platform config for U300 
+	v3
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 11:00:22PM -0700, Andrew Morton wrote:
-> On Mon, 26 Oct 2009 18:24:28 +0100 Mike Hommey <mh@glandium.org> wrote:
-> 
-> > Because of an integer overflow on start_blk, various kind of wrong results
-> > would be returned by the generic_block_fiemap handler, such as no extents
-> > when there is a 4GB+ hole at the beginning of the file, or wrong fe_logical
-> > when an extent starts after the first 4GB.
-> > 
-> > Signed-off-by: Mike Hommey <mh@glandium.org>
-> > ---
-> >  fs/ioctl.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/ioctl.c b/fs/ioctl.c
-> > index 7b17a14..6c75110 100644
-> > --- a/fs/ioctl.c
-> > +++ b/fs/ioctl.c
-> > @@ -254,7 +254,7 @@ int __generic_block_fiemap(struct inode *inode,
-> >  			   u64 len, get_block_t *get_block)
-> >  {
-> >  	struct buffer_head tmp;
-> > -	unsigned int start_blk;
-> > +	unsigned long long start_blk;
-> >  	long long length = 0, map_len = 0;
-> >  	u64 logical = 0, phys = 0, size = 0;
-> >  	u32 flags = FIEMAP_EXTENT_MERGED;
-> 
-> Well.  Should it be unsigned long long, or u64 or sector_t?  Or even loff_t.
-> 
-> The code's a bit confused about types in there.  And it's made much
-> more confusing by the moronic and wholly unnecessary use of macros for
-> blk_to_logical() and logical_to_blk().
-> 
-> It's also unhelpful that the `u64 start' argument forgot to get itself
-> documented in the kerneldoc comment.  Sigh.
-> 
-> Ah, generic_block_fiemap() has it:
-> 
->  * @start: The initial block to map
-> 
-> I guess u64 was logical there as it comes in from userspace.  But at
-> some boundary we should start talking kernel types so I suspect the
-> correct thing to do here is to use sector_t?
-> 
+2009/10/28 Dan Williams <dan.j.williams@intel.com>:
 
-Hmm this is strange, I had sent a patch a few months ago after you chewed me out
-the first time for this to change all the types and such and make the macro's
-inlined functions.  I will see if I can find it and resend it.  Thanks,
+> On Wed, Oct 28, 2009 at 8:19 AM, Linus Walleij
+> <linus.walleij@stericsson.com> wrote:
+> [..]
+>> +#define flags_memcpy_config (COH901318_CX_CFG_CH_DISABLE | \
+>> +                       COH901318_CX_CFG_RM_MEMORY_TO_MEMORY | \
+>> +                       COH901318_CX_CFG_LCR_DISABLE | \
+>> +                       COH901318_CX_CFG_TC_IRQ_ENABLE | \
+>> +                       COH901318_CX_CFG_BE_IRQ_ENABLE)
+>> +#define flags_memcpy_lli_chained (COH901318_CX_CTRL_TC_ENABLE | \
+>> +                       COH901318_CX_CTRL_BURST_COUNT_32_BYTES | \
+>> +                       COH901318_CX_CTRL_SRC_BUS_SIZE_32_BITS | \
+>> +                       COH901318_CX_CTRL_SRC_ADDR_INC_ENABLE | \
+>> +                       COH901318_CX_CTRL_DST_BUS_SIZE_32_BITS | \
+>> +                       COH901318_CX_CTRL_DST_ADDR_INC_ENABLE | \
+>> +                       COH901318_CX_CTRL_MASTER_MODE_M1RW | \
+>> +                       COH901318_CX_CTRL_TCP_DISABLE | \
+>> +                       COH901318_CX_CTRL_TC_IRQ_DISABLE | \
+>> +                       COH901318_CX_CTRL_HSP_DISABLE | \
+>> +                       COH901318_CX_CTRL_HSS_DISABLE | \
+>> +                       COH901318_CX_CTRL_DDMA_LEGACY | \
+>> +                       COH901318_CX_CTRL_PRDD_SOURCE)
+>> +#define flags_memcpy_lli (COH901318_CX_CTRL_TC_ENABLE | \
+>> +                       COH901318_CX_CTRL_BURST_COUNT_32_BYTES | \
+>> +                       COH901318_CX_CTRL_SRC_BUS_SIZE_32_BITS | \
+>> +                       COH901318_CX_CTRL_SRC_ADDR_INC_ENABLE | \
+>> +                       COH901318_CX_CTRL_DST_BUS_SIZE_32_BITS | \
+>> +                       COH901318_CX_CTRL_DST_ADDR_INC_ENABLE | \
+>> +                       COH901318_CX_CTRL_MASTER_MODE_M1RW | \
+>> +                       COH901318_CX_CTRL_TCP_DISABLE | \
+>> +                       COH901318_CX_CTRL_TC_IRQ_DISABLE | \
+>> +                       COH901318_CX_CTRL_HSP_DISABLE | \
+>> +                       COH901318_CX_CTRL_HSS_DISABLE | \
+>> +                       COH901318_CX_CTRL_DDMA_LEGACY | \
+>> +                       COH901318_CX_CTRL_PRDD_SOURCE)
+>> +#define flags_memcpy_lli_last (COH901318_CX_CTRL_TC_ENABLE | \
+>> +                       COH901318_CX_CTRL_BURST_COUNT_32_BYTES | \
+>> +                       COH901318_CX_CTRL_SRC_BUS_SIZE_32_BITS | \
+>> +                       COH901318_CX_CTRL_SRC_ADDR_INC_ENABLE | \
+>> +                       COH901318_CX_CTRL_DST_BUS_SIZE_32_BITS | \
+>> +                       COH901318_CX_CTRL_DST_ADDR_INC_ENABLE | \
+>> +                       COH901318_CX_CTRL_MASTER_MODE_M1RW | \
+>> +                       COH901318_CX_CTRL_TCP_DISABLE | \
+>> +                       COH901318_CX_CTRL_TC_IRQ_ENABLE | \
+>> +                       COH901318_CX_CTRL_HSP_DISABLE | \
+>> +                       COH901318_CX_CTRL_HSS_DISABLE | \
+>> +                       COH901318_CX_CTRL_DDMA_LEGACY | \
+>> +                       COH901318_CX_CTRL_PRDD_SOURCE)
+>
+> You go through the hassle of defining these flag combination sets...
+>
+>> +               .param.config = COH901318_CX_CFG_CH_DISABLE |
+>> +                               COH901318_CX_CFG_RM_MEMORY_TO_PRIMARY |
+>> +                               COH901318_CX_CFG_LCR_DISABLE |
+>> +                               COH901318_CX_CFG_TC_IRQ_ENABLE |
+>> +                               COH901318_CX_CFG_BE_IRQ_ENABLE,
+>
+> ...but then don't use them to cut down on the line count in the
+> definition of these parameters?
 
-Josef
+We do, look further below:
+
++       {
++               .number = U300_DMA_GENERAL_PURPOSE_0,
++               .name = "GENERAL 00",
++               .priority_high = 0,
++
++               .param.config = flags_memcpy_config,
++               .param.ctrl_lli_chained = flags_memcpy_lli_chained,
++               .param.ctrl_lli = flags_memcpy_lli,
++               .param.ctrl_lli_last = flags_memcpy_lli_last,
++       },
+
+Only the general purpose channels support memcpy and these are all set
+up the same way (for accelerating memcpy() operations).
+
+The rest of the channels are, mem -> io, io -> mem, io -> io and the io
+(device DMA) configurations are individual and varies greatly with
+hardware. For some currently unused hardware we haven't even defined
+the proper flags yet, and e.g. changing the burst size of an individual
+channel without affecting the rest is something a developer is very
+likely to do.
+
+Linus Walleij
