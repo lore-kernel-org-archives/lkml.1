@@ -1,113 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbZJ2WRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbZJ2WUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbZJ2WRc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 18:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbZJ2WRc
+	id S1756725AbZJ2WUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 18:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbZJ2WUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 18:17:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45808 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755959AbZJ2WRb (ORCPT
+	Thu, 29 Oct 2009 18:20:42 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:58618 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756045AbZJ2WUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 18:17:31 -0400
-Subject: Re: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from
- crashing function graph tracer
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Thu, 29 Oct 2009 18:20:41 -0400
+Date: Fri, 30 Oct 2009 03:50:37 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-In-Reply-To: <4AEA10EC.8000103@redhat.com>
-References: <20091029205151.852744305@goodmis.org>
-	 <4AEA10EC.8000103@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 29 Oct 2009 18:17:33 -0400
-Message-Id: <1256854653.26028.3255.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+       Paul Mackerras <paulus@samba.org>
+Subject: [RFC Patch 0/5] PERF-HW_BKPT: Enhance perf-events to profile
+	memory accesses using hw-breakpoints - ver III
+Message-ID: <20091029222037.GA14906@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-29 at 18:02 -0400, Masami Hiramatsu wrote:
-> > 
-> > Jprobes and the function graph tracer use the same mechanism to trace
-> > the exit of a function. Unfortunately, only one can be done at a time.
-> > The function graph tracer replaces the return address with its own handler,
-> > but so does jprobes. The two are not compatible.
-> 
-> AFAIK, Jprobe doesn't trace the exit of a function. I assume that
-> jprobe's user handler causes the problem, since the handler never
-> returns normal way.
-> Instead of that, it just calls jprobe_return() which causes
-> int3 to be trapped by kprobe's break handler. And the break handler
-> fixup regs->ip to back to traced function.
+Hi All,
+	Please find version II of the patchset that enables perf-events to
+place hw-breakpoints over kernel symbols (along with requisite enhancements to
+the hw-breakpoint layer).
 
-Ah, yes, my documenting this is wrong. It's the skipped jprobe that
-messed it up.
+The patches have been tested on an x86 box running -tip tree (commit
+d80c46df1d0e6387f3e0a49d5ffba2669eb76d71) and is intended for -tip tree
+submission if there are no further comments.
 
-> 
-> Actually, this will cause a problem with function graph tracer.
-> The f-g-tracer push the return address into the special stack and replaces
-> it with fixup function (This is similar (not same) mechanism of kretprobe.)
-> And then the traced function returns, it returns to the fixup function and
-> it pops the return address up and back to the real caller.
-> 
-> So, if the f-g-tracer traces jprobe user handler, the pop operation
-> will be skipped because the the handler never returns.
+Changelog version II
+---------------------
+Version I: http://lkml.org/lkml/2009/10/26/461
+Version II: http://lkml.org/lkml/2009/10/28/208
 
-Exactly!
+- Renamed the event names to "memory-write"/"w" and "memory-readwrite"/"rw".
+- Kernel symbolnames will accompany event-names in perf statistics.
+- A few more code comments.
 
-> 
-> > The solution I am proposing with this patch set is to add a call in
-> > ftrace that lets other code in the kernel permanently disable functions from
-> > being traced by the function and function graph tracer. As a probe function
-> > is registered with jprobes, it calls this new function and that entry
-> > will be removed from being traced.
-> >
-> > I tested this with this patch series and it does solve the problem.
-> > 
-> > Some issues though:
-> > 
-> > 1) this only works when DYNAMIC_FTRACE is enabled. We can prevent
-> > function graph tracing with jprobes when DYNAMIC_FTRACE is not
-> > enabled through Kconfig dependencies. Or have the registering of
-> > a jprobe permanently disable function graph tracing.
-> 
-> IMHO, those *probe handler should be tagged as __kprobes and notrace.
+An edited log of 'perf stat' and 'perf record' output is shown below for your
+reference.
 
-Yeah, I agree. But how do you guarantee that it does. If one forgets,
-than we still have the issue. We can perhaps test to make sure the
-function is in the kprobes section. But that does not mean they will not
-be notraced. The __kprobes and notrace are no longer in the same set.
+Thanks,
+K.Prasad
 
-> 
-> > 2) This also prevents the function tracer from being able to trace a
-> > function probe, even though the function tracer is not at issue
-> > with this bug.
-> 
-> I think we can skip those user handlers, because those are irregular
-> functions and user can control (enable/disable) it.
+Screen logs
+------------
+#
+# perf stat -v -i -e rw:pid_max -e w:jiffies make kernel/futex.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    scripts/checksyscalls.sh
+  CC      kernel/futex.o
+memory-readwrite:pid_max: 68 301693959 301693959
+memory-write:jiffies: 195 301693959 301693959
 
-True, but it may be nice to still trace them.
+ Performance counter stats for 'make kernel/futex.o':
 
-> 
-> BTW, in this specific case, I assume that it can use tracepoint
-> instead of jprobe and move tcp_probe to a part of ftrace :-), isn't it?
-> (Or, if it is just for a debugging, Systemtap can help it.)
+             68  memory-readwrite:pid_max #      0.000 M/sec
+            195  memory-write:jiffies     #      0.000 M/sec
 
-That's a question for the networking guys.
+   16.345075062  seconds time elapsed
 
--- Steve
+#
+#
+# perf record -v -i -a -e rw:pid_max top
 
+<Ran 'top' for about 10 seconds>
+
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.076 MB perf.data (~3306 samples) ]
+# 
+# perf report -i perf.data 
+No symbols found in /sbin/init, maybe install a debug package?
+<snipped>
+# Samples: 306
+#
+# Overhead          Command  Shared Object  Symbol
+# ........  ...............  .............  ......
+#
+    27.45%              yum  [kernel]       [k] alloc_pid
+    22.88%               sh  [kernel]       [k] alloc_pid
+    22.88%         powertop  [kernel]       [k] alloc_pid
+    15.03%             bash  [kernel]       [k] alloc_pid
+    10.46%          khelper  [kernel]       [k] alloc_pid
+     0.65%              top  [kernel]       [k] do_proc_dointvec_minmax_conv
+     0.65%             perf  [kernel]       [k] alloc_pid
+#
+# (For a higher level overview, try: perf report --sort comm,dso)
+#
+# 
 
