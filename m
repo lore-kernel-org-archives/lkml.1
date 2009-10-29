@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZJ2Qcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZJ2Qdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZJ2Qcl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbZJ2Qck
+	id S1755451AbZJ2Qdv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZJ2Qdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:32:40 -0400
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:54271 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753620AbZJ2Qck (ORCPT
+	Thu, 29 Oct 2009 12:33:50 -0400
+Received: from snt0-omc1-s28.snt0.hotmail.com ([65.55.90.39]:47252 "EHLO
+	snt0-omc1-s28.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752385AbZJ2Qdu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:32:40 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=us-ascii
-X-IronPort-AV: E=Sophos;i="4.44,646,1249250400";   d="scan'208";a="31720054"
-Message-id: <4AE9C396.3040705@nets.rwth-aachen.de>
-Date: Thu, 29 Oct 2009 17:32:22 +0100
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-To: Andreas Petlund <apetlund@simula.no>
-Cc: William Allen Simpson <william.allen.simpson@gmail.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "shemminger@vyatta.com" <shemminger@vyatta.com>,
-       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
-       "davem@davemloft.net" <davem@davemloft.net>
-Subject: Re: [PATCH 1/3] net: TCP thin-stream detection
-References: <4AE72075.4070702@simula.no> <4AE7B5D6.8070001@gmail.com>
- <38EB8C31-A96A-4C5C-88D8-8F6BF0E9225F@simula.no>
-In-reply-to: <38EB8C31-A96A-4C5C-88D8-8F6BF0E9225F@simula.no>
+	Thu, 29 Oct 2009 12:33:50 -0400
+Message-ID: <SNT125-W40D0711CC6E5AC27159050C3B70@phx.gbl>
+X-Originating-IP: [164.116.126.146]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: <davej@redhat.com>
+CC: <jengelh@medozas.de>, <macro@linux-mips.org>,
+       <linux-kernel@vger.kernel.org>, <mingo@elte.hu>, <tglx@linutronix.de>,
+       <hpa@zytor.com>
+Subject: RE: [X86] Fix up silly i1586 boot message.
+Date: Thu, 29 Oct 2009 09:33:55 -0700
+Importance: Normal
+In-Reply-To: <20091028154650.GA13660@redhat.com>
+References: <20080528165713.GA412@redhat.com>
+ <alpine.LNX.1.10.0805281943330.19264@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.55.0805281850540.29522@cliff.in.clinika.pl>
+ <alpine.LNX.1.10.0805282001180.19264@fbirervta.pbzchgretzou.qr>
+ <SNT125-W471F856F2358A53E59A13BC3B80@phx.gbl>
+ <alpine.LSU.2.00.0910280914590.28170@obet.zrqbmnf.qr>
+X-OriginalArrivalTime: 29 Oct 2009 16:33:54.0882 (UTC) FILETIME=[9B26DA20:01CA58B5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Petlund schrieb:
-> Den 28. okt. 2009 kl. 04.09 skrev William Allen Simpson:
-> 
->> Andreas Petlund wrote:
->>> +/* Determines whether this is a thin stream (which may suffer from
->>> + * increased latency). Used to trigger latency-reducing mechanisms.
->>> + */
->>> +static inline unsigned int tcp_stream_is_thin(const struct  
->>> tcp_sock *tp)
->>> +{
->>> +	return tp->packets_out < 4;
->>> +}
->>> +
->> This bothers me a bit.  Having just looked at your Linux presentation,
->> and not (yet) read your papers, it seems much of your justification  
->> was
->> with 1 packet per RTT.  Here, you seem to be concentrating on 4,  
->> probably
->> because many implementations quickly ramp up to 4.
->>
-> 
-> The limit of 4 packets in flight is based on the fact that less than 4  
-> packets in flight makes fast retransmissions impossible, thus limiting  
-> the retransmit options to timeout-retransmissions. The criterion is  
 
-There is Limited Transmit! So this is generally not true.
+ <20091028154650.GA13660@redhat.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
 
-> therefore as conservative as possible while still serving its purpose.  
-> If further losses occur, the exponential backoff will increase latency  
-> further. The concept of using this limit is also discussed in the  
-> Internet draft for Early Retransmit by Allman et al.:
-> http://www.icir.org/mallman/papers/draft-ietf-tcpm-early-rexmt-01.txt
 
-This ID is covering exactly the cases which Limited Transmit does not
-cover and works "automagically" without help of application. So why not
-just implement this ID?
 
-Best regards,
-Arnd
+>> So that tells us that either NT4 works=2C or nobody uses
+>> NT4 on fam15s.
+>
+> Or that no-one cares.
+NT 4 do work on fam15s=2C because 15 truncated to 3 bits is 7=2C while 8 tr=
+uncated to 3 bits is 0.
+> I don't know why this year and half old thread was resurrected=2C
+> but can we all do our bit for lkml traffic reduction and let it die?
+> (or at least drop me from the cc. The bug was fixed May 2008=2C
+> there's no reason afaics for endless bibble filling everyones inbox).
+=A0I know that this bug is now fixed=2C but=A0I wanted to provide more deta=
+il on the history behind this.
+Yuhong Bao 		 	   		 =20
+_________________________________________________________________
+Windows 7: Simplify your PC. Learn more.
+http://www.microsoft.com/Windows/windows-7/default.aspx?ocid=3DPID24727::T:=
+WLMTAGL:ON:WL:en-US:WWL_WIN_evergreen1:102009=
