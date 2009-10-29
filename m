@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZJ2JKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbZJ2JOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbZJ2JKa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 05:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZJ2JKa
+	id S1753920AbZJ2JOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 05:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZJ2JOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 05:10:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42407 "EHLO mx2.mail.elte.hu"
+	Thu, 29 Oct 2009 05:14:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60364 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639AbZJ2JK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 05:10:29 -0400
-Date: Thu, 29 Oct 2009 10:09:57 +0100
+	id S1753754AbZJ2JOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 05:14:17 -0400
+Date: Thu, 29 Oct 2009 10:14:11 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Andi Kleen <ak@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH] x86, mce: short output of MCE banks ownership
-	information
-Message-ID: <20091029090957.GD22963@elte.hu>
-References: <4AE90E43.2030709@jp.fujitsu.com> <adaaaza6exw.fsf@cisco.com> <4AE93B42.5040605@jp.fujitsu.com> <20091029073408.GA18976@elte.hu> <4AE951F4.7080406@jp.fujitsu.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, a.p.zijlstra@chello.nl, tglx@linutronix.de
+Subject: Re: [patch] Re: [regression bisect -next] BUG: using
+	smp_processor_id() in preemptible [00000000] code: rmmod
+Message-ID: <20091029091411.GE22963@elte.hu>
+References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com> <1256805552.7158.22.camel@marge.simson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AE951F4.7080406@jp.fujitsu.com>
+In-Reply-To: <1256805552.7158.22.camel@marge.simson.net>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,40 +35,60 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
+* Mike Galbraith <efault@gmx.de> wrote:
 
-> Ingo Molnar wrote:
-> > * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
-> >> Maybe there would be more desirable ways, but I think that "compress 
-> >> messages shorter to bear heavy repeating" will be a good way at this 
-> >> time.
-> > 
-> > We really want to only print out relevant information. 128 lines of 
-> > identical output is not relevant. (or 2x 64 lines, or 4096 lines of 
-> > identical output)
-> > 
-> > So we only want to print MCE setup messages on the boot CPU. That gives 
-> > us 90% of the benefits already: we see the rough structure of the 
-> > hardware, and if the bootup has a problem with MCE initialization we get 
-> > relevant printouts that helps debugging.
-> > 
-> > Now, it's certainly true that with things like MCE bank sharing the MCE 
-> > setup output from different CPUs might not be identical all the time - 
-> > but the information is represented in other (topology) info anyway. (and 
-> > if not it wasnt all that important to begin with)
-> > 
-> > For non-boot CPUs we can perhaps add a mce=verbose (default-disabled) 
-> > mode of bootup that allows all CPUs to be printed - should there be any 
-> > problem with MCE details only visible on non-boot CPUs. (unlikely)
+> On Wed, 2009-10-28 at 22:42 -0400, Eric Paris wrote:
+> > I get a slew of these on boot.
 > 
-> How about having a kind of "boot=quiet_ap" which suppress boot-time 
-> messages for all non-boot CPUs, rather than "mce=verbose" which only 
-> suppress one (or, with thermal message, two) line?  I don't not 
-> understand why this problem would be solved only by removing the lines 
-> from mce subsystem.
+> Ouch.  This fix it up for you?
+> 
+> sched: protect task_hot() buddy check.
+> 
+> Eric Paris reported that commit f685ceacab07d3f6c236f04803e2f2f0dbcc5afb
+> causes boot time PREEMPT_DEBUG complaints.
+> 
+> [    4.590699] BUG: using smp_processor_id() in preemptible [00000000] code: rmmod/1314
+> [    4.593043] caller is task_hot+0x86/0xd0
+> [    4.593872] Pid: 1314, comm: rmmod Tainted: G        W  2.6.32-rc3-fanotify #127
+> [    4.595443] Call Trace:
+> [    4.596177]  [<ffffffff812ad35b>] debug_smp_processor_id+0x11b/0x120
+> [    4.597337]  [<ffffffff81051d66>] task_hot+0x86/0xd0
+> [    4.598320]  [<ffffffff81066275>] set_task_cpu+0x115/0x270
+> [    4.599368]  [<ffffffff810985ab>] kthread_bind+0x6b/0x100
+> [    4.600354]  [<ffffffff810914f0>] start_workqueue_thread+0x30/0x60
+> [    4.601545]  [<ffffffff810941dd>] __create_workqueue_key+0x18d/0x2f0
+> [    4.602526]  [<ffffffff810d9bee>] stop_machine_create+0x4e/0xd0
+> [    4.603811]  [<ffffffff810c5818>] sys_delete_module+0x98/0x250
+> [    4.604922]  [<ffffffff810e2505>] ? audit_syscall_entry+0x205/0x290
+> [    4.606202]  [<ffffffff81013202>] system_call_fastpath+0x16/0x1b
+> 
+> Don't use this_rq() when preemptible.
+> 
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Reported-by: Eric Paris <eparis@redhat.com>
+> LKML-Reference: <new-submission>
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 91ffb01..21f52c4 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -2008,7 +2008,8 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+>  	/*
+>  	 * Buddy candidates are cache hot:
+>  	 */
+> -	if (sched_feat(CACHE_HOT_BUDDY) && this_rq()->nr_running &&
+> +	if (sched_feat(CACHE_HOT_BUDDY) && 
+> +			(preempt_count() ? this_rq()->nr_running : 1) &&
+>  			(&p->se == cfs_rq_of(&p->se)->next ||
+>  			 &p->se == cfs_rq_of(&p->se)->last))
+>  		return 1;
 
-The idea is to suppress bootup messages by default - and to allow opt-in 
-verbose printing, in the (rare) case of having to debug bootup problems 
-that involve APs.
+hm, the problem is kthread_bind(). It is rummaging around in scheduler 
+internals without holding the runqueue lock - and this now got exposed. 
+Even though it is operating on (supposedly ...) inactive tasks, the guts 
+of that function should be moved into sched.c and it should be fixed to 
+have proper locking.
 
 	Ingo
