@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbZJ2WdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756936AbZJ2Wet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902AbZJ2WdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 18:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbZJ2WdS
+	id S1756936AbZJ2Wet (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 18:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbZJ2Wer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 18:33:18 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:52802 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756827AbZJ2WdQ (ORCPT
+	Thu, 29 Oct 2009 18:34:47 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:63306 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756786AbZJ2Wel convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 18:33:16 -0400
-Message-Id: <20091029223321.033537042@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 29 Oct 2009 18:33:02 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Li Hong <lihong.hi@gmail.com>
-Subject: [PATCH 8/8] [PATCH 8/8] tracing: Exit with error if a weak function is used in recordmcount.pl
-References: <20091029223254.504427063@goodmis.org>
-Content-Disposition: inline; filename=0008-tracing-Exit-with-error-if-a-weak-function-is-used-i.patch
+	Thu, 29 Oct 2009 18:34:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=VO5VxZJRFoz5u0wjONRRf+d3UUwIId5m2ZXFMRdqMILA63mZZEteERzD9jwZaoR1vP
+         EZH51wABkrgup6YuzuAb5ZifU5TQxqx2h6PvGavBBoCRGeYGW/gieWcajH4socqvUKBm
+         0gP8h31IfYfpl3Na2Zyonuxk+hMxNt4N3Vicc=
+MIME-Version: 1.0
+In-Reply-To: <20091029222335.GJ18464@mit.edu>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
+	 <6dRYo8ss7vL.A.haF.Are5KB@chimera>
+	 <cb0375e10910291257t1f2f16ciade932bd78689ccc@mail.gmail.com>
+	 <20091029222335.GJ18464@mit.edu>
+Date: Thu, 29 Oct 2009 18:34:45 -0400
+X-Google-Sender-Auth: 0448fd16da2bde27
+Message-ID: <cb0375e10910291534j485b9e55vc42c3ce94a30252c@mail.gmail.com>
+Subject: Re: [Bug #14472] EXT4 corruption
+From: Andrew Lutomirski <luto@mit.edu>
+To: Theodore Tso <tytso@mit.edu>, Andrew Lutomirski <luto@mit.edu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Shawn Starr <shawn.starr@rogers.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Hong <lihong.hi@gmail.com>
+On Thu, Oct 29, 2009 at 6:23 PM, Theodore Tso <tytso@mit.edu> wrote:
+> On Thu, Oct 29, 2009 at 03:57:32PM -0400, Andrew Lutomirski wrote:
+>>
+>> This but is *not* fixed.  I just triggered it a few minutes ago by
+>> abusing i915 and drm, which caused a panic.  This is slightly newer
+>> than 2.6.32-rc5, with a couple of i915 bugfixes thrown in.
+>
+> Andrew, can you test to see if this patch helps?
 
-If a weak function is used as a relocation reference for mcount callers
-and that function is overridden, it will cause ftrace to fail at run time.
+I'm building a kernel with that patch now, and I'll keep running it
+for awhile.  I only seem to trigger this bug once a month or so, so
+I'll let you know if I see any more corruption.
 
-The current code should prevent a weak function from being used, but if
-one is, the code should exit with an error to fail at compile time.
-
-Signed-off-by: Li Hong <lihong.hi@gmail.com>
-LKML-Reference: <20091028050743.GH30758@uhli>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- scripts/recordmcount.pl |   10 +++-------
- 1 files changed, 3 insertions(+), 7 deletions(-)
-
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 884776a..a4e2435 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -350,15 +350,11 @@ sub update_funcs
- {
-     return unless ($ref_func and @offsets);
- 
--    # A section only had a weak function, to represent it.
--    # Unfortunately, a weak function may be overwritten by another
--    # function of the same name, making all these offsets incorrect.
--    # To be safe, we simply print a warning and bail.
-+    # Sanity check on weak function. A weak function may be overwritten by
-+    # another function of the same name, making all these offsets incorrect.
-     if (defined $weak{$ref_func}) {
--	print STDERR
--	    "$inputfile: WARNING: referencing weak function" .
-+	die "$inputfile: ERROR: referencing weak function" .
- 	    " $ref_func for mcount\n";
--	return;
-     }
- 
-     # is this function static? If so, note this fact.
--- 
-1.6.3.3
-
-
+Thanks,
+Andy
