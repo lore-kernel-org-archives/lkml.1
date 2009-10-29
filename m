@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbZJ2Frw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbZJ2F5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756263AbZJ2Frw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 01:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbZJ2Frv
+	id S1756376AbZJ2F5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 01:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbZJ2F5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 01:47:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50429 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750707AbZJ2Fru (ORCPT
+	Thu, 29 Oct 2009 01:57:18 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:49522 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756349AbZJ2F5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 01:47:50 -0400
-Date: Wed, 28 Oct 2009 22:47:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Shmulik Ladkani <shmulik@jungo.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: copy UART properties of UPF_FIXED_TYPE ports
- provisioned using early_serial_setup
-Message-Id: <20091028224737.ac4279e7.akpm@linux-foundation.org>
-In-Reply-To: <4AE57EDF.3040607@jungo.com>
-References: <4AE57EDF.3040607@jungo.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Oct 2009 01:57:17 -0400
+Date: Thu, 29 Oct 2009 06:57:21 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Bob Tracy <rct@gherkin.frus.com>
+Cc: linux-kernel@vger.kernel.org, debian-alpha@lists.debian.org
+Subject: Re: [BUG] 2.6.32-rc5 build failure on Alpha
+Message-ID: <20091029055721.GA20758@merkur.ravnborg.org>
+References: <20091029053947.GA9872@gherkin.frus.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091029053947.GA9872@gherkin.frus.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 12:50:07 +0200 Shmulik Ladkani <shmulik@jungo.com> wrote:
-
-> Augment the UPF_FIXED_TYPE logic, which currently applies to UART ports 
-> provisioned using platform_device_register.
+On Thu, Oct 29, 2009 at 12:39:47AM -0500, Bob Tracy wrote:
+> On Wed, Oct 28, 2009 at 10:53:05PM -0500, Bob Tracy wrote:
+> > Mainline 2.6.32-rc5 kernel build failure.  The last few lines of the kernel
+> > build output are:
+> > 
+> >   LD      vmlinux.o
+> >   MODPOST vmlinux.o
+> > WARNING: "saved_config" [vmlinux] is COMMON symbol
+> >   GEN     .version
+> >   CHK     include/linux/compile.h
+> >   UPD     include/linux/compile.h
+> >   CC      init/version.o
+> >   LD      init/built-in.o
+> >   LD      .tmp_vmlinux1
+> > arch/alpha/kernel/vmlinux.lds:241: undefined symbol `THREAD_SIZE' referenced in expression
+> > make: *** [.tmp_vmlinux1] Error 1
 > 
-> The suggested patch applies same logic into 'serial8250_register_ports', 
-> making UART ports provisioned using early_serial_setup inherit their 
-> properties from the uart_config entry.
+> > In arch/alpha/include/asm/thread_info.h, THREAD_SIZE is defined as
+> > (2*PAGE_SIZE).
 > 
-> The patch applies to linux-2.6.32-rc5
-> 
-> Signed-off-by: Shmulik Ladkani <shmulik@jungo.com>
-> ---
-> diff -upr linux-2.6.32-rc5.clean/drivers/serial/8250.c 
-> linux-2.6.32-rc5/drivers/serial/8250.c
-> --- linux-2.6.32-rc5.clean/drivers/serial/8250.c	2009-10-16 
-> 02:41:50.000000000 +0200
-> +++ linux-2.6.32-rc5/drivers/serial/8250.c	2009-10-26 11:36:09.000000000 
-> +0200
+> Ok.  Found it.  The THREAD_SIZE definition is inside a
+> "#ifndef __ASSEMBLY__" block, so it never gets referenced (because
+> "__ASSEMBLY__" is defined for the "vmlinux.lds" build).  The obvious
+> suggested fix is to move the definition outside the block.
 
-Your email client wordwraps the patches.
+A patch doing this has been posted some time ago.
+I think/hope it is in -mm if it is not yet in -linus.
 
-> @@ -2704,6 +2704,14 @@ serial8250_register_ports(struct uart_dr
->   		struct uart_8250_port *up = &serial8250_ports[i];
-> 
->   		up->port.dev = dev;
-> +
-> +		if (up->port.flags & UPF_FIXED_TYPE) {
-> +			up->port.fifosize =
-> +				uart_config[up->port.type].fifo_size;
-> +			up->capabilities = uart_config[up->port.type].flags;
-> +			up->tx_loadsz = uart_config[up->port.type].tx_loadsz;
-> +		}
-> +
->   		uart_add_one_port(drv, &up->port);
->   	}
->   }
-
-Why don't we also initialise up->port.type here?
-
-Perhaps it would be neater to write a little function to do this rather
-than copy-n-paste?
-
+	Sam
