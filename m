@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZJ2Qdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZJ2QeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZJ2Qdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZJ2Qdu
+	id S1755527AbZJ2QeG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZJ2QeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:33:50 -0400
-Received: from snt0-omc1-s28.snt0.hotmail.com ([65.55.90.39]:47252 "EHLO
-	snt0-omc1-s28.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752385AbZJ2Qdu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:33:50 -0400
-Message-ID: <SNT125-W40D0711CC6E5AC27159050C3B70@phx.gbl>
-X-Originating-IP: [164.116.126.146]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: <davej@redhat.com>
-CC: <jengelh@medozas.de>, <macro@linux-mips.org>,
-       <linux-kernel@vger.kernel.org>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <hpa@zytor.com>
-Subject: RE: [X86] Fix up silly i1586 boot message.
-Date: Thu, 29 Oct 2009 09:33:55 -0700
-Importance: Normal
-In-Reply-To: <20091028154650.GA13660@redhat.com>
-References: <20080528165713.GA412@redhat.com>
- <alpine.LNX.1.10.0805281943330.19264@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.55.0805281850540.29522@cliff.in.clinika.pl>
- <alpine.LNX.1.10.0805282001180.19264@fbirervta.pbzchgretzou.qr>
- <SNT125-W471F856F2358A53E59A13BC3B80@phx.gbl>
- <alpine.LSU.2.00.0910280914590.28170@obet.zrqbmnf.qr>
-X-OriginalArrivalTime: 29 Oct 2009 16:33:54.0882 (UTC) FILETIME=[9B26DA20:01CA58B5]
+	Thu, 29 Oct 2009 12:34:05 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:50394 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753950AbZJ2QeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:34:03 -0400
+Message-ID: <4AE9C3FA.4000305@sgi.com>
+Date: Thu, 29 Oct 2009 09:34:02 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch] x86: reduce srat verbosity in the kernel log
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <4AE8792F.8070200@sgi.com> <alpine.DEB.2.00.0910281348590.24785@chino.kir.corp.google.com> <4AE8B933.5020103@sgi.com> <alpine.DEB.2.00.0910281440580.32315@chino.kir.corp.google.com> <4AE8C764.90705@sgi.com> <alpine.DEB.2.00.0910290117020.11476@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0910290117020.11476@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
- <20091028154650.GA13660@redhat.com>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
 
+David Rientjes wrote:
+> On Wed, 28 Oct 2009, Mike Travis wrote:
+> 
+>>> I'm not saying it would be illegal, merely that it would be harm
+>>> readability.  Based on how apic id's are formed from processor ids, though,
+>>> I think we're really talking about an upper limit (128) that will never be
+>>> reached.
+>> We actually have many, many more than that by adding on some extra bits
+>> to the CPU's apicid.  These select which blade in the system to target.
+>>
+> 
+> Maybe I've been vague in my rationale for why this limit will probably 
+> never be reached.  The way apic ids are constructed, with physical and 
+> logical processor ids, it tends to lend itself to ranges where 
+> bitmap_scnlistprintf() can specify a large number of apic ids with 
+> relatively few ASCII characters because logical processors typically do 
+> not have differing pxms.  For us to reach the 128 character upper bound, 
+> scnlistprintf() would need to have many, many distinct ranges; your 
+> example showed two ranges per pxm (many more machines would have only a 
+> single range).  In other words, we're not predicting to have 
+> "1-2,4-6,8-9,11-13,15-17," etc, that we often have with nodemasks.
 
+Yes, you are correct.  (I was confused... ;-)
 
->> So that tells us that either NT4 works=2C or nobody uses
->> NT4 on fam15s.
->
-> Or that no-one cares.
-NT 4 do work on fam15s=2C because 15 truncated to 3 bits is 7=2C while 8 tr=
-uncated to 3 bits is 0.
-> I don't know why this year and half old thread was resurrected=2C
-> but can we all do our bit for lkml traffic reduction and let it die?
-> (or at least drop me from the cc. The bug was fixed May 2008=2C
-> there's no reason afaics for endless bibble filling everyones inbox).
-=A0I know that this bug is now fixed=2C but=A0I wanted to provide more deta=
-il on the history behind this.
-Yuhong Bao 		 	   		 =20
-_________________________________________________________________
-Windows 7: Simplify your PC. Learn more.
-http://www.microsoft.com/Windows/windows-7/default.aspx?ocid=3DPID24727::T:=
-WLMTAGL:ON:WL:en-US:WWL_WIN_evergreen1:102009=
+I believe the disjointed ranges came from the hyperthread cpus..?  Which if
+true means there'll probably be as many distinct ranges as there are threads
+per core?
