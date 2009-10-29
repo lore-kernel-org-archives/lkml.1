@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbZJ2Ogf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZJ2OjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754394AbZJ2Ogf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 10:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZJ2Oge
+	id S1754560AbZJ2OjR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 10:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZJ2OjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 10:36:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49596
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753813AbZJ2Oge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 10:36:34 -0400
-Date: Thu, 29 Oct 2009 07:36:57 -0700 (PDT)
-Message-Id: <20091029.073657.161810259.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: IDE
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 29 Oct 2009 10:39:16 -0400
+Received: from bu3sch.de ([62.75.166.246]:52647 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754087AbZJ2OjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 10:39:15 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Date: Thu, 29 Oct 2009 15:39:14 +0100
+User-Agent: KMail/1.9.9
+Cc: bzolnier@gmail.com, penberg@cs.helsinki.fi, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linville@tuxdriver.com
+References: <200910291435.54203.bzolnier@gmail.com> <200910291514.40318.bzolnier@gmail.com> <20091029.072101.109209962.davem@davemloft.net>
+In-Reply-To: <20091029.072101.109209962.davem@davemloft.net>
+X-Move-Along: Nothing to see here. No, really... Nothing.
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910291539.16476.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 29 October 2009 15:21:01 David Miller wrote:
+> The issue is that John disagrees with you can you can't handle
+> that.
+> 
+> So instead of continuing to discuss things with him and the
+> other wireless folks, you want me to just overreach everybody
+> and revert someone else's work.
 
-Just once bug fix from Mikulas Patocka, need to add back serialization
-flag to some CMD64X chip variants.
+In the end this results in the driver maintainer being forced to maintain
+code and handle bugreports for code that he disagrees with in the first place.
+This is unacceptable and has to be resolved in some way.
+If it's not possible to get it reverted through John (for whatever reason),
+you're in charge to help the actual code maintainer out.
 
-Please pull, thanks a lot!
+> I'm not going to do that sorry, learn how to work with the
+> wireless people instead.
 
-The following changes since commit 964fe080d94db82a3268443e9b9ece4c60246414:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../rusty/linux-2.6-for-linus
+This is not the problem.
+The problem is that stuff is merged without ack from the maintainer
+and it's virtually impossible to get the stuff reverted. The only real
+way for the maintainer to resolve this is 1) live with it or 2) fix it.
+And that's bad, because it completely invalidates his priority queue.
 
-are available in the git repository at:
+Just like you must not bypass John, the driver maintainers must not be bypassed, too.
+The quality control does _only_ work if nobody in the chain is bypassed.
+But in this situation the quality control did already fail and it should be
+tried hard to resolve (=revert) the situation instead of pointing at John.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-2.6.git master
-
-Mikulas Patocka (1):
-      ide: Serialize CMD643 and CMD646 to fix a hardware bug with SSD
-
- drivers/ide/cmd64x.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+-- 
+Greetings, Michael.
