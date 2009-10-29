@@ -1,110 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZJ2VbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZJ2Vbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbZJ2VbP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 17:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbZJ2VbM
+	id S1756176AbZJ2Vbn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 17:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZJ2Vbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 17:31:12 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:37735 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756123AbZJ2VbH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 17:31:07 -0400
-Subject: Re: [PATCH] BUILD_BUG_ON: make it handle more cases
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jan Beulich <JBeulich@novell.com>, sfr@canb.auug.org.au,
-       akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-       kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org
-In-Reply-To: <200910201415.34361.rusty@rustcorp.com.au>
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	 <200910201142.34006.rusty@rustcorp.com.au> <1256002193.6546.2.camel@slab>
-	 <200910201415.34361.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 29 Oct 2009 14:30:50 -0700
-Message-Id: <1256851850.9044.114.camel@slab.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Thu, 29 Oct 2009 17:31:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51515 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756086AbZJ2Vbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 17:31:41 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Lutomirski <luto@mit.edu>
+Subject: Re: [Bug #14472] EXT4 corruption
+Date: Thu, 29 Oct 2009 22:33:11 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Shawn Starr <shawn.starr@rogers.com>, Theodore Tso <tytso@mit.edu>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.haF.Are5KB@chimera> <cb0375e10910291257t1f2f16ciade932bd78689ccc@mail.gmail.com>
+In-Reply-To: <cb0375e10910291257t1f2f16ciade932bd78689ccc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910292233.11090.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-20 at 14:15 +1030, Rusty Russell wrote:
-> BUILD_BUG_ON used to use the optimizer to do code elimination or fail
-> at link time; it was changed to first the size of a negative array (a
-> nicer compile time error), then (in
-> 8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
+On Thursday 29 October 2009, Andrew Lutomirski wrote:
+> On Mon, Oct 26, 2009 at 2:55 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.31.  Please verify if it still should be listed and let me know
+> > (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14472
+> > Subject         : EXT4 corruption
+> > Submitter       : Shawn Starr <shawn.starr@rogers.com>
+> > Date            : 2009-10-13 2:07 (14 days old)
+> > References      : http://marc.info/?l=linux-kernel&m=125539997508256&w=4
+> > Handled-By      : Theodore Tso <tytso@mit.edu>
+> >
 > 
-> bitfields: needs a literal constant at parse time, and can't be put under
-> 	"if (__builtin_constant_p(x))" for example.
-> negative array: can handle anything, but if the compiler can't tell it's
-> 	a constant, silently has no effect.
-> link time: breaks link if the compiler can't determine the value, but the
-> 	linker output is not usually as informative as a compiler error.
 > 
-> If we use the negative-array-size method *and* the link time trick,
-> we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
-> branches, and maximal ability for the compiler to detect errors at
-> build time.
+> This but is *not* fixed.  I just triggered it a few minutes ago by
+> abusing i915 and drm, which caused a panic.  This is slightly newer
+> than 2.6.32-rc5, with a couple of i915 bugfixes thrown in.
 > 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Photos are here:
+> http://web.mit.edu/luto/www/ext4_crashphotos/
 > 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -683,12 +683,6 @@ struct sysinfo {
->  	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
->  };
-> 
-> -/* Force a compilation error if condition is true */
-> -#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
-> -
-> -/* Force a compilation error if condition is constant and true */
-> -#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
-> -
->  /* Force a compilation error if condition is true, but also produce a
->     result (of value 0 and type size_t), so the expression can be used
->     e.g. in a structure initializer (or where-ever else comma expressions
-> @@ -696,6 +690,33 @@ struct sysinfo {
->  #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
->  #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
-> 
-> +/**
-> + * BUILD_BUG_ON - break compile if a condition is true.
-> + * @cond: the condition which the compiler should know is false.
-> + *
-> + * If you have some code which relies on certain constants being equal, or
-> + * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
-> + * detect if someone changes it.
-> + *
-> + * The implementation uses gcc's reluctance to create a negative array, but
-> + * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
-> + * to inline functions).  So as a fallback we use the optimizer; if it can't
-> + * prove the condition is false, it will cause a link error on the undefined
-> + * "__build_bug_on_failed".  This error message can be harder to track down
-> + * though, hence the two different methods.
-> + */
-> +#ifndef __OPTIMIZE__
-> +#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-> +#else
-> +extern int __build_bug_on_failed;
-> +#define BUILD_BUG_ON(condition)					\
-> +	do {							\
-> +		((void)sizeof(char[1 - 2*!!(condition)]));	\
-> +		if (condition) __build_bug_on_failed = 1;	\
-> +	} while(0)
-> +#endif
-> +#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
-> +
->  /* Trap pasters of __FUNCTION__ at compile-time */
->  #define __FUNCTION__ (__func__)
+> This is a very nasty regression, for obvious reasons.
 
-What's the state of this patch?
+Thanks for the update.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
-
+Rafael
