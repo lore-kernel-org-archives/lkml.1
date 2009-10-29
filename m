@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZJ2UFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZJ2ULI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbZJ2UFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 16:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbZJ2UFk
+	id S1754950AbZJ2ULI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 16:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZJ2ULG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 16:05:40 -0400
-Received: from vena.lwn.net ([206.168.112.25]:53751 "EHLO vena.lwn.net"
+	Thu, 29 Oct 2009 16:11:06 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51990 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754117AbZJ2UFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 16:05:39 -0400
-Date: Thu, 29 Oct 2009 14:05:42 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Daniel Rodrick <daniel.rodrick@gmail.com>
-Cc: Linux Newbie <linux-newbie@vger.kernel.org>,
-       Kernel Newbies <kernelnewbies@nl.linux.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Questions about linux scheduler
-Message-ID: <20091029140542.21970ff2@bike.lwn.net>
-In-Reply-To: <292693080910290808x69f25f6fgc49cb646c1c00466@mail.gmail.com>
-References: <292693080910290808x69f25f6fgc49cb646c1c00466@mail.gmail.com>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	id S1754609AbZJ2ULF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 16:11:05 -0400
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+From: Mingming <cmm@us.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Theodore Tso <tytso@mit.edu>, Parag Warudkar <parag.lkml@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       bugzilla-daemon@bugzilla.kernel.org
+In-Reply-To: <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
+	 <20091016091558.GA10184@mit.edu>
+	 <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 29 Oct 2009 13:10:38 -0700
+Message-Id: <1256847038.4341.0.camel@mingming-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Daniel,
-
-I'm not a scheduler expert by any stretch, but I can try to play one on
-the net...
-
-> I'm following the Robert Love's book and am trying to understand the
-> Linux O(1) scheduler. 
-
-Note that the O(1) scheduler is no more; it was replaced by the
-completely fair scheduler in 2.6.23.  For the purposes of your
-questions things haven't changed a lot, but it's completely different
-internally.
-
-> So here is my understanding. The kernel allows
-> the applications to specify two types of priorities
+On Tue, 2009-10-27 at 15:45 +0530, Aneesh Kumar K.V wrote:
+> Can you try this patch ?
 > 
-> * Realtime Priorities: Range from 0 to 99
-> * Non-realtime priorities: Also called "nice" values range from -20 to +19.
+> commit a8836b1d6f92273e001012c7705ae8f4c3d5fb65
+> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Date:   Tue Oct 27 15:36:38 2009 +0530
+> 
+>     ext4: discard preallocation during truncate
+>     
+>     We need to make sure when we drop and reacquire the inode's
+>     i_data_sem we discard the inode preallocation. Otherwise we
+>     could have blocks marked as free in bitmap but still belonging
+>     to prealloc space.
+>     
+>     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> 
 
-You're really talking about different scheduling classes.  There are
-two realtime classes (FIFO and RR), both of which trump the interactive
-class (SCHED_OTHER).
+Make sense, reviewed-by: Mingming Cao <cmm@us.ibm.com>
 
-> * A total of 140 priorities (100 RT + 40 non-RT) - these priorities
-> are static - do not change over time.
+> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+> index 5c5bc5d..a1ef1c3 100644
+> --- a/fs/ext4/inode.c
+> +++ b/fs/ext4/inode.c
+> @@ -209,6 +209,12 @@ static int try_to_extend_transaction(handle_t *handle, struct inode *inode)
+>  	up_write(&EXT4_I(inode)->i_data_sem);
+>  	ret = ext4_journal_restart(handle, blocks_for_truncate(inode));
+>  	down_write(&EXT4_I(inode)->i_data_sem);
+> +	/*
+> +	 * We have dropped i_data_sem. So somebody else could have done
+> +	 * block allocation. So discard the prealloc space created as a
+> +	 * part of block allocation
+> +	 */
+> +	ext4_discard_preallocations(inode);
+> 
+>  	return ret;
+>  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Sort of, but realtime priorities are really an entirely different scale.
 
-> * A lower priority process will run only if there are no runnable
-> processes in priority above it - this automatically means that all RT
-> processes get to run before non-RT processes.
-
-That is true for the realtime classes.  SCHED_OTHER will give
-lower-priority processes a bit of time even in the presence of runnable
-high-priority processes.
-
->  * tasks on the same priority level are scheduled round robin
-
-SCHED_RR does that, SCHED_FIFO does not.  SCHED_OTHER is
-fairness-based, which has RR-like characteristics but is not quite the
-same.
-
-Hope that helps,
-
-jon
-
-Jonathan Corbet / LWN.net / corbet@lwn.net
