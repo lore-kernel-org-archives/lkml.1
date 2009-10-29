@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZJ2OjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZJ2OnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbZJ2OjR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 10:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZJ2OjQ
+	id S1754848AbZJ2OnT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 10:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZJ2OnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 10:39:16 -0400
-Received: from bu3sch.de ([62.75.166.246]:52647 "EHLO vs166246.vserver.de"
+	Thu, 29 Oct 2009 10:43:18 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:61943 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754087AbZJ2OjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 10:39:15 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-Date: Thu, 29 Oct 2009 15:39:14 +0100
-User-Agent: KMail/1.9.9
-Cc: bzolnier@gmail.com, penberg@cs.helsinki.fi, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linville@tuxdriver.com
-References: <200910291435.54203.bzolnier@gmail.com> <200910291514.40318.bzolnier@gmail.com> <20091029.072101.109209962.davem@davemloft.net>
-In-Reply-To: <20091029.072101.109209962.davem@davemloft.net>
-X-Move-Along: Nothing to see here. No, really... Nothing.
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1754335AbZJ2OnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 10:43:16 -0400
+Date: Thu, 29 Oct 2009 15:43:17 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mika Kuoppala <mika.kuoppala@nokia.com>,
+       Ben Hutchings <bhutchings@solarflare.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+Subject: Shared i2c adapter locking (Was: linux-next: manual merge of the
+ net tree with the i2c tree)
+Message-ID: <20091029154317.651904b9@hyperion.delvare>
+In-Reply-To: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
+References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910291539.16476.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 October 2009 15:21:01 David Miller wrote:
-> The issue is that John disagrees with you can you can't handle
-> that.
+Hi Stephen,
+
+On Mon, 26 Oct 2009 13:37:57 +1100, Stephen Rothwell wrote:
+> Today's linux-next merge of the net tree got a conflict in
+> drivers/net/sfc/sfe4001.c between commit
+> 3f7c0648f727a6d5baf6117653e4001dc877b90b ("i2c: Prevent priority
+> inversion on top of bus lock") from the i2c tree and commit
+> c9597d4f89565b6562bd3026adbe6eac6c317f47 ("sfc: Merge sfe4001.c into
+> falcon_boards.c") from the net tree.
 > 
-> So instead of continuing to discuss things with him and the
-> other wireless folks, you want me to just overreach everybody
-> and revert someone else's work.
+> I have applied the following merge fixup patch (after removing
+> drivers/net/sfc/sfe4001.c) and can carry it as necessary.
 
-In the end this results in the driver maintainer being forced to maintain
-code and handle bugreports for code that he disagrees with in the first place.
-This is unacceptable and has to be resolved in some way.
-If it's not possible to get it reverted through John (for whatever reason),
-you're in charge to help the actual code maintainer out.
+Thanks for fixing it. The core problem here IMHO is that the sfc
+network driver touches i2c internals which it would rather leave alone.
+This is the only driver I know of which does this.
 
-> I'm not going to do that sorry, learn how to work with the
-> wireless people instead.
+I can think of 3 different ways to address the issue.
 
-This is not the problem.
-The problem is that stuff is merged without ack from the maintainer
-and it's virtually impossible to get the stuff reverted. The only real
-way for the maintainer to resolve this is 1) live with it or 2) fix it.
-And that's bad, because it completely invalidates his priority queue.
+Method #1: add a public API to grab/release an I2C segment.
 
-Just like you must not bypass John, the driver maintainers must not be bypassed, too.
-The quality control does _only_ work if nobody in the chain is bypassed.
-But in this situation the quality control did already fail and it should be
-tried hard to resolve (=revert) the situation instead of pointing at John.
+void i2c_adapter_lock(struct i2c_adapter *adapter)
+{
+	rt_mutex_lock(&adapter->bus_lock);
+}
+
+void i2c_adapter_unlock(struct i2c_adapter *adapter)
+{
+	rt_mutex_unlock(&adapter->bus_lock);
+}
+
+It has the advantage of simplicity. The problem is that it is not
+symmetric. Whatever shares the pins with I2C, I2C is considered the
+main user in that its mutex is used to guarantee mutual exclusion. If
+the other subsystem also has a mandatory locking mechanism, there will
+have to be a decision on who is locked first. If not all drivers agree,
+lockdep will get confused.
+
+Method #2: let the driver implement its own "main" locking, and have
+all pin users (i2c etc.) take it in addition to any subsystem-specific
+mutex. As far as the sfc network driver is concerned, that would mean
+adding pre-xfer and post-xfer hooks to i2c-algo-bit, where the "main"
+mutex in question would be taken resp. released.
+
+It has the advantage of symmetry. The problem is performance, as
+regular operation will require to take and release two mutexes instead
+of just one. But it is a fairly generic approach which could solve
+other issues too.
+
+Method #3: let individual bus drivers implement segment locking
+themselves, with custom locking/unlocking hooks. This way, a device
+sharing pins between several functions can have its own mutex
+protecting these pins globally, and all user subsystems (i2c etc.) use
+this single mutex.
+
+It has the advantage of performance and symmetry, at the price of
+fragility. If the i2c bus driver implements locking improperly... I am
+also worried by inconsistencies that may arise, if different i2c
+adapters are protected by different mutex types (mutex vs. real-time
+mutex vs. spinlock etc.) but maybe this will be seen as an advantage
+rather than a problem.
+
+I'm not really sure if I have a preference yet, so please speak up if
+you do.
 
 -- 
-Greetings, Michael.
+Jean Delvare
