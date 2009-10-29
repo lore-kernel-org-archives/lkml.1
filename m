@@ -1,66 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZJ2Jbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZJ2Jn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbZJ2Jbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 05:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZJ2Jbn
+	id S1753449AbZJ2Jn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 05:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZJ2Jn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 05:31:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:45671 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbZJ2Jbn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 05:31:43 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=jIPxbwDgvs92YzhKbeH88R6hIKn4DE6p/N1SnOhhlvokinMmZYUH+X7sfSw0LA3DV
-	jW8I2o5ShJY0OZLFHflaQ==
-Date: Thu, 29 Oct 2009 02:31:23 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, x86@kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] k8.h: add struct bootnode
-In-Reply-To: <20091028160955.d27ccb16.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.2.00.0910290229490.21298@chino.kir.corp.google.com>
-References: <20091028190643.627f10aa.sfr@canb.auug.org.au> <20091028160955.d27ccb16.randy.dunlap@oracle.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 29 Oct 2009 05:43:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51558 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751279AbZJ2Jnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 05:43:55 -0400
+Date: Thu, 29 Oct 2009 10:43:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-mm@kvack.org,
+       Marcelo Tosatti <mtosatti@redhat.com>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: Transparent Hugepage support
+Message-ID: <20091029094344.GA1068@elte.hu>
+References: <20091026185130.GC4868@random.random> <87ljiwk8el.fsf@basil.nowhere.org> <20091027193007.GA6043@random.random> <20091028042805.GJ7744@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091028042805.GJ7744@basil.fritz.box>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009, Randy Dunlap wrote:
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> k8.h uses struct bootnode but does not #include a header file
-> for it, so provide a simple declaration for it.
-> 
-> arch/x86/include/asm/k8.h:13: warning: 'struct bootnode' declared inside parameter list
-> arch/x86/include/asm/k8.h:13: warning: its scope is only this definition or declaration, which is probably not what you want
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-Acked-by: David Rientjes <rientjes@google.com>
-
-This is probably my fault originating from my patchset in Ingo's x86/mm 
-tree with some unexpected config option combination.  Thanks Randy!
-
-> ---
->  arch/x86/include/asm/k8.h |    1 +
->  1 file changed, 1 insertion(+)
+> > 1GB pages can't be handled by this code, and clearly it's not 
+> > practical to hope 1G pages to materialize in the buddy (even if we
 > 
-> --- linux-next-20091028.orig/arch/x86/include/asm/k8.h
-> +++ linux-next-20091028/arch/x86/include/asm/k8.h
-> @@ -4,6 +4,7 @@
->  #include <linux/pci.h>
->  
->  extern struct pci_device_id k8_nb_ids[];
-> +struct bootnode;
->  
->  extern int early_is_k8_nb(u32 value);
->  extern struct pci_dev **k8_northbridges;
+> That seems short sightened. You do this because 2MB pages give you x% 
+> performance advantage, but then it's likely that 1GB pages will give 
+> another y% improvement and why should people stop at the smaller 
+> improvement?
+> 
+> Ignoring the gigantic pages now would just mean that this would need 
+> to be revised later again or that users still need to use hacks like 
+> libhugetlbfs.
+
+I've read the patch and have read through this discussion and you are 
+missing the big point that it's best to do such things gradually - one 
+step at a time.
+
+Just like we went from 2 level pagetables to 3 level pagetables, then to 
+4 level pagetables - and we might go to 5 level pagetables in the 
+future. We didnt go from 2 level pagetables to 5 level page tables in 
+one go, despite predictions clearly pointing out the exponentially 
+increasing need for RAM.
+
+So your obsession with 1GB pages is misguided. If indeed transparent 
+largepages give us real benefits we can extend it to do transparent 
+gbpages as well - should we ever want to. There's nothing 'shortsighted' 
+about being gradual - the change is already ambitious enough as-is, and 
+brings very clear benefits to a difficult, decade-old problem no other 
+person was able to address.
+
+In fact introducing transparent 2MBpages makes 1GB pages support 
+_easier_ to merge: as at that point we'll already have a (finally..) 
+successful hugetlb facility happility used by an increasing range of 
+applications.
+
+Hugetlbfs's big problem was always that it wasnt transparent and hence 
+wasnt gradual for applications. It was an opt-in and constituted an 
+interface/ABI change - that is always a big barrier to app adoption.
+
+So i give Andrea's patch a very big thumbs up - i hope it gets reviewed 
+in fine detail and added to -mm ASAP. Our lack of decent, automatic 
+hugepage support is sticking out like a sore thumb and is hurting us in 
+high-performance setups. If largepage support within Linux has a chance, 
+this might be the way to do it.
+
+A small comment regarding the patch itself: i think it could be 
+simplified further by eliminating CONFIG_TRANSPARENT_HUGEPAGE and by 
+making it a natural feature of hugepage support. If the code is correct 
+i cannot see any scenario under which i wouldnt want a hugepage enabled 
+kernel i'm booting to not have transparent hugepage support as well.
+
+Thanks,
+
+	Ingo
