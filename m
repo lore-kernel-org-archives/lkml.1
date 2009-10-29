@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbZJ2LNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbZJ2LTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbZJ2LNm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 07:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbZJ2LNm
+	id S1754325AbZJ2LTv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 07:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZJ2LTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 07:13:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:64151 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752676AbZJ2LNk (ORCPT
+	Thu, 29 Oct 2009 07:19:49 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:55560 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753100AbZJ2LTs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 07:13:40 -0400
+	Thu, 29 Oct 2009 07:19:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=jZkVpfEhQSXgMl3Cy2PQSHb87i0pWZuRWXEwFrlutexWr4nXNiAhdEGofj9j+4bE06
-         67UdxOhnV2/Y7Q9j2lPeEoaILBk/1IBJDyuzx1c7cIybKGmVKlZOVweqsrZu/TB7XImL
-         Zo2sZZlrVEMuZMawegSoU8RUcWFA9U59cRjJE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: davem@davemloft.net
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-Date: Thu, 29 Oct 2009 12:12:41 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-References: <20091028211031.GF2856@tuxdriver.com> <200910282256.00407.bzolnier@gmail.com>
-In-Reply-To: <200910282256.00407.bzolnier@gmail.com>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=GD3U8T1zloehm8dXaLIb6hHMLfiBpk5iF8XNT8CRfH0LDgRVqKzwHHleVD/hQHst/p
+         YWLIx5QVaPy4PBopEbrSBqmF/hi1tELjPcdLekXCUHoosI0EvVpvCV1RPG8mYdyrdBnd
+         Fllgl89oqZM/x8lhSK+2TEnnxmhPWpqeOOPUM=
 MIME-Version: 1.0
-Message-Id: <200910291212.41656.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4AE83541.3030306@kernel.org>
+References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <20091028074832.GC19402@elte.hu> <4AE7FA12.2070905@kernel.org>
+	 <84144f020910280438j65bcacacq731f6076cbd8d99@mail.gmail.com>
+	 <4AE83541.3030306@kernel.org>
+Date: Thu, 29 Oct 2009 13:19:51 +0200
+X-Google-Sender-Auth: e8469d64166b67fb
+Message-ID: <84144f020910290419k45a0c47fp500f5b5c390b80e2@mail.gmail.com>
+Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Tejun Heo <tj@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
+       joerg.roedel@amd.com, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 October 2009 22:56:00 Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday 28 October 2009 22:10:32 John W. Linville wrote:
-> > Dave,
-> > 
-> > I let my patches pile-up!  Yikes!!
-> > 
-> > This request includes the usual ton of stuff for -next -- driver
-> > updates, fixes for some earlier -next stuff, a few cfg80211 changes to
-> > accomodate the libertas driver, etc.  Of note is the rt2800pci support
-> > added to the rt2x00 family.
-> 
-> Unfortunately rt2800pci support is non-functioning at the moment... :(
-> 
-> > Pleaset let me know if there are problems!
-> 
-> I find it rather disappointing that all my review comments regarding
-> rt2800pci support were just completely ignored and then the initial
-> patch was merged just as it was..
-> 
-> The way rt2800usb and rt2800pci drivers are designed really results
-> in making the task of adding working support for RT28x0 and RT30x0
-> chipsets to rt2x00 infrastructure more difficult and time consuming
-> than it should be... :(
+On Wed, Oct 28, 2009 at 2:12 PM, Tejun Heo <tj@kernel.org> wrote:
+>> We're doing it before scheduler init now but I haven't put any effort
+>> into moving it earlier than that yet. I don't see any fundamental
+>> reason we can't do that but the practical problem is that we're going
+>> to affect architecture specific boot code which is really hard to
+>> test.
+>
+> Thanks for the explanation.  It would be really great if we can pull
+> that off someday.  This should be doable architecture-by-architecture,
+> right?  You can, for example, first convert x86 and then make bootmem
+> allocator thin wrapper around the slab allocator.  After all archs
+> have been converted, the wrappers can be dropped.
 
-What is even more disappointing (especially after all that "working with"
-preaching) is that the patch is now in net-next-2.6..
+I am not sure how you we could do that.
 
--- 
-Bartlomiej Zolnierkiewicz
+The main challenge in initializing slab earlier is the various
+implicit dependencies between different parts of the kernel boot code.
+If we initialize slab earlier, we also need to initialize page
+allocator earlier which requires page table setup, mem_init(), and so
+on. Unfortunately architectures don't do boot-time setup in "standard"
+places which means that for some architectures mem_init() might need
+traps but for other architectures we can't just enable traps earlier
+unless we do something else before that as well.
+
+So I think we need to untagle the mess in init/main.c some more first
+before we try to initialize slab earlier.
+
+                        Pekka
