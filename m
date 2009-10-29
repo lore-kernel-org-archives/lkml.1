@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbZJ2PKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZJ2PKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755048AbZJ2PKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbZJ2PKb
+	id S1755202AbZJ2PKz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbZJ2PKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:10:31 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59656 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754374AbZJ2PKb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:10:31 -0400
-Date: Thu, 29 Oct 2009 13:10:15 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
-Message-ID: <20091029151014.GA7266@ghostprotocols.net>
-References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu>
+	Thu, 29 Oct 2009 11:10:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40217 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755160AbZJ2PKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:10:54 -0400
+Message-ID: <4AE9B090.9090107@kernel.org>
+Date: Thu, 29 Oct 2009 16:11:12 +0100
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091029085348.GD26970@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Bug #14467] Linker errors on ia64 with NR_CPUS=4096
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.nnF.Cre5KB@chimera> <alpine.DEB.1.10.0910271623210.20363@V090114053VZO-1> <alpine.LSU.2.00.0910271922490.19847@wotan.suse.de> <alpine.DEB.1.10.0910291435420.18197@V090114053VZO-1> <4AE9AB23.8010207@kernel.org> <alpine.DEB.1.10.0910291455400.19555@V090114053VZO-1>
+In-Reply-To: <alpine.DEB.1.10.0910291455400.19555@V090114053VZO-1>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Oct 29, 2009 at 09:53:48AM +0100, Ingo Molnar escreveu:
-> Thirdly, i think we should expose the build-id of the kernel and the 
-> path to the vmlinux (and modules) via /proc/build-id or so. That way 
-> tooling can find the vmlinux file and can validate that it matches the 
-> kernel's signature. (maybe include a file date as well - that's a faster 
-> check than a full build-id checksum, especially for large kernels)
+Christoph Lameter wrote:
+> On Thu, 29 Oct 2009, Tejun Heo wrote:
+> 
+>> It's just for sched_init() which has irq off but is not really in
+>> atomic context and does GFP_KERNEL allocations.  The following comment
+>> has been added to the first patch to explain it.
+> 
+> Uhmm.. Is the page allocator available at that point? If you are
+> constricted to the reserved per cpu area then IA64 can still run out of
+> space if its booted with 4096 actual cpus.
 
-Yeah, build-id need to be a first class citizen, being always available for
-checking that the DSO in disk matches the one being currently used by some app.
+sched_init() is after mm_init() so it should work.
 
-Right now I got myself staring at these messages in a perf top session:
+>> + * allocations are done using GFP_KERNEL with pcpu_lock released.  In
+>> + * general, percpu memory can't be allocated with irq off but
+>> + * irqsave/restore are still used in alloc path so that it can be used
+>> + * from early init path - sched_init() specifically.
+> 
+> Maybe make the patch a bit more general so that it can operate in an
+> atomic context and handles gfp flags nicely?
 
-No symbols found in /usr/lib/libvte.so.9.6.0 (deleted), maybe install a debug package?
-No symbols found in /lib/libgobject-2.0.so.0.2000.5.#prelink#.MDypV3 (deleted), maybe install a debug package?
-No symbols found in /usr/lib/libpixman-1.so.0.14.0 (deleted), maybe install a debug package?
-No symbols found in /usr/lib/libgdk-x11-2.0.so.0.1600.6.#prelink#.4CriMV (deleted), maybe install a debug package?
-No symbols found in /lib/libgthread-2.0.so.0.2000.5.#prelink#.0ooYbx (deleted), maybe install a debug package?
-No symbols found in /usr/lib/libX11.so.6.2.0 (deleted), maybe install a debug package?
-No symbols found in /usr/lib/libxcb.so.1.1.0 (deleted), maybe install a debug package?
+That would be nice but currently, we have no user which needs anything
+other than GFP_KERNEL although lack of users could have been caused by
+the lack of the functionality and the non-atomic irq disabled state is
+an exception case which is handled differently by might_sleep() too.
+So, I'm not sure whether adding GFP_* parameter would worth the
+effort.  Also, adding that is a bit too late for 2.6.32 at this point.
 
-Well, I did a 'yum upgrade' and there are some binaries still running that hold
-reference counts to those DSOs, but there is not anymore any place I can look
-for its buildid to get the right symtab.
+Thanks.
 
-Corner case, yeah, but it would be nice to be able to query for its buildid and
-then get the right symtab.
-
-But as we don't have that, I'll just look for (deleted) at the end of the DSO
-name and emit a more friendly warning...
-
-- Arnaldo
+-- 
+tejun
