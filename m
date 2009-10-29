@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbZJ2WWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbZJ2WXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbZJ2WWo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 18:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZJ2WWn
+	id S1756794AbZJ2WXj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 18:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbZJ2WXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 18:22:43 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:35623 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756721AbZJ2WWm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 18:22:42 -0400
-Date: Fri, 30 Oct 2009 03:52:40 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [RFC Patch 5/5] PERF-HW_HBKPT: Display kernel symbol-name along
-	with perf output
-Message-ID: <20091029222240.GF14906@in.ibm.com>
-References: <20091029220551.166918079@linux.vnet.ibm.com>
+	Thu, 29 Oct 2009 18:23:38 -0400
+Received: from THUNK.ORG ([69.25.196.29]:42875 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750898AbZJ2WXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 18:23:37 -0400
+Date: Thu, 29 Oct 2009 18:23:35 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Shawn Starr <shawn.starr@rogers.com>
+Subject: Re: [Bug #14472] EXT4 corruption
+Message-ID: <20091029222335.GJ18464@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Lutomirski <luto@MIT.EDU>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Shawn Starr <shawn.starr@rogers.com>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.haF.Are5KB@chimera> <cb0375e10910291257t1f2f16ciade932bd78689ccc@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=perf_hbkpt_ksymname_05
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Disposition: inline
+In-Reply-To: <cb0375e10910291257t1f2f16ciade932bd78689ccc@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable the kernel symbol to be shown when perf statistics are reported. This
-enables the user to quickly recognise the hit counter with the symbol to which
-it corresponds to.
+On Thu, Oct 29, 2009 at 03:57:32PM -0400, Andrew Lutomirski wrote:
+> 
+> This but is *not* fixed.  I just triggered it a few minutes ago by
+> abusing i915 and drm, which caused a panic.  This is slightly newer
+> than 2.6.32-rc5, with a couple of i915 bugfixes thrown in.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- tools/perf/builtin-report.c    |    4 ++--
- tools/perf/util/parse-events.c |   18 +++++++++++-------
- tools/perf/util/parse-events.h |    2 +-
- 3 files changed, 14 insertions(+), 10 deletions(-)
+Andrew, can you test to see if this patch helps?
 
-Index: linux-2.6-tip.perf_hbkpt/tools/perf/util/parse-events.c
-===================================================================
---- linux-2.6-tip.perf_hbkpt.orig/tools/perf/util/parse-events.c
-+++ linux-2.6-tip.perf_hbkpt/tools/perf/util/parse-events.c
-@@ -285,15 +285,14 @@ static char *event_cache_name(u8 cache_t
+Thanks,
+
+						- Ted
+
+commit a8836b1d6f92273e001012c7705ae8f4c3d5fb65
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Tue Oct 27 15:36:38 2009 +0530
+
+    ext4: discard preallocation during truncate
+    
+    We need to make sure when we drop and reacquire the inode's
+    i_data_sem we discard the inode preallocation. Otherwise we
+    could have blocks marked as free in bitmap but still belonging
+    to prealloc space.
+    
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 5c5bc5d..a1ef1c3 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -209,6 +209,12 @@ static int try_to_extend_transaction(handle_t *handle, struct inode *inode)
+ 	up_write(&EXT4_I(inode)->i_data_sem);
+ 	ret = ext4_journal_restart(handle, blocks_for_truncate(inode));
+ 	down_write(&EXT4_I(inode)->i_data_sem);
++	/*
++	 * We have dropped i_data_sem. So somebody else could have done
++	 * block allocation. So discard the prealloc space created as a
++	 * part of block allocation
++	 */
++	ext4_discard_preallocations(inode);
  
- const char *event_name(int counter)
- {
--	u64 config = attrs[counter].config;
--	int type = attrs[counter].type;
--
--	return __event_name(type, config);
-+	return __event_name(&attrs[counter]);
+ 	return ret;
  }
- 
--const char *__event_name(int type, u64 config)
-+const char *__event_name(const struct perf_event_attr *attr)
- {
--	static char buf[32];
-+	int type = attr->type;
-+	u64 config = attr->config;
-+	static char buf[256];
- 
- 	if (type == PERF_TYPE_RAW) {
- 		sprintf(buf, "raw 0x%llx", config);
-@@ -336,7 +335,12 @@ const char *__event_name(int type, u64 c
- 		return tracepoint_id_to_name(config);
- 
- 	case PERF_TYPE_BREAKPOINT:
--		return hbp_event_names[config];
-+		/*
-+		 * Separate the breakpoint event from the kernel symbol
-+		 * using a ":" symbol
-+		 */
-+		sprintf(buf, "%s:%s", hbp_event_names[config], attr->ksym_name);
-+			return buf;
- 
- 	default:
- 		break;
-Index: linux-2.6-tip.perf_hbkpt/tools/perf/util/parse-events.h
-===================================================================
---- linux-2.6-tip.perf_hbkpt.orig/tools/perf/util/parse-events.h
-+++ linux-2.6-tip.perf_hbkpt/tools/perf/util/parse-events.h
-@@ -20,7 +20,7 @@ extern struct perf_event_attr attrs[MAX_
- extern char *filters[MAX_COUNTERS];
- 
- extern const char *event_name(int ctr);
--extern const char *__event_name(int type, u64 config);
-+extern const char *__event_name(const struct perf_event_attr *attr);
- 
- extern int parse_events(const struct option *opt, const char *str, int unset);
- extern int parse_filter(const struct option *opt, const char *str, int unset);
-Index: linux-2.6-tip.perf_hbkpt/tools/perf/builtin-report.c
-===================================================================
---- linux-2.6-tip.perf_hbkpt.orig/tools/perf/builtin-report.c
-+++ linux-2.6-tip.perf_hbkpt/tools/perf/builtin-report.c
-@@ -849,7 +849,7 @@ process_read_event(event_t *event, unsig
- 	attr = perf_header__find_attr(event->read.id, header);
- 
- 	if (show_threads) {
--		const char *name = attr ? __event_name(attr->type, attr->config)
-+		const char *name = attr ? __event_name(attr)
- 				   : "unknown";
- 		perf_read_values_add_value(&show_threads_values,
- 					   event->read.pid, event->read.tid,
-@@ -863,7 +863,7 @@ process_read_event(event_t *event, unsig
- 			(void *)(long)(event->header.size),
- 			event->read.pid,
- 			event->read.tid,
--			attr ? __event_name(attr->type, attr->config)
-+			attr ? __event_name(attr)
- 			     : "FAIL",
- 			event->read.value);
- 
-
