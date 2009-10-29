@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZJ2T5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZJ2UBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbZJ2T5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 15:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbZJ2T5a
+	id S1754821AbZJ2UBd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 16:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbZJ2UBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 15:57:30 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:40913 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754317AbZJ2T53 convert rfc822-to-8bit (ORCPT
+	Thu, 29 Oct 2009 16:01:32 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:49138 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753661AbZJ2UBc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 15:57:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=SZRKmjyWLaCKZiaZbxa+aS279s9bGJoM+zmIYh+pJWImMIUs39Z9OszDC0a5PANFkx
-         KIj+6ECcIPkMSSQEgqpaG5KyDdxAHMmtOXSTgeEfhgwUA7sAMoNDUed1l8/CSK04X4s/
-         y3+gpAI6G3J78Cz7DK2MaOSSX1MhBfxj7jcKc=
+	Thu, 29 Oct 2009 16:01:32 -0400
+Message-ID: <4AE9F3D2.8030502@nortel.com>
+Date: Thu, 29 Oct 2009 13:58:10 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <6dRYo8ss7vL.A.haF.Are5KB@chimera>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-	 <6dRYo8ss7vL.A.haF.Are5KB@chimera>
-Date: Thu, 29 Oct 2009 15:57:32 -0400
-X-Google-Sender-Auth: 9f4f0195feddef8d
-Message-ID: <cb0375e10910291257t1f2f16ciade932bd78689ccc@mail.gmail.com>
-Subject: Re: [Bug #14472] EXT4 corruption
-From: Andrew Lutomirski <luto@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Shawn Starr <shawn.starr@rogers.com>, Theodore Tso <tytso@mit.edu>
+To: Daniel Rodrick <daniel.rodrick@gmail.com>
+CC: Linux Newbie <linux-newbie@vger.kernel.org>,
+       Kernel Newbies <kernelnewbies@nl.linux.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Questions about linux scheduler
+References: <292693080910290808x69f25f6fgc49cb646c1c00466@mail.gmail.com>
+In-Reply-To: <292693080910290808x69f25f6fgc49cb646c1c00466@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Oct 2009 20:01:32.0130 (UTC) FILETIME=[9C400C20:01CA58D2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 2:55 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14472
-> Subject         : EXT4 corruption
-> Submitter       : Shawn Starr <shawn.starr@rogers.com>
-> Date            : 2009-10-13 2:07 (14 days old)
-> References      : http://marc.info/?l=linux-kernel&m=125539997508256&w=4
-> Handled-By      : Theodore Tso <tytso@mit.edu>
->
+On 10/29/2009 09:08 AM, Daniel Rodrick wrote:
+> Hi list,
+> 
+> I'm following the Robert Love's book and am trying to understand the
+> Linux O(1) scheduler.
 
+The details of Rob Love's book are now out of date and no longer
+applicable to the current scheduler.  Some of the overall concepts are
+still applicable though.
 
-This but is *not* fixed.  I just triggered it a few minutes ago by
-abusing i915 and drm, which caused a panic.  This is slightly newer
-than 2.6.32-rc5, with a couple of i915 bugfixes thrown in.
+> So here is my understanding. The kernel allows
+> the applications to specify two types of priorities
+> 
+> * Realtime Priorities: Range from 0 to 99
 
-Photos are here:
-http://web.mit.edu/luto/www/ext4_crashphotos/
+Actually, 1 to 99.
 
-This is a very nasty regression, for obvious reasons.
+> * Non-realtime priorities: Also called "nice" values range from -20 to +19.
+> 
+> (The above are mutually exclusive)
 
---Andy
+Correct.
+
+> Over all Scheduling algo
+> =================
+> * A total of 140 priorities (100 RT + 40 non-RT) - these priorities
+> are static - do not change over time.
+
+So far so good.
+
+> * A lower priority process will run only if there are no runnable
+> processes in priority above it - this automatically means that all RT
+> processes get to run before non-RT processes.
+
+True for RT, not true for non-RT.  In the current scheduler the non-RT
+tasks are stored in a time-ordered structure rather than the 40
+runqueues that were used before.  A non-RT task will run once it becomes
+the most "urgent" task based on its nice level, how much cpu time it
+uses, and how long it's been since it ran last relative to other tasks
+on the system.
+
+>  * tasks on the same priority level are scheduled round robin
+
+True for RT.  For non-RT, tasks of other nice levels may be interleaved
+depending on how much cpu time they've been using.
+
+> Is my above understanding correct? Where my understanding doesn't fit
+> is the conncept of dynamic timeslice calculation. IMHO, the dynamic
+> timeslice calculation applies only to Non-RT processes, right? Because
+> a higher priority RT process should always get to run.
+
+With the new scheduler I think it's fair to say that non-RT tasks don't
+really have a fixed "timeslice".  The amount of time they get to run is
+determined by their nice level, previous cpu usage, cpu usage of other
+tasks, etc.
+
+Chris
