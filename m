@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZJ2U0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZJ2U0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZJ2U0U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 16:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZJ2U0U
+	id S1756647AbZJ2U0r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 16:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZJ2U0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 16:26:20 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:31471 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754694AbZJ2U0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 16:26:19 -0400
-Message-ID: <4AE9FA43.1040803@redhat.com>
-Date: Thu, 29 Oct 2009 13:25:39 -0700
-From: Josh Stone <jistone@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
-References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu> <4AE9C919.4070003@redhat.com> <4AE9F6BF.8000501@redhat.com>
-In-Reply-To: <4AE9F6BF.8000501@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Oct 2009 16:26:46 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44036 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754758AbZJ2U0p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 16:26:45 -0400
+Date: Thu, 29 Oct 2009 22:26:49 +0200 (EET)
+From: "=?ISO-8859-15?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@melkinkari.cs.Helsinki.FI
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+cc: Andreas Petlund <apetlund@simula.no>,
+       William Allen Simpson <william.allen.simpson@gmail.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       Christian Samsel <Christian.Samsel@rwth-aachen.de>
+Subject: Re: [PATCH 1/3] net: TCP thin-stream detection
+In-Reply-To: <4AE9C396.3040705@nets.rwth-aachen.de>
+Message-ID: <Pine.LNX.4.64.0910292215420.14335@melkinkari.cs.Helsinki.FI>
+References: <4AE72075.4070702@simula.no> <4AE7B5D6.8070001@gmail.com>
+ <38EB8C31-A96A-4C5C-88D8-8F6BF0E9225F@simula.no> <4AE9C396.3040705@nets.rwth-aachen.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/29/2009 01:10 PM, Masami Hiramatsu wrote:
-> Masami Hiramatsu wrote:
->> Ingo Molnar wrote:
->>> Another problem i noticed is that a vmlinux without DEBUG_INFO will fail
->>> in this way:
->>>
->>>    aldebaran:~/linux/linux>   perf probe schedule
->>>      Fatal: Failed to call dwarf_init(). Maybe, not a dwarf file.
->>
->> Ah, really? I think I broke need_dwarf logic somehow...
-> 
-> Hmm, I've found that is for searching (implicitly) inlined symbols,
-> this means "the behavior is by (bad) design" :-(
-> 
-> I think it should be search the symbol in Elf (or kallsyms) first,
-> and only if it fails, use Dwarf for searching the symbol again.
-> 
-> Or, it may be enough that just trying to setup probe and if it fails
-> use Dwarf. This way doesn't require any vmlinux access.
+On Thu, 29 Oct 2009, Arnd Hannemann wrote:
 
-Just beware that functions can exist in the symbol table and as inlines
-at the same time.  For example, we've seen compat_sys_recvmsg get
-inlined into compat_sys_socketcall, while it's still compiled as a
-standalone function too.  So if you have the dwarf, you should still try
-to see if inlined versions exist.
+> Andreas Petlund schrieb:
+> > Den 28. okt. 2009 kl. 04.09 skrev William Allen Simpson:
+> > 
+> >> Andreas Petlund wrote:
+> >>> +/* Determines whether this is a thin stream (which may suffer from
+> >>> + * increased latency). Used to trigger latency-reducing mechanisms.
+> >>> + */
+> >>> +static inline unsigned int tcp_stream_is_thin(const struct  
+> >>> tcp_sock *tp)
+> >>> +{
+> >>> +	return tp->packets_out < 4;
+> >>> +}
+> >>> +
+> >> This bothers me a bit.  Having just looked at your Linux presentation,
+> >> and not (yet) read your papers, it seems much of your justification  
+> >> was
+> >> with 1 packet per RTT.  Here, you seem to be concentrating on 4,  
+> >> probably
+> >> because many implementations quickly ramp up to 4.
+> >>
+> > 
+> > The limit of 4 packets in flight is based on the fact that less than 4  
+> > packets in flight makes fast retransmissions impossible, thus limiting  
+> > the retransmit options to timeout-retransmissions. The criterion is  
+> 
+> There is Limited Transmit! So this is generally not true.
+> 
+> > therefore as conservative as possible while still serving its purpose.  
+> > If further losses occur, the exponential backoff will increase latency  
+> > further. The concept of using this limit is also discussed in the  
+> > Internet draft for Early Retransmit by Allman et al.:
+> > http://www.icir.org/mallman/papers/draft-ietf-tcpm-early-rexmt-01.txt
+> 
+> This ID is covering exactly the cases which Limited Transmit does not
+> cover and works "automagically" without help of application. So why not
+> just implement this ID?
 
-Josh
+I even gave some advise recently to one guy how to polish up the early 
+retransmit implementation of his. ...However, I think we haven't heard 
+from that since then... I added him as CC if he happens to have it already 
+done.
+
+It is actually so that patches 1+3 implement sort of an early retransmit, 
+just slightly more aggressive of it than what is given in ID but I find 
+the difference in the aggressiveness rather insignificant. ...Whereas the 
+RTO stuff is more questionable.
+
+
+-- 
+ i.
