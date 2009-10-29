@@ -1,76 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZJ2Vto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZJ2Vwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbZJ2Vto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 17:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZJ2Vtn
+	id S1756673AbZJ2Vwq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 17:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756217AbZJ2Vwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 17:49:43 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:50713 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752997AbZJ2Vtm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 17:49:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=MMovk+TUJTNyHWFcJSsI0N8VY59hmmM3hJnXC7SOY95AM08vvL6cz9Yy+iCAzxVRhG
-         lq1M4ix9fUdzYFxAe/0s1dsGoRuBM2Gv7k5cyXri/EwTCkcIFYUl7L6MK40V6MY5esqV
-         HuBYh2PfiqeOymT+v1byZG3YMjjXxCWmkfGIM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-Date: Thu, 29 Oct 2009 22:48:42 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linville@tuxdriver.com
-References: <200910291212.41656.bzolnier@gmail.com> <200910291514.40318.bzolnier@gmail.com> <84144f020910291245l1a7a3fd6o8822ecd4ce3b5504@mail.gmail.com>
-In-Reply-To: <84144f020910291245l1a7a3fd6o8822ecd4ce3b5504@mail.gmail.com>
+	Thu, 29 Oct 2009 17:52:45 -0400
+Received: from tundra.namei.org ([65.99.196.166]:38136 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755376AbZJ2Vwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 17:52:45 -0400
+Date: Fri, 30 Oct 2009 08:51:52 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: linux-security-module@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] define convenient securebits masks for prctl users
+ (v2)
+In-Reply-To: <20091029164016.GA21797@us.ibm.com>
+Message-ID: <alpine.LRH.2.00.0910300851470.25970@tundra.namei.org>
+References: <20091029164016.GA21797@us.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Message-Id: <200910292248.42229.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 October 2009 20:45:07 Pekka Enberg wrote:
-> Hi Bart,
+On Thu, 29 Oct 2009, Serge E. Hallyn wrote:
+
+> Hi James, would you mind taking the following into
+> security-testing?
+
+
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+
 > 
-> On Thu, Oct 29, 2009 at 4:14 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> >> lots of cleanups to the staging drivers, why not direct some of that
-> >> energy to the drivers/net/wireless ones?
-> >
-> > When did we start to apply "fix it yourself" rule instead of "submitter
-> > should fix it" one to the _new_ code..
+> The securebits are used by passing them to prctl with the
+> PR_{S,G}ET_SECUREBITS commands.  But the defines must be
+> shifted to be used in prctl, which begs to be confused and
+> misused by userspace.  So define some more convenient
+> values for userspace to specify.  This way userspace does
 > 
-> Don't be silly, I didn't say that.
+> 	prctl(PR_SET_SECUREBITS, SECBIT_NOROOT);
+> 
+> instead of
+> 
+> 	prctl(PR_SET_SECUREBITS, 1 << SECURE_NOROOT);
+> 
+> (Thanks to Michael for the idea)
+> 
+> This patch also adds include/linux/securebits to the installed headers.
+> Then perhaps it can be included by glibc's sys/prctl.h.
+> 
+> Changelog:
+> 	Oct 29: Stephen Rothwell points out that issecure can
+> 		be under __KERNEL__.
+> 	Oct 14: (Suggestions by Michael Kerrisk):
+> 		1. spell out SETUID in SECBIT_NO_SETUID*
+> 		2. SECBIT_X_LOCKED does not imply SECBIT_X
+> 		3. add definitions for keepcaps
+>         Oct 14: As suggested by Michael Kerrisk, don't
+> 		use SB_* as that convention is already in
+> 		use.  Use SECBIT_ prefix instead.
+> 
+> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> Acked-by: Andrew G. Morgan <morgan@kernel.org>
+> Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
+> Cc: Ulrich Drepper <drepper@redhat.com>
+> Cc: James Morris <jmorris@namei.org>
+> ---
+>  include/linux/Kbuild       |    1 +
+>  include/linux/securebits.h |   24 ++++++++++++++++++------
+>  2 files changed, 19 insertions(+), 6 deletions(-)
+> 
+> diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+> index 1feed71..5a53857 100644
+> --- a/include/linux/Kbuild
+> +++ b/include/linux/Kbuild
+> @@ -330,6 +330,7 @@ unifdef-y += scc.h
+>  unifdef-y += sched.h
+>  unifdef-y += screen_info.h
+>  unifdef-y += sdla.h
+> +unifdef-y += securebits.h
+>  unifdef-y += selinux_netlink.h
+>  unifdef-y += sem.h
+>  unifdef-y += serial_core.h
+> diff --git a/include/linux/securebits.h b/include/linux/securebits.h
+> index d2c5ed8..3340617 100644
+> --- a/include/linux/securebits.h
+> +++ b/include/linux/securebits.h
+> @@ -1,6 +1,15 @@
+>  #ifndef _LINUX_SECUREBITS_H
+>  #define _LINUX_SECUREBITS_H 1
+>  
+> +/* Each securesetting is implemented using two bits. One bit specifies
+> +   whether the setting is on or off. The other bit specify whether the
+> +   setting is locked or not. A setting which is locked cannot be
+> +   changed from user-level. */
+> +#define issecure_mask(X)	(1 << (X))
+> +#ifdef __KERNEL__
+> +#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
+> +#endif
+> +
+>  #define SECUREBITS_DEFAULT 0x00000000
+>  
+>  /* When set UID 0 has no special privileges. When unset, we support
+> @@ -12,6 +21,9 @@
+>  #define SECURE_NOROOT			0
+>  #define SECURE_NOROOT_LOCKED		1  /* make bit-0 immutable */
+>  
+> +#define SECBIT_NOROOT		(issecure_mask(SECURE_NOROOT))
+> +#define SECBIT_NOROOT_LOCKED	(issecure_mask(SECURE_NOROOT_LOCKED))
+> +
+>  /* When set, setuid to/from uid 0 does not trigger capability-"fixup".
+>     When unset, to provide compatiblility with old programs relying on
+>     set*uid to gain/lose privilege, transitions to/from uid 0 cause
+> @@ -19,6 +31,10 @@
+>  #define SECURE_NO_SETUID_FIXUP		2
+>  #define SECURE_NO_SETUID_FIXUP_LOCKED	3  /* make bit-2 immutable */
+>  
+> +#define SECBIT_NO_SETUID_FIXUP	(issecure_mask(SECURE_NO_SETUID_FIXUP))
+> +#define SECBIT_NO_SETUID_FIXUP_LOCKED \
+> +			(issecure_mask(SECURE_NO_SETUID_FIXUP_LOCKED))
+> +
+>  /* When set, a process can retain its capabilities even after
+>     transitioning to a non-root user (the set-uid fixup suppressed by
+>     bit 2). Bit-4 is cleared when a process calls exec(); setting both
+> @@ -27,12 +43,8 @@
+>  #define SECURE_KEEP_CAPS		4
+>  #define SECURE_KEEP_CAPS_LOCKED		5  /* make bit-4 immutable */
+>  
+> -/* Each securesetting is implemented using two bits. One bit specifies
+> -   whether the setting is on or off. The other bit specify whether the
+> -   setting is locked or not. A setting which is locked cannot be
+> -   changed from user-level. */
+> -#define issecure_mask(X)	(1 << (X))
+> -#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
+> +#define SECBIT_KEEP_CAPS	(issecure_mask(SECURE_KEEP_CAPS))
+> +#define SECBIT_KEEP_CAPS_LOCKED (issecure_mask(SECURE_KEEP_CAPS_LOCKED))
+>  
+>  #define SECURE_ALL_BITS		(issecure_mask(SECURE_NOROOT) | \
+>  				 issecure_mask(SECURE_NO_SETUID_FIXUP) | \
+> -- 
+> 1.6.1
+> 
 
-Sorry, I must have misunderstood you.
-
-> I was simply pointing out that your time would probably be better
-> spent in improving the "proper" ralink wireless drivers but if you
-
-Thanks for the concern.  However recent discussions made my realize how
-I should really be spending my time effectively way too well.
-
-> _really_ prefer to spend your time in pointless arguments, go ahead.
-
-I don't think that my technical arguments are pointless.
-
-Quite the contrary, I'm pretty confident that addressing my review concerns
-would result in better RT28x00 / RT30x0 support in the very near future.
-
-> It should be pretty obvious by now that the best way to improve things
-> is to work with the relevant maintainers, not against them. (Unless
-> you wish your work to be ignored, of course.)
-
-I work with a lot of other maintainers.  I would say that providing valuable
-review feedback is also "working with" (at least I would be very happy with
-such feedback in my projects).
-
---
-Bartlomiej Zolnierkiewicz
+-- 
+James Morris
+<jmorris@namei.org>
