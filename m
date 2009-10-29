@@ -1,115 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZJ2Cbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZJ2CdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbZJ2Cbo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 22:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbZJ2Cbn
+	id S1756335AbZJ2CdL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 22:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbZJ2CdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 22:31:43 -0400
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:42395 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754942AbZJ2Cbm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 22:31:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NdlIWT+0gANBF0sjZu+XRdzGXL5YAa2J8XqkGe/79Bpz72bVMQxx5tksh7PPX/nCS4
-         9vi2YnJecNFzEfnQ/xam1SDVJhVFyFulRKnBib4LG5jCUrvxfN/50Et2yP/OGcIq1HcL
-         Fzeat9FMQc+0AwG5Az5NNljv0hnOwvmSg9TTs=
-MIME-Version: 1.0
-In-Reply-To: <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
-	 <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
-	 <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
-	 <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 29 Oct 2009 11:31:47 +0900
-Message-ID: <28c262360910281931n57a3792elcf10ce0ff3f59815@mail.gmail.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: David Rientjes <rientjes@google.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 28 Oct 2009 22:33:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57687 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756252AbZJ2CdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 22:33:09 -0400
+Date: Thu, 29 Oct 2009 13:33:06 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>, linux-api@vger.kernel.org,
+       James Morris <jmorris@namei.org>
+Subject: Re: [PATCH resend] define convenient securebits masks for prctl
+ users
+Message-Id: <20091029133306.0cb87521.sfr@canb.auug.org.au>
+In-Reply-To: <20091028140236.GA8157@us.ibm.com>
+References: <20091028140236.GA8157@us.ibm.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__29_Oct_2009_13_33_06_+1100_5x.aSldZ3w=VkIqU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 10:00 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> I'll wait until the next week to post a new patch.
->> We don't need rapid way.
->>
-> I wrote above...but for my mental health, this is bug-fixed version.
-> Sorry for my carelessness. David, thank you for your review.
-> Regards,
-> -Kame
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> It's reported that OOM-Killer kills Gnone/KDE at first...
-> And yes, we can reproduce it easily.
->
-> Now, oom-killer uses mm->total_vm as its base value. But in recent
-> applications, there are a big gap between VM size and RSS size.
-> Because
->  - Applications attaches much dynamic libraries. (Gnome, KDE, etc...)
->  - Applications may alloc big VM area but use small part of them.
->    (Java, and multi-threaded applications has this tendency because
->     of default-size of stack.)
->
-> I think using mm->total_vm as score for oom-kill is not good.
-> By the same reason, overcommit memory can't work as expected.
-> (In other words, if we depends on total_vm, using overcommit more positive
->  is a good choice.)
->
-> This patch uses mm->anon_rss/file_rss as base value for calculating badness.
->
-> Following is changes to OOM score(badness) on an environment with 1.6G memory
-> plus memory-eater(500M & 1G).
->
-> Top 10 of badness score. (The highest one is the first candidate to be killed)
-> Before
-> badness program
-> 91228   gnome-settings-
-> 94210   clock-applet
-> 103202  mixer_applet2
-> 106563  tomboy
-> 112947  gnome-terminal
-> 128944  mmap              <----------- 500M malloc
-> 129332  nautilus
-> 215476  bash              <----------- parent of 2 mallocs.
-> 256944  mmap              <----------- 1G malloc
-> 423586  gnome-session
->
-> After
-> badness
-> 1911    mixer_applet2
-> 1955    clock-applet
-> 1986    xinit
-> 1989    gnome-session
-> 2293    nautilus
-> 2955    gnome-terminal
-> 4113    tomboy
-> 104163  mmap             <----------- 500M malloc.
-> 168577  bash             <----------- parent of 2 mallocs
-> 232375  mmap             <----------- 1G malloc
->
-> seems good for me. Maybe we can tweak this patch more,
-> but this one will be a good one as a start point.
->
-> Changelog: 2009/10/29
->  - use get_mm_rss() instead of get_mm_counter()
->
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+--Signature=_Thu__29_Oct_2009_13_33_06_+1100_5x.aSldZ3w=VkIqU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Let's start from this.
+Hi Serge,
 
--- 
-Kind regards,
-Minchan Kim
+On Wed, 28 Oct 2009 09:02:36 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wro=
+te:
+>
+> [ Are there any objections to exporting securebits.h?  If not,
+> can this patch be pushed to linux-next? ]
+
+I am not sure which tree this belongs in?  Maybe security-testing (James
+cc'd)?
+
+> diff --git a/include/linux/securebits.h b/include/linux/securebits.h
+> index d2c5ed8..9ad109e 100644
+> --- a/include/linux/securebits.h
+> +++ b/include/linux/securebits.h
+> @@ -1,6 +1,13 @@
+>  #ifndef _LINUX_SECUREBITS_H
+>  #define _LINUX_SECUREBITS_H 1
+> =20
+> +/* Each securesetting is implemented using two bits. One bit specifies
+> +   whether the setting is on or off. The other bit specify whether the
+> +   setting is locked or not. A setting which is locked cannot be
+> +   changed from user-level. */
+> +#define issecure_mask(X)	(1 << (X))
+> +#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
+
+You want this second define protected by ifdef __KERNEL__ ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__29_Oct_2009_13_33_06_+1100_5x.aSldZ3w=VkIqU
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkro/uIACgkQjjKRsyhoI8yk8QCeOoAWptTrIocoGY3N4tFvjm8V
+x6IAn1cgPDdSHCN1l5R4jjupgbkeSAyw
+=9xpe
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__29_Oct_2009_13_33_06_+1100_5x.aSldZ3w=VkIqU--
