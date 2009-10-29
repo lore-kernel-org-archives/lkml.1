@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbZJ2GXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbZJ2GZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbZJ2GXv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 02:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZJ2GXu
+	id S1756410AbZJ2GZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 02:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZJ2GZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 02:23:50 -0400
-Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:53940
-	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751739AbZJ2GXu (ORCPT
+	Thu, 29 Oct 2009 02:25:55 -0400
+Received: from mga06.intel.com ([134.134.136.21]:27764 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751798AbZJ2GZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 02:23:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuAAAOrR6Ep8qNN0/2dsb2JhbAAI22KCNIILBA
-X-IronPort-AV: E=Sophos;i="4.44,644,1249228800"; 
-   d="scan'208";a="575195260"
-Subject: Re: kernel panic about kernel unaligned access
-From: Ben Nizette <bn@niasdigital.com>
-To: loody <miloody@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <3a665c760910270723l6989539er7e820d630cce51ac@mail.gmail.com>
-References: <3a665c760910270627u784d43b8t2978731110c920a4@mail.gmail.com>
-	 <3a665c760910270723l6989539er7e820d630cce51ac@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 29 Oct 2009 17:24:13 +1100
-Message-Id: <1256797453.4362.61.camel@ben-desktop>
+	Thu, 29 Oct 2009 02:25:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,644,1249282800"; 
+   d="scan'208";a="462505229"
+Subject: Re: hackbench regression with kernel 2.6.32-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1256795190.7048.63.camel@marge.simson.net>
+References: <1255079943.25078.23.camel@ymzhang>
+	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
+	 <1255357264.10420.15.camel@twins>  <1255403522.3684.57.camel@ymzhang>
+	 <1255691192.7029.13.camel@marge.simson.net>
+	 <1256630584.16282.13.camel@ymzhang>
+	 <1256654547.17752.13.camel@marge.simson.net>
+	 <1256722141.16282.20.camel@ymzhang>
+	 <1256739779.7503.59.camel@marge.simson.net>
+	 <1256777448.16282.21.camel@ymzhang>
+	 <1256795190.7048.63.camel@marge.simson.net>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 29 Oct 2009 14:26:48 +0800
+Message-Id: <1256797608.16282.28.camel@ymzhang>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 22:23 +0800, loody wrote:
-> Dear all:
-> I use kernel 2.6.18 and I get the kernel panic as below:
+On Thu, 2009-10-29 at 06:46 +0100, Mike Galbraith wrote:
+> On Thu, 2009-10-29 at 08:50 +0800, Zhang, Yanmin wrote:
+> > On Wed, 2009-10-28 at 15:22 +0100, Mike Galbraith wrote:
+> > > On Wed, 2009-10-28 at 17:29 +0800, Zhang, Yanmin wrote:
+> > > > 	-Mike
+> > > > I'm investigating 5% tbench regression on Nehalem machine. perf_counter shows
+> > > > select_task_rq_fair consumes about 5% cpu time with 2.6.32-rc1 while it consumes
+> > > > less than 0.5% with 2.6.31.
+> > > > 
+> > > > Patch c88d5910890 has comments to explain it, but I still can't understand why
+> > > > to add complicated balance logic when selecting task rq.
+> > > > 
+> > > > I will check which section in function ﻿select_task_rq_fair consumes so much time.
+> > > 
+> > > Turn off SD_WAKE_BALANCE as it was called in rc1.  See commit 182a85f.
+> > I run testing against 2.6.32-rc1 which already includes the patch.
+> 
+> Duh, I checked the wrong tree.
+> 
+> SD_PREFER_LOCAL is still on in rc1 though (double checks;), so you'll go
+> through the power saving code until you reach a domain containing both
+> waker's cpu and wakee's previous cpu even if that code already found
+> that a higher domain wasn't overloaded.  Looks to me like that block
+> wants a want_sd && qualifier. 
+> 
+> Even it you turn SD_PREFER_LOCAL off, you can still hit the overhead if
+> SD_POWERSAVINGS_BALANCE is set, so I'd make sure both are off and see if
+> that's the source (likely, since the rest is already off).
+Yes. ﻿SD_POWERSAVINGS_BALANCE is disabled by default. I applied Peter's patch which
+turning ﻿SD_PREFER_LOCAL off for MC and cpu domain and it doesn't help.
+perf counter shows ﻿select_task_rq_fair still consumes about 5% cpu time. Eventually,
+I found for_each_cpu in for_each_domain consumes the 5% cpu time, because Peter's
+patch doesn't turn off ﻿SD_PREFER_LOCAL for node domain.
+I turned it off for node domain against the latest tips tree and tbench regression
+disappears on a Nehalem machine and becomes about 2% on another one.
 
-Very old kernel, you're unlikely to get good responses.
+Can we turn it off for node domain by default?
 
-> 1. what does "Not tainted" mean?
-
-You haven't loaded a closed-source module, the system hasn't crashed
-before and a few other things.  Pretty much that your system was in good
-shape before the bug
-
-> 2. I grep the kernel and I find the above message comes from do_ade in
-> unaligned.c, If I guess correctly.
->    but from the call trace I cannot find out who call it.
->    who and how kernel pass the information to do_ade?
-
-No-one calls it, it's an exception handler invoked when an unaligned
-access is attempted.  Your question should be "on which assembler
-instruction is the unaligned access attempted" and you can find that out
-as below
-
-> 3. as far as i know, inode is the data structure we used to record file.
-
-Well, its a structure which holds metadata about files, yes
-
-> From what information in the inode I can find out the file name the
-> writeback_inodes try to write?
-
-Not with just this information; you'd need additional debug output, but
-even then I very much doubt that information would help you
-
-> 4. take  [<87189564>] preempt_schedule+0x68/0xac for example, what
-> does "0xac" mean?
-
-That's the symbol size. 0x68 is the offset in to preempt_schedule and
-probably more useful for you.  With that info, your vmlinux and gdb you
-can get the offending asm instruction.
-
-All that said, it's such an old kernel you're unlikely to get much help
-actually fixing the bug, you're much better off to upgrade if there's
-any chance of it.
-
-	--Ben.
 
