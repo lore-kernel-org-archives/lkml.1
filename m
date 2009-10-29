@@ -1,142 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZJ2ITj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZJ2IT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbZJ2ITj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZJ2ITi
+	id S1752877AbZJ2IT0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZJ2ITZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:19:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57877 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753204AbZJ2ITd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:19:33 -0400
-Date: Thu, 29 Oct 2009 09:19:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC Patch 0/4] Enhance perf-events to profile memory accesses
-	using hw-breakpoints - ver II
-Message-ID: <20091029081917.GC26970@elte.hu>
-References: <20091028155827.GA8604@in.ibm.com>
+	Thu, 29 Oct 2009 04:19:25 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:42575 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbZJ2ITX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 04:19:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=O+OTLHGF22WvhJMBAm091Eth1tq3f2iI8vlDlwMpe5XeD3TAYTj6NEniGvPZvPCWsV
+         TX8sghA1fzf9LmPUKibU/NMbiNuzUuv8r3HLM+E6/Kmz9kFrtch5RDvPOYwTRLoT6p+8
+         8qdKMyz+arp6yNhUPR6VoerxopL7TDndwSLbQ=
+Date: Thu, 29 Oct 2009 11:19:26 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] proc: uninline PDE get
+Message-ID: <20091029081926.GA9916@x200>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091028155827.GA8604@in.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* PDE get is trivial -- make inline, save a few bits of code,
+  drop "refcount is 0" check -- it should be done in some generic refcount code,
+  don't recall it's was helpful
+* rename GET and PUT functions to pde_get(), pde_put() for cool prefix!
+* remove obvious and incorrent comments
+* in remove_proc_entry() use pde_put(),
+  when I fixed PDE refcounting to be normal one, remove_proc_entry() was
+  supposed to do "-1" and code now reflects that.
 
-* K.Prasad <prasad@linux.vnet.ibm.com> wrote:
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-> Hi All,
-> 	Please find version II of the patchset that enables perf-events to
-> place hw-breakpoints over kernel symbols (along with requisite enhancements to
-> the hw-breakpoint layer).
-> 
-> Changelog version II
-> ---------------------
-> Version I: http://lkml.org/lkml/2009/10/26/461
-> 
-> - Fixed parsing issues that disallowed other perf events to be invoked
-> - Fixed user-space breakpoint usage which was broken due to patch 2/4
-> - Introduced an instance of perf_sample_data for use by do_perf_sw_event()
-> 
-> An edited log of 'perf stat' and 'perf record' output is shown below for your
-> reference.
-> 
-> Kindly let me know your suggestions/feedback about the same.
-> 
-> Thanks,
-> K.Prasad
-> 
-> Screen logs
-> ------------
-> # perf stat -v -i -e breakpoint-readwrite:pid_max -e breakpoint-write:jiffies make kernel/futex.o
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-x86
->   CALL    scripts/checksyscalls.sh
->   CC      kernel/futex.o
-> breakpoint-readwrite: 68 298512531 298512531
-> breakpoint-write: 235 298512531 298512531
-> 
->  Performance counter stats for 'make kernel/futex.o':
-> 
->              68  breakpoint-readwrite     #      0.000 M/sec
->             235  breakpoint-write         #      0.000 M/sec
-> 
->    14.571235288  seconds time elapsed
-> 
-> #
-> #
-> # perf record -v -i -e breakpoint-readwrite:jiffies top
-> 
-> [Ran 'top' for about 10 seconds]
+ fs/proc/generic.c  |   21 +++++++++++++--------
+ fs/proc/inode.c    |   31 ++++---------------------------
+ fs/proc/internal.h |   10 ++++++----
+ 3 files changed, 23 insertions(+), 39 deletions(-)
 
-btw., you probably want to add the -a/--all option as well when you test 
-via top, to do system-wide profiling. With this command you profile top 
-itself (and its child tasks).
-
-> 
-> # perf report -i perf.data
-> # Samples: 2022950155
-> #
-> # Overhead  Command  Shared Object  Symbol
-> # ........  .......  .............  ......
-> #
->     99.99%      top  [kernel]       [k] scheduler_tick
->      0.01%     perf  [kernel]       [k] scheduler_tick
->      0.00%      top  [kernel]       [k] set_track
->      0.00%      top  [kernel]       [k] run_timer_softirq
->      0.00%     perf  [kernel]       [k] set_track
->      0.00%      top  [kernel]       [k] __call_rcu
->      0.00%      top  [kernel]       [k] calc_global_load
->      0.00%      top  [kernel]       [k] do_timer
->      0.00%      top  [kernel]       [k] __rcu_process_callbacks
-> #
-> # (For a higher level overview, try: perf report --sort comm,dso)
-> #
-
-That output looks pretty awesome! This way we can map out how frequently 
-global variables are used in the kernel - in stock distro kernels too. 
-Previously we could only measure it indirectly (by looking at 
-high-overhead functions and assembly level annotations), or by running 
-very costly instrumentation like Valgrind.
-
-I like it how you extended --event with the breakpoint-readwrite:jiffies 
-method as well.
-
-A few additional shortcuts/aliases would be nice, such as:
-
-   perf record -v -i -e readwrite:jiffies top
-
-as breakpoint-readwrite is pretty log users arent really interested in 
-the mechanism (hardware-breakpoints), they are more interested that it's 
-memory read-write profiling done at a given address.
-
-Maybe even 'rw' would be a useful alias as well. There are alias tables 
-for events which you can use for this. You can define them via:
-
-  { CHBP(WRITE),               "memory-write",     "write",     "w"  },
-  { CHBP(RW),                  "memory-readwrite", "readwrite", "rw" },
-
-Anyway, this looks very good already - Frederic, if you like these 
-patches too feel free to send it to me in your next hw-breakpoints pull 
-request.
-
-Thanks,
-
-	Ingo
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -429,7 +429,7 @@ struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *dir,
+ 			unsigned int ino;
+ 
+ 			ino = de->low_ino;
+-			de_get(de);
++			pde_get(de);
+ 			spin_unlock(&proc_subdir_lock);
+ 			error = -EINVAL;
+ 			inode = proc_get_inode(dir->i_sb, ino, de);
+@@ -445,7 +445,7 @@ out_unlock:
+ 		return NULL;
+ 	}
+ 	if (de)
+-		de_put(de);
++		pde_put(de);
+ 	return ERR_PTR(error);
+ }
+ 
+@@ -509,17 +509,17 @@ int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
+ 				struct proc_dir_entry *next;
+ 
+ 				/* filldir passes info to user space */
+-				de_get(de);
++				pde_get(de);
+ 				spin_unlock(&proc_subdir_lock);
+ 				if (filldir(dirent, de->name, de->namelen, filp->f_pos,
+ 					    de->low_ino, de->mode >> 12) < 0) {
+-					de_put(de);
++					pde_put(de);
+ 					goto out;
+ 				}
+ 				spin_lock(&proc_subdir_lock);
+ 				filp->f_pos++;
+ 				next = de->next;
+-				de_put(de);
++				pde_put(de);
+ 				de = next;
+ 			} while (de);
+ 			spin_unlock(&proc_subdir_lock);
+@@ -763,7 +763,7 @@ out:
+ 	return NULL;
+ }
+ 
+-void free_proc_entry(struct proc_dir_entry *de)
++static void free_proc_entry(struct proc_dir_entry *de)
+ {
+ 	unsigned int ino = de->low_ino;
+ 
+@@ -777,6 +777,12 @@ void free_proc_entry(struct proc_dir_entry *de)
+ 	kfree(de);
+ }
+ 
++void pde_put(struct proc_dir_entry *pde)
++{
++	if (atomic_dec_and_test(&pde->count))
++		free_proc_entry(pde);
++}
++
+ /*
+  * Remove a /proc entry and free it if it's not currently in use.
+  */
+@@ -845,6 +851,5 @@ continue_removing:
+ 	WARN(de->subdir, KERN_WARNING "%s: removing non-empty directory "
+ 			"'%s/%s', leaking at least '%s'\n", __func__,
+ 			de->parent->name, de->name, de->subdir->name);
+-	if (atomic_dec_and_test(&de->count))
+-		free_proc_entry(de);
++	pde_put(de);
+ }
+--- a/fs/proc/inode.c
++++ b/fs/proc/inode.c
+@@ -24,29 +24,6 @@
+ 
+ #include "internal.h"
+ 
+-struct proc_dir_entry *de_get(struct proc_dir_entry *de)
+-{
+-	atomic_inc(&de->count);
+-	return de;
+-}
+-
+-/*
+- * Decrements the use count and checks for deferred deletion.
+- */
+-void de_put(struct proc_dir_entry *de)
+-{
+-	if (!atomic_read(&de->count)) {
+-		printk("de_put: entry %s already free!\n", de->name);
+-		return;
+-	}
+-
+-	if (atomic_dec_and_test(&de->count))
+-		free_proc_entry(de);
+-}
+-
+-/*
+- * Decrement the use count of the proc_dir_entry.
+- */
+ static void proc_delete_inode(struct inode *inode)
+ {
+ 	struct proc_dir_entry *de;
+@@ -59,7 +36,7 @@ static void proc_delete_inode(struct inode *inode)
+ 	/* Let go of any associated proc directory entry */
+ 	de = PROC_I(inode)->pde;
+ 	if (de)
+-		de_put(de);
++		pde_put(de);
+ 	if (PROC_I(inode)->sysctl)
+ 		sysctl_head_put(PROC_I(inode)->sysctl);
+ 	clear_inode(inode);
+@@ -480,7 +457,7 @@ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
+ 		}
+ 		unlock_new_inode(inode);
+ 	} else
+-	       de_put(de);
++	       pde_put(de);
+ 	return inode;
+ }			
+ 
+@@ -495,7 +472,7 @@ int proc_fill_super(struct super_block *s)
+ 	s->s_op = &proc_sops;
+ 	s->s_time_gran = 1;
+ 	
+-	de_get(&proc_root);
++	pde_get(&proc_root);
+ 	root_inode = proc_get_inode(s, PROC_ROOT_INO, &proc_root);
+ 	if (!root_inode)
+ 		goto out_no_root;
+@@ -509,6 +486,6 @@ int proc_fill_super(struct super_block *s)
+ out_no_root:
+ 	printk("proc_read_super: get root inode failed\n");
+ 	iput(root_inode);
+-	de_put(&proc_root);
++	pde_put(&proc_root);
+ 	return -ENOMEM;
+ }
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -61,8 +61,6 @@ extern const struct file_operations proc_pagemap_operations;
+ extern const struct file_operations proc_net_operations;
+ extern const struct inode_operations proc_net_inode_operations;
+ 
+-void free_proc_entry(struct proc_dir_entry *de);
+-
+ void proc_init_inodecache(void);
+ 
+ static inline struct pid *proc_pid(struct inode *inode)
+@@ -101,8 +99,12 @@ unsigned long task_vsize(struct mm_struct *);
+ int task_statm(struct mm_struct *, int *, int *, int *, int *);
+ void task_mem(struct seq_file *, struct mm_struct *);
+ 
+-struct proc_dir_entry *de_get(struct proc_dir_entry *de);
+-void de_put(struct proc_dir_entry *de);
++static inline struct proc_dir_entry *pde_get(struct proc_dir_entry *pde)
++{
++	atomic_inc(&pde->count);
++	return pde;
++}
++void pde_put(struct proc_dir_entry *pde);
+ 
+ extern struct vfsmount *proc_mnt;
+ int proc_fill_super(struct super_block *);
