@@ -1,85 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbZJ2Umj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZJ2VFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756688AbZJ2Umj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 16:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbZJ2Umj
+	id S1755939AbZJ2VFe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 17:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZJ2VFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 16:42:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:24612 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756670AbZJ2Umi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 16:42:38 -0400
-Message-ID: <4AE9FE09.2030906@redhat.com>
-Date: Thu, 29 Oct 2009 16:41:45 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Josh Stone <jistone@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+	Thu, 29 Oct 2009 17:05:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49055 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbZJ2VFX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 17:05:23 -0400
+Message-Id: <20091029205151.852744305@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 29 Oct 2009 16:51:51 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
-References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu> <4AE9C919.4070003@redhat.com> <4AE9F6BF.8000501@redhat.com> <4AE9FA43.1040803@redhat.com>
-In-Reply-To: <4AE9FA43.1040803@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from crashing function graph tracer
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Josh Stone wrote:
-> On 10/29/2009 01:10 PM, Masami Hiramatsu wrote:
->> Masami Hiramatsu wrote:
->>> Ingo Molnar wrote:
->>>> Another problem i noticed is that a vmlinux without DEBUG_INFO will fail
->>>> in this way:
->>>>
->>>>     aldebaran:~/linux/linux>    perf probe schedule
->>>>       Fatal: Failed to call dwarf_init(). Maybe, not a dwarf file.
->>>
->>> Ah, really? I think I broke need_dwarf logic somehow...
->>
->> Hmm, I've found that is for searching (implicitly) inlined symbols,
->> this means "the behavior is by (bad) design" :-(
->>
->> I think it should be search the symbol in Elf (or kallsyms) first,
->> and only if it fails, use Dwarf for searching the symbol again.
->>
->> Or, it may be enough that just trying to setup probe and if it fails
->> use Dwarf. This way doesn't require any vmlinux access.
->
-> Just beware that functions can exist in the symbol table and as inlines
-> at the same time.  For example, we've seen compat_sys_recvmsg get
-> inlined into compat_sys_socketcall, while it's still compiled as a
-> standalone function too.  So if you have the dwarf, you should still try
-> to see if inlined versions exist.
+Lately I've been testing with an allyesconfig. When I ran the function graph
+tracer, it immediately crashed the kernel. Thanks to the new frame pointer
+test in function graph, it reported directly what the issue was and then
+panicked the kernel to prevent any unexpected damage from happening.
 
-Right, by default, perf-probe should see Dwarf since some static functions
-may implicitly compiled as inline, and it is hard to request user checking
-whether the symbol is inlined or not.
+It pointed the error to be with jtcp_rcv_established. Which is a jprobe
+function added to tcp_rcv_established at bootup when CONFIG_NET_TCPPROBE
+is enabled.
 
-So, this means current design is not so bad, but practically, we'd better
-provide an option which ignores inline functions. e.g. exported functions
-will be always not-inlined.
+Jprobes and the function graph tracer use the same mechanism to trace
+the exit of a function. Unfortunately, only one can be done at a time.
+The function graph tracer replaces the return address with its own handler,
+but so does jprobes. The two are not compatible.
 
-Thank you,
+The solution I am proposing with this patch set is to add a call in
+ftrace that lets other code in the kernel permanently disable functions from
+being traced by the function and function graph tracer. As a probe function
+is registered with jprobes, it calls this new function and that entry
+will be removed from being traced.
 
--- 
-Masami Hiramatsu
+I tested this with this patch series and it does solve the problem.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Some issues though:
 
-e-mail: mhiramat@redhat.com
+1) this only works when DYNAMIC_FTRACE is enabled. We can prevent
+function graph tracing with jprobes when DYNAMIC_FTRACE is not
+enabled through Kconfig dependencies. Or have the registering of
+a jprobe permanently disable function graph tracing.
+
+2) This also prevents the function tracer from being able to trace a
+function probe, even though the function tracer is not at issue
+with this bug.
+
+Feedback welcomed.
+
+-- Steve
+
+The following patches are in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: rfc/trace
+
+
+Steven Rostedt (3):
+      tracing: Clean up ftrace.h header and add ftrace_set_notrace() declaration
+      tracing: Add calls to permanently disable functions from tracing
+      tracing/kprobes: Disable tracing registered jprobe callback functions
+
+----
+ include/linux/ftrace.h |   26 +++++++--
+ kernel/kprobes.c       |    4 +
+ kernel/trace/ftrace.c  |  147 +++++++++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 150 insertions(+), 27 deletions(-)
 
