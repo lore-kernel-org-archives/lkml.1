@@ -1,74 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbZJ2IoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753017AbZJ2ItG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbZJ2IoO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZJ2IoN
+	id S1753017AbZJ2ItG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZJ2ItF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:44:13 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:4371 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752625AbZJ2IoM (ORCPT
+	Thu, 29 Oct 2009 04:49:05 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54014 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbZJ2ItD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:44:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=nH/itgFIs1/zNwGw5x9W38GHGcsWERzN2qqcZO+Hwp9F1fEPytSI99Nn2vdlSBvp/
-	ODO4IDf03V+AQVYLtKUXg==
-Date: Thu, 29 Oct 2009 01:44:11 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Alex Chiang <achiang@hp.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 3/7] Documentation: ABI: /sys/devices/system/cpu/ topology
- files
-In-Reply-To: <20091028212312.GH22743@ldl.fc.hp.com>
-Message-ID: <alpine.DEB.2.00.0910290138350.11476@chino.kir.corp.google.com>
-References: <20091022033506.13399.90799.stgit@bob.kio> <20091022034525.13399.4286.stgit@bob.kio> <alpine.DEB.2.00.0910281414170.27638@chino.kir.corp.google.com> <20091028212312.GH22743@ldl.fc.hp.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 29 Oct 2009 04:49:03 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 29 Oct 2009 17:46:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+Message-Id: <20091029174632.8110976c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
+	<abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
+	<20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009, Alex Chiang wrote:
+On Thu, 29 Oct 2009 01:31:59 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-> > I noticed that this and patches 4-6 were added to gregkh-2.6.  Alex, did 
-> > you want to seperate these large multi-file sections into individual file 
-> > sections so that it is consistent with the remainder of Documentation/ABI?
+> On Thu, 29 Oct 2009, KAMEZAWA Hiroyuki wrote:
 > 
-> That's one option. Here's another:
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > It's reported that OOM-Killer kills Gnone/KDE at first...
+> > And yes, we can reproduce it easily.
+> > 
+> > Now, oom-killer uses mm->total_vm as its base value. But in recent
+> > applications, there are a big gap between VM size and RSS size.
+> > Because
+> >   - Applications attaches much dynamic libraries. (Gnome, KDE, etc...)
+> >   - Applications may alloc big VM area but use small part of them.
+> >     (Java, and multi-threaded applications has this tendency because
+> >      of default-size of stack.)
+> > 
+> > I think using mm->total_vm as score for oom-kill is not good.
+> > By the same reason, overcommit memory can't work as expected.
+> > (In other words, if we depends on total_vm, using overcommit more positive
+> >  is a good choice.)
+> > 
+> > This patch uses mm->anon_rss/file_rss as base value for calculating badness.
+> > 
+> > Following is changes to OOM score(badness) on an environment with 1.6G memory
+> > plus memory-eater(500M & 1G).
+> > 
+> > Top 10 of badness score. (The highest one is the first candidate to be killed)
+> > Before
+> > badness program
+> > 91228	gnome-settings-
+> > 94210	clock-applet
+> > 103202	mixer_applet2
+> > 106563	tomboy
+> > 112947	gnome-terminal
+> > 128944	mmap              <----------- 500M malloc
+> > 129332	nautilus
+> > 215476	bash              <----------- parent of 2 mallocs.
+> > 256944	mmap              <----------- 1G malloc
+> > 423586	gnome-session
+> > 
+> > After
+> > badness 
+> > 1911	mixer_applet2
+> > 1955	clock-applet
+> > 1986	xinit
+> > 1989	gnome-session
+> > 2293	nautilus
+> > 2955	gnome-terminal
+> > 4113	tomboy
+> > 104163	mmap             <----------- 500M malloc.
+> > 168577	bash             <----------- parent of 2 mallocs
+> > 232375	mmap             <----------- 1G malloc
+> > 
+> > seems good for me. Maybe we can tweak this patch more,
+> > but this one will be a good one as a start point.
+> > 
 > 
-> > > +What:		/sys/devices/system/cpu/kernel_max
-> > > +What:		/sys/devices/system/cpu/offline
-> > > +What:		/sys/devices/system/cpu/online
-> > > +What:		/sys/devices/system/cpu/possible
-> > > +What:		/sys/devices/system/cpu/present
+> This appears to actually prefer X more than total_vm in Vedran's test 
+> case.  He cited http://pastebin.com/f3f9674a0 in 
+> http://marc.info/?l=linux-kernel&m=125678557002888.
 > 
-> That way, your grep that you displayed in another mail still
-> works.
+> There are 12 ooms in this log, which has /proc/sys/vm/oom_dump_tasks 
+> enabled.  It shows the difference between the top total_vm candidates vs. 
+> the top rss candidates.
 > 
-> I understand the point about consistency, but... I kinda like the
-> condensed format better, since imho, it's easier to read.
+> total_vm
+> 708945 test
+> 195695 krunner
+> 168881 plasma-desktop
+> 130567 ktorrent
+> 127081 knotify4
+> 125881 icedove-bin
+> 123036 akregator
+> 118641 kded4
 > 
-> Dunno, I don't have very strong feelings really... Greg already
-> took them, so David, if you do have a strong feeling, let me know
-> and I'll ask Greg to drop and I'll do one last respin.
+> rss
+> 707878 test
+> 42201 Xorg
+> 13300 icedove-bin
+> 10209 ktorrent
+> 9277 akregator
+> 8878 plasma-desktop
+> 7546 krunner
+> 4532 mysqld
 > 
+> This patch would pick the memory hogging task, "test", first everytime 
+> just like the current implementation does.  It would then prefer Xorg, 
+> icedove-bin, and ktorrent next as a starting point.
+> 
+> Admittedly, there are other heuristics that the oom killer uses to create 
+> a badness score.  But since this patch is only changing the baseline from 
+> mm->total_vm to get_mm_rss(mm), its behavior in this test case do not 
+> match the patch description.
+> 
+yes, then I wrote "as start point". There are many environments.
+But I'm not sure why ntpd can be the first candidate...
+The scores you shown doesn't include children's score, right ?
 
-When I originally saw the format that the Documentation/ABI files were 
-written in, I had this premonition that someone would eventually write a 
-gui application that allowed users to tune their sysfs files and that it 
-would inevitably include commentary on what the file represented by using 
-the documentation.  It was easily parsable and had a strict file naming 
-scheme that this was possible.  It seems we've departed from that at a 
-relatively late stage in its maturity with no real benefit, but I'll defer 
-to the maintainer's preference.
+I believe I'll have to remove "adding child's score to parents".
+I'm now considering how to implement fork-bomb detector for removing it.
 
-Regardless, thanks a lot for documenting these files and going the extra 
-mile!  I'm sure it will come in very useful.
+> The vast majority of the other ooms have identical top 8 candidates:
+> 
+> total_vm
+> 673222 test
+> 195695 krunner
+> 168881 plasma-desktop
+> 130567 ktorrent
+> 127081 knotify4
+> 125881 icedove-bin
+> 123036 akregator
+> 121869 firefox-bin
+> 
+> rss
+> 672271 test
+> 42192 Xorg
+> 30763 firefox-bin
+> 13292 icedove-bin
+> 10208 ktorrent
+> 9260 akregator
+> 8859 plasma-desktop
+> 7528 krunner
+> 
+> firefox-bin seems much more preferred in this case than total_vm, but Xorg 
+> still ranks very high with this patch compared to the current 
+> implementation.
+> 
+ya, I'm now considering to drop file_rss from calculation.
+
+some reasons.
+
+  - file caches remaining in memory at OOM tend to have some trouble to remove it.
+  - file caches tend to be shared.
+  - if file caches are from shmem, we never be able to drop them if no swap/swapfull.
+
+Maybe we'll have better result.
+
+Regards,
+-Kame
+
+
+
+
