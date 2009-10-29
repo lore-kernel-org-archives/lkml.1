@@ -1,124 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZJ2TkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZJ2Tmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZJ2TkK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 15:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZJ2TkI
+	id S1754074AbZJ2Tmu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 15:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZJ2Tmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 15:40:08 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:4668 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225AbZJ2TkH (ORCPT
+	Thu, 29 Oct 2009 15:42:50 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:21155 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753591AbZJ2Tmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 15:40:07 -0400
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big
-	range for pcie devices
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-In-Reply-To: <m1639yyp85.fsf@fess.ebiederm.org>
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>
-	 <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>
-	 <4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>
-	 <4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>
-	 <4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>
-	 <m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>
-	 <m1eionia3y.fsf@fess.ebiederm.org> <4AE8A080.1040208@kernel.org>
-	 <m1pr87cilf.fsf@fess.ebiederm.org> <4AE8BA1D.5030908@kernel.org>
-	 <4AE8C4BF.8040306@kernel.org> <m1my3aboon.fsf@fess.ebiederm.org>
-	 <1256822508.30701.41.camel@dc7800.home> <m1bpjqb5dj.fsf@fess.ebiederm.org>
-	 <1256830988.30701.55.camel@dc7800.home>  <m1639yyp85.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Thu, 29 Oct 2009 13:36:18 -0600
-Message-Id: <1256844978.30701.96.camel@dc7800.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Oct 2009 15:42:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=uoFg4fnWIQdc7FR79gOO0MjP7pkPO1gALMEdiX1TzyMKLCMX+inxLesRJGn2Ys6cK
+	K4+fmCIJ8nAU8D89V04ww==
+Date: Thu, 29 Oct 2009 12:42:40 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: vedran.furac@gmail.com
+cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+In-Reply-To: <4AE97618.6060607@gmail.com>
+Message-ID: <alpine.DEB.2.00.0910291225460.27732@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+ <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com>
+ <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <4AE846E8.1070303@gmail.com> <alpine.DEB.2.00.0910281307370.23279@chino.kir.corp.google.com>
+ <4AE9068B.7030504@gmail.com> <alpine.DEB.2.00.0910290132320.11476@chino.kir.corp.google.com> <4AE97618.6060607@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-29 at 12:28 -0700, Eric W. Biederman wrote:
-> Bjorn Helgaas <bjorn.helgaas@hp.com> writes:
+On Thu, 29 Oct 2009, Vedran Furac wrote:
+
+> [ 1493.064458] Out of memory: kill process 6304 (kdeinit4) score 1190231
+> or a child
+> [ 1493.064467] Killed process 6409 (konqueror)
+> [ 1493.261149] knotify4 invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1493.261166]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1493.276528] Out of memory: kill process 6304 (kdeinit4) score 1161265
+> or a child
+> [ 1493.276538] Killed process 6411 (krusader)
+> [ 1499.221160] akregator invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1499.221178]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1499.236431] Out of memory: kill process 6304 (kdeinit4) score 1067593
+> or a child
+> [ 1499.236441] Killed process 6412 (irexec)
+> [ 1499.370192] firefox-bin invoked oom-killer: gfp_mask=0x201da,
+> order=0, oomkilladj=0
+> [ 1499.370209]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1499.385417] Out of memory: kill process 6304 (kdeinit4) score 1066861
+> or a child
+> [ 1499.385427] Killed process 6420 (xchm)
+> [ 1499.458304] kio_file invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1499.458333]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1499.458367]  [<ffffffff81120900>] ? d_kill+0x5c/0x7c
+> [ 1499.473573] Out of memory: kill process 6304 (kdeinit4) score 1043690
+> or a child
+> [ 1499.473582] Killed process 6425 (kio_file)
+> [ 1500.250746] korgac invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1500.250765]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1500.266186] Out of memory: kill process 6304 (kdeinit4) score 1020350
+> or a child
+> [ 1500.266196] Killed process 6464 (icedove)
+> [ 1500.349355] syslog-ng invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1500.349371]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1500.364689] Out of memory: kill process 6304 (kdeinit4) score 1019864
+> or a child
+> [ 1500.364699] Killed process 6477 (kio_http)
+> [ 1500.452151] kded4 invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1500.452167]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1500.452196]  [<ffffffff81120900>] ? d_kill+0x5c/0x7c
+> [ 1500.467307] Out of memory: kill process 6304 (kdeinit4) score 993142
+> or a child
+> [ 1500.467316] Killed process 6478 (kio_http)
+> [ 1500.780222] akregator invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1500.780239]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1500.796280] Out of memory: kill process 6304 (kdeinit4) score 966331
+> or a child
+> [ 1500.796290] Killed process 6484 (kio_http)
+> [ 1501.065374] syslog-ng invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1501.065390]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1501.080579] Out of memory: kill process 6304 (kdeinit4) score 939434
+> or a child
+> [ 1501.080587] Killed process 6486 (kio_http)
+> [ 1501.381188] knotify4 invoked oom-killer: gfp_mask=0x201da, order=0,
+> oomkilladj=0
+> [ 1501.381204]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1501.396338] Out of memory: kill process 6304 (kdeinit4) score 912691
+> or a child
+> [ 1501.396346] Killed process 6487 (firefox-bin)
+> [ 1502.661294] icedove-bin invoked oom-killer: gfp_mask=0x201da,
+> order=0, oomkilladj=0
+> [ 1502.661311]  [<ffffffff810d6dd7>] ? oom_kill_process+0x9a/0x264
+> [ 1502.676563] Out of memory: kill process 7580 (test) score 708945 or a
+> child
+> [ 1502.676575] Killed process 7580 (test)
 > 
-> > On Thu, 2009-10-29 at 08:13 -0700, Eric W. Biederman wrote:
-> >> Bjorn Helgaas <bjorn.helgaas@hp.com> writes:
-> >> 
-> >> > On Thu, 2009-10-29 at 01:16 -0700, Eric W. Biederman wrote:
-> >> >> Yinghai Lu <yinghai@kernel.org> writes:
-> >> >> >
-> >> >> > after closing look up the code, it looks it will not break your setup.
-> >> >> >
-> >> >> > 1. before the patches:
-> >> >> > a. when master card is inserted, all bridge in that card will get assigned with min_size
-> >> >> > b. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
-> >> >> >
-> >> >> > 2. after the patches: v5
-> >> >> > a. booted up, all leaf bridge mmio get clearred.
-> >> >> > b. when master card is inserted, all bridge in that card will get assigned with min_size, and master bridge will be sum of them
-> >> >> > c. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
-> >> >> >
-> >> >> > can you check those two patches in your setup to verify it?
-> >> >> 
-> >> >> I have a much simpler case I will break, as I tried something similar by accident.
-> >> >> 
-> >> >> AMD cpu MCP55 with one pcie port setup as hotplug.
-> >> >> The system only has 2GB of RAM.  So plenty of space for pcie devices.
-> >> >> 
-> >> >> If the firmware assigns nothing and linux at boot time assigns the pci mmio space:
-> >> >> Reads from the bar of the hotplugged device work
-> >> >> Writes to the bar of the hotplugged device, cause further writes to go to lala land.
-> >> >> 
-> >> >> So I had to have the firmware make the assignment, because only it knows the
-> >> >> details of the hidden AMD bar registers for each hypertransport chain etc.
-> >> >
-> >> > Do you mean you had to have firmware program a hot-added device, or just
-> >> > that firmware had to program the apertures of the root port that was
-> >> > present at boot, even though it had no devices below it?
-> >> 
-> >> Firmware had to program the apertures of the root port that was present
-> >> at boot, even though it had no devices below it.
-> >> 
-> >> > Firmware normally supplies ACPI _CRS information that tells us how it
-> >> > programmed the host bridge windows.  On x86, Linux normally ignores that
-> >> > and just assumes a range based on memory size.  If we paid attention to
-> >> > it (as with "pci=use_crs"), it's likely that we could do a better job of
-> >> > doing this setup.
-> >> >
-> >> > Or, of course, we could add a Linux driver that knows about "the hidden
-> >> > AMD bar registers."  But I think that should be a last resort, for when
-> >> > firmware supplied incorrect _CRS information.
-> >> 
-> >> In this case there was no ACPI, and even if there was correct _CRS information
-> >> it would have said only those addresses routed to bars/apertures on the
-> >> root bridge was routed to the MCP55.  So while it looked like we had gobs
-> >> of unallocated space we could use.  In practice we did not.
-> >
-> > I know this is a hypothetical case since you don't have ACPI, but I'm
-> > curious about this.
-> >
-> > I assume the magic AMD BARs only affect the host bridge, and that the
-> > downstream root ports look like standard PCI-to-PCI bridges.  If that's
-> > the case, and if we have correct descriptions of the host bridge
-> > apertures, Linux should theoretically be able to do as well as firmware.
-> >
-> > But you seem to be suggesting that even with a correct host bridge
-> > description, there's space that *looks* available but is not.  I don't
-> > understand how this can be.
+
+Ok, so this is the forkbomb problem by adding half of each child's 
+total_vm into the badness score of the parent.  We should address this 
+completely seperately by addressing that specific part of the heuristic, 
+not changing what we consider to be a baseline.
+
+The rationale is quite simple: we'll still experience the same problem 
+with rss as we did with total_vm in the forkbomb scenario above on certain 
+workloads (maybe not yours, but others).  The oom killer always kills a 
+child first if it has a different mm than the selected parent, so the 
+amount of memory freeing as a result of that is entirely dependent on the 
+order of the child list.  It may be very little, but killed because its 
+siblings had large total_vm values.
+
+So instead of focusing on rss, we simply need to find a better heuristic 
+for the forkbomb issue which I've already proposed a very trivial solution 
+for.  Then, afterwards, we can debate about how the scoring heuristic can 
+be changed to select better tasks (and perhaps remove a lot of the clutter 
+that's there currently!).
+
+> > Can you explain why Xorg is preferred as a baseline to kill rather than 
+> > krunner in your example?
 > 
-> What I meant was simply that not all of the non-memory space was
-> routed down the hypertransport chain to the mcp55.  If you have an
-> accurate description of that you should be fine.
+> Krunner is a small app for running other apps and do similar things. It
+> shouldn't use a lot of memory. OTOH, Xorg has to hold all the pixmaps
+> and so on. That was expected result. Fist Xorg, then firefox and
+> thunderbird.
+> 
 
-OK, yep, that makes perfect sense.  That's a good example of why I
-believe we should start paying attention to the root bridge _CRS,
-because that's exactly what it would tell us.
+You're making all these claims and assertions based _solely_ on the theory 
+that killing the application with the most resident RAM is always the 
+optimal solution.  That's just not true, especially if we're just 
+allocating small numbers of order-0 memory.
 
-Bjorn
+Much better is to allow the user to decide at what point, regardless of 
+swap usage, their application is using much more memory than expected or 
+required.  They can do that right now pretty well with /proc/pid/oom_adj 
+without this outlandish claim that they should be expected to know the rss 
+of their applications at the time of oom to effectively tune oom_adj.
 
+What would you suggest?  A script that sits in a loop checking each task's 
+current rss from /proc/pid/stat or their current oom priority though 
+/proc/pid/oom_score and adjusting oom_adj preemptively just in case the 
+oom killer is invoked in the next second?
 
+And that "small app" has 30MB of rss which could be freed, if killed, and 
+utilized for subsequent page allocations.
