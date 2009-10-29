@@ -1,80 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbZJ2FcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbZJ2FcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbZJ2FcE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 01:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZJ2FcD
+	id S1754430AbZJ2FcG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 01:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZJ2FcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 01:32:03 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:37271 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbZJ2FcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 01:32:01 -0400
-To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-Cc: Lon Hohberger <lhh@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       LKLM <linux-kernel@vger.kernel.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Neil Horman <nhorman@redhat.com>
-Subject: Re: [PATCH] [RFC][Patch x86-tip] add notifier before kdump
-References: <4AE6B1CC.6040603@np.css.fujitsu.com>
-	<20091027150725.GD10513@redhat.com>
-	<1256660208.15137.102.camel@localhost.localdomain>
-	<4AE91645.8080903@np.css.fujitsu.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 28 Oct 2009 22:32:04 -0700
-In-Reply-To: <4AE91645.8080903@np.css.fujitsu.com> (Jin Dongming's message of "Thu\, 29 Oct 2009 13\:12\:53 +0900")
-Message-ID: <m1fx927okr.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 29 Oct 2009 01:32:04 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:50198 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753064AbZJ2FcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 01:32:02 -0400
+Date: Thu, 29 Oct 2009 00:32:08 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [TOMOYO #16 02/25] LSM: Add security_path_chroot().
+Message-ID: <20091029053208.GD11558@us.ibm.com>
+References: <20091004124946.788396453@I-love.SAKURA.ne.jp> <20091004125327.457898741@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <20091004125327.457898741@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jin Dongming <jin.dongming@np.css.fujitsu.com> writes:
+Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
+> This patch allows pathname based LSM modules to check chroot() operations.
+> 
+> This hook is used by TOMOYO.
+> 
+> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 
-> Vivek, Lon Hohberger
->
-> Thanks for your comments.
->
-> I also agree with your opinion, too. But I still have problems listed
-> as following.
->     1. Nobody knows when the second kernel does not work well
->     2. Too much time cost to startup the second kernel
->
-> So I hope that following work could be done. 
->     1. Add some code before kdump to monitor the actions of second kernel
->        Something we worried about is that nobody knows when the kdump will not
->        work well. If the second kernel does not work well, nobody knows when
->        the best time is to restart. So we need to add some code such as setting
->        watchdog. If we want to monitor second kernel, some work need to be done
->        before it starts to work.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Any extra work done in the crashing kernel decreases the likely hood
-of the second kernel working.  If you want a watchdog I recommend you always
-run it and have the interval set large enough for the second kernel to boot
-before it starts petting it.  That way no code needs to run after a kernel crash.
-
->     2. Shorten the startup time of second kernel
->        I think that the purpose of second kernel is used for backup information
->        stored in memory to storage only. But the time cost is different
->        according to the system architecture. And also I think that there are
->        too many of device is not useful to get the memory information to
->        storage. I think the startup time of second kernel should be shortened.
->        I don't know much about second kernel, these are only my thought.
-
-The second kernel can be anything you like.  Including a standalone executable
-if needed for very precise requirements.  Any improvements in boot time for a
-normal linux image should apply to the dump kernel.
-
-Currently with a tight initrd and just dumping dmesg to disk I get away with
-a 20M crashkernel reservation, and it typically runs and does it's work before
-my watchdog fires.
-
-Eric
+> ---
+>  fs/open.c                |    3 +++
+>  include/linux/security.h |   11 +++++++++++
+>  security/capability.c    |    6 ++++++
+>  security/security.c      |    5 +++++
+>  4 files changed, 25 insertions(+)
+> 
+> --- security-testing-2.6.orig/fs/open.c
+> +++ security-testing-2.6/fs/open.c
+> @@ -587,6 +587,9 @@ SYSCALL_DEFINE1(chroot, const char __use
+>  	error = -EPERM;
+>  	if (!capable(CAP_SYS_CHROOT))
+>  		goto dput_and_out;
+> +	error = security_path_chroot(&path);
+> +	if (error)
+> +		goto dput_and_out;
+> 
+>  	set_fs_root(current->fs, &path);
+>  	error = 0;
+> --- security-testing-2.6.orig/include/linux/security.h
+> +++ security-testing-2.6/include/linux/security.h
+> @@ -459,6 +459,10 @@ static inline void security_free_mnt_opt
+>   *	@uid contains new owner's ID.
+>   *	@gid contains new group's ID.
+>   *	Return 0 if permission is granted.
+> + * @path_chroot:
+> + *	Check for permission to change root directory.
+> + *	@path contains the path structure.
+> + *	Return 0 if permission is granted.
+>   * @inode_readlink:
+>   *	Check the permission to read the symbolic link.
+>   *	@dentry contains the dentry structure for the file link.
+> @@ -1503,6 +1507,7 @@ struct security_operations {
+>  	int (*path_chmod) (struct dentry *dentry, struct vfsmount *mnt,
+>  			   mode_t mode);
+>  	int (*path_chown) (struct path *path, uid_t uid, gid_t gid);
+> +	int (*path_chroot) (struct path *path);
+>  #endif
+> 
+>  	int (*inode_alloc_security) (struct inode *inode);
+> @@ -2970,6 +2975,7 @@ int security_path_rename(struct path *ol
+>  int security_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
+>  			mode_t mode);
+>  int security_path_chown(struct path *path, uid_t uid, gid_t gid);
+> +int security_path_chroot(struct path *path);
+>  #else	/* CONFIG_SECURITY_PATH */
+>  static inline int security_path_unlink(struct path *dir, struct dentry *dentry)
+>  {
+> @@ -3031,6 +3037,11 @@ static inline int security_path_chown(st
+>  {
+>  	return 0;
+>  }
+> +
+> +static inline int security_path_chroot(struct path *path)
+> +{
+> +	return 0;
+> +}
+>  #endif	/* CONFIG_SECURITY_PATH */
+> 
+>  #ifdef CONFIG_KEYS
+> --- security-testing-2.6.orig/security/capability.c
+> +++ security-testing-2.6/security/capability.c
+> @@ -319,6 +319,11 @@ static int cap_path_chown(struct path *p
+>  {
+>  	return 0;
+>  }
+> +
+> +static int cap_path_chroot(struct path *root)
+> +{
+> +	return 0;
+> +}
+>  #endif
+> 
+>  static int cap_file_permission(struct file *file, int mask)
+> @@ -990,6 +995,7 @@ void security_fixup_ops(struct security_
+>  	set_to_cap_if_null(ops, path_truncate);
+>  	set_to_cap_if_null(ops, path_chmod);
+>  	set_to_cap_if_null(ops, path_chown);
+> +	set_to_cap_if_null(ops, path_chroot);
+>  #endif
+>  	set_to_cap_if_null(ops, file_permission);
+>  	set_to_cap_if_null(ops, file_alloc_security);
+> --- security-testing-2.6.orig/security/security.c
+> +++ security-testing-2.6/security/security.c
+> @@ -449,6 +449,11 @@ int security_path_chown(struct path *pat
+>  		return 0;
+>  	return security_ops->path_chown(path, uid, gid);
+>  }
+> +
+> +int security_path_chroot(struct path *path)
+> +{
+> +	return security_ops->path_chroot(path);
+> +}
+>  #endif
+> 
+>  int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
+> 
+> -- 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
