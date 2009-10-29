@@ -1,263 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZJ2Q4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbZJ2RAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbZJ2Q4h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZJ2Q4h
+	id S1755783AbZJ2RAc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 13:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbZJ2RAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:56:37 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1615 "EHLO mx1.redhat.com"
+	Thu, 29 Oct 2009 13:00:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40344 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753880AbZJ2Q4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:56:36 -0400
-Message-ID: <4AE9C919.4070003@redhat.com>
-Date: Thu, 29 Oct 2009 12:55:53 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	id S1755645AbZJ2RAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 13:00:30 -0400
+Message-ID: <4AE9CA10.10302@kernel.org>
+Date: Thu, 29 Oct 2009 10:00:00 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9r?= =?ISO-8859-1?Q?ic_Weisbecker?= 
-	<fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
-References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu>
-In-Reply-To: <20091029085348.GD26970@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
+ for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>	<m1eionia3y.fsf@fess.ebiederm.org> <4AE8A080.1040208@kernel.org>	<m1pr87cilf.fsf@fess.ebiederm.org> <4AE8BA1D.5030908@kernel.org>	<4AE8C4BF.8040306@kernel.org> <m1my3aboon.fsf@fess.ebiederm.org>	<4AE95A57.6050504@kernel.org> <m1zl7a9ped.fsf@fess.ebiederm.org>
+In-Reply-To: <m1zl7a9ped.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->
-> * Masami Hiramatsu<mhiramat@redhat.com>  wrote:
->
->> Hi Ingo,
+Eric W. Biederman wrote:
+> Yinghai Lu <yinghai@kernel.org> writes:
+> 
+>> Eric W. Biederman wrote:
+>>> Yinghai Lu <yinghai@kernel.org> writes:
+>>>> after closing look up the code, it looks it will not break your setup.
+>>>>
+>>>> 1. before the patches:
+>>>> a. when master card is inserted, all bridge in that card will get assigned with min_size
+>>>> b. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+>>>>
+>>>> 2. after the patches: v5
+>>>> a. booted up, all leaf bridge mmio get clearred.
+>>>> b. when master card is inserted, all bridge in that card will get assigned with min_size, and master bridge will be sum of them
+>>>> c. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+>>>>
+>>>> can you check those two patches in your setup to verify it?
+>>> I have a much simpler case I will break, as I tried something similar by accident.
+>> which kernel version?
+>>> AMD cpu MCP55 with one pcie port setup as hotplug.
+>>> The system only has 2GB of RAM.  So plenty of space for pcie devices.
+>> one or two ht chains?
+> 
+> One chain.
+> 
+>> do you still have lspci -tv with it?
 >>
->> Here are bugfixes and some enhances of x86-insn decoder and perf-probe.
->>   - x86 insn decoder supports AVX and FMA.
->>   - perf-probe syntax change.
->>   - perf-probe supports function-relative line number.
->>   - minor bugfixes.
->>
->> New perf-probe syntax is below:
->>
->>    perf probe 'PROBE'
->>
->>   or
->>
->>    perf probe --add 'PROBE'
->>
->>   where, PROBE is
->>
->>    <source>:<line-number>
->>
->>   or
->>
->>    <function>[:<rel-lineno>|+<byte-offset>|%return][@<source>]
->>
->>   e.g.
->>
->>    perf probe 'schedule:10@kernel/sched.c'
->>
->>    puts a probe at 10th line from entry line of schedule() function
->>    in kernel/sched.c." and
->>
->>    perf probe 'vmalloc%return'
->>
->>    puts a return probe at the returning of vmalloc.
->>
->> TODO:
->>   - Support --line option to show which lines user can probe.
->>   - Support lazy string matching.
->
-> Ok, i like these fixes and improvements - thanks Masami!
+>>> If the firmware assigns nothing and linux at boot time assigns the pci mmio space:
+>>> Reads from the bar of the hotplugged device work
+>>> Writes to the bar of the hotplugged device, cause further writes to go to lala land.
+>>>
+>>> So I had to have the firmware make the assignment, because only it knows the
+>>> details of the hidden AMD bar registers for each hypertransport chain etc.
+>> that mean kernel doesn't get peer root bus res probed properly
+> 
+> How do you do that without having drivers for the peer root bus?
 
-Thanks!
+we have amd_bus.c to handle amd k8 system with two chains. but one chain is skipped.
+(wonder if need to reenable that for one chain k8 system)
 
-> One detail i noticed is that we are still not very smart about finding
-> our vmlinux file. I booted the kernel on a box and it gave:
->
->   aldebaran:~/linux/linux>  perf probe schedule
->     Fatal: vmlinux/module file open
->   aldebaran:~/linux/linux>  ls -l vmlinux
->   -rwxrwxr-x 1 mingo mingo 21589717 2009-10-29 09:04 vmlinux
->
-> Firstly, it should print something more meaningful, such as:
->
->   aldebaran:~/linux/linux>  perf probe schedule
->     Fatal: Could not open vmlinux/module file
+another intel_bus.c is on the way to 2.6.33.
 
-Oops, yes, it should be. since previously I used perror() for error message,
-all die() messages in perf probe should be changed to show actual error message.
+when use_crs is used, those info from pci conf space is not used but just print out for check if _CRS is right or not.
 
-> Secondly, we should look beyond these places:
->
-> 25806 open("/lib/modules/2.6.32-rc5-tip-01760-g2c4b5e0-dirty/build/vmlinux", O_RDONLY) = -1 ENOENT (No such file or directory)
-> 25806 open("/usr/lib/debug/lib/modules/2.6.32-rc5-tip-01760-g2c4b5e0-dirty/vmlinux", O_RDONLY) = -1 ENOENT (No such file or directory)
-> 25806 open("/boot/vmlinux-debug-2.6.32-rc5-tip-01760-g2c4b5e0-dirty", O_RDONLY) = -1 ENOENT (No such file or directory)
-> 25806 write(2, "  Fatal: vmlinux/module file open"..., 34) = 34
-> 25806 exit_group(128)                   = ?
->
-> and look into the current directory as well.
-
-I think that perf-probe has -k option for that purpose, doesn't it? :-)
-Did you move your vmlinux from build dir to current dir?
-I assume people usually just installs kernel and runs perf tools,
-and they might not tend to copy vmlinux to current dir, just IMHO.
-But anyway, if other perf commands already search vmlinux in current
-dir, I'm OK for adding it on the list.
-
-> Thirdly, i think we should expose the build-id of the kernel and the
-> path to the vmlinux (and modules) via /proc/build-id or so. That way
-> tooling can find the vmlinux file and can validate that it matches the
-> kernel's signature. (maybe include a file date as well - that's a faster
-> check than a full build-id checksum, especially for large kernels)
-
-That's a good idea!
-I think we can expose build-id via /sys/modules/*/build-id.
-
-
-> Another problem i noticed is that a vmlinux without DEBUG_INFO will fail
-> in this way:
->
->   aldebaran:~/linux/linux>  perf probe schedule
->     Fatal: Failed to call dwarf_init(). Maybe, not a dwarf file.
-
-Ah, really? I think I broke need_dwarf logic somehow...
-
-> this is not meaningful to a user. A more usable message would be:
->
->   aldebaran:~/linux/linux>  perf probe schedule
->     Fatal: Have not found dwarf info in the vmlinux - please rebuild with CONFIG_DEBUG_INFO
-
-Sure.
-
->
-> but ... we should really not force DEBUG_INFO for a simple probe that is
-> based on an ELF symbol. We already parse ELF symbols so 'perf probe
-> schedule' should be able to figure out where to put the probe point.
-
-Agreed, I'll figure out how perf-probe can use ELF symbols too.
-
-> Not forcing debuginfo for simple usecases is extremely important for
-> usability.
-
-Yeah, it should not.
-
->
-> And once i had these fixed, i got:
->
->   aldebaran:~/linux/linux>  perf probe schedule
->     Fatal: kprobe_events open
->
-> Which is not a meaningful error message either. This error occured due
-> to CONFIG_KPROBE_TRACER not being enabled.
->
-> What we want here is two fold:
->
->   - enable kprobes event support when perf events is enabled and kprobes
->     is enabled. We dont want another config option for it.
-
-Sure, at least that combination should enable kprobe-tracer forcibly.
-
->   - and we need to improve error messages so that users can figure out
->     what is the problem.
-
-Sure.
-
-> Once i had this third roadblock out of the way i noticed that the _real_
-> reason for the error was that i was not root and had no privilege to
-> insert a kprobe.
->
-> Once root, the probe worked well:
->
->   # perf probe schedule
->   Adding new event: p:perfprobe/schedule_0 schedule+0
->
-> And it seems to be precise:
->
-> aldebaran:/home/mingo>  perf stat -e perfprobe:__switch_to_0 -e cs -a ./hackbench 1
-> Time: 0.018
->
->   Performance counter stats for './hackbench 1':
->
->             7358  perfprobe:__switch_to_0  #      0.000 M/sec
->             7364  context-switches         #      0.000 M/sec
->
->      0.119152919  seconds time elapsed
->
-> (The difference of 6 context-switches should be investigated i suspect.)
-
-Maybe, because of enabling/disabling timings difference.
-
-> Btw., very small nit, it would be better to put that sentence into past
-> tense:
->
->   # perf probe schedule
->   Added new event: p:perfprobe/schedule_0 schedule+0
->
-> To make sure the user knows that the action has been pursued already.
-
-OK.
-
-> I'd expect the typical user give up much sooner than i did so we really
-> need to address these usability details - emit useful error messages and
-> be more successful in getting the user what he wants.
->
-> But the basic UI is already pretty promising!
->
-> A few further (and very small) UI tweaks i'd suggest:
->
-> Firstly, could we please make the first probe inserted named plain after
-> the symbol it specifies, with no _0 postfix? I.e. instead of:
->
->             7358  perfprobe:__switch_to_0  #      0.000 M/sec
->
-> we'd get:
->
->             7358  perfprobe:__switch_to    #      0.000 M/sec
->
-> Subsequent probes for the same symbol can be named _1, _2 - but the
-> first symbol should not have this needless post-fix.
-
-Ah, this prefix means the offset from the symbol. Of course we can
-remove it if the offset == 0. Or, would you think make the postfix
-sequence number of probes on the same symbol?
-
-
-> Secondly, i think we should remove the 'perf' bit from the probe name.
-> I.e. instead of:
->
->             7358  perfprobe:__switch_to    #      0.000 M/sec
->
-> we should do:
->
->             7358  probe:__switch_to        #      0.000 M/sec
->
-> as that's really what the user cares about. The user already knows that
-> we are in perf - no need to repeat that in every event specification.
-
-Yeah, that's fine to me.
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+YH
