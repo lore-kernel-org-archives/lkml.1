@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbZJ2IiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZJ2Ii2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392AbZJ2IiR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZJ2IiR
+	id S1753519AbZJ2Ii2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZJ2Ii1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:38:17 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45771 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751195AbZJ2IiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:38:16 -0400
-Date: Thu, 29 Oct 2009 09:38:20 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.32-rc5: surprise removal of USB mass storage, and whole
-	system goes to hell
-Message-ID: <20091029083820.GZ10727@kernel.dk>
-References: <20091027211951.GA21967@elf.ucw.cz> <alpine.LRH.2.00.0910280212510.25075@twin.jikos.cz> <20091028095537.GD10727@kernel.dk> <20091028140731.GP10727@kernel.dk>
+	Thu, 29 Oct 2009 04:38:27 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:3720 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752833AbZJ2Ii0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 04:38:26 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=w5svUaswcy7CI2KhV7Y3oVjNcmYDQHn8z26bgeo3YCE8FwD3l8qHk6YzUw8n77LbT
+	KkaurYFZCSHtkBwPZhCDg==
+Date: Thu, 29 Oct 2009 01:38:24 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+In-Reply-To: <20091028152015.3d383cd6.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0910290136000.11476@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+ <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com>
+ <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <20091028135519.805c4789.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910272205200.7507@chino.kir.corp.google.com>
+ <20091028150536.674abe68.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910272311001.15462@chino.kir.corp.google.com> <20091028152015.3d383cd6.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028140731.GP10727@kernel.dk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28 2009, Jens Axboe wrote:
-> On Wed, Oct 28 2009, Jens Axboe wrote:
-> > On Wed, Oct 28 2009, Jiri Kosina wrote:
-> > > On Tue, 27 Oct 2009, Pavel Machek wrote:
-> > > 
-> > > > I did remove one harddrive w/o unmounting, and now the whole system
-> > > > becomes unusable :-(: (whole dmesg attached).
-> > > > 
-> > > > Stuff like "sync" hangs, and I'll probably have to reboot soon.
-> > > 
-> > > From the traces it seems that it might be related to the new per-bdi 
-> > > writeback stuff ... adding Jens to CC.
-> > 
-> > It looks like the IO isn't being errored on the device side, or perhaps
-> > it just got stuck. Pavel, if you can reproduce, please try with this
-> > tracing patch. Apply it, and then do something ala:
-> > 
-> > # cd /sys/kernel/debug/tracing
-> > # echo 0 events/enable
-> > # echo 1 events/writeback/enable
-> > # echo 0 > trace
-> > 
-> > then start the act of reproducing, and finally
-> > 
-> > # cat trace > /tmp/foo
-> > 
-> > and send the output of foo here. Thanks!
+On Wed, 28 Oct 2009, KAMEZAWA Hiroyuki wrote:
+
+> It's _not_ special to X.
 > 
-> I can reproduce this. The writeback work gets queued, we notice the task
-> isn't there and wake up the default task. And then nothing happens, I
-> wonder if the bdi is gone.
+> Almost all applications which uses many dynamica libraries can be affected by this,
+> total_vm. And, as I explained to Vedran, multi-threaded program like Java can easily
+> increase total_vm without using many anon_rss.
+> And it's the reason I hate overcommit_memory. size of VM doesn't tell anything.
 > 
-> I'll fiddle around with this.
 
-Problem is, we cannot control if the bdi disappears all of a sudden.
-This happens when the device is yanked. This bug got introduced with the
-addition of the sb s_bdi cache pointer, it would now point to a bdi that
-was gone (and memory had been freed).
-
-Pavel, can you try this?
-
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 4f53a6d..756c31b 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -614,6 +616,18 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
- 		kthread_stop(wb->task);
- }
- 
-+static void bdi_prune_sb(struct backing_dev_info *bdi)
-+{
-+	struct super_block *sb;
-+
-+	spin_lock(&sb_lock);
-+	list_for_each_entry(sb, &super_blocks, s_list) {
-+		if (sb->s_bdi == bdi)
-+			sb->s_bdi = NULL;
-+	}
-+	spin_unlock(&sb_lock);
-+}
-+
- void bdi_unregister(struct backing_dev_info *bdi)
- {
- 	if (bdi->dev) {
-@@ -624,6 +638,8 @@ void bdi_unregister(struct backing_dev_info *bdi)
- 		device_unregister(bdi->dev);
- 		bdi->dev = NULL;
- 	}
-+
-+	bdi_prune_sb(bdi);
- }
- EXPORT_SYMBOL(bdi_unregister);
- 
-
--- 
-Jens Axboe
-
+Right, because in Vedran's latest oom log it shows that Xorg is preferred 
+more than any other thread other than the memory hogging test program with 
+your patch than without.  I pointed out a clear distinction in the killing 
+order using both total_vm and rss in that log and in my opinion killing 
+Xorg as opposed to krunner would be undesireable.
