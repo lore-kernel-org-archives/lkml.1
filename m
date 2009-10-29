@@ -1,88 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751827AbZJ2Hpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbZJ2HsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751827AbZJ2Hpj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 03:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZJ2Hpj
+	id S1751708AbZJ2HsX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 03:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZJ2HsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 03:45:39 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54829 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbZJ2Hpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 03:45:38 -0400
-Date: Thu, 29 Oct 2009 08:45:42 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Snitzer <snitzer@redhat.com>
-Cc: Andrew Patterson <andrew.patterson@hp.com>,
-       Mikulas Patocka <mpatocka@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>, ". troy.heber"@hp.com,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: block: silently error unsupported empty barriers too
-Message-ID: <20091029074542.GX10727@kernel.dk>
-References: <1249557257.3721.55.camel@blaa> <20090806114550.GL29899@agk-dp.fab.redhat.com> <Pine.LNX.4.64.0908062148060.8764@hs20-bc2-1.build.redhat.com> <1256761141.5830.79.camel@grinch> <20091028210325.GC1143@redhat.com>
+	Thu, 29 Oct 2009 03:48:22 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58023 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbZJ2HsW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 03:48:22 -0400
+Message-ID: <4AE948D6.2080809@np.css.fujitsu.com>
+Date: Thu, 29 Oct 2009 16:48:38 +0900
+From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028210325.GC1143@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Lon Hohberger <lhh@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       LKLM <linux-kernel@vger.kernel.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Neil Horman <nhorman@redhat.com>
+Subject: Re: [PATCH] [RFC][Patch x86-tip] add notifier before kdump
+References: <4AE6B1CC.6040603@np.css.fujitsu.com>	<20091027150725.GD10513@redhat.com>	<1256660208.15137.102.camel@localhost.localdomain>	<4AE91645.8080903@np.css.fujitsu.com> <m1fx927okr.fsf@fess.ebiederm.org>
+In-Reply-To: <m1fx927okr.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28 2009, Mike Snitzer wrote:
-> On Wed, Oct 28 2009 at  4:19pm -0400,
-> Andrew Patterson <andrew.patterson@hp.com> wrote:
-> 
-> > On Thu, 2009-08-06 at 21:50 -0400, Mikulas Patocka wrote:
-> > > On Thu, 6 Aug 2009, Alasdair G Kergon wrote:
-> > > 
-> > > > On Thu, Aug 06, 2009 at 12:14:17PM +0100, Mark McLoughlin wrote:
-> > > > > We should error all barriers, even empty barriers, on devices like
-> > > > > virtio_blk which don't support them.
-> > > >  
-> > > > Have you considered whether or not virtio_blk actually needs to
-> > > > support empty barriers?
-> > > > 
-> > > > Alasdair
-> > > 
-> > > This is only for request-based drivers, where it is the responsibility of 
-> > > blk-core to translate barriers. I think the empty barrier request anyway 
-> > > in blk_do_ordered, but with an error message. So the patch changes it to 
-> > > discard it early and queitly. It seems ok.
-> > > 
-> > > Mikulas
-> > > --
-> > 
-> > This patch seems to have been dropped.  I can reproduce the error using
-> > the following:
-> > 
-> >      1. Create an LVM logical volume on top of a cciss device (note that
-> >         the cciss driver does not support barriers)
-> >      2. Create an ext3 file system on top of the logical volume
-> >      3. Mount the file-system using -obarrier=1
-> >      4. Copy some files onto the file-system
-> >      5. Run sync (dm_flush is called)
-> > 
-> > If I apply the patch (with some munging), the 
-> > 
-> > "end_request: I/O error, dev cciss/cXdY, sector 0"
-> > 
-> > messages go away.
-> > 
-> > This is not strictly a regression, given that the problem was introduced
-> > in 2.6.31, but I think it should still be fixed for 2.6.32.
-> 
-> It was resubmitted last Friday:
-> http://lkml.org/lkml/2009/10/23/196
-> 
-> And is queued in Jens' 'for-linus' branch (meaning it should get
-> upstream in time for 2.6.32), see:
-> http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git;a=commit;h=6cafb12dc85a5bdc722791cc5070968413264909
+Hi Eric
 
-I sent out a pull request yesterday, but it isn't in yet. Any day now...
+Thanks for your comment.
+I will consider the method you suggested. Thank you very much.
 
--- 
-Jens Axboe
+Best regards,
+Jin Dongming
+
+Eric W. Biederman wrote:
+> Jin Dongming <jin.dongming@np.css.fujitsu.com> writes:
+> 
+>> Vivek, Lon Hohberger
+>>
+>> Thanks for your comments.
+>>
+>> I also agree with your opinion, too. But I still have problems listed
+>> as following.
+>>     1. Nobody knows when the second kernel does not work well
+>>     2. Too much time cost to startup the second kernel
+>>
+>> So I hope that following work could be done. 
+>>     1. Add some code before kdump to monitor the actions of second kernel
+>>        Something we worried about is that nobody knows when the kdump will not
+>>        work well. If the second kernel does not work well, nobody knows when
+>>        the best time is to restart. So we need to add some code such as setting
+>>        watchdog. If we want to monitor second kernel, some work need to be done
+>>        before it starts to work.
+> 
+> Any extra work done in the crashing kernel decreases the likely hood
+> of the second kernel working.  If you want a watchdog I recommend you always
+> run it and have the interval set large enough for the second kernel to boot
+> before it starts petting it.  That way no code needs to run after a kernel crash.
+> 
+>>     2. Shorten the startup time of second kernel
+>>        I think that the purpose of second kernel is used for backup information
+>>        stored in memory to storage only. But the time cost is different
+>>        according to the system architecture. And also I think that there are
+>>        too many of device is not useful to get the memory information to
+>>        storage. I think the startup time of second kernel should be shortened.
+>>        I don't know much about second kernel, these are only my thought.
+> 
+> The second kernel can be anything you like.  Including a standalone executable
+> if needed for very precise requirements.  Any improvements in boot time for a
+> normal linux image should apply to the dump kernel.
+> 
+> Currently with a tight initrd and just dumping dmesg to disk I get away with
+> a 20M crashkernel reservation, and it typically runs and does it's work before
+> my watchdog fires.
+> 
+> Eric
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
 
