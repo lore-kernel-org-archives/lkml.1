@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbZJ2JOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbZJ2JO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbZJ2JOS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 05:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZJ2JOS
+	id S1753948AbZJ2JO7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 05:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZJ2JO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 05:14:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60364 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753754AbZJ2JOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 05:14:17 -0400
-Date: Thu, 29 Oct 2009 10:14:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, a.p.zijlstra@chello.nl, tglx@linutronix.de
-Subject: Re: [patch] Re: [regression bisect -next] BUG: using
-	smp_processor_id() in preemptible [00000000] code: rmmod
-Message-ID: <20091029091411.GE22963@elte.hu>
-References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com> <1256805552.7158.22.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256805552.7158.22.camel@marge.simson.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 29 Oct 2009 05:14:58 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39271 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752728AbZJ2JO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 05:14:57 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+xHU9MEH6x7fT9lKjNpVpuTSL93jp59gMlpEXJfl
+	O3+vFTpE3e+6zo
+Subject: [patch] Re: hackbench regression with kernel 2.6.32-rc1
+From: Mike Galbraith <efault@gmx.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1256797608.16282.28.camel@ymzhang>
+References: <1255079943.25078.23.camel@ymzhang>
+	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
+	 <1255357264.10420.15.camel@twins>  <1255403522.3684.57.camel@ymzhang>
+	 <1255691192.7029.13.camel@marge.simson.net>
+	 <1256630584.16282.13.camel@ymzhang>
+	 <1256654547.17752.13.camel@marge.simson.net>
+	 <1256722141.16282.20.camel@ymzhang>
+	 <1256739779.7503.59.camel@marge.simson.net>
+	 <1256777448.16282.21.camel@ymzhang>
+	 <1256795190.7048.63.camel@marge.simson.net>
+	 <1256797608.16282.28.camel@ymzhang>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 29 Oct 2009 10:14:51 +0100
+Message-Id: <1256807691.7158.54.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-10-29 at 14:26 +0800, Zhang, Yanmin wrote: 
+> On Thu, 2009-10-29 at 06:46 +0100, Mike Galbraith wrote:
 
-* Mike Galbraith <efault@gmx.de> wrote:
+> > SD_PREFER_LOCAL is still on in rc1 though (double checks;), so you'll go
+> > through the power saving code until you reach a domain containing both
+> > waker's cpu and wakee's previous cpu even if that code already found
+> > that a higher domain wasn't overloaded.  Looks to me like that block
+> > wants a want_sd && qualifier. 
+> > 
+> > Even it you turn SD_PREFER_LOCAL off, you can still hit the overhead if
+> > SD_POWERSAVINGS_BALANCE is set, so I'd make sure both are off and see if
+> > that's the source (likely, since the rest is already off).
+> Yes. ﻿SD_POWERSAVINGS_BALANCE is disabled by default. I applied Peter's patch which
+> turning ﻿SD_PREFER_LOCAL off for MC and cpu domain and it doesn't help.
+> perf counter shows ﻿select_task_rq_fair still consumes about 5% cpu time. Eventually,
+> I found for_each_cpu in for_each_domain consumes the 5% cpu time, because Peter's
+> patch doesn't turn off ﻿SD_PREFER_LOCAL for node domain.
+> I turned it off for node domain against the latest tips tree and tbench regression
+> disappears on a Nehalem machine and becomes about 2% on another one.
+> 
+> Can we turn it off for node domain by default?
 
-> On Wed, 2009-10-28 at 22:42 -0400, Eric Paris wrote:
-> > I get a slew of these on boot.
-> 
-> Ouch.  This fix it up for you?
-> 
-> sched: protect task_hot() buddy check.
-> 
-> Eric Paris reported that commit f685ceacab07d3f6c236f04803e2f2f0dbcc5afb
-> causes boot time PREEMPT_DEBUG complaints.
-> 
-> [    4.590699] BUG: using smp_processor_id() in preemptible [00000000] code: rmmod/1314
-> [    4.593043] caller is task_hot+0x86/0xd0
-> [    4.593872] Pid: 1314, comm: rmmod Tainted: G        W  2.6.32-rc3-fanotify #127
-> [    4.595443] Call Trace:
-> [    4.596177]  [<ffffffff812ad35b>] debug_smp_processor_id+0x11b/0x120
-> [    4.597337]  [<ffffffff81051d66>] task_hot+0x86/0xd0
-> [    4.598320]  [<ffffffff81066275>] set_task_cpu+0x115/0x270
-> [    4.599368]  [<ffffffff810985ab>] kthread_bind+0x6b/0x100
-> [    4.600354]  [<ffffffff810914f0>] start_workqueue_thread+0x30/0x60
-> [    4.601545]  [<ffffffff810941dd>] __create_workqueue_key+0x18d/0x2f0
-> [    4.602526]  [<ffffffff810d9bee>] stop_machine_create+0x4e/0xd0
-> [    4.603811]  [<ffffffff810c5818>] sys_delete_module+0x98/0x250
-> [    4.604922]  [<ffffffff810e2505>] ? audit_syscall_entry+0x205/0x290
-> [    4.606202]  [<ffffffff81013202>] system_call_fastpath+0x16/0x1b
-> 
-> Don't use this_rq() when preemptible.
-> 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Reported-by: Eric Paris <eparis@redhat.com>
-> LKML-Reference: <new-submission>
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 91ffb01..21f52c4 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -2008,7 +2008,8 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
->  	/*
->  	 * Buddy candidates are cache hot:
->  	 */
-> -	if (sched_feat(CACHE_HOT_BUDDY) && this_rq()->nr_running &&
-> +	if (sched_feat(CACHE_HOT_BUDDY) && 
-> +			(preempt_count() ? this_rq()->nr_running : 1) &&
->  			(&p->se == cfs_rq_of(&p->se)->next ||
->  			 &p->se == cfs_rq_of(&p->se)->last))
->  		return 1;
+If it's hurting fast path overhead to the tune of an order of magnitude,
+I guess there's no choice but to either fix it or turn it off.  Since
+SD_BALANCE_WAKE is off globally, I don't see any point in keeping
+SD_PREFER_LOCAL at any level.
 
-hm, the problem is kthread_bind(). It is rummaging around in scheduler 
-internals without holding the runqueue lock - and this now got exposed. 
-Even though it is operating on (supposedly ...) inactive tasks, the guts 
-of that function should be moved into sched.c and it should be fixed to 
-have proper locking.
+(That said, what we need is for this to not be so expensive that we
+can't afford it in the fast path).
 
-	Ingo
+sched: Disable SD_PREFER_LOCAL at node level.
+
+Yanmin Zhang reported that SD_PREFER_LOCAL induces an order of magnitude
+increase in select_task_rq_fair() overhead while running heavy wakeup
+benchmarks (tbench and vmark).  Since SD_BALANCE_WAKE is off at node level,
+turn SD_PREFER_LOCAL off as well pending further investigation. 
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Reported-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+LKML-Reference: <new-submission>
+
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index d823c24..40e37b1 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -143,7 +143,7 @@ extern unsigned long node_remap_size[];
+ 				| 1*SD_BALANCE_FORK			\
+ 				| 0*SD_BALANCE_WAKE			\
+ 				| 1*SD_WAKE_AFFINE			\
+-				| 1*SD_PREFER_LOCAL			\
++				| 0*SD_PREFER_LOCAL			\
+ 				| 0*SD_SHARE_CPUPOWER			\
+ 				| 0*SD_POWERSAVINGS_BALANCE		\
+ 				| 0*SD_SHARE_PKG_RESOURCES		\
+
+
+
