@@ -1,273 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbZJ2I6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbZJ2I5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570AbZJ2I6L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:58:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbZJ2I6K
+	id S1753413AbZJ2I5w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbZJ2I5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:58:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42578 "EHLO hera.kernel.org"
+	Thu, 29 Oct 2009 04:57:51 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:55721 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752473AbZJ2I6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:58:09 -0400
-Message-ID: <4AE95907.5050300@kernel.org>
-Date: Thu, 29 Oct 2009 01:57:43 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751835AbZJ2I5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 04:57:51 -0400
+Date: Thu, 29 Oct 2009 09:57:55 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+Message-ID: <20091029085755.GB10727@kernel.dk>
+References: <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk> <20091013172731.GB22797@ldl.fc.hp.com> <20091014081309.GM9228@kernel.dk> <20091020190707.GA25615@ldl.fc.hp.com> <20091026105419.GA10727@kernel.dk> <20091027024841.GA30509@ldl.fc.hp.com> <20091027082635.GS10727@kernel.dk> <20091028213948.GC8749@ldl.fc.hp.com>
 MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Chiang <achiang@hp.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 1/2] pci: pciehp update the slot bridge res to get big
- range for pcie devices - v4
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org> <m1ljivibrt.fsf@fess.ebiederm.org> <4AE899A0.3020006@kernel.org> <4AE95247.8080401@jp.fujitsu.com> <4AE952B9.1010603@kernel.org> <4AE9588E.90708@jp.fujitsu.com>
-In-Reply-To: <4AE9588E.90708@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091028213948.GC8749@ldl.fc.hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige wrote:
-> Yinghai Lu wrote:
->> Kenji Kaneshige wrote:
->>> Yinghai Lu wrote:
->>>> move out bus_size_bridges and assign resources out of
->>>> pciehp_add_bridge()
->>>> and at last do them all together one time including slot bridge, to
->>>> avoid to
->>>> call assign resources several times, when there are several bridges
->>>> under the
->>>> slot bridge.
->>>>
->>>> need to introduce pci_bridge_assign_resources there.
->>>>
->>>> handle the case the slot bridge that doesn't get pre-allocated big
->>>> enough res
->>>> from FW.
->>>> for example pcie devices need 256M, but the bridge only get
->>>> preallocated 2M...
->>>>
->>>> pci_setup_bridge() will take extra check_enabled for the slot bridge,
->>>> otherwise
->>>> update res is not updated to bridge BAR. that is bridge is enabled
->>>> already for
->>>> port service.
->>>>
->>>> -v2: address Alex's concern about pci remove/rescan feature about
->>>> pci_setup_bridge changes.
->>>> -v3: Kenji pointed out that pci_config_slot need to be called before
->>>> pci_bus_add_devices()
->>>> -v4: move out pci_is_enabled checkout of pci_setup_bridge()
->>>>
->>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>>
->>>> ---
->>>>  drivers/pci/hotplug/pciehp_pci.c |   29 ++++++++++++---
->>>>  drivers/pci/setup-bus.c          |   73
->>>> ++++++++++++++++++++++++++++++++++++---
->>>>  include/linux/pci.h              |    1  3 files changed, 93
->>>> insertions(+), 10 deletions(-)
->>>>
->>>> Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
->>>> ===================================================================
->>>> --- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
->>>> +++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
->>>> @@ -53,19 +53,18 @@ static int __ref pciehp_add_bridge(struc
->>>>          busnr = pci_scan_bridge(parent, dev, busnr, pass);
->>>>      if (!dev->subordinate)
->>>>          return -1;
->>>> -    pci_bus_size_bridges(dev->subordinate);
->>>> -    pci_bus_assign_resources(parent);
->>>> -    pci_enable_bridges(parent);
->>>> -    pci_bus_add_devices(parent);
->>>> +
->>>>      return 0;
->>>>  }
->>>>  
->>>>  int pciehp_configure_device(struct slot *p_slot)
->>>>  {
->>>>      struct pci_dev *dev;
->>>> -    struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
->>>> +    struct pci_dev *bridge = p_slot->ctrl->pcie->port;
->>>> +    struct pci_bus *parent = bridge->subordinate;
->>>>      int num, fn;
->>>>      struct controller *ctrl = p_slot->ctrl;
->>>> +    int retval;
->>>>  
->>>>      dev = pci_get_slot(parent, PCI_DEVFN(0, 0));
->>>>      if (dev) {
->>>> @@ -96,12 +95,30 @@ int pciehp_configure_device(struct slot
->>>>                  (dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
->>>>              pciehp_add_bridge(dev);
->>>>          }
->>>> +        pci_dev_put(dev);
->>>> +    }
->>>> +
->>>> +    pci_bus_size_bridges(parent);
->>>> +    pci_clear_master(bridge);
->>>> +    pci_bridge_assign_resources(bridge);
->>>> +    retval = pci_reenable_device(bridge);
->>>> +    pci_set_master(bridge);
->>>> +    pci_enable_bridges(parent);
->>>> +
->>>> +    for (fn = 0; fn < 8; fn++) {
->>>> +        dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
->>>> +        if (!dev)
->>>> +            continue;
->>>> +        if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
->>>> +            pci_dev_put(dev);
->>>> +            continue;
->>>> +        }
->>>>          pci_configure_slot(dev);
->>>>          pci_dev_put(dev);
->>>>      }
->>>>  
->>>> -    pci_bus_assign_resources(parent);
->>>>      pci_bus_add_devices(parent);
->>>> +
->>>>      return 0;
->>>>  }
->>>>  
->>>> Index: linux-2.6/drivers/pci/setup-bus.c
->>>> ===================================================================
->>>> --- linux-2.6.orig/drivers/pci/setup-bus.c
->>>> +++ linux-2.6/drivers/pci/setup-bus.c
->>>> @@ -27,6 +27,44 @@
->>>>  #include <linux/slab.h>
->>>>  #include "pci.h"
->>>>  
->>>> +static void pdev_assign_resources_sorted(struct pci_dev *dev)
->>>> +{
->>>> +    struct resource *res;
->>>> +    struct resource_list head, *list, *tmp;
->>>> +    int idx;
->>>> +    u16 class = dev->class >> 8;
->>>> +
->>>> +    head.next = NULL;
->>>> +
->>>> +    /* Don't touch classless devices or host bridges or ioapics.  */
->>>> +    if (class == PCI_CLASS_NOT_DEFINED ||
->>>> +        class == PCI_CLASS_BRIDGE_HOST)
->>>> +        return;
->>>> +
->>>> +    /* Don't touch ioapic devices already enabled by firmware */
->>>> +    if (class == PCI_CLASS_SYSTEM_PIC) {
->>>> +        u16 command;
->>>> +        pci_read_config_word(dev, PCI_COMMAND, &command);
->>>> +        if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
->>>> +            return;
->>>> +    }
->>>> +
->>>> +    pdev_sort_resources(dev, &head);
->>>> +
->>>> +    for (list = head.next; list;) {
->>>> +        res = list->res;
->>>> +        idx = res - &list->dev->resource[0];
->>>> +        if (pci_assign_resource(list->dev, idx)) {
->>>> +            res->start = 0;
->>>> +            res->end = 0;
->>>> +            res->flags = 0;
->>>> +        }
->>>> +        tmp = list;
->>>> +        list = list->next;
->>>> +        kfree(tmp);
->>>> +    }
->>>> +}
->>>> +
->>>>  static void pbus_assign_resources_sorted(const struct pci_bus *bus)
->>>>  {
->>>>      struct pci_dev *dev;
->>>> @@ -144,9 +182,6 @@ static void pci_setup_bridge(struct pci_
->>>>      u32 l, bu, lu, io_upper16;
->>>>      int pref_mem64;
->>>>  
->>>> -    if (pci_is_enabled(bridge))
->>>> -        return;
->>>> -
->>>>      dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
->>>>           pci_domain_nr(bus), bus->number);
->>>>  
->>>> @@ -541,6 +576,35 @@ void __ref pci_bus_size_bridges(struct p
->>>>  }
->>>>  EXPORT_SYMBOL(pci_bus_size_bridges);
->>>>  
->>>> +void __ref pci_bridge_assign_resources(const struct pci_dev *bridge)
->>>> +{
->>>> +    struct pci_bus *b;
->>>> +
->>>> +    pdev_assign_resources_sorted((struct pci_dev *)bridge);
->>>> +
->>>> +    b = bridge->subordinate;
->>>> +    if (!b)
->>>> +        return;
->>>> +
->>>> +    pci_bus_assign_resources(b);
->>>> +
->>>> +    switch (bridge->class >> 8) {
->>>> +    case PCI_CLASS_BRIDGE_PCI:
->>>> +        pci_setup_bridge(b);
->>>> +        break;
->>>> +
->>>> +    case PCI_CLASS_BRIDGE_CARDBUS:
->>>> +        pci_setup_cardbus(b);
->>>> +        break;
->>>> +
->>>> +    default:
->>>> +        dev_info(&bridge->dev, "not setting up bridge for bus "
->>>> +             "%04x:%02x\n", pci_domain_nr(b), b->number);
->>>> +        break;
->>>> +    }
->>>> +}
->>>> +EXPORT_SYMBOL(pci_bridge_assign_resources);
->>>> +
->>>>  void __ref pci_bus_assign_resources(const struct pci_bus *bus)
->>>>  {
->>>>      struct pci_bus *b;
->>>> @@ -557,7 +621,8 @@ void __ref pci_bus_assign_resources(cons
->>>>  
->>>>          switch (dev->class >> 8) {
->>>>          case PCI_CLASS_BRIDGE_PCI:
->>>> -            pci_setup_bridge(b);
->>>> +            if (!pci_is_enabled(dev))
->>>> +                pci_setup_bridge(b);
->>>>              break;
->>>>  
->>>>          case PCI_CLASS_BRIDGE_CARDBUS:
->>>> Index: linux-2.6/include/linux/pci.h
->>>> ===================================================================
->>>> --- linux-2.6.orig/include/linux/pci.h
->>>> +++ linux-2.6/include/linux/pci.h
->>>> @@ -756,6 +756,7 @@ ssize_t pci_write_vpd(struct pci_dev *de
->>>>  int pci_vpd_truncate(struct pci_dev *dev, size_t size);
->>>>  
->>>>  /* Helper functions for low-level code
->>>> (drivers/pci/setup-[bus,res].c) */
->>>> +void pci_bridge_assign_resources(const struct pci_dev *bridge);
->>>>  void pci_bus_assign_resources(const struct pci_bus *bus);
->>>>  void pci_bus_size_bridges(struct pci_bus *bus);
->>>>  int pci_claim_resource(struct pci_dev *, int);
->>>>
->>> Does this patch work without [PATCH 2/2]? I don't understand who
->>> releases resouces? Does find_free_bus_resource() still release
->>> resources?
->>
->> need to work with [2/2].
->>
+On Wed, Oct 28 2009, Alex Chiang wrote:
+> * Jens Axboe <jens.axboe@oracle.com>:
+> > 
+> > acpiphp: enable_slot - physical_slot = 1
+> > power_on_slot
+> >   no _PS0
+> >   no _PS0
+> >   no _PS0
+> >   no _PS0
+> >   no _PS0
+> >   no _PS0
+> >   no _PS0
+> >   no _PS0
 > 
-> Ok. Could you rearrange the set of patches with the right pieces and
-> with the right order? It's very difficult for me to understand and
-> review the current patches.
-
-ok
-
+> One final thought -- your DSDT doesn't provide any power methods
+> such as _PS[0-3] (I grepped your DSDT so basing my statement on
+> more than just the output above), and without those, I'm pretty
+> sure that there's no way for the OS to communicate to the BIOS
+> that we want to power those slots on.
 > 
-> By the way, is release_resource() in find_free_bus_resource() already
-> removed?
+> So, something funky is going on with your BIOS. This isn't some
+> weird proto board or something, is it? ;)
 
-YES. Jesse sent request to Linus to revert that.
+It's pre-production, but not a prototype. I'll take it up with the
+vendor.
 
-YH
+-- 
+Jens Axboe
+
