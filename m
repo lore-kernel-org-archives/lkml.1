@@ -1,104 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbZJ2Iel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZJ2Ifr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbZJ2Iel (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZJ2Iek
+	id S1753509AbZJ2Ifr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZJ2Ifq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:34:40 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:64930 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbZJ2Iej (ORCPT
+	Thu, 29 Oct 2009 04:35:46 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:3417 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739AbZJ2Ifq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:34:39 -0400
-Date: Thu, 29 Oct 2009 09:34:16 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: arndbergmann@googlemail.com, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
-       Ankit Jain <me@ankitjain.org>, Christoph Hellwig <hch@lst.de>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: is avoiding compat ioctls possible?
-Message-ID: <20091029083415.GA6639@osiris.boeblingen.de.ibm.com>
-References: <200910281313.32827.arnd@arndb.de>
- <20091028.051631.212225494.davem@davemloft.net>
- <200910281640.18491.arnd@arndb.de>
- <20091028.224157.92041844.davem@davemloft.net>
+	Thu, 29 Oct 2009 04:35:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ljpvlFVU/dTgSUoOooIAqDH/pIzXwxi+z0kPxkXa7QYJpma8kVZ0MonxPDwywhoiD
+	I41kUIZdDMiFeoXg329lg==
+Date: Thu, 29 Oct 2009 01:35:43 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: vedran.furac@gmail.com
+cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+In-Reply-To: <4AE9068B.7030504@gmail.com>
+Message-ID: <alpine.DEB.2.00.0910290132320.11476@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+ <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com>
+ <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <4AE846E8.1070303@gmail.com> <alpine.DEB.2.00.0910281307370.23279@chino.kir.corp.google.com>
+ <4AE9068B.7030504@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028.224157.92041844.davem@davemloft.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 10:41:57PM -0700, David Miller wrote:
-> From: Arnd Bergmann <arndbergmann@googlemail.com>
-> Date: Wed, 28 Oct 2009 16:40:18 +0100
+On Thu, 29 Oct 2009, Vedran Furac wrote:
+
+> > We would know if you posted the data.
 > 
-> > I'm pretty sure it was ok when we started adding the compat_ioctl
-> > handlers years ago. I think most people just ignored these for
-> > the majority of drivers that can't possibly run on s390. Even
-> > on s390, gcc will always do the right thing if you call call ioctl
-> > with a pointer to a normal object in the .data section, heap or stack,
-> > but hand-written assembly or other compilers may not.
+> I need to find some free time to destroy a session on a computer which I
+> use for work. You could easily test it yourself also as this doesn't
+> happen only to me.
 > 
-> Arnd, even compat_sys_ioctl() itself has constructs like:
+> Anyways, here it is... this time it started with ntpd:
 > 
-> 	case FS_IOC_RESVSP:
-> 	case FS_IOC_RESVSP64:
-> 		error = ioctl_preallocate(filp, (void __user *)arg);
-> 		goto out_fput;
+> http://pastebin.com/f3f9674a0
+> 
 
-That's broken, but it's quite new code. In general it looks like we don't
-have many compat ioctl problems on s390. At least I don't remember when
-we faced the last bug.
-We did have some compat syscall issues when SLES11 testing started.
-The lack of bug reports is probably just a lack of 32 bit userspace ;)
+That oom log shows 12 ooms but no tasks actually appear to be getting 
+killed (there're no "Killed process 1234 (task)" found).  Do you have any 
+idea why?
 
-This should fix at least the bug above:
+Anyway, as I posted in response to KAMEZAWA-san's patch, the change to 
+get_mm_rss(mm) prefers Xorg more than the current implementation.
 
-Subject: [PATCH] fs: add missing compat_ptr handling for FS_IOC_RESVSP ioctl
+>From your log at the link above:
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+total_vm
+669624 test
+195695 krunner
+187342 krusader
+168881 plasma-desktop
+130562 ktorrent
+127081 knotify4
+125881 icedove-bin
+123036 akregator
 
-For FS_IOC_RESVSP and FS_IOC_RESVSP64 compat_sys_ioctl() uses its
-arg argument as a pointer to userspace. However it is missing a
-a call to compat_ptr() which will do a proper pointer conversion.
+rss
+668738 test
+42191 Xorg
+30761 firefox-bin
+13331 icedove-bin
+10234 ktorrent
+9263 akregator
+8864 plasma-desktop
+7532 krunner
 
-This was introduced with 3e63cbb1 "fs: Add new pre-allocation ioctls
-to vfs for compatibility with legacy xfs ioctls".
+Can you explain why Xorg is preferred as a baseline to kill rather than 
+krunner in your example?
 
-Cc: Ankit Jain <me@ankitjain.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Arnd Bergmann <arndbergmann@googlemail.com>
-Reported-by: David Miller <davem@davemloft.net>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- fs/compat_ioctl.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index f91fd51..d84e705 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -1800,7 +1800,7 @@ struct space_resv_32 {
- /* just account for different alignment */
- static int compat_ioctl_preallocate(struct file *file, unsigned long arg)
- {
--	struct space_resv_32	__user *p32 = (void __user *)arg;
-+	struct space_resv_32	__user *p32 = compat_ptr(arg);
- 	struct space_resv	__user *p = compat_alloc_user_space(sizeof(*p));
- 
- 	if (copy_in_user(&p->l_type,	&p32->l_type,	sizeof(s16)) ||
-@@ -2802,7 +2802,7 @@ asmlinkage long compat_sys_ioctl(unsigned int fd, unsigned int cmd,
- #else
- 	case FS_IOC_RESVSP:
- 	case FS_IOC_RESVSP64:
--		error = ioctl_preallocate(filp, (void __user *)arg);
-+		error = ioctl_preallocate(filp, compat_ptr(arg));
- 		goto out_fput;
- #endif
- 
+Thanks.
