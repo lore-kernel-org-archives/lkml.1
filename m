@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbZJ2I1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbZJ2I2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752900AbZJ2I1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZJ2I1W
+	id S1752773AbZJ2I2J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZJ2I2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:27:22 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:42051 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752542AbZJ2I1R (ORCPT
+	Thu, 29 Oct 2009 04:28:08 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53154 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751297AbZJ2I2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:27:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=KCFAKiU4H7OTXC6XgmDY4k2+Lj6QSPnbYYMdvwT7cgbJB2MOaWIV/105j1ubpperrq
-         deRJUAEFEQkMt5G0XCQupuOtfIFq8ooSwr1oTKV45eTxwkwVmvXbgRuTwr01fw9mPY+b
-         FdZL+8l7TQnMtHMk6mobRhfhMbFnZ3oVZCkSE=
-From: Arnd Bergmann <arndbergmann@googlemail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: is avoiding compat ioctls possible?
-Date: Thu, 29 Oct 2009 09:27:18 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       DRI Development Mailing List 
-	<dri-devel@lists.sourceforge.net>,
-       David Miller <davem@davemloft.net>
-References: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com> <20091028031904.GA7744@basil.fritz.box> <alpine.LFD.2.00.0910282055330.9323@eddie.linux-mips.org>
-In-Reply-To: <alpine.LFD.2.00.0910282055330.9323@eddie.linux-mips.org>
+	Thu, 29 Oct 2009 04:28:06 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AE951F4.7080406@jp.fujitsu.com>
+Date: Thu, 29 Oct 2009 17:27:32 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, Andi Kleen <ak@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] x86, mce: short output of MCE banks ownership	information
+References: <4AE90E43.2030709@jp.fujitsu.com> <adaaaza6exw.fsf@cisco.com> <4AE93B42.5040605@jp.fujitsu.com> <20091029073408.GA18976@elte.hu>
+In-Reply-To: <20091029073408.GA18976@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910290927.18436.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 October 2009, Maciej W. Rozycki wrote:
+Ingo Molnar wrote:
+> * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
+>> Maybe there would be more desirable ways, but I think that "compress 
+>> messages shorter to bear heavy repeating" will be a good way at this 
+>> time.
 > 
-> On Wed, 28 Oct 2009, Andi Kleen wrote:
+> We really want to only print out relevant information. 128 lines of 
+> identical output is not relevant. (or 2x 64 lines, or 4096 lines of 
+> identical output)
 > 
-> > > I'm just amazed that compat_ioctl should be required for all new code.
-> > > 
-> > > DrNick on irc suggested just doing:
-> > > if (is_compat_task()) ptr &= 0x00000000FFFFFFFF;
-> > 
-> > Such hacks often have problems on BE.
+> So we only want to print MCE setup messages on the boot CPU. That gives 
+> us 90% of the benefits already: we see the rough structure of the 
+> hardware, and if the bootup has a problem with MCE initialization we get 
+> relevant printouts that helps debugging.
 > 
->  And then some platforms (i.e. MIPS) require sign-extension rather than 
-> zero-extension, that is:
+> Now, it's certainly true that with things like MCE bank sharing the MCE 
+> setup output from different CPUs might not be identical all the time - 
+> but the information is represented in other (topology) info anyway. (and 
+> if not it wasnt all that important to begin with)
 > 
-> if (is_compat_task()) ptr = ((ptr & 0xffffffff) ^ 0x80000000) - 0x80000000;
-> 
-> if doing this explicitly (with compat stuff hardware will do the right 
-> thing automagically).
+> For non-boot CPUs we can perhaps add a mce=verbose (default-disabled) 
+> mode of bootup that allows all CPUs to be printed - should there be any 
+> problem with MCE details only visible on non-boot CPUs. (unlikely)
 
-Such conversion should *only* ever take place in compat_ptr().
+How about having a kind of "boot=quiet_ap" which suppress boot-time messages
+for all non-boot CPUs, rather than "mce=verbose" which only suppress one
+(or, with thermal message, two) line?  I don't not understand why this problem
+would be solved only by removing the lines from mce subsystem.
 
-	Arnd <><
+I have no problem on my box with 16 CPUs, but I would not think so if there
+were 128 or 4096.  Then I'd like to see in short:
+  :
+ 2048 CPUs available, 4096 CPUs total
+ Booting 2047 processors ........<snip>..... OK.
+ Total of 2048 processors activated (XXXXXXXXXXX.XX BogoMIPS).
+  :
+
+Anyway this will be a quite trivial problem for desktop/notebook users.
+
+
+Thanks,
+H.Seto
+
