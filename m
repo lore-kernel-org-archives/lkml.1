@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbZJ2AHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZJ2AJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777AbZJ2AHl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 20:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbZJ2AHk
+	id S1755616AbZJ2AJu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 20:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZJ2AJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 20:07:40 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:46190 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755282AbZJ2AHj (ORCPT
+	Wed, 28 Oct 2009 20:09:50 -0400
+Received: from smtp.microsoft.com ([131.107.115.212]:23898 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323AbZJ2AJt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 20:07:39 -0400
-Date: Wed, 28 Oct 2009 18:07:43 -0600
-From: Alex Chiang <achiang@hp.com>
-To: shaohua.li@intel.com, lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 0/6] ACPI: dock: code hygiene
-Message-ID: <20091029000743.GA3602@ldl.fc.hp.com>
-References: <20091019211132.5412.80438.stgit@bob.kio>
+	Wed, 28 Oct 2009 20:09:49 -0400
+From: Hank Janssen <hjanssen@microsoft.com>
+To: Milan Dadok <milan@dadok.name>, "'Greg Kroah-Hartman'" <gregkh@suse.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Haiyang Zhang" <haiyangz@microsoft.com>
+Subject: RE: [PATCH] 2/3 staging: hv: fix oops in vmbus - netvsc list_head
+Thread-Topic: [PATCH] 2/3 staging: hv: fix oops in vmbus - netvsc list_head
+Thread-Index: AcpYHUsWpndeDo9YTDGqhyDth2lMgAADmdyg
+Date: Thu, 29 Oct 2009 00:09:51 +0000
+Message-ID: <8AFC7968D54FB448A30D8F38F259C5620E7EEC42@TK5EX14MBXC114.redmond.corp.microsoft.com>
+References: <001501ca581d$4c201fb0$e4605f10$@name>
+In-Reply-To: <001501ca581d$4c201fb0$e4605f10$@name>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019211132.5412.80438.stgit@bob.kio>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len, Shaohua,
 
-Any comments on this patch series?
 
-I did fat-finger Shaohua's email address when I sent out v4, but
-I thought I bounced all the mails to him privately, off-list.
+>Remove incorrect list_head usage. Variable of type list_head was used in
+>some function's arguments as list item.
 
-Thanks,
-/ac
+Milan,
 
-* Alex Chiang <achiang@hp.com>:
-> This is v4 of a modest attempt to clean up the dock driver.
-> 
-> As before, compile tested only, since I don't have any machines
-> that provide _DCK.
-> 
-> Thanks.
-> /ac
-> 
-> v3 -> v4:
-> 	- defensively code in case sysfs_create_group() fails and
-> 	  sysfs_remove_group() can't handle removing a non-existent group;
-> 	  suggested by Dmitry Torokhov
-> 
-> v2 -> v3:
-> 	- now using an attribute_group, as suggested by Dmitry Torokhov
-> 
-> v1 -> v2:
-> 	- changed how we add platform device data, based on Shaohua Li's
->   	  review
-> ---
-> 
-> Alex Chiang (6):
->       ACPI: dock: convert sysfs attributes to an attribute_group
->       ACPI: dock: combine add|alloc_dock_dependent_device
->       ACPI: dock: remove global 'dock_device_name'
->       ACPI: dock: dock_add - hoist up platform_device_register_simple()
->       ACPI: dock: add struct dock_station * directly to platform device data
->       ACPI: dock: minor whitespace and style cleanups
-> 
-> 
->  drivers/acpi/dock.c |  266 ++++++++++++++++++---------------------------------
->  1 files changed, 93 insertions(+), 173 deletions(-)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I just checked this patch and thanks a million, this corrects the kernel crashing
+When loading hv_netvsc :)
+
+We have been working on fixing this issue for the last day or so, and you 
+Beat us to it! Excellent!
+
+It looks like you might already have one, but if you need a license for 
+Server 2008/R2 to play with for this code, please let me know and I will
+Send you one!
+
+Thank you very much!
+
+Hank.
+
