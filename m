@@ -1,82 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZJ2Vwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbZJ2WDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZJ2Vwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 17:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbZJ2Vwb
+	id S1756655AbZJ2WDd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 18:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZJ2WDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 17:52:31 -0400
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:57345 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754823AbZJ2Vwa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 17:52:30 -0400
-X-Greylist: delayed 1637 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Oct 2009 17:52:30 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=Ryqs96glaPaT/0z5eQ7XSh/lJrUJFR4LMikZ4GjHaAtICHr3WBtbyG5lH7x1IIa9O+
-         m6DhxjXWvvNvF2JchmxcBXwHJZGt4TRzLq3fZcJ6NnuBzt6IVvgx+RMysZqPh7LMTCis
-         8YIoKgyGYMt+2QA6pI9TtCAGy8LB1cnKgQHAY=
+	Thu, 29 Oct 2009 18:03:32 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8350 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756150AbZJ2WDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 18:03:31 -0400
+Message-ID: <4AEA10EC.8000103@redhat.com>
+Date: Thu, 29 Oct 2009 18:02:20 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091029214241.GH18464@mit.edu>
-References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
-	 <20091016091558.GA10184@mit.edu>
-	 <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
-	 <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com>
-	 <20091029214241.GH18464@mit.edu>
-Date: Thu, 29 Oct 2009 17:52:34 -0400
-Message-ID: <f7848160910291452g58c9b6ecwd3c8671cd87b012b@mail.gmail.com>
-Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
-From: Parag Warudkar <parag.lkml@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Parag Warudkar <parag.lkml@gmail.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       bugzilla-daemon@bugzilla.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from crashing
+ function graph tracer
+References: <20091029205151.852744305@goodmis.org>
+In-Reply-To: <20091029205151.852744305@goodmis.org>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 5:42 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Thu, Oct 29, 2009 at 05:25:17PM -0400, Parag Warudkar wrote:
->> > Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> > Date:   Tue Oct 27 15:36:38 2009 +0530
->> >
->> >    ext4: discard preallocation during truncate
->> >
->> Just wanted to let you know that I have applied this patch and one
->> unclean shutdown later it seems to have not given me any trouble.
->>
->> I will continue testing it - hopefully I won't have to reformat  this
->> time ( every time I tested previously I ended up having weird issues
->> that I decided to get rid of by reformatting /).
+Steven Rostedt wrote:
+> Lately I've been testing with an allyesconfig. When I ran the function graph
+> tracer, it immediately crashed the kernel. Thanks to the new frame pointer
+> test in function graph, it reported directly what the issue was and then
+> panicked the kernel to prevent any unexpected damage from happening.
+> 
+> It pointed the error to be with jtcp_rcv_established. Which is a jprobe
+> function added to tcp_rcv_established at bootup when CONFIG_NET_TCPPROBE
+> is enabled.
+> 
+> Jprobes and the function graph tracer use the same mechanism to trace
+> the exit of a function. Unfortunately, only one can be done at a time.
+> The function graph tracer replaces the return address with its own handler,
+> but so does jprobes. The two are not compatible.
+
+AFAIK, Jprobe doesn't trace the exit of a function. I assume that
+jprobe's user handler causes the problem, since the handler never
+returns normal way.
+Instead of that, it just calls jprobe_return() which causes
+int3 to be trapped by kprobe's break handler. And the break handler
+fixup regs->ip to back to traced function.
+
+Actually, this will cause a problem with function graph tracer.
+The f-g-tracer push the return address into the special stack and replaces
+it with fixup function (This is similar (not same) mechanism of kretprobe.)
+And then the traced function returns, it returns to the fixup function and
+it pops the return address up and back to the real caller.
+
+So, if the f-g-tracer traces jprobe user handler, the pop operation
+will be skipped because the the handler never returns.
+
+> The solution I am proposing with this patch set is to add a call in
+> ftrace that lets other code in the kernel permanently disable functions from
+> being traced by the function and function graph tracer. As a probe function
+> is registered with jprobes, it calls this new function and that entry
+> will be removed from being traced.
 >
-> Cool!
->
-> It looked like Avery Fisher had reported that had had tried patch
-> didn't help him, and so I had put it in the category of "good patch,
-> makes sense, but probably not the one that would solve this
-> regression".  But if it works for you, I'll accelerate getting it to
-> Linus.  Do let us know if you have any additional problems with this
-> patch, please!
->
+> I tested this with this patch series and it does solve the problem.
+> 
+> Some issues though:
+> 
+> 1) this only works when DYNAMIC_FTRACE is enabled. We can prevent
+> function graph tracing with jprobes when DYNAMIC_FTRACE is not
+> enabled through Kconfig dependencies. Or have the registering of
+> a jprobe permanently disable function graph tracing.
 
-I have gone through 3 unclean shutdowns so far - this time on Ubuntu
-Karmic Release, today's -git and this patch.
-Nothing odd to report.
+IMHO, those *probe handler should be tagged as __kprobes and notrace.
 
-[ Goes and crashes it again - comes back clean! ]
+> 2) This also prevents the function tracer from being able to trace a
+> function probe, even though the function tracer is not at issue
+> with this bug.
 
-Since literally all of my previous attempts always resulted in
-problems - something seems to have improved although there is no way
-to tell if this is going to last long or that if it was Aneesh's patch
-alone that improved things as last time i tried this I ended up
-reinstalling and I switched to Karmic from Jaunty and I did not test
-mainline for few days.
+I think we can skip those user handlers, because those are irregular
+functions and user can control (enable/disable) it.
 
-Any rate, I will let everyone know if I see anything different.
+BTW, in this specific case, I assume that it can use tracepoint
+instead of jprobe and move tcp_probe to a part of ftrace :-), isn't it?
+(Or, if it is just for a debugging, Systemtap can help it.)
 
-Thanks
-Parag
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
