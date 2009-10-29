@@ -1,185 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbZJ2RK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZJ2RMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbZJ2RK7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 13:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZJ2RK6
+	id S1756041AbZJ2RMc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 13:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbZJ2RMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 13:10:58 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37484 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755906AbZJ2RK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 13:10:57 -0400
-Message-ID: <4AE9CC7E.10701@kernel.org>
-Date: Thu, 29 Oct 2009 10:10:22 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 29 Oct 2009 13:12:31 -0400
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:46096 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755978AbZJ2RMb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 13:12:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gmIDVFfrgngFQojRcJV1Xy5OZ1lVCioSPWxxmdoZlzdBPjwAC9ZX6gk4MwBr4/fjz2
+         bXtJ2yl8n9KbpeO588tniqoaCOq9D869EKbyWVgVFRJipnLYPmSA1T5pPW53cJ/VqTS0
+         RZ7VnConxEusDJ+duJpPOMrbWQ41GxY0k1g0c=
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 1/2] pci: release that leaf bridge' resource index is
- not used -v6
-References: <4ADEB601.8020200@kernel.org>	<4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org>	<4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE965C0.30206@kernel.org> <20091029093144.6ef9da98@jbarnes-g45>
-In-Reply-To: <20091029093144.6ef9da98@jbarnes-g45>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091029131944.GN10727@kernel.dk>
+References: <200910262136.03233.czoccolo@gmail.com>
+	 <20091029131944.GN10727@kernel.dk>
+Date: Thu, 29 Oct 2009 18:12:35 +0100
+Message-ID: <4e5e476b0910291012k39c3b69byc84ab0d0b41bd616@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: simplify prio-unboost code
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Thu, 29 Oct 2009 02:52:00 -0700
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> only for index < 3
+On Thu, Oct 29, 2009 at 2:19 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Oct 26 2009, Corrado Zoccolo wrote:
+>> Eliminate redundant checks.
 >>
->> v2: Jesse doesn't like it is in find_free_bus_resource...
->>     try to move out of pci_bus_size_bridges loop.
->> need to apply after:
->> 	[PATCH] pci: pciehp update the slot bridge res to get big
->> range for pcie devices - v4 v3: add pci_setup_bridge calling after
->> pci_bridge_release_not_used_res. only clear release those res for x86.
->> v4: Bjorn want to release use dev instead of bus.
->> v5: Kenji pointed out it will have problem with several level bridge.
->>     so let only handle leaf bridge.
->> v6: address Kenji's request (new pci_bus_release...). and change
->> applying order move back release to pci_assign_unassigned_resource
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> Starting to look better...
-> 
+>> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
 >> ---
->>  drivers/pci/setup-bus.c |   65
->> +++++++++++++++++++++++++++++++++++++++++++++++-
->> include/linux/pci.h     |    1 2 files changed, 65 insertions(+), 1
->> deletion(-)
+>>  block/cfq-iosched.c |    8 +++-----
+>>  1 files changed, 3 insertions(+), 5 deletions(-)
 >>
->> Index: linux-2.6/drivers/pci/setup-bus.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/pci/setup-bus.c
->> +++ linux-2.6/drivers/pci/setup-bus.c
->> @@ -573,13 +573,68 @@ void __ref pci_bus_assign_resources(cons
->>  }
->>  EXPORT_SYMBOL(pci_bus_assign_resources);
->>  
->> +static void pci_bridge_release_not_used_res(struct pci_bus *bus)
-> 
-> Can we call these functions something else?  Maybe
-> pci_bridge_release_unused() with a kdoc comment describing exactly what
-> it does and why?
+>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> index 6e9b395..244bc8a 100644
+>> --- a/block/cfq-iosched.c
+>> +++ b/block/cfq-iosched.c
+>> @@ -2611,12 +2611,10 @@ static void cfq_prio_boost(struct cfq_queue *cfqq)
+>>                       cfqq->ioprio = IOPRIO_NORM;
+>>       } else {
+>>               /*
+>> -              * check if we need to unboost the queue
+>> +              * unboost the queue (if needed)
+>>                */
+>> -             if (cfqq->ioprio_class != cfqq->org_ioprio_class)
+>> -                     cfqq->ioprio_class = cfqq->org_ioprio_class;
+>> -             if (cfqq->ioprio != cfqq->org_ioprio)
+>> -                     cfqq->ioprio = cfqq->org_ioprio;
+>> +             cfqq->ioprio_class = cfqq->org_ioprio_class;
+>> +             cfqq->ioprio = cfqq->org_ioprio;
+>>       }
+>
+> Not sure I see much gain in that, the previous code makes it explicit
+> that it may not be different and avoid dirtying cfqq if it isn't.
 
-ok.
+>From readability p.o.v., it is simpler to understand the direct assignment.
+The comment says that they might already be equal, but the code states
+clearly what is the final state, i.e. they will surely be equal at the
+end-
 
-> 
->> +{
->> +	int idx;
->> +	bool changed = false;
->> +	struct pci_dev *dev;
->> +	struct resource *r;
->> +	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
->> +				  IORESOURCE_PREFETCH;
->> +
->> +	/* for pci bridges res only */
->> +	dev = bus->self;
->> +	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES
->> + 3;
->> +	    idx++) {
->> +		r = &dev->resource[idx];
->> +		if (!(r->flags & type_mask))
->> +			continue;
->> +		if (!r->parent)
->> +			continue;
->> +		/* if there is no child under that, we should
->> release it */
->> +		if (r->child)
->> +			continue;
->> +		if (!release_resource(r)) {
->> +			dev_info(&dev->dev, "resource %d %pRt
->> released\n",
->> +				 idx, r);
->> +			r->flags = 0;
->> +			changed = true;
->> +		}
->> +	}
->> +
->> +	if (changed)
->> +		pci_setup_bridge(bus);
->> +}
->> +
->> +void __ref pci_bus_release_bridges_not_used_res(struct pci_bus *bus)
-> 
-> Likewise, maybe pci_bus_release_unused_bridge_res or something, with
-> comments again.
+Moreover, using two branches to avoid dirtying a cache line is not a
+win performance-wise, given the penalty on mispredicted branches, and
+the fact that the interval between two executions of this code is
+large, so the branch predictor entries for those would be already
+replaced by userspace ones.
 
-ok
+If on some exotic MP hardware dirtying a cache line could be very
+expensive, a similar check could be done in hardware, and it would be
+more efficient, in fact it could distinguish the 2 cases:
+* we already have the shared cache line locally -> we can compare the
+value and absorb the write if it doesn't change
+* we don't have the cache line locally -> we acquire the cache line in
+exclusive mode, so we can do the write directly (on the contrary, the
+previous code would first acquire the cache line as shared, and if
+necessary, upgrade it to exclusive, possibly increasing the traffic).
 
-> 
->> +{
->> +	struct pci_bus *b;
->> +
->> +	/* If the bus is cardbus, do nothing */
->> +	if (bus->self && (bus->self->class >> 8) ==
->> PCI_CLASS_BRIDGE_CARDBUS)
->> +		return;
->> +
->> +	/* We only release the resources under the leaf bridge */
->> +	if (list_empty(&bus->children)) {
->> +		if (!pci_is_root_bus(bus))
->> +			pci_bridge_release_not_used_res(bus);
->> +		return;
->> +	}
->> +
->> +	/* Scan child buses if the bus is not leaf */
->> +	list_for_each_entry(b, &bus->children, node)
->> +		pci_bus_release_bridges_not_used_res(b);
->> +}
->> +EXPORT_SYMBOL(pci_bus_release_bridges_not_used_res);
->> +
->>  static void pci_bus_dump_res(struct pci_bus *bus)
->>  {
->>          int i;
->>  
->>          for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
->>                  struct resource *res = bus->resource[i];
->> -                if (!res || !res->end)
->> +
->> +		if (!res || !res->end || !res->flags)
->>                          continue;
->>  
->>  		dev_printk(KERN_DEBUG, &bus->dev, "resource %d
->> %pRt\n", i, res); @@ -608,6 +663,14 @@
->> pci_assign_unassigned_resources(void) {
->>  	struct pci_bus *bus;
->>  
->> +	/*
->> +	 * Try to release leaf bridge's resources that there is not
->> child
->> +	 * under it
->> +	 */
->> +	list_for_each_entry(bus, &pci_root_buses, node) {
->> +		pci_bus_release_bridges_not_used_res(bus);
->> +	}
->> +
-> 
-> Also I wonder if we need to make this a command line option that isn't
-> run by default?
+Corrado
 
-thinking:
-1. try not to touch bridge resource and do the allocation and record the fail device
-2. release leaf bridge for those failed device
-3. do second around bus_size and allocation.
-
-> 
-> Really, as Eric says, we need a real dynamic allocation system with the
-> ability to move devices around at some point.  Any volunteers? :)
-
-that will need suspend driver and rescan allocation and wakeup driver...
-
-YH
-
+>
+> --
+> Jens Axboe
+>
+>
