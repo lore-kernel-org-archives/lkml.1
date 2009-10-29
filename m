@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZJ2Fj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZJ2FkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbZJ2Fj4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 01:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZJ2Fjz
+	id S1754323AbZJ2FkZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 01:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZJ2FkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 01:39:55 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:58889 "EHLO gherkin.frus.com"
+	Thu, 29 Oct 2009 01:40:23 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:56889 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752263AbZJ2Fjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 01:39:55 -0400
-Date: Thu, 29 Oct 2009 00:39:47 -0500
-From: Bob Tracy <rct@gherkin.frus.com>
-To: linux-kernel@vger.kernel.org
-Cc: debian-alpha@lists.debian.org
-Subject: Re: [BUG] 2.6.32-rc5 build failure on Alpha
-Message-ID: <20091029053947.GA9872@gherkin.frus.com>
-Mime-Version: 1.0
+	id S1753364AbZJ2FkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 01:40:22 -0400
+Date: Thu, 29 Oct 2009 00:40:29 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TOMOYO: Use RCU primitives for list operation
+Message-ID: <20091029054029.GE11558@us.ibm.com>
+References: <20091004125327.105675949@I-love.SAKURA.ne.jp> <4ACE1CFE.3020507@canonical.com> <alpine.LRH.2.00.0910121203090.19066@tundra.namei.org> <200910132034.DAE39014.OVLFFOMHJQFOSt@I-love.SAKURA.ne.jp> <200910132037.BHJ57351.QLVJtMHSFOFOOF@I-love.SAKURA.ne.jp> <200910132039.HAD48971.JFOOMQFSFOtVLH@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <200910132039.HAD48971.JFOOMQFSFOtVLH@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 10:53:05PM -0500, Bob Tracy wrote:
-> Mainline 2.6.32-rc5 kernel build failure.  The last few lines of the kernel
-> build output are:
+Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
+> [PATCH] TOMOYO: Use RCU primitives for list operation
 > 
->   LD      vmlinux.o
->   MODPOST vmlinux.o
-> WARNING: "saved_config" [vmlinux] is COMMON symbol
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/alpha/kernel/vmlinux.lds:241: undefined symbol `THREAD_SIZE' referenced in expression
-> make: *** [.tmp_vmlinux1] Error 1
+> Remove down_read()/up_read() by replacing with RCU primitives.
+> SRCU based garbage collector will be added in the future.
+> 
+> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> ---
+>  security/tomoyo/common.c   |   52 ++++++++++-----------------------------------
+>  security/tomoyo/common.h   |   14 ++++++------
+>  security/tomoyo/domain.c   |   38 ++++++++++----------------------
+>  security/tomoyo/file.c     |   50 ++++++++++++++-----------------------------
+>  security/tomoyo/realpath.c |    4 ---
+>  5 files changed, 49 insertions(+), 109 deletions(-)
+> 
+> --- security-testing-2.6.orig/security/tomoyo/common.c
+> +++ security-testing-2.6/security/tomoyo/common.c
+> @@ -365,9 +365,6 @@ bool tomoyo_is_domain_def(const unsigned
+>   *
+>   * @domainname: The domainname to find.
+>   *
+> - * Caller must call down_read(&tomoyo_domain_list_lock); or
+> - * down_write(&tomoyo_domain_list_lock); .
+> - *
+>   * Returns pointer to "struct tomoyo_domain_info" if found, NULL otherwise.
+>   */
+>  struct tomoyo_domain_info *tomoyo_find_domain(const char *domainname)
+> @@ -377,7 +374,7 @@ struct tomoyo_domain_info *tomoyo_find_d
+> 
+>  	name.name = domainname;
+>  	tomoyo_fill_path_info(&name);
+> -	list_for_each_entry(domain, &tomoyo_domain_list, list) {
+> +	list_for_each_entry_rcu(domain, &tomoyo_domain_list, list) {
+>  		if (!domain->is_deleted &&
+>  		    !tomoyo_pathcmp(&name, domain->domainname))
+>  			return domain;
+> @@ -837,8 +834,7 @@ bool tomoyo_domain_quota_is_ok(struct to
+> 
+>  	if (!domain)
+>  		return true;
+> -	down_read(&tomoyo_domain_acl_info_list_lock);
+> -	list_for_each_entry(ptr, &domain->acl_info_list, list) {
+> +	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
+>  		if (ptr->type & TOMOYO_ACL_DELETED)
+>  			continue;
+>  		switch (tomoyo_acl_type2(ptr)) {
 
-> In arch/alpha/include/asm/thread_info.h, THREAD_SIZE is defined as
-> (2*PAGE_SIZE).
+You are removing the down_read()s, but not replacing them with
+rcu_read_lock()s.  I assume this is based on the same discussions
+you had with Paul awhile ago about the safety of walking the list
+bc you only append to the end (which I trust must have concluded
+in your favor)?
 
-Ok.  Found it.  The THREAD_SIZE definition is inside a
-"#ifndef __ASSEMBLY__" block, so it never gets referenced (because
-"__ASSEMBLY__" is defined for the "vmlinux.lds" build).  The obvious
-suggested fix is to move the definition outside the block.
+If you'll be adding gc eventually anyway, is it really worthwhile
+to 'violate the rules' now by calling list_for_each_entry_rcu()
+without being inside rcu_read_lock() now?  I fear it'll only serve
+to confuse readers, especially those looking for rcu users to serve
+as examples.
 
---Bob
+-serge
