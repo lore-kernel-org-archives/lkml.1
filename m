@@ -1,98 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbZJ2PmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZJ2Pne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbZJ2PmW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbZJ2PmV
+	id S1754708AbZJ2Pne (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbZJ2Pnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:42:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40023 "EHLO hera.kernel.org"
+	Thu, 29 Oct 2009 11:43:33 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:33085 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755063AbZJ2PmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:42:20 -0400
-Message-ID: <4AE9B812.2080307@kernel.org>
-Date: Thu, 29 Oct 2009 16:43:14 +0100
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1755232AbZJ2Pnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:43:31 -0400
+Message-ID: <69812160e5682c9fb4acba05bc082664.squirrel@webmail.uio.no>
+Date: Thu, 29 Oct 2009 16:43:34 +0100
+Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
+From: apetlund@simula.no
+To: "Eric Dumazet" <eric.dumazet@gmail.com>
+Cc: "Andreas Petlund" <apetlund@simula.no>,
+       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       "Arnd Hannemann" <hannemann@nets.rwth-aachen.de>,
+       "Netdev" <netdev@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       "David Miller" <davem@davemloft.net>
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Andreas Gruenbacher <agruen@suse.de>,
-       Jan Beulich <JBeulich@novell.com>
-Subject: Re: [PATCH -next] ia64/sn: fix percpu warnings
-References: <20091014163445.f0441473.sfr@canb.auug.org.au>	 <20091014151003.0ef42973.randy.dunlap@oracle.com>	 <4AD67C05.2030201@kernel.org> <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com> <57C9024A16AD2D4C97DC78E552063EA3E345953E@orsmsx505.amr.corp.intel.com> <4AE85D28.90809@kernel.org> <57C9024A16AD2D4C97DC78E552063EA3E34C0108@orsmsx505.amr.corp.intel.com> <4AE87344.6030708@kernel.org> <57C9024A16AD2D4C97DC78E552063EA3E34C018B@orsmsx505.amr.corp.intel.com> <57C9024A16AD2D4C97DC78E552063EA3E34C0629@orsmsx505.amr.corp.intel.com> <4AE9AA0E.5070104@kernel.org>
-In-Reply-To: <4AE9AA0E.5070104@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-UiO-Ratelimit-Test: rcpts/h 28 msgs/h 4 sum rcpts/h 39 sum msgs/h 6 total rcpts 432 max rcpts/h 37 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: BFD689FD37BEFA961EAC0C6720DAD2FD645123AC
+X-UiO-SPAM-Test: remote_host: 129.240.4.214 spam_score: -49 maxlevel 80 minaction 1 bait 0 mail/h: 314 total 1919991 max/h 678 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yiee... lexer/parser problem in genksyms.  cc'ing Andreas, Sam and Jan
-for help and quoting whole body.
+> Andreas Petlund a écrit :
+>
+>> The removal of exponential backoff on a general basis has been
+>> investigated and discussed already, for instance here:
+>> http://ccr.sigcomm.org/online/?q=node/416
+>> Such steps are, however considered drastic, and I agree that caution
+must be made to thoroughly investigate the effects of such changes. The
+changes introduced by the proposed patches, however, are not
+default
+>> behaviour, but an option for applications that suffer from the
+>> thin-stream TCP increased retransmission latencies. They will, as such,
+not affect all streams. In addition, the changes will only be active
+for
+>> streams which are perpetually thin or in the early phase of expanding
+their cwnd. Also, experiments performed on congested bottlenecks with
+tail-drop queues show very little (if any at all) effect on goodput for
+the modified scenario compared to a scenario with unmodified TCP
+streams.
+>> Graphs both for latency-results and fairness tests can be found here:
+http://folk.uio.no/apetlund/lktmp/
+>
+> There should be a limit to linear timeouts, to say ... no more than 6
+retransmits
+> (eventually tunable), then switch to exponential backoff. Maybe your
+patch
+> already implement such heuristic ?
+>
 
-Hello,
+The limitation you suggest to the linear timeouts makes very good sense.
+Our experiments performed on the Internet indicate that it is extremely
+rare that more than 6 retransmissions are needed to recover. It is not
+included in the current patch, so I will include this in the next
+iteration.
 
-Tejun Heo wrote:
-> Hello,
-> 
-> Luck, Tony wrote:
->> Ok.  x86 doesn't see this because the defconfig has
->>   CONFIG_MODVERSIONS is not set
->>
->> If I turn MODVERSION off, then the problem disappears for me.
->>
->> If I turn MODVERSIONS on for x86 (and fudge a driver to make use of
->> softirq_work_list), then x86 gets the CRC warning too.
-> 
-> Right, I can reproduce it here too.
-> 
->> So this isn't a tool chain problem. Neither x86 nor ia64
->> can handle exported per-cpu array objects when CONFIG_MODVERSIONS
->> is set.
->>
->> Looking at the __crc symbols in the vmlinux for x86 with
->> CONFIG_MODVERSIONS=y I see:
->>
->> 000000006dcaeb88 A __crc_per_cpu__kernel_stack
->> 00000000b3994c7a A __crc_per_cpu__kstat
->> 00000000d917c158 A __crc_per_cpu__node_number
->>                  w __crc_per_cpu__softirq_work_list
->> 0000000036a1f502 A __crc_per_cpu__softnet_data
->> 0000000057adf756 A __crc_per_cpu__this_cpu_off
->>
->> which explains why "modpost" is unable to find a CRC.
->>
->> Maybe the comments in <linux/module.h> are supposed to be a
->> clue? :
->>
->> #ifdef CONFIG_MODVERSIONS
->> /* Mark the CRC weak since genksyms apparently decides not to
->>  * generate a checksums for some symbols */
->> #define __CRC_SYMBOL(sym, sec)                                  \
->>         extern void *__crc_##sym __attribute__((weak));         \
->>         static const unsigned long __kcrctab_##sym              \
->>         __used                                                  \
->>         __attribute__((section("__kcrctab" sec), unused))       \
->>         = (unsigned long) &__crc_##sym;
->>
->> But not enough of a clue for me :-(
-> 
-> I have no idea either.  I'll dig a bit and try to find out what's
-> going on.
+> True link collapses do happen, it would be good if not all streams
+wakeup
+> in the same
+> second and make recovery very slow.
+>
 
-So, the problem is that genksyms can't understand the following.
+Each stream will have its own schedule for wakeup, so such events will
+still be subject to coincidence. The timer granularity of the TCP wakeup
+timer will also influence how many streams will wake at the same time. The
+experiments we have performed on severely congested bottlenecks (link
+above) indicate that the modifications will not create a large negative
+effect. In fact, when goodput is drastically reduced due to severe
+overload, regular TCP and the LT and dupACK modifications seem to perform
+nearly identically. Other scenarios may exist where different effects can
+be observed, and I am open to suggestions for further testing.
 
-  __typeof__(int [10]) my_ar;
-  EXPORT_SYMBOL(my_ar);
+> Thats too easy to accept possibly dangerous features with the excuse of
+saying
+> "It wont be used very much", because you cannot predict the future.
 
-Would it be difficult to teach it how to parse it?
+I agree that it is no argument to say that it won't be used much; indeed,
+my hope is that it will be used much. However, our experiments indicate no
+negative effects while showing a large improvement on retransmission
+latency for the scenario in question. I therefore think that the option
+for such an improvement should be made available for time-dependent
+thin-stream applications.
 
-Thanks.
+-AP
 
--- 
-tejun
+
+
+
+
