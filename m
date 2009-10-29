@@ -1,108 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZJ2Oz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZJ2K6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbZJ2Oz0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 10:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZJ2Oz0
+	id S1754123AbZJ2K6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 06:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZJ2K6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 10:55:26 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:35497 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753805AbZJ2OzZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 10:55:25 -0400
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-To: <linux-fbdev-devel@lists.sourceforge.net>
-Cc: linux-kernel@vger.kernel.org,
-       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
-Subject: [PATCH] atoi: Drop custom atoi from drivers/video/modedb.c
-Date: Thu, 29 Oct 2009 16:54:43 +0200
-Message-Id: <1256828083-19002-1-git-send-email-andy.shevchenko@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-X-OriginalArrivalTime: 29 Oct 2009 14:54:45.0951 (UTC) FILETIME=[C15004F0:01CA58A7]
-X-Nokia-AV: Clean
+	Thu, 29 Oct 2009 06:58:49 -0400
+Received: from lucidpixels.com ([75.144.35.66]:49132 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754057AbZJ2K6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 06:58:48 -0400
+Date: Thu, 29 Oct 2009 10:58:52 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: linux-usb@vger.kernel.org, nut-upsuser@lists.alioth.debian.org
+Subject: 2.6.31.4: Any other suggestions regarding a UPS/USB (APC1500VA) on
+ (Intel P55KG) stale issue?
+Message-ID: <alpine.DEB.2.00.0910291047530.14066@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Hello,
 
-Kernel has simple_strtol() implementation which could be used as atoi().
+Problem: When I migrated from a DG965WH -> DP55KG motherboard, there were 
+quite a bit of issues, host still does not reboot without special flags, 
+e.g. reboot=a, the NIC driver is broken with the in-kernel version (the 
+one on e1000.sourceforge) fixes that and finally my UPS USB has driver 
+stale problems, with two issues already relating to the HW/drivers 
+themselves it would not be unrealistic to speculate that there could be an 
+issue with the USB chipset/driver with this P55 motherboard.
 
-Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
----
- drivers/video/modedb.c |   24 +++++-------------------
- 1 files changed, 5 insertions(+), 19 deletions(-)
+Is anyone else out there running an APC1500VA UPS on a P55 motherboard? 
+If so, what have been your results?
 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 34e4e79..0129f1b 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -13,6 +13,7 @@
- 
- #include <linux/module.h>
- #include <linux/fb.h>
-+#include <linux/kernel.h>
- 
- #undef DEBUG
- 
-@@ -402,21 +403,6 @@ const struct fb_videomode vesa_modes[] = {
- EXPORT_SYMBOL(vesa_modes);
- #endif /* CONFIG_FB_MODE_HELPERS */
- 
--static int my_atoi(const char *name)
--{
--    int val = 0;
--
--    for (;; name++) {
--	switch (*name) {
--	    case '0' ... '9':
--		val = 10*val+(*name-'0');
--		break;
--	    default:
--		return val;
--	}
--    }
--}
--
- /**
-  *	fb_try_mode - test a video mode
-  *	@var: frame buffer user defined part of display
-@@ -539,7 +525,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 		    namelen = i;
- 		    if (!refresh_specified && !bpp_specified &&
- 			!yres_specified) {
--			refresh = my_atoi(&name[i+1]);
-+			refresh = simple_strtol(&name[i+1], NULL, 10);
- 			refresh_specified = 1;
- 			if (cvt || rb)
- 			    cvt = 0;
-@@ -549,7 +535,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 		case '-':
- 		    namelen = i;
- 		    if (!bpp_specified && !yres_specified) {
--			bpp = my_atoi(&name[i+1]);
-+			bpp = simple_strtol(&name[i+1], NULL, 10);
- 			bpp_specified = 1;
- 			if (cvt || rb)
- 			    cvt = 0;
-@@ -558,7 +544,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 		    break;
- 		case 'x':
- 		    if (!yres_specified) {
--			yres = my_atoi(&name[i+1]);
-+			yres = simple_strtol(&name[i+1], NULL, 10);
- 			yres_specified = 1;
- 		    } else
- 			goto done;
-@@ -586,7 +572,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 	    }
- 	}
- 	if (i < 0 && yres_specified) {
--	    xres = my_atoi(name);
-+	    xres = simple_strtol(name, NULL, 10);
- 	    res_specified = 1;
- 	}
- done:
--- 
-1.5.6.5
+Motherboard: Intel P55KG
+Kernel: 2.6.31.4 x86_64
 
+Details from nut/kernel usb trace:
+http://home.comcast.net/~jpiszcz/20091014/nut-problem.txt
+
+The last thread petered out:
+http://www.gossamer-threads.com/lists/linux/kernel/1143579
+
+# From ups -D
+Got 2 HID objects...
+Quick update...
+upsdrv_updateinfo...
+Got 2 HID objects...
+Quick update...
+Can't retrieve Report 22: Broken pipe
+upsdrv_updateinfo...
+Got to reconnect!
+upsdrv_updateinfo...
+Got to reconnect!
+Can't retrieve Report 19: Broken pipe
+upsdrv_updateinfo...
+Got to reconnect!
+Can't retrieve Report 15: Broken pipe
+upsdrv_updateinfo...
+Got to reconnect!
+upsdrv_updateinfo...
+
+# From the system logs:
+Broadcast Message from nut@p34.internal.lan
+         (somewhere) at 6:01 ...
+Communications with UPS apc@localhost lost
+Broadcast Message from nut@p34.internal.lan
+         (somewhere) at 6:02 ...
+Communications with UPS apc@localhost established
+Broadcast Message from nut@p34.internal.lan
+         (somewhere) at 6:03 ...
+
+# From ups.conf:
+[apc]
+         driver = usbhid-ups
+         port = auto
+         desc = "APC 1500VA"
+
+All other USB devices work properly, USB CD/DVD writer, keyboard, mouse, 
+etc.  The same UPS (APC 1500VA) worked fine on the last board, same cable, 
+etc.  I have tried power cycling the UPS and using a different port on the 
+motherboard, to no avail.
+
+Aside from purchasing a different UPS (if I wanted to use nut)- is it 
+possible there is a bug in the chipset on these P55 boards in the way the 
+driver communicates with it?
+
+Since this problem is 100% reproducible every time, is there anyway to 
+look into this issue any further?
+
+Justin.
