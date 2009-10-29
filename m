@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZJ2Nwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbZJ2Nrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbZJ2Nwh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 09:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbZJ2Nwg
+	id S1753705AbZJ2Nrn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 09:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZJ2Nrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 09:52:36 -0400
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:61913 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753809AbZJ2Nwg (ORCPT
+	Thu, 29 Oct 2009 09:47:42 -0400
+Received: from gv-out-0910.google.com ([216.239.58.188]:49042 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbZJ2Nrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 09:52:36 -0400
-X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Oct 2009 09:52:35 EDT
+	Thu, 29 Oct 2009 09:47:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=q7RUyiMf/jBqFhLQEJEy/TUKlb7vYUX5gWWjuIYnQjcK/hfCROnG+nSY1J0fmlkRxc
-         RSUwYabefeLPoS0va7Hidyjh1/gfyjJ62DaQieLGWCzU73rwdHO8urh572SLUqG+QBfH
-         0scKJ+xnr7UZyBcDuuOtVbw3Alv9lqGIPnwrM=
-Date: Thu, 29 Oct 2009 14:45:52 +0100
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Gig/4P3UzQpYhuUx+v7NqR8am7j6AwOLF2a+mAkYWUcNeqtWB8BN3rYv2J/K87xfUc
+         1RgL0gZYfJJCOnx4D7C4XBk6NQTH1whDyRyIc5OQ+EJlAOMrDEe3+mydMY6imYMX+vc2
+         e4BNejgNzu0J5KyEzIwgLbC0o0Lv7WFDzxjJI=
+Date: Thu, 29 Oct 2009 14:47:42 +0100
 From: Andreas Herrmann <herrmann.der.user@googlemail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 1/2] x86, amd-ucode: Check UCODE_MAGIC before loading the
- container file
-Message-ID: <20091029134552.GC30802@alberich.amd.com>
+Subject: [PATCH 2/2] x86, amd-ucode: Remove needless log messages
+Message-ID: <20091029134742.GD30802@alberich.amd.com>
+References: <20091029134552.GC30802@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091029134552.GC30802@alberich.amd.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 5183dd763c6dc9f760e29f3313e0ae3dda5228a2 Mon Sep 17 00:00:00 2001
-From: Borislav Petkov <borislav.petkov@amd.com>
-Date: Thu, 29 Oct 2009 14:00:54 +0100
-Subject: [PATCH 1/2] x86, amd-ucode: Check UCODE_MAGIC before loading the container file
 
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- arch/x86/kernel/microcode_amd.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ arch/x86/kernel/microcode_amd.c |    9 +--------
+ 1 files changed, 1 insertions(+), 8 deletions(-)
 
 diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 366baa1..f4c538b 100644
+index f4c538b..c043534 100644
 --- a/arch/x86/kernel/microcode_amd.c
 +++ b/arch/x86/kernel/microcode_amd.c
-@@ -317,6 +317,12 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- 		return UCODE_NFOUND;
+@@ -109,12 +109,8 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+ 		return 0;
  	}
  
-+	if (*(u32 *)firmware->data != UCODE_MAGIC) {
-+		printk(KERN_ERR "microcode: invalid UCODE_MAGIC (0x%08x)\n",
-+		       *(u32 *)firmware->data);
-+		return UCODE_ERROR;
-+	}
-+
- 	ret = generic_load_microcode(cpu, firmware->data, firmware->size);
+-	if (mc_header->processor_rev_id != equiv_cpu_id) {
+-		printk(KERN_ERR	"microcode: CPU%d: patch mismatch "
+-		       "(processor_rev_id: %x, equiv_cpu_id: %x)\n",
+-		       cpu, mc_header->processor_rev_id, equiv_cpu_id);
++	if (mc_header->processor_rev_id != equiv_cpu_id)
+ 		return 0;
+-	}
  
- 	release_firmware(firmware);
+ 	/* ucode might be chipset specific -- currently we don't support this */
+ 	if (mc_header->nb_dev_id || mc_header->sb_dev_id) {
+@@ -185,9 +181,6 @@ get_next_ucode(const u8 *buf, unsigned int size, unsigned int *mc_size)
+ 
+ 	total_size = (unsigned long) (section_hdr[4] + (section_hdr[5] << 8));
+ 
+-	printk(KERN_DEBUG "microcode: size %u, total_size %u\n",
+-	       size, total_size);
+-
+ 	if (total_size > size || total_size > UCODE_MAX_SIZE) {
+ 		printk(KERN_ERR "microcode: error: size mismatch\n");
+ 		return NULL;
 -- 
 1.6.5.1
 
