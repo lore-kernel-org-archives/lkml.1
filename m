@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZJ2CW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZJ2Cbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbZJ2CW3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 22:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756217AbZJ2CW3
+	id S1756302AbZJ2Cbo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 22:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbZJ2Cbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 22:22:29 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:31084 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756019AbZJ2CW2 convert rfc822-to-8bit (ORCPT
+	Wed, 28 Oct 2009 22:31:43 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:42395 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754942AbZJ2Cbm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 22:22:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=CC2amjYn/UUoHXTXD+WvPVzCgSnUqYjB/aS8b9dxBsK9N818EWHKP+DhWy/xArtq6
-	/uqJNiaBJQ47lVhGhNfEg==
+	Wed, 28 Oct 2009 22:31:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NdlIWT+0gANBF0sjZu+XRdzGXL5YAa2J8XqkGe/79Bpz72bVMQxx5tksh7PPX/nCS4
+         9vi2YnJecNFzEfnQ/xam1SDVJhVFyFulRKnBib4LG5jCUrvxfN/50Et2yP/OGcIq1HcL
+         Fzeat9FMQc+0AwG5Az5NNljv0hnOwvmSg9TTs=
 MIME-Version: 1.0
-In-Reply-To: <4AE8F604.2090005@canonical.com>
-References: <1256316741-14053-1-git-send-email-bryan.wu@canonical.com>
-	 <f17812d70910262140i63e4d2f0x708521a9287ca386@mail.gmail.com>
-	 <20091027140558.GA17208@suse.de> <4AE8E953.6090504@canonical.com>
-	 <20091029010419.GA18410@suse.de> <4AE8EBCB.5030102@canonical.com>
-	 <20091029011759.GA908@suse.de> <4AE8EF8C.9030805@canonical.com>
-	 <20091029012857.GA30274@suse.de> <4AE8F604.2090005@canonical.com>
-Date: Wed, 28 Oct 2009 19:22:28 -0700
-Message-ID: <a55d774e0910281922l2c84f7d5tdda6666878ece78a@mail.gmail.com>
-Subject: Re: [PATCH] Staging: Android logger: fix compiling error
-From: Brian Swetland <swetland@google.com>
-To: Bryan Wu <bryan.wu@canonical.com>
-Cc: Greg KH <gregkh@suse.de>, Eric Miao <eric.miao@canonical.com>,
-       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
+	 <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
+	 <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
+	 <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 29 Oct 2009 11:31:47 +0900
+Message-ID: <28c262360910281931n57a3792elcf10ce0ff3f59815@mail.gmail.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: David Rientjes <rientjes@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 6:55 PM, Bryan Wu <bryan.wu@canonical.com> wrote:
->>> But now, it is hard for us to do that without a workable Android drivers
->>> in mainline.
+On Thu, Oct 29, 2009 at 10:00 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> I'll wait until the next week to post a new patch.
+>> We don't need rapid way.
 >>
->> Then push on Google to get them cleaned up and fixed! Â Or do it
->> yourself, all I need is a developer to take ownership of the code.
+> I wrote above...but for my mental health, this is bug-fixed version.
+> Sorry for my carelessness. David, thank you for your review.
+> Regards,
+> -Kame
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 >
-> I'm doing a task which is trying to merge Android patches to Ubuntu kernel
-> and mainline, not only the Android drivers but also the ARM port code which
-> is not in mainline.
+> It's reported that OOM-Killer kills Gnone/KDE at first...
+> And yes, we can reproduce it easily.
 >
-> But since Android kernel is 2.6.29 and ours or mainline is 2.6.31+, you know
-> it needs much more effort without Google's help.
+> Now, oom-killer uses mm->total_vm as its base value. But in recent
+> applications, there are a big gap between VM size and RSS size.
+> Because
+>  - Applications attaches much dynamic libraries. (Gnome, KDE, etc...)
+>  - Applications may alloc big VM area but use small part of them.
+>    (Java, and multi-threaded applications has this tendency because
+>     of default-size of stack.)
 >
-> And for sure, I'm very happy to help this out.
+> I think using mm->total_vm as score for oom-kill is not good.
+> By the same reason, overcommit memory can't work as expected.
+> (In other words, if we depends on total_vm, using overcommit more positive
+>  is a good choice.)
+>
+> This patch uses mm->anon_rss/file_rss as base value for calculating badness.
+>
+> Following is changes to OOM score(badness) on an environment with 1.6G memory
+> plus memory-eater(500M & 1G).
+>
+> Top 10 of badness score. (The highest one is the first candidate to be killed)
+> Before
+> badness program
+> 91228   gnome-settings-
+> 94210   clock-applet
+> 103202  mixer_applet2
+> 106563  tomboy
+> 112947  gnome-terminal
+> 128944  mmap              <----------- 500M malloc
+> 129332  nautilus
+> 215476  bash              <----------- parent of 2 mallocs.
+> 256944  mmap              <----------- 1G malloc
+> 423586  gnome-session
+>
+> After
+> badness
+> 1911    mixer_applet2
+> 1955    clock-applet
+> 1986    xinit
+> 1989    gnome-session
+> 2293    nautilus
+> 2955    gnome-terminal
+> 4113    tomboy
+> 104163  mmap             <----------- 500M malloc.
+> 168577  bash             <----------- parent of 2 mallocs
+> 232375  mmap             <----------- 1G malloc
+>
+> seems good for me. Maybe we can tweak this patch more,
+> but this one will be a good one as a start point.
+>
+> Changelog: 2009/10/29
+>  - use get_mm_rss() instead of get_mm_counter()
+>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-We (Google) definitely want to get back in sync with mainline (as I've
-mentioned earlier in this or a related thread), and we're planning on
-snapping up our kernel trees to 2.6.32+ once we get past various
-deadlines in the near future.  Obviously action speaks louder than
-words here, and I understand Greg's frustration at the slow pace so
-far and appreciate his efforts to encourage us to stop dropping the
-ball.
+Let's start from this.
 
-Probably the two biggest pain points for general driver support are
-wakelocks (which we were making some progress on getting cleaned up on
-the linux-pm list -- Arve will be respinning those patchsets for
-review again before long) and some of the gpio support.  Otherwise,
-most of the drivers don't have a lot of dependencies on new core
-kernel infrastructure and many effectively stand alone.  For some of
-the qualcomm chipsets, there is a fair bit of layering needed for
-functions owned by the modem or dsp cores -- smem / smd / rpc / etc.
-
-Brian
+-- 
+Kind regards,
+Minchan Kim
