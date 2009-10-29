@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbZJ2TTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZJ2PUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbZJ2TTH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 15:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbZJ2TTG
+	id S1755332AbZJ2PUO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZJ2PUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 15:19:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22789 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756421AbZJ2TTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 15:19:05 -0400
+	Thu, 29 Oct 2009 11:20:11 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:51449 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755195AbZJ2PUI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:20:08 -0400
+Date: Thu, 29 Oct 2009 15:18:24 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Tejun Heo <tj@kernel.org>
+cc: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Bug #14467] Linker errors on ia64 with NR_CPUS=4096
+In-Reply-To: <4AE9B090.9090107@kernel.org>
+Message-ID: <alpine.DEB.1.10.0910291517160.30265@V090114053VZO-1>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.nnF.Cre5KB@chimera> <alpine.DEB.1.10.0910271623210.20363@V090114053VZO-1> <alpine.LSU.2.00.0910271922490.19847@wotan.suse.de> <alpine.DEB.1.10.0910291435420.18197@V090114053VZO-1>
+ <4AE9AB23.8010207@kernel.org> <alpine.DEB.1.10.0910291455400.19555@V090114053VZO-1> <4AE9B090.9090107@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/linus
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
-In-Reply-To: Ingo Molnar's message of  Thursday, 29 October 2009 09:53:48 +0100 <20091029085348.GD26970@elte.hu>
-References: <20091027204156.30545.96425.stgit@harusame>
-	<20091029085348.GD26970@elte.hu>
-X-Shopping-List: (1) Urgent digressions
-   (2) Allegorical bits
-   (3) Lucky hamster-lips
-Message-Id: <20091029191801.CADC3538@magilla.sf.frob.com>
-Date: Thu, 29 Oct 2009 12:18:01 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thirdly, i think we should expose the build-id of the kernel and the 
-> path to the vmlinux (and modules) via /proc/build-id or so. That way 
-> tooling can find the vmlinux file and can validate that it matches the 
-> kernel's signature. (maybe include a file date as well - that's a faster 
-> check than a full build-id checksum, especially for large kernels)
+On Thu, 29 Oct 2009, Tejun Heo wrote:
 
-You seem to be confused about what build IDs are.  There is no "checksum
-validation".  Once the bits are stored there is no calculation ever done
-again, only exact comparison with an expected build ID bitstring.  The size
-of an object file is immaterial.
+> That would be nice but currently, we have no user which needs anything
+> other than GFP_KERNEL although lack of users could have been caused by
+> the lack of the functionality and the non-atomic irq disabled state is
+> an exception case which is handled differently by might_sleep() too.
+> So, I'm not sure whether adding GFP_* parameter would worth the
+> effort.  Also, adding that is a bit too late for 2.6.32 at this point.
 
-As Frank mentioned, the kernel's and modules' allocated ELF notes (and thus
-build IDs) are already exposed in /sys.  Tools like "eu-unstrip -nk" use
-this information today.
+As I have said repeately before: We need this for dynamic DMA slab
+creation in SLUB. Since you got it already halfway in: Complete it and I
+can get rid of the static percpu definitions that I had to add to be able
+to use the new percpu allocator.
 
-
-Thanks,
-Roland
