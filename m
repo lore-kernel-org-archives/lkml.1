@@ -1,50 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZJ2POQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbZJ2PRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbZJ2POQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbZJ2POP
+	id S1755020AbZJ2PRt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZJ2PRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:14:15 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:38563 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754384AbZJ2POP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:14:15 -0400
-Message-ID: <66f580dbbf814a9c4b9710f13d8661d8.squirrel@webmail.uio.no>
-Date: Thu, 29 Oct 2009 16:14:18 +0100
-Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
-From: apetlund@simula.no
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: "Andreas Petlund" <apetlund@simula.no>, "Netdev" <netdev@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
-       "David Miller" <davem@davemloft.net>
-User-Agent: SquirrelMail/1.4.19
-MIME-Version: 1.0
+	Thu, 29 Oct 2009 11:17:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39553 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754411AbZJ2PRs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:17:48 -0400
+Date: Thu, 29 Oct 2009 08:17:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josef Bacik <josef@redhat.com>
+Cc: Mike Hommey <mh@glandium.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Steven Whitehouse <swhiteho@redhat.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Josef Bacik <jbacik@redhat.com>, Mark Fasheh <mfasheh@suse.com>
+Subject: Re: [PATCH] Fix generic_block_fiemap for files bigger than 4GB
+Message-Id: <20091029081701.83249755.akpm@linux-foundation.org>
+In-Reply-To: <20091029124055.GB7436@localhost.localdomain>
+References: <1256577868-30484-1-git-send-email-mh@glandium.org>
+	<20091028230022.e15b1e9c.akpm@linux-foundation.org>
+	<20091029123153.GA7436@localhost.localdomain>
+	<20091029124055.GB7436@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 17 sum msgs/h 3 total rcpts 410 max rcpts/h 37 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: D3250C2E5AA8C28BBEC75A13D10D9360798DB2C1
-X-UiO-SPAM-Test: remote_host: 129.240.4.214 spam_score: -49 maxlevel 80 minaction 1 bait 0 mail/h: 113 total 1919790 max/h 678 blacklist 0 greylist 0 ratelimit 0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I apologise that some of you received this mail more than once. My email
-client played a HTML-trick on me.
+On Thu, 29 Oct 2009 08:40:56 -0400 Josef Bacik <josef@redhat.com> wrote:
 
->> +		icsk->icsk_backoff = 0;
->> +		icsk->icsk_rto = min(((tp->srtt >> 3) + tp->rttvar), TCP_RTO_MAX);
->
-> The first part is nowadays done with __tcp_set_rto(tp).
->
-> --
->  i.
->
+> 
+> Ok here it is.  I've fixed all the type issues and there were other problems
+> with not setting FIEMAP_EXTENT_LAST last properly.  If this is more reasonable
+> to you I will update it and send it along properly.  Thanks,
 
-I will address this in the next iteration of the patch.
+geeze, how did we lose a patch of this magnitude?
 
--AP
+> diff --git a/fs/ioctl.c b/fs/ioctl.c
+> index ac2d47e..ee9fba0 100644
+> --- a/fs/ioctl.c
+> +++ b/fs/ioctl.c
+> @@ -228,13 +228,22 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+>  
+>  #ifdef CONFIG_BLOCK
+>  
+> -#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
+> -#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
+> +static inline sector_t logical_to_blk(struct inode *inode, loff_t offset)
+> +{
+> +	return (offset >> inode->i_blkbits);
+> +}
+> +
+> +static inline loff_t blk_to_logical(struct inode *inode, sector_t blk)
+> +{
+> +	return (blk << inode->i_blkbits);
+> +}
 
+ah.  Adding the types really does clarify things.
 
+>  /**
+>   * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
+>   * @inode - the inode to map
+> - * @arg - the pointer to userspace where we copy everything to
+> + * @fieinfo - the fiemap info struct that will be passed back to userspace
+> + * @start - where to start mapping in the inode
+> + * @len - how much space to map
+>   * @get_block - the fs's get_block function
+>   *
+>   * This does FIEMAP for block based inodes.  Basically it will just loop
+> @@ -250,43 +259,63 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+>   */
+>  
+>  int __generic_block_fiemap(struct inode *inode,
+> -			   struct fiemap_extent_info *fieinfo, u64 start,
+> -			   u64 len, get_block_t *get_block)
+> +			   struct fiemap_extent_info *fieinfo, loff_t start,
+> +			   loff_t len, get_block_t *get_block)
+>  {
+> -	struct buffer_head tmp;
+> -	unsigned int start_blk;
+> -	long long length = 0, map_len = 0;
+> +	struct buffer_head map_bh;
+> +	sector_t start_blk;
+
+And the bugfix is there.
+
+Has anyone actually tested this code on large files?  Greater than 4G
+sectors and greater than 4G pages?
 
 
