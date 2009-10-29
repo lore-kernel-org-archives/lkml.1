@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbZJ2OTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZJ2OUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbZJ2OTc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 10:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZJ2OTb
+	id S1754656AbZJ2OUj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 10:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbZJ2OUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 10:19:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34512 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752139AbZJ2OTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 10:19:31 -0400
-Message-ID: <4AE9A4BA.3020104@kernel.org>
-Date: Thu, 29 Oct 2009 15:20:42 +0100
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Rashmi Mohapatra <rashmilinux@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Error in NCQ Command Handling in AHCI SATA
-References: <8dd538850910290656q322b2c1aga1172c486361f7c4@mail.gmail.com>
-In-Reply-To: <8dd538850910290656q322b2c1aga1172c486361f7c4@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Oct 2009 10:20:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42244
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753110AbZJ2OUh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 10:20:37 -0400
+Date: Thu, 29 Oct 2009 07:21:01 -0700 (PDT)
+Message-Id: <20091029.072101.109209962.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: penberg@cs.helsinki.fi, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linville@tuxdriver.com
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200910291514.40318.bzolnier@gmail.com>
+References: <200910291435.54203.bzolnier@gmail.com>
+	<84144f020910290652n2e75827dk698b238b6bd1cbed@mail.gmail.com>
+	<200910291514.40318.bzolnier@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, (cc list trimmed and linux-ide added)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Thu, 29 Oct 2009 15:14:40 +0100
 
-DO NOT SPAM unrelated people.
+> Dave, if you have problems with executing the command locally I'll be
+> happy to supply you with the patch.
 
-Rashmi Mohapatra wrote:
-> Please look at the log attached.
-> Between line 1090 and 1210 something happens and the copy fails.
-> If you look at Line No 1141 the log says,
-> 
-> qc_complete_multiple ap->qc_active=ffff qc_active=fbfe done_mask=401
-> 
-> Could it be possible that the software is issuing 32 commands MAX even
-> if the Hardware supports less than that ?
+This is not the issue.
 
-Unlikely but then again you'll be the first to test an NCQ controller
-with 16 command limit.
+The issue is that John disagrees with you can you can't handle
+that.
 
-> Could it be a timeout issue for a block dma command ?
-> 
-> Why the scsi error handler code is called ?
-> Can someone point me to the code flow which ends up calling the Error
-> Handler ?
+So instead of continuing to discuss things with him and the
+other wireless folks, you want me to just overreach everybody
+and revert someone else's work.
 
-Commands were issued but the controller didn't report completion
-before the timeout expired (30s), so the EH kicked in.  You have
-multiple nobody cared warnings there.  Does specifying "irqpoll"
-kernel parameter make any difference?
-
--- 
-tejun
+I'm not going to do that sorry, learn how to work with the
+wireless people instead.
