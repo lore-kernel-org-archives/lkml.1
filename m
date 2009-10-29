@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751566AbZJ2I1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbZJ2I1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751566AbZJ2I1F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZJ2I1E
+	id S1752900AbZJ2I1X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZJ2I1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:27:04 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:60380 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbZJ2I1C (ORCPT
+	Thu, 29 Oct 2009 04:27:22 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:42051 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbZJ2I1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:27:02 -0400
+	Thu, 29 Oct 2009 04:27:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=C/YPrWdsbVC/xE91YxTKqz0/m3k8uM8meJNO/LuBkFjrxuSOM9h+clTmxJCJoTu6It
-         Dc6hJjZGKIM9sfLH2B/54yJO4w1sXKT6HkxIgHqznaykWPHE+lXevLYVfBBPMm3IMsjs
-         Jg7FYr8gT4mMRFw8vTSUNnqjUV54iNUWcREuo=
-Date: Thu, 29 Oct 2009 10:26:52 +0200
-From: Shmulik Ladkani <jungoshmulik@gmail.com>
-To: myuboot@fastmail.fm
-Cc: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
-       "Florian Fainelli" <florian@openwrt.org>, linux-kernel@vger.kernel.org,
-       "linux-mips" <linux-mips@linux-mips.org>, shmulik@jungo.com
-Subject: Re: serial port 8250 messed up after coverting from little endian
- to big endian on kernel  2.6.31
-Message-ID: <20091029102652.76d42b8c@pixies.home.jungo.com>
-In-Reply-To: <1256758575.4093.1342456105@webmail.messagingengine.com>
-References: <1255735395.30097.1340523469@webmail.messagingengine.com>
-	<4AD906D8.3020404@caviumnetworks.com>
-	<1255996564.10560.1340920621@webmail.messagingengine.com>
-	<200910200817.24018.florian@openwrt.org>
-	<1256676013.24305.1342273367@webmail.messagingengine.com>
-	<20091028103551.0b4052d8@pixies.home.jungo.com>
-	<4AE82520.4090607@ru.mvista.com>
-	<1256758575.4093.1342456105@webmail.messagingengine.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=KCFAKiU4H7OTXC6XgmDY4k2+Lj6QSPnbYYMdvwT7cgbJB2MOaWIV/105j1ubpperrq
+         deRJUAEFEQkMt5G0XCQupuOtfIFq8ooSwr1oTKV45eTxwkwVmvXbgRuTwr01fw9mPY+b
+         FdZL+8l7TQnMtHMk6mobRhfhMbFnZ3oVZCkSE=
+From: Arnd Bergmann <arndbergmann@googlemail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: is avoiding compat ioctls possible?
+Date: Thu, 29 Oct 2009 09:27:18 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       DRI Development Mailing List 
+	<dri-devel@lists.sourceforge.net>,
+       David Miller <davem@davemloft.net>
+References: <21d7e9970910271822p3751b2fdnd78e1bc3326b9b0b@mail.gmail.com> <20091028031904.GA7744@basil.fritz.box> <alpine.LFD.2.00.0910282055330.9323@eddie.linux-mips.org>
+In-Reply-To: <alpine.LFD.2.00.0910282055330.9323@eddie.linux-mips.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910290927.18436.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009 14:36:15 -0500 myuboot@fastmail.fm wrote:
-> I just tried UPIO_MEM32 without adding a offset of 3. But the result is
-> bad - after the kernel initializes the serial console, the console print
-> out messes up. The early printk is fine because the u-boot initialises
-> the serial port fine. 
+On Wednesday 28 October 2009, Maciej W. Rozycki wrote:
 > 
-> Did I miss anything? Thanks again for your help.
+> On Wed, 28 Oct 2009, Andi Kleen wrote:
+> 
+> > > I'm just amazed that compat_ioctl should be required for all new code.
+> > > 
+> > > DrNick on irc suggested just doing:
+> > > if (is_compat_task()) ptr &= 0x00000000FFFFFFFF;
+> > 
+> > Such hacks often have problems on BE.
+> 
+>  And then some platforms (i.e. MIPS) require sign-extension rather than 
+> zero-extension, that is:
+> 
+> if (is_compat_task()) ptr = ((ptr & 0xffffffff) ^ 0x80000000) - 0x80000000;
+> 
+> if doing this explicitly (with compat stuff hardware will do the right 
+> thing automagically).
 
-I guess you did fine with UPIO_MEM32.
+Such conversion should *only* ever take place in compat_ptr().
 
-Keeping the UPIO_MEM32 approach, I suggest also to fiddle Y/N with
-CONFIG_SWAP_IO_SPACE (might be that you have it set to Y while you don't
-really need it, or vice versa).
-This is since 'readl' uses 'ioswabl' for (potential) byte-swapping of the read
-value. Take a look at asm/io.h and mangle-port.h.
-
-Most important, read your hardware documentation to determine correct access
-to the memory mapped serial registers.
-
--- 
-Shmulik Ladkani		Jungo Ltd.
+	Arnd <><
