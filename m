@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZJ2O6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbZJ2TBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbZJ2O6V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 10:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZJ2O6V
+	id S1756462AbZJ2TBy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 15:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbZJ2TBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 10:58:21 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:55061 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754516AbZJ2O6U (ORCPT
+	Thu, 29 Oct 2009 15:01:54 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:53537 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755874AbZJ2TBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 10:58:20 -0400
-Date: Thu, 29 Oct 2009 14:57:19 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Tejun Heo <tj@kernel.org>
-cc: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Bug #14467] Linker errors on ia64 with NR_CPUS=4096
-In-Reply-To: <4AE9AB23.8010207@kernel.org>
-Message-ID: <alpine.DEB.1.10.0910291455400.19555@V090114053VZO-1>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.nnF.Cre5KB@chimera> <alpine.DEB.1.10.0910271623210.20363@V090114053VZO-1> <alpine.LSU.2.00.0910271922490.19847@wotan.suse.de> <alpine.DEB.1.10.0910291435420.18197@V090114053VZO-1>
- <4AE9AB23.8010207@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 29 Oct 2009 15:01:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=I2MHMHIz066Awp6RI5/0YcnRTON57wBk7Xzq6TPJiLQfmCXpqGcijXCQLc9Jeu1GiU
+         eYCOiF6RgeJvOlBkgf1FoMFKM1rQqXH8FkFmKuGHRBQNCjtlVTnVaKEXTz1TjcpGOHbr
+         aUK4xlCf7wcCHLthyjZEQ00HwOUMsYUAxzv74=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 29 Oct 2009 15:01:22 -0400
+Message-ID: <d0626390910291201m6e8121abq831867715f5d7d5@mail.gmail.com>
+Subject: How to immunize a process from the OOM Killer
+From: Juan Miscaro <jmiscaro@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Oct 2009, Tejun Heo wrote:
+Hi, I'm running 2.6.24 on Ubuntu.
 
-> It's just for sched_init() which has irq off but is not really in
-> atomic context and does GFP_KERNEL allocations.  The following comment
-> has been added to the first patch to explain it.
+I've got a OOM Killer gone wild.  I have plenty of free memory (over
+40 GB) and lots of processes are being murdered.  Anyway, I would like
+to first prevent a few processes from being killed in the hopes of
+buying me time (users can work) to discover why the killer is being
+invoked in the first place.
 
-Uhmm.. Is the page allocator available at that point? If you are
-constricted to the reserved per cpu area then IA64 can still run out of
-space if its booted with 4096 actual cpus.
+I've read in a few places [1] that in order to immunize a process you
+need to modify the value of /proc/PID/oom_adj.  Thing is, such files
+cannot be edited directly.  How do I achieve my goal?
 
-> + * allocations are done using GFP_KERNEL with pcpu_lock released.  In
-> + * general, percpu memory can't be allocated with irq off but
-> + * irqsave/restore are still used in alloc path so that it can be used
-> + * from early init path - sched_init() specifically.
->
-> Thanks.
+Thank you,
 
-Maybe make the patch a bit more general so that it can operate in an
-atomic context and handles gfp flags nicely?
+--
+jm
 
+[1]
+http://linux-mm.org/OOM_Killer
+http://lwn.net/Articles/317814/
