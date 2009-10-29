@@ -1,88 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZJ2Ifr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZJ2IhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbZJ2Ifr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZJ2Ifq
+	id S1753435AbZJ2IhQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZJ2IhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:35:46 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:3417 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbZJ2Ifq (ORCPT
+	Thu, 29 Oct 2009 04:37:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39622
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751484AbZJ2IhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:35:46 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=ljpvlFVU/dTgSUoOooIAqDH/pIzXwxi+z0kPxkXa7QYJpma8kVZ0MonxPDwywhoiD
-	I41kUIZdDMiFeoXg329lg==
-Date: Thu, 29 Oct 2009 01:35:43 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: vedran.furac@gmail.com
-cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: Memory overcommit
-In-Reply-To: <4AE9068B.7030504@gmail.com>
-Message-ID: <alpine.DEB.2.00.0910290132320.11476@chino.kir.corp.google.com>
-References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
- <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com>
- <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <4AE846E8.1070303@gmail.com> <alpine.DEB.2.00.0910281307370.23279@chino.kir.corp.google.com>
- <4AE9068B.7030504@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 29 Oct 2009 04:37:14 -0400
+Date: Thu, 29 Oct 2009 01:37:38 -0700 (PDT)
+Message-Id: <20091029.013738.257529406.davem@davemloft.net>
+To: tilman@imap.cc
+Cc: isdn@linux-pingi.de, hjlipp@web.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
+       i4ldeveloper@listserv.isdn4linux.de
+Subject: Re: [PATCH 0/9] Gigaset driver patches for 2.6.33
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091023-patch-gigaset-00.tilman@imap.cc>
+References: <20091023-patch-gigaset-00.tilman@imap.cc>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Oct 2009, Vedran Furac wrote:
+From: Tilman Schmidt <tilman@imap.cc>
+Date: Sun, 25 Oct 2009 20:29:27 +0100 (CET)
 
-> > We would know if you posted the data.
+> David, Karsten,
 > 
-> I need to find some free time to destroy a session on a computer which I
-> use for work. You could easily test it yourself also as this doesn't
-> happen only to me.
-> 
-> Anyways, here it is... this time it started with ntpd:
-> 
-> http://pastebin.com/f3f9674a0
-> 
+> here's a series of patches that should be applied on top of those
+> currently in net-next. I'm sending them now to leave you enough time
+> before the next merge window to decide who wants to handle them.
+> In particular, patch 3 provides an important bugfix to the new CAPI
+> interface which is necessary for using it with pppd capiplugin.
 
-That oom log shows 12 ooms but no tasks actually appear to be getting 
-killed (there're no "Killed process 1234 (task)" found).  Do you have any 
-idea why?
+All of these patches look reasonable, so I've applied them
+to net-next-2.6
 
-Anyway, as I posted in response to KAMEZAWA-san's patch, the change to 
-get_mm_rss(mm) prefers Xorg more than the current implementation.
-
->From your log at the link above:
-
-total_vm
-669624 test
-195695 krunner
-187342 krusader
-168881 plasma-desktop
-130562 ktorrent
-127081 knotify4
-125881 icedove-bin
-123036 akregator
-
-rss
-668738 test
-42191 Xorg
-30761 firefox-bin
-13331 icedove-bin
-10234 ktorrent
-9263 akregator
-8864 plasma-desktop
-7532 krunner
-
-Can you explain why Xorg is preferred as a baseline to kill rather than 
-krunner in your example?
-
-Thanks.
+Thanks!
