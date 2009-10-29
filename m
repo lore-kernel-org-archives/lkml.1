@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751445AbZJ2H5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbZJ2IEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751445AbZJ2H5q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 03:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbZJ2H5q
+	id S1752139AbZJ2IEd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZJ2IE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 03:57:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56193 "EHLO mx3.mail.elte.hu"
+	Thu, 29 Oct 2009 04:04:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46734 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbZJ2H5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 03:57:45 -0400
-Date: Thu, 29 Oct 2009 08:57:35 +0100
+	id S1751936AbZJ2IEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 04:04:22 -0400
+Date: Thu, 29 Oct 2009 09:04:10 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: Fix to use unused attribute
-Message-ID: <20091029075735.GC18976@elte.hu>
-References: <4AE7A217.8030008@cn.fujitsu.com>
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] tracefs
+Message-ID: <20091029080410.GA26970@elte.hu>
+References: <20091023004937.GA24035@kroah.com> <20091023053237.GA24359@elte.hu> <20091028010647.GB14956@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AE7A217.8030008@cn.fujitsu.com>
+In-Reply-To: <20091028010647.GB14956@kroah.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -36,52 +36,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+* Greg KH <greg@kroah.com> wrote:
 
-> ____ftrace_check_##name() is used for compile-time check
-> on F_printk() only, so it should be marked as __unused
-> instead of __used.
+> On Fri, Oct 23, 2009 at 07:32:37AM +0200, Ingo Molnar wrote:
+> > 
+> > * Greg KH <greg@kroah.com> wrote:
+> > 
+> > > Hi all,
+> > > 
+> > > At LinuxCon this year, Steven and I talked about moving the 
+> > > debugfs usage in the tracing core to a stand-alone filesystem to 
+> > > give the ability to start to lock down the api so that people an 
+> > > count on what is going on in the tracing userspace interface.
+> > 
+> > What we want to move out initially (and i talked to Steve and 
+> > Frederic about that a few weeks ago) is the event description bits - 
+> > the format stuff in /debug/tracing/events/ - but definitely not all 
+> > the other, rather messy and ad-hoc APIs.
+> > 
+> > _No way_ do we want to tie down the pretty-printing ftrace details 
+> > as an ABI. We promised that when ftrace went upstream and all the 
+> > details are way too messy to be exposed in an ABI alike matter (and 
+> > yes, consider this a NAK Steve ;-).
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
-> 
-> I'm thinking about introducing __always_unused, comparing
-> to __maybe_unused.
-> 
-> ---
->  kernel/trace/trace_export.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-> index 934d81f..85309fc 100644
-> --- a/kernel/trace/trace_export.c
-> +++ b/kernel/trace/trace_export.c
-> @@ -48,11 +48,12 @@
->  struct ____ftrace_##name {					\
->  	tstruct							\
->  };								\
-> -static void __used ____ftrace_check_##name(void)		\
-> +static void __attribute__((unused))				\
-> +____ftrace_check_##name(void)					\
->  {								\
->  	struct ____ftrace_##name *__entry = NULL;		\
->  								\
-> -	/* force cmpile-time check on F_printk() */		\
-> +	/* force compile-time check on F_printk() */		\
->  	printk(print);						\
->  }
+> Ok, I'll drop this.  There was some cleanups I found, I'll pick those 
+> out and send them on.  What tree should I base off of to send cleanup 
+> patches to?
 
-Hm, open-coding __attribute__()'s is not good.
+The tip of the tracing tree is in tip:tracing/core, you can find it at:
 
-These tags are somewhat of a mess:
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing/core
 
- #if __GNUC_MINOR__ >= 3
- # define __used                 __attribute__((__used__))
- #else
- # define __used                 __attribute__((__unused__))
- #endif
-
-I've Cc:-ed Linus and Andrew, to solicite feedback on __always_unused. I 
-think we should add it.
+Thanks,
 
 	Ingo
