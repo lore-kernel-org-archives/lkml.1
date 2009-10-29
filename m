@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbZJ2Q1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbZJ2QMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493AbZJ2Q1e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZJ2Q1d
+	id S1753895AbZJ2QMK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZJ2QMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:27:33 -0400
-Received: from mail-gw.exalead.com ([193.47.80.29]:36702 "EHLO exalead.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755468AbZJ2Q1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:27:32 -0400
-X-Greylist: delayed 1112 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Oct 2009 12:27:32 EDT
-Message-ID: <4AE9BE21.8020102@exalead.com>
-Date: Thu, 29 Oct 2009 17:09:05 +0100
-From: Xavier Roche <roche+kml2@exalead.com>
-Organization: Exalead
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091020 SeaMonkey/1.1.18
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.31 / 2.6.32-last: XFS will not mount after a crash when quotas
- are enabled (quota DB corrupted)
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Oct 2009 12:12:09 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:40039 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753221AbZJ2QMH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:12:07 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-15
+X-IronPort-AV: E=Sophos;i="4.44,646,1249250400";   d="scan'208";a="31717329"
+Message-id: <4AE9BEC8.6020108@nets.rwth-aachen.de>
+Date: Thu, 29 Oct 2009 17:11:52 +0100
+From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+To: Andreas Petlund <apetlund@simula.no>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
+       "davem@davemloft.net" <davem@davemloft.net>
+Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
+References: <4AE72079.4030504@simula.no> <4AE7262B.1060703@gmail.com>
+ <4AE83FE4.1050309@nets.rwth-aachen.de>
+ <07CD1135-C68B-4264-8CD3-C4BC0400FDA2@simula.no>
+In-reply-to: <07CD1135-C68B-4264-8CD3-C4BC0400FDA2@simula.no>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+Andreas Petlund schrieb:
+> We have found no noticeable degradation of the goodput in a series of
+> experiments we have performed in order to map the effects of the
+> modifications. Furthermore, the modifications implemented in the patches
+> are explicitly enabled only for applications where the developer knows
+> that streams will be thin, thus only a small subset of the streams will
+> apply the modifications.  
+> 
+> Graphs presenting results from experiments performed to analyse latency
+> and fairness issues can be found here:
+> http://folk.uio.no/apetlund/lktmp/
 
-We experience issues with XFS on Kernel >= 2.6.31 when quotas are
-enabled. Some recent quotas additions might be the cause of the problems
-encountered. (1)
+How often did you hit consecutive RTOs in these measurements?
+As I see you did a measurement with 512 thick vs. 512 thin streams.
+Lets do a hypothetical calculation with only 512 "thin" streams.
+Lets further assume the rtt is low, so that RTO is around 200ms.
+Assume each segment has 128 Bytes (already very small...).
+Assume after a period of normal operation all streams are in
+timeout-based loss recovery. (e.g. because destination endpoint
+suddenly behaves like a black hole)
+As all streams are in timeout-based loss recovery, each stream
+will transmit 5 segments each second with your modification.
+This would result in a throughput around 512*5*1024bit = 2560 kbit/s
+and a goodput of 0 kbit/s (because the receiver is a black hole).
+So you can easily saturate a 2 MBit/s link, only with retransmissions.
 
-Test case to reproduce the issue:
----------------------------------
+Unfortunately in Germany an ADSL uplink of 786 kbit/s is still quite
+common, and its already called "broadband"...
 
-- Have an XFS filesystem with quotas enabled for users
+Regarding the "small subset", why have a global sysctl option, then?
+And I think "tcp_stream_is_thin(tp)" will be true for every flow
+in the RTO case, at least for consecutive RTOs.
 
-/etc/fstab entry:
-/dev/sda6   /data           xfs             uqupta,gquota     0 0
-
-- Have a kernel crash while the filesystem is dirty
-
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git &
-sleep 10
-echo b >/proc/sysrq-trigger
-# we should dead here
-
-On reboot, after the filesystem check, the filesystem will not mount
-because the quota db is apparently corrupted:
-
-XFS: dquot too small (104) in xlog_recover_do_dquot_trans.
-
-The filesystem is however still fixable using:
-mount -o noquota /data
-umount /data
-mount /data
-
-(however this will rebuild the entire DB..)
-
-The issue could not be reproduced on a 2.6.30
-
-
-(1) http://xfs.org/index.php/XFS_Status_Updates
-"The Linux 2.6.31 merge opened in the mid of the month and some big XFS
-changes have been pushed: A removal of the quotaops infrastructure which
-simplifies the quota implementation, the switch from XFS's own Posix ACL
-implementation to the generic one shared by various other filesystems
-which also supports in-memory caching of ACLs and another incremental
-refactoring of the sync code"
+Best regards,
+Arnd Hannemann
