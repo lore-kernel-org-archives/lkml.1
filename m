@@ -1,54 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbZJ2PUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZJ2PWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbZJ2PUE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZJ2PUD
+	id S1755267AbZJ2PWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbZJ2PWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:20:03 -0400
-Received: from vuizook.err.no ([85.19.221.46]:35257 "EHLO vuizook.err.no"
+	Thu, 29 Oct 2009 11:22:36 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:64462 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754574AbZJ2PUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:20:01 -0400
-Date: Thu, 29 Oct 2009 16:19:45 +0100
-From: Mike Hommey <mh@glandium.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Josef Bacik <josef@redhat.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Whitehouse <swhiteho@redhat.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Josef Bacik <jbacik@redhat.com>, Mark Fasheh <mfasheh@suse.com>
-Subject: Re: [PATCH] Fix generic_block_fiemap for files bigger than 4GB
-Message-ID: <20091029151945.GA453@glandium.org>
-References: <1256577868-30484-1-git-send-email-mh@glandium.org>
- <20091028230022.e15b1e9c.akpm@linux-foundation.org>
- <20091029123153.GA7436@localhost.localdomain>
- <20091029124055.GB7436@localhost.localdomain>
- <20091029081701.83249755.akpm@linux-foundation.org>
+	id S1754127AbZJ2PWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:22:35 -0400
+Date: Thu, 29 Oct 2009 17:20:02 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] perf tools: support static build
+Message-ID: <20091029152002.GA5406@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091029081701.83249755.akpm@linux-foundation.org>
-X-GPG-Fingerprint: A479 A824 265C B2A5 FC54  8D1E DE4B DA2C 54FD 2A58
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 08:17:01AM -0700, Andrew Morton wrote:
-> > -	struct buffer_head tmp;
-> > -	unsigned int start_blk;
-> > -	long long length = 0, map_len = 0;
-> > +	struct buffer_head map_bh;
-> > +	sector_t start_blk;
-> 
-> And the bugfix is there.
-> 
-> Has anyone actually tested this code on large files?  Greater than 4G
-> sectors and greater than 4G pages?
-> 
+This makes it possible to build perf statically, by performing
+make LDFLAGS=-static
+Since static libraries are only searched in the order they are
+specified, move library list from LDFLAGS to EXTLIBS, so that
+they are put at the end of linker command line.
 
-I tested my patch with 2TB sparse files that would fail without the patch.
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
 
-I can give a try to Josef's patch if that's necessary.
+Changes in v2: updated to latest tip.
 
-Mike
+ tools/perf/Makefile |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 800783d..b768741 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -145,6 +145,8 @@ all::
+ # Define NO_EXTERNAL_GREP if you don't want "perf grep" to ever call
+ # your external grep (e.g., if your system lacks grep, if its grep is
+ # broken, or spawning external process is slower than built-in grep perf has).
++#
++# Define LDFLAGS=-static to build a static binary.
+ 
+ PERF-VERSION-FILE: .FORCE-PERF-VERSION-FILE
+ 	@$(SHELL_PATH) util/PERF-VERSION-GEN
+@@ -208,7 +210,7 @@ ifndef PERF_DEBUG
+ endif
+ 
+ CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+-LDFLAGS = -lpthread -lrt -lelf -lm
++EXTLIBS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+ STRIP ?= strip
+@@ -457,19 +459,19 @@ ifeq ($(uname_S),Darwin)
+ 	PTHREAD_LIBS =
+ endif
+ 
+-ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+-ifneq ($(shell sh -c "(echo '\#include <gnu/libc-version.h>'; echo 'int main(void) { const char * version = gnu_get_libc_version(); return (long)version; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) > /dev/null 2>&1 && echo y"), y)
++ifneq ($(shell sh -c "(echo '\#include <gnu/libc-version.h>'; echo 'int main(void) { const char * version = gnu_get_libc_version(); return (long)version; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) > /dev/null 2>&1 && echo y"), y)
+ 	msg := $(error No gnu/libc-version.h found, please install glibc-dev[el]);
+ endif
+ 
+-	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) > /dev/null 2>&1 && echo y"), y)
+ 		BASIC_CFLAGS += -DLIBELF_NO_MMAP
+ 	endif
+ else
+ 	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel);
+ endif
+ 
+-ifneq ($(shell sh -c "(echo '\#include <libdwarf/dwarf.h>'; echo '\#include <libdwarf/libdwarf.h>'; echo 'int main(void) { Dwarf_Debug dbg; Dwarf_Error err; Dwarf_Ranges *rng; dwarf_init(0, DW_DLC_READ, 0, 0, &dbg, &err); dwarf_get_ranges(dbg, 0, &rng, 0, 0, &err); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -ldwarf -lelf -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++ifneq ($(shell sh -c "(echo '\#include <libdwarf/dwarf.h>'; echo '\#include <libdwarf/libdwarf.h>'; echo 'int main(void) { Dwarf_Debug dbg; Dwarf_Error err; Dwarf_Ranges *rng; dwarf_init(0, DW_DLC_READ, 0, 0, &dbg, &err); dwarf_get_ranges(dbg, 0, &rng, 0, 0, &err); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -ldwarf -lelf -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) > /dev/null 2>&1 && echo y"), y)
+ 	msg := $(warning No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231);
+ 	BASIC_CFLAGS += -DNO_LIBDWARF
+ else
+@@ -481,20 +483,20 @@ endif
+ ifdef NO_DEMANGLE
+ 	BASIC_CFLAGS += -DNO_DEMANGLE
+ else
+-	has_bfd := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd > /dev/null 2>&1 && echo y")
++	has_bfd := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd > /dev/null 2>&1 && echo y")
+ 
+ 	ifeq ($(has_bfd),y)
+ 		EXTLIBS += -lbfd
+ 	else
+-		has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty > /dev/null 2>&1 && echo y")
++		has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd -liberty > /dev/null 2>&1 && echo y")
+ 		ifeq ($(has_bfd_iberty),y)
+ 			EXTLIBS += -lbfd -liberty
+ 		else
+-			has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty -lz > /dev/null 2>&1 && echo y")
++			has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd -liberty -lz > /dev/null 2>&1 && echo y")
+ 			ifeq ($(has_bfd_iberty_z),y)
+ 				EXTLIBS += -lbfd -liberty -lz
+ 			else
+-				has_cplus_demangle := $(shell sh -c "(echo 'extern char *cplus_demangle(const char *, int);'; echo 'int main(void) { cplus_demangle(0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -liberty > /dev/null 2>&1 && echo y")
++				has_cplus_demangle := $(shell sh -c "(echo 'extern char *cplus_demangle(const char *, int);'; echo 'int main(void) { cplus_demangle(0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -liberty > /dev/null 2>&1 && echo y")
+ 				ifeq ($(has_cplus_demangle),y)
+ 					EXTLIBS += -liberty
+ 					BASIC_CFLAGS += -DHAVE_CPLUS_DEMANGLE
+-- 
+1.6.5.rc2
