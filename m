@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZJ2Veo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZJ2VjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756129AbZJ2Veo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 17:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZJ2Ven
+	id S1754290AbZJ2VjF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 17:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZJ2VjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 17:34:43 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:58339 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755945AbZJ2Ven (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 17:34:43 -0400
-Date: Fri, 30 Oct 2009 03:04:40 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC Patch 2/4] Allow breakpoints to be enabled/disabled
-	without yielding the breakpoint request through new APIs -
-	<enable><disable>_hw_breakpoint()
-Message-ID: <20091029213440.GA4596@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20091026211225.214925175@xyz> <20091026211915.GC15529@in.ibm.com> <1256761909.26028.1794.camel@gandalf.stny.rr.com>
+	Thu, 29 Oct 2009 17:39:04 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:61680 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752900AbZJ2VjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 17:39:03 -0400
+Message-ID: <4AEA0B71.5050805@redhat.com>
+Date: Thu, 29 Oct 2009 16:38:57 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256761909.26028.1794.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Parag Warudkar <parag.lkml@gmail.com>
+CC: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Theodore Tso <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, bugzilla-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>	 <20091016091558.GA10184@mit.edu>	 <20091027101534.GA27584@skywalker.linux.vnet.ibm.com> <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com>
+In-Reply-To: <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 04:31:49PM -0400, Steven Rostedt wrote:
-> On Tue, 2009-10-27 at 02:49 +0530, K.Prasad wrote:
+Parag Warudkar wrote:
+> On Tue, Oct 27, 2009 at 6:15 AM, Aneesh Kumar K.V
+> <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>> Can you try this patch ?
+>>
+>> commit a8836b1d6f92273e001012c7705ae8f4c3d5fb65
+>> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> Date:   Tue Oct 27 15:36:38 2009 +0530
+>>
+>>    ext4: discard preallocation during truncate
+>>
+>>    We need to make sure when we drop and reacquire the inode's
+>>    i_data_sem we discard the inode preallocation. Otherwise we
+>>    could have blocks marked as free in bitmap but still belonging
+>>    to prealloc space.
 > 
-> > Index: linux-2.6-tip.perf_hbkpt/include/asm-generic/hw_breakpoint.h
-> > ===================================================================
-> > --- linux-2.6-tip.perf_hbkpt.orig/include/asm-generic/hw_breakpoint.h
-> > +++ linux-2.6-tip.perf_hbkpt/include/asm-generic/hw_breakpoint.h
-> > @@ -102,11 +102,22 @@
-> >   * ----------------------------------------------------------------------
-> >   */
-> >  struct hw_breakpoint {
-> > +	/*
-> > +	 * Denotes if a breakpoint is currently enabled in physical debug
-> > +	 * registers. Not to be set directly by the end-user. Must be
-> > +	 * operated through <enable><disable>_hw_breakpoint() APIs only.
-> > +	 */
-> > +	atomic_t enabled;
+> Just wanted to let you know that I have applied this patch and one
+> unclean shutdown later it seems to have not given me any trouble.
 > 
-> Just a nit, but by looking at this structure as a whole, it's not easy
-> to see that the above comment is talking just about the "enabled" part
-> of the structure or the entire structure itself.
-> 
-> Probably want to add ...
-> 
-> 	/*
-> 	 * The enabled item denotes if ...
-> 
-> 
-> -- Steve
->
+> I will continue testing it - hopefully I won't have to reformat  this
+> time ( every time I tested previously I ended up having weird issues
+> that I decided to get rid of by reformatting /).
 
-I will modify the comments to read as under...the role of the 'enabled'
-flag has undergone changes and the comments will reflect that.
+I've been running my testcase, and I just hit the usual corruption with 
+this patch in place after 8 iterations, I'm afraid.
 
+-Eric
 
- struct hw_breakpoint {
-+	/*
-+	 * The 'enabled' flag denotes if a breakpoint hit would in-turn invoke
-+	 * the 'triggered' function. Not to be set directly by the end-user.
-+	 * Must be operated through <enable><disable>_hw_breakpoint() APIs only.
-+	 */
-+	atomic_t enabled;
- 	void (*triggered)(struct hw_breakpoint *, struct pt_regs *);
- 	const cpumask_t *cpumask;
- 	struct arch_hw_breakpoint info;
-
-Thanks,
-K.Prasad
+> Parag
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
