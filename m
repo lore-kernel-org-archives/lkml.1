@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbZJ2Wdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZJ2Wem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756909AbZJ2Wdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 18:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbZJ2WdR
+	id S1756888AbZJ2Wem (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 18:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbZJ2Wel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 18:33:17 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57407 "EHLO
+	Thu, 29 Oct 2009 18:34:41 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52757 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756157AbZJ2WdP (ORCPT
+	with ESMTP id S1756712AbZJ2WdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 29 Oct 2009 18:33:15 -0400
-Message-Id: <20091029223319.208676391@goodmis.org>
+Message-Id: <20091029223319.640367244@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 29 Oct 2009 18:32:56 -0400
+Date: Thu, 29 Oct 2009 18:32:57 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>, Li Hong <lihong.hi@gmail.com>
-Subject: [PATCH 2/8] [PATCH 2/8] tracing: Correct the check for number of arguments in recordmcount.pl
+Subject: [PATCH 3/8] [PATCH 3/8] tracing: Check absolute path of input file in recordmcount.pl
 References: <20091029223254.504427063@goodmis.org>
-Content-Disposition: inline; filename=0002-tracing-Correct-the-check-for-number-of-arguments-in.patch
+Content-Disposition: inline; filename=0003-tracing-Check-absolute-path-of-input-file-in-recordm.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Li Hong <lihong.hi@gmail.com>
 
-The number of arguments passed into recordmcount.pl is 10, but the code
-checks if only 7 are passed in.
+The ftrace.c file may reference the mcount function and this may interfere
+with the recordmcount.pl processing. To avoid this, the code does not
+process the kernel/trace/ftrace.o. But currently the check is against
+a relative path. This patch modifies the check to succeed if the path
+is an absolute path.
 
 Signed-off-by: Li Hong <lihong.hi@gmail.com>
-LKML-Reference: <20091027065733.GB22032@uhli>
+LKML-Reference: <20091028050332.GC30758@uhli>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
  scripts/recordmcount.pl |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index a569be7..a512af1 100755
+index a512af1..b80e5d0 100755
 --- a/scripts/recordmcount.pl
 +++ b/scripts/recordmcount.pl
-@@ -113,7 +113,7 @@ $P =~ s@.*/@@g;
+@@ -123,7 +123,7 @@ my ($arch, $bits, $objdump, $objcopy, $cc,
+     $ld, $nm, $rm, $mv, $is_module, $inputfile) = @ARGV;
  
- my $V = '0.1';
+ # This file refers to mcount and shouldn't be ftraced, so lets' ignore it
+-if ($inputfile eq "kernel/trace/ftrace.o") {
++if ($inputfile =~ m,kernel/trace/ftrace\.o$,) {
+     exit(0);
+ }
  
--if ($#ARGV < 7) {
-+if ($#ARGV != 10) {
- 	print "usage: $P arch bits objdump objcopy cc ld nm rm mv is_module inputfile\n";
- 	print "version: $V\n";
- 	exit(1);
 -- 
 1.6.3.3
 
