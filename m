@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZJ2PIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbZJ2PIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbZJ2PIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZJ2PIT
+	id S1755109AbZJ2PIa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755076AbZJ2PI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:08:19 -0400
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:46910 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754318AbZJ2PIS (ORCPT
+	Thu, 29 Oct 2009 11:08:28 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:51398 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755032AbZJ2PI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:08:18 -0400
+	Thu, 29 Oct 2009 11:08:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=uQEh2jpqS9pTpokTNFMg5Kd1spi1DBbH1xjutGbBMMUzvZr3ZBHkL7G4X/E8djY+oC
-         WOrWTDsXdWgD8bQlQIUINFM6b1aQw0xVcameagjMdB674dtopeBXx5iW8EoiRvO7UZJl
-         CHOB88yJk0E/2dO8daSgR4kaQIfWXMeQM2cFI=
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=mVUf/OPm18R8u8BmDvu+wKfLjpfX92ogIGddIu8zZSOVPsOXKlrpFo7dYEqXAlbqM7
+         HGQAsNNd6MigEnaGDeQlTLt0Rm5Tbd0FzRXtvQkUa8undbqn9gJMiFzeeYqUWW3zL2ZM
+         Qycou5cZuG04034NfOTMPFEyBEZYtFLtMh56E=
 MIME-Version: 1.0
-In-Reply-To: <200910291548.27235.mb@bu3sch.de>
-References: <200910291435.54203.bzolnier@gmail.com> <200910291539.16476.mb@bu3sch.de> 
-	<14add3d10910290744n3abd1cf8w42a6311108eb2fa7@mail.gmail.com> 
-	<200910291548.27235.mb@bu3sch.de>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Thu, 29 Oct 2009 08:08:02 -0700
-Message-ID: <43e72e890910290808p1d20ea0fxd9cf981c5a480156@mail.gmail.com>
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Gertjan van Wingerde <gwingerde@gmail.com>,
-       David Miller <davem@davemloft.net>, bzolnier@gmail.com,
-       penberg@cs.helsinki.fi, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linville@tuxdriver.com
-Content-Type: text/plain; charset=UTF-8
+Date: Thu, 29 Oct 2009 20:38:31 +0530
+Message-ID: <292693080910290808x69f25f6fgc49cb646c1c00466@mail.gmail.com>
+Subject: Questions about linux scheduler
+From: Daniel Rodrick <daniel.rodrick@gmail.com>
+To: Linux Newbie <linux-newbie@vger.kernel.org>,
+       Kernel Newbies <kernelnewbies@nl.linux.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 7:48 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> On Thursday 29 October 2009 15:44:42 Gertjan van Wingerde wrote:
->> Hold on here. In this case it is the driver maintainer (i.e. Ivo for
->> the rt2x00 project) that
->> submitted this driver for inclusion, so the driver maintainer has not
->> been bypassed in
->> this case.
->>
->> Apparently Bart has issues with the code submitted by the maintainers
->> and has been
->> unsuccessful in convincing others about these issues.
->
-> So Bart is not a maintainer? That of course changes the situation.
+Hi list,
 
-But you were :-P
+I'm following the Robert Love's book and am trying to understand the
+Linux O(1) scheduler. So here is my understanding. The kernel allows
+the applications to specify two types of priorities
 
-  Luis
+* Realtime Priorities: Range from 0 to 99
+* Non-realtime priorities: Also called "nice" values range from -20 to +19.
+
+(The above are mutually exclusive)
+
+
+Over all Scheduling algo
+=================
+* A total of 140 priorities (100 RT + 40 non-RT) - these priorities
+are static - do not change over time.
+* A lower priority process will run only if there are no runnable
+processes in priority above it - this automatically means that all RT
+processes get to run before non-RT processes.
+ * tasks on the same priority level are scheduled round robin
+
+Is my above understanding correct? Where my understanding doesn't fit
+is the conncept of dynamic timeslice calculation. IMHO, the dynamic
+timeslice calculation applies only to Non-RT processes, right? Because
+a higher priority RT process should always get to run.
+
+Thanks,
+
+Dan
