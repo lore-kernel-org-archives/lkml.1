@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbZJ2Pbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbZJ2PeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbZJ2Pbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbZJ2Pbq
+	id S1755122AbZJ2PeJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbZJ2PeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:31:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34795 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751835AbZJ2Pbq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:31:46 -0400
-Date: Thu, 29 Oct 2009 08:31:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Howells <dhowells@redhat.com>
-cc: akpm@linux-foundation.org, linux-cachefs@redhat.com,
-       linux-kernel@vger.kernel.org, Roel Kluin <roel.kluin@gmail.com>
-Subject: Re: [PATCH] CacheFiles: Cleanup redundant tests on unsigned
-In-Reply-To: <20091026155839.15099.72735.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LFD.2.01.0910290826350.31845@localhost.localdomain>
-References: <20091026155839.15099.72735.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 29 Oct 2009 11:34:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45420 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754850AbZJ2PeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:34:08 -0400
+Message-ID: <4AE9B5E1.7030509@kernel.org>
+Date: Thu, 29 Oct 2009 16:33:53 +0100
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Bug #14467] Linker errors on ia64 with NR_CPUS=4096
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.nnF.Cre5KB@chimera> <alpine.DEB.1.10.0910271623210.20363@V090114053VZO-1> <alpine.LSU.2.00.0910271922490.19847@wotan.suse.de> <alpine.DEB.1.10.0910291435420.18197@V090114053VZO-1> <4AE9AB23.8010207@kernel.org> <alpine.DEB.1.10.0910291455400.19555@V090114053VZO-1> <4AE9B090.9090107@kernel.org> <alpine.DEB.1.10.0910291517160.30265@V090114053VZO-1>
+In-Reply-To: <alpine.DEB.1.10.0910291517160.30265@V090114053VZO-1>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+Christoph Lameter wrote:
+> As I have said repeately before: We need this for dynamic DMA slab
+> creation in SLUB. Since you got it already halfway in: Complete it and I
+> can get rid of the static percpu definitions that I had to add to be able
+> to use the new percpu allocator.
 
-On Mon, 26 Oct 2009, David Howells wrote:
->
-> From: Roel Kluin <roel.kluin@gmail.com>
-> 
-> The variables are unsigned so the test `>= 0' is always true,
-> the `< 0' test always fails. The other part of
-> the test catches wrapped values.
+I completely forgot about that.  The biggest cause of my reluctance is
+that it's gonna make locking more complex as I really like the current
+dumb locking in alloc path.  Oh well, I'm putting it on my todo list.
 
-This is an excellent example of why I think that some gcc warnings are 
-pure and utter sh*t, and why just blindly trying to avoid them then leads 
-to worse code.
+Thanks.
 
-> -	if (datalen < 0 || datalen > PAGE_SIZE - 1)
-> +	if (datalen > PAGE_SIZE - 1)
-> -	if (fstop < 0 || fstop >= cache->fcull_percent)
-> +	if (fstop >= cache->fcull_percent)
-> -	if (bstop < 0 || bstop >= cache->bcull_percent)
-> +	if (bstop >= cache->bcull_percent)
-
-You've now actively made the code more fragile, only to avoid a warning.
-
-The old code was clearly correct. The new code subtle depends on the type 
-of comparison. 
-
-I _hate_ those idiotic warnings, and in this case the "warning-free" code 
-is actively worse than the original.
-
-A smart compiler would see that it's a range check, and one that could 
-have been done as an unsigned comparison (well, for the constant compare 
-case) regardless of the type of the variable being tested. So a _smart_ 
-compiler wouldn't complain, but it might use the signedness information to 
-silently simplify the comparison.
-
-A _stupid_ compiler complains, and thus forces people to either ignore the 
-warning, or make the code worse.
-
-Which one would you prefer?
-
-		Linus
+-- 
+tejun
