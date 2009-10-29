@@ -1,150 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZJ2I2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZJ2I3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753257AbZJ2I2W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZJ2I2T
+	id S1753336AbZJ2I3Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZJ2I3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:28:19 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44138 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753039AbZJ2I2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:28:16 -0400
-Date: Thu, 29 Oct 2009 17:27:36 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       chrisw@sous-sol.org, dwmw2@infradead.org, mingo@elte.hu
-Subject: Re: [PATCH 0/10] x86: handle HW IOMMU initialization failure
- gracely
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091028132119.GC5876@amd.com>
-References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<20091028132119.GC5876@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 29 Oct 2009 04:29:23 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60059 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753019AbZJ2I3U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 04:29:20 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AE95247.8080401@jp.fujitsu.com>
+Date: Thu, 29 Oct 2009 17:28:55 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Chiang <achiang@hp.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/2] pci: pciehp update the slot bridge res to get big
+ range for pcie devices - v4
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org> <m1ljivibrt.fsf@fess.ebiederm.org> <4AE899A0.3020006@kernel.org>
+In-Reply-To: <4AE899A0.3020006@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091029172623X.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 29 Oct 2009 17:27:39 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009 14:21:19 +0100
-Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> > The new x86 IOMMU initialization sequence are:
-> > 
-> > 1. initializing swiotlb (and setting swiotlb to 1) in the case of
-> > (max_pfn > MAX_DMA32_PFN && !no_iommu). dma_ops is set to
-> > swiotlb_dma_ops or nommu_dma_ops.
-> > 
-> > 2. calling the detection functions of all the IOMMUs
-> > 
-> > 3. the detection function sets x86_init.iommu.iommu_init to the IOMMU
-> > initialization function (so we can avoid calling the initialization
-> > functions of all the IOMMUs needlessly).
-> > 
-> > 4. if the IOMMU initialization function doesn't need to swiotlb then
-> > sets swiotlb to zero (e.g. the initialization is sucessful).
-> > 
-> > 5. if we find that swiotlb is set to zero, we free swiotlb resource.
+Yinghai Lu wrote:
 > 
-> I started to test this patchset. It breaks the iommu=soft selection to
-> force using swiotlb usage. On my machine always the AMD IOMMU driver
-> gots selected and initialized.
+> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+> and at last do them all together one time including slot bridge, to avoid to
+> call assign resources several times, when there are several bridges under the
+> slot bridge.
+> 
+> need to introduce pci_bridge_assign_resources there.
+> 
+> handle the case the slot bridge that doesn't get pre-allocated big enough res
+> from FW.
+> for example pcie devices need 256M, but the bridge only get preallocated 2M...
+> 
+> pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
+> update res is not updated to bridge BAR. that is bridge is enabled already for
+> port service.
+> 
+> -v2: address Alex's concern about pci remove/rescan feature about pci_setup_bridge changes.
+> -v3: Kenji pointed out that pci_config_slot need to be called before pci_bus_add_devices()
+> -v4: move out pci_is_enabled checkout of pci_setup_bridge()
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  drivers/pci/hotplug/pciehp_pci.c |   29 ++++++++++++---
+>  drivers/pci/setup-bus.c          |   73 ++++++++++++++++++++++++++++++++++++---
+>  include/linux/pci.h              |    1 
+>  3 files changed, 93 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
+> +++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+> @@ -53,19 +53,18 @@ static int __ref pciehp_add_bridge(struc
+>  		busnr = pci_scan_bridge(parent, dev, busnr, pass);
+>  	if (!dev->subordinate)
+>  		return -1;
+> -	pci_bus_size_bridges(dev->subordinate);
+> -	pci_bus_assign_resources(parent);
+> -	pci_enable_bridges(parent);
+> -	pci_bus_add_devices(parent);
+> +
+>  	return 0;
+>  }
+>  
+>  int pciehp_configure_device(struct slot *p_slot)
+>  {
+>  	struct pci_dev *dev;
+> -	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
+> +	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
+> +	struct pci_bus *parent = bridge->subordinate;
+>  	int num, fn;
+>  	struct controller *ctrl = p_slot->ctrl;
+> +	int retval;
+>  
+>  	dev = pci_get_slot(parent, PCI_DEVFN(0, 0));
+>  	if (dev) {
+> @@ -96,12 +95,30 @@ int pciehp_configure_device(struct slot
+>  				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
+>  			pciehp_add_bridge(dev);
+>  		}
+> +		pci_dev_put(dev);
+> +	}
+> +
+> +	pci_bus_size_bridges(parent);
+> +	pci_clear_master(bridge);
+> +	pci_bridge_assign_resources(bridge);
+> +	retval = pci_reenable_device(bridge);
+> +	pci_set_master(bridge);
+> +	pci_enable_bridges(parent);
+> +
+> +	for (fn = 0; fn < 8; fn++) {
+> +		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
+> +		if (!dev)
+> +			continue;
+> +		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
+> +			pci_dev_put(dev);
+> +			continue;
+> +		}
+>  		pci_configure_slot(dev);
+>  		pci_dev_put(dev);
+>  	}
+>  
+> -	pci_bus_assign_resources(parent);
+>  	pci_bus_add_devices(parent);
+> +
+>  	return 0;
+>  }
+>  
+> Index: linux-2.6/drivers/pci/setup-bus.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/setup-bus.c
+> +++ linux-2.6/drivers/pci/setup-bus.c
+> @@ -27,6 +27,44 @@
+>  #include <linux/slab.h>
+>  #include "pci.h"
+>  
+> +static void pdev_assign_resources_sorted(struct pci_dev *dev)
+> +{
+> +	struct resource *res;
+> +	struct resource_list head, *list, *tmp;
+> +	int idx;
+> +	u16 class = dev->class >> 8;
+> +
+> +	head.next = NULL;
+> +
+> +	/* Don't touch classless devices or host bridges or ioapics.  */
+> +	if (class == PCI_CLASS_NOT_DEFINED ||
+> +	    class == PCI_CLASS_BRIDGE_HOST)
+> +		return;
+> +
+> +	/* Don't touch ioapic devices already enabled by firmware */
+> +	if (class == PCI_CLASS_SYSTEM_PIC) {
+> +		u16 command;
+> +		pci_read_config_word(dev, PCI_COMMAND, &command);
+> +		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
+> +			return;
+> +	}
+> +
+> +	pdev_sort_resources(dev, &head);
+> +
+> +	for (list = head.next; list;) {
+> +		res = list->res;
+> +		idx = res - &list->dev->resource[0];
+> +		if (pci_assign_resource(list->dev, idx)) {
+> +			res->start = 0;
+> +			res->end = 0;
+> +			res->flags = 0;
+> +		}
+> +		tmp = list;
+> +		list = list->next;
+> +		kfree(tmp);
+> +	}
+> +}
+> +
+>  static void pbus_assign_resources_sorted(const struct pci_bus *bus)
+>  {
+>  	struct pci_dev *dev;
+> @@ -144,9 +182,6 @@ static void pci_setup_bridge(struct pci_
+>  	u32 l, bu, lu, io_upper16;
+>  	int pref_mem64;
+>  
+> -	if (pci_is_enabled(bridge))
+> -		return;
+> -
+>  	dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
+>  		 pci_domain_nr(bus), bus->number);
+>  
+> @@ -541,6 +576,35 @@ void __ref pci_bus_size_bridges(struct p
+>  }
+>  EXPORT_SYMBOL(pci_bus_size_bridges);
+>  
+> +void __ref pci_bridge_assign_resources(const struct pci_dev *bridge)
+> +{
+> +	struct pci_bus *b;
+> +
+> +	pdev_assign_resources_sorted((struct pci_dev *)bridge);
+> +
+> +	b = bridge->subordinate;
+> +	if (!b)
+> +		return;
+> +
+> +	pci_bus_assign_resources(b);
+> +
+> +	switch (bridge->class >> 8) {
+> +	case PCI_CLASS_BRIDGE_PCI:
+> +		pci_setup_bridge(b);
+> +		break;
+> +
+> +	case PCI_CLASS_BRIDGE_CARDBUS:
+> +		pci_setup_cardbus(b);
+> +		break;
+> +
+> +	default:
+> +		dev_info(&bridge->dev, "not setting up bridge for bus "
+> +			 "%04x:%02x\n", pci_domain_nr(b), b->number);
+> +		break;
+> +	}
+> +}
+> +EXPORT_SYMBOL(pci_bridge_assign_resources);
+> +
+>  void __ref pci_bus_assign_resources(const struct pci_bus *bus)
+>  {
+>  	struct pci_bus *b;
+> @@ -557,7 +621,8 @@ void __ref pci_bus_assign_resources(cons
+>  
+>  		switch (dev->class >> 8) {
+>  		case PCI_CLASS_BRIDGE_PCI:
+> -			pci_setup_bridge(b);
+> +			if (!pci_is_enabled(dev))
+> +				pci_setup_bridge(b);
+>  			break;
+>  
+>  		case PCI_CLASS_BRIDGE_CARDBUS:
+> Index: linux-2.6/include/linux/pci.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/pci.h
+> +++ linux-2.6/include/linux/pci.h
+> @@ -756,6 +756,7 @@ ssize_t pci_write_vpd(struct pci_dev *de
+>  int pci_vpd_truncate(struct pci_dev *dev, size_t size);
+>  
+>  /* Helper functions for low-level code (drivers/pci/setup-[bus,res].c) */
+> +void pci_bridge_assign_resources(const struct pci_dev *bridge);
+>  void pci_bus_assign_resources(const struct pci_bus *bus);
+>  void pci_bus_size_bridges(struct pci_bus *bus);
+>  int pci_claim_resource(struct pci_dev *, int);
+> 
 
-Thanks for testing the patchset.
+Does this patch work without [PATCH 2/2]? I don't understand who
+releases resouces? Does find_free_bus_resource() still release
+resources?
 
-Sorry about the bug. I need to add 1.5 to the above sequence:
-
-1.5 if swiotlb usage is forced by the boot option, we skip the rest.
-
-Here's a patch against the patchset.
-
-diff --git a/arch/ia64/include/asm/swiotlb.h b/arch/ia64/include/asm/swiotlb.h
-index dcbaea7..f0acde6 100644
---- a/arch/ia64/include/asm/swiotlb.h
-+++ b/arch/ia64/include/asm/swiotlb.h
-@@ -4,8 +4,6 @@
- #include <linux/dma-mapping.h>
- #include <linux/swiotlb.h>
- 
--extern int swiotlb_force;
--
- #ifdef CONFIG_SWIOTLB
- extern int swiotlb;
- extern void pci_swiotlb_init(void);
-diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
-index b9e4e20..193aa75 100644
---- a/arch/x86/include/asm/swiotlb.h
-+++ b/arch/x86/include/asm/swiotlb.h
-@@ -5,8 +5,6 @@
- 
- /* SWIOTLB interface */
- 
--extern int swiotlb_force;
--
- #ifdef CONFIG_SWIOTLB
- extern int swiotlb;
- extern void pci_swiotlb_init(void);
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 28fd54a..2583a0b 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -124,11 +124,15 @@ static void __init dma32_free_bootmem(void)
- 
- void __init pci_iommu_alloc(void)
- {
-+	/* swiotlb is forced by the boot option */
-+	int use_swiotlb = swiotlb;
- #ifdef CONFIG_X86_64
- 	/* free the range so iommu could get some range less than 4G */
- 	dma32_free_bootmem();
- #endif
- 	pci_swiotlb_init();
-+	if (use_swiotlb)
-+		return;
- 
- 	gart_iommu_hole_init();
- 
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index 607fbb6..17ce422 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -49,8 +49,6 @@ void __init pci_swiotlb_init(void)
- 	if (!no_iommu && max_pfn > MAX_DMA32_PFN)
- 		swiotlb = 1;
- #endif
--	if (swiotlb_force)
--		swiotlb = 1;
- 	if (swiotlb) {
- 		swiotlb_init(0);
- 		dma_ops = &swiotlb_dma_ops;
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 0c12d7c..2eae139 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -57,7 +57,7 @@ enum dma_sync_target {
- 	SYNC_FOR_DEVICE = 1,
- };
- 
--int swiotlb_force;
-+static int swiotlb_force;
- 
- /*
-  * Used to do a quick range check in unmap_single and
-@@ -109,8 +109,10 @@ setup_io_tlb_npages(char *str)
- 	}
- 	if (*str == ',')
- 		++str;
--	if (!strcmp(str, "force"))
-+	if (!strcmp(str, "force")) {
- 		swiotlb_force = 1;
-+		swiotlb = 1;
-+	}
- 	return 1;
- }
- __setup("swiotlb=", setup_io_tlb_npages);
-
-
+Thanks,
+Kenji Kaneshige
 
 
