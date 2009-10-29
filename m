@@ -1,95 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZJ2Jn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZJ2Jou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbZJ2Jn4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 05:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZJ2Jn4
+	id S1753514AbZJ2Jou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 05:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZJ2Jot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 05:43:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51558 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751279AbZJ2Jnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 05:43:55 -0400
-Date: Thu, 29 Oct 2009 10:43:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-mm@kvack.org,
-       Marcelo Tosatti <mtosatti@redhat.com>, Adam Litke <agl@us.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+	Thu, 29 Oct 2009 05:44:49 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:47859 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751757AbZJ2Jos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 05:44:48 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=sBC5cLRLSRPQwJ4o1iClZgcJQQSkt5alZGVFGxWZLxTC5aVzZgnqeHGg110wKLP0o
+	UZiYV09kx4QIvZfuy1/8w==
+Date: Thu, 29 Oct 2009 02:44:45 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
        Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: Transparent Hugepage support
-Message-ID: <20091029094344.GA1068@elte.hu>
-References: <20091026185130.GC4868@random.random> <87ljiwk8el.fsf@basil.nowhere.org> <20091027193007.GA6043@random.random> <20091028042805.GJ7744@basil.fritz.box>
+       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+In-Reply-To: <20091029181650.979bf95c.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0910290232000.21298@chino.kir.corp.google.com>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com> <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com> <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com> <20091029174632.8110976c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910290156560.16347@chino.kir.corp.google.com> <20091029181650.979bf95c.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028042805.GJ7744@basil.fritz.box>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Oct 2009, KAMEZAWA Hiroyuki wrote:
 
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> > 1GB pages can't be handled by this code, and clearly it's not 
-> > practical to hope 1G pages to materialize in the buddy (even if we
+> > > yes, then I wrote "as start point". There are many environments.
+> > 
+> > And this environment has a particularly bad result.
+> > yes, then I wrote "as start point". There are many environments.
 > 
-> That seems short sightened. You do this because 2MB pages give you x% 
-> performance advantage, but then it's likely that 1GB pages will give 
-> another y% improvement and why should people stop at the smaller 
-> improvement?
+> In my understanding, 2nd, 3rd candidates are not important. If both of
+> total_vm and RSS catches the same process as 1st candidate, it's ok.
+> (i.e. If killed, oom situation will go away.)
 > 
-> Ignoring the gigantic pages now would just mean that this would need 
-> to be revised later again or that users still need to use hacks like 
-> libhugetlbfs.
 
-I've read the patch and have read through this discussion and you are 
-missing the big point that it's best to do such things gradually - one 
-step at a time.
+The ordering would matter on a machine with smaller capacity or if Vedran 
+was using mem=, theoretically at the size of its current capacity minus 
+the amount of anonymous memory being mlocked by the "test" program.  When 
+the oom occurs (and notice it's not triggered by "test" each time), it 
+would have killed Xorg in what would otherwise be the same conditions.
 
-Just like we went from 2 level pagetables to 3 level pagetables, then to 
-4 level pagetables - and we might go to 5 level pagetables in the 
-future. We didnt go from 2 level pagetables to 5 level page tables in 
-one go, despite predictions clearly pointing out the exponentially 
-increasing need for RAM.
+> > I'm surprised you still don't see a value in using the peak VM and RSS 
+> > sizes, though, as part of your formula as it would indicate the proportion 
+> > of memory resident in RAM at the time of oom.
+> > 
+> I'll use swap_usage instead of peak VM size as bonus.
+> 
+>   anon_rss + swap_usage/2 ? or some.
+> 
+> My first purpose is not to kill not-guilty process at random.
+> If memory eater is killed, it's reasnoable.
+> 
 
-So your obsession with 1GB pages is misguided. If indeed transparent 
-largepages give us real benefits we can extend it to do transparent 
-gbpages as well - should we ever want to. There's nothing 'shortsighted' 
-about being gradual - the change is already ambitious enough as-is, and 
-brings very clear benefits to a difficult, decade-old problem no other 
-person was able to address.
+We again arrive at the distinction I made earlier where there're two 
+approaches: kill a task that is consuming the majority of resident RAM, or 
+kill a thread that is using much more memory than expected such as a 
+memory leaker.  I know that you've argued that the kernel can never know 
+the latter, which I agree, but it does have the benefit of allowing the 
+user to have more input and determine when an actual task is using much 
+more RAM than expected; the anon_rss and swap_usage in your formula is 
+highly dynamic, so you've have to expect the user to dynamically alter 
+oom_adj to specify a preference in the case of the memory leaker.
 
-In fact introducing transparent 2MBpages makes 1GB pages support 
-_easier_ to merge: as at that point we'll already have a (finally..) 
-successful hugetlb facility happility used by an increasing range of 
-applications.
+> In my consideration
+> 
+>   - "Killing a process because of OOM" is something bad, but not avoidable.
+> 
+>   - We don't need to do compliated/too-wise calculation for killing a process.
+>     "The worst one is memory-eater!" is easy to understand to users and admins.
+> 
 
-Hugetlbfs's big problem was always that it wasnt transparent and hence 
-wasnt gradual for applications. It was an opt-in and constituted an 
-interface/ABI change - that is always a big barrier to app adoption.
+Is this a proposal to remove the remainder of the heuristics as well such 
+as considering superuser tasks and those with longer uptimes?  I'd agree 
+with removing most of it other than the oom_adj and current->mems_allowed 
+intersection penalty.  We're probably going to need rewrite the badness 
+heuristic from scratch instead of simply changing the baseline.
 
-So i give Andrea's patch a very big thumbs up - i hope it gets reviewed 
-in fine detail and added to -mm ASAP. Our lack of decent, automatic 
-hugepage support is sticking out like a sore thumb and is hurting us in 
-high-performance setups. If largepage support within Linux has a chance, 
-this might be the way to do it.
+>   - We have oom_adj, now. User can customize it if he run _important_ memory eater.
+> 
 
-A small comment regarding the patch itself: i think it could be 
-simplified further by eliminating CONFIG_TRANSPARENT_HUGEPAGE and by 
-making it a natural feature of hugepage support. If the code is correct 
-i cannot see any scenario under which i wouldnt want a hugepage enabled 
-kernel i'm booting to not have transparent hugepage support as well.
+If he runs an important memory eater, he can always polarize it by 
+disabling oom killing completely for that task.  However, oom_adj is also 
+used to identify memory leakers when the amount of memory that it uses is 
+roughly known.  Most people don't know how much memory their applications 
+use, but there are systems where users have tuned oom_adj specifically 
+based on comparative /proc/pid/oom_score results.  Simply using anon_rss 
+and swap_usage will make that vary much more than previously.
 
-Thanks,
+>   - But fork-bomb doesn't seem memory eater if we see each process.
+>     We need some cares.
+> 
 
-	Ingo
+The forkbomb can be addressed in multiple ways, the most simple of which 
+is simply counting the number of children and their runtime.  It'd 
+probably even be better to isolate the forkbomb case away from the badness 
+score and simply kill the parent by returning ULONG_MAX when it's 
+recognized.
+
+>   Then,
+>   - I'd like to drop file_rss.
+>   - I'd like to take swap_usage into acccount.
+>   - I'd like to remove cpu_time bonus. runtime bonus is much more important.
+>   - I'd like to remove penalty from children. To do that, fork-bomb detector
+>     is necessary.
+>   - nice bonus is bad. (We have oom_adj instead of this.) It should be
+>     if (task_nice(p) < 0)
+> 	points /= 2;
+>     But we have "root user" bonus already. We can remove this line.
+> 
+> After above, much more simple selection, easy-to-understand,  will be done.
+> 
+
+Agreed, I think we'll need to rewrite most of the heuristic from scratch.
