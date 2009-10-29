@@ -1,92 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZJ2P5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZJ2P4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbZJ2P5H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbZJ2P5G
+	id S1752960AbZJ2P4v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZJ2P4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:57:06 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:60199 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753078AbZJ2P5F convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:57:05 -0400
-MIME-Version: 1.0
-Message-ID: <ffdfacb2-bc41-40b3-8a35-550fd441d77b@default>
-Date: Thu, 29 Oct 2009 08:55:55 -0700 (PDT)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Glauber Costa <glommer@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
-       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
-Subject: RE: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
-	implementation
-In-Reply-To: <4AE9AFAE.5020306@redhat.com>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
- 9.0.0.6627]
-Content-Type: text/plain; charset=Windows-1252
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4AE9BB17.00D8:SCFMA4539814,ss=1,fgs=0
+	Thu, 29 Oct 2009 11:56:50 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:55440 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbZJ2P4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:56:49 -0400
+To: serue@us.ibm.com, viro@zeniv.linux.org.uk
+Cc: linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TOMOYO #16 01/25] LSM: Add security_path_chmod() andsecurity_path_chown().
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
+	<20091004125327.105675949@I-love.SAKURA.ne.jp>
+	<20091029051211.GB11558@us.ibm.com>
+In-Reply-To: <20091029051211.GB11558@us.ibm.com>
+Message-Id: <200910300056.IFD65194.MSOLHFOVJQtOFF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Fri, 30 Oct 2009 00:56:53 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Avi Kivity [mailto:avi@redhat.com]
-> Sent: Thursday, October 29, 2009 9:07 AM
-> To: Dan Magenheimer
-> Cc: Jeremy Fitzhardinge; Glauber Costa; Jeremy Fitzhardinge; Kurt
-> Hackel; the arch/x86 maintainers; Linux Kernel Mailing List; 
-> Glauber de
-> Oliveira Costa; Xen-devel; Keir Fraser; Zach Brown; Chris Mason; Ingo
-> Molnar
-> Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
-> implementation
+Hello.
+
+Serge E. Hallyn wrote:
+> Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
+> > This patch allows pathname based LSM modules to check chmod()/chown()
+> > operations. Since notify_change() does not receive "struct vfsmount *",
+> > we add security_path_chmod() and security_path_chown() to the caller of
+> > notify_change().
+> > 
+> > These hooks are used by TOMOYO.
+> > 
+> > Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> > ---
+> >  fs/open.c                |   24 ++++++++++++++++++++----
+> >  include/linux/security.h |   30 ++++++++++++++++++++++++++++++
+> >  security/capability.c    |   13 +++++++++++++
+> >  security/security.c      |   15 +++++++++++++++
+> >  4 files changed, 78 insertions(+), 4 deletions(-)
+> > 
+> > --- security-testing-2.6.orig/fs/open.c
+> > +++ security-testing-2.6/fs/open.c
+> > @@ -616,6 +616,9 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd
+> >  	err = mnt_want_write_file(file);
+> >  	if (err)
+> >  		goto out_putf;
+> > +	err = security_path_chmod(dentry, file->f_vfsmnt, mode);
+> > +	if (err)
+> > +		goto out_drop_write;
+> >  	mutex_lock(&inode->i_mutex);
 > 
+> Isn't doing the security check before the mutex_lock racy?
 > 
-> On 10/29/2009 04:46 PM, Dan Magenheimer wrote:
-> > No, the apps I'm familiar with (a DB and a JVM) need a timestamp
-> > not a monotonic counter.  The timestamps must be relatively
-> > accurate (e.g. we've been talking about gettimeofday generically,
-> > but these apps would use clock_gettime for nsec resolution),
-> > monotonically increasing, and work properly across a VM
-> > migration.  The timestamps are taken up to a 100K/sec or
-> > more so the apps need to ensure they are using the fastest
-> > mechanism available that meets those requirements.
+> Any reason not to move it into the lock?  (since you had
+> considered putting a path hook in notify_change() I assume
+> not?)
 > 
-> Out of interest, do you know (and can you relate) why those apps need 
-> 100k/sec monotonically increasing timestamps?
+None for security_path_chmod(). None for security_path_chown() if we are
+allowed to pass "struct vfsmount" to chown_common().
+> -serge
+> 
+Al, is it OK to pass "struct vfsmount" to chown_common() so that
+security_path_chown() is called after mutex_lock()?
+----------
+[PATCH] LSM: Move security_path_chmod()/security_path_chown() to after mutex_lock().
 
-I don't have any public data available for this DB usage, but basically
-assume it is measuring transactions at a very high throughput, some
-of which are to a memory-resident portion of the DB.  Anecdotally, 
-I'm told the difference between non-vsyscall gettimeofday
-and native rdtsc (on a machine with Invariant TSC support) can
-affect overall DB performance by as much as 10-20%.
+We should call security_path_chmod()/security_path_chown() after mutex_lock()
+in order to avoid races.
 
-I did find the following public link for the JVM: 
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ fs/open.c |   36 +++++++++++++++---------------------
+ 1 file changed, 15 insertions(+), 21 deletions(-)
 
-http://download.oracle.com/docs/cd/E13188_01/jrockit/tools/intro/jmc3.html
-
-Search for "flight recorder".  This feature is intended to
-be enabled all the time, but with non-vsyscall gettimeofday
-the performance impact is unacceptably high, so they are using
-rdtscp instead (on those machines where it is available).  With
-rdtscp, the performance impact is not measureable.
-
-Though the processor/server vendors have finally fixed the
-"unsynced TSC" problem on recent x86 platforms, thus allowing
-enterprise software to obtain timestamps at rdtsc performance,
-the problem comes back all over again with virtualization
-because of migration.  Jeremy's vsyscall+pvclock is a great 
-solution if the app can ensure that it is present; if not,
-the apps will instead continue to use rdtsc as even emulated
-rdtsc is 2-3x faster than non-vsyscall gettimeofday.
-
-Does that help?
+--- security-testing-2.6.orig/fs/open.c
++++ security-testing-2.6/fs/open.c
+@@ -619,17 +619,17 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd
+ 	err = mnt_want_write_file(file);
+ 	if (err)
+ 		goto out_putf;
++	mutex_lock(&inode->i_mutex);
+ 	err = security_path_chmod(dentry, file->f_vfsmnt, mode);
+ 	if (err)
+-		goto out_drop_write;
+-	mutex_lock(&inode->i_mutex);
++		goto out_unlock;
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	err = notify_change(dentry, &newattrs);
++out_unlock:
+ 	mutex_unlock(&inode->i_mutex);
+-out_drop_write:
+ 	mnt_drop_write(file->f_path.mnt);
+ out_putf:
+ 	fput(file);
+@@ -652,17 +652,17 @@ SYSCALL_DEFINE3(fchmodat, int, dfd, cons
+ 	error = mnt_want_write(path.mnt);
+ 	if (error)
+ 		goto dput_and_out;
++	mutex_lock(&inode->i_mutex);
+ 	error = security_path_chmod(path.dentry, path.mnt, mode);
+ 	if (error)
+-		goto out_drop_write;
+-	mutex_lock(&inode->i_mutex);
++		goto out_unlock;
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	error = notify_change(path.dentry, &newattrs);
++out_unlock:
+ 	mutex_unlock(&inode->i_mutex);
+-out_drop_write:
+ 	mnt_drop_write(path.mnt);
+ dput_and_out:
+ 	path_put(&path);
+@@ -675,9 +675,9 @@ SYSCALL_DEFINE2(chmod, const char __user
+ 	return sys_fchmodat(AT_FDCWD, filename, mode);
+ }
+ 
+-static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
++static int chown_common(struct path *path, uid_t user, gid_t group)
+ {
+-	struct inode *inode = dentry->d_inode;
++	struct inode *inode = path->dentry->d_inode;
+ 	int error;
+ 	struct iattr newattrs;
+ 
+@@ -694,7 +694,9 @@ static int chown_common(struct dentry * 
+ 		newattrs.ia_valid |=
+ 			ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
+ 	mutex_lock(&inode->i_mutex);
+-	error = notify_change(dentry, &newattrs);
++	error = security_path_chown(path, user, group);
++	if (!error)
++		error = notify_change(path->dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ 	return error;
+@@ -711,9 +713,7 @@ SYSCALL_DEFINE3(chown, const char __user
+ 	error = mnt_want_write(path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = security_path_chown(&path, user, group);
+-	if (!error)
+-		error = chown_common(path.dentry, user, group);
++	error = chown_common(&path, user, group);
+ 	mnt_drop_write(path.mnt);
+ out_release:
+ 	path_put(&path);
+@@ -738,9 +738,7 @@ SYSCALL_DEFINE5(fchownat, int, dfd, cons
+ 	error = mnt_want_write(path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = security_path_chown(&path, user, group);
+-	if (!error)
+-		error = chown_common(path.dentry, user, group);
++	error = chown_common(&path, user, group);
+ 	mnt_drop_write(path.mnt);
+ out_release:
+ 	path_put(&path);
+@@ -759,9 +757,7 @@ SYSCALL_DEFINE3(lchown, const char __use
+ 	error = mnt_want_write(path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = security_path_chown(&path, user, group);
+-	if (!error)
+-		error = chown_common(path.dentry, user, group);
++	error = chown_common(&path, user, group);
+ 	mnt_drop_write(path.mnt);
+ out_release:
+ 	path_put(&path);
+@@ -784,9 +780,7 @@ SYSCALL_DEFINE3(fchown, unsigned int, fd
+ 		goto out_fput;
+ 	dentry = file->f_path.dentry;
+ 	audit_inode(NULL, dentry);
+-	error = security_path_chown(&file->f_path, user, group);
+-	if (!error)
+-		error = chown_common(dentry, user, group);
++	error = chown_common(&file->f_path, user, group);
+ 	mnt_drop_write(file->f_path.mnt);
+ out_fput:
+ 	fput(file);
