@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbZJ2Bbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZJ2Brr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756166AbZJ2Bbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 21:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZJ2Bbt
+	id S1756029AbZJ2Brr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 21:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbZJ2Brr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 21:31:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56992 "EHLO mx2.suse.de"
+	Wed, 28 Oct 2009 21:47:47 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55571 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753911AbZJ2Bbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 21:31:48 -0400
-Date: Wed, 28 Oct 2009 18:28:58 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bryan Wu <bryan.wu@canonical.com>
-Cc: Brian Swetland <swetland@google.com>, Eric Miao <eric.miao@canonical.com>,
-       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Staging: Android logger: fix compiling error
-Message-ID: <20091029012857.GA30274@suse.de>
-References: <1256316741-14053-1-git-send-email-bryan.wu@canonical.com>
- <f17812d70910262140i63e4d2f0x708521a9287ca386@mail.gmail.com>
- <20091027140558.GA17208@suse.de>
- <4AE8E953.6090504@canonical.com>
- <20091029010419.GA18410@suse.de>
- <4AE8EBCB.5030102@canonical.com>
- <20091029011759.GA908@suse.de>
- <4AE8EF8C.9030805@canonical.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE8EF8C.9030805@canonical.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754925AbZJ2Brq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 21:47:46 -0400
+Subject: Re: [GIT PULL] perf_event/tracing/powerpc patches from Anton
+ Blanchard
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Anton Blanchard <anton@samba.org>
+In-Reply-To: <19176.59441.523075.445864@drongo.ozlabs.ibm.com>
+References: <19176.59441.523075.445864@drongo.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 29 Oct 2009 12:44:28 +1100
+Message-ID: <1256780668.26770.15.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 09:27:40AM +0800, Bryan Wu wrote:
-> Greg KH wrote:
-> > On Thu, Oct 29, 2009 at 09:11:39AM +0800, Bryan Wu wrote:
-> >> Greg KH wrote:
-> >>> On Thu, Oct 29, 2009 at 09:01:07AM +0800, Bryan Wu wrote:
-> >>>> Greg KH wrote:
-> >>>>> On Tue, Oct 27, 2009 at 12:40:07PM +0800, Eric Miao wrote:
-> >>>>>>> Compiling broke since commit a99bbaf5ee6bad1aca0c88ea65ec6e5373e86184
-> >>>>>>>    headers: remove sched.h from poll.h
-> >>>>>>>
-> >>>>>>> Adding <linux/sched.h> to fix this compiling bug.
-> >>>>> I have now just marked the android drivers as broken, as this is not the
-> >>>>> only build error in them at the moment :(
-> >>>>>
-> >>>> Yeah, actually the drivers/staging/android/lowmemorykiller.c has been
-> >>>> failing to compile for a long time, because that struct mm_struct does
-> >>>> not have a field named oom_adj. All the Android drivers are compiled
-> >>>> as modules in Ubuntu kernel package, except this one.
-> >>>>
-> >>>> Although Android public kernel is still in 2.6.29, it's own driver is
-> >>>> totally different with our mainline staging version. Is there any plan
-> >>>> to sync with it?
-> >>> No, Google has abandoned any current effort to push code upstream for
-> >>> the past year :(
-> >>>
-> >>> The android drivers are deleted in linux-next and will go away in 2.6.33
-> >>> because of this.
-> >>>
-> >> Thanks a lot for this update. It looks like we need to consider to drop Android 
-> >> modules in our Ubuntu kernel building somehow.
-> > 
-> > As no one is using them, it should be trivial to just change your kernel
-> > config, right?
-> > 
+On Thu, 2009-10-29 at 11:56 +1100, Paul Mackerras wrote:
+> Here is a series of patches from Anton Blanchard that implement some
+> nice tracing and perf_event features on powerpc.  One of them is
+> generic perf_event stuff (adding software events for alignment faults
+> and instruction emulation faults).
 > 
-> The reason we include them is that we wanna port the Android runtime environment 
-> to Ubuntu. Then the Android applications can run on Android compatible Ubuntu OS 
-> directly without any modification.
+> Since this touches the perf_event and tracing subsystems as well as the
+> powerpc architecture code, I think the best way forward is for both
+> Ingo and Ben to pull it into their trees.  I have based it on the most
+> recent point in Linus' tree that Ingo had pulled into his perf
+> branches (as of yesterday or so).
+
+This is -next material right ?
+
+Cheers,
+Ben.
+
+> Thanks,
+> Paul.
 > 
-> The Android runtime environment needs some Android drivers such as Binder.
+> The following changes since commit a3ccf63ee643ef243cbf8918da8b3f9238f10029:
+>   Linus Torvalds (1):
+>         Merge branch 'for-linus' of git://git.kernel.org/.../ieee1394/linux1394-2.6
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
+> 
+> Anton Blanchard (14):
+>       powerpc: perf_event: Log invalid data addresses as all 1s
+>       powerpc: perf_event: Enable SDAR in continous sample mode
+>       perf_event: Add alignment-faults and emulation-faults software events
+>       powerpc: Create PPC_WARN_ALIGNMENT to match PPC_WARN_EMULATED
+>       powerpc: perf_event: Add alignment-faults and emulation-faults software events
+>       powerpc: tracing: Add powerpc tracepoints for interrupt entry and exit
+>       powerpc: tracing: Add powerpc tracepoints for timer entry and exit
+>       powerpc: tracing: Add hypervisor call tracepoints
+>       powerpc: tracing: Give hypervisor call tracepoints access to arguments
+>       powerpc: Disable HCALL_STATS by default
+>       powerpc: Export powerpc_debugfs_root
+>       powerpc: perf_event: Cleanup copy_page output by hiding setup symbol
+>       powerpc: perf_event: Hide iseries_check_pending_irqs
+>       powerpc: perf_event: Cleanup output by adding symbols
+> 
+>  arch/powerpc/Kconfig.debug                   |    2 +-
+>  arch/powerpc/configs/pseries_defconfig       |    2 +-
+>  arch/powerpc/include/asm/emulated_ops.h      |   19 ++++-
+>  arch/powerpc/include/asm/hvcall.h            |    2 +
+>  arch/powerpc/include/asm/reg.h               |    2 +
+>  arch/powerpc/include/asm/trace.h             |  133 ++++++++++++++++++++++++++
+>  arch/powerpc/kernel/align.c                  |   12 +-
+>  arch/powerpc/kernel/entry_64.S               |    4 +-
+>  arch/powerpc/kernel/exceptions-64s.S         |    3 +
+>  arch/powerpc/kernel/irq.c                    |    6 +
+>  arch/powerpc/kernel/perf_event.c             |    2 +-
+>  arch/powerpc/kernel/power5+-pmu.c            |    4 -
+>  arch/powerpc/kernel/power5-pmu.c             |    6 +-
+>  arch/powerpc/kernel/power6-pmu.c             |    2 +-
+>  arch/powerpc/kernel/power7-pmu.c             |    6 +-
+>  arch/powerpc/kernel/ppc970-pmu.c             |    4 -
+>  arch/powerpc/kernel/setup-common.c           |    1 +
+>  arch/powerpc/kernel/time.c                   |    6 +
+>  arch/powerpc/kernel/traps.c                  |   18 ++--
+>  arch/powerpc/lib/copypage_64.S               |    4 +-
+>  arch/powerpc/platforms/pseries/hvCall.S      |  132 +++++++++++++++----------
+>  arch/powerpc/platforms/pseries/hvCall_inst.c |   38 ++++++++
+>  arch/powerpc/platforms/pseries/lpar.c        |   33 +++++++
+>  include/linux/perf_counter.h                 |    2 +
+>  include/linux/perf_event.h                   |    2 +
+>  kernel/perf_event.c                          |    2 +
+>  tools/perf/design.txt                        |    2 +
+>  tools/perf/util/parse-events.c               |    4 +
+>  28 files changed, 357 insertions(+), 96 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/trace.h
 
-Don't you also need the wakelocks and the hooks in the core of the
-kernel to tie into the binder mess?
 
-> But now, it is hard for us to do that without a workable Android drivers in 
-> mainline.
-
-Then push on Google to get them cleaned up and fixed!  Or do it
-yourself, all I need is a developer to take ownership of the code.
-
-thanks,
-
-greg k-h
