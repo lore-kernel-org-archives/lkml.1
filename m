@@ -1,129 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZJ2Jou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbZJ2Jwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbZJ2Jou (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 05:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZJ2Jot
+	id S1753668AbZJ2Jwt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 05:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZJ2Jws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 05:44:49 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:47859 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757AbZJ2Jos (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 05:44:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=sBC5cLRLSRPQwJ4o1iClZgcJQQSkt5alZGVFGxWZLxTC5aVzZgnqeHGg110wKLP0o
-	UZiYV09kx4QIvZfuy1/8w==
-Date: Thu, 29 Oct 2009 02:44:45 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-In-Reply-To: <20091029181650.979bf95c.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0910290232000.21298@chino.kir.corp.google.com>
-References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com> <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com> <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com> <20091029174632.8110976c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910290156560.16347@chino.kir.corp.google.com> <20091029181650.979bf95c.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 29 Oct 2009 05:52:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44182 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752550AbZJ2Jwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 05:52:47 -0400
+Message-ID: <4AE965C0.30206@kernel.org>
+Date: Thu, 29 Oct 2009 02:52:00 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Chiang <achiang@hp.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: [PATCH 1/2] pci: release that leaf bridge' resource index is not
+ used -v6
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org> <m1ljivibrt.fsf@fess.ebiederm.org> <4AE899A0.3020006@kernel.org> <4AE95247.8080401@jp.fujitsu.com> <4AE952B9.1010603@kernel.org> <4AE9588E.90708@jp.fujitsu.com>
+In-Reply-To: <4AE9588E.90708@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Oct 2009, KAMEZAWA Hiroyuki wrote:
 
-> > > yes, then I wrote "as start point". There are many environments.
-> > 
-> > And this environment has a particularly bad result.
-> > yes, then I wrote "as start point". There are many environments.
-> 
-> In my understanding, 2nd, 3rd candidates are not important. If both of
-> total_vm and RSS catches the same process as 1st candidate, it's ok.
-> (i.e. If killed, oom situation will go away.)
-> 
+only for index < 3
 
-The ordering would matter on a machine with smaller capacity or if Vedran 
-was using mem=, theoretically at the size of its current capacity minus 
-the amount of anonymous memory being mlocked by the "test" program.  When 
-the oom occurs (and notice it's not triggered by "test" each time), it 
-would have killed Xorg in what would otherwise be the same conditions.
+v2: Jesse doesn't like it is in find_free_bus_resource...
+    try to move out of pci_bus_size_bridges loop.
+need to apply after:
+	[PATCH] pci: pciehp update the slot bridge res to get big range for pcie devices - v4
+v3: add pci_setup_bridge calling after pci_bridge_release_not_used_res.
+    only clear release those res for x86.
+v4: Bjorn want to release use dev instead of bus.
+v5: Kenji pointed out it will have problem with several level bridge.
+    so let only handle leaf bridge.
+v6: address Kenji's request (new pci_bus_release...). and change applying order
+    move back release to pci_assign_unassigned_resource
 
-> > I'm surprised you still don't see a value in using the peak VM and RSS 
-> > sizes, though, as part of your formula as it would indicate the proportion 
-> > of memory resident in RAM at the time of oom.
-> > 
-> I'll use swap_usage instead of peak VM size as bonus.
-> 
->   anon_rss + swap_usage/2 ? or some.
-> 
-> My first purpose is not to kill not-guilty process at random.
-> If memory eater is killed, it's reasnoable.
-> 
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-We again arrive at the distinction I made earlier where there're two 
-approaches: kill a task that is consuming the majority of resident RAM, or 
-kill a thread that is using much more memory than expected such as a 
-memory leaker.  I know that you've argued that the kernel can never know 
-the latter, which I agree, but it does have the benefit of allowing the 
-user to have more input and determine when an actual task is using much 
-more RAM than expected; the anon_rss and swap_usage in your formula is 
-highly dynamic, so you've have to expect the user to dynamically alter 
-oom_adj to specify a preference in the case of the memory leaker.
+---
+ drivers/pci/setup-bus.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/pci.h     |    1 
+ 2 files changed, 65 insertions(+), 1 deletion(-)
 
-> In my consideration
-> 
->   - "Killing a process because of OOM" is something bad, but not avoidable.
-> 
->   - We don't need to do compliated/too-wise calculation for killing a process.
->     "The worst one is memory-eater!" is easy to understand to users and admins.
-> 
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -573,13 +573,68 @@ void __ref pci_bus_assign_resources(cons
+ }
+ EXPORT_SYMBOL(pci_bus_assign_resources);
+ 
++static void pci_bridge_release_not_used_res(struct pci_bus *bus)
++{
++	int idx;
++	bool changed = false;
++	struct pci_dev *dev;
++	struct resource *r;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++
++	/* for pci bridges res only */
++	dev = bus->self;
++	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES + 3;
++	    idx++) {
++		r = &dev->resource[idx];
++		if (!(r->flags & type_mask))
++			continue;
++		if (!r->parent)
++			continue;
++		/* if there is no child under that, we should release it */
++		if (r->child)
++			continue;
++		if (!release_resource(r)) {
++			dev_info(&dev->dev, "resource %d %pRt released\n",
++				 idx, r);
++			r->flags = 0;
++			changed = true;
++		}
++	}
++
++	if (changed)
++		pci_setup_bridge(bus);
++}
++
++void __ref pci_bus_release_bridges_not_used_res(struct pci_bus *bus)
++{
++	struct pci_bus *b;
++
++	/* If the bus is cardbus, do nothing */
++	if (bus->self && (bus->self->class >> 8) == PCI_CLASS_BRIDGE_CARDBUS)
++		return;
++
++	/* We only release the resources under the leaf bridge */
++	if (list_empty(&bus->children)) {
++		if (!pci_is_root_bus(bus))
++			pci_bridge_release_not_used_res(bus);
++		return;
++	}
++
++	/* Scan child buses if the bus is not leaf */
++	list_for_each_entry(b, &bus->children, node)
++		pci_bus_release_bridges_not_used_res(b);
++}
++EXPORT_SYMBOL(pci_bus_release_bridges_not_used_res);
++
+ static void pci_bus_dump_res(struct pci_bus *bus)
+ {
+         int i;
+ 
+         for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+                 struct resource *res = bus->resource[i];
+-                if (!res || !res->end)
++
++		if (!res || !res->end || !res->flags)
+                         continue;
+ 
+ 		dev_printk(KERN_DEBUG, &bus->dev, "resource %d %pRt\n", i, res);
+@@ -608,6 +663,14 @@ pci_assign_unassigned_resources(void)
+ {
+ 	struct pci_bus *bus;
+ 
++	/*
++	 * Try to release leaf bridge's resources that there is not child
++	 * under it
++	 */
++	list_for_each_entry(bus, &pci_root_buses, node) {
++		pci_bus_release_bridges_not_used_res(bus);
++	}
++
+ 	/* Depth first, calculate sizes and alignments of all
+ 	   subordinate buses. */
+ 	list_for_each_entry(bus, &pci_root_buses, node) {
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -758,6 +758,7 @@ int pci_vpd_truncate(struct pci_dev *dev
+ /* Helper functions for low-level code (drivers/pci/setup-[bus,res].c) */
+ void pci_bus_assign_resources(const struct pci_bus *bus);
+ void pci_bus_size_bridges(struct pci_bus *bus);
++void pci_bus_release_bridges_not_used_res(struct pci_bus *bus);
+ int pci_claim_resource(struct pci_dev *, int);
+ void pci_assign_unassigned_resources(void);
+ void pdev_enable_device(struct pci_dev *);
 
-Is this a proposal to remove the remainder of the heuristics as well such 
-as considering superuser tasks and those with longer uptimes?  I'd agree 
-with removing most of it other than the oom_adj and current->mems_allowed 
-intersection penalty.  We're probably going to need rewrite the badness 
-heuristic from scratch instead of simply changing the baseline.
-
->   - We have oom_adj, now. User can customize it if he run _important_ memory eater.
-> 
-
-If he runs an important memory eater, he can always polarize it by 
-disabling oom killing completely for that task.  However, oom_adj is also 
-used to identify memory leakers when the amount of memory that it uses is 
-roughly known.  Most people don't know how much memory their applications 
-use, but there are systems where users have tuned oom_adj specifically 
-based on comparative /proc/pid/oom_score results.  Simply using anon_rss 
-and swap_usage will make that vary much more than previously.
-
->   - But fork-bomb doesn't seem memory eater if we see each process.
->     We need some cares.
-> 
-
-The forkbomb can be addressed in multiple ways, the most simple of which 
-is simply counting the number of children and their runtime.  It'd 
-probably even be better to isolate the forkbomb case away from the badness 
-score and simply kill the parent by returning ULONG_MAX when it's 
-recognized.
-
->   Then,
->   - I'd like to drop file_rss.
->   - I'd like to take swap_usage into acccount.
->   - I'd like to remove cpu_time bonus. runtime bonus is much more important.
->   - I'd like to remove penalty from children. To do that, fork-bomb detector
->     is necessary.
->   - nice bonus is bad. (We have oom_adj instead of this.) It should be
->     if (task_nice(p) < 0)
-> 	points /= 2;
->     But we have "root user" bonus already. We can remove this line.
-> 
-> After above, much more simple selection, easy-to-understand,  will be done.
-> 
-
-Agreed, I think we'll need to rewrite most of the heuristic from scratch.
