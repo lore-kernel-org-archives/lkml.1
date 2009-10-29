@@ -1,219 +1,418 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZJ2Iy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZJ2IzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZJ2Iy0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZJ2IyZ
+	id S1753548AbZJ2IzA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZJ2Iy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:54:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46062 "EHLO mx3.mail.elte.hu"
+	Thu, 29 Oct 2009 04:54:59 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:55863 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbZJ2IyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:54:24 -0400
-Date: Thu, 29 Oct 2009 09:53:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
-Message-ID: <20091029085348.GD26970@elte.hu>
-References: <20091027204156.30545.96425.stgit@harusame>
+	id S1752104AbZJ2Iy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 04:54:57 -0400
+Date: Thu, 29 Oct 2009 09:55:01 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: jack@suse.cz, wfg@mail.ustc.edu.cn, chris.mason@oracle.com
+Subject: writeback tracing
+Message-ID: <20091029085501.GA10727@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091027204156.30545.96425.stgit@harusame>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+This is a first stab at providing some general writeback tracing
+infrastructure. I'd like some input on whatever trace points you think
+would be interesting. The goal would be to ensure that we never again
+have to do debug printk() patches to trace this stuff.
 
-> Hi Ingo,
-> 
-> Here are bugfixes and some enhances of x86-insn decoder and perf-probe.
->  - x86 insn decoder supports AVX and FMA.
->  - perf-probe syntax change.
->  - perf-probe supports function-relative line number.
->  - minor bugfixes.
-> 
-> New perf-probe syntax is below:
-> 
->   perf probe 'PROBE'
-> 
->  or 
-> 
->   perf probe --add 'PROBE'
-> 
->  where, PROBE is
-> 
->   <source>:<line-number>
-> 
->  or
-> 
->   <function>[:<rel-lineno>|+<byte-offset>|%return][@<source>]
-> 
->  e.g.
-> 
->   perf probe 'schedule:10@kernel/sched.c'
-> 
->   puts a probe at 10th line from entry line of schedule() function
->   in kernel/sched.c." and
-> 
->   perf probe 'vmalloc%return'
-> 
->   puts a return probe at the returning of vmalloc.
-> 
-> TODO:
->  - Support --line option to show which lines user can probe.
->  - Support lazy string matching.
+Patch is against latest -git.
 
-Ok, i like these fixes and improvements - thanks Masami!
+commit 607eadcebf9f137ec445cb9883312c821b37a3a7
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Thu Oct 29 10:54:00 2009 +0100
 
-One detail i noticed is that we are still not very smart about finding 
-our vmlinux file. I booted the kernel on a box and it gave:
+    writeback: initial tracing support
+    
+    Trace queue/sched/exec parts of the writeback loop.
+    
+    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
- aldebaran:~/linux/linux> perf probe schedule
-   Fatal: vmlinux/module file open
- aldebaran:~/linux/linux> ls -l vmlinux
- -rwxrwxr-x 1 mingo mingo 21589717 2009-10-29 09:04 vmlinux
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 9d5360c..056dd07 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -25,7 +25,9 @@
+ #include <linux/blkdev.h>
+ #include <linux/backing-dev.h>
+ #include <linux/buffer_head.h>
++#include <linux/ftrace.h>
+ #include "internal.h"
++#include <trace/events/writeback.h>
+ 
+ #define inode_to_bdi(inode)	((inode)->i_mapping->backing_dev_info)
+ 
+@@ -34,33 +36,6 @@
+  */
+ int nr_pdflush_threads;
+ 
+-/*
+- * Passed into wb_writeback(), essentially a subset of writeback_control
+- */
+-struct wb_writeback_args {
+-	long nr_pages;
+-	struct super_block *sb;
+-	enum writeback_sync_modes sync_mode;
+-	int for_kupdate:1;
+-	int range_cyclic:1;
+-	int for_background:1;
+-};
+-
+-/*
+- * Work items for the bdi_writeback threads
+- */
+-struct bdi_work {
+-	struct list_head list;		/* pending work list */
+-	struct rcu_head rcu_head;	/* for RCU free/clear of work */
+-
+-	unsigned long seen;		/* threads that have seen this work */
+-	atomic_t pending;		/* number of threads still to do work */
+-
+-	struct wb_writeback_args args;	/* writeback arguments */
+-
+-	unsigned long state;		/* flag bits, see WS_* */
+-};
+-
+ enum {
+ 	WS_USED_B = 0,
+ 	WS_ONSTACK_B,
+@@ -135,6 +110,8 @@ static void wb_work_complete(struct bdi_work *work)
+ 
+ static void wb_clear_pending(struct bdi_writeback *wb, struct bdi_work *work)
+ {
++	trace_writeback_clear(work);
++
+ 	/*
+ 	 * The caller has retrieved the work arguments from this work,
+ 	 * drop our reference. If this is the last ref, delete and free it
+@@ -170,12 +147,16 @@ static void bdi_queue_work(struct backing_dev_info *bdi, struct bdi_work *work)
+ 	 * If the default thread isn't there, make sure we add it. When
+ 	 * it gets created and wakes up, we'll run this work.
+ 	 */
+-	if (unlikely(list_empty_careful(&bdi->wb_list)))
++	if (unlikely(list_empty_careful(&bdi->wb_list))) {
++		trace_writeback_sched(bdi, work, "default");
+ 		wake_up_process(default_backing_dev_info.wb.task);
+-	else {
++	} else {
+ 		struct bdi_writeback *wb = &bdi->wb;
++		struct task_struct *task = wb->task;
+ 
+-		if (wb->task)
++		trace_writeback_sched(bdi, work, task ? "task" : "notask");
++
++		if (task)
+ 			wake_up_process(wb->task);
+ 	}
+ }
+@@ -202,6 +183,7 @@ static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+ 	work = kmalloc(sizeof(*work), GFP_ATOMIC);
+ 	if (work) {
+ 		bdi_work_init(work, args);
++		trace_writeback_queue(bdi, args);
+ 		bdi_queue_work(bdi, work);
+ 	} else {
+ 		struct bdi_writeback *wb = &bdi->wb;
+@@ -235,6 +217,7 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
+ 	bdi_work_init(&work, &args);
+ 	work.state |= WS_ONSTACK;
+ 
++	trace_writeback_queue(bdi, &args);
+ 	bdi_queue_work(bdi, &work);
+ 	bdi_wait_on_work_clear(&work);
+ }
+@@ -901,6 +884,8 @@ long wb_do_writeback(struct bdi_writeback *wb, int force_wait)
+ 		if (force_wait)
+ 			work->args.sync_mode = args.sync_mode = WB_SYNC_ALL;
+ 
++		trace_writeback_exec(work);
++
+ 		/*
+ 		 * If this isn't a data integrity operation, just notify
+ 		 * that we have seen this work and we are now starting it.
+@@ -936,9 +921,13 @@ int bdi_writeback_task(struct bdi_writeback *wb)
+ 	unsigned long wait_jiffies = -1UL;
+ 	long pages_written;
+ 
++	trace_writeback_thread_start(1);
++
+ 	while (!kthread_should_stop()) {
+ 		pages_written = wb_do_writeback(wb, 0);
+ 
++		trace_writeback_pages_written(pages_written);
++
+ 		if (pages_written)
+ 			last_active = jiffies;
+ 		else if (wait_jiffies != -1UL) {
+@@ -959,6 +948,8 @@ int bdi_writeback_task(struct bdi_writeback *wb)
+ 		try_to_freeze();
+ 	}
+ 
++	trace_writeback_thread_start(0);
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index 66ebddc..b12a077 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -22,6 +22,33 @@ enum writeback_sync_modes {
+ };
+ 
+ /*
++ * Passed into wb_writeback(), essentially a subset of writeback_control
++ */
++struct wb_writeback_args {
++	long nr_pages;
++	struct super_block *sb;
++	enum writeback_sync_modes sync_mode;
++	int for_kupdate:1;
++	int range_cyclic:1;
++	int for_background:1;
++};
++
++/*
++ * Work items for the bdi_writeback threads
++ */
++struct bdi_work {
++	struct list_head list;		/* pending work list */
++	struct rcu_head rcu_head;	/* for RCU free/clear of work */
++
++	unsigned long seen;		/* threads that have seen this work */
++	atomic_t pending;		/* number of threads still to do work */
++
++	struct wb_writeback_args args;	/* writeback arguments */
++
++	unsigned long state;		/* flag bits, see WS_* */
++};
++
++/*
+  * A control structure which tells the writeback code what to do.  These are
+  * always on the stack, and hence need no locking.  They are always initialised
+  * in a manner such that unspecified fields are set to zero.
+diff --git a/include/trace/events/writeback.h b/include/trace/events/writeback.h
+new file mode 100644
+index 0000000..d58c75b
+--- /dev/null
++++ b/include/trace/events/writeback.h
+@@ -0,0 +1,172 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM writeback
++
++#if !defined(_TRACE_WRITEBACK_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_WRITEBACK_H
++
++#include <linux/backing-dev.h>
++#include <linux/writeback.h>
++
++TRACE_EVENT(writeback_queue,
++
++	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_args *args),
++
++	TP_ARGS(bdi, args),
++
++	TP_STRUCT__entry(
++		__array(char,		name,		16)
++		__field(long,		nr_pages)
++		__field(int,		sb)
++		__field(int,		sync_mode)
++		__field(int,		for_kupdate)
++		__field(int,		range_cyclic)
++		__field(int,		for_background)
++	),
++
++	TP_fast_assign(
++		strncpy(__entry->name, dev_name(bdi->dev), 16);
++		__entry->nr_pages	= args->nr_pages;
++		__entry->sb		= !!args->sb;
++		__entry->for_kupdate	= args->for_kupdate;
++		__entry->range_cyclic	= args->range_cyclic;
++		__entry->for_background	= args->for_background;
++	),
++
++	TP_printk("%s: pages=%ld, sb=%d, kupdate=%d, range_cyclic=%d "
++		  "for_background=%d", __entry->name, __entry->nr_pages,
++			__entry->sb, __entry->for_kupdate,
++			__entry->range_cyclic, __entry->for_background)
++);
++
++TRACE_EVENT(writeback_sched,
++
++	TP_PROTO(struct backing_dev_info *bdi, struct bdi_work *work,
++		 const char *msg),
++
++	TP_ARGS(bdi, work, msg),
++
++	TP_STRUCT__entry(
++		__array(char,			name,		16)
++		__field(unsigned int,		work)
++		__array(char,			task,		8)
++	),
++
++	TP_fast_assign(
++		strncpy(__entry->name, dev_name(bdi->dev), 16);
++		__entry->work = (unsigned long) work & 0xffff;
++		snprintf(__entry->task, 8, "%s", msg);
++	),
++
++	TP_printk("work=%x, task=%s", __entry->work, __entry->task)
++);
++
++TRACE_EVENT(writeback_exec,
++
++	TP_PROTO(struct bdi_work *work),
++
++	TP_ARGS(work),
++
++	TP_STRUCT__entry(
++		__field(unsigned int,	work)
++		__field(long,		nr_pages)
++		__field(int,		sb)
++		__field(int,		sync_mode)
++		__field(int,		for_kupdate)
++		__field(int,		range_cyclic)
++		__field(int,		for_background)
++	),
++
++	TP_fast_assign(
++		__entry->work		= (unsigned long) work & 0xffff;
++		__entry->nr_pages	= work->args.nr_pages;
++		__entry->sb		= !!work->args.sb;
++		__entry->for_kupdate	= work->args.for_kupdate;
++		__entry->range_cyclic	= work->args.range_cyclic;
++		__entry->for_background	= work->args.for_background;
++
++	),
++
++	TP_printk("work=%x pages=%ld, sb=%d, kupdate=%d, range_cyclic=%d"
++		  " for_background=%d", __entry->work,
++			__entry->nr_pages, __entry->sb, __entry->for_kupdate,
++			__entry->range_cyclic, __entry->for_background)
++);
++
++TRACE_EVENT(writeback_clear,
++
++	TP_PROTO(struct bdi_work *work),
++
++	TP_ARGS(work),
++
++	TP_STRUCT__entry(
++		__field(struct bdi_work *,	work)
++		__field(int,			refs)
++	),
++
++	TP_fast_assign(
++		__entry->work		= work;
++		__entry->refs		= atomic_read(&work->pending);
++	),
++
++	TP_printk("work=%p, refs=%d", __entry->work, __entry->refs)
++);
++
++TRACE_EVENT(writeback_pages_written,
++
++	TP_PROTO(long pages_written),
++
++	TP_ARGS(pages_written),
++
++	TP_STRUCT__entry(
++		__field(long,		pages)
++	),
++
++	TP_fast_assign(
++		__entry->pages		= pages_written;
++	),
++
++	TP_printk("%ld", __entry->pages)
++);
++
++
++TRACE_EVENT(writeback_thread_start,
++
++	TP_PROTO(int start),
++
++	TP_ARGS(start),
++
++	TP_STRUCT__entry(
++		__field(int,	start)
++	),
++
++	TP_fast_assign(
++		__entry->start = start;
++	),
++
++	TP_printk("%s", __entry->start ? "started" : "exited")
++);
++
++TRACE_EVENT(writeback_bdi_register,
++
++	TP_PROTO(const char *name, int start),
++
++	TP_ARGS(name, start),
++
++	TP_STRUCT__entry(
++		__array(char,	name,		16)
++		__field(int,	start)
++	),
++
++	TP_fast_assign(
++		strncpy(__entry->name, name, 16);
++		__entry->start = start;
++	),
++
++	TP_printk("%s: %s", __entry->name,
++			__entry->start ? "registered" : "unregistered")
++);
++
++#endif /* _TRACE_WRITEBACK_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 5a37e20..4f53a6d 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -11,6 +11,9 @@
+ #include <linux/writeback.h>
+ #include <linux/device.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/writeback.h>
++
+ void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+ {
+ }
+@@ -570,6 +573,7 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 
+ 	bdi_debug_register(bdi, dev_name(dev));
+ 	set_bit(BDI_registered, &bdi->state);
++	trace_writeback_bdi_register(dev_name(dev), 1);
+ exit:
+ 	return ret;
+ }
+@@ -613,6 +617,7 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
+ void bdi_unregister(struct backing_dev_info *bdi)
+ {
+ 	if (bdi->dev) {
++		trace_writeback_bdi_register(dev_name(bdi->dev), 0);
+ 		if (!bdi_cap_flush_forker(bdi))
+ 			bdi_wb_shutdown(bdi);
+ 		bdi_debug_unregister(bdi);
 
-Firstly, it should print something more meaningful, such as:
+-- 
+Jens Axboe
 
- aldebaran:~/linux/linux> perf probe schedule
-   Fatal: Could not open vmlinux/module file
-
-Secondly, we should look beyond these places:
-
-25806 open("/lib/modules/2.6.32-rc5-tip-01760-g2c4b5e0-dirty/build/vmlinux", O_RDONLY) = -1 ENOENT (No such file or directory)
-25806 open("/usr/lib/debug/lib/modules/2.6.32-rc5-tip-01760-g2c4b5e0-dirty/vmlinux", O_RDONLY) = -1 ENOENT (No such file or directory)
-25806 open("/boot/vmlinux-debug-2.6.32-rc5-tip-01760-g2c4b5e0-dirty", O_RDONLY) = -1 ENOENT (No such file or directory)
-25806 write(2, "  Fatal: vmlinux/module file open"..., 34) = 34
-25806 exit_group(128)                   = ?
-
-and look into the current directory as well.
-
-Thirdly, i think we should expose the build-id of the kernel and the 
-path to the vmlinux (and modules) via /proc/build-id or so. That way 
-tooling can find the vmlinux file and can validate that it matches the 
-kernel's signature. (maybe include a file date as well - that's a faster 
-check than a full build-id checksum, especially for large kernels)
-
-Another problem i noticed is that a vmlinux without DEBUG_INFO will fail 
-in this way:
-
- aldebaran:~/linux/linux> perf probe schedule
-   Fatal: Failed to call dwarf_init(). Maybe, not a dwarf file.
-
-this is not meaningful to a user. A more usable message would be:
-
- aldebaran:~/linux/linux> perf probe schedule
-   Fatal: Have not found dwarf info in the vmlinux - please rebuild with CONFIG_DEBUG_INFO
-
-but ... we should really not force DEBUG_INFO for a simple probe that is 
-based on an ELF symbol. We already parse ELF symbols so 'perf probe 
-schedule' should be able to figure out where to put the probe point.
-
-Not forcing debuginfo for simple usecases is extremely important for 
-usability.
-
-And once i had these fixed, i got:
-
- aldebaran:~/linux/linux> perf probe schedule
-   Fatal: kprobe_events open
-
-Which is not a meaningful error message either. This error occured due 
-to CONFIG_KPROBE_TRACER not being enabled.
-
-What we want here is two fold:
-
- - enable kprobes event support when perf events is enabled and kprobes
-   is enabled. We dont want another config option for it.
-
- - and we need to improve error messages so that users can figure out 
-   what is the problem.
-
-Once i had this third roadblock out of the way i noticed that the _real_ 
-reason for the error was that i was not root and had no privilege to 
-insert a kprobe.
-
-Once root, the probe worked well:
-
- # perf probe schedule
- Adding new event: p:perfprobe/schedule_0 schedule+0
-
-And it seems to be precise:
-
-aldebaran:/home/mingo> perf stat -e perfprobe:__switch_to_0 -e cs -a ./hackbench 1
-Time: 0.018
-
- Performance counter stats for './hackbench 1':
-
-           7358  perfprobe:__switch_to_0  #      0.000 M/sec
-           7364  context-switches         #      0.000 M/sec
-
-    0.119152919  seconds time elapsed
-
-(The difference of 6 context-switches should be investigated i suspect.)
-
-Btw., very small nit, it would be better to put that sentence into past 
-tense:
-
- # perf probe schedule
- Added new event: p:perfprobe/schedule_0 schedule+0
-
-To make sure the user knows that the action has been pursued already.
-
-I'd expect the typical user give up much sooner than i did so we really 
-need to address these usability details - emit useful error messages and 
-be more successful in getting the user what he wants.
-
-But the basic UI is already pretty promising!
-
-A few further (and very small) UI tweaks i'd suggest:
-
-Firstly, could we please make the first probe inserted named plain after 
-the symbol it specifies, with no _0 postfix? I.e. instead of:
-
-           7358  perfprobe:__switch_to_0  #      0.000 M/sec
-
-we'd get:
-
-           7358  perfprobe:__switch_to    #      0.000 M/sec
-
-Subsequent probes for the same symbol can be named _1, _2 - but the 
-first symbol should not have this needless post-fix.
-
-Secondly, i think we should remove the 'perf' bit from the probe name. 
-I.e. instead of:
-
-           7358  perfprobe:__switch_to    #      0.000 M/sec
-
-we should do:
-
-           7358  probe:__switch_to        #      0.000 M/sec
-
-as that's really what the user cares about. The user already knows that 
-we are in perf - no need to repeat that in every event specification.
-
-Thanks,
-
-	Ingo
