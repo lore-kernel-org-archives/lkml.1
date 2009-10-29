@@ -1,157 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbZJ2IcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbZJ2Iel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbZJ2IcI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZJ2IcH
+	id S1753297AbZJ2Iel (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZJ2Iek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:32:07 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:3039 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753383AbZJ2IcC (ORCPT
+	Thu, 29 Oct 2009 04:34:40 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:64930 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbZJ2Iej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:32:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=fTOIVVP2SRZ32qLekSEMl2UJDm6Zb+ApOtQmcyWGWgzjr6Af9985j64dh2x8ESjyw
-	qfG+A2beCRQvzIXVoYI4w==
-Date: Thu, 29 Oct 2009 01:31:59 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-In-Reply-To: <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>
-References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com> <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
- <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 29 Oct 2009 04:34:39 -0400
+Date: Thu, 29 Oct 2009 09:34:16 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: arndbergmann@googlemail.com, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
+       Ankit Jain <me@ankitjain.org>, Christoph Hellwig <hch@lst.de>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: is avoiding compat ioctls possible?
+Message-ID: <20091029083415.GA6639@osiris.boeblingen.de.ibm.com>
+References: <200910281313.32827.arnd@arndb.de>
+ <20091028.051631.212225494.davem@davemloft.net>
+ <200910281640.18491.arnd@arndb.de>
+ <20091028.224157.92041844.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091028.224157.92041844.davem@davemloft.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Oct 2009, KAMEZAWA Hiroyuki wrote:
-
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Wed, Oct 28, 2009 at 10:41:57PM -0700, David Miller wrote:
+> From: Arnd Bergmann <arndbergmann@googlemail.com>
+> Date: Wed, 28 Oct 2009 16:40:18 +0100
 > 
-> It's reported that OOM-Killer kills Gnone/KDE at first...
-> And yes, we can reproduce it easily.
+> > I'm pretty sure it was ok when we started adding the compat_ioctl
+> > handlers years ago. I think most people just ignored these for
+> > the majority of drivers that can't possibly run on s390. Even
+> > on s390, gcc will always do the right thing if you call call ioctl
+> > with a pointer to a normal object in the .data section, heap or stack,
+> > but hand-written assembly or other compilers may not.
 > 
-> Now, oom-killer uses mm->total_vm as its base value. But in recent
-> applications, there are a big gap between VM size and RSS size.
-> Because
->   - Applications attaches much dynamic libraries. (Gnome, KDE, etc...)
->   - Applications may alloc big VM area but use small part of them.
->     (Java, and multi-threaded applications has this tendency because
->      of default-size of stack.)
+> Arnd, even compat_sys_ioctl() itself has constructs like:
 > 
-> I think using mm->total_vm as score for oom-kill is not good.
-> By the same reason, overcommit memory can't work as expected.
-> (In other words, if we depends on total_vm, using overcommit more positive
->  is a good choice.)
-> 
-> This patch uses mm->anon_rss/file_rss as base value for calculating badness.
-> 
-> Following is changes to OOM score(badness) on an environment with 1.6G memory
-> plus memory-eater(500M & 1G).
-> 
-> Top 10 of badness score. (The highest one is the first candidate to be killed)
-> Before
-> badness program
-> 91228	gnome-settings-
-> 94210	clock-applet
-> 103202	mixer_applet2
-> 106563	tomboy
-> 112947	gnome-terminal
-> 128944	mmap              <----------- 500M malloc
-> 129332	nautilus
-> 215476	bash              <----------- parent of 2 mallocs.
-> 256944	mmap              <----------- 1G malloc
-> 423586	gnome-session
-> 
-> After
-> badness 
-> 1911	mixer_applet2
-> 1955	clock-applet
-> 1986	xinit
-> 1989	gnome-session
-> 2293	nautilus
-> 2955	gnome-terminal
-> 4113	tomboy
-> 104163	mmap             <----------- 500M malloc.
-> 168577	bash             <----------- parent of 2 mallocs
-> 232375	mmap             <----------- 1G malloc
-> 
-> seems good for me. Maybe we can tweak this patch more,
-> but this one will be a good one as a start point.
-> 
+> 	case FS_IOC_RESVSP:
+> 	case FS_IOC_RESVSP64:
+> 		error = ioctl_preallocate(filp, (void __user *)arg);
+> 		goto out_fput;
 
-This appears to actually prefer X more than total_vm in Vedran's test 
-case.  He cited http://pastebin.com/f3f9674a0 in 
-http://marc.info/?l=linux-kernel&m=125678557002888.
+That's broken, but it's quite new code. In general it looks like we don't
+have many compat ioctl problems on s390. At least I don't remember when
+we faced the last bug.
+We did have some compat syscall issues when SLES11 testing started.
+The lack of bug reports is probably just a lack of 32 bit userspace ;)
 
-There are 12 ooms in this log, which has /proc/sys/vm/oom_dump_tasks 
-enabled.  It shows the difference between the top total_vm candidates vs. 
-the top rss candidates.
+This should fix at least the bug above:
 
-total_vm
-708945 test
-195695 krunner
-168881 plasma-desktop
-130567 ktorrent
-127081 knotify4
-125881 icedove-bin
-123036 akregator
-118641 kded4
+Subject: [PATCH] fs: add missing compat_ptr handling for FS_IOC_RESVSP ioctl
 
-rss
-707878 test
-42201 Xorg
-13300 icedove-bin
-10209 ktorrent
-9277 akregator
-8878 plasma-desktop
-7546 krunner
-4532 mysqld
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-This patch would pick the memory hogging task, "test", first everytime 
-just like the current implementation does.  It would then prefer Xorg, 
-icedove-bin, and ktorrent next as a starting point.
+For FS_IOC_RESVSP and FS_IOC_RESVSP64 compat_sys_ioctl() uses its
+arg argument as a pointer to userspace. However it is missing a
+a call to compat_ptr() which will do a proper pointer conversion.
 
-Admittedly, there are other heuristics that the oom killer uses to create 
-a badness score.  But since this patch is only changing the baseline from 
-mm->total_vm to get_mm_rss(mm), its behavior in this test case do not 
-match the patch description.
+This was introduced with 3e63cbb1 "fs: Add new pre-allocation ioctls
+to vfs for compatibility with legacy xfs ioctls".
 
-The vast majority of the other ooms have identical top 8 candidates:
+Cc: Ankit Jain <me@ankitjain.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Arnd Bergmann <arndbergmann@googlemail.com>
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ fs/compat_ioctl.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-total_vm
-673222 test
-195695 krunner
-168881 plasma-desktop
-130567 ktorrent
-127081 knotify4
-125881 icedove-bin
-123036 akregator
-121869 firefox-bin
-
-rss
-672271 test
-42192 Xorg
-30763 firefox-bin
-13292 icedove-bin
-10208 ktorrent
-9260 akregator
-8859 plasma-desktop
-7528 krunner
-
-firefox-bin seems much more preferred in this case than total_vm, but Xorg 
-still ranks very high with this patch compared to the current 
-implementation.
+diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+index f91fd51..d84e705 100644
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -1800,7 +1800,7 @@ struct space_resv_32 {
+ /* just account for different alignment */
+ static int compat_ioctl_preallocate(struct file *file, unsigned long arg)
+ {
+-	struct space_resv_32	__user *p32 = (void __user *)arg;
++	struct space_resv_32	__user *p32 = compat_ptr(arg);
+ 	struct space_resv	__user *p = compat_alloc_user_space(sizeof(*p));
+ 
+ 	if (copy_in_user(&p->l_type,	&p32->l_type,	sizeof(s16)) ||
+@@ -2802,7 +2802,7 @@ asmlinkage long compat_sys_ioctl(unsigned int fd, unsigned int cmd,
+ #else
+ 	case FS_IOC_RESVSP:
+ 	case FS_IOC_RESVSP64:
+-		error = ioctl_preallocate(filp, (void __user *)arg);
++		error = ioctl_preallocate(filp, compat_ptr(arg));
+ 		goto out_fput;
+ #endif
+ 
