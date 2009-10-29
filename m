@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbZJ2N6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZJ2OCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037AbZJ2N6n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 09:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZJ2N6m
+	id S1754270AbZJ2OCX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 10:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZJ2OCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 09:58:42 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:48472 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbZJ2N6l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 09:58:41 -0400
-Subject: Re: [PATCH] firmware_class: make request_firmware_nowait more
- useful
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Greg KH <gregkh@suse.de>, linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       Pavel Roskin <proski@gnu.org>, Abhay Salunke <abhay_salunke@dell.com>
-In-Reply-To: <1256816162.3865.110.camel@johannes.local>
-References: <1256816162.3865.110.camel@johannes.local>
-Content-Type: text/plain
-Date: Thu, 29 Oct 2009 22:58:12 +0900
-Message-Id: <1256824692.5768.41.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Thu, 29 Oct 2009 10:02:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45374 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752390AbZJ2OCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 10:02:22 -0400
+Message-ID: <4AE9A0B3.4010305@kernel.org>
+Date: Thu, 29 Oct 2009 15:03:31 +0100
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH percpu#for-next] ia64: add sparse annotation to __ia64_per_cpu_var()
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Johannes,
+ia64 has its own optimized percpu accessor - __ia64_per_cpu_var().
+Add percpu sparse annotations to it.
 
-> Unfortunately, one cannot hold on to the struct firmware
-> that request_firmware_nowait() hands off, which is needed
-> in some cases. Allow this by requiring the callback to
-> free it (via release_firmware).
-> 
-> Additionally, give it a gfp_t parameter -- all the current
-> users call it from a GFP_KERNEL context so the GFP_ATOMIC
-> isn't necessary. This also marks an API break which is
-> useful in a sense, although that is obviously not the
-> primary purpose of this change.
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ arch/ia64/include/asm/percpu.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-I had a look at this one and looks good to me and makes perfect sense.
-
-Acked-by: Marcel Holtmann <marcel@holtmann.org>
-
-Regards
-
-Marcel
-
-
+Index: work/arch/ia64/include/asm/percpu.h
+===================================================================
+--- work.orig/arch/ia64/include/asm/percpu.h
++++ work/arch/ia64/include/asm/percpu.h
+@@ -39,7 +39,10 @@ extern void *per_cpu_init(void);
+  * On the positive side, using __ia64_per_cpu_var() instead of __get_cpu_var() is slightly
+  * more efficient.
+  */
+-#define __ia64_per_cpu_var(var)	var
++#define __ia64_per_cpu_var(var) (*({					\
++	__verify_pcpu_ptr(&(var));					\
++	((typeof(var) __kernel __force *)&(var));			\
++}))
+ 
+ #include <asm-generic/percpu.h>
+ 
