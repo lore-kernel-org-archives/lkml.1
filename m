@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbZJ2VYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbZJ2VbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbZJ2VYr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 17:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZJ2VYq
+	id S1756103AbZJ2VbA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 17:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbZJ2VbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 17:24:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:33992 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755623AbZJ2VYp (ORCPT
+	Thu, 29 Oct 2009 17:31:00 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:33958 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755868AbZJ2Va7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 17:24:45 -0400
-Subject: Re: perf trace errors
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Christoph Hellwig <hch@lst.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <c62985530910251643k6b3e59c0l6069b08741469b47@mail.gmail.com>
-References: <20091011025441.GA18152@lst.de> <20091016083242.GA11174@elte.hu>
-	 <20091025071708.GA16936@lst.de>
-	 <c62985530910251643k6b3e59c0l6069b08741469b47@mail.gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 29 Oct 2009 17:24:49 -0400
-Message-Id: <1256851489.26028.3247.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Oct 2009 17:30:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=I0L8a4eA742ZyFaK39tLlPhNNa5nMSjIoqHWB65hq/G20QSp6cbspd+2lH2EMviFP9
+         nAIq74L2qoraHg6deh8AFAc4e45QcaZ3EgKcJ8wHLlSyG9eEOJzfLY5t06nC6WCF80iR
+         J47xKUVR26Cgc+ayHby+cHGSWnS9r7vRoBVgM=
+MIME-Version: 1.0
+In-Reply-To: <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
+	 <20091016091558.GA10184@mit.edu>
+	 <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
+Date: Thu, 29 Oct 2009 17:25:17 -0400
+Message-ID: <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com>
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+From: Parag Warudkar <parag.lkml@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Theodore Tso <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, bugzilla-daemon@bugzilla.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 00:43 +0100, Frederic Weisbecker wrote:
-> 2009/10/25 Christoph Hellwig <hch@lst.de>:
-> > On Fri, Oct 16, 2009 at 10:32:42AM +0200, Ingo Molnar wrote:
-> >> FYI, these bugs are fixed in latest -tip, your testcase works for me:
-> >
-> >> Mind checking whether it works for you?
-> >
-> > Yes, it works on -tip, but not yet on mainline.  What still doesn't
-> > work yet on -tip either is printing of dynamic strings in some events,
-> > e.g.:
-> >
-> >       kjournald-1105  [000]   643.002702: block_rq_complete: 253,0 W () 2283224
-> 
-> 
-> Ah, interesting, it means we support __string() but not well other
-> dynamic arrays.
-> I'll have a look at it.
+On Tue, Oct 27, 2009 at 6:15 AM, Aneesh Kumar K.V
+<aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Can you try this patch ?
+>
+> commit a8836b1d6f92273e001012c7705ae8f4c3d5fb65
+> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Date:   Tue Oct 27 15:36:38 2009 +0530
+>
+>    ext4: discard preallocation during truncate
+>
+>    We need to make sure when we drop and reacquire the inode's
+>    i_data_sem we discard the inode preallocation. Otherwise we
+>    could have blocks marked as free in bitmap but still belonging
+>    to prealloc space.
 
-Frederic,
+Just wanted to let you know that I have applied this patch and one
+unclean shutdown later it seems to have not given me any trouble.
 
-Have you found anything with this yet? If not, I can take a look too.
+I will continue testing it - hopefully I won't have to reformat  this
+time ( every time I tested previously I ended up having weird issues
+that I decided to get rid of by reformatting /).
 
--- Steve
-
-
+Parag
