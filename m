@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZJ2QrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZJ2QsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZJ2QrX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbZJ2QrW
+	id S1755691AbZJ2QsP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbZJ2QsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:47:22 -0400
-Received: from outbound-mail-309.bluehost.com ([67.222.54.2]:60413 "HELO
-	outbound-mail-309.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755409AbZJ2QrV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:47:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=oZzCke9qIjHlx3FgZew5ikOTV8gvHylXEYAed+fBLVBEfZ5KIojcohB3tya6VCj2Csn8pc1AqxsNUZ3TA2ZG95FIDgKEEQii+TZXkiCZLMwuBHePeHMD/zBbWzFFCseO;
-Date: Thu, 29 Oct 2009 09:47:23 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andrew Lutomirski <luto@mit.edu>
-Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: [resend] i915: high power consumption after suspend/resume
-Message-ID: <20091029094723.7e5a3376@jbarnes-g45>
-In-Reply-To: <cb0375e10910072044m470c8cbasef33de3b36bb62ee@mail.gmail.com>
-References: <cb0375e10910030939v8d03df7m861a2f05219f173c@mail.gmail.com>
-	<cb0375e10910030950kcd19fe9i7835eaaf4314c0fb@mail.gmail.com>
-	<20091005092148.4341d9ab@jbarnes-g45>
-	<cb0375e10910072044m470c8cbasef33de3b36bb62ee@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Thu, 29 Oct 2009 12:48:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:26703 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755495AbZJ2QsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:48:14 -0400
+Message-ID: <4AE9C74C.2040309@redhat.com>
+Date: Thu, 29 Oct 2009 12:48:12 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for October 29 (x86 posttest)
+References: <20091029182919.4d6ec52c.sfr@canb.auug.org.au> <20091029090627.7857ed08.rdunlap@xenotime.net>
+In-Reply-To: <20091029090627.7857ed08.rdunlap@xenotime.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Oct 2009 23:44:35 -0400
-Andrew Lutomirski <luto@mit.edu> wrote:
-> > I probably need to save/restore some more of the power saving state
-> > across suspend/resume...  Can you file a bug for this at
-> > bugs.freedesktop.org so it doesn't get lost?
-> 
-> Submitted as https://bugs.freedesktop.org/show_bug.cgi?id=24386
+Randy Dunlap wrote:
+> On Thu, 29 Oct 2009 18:29:19 +1100 Stephen Rothwell wrote:
+>
+>> Hi all,
+>>
+>> [I accidentally deleted my merge log today, so sorry to anyone who
+>> actually reads them :-), the summary still appears below.]
+>
+>
+> I'm getting this on x86_64:
+>
+>    TEST    posttest
+> Error: ffffffff810299e2:	f2 41 0f 28 52 b0    	repnz movaps -0x50(%r10),%xmm2
+> Error: objdump says 6 bytes, but insn_get_length() says 4 (attr:0)
+> make[2]: *** [posttest] Error 2
 
-Andrew, are you still seeing this after the various fixes that have
-landed in Linus's tree?
+Ah, that's should be fixed by AVX support patch which I've posted.
+http://git.kernel.org/tip/e0e492e99b372c6990a5daca9e4683c341f1330e
+
+Thank you,
+
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
