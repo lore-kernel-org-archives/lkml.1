@@ -1,143 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZJ2T30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZJ2TkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbZJ2T30 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 15:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbZJ2T3Y
+	id S1756664AbZJ2TkK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 15:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZJ2TkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 15:29:24 -0400
-Received: from kroah.org ([198.145.64.141]:34082 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756684AbZJ2T3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 15:29:09 -0400
-Subject: patch driver-core-devtmpfs-prevent-concurrent-subdirectory-creation-and-removal.patch added to gregkh-2.6 tree
-To: kay.sievers@vrfy.org, gregkh@suse.de, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Thu, 29 Oct 2009 12:29:06 -0700
-In-Reply-To: <1256755866.2618.321.camel@yio.site>
-Message-ID: <1256844546706@kroah.org>
+	Thu, 29 Oct 2009 15:40:08 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:4668 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755225AbZJ2TkH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 15:40:07 -0400
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big
+	range for pcie devices
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+In-Reply-To: <m1639yyp85.fsf@fess.ebiederm.org>
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>
+	 <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>
+	 <4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>
+	 <4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>
+	 <4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>
+	 <m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>
+	 <m1eionia3y.fsf@fess.ebiederm.org> <4AE8A080.1040208@kernel.org>
+	 <m1pr87cilf.fsf@fess.ebiederm.org> <4AE8BA1D.5030908@kernel.org>
+	 <4AE8C4BF.8040306@kernel.org> <m1my3aboon.fsf@fess.ebiederm.org>
+	 <1256822508.30701.41.camel@dc7800.home> <m1bpjqb5dj.fsf@fess.ebiederm.org>
+	 <1256830988.30701.55.camel@dc7800.home>  <m1639yyp85.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Thu, 29 Oct 2009 13:36:18 -0600
+Message-Id: <1256844978.30701.96.camel@dc7800.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-10-29 at 12:28 -0700, Eric W. Biederman wrote:
+> Bjorn Helgaas <bjorn.helgaas@hp.com> writes:
+> 
+> > On Thu, 2009-10-29 at 08:13 -0700, Eric W. Biederman wrote:
+> >> Bjorn Helgaas <bjorn.helgaas@hp.com> writes:
+> >> 
+> >> > On Thu, 2009-10-29 at 01:16 -0700, Eric W. Biederman wrote:
+> >> >> Yinghai Lu <yinghai@kernel.org> writes:
+> >> >> >
+> >> >> > after closing look up the code, it looks it will not break your setup.
+> >> >> >
+> >> >> > 1. before the patches:
+> >> >> > a. when master card is inserted, all bridge in that card will get assigned with min_size
+> >> >> > b. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+> >> >> >
+> >> >> > 2. after the patches: v5
+> >> >> > a. booted up, all leaf bridge mmio get clearred.
+> >> >> > b. when master card is inserted, all bridge in that card will get assigned with min_size, and master bridge will be sum of them
+> >> >> > c. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+> >> >> >
+> >> >> > can you check those two patches in your setup to verify it?
+> >> >> 
+> >> >> I have a much simpler case I will break, as I tried something similar by accident.
+> >> >> 
+> >> >> AMD cpu MCP55 with one pcie port setup as hotplug.
+> >> >> The system only has 2GB of RAM.  So plenty of space for pcie devices.
+> >> >> 
+> >> >> If the firmware assigns nothing and linux at boot time assigns the pci mmio space:
+> >> >> Reads from the bar of the hotplugged device work
+> >> >> Writes to the bar of the hotplugged device, cause further writes to go to lala land.
+> >> >> 
+> >> >> So I had to have the firmware make the assignment, because only it knows the
+> >> >> details of the hidden AMD bar registers for each hypertransport chain etc.
+> >> >
+> >> > Do you mean you had to have firmware program a hot-added device, or just
+> >> > that firmware had to program the apertures of the root port that was
+> >> > present at boot, even though it had no devices below it?
+> >> 
+> >> Firmware had to program the apertures of the root port that was present
+> >> at boot, even though it had no devices below it.
+> >> 
+> >> > Firmware normally supplies ACPI _CRS information that tells us how it
+> >> > programmed the host bridge windows.  On x86, Linux normally ignores that
+> >> > and just assumes a range based on memory size.  If we paid attention to
+> >> > it (as with "pci=use_crs"), it's likely that we could do a better job of
+> >> > doing this setup.
+> >> >
+> >> > Or, of course, we could add a Linux driver that knows about "the hidden
+> >> > AMD bar registers."  But I think that should be a last resort, for when
+> >> > firmware supplied incorrect _CRS information.
+> >> 
+> >> In this case there was no ACPI, and even if there was correct _CRS information
+> >> it would have said only those addresses routed to bars/apertures on the
+> >> root bridge was routed to the MCP55.  So while it looked like we had gobs
+> >> of unallocated space we could use.  In practice we did not.
+> >
+> > I know this is a hypothetical case since you don't have ACPI, but I'm
+> > curious about this.
+> >
+> > I assume the magic AMD BARs only affect the host bridge, and that the
+> > downstream root ports look like standard PCI-to-PCI bridges.  If that's
+> > the case, and if we have correct descriptions of the host bridge
+> > apertures, Linux should theoretically be able to do as well as firmware.
+> >
+> > But you seem to be suggesting that even with a correct host bridge
+> > description, there's space that *looks* available but is not.  I don't
+> > understand how this can be.
+> 
+> What I meant was simply that not all of the non-memory space was
+> routed down the hypertransport chain to the mcp55.  If you have an
+> accurate description of that you should be fine.
 
-This is a note to let you know that I've just added the patch titled
+OK, yep, that makes perfect sense.  That's a good example of why I
+believe we should start paying attention to the root bridge _CRS,
+because that's exactly what it would tell us.
 
-    Subject: Driver core: devtmpfs: prevent concurrent subdirectory creation and removal
+Bjorn
 
-to my gregkh-2.6 tree.  Its filename is
-
-    driver-core-devtmpfs-prevent-concurrent-subdirectory-creation-and-removal.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From kay.sievers@vrfy.org  Thu Oct 29 11:59:28 2009
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 28 Oct 2009 19:51:06 +0100
-Subject: Driver core: devtmpfs: prevent concurrent subdirectory creation and removal
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Message-ID: <1256755866.2618.321.camel@yio.site>
-
-
-From: Kay Sievers <kay.sievers@vrfy.org>
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/base/devtmpfs.c |   26 ++++++++++++++++----------
- 1 file changed, 16 insertions(+), 10 deletions(-)
-
---- a/drivers/base/devtmpfs.c
-+++ b/drivers/base/devtmpfs.c
-@@ -32,6 +32,8 @@ static int dev_mount = 1;
- static int dev_mount;
- #endif
- 
-+static rwlock_t dirlock;
-+
- static int __init mount_param(char *str)
- {
- 	dev_mount = simple_strtoul(str, NULL, 0);
-@@ -86,16 +88,12 @@ static int dev_mkdir(const char *name, m
- 
- static int create_path(const char *nodepath)
- {
--	char *path;
- 	struct nameidata nd;
- 	int err = 0;
- 
--	path = kstrdup(nodepath, GFP_KERNEL);
--	if (!path)
--		return -ENOMEM;
--
-+	read_lock(&dirlock);
- 	err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
--			      path, LOOKUP_PARENT, &nd);
-+			      nodepath, LOOKUP_PARENT, &nd);
- 	if (err == 0) {
- 		struct dentry *dentry;
- 
-@@ -107,14 +105,17 @@ static int create_path(const char *nodep
- 			dput(dentry);
- 		}
- 		mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
--
- 		path_put(&nd.path);
- 	} else if (err == -ENOENT) {
-+		char *path;
- 		char *s;
- 
- 		/* parent directories do not exist, create them */
-+		path = kstrdup(nodepath, GFP_KERNEL);
-+		if (!path)
-+			return -ENOMEM;
- 		s = path;
--		while (1) {
-+		for (;;) {
- 			s = strchr(s, '/');
- 			if (!s)
- 				break;
-@@ -125,9 +126,10 @@ static int create_path(const char *nodep
- 			s[0] = '/';
- 			s++;
- 		}
-+		kfree(path);
- 	}
-+	read_unlock(&dirlock);
- 
--	kfree(path);
- 	return err;
- }
- 
-@@ -232,7 +234,8 @@ static int delete_path(const char *nodep
- 	if (!path)
- 		return -ENOMEM;
- 
--	while (1) {
-+	write_lock(&dirlock);
-+	for (;;) {
- 		char *base;
- 
- 		base = strrchr(path, '/');
-@@ -243,6 +246,7 @@ static int delete_path(const char *nodep
- 		if (err)
- 			break;
- 	}
-+	write_unlock(&dirlock);
- 
- 	kfree(path);
- 	return err;
-@@ -358,6 +362,8 @@ int __init devtmpfs_init(void)
- 	int err;
- 	struct vfsmount *mnt;
- 
-+	rwlock_init(&dirlock);
-+
- 	err = register_filesystem(&dev_fs_type);
- 	if (err) {
- 		printk(KERN_ERR "devtmpfs: unable to register devtmpfs "
 
