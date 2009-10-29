@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZJ2SfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZJ2OpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbZJ2SfI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 14:35:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZJ2SfI
+	id S1754925AbZJ2OpP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 10:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbZJ2OpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 14:35:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50926 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754762AbZJ2SfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 14:35:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ferenc Wagner <wferi@niif.hu>
-Subject: Re: [linux-pm] intermittent suspend problem again
-Date: Thu, 29 Oct 2009 19:36:14 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910281956.44791.rjw@sisk.pl> <87d447m52t.fsf@tac.ki.iif.hu>
-In-Reply-To: <87d447m52t.fsf@tac.ki.iif.hu>
+	Thu, 29 Oct 2009 10:45:14 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:42472 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754808AbZJ2OpM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 10:45:12 -0400
+Date: Thu, 29 Oct 2009 14:39:19 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Jiri Kosina <jkosina@suse.cz>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>
+Subject: Re: [Bug #14467] Linker errors on ia64 with NR_CPUS=4096
+In-Reply-To: <alpine.LSU.2.00.0910271922490.19847@wotan.suse.de>
+Message-ID: <alpine.DEB.1.10.0910291435420.18197@V090114053VZO-1>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.nnF.Cre5KB@chimera> <alpine.DEB.1.10.0910271623210.20363@V090114053VZO-1> <alpine.LSU.2.00.0910271922490.19847@wotan.suse.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910291936.14082.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 October 2009, Ferenc Wagner wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Wednesday 28 October 2009, Ferenc Wagner wrote:
-> > 
-> >> Something similar to http://bugzilla.kernel.org/show_bug.cgi?id=13894
-> >> raised its ugly head again, please see my last comments on that bug.
+On Tue, 27 Oct 2009, Jiri Kosina wrote:
+
+> On Tue, 27 Oct 2009, Christoph Lameter wrote:
+>
+> > The NR_CPUS array in the percpu section needs to be removed.
 > >
-> > This very well may be a separete bug, so please file a new bugzilla report
-> > on this and mark it as a regression.
-> 
-> Done.
+> > A simple fix would be to allocate the rq_weight per cpu array
+> > dynamically.
+>
+> There already are two patches for this acked by Ingo/Tejun, which Tejun is
+> going to take through his tree tomorrow.
+>
+> 	http://lkml.org/lkml/2009/10/27/132
 
-Which number is this?
+per cpu alloc from an atomic context without passing gfp flags through to
+the page allocator? That does not look right. Sure wish that the percpu
+allocator would be working from atomic contexts for other cases.
 
-> >> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
-> >> off the machine after "S|" or freezes after "Snapshotting system".
-> >> The former does not cause much trouble in itself, as the machine can
-> >> be switched off and resumed all right, but the latter is nasty.
-> >> Suspend to RAM works all the time.  The issue is not reproducible,
-> >> unfortunately, and the kernel change happened almost together with a
-> >> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
-> >> still works stably with the new BIOS.  I'll report back my findings in
-> >> a couple of days.
-> >
-> > OK, thanks.
-> >
-> > Still, I'm really afraid we won't be able to debug it any further without a
-> > reproducible test case.
-> 
-> I've got another, fully reproducible but nevertheless neglected ACPI
-> problem, already mentioned in #13894:
-> https://bugs.freedesktop.org/show_bug.cgi?id=22126.
+> 	http://lkml.org/lkml/2009/10/27/215
 
-A side note: I'm totally unhappy with _kernel_ bugs being handled at
-bugs.freedesktop.org without a notice anywhere else.  Even though they are
-related to the graphics, the kernel developers in general at least deserve the
-information that the bugs have been reported.
+There is still heavy percpu use because of the patch for machines with
+large numbers of processors. Another solution would be better that does
+not require a N^2 sized array.
 
-In this particulare case, the bug is clearly related to ACPI and linux-acpi
-should have received a notification about it.
-
-> Well, it's probably far-fetched, but maybe the two are somehow related...
-
-Very well may be.
-
-> Can't you perhaps suggest a way forward there?  Or some tricks to create a
-> reproducible test case here?
-
-Well, you can test if the problem is reproducible in the "shutdown" mode of
-hibernation.
-
-> Btw. my gut feeling is that hibernation
-> is getting slower with each kernel release.  I didn't measure it, and
-> didn't even care about comparable initial states... But could anything
-> explain this, or is it sheer impatience?
-
-Which part of it is getting slower?  Saving the image, suspending devices or
-the entire hibernation overall?
-
-Rafael
