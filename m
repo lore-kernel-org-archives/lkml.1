@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZJ2VFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbZJ2VFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbZJ2VFe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 17:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZJ2VFZ
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1755530AbZJ2VFZ (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 29 Oct 2009 17:05:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49055 "EHLO
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755056AbZJ2VFY
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 29 Oct 2009 17:05:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:49148 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbZJ2VFX (ORCPT
+	with ESMTP id S1752997AbZJ2VFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 29 Oct 2009 17:05:23 -0400
-Message-Id: <20091029205151.852744305@goodmis.org>
+Message-Id: <20091029210526.593603847@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 29 Oct 2009 16:51:51 -0400
+Date: Thu, 29 Oct 2009 16:51:52 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -25,63 +25,73 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        "David S. Miller" <davem@davemloft.net>,
        Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from crashing function graph tracer
+Subject: [PATCH 1/3][RFC] [PATCH 1/3] tracing: Clean up ftrace.h header and add ftrace_set_notrace() declaration
+References: <20091029205151.852744305@goodmis.org>
+Content-Disposition: inline; filename=0001-tracing-Clean-up-ftrace.h-header-and-add-ftrace_set_.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lately I've been testing with an allyesconfig. When I ran the function graph
-tracer, it immediately crashed the kernel. Thanks to the new frame pointer
-test in function graph, it reported directly what the issue was and then
-panicked the kernel to prevent any unexpected damage from happening.
+From: Steven Rostedt <srostedt@redhat.com>
 
-It pointed the error to be with jtcp_rcv_established. Which is a jprobe
-function added to tcp_rcv_established at bootup when CONFIG_NET_TCPPROBE
-is enabled.
+The ftrace_set_notrace() declaration is missing from ftrace.h. This patch
+adds it. I also noticed that the #else portion uses macros instead of
+inlines, so those are updated as well.
 
-Jprobes and the function graph tracer use the same mechanism to trace
-the exit of a function. Unfortunately, only one can be done at a time.
-The function graph tracer replaces the return address with its own handler,
-but so does jprobes. The two are not compatible.
+The unregister_ftrace_command() in the #else side had an incorrect
+prototype and is now fixed.
 
-The solution I am proposing with this patch set is to add a call in
-ftrace that lets other code in the kernel permanently disable functions from
-being traced by the function and function graph tracer. As a probe function
-is registered with jprobes, it calls this new function and that entry
-will be removed from being traced.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ include/linux/ftrace.h |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
 
-I tested this with this patch series and it does solve the problem.
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 0b4f97d..5d31e93 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -158,6 +158,7 @@ struct dyn_ftrace {
+ 
+ int ftrace_force_update(void);
+ void ftrace_set_filter(unsigned char *buf, int len, int reset);
++void ftrace_set_notrace(unsigned char *buf, int len, int reset);
+ 
+ int register_ftrace_command(struct ftrace_func_command *cmd);
+ int unregister_ftrace_command(struct ftrace_func_command *cmd);
+@@ -236,17 +237,26 @@ extern int skip_trace(unsigned long ip);
+ extern void ftrace_disable_daemon(void);
+ extern void ftrace_enable_daemon(void);
+ #else
+-# define skip_trace(ip)				({ 0; })
+-# define ftrace_force_update()			({ 0; })
+-# define ftrace_set_filter(buf, len, reset)	do { } while (0)
+-# define ftrace_disable_daemon()		do { } while (0)
+-# define ftrace_enable_daemon()			do { } while (0)
++static inline int skip_trace(unsigned long ip)
++{
++	return 0;
++}
++static inline ftrace_force_update(void)
++{
++	return 0;
++}
++static inline void ftrace_disable_daemon(void) { }
++static inline void ftrace_enable_daemon(void) { }
++static inline void
++ftrace_set_filter(unsigned char *buf, int len, int reset) { }
++static inline void
++ftrace_set_notrace(unsigned char *buf, int len, int reset) { }
+ static inline void ftrace_release_mod(struct module *mod) {}
+ static inline int register_ftrace_command(struct ftrace_func_command *cmd)
+ {
+ 	return -EINVAL;
+ }
+-static inline int unregister_ftrace_command(char *cmd_name)
++static inline int unregister_ftrace_command(struct ftrace_func_command *cmd);
+ {
+ 	return -EINVAL;
+ }
+-- 
+1.6.3.3
 
-Some issues though:
-
-1) this only works when DYNAMIC_FTRACE is enabled. We can prevent
-function graph tracing with jprobes when DYNAMIC_FTRACE is not
-enabled through Kconfig dependencies. Or have the registering of
-a jprobe permanently disable function graph tracing.
-
-2) This also prevents the function tracer from being able to trace a
-function probe, even though the function tracer is not at issue
-with this bug.
-
-Feedback welcomed.
-
--- Steve
-
-The following patches are in:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-
-    branch: rfc/trace
-
-
-Steven Rostedt (3):
-      tracing: Clean up ftrace.h header and add ftrace_set_notrace() declaration
-      tracing: Add calls to permanently disable functions from tracing
-      tracing/kprobes: Disable tracing registered jprobe callback functions
-
-----
- include/linux/ftrace.h |   26 +++++++--
- kernel/kprobes.c       |    4 +
- kernel/trace/ftrace.c  |  147 +++++++++++++++++++++++++++++++++++++++++-------
- 3 files changed, 150 insertions(+), 27 deletions(-)
 
