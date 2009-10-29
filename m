@@ -1,128 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZJ2WYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZJ2W1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZJ2WYF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 18:24:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbZJ2WYF
+	id S1756821AbZJ2W1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 18:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbZJ2W1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 18:24:05 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:34063 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756744AbZJ2WYD (ORCPT
+	Thu, 29 Oct 2009 18:27:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46888 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756710AbZJ2W1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 18:24:03 -0400
-Date: Fri, 30 Oct 2009 03:54:01 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC Patch 0/4] Enhance perf-events to profile memory accesses
-	using hw-breakpoints - ver II
-Message-ID: <20091029222401.GB4596@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20091028155827.GA8604@in.ibm.com> <20091029081917.GC26970@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091029081917.GC26970@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 29 Oct 2009 18:27:15 -0400
+Date: Thu, 29 Oct 2009 15:26:14 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: rostedt@goodmis.org
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from crashing
+ function graph tracer
+Message-ID: <20091029152614.42c7f366@nehalam>
+In-Reply-To: <1256854653.26028.3255.camel@gandalf.stny.rr.com>
+References: <20091029205151.852744305@goodmis.org>
+	<4AEA10EC.8000103@redhat.com>
+	<1256854653.26028.3255.camel@gandalf.stny.rr.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 09:19:17AM +0100, Ingo Molnar wrote:
-> 
-> * K.Prasad <prasad@linux.vnet.ibm.com> wrote:
-> 
-[snipped]
+On Thu, 29 Oct 2009 18:17:33 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> On Thu, 2009-10-29 at 18:02 -0400, Masami Hiramatsu wrote:
+> > > 
+> > > Jprobes and the function graph tracer use the same mechanism to trace
+> > > the exit of a function. Unfortunately, only one can be done at a time.
+> > > The function graph tracer replaces the return address with its own handler,
+> > > but so does jprobes. The two are not compatible.
 > > 
-> > #
-> > #
-> > # perf record -v -i -e breakpoint-readwrite:jiffies top
+> > AFAIK, Jprobe doesn't trace the exit of a function. I assume that
+> > jprobe's user handler causes the problem, since the handler never
+> > returns normal way.
+> > Instead of that, it just calls jprobe_return() which causes
+> > int3 to be trapped by kprobe's break handler. And the break handler
+> > fixup regs->ip to back to traced function.
+> 
+> Ah, yes, my documenting this is wrong. It's the skipped jprobe that
+> messed it up.
+> 
 > > 
-> > [Ran 'top' for about 10 seconds]
-> 
-> btw., you probably want to add the -a/--all option as well when you test 
-> via top, to do system-wide profiling. With this command you profile top 
-> itself (and its child tasks).
-> 
-
-Okay. Attached output to that effect in ver III of my patchset sent
-here: http://lkml.org/lkml/2009/10/29/300
-
+> > Actually, this will cause a problem with function graph tracer.
+> > The f-g-tracer push the return address into the special stack and replaces
+> > it with fixup function (This is similar (not same) mechanism of kretprobe.)
+> > And then the traced function returns, it returns to the fixup function and
+> > it pops the return address up and back to the real caller.
 > > 
-> > # perf report -i perf.data
-> > # Samples: 2022950155
-> > #
-> > # Overhead  Command  Shared Object  Symbol
-> > # ........  .......  .............  ......
-> > #
-> >     99.99%      top  [kernel]       [k] scheduler_tick
-> >      0.01%     perf  [kernel]       [k] scheduler_tick
-> >      0.00%      top  [kernel]       [k] set_track
-> >      0.00%      top  [kernel]       [k] run_timer_softirq
-> >      0.00%     perf  [kernel]       [k] set_track
-> >      0.00%      top  [kernel]       [k] __call_rcu
-> >      0.00%      top  [kernel]       [k] calc_global_load
-> >      0.00%      top  [kernel]       [k] do_timer
-> >      0.00%      top  [kernel]       [k] __rcu_process_callbacks
-> > #
-> > # (For a higher level overview, try: perf report --sort comm,dso)
-> > #
+> > So, if the f-g-tracer traces jprobe user handler, the pop operation
+> > will be skipped because the the handler never returns.
 > 
-> That output looks pretty awesome! This way we can map out how frequently 
-> global variables are used in the kernel - in stock distro kernels too. 
-> Previously we could only measure it indirectly (by looking at 
-> high-overhead functions and assembly level annotations), or by running 
-> very costly instrumentation like Valgrind.
+> Exactly!
 > 
-> I like it how you extended --event with the breakpoint-readwrite:jiffies 
-> method as well.
+> > 
+> > > The solution I am proposing with this patch set is to add a call in
+> > > ftrace that lets other code in the kernel permanently disable functions from
+> > > being traced by the function and function graph tracer. As a probe function
+> > > is registered with jprobes, it calls this new function and that entry
+> > > will be removed from being traced.
+> > >
+> > > I tested this with this patch series and it does solve the problem.
+> > > 
+> > > Some issues though:
+> > > 
+> > > 1) this only works when DYNAMIC_FTRACE is enabled. We can prevent
+> > > function graph tracing with jprobes when DYNAMIC_FTRACE is not
+> > > enabled through Kconfig dependencies. Or have the registering of
+> > > a jprobe permanently disable function graph tracing.
+> > 
+> > IMHO, those *probe handler should be tagged as __kprobes and notrace.
 > 
-> A few additional shortcuts/aliases would be nice, such as:
+> Yeah, I agree. But how do you guarantee that it does. If one forgets,
+> than we still have the issue. We can perhaps test to make sure the
+> function is in the kprobes section. But that does not mean they will not
+> be notraced. The __kprobes and notrace are no longer in the same set.
 > 
->    perf record -v -i -e readwrite:jiffies top
+> > 
+> > > 2) This also prevents the function tracer from being able to trace a
+> > > function probe, even though the function tracer is not at issue
+> > > with this bug.
+> > 
+> > I think we can skip those user handlers, because those are irregular
+> > functions and user can control (enable/disable) it.
 > 
-> as breakpoint-readwrite is pretty log users arent really interested in 
-> the mechanism (hardware-breakpoints), they are more interested that it's 
-> memory read-write profiling done at a given address.
+> True, but it may be nice to still trace them.
 > 
-> Maybe even 'rw' would be a useful alias as well. There are alias tables 
-> for events which you can use for this. You can define them via:
+> > 
+> > BTW, in this specific case, I assume that it can use tracepoint
+> > instead of jprobe and move tcp_probe to a part of ftrace :-), isn't it?
+> > (Or, if it is just for a debugging, Systemtap can help it.)
 > 
->   { CHBP(WRITE),               "memory-write",     "write",     "w"  },
->   { CHBP(RW),                  "memory-readwrite", "readwrite", "rw" },
+> That's a question for the networking guys.
 > 
 
-I've added "memory-write" and "w" as the aliases (similarly
-"memory-readwrite" and "rw" as shown under). "read" and "write" are
-used as hw_cache_op[] aliases; moreover defining more than one alias
-would require a separate structure (as done by hw_cache[] and
-hw_cache_op[] and further changes in print_events()), and hence the
-single alias. I'm open to any further suggestions on the renaming front.
+tcp_probe is simple tool used for research graphs, there are scripts
+and stuff wrapped around it. If you keep the ABI, go ahead and convert
+it to ftrace.
 
-
-+  { CHBP(WRITE),		"memory-write",		"w"		},
-+  { CHBP(RW),			"memory-readwrite",	"rw"		},
-
-
-> Anyway, this looks very good already - Frederic, if you like these 
-> patches too feel free to send it to me in your next hw-breakpoints pull 
-> request.
-> 
-> Thanks,
-> 
-> 	Ingo
-
-I'm glad that you found value in the patchset and hope that this would
-entail the feature's journey further into the mainline. Frederic's
-previous mail suggests that I owe him more reasoning about the patches'
-approach, before being sent out for a git pull!
-
-Thanks,
-K.Prasad
-
-
+-- 
