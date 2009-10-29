@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbZJ2GAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbZJ2GXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbZJ2GAy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 02:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbZJ2GAx
+	id S1755945AbZJ2GXv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 02:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZJ2GXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 02:00:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41373 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756361AbZJ2GAx (ORCPT
+	Thu, 29 Oct 2009 02:23:50 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:53940
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751739AbZJ2GXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 02:00:53 -0400
-Date: Wed, 28 Oct 2009 23:00:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Hommey <mh@glandium.org>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Whitehouse <swhiteho@redhat.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, Eric Sandeen <sandeen@sgi.com>,
-       Josef Bacik <jbacik@redhat.com>, Mark Fasheh <mfasheh@suse.com>
-Subject: Re: [PATCH] Fix generic_block_fiemap for files bigger than 4GB
-Message-Id: <20091028230022.e15b1e9c.akpm@linux-foundation.org>
-In-Reply-To: <1256577868-30484-1-git-send-email-mh@glandium.org>
-References: <1256577868-30484-1-git-send-email-mh@glandium.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 29 Oct 2009 02:23:50 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuAAAOrR6Ep8qNN0/2dsb2JhbAAI22KCNIILBA
+X-IronPort-AV: E=Sophos;i="4.44,644,1249228800"; 
+   d="scan'208";a="575195260"
+Subject: Re: kernel panic about kernel unaligned access
+From: Ben Nizette <bn@niasdigital.com>
+To: loody <miloody@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <3a665c760910270723l6989539er7e820d630cce51ac@mail.gmail.com>
+References: <3a665c760910270627u784d43b8t2978731110c920a4@mail.gmail.com>
+	 <3a665c760910270723l6989539er7e820d630cce51ac@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 29 Oct 2009 17:24:13 +1100
+Message-Id: <1256797453.4362.61.camel@ben-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 18:24:28 +0100 Mike Hommey <mh@glandium.org> wrote:
+On Tue, 2009-10-27 at 22:23 +0800, loody wrote:
+> Dear all:
+> I use kernel 2.6.18 and I get the kernel panic as below:
 
-> Because of an integer overflow on start_blk, various kind of wrong results
-> would be returned by the generic_block_fiemap handler, such as no extents
-> when there is a 4GB+ hole at the beginning of the file, or wrong fe_logical
-> when an extent starts after the first 4GB.
-> 
-> Signed-off-by: Mike Hommey <mh@glandium.org>
-> ---
->  fs/ioctl.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/ioctl.c b/fs/ioctl.c
-> index 7b17a14..6c75110 100644
-> --- a/fs/ioctl.c
-> +++ b/fs/ioctl.c
-> @@ -254,7 +254,7 @@ int __generic_block_fiemap(struct inode *inode,
->  			   u64 len, get_block_t *get_block)
->  {
->  	struct buffer_head tmp;
-> -	unsigned int start_blk;
-> +	unsigned long long start_blk;
->  	long long length = 0, map_len = 0;
->  	u64 logical = 0, phys = 0, size = 0;
->  	u32 flags = FIEMAP_EXTENT_MERGED;
+Very old kernel, you're unlikely to get good responses.
 
-Well.  Should it be unsigned long long, or u64 or sector_t?  Or even loff_t.
+> 1. what does "Not tainted" mean?
 
-The code's a bit confused about types in there.  And it's made much
-more confusing by the moronic and wholly unnecessary use of macros for
-blk_to_logical() and logical_to_blk().
+You haven't loaded a closed-source module, the system hasn't crashed
+before and a few other things.  Pretty much that your system was in good
+shape before the bug
 
-It's also unhelpful that the `u64 start' argument forgot to get itself
-documented in the kerneldoc comment.  Sigh.
+> 2. I grep the kernel and I find the above message comes from do_ade in
+> unaligned.c, If I guess correctly.
+>    but from the call trace I cannot find out who call it.
+>    who and how kernel pass the information to do_ade?
 
-Ah, generic_block_fiemap() has it:
+No-one calls it, it's an exception handler invoked when an unaligned
+access is attempted.  Your question should be "on which assembler
+instruction is the unaligned access attempted" and you can find that out
+as below
 
- * @start: The initial block to map
+> 3. as far as i know, inode is the data structure we used to record file.
 
-I guess u64 was logical there as it comes in from userspace.  But at
-some boundary we should start talking kernel types so I suspect the
-correct thing to do here is to use sector_t?
+Well, its a structure which holds metadata about files, yes
+
+> From what information in the inode I can find out the file name the
+> writeback_inodes try to write?
+
+Not with just this information; you'd need additional debug output, but
+even then I very much doubt that information would help you
+
+> 4. take  [<87189564>] preempt_schedule+0x68/0xac for example, what
+> does "0xac" mean?
+
+That's the symbol size. 0x68 is the offset in to preempt_schedule and
+probably more useful for you.  With that info, your vmlinux and gdb you
+can get the offending asm instruction.
+
+All that said, it's such an old kernel you're unlikely to get much help
+actually fixing the bug, you're much better off to upgrade if there's
+any chance of it.
+
+	--Ben.
 
