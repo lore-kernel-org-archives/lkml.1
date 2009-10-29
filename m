@@ -1,75 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbZJ2Q1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZJ2Qbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbZJ2Q1G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZJ2Q1F
+	id S1755224AbZJ2Qbu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZJ2Qbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:27:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55991 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752832AbZJ2Q1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:27:04 -0400
-Message-ID: <4AE9C29E.6090706@suse.de>
-Date: Thu, 29 Oct 2009 17:28:14 +0100
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 2/3] Sysfs: Allow directories to be populated	dynamically
-References: <20091020054740.GC29158@parisc-linux.org> <20091020055021.GE29158@parisc-linux.org> <4AE9C0B0.3030304@suse.de> <20091029162145.GM10555@parisc-linux.org>
-In-Reply-To: <20091029162145.GM10555@parisc-linux.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Oct 2009 12:31:50 -0400
+Received: from outbound-mail-154.bluehost.com ([67.222.39.34]:57990 "HELO
+	outbound-mail-154.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753514AbZJ2Qbt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 12:31:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=pNGIusk7muRtlCgy3ip0G6GgpiwUuFIsALxpW9O3Zt5RT42egKpwNp2qAg+/tLgjfmncVnVV328nibtitFPgwYCgyiqdROcs42b886BmgJgzKRx0Z/N9PUTOjSNeU9qD;
+Date: Thu, 29 Oct 2009 09:31:44 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/2] pci: release that leaf bridge' resource index is
+ not used -v6
+Message-ID: <20091029093144.6ef9da98@jbarnes-g45>
+In-Reply-To: <4AE965C0.30206@kernel.org>
+References: <4ADEB601.8020200@kernel.org>
+	<4AE52B68.3070501@jp.fujitsu.com>
+	<4AE53883.3070709@kernel.org>
+	<4AE5545E.1020900@jp.fujitsu.com>
+	<4AE55D12.30403@kernel.org>
+	<4AE57976.4060107@jp.fujitsu.com>
+	<4AE5E37F.8070707@kernel.org>
+	<4AE5EFDB.2060908@kernel.org>
+	<4AE80170.6030402@jp.fujitsu.com>
+	<4AE88305.8020207@kernel.org>
+	<m1ljivibrt.fsf@fess.ebiederm.org>
+	<4AE899A0.3020006@kernel.org>
+	<4AE95247.8080401@jp.fujitsu.com>
+	<4AE952B9.1010603@kernel.org>
+	<4AE9588E.90708@jp.fujitsu.com>
+	<4AE965C0.30206@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Thu, Oct 29, 2009 at 05:20:00PM +0100, Tejun Heo wrote:
->> This will increase the size of struct sysfs_dirent by three pointers
->> which is considerable.  Bloating the size of sysfs_dirent can waste
->> large amount of memory on machines with a lot of disks.
+On Thu, 29 Oct 2009 02:52:00 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
+
 > 
-> No it won't.  It's in a union with sysfs_inode_attrs which contains a
-> struct iattr, which is at least 52 bytes.
-
- struct sysfs_dirent {
-	 atomic_t		s_count;
-	 atomic_t		s_active;
-	 struct sysfs_dirent	*s_parent;
-	 struct sysfs_dirent	*s_sibling;
-	 const char		*s_name;
-
-	 union {
-		 struct sysfs_elem_dir		s_dir;
-		 struct sysfs_elem_symlink	s_symlink;
-		 struct sysfs_elem_attr		s_attr;
-		 struct sysfs_elem_bin_attr	s_bin_attr;
-	 };
-
-	 unsigned int		s_flags;
-	 ino_t			s_ino;
-	 umode_t			s_mode;
-	 struct sysfs_inode_attrs *s_iattr;
-	                          ^^
- };
-
->> The implementation looks quite scary to me.  Is this the only way to
->> do this?  It it because trying to create individual entries for msix
->> will end up creating too many sysfs entries?  If so, how many are we
->> talking about?
+> only for index < 3
 > 
-> While that's the original motivation, shrinking the amount of memory
-> taken by sysfs overall is a worthwhile achievement, don't you think?
+> v2: Jesse doesn't like it is in find_free_bus_resource...
+>     try to move out of pci_bus_size_bridges loop.
+> need to apply after:
+> 	[PATCH] pci: pciehp update the slot bridge res to get big
+> range for pcie devices - v4 v3: add pci_setup_bridge calling after
+> pci_bridge_release_not_used_res. only clear release those res for x86.
+> v4: Bjorn want to release use dev instead of bus.
+> v5: Kenji pointed out it will have problem with several level bridge.
+>     so let only handle leaf bridge.
+> v6: address Kenji's request (new pci_bus_release...). and change
+> applying order move back release to pci_assign_unassigned_resource
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-It feels a bit too convoluted to me.  sysfs is already pretty
-convoluted and adding yet more convolution would require pretty good
-justification, so I'm curious about the numbers.
+Starting to look better...
 
-Thanks.
+> 
+> ---
+>  drivers/pci/setup-bus.c |   65
+> +++++++++++++++++++++++++++++++++++++++++++++++-
+> include/linux/pci.h     |    1 2 files changed, 65 insertions(+), 1
+> deletion(-)
+> 
+> Index: linux-2.6/drivers/pci/setup-bus.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/setup-bus.c
+> +++ linux-2.6/drivers/pci/setup-bus.c
+> @@ -573,13 +573,68 @@ void __ref pci_bus_assign_resources(cons
+>  }
+>  EXPORT_SYMBOL(pci_bus_assign_resources);
+>  
+> +static void pci_bridge_release_not_used_res(struct pci_bus *bus)
+
+Can we call these functions something else?  Maybe
+pci_bridge_release_unused() with a kdoc comment describing exactly what
+it does and why?
+
+> +{
+> +	int idx;
+> +	bool changed = false;
+> +	struct pci_dev *dev;
+> +	struct resource *r;
+> +	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
+> +				  IORESOURCE_PREFETCH;
+> +
+> +	/* for pci bridges res only */
+> +	dev = bus->self;
+> +	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES
+> + 3;
+> +	    idx++) {
+> +		r = &dev->resource[idx];
+> +		if (!(r->flags & type_mask))
+> +			continue;
+> +		if (!r->parent)
+> +			continue;
+> +		/* if there is no child under that, we should
+> release it */
+> +		if (r->child)
+> +			continue;
+> +		if (!release_resource(r)) {
+> +			dev_info(&dev->dev, "resource %d %pRt
+> released\n",
+> +				 idx, r);
+> +			r->flags = 0;
+> +			changed = true;
+> +		}
+> +	}
+> +
+> +	if (changed)
+> +		pci_setup_bridge(bus);
+> +}
+> +
+> +void __ref pci_bus_release_bridges_not_used_res(struct pci_bus *bus)
+
+Likewise, maybe pci_bus_release_unused_bridge_res or something, with
+comments again.
+
+> +{
+> +	struct pci_bus *b;
+> +
+> +	/* If the bus is cardbus, do nothing */
+> +	if (bus->self && (bus->self->class >> 8) ==
+> PCI_CLASS_BRIDGE_CARDBUS)
+> +		return;
+> +
+> +	/* We only release the resources under the leaf bridge */
+> +	if (list_empty(&bus->children)) {
+> +		if (!pci_is_root_bus(bus))
+> +			pci_bridge_release_not_used_res(bus);
+> +		return;
+> +	}
+> +
+> +	/* Scan child buses if the bus is not leaf */
+> +	list_for_each_entry(b, &bus->children, node)
+> +		pci_bus_release_bridges_not_used_res(b);
+> +}
+> +EXPORT_SYMBOL(pci_bus_release_bridges_not_used_res);
+> +
+>  static void pci_bus_dump_res(struct pci_bus *bus)
+>  {
+>          int i;
+>  
+>          for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+>                  struct resource *res = bus->resource[i];
+> -                if (!res || !res->end)
+> +
+> +		if (!res || !res->end || !res->flags)
+>                          continue;
+>  
+>  		dev_printk(KERN_DEBUG, &bus->dev, "resource %d
+> %pRt\n", i, res); @@ -608,6 +663,14 @@
+> pci_assign_unassigned_resources(void) {
+>  	struct pci_bus *bus;
+>  
+> +	/*
+> +	 * Try to release leaf bridge's resources that there is not
+> child
+> +	 * under it
+> +	 */
+> +	list_for_each_entry(bus, &pci_root_buses, node) {
+> +		pci_bus_release_bridges_not_used_res(bus);
+> +	}
+> +
+
+Also I wonder if we need to make this a command line option that isn't
+run by default?
+
+Really, as Eric says, we need a real dynamic allocation system with the
+ability to move devices around at some point.  Any volunteers? :)
 
 -- 
-tejun
+Jesse Barnes, Intel Open Source Technology Center
