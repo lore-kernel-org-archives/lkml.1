@@ -1,214 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZJ2IT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751946AbZJ2IVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752877AbZJ2IT0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 04:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZJ2ITZ
+	id S1751946AbZJ2IVd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 04:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZJ2IVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 04:19:25 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:42575 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752265AbZJ2ITX (ORCPT
+	Thu, 29 Oct 2009 04:21:32 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:1930 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbZJ2IVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 04:19:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=O+OTLHGF22WvhJMBAm091Eth1tq3f2iI8vlDlwMpe5XeD3TAYTj6NEniGvPZvPCWsV
-         TX8sghA1fzf9LmPUKibU/NMbiNuzUuv8r3HLM+E6/Kmz9kFrtch5RDvPOYwTRLoT6p+8
-         8qdKMyz+arp6yNhUPR6VoerxopL7TDndwSLbQ=
-Date: Thu, 29 Oct 2009 11:19:26 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] proc: uninline PDE get
-Message-ID: <20091029081926.GA9916@x200>
+	Thu, 29 Oct 2009 04:21:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=L4/SdxJ5+npWkPhTqmCSPxDoYqvkqTmmiFo5qE9MKZBPTqNVC426V3OoelojKYpoV
+	q8xEO2sTeeogQCN/uKwqA==
+Date: Thu, 29 Oct 2009 01:21:25 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mike Travis <travis@sgi.com>
+cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch] x86: reduce srat verbosity in the kernel log
+In-Reply-To: <4AE8C764.90705@sgi.com>
+Message-ID: <alpine.DEB.2.00.0910290117020.11476@chino.kir.corp.google.com>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
+ <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <4AE8792F.8070200@sgi.com>
+ <alpine.DEB.2.00.0910281348590.24785@chino.kir.corp.google.com> <4AE8B933.5020103@sgi.com> <alpine.DEB.2.00.0910281440580.32315@chino.kir.corp.google.com> <4AE8C764.90705@sgi.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* PDE get is trivial -- make inline, save a few bits of code,
-  drop "refcount is 0" check -- it should be done in some generic refcount code,
-  don't recall it's was helpful
-* rename GET and PUT functions to pde_get(), pde_put() for cool prefix!
-* remove obvious and incorrent comments
-* in remove_proc_entry() use pde_put(),
-  when I fixed PDE refcounting to be normal one, remove_proc_entry() was
-  supposed to do "-1" and code now reflects that.
+On Wed, 28 Oct 2009, Mike Travis wrote:
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+> > I'm not saying it would be illegal, merely that it would be harm
+> > readability.  Based on how apic id's are formed from processor ids, though,
+> > I think we're really talking about an upper limit (128) that will never be
+> > reached.
+> 
+> We actually have many, many more than that by adding on some extra bits
+> to the CPU's apicid.  These select which blade in the system to target.
+> 
 
- fs/proc/generic.c  |   21 +++++++++++++--------
- fs/proc/inode.c    |   31 ++++---------------------------
- fs/proc/internal.h |   10 ++++++----
- 3 files changed, 23 insertions(+), 39 deletions(-)
-
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -429,7 +429,7 @@ struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *dir,
- 			unsigned int ino;
- 
- 			ino = de->low_ino;
--			de_get(de);
-+			pde_get(de);
- 			spin_unlock(&proc_subdir_lock);
- 			error = -EINVAL;
- 			inode = proc_get_inode(dir->i_sb, ino, de);
-@@ -445,7 +445,7 @@ out_unlock:
- 		return NULL;
- 	}
- 	if (de)
--		de_put(de);
-+		pde_put(de);
- 	return ERR_PTR(error);
- }
- 
-@@ -509,17 +509,17 @@ int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
- 				struct proc_dir_entry *next;
- 
- 				/* filldir passes info to user space */
--				de_get(de);
-+				pde_get(de);
- 				spin_unlock(&proc_subdir_lock);
- 				if (filldir(dirent, de->name, de->namelen, filp->f_pos,
- 					    de->low_ino, de->mode >> 12) < 0) {
--					de_put(de);
-+					pde_put(de);
- 					goto out;
- 				}
- 				spin_lock(&proc_subdir_lock);
- 				filp->f_pos++;
- 				next = de->next;
--				de_put(de);
-+				pde_put(de);
- 				de = next;
- 			} while (de);
- 			spin_unlock(&proc_subdir_lock);
-@@ -763,7 +763,7 @@ out:
- 	return NULL;
- }
- 
--void free_proc_entry(struct proc_dir_entry *de)
-+static void free_proc_entry(struct proc_dir_entry *de)
- {
- 	unsigned int ino = de->low_ino;
- 
-@@ -777,6 +777,12 @@ void free_proc_entry(struct proc_dir_entry *de)
- 	kfree(de);
- }
- 
-+void pde_put(struct proc_dir_entry *pde)
-+{
-+	if (atomic_dec_and_test(&pde->count))
-+		free_proc_entry(pde);
-+}
-+
- /*
-  * Remove a /proc entry and free it if it's not currently in use.
-  */
-@@ -845,6 +851,5 @@ continue_removing:
- 	WARN(de->subdir, KERN_WARNING "%s: removing non-empty directory "
- 			"'%s/%s', leaking at least '%s'\n", __func__,
- 			de->parent->name, de->name, de->subdir->name);
--	if (atomic_dec_and_test(&de->count))
--		free_proc_entry(de);
-+	pde_put(de);
- }
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -24,29 +24,6 @@
- 
- #include "internal.h"
- 
--struct proc_dir_entry *de_get(struct proc_dir_entry *de)
--{
--	atomic_inc(&de->count);
--	return de;
--}
--
--/*
-- * Decrements the use count and checks for deferred deletion.
-- */
--void de_put(struct proc_dir_entry *de)
--{
--	if (!atomic_read(&de->count)) {
--		printk("de_put: entry %s already free!\n", de->name);
--		return;
--	}
--
--	if (atomic_dec_and_test(&de->count))
--		free_proc_entry(de);
--}
--
--/*
-- * Decrement the use count of the proc_dir_entry.
-- */
- static void proc_delete_inode(struct inode *inode)
- {
- 	struct proc_dir_entry *de;
-@@ -59,7 +36,7 @@ static void proc_delete_inode(struct inode *inode)
- 	/* Let go of any associated proc directory entry */
- 	de = PROC_I(inode)->pde;
- 	if (de)
--		de_put(de);
-+		pde_put(de);
- 	if (PROC_I(inode)->sysctl)
- 		sysctl_head_put(PROC_I(inode)->sysctl);
- 	clear_inode(inode);
-@@ -480,7 +457,7 @@ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
- 		}
- 		unlock_new_inode(inode);
- 	} else
--	       de_put(de);
-+	       pde_put(de);
- 	return inode;
- }			
- 
-@@ -495,7 +472,7 @@ int proc_fill_super(struct super_block *s)
- 	s->s_op = &proc_sops;
- 	s->s_time_gran = 1;
- 	
--	de_get(&proc_root);
-+	pde_get(&proc_root);
- 	root_inode = proc_get_inode(s, PROC_ROOT_INO, &proc_root);
- 	if (!root_inode)
- 		goto out_no_root;
-@@ -509,6 +486,6 @@ int proc_fill_super(struct super_block *s)
- out_no_root:
- 	printk("proc_read_super: get root inode failed\n");
- 	iput(root_inode);
--	de_put(&proc_root);
-+	pde_put(&proc_root);
- 	return -ENOMEM;
- }
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -61,8 +61,6 @@ extern const struct file_operations proc_pagemap_operations;
- extern const struct file_operations proc_net_operations;
- extern const struct inode_operations proc_net_inode_operations;
- 
--void free_proc_entry(struct proc_dir_entry *de);
--
- void proc_init_inodecache(void);
- 
- static inline struct pid *proc_pid(struct inode *inode)
-@@ -101,8 +99,12 @@ unsigned long task_vsize(struct mm_struct *);
- int task_statm(struct mm_struct *, int *, int *, int *, int *);
- void task_mem(struct seq_file *, struct mm_struct *);
- 
--struct proc_dir_entry *de_get(struct proc_dir_entry *de);
--void de_put(struct proc_dir_entry *de);
-+static inline struct proc_dir_entry *pde_get(struct proc_dir_entry *pde)
-+{
-+	atomic_inc(&pde->count);
-+	return pde;
-+}
-+void pde_put(struct proc_dir_entry *pde);
- 
- extern struct vfsmount *proc_mnt;
- int proc_fill_super(struct super_block *);
+Maybe I've been vague in my rationale for why this limit will probably 
+never be reached.  The way apic ids are constructed, with physical and 
+logical processor ids, it tends to lend itself to ranges where 
+bitmap_scnlistprintf() can specify a large number of apic ids with 
+relatively few ASCII characters because logical processors typically do 
+not have differing pxms.  For us to reach the 128 character upper bound, 
+scnlistprintf() would need to have many, many distinct ranges; your 
+example showed two ranges per pxm (many more machines would have only a 
+single range).  In other words, we're not predicting to have 
+"1-2,4-6,8-9,11-13,15-17," etc, that we often have with nodemasks.
