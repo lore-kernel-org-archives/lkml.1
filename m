@@ -1,51 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbZJ2QVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZJ2QXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755258AbZJ2QVm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 12:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbZJ2QVl
+	id S1755401AbZJ2QXy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 12:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755326AbZJ2QXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 12:21:41 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:45280 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754159AbZJ2QVl (ORCPT
+	Thu, 29 Oct 2009 12:23:53 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:53390 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755224AbZJ2QXw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 12:21:41 -0400
-Date: Thu, 29 Oct 2009 10:21:45 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Tejun Heo <teheo@suse.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 2/3] Sysfs: Allow directories to be populated
-	dynamically
-Message-ID: <20091029162145.GM10555@parisc-linux.org>
-References: <20091020054740.GC29158@parisc-linux.org> <20091020055021.GE29158@parisc-linux.org> <4AE9C0B0.3030304@suse.de>
+	Thu, 29 Oct 2009 12:23:52 -0400
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       jamie@shareable.org
+Subject: Re: symlinks with permissions
+References: <20091026165729.GF23564@us.ibm.com>
+	<20091026173629.GB16861@fieldses.org>
+	<20091026174631.GD7233@duck.suse.cz>
+	<1256579869.8576.7.camel@heimdal.trondhjem.org>
+	<20091025093604.GA1501@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org>
+	<20091028081653.GA18290@elf.ucw.cz> <m1k4yfkbfg.fsf@fess.ebiederm.org>
+	<20091028210323.GA4159@elf.ucw.cz> <m1hbtj7xgj.fsf@fess.ebiederm.org>
+	<20091029110344.GA1517@ucw.cz>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 29 Oct 2009 09:23:46 -0700
+In-Reply-To: <20091029110344.GA1517@ucw.cz> (Pavel Machek's message of "Thu\, 29 Oct 2009 12\:03\:44 +0100")
+Message-ID: <m1d4466uel.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE9C0B0.3030304@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 05:20:00PM +0100, Tejun Heo wrote:
-> This will increase the size of struct sysfs_dirent by three pointers
-> which is considerable.  Bloating the size of sysfs_dirent can waste
-> large amount of memory on machines with a lot of disks.
+Pavel Machek <pavel@ucw.cz> writes:
 
-No it won't.  It's in a union with sysfs_inode_attrs which contains a
-struct iattr, which is at least 52 bytes.
+> Hi!
+>
+>> >> It looks to me like it has been this way for better than a decade
+>> >> without problems so there is no point in changing it now.  
+>> >
+>> > Unix compatibility?
+>> 
+>> Thinking about this proc fundamentally gives you the ability to create
+>> (via open) a new file descriptor for a file you already have open.
+>
+> Yes. Problem is that by using /proc, I can work-around open(READONLY)
+> restriction and work-around open(APPEND_ONLY) restriction.
 
-> The implementation looks quite scary to me.  Is this the only way to
-> do this?  It it because trying to create individual entries for msix
-> will end up creating too many sysfs entries?  If so, how many are we
-> talking about?
+If you are allowed to do that simply opening the inode.
 
-While that's the original motivation, shrinking the amount of memory
-taken by sysfs overall is a worthwhile achievement, don't you think?
+I can also use a bind mount on the file before you lock down
+permissions instead of proc in your example to achieve the same
+affect.  An extra path to an inode.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+In general there is not a way to lock down the path to a file to a
+more restrictive set of permissions after it has been opened.  Not
+until sys_revoke or similar syscall has been implemented.  Even then I
+am a bit dubious.
+
+>> I do see a security issue in your example, but the security issue I
+>> see is how you have chosen to use the linux facilities, that have been
+>> there for ages.  Facilities cloned from plan 9 and apparently
+>> available in slightly different forms on many unix variants existence.
+>> /dev/fd/N is not a linuxism.
+>> 
+>> To close this whole would require some sort of stacking inode that
+>> when opened opened the real fs inode.  With all kinds of convolutions
+>> and complications.  Just to close the issue that some idiot might
+>> give someone a fd to a world writeable file that they don't want
+>> them to open.
+>
+> Ok, so you agree issue is there. Good.
+
+I don't agree that the kernel has a problem.  I agree that there
+is a security hole in your example.
+
+I don't believe you can rely on the directory permissions in the general
+case to control access to a file.
+
+> Now, fix for READONLY issue should be fairly simple: follow link in
+> /proc/*/fd/* should check the link permissions,  and return
+> read-only/write-only descriptors as neccessary.
+
+The follow_link is just a follow link.  Either we add an extra path
+to the fd or we don't.  Follow link doesn't know it is being used for open.
+
+That isn't completely correct.  You might be able to look at the
+intent and if it is LOOKUP_OPEN and the open mode is compatible return
+the original file descriptor.  Even if you do that and the kernel is
+guaranteed to take that path in all examples that still leaves an
+extra path for syscalls that don't require a filedesciptor to use.
+
+> Basically, that follow link should behave as dup(), not as open().
+
+There are reasons why an open is an open here.  I don't remember the
+details but I found the archive of that conversation once.  Maybe it was
+just technical limitations of the time.
+
+>> I certainly am not interested in debugging or maintaining the stacking
+>> inode code that would be necessary to close this theoretical corner
+>> case.  There are much more real bugs that need attention.
+>
+> But if we can get trivial 10-liner, that should be acceptable, right?
+
+How many linux shell scripts and other applications that use /dev/fd/N
+or /proc/self/fd/N will you be breaking?
+
+Closing a theoretical security hole at the expense of breaking real
+applications is a show stopper.
+
+Feel free to play and test but I'm still not buying it.
+
+Eric
