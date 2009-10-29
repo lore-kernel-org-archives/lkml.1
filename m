@@ -1,30 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbZJ2JGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZJ2JHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbZJ2JGV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 05:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZJ2JGV
+	id S1753870AbZJ2JHm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 05:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZJ2JHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 05:06:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39255 "EHLO mx3.mail.elte.hu"
+	Thu, 29 Oct 2009 05:07:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39601 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751614AbZJ2JGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 05:06:20 -0400
-Date: Thu, 29 Oct 2009 10:05:37 +0100
+	id S1751614AbZJ2JHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 05:07:41 -0400
+Date: Thu, 29 Oct 2009 10:07:41 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 0/2] RCU force_quiescent_state() fix and
-	dyntick cleanup
-Message-ID: <20091029090537.GB22963@elte.hu>
-References: <20091028151419.GA7838@linux.vnet.ibm.com>
+To: Soeren Sandmann <sandmann@daimi.au.dk>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl
+Subject: Re: [PATCH 0/2] Some fixes to debug_kmap_atomic()
+Message-ID: <20091029090741.GC22963@elte.hu>
+References: <ye84opj9zgs.fsf@camel23.daimi.au.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091028151419.GA7838@linux.vnet.ibm.com>
+In-Reply-To: <ye84opj9zgs.fsf@camel23.daimi.au.dk>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -38,21 +33,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+* Soeren Sandmann <sandmann@daimi.au.dk> wrote:
 
-> This patch series contains a cleanup and a fix:
+> Hi, 
 > 
-> o	Code cleanup from Lai Jiangshan that makes the calls to
-> 	rcu_irq_enter() and rcu_irq_exit() more obviously correct.
-> 	The previous code worked because rcu_irq_exit() is always
-> 	an empty function if !NO_HZ.
+> Here are two patches that fix an issue with debug_kmap_atomic(). 
 
-Can go via tip:core/rcu, agreed?
+hm, have you seen this patch from Peter on lkml:
 
-> 
-> o	Fix a low-probability race in the TREE_RCU infrastructure
-> 	that can be triggered by extremely long grace periods.
+  [RFC][PATCH] kmap_atomic_push
 
-Should go via tip:core/urgent as it's a fix for .32, agreed?
+which eliminates debug_kmap_atomic().
 
 	Ingo
