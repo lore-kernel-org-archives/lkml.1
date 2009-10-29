@@ -1,114 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZJ2KRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZJ2Khx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbZJ2KRQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 06:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbZJ2KRP
+	id S1754025AbZJ2Khx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 06:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZJ2Khw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 06:17:15 -0400
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:62348 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752994AbZJ2KRP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 06:17:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=p+5vnluRsvuh8XR73bn+1lU3IehlcztCz5hh5cTzzH0XfpazSJJyStPy4ENAuTwAQI
-         TZh6EHX69e8RZMijj2ETx6lHuuRwDJqI7Y+KqnSb9YcBLJLKcKg5eNW54kDTl2FGqLXr
-         dCQVoWWvsMIGBLw8mopgQlUJBSNrr1VYEdy10=
-Date: Thu, 29 Oct 2009 13:17:18 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: dushistov@mail.ru, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH 2/2] ufs: NFS support
-Message-ID: <20091029101718.GB27166@x200>
+	Thu, 29 Oct 2009 06:37:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:61880 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752550AbZJ2Khw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 06:37:52 -0400
+Date: Thu, 29 Oct 2009 11:36:58 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       Marcelo Tosatti <mtosatti@redhat.com>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: Transparent Hugepage support
+Message-ID: <20091029103658.GJ9640@random.random>
+References: <20091026185130.GC4868@random.random>
+ <87ljiwk8el.fsf@basil.nowhere.org>
+ <20091027193007.GA6043@random.random>
+ <20091028042805.GJ7744@basil.fritz.box>
+ <20091029094344.GA1068@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091029094344.GA1068@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Hello Ingo, Andi, everyone,
 
- fs/ufs/super.c |   52 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
+On Thu, Oct 29, 2009 at 10:43:44AM +0100, Ingo Molnar wrote:
+> 
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > > 1GB pages can't be handled by this code, and clearly it's not 
+> > > practical to hope 1G pages to materialize in the buddy (even if we
+> > 
+> > That seems short sightened. You do this because 2MB pages give you x% 
+> > performance advantage, but then it's likely that 1GB pages will give 
+> > another y% improvement and why should people stop at the smaller 
+> > improvement?
+> > 
+> > Ignoring the gigantic pages now would just mean that this would need 
+> > to be revised later again or that users still need to use hacks like 
+> > libhugetlbfs.
+> 
+> I've read the patch and have read through this discussion and you are 
+> missing the big point that it's best to do such things gradually - one 
+> step at a time.
+> 
+> Just like we went from 2 level pagetables to 3 level pagetables, then to 
+> 4 level pagetables - and we might go to 5 level pagetables in the 
+> future. We didnt go from 2 level pagetables to 5 level page tables in 
+> one go, despite predictions clearly pointing out the exponentially 
+> increasing need for RAM.
 
---- a/fs/ufs/super.c
-+++ b/fs/ufs/super.c
-@@ -66,6 +66,7 @@
-  */
- 
- 
-+#include <linux/exportfs.h>
- #include <linux/module.h>
- #include <linux/bitops.h>
- 
-@@ -96,6 +97,56 @@
- #include "swab.h"
- #include "util.h"
- 
-+static struct inode *ufs_nfs_get_inode(struct super_block *sb, u64 ino, u32 generation)
-+{
-+	struct ufs_sb_private_info *uspi = UFS_SB(sb)->s_uspi;
-+	struct inode *inode;
-+
-+	if (ino < UFS_ROOTINO || ino > uspi->s_ncg * uspi->s_ipg)
-+		return ERR_PTR(-ESTALE);
-+
-+	inode = ufs_iget(sb, ino);
-+	if (IS_ERR(inode))
-+		return ERR_CAST(inode);
-+	if (generation && inode->i_generation != generation) {
-+		iput(inode);
-+		return ERR_PTR(-ESTALE);
-+	}
-+	return inode;
-+}
-+
-+static struct dentry *ufs_fh_to_dentry(struct super_block *sb, struct fid *fid,
-+				       int fh_len, int fh_type)
-+{
-+	return generic_fh_to_dentry(sb, fid, fh_len, fh_type, ufs_nfs_get_inode);
-+}
-+
-+static struct dentry *ufs_fh_to_parent(struct super_block *sb, struct fid *fid,
-+				       int fh_len, int fh_type)
-+{
-+	return generic_fh_to_parent(sb, fid, fh_len, fh_type, ufs_nfs_get_inode);
-+}
-+
-+static struct dentry *ufs_get_parent(struct dentry *child)
-+{
-+	struct qstr dot_dot = {
-+		.name	= "..",
-+		.len	= 2,
-+	};
-+	ino_t ino;
-+
-+	ino = ufs_inode_by_name(child->d_inode, &dot_dot);
-+	if (!ino)
-+		return ERR_PTR(-ENOENT);
-+	return d_obtain_alias(ufs_iget(child->d_inode->i_sb, ino));
-+}
-+
-+static const struct export_operations ufs_export_ops = {
-+	.fh_to_dentry	= ufs_fh_to_dentry,
-+	.fh_to_parent	= ufs_fh_to_parent,
-+	.get_parent	= ufs_get_parent,
-+};
-+
- #ifdef CONFIG_UFS_DEBUG
- /*
-  * Print contents of ufs_super_block, useful for debugging
-@@ -990,6 +1041,7 @@ magic_found:
- 	 * Read ufs_super_block into internal data structures
- 	 */
- 	sb->s_op = &ufs_super_ops;
-+	sb->s_export_op = &ufs_export_ops;
- 	sb->dq_op = NULL; /***/
- 	sb->s_magic = fs32_to_cpu(sb, usb3->fs_magic);
- 
+I totally agree with your assessment.
+
+> So your obsession with 1GB pages is misguided. If indeed transparent 
+> largepages give us real benefits we can extend it to do transparent 
+> gbpages as well - should we ever want to. There's nothing 'shortsighted' 
+> about being gradual - the change is already ambitious enough as-is, and 
+> brings very clear benefits to a difficult, decade-old problem no other 
+> person was able to address.
+> 
+> In fact introducing transparent 2MBpages makes 1GB pages support 
+> _easier_ to merge: as at that point we'll already have a (finally..) 
+> successful hugetlb facility happility used by an increasing range of 
+> applications.
+
+Agreed.
+
+> Hugetlbfs's big problem was always that it wasnt transparent and hence 
+> wasnt gradual for applications. It was an opt-in and constituted an 
+> interface/ABI change - that is always a big barrier to app adoption.
+> 
+> So i give Andrea's patch a very big thumbs up - i hope it gets reviewed 
+> in fine detail and added to -mm ASAP. Our lack of decent, automatic 
+> hugepage support is sticking out like a sore thumb and is hurting us in 
+> high-performance setups. If largepage support within Linux has a chance, 
+> this might be the way to do it.
+
+Thanks a lot for your review!
+
+> A small comment regarding the patch itself: i think it could be 
+> simplified further by eliminating CONFIG_TRANSPARENT_HUGEPAGE and by 
+> making it a natural feature of hugepage support. If the code is correct 
+> i cannot see any scenario under which i wouldnt want a hugepage enabled 
+> kernel i'm booting to not have transparent hugepage support as well.
+
+The two reasons why I added a config option are:
+
+1) because it was easy enough, gcc is smart enough to eliminate the
+external calls so I didn't need to add ifdefs with the exception of
+returning 0 from pmd_trans_huge and pmd_trans_frozen. I only had to
+make the exports of huge_memory.c visible unconditionally so it doesn't
+warn, after that I don't need to build and link huge_memory.o.
+
+2) to avoid breaking build of archs not implementing pmd_trans_huge
+and that may never be able to take advantage of it
+
+But we could move CONFIG_TRANSPARENT_HUGEPAGE to an arch define forced
+to Y on x86-64 and N on power.
