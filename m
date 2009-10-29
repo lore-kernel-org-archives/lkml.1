@@ -1,154 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZJ2Vwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZJ2Vwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756673AbZJ2Vwq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 17:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756217AbZJ2Vwp
+	id S1756175AbZJ2Vwc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 17:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbZJ2Vwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 17:52:45 -0400
-Received: from tundra.namei.org ([65.99.196.166]:38136 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755376AbZJ2Vwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 17:52:45 -0400
-Date: Fri, 30 Oct 2009 08:51:52 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: linux-security-module@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] define convenient securebits masks for prctl users
- (v2)
-In-Reply-To: <20091029164016.GA21797@us.ibm.com>
-Message-ID: <alpine.LRH.2.00.0910300851470.25970@tundra.namei.org>
-References: <20091029164016.GA21797@us.ibm.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 29 Oct 2009 17:52:31 -0400
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:57345 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754823AbZJ2Vwa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 17:52:30 -0400
+X-Greylist: delayed 1637 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Oct 2009 17:52:30 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=Ryqs96glaPaT/0z5eQ7XSh/lJrUJFR4LMikZ4GjHaAtICHr3WBtbyG5lH7x1IIa9O+
+         m6DhxjXWvvNvF2JchmxcBXwHJZGt4TRzLq3fZcJ6NnuBzt6IVvgx+RMysZqPh7LMTCis
+         8YIoKgyGYMt+2QA6pI9TtCAGy8LB1cnKgQHAY=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20091029214241.GH18464@mit.edu>
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
+	 <20091016091558.GA10184@mit.edu>
+	 <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
+	 <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com>
+	 <20091029214241.GH18464@mit.edu>
+Date: Thu, 29 Oct 2009 17:52:34 -0400
+Message-ID: <f7848160910291452g58c9b6ecwd3c8671cd87b012b@mail.gmail.com>
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+From: Parag Warudkar <parag.lkml@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, Parag Warudkar <parag.lkml@gmail.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       bugzilla-daemon@bugzilla.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Oct 2009, Serge E. Hallyn wrote:
+On Thu, Oct 29, 2009 at 5:42 PM, Theodore Tso <tytso@mit.edu> wrote:
+> On Thu, Oct 29, 2009 at 05:25:17PM -0400, Parag Warudkar wrote:
+>> > Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> > Date:   Tue Oct 27 15:36:38 2009 +0530
+>> >
+>> >    ext4: discard preallocation during truncate
+>> >
+>> Just wanted to let you know that I have applied this patch and one
+>> unclean shutdown later it seems to have not given me any trouble.
+>>
+>> I will continue testing it - hopefully I won't have to reformat  this
+>> time ( every time I tested previously I ended up having weird issues
+>> that I decided to get rid of by reformatting /).
+>
+> Cool!
+>
+> It looked like Avery Fisher had reported that had had tried patch
+> didn't help him, and so I had put it in the category of "good patch,
+> makes sense, but probably not the one that would solve this
+> regression".  But if it works for you, I'll accelerate getting it to
+> Linus.  Do let us know if you have any additional problems with this
+> patch, please!
+>
 
-> Hi James, would you mind taking the following into
-> security-testing?
+I have gone through 3 unclean shutdowns so far - this time on Ubuntu
+Karmic Release, today's -git and this patch.
+Nothing odd to report.
 
+[ Goes and crashes it again - comes back clean! ]
 
-Applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+Since literally all of my previous attempts always resulted in
+problems - something seems to have improved although there is no way
+to tell if this is going to last long or that if it was Aneesh's patch
+alone that improved things as last time i tried this I ended up
+reinstalling and I switched to Karmic from Jaunty and I did not test
+mainline for few days.
 
-> 
-> The securebits are used by passing them to prctl with the
-> PR_{S,G}ET_SECUREBITS commands.  But the defines must be
-> shifted to be used in prctl, which begs to be confused and
-> misused by userspace.  So define some more convenient
-> values for userspace to specify.  This way userspace does
-> 
-> 	prctl(PR_SET_SECUREBITS, SECBIT_NOROOT);
-> 
-> instead of
-> 
-> 	prctl(PR_SET_SECUREBITS, 1 << SECURE_NOROOT);
-> 
-> (Thanks to Michael for the idea)
-> 
-> This patch also adds include/linux/securebits to the installed headers.
-> Then perhaps it can be included by glibc's sys/prctl.h.
-> 
-> Changelog:
-> 	Oct 29: Stephen Rothwell points out that issecure can
-> 		be under __KERNEL__.
-> 	Oct 14: (Suggestions by Michael Kerrisk):
-> 		1. spell out SETUID in SECBIT_NO_SETUID*
-> 		2. SECBIT_X_LOCKED does not imply SECBIT_X
-> 		3. add definitions for keepcaps
->         Oct 14: As suggested by Michael Kerrisk, don't
-> 		use SB_* as that convention is already in
-> 		use.  Use SECBIT_ prefix instead.
-> 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> Acked-by: Andrew G. Morgan <morgan@kernel.org>
-> Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
-> Cc: Ulrich Drepper <drepper@redhat.com>
-> Cc: James Morris <jmorris@namei.org>
-> ---
->  include/linux/Kbuild       |    1 +
->  include/linux/securebits.h |   24 ++++++++++++++++++------
->  2 files changed, 19 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-> index 1feed71..5a53857 100644
-> --- a/include/linux/Kbuild
-> +++ b/include/linux/Kbuild
-> @@ -330,6 +330,7 @@ unifdef-y += scc.h
->  unifdef-y += sched.h
->  unifdef-y += screen_info.h
->  unifdef-y += sdla.h
-> +unifdef-y += securebits.h
->  unifdef-y += selinux_netlink.h
->  unifdef-y += sem.h
->  unifdef-y += serial_core.h
-> diff --git a/include/linux/securebits.h b/include/linux/securebits.h
-> index d2c5ed8..3340617 100644
-> --- a/include/linux/securebits.h
-> +++ b/include/linux/securebits.h
-> @@ -1,6 +1,15 @@
->  #ifndef _LINUX_SECUREBITS_H
->  #define _LINUX_SECUREBITS_H 1
->  
-> +/* Each securesetting is implemented using two bits. One bit specifies
-> +   whether the setting is on or off. The other bit specify whether the
-> +   setting is locked or not. A setting which is locked cannot be
-> +   changed from user-level. */
-> +#define issecure_mask(X)	(1 << (X))
-> +#ifdef __KERNEL__
-> +#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
-> +#endif
-> +
->  #define SECUREBITS_DEFAULT 0x00000000
->  
->  /* When set UID 0 has no special privileges. When unset, we support
-> @@ -12,6 +21,9 @@
->  #define SECURE_NOROOT			0
->  #define SECURE_NOROOT_LOCKED		1  /* make bit-0 immutable */
->  
-> +#define SECBIT_NOROOT		(issecure_mask(SECURE_NOROOT))
-> +#define SECBIT_NOROOT_LOCKED	(issecure_mask(SECURE_NOROOT_LOCKED))
-> +
->  /* When set, setuid to/from uid 0 does not trigger capability-"fixup".
->     When unset, to provide compatiblility with old programs relying on
->     set*uid to gain/lose privilege, transitions to/from uid 0 cause
-> @@ -19,6 +31,10 @@
->  #define SECURE_NO_SETUID_FIXUP		2
->  #define SECURE_NO_SETUID_FIXUP_LOCKED	3  /* make bit-2 immutable */
->  
-> +#define SECBIT_NO_SETUID_FIXUP	(issecure_mask(SECURE_NO_SETUID_FIXUP))
-> +#define SECBIT_NO_SETUID_FIXUP_LOCKED \
-> +			(issecure_mask(SECURE_NO_SETUID_FIXUP_LOCKED))
-> +
->  /* When set, a process can retain its capabilities even after
->     transitioning to a non-root user (the set-uid fixup suppressed by
->     bit 2). Bit-4 is cleared when a process calls exec(); setting both
-> @@ -27,12 +43,8 @@
->  #define SECURE_KEEP_CAPS		4
->  #define SECURE_KEEP_CAPS_LOCKED		5  /* make bit-4 immutable */
->  
-> -/* Each securesetting is implemented using two bits. One bit specifies
-> -   whether the setting is on or off. The other bit specify whether the
-> -   setting is locked or not. A setting which is locked cannot be
-> -   changed from user-level. */
-> -#define issecure_mask(X)	(1 << (X))
-> -#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
-> +#define SECBIT_KEEP_CAPS	(issecure_mask(SECURE_KEEP_CAPS))
-> +#define SECBIT_KEEP_CAPS_LOCKED (issecure_mask(SECURE_KEEP_CAPS_LOCKED))
->  
->  #define SECURE_ALL_BITS		(issecure_mask(SECURE_NOROOT) | \
->  				 issecure_mask(SECURE_NO_SETUID_FIXUP) | \
-> -- 
-> 1.6.1
-> 
+Any rate, I will let everyone know if I see anything different.
 
--- 
-James Morris
-<jmorris@namei.org>
+Thanks
+Parag
