@@ -1,98 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZJ2Nvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbZJ2Nvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbZJ2Nvh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 09:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZJ2Nvg
+	id S1754140AbZJ2Nvx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 09:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZJ2Nvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 09:51:36 -0400
-Received: from mail-forward1.uio.no ([129.240.10.70]:48416 "EHLO
-	mail-forward1.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753873AbZJ2Nvf (ORCPT
+	Thu, 29 Oct 2009 09:51:52 -0400
+Received: from mail-forward2.uio.no ([129.240.10.71]:34004 "EHLO
+	mail-forward2.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754087AbZJ2Nvu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 09:51:35 -0400
-References: <4AE72075.4070702@simula.no> <4AE7B5D6.8070001@gmail.com>
-In-Reply-To: <4AE7B5D6.8070001@gmail.com>
+	Thu, 29 Oct 2009 09:51:50 -0400
+References: <4AE72079.4030504@simula.no> <4AE7262B.1060703@gmail.com> <4AE83FE4.1050309@nets.rwth-aachen.de> <alpine.DEB.2.00.0910281618330.19761@wel-95.cs.helsinki.fi>
+In-Reply-To: <alpine.DEB.2.00.0910281618330.19761@wel-95.cs.helsinki.fi>
 Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-Message-Id: <38EB8C31-A96A-4C5C-88D8-8F6BF0E9225F@simula.no>
-Content-Transfer-Encoding: 7bit
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       shemminger@vyatta.com, ilpo.jarvinen@helsinki.fi, davem@davemloft.net
+Content-Type: text/plain; charset=iso-8859-1; format=flowed; delsp=yes
+Message-Id: <58396856-6D7E-4CE1-8D66-D1F11205B0D5@simula.no>
+Content-Transfer-Encoding: 8BIT
+Cc: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       Eric Dumazet <eric.dumazet@gmail.com>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>
 From: Andreas Petlund <apetlund@simula.no>
-Subject: Re: [PATCH 1/3] net: TCP thin-stream detection
-Date: Thu, 29 Oct 2009 14:51:07 +0100
-To: William Allen Simpson <william.allen.simpson@gmail.com>
+Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
+Date: Thu, 29 Oct 2009 14:51:11 +0100
+To: =?iso-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
 X-Mailer: Apple Mail (2.1076)
-X-UiO-Ratelimit-Test: rcpts/h 30 msgs/h 6 sum rcpts/h 32 sum msgs/h 6 total rcpts 392 max rcpts/h 30 ratelimit 0
+X-UiO-Ratelimit-Test: rcpts/h 37 msgs/h 7 sum rcpts/h 39 sum msgs/h 7 total rcpts 399 max rcpts/h 37 ratelimit 0
 X-UiO-Spam-info: not spam, SpamAssassin (score=-4.5, required=5.0, autolearn=disabled, TVD_RCVD_IP=0.502,UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 7B3AFF4188FDCDCE939481D62678A3689ADCCF01
-X-UiO-SPAM-Test: remote_host: 213.23.10.108 spam_score: -44 maxlevel 80 minaction 2 bait 0 mail/h: 6 total 6 max/h 6 blacklist 0 greylist 0 ratelimit 0
+X-UiO-Scanned: A54F12C7FA1A044EFA877293E9D6A9CA3C8E771B
+X-UiO-SPAM-Test: remote_host: 213.23.10.108 spam_score: -44 maxlevel 80 minaction 2 bait 0 mail/h: 7 total 7 max/h 7 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Den 28. okt. 2009 kl. 04.09 skrev William Allen Simpson:
+Den 28. okt. 2009 kl. 15.31 skrev Ilpo Järvinen:
 
-> Andreas Petlund wrote:
->> +/* Determines whether this is a thin stream (which may suffer from
->> + * increased latency). Used to trigger latency-reducing mechanisms.
->> + */
->> +static inline unsigned int tcp_stream_is_thin(const struct  
->> tcp_sock *tp)
->> +{
->> +	return tp->packets_out < 4;
->> +}
->> +
-> This bothers me a bit.  Having just looked at your Linux presentation,
-> and not (yet) read your papers, it seems much of your justification  
-> was
-> with 1 packet per RTT.  Here, you seem to be concentrating on 4,  
-> probably
-> because many implementations quickly ramp up to 4.
+> On Wed, 28 Oct 2009, Arnd Hannemann wrote:
+>
+>> Eric Dumazet schrieb:
+>>> Andreas Petlund a écrit :
+>>>> This patch will make TCP use only linear timeouts if the stream is
+>>>> thin. This will help to avoid the very high latencies that thin
+>>>> stream suffer because of exponential backoff. This mechanism is  
+>>>> only
+>>>> active if enabled by iocontrol or syscontrol and the stream is
+>>>> identified as thin.
+>
+> ...I don't see how high latency is in any connection to stream being
+> "thin" or not btw. If all ACKs are lost it usually requires silence  
+> for
+> the full RTT, which affects a stream regardless of its size. ...If  
+> not all
+> ACKs are lost, then the dupACK approach in the other patch should  
+> cover
+> it already.
 >
 
-The limit of 4 packets in flight is based on the fact that less than 4  
-packets in flight makes fast retransmissions impossible, thus limiting  
-the retransmit options to timeout-retransmissions. The criterion is  
-therefore as conservative as possible while still serving its purpose.  
-If further losses occur, the exponential backoff will increase latency  
-further. The concept of using this limit is also discussed in the  
-Internet draft for Early Retransmit by Allman et al.:
-http://www.icir.org/mallman/papers/draft-ietf-tcpm-early-rexmt-01.txt
+The increased latency that we observed does not arise from lost ACKs,  
+but from the lack of enough packets in flight to be able to trigger  
+fast retransmits. This effectively limits the retransmission options  
+to retransmission by timeout, which again will increase exponentially  
+with each subsequent retransmissions. We have also found that the  
+"thin" stream patterns are very often generated by applications where  
+human interaction is the purpose. Such applications will give a  
+degraded experience to the user if such high latencies happen often.  
+In-depth discussion of these effects can be found in the papers I  
+linked to.
+If the application produces less than one packet per RTT, the dupACK- 
+modification will be ineffective and any improved latency will be from  
+linear timeouts. If the number of packets in flight are 2-4, no fast  
+retransmissions may be triggered based on the 3 dupACK scheme, but a  
+retransmission upon the first indication of loss will improve  
+retransmission latency.
 
-> But there's a fair amount of experience showing that ramping to 4 is
-> problematic on congested paths, especially wireless networks.  Fast
-> retransmit in that case would be disastrous.
+>> However, addressing the proposal:
+>> I wonder how one can seriously suggest to just skip congestion  
+>> response
+>> during timeout-based loss recovery? I believe that in a heavily
+>> congested scenarios, this would lead to a goodput disaster... Not to
+>> mention that in a heavily congested scenario, suddenly every flow  
+>> will
+>> become "thin", so this will even amplify the problems. Or did I miss
+>> something?
+>
+> Good point. I suppose such an under-provisioned network can  
+> certainly be
+> there. I have heard that at least some people who remove exponential  
+> back
+> off apply it later on nth retransmission as very often there really  
+> isn't
+> such a super heavy congestion scenario but something completely  
+> unrelated
+> to congestion which causes the RTO.
+>
+> -- 
+> i.
 
-First, the modifications implemented in the patch is explicitly  
-enabled only for applications where the developer knows that streams  
-will be thin, thus only a small subset of the streams will apply the  
-modifications. Second, experiments we have performed to try to map the  
-effect on a congested bottleneck both with and without the  
-modifications show that no measurable effect is recorded.
 
-Graphs presenting results from experiments performed to analyse  
-latency and fairness issues can be found here:
+The removal of exponential backoff on a general basis has been  
+investigated and discussed already, for instance here:
+http://ccr.sigcomm.org/online/?q=node/416
+Such steps are, however considered drastic, and I agree that caution  
+must be made to thoroughly investigate the effects of such changes.
+The changes introduced by the proposed patches, however, are not  
+default behaviour, but an option for applications that suffer from the  
+thin-stream TCP increased retransmission latencies. They will, as  
+such, not affect all streams. In addition, the changes will only be  
+active for streams which are perpetually thin or in the early phase of  
+expanding their cwnd. Also, experiments performed on congested  
+bottlenecks with tail-drop queues show very little (if any at all)  
+effect on goodput for the modified scenario compared to a scenario  
+with unmodified TCP streams.
+
+Graphs both for latency-results and fairness tests can be found here:
 http://folk.uio.no/apetlund/lktmp/
 
-> Once upon a time, I worked on a fair number of interactive games a  
-> decade
-> or so ago.  And agree that this can be a problem, although I've never
-> been a fan of turning off the Nagle algorithm.  My solution has always
-> been a heartbeat, rather than trying to shoehorn this into TCP.
->
-
-The beginning of this patch was an analysis of game traffic from the  
-Norwegian game company Funcom. They use TCP for all their MMOGs as  
-does, for example, Blizzard for WoW. Our analysis showed that many  
-players experienced extreme latencies, and the source of this was  
-tracked to the effects that we discuss here. As long as a wide range  
-of time-dependent applications choose to use TCP, and we can improve  
-conditions for their needs without jeopardising other functionality,  
-we think that this will add value to the TCP stack.
-
-> Also, I've not seen any discussion on the end-to-end interest list.
-
-It will be enlightening to have a discussion on end-to-end about this  
-topic.
+-AP
