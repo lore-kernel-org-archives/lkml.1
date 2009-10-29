@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbZJ2PH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZJ2PIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbZJ2PH4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 11:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbZJ2PHz
+	id S1754969AbZJ2PIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 11:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZJ2PIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 11:07:55 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22192 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754462AbZJ2PHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 11:07:55 -0400
-Message-ID: <4AE9AFAE.5020306@redhat.com>
-Date: Thu, 29 Oct 2009 17:07:26 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 29 Oct 2009 11:08:19 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:46910 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754318AbZJ2PIS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 11:08:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=uQEh2jpqS9pTpokTNFMg5Kd1spi1DBbH1xjutGbBMMUzvZr3ZBHkL7G4X/E8djY+oC
+         WOrWTDsXdWgD8bQlQIUINFM6b1aQw0xVcameagjMdB674dtopeBXx5iW8EoiRvO7UZJl
+         CHOB88yJk0E/2dO8daSgR4kaQIfWXMeQM2cFI=
 MIME-Version: 1.0
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Glauber Costa <glommer@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
-       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall	implementation
-References: <6137c066-3dfd-49dd-bbf2-7718f8542958@default>
-In-Reply-To: <6137c066-3dfd-49dd-bbf2-7718f8542958@default>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200910291548.27235.mb@bu3sch.de>
+References: <200910291435.54203.bzolnier@gmail.com> <200910291539.16476.mb@bu3sch.de> 
+	<14add3d10910290744n3abd1cf8w42a6311108eb2fa7@mail.gmail.com> 
+	<200910291548.27235.mb@bu3sch.de>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 29 Oct 2009 08:08:02 -0700
+Message-ID: <43e72e890910290808p1d20ea0fxd9cf981c5a480156@mail.gmail.com>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Gertjan van Wingerde <gwingerde@gmail.com>,
+       David Miller <davem@davemloft.net>, bzolnier@gmail.com,
+       penberg@cs.helsinki.fi, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linville@tuxdriver.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/29/2009 04:46 PM, Dan Magenheimer wrote:
-> No, the apps I'm familiar with (a DB and a JVM) need a timestamp
-> not a monotonic counter.  The timestamps must be relatively
-> accurate (e.g. we've been talking about gettimeofday generically,
-> but these apps would use clock_gettime for nsec resolution),
-> monotonically increasing, and work properly across a VM
-> migration.  The timestamps are taken up to a 100K/sec or
-> more so the apps need to ensure they are using the fastest
-> mechanism available that meets those requirements.
->    
+On Thu, Oct 29, 2009 at 7:48 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Thursday 29 October 2009 15:44:42 Gertjan van Wingerde wrote:
+>> Hold on here. In this case it is the driver maintainer (i.e. Ivo for
+>> the rt2x00 project) that
+>> submitted this driver for inclusion, so the driver maintainer has not
+>> been bypassed in
+>> this case.
+>>
+>> Apparently Bart has issues with the code submitted by the maintainers
+>> and has been
+>> unsuccessful in convincing others about these issues.
+>
+> So Bart is not a maintainer? That of course changes the situation.
 
-Out of interest, do you know (and can you relate) why those apps need 
-100k/sec monotonically increasing timestamps?
+But you were :-P
 
--- 
-error compiling committee.c: too many arguments to function
-
+  Luis
