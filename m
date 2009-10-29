@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZJ2JBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbZJ2JDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbZJ2JBw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 05:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZJ2JBw
+	id S1753750AbZJ2JDg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 05:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZJ2JDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 05:01:52 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:6323 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbZJ2JBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 05:01:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=T/4aSh0jdDRRJ0gM+icjarb0fhD6Q0lDfh+osuWZ8ODM/Wxh5lk+jMWhyAV2HQaSl
-	F7y3wEDwJwSLzamfkiDyA==
-Date: Thu, 29 Oct 2009 02:01:49 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-In-Reply-To: <20091029174632.8110976c.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0910290156560.16347@chino.kir.corp.google.com>
-References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com> <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com> <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com> <20091029174632.8110976c.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 29 Oct 2009 05:03:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37499 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752858AbZJ2JDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 05:03:34 -0400
+Message-ID: <4AE95A57.6050504@kernel.org>
+Date: Thu, 29 Oct 2009 02:03:19 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
+ for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>	<m1eionia3y.fsf@fess.ebiederm.org> <4AE8A080.1040208@kernel.org>	<m1pr87cilf.fsf@fess.ebiederm.org> <4AE8BA1D.5030908@kernel.org>	<4AE8C4BF.8040306@kernel.org> <m1my3aboon.fsf@fess.ebiederm.org>
+In-Reply-To: <m1my3aboon.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Oct 2009, KAMEZAWA Hiroyuki wrote:
-
-> > This appears to actually prefer X more than total_vm in Vedran's test 
-> > case.  He cited http://pastebin.com/f3f9674a0 in 
-> > http://marc.info/?l=linux-kernel&m=125678557002888.
-> > 
-> > There are 12 ooms in this log, which has /proc/sys/vm/oom_dump_tasks 
-> > enabled.  It shows the difference between the top total_vm candidates vs. 
-> > the top rss candidates.
-> > 
-> > total_vm
-> > 708945 test
-> > 195695 krunner
-> > 168881 plasma-desktop
-> > 130567 ktorrent
-> > 127081 knotify4
-> > 125881 icedove-bin
-> > 123036 akregator
-> > 118641 kded4
-> > 
-> > rss
-> > 707878 test
-> > 42201 Xorg
-> > 13300 icedove-bin
-> > 10209 ktorrent
-> > 9277 akregator
-> > 8878 plasma-desktop
-> > 7546 krunner
-> > 4532 mysqld
-> > 
-> > This patch would pick the memory hogging task, "test", first everytime 
-> > just like the current implementation does.  It would then prefer Xorg, 
-> > icedove-bin, and ktorrent next as a starting point.
-> > 
-> > Admittedly, there are other heuristics that the oom killer uses to create 
-> > a badness score.  But since this patch is only changing the baseline from 
-> > mm->total_vm to get_mm_rss(mm), its behavior in this test case do not 
-> > match the patch description.
-> > 
-> yes, then I wrote "as start point". There are many environments.
-
-And this environment has a particularly bad result.
-
-> But I'm not sure why ntpd can be the first candidate...
-> The scores you shown doesn't include children's score, right ?
+Eric W. Biederman wrote:
+> Yinghai Lu <yinghai@kernel.org> writes:
+>> after closing look up the code, it looks it will not break your setup.
+>>
+>> 1. before the patches:
+>> a. when master card is inserted, all bridge in that card will get assigned with min_size
+>> b. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+>>
+>> 2. after the patches: v5
+>> a. booted up, all leaf bridge mmio get clearred.
+>> b. when master card is inserted, all bridge in that card will get assigned with min_size, and master bridge will be sum of them
+>> c. when new cards is inserted to those slots in master card, will get assigned in the bridge size.
+>>
+>> can you check those two patches in your setup to verify it?
 > 
-
-Right, it's just the get_mm_rss(mm) for each thread shown in the oom dump, 
-the same value you've used as the new baseline.  The actual badness scores 
-could easily be calculated by cat'ing /proc/*/oom_score prior to oom, but 
-this data was meant to illustrate the preference given the rss compared to 
-total_vm in a heuristic sense.
-
-> I believe I'll have to remove "adding child's score to parents".
-> I'm now considering how to implement fork-bomb detector for removing it.
+> I have a much simpler case I will break, as I tried something similar by accident.
+which kernel version?
 > 
+> AMD cpu MCP55 with one pcie port setup as hotplug.
+> The system only has 2GB of RAM.  So plenty of space for pcie devices.
 
-Agreed, I'm looking forward to your proposal.
+one or two ht chains?
 
-> ya, I'm now considering to drop file_rss from calculation.
-> 
-> some reasons.
-> 
->   - file caches remaining in memory at OOM tend to have some trouble to remove it.
->   - file caches tend to be shared.
->   - if file caches are from shmem, we never be able to drop them if no swap/swapfull.
-> 
-> Maybe we'll have better result.
-> 
+do you still have lspci -tv with it?
 
-That sounds more appropriate.
+> 
+> If the firmware assigns nothing and linux at boot time assigns the pci mmio space:
+> Reads from the bar of the hotplugged device work
+> Writes to the bar of the hotplugged device, cause further writes to go to lala land.
+> 
+> So I had to have the firmware make the assignment, because only it knows the
+> details of the hidden AMD bar registers for each hypertransport chain etc.
 
-I'm surprised you still don't see a value in using the peak VM and RSS 
-sizes, though, as part of your formula as it would indicate the proportion 
-of memory resident in RAM at the time of oom.
+that mean kernel doesn't get peer root bus res probed properly
+
+
+YH
