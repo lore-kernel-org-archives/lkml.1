@@ -1,136 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750810AbZJ2EMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750898AbZJ2ENV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750810AbZJ2EMk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 00:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbZJ2EMj
+	id S1750898AbZJ2ENV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 00:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbZJ2ENV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 00:12:39 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42937 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbZJ2EMi (ORCPT
+	Thu, 29 Oct 2009 00:13:21 -0400
+Received: from smtp107.prem.mail.sp1.yahoo.com ([98.136.44.62]:23404 "HELO
+	smtp107.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750716AbZJ2ENU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 00:12:38 -0400
-Message-ID: <4AE91645.8080903@np.css.fujitsu.com>
-Date: Thu, 29 Oct 2009 13:12:53 +0900
-From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+	Thu, 29 Oct 2009 00:13:20 -0400
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: .l7MYNQVM1k6i7g0qGsydXYhSgyUHvDKHfZg.5PFUq56GvhyxN.qbV9xic6vUP1Uci8YZf4L1IpDQuUyRrYLxIF6i1Lre6yHL_UDF9vf5U2ceNjEGWCOZuM3LVn_96qhaVBAasItmMNA7Afx7tdcRFvGywL1bDJcx8sKXXSR_yXbcAXqQoTa6TO_CxdmHbgg5BO7UP8FotbNAMY.2sg4DWWNAX9Xh_d2CedQZF72HFlkShfHEr7qrj18..hZzlZtIGPVfJWCwM1TaXEI1qnUoS9nBzmyzId664CsguAll58frkxF47gkT34-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AE91658.9090105@schaufler-ca.com>
+Date: Wed, 28 Oct 2009 21:13:12 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Lon Hohberger <lhh@redhat.com>, Vivek Goyal <vgoyal@redhat.com>
-Cc: LKLM <linux-kernel@vger.kernel.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Neil Horman <nhorman@redhat.com>
-Subject: Re: [PATCH] [RFC][Patch x86-tip] add notifier before kdump
-References: <4AE6B1CC.6040603@np.css.fujitsu.com>	 <20091027150725.GD10513@redhat.com> <1256660208.15137.102.camel@localhost.localdomain>
-In-Reply-To: <1256660208.15137.102.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: David Wagner <daw-news@cs.berkeley.edu>
+CC: linux-kernel@vger.kernel.org, Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: symlinks with permissions
+References: <20091025062953.GC1391@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org> <20091028081653.GA18290@elf.ucw.cz> <4AE87292.20802@schaufler-ca.com> <hcahnb$mgp$1@taverner.cs.berkeley.edu>
+In-Reply-To: <hcahnb$mgp$1@taverner.cs.berkeley.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek, Lon Hohberger
+David Wagner wrote:
+> Casey Schaufler  wrote:
+>   
+>> There is no security violation here. Consider the case where
+>> the file is unlinked after it is opened. What directory permissions
+>> would matter in that case?
+>>     
+>
+> Where are you going with this?
+>   
 
-Thanks for your comments.
+Probably straight into a level of obscurity that only a
+very small fraction of us care about, but hear me out.
 
-I also agree with your opinion, too. But I still have problems listed
-as following.
-    1. Nobody knows when the second kernel does not work well
-    2. Too much time cost to startup the second kernel
+> Suppose I open a file in read-only mode.  Suppose moreover I only
+> have permission to read the file but not write it (given the full
+> permissions on the path to the file).
 
-So I hope that following work could be done. 
-    1. Add some code before kdump to monitor the actions of second kernel
-       Something we worried about is that nobody knows when the kdump will not
-       work well. If the second kernel does not work well, nobody knows when
-       the best time is to restart. So we need to add some code such as setting
-       watchdog. If we want to monitor second kernel, some work need to be done
-       before it starts to work.
+Ok. The parenthetical clause is a problem. Once you have the file
+descriptor the path that you used to get it is completely irrelevant.
+Not just unimportant. It matters not at all. The only thing that
+matters at that point are the mode bits on the file itself. Why?
+If /a/foo is a hard link to /b/bar (for the uninitiated that means
+that foo and bar are on the same file system and share an inode
+number) there is absolutely no way to tell, given a file descriptor,
+which path was used to open the file. Further, it is no longer
+necessary that foo, bar, a, or b even exist any longer. So if
+/proc/8675309/fd/3 is accessable for write access to a process it
+does not matter one horse's pitutte what the mode bits on a or b
+might be. Period.
 
-    2. Shorten the startup time of second kernel
-       I think that the purpose of second kernel is used for backup information
-       stored in memory to storage only. But the time cost is different
-       according to the system architecture. And also I think that there are
-       too many of device is not useful to get the memory information to
-       storage. I think the startup time of second kernel should be shortened.
-       I don't know much about second kernel, these are only my thought.
+>   Suppose that someone else deletes
+> the file.  Then the OS had darn well better prevent me from upgrading
+> my read-only file descriptor to a read-write file descriptor.
 
-Thanks for your comments again.
+Nope. Not if the mode bits on the file allow it. How you got to
+the file matters not at all. The mode of the path you happened to
+use matters not at all. What matters are the mode bit on the file
+itself.
 
-Best regards,
-Jin Dongming
+>   If some
+> OS feature created a backdoor that allowed me to upgrade my read-only
+> file descriptor to read-write access (even in cases where the file and
+> directory permissions would prevent me from directly opening the file in
+> read-write mode), then we'd darn well consider that a security violation.
+> That is roughly analogous to what is happening here.
+>   
 
+No, I don't believe that is correct. Unless I read the discussion
+incorrectly, the file has to be writeable for the "exploit" to
+work. The reason that it looks like an exploit is that the mode bits
+on the containing directory "should" prevent the requested access,
+but in reality /proc/8675309/fs/3 provides an alternative pathname
+to the object, just as having a hard link or an alternative mount
+point might. Neither of those cases is an "exploit", although I can
+easily understand how they might appear to be to those who are
+unfamiliar with the acyclic graph that is the Linux (Unix) file
+system name space.
 
-Lon Hohberger wrote:
-> On Tue, 2009-10-27 at 11:07 -0400, Vivek Goyal wrote:
->>> In our PC-cluster, there are two nodes working together, one is running
->>> and the other one is on standby mode. When the running one is going
->>> on panic, we hope the works listed as following would be done:
->>>     1. Before the running kernel is going on panic, the node on standby
->>>        mode should be notified firstly.
->>>     2. After the notified work is done, the panic kernel startup on the
->>>        second kernel to get kdump.
->>> But the current kernel could not do them all.
->>>
-> 
-> Ok, I'll admit at being naive as to how panicking kernels operate.
-> 
-> I do not understand how this could be safe from a cluster fencing
-> perspective.  Effectively, you're allowing a "bad" kernel to continue to
-> do "something", when you should be allowing it to do "nothing".
-> 
-> This panicking kernel does "something" and the cluster presumably
-> initiates recovery /before/ the kdump kernel boots... i.e. with the old,
-> panicking kernel still present.
-> 
-> Shouldn't you at least wait until the kdump kernel boots before telling
-> a cluster that it is safe to begin recovery?
-> 
->>> This patch is not tested on SH and Power PC.
->>>
->> I guess this might be 3rd or 4th attempt to get this kind of
->> infrastructure in kernel.
->>
->> In the past exporting this kind of hook to modules has been rejected
->> becuase of concerns that modules might be doing too much in side a 
+> I do think Pavel's attack is a security violation.  I don't understand
+> why there is any debate about this; it seems pretty clear-cut to me.
+> It may be an obscure corner-case, but it still seems like a cut-and-dry
+> security violation.  (Incidentally, I found the quality of some of the
+> discussion on bugtraq pretty disappointing as well.)
+>   
 
->> crashed kernel and that can hang up the system completely and we can't
->> even capture the dump.
-> 
-> Right.
->  - the hook can fail
->  - the hook could potentially be a poorly written one which tries to
-> access shared storage
-> 
-> Surely, booting the kdump kernel/env. might fail too - but it's no worse
-> than the notification hook failing.  In both cases, you eventually time
-> out and fence off (or "STONITH") the failed node
-> 
-> I suspect doing things in a crashing kernel is more likely to fail than
-> doing things in a kdump-booted kernel...
-> 
->> In the past two ways have been proposed to handle this situation.
->>
->> - Handle it in second kernel. Especially in initrd. Put right
->>   script/binary/tools and configuration in kdump initrd at the time of
->>   configuration and once second kernel boots, initrd will first send the
->>   kdump message out to other node(s). This can be helpful for fencing
->>   scenario also.
-> 
-> I think this is safer and more predictable: once the second kernel
-> boots, the panicked kernel is not in control any more.  I suspect there
-> is a much higher degree of certainty around what the new kdump kernel
-> will do than what will happen in the panicked kernel with an added
-> 'crashing' hook.
-> 
-> Waiting for kdump to boot is an unfortunate delay.  However, the trade
-> off, I think, is more predictable, ordered failure recovery and
-> potentially less risk to data on shared storage (depending on what the
-> notify hook does).
-> 
-> -- Lon
-> 
-> 
-> 
+Sorry if my arguments lack clarity. It's been a rough year.
 
+The only access that really matters is that of the object itself.
+The path you use to get to it only matters during the resolution
+of the path, after which it is, and must be, irrelevant. If there
+is a path that leads to the object that is constructed some other
+way, as the "fd" bit of /proc is, then the semantics of that path's
+construction are what matter for the resolution of that path. Since
+they have no way or reason to determine what the original
+resolution path might have been there is no point in whinging
+that the access of the /proc/8675309/fd/3 path is different from
+the /a/foo path any more than there is that /b/bar might be
+different.
+
+>   
+>> The path name is
+>> an ethereal convenience and once traversed has no bearing on the
+>> security state of the object.
+>>     
+>
+> I think you've missed the point of Pavel's attack.  Pavel's attack allows
+> a malicious process to take an existing read-only file descriptor and
+> turn it into a read-write file descriptor, in cases where the filesystem
+> permission bits should not have allowed the malicious process to do that.
+> *That* is the security violation.  *That* should not be allowed.
+>   
+
+Again, once the file descriptor exists the only mode bits
+(Or Smack label, or SELinux context, or ACL) that matters is
+that of the object itself. It is perfectly OK to change a RO
+to an RW if the mode bits allow it.
+
+> Perhaps take a look at Pavel's post describing the attack again?
+
+Yeah, I did that. It still looks like the complaint is that
+/proc/8675309/fd/3 gives you the ability to gain RW access to
+an object for which you have RW access.
+
+Look, with hard links and the various mount options available
+today you just can't count on setting the mode on a directory
+to completely protect the files that it references. Look carefully
+at the semantics of directories. They do not contain files. They
+contain names of files. Setting the mode on a directory protects
+access to the name of a file, not access to the file. There are
+multiple ways to name a file, and access to any of the names of
+a file to which you have access is sufficient to get you access
+to the file.
+
+As always, I could be missing something completely, but I have
+been arguing Unix/Linux file system security issues for longer
+than some of the people reading this have been alive.
+
+Now, ask me if I think that /proc/8675309/fd/3 is a good idea,
+and we'll have a different discussion, but from an old school
+security standpoint (objects, subjects, accesses) there just is
+not a problem.
+
+If you want to introduce the notion that the pathname used to
+access a file matters on subsequent access control decisions, well,
+good luck, but don't say I didn't warn you.
 
