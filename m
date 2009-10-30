@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbZJ3S5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbZJ3Tlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359AbZJ3S5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 14:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbZJ3S5f
+	id S1757163AbZJ3Tlh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 15:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbZJ3Tlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 14:57:35 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:46233 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757342AbZJ3S5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 14:57:35 -0400
-Date: Fri, 30 Oct 2009 13:57:35 -0500
-From: Alex Elder <aelder@sgi.com>
-Message-Id: <200910301857.n9UIvZ6w009983@stout.americas.sgi.com>
-To: torvalds@linux-foundation.org
-Subject: [GIT PULL] XFS (2 regression fixes)
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+	Fri, 30 Oct 2009 15:41:36 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:55557 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755635AbZJ3Tlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 15:41:35 -0400
+X-Greylist: delayed 2251 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Oct 2009 15:41:35 EDT
+From: Ferenc Wagner <wferi@niif.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [linux-pm] intermittent suspend problem again
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910291936.14082.rjw@sisk.pl>
+	<87fx91q1bc.fsf@tac.ki.iif.hu> <200910301918.53301.rjw@sisk.pl>
+Date: Fri, 30 Oct 2009 20:03:50 +0100
+In-Reply-To: <200910301918.53301.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Fri, 30 Oct 2009 19:18:53 +0100")
+Message-ID: <87k4yc3drd.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, Christoph Hellwig sent a pull request for these patches from
-the xfs-dev tree on kernel.org earlier today.  (Pointing this out to
-hopefully avoid confusion.)
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-					-Alex
+> On Thursday 29 October 2009, Ferenc Wagner wrote:
+>
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>>> Which part of it is getting slower?  Saving the image, suspending
+>>> devices or the entire hibernation overall?
+>> 
+>> "Snapshotting system" before saving the image
+>
+> That may be a result of changing the way in which image memory is reserved.
+> How much memory is there in your machine?
 
-The following changes since commit 2e2ec952350f25242f2e0539db16b1e46f9eb01b:
-  Linus Torvalds (1):
-        Merge branch 'bugfix' of git://git.kernel.org/.../jeremy/xen
+512 MB.
 
-are available in the git repository at:
+>> and saving the image as well.  If s2disk didn't report funny huge negative
+>> ratios all the time,
+>
+> Hmm.  This looks like a bug in s2disk.
 
-  git://oss.sgi.com/xfs/xfs for-linus
-
-Alex Elder (2):
-      Merge branch 'master' of ssh://oss.sgi.com/oss/git/xfs/xfs into for-linus
-      Merge branch 'master' of git://git.kernel.org/.../torvalds/linux-2.6 into for-linus
-
-Eric Sandeen (1):
-      xfs: free temporary cursor in xfs_dialloc
-
-Ryota Yamauchi (1):
-      xfs: fix xfs_quota remove error
-
- fs/xfs/linux-2.6/xfs_quotaops.c |    2 +-
- fs/xfs/xfs_ialloc.c             |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
+Definitely.  Do you also experience this?  Probably an easy one, but
+I've never had the chance to check the CVS version (running 0.7 at the
+moment).  I can probably give 0.8 a spin if you deem necessary.  I
+always thought it wasn't more than a cosmetic flaw.
+-- 
+Thanks,
+Feri.
