@@ -1,71 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbZJ3PAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932254AbZJ3OlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330AbZJ3PAy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 11:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932298AbZJ3PAx
+	id S932254AbZJ3OlN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 10:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932215AbZJ3OlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 11:00:53 -0400
-Received: from rs1.rw-gmbh.net ([213.239.201.58]:44425 "EHLO rs1.rw-gmbh.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932294AbZJ3PAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 11:00:52 -0400
-X-Greylist: delayed 1553 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Oct 2009 11:00:52 EDT
-Message-ID: <4AEAF987.2080809@rw-gmbh.de>
-Date: Fri, 30 Oct 2009 15:34:47 +0100
-From: =?UTF-8?B?UmFsZiBSw7ZzY2g=?= <ralf.roesch@rw-gmbh.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 30 Oct 2009 10:41:12 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:64793 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932211AbZJ3OlL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 10:41:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:reply-to:organization:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to:x-age:x-location
+         :x-os:x-face:content-type:content-transfer-encoding;
+        b=Dz419wdcdYFjd6mq56JyrTsWaEdc4M6k6z7uQhM4N5ltn6xH1h985rlAlaGC7TWH6H
+         /liA2tUeB77wmIR9hzujE6hqKvurHKFf9rQnZZlGtfb25gxT0xakXF3CzEIPQQ8EHeY2
+         lqL0K4qN6YUsxiJ20auh54OZpSkLzuvsP+MgU=
+Message-ID: <4AEAFB08.8050305@gmail.com>
+Date: Fri, 30 Oct 2009 15:41:12 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+Organization: Home
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu
-Subject: [PATCH] x86: sched: fix for non SMP systems in sched.h
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Andrea Arcangeli <aarcange@redhat.com>
+CC: David Rientjes <rientjes@google.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Memory overcommit
+References: <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <4AE846E8.1070303@gmail.com> <alpine.DEB.2.00.0910281307370.23279@chino.kir.corp.google.com> <4AE9068B.7030504@gmail.com> <alpine.DEB.2.00.0910290132320.11476@chino.kir.corp.google.com> <4AE97618.6060607@gmail.com> <alpine.DEB.2.00.0910291225460.27732@chino.kir.corp.google.com> <4AEAEFDD.5060009@gmail.com> <20091030141250.GQ9640@random.random>
+In-Reply-To: <20091030141250.GQ9640@random.random>
+X-Age: 25
+X-Location: Lovran, Croatia
+X-OS: Debian GNU/Linux
+X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit d65d153bc23b84e4709a49137a9a03ae139d51a0 introduced
-two new prototypes: default_scale_freq_power and default_scale_smt_power.
-Both of them use struct sched_domain which is not defined on non SMP 
-systems.
-Just moved the prototypes to the correct place.
+Andrea Arcangeli wrote:
 
-Signed-off-by: Ralf Roesch <ralf.roesch@rw-gmbh.de>
----
- include/linux/sched.h |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
- mode change 100644 => 100755 include/linux/sched.h
+> On Fri, Oct 30, 2009 at 02:53:33PM +0100, Vedran Furač wrote:
+>> % free -m
+>>           total       used       free     shared    buffers     cached
+>> Mem:      3458        3429         29          0        102       1119
+>> -/+ buffers/cache:    2207       1251
+>>
+>> There's plenty of memory available. Shouldn't cache be automatically
+>> dropped (this question was in my original mail, hence the subject)?
+> 
+> This is not about cache, cache amount is physical, this about
+> virtual amount that can only go in ram or swap (at any later time,
+> current time is irrelevant) vs "ram + swap".
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-old mode 100644
-new mode 100755
-index c231a24..b633308
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1036,6 +1036,9 @@ static inline int test_sd_parent(struct 
-sched_domain *sd, int flag)
-     return 0;
- }
- 
-+unsigned long default_scale_freq_power(struct sched_domain *sd, int cpu);
-+unsigned long default_scale_smt_power(struct sched_domain *sd, int cpu);
-+
- #else /* CONFIG_SMP */
- 
- struct sched_domain_attr;
-@@ -1047,10 +1050,6 @@ partition_sched_domains(int ndoms_new, struct 
-cpumask *doms_new,
- }
- #endif    /* !CONFIG_SMP */
- 
--
--unsigned long default_scale_freq_power(struct sched_domain *sd, int cpu);
--unsigned long default_scale_smt_power(struct sched_domain *sd, int cpu);
--
- struct io_context;            /* See blkdev.h */
- 
- 
--- 
-1.6.5
+Oh... so this is because apps "reserve" (Committed_AS?) more then they
+currently need.
+
+> In short add more swap if
+> you don't like overcommit and check grep Commit /proc/meminfo in case
+> this is accounting bug...
+
+A the time of "malloc: Cannot allocate memory":
+
+CommitLimit:     3364440 kB
+Committed_AS:    3240200 kB
+
+So probably everything is ok (and free is misleading). Overcommit is
+unfortunately necessary if I want to be able to use all my memory.
+
+Btw. http://www.redhat.com/advice/tips/meminfo.html says Committed_AS is
+a (gu)estimate. Hope it is a good (not to high) guesstimate. :)
+
+Regards,
+
+Vedran
 
