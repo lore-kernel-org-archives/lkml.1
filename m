@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbZJ3PNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbZJ3PQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbZJ3PNX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 11:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZJ3PNW
+	id S932386AbZJ3PQW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 11:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932357AbZJ3PQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 11:13:22 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43718 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755725AbZJ3PNV (ORCPT
+	Fri, 30 Oct 2009 11:16:17 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:43353 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932305AbZJ3PQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 11:13:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:reply-to:organization:user-agent
-         :mime-version:to:cc:subject:references:in-reply-to:x-age:x-location
-         :x-os:x-face:content-type:content-transfer-encoding;
-        b=XqvwvJA7j50VAEjJ9AFnCqnQtR1uqUv4qtdk1d0GylpcKdFU27/HsEh4E6x1NKSw0a
-         pKAAjeanlQhm1WhZeN6NfwXobgQ58sXOjrrlYNyQn8WcaavkUMOg4I6zGuW6IyMnMKJg
-         cG+ZOYedXgGrTmwjKgApcOCAjcV+3+gMo4Qok=
-Message-ID: <4AEB0291.4080003@gmail.com>
-Date: Fri, 30 Oct 2009 16:13:21 +0100
-From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
-Reply-To: vedran.furac@gmail.com
-Organization: Home
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+	Fri, 30 Oct 2009 11:16:15 -0400
+Date: Fri, 30 Oct 2009 11:14:28 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Miller <davem@davemloft.net>,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Message-ID: <20091030151428.GB2586@tuxdriver.com>
+References: <200910291212.41656.bzolnier@gmail.com> <200910291514.40318.bzolnier@gmail.com> <84144f020910291245l1a7a3fd6o8822ecd4ce3b5504@mail.gmail.com> <200910292248.42229.bzolnier@gmail.com>
 MIME-Version: 1.0
-To: tfjellstrom@shaw.ca
-CC: linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: Memory overcommit
-References: <hav57c$rso$1@ger.gmane.org> <alpine.DEB.2.00.0910291225460.27732@chino.kir.corp.google.com> <4AEAEFDD.5060009@gmail.com> <200910300808.38450.tfjellstrom@shaw.ca>
-In-Reply-To: <200910300808.38450.tfjellstrom@shaw.ca>
-X-Age: 25
-X-Location: Lovran, Croatia
-X-OS: Debian GNU/Linux
-X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910292248.42229.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Fjellstrom wrote:
+On Thu, Oct 29, 2009 at 10:48:42PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 29 October 2009 20:45:07 Pekka Enberg wrote:
 
->> malloc: Cannot allocate memory /* Great, no OOM, but: */
->> 
->> % free -m total       used       free     shared    buffers cached
->> Mem:      3458        3429         29          0        102 1119
->> -/+ buffers/cache:    2207       1251
->> 
->> There's plenty of memory available. Shouldn't cache be 
->> automatically dropped (this question was in my original mail, hence
->>  the subject)?
->> 
+> > I was simply pointing out that your time would probably be better
+> > spent in improving the "proper" ralink wireless drivers but if you
 > 
-> I think this is the MOST serious issue related to the oom killer. For
-> some reason it refuses to drop pages before trying to kill. When it
-> should drop cache, THEN kill if needed.
+> Thanks for the concern.  However recent discussions made my realize how
+> I should really be spending my time effectively way too well.
+> 
+> > _really_ prefer to spend your time in pointless arguments, go ahead.
+> 
+> I don't think that my technical arguments are pointless.
 
-This isn't about OOM, but situation when you turn off overcommit. I was
-jumping to conclusion here. You can drop caches manually with:
-# echo 1 > /proc/sys/vm/drop_caches
+More like "petty"...
 
-but you still get: "malloc: Cannot allocate memory" even if almost
-nothing is cached:
+> Quite the contrary, I'm pretty confident that addressing my review concerns
+> would result in better RT28x00 / RT30x0 support in the very near future.
 
-        total       used       free     shared    buffers     cached
-Mem:    3458       2210       1248          0          3          90
--/+ buffers/cache: 2116       1342
+Yeah, maybe.  Or they could just waste someone's time mashing
+together some definitions to prematurely turn two header files into
+three instead of spending that time on resolving operational issues.
+In either case it is a judgment call, and IMHO not your call to make.
 
-As for not dropping pages by kernel before killing, I don't know nothing
-about it. It happens so fast and I never tried to measure it.
+> > It should be pretty obvious by now that the best way to improve things
+> > is to work with the relevant maintainers, not against them. (Unless
+> > you wish your work to be ignored, of course.)
+> 
+> I work with a lot of other maintainers.  I would say that providing valuable
+> review feedback is also "working with" (at least I would be very happy with
+> such feedback in my projects).
+
+"Valuable" feedback would be welcome.  In fact, your initial feedback
+in this case was welcome -- even moreso had it included a patch.
+
+Your arrogant follow-ups and self-righteous indignation, however,
+is quite a bit less welcome.  Please take it somewhere else.
+
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
