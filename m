@@ -1,86 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZJ3IoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbZJ3I4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZJ3IoS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 04:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbZJ3IoR
+	id S1756331AbZJ3I4l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 04:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZJ3I4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 04:44:17 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43188 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756351AbZJ3IoQ (ORCPT
+	Fri, 30 Oct 2009 04:56:40 -0400
+Received: from msa104.auone-net.jp ([61.117.18.164]:54395 "EHLO
+	msa104.auone-net.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbZJ3I4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 04:44:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=C6ZOHUcZal8HD6nkIIUJMCThVs7sBevfaZlWQIz+KxY3HS/WATlCbRi4EN1yW/tL2D
-         UMI5BSX0kEcoYhP5bHK0Wj6mAZmnoXTXVRuHzP5jiEClSMadJS3jFHq1+Qjju0c4sUh0
-         f2jTsQk9NIRdsf6NqRONLiKmvO/8e2X7CoRIM=
+	Fri, 30 Oct 2009 04:56:39 -0400
+Date: Fri, 30 Oct 2009 17:56:41 +0900
+From: Kusanagi Kouichi <slash@ac.auone-net.jp>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs: Don't ignore MS_RDONLY in bind and not remount
+ case.
+References: <20091030053146.BC2176FC03B@msa105.auone-net.jp>
+ <20091030055337.GA3406@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <4AC1D0F5.4050709@gmail.com>
-References: <38b2ab8a0909290109m3f82c161j4fb0f1266152877e@mail.gmail.com>
-	 <4AC1D0F5.4050709@gmail.com>
-Date: Fri, 30 Oct 2009 09:44:19 +0100
-Message-ID: <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com>
-Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
-From: Francis Moreau <francis.moro@gmail.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091030055337.GA3406@infradead.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <20091030085644.2157915C033@msa104.auone-net.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Eric,
+On 2009-10-30 01:53:37 -0400, Christoph Hellwig wrote:
+> On Fri, Oct 30, 2009 at 02:31:46PM +0900, Kusanagi Kouichi wrote:
+> > A readonly bind mount needed to be created in 2 steps
+> > 
+> > # mount --bind
+> > # mount --bind -o remount,ro
+> > 
+> > instead of single
+> > 
+> > # mount --bind -o ro
+> > 
+> > because MS_RDONLY is ignored in bind and not remount case.
+> 
+> I'm pretty sure that was intentional, but I don't remember why anymore.
 
-It seems I still have a related bug, please have a look to the following oops.
-
-This happened on a 2.6.32-rc5 where your patch is included.
-
-[107304.558821] nfsd: last server has exited, flushing export cache
-[107304.558848] ------------[ cut here ]------------
-[107304.558858] WARNING: at net/ipv4/af_inet.c:153
-inet_sock_destruct+0x161/0x17c()
-[107304.558862] Hardware name: P5K-VM
-[107304.558865] Modules linked in: kvm_intel kvm jfs loop nfsd lockd
-nfs_acl auth_rpcgss exportfs sunrpc [last unloaded: microcode]
-[107304.558889] Pid: 8198, comm: nfsd Tainted: G   M       2.6.32-rc5 #25
-[107304.558892] Call Trace:
-[107304.558899]  [<ffffffff81429f19>] ? inet_sock_destruct+0x161/0x17c
-[107304.558907]  [<ffffffff810487e9>] warn_slowpath_common+0x7c/0xa9
-[107304.558914]  [<ffffffff8104882a>] warn_slowpath_null+0x14/0x16
-[107304.558920]  [<ffffffff81429f19>] inet_sock_destruct+0x161/0x17c
-[107304.558927]  [<ffffffff813c8741>] __sk_free+0x23/0xe7
-[107304.558933]  [<ffffffff813c8881>] sk_free+0x1f/0x21
-[107304.558939]  [<ffffffff813c894b>] sk_common_release+0xc8/0xcd
-[107304.558944]  [<ffffffff81420b59>] udp_lib_close+0xe/0x10
-[107304.558951]  [<ffffffff814299bf>] inet_release+0x55/0x5c
-[107304.558957]  [<ffffffff813c5aa9>] sock_release+0x1f/0x71
-[107304.558962]  [<ffffffff813c5b22>] sock_close+0x27/0x2b
-[107304.558968]  [<ffffffff810eb60f>] __fput+0xfb/0x1c0
-[107304.558973]  [<ffffffff810eb6f1>] fput+0x1d/0x1f
-[107304.558995]  [<ffffffffa0013e23>] svc_sock_free+0x40/0x56 [sunrpc]
-[107304.559018]  [<ffffffffa001f392>] svc_xprt_free+0x43/0x53 [sunrpc]
-[107304.559038]  [<ffffffffa001f34f>] ? svc_xprt_free+0x0/0x53 [sunrpc]
-[107304.559048]  [<ffffffff811d9275>] kref_put+0x43/0x4f
-[107304.559069]  [<ffffffffa001e67a>] svc_close_xprt+0x55/0x5e [sunrpc]
-[107304.559088]  [<ffffffffa001e6d3>] svc_close_all+0x50/0x69 [sunrpc]
-[107304.559107]  [<ffffffffa0012a2b>] svc_destroy+0x9e/0x142 [sunrpc]
-[107304.559126]  [<ffffffffa0012b88>] svc_exit_thread+0xb9/0xc2 [sunrpc]
-[107304.559138]  [<ffffffffa008981b>] ? nfsd+0x0/0x13f [nfsd]
-[107304.559149]  [<ffffffffa0089940>] nfsd+0x125/0x13f [nfsd]
-[107304.559157]  [<ffffffff810685e3>] kthread+0x82/0x8a
-[107304.559164]  [<ffffffff8100c13a>] child_rip+0xa/0x20
-[107304.559172]  [<ffffffff8100baad>] ? restore_args+0x0/0x30
-[107304.559179]  [<ffffffff81068561>] ? kthread+0x0/0x8a
-[107304.559185]  [<ffffffff8100c130>] ? child_rip+0x0/0x20
-[107304.559191] ---[ end trace c107131f4762168c ]---
-[107304.927931] NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state
-recovery directory
-[107304.932765] NFSD: starting 90-second grace period
-
--- 
-Francis
+I could not find any reason to restrict this.
+Could you tell me the reason of this restriction?
