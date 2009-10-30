@@ -1,61 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbZJ3PSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932400AbZJ3PXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932393AbZJ3PSy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 11:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932350AbZJ3PSy
+	id S932400AbZJ3PXm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 11:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbZJ3PXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 11:18:54 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:38569 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932287AbZJ3PSx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 11:18:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=JDThxn3SI+nexHk8+TCnUQWGVW6XuDPSanHgM3lMA0c9RZj/zWDUUkvVM4twIDFzQJ
-         UcSwYusP+xq8w9Np69u7Til2W0E1qUTQWGF/p0YLJzrGyFewsoYzAzS/oqNfNX0fYXxp
-         LfDq+LSbxzTJ9WW3MrHeoeOqUHguIwiFEqG7c=
+	Fri, 30 Oct 2009 11:23:41 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:43818 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932349AbZJ3PXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 11:23:40 -0400
+Message-ID: <52481f5b4edfdbd96dcde46aed403fcf.squirrel@webmail.uio.no>
+Date: Fri, 30 Oct 2009 16:23:43 +0100
+Subject: Re: [PATCH 1/3] net: TCP thin-stream detection
+From: apetlund@simula.no
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: "Arnd Hannemann" <hannemann@nets.rwth-aachen.de>,
+       "Andreas Petlund" <apetlund@simula.no>,
+       "William Allen Simpson" <william.allen.simpson@gmail.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "Christian Samsel" <christian.samsel@rwth-aachen.de>
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-Date: Fri, 30 Oct 2009 21:18:57 +0600
-Message-ID: <b9df5fa10910300818u4b104a50if01f32c26be580d8@mail.gmail.com>
-Subject: [PATCH] x86, tsc: Remove checking cpu_has_tsc when CONFIG_X86_TSC=n.
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-UiO-Ratelimit-Test: rcpts/h 9 msgs/h 1 sum rcpts/h 14 sum msgs/h 1 total rcpts 476 max rcpts/h 37 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: D3562D9FD8245941217587462A45DABA97433CAC
+X-UiO-SPAM-Test: remote_host: 129.240.4.214 spam_score: -49 maxlevel 80 minaction 1 bait 0 mail/h: 134 total 1925518 max/h 678 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- When CONFIG_X86_TSC=n, we do not need to check cpu_has_tsc, we can
-simply return with 0. Moreover cpu_has_tsc indicates whether cpu
-tsc feature on or not, so it doesn't matter when CONFIG_X86_TSC=n.
-Am I right? Or I'm missing anything?
+> On Thu, 29 Oct 2009, Arnd Hannemann wrote:
+>
+>> Andreas Petlund schrieb:
+>> > Den 28. okt. 2009 kl. 04.09 skrev William Allen Simpson:
+>> >
+>> >> Andreas Petlund wrote:
+>> >>> +/* Determines whether this is a thin stream (which may suffer from
++ * increased latency). Used to trigger latency-reducing
+mechanisms.
+>> >>> + */
+>> >>> +static inline unsigned int tcp_stream_is_thin(const struct
+tcp_sock *tp)
+>> >>> +{
+>> >>> +	return tp->packets_out < 4;
+>> >>> +}
+>> >>> +
+>> >> This bothers me a bit.  Having just looked at your Linux
+>> presentation,
+>> >> and not (yet) read your papers, it seems much of your justification was
+>> >> with 1 packet per RTT.  Here, you seem to be concentrating on 4,
+probably
+>> >> because many implementations quickly ramp up to 4.
+>> >>
+>> >
+>> > The limit of 4 packets in flight is based on the fact that less than
+4
+>> > packets in flight makes fast retransmissions impossible, thus
+limiting
+>> > the retransmit options to timeout-retransmissions. The criterion is
+>> There is Limited Transmit! So this is generally not true.
+>> > therefore as conservative as possible while still serving its
+purpose.
+>> > If further losses occur, the exponential backoff will increase
+latency
+>> > further. The concept of using this limit is also discussed in the
+Internet draft for Early Retransmit by Allman et al.:
+>> > http://www.icir.org/mallman/papers/draft-ietf-tcpm-early-rexmt-01.txt
+>> This ID is covering exactly the cases which Limited Transmit does not
+cover and works "automagically" without help of application. So why not
+just implement this ID?
+>
+> I even gave some advise recently to one guy how to polish up the early
+retransmit implementation of his. ...However, I think we haven't heard
+from that since then... I added him as CC if he happens to have it
+already
+> done.
+>
+> It is actually so that patches 1+3 implement sort of an early
+retransmit,
+> just slightly more aggressive of it than what is given in ID but I find
+the difference in the aggressiveness rather insignificant. ...Whereas
+the
+> RTO stuff is more questionable.
+>
 
-----
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+I share the opinion that the linear timeouts should be limited, and back
+off exponentially after the limit, as Eric suggested. I believe this will
+be a sufficient safety-valve for the black-hole scenario, although I would
+like to run some tests.
 
---- linus/arch/x86/include/asm/tsc.h	2009-10-17 13:12:59.000000000 +0600
-+++ rakib/arch/x86/include/asm/tsc.h	2009-10-30 21:55:29.000000000 +0600
-@@ -24,8 +24,7 @@ static inline cycles_t get_cycles(void)
- 	unsigned long long ret = 0;
+As I wrote to Arnd, there are many similarities with the EFR approach and
+what our patch does. The largest difference is that the thin-stream
+patterns are identified as an indication of time dependent/interactive
+apps. This is the reason why the proposed patch does not try to keep an
+inflated cwnd open, but only focuses on the cases of few packets in
+flight. The target is time-dependent/interactive applications, and as such
+we don't want a generally enabled mechanism, but want to give the option
+of enabling it only in the cases where they are most needed (in contrast
+to a generally enabled "automagically" triggered EFR).
 
- #ifndef CONFIG_X86_TSC
--	if (!cpu_has_tsc)
--		return 0;
-+	return 0;
- #endif
- 	rdtscll(ret);
+Below is a link to a table presenting some of the applications that we
+have traced and analysed the packet interarrival times of:
 
-@@ -39,8 +38,7 @@ static __always_inline cycles_t vget_cyc
- 	 * access boot_cpu_data (which is not VDSO-safe):
- 	 */
- #ifndef CONFIG_X86_TSC
--	if (!cpu_has_tsc)
--		return 0;
-+	return 0;
- #endif
- 	return (cycles_t)__native_read_tsc();
- }
+http://folk.uio.no/apetlund/lktmp/thin_apps_table.pdf
+
+We were surprised to see how many cases of "thin-stream" traffic patterns
+were indicative of time-dependent/interactive apps.
+
+Regards,
+Andreas
+
+
+
+
+
+
