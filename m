@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932853AbZJ3S3C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbZJ3SgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932853AbZJ3S3C (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 14:29:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932795AbZJ3S3B
+	id S932886AbZJ3SgD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 14:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932870AbZJ3SgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 14:29:01 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45621 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932516AbZJ3S3A (ORCPT
+	Fri, 30 Oct 2009 14:36:03 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39753 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932861AbZJ3SgC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 14:29:00 -0400
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
-Subject: [PATCH] perf tools: Improve message about missing symtabs for deleted DSOs
-Date: Fri, 30 Oct 2009 16:28:25 -0200
-Message-Id: <1256927305-4628-3-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1256927305-4628-2-git-send-email-acme@infradead.org>
-References: <1256927305-4628-1-git-send-email-acme@infradead.org>
- <1256927305-4628-2-git-send-email-acme@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 30 Oct 2009 14:36:02 -0400
+Date: Fri, 30 Oct 2009 19:35:59 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       jamie@shareable.org
+Subject: Re: symlinks with permissions
+Message-ID: <20091030183559.GF7008@elf.ucw.cz>
+References: <20091026174631.GD7233@duck.suse.cz>
+ <1256579869.8576.7.camel@heimdal.trondhjem.org>
+ <20091025093604.GA1501@ucw.cz>
+ <m1zl7cb1c5.fsf@fess.ebiederm.org>
+ <20091028081653.GA18290@elf.ucw.cz>
+ <m1k4yfkbfg.fsf@fess.ebiederm.org>
+ <20091028210323.GA4159@elf.ucw.cz>
+ <m1hbtj7xgj.fsf@fess.ebiederm.org>
+ <20091029110344.GA1517@ucw.cz>
+ <m1d4466uel.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1d4466uel.fsf@fess.ebiederm.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Hi!
 
-Instead of:
+> > Basically, that follow link should behave as dup(), not as open().
+> 
+> There are reasons why an open is an open here.  I don't remember the
+> details but I found the archive of that conversation once.  Maybe it was
+> just technical limitations of the time.
 
-no symbols found in /usr/lib/gstreamer-0.10/libgsttypefindfunctions.so (deleted), maybe install a debug package?
-no symbols found in /usr/lib/gstreamer-0.10/libgstaudioconvert.so (deleted), maybe install a debug package?
+That would be really really useful to bring 
 
-We now emit:
+> >> I certainly am not interested in debugging or maintaining the stacking
+> >> inode code that would be necessary to close this theoretical corner
+> >> case.  There are much more real bugs that need attention.
+> >
+> > But if we can get trivial 10-liner, that should be acceptable, right?
+> 
+> How many linux shell scripts and other applications that use /dev/fd/N
+> or /proc/self/fd/N will you be breaking?
 
-/usr/lib/gstreamer-0.10/libgsttypefindfunctions.so was updated, restart the long running apps that use it!
-/usr/lib/gstreamer-0.10/libgstaudioconvert.so was updated, restart the long running apps that use it!
+Zero. (Well unless someone is exploiting it in wild).
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/map.c |   16 ++++++++++++++--
- 1 files changed, 14 insertions(+), 2 deletions(-)
+> Closing a theoretical security hole at the expense of breaking real
+> applications is a show stopper.
 
-diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
-index 679011c..f1e2169 100644
---- a/tools/perf/util/map.c
-+++ b/tools/perf/util/map.c
-@@ -75,6 +75,8 @@ out_delete:
- 	return NULL;
- }
- 
-+#define DSO__DELETED "(deleted)"
-+
- struct symbol *
- map__find_symbol(struct map *self, u64 ip, symbol_filter_t filter)
- {
-@@ -86,8 +88,18 @@ map__find_symbol(struct map *self, u64 ip, symbol_filter_t filter)
- 				   self->dso->long_name);
- 			return NULL;
- 		} else if (nr == 0) {
--			pr_warning("No symbols found in %s, maybe install a debug package?\n",
--				   self->dso->long_name);
-+			const char *name = self->dso->long_name;
-+			const size_t len = strlen(name);
-+			const size_t real_len = len - sizeof(DSO__DELETED);
-+
-+			if (len > sizeof(DSO__DELETED) &&
-+			    strcmp(name + real_len + 1, DSO__DELETED) == 0)
-+				pr_warning("%.*s was updated, restart the "
-+					   "long running apps that use it!\n",
-+					   real_len, name);
-+			else
-+				pr_warning("no symbols found in %s, maybe "
-+					   "install a debug package?\n", name);
- 			return NULL;
- 		}
- 	}
+I don't plan to remove /proc/*/fd; but I would like it to behave like
+dup().
+
+(I still hope some security team does work for me :-).
+									Pavel
 -- 
-1.6.2.5
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
