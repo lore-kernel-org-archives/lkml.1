@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbZJ3VWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbZJ3V04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903AbZJ3VWd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 17:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932877AbZJ3VWb
+	id S932931AbZJ3V04 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 17:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932919AbZJ3V0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 17:22:31 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:17706 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932872AbZJ3VWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 17:22:31 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org, zach.brown@oracle.com
-Subject: Re: [patch] aio: Don't zero out the pages array inside struct dio
-References: <x49tyxhroes.fsf@segfault.boston.devel.redhat.com>
-	<20091030141811.1c77571b.akpm@linux-foundation.org>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 30 Oct 2009 17:22:27 -0400
-In-Reply-To: <20091030141811.1c77571b.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 30 Oct 2009 14:18:11 -0700")
-Message-ID: <x49hbtgr2zw.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 30 Oct 2009 17:26:55 -0400
+Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:45413
+	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932916AbZJ3V0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 17:26:54 -0400
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: trivial@kernel.org
+Cc: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH] trivial: fix a typo in SHM_SIGNAL config description
+Date: Fri, 30 Oct 2009 19:26:52 -0200
+Message-Id: <1256938012-8088-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ lib/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> You forgot something:
->
-> --- a/fs/direct-io.c~aio-dont-zero-out-the-pages-array-inside-struct-dio-fix
-> +++ a/fs/direct-io.c
-> @@ -130,6 +130,12 @@ struct dio {
->  	unsigned head;			/* next page to process */
->  	unsigned tail;			/* last valid page + 1 */
->  	int page_errors;		/* errno from get_user_pages() */
-> +
-> +	/*
-> +	 * pages[] (and any fields placed after it) are not zeroed out at
-> +	 * allocation time.  Don't add new fields after pages[] unless you
-> +	 * wish that they not be zeroed.
-> +	 */
->  	struct page *pages[DIO_PAGES];	/* page buffer */
->  };
->  
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 272cecf..bfe871d 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -207,7 +207,7 @@ config SHM_SIGNAL
+ 	tristate "SHM Signal - Generic shared-memory signaling mechanism"
+ 	default n
+ 	help
+-	 Provides a shared-memory based signaling mechansim to indicate
++	 Provides a shared-memory based signaling mechanism to indicate
+          memory-dirty notifications between two end-points.
+ 
+ 	 If unsure, say N
+-- 
+1.6.3.3
 
-Yeah, that makes sense.  Thanks for adding it, Andrew.  Oh, and it looks
-like I botched the subject line.  It should have read dio, not aio, but
-I'm not sure that matters a whole lot.
-
-Cheers,
-Jeff
