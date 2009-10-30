@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932465AbZJ3Pae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbZJ3Pho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932465AbZJ3Pae (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 11:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932421AbZJ3Pad
+	id S1757305AbZJ3Pho (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 11:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbZJ3Pho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 11:30:33 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:36565 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932376AbZJ3Pac (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 11:30:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=M7BoZKHE347fUYTlElEZLzxA080K1buD3fOeVaTyNa8J9VCbyhxHco2s6W3mctPvJ6
-         DSj7WqZNCtBYSGcwMsSMLwtntGGNvhIir57UWSxN88JMe30wnpTMk1NI+vGPhR6w17xg
-         KenhdBenZYCrnJ5cuPfwJDmHIggkZV9FiQmMU=
-Message-ID: <4AEB068F.3020607@gmail.com>
-Date: Fri, 30 Oct 2009 11:30:23 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for October 30
-References: <20091030200916.e9331f66.sfr@canb.auug.org.au>
-In-Reply-To: <20091030200916.e9331f66.sfr@canb.auug.org.au>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA3DD6397EDCD54BF79A446B7"
+	Fri, 30 Oct 2009 11:37:44 -0400
+Received: from outbound-mail-11.bluehost.com ([69.89.18.111]:35761 "HELO
+	outbound-mail-11.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752619AbZJ3Phn convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 11:37:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=NWIFZrJVHes42O8FnIhWFW3zfWzK7xIc5xvpBhhL9WDqmMR3BRm25EHhdipA5slaHSsJfet87+avalEXmRWd3jVlx35I8B4eW83wS8wDjtshROkQRfbZ6ZHhivnd+4xK;
+Date: Fri, 30 Oct 2009 08:37:42 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [resend] i915: high power consumption after suspend/resume
+Message-ID: <20091030083742.48f5d4f3@jbarnes-g45>
+In-Reply-To: <cb0375e10910292325l659034c4u36cf263cda8e90c8@mail.gmail.com>
+References: <cb0375e10910030939v8d03df7m861a2f05219f173c@mail.gmail.com>
+	<cb0375e10910030950kcd19fe9i7835eaaf4314c0fb@mail.gmail.com>
+	<20091005092148.4341d9ab@jbarnes-g45>
+	<cb0375e10910072044m470c8cbasef33de3b36bb62ee@mail.gmail.com>
+	<20091029094723.7e5a3376@jbarnes-g45>
+	<cb0375e10910291022l5650994dyc4a36d55f1e5bbc4@mail.gmail.com>
+	<cb0375e10910291040i31a7b9aatb6da5c20778d9791@mail.gmail.com>
+	<cb0375e10910292325l659034c4u36cf263cda8e90c8@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA3DD6397EDCD54BF79A446B7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, 30 Oct 2009 02:25:21 -0400
+Andrew Lutomirski <luto@mit.edu> wrote:
 
-Hi Stephen
+> On Thu, Oct 29, 2009 at 1:40 PM, Andrew Lutomirski <luto@mit.edu>
+> wrote:
+> >
+> > I just suspended and resumed and power consumption stayed low.  I'll
+> > try and get an intel_reg_dumper diff next time I trigger this bug.
+> 
+> intel_reg_dumper blames RENCLK_GATE_D2.  Patch coming.
+> 
+> Maybe my BIOS doesn't always reset it.
 
-Stephen Rothwell wrote:
-> Hi all,
->=20
-> Changes since 20091029:
->=20
+Does resetting that reg get your power savings back?
 
-< snip >
-
-> Merging alacrity/linux-next
-> CONFLICT (content): Merge conflict in drivers/net/Kconfig
-> CONFLICT (content): Merge conflict in lib/Kconfig
-
-So I've noticed this error in your reports for a while now, but I wasn't
-quite sure if there was an action-item for me to address it.
-
-Considering no one is complaining that the tree is broken, I assume
-these kinds of conflicts are automatically resolved, but I am wondering
-if there are steps I should take to prevent the conflict in the future?
-
-Kind Regards,
--Greg
-
-
-
---------------enigA3DD6397EDCD54BF79A446B7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkrrBo8ACgkQP5K2CMvXmqF2mgCaAyYKXqwliMbLSB14lm/H9nBo
-b0wAn33uwQvcRM6QKTlhtsGA8dkOlp4J
-=BKJP
------END PGP SIGNATURE-----
-
---------------enigA3DD6397EDCD54BF79A446B7--
+-- 
+Jesse Barnes, Intel Open Source Technology Center
