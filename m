@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbZJ3LCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbZJ3LCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757163AbZJ3LCD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 07:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757145AbZJ3LCC
+	id S1757186AbZJ3LCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 07:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbZJ3LCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 07:02:02 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58016 "EHLO mx2.suse.de"
+	Fri, 30 Oct 2009 07:02:19 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58038 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757142AbZJ3LCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 07:02:00 -0400
-Date: Fri, 30 Oct 2009 12:02:05 +0100
-Message-ID: <s5hiqdxywk2.wl%tiwai@suse.de>
+	id S1757174AbZJ3LCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 07:02:17 -0400
+Date: Fri, 30 Oct 2009 12:02:22 +0100
+Message-ID: <s5hhbthywjl.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Julia Lawall <julia@diku.dk>
-Cc: Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
+Cc: Kyle McMartin <kyle@mcmartin.ca>, Jaroslav Kysela <perex@perex.cz>,
+       linux-parisc@vger.kernel.org, alsa-devel@alsa-project.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/14] sound: Move dereference after NULL test and drop unnecessary NULL tests
-In-Reply-To: <Pine.LNX.4.64.0910170832570.9213@ask.diku.dk>
-References: <Pine.LNX.4.64.0910170832570.9213@ask.diku.dk>
+Subject: Re: [PATCH 3/14] sound/parisc: Move dereference after NULL test
+In-Reply-To: <Pine.LNX.4.64.0910170833240.9213@ask.diku.dk>
+References: <Pine.LNX.4.64.0910170833240.9213@ask.diku.dk>
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.7 Emacs/23.1
  (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -27,17 +28,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 17 Oct 2009 08:33:22 +0200 (CEST),
+At Sat, 17 Oct 2009 08:33:47 +0200 (CEST),
 Julia Lawall wrote:
 > 
 > From: Julia Lawall <julia@diku.dk>
 > 
-> In pcm.c, if the NULL test on pcm is needed, then the dereference should be
-> after the NULL test.
+> If the NULL test on h is needed in snd_harmony_mixer_init, then the
+> dereference should be after the NULL test.
 > 
-> In dummy.c and ali5451.c, the context of the calls to
-> snd_card_dummy_new_mixer and snd_ali_free_voice show that dummy and pvoice,
-> respectively cannot be NULL.
+> Actually, there is a sequence of calls: snd_harmony_create, then
+> snd_harmony_pcm_init, and then snd_harmony_mixer_init.  snd_harmony_create
+> initializes h, but may indeed leave it as NULL.  There was no NULL test at
+> the beginning of snd_harmony_pcm_init, so I have added one.  The NULL test
+> in snd_harmony_mixer_init is then not necessary, but in case the ordering
+> of the calls changes, I have left it, and moved the dereference after it.
 > 
 > A simplified version of the semantic match that detects this problem is as
 > follows (http://coccinelle.lip6.fr/):
@@ -55,60 +59,42 @@ Julia Lawall wrote:
 > 
 > Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Thanks, applied now.
+Applied this one, too.  Thanks.
 
 
 Takashi
 
-> 
+
 > ---
->  sound/core/pcm.c            |    5 +++--
->  sound/drivers/dummy.c       |    2 --
->  sound/pci/ali5451/ali5451.c |    2 +-
+>  sound/parisc/harmony.c              |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
 > 
-> diff --git a/sound/core/pcm.c b/sound/core/pcm.c
-> index 0c14401..c69c60b 100644
-> --- a/sound/core/pcm.c
-> +++ b/sound/core/pcm.c
-> @@ -953,11 +953,12 @@ static int snd_pcm_dev_register(struct snd_device *device)
->  	struct snd_pcm_substream *substream;
->  	struct snd_pcm_notify *notify;
->  	char str[16];
-> -	struct snd_pcm *pcm = device->device_data;
-> +	struct snd_pcm *pcm;
->  	struct device *dev;
->  
-> -	if (snd_BUG_ON(!pcm || !device))
-> +	if (snd_BUG_ON(!device || !device->device_data))
->  		return -ENXIO;
-> +	pcm = device->device_data;
->  	mutex_lock(&register_mutex);
->  	err = snd_pcm_add(pcm);
->  	if (err) {
-> diff --git a/sound/drivers/dummy.c b/sound/drivers/dummy.c
-> index 6ba066c..146ef00 100644
-> --- a/sound/drivers/dummy.c
-> +++ b/sound/drivers/dummy.c
-> @@ -808,8 +808,6 @@ static int __devinit snd_card_dummy_new_mixer(struct snd_dummy *dummy)
->  	unsigned int idx;
+> diff --git a/sound/parisc/harmony.c b/sound/parisc/harmony.c
+> index e924492..f47f9e2 100644
+> --- a/sound/parisc/harmony.c
+> +++ b/sound/parisc/harmony.c
+> @@ -624,6 +624,9 @@ snd_harmony_pcm_init(struct snd_harmony *h)
+>  	struct snd_pcm *pcm;
 >  	int err;
 >  
-> -	if (snd_BUG_ON(!dummy))
-> -		return -EINVAL;
->  	spin_lock_init(&dummy->mixer_lock);
->  	strcpy(card->mixername, "Dummy Mixer");
+> +	if (snd_BUG_ON(!h))
+> +		return -EINVAL;
+> +
+>  	harmony_disable_interrupts(h);
+>  	
+>     	err = snd_pcm_new(h->card, "harmony", 0, 1, 1, &pcm);
+> @@ -865,11 +868,12 @@ snd_harmony_mixer_reset(struct snd_harmony *h)
+>  static int __devinit
+>  snd_harmony_mixer_init(struct snd_harmony *h)
+>  {
+> -	struct snd_card *card = h->card;
+> +	struct snd_card *card;
+>  	int idx, err;
 >  
-> diff --git a/sound/pci/ali5451/ali5451.c b/sound/pci/ali5451/ali5451.c
-> index b458d20..aaf4da6 100644
-> --- a/sound/pci/ali5451/ali5451.c
-> +++ b/sound/pci/ali5451/ali5451.c
-> @@ -973,7 +973,7 @@ static void snd_ali_free_voice(struct snd_ali * codec,
->  	void *private_data;
+>  	if (snd_BUG_ON(!h))
+>  		return -EINVAL;
+> +	card = h->card;
+>  	strcpy(card->mixername, "Harmony Gain control interface");
 >  
->  	snd_ali_printk("free_voice: channel=%d\n",pvoice->number);
-> -	if (pvoice == NULL || !pvoice->use)
-> +	if (!pvoice->use)
->  		return;
->  	snd_ali_clear_voices(codec, pvoice->number, pvoice->number);
->  	spin_lock_irq(&codec->voice_alloc);
+>  	for (idx = 0; idx < HARMONY_CONTROLS; idx++) {
 > 
