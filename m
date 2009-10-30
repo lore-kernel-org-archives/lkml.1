@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbZJ3WYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933016AbZJ3Wp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbZJ3WYy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 18:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932986AbZJ3WYx
+	id S933016AbZJ3Wp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 18:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933004AbZJ3WpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 18:24:53 -0400
-Received: from kroah.org ([198.145.64.141]:49434 "EHLO coco.kroah.org"
+	Fri, 30 Oct 2009 18:45:24 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:59905 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932980AbZJ3WYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 18:24:53 -0400
-Date: Fri, 30 Oct 2009 15:24:47 -0700
-From: Greg KH <greg@kroah.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 0/7] kfifo: new API v0.6
-Message-ID: <20091030222447.GA11671@kroah.com>
-References: <1256391194.7362.7.camel@wall-e>
+	id S933003AbZJ3WpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 18:45:23 -0400
+Date: Fri, 30 Oct 2009 15:45:28 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Patrik Kluba <kpajko79@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PREEMPT_RCU on UP
+Message-ID: <20091030224528.GN6782@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <26080408.post@talk.nabble.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256391194.7362.7.camel@wall-e>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <26080408.post@talk.nabble.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 24, 2009 at 03:33:14PM +0200, Stefani Seibold wrote:
-> This is a new generic kernel FIFO implementation.
+On Tue, Oct 27, 2009 at 09:10:02AM -0700, Patrik Kluba wrote:
+> 
+> Hi!
+> 
+> Does the preemptible RCU implementation have better performance (lower
+> latency?) than the classic RCU implementation on embedded uniprocessor
+> systems? I can't find any information about this in Documentation/.
 
-<snip>
+I would expect that you would get the best latencies on UP by using
+the -rt patchset and preemptible RCU.  I don't know that anyone has
+carefully measured the combination of vanilla CONFIG_PREEMPT kernel
+and preemptible RCU on UP.
 
-Good stuff, how is this going to get into Linus's tree for .33?  Need me
-to take it through the "driver core" tree, as it seems to touch a lot of
-drivers?  If so, I'll be glad to do so.
-
-Feel free to add my:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-to the patches touching the USB files.
-
-thanks,
-
-greg k-h
+							Thanx, Paul
