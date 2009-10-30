@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932405AbZJ3PQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbZJ3PSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932405AbZJ3PQc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 11:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932394AbZJ3PQa
+	id S932393AbZJ3PSy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 11:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932350AbZJ3PSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 11:16:30 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:59251 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932358AbZJ3PQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 11:16:21 -0400
-Date: Fri, 30 Oct 2009 16:15:44 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Vedran =?utf-8?B?RnVyYcSN?= <vedran.furac@gmail.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Memory overcommit
-Message-ID: <20091030151544.GR9640@random.random>
-References: <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com>
- <4AE846E8.1070303@gmail.com>
- <alpine.DEB.2.00.0910281307370.23279@chino.kir.corp.google.com>
- <4AE9068B.7030504@gmail.com>
- <alpine.DEB.2.00.0910290132320.11476@chino.kir.corp.google.com>
- <4AE97618.6060607@gmail.com>
- <alpine.DEB.2.00.0910291225460.27732@chino.kir.corp.google.com>
- <4AEAEFDD.5060009@gmail.com>
- <20091030141250.GQ9640@random.random>
- <4AEAFB08.8050305@gmail.com>
+	Fri, 30 Oct 2009 11:18:54 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:38569 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932287AbZJ3PSx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 11:18:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=JDThxn3SI+nexHk8+TCnUQWGVW6XuDPSanHgM3lMA0c9RZj/zWDUUkvVM4twIDFzQJ
+         UcSwYusP+xq8w9Np69u7Til2W0E1qUTQWGF/p0YLJzrGyFewsoYzAzS/oqNfNX0fYXxp
+         LfDq+LSbxzTJ9WW3MrHeoeOqUHguIwiFEqG7c=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AEAFB08.8050305@gmail.com>
+Date: Fri, 30 Oct 2009 21:18:57 +0600
+Message-ID: <b9df5fa10910300818u4b104a50if01f32c26be580d8@mail.gmail.com>
+Subject: [PATCH] x86, tsc: Remove checking cpu_has_tsc when CONFIG_X86_TSC=n.
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 03:41:12PM +0100, Vedran Furač wrote:
-> Oh... so this is because apps "reserve" (Committed_AS?) more then they
-> currently need.
+ When CONFIG_X86_TSC=n, we do not need to check cpu_has_tsc, we can
+simply return with 0. Moreover cpu_has_tsc indicates whether cpu
+tsc feature on or not, so it doesn't matter when CONFIG_X86_TSC=n.
+Am I right? Or I'm missing anything?
 
-They don't actually reserve, they end up "reserving" if overcommit is
-set to 2 (OVERCOMMIT_NEVER)... Apps aren't reserving, more likely they
-simply avoid a flood of mmap when a single one is enough to map an
-huge MAP_PRIVATE region like shared libs that you may only execute
-partially (this is why total_vm is usually much bigger than real ram
-mapped by pagetables represented in rss). But those shared libs are
-99% pageable and they don't need to stay in swap or ram, so
-overcommit-as greatly overstimates the actual needs even if shared lib
-loading wouldn't be 64bit optimized (i.e. large and a single one).
+----
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 
-> A the time of "malloc: Cannot allocate memory":
-> 
-> CommitLimit:     3364440 kB
-> Committed_AS:    3240200 kB
-> 
-> So probably everything is ok (and free is misleading). Overcommit is
-> unfortunately necessary if I want to be able to use all my memory.
+--- linus/arch/x86/include/asm/tsc.h	2009-10-17 13:12:59.000000000 +0600
++++ rakib/arch/x86/include/asm/tsc.h	2009-10-30 21:55:29.000000000 +0600
+@@ -24,8 +24,7 @@ static inline cycles_t get_cycles(void)
+ 	unsigned long long ret = 0;
 
-Add more swap.
+ #ifndef CONFIG_X86_TSC
+-	if (!cpu_has_tsc)
+-		return 0;
++	return 0;
+ #endif
+ 	rdtscll(ret);
 
-> Btw. http://www.redhat.com/advice/tips/meminfo.html says Committed_AS is
-> a (gu)estimate. Hope it is a good (not to high) guesstimate. :)
-
-It is a guess in the sense to guarantee no ENOMEM it has to take into
-account the worst possible case, that is all shared lib MAP_PRIVATE
-mappings are cowed, which is very far from reality. Other than that
-the overcommitas should exactly match all mmapped possibly writeable
-space that can only fit in ram+swap, so from that point of view it's
-not a guessed number (modulo the smp read out of order). The only
-guess is how much slab, cache and other stuff is freeable, which
-doesn't provide true perfection to OVERCOMMIT_NEVER.
+@@ -39,8 +38,7 @@ static __always_inline cycles_t vget_cyc
+ 	 * access boot_cpu_data (which is not VDSO-safe):
+ 	 */
+ #ifndef CONFIG_X86_TSC
+-	if (!cpu_has_tsc)
+-		return 0;
++	return 0;
+ #endif
+ 	return (cycles_t)__native_read_tsc();
+ }
