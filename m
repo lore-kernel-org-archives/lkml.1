@@ -1,140 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbZJ3F3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZJ3Fil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbZJ3F3K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 01:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbZJ3F3J
+	id S1755487AbZJ3Fil (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 01:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZJ3Fil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 01:29:09 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34448 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbZJ3F3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 01:29:08 -0400
-Date: Fri, 30 Oct 2009 16:29:06 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "Joseph S. Myers" <joseph@codesourcery.com>, linux-api@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <onestero@redhat.com>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: F_SETOWN_EX and F_GETLK64 conflict
-Message-Id: <20091030162906.fbc1c40b.sfr@canb.auug.org.au>
-In-Reply-To: <20091030161320.17d07dc9.sfr@canb.auug.org.au>
-References: <Pine.LNX.4.64.0910041229300.20203@digraph.polyomino.org.uk>
-	<1254691822.21044.9.camel@laptop>
-	<20091030161320.17d07dc9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Oct 2009 01:38:41 -0400
+Received: from msa105.auone-net.jp ([61.117.18.165]:39582 "EHLO
+	msa105.auone-net.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754764AbZJ3Fik (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 01:38:40 -0400
+X-Greylist: delayed 418 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Oct 2009 01:38:40 EDT
+Date: Fri, 30 Oct 2009 14:31:46 +0900
+From: Kusanagi Kouichi <slash@ac.auone-net.jp>
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fs: Don't ignore MS_RDONLY in bind and not remount case.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <20091030053146.BC2176FC03B@msa105.auone-net.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Oct 2009 16:13:20 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> This is why we have F_LINUX_SPECIFIC_BASE and use it in
-> include/linux/fcntl.h ... it should be used as a base for any new fcntl
-> types since they don't require backward compatibility.
+A readonly bind mount needed to be created in 2 steps
 
-Something like this (not even built, but pretty obvious):
+# mount --bind
+# mount --bind -o remount,ro
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 30 Oct 2009 16:25:51 +1100
-Subject: [PATCH] fcntl: use consistent valuse for F_SETOWN_EX/F_GETOWN_EX
+instead of single
 
-This is what F_LINUX_SPECIFIC_BASE was meant for.
+# mount --bind -o ro
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+because MS_RDONLY is ignored in bind and not remount case.
+
+Signed-off-by: Kusanagi Kouichi <slash@ac.auone-net.jp>
 ---
- arch/alpha/include/asm/fcntl.h  |    2 --
- arch/parisc/include/asm/fcntl.h |    2 --
- include/asm-generic/fcntl.h     |   14 --------------
- include/linux/fcntl.h           |   12 ++++++++++++
- 4 files changed, 12 insertions(+), 18 deletions(-)
+ fs/namespace.c |   14 +++++++++-----
+ fs/pnode.h     |    1 +
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/arch/alpha/include/asm/fcntl.h b/arch/alpha/include/asm/fcntl.h
-index e42823e..25da001 100644
---- a/arch/alpha/include/asm/fcntl.h
-+++ b/arch/alpha/include/asm/fcntl.h
-@@ -26,8 +26,6 @@
- #define F_GETOWN	6	/*  for sockets. */
- #define F_SETSIG	10	/*  for sockets. */
- #define F_GETSIG	11	/*  for sockets. */
--#define F_SETOWN_EX	12
--#define F_GETOWN_EX	13
+diff --git a/fs/namespace.c b/fs/namespace.c
+index bdc3cb4..1d350e2 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -562,6 +562,8 @@ static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
+ 		}
  
- /* for posix fcntl() and lockf() */
- #define F_RDLCK		1
-diff --git a/arch/parisc/include/asm/fcntl.h b/arch/parisc/include/asm/fcntl.h
-index 5f39d55..1e1c824 100644
---- a/arch/parisc/include/asm/fcntl.h
-+++ b/arch/parisc/include/asm/fcntl.h
-@@ -28,8 +28,6 @@
- #define F_SETOWN	12	/*  for sockets. */
- #define F_SETSIG	13	/*  for sockets. */
- #define F_GETSIG	14	/*  for sockets. */
--#define F_GETOWN_EX	15
--#define F_SETOWN_EX	16
+ 		mnt->mnt_flags = old->mnt_flags;
++		if (flag & CL_READONLY)
++			mnt->mnt_flags |= MNT_READONLY;
+ 		atomic_inc(&sb->s_active);
+ 		mnt->mnt_sb = sb;
+ 		mnt->mnt_root = dget(root);
+@@ -1447,7 +1449,7 @@ static int do_change_type(struct path *path, int flag)
+  * do loopback mount.
+  */
+ static int do_loopback(struct path *path, char *old_name,
+-				int recurse)
++				int flags)
+ {
+ 	struct path old_path;
+ 	struct vfsmount *mnt = NULL;
+@@ -1469,10 +1471,12 @@ static int do_loopback(struct path *path, char *old_name,
+ 		goto out;
  
- /* for posix fcntl() and lockf() */
- #define F_RDLCK		01
-diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
-index 0c3dd86..980d6b5 100644
---- a/include/asm-generic/fcntl.h
-+++ b/include/asm-generic/fcntl.h
-@@ -73,20 +73,6 @@
- #define F_SETSIG	10	/* for sockets. */
- #define F_GETSIG	11	/* for sockets. */
- #endif
--#ifndef F_SETOWN_EX
--#define F_SETOWN_EX	12
--#define F_GETOWN_EX	13
--#endif
--
--#define F_OWNER_TID	0
--#define F_OWNER_PID	1
--#define F_OWNER_GID	2
--
--struct f_owner_ex {
--	int	type;
--	pid_t	pid;
--};
--
- /* for F_[GET|SET]FL */
- #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
+ 	err = -ENOMEM;
+-	if (recurse)
+-		mnt = copy_tree(old_path.mnt, old_path.dentry, 0);
++	if (flags & MS_REC)
++		mnt = copy_tree(old_path.mnt, old_path.dentry,
++				flags & MS_RDONLY ? CL_READONLY : 0);
+ 	else
+-		mnt = clone_mnt(old_path.mnt, old_path.dentry, 0);
++		mnt = clone_mnt(old_path.mnt, old_path.dentry,
++				flags & MS_RDONLY ? CL_READONLY : 0);
  
-diff --git a/include/linux/fcntl.h b/include/linux/fcntl.h
-index 8603740..b34c41d 100644
---- a/include/linux/fcntl.h
-+++ b/include/linux/fcntl.h
-@@ -40,6 +40,18 @@
-                                            unlinking file.  */
- #define AT_SYMLINK_FOLLOW	0x400   /* Follow symbolic links.  */
+ 	if (!mnt)
+ 		goto out;
+@@ -1959,7 +1963,7 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
+ 		retval = do_remount(&path, flags & ~MS_REMOUNT, mnt_flags,
+ 				    data_page);
+ 	else if (flags & MS_BIND)
+-		retval = do_loopback(&path, dev_name, flags & MS_REC);
++		retval = do_loopback(&path, dev_name, flags);
+ 	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
+ 		retval = do_change_type(&path, flags);
+ 	else if (flags & MS_MOVE)
+diff --git a/fs/pnode.h b/fs/pnode.h
+index 958665d..59769bb 100644
+--- a/fs/pnode.h
++++ b/fs/pnode.h
+@@ -23,6 +23,7 @@
+ #define CL_MAKE_SHARED 		0x08
+ #define CL_PROPAGATION 		0x10
+ #define CL_PRIVATE 		0x20
++#define CL_READONLY 		0x40
  
-+#define F_SETOWN_EX	(F_LINUX_SPECIFIC_BASE + 7)
-+#define F_GETOWN_EX	(F_LINUX_SPECIFIC_BASE + 8)
-+
-+#define F_OWNER_TID	0
-+#define F_OWNER_PID	1
-+#define F_OWNER_GID	2
-+
-+struct f_owner_ex {
-+	int	type;
-+	pid_t	pid;
-+};
-+
- #ifdef __KERNEL__
- 
- #ifndef force_o_largefile
+ static inline void set_mnt_shared(struct vfsmount *mnt)
+ {
 -- 
-1.6.5.2
+1.6.5
 
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
