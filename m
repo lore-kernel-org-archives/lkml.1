@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbZJ3WKC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbZJ3WJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932973AbZJ3WKC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 18:10:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932952AbZJ3WJ6
+	id S932962AbZJ3WJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 18:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932903AbZJ3WJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 18:09:58 -0400
-Received: from kroah.org ([198.145.64.141]:48363 "EHLO coco.kroah.org"
+	Fri, 30 Oct 2009 18:09:56 -0400
+Received: from kroah.org ([198.145.64.141]:48367 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757544AbZJ3WJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757530AbZJ3WJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 30 Oct 2009 18:09:52 -0400
-Date: Fri, 30 Oct 2009 15:09:37 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: [GIT PATCH] STAGING fixes for 2.6.32-git
-Message-ID: <20091030220937.GB11297@kroah.com>
+Date: Fri, 30 Oct 2009 15:09:44 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB bugfixes for 2.6.32-git
+Message-ID: <20091030220944.GC11297@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,101 +24,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some staging fixes for your 2.6.32-git tree.
+Here are a few bugfixes for your 2.6.32-git tree.
 
-The big one here is a removal of a driver that is now working properly
-with a "real" driver in the network driver portion of the kernel tree.
-The other fixes are minor ones that solve problems that have been
-reported (like finally getting the Hyper-V drivers to work properly.)
+These fix:
+	- sierra driver suspend issues.
+	- new device ids.
+	- oops fixes for reported problems.
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
 All of these patches have been in the linux-next and mm trees for a
 while.
 
-The patches will be sent as a follow-on to this message to the
-driver-devel list for people to see.
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
 
 thanks,
 
 greg k-h
 
---------------
+------------
 
- drivers/staging/Kconfig                            |    2 -
- drivers/staging/Makefile                           |    1 -
- drivers/staging/android/Kconfig                    |    1 +
- drivers/staging/hv/ChannelMgmt.h                   |    3 +-
- drivers/staging/hv/NetVsc.c                        |   10 +-
- drivers/staging/hv/TODO                            |    6 +
- drivers/staging/hv/osd.h                           |    1 +
- drivers/staging/hv/vmbus_drv.c                     |   28 +-
- drivers/staging/otus/Kconfig                       |    2 +-
- drivers/staging/panel/panel.c                      |   13 +-
- drivers/staging/rt2860/Kconfig                     |    2 +-
- drivers/staging/rt2870/Kconfig                     |    2 +-
- drivers/staging/rt3090/Kconfig                     |    2 +-
- drivers/staging/rtl8187se/Kconfig                  |    2 +-
- .../staging/rtl8187se/ieee80211/ieee80211_crypt.c  |    4 +-
- .../staging/rtl8187se/ieee80211/ieee80211_module.c |    4 +-
- .../rtl8187se/ieee80211/ieee80211_softmac.c        |   12 +-
- drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c |   17 +-
- drivers/staging/rtl8192e/Kconfig                   |    2 +-
- .../staging/rtl8192e/ieee80211/ieee80211_crypt.c   |    8 +-
- .../staging/rtl8192e/ieee80211/ieee80211_module.c  |    8 +-
- .../staging/rtl8192e/ieee80211/ieee80211_softmac.c |   19 +-
- drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c  |   21 +-
- drivers/staging/rtl8192su/Kconfig                  |    2 +-
- .../staging/rtl8192su/ieee80211/ieee80211_crypt.c  |    4 +-
- .../staging/rtl8192su/ieee80211/ieee80211_module.c |    4 +-
- .../rtl8192su/ieee80211/ieee80211_softmac.c        |   15 +-
- drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c |   17 +-
- drivers/staging/stlc45xx/Kconfig                   |    8 -
- drivers/staging/stlc45xx/Makefile                  |    1 -
- drivers/staging/stlc45xx/stlc45xx.c                | 2594 --------------------
- drivers/staging/stlc45xx/stlc45xx.h                |  283 ---
- drivers/staging/stlc45xx/stlc45xx_lmac.h           |  434 ----
- drivers/staging/vt6656/main_usb.c                  |    1 -
- drivers/staging/winbond/Kconfig                    |    2 +-
- drivers/staging/wlan-ng/Kconfig                    |    2 +-
- 36 files changed, 75 insertions(+), 3462 deletions(-)
- delete mode 100644 drivers/staging/stlc45xx/Kconfig
- delete mode 100644 drivers/staging/stlc45xx/Makefile
- delete mode 100644 drivers/staging/stlc45xx/stlc45xx.c
- delete mode 100644 drivers/staging/stlc45xx/stlc45xx.h
- delete mode 100644 drivers/staging/stlc45xx/stlc45xx_lmac.h
+ drivers/net/usb/rndis_host.c      |    6 ++--
+ drivers/usb/gadget/fsl_udc_core.c |    2 +-
+ drivers/usb/host/r8a66597-hcd.c   |   23 ++++++++++++---------
+ drivers/usb/serial/option.c       |    4 +++
+ drivers/usb/serial/sierra.c       |   38 +++++++++++++++++++++---------------
+ 5 files changed, 43 insertions(+), 30 deletions(-)
 
 ---------------
 
-Greg Kroah-Hartman (3):
-      Staging: remove stlc45xx driver
-      Staging: android: mark subsystem as broken
-      Staging: wireless drivers Kconfig change
+Anton Vorontsov (1):
+      USB: fsl_udc_core: Fix kernel oops on module removal
 
-Haiyang Zhang (1):
-      Staging: hv: Fix null pointer error after vmbus loading
+Bryan Wu (1):
+      USB: option: TLAYTECH TUE800 support
 
-Hank Janssen (1):
-      Staging: hv: Fix vmbus load hang caused by faulty data packing
+Elina Pasheva (2):
+      USB: serial: sierra driver send_setup() autopm fix
+      USB: serial: sierra driver autopm fixes
 
-Herton Ronaldo Krzesinski (1):
-      Staging: rtl8187se/rtl8192e/rtl8192su: allow module unload
+George Nassar (1):
+      USB: rndis_host: debug info clobbered before it is logged
 
-Milan Dadok (3):
-      Staging: hv: fix oops in vmbus - udev events
-      Staging: hv: fix oops in vmbus - netvsc list_head
-      Staging: hv: fix oops in vmbus - missing #include
-
-Peter Huewe (1):
-      Staging: Panel: prevent driver from calling misc_deregister twice on same ressource
-
-Randy Dunlap (1):
-      Staging: fix wireless drivers depends
-
-Stephen Hemminger (1):
-      Staging: hv TODO patches
-
-miaofng (1):
-      Staging: vt6656: fix the memory free bug in vntwusb_disconnect()
+Yoshihiro Shimoda (1):
+      USB: r8a66597-hcd: fix cannot detect a device when uses_new_polling is set
 
