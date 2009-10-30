@@ -1,106 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZJ3Fil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbZJ3Fmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbZJ3Fil (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 01:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZJ3Fil
+	id S1755619AbZJ3Fmi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 01:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbZJ3Fmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 01:38:41 -0400
-Received: from msa105.auone-net.jp ([61.117.18.165]:39582 "EHLO
-	msa105.auone-net.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754764AbZJ3Fik (ORCPT
+	Fri, 30 Oct 2009 01:42:38 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:61594 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754806AbZJ3Fmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 01:38:40 -0400
-X-Greylist: delayed 418 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Oct 2009 01:38:40 EDT
-Date: Fri, 30 Oct 2009 14:31:46 +0900
-From: Kusanagi Kouichi <slash@ac.auone-net.jp>
-To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] fs: Don't ignore MS_RDONLY in bind and not remount case.
+	Fri, 30 Oct 2009 01:42:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=gRsrg6C7afnHHw2+YNU/gR+90sl5W97uMnpSU28AJgsZwmpwzbYrUHp4lXlQa8+pR9
+         khZWtXwsc4gKT+CzPowZyZFiMWI9kI78jsXw/J2uVAZCPDD/PxSBhBTBhpzYKWNv/wEE
+         JNwLLCQGgpgajPF2YiLzA0sB438hr0hn5kk5o=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Message-Id: <20091030053146.BC2176FC03B@msa105.auone-net.jp>
+In-Reply-To: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+Date: Fri, 30 Oct 2009 00:42:41 -0500
+Message-ID: <73a01bf20910292242j4558da75i221293bc10cdc867@mail.gmail.com>
+Subject: Re: FatELF patches...
+From: Rayson Ho <raysonlogin@gmail.com>
+To: "Ryan C. Gordon" <icculus@icculus.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A readonly bind mount needed to be created in 2 steps
+On Thu, Oct 29, 2009 at 9:19 PM, Ryan C. Gordon <icculus@icculus.org> wrote:
+> What's the best way to get this moving towards the mainline? It's not
+> clear to me who the binfmt_elf maintainer would be. Is this something that
+> should go to Andrew Morton for the -mm tree?
 
-# mount --bind
-# mount --bind -o remount,ro
+Can we first find out whether it is safe from a legal point of view??
+After the SCO v. IBM lawsuit, we should be way more careful.
 
-instead of single
+Like it or not, Apple invented universal binaries in 1993, and so far
+we are not able to find any prior arts...  If we integrate something
+that infringes Apple's patent, then Apple can ban all the Linux
+distributions and devices from shipping.
 
-# mount --bind -o ro
+Rayson
 
-because MS_RDONLY is ignored in bind and not remount case.
 
-Signed-off-by: Kusanagi Kouichi <slash@ac.auone-net.jp>
----
- fs/namespace.c |   14 +++++++++-----
- fs/pnode.h     |    1 +
- 2 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/fs/namespace.c b/fs/namespace.c
-index bdc3cb4..1d350e2 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -562,6 +562,8 @@ static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
- 		}
- 
- 		mnt->mnt_flags = old->mnt_flags;
-+		if (flag & CL_READONLY)
-+			mnt->mnt_flags |= MNT_READONLY;
- 		atomic_inc(&sb->s_active);
- 		mnt->mnt_sb = sb;
- 		mnt->mnt_root = dget(root);
-@@ -1447,7 +1449,7 @@ static int do_change_type(struct path *path, int flag)
-  * do loopback mount.
-  */
- static int do_loopback(struct path *path, char *old_name,
--				int recurse)
-+				int flags)
- {
- 	struct path old_path;
- 	struct vfsmount *mnt = NULL;
-@@ -1469,10 +1471,12 @@ static int do_loopback(struct path *path, char *old_name,
- 		goto out;
- 
- 	err = -ENOMEM;
--	if (recurse)
--		mnt = copy_tree(old_path.mnt, old_path.dentry, 0);
-+	if (flags & MS_REC)
-+		mnt = copy_tree(old_path.mnt, old_path.dentry,
-+				flags & MS_RDONLY ? CL_READONLY : 0);
- 	else
--		mnt = clone_mnt(old_path.mnt, old_path.dentry, 0);
-+		mnt = clone_mnt(old_path.mnt, old_path.dentry,
-+				flags & MS_RDONLY ? CL_READONLY : 0);
- 
- 	if (!mnt)
- 		goto out;
-@@ -1959,7 +1963,7 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
- 		retval = do_remount(&path, flags & ~MS_REMOUNT, mnt_flags,
- 				    data_page);
- 	else if (flags & MS_BIND)
--		retval = do_loopback(&path, dev_name, flags & MS_REC);
-+		retval = do_loopback(&path, dev_name, flags);
- 	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
- 		retval = do_change_type(&path, flags);
- 	else if (flags & MS_MOVE)
-diff --git a/fs/pnode.h b/fs/pnode.h
-index 958665d..59769bb 100644
---- a/fs/pnode.h
-+++ b/fs/pnode.h
-@@ -23,6 +23,7 @@
- #define CL_MAKE_SHARED 		0x08
- #define CL_PROPAGATION 		0x10
- #define CL_PRIVATE 		0x20
-+#define CL_READONLY 		0x40
- 
- static inline void set_mnt_shared(struct vfsmount *mnt)
- {
--- 
-1.6.5
-
+>
+> --ryan.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
