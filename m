@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbZJ3PQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932405AbZJ3PQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932386AbZJ3PQW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 11:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932357AbZJ3PQR
+	id S932405AbZJ3PQc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 11:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932394AbZJ3PQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 11:16:17 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:43353 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932305AbZJ3PQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 11:16:15 -0400
-Date: Fri, 30 Oct 2009 11:14:28 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Miller <davem@davemloft.net>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-Message-ID: <20091030151428.GB2586@tuxdriver.com>
-References: <200910291212.41656.bzolnier@gmail.com> <200910291514.40318.bzolnier@gmail.com> <84144f020910291245l1a7a3fd6o8822ecd4ce3b5504@mail.gmail.com> <200910292248.42229.bzolnier@gmail.com>
+	Fri, 30 Oct 2009 11:16:30 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59251 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932358AbZJ3PQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 11:16:21 -0400
+Date: Fri, 30 Oct 2009 16:15:44 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Vedran =?utf-8?B?RnVyYcSN?= <vedran.furac@gmail.com>
+Cc: David Rientjes <rientjes@google.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Memory overcommit
+Message-ID: <20091030151544.GR9640@random.random>
+References: <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com>
+ <4AE846E8.1070303@gmail.com>
+ <alpine.DEB.2.00.0910281307370.23279@chino.kir.corp.google.com>
+ <4AE9068B.7030504@gmail.com>
+ <alpine.DEB.2.00.0910290132320.11476@chino.kir.corp.google.com>
+ <4AE97618.6060607@gmail.com>
+ <alpine.DEB.2.00.0910291225460.27732@chino.kir.corp.google.com>
+ <4AEAEFDD.5060009@gmail.com>
+ <20091030141250.GQ9640@random.random>
+ <4AEAFB08.8050305@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200910292248.42229.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4AEAFB08.8050305@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 10:48:42PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 29 October 2009 20:45:07 Pekka Enberg wrote:
+On Fri, Oct 30, 2009 at 03:41:12PM +0100, Vedran Furač wrote:
+> Oh... so this is because apps "reserve" (Committed_AS?) more then they
+> currently need.
 
-> > I was simply pointing out that your time would probably be better
-> > spent in improving the "proper" ralink wireless drivers but if you
+They don't actually reserve, they end up "reserving" if overcommit is
+set to 2 (OVERCOMMIT_NEVER)... Apps aren't reserving, more likely they
+simply avoid a flood of mmap when a single one is enough to map an
+huge MAP_PRIVATE region like shared libs that you may only execute
+partially (this is why total_vm is usually much bigger than real ram
+mapped by pagetables represented in rss). But those shared libs are
+99% pageable and they don't need to stay in swap or ram, so
+overcommit-as greatly overstimates the actual needs even if shared lib
+loading wouldn't be 64bit optimized (i.e. large and a single one).
+
+> A the time of "malloc: Cannot allocate memory":
 > 
-> Thanks for the concern.  However recent discussions made my realize how
-> I should really be spending my time effectively way too well.
+> CommitLimit:     3364440 kB
+> Committed_AS:    3240200 kB
 > 
-> > _really_ prefer to spend your time in pointless arguments, go ahead.
-> 
-> I don't think that my technical arguments are pointless.
+> So probably everything is ok (and free is misleading). Overcommit is
+> unfortunately necessary if I want to be able to use all my memory.
 
-More like "petty"...
+Add more swap.
 
-> Quite the contrary, I'm pretty confident that addressing my review concerns
-> would result in better RT28x00 / RT30x0 support in the very near future.
+> Btw. http://www.redhat.com/advice/tips/meminfo.html says Committed_AS is
+> a (gu)estimate. Hope it is a good (not to high) guesstimate. :)
 
-Yeah, maybe.  Or they could just waste someone's time mashing
-together some definitions to prematurely turn two header files into
-three instead of spending that time on resolving operational issues.
-In either case it is a judgment call, and IMHO not your call to make.
-
-> > It should be pretty obvious by now that the best way to improve things
-> > is to work with the relevant maintainers, not against them. (Unless
-> > you wish your work to be ignored, of course.)
-> 
-> I work with a lot of other maintainers.  I would say that providing valuable
-> review feedback is also "working with" (at least I would be very happy with
-> such feedback in my projects).
-
-"Valuable" feedback would be welcome.  In fact, your initial feedback
-in this case was welcome -- even moreso had it included a patch.
-
-Your arrogant follow-ups and self-righteous indignation, however,
-is quite a bit less welcome.  Please take it somewhere else.
-
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+It is a guess in the sense to guarantee no ENOMEM it has to take into
+account the worst possible case, that is all shared lib MAP_PRIVATE
+mappings are cowed, which is very far from reality. Other than that
+the overcommitas should exactly match all mmapped possibly writeable
+space that can only fit in ram+swap, so from that point of view it's
+not a guessed number (modulo the smp read out of order). The only
+guess is how much slab, cache and other stuff is freeable, which
+doesn't provide true perfection to OVERCOMMIT_NEVER.
