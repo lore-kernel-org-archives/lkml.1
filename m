@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbZJ3WzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbZJ3WzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933044AbZJ3WzV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 18:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933077AbZJ3WzG
+	id S933084AbZJ3WzH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 18:55:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933000AbZJ3WzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 18:55:06 -0400
-Received: from kroah.org ([198.145.64.141]:38989 "EHLO coco.kroah.org"
+	Fri, 30 Oct 2009 18:55:04 -0400
+Received: from kroah.org ([198.145.64.141]:38994 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933043AbZJ3Wyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 18:54:33 -0400
+	id S933037AbZJ3Wye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 18:54:34 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alex Chiang <achiang@hp.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <lenb@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 8/9] Documentation: ABI: /sys/devices/system/cpu/cpuidle/
-Date: Fri, 30 Oct 2009 15:54:27 -0700
-Message-Id: <1256943268-12164-8-git-send-email-gregkh@suse.de>
+Cc: Alex Chiang <achiang@hp.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 9/9] Documentation: ABI: /sys/devices/system/cpu/cpu#/node
+Date: Fri, 30 Oct 2009 15:54:28 -0700
+Message-Id: <1256943268-12164-9-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.1
 In-Reply-To: <20091030220930.GA11297@kroah.com>
 References: <20091030220930.GA11297@kroah.com>
@@ -26,48 +25,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alex Chiang <achiang@hp.com>
 
-Document cpuidle sysfs attributes by reading code, Documentation/cpuidle/,
-and git logs.
+Describe NUMA node symlink created for CPUs when CONFIG_NUMA is set.
 
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Len Brown <lenb@kernel.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/ABI/testing/sysfs-devices-system-cpu |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 8cdda1c..968d8ba 100644
+index 968d8ba..a703b9e 100644
 --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
 +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -101,6 +101,26 @@ Description:	CPU topology files that describe a logical CPU's relationship
+@@ -62,6 +62,21 @@ Description:	CPU topology files that describe kernel limits related to
  		See Documentation/cputopology.txt for more information.
  
  
-+What:		/sys/devices/system/cpu/cpuidle/current_driver
-+		/sys/devices/system/cpu/cpuidle/current_governer_ro
-+Date:		September 2007
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:	Discover cpuidle policy and mechanism
 +
-+		Various CPUs today support multiple idle levels that are
-+		differentiated by varying exit latencies and power
-+		consumption during idle.
++What:		/sys/devices/system/cpu/cpu#/node
++Date:		October 2009
++Contact:	Linux memory management mailing list <linux-mm@kvack.org>
++Description:	Discover NUMA node a CPU belongs to
 +
-+		Idle policy (governor) is differentiated from idle mechanism
-+		(driver)
++		When CONFIG_NUMA is enabled, a symbolic link that points
++		to the corresponding NUMA node directory.
 +
-+		current_driver: displays current idle mechanism
++		For example, the following symlink is created for cpu42
++		in NUMA node 2:
 +
-+		current_governor_ro: displays current idle policy
-+
-+		See files in Documentation/cpuidle/ for more information.
++		/sys/devices/system/cpu/cpu42/node2 -> ../../node/node2
 +
 +
- What:      /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
- Date:      August 2008
- KernelVersion:	2.6.27
+ What:		/sys/devices/system/cpu/cpu#/topology/core_id
+ 		/sys/devices/system/cpu/cpu#/topology/core_siblings
+ 		/sys/devices/system/cpu/cpu#/topology/core_siblings_list
 -- 
 1.6.4.2
 
