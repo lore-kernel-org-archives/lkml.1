@@ -1,119 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZJ3ANt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbZJ3ATB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbZJ3ANt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 20:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbZJ3ANs
+	id S1756451AbZJ3ATB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 20:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbZJ3AS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 20:13:48 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:33358 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289AbZJ3ANs (ORCPT
+	Thu, 29 Oct 2009 20:18:59 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:38916 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756025AbZJ3AS6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 20:13:48 -0400
-Message-ID: <4AEA2FB9.6060305@linux.vnet.ibm.com>
-Date: Thu, 29 Oct 2009 17:13:45 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 29 Oct 2009 20:18:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qLML2+ZTZHIRBvpdI/cwMQKBgnBpocQPPIJQdE8EL6zzCnsf45MwfSv3JWAorgT/ww
+         OieJ1oxP4PhFPK9FlPFBkMk9nMYKxbI48fklaK5y7OD51DTB3af9l9sLrYAQohNdmZMk
+         pVru+XLrTPvmnuQxw5GhFGgmAe+hNbObTUs+c=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, paulus@au1.ibm.com
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: perf_events: zero time running and enabled, but non-zero count
-References: <4AE20102.8010002@linux.vnet.ibm.com> <20091023193246.GA3139@elte.hu> <4AE21655.6040403@linux.vnet.ibm.com> <20091023205711.GB8356@elte.hu> <4AE50B55.4070706@linux.vnet.ibm.com>
-In-Reply-To: <4AE50B55.4070706@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091029.031344.102288703.davem@davemloft.net>
+References: <4AE64FCC.4030102@gmail.com>
+	 <20091029.031344.102288703.davem@davemloft.net>
+Date: Thu, 29 Oct 2009 18:19:03 -0600
+Message-ID: <51f3faa70910291719kecb5edcp3b8812981b69acb1@mail.gmail.com>
+Subject: Re: [PATCH] ide: update Kconfig text to mark as deprecated
+From: Robert Hancock <hancockrwd@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anyone had a chance to look at this test case yet?
-
-Regards,
-
-- Corey
-
-Corey Ashford wrote:
-> On 10/23/2009 01:57 PM, Ingo Molnar wrote:
+On Thu, Oct 29, 2009 at 4:13 AM, David Miller <davem@davemloft.net> wrote:
+> From: Robert Hancock <hancockrwd@gmail.com>
+> Date: Mon, 26 Oct 2009 19:41:32 -0600
+>
+>> The current Kconfig text for CONFIG_IDE doesn't give a hint to users that this
+>> subsystem is currently in maintenance mode and isn't actively developed.
+>> Let's correct this by marking it as deprecated, and also get rid of a bunch of
+>> unnecessary text that doesn't really have anything to do with what the option is
+>> for.
 >>
->> * Corey Ashford<cjashfor@linux.vnet.ibm.com>  wrote:
->>
->>>> Btw., you might want to consider putting such testcases into a new
->>>> 'perf test' kind of utility (under tools/perf/builtin-test.c) that
->>>> does various tests such as reading a count and validating the
->>>> time-running/time-enabled values - so that we can see any bugs
->>>> directly.
->>>
->>> I'll see if I can put the test case in some sort of acceptable format
->>> like that.  Maybe we can use this one test case as the starting point
->>> for builtin-test.c.
->>
->> Yeah. Feel free to add just something minimal that solves your problem.
->> Others will add their testcases too i'm sure, once the basic command is
->> there.
->>
->>     Ingo
-> 
-> Hi Ingo and Paul,
-> 
-> I followed the directions Ingo provided for getting the -tip tree and 
-> then attempted to build the perf tool that's in it and it doesn't build. 
->  I'm getting this error on a Power5 box:
-> 
-> ../../lib/find_next_bit.c: In function ‘ext2_swabp’:
-> ../../lib/find_next_bit.c:168: warning: passing argument 1 of 
-> ‘__swab64p’ from incompatible pointer type
-> make: *** [util/find_next_bit.o] Error 1
-> 
-> I looked at the code and it looks ok to me.  There's a cast from an 
-> "unsigned long *" to a "unsigned long long *", but those types should be 
-> of the same size (in -m64 mode), so I don't know why this is failing.
-> 
-> Some good news is that I have created a simple test case which 
-> demonstrates the bug, but I haven't formulated it in the builtin-test.c 
-> format yet, since I have been able to build perf.
-> 
-> If you toss the attached file into the perf source directory and compile 
-> it as follows:
-> 
-> gcc -m64 -o petb perf_events_time_bug.c -lrt
-> 
-> it will show the error:
-> % ./petb
-> [0] = 1
-> [1] = 0 <- time enabled
-> [2] = 0 <- time running
-> [3] = 4559d1f8
-> [4] = 1
-> test failed!
-> 
-> perf_events_time_bug.c -lrt
-> 
-> If you compile it with:
-> 
-> gcc -DDO_DISABLE -m66 -o petb perf_events_time_bug.c -lrt
-> 
-> This will disable the event before reading it and then you will get the 
-> correct times.
-> 
-> % ./petb
-> [0] = 1
-> [1] = 2a50c1c8 <- time enabled
-> [2] = 2a50c1c8 <- time running
-> [3] = 460dea97
-> [4] = 2
-> test passed!
-> 
+>> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+>
+> Applied to ide-next-2.6, thanks.
+>
+> But honestly, we have to reword or revert this if certain
+> things don't happen before the next merge window.
+>
+> What it comes to is that two things have to happen before
+> we can completely shut down IDE and schedule it's removal.
 
--- 
-Regards,
+Well, that's why it's a Kconfig patch and not an entry in the feature
+removal schedule.. the idea is to tell people that while they can
+continue using the code for now, it's not under active development and
+will likely someday go away, so migrate if you can. That doesn't imply
+that we're close to being able to schedule IDE removal yet.
 
-- Corey
+>
+> 1) Add a way for the ATA layer to create compat device
+>   nodes so that people can change over to use the ATA
+>   layer for their devices without any fstab et al. changes.
+>
+>   These compat device nodes do not have to be so featureful
+>   that they support hdparm or smartd or anything like that,
+>   but they need to work well enough to mount filesystems, and
+>   mount swap partitions, and interact with device management
+>   systems like udev as if they were real IDE devices.
 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+I'm not really sure if this is worthwhile.. is having to update fstab
+really so onerous as to be worth the trouble? You'd presumably have to
+enable the creation of the compat device nodes somehow (enabling them
+by default seems like it would cause a lot of confusion), so it's not
+like you wouldn't need any config changes that way, either.
 
+I think people would be better off just updating their fstab and being
+done with it.. preferably switching to something like mounting by
+label or UUID so that things just work even if the devices get
+reordered when they rearrange their cables or add a new controller,
+etc. Every Fedora/Red Hat-derived OS has set things up this way by
+default for years..
+
+>
+> 2) The two or so remaining devices which have IDE support but
+>   don't have an ATA layer driver need porting.
+
+Has anyone gone through and made a list of these? pmac seems like the
+most obvious one..
+
+>
+> I plan to work on #1 if I get the time.  Someone with the requisite
+> hardware needs to work on #2, and I'm sure whoever wants to work on
+> that will find it easy to get help from some ATA layer experts.
+>
