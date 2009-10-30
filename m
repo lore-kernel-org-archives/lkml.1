@@ -1,93 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbZJ3XWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933093AbZJ3XaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933092AbZJ3XWZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 19:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933045AbZJ3XWY
+	id S933093AbZJ3XaS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 19:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933058AbZJ3XaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 19:22:24 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:32863 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933036AbZJ3XWX convert rfc822-to-8bit (ORCPT
+	Fri, 30 Oct 2009 19:30:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:39166 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933054AbZJ3XaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 19:22:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qySe2RPndNyiomdaur2gBND69HjJQACIJKhmligROQV8DCBwPSfBAgpEOOWGM4ZVnO
-         dV2kuoXcFkLkcPdqKS4VtF2iQOu+ulKjoJBth1Vd0Gr4XKYganKGixnte02vpUPNJ2Z7
-         uD8i2Qt3QA6UIidFca9G95PJnuTYRtjUzmc58=
+	Fri, 30 Oct 2009 19:30:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=CvLHd7/LDcmksArrR3PMWEScCv3c4wccCWJcO2ExwFMRCGiY7RXMU1VAxqdeXkmbW
+	LaA+K77+AvD6hSFoPdy+A==
+Date: Fri, 30 Oct 2009 16:30:04 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mike Travis <travis@sgi.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: Limit the number of processor bootup messages
+In-Reply-To: <4AEB4F0C.5020309@sgi.com>
+Message-ID: <alpine.DEB.2.00.0910301620260.31387@chino.kir.corp.google.com>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233746.128967000@alcatraz.americas.sgi.com> <87tyxmy6x6.fsf@basil.nowhere.org> <4AE5E48F.6020408@sgi.com> <20091026215544.GA3355@basil.fritz.box> <4AEB3D95.50300@sgi.com>
+ <alpine.DEB.2.00.0910301248390.1090@chino.kir.corp.google.com> <4AEB4F0C.5020309@sgi.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1256903425.3555.47.camel@johannes.local>
-References: <f7848160910291617q2b168089l5ce489d2f47ebe96@mail.gmail.com>
-	 <1256885343.3555.0.camel@johannes.local>
-	 <alpine.DEB.2.00.0910300652350.2223@parag-laptop>
-	 <1256903425.3555.47.camel@johannes.local>
-Date: Fri, 30 Oct 2009 19:22:27 -0400
-Message-ID: <f7848160910301622t2cf43b5bo5ffeda03ec2cdbfe@mail.gmail.com>
-Subject: Re: OOPS in cfg80211_conn_work
-From: Parag Warudkar <parag.lkml@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, October 30, 2009, Johannes Berg <johannes@sipsolutions.net> wrote:
-> On Fri, 2009-10-30 at 06:57 -0400, Parag Warudkar wrote:
->>
->> On Fri, 30 Oct 2009, Johannes Berg wrote:
->>
->> > On Thu, 2009-10-29 at 19:17 -0400, Parag Warudkar wrote:
->> > > Oct 29 18:59:06 parag-laptop kernel: [  143.180037] wlan0:
->> > > deauthenticating from 00:16:01:d6:6f:12 by local choice (reason=3)
->> > > Oct 29 18:59:06 parag-laptop kernel: [  143.181137] wlan0: direct
->> > > probe to AP 00:16:01:d6:6f:12 (try 1)
->> >
->> > sorry, I can't read this log. please provide a non-wrapped version
->> >
->> How does this look? (Sorry sent it in a rush earlier.)
->> Below also is a disassembly of cfg80211_conn_work.
->
-> Thanks. I was going to ask for disassembly but you preempted me, I like
-> that :)
->
-> Since you say you can easily reproduce this, can you try the patch
-> below?
->
-> johannes
->
-> ---
->  net/wireless/sme.c |    7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
->
-> --- wireless-testing.orig/net/wireless/sme.c    2009-10-30 12:48:09.000000000 +0100
-> +++ wireless-testing/net/wireless/sme.c 2009-10-30 12:48:41.000000000 +0100
-> @@ -165,7 +165,7 @@ void cfg80211_conn_work(struct work_stru
->         struct cfg80211_registered_device *rdev =
->                 container_of(work, struct cfg80211_registered_device, conn_work);
->         struct wireless_dev *wdev;
-> -       u8 bssid[ETH_ALEN];
-> +       u8 bssid_buf[ETH_ALEN], *bssid = NULL;
->
->         rtnl_lock();
->         cfg80211_lock_rdev(rdev);
-> @@ -181,7 +181,10 @@ void cfg80211_conn_work(struct work_stru
->                         wdev_unlock(wdev);
->                         continue;
->                 }
-> -               memcpy(bssid, wdev->conn->params.bssid, ETH_ALEN);
-> +               if (wdev->conn->params.bssid) {
-> +                       memcpy(bssid_buf, wdev->conn->params.bssid, ETH_ALEN);
-> +                       bssid = bssid_buf;
-> +               }
->                 if (cfg80211_conn_do_work(wdev))
->                         __cfg80211_connect_result(
->                                         wdev->netdev, bssid,
->
->
-Seems to have fixed it.
+On Fri, 30 Oct 2009, Mike Travis wrote:
 
-Thanks Johannes.
+> > > x86_64: Limit the number of processor bootup messages
+> > > 
+
+Is this really only limited to 64 bit?
+
+> > > With a large number of processors in a system there is an excessive amount
+> > > of messages sent to the system console.  It's estimated that with 4096
+> > > processors in a system, and the console baudrate set to 56K, the startup
+> > > messages will take about 84 minutes to clear the serial port.
+> > > 
+> > > This set of patches limits the number of repetitious messages which
+> > > contain
+> > > no additional information.  Much of this information is obtainable from
+> > > the
+> > > /proc and /sysfs.   Most of the messages are also sent to the kernel log
+> > > buffer as KERN_DEBUG messages so it can be used to examine more closely
+> > > any
+> > > details specific to a processor.
+> > > 
+> > > The list of message transformations....
+> > > 
+> > > For system_state == SYSTEM_BOOTING:
+> > > 
+> > > 	[   25.388280] Booting Processors 1-7,320-327, Node 0
+> > > 	[   26.064742] Booting Processors 8-15,328-335, Node 1
+> > > 	[   26.837006] Booting Processors 16-31,336-351, Nodes 2-3
+> > > 	[   28.440427] Booting Processors 32-63,352-383, Nodes 4-7
+> > > 	[   31.640450] Booting Processors 64-127,384-447, Nodes 8-15
+> > > 	[   38.041430] Booting Processors 128-255,448-575, Nodes 16-31
+> > > 	[   50.917504] Booting Processors 256-319,576-639, Nodes 32-39
+> > > 	[   90.964169] Brought up 640 CPUs
+> > > 
+> > > The range of processors increases as a power of 2, so 4096 CPU's should
+> > > only take 12 lines.
+> > > 
+
+On your particular machine, yes, but there's no x86 restriction on the 
+number of cpus per node.
+
+> > > @@ -671,6 +759,50 @@
+> > > 	complete(&c_idle->done);
+> > > }
+> > > 
+> > > +/* Summarize the "Booting processor ..." startup messages */
+> > > +static void __init print_summary_bootmsg(int cpu)
+> > > +{
+> > > +	static int next_node, node_shift;
+> > > +	int node = cpu_to_node(cpu);
+> > > +
+> > > +	if (node >= next_node) {
+> > > +		cpumask_var_t cpulist;
+> > > +
+> > > +		node = next_node;
+> > > +		next_node = 1 << node_shift;
+> > > +		node_shift++;
+> > > +
+> > > +		if (alloc_cpumask_var(&cpulist, GFP_KERNEL)) {
+> > > +			int i, tmp, last_node = node;
+> > > +			char buf[32];
+> > > +
+> > > +			cpumask_clear(cpulist);
+> > > +			for_each_present_cpu(i) {
+> > > +				if (i == 0)	/* boot cpu */
+> > > +					continue;
+> > > +
+> > > +				tmp = cpu_to_node(i);
+> > > +				if (node <= tmp && tmp < next_node) {
+> > > +					cpumask_set_cpu(i, cpulist);
+> > > +					if (last_node < tmp)
+> > > +						last_node = tmp;
+> > > +				}
+> > > +			}
+> > > +			if (cpumask_weight(cpulist)) {
+> > > +				cpulist_scnprintf(buf, sizeof(buf), cpulist);
+> > > +				printk(KERN_INFO "Booting Processors %s,",
+> > > buf);
+> > > +
+> > > +				if (node == last_node)
+> > > +					printk(KERN_CONT " Node %d\n", node);
+> > > +				else
+> > > +					printk(KERN_CONT " Nodes %d-%d\n",
+> > > +						node, last_node);
+> > > +			}
+> > > +			free_cpumask_var(cpulist);
+> > > +		}
+> > > +	}
+> > > +}
+> > > +
+> > > /*
+> > >  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
+> > >  * (ie clustered apic addressing mode), this is a LOGICAL apic ID.
+> > 
+> > Why isn't cpumask_of_node() available yet?
+> 
+> I'll try that.  It gets a bit tricky in specifying the actual last node that
+> is being booted.
+> 
+
+Why do you need to call print_summary_bootmsg() for each cpu?  It seems 
+like you'd be able to move this out to a single call to a new function:
+
+void __init print_summary_bootmsg(void)
+{
+	char buf[128];
+	int nid;
+
+	for_each_online_node(nid) {
+		const struct cpumask *mask = cpumask_of_node(nid);
+
+		if (cpumask_empty(mask))
+			continue;
+		cpulist_scnprintf(buf, sizeof(buf), cpumask_of_node(nid));
+		pr_info("Booting Processors %s, Node %d\n", buf, nid);
+	}
+}
