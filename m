@@ -1,56 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbZJ3PQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932347AbZJ3PDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932363AbZJ3PQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 11:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932321AbZJ3PQP
+	id S932347AbZJ3PDy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 11:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932287AbZJ3PDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 11:16:15 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:43355 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932317AbZJ3PQP (ORCPT
+	Fri, 30 Oct 2009 11:03:54 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:52887 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932269AbZJ3PDx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 11:16:15 -0400
-Date: Fri, 30 Oct 2009 11:02:24 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-Message-ID: <20091030150223.GA2586@tuxdriver.com>
-References: <1256886023.3555.5.camel@johannes.local> <20091030110616.GB6150@ff.dom.local>
+	Fri, 30 Oct 2009 11:03:53 -0400
+Message-ID: <4AEB0059.1050400@gmail.com>
+Date: Fri, 30 Oct 2009 16:03:53 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091030110616.GB6150@ff.dom.local>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Francis Moreau <francis.moro@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
+References: <38b2ab8a0909290109m3f82c161j4fb0f1266152877e@mail.gmail.com>	 <4AC1D0F5.4050709@gmail.com> <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com> <4AEACD88.8080108@gmail.com>
+In-Reply-To: <4AEACD88.8080108@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 30 Oct 2009 16:03:54 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 11:06:16AM +0000, Jarek Poplawski wrote:
+Eric Dumazet a écrit :
+> Francis Moreau a écrit :
+>> Hello Eric,
+>>
+>> It seems I still have a related bug, please have a look to the following oops.
+>>
+>> This happened on a 2.6.32-rc5 where your patch is included.
+>>
+>> [107304.558821] nfsd: last server has exited, flushing export cache
+>> [107304.558848] ------------[ cut here ]------------
+>> [107304.558858] WARNING: at net/ipv4/af_inet.c:153
+>> inet_sock_destruct+0x161/0x17c()
+>> [107304.558862] Hardware name: P5K-VM
+>> [107304.558865] Modules linked in: kvm_intel kvm jfs loop nfsd lockd
+>> nfs_acl auth_rpcgss exportfs sunrpc [last unloaded: microcode]
+>> [107304.558889] Pid: 8198, comm: nfsd Tainted: G   M       2.6.32-rc5 #25
+>> [107304.558892] Call Trace:
+>> [107304.558899]  [<ffffffff81429f19>] ? inet_sock_destruct+0x161/0x17c
+>> [107304.558907]  [<ffffffff810487e9>] warn_slowpath_common+0x7c/0xa9
+>> [107304.558914]  [<ffffffff8104882a>] warn_slowpath_null+0x14/0x16
+>> [107304.558920]  [<ffffffff81429f19>] inet_sock_destruct+0x161/0x17c
+>> [107304.558927]  [<ffffffff813c8741>] __sk_free+0x23/0xe7
+>> [107304.558933]  [<ffffffff813c8881>] sk_free+0x1f/0x21
+>> [107304.558939]  [<ffffffff813c894b>] sk_common_release+0xc8/0xcd
+>> [107304.558944]  [<ffffffff81420b59>] udp_lib_close+0xe/0x10
+>> [107304.558951]  [<ffffffff814299bf>] inet_release+0x55/0x5c
+>> [107304.558957]  [<ffffffff813c5aa9>] sock_release+0x1f/0x71
+>> [107304.558962]  [<ffffffff813c5b22>] sock_close+0x27/0x2b
+>> [107304.558968]  [<ffffffff810eb60f>] __fput+0xfb/0x1c0
+>> [107304.558973]  [<ffffffff810eb6f1>] fput+0x1d/0x1f
+>> [107304.558995]  [<ffffffffa0013e23>] svc_sock_free+0x40/0x56 [sunrpc]
+>> [107304.559018]  [<ffffffffa001f392>] svc_xprt_free+0x43/0x53 [sunrpc]
+>> [107304.559038]  [<ffffffffa001f34f>] ? svc_xprt_free+0x0/0x53 [sunrpc]
+>> [107304.559048]  [<ffffffff811d9275>] kref_put+0x43/0x4f
+>> [107304.559069]  [<ffffffffa001e67a>] svc_close_xprt+0x55/0x5e [sunrpc]
+>> [107304.559088]  [<ffffffffa001e6d3>] svc_close_all+0x50/0x69 [sunrpc]
+>> [107304.559107]  [<ffffffffa0012a2b>] svc_destroy+0x9e/0x142 [sunrpc]
+>> [107304.559126]  [<ffffffffa0012b88>] svc_exit_thread+0xb9/0xc2 [sunrpc]
+>> [107304.559138]  [<ffffffffa008981b>] ? nfsd+0x0/0x13f [nfsd]
+>> [107304.559149]  [<ffffffffa0089940>] nfsd+0x125/0x13f [nfsd]
+>> [107304.559157]  [<ffffffff810685e3>] kthread+0x82/0x8a
+>> [107304.559164]  [<ffffffff8100c13a>] child_rip+0xa/0x20
+>> [107304.559172]  [<ffffffff8100baad>] ? restore_args+0x0/0x30
+>> [107304.559179]  [<ffffffff81068561>] ? kthread+0x0/0x8a
+>> [107304.559185]  [<ffffffff8100c130>] ? child_rip+0x0/0x20
+>> [107304.559191] ---[ end trace c107131f4762168c ]---
+>> [107304.927931] NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state
+>> recovery directory
+>> [107304.932765] NFSD: starting 90-second grace period
+>>
+> 
+> This oops occurring again and again with SUNRPC finally gave me the right pointer.
+> 
+> David, we added two years ago memory accounting to UDP, and this changed
+> requirements about calling skb_free_datagram() in the right context.
+> 
+> I wish we had an ASSERT_SOCK_LOCKED() debugging facility :(
+> 
+> Francis, would you please test following patch ?
 
-> There are various ways to disagree, and ignoring by John questions
-> from a merited developer both in this referenced lkml and current
-> threads looks at least strange (if not offensive) as well.
+Here is the updated patch (against linux-2.6) , in case other people are interested to test it.
 
-Did you read the thread for which Bartlomiej provided a link earlier?
-There were ten responses (only three of them from him) in that thread.
-His comments were not ignored, they were rejected.
+[PATCH take2] net: fix sk_forward_alloc corruption
 
-Ever since Bartlomiej decided to tear himself away from
-drivers/staging, he has been nothing but negative -- petty, whining,
-indignat, whatever.  Just what has he done to merit any special
-consideration here?  Why should he have any sort of veto over rt2x00?
+On UDP sockets, we must call skb_free_datagram() with socket locked,
+or risk sk_forward_alloc corruption. This requirement is not respected
+in SUNRPC.
 
-And of all things on which to take a stand -- how dare the rt2x00 guys
-use two header files instead of three?  The nerve of those people!!!
+Add a convenient helper, skb_free_datagram_locked() and use it in SUNRPC
 
-Ridiculous...
+Reported-by: Francis Moreau <francis.moro@gmail.com>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+ include/linux/skbuff.h |    2 ++
+ net/core/datagram.c    |   10 +++++++++-
+ net/ipv4/udp.c         |    4 +---
+ net/ipv6/udp.c         |    4 +---
+ net/sunrpc/svcsock.c   |   10 +++++-----
+ 5 files changed, 18 insertions(+), 12 deletions(-)
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index df7b23a..266878f 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -1757,6 +1757,8 @@ extern int	       skb_copy_datagram_const_iovec(const struct sk_buff *from,
+ 						     int to_offset,
+ 						     int size);
+ extern void	       skb_free_datagram(struct sock *sk, struct sk_buff *skb);
++extern void	       skb_free_datagram_locked(struct sock *sk,
++						struct sk_buff *skb);
+ extern int	       skb_kill_datagram(struct sock *sk, struct sk_buff *skb,
+ 					 unsigned int flags);
+ extern __wsum	       skb_checksum(const struct sk_buff *skb, int offset,
+diff --git a/net/core/datagram.c b/net/core/datagram.c
+index 1c6cf3a..4ade301 100644
+--- a/net/core/datagram.c
++++ b/net/core/datagram.c
+@@ -224,6 +224,15 @@ void skb_free_datagram(struct sock *sk, struct sk_buff *skb)
+ 	consume_skb(skb);
+ 	sk_mem_reclaim_partial(sk);
+ }
++EXPORT_SYMBOL(skb_free_datagram);
++
++void skb_free_datagram_locked(struct sock *sk, struct sk_buff *skb)
++{
++	lock_sock(sk);
++	skb_free_datagram(sk, skb);
++	release_sock(sk);
++}
++EXPORT_SYMBOL(skb_free_datagram_locked);
+ 
+ /**
+  *	skb_kill_datagram - Free a datagram skbuff forcibly
+@@ -752,5 +761,4 @@ unsigned int datagram_poll(struct file *file, struct socket *sock,
+ EXPORT_SYMBOL(datagram_poll);
+ EXPORT_SYMBOL(skb_copy_and_csum_datagram_iovec);
+ EXPORT_SYMBOL(skb_copy_datagram_iovec);
+-EXPORT_SYMBOL(skb_free_datagram);
+ EXPORT_SYMBOL(skb_recv_datagram);
+diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+index d0d436d..0fa9f70 100644
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -999,9 +999,7 @@ try_again:
+ 		err = ulen;
+ 
+ out_free:
+-	lock_sock(sk);
+-	skb_free_datagram(sk, skb);
+-	release_sock(sk);
++	skb_free_datagram_locked(sk, skb);
+ out:
+ 	return err;
+ 
+diff --git a/net/ipv6/udp.c b/net/ipv6/udp.c
+index 3a60f12..cf538ed 100644
+--- a/net/ipv6/udp.c
++++ b/net/ipv6/udp.c
+@@ -288,9 +288,7 @@ try_again:
+ 		err = ulen;
+ 
+ out_free:
+-	lock_sock(sk);
+-	skb_free_datagram(sk, skb);
+-	release_sock(sk);
++	skb_free_datagram_locked(sk, skb);
+ out:
+ 	return err;
+ 
+diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+index ccc5e83..1c246a4 100644
+--- a/net/sunrpc/svcsock.c
++++ b/net/sunrpc/svcsock.c
+@@ -111,7 +111,7 @@ static void svc_release_skb(struct svc_rqst *rqstp)
+ 		rqstp->rq_xprt_ctxt = NULL;
+ 
+ 		dprintk("svc: service %p, releasing skb %p\n", rqstp, skb);
+-		skb_free_datagram(svsk->sk_sk, skb);
++		skb_free_datagram_locked(svsk->sk_sk, skb);
+ 	}
+ }
+ 
+@@ -578,7 +578,7 @@ static int svc_udp_recvfrom(struct svc_rqst *rqstp)
+ 				"svc: received unknown control message %d/%d; "
+ 				"dropping RPC reply datagram\n",
+ 					cmh->cmsg_level, cmh->cmsg_type);
+-		skb_free_datagram(svsk->sk_sk, skb);
++		skb_free_datagram_locked(svsk->sk_sk, skb);
+ 		return 0;
+ 	}
+ 
+@@ -588,18 +588,18 @@ static int svc_udp_recvfrom(struct svc_rqst *rqstp)
+ 		if (csum_partial_copy_to_xdr(&rqstp->rq_arg, skb)) {
+ 			local_bh_enable();
+ 			/* checksum error */
+-			skb_free_datagram(svsk->sk_sk, skb);
++			skb_free_datagram_locked(svsk->sk_sk, skb);
+ 			return 0;
+ 		}
+ 		local_bh_enable();
+-		skb_free_datagram(svsk->sk_sk, skb);
++		skb_free_datagram_locked(svsk->sk_sk, skb);
+ 	} else {
+ 		/* we can use it in-place */
+ 		rqstp->rq_arg.head[0].iov_base = skb->data +
+ 			sizeof(struct udphdr);
+ 		rqstp->rq_arg.head[0].iov_len = len;
+ 		if (skb_checksum_complete(skb)) {
+-			skb_free_datagram(svsk->sk_sk, skb);
++			skb_free_datagram_locked(svsk->sk_sk, skb);
+ 			return 0;
+ 		}
+ 		rqstp->rq_xprt_ctxt = skb;
