@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932895AbZJ3VSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932910AbZJ3VS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932895AbZJ3VSG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 17:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932881AbZJ3VSF
+	id S932910AbZJ3VS2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 17:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbZJ3VS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 17:18:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49396 "EHLO
+	Fri, 30 Oct 2009 17:18:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37436 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932872AbZJ3VSD (ORCPT
+	by vger.kernel.org with ESMTP id S932899AbZJ3VS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 17:18:03 -0400
-Date: Fri, 30 Oct 2009 14:17:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from
- 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
-In-Reply-To: <alpine.LFD.2.01.0910301335570.31845@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0910301412500.31845@localhost.localdomain>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <200910301948.24473.rjw@sisk.pl> <alpine.LFD.2.01.0910301228430.31845@localhost.localdomain> <200910302132.44759.rjw@sisk.pl> <alpine.LFD.2.01.0910301335570.31845@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 Oct 2009 17:18:26 -0400
+Date: Fri, 30 Oct 2009 14:18:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org, zach.brown@oracle.com
+Subject: Re: [patch] aio: Don't zero out the pages array inside struct dio
+Message-Id: <20091030141811.1c77571b.akpm@linux-foundation.org>
+In-Reply-To: <x49tyxhroes.fsf@segfault.boston.devel.redhat.com>
+References: <x49tyxhroes.fsf@segfault.boston.devel.redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 30 Oct 2009 09:39:55 -0400
+Jeff Moyer <jmoyer@redhat.com> wrote:
 
-
-On Fri, 30 Oct 2009, Linus Torvalds wrote:
+> Hi,
 > 
-> And partly exactly _because_ even Cardbus is starting to be "legacy", I'd 
-> personally prefer to try to simplify the model to the point where we don't 
-> have to think about all the subtle interactions. Just making suspend act 
-> as an eject would mean that we'd never have to worry about how the CardBus 
-> bridge interacts with the PCI layer at suspend/resume time.
+> Intel reported a performance regression caused by the following commit:
+> 
+> commit 848c4dd5153c7a0de55470ce99a8e13a63b4703f
+> Author: Zach Brown <zach.brown@oracle.com>
+> Date:   Mon Aug 20 17:12:01 2007 -0700
+> 
+>     dio: zero struct dio with kzalloc instead of manually
+> 
+>     This patch uses kzalloc to zero all of struct dio rather than
+>     manually trying to track which fields we rely on being zero.  It
+>     passed aio+dio stress testing and some bug regression testing on
+>     ext3.
+> 
+>     This patch was introduced by Linus in the conversation that lead up
+>     to Badari's minimal fix to manually zero .map_bh.b_state in commit:
+> 
+>       6a648fa72161d1f6468dabd96c5d3c0db04f598a
+> 
+>     It makes the code a bit smaller.  Maybe a couple fewer cachelines to
+>     load, if we're lucky:
+> 
+>        text    data     bss     dec     hex filename
+>     3285925  568506 1304616 5159047  4eb887 vmlinux
+>     3285797  568506 1304616 5158919  4eb807 vmlinux.patched
+> 
+>     I was unable to measure a stable difference in the number of cpu
+>     cycles spent in blockdev_direct_IO() when pushing aio+dio 256K reads
+>     at ~340MB/s.
+> 
+>     So the resulting intent of the patch isn't a performance gain but to
+>     avoid exposing ourselves to the risk of finding another field like
+>     .map_bh.b_state where we rely on zeroing but don't enforce it in the
+>     code.
+> 
+> Zach surmised that zeroing out the page array was what caused most of
+> the problem, and suggested the approach taken in the attached patch for
+> resolving the issue.  Intel re-tested with this patch and saw a 0.6%
+> performance gain (the original regression was 0.5%).
+> 
+> Comments, as always, are appreciated.
+> 
 
-Put another way: five years ago I would have felt that it could be 
-important that people can suspend and resume while they have a CD-ROM 
-mounted through a PCMCIA IDE card. Or something like that where you want 
-to keep session information.
+You forgot something:
 
-These days, that scenario is less interesting to begin with, and we're 
-generally better at some of the hotplug issues anyway. Example: one of the 
-reasons I used to like not causing an unplug event was because I had 
-network cards, and hated setting up the connection again. These days, all 
-distros come with networkmanager or similar, and hotplug networking just 
-works (even if the "CD-ROM mounted" case probably still would cause 
-problems).
+--- a/fs/direct-io.c~aio-dont-zero-out-the-pages-array-inside-struct-dio-fix
++++ a/fs/direct-io.c
+@@ -130,6 +130,12 @@ struct dio {
+ 	unsigned head;			/* next page to process */
+ 	unsigned tail;			/* last valid page + 1 */
+ 	int page_errors;		/* errno from get_user_pages() */
++
++	/*
++	 * pages[] (and any fields placed after it) are not zeroed out at
++	 * allocation time.  Don't add new fields after pages[] unless you
++	 * wish that they not be zeroed.
++	 */
+ 	struct page *pages[DIO_PAGES];	/* page buffer */
+ };
+ 
+_
 
-So I think we used to have good reasons to try to maintain state over a 
-suspend event, but many of those reasons have become weaker, while at the 
-same time USB has meant that PCMCIA itself has become more of a 
-"maintenance burden" rather than a "primary subsystem".
-
-			Linus
