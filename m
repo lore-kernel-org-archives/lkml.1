@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZJ3FXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZJ3FXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbZJ3FXA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 01:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbZJ3FW6
+	id S1755491AbZJ3FXf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 01:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbZJ3FXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 01:22:58 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:49259 "EHLO
+	Fri, 30 Oct 2009 01:23:00 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:49261 "EHLO
 	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755243AbZJ3FW5 (ORCPT
+	with ESMTP id S1755247AbZJ3FW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 30 Oct 2009 01:22:57 -0400
-Subject: [PATCH v5 2/4] pSeries: Add hooks to put the CPU into an appropriate
-	offline state
+Subject: [PATCH v5 3/4] pseries: Add code to online/offline CPUs of a DLPAR
+	node.
 To: Nathan Fontenot <nfont@austin.ibm.com>,
        Benjamin Herrenschmidt <benh@au1.ibm.com>
 From: Gautham R Shenoy <ego@in.ibm.com>
@@ -21,8 +21,8 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
        linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
-Date: Fri, 30 Oct 2009 10:52:53 +0530
-Message-ID: <20091030052253.25493.65063.stgit@sofia.in.ibm.com>
+Date: Fri, 30 Oct 2009 10:52:59 +0530
+Message-ID: <20091030052258.25493.89919.stgit@sofia.in.ibm.com>
 In-Reply-To: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
 References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
 User-Agent: StGit/0.14.3.384.g9ab0
@@ -33,389 +33,163 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a CPU is offlined on POWER currently, we call rtas_stop_self() and hand
-the CPU back to the resource pool. This path is used for DLPAR which will
-cause a change in the LPAR configuration which will be visible outside.
+Currently the cpu-allocation/deallocation on pSeries is a
+two step process from the Userspace.
 
-This patch changes the default state a CPU is put into when it is offlined.
-On platforms which support ceding the processor to the hypervisor with
-latency hint specifier value, during a cpu offline operation,
-instead of calling rtas_stop_self(), we cede the vCPU to the hypervisor
-while passing a latency hint specifier value. The Hypervisor can use this hint
-to provide better energy savings. Also, during the offline
-operation, the control of the vCPU remains with the LPAR as oppposed to
-returning it to the resource pool.
+- Set the indicators and update the device tree by writing to the sysfs
+  tunable "probe" during allocation and "release" during deallocation.
+- Online / Offline the CPUs of the allocated/would_be_deallocated node by
+  writing to the sysfs tunable "online".
 
-The patch achieves this by creating an infrastructure to set the
-preferred_offline_state() which can be either
-- CPU_STATE_OFFLINE: which is the current behaviour of calling
-  rtas_stop_self()
-
-- CPU_STATE_INACTIVE: which cedes the vCPU to the hypervisor with the latency
-  hint specifier.
-
-The codepath which wants to perform a DLPAR operation can set the
-preferred_offline_state() of a CPU to CPU_STATE_OFFLINE before invoking
-cpu_down().
-
-The patch also provides a boot-time command line argument to disable/enable
-CPU_STATE_INACTIVE.
+This patch adds kernel code to online/offline the CPUs soon_after/just_before
+they have been allocated/would_be_deallocated. This way, the userspace tool
+that performs DLPAR operations would only have to deal with one set of sysfs
+tunables namely "probe" and release".
 
 Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 ---
- Documentation/cpu-hotplug.txt                   |    6 +
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |  182 ++++++++++++++++++++++-
- arch/powerpc/platforms/pseries/offline_states.h |   18 ++
- arch/powerpc/platforms/pseries/smp.c            |   19 ++
- 4 files changed, 216 insertions(+), 9 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/offline_states.h
+ arch/powerpc/platforms/pseries/dlpar.c |  101 ++++++++++++++++++++++++++++++++
+ 1 files changed, 101 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/cpu-hotplug.txt b/Documentation/cpu-hotplug.txt
-index 9d620c1..4d4a644 100644
---- a/Documentation/cpu-hotplug.txt
-+++ b/Documentation/cpu-hotplug.txt
-@@ -49,6 +49,12 @@ maxcpus=n    Restrict boot time cpus to n. Say if you have 4 cpus, using
- additional_cpus=n (*)	Use this to limit hotpluggable cpus. This option sets
-   			cpu_possible_map = cpu_present_map + additional_cpus
- 
-+cede_offline={"off","on"}  Use this option to disable/enable putting offlined
-+		            processors to an extended H_CEDE state on
-+			    supported pseries platforms.
-+			    If nothing is specified,
-+			    cede_offline is set to "on".
-+
- (*) Option valid only for following architectures
- - ia64
- 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index ebff6d9..6ea4698 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -30,6 +30,7 @@
- #include <asm/pSeries_reconfig.h>
- #include "xics.h"
- #include "plpar_wrappers.h"
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index ceb6d17..8e04a69 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -19,6 +19,7 @@
+ #include <linux/sysdev.h>
+ #include <linux/sysfs.h>
+ #include <linux/cpu.h>
 +#include "offline_states.h"
  
- /* This version can't take the spinlock, because it never returns */
- static struct rtas_args rtas_stop_self_args = {
-@@ -39,6 +40,55 @@ static struct rtas_args rtas_stop_self_args = {
- 	.rets = &rtas_stop_self_args.args[0],
- };
- 
-+static DEFINE_PER_CPU(enum cpu_state_vals, preferred_offline_state) =
-+							CPU_STATE_OFFLINE;
-+static DEFINE_PER_CPU(enum cpu_state_vals, current_state) = CPU_STATE_OFFLINE;
-+
-+static enum cpu_state_vals default_offline_state = CPU_STATE_OFFLINE;
-+
-+static int cede_offline_enabled __read_mostly = 1;
-+
-+/*
-+ * Enable/disable cede_offline when available.
-+ */
-+static int __init setup_cede_offline(char *str)
-+{
-+	if (!strcmp(str, "off"))
-+		cede_offline_enabled = 0;
-+	else if (!strcmp(str, "on"))
-+		cede_offline_enabled = 1;
-+	else
-+		return 0;
-+	return 1;
-+}
-+
-+__setup("cede_offline=", setup_cede_offline);
-+
-+enum cpu_state_vals get_cpu_current_state(int cpu)
-+{
-+	return per_cpu(current_state, cpu);
-+}
-+
-+void set_cpu_current_state(int cpu, enum cpu_state_vals state)
-+{
-+	per_cpu(current_state, cpu) = state;
-+}
-+
-+enum cpu_state_vals get_preferred_offline_state(int cpu)
-+{
-+	return per_cpu(preferred_offline_state, cpu);
-+}
-+
-+void set_preferred_offline_state(int cpu, enum cpu_state_vals state)
-+{
-+	per_cpu(preferred_offline_state, cpu) = state;
-+}
-+
-+void set_default_offline_state(int cpu)
-+{
-+	per_cpu(preferred_offline_state, cpu) = default_offline_state;
-+}
-+
- static void rtas_stop_self(void)
- {
- 	struct rtas_args *args = &rtas_stop_self_args;
-@@ -56,11 +106,61 @@ static void rtas_stop_self(void)
- 
- static void pseries_mach_cpu_die(void)
- {
-+	unsigned int cpu = smp_processor_id();
-+	unsigned int hwcpu = hard_smp_processor_id();
-+	u8 cede_latency_hint = 0;
-+
- 	local_irq_disable();
- 	idle_task_exit();
- 	xics_teardown_cpu();
--	unregister_slb_shadow(hard_smp_processor_id(), __pa(get_slb_shadow()));
--	rtas_stop_self();
-+
-+	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
-+		set_cpu_current_state(cpu, CPU_STATE_INACTIVE);
-+		cede_latency_hint = 2;
-+
-+		get_lppaca()->idle = 1;
-+		if (!get_lppaca()->shared_proc)
-+			get_lppaca()->donate_dedicated_cpu = 1;
-+
-+		printk(KERN_INFO
-+			"cpu %u (hwid %u) ceding for offline with hint %d\n",
-+			cpu, hwcpu, cede_latency_hint);
-+		while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
-+			extended_cede_processor(cede_latency_hint);
-+			printk(KERN_INFO "cpu %u (hwid %u) returned from cede.\n",
-+				cpu, hwcpu);
-+			printk(KERN_INFO
-+			"Decrementer value = %x Timebase value = %llx\n",
-+			get_dec(), get_tb());
-+		}
-+
-+		printk(KERN_INFO "cpu %u (hwid %u) got prodded to go online\n",
-+			cpu, hwcpu);
-+
-+		if (!get_lppaca()->shared_proc)
-+			get_lppaca()->donate_dedicated_cpu = 0;
-+		get_lppaca()->idle = 0;
-+	}
-+
-+	if (get_preferred_offline_state(cpu) == CPU_STATE_ONLINE) {
-+		unregister_slb_shadow(hwcpu, __pa(get_slb_shadow()));
-+
-+		/*
-+		 * NOTE: Calling start_secondary() here for now to
-+		 * start new context.
-+		 * However, need to do it cleanly by resetting the
-+		 * stack pointer.
-+		 */
-+		start_secondary();
-+
-+	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
-+
-+		set_cpu_current_state(cpu, CPU_STATE_OFFLINE);
-+		unregister_slb_shadow(hard_smp_processor_id(),
-+					__pa(get_slb_shadow()));
-+		rtas_stop_self();
-+	}
-+
- 	/* Should never get here... */
- 	BUG();
- 	for(;;);
-@@ -106,18 +206,43 @@ static int pseries_cpu_disable(void)
- 	return 0;
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+@@ -353,6 +354,98 @@ int remove_device_tree_nodes(struct device_node *dn)
+ 	return rc;
  }
  
-+/*
-+ * pseries_cpu_die: Wait for the cpu to die.
-+ * @cpu: logical processor id of the CPU whose death we're awaiting.
-+ *
-+ * This function is called from the context of the thread which is performing
-+ * the cpu-offline. Here we wait for long enough to allow the cpu in question
-+ * to self-destroy so that the cpu-offline thread can send the CPU_DEAD
-+ * notifications.
-+ *
-+ * OTOH, pseries_mach_cpu_die() is called by the @cpu when it wants to
-+ * self-destruct.
-+ */
- static void pseries_cpu_die(unsigned int cpu)
- {
- 	int tries;
--	int cpu_status;
-+	int cpu_status = 1;
- 	unsigned int pcpu = get_hard_smp_processor_id(cpu);
- 
--	for (tries = 0; tries < 25; tries++) {
--		cpu_status = query_cpu_stopped(pcpu);
--		if (cpu_status == 0 || cpu_status == -1)
--			break;
--		cpu_relax();
-+	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
-+		cpu_status = 1;
-+		for (tries = 0; tries < 1000; tries++) {
-+			if (get_cpu_current_state(cpu) == CPU_STATE_INACTIVE) {
-+				cpu_status = 0;
++int online_node_cpus(struct device_node *dn)
++{
++	int rc = 0;
++	unsigned int cpu;
++	int len, nthreads, i;
++	const u32 *intserv;
++
++	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
++	if (!intserv)
++		return -EINVAL;
++
++	nthreads = len / sizeof(u32);
++
++	cpu_maps_update_begin();
++	for (i = 0; i < nthreads; i++) {
++		for_each_present_cpu(cpu) {
++			if (get_hard_smp_processor_id(cpu) != intserv[i])
++				continue;
++			BUG_ON(get_cpu_current_state(cpu)
++					!= CPU_STATE_OFFLINE);
++			cpu_maps_update_done();
++			rc = cpu_up(cpu);
++			if (rc)
++				goto out;
++			cpu_maps_update_begin();
++
++			break;
++		}
++		if (cpu == num_possible_cpus())
++			printk(KERN_WARNING "Could not find cpu to online "
++			       "with physical id 0x%x\n", intserv[i]);
++	}
++	cpu_maps_update_done();
++
++out:
++	return rc;
++
++}
++
++int offline_node_cpus(struct device_node *dn)
++{
++	int rc = 0;
++	unsigned int cpu;
++	int len, nthreads, i;
++	const u32 *intserv;
++
++	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
++	if (!intserv)
++		return -EINVAL;
++
++	nthreads = len / sizeof(u32);
++
++	cpu_maps_update_begin();
++	for (i = 0; i < nthreads; i++) {
++		for_each_present_cpu(cpu) {
++			if (get_hard_smp_processor_id(cpu) != intserv[i])
++				continue;
++
++			if (get_cpu_current_state(cpu) == CPU_STATE_OFFLINE)
 +				break;
++
++			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
++				cpu_maps_update_done();
++				rc = cpu_down(cpu);
++				if (rc)
++					goto out;
++				cpu_maps_update_begin();
++				break;
++
 +			}
-+			cpu_relax();
++
++			/*
++			 * The cpu is in CPU_STATE_INACTIVE.
++			 * Upgrade it's state to CPU_STATE_OFFLINE.
++			 */
++			set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
++			BUG_ON(plpar_hcall_norets(H_PROD, intserv[i])
++								!= H_SUCCESS);
++			__cpu_die(cpu);
++			break;
 +		}
-+	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
++		if (cpu == num_possible_cpus())
++			printk(KERN_WARNING "Could not find cpu to offline "
++			       "with physical id 0x%x\n", intserv[i]);
++	}
++	cpu_maps_update_done();
 +
-+		for (tries = 0; tries < 25; tries++) {
-+			cpu_status = query_cpu_stopped(pcpu);
-+			if (cpu_status == 0 || cpu_status == -1)
-+				break;
-+			cpu_relax();
-+		}
- 	}
++out:
++	return rc;
 +
- 	if (cpu_status != 0) {
- 		printk("Querying DEAD? cpu %i (%i) shows %i\n",
- 		       cpu, pcpu, cpu_status);
-@@ -252,10 +377,41 @@ static struct notifier_block pseries_smp_nb = {
- 	.notifier_call = pseries_smp_notifier,
- };
- 
-+#define MAX_CEDE_LATENCY_LEVELS		4
-+#define	CEDE_LATENCY_PARAM_LENGTH	10
-+#define CEDE_LATENCY_PARAM_MAX_LENGTH	\
-+	(MAX_CEDE_LATENCY_LEVELS * CEDE_LATENCY_PARAM_LENGTH * sizeof(char))
-+#define CEDE_LATENCY_TOKEN		45
-+
-+static char cede_parameters[CEDE_LATENCY_PARAM_MAX_LENGTH];
-+
-+static int parse_cede_parameters(void)
-+{
-+	int call_status;
-+
-+	memset(cede_parameters, 0, CEDE_LATENCY_PARAM_MAX_LENGTH);
-+	call_status = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
-+				NULL,
-+				CEDE_LATENCY_TOKEN,
-+				__pa(cede_parameters),
-+				CEDE_LATENCY_PARAM_MAX_LENGTH);
-+
-+	if (call_status != 0)
-+		printk(KERN_INFO "CEDE_LATENCY: \
-+			%s %s Error calling get-system-parameter(0x%x)\n",
-+			__FILE__, __func__, call_status);
-+	else
-+		printk(KERN_INFO "CEDE_LATENCY: \
-+			get-system-parameter successful.\n");
-+
-+	return call_status;
 +}
 +
- static int __init pseries_cpu_hotplug_init(void)
- {
- 	struct device_node *np;
- 	const char *typep;
-+	int cpu;
+ #define DR_ENTITY_SENSE		9003
+ #define DR_ENTITY_PRESENT	1
+ #define DR_ENTITY_UNUSABLE	2
+@@ -447,6 +540,8 @@ static ssize_t cpu_probe_store(struct class *class, const char *buf,
+ 	if (rc)
+ 		release_drc(drc_index);
  
- 	for_each_node_by_name(np, "interrupt-controller") {
- 		typep = of_get_property(np, "compatible", NULL);
-@@ -283,8 +439,16 @@ static int __init pseries_cpu_hotplug_init(void)
- 	smp_ops->cpu_die = pseries_cpu_die;
- 
- 	/* Processors can be added/removed only on LPAR */
--	if (firmware_has_feature(FW_FEATURE_LPAR))
-+	if (firmware_has_feature(FW_FEATURE_LPAR)) {
- 		pSeries_reconfig_notifier_register(&pseries_smp_nb);
-+		cpu_maps_update_begin();
-+		if (cede_offline_enabled && parse_cede_parameters() == 0) {
-+			default_offline_state = CPU_STATE_INACTIVE;
-+			for_each_online_cpu(cpu)
-+				set_default_offline_state(cpu);
-+		}
-+		cpu_maps_update_done();
-+	}
- 
- 	return 0;
++	rc = online_node_cpus(dn);
++
+ 	return rc ? -EINVAL : count;
  }
-diff --git a/arch/powerpc/platforms/pseries/offline_states.h b/arch/powerpc/platforms/pseries/offline_states.h
-new file mode 100644
-index 0000000..22574e0
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/offline_states.h
-@@ -0,0 +1,18 @@
-+#ifndef _OFFLINE_STATES_H_
-+#define _OFFLINE_STATES_H_
+ 
+@@ -467,6 +562,11 @@ static ssize_t cpu_release_store(struct class *class, const char *buf,
+ 		return -EINVAL;
+ 	}
+ 
++	rc = offline_node_cpus(dn);
 +
-+/* Cpu offline states go here */
-+enum cpu_state_vals {
-+	CPU_STATE_OFFLINE,
-+	CPU_STATE_INACTIVE,
-+	CPU_STATE_ONLINE,
-+	CPU_MAX_OFFLINE_STATES
-+};
-+
-+extern enum cpu_state_vals get_cpu_current_state(int cpu);
-+extern void set_cpu_current_state(int cpu, enum cpu_state_vals state);
-+extern enum cpu_state_vals get_preferred_offline_state(int cpu);
-+extern void set_preferred_offline_state(int cpu, enum cpu_state_vals state);
-+extern void set_default_offline_state(int cpu);
-+extern int start_secondary(void);
-+#endif
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index 440000c..8868c01 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -48,6 +48,7 @@
- #include "plpar_wrappers.h"
- #include "pseries.h"
- #include "xics.h"
-+#include "offline_states.h"
- 
- 
- /*
-@@ -84,6 +85,9 @@ static inline int __devinit smp_startup_cpu(unsigned int lcpu)
- 	/* Fixup atomic count: it exited inside IRQ handler. */
- 	task_thread_info(paca[lcpu].__current)->preempt_count	= 0;
- 
-+	if (get_cpu_current_state(lcpu) == CPU_STATE_INACTIVE)
++	if (rc)
 +		goto out;
 +
- 	/* 
- 	 * If the RTAS start-cpu token does not exist then presume the
- 	 * cpu is already spinning.
-@@ -98,6 +102,7 @@ static inline int __devinit smp_startup_cpu(unsigned int lcpu)
- 		return 0;
- 	}
+ 	rc = release_drc(*drc_index);
+ 	if (rc) {
+ 		of_node_put(dn);
+@@ -478,6 +578,7 @@ static ssize_t cpu_release_store(struct class *class, const char *buf,
+ 		acquire_drc(*drc_index);
  
+ 	of_node_put(dn);
 +out:
- 	return 1;
+ 	return rc ? -EINVAL : count;
  }
  
-@@ -111,12 +116,16 @@ static void __devinit smp_xics_setup_cpu(int cpu)
- 		vpa_init(cpu);
- 
- 	cpu_clear(cpu, of_spin_map);
-+	set_cpu_current_state(cpu, CPU_STATE_ONLINE);
-+	set_default_offline_state(cpu);
- 
- }
- #endif /* CONFIG_XICS */
- 
- static void __devinit smp_pSeries_kick_cpu(int nr)
- {
-+	long rc;
-+	unsigned long hcpuid;
- 	BUG_ON(nr < 0 || nr >= NR_CPUS);
- 
- 	if (!smp_startup_cpu(nr))
-@@ -128,6 +137,16 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
- 	 * the processor will continue on to secondary_start
- 	 */
- 	paca[nr].cpu_start = 1;
-+
-+	set_preferred_offline_state(nr, CPU_STATE_ONLINE);
-+
-+	if (get_cpu_current_state(nr) == CPU_STATE_INACTIVE) {
-+		hcpuid = get_hard_smp_processor_id(nr);
-+		rc = plpar_hcall_norets(H_PROD, hcpuid);
-+		if (rc != H_SUCCESS)
-+			panic("Error: Prod to wake up processor %d Ret= %ld\n",
-+				nr, rc);
-+	}
- }
- 
- static int smp_pSeries_cpu_bootable(unsigned int nr)
 
