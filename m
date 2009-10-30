@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZJ3ISh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZJ3IUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbZJ3ISh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 04:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbZJ3ISg
+	id S1756160AbZJ3IUk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 04:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbZJ3IUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 04:18:36 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:54913 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755048AbZJ3ISf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 04:18:35 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ide: update Kconfig text to mark as deprecated
-Date: Fri, 30 Oct 2009 09:18:39 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-tp42-toi-3.0.1-04850-g4eddd0d; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>, hancockrwd@gmail.com,
-       linux-ide@vger.kernel.org
-References: <4AE64FCC.4030102@gmail.com> <20091029.173028.248393897.davem@davemloft.net> <200910300915.51836.Martin@lichtvoll.de> (sfid-20091030_091707_632352_07360635)
-In-Reply-To: <200910300915.51836.Martin@lichtvoll.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2747328.58xuxTDsLv";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 30 Oct 2009 04:20:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49662 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755063AbZJ3IUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 04:20:38 -0400
+Date: Fri, 30 Oct 2009 19:20:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: linux-next: manual merge of the percpu tree with the kgdb tree
+Message-Id: <20091030192038.381eba2d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910300918.39261.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2747328.58xuxTDsLv
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Hi all,
 
-Am Freitag 30 Oktober 2009 schrieb Martin Steigerwald:
-> Am Freitag 30 Oktober 2009 schrieb David Miller:
-> > And yes I absolutely do consider it too onerous to change my fstab
-> > because I have to (or want to be able to) go back to older kernels
-> > which will only have the IDE stack enabled.  I refuse to have to
-> > monkey around with my fstab every time I want to go back and forth.
->=20
-> You don't need to when you used UUID or LABEL - I prefer the later
->  cause  its more readable. Actually I never quite understood while one
->  would want to use dynamic things like /dev/hdd or /dev/sdb in the
->  first place. Thats for me not that much better than C: or D:. Connect
->  your harddisks differently and you are screwed.
+Today's linux-next merge of the percpu tree got a conflict in
+kernel/softlockup.c between commit
+b460e1994445b5ebb97aaec0c29f893c246bd830 ("softlockup: add
+sched_clock_tick() to avoid kernel warning on kgdb resume") from the kgdb
+tree and commit 1871e52c76dd95895caeb772f845a1718dcbcd75 ("percpu: make
+percpu symbols under kernel/ and mm/ unique") from the percpu tree.
 
-One thing to add: If you use a InitRD, you can use UUID or LABEL in GRUB 1=
-=20
-as well. I believe GRUB 2 at leasts supports UUID out of the box, but=20
-better check this, before relying on my word.
+Just context changes.  I fixed it up (see below) and can carry the
+changes as necessary.
 
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+I do wonder if the local variable name changes in the percpu tree change
+were a good idea?
 
---nextPart2747328.58xuxTDsLv
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I also needed a further merge fixup (see further below).
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+diff --cc kernel/softlockup.c
+index a85ace2,d225790..0000000
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@@ -125,15 -117,7 +125,15 @@@ void softlockup_tick(void
+  		return;
+  	}
+  
+- 	if (touch_timestamp == 0) {
++ 	if (touch_ts == 0) {
+ +		if (unlikely(softlock_touch_sync[this_cpu])) {
+ +			/*
+ +			 * If the time stamp was touched atomically
+ +			 * make sure the scheduler tick is up to date.
+ +			 */
+ +			softlock_touch_sync[this_cpu] = 0;
+ +			sched_clock_tick();
+ +		}
+  		__touch_softlockup_watchdog();
+  		return;
+  	}
 
-iEYEABECAAYFAkrqoV8ACgkQmRvqrKWZhMftzACcCPbwpx6uhUY1rA0kjQPygVS/
-NdgAoLMOzbX6tmZ2EPbZiD0yA8mXOu+f
-=Dvuo
------END PGP SIGNATURE-----
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 30 Oct 2009 18:58:07 +1100
+Subject: [PATCH] percpu: merge fixup for variable renaming
 
---nextPart2747328.58xuxTDsLv--
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ kernel/softlockup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/softlockup.c b/kernel/softlockup.c
+index 560a01d..57f1295 100644
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -84,7 +84,7 @@ static int softlock_touch_sync[NR_CPUS];
+ void touch_softlockup_watchdog_sync(void)
+ {
+ 	softlock_touch_sync[raw_smp_processor_id()] = 1;
+-	__raw_get_cpu_var(touch_timestamp) = 0;
++	__raw_get_cpu_var(softlockup_touch_ts) = 0;
+ }
+ 
+ void touch_all_softlockup_watchdogs(void)
+-- 
+1.6.5.2
+
