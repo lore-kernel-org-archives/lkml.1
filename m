@@ -1,114 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbZJ3SLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbZJ3SRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712AbZJ3SLi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 14:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932752AbZJ3SLh
+	id S932806AbZJ3SRP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 14:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932692AbZJ3SRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 14:11:37 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:61851 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932695AbZJ3SLg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 14:11:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=oyaabh88631sPEcKamxHUNIRXL9InJhapC0KQu5iEXj7dAtr4itCX0u/2sG2fixOIU
-         +PRWPpgrt1Vlm/F3nLXLT8lkATZ3LtEnSalF4FSs20lYJ4P2t7VCPaklN/WcgUh5EBe7
-         ZR2W3gL+zeaXaKGYgdxDMLCTb/V7JyMLuz/Gk=
-Message-ID: <4AEB2C55.7040208@gmail.com>
-Date: Fri, 30 Oct 2009 14:11:33 -0400
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Fri, 30 Oct 2009 14:17:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55706 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932518AbZJ3SRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 14:17:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: [linux-pm] intermittent suspend problem again
+Date: Fri, 30 Oct 2009 19:18:53 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910291936.14082.rjw@sisk.pl> <87fx91q1bc.fsf@tac.ki.iif.hu>
+In-Reply-To: <87fx91q1bc.fsf@tac.ki.iif.hu>
 MIME-Version: 1.0
-To: Rick Jones <rick.jones2@hp.com>
-CC: apetlund@simula.no,
-       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       Eric Dumazet <eric.dumazet@gmail.com>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2/3] net: TCP thin linear timeouts
-References: <6980f83370cc081eb82dc2e0bd65bcf4.squirrel@webmail.uio.no> <4AEB2362.5060601@hp.com>
-In-Reply-To: <4AEB2362.5060601@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910301918.53301.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rick Jones wrote:
-> apetlund@simula.no wrote:
->>> Just how thin can a thin stream be when a thin stream is found thin? 
->>> (to the cadence of "How much wood could a woodchuck chuck if a 
->>> woodchuck could chuck wood?")
+On Thursday 29 October 2009, Ferenc Wagner wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
->>> Does a stream get so thin that a user's send could not be split into 
->>> four,
->>>  sub-MSS TCP segments?
->>
->>
->> That was a nifty idea: Anti-Nagle the segments to be able to trigger fast
->> retransmissions. I think it is possible.
->>
->> Besides using more resources on each send, this scheme will introduce the
->> need to delay parts of the segment, which is undesirable for
->> time-dependent applications (the intended target of the mechanisms).
->>
->> I think it would be fun to implement and play around with such a 
->> mechanism
->> to see the effects.
+> > On Thursday 29 October 2009, Ferenc Wagner wrote:
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >> 
+> >>> On Wednesday 28 October 2009, Ferenc Wagner wrote:
+> >>> 
+> >>>> Something similar to http://bugzilla.kernel.org/show_bug.cgi?id=13894
+> >>>> raised its ugly head again, please see my last comments on that bug.
+> >>>
+> >>> This very well may be a separete bug, so please file a new bugzilla report
+> >>> on this and mark it as a regression.
+> >> 
+> >> Done.
+> >
+> > Which number is this?
 > 
-> Indeed, it does feel a bit "anti-nagle" but at the same time, these thin 
-> streams are supposed to be quite rare right?  I mean we have survived 20 
-> odd years of congestion control and fast retransmission without it being 
-> a big issue.
+> http://bugzilla.kernel.org/show_bug.cgi?id=14504
+
+Thanks.
+
+> Submitted containing the following paragraph only:
+
+That should be sufficient.
+
+> >>>> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
+> >>>> off the machine after "S|" or freezes after "Snapshotting system".
+> >>>> The former does not cause much trouble in itself, as the machine can
+> >>>> be switched off and resumed all right, but the latter is nasty.
+> >>>> Suspend to RAM works all the time.  The issue is not reproducible,
+> >>>> unfortunately, and the kernel change happened almost together with a
+> >>>> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
+> >>>> still works stably with the new BIOS.  I'll report back my findings in
+> >>>> a couple of days.
+> >>>
+> >>> OK, thanks.
+> >>>
+> >>> Still, I'm really afraid we won't be able to debug it any further without a
+> >>> reproducible test case.
+> >> 
+> >> I've got another, fully reproducible but nevertheless neglected ACPI
+> >> problem, already mentioned in #13894:
+> >> https://bugs.freedesktop.org/show_bug.cgi?id=22126.
+> >
+> > A side note: I'm totally unhappy with _kernel_ bugs being handled at
+> > bugs.freedesktop.org without a notice anywhere else.  Even though they are
+> > related to the graphics, the kernel developers in general at least deserve the
+> > information that the bugs have been reported.
+> >
+> > In this particulare case, the bug is clearly related to ACPI and linux-acpi
+> > should have received a notification about it.
 > 
-> They are also supposed to not have terribly high bandwidth requirements 
-> yes? Suppose that instead of an explicit "I promise to be thin" 
-> setsockopt(), they instead set a Very Small (tm) in today's thinking 
-> socket buffer size and the stack then picks the MSS to be no more than 
-> 1/4 that size?  Or for that matter, assuming the permissions are 
-> acceptable, the thin application makes a setsockopt(TCP_MAXSEG) call 
-> such that the actual MSS is small enough to allow the send()'s to be 
-> four (or more) segments.  And, if one wants to spin-away the anti-Nagle, 
-> Nagle is defined by the send() being smaller than the MSS, so if the MSS 
-> is smaller, it isn't anti-Nagle :)
+> When the ACPI relation became clear to me, I notified linux-acpi, see
+> http://thread.gmane.org/gmane.linux.acpi.devel/42172/focus=42230
+
+OK, thanks.
+
+> >> Well, it's probably far-fetched, but maybe the two are somehow related...
+> >
+> > Very well may be.
+> >
+> >> Can't you perhaps suggest a way forward there?  Or some tricks to create a
+> >> reproducible test case here?
+> >
+> > Well, you can test if the problem is reproducible in the "shutdown" mode of
+> > hibernation.
 > 
-This is not a new idea.  Folks used to set the MSS really low for M$
-Windows, so that their short little packets went over dialup links more
-quickly and they saw a little bit more of their graphic as it crawled to
-the screen.  Even though it was actually slower in total time, it "felt"
-faster because of the continuing visual feedback.  It depended upon VJ
-Header Prediction to keep the overhead down for the link.
+> Ok, I'll go back to 2.6.32-rc5 for testing that.  Does that make any
+> difference in the "Snapshotting system" phase?
 
-These are/were called "TCP mice", and the result was routers and servers
-being nibbled by mice.  Not pleasant.
+Yes, it does.
 
-
-> Further blue-skying...
+> Freezes happen that time, too, before writing out the image.
 > 
-> If SACK were also enabled, it would seem that only loss of the last 
-> segment in the "thin train" would be an issue?  Presumably, the thin 
-> stream receiver would be in a position to detect this, perhaps with an 
-> application-level timeout. Whether then it would suffice to allow the 
-> receiving app to make a setsockopt() call to force an extra ACK or two 
-> I'm not sure.  Perhaps if the thin-stream had a semi-aggressive 
-> "heartbeat" going...
+> >> Btw. my gut feeling is that hibernation is getting slower with each
+> >> kernel release.  I didn't measure it, and didn't even care about
+> >> comparable initial states... But could anything explain this, or is
+> >> it sheer impatience?
+> >
+> > Which part of it is getting slower?  Saving the image, suspending
+> > devices or the entire hibernation overall?
 > 
-Heartbeats are the usual solution for gaming.  Handles a host of
-issues, including detection of clients that have become unreachable.
+> "Snapshotting system" before saving the image
 
-(No, these are not the same as TCP keep-alives.)
+That may be a result of changing the way in which image memory is reserved.
+How much memory is there in your machine?
 
-Beside my code in the field and widespread discussion, I know that Paul
-Francis had several related papers a decade or so ago.  My memory is that
-younger game coders weren't particularly avid readers....
+> and saving the image as well.  If s2disk didn't report funny huge negative
+> ratios all the time,
 
+Hmm.  This looks like a bug in s2disk.
 
-> But it does seem that it should be possible to deal with this sort of 
-> thing without having to make wholesale changes to TCP's RTO policies and 
-> whatnot?
-> 
-Yep.
+> I'd probably have tried to correlate this with the number of
+> saved pages or similar...  But anyway, this is a minor nit, it's still
+> far from being unbearable.  If only it worked all the time!
+
+It should.
+
+Thanks,
+Rafael
