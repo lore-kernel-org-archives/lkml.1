@@ -1,55 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbZJ3ONA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbZJ3OTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932223AbZJ3ONA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 10:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932201AbZJ3OM7
+	id S932213AbZJ3OTz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 10:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932128AbZJ3OTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 10:12:59 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:26205 "EHLO mx1.redhat.com"
+	Fri, 30 Oct 2009 10:19:54 -0400
+Received: from icculus.org ([67.106.77.212]:45556 "EHLO icculus.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932199AbZJ3OM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 10:12:59 -0400
-Date: Fri, 30 Oct 2009 15:12:50 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Vedran =?utf-8?B?RnVyYcSN?= <vedran.furac@gmail.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Memory overcommit
-Message-ID: <20091030141250.GQ9640@random.random>
-References: <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com>
- <4AE792B8.5020806@gmail.com>
- <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com>
- <4AE846E8.1070303@gmail.com>
- <alpine.DEB.2.00.0910281307370.23279@chino.kir.corp.google.com>
- <4AE9068B.7030504@gmail.com>
- <alpine.DEB.2.00.0910290132320.11476@chino.kir.corp.google.com>
- <4AE97618.6060607@gmail.com>
- <alpine.DEB.2.00.0910291225460.27732@chino.kir.corp.google.com>
- <4AEAEFDD.5060009@gmail.com>
+	id S932113AbZJ3OTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 10:19:53 -0400
+Date: Fri, 30 Oct 2009 10:19:54 -0400 (EDT)
+From: "Ryan C. Gordon" <icculus@icculus.org>
+X-X-Sender: icculus@caridad.icculuslan
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/2] binfmt_elf: FatELF support for kernel
+ modules.
+In-Reply-To: <20091030103214.463042fb@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.OSX.1.10.0910301018170.30808@caridad.icculuslan>
+References: <alpine.DEB.2.00.0910190422090.13303@andre.icculuslan> <4ADD0086.9060304@goop.org> <alpine.DEB.2.00.0910200043200.18342@andre.icculuslan> <4AE22D04.50708@goop.org> <20091024121421.2e530635@lxorguk.ukuu.org.uk> <4AE5F4FB.3000506@goop.org>
+ <alpine.DEB.2.00.0910292224560.4219@andre.icculuslan> <20091030103214.463042fb@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AEAEFDD.5060009@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 02:53:33PM +0100, Vedran Furač wrote:
-> % free -m
->           total       used       free     shared    buffers     cached
-> Mem:      3458        3429         29          0        102       1119
-> -/+ buffers/cache:    2207       1251
-> 
-> There's plenty of memory available. Shouldn't cache be automatically
-> dropped (this question was in my original mail, hence the subject)?
 
-This is not about cache, cache amount is physical, this about
-virtual amount that can only go in ram or swap (at any later time,
-current time is irrelevant) vs "ram + swap". In short add more swap if
-you don't like overcommit and check grep Commit /proc/meminfo in case
-this is accounting bug...
+> And you still ignore the fundamental point that the kernel module search
+> path typically includes the architecture anyway so you can simply install
+> two module files. That makes this feature pointless.
+
+The module loading patch is just for the sake of completeness, so if 
+there's a hesitance to apply this part, I'm okay with that.
+
+--ryan.
+
