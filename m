@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbZJ3Tlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932816AbZJ3SSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757163AbZJ3Tlh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 15:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbZJ3Tlg
+	id S932816AbZJ3SSc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 14:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932701AbZJ3SSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 15:41:36 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:55557 "EHLO tac.ki.iif.hu"
+	Fri, 30 Oct 2009 14:18:31 -0400
+Received: from mga11.intel.com ([192.55.52.93]:41410 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755635AbZJ3Tlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 15:41:35 -0400
-X-Greylist: delayed 2251 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Oct 2009 15:41:35 EDT
-From: Ferenc Wagner <wferi@niif.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [linux-pm] intermittent suspend problem again
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910291936.14082.rjw@sisk.pl>
-	<87fx91q1bc.fsf@tac.ki.iif.hu> <200910301918.53301.rjw@sisk.pl>
-Date: Fri, 30 Oct 2009 20:03:50 +0100
-In-Reply-To: <200910301918.53301.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri, 30 Oct 2009 19:18:53 +0100")
-Message-ID: <87k4yc3drd.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932692AbZJ3SSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 14:18:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,655,1249282800"; 
+   d="scan'208";a="509314731"
+Subject: Re: [patch 3/3] x86_64, cpa: use only text section in
+ set_kernel_text_rw/ro
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "rostedt@goodmis.org" <rostedt@goodmis.org>
+Cc: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1256781977.26028.2139.camel@gandalf.stny.rr.com>
+References: <20091029024820.996634347@sbs-t61.sc.intel.com>
+	 <20091029024821.164525222@sbs-t61.sc.intel.com>
+	 <1256781977.26028.2139.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 30 Oct 2009 11:17:08 -0800
+Message-Id: <1256930228.2679.5.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Wed, 2009-10-28 at 19:06 -0700, Steven Rostedt wrote:
+> On Wed, 2009-10-28 at 18:46 -0800, Suresh Siddha wrote:
+> > plain text document attachment (fix_kernel_text_ro_rw.patch)
+> > set_kernel_text_rw()/set_kernel_text_ro() are marking pages starting
+> > from _text to __start_rodata as RW or RO.
+> > 
+> > With CONFIG_DEBUG_RODATA, there might be free pages (associated with
+> > padding the sections to 2MB large page boundary) between text
+> > and rodata sections that are given back to page allocator. So we should
+> > use only use the start (__text) and end (__stop___ex_table) of the
+> > text section in set_kernel_text_rw()/set_kernel_text_ro().
+> > 
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> > ---
+> >  
+> 
+> I'll go ahead and test this to make sure it does not bust ftrace with an
+> allyesconfig.
 
-> On Thursday 29 October 2009, Ferenc Wagner wrote:
->
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> 
->>> Which part of it is getting slower?  Saving the image, suspending
->>> devices or the entire hibernation overall?
->> 
->> "Snapshotting system" before saving the image
->
-> That may be a result of changing the way in which image memory is reserved.
-> How much memory is there in your machine?
+Steve, Good to go?
 
-512 MB.
+If so, Ingo can you please consider this patchset?
 
->> and saving the image as well.  If s2disk didn't report funny huge negative
->> ratios all the time,
->
-> Hmm.  This looks like a bug in s2disk.
+thanks,
+suresh
 
-Definitely.  Do you also experience this?  Probably an easy one, but
-I've never had the chance to check the CVS version (running 0.7 at the
-moment).  I can probably give 0.8 a spin if you deem necessary.  I
-always thought it wasn't more than a cosmetic flaw.
--- 
-Thanks,
-Feri.
