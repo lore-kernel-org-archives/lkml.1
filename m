@@ -1,291 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbZJ3JJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbZJ3JKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756629AbZJ3JJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 05:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZJ3JJU
+	id S1756640AbZJ3JKq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 05:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbZJ3JKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 05:09:20 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49698 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756535AbZJ3JJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 05:09:18 -0400
-Date: Fri, 30 Oct 2009 20:09:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for October 30
-Message-Id: <20091030200916.e9331f66.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__30_Oct_2009_20_09_16_+1100_xWZ704Cxo_b5H=_a"
+	Fri, 30 Oct 2009 05:10:45 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:5818 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756543AbZJ3JKo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 05:10:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ZuPCJdLH3MhU2jHVx5syt2hlvHvYkdZMI1oTtcTY1izX4gNs0ie641TkY8dR4uq/p
+	CMZp5fJ2OLlUmT3QpUqPA==
+Date: Fri, 30 Oct 2009 02:10:37 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+In-Reply-To: <20091030084836.5428e085.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0910300200170.18076@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org> <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com>
+ <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <20091028135519.805c4789.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910272205200.7507@chino.kir.corp.google.com>
+ <20091028150536.674abe68.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910272311001.15462@chino.kir.corp.google.com> <20091028152015.3d383cd6.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910290136000.11476@chino.kir.corp.google.com>
+ <4AE97861.1070902@gmail.com> <alpine.DEB.2.00.0910291248480.2276@chino.kir.corp.google.com> <20091030084836.5428e085.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__30_Oct_2009_20_09_16_+1100_xWZ704Cxo_b5H=_a
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 30 Oct 2009, KAMEZAWA Hiroyuki wrote:
 
-Hi all,
+> As I wrote repeatedly,
+> 
+>    - OOM-Killer itselfs is bad thing, bad situation.
 
-Changes since 20091029:
+Not necessarily, the memory controller and cpusets uses it quite often to 
+enforce it's policy and is standard runtime behavior.  We'd like to 
+imagine that our cpuset will never be too small to run all the attached 
+jobs, but that happens and we can easily recover from it by killing a 
+task.
 
-My fixes tree contains a build fix for powerpc/kvm.
+>    - The kernel can't know the program is bad or not. just guess it.
 
-The omap tree gained a few conflicts against Linus' tree.
+Totally irrelevant, given your fourth point about /proc/pid/oom_adj.  We 
+can tell the kernel what we'd like the oom killer behavior should be if 
+the situation arises.
 
-The sh tree lost its conflict.
+>    - Then, there is no "correct" OOM-Killer other than fork-bomb killer.
 
-The net/wireless tree gained 2 conflicts against the staging.current tree.
+Well of course there is, you're seeing this is a WAY too simplistic 
+manner.  If we are oom, we want to be able to influence how the oom killer 
+behaves and respond to that situation.  You are proposing that we change 
+the baseline for how the oom killer selects tasks which we use CONSTANTLY 
+as part of our normal production environment.  I'd appreciate it if you'd 
+take it a little more seriously.
 
-The percpu tree gained conflicts against Linus' tree and the kgdb and kvm
-trees.
+>    - User has a knob as oom_adj. This is very strong.
+> 
 
-----------------------------------------------------------------------------
+Agreed.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+> Then, there is only "reasonable" or "easy-to-understand" OOM-Kill.
+> "Current biggest memory eater is killed" sounds reasonable, easy to
+> understand. And if total_vm works well, overcommit_guess should catch it.
+> Please improve overcommit_guess if you want to stay on total_vm.
+> 
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
+I don't necessarily want to stay on total_vm, but I also don't want to 
+move to rss as a baseline, as you would probably agree.
 
-Below is a summary of the state of the merge.
+We disagree about a very fundamental principle: you are coming from a 
+perspective of always wanting to kill the biggest resident memory eater 
+even for a single order-0 allocation that fails and I'm coming from a 
+perspective of wanting to ensure that our machines know how the oom killer 
+will react when it is used.  Moving to rss reduces the ability of the user 
+to specify an expected oom priority other than polarizing it by either 
+disabling it completely with an oom_adj value of -17 or choosing the 
+definite next victim with +15.  That's my objection to it: the user cannot 
+possibly be expected to predict what proportion of each application's 
+memory will be resident at the time of oom.
 
-We are up to 145 trees (counting Linus' and 22 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging omap/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-omap1/serial.c
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-3430sdp.c
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-ldp.c
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-omap3evm.c
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-omap3pandor=
-a.c
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-rx51-periph=
-erals.c
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-rx51.c
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-zoom2.c
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-CONFLICT (content): Merge conflict in drivers/hwmon/it87.c
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/master
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-CONFLICT (content): Merge conflict in arch/x86/kvm/mmu.c
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
-nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
-CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/cmd.c
-CONFLICT (content): Merge conflict in drivers/staging/rtl8187se/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/rtl8192e/Kconfig
-$ git rm -f drivers/net/sfc/sfe4001.c
-Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging security-testing/next
-CONFLICT (content): Merge conflict in Documentation/dontdiff
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-CONFLICT (content): Merge conflict in drivers/acpi/video_detect.c
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/Kconfig
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/Makefile
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_actlog.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_int.h
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_main.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_nl.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_receiver.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_req.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_worker.c
-CONFLICT (add/add): Merge conflict in include/linux/drbd.h
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in drivers/net/Kconfig
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging limits/writable_limits
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
-Merging oprofile/for-next
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
-CONFLICT (content): Merge conflict in kernel/softlockup.c
-CONFLICT (content): Merge conflict in mm/percpu.c
-Applying: percpu: merge fixup for variable renaming
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Fri__30_Oct_2009_20_09_16_+1100_xWZ704Cxo_b5H=_a
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrqrTwACgkQjjKRsyhoI8yFWQCdHRG895Z66tMNNtiNvb41+qNW
-qTgAn3HhIh0SKjXrXERTCLfQ84gvzI+V
-=Jh66
------END PGP SIGNATURE-----
-
---Signature=_Fri__30_Oct_2009_20_09_16_+1100_xWZ704Cxo_b5H=_a--
+I understand you want to totally rewrite the oom killer for whatever 
+reason, but I think you need to spend a lot more time understanding the 
+needs that the Linux community has for its behavior instead of insisting 
+on your point of view.
