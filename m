@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbZJ3UhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbZJ3Ugn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbZJ3UhY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 16:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbZJ3UhX
+	id S1757421AbZJ3Ugn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 16:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbZJ3Ugm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 16:37:23 -0400
-Received: from smtp-noauth7.primus.ca ([216.254.180.38]:56975 "EHLO
-	mail-07.primus.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756885AbZJ3UhW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 16:37:22 -0400
-Date: Fri, 30 Oct 2009 16:37:15 -0400
-From: Nick Bowler <nbowler@elliptictech.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-Message-ID: <20091030203715.GA28901@emergent.ellipticsemi.com>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Trond Myklebust <trond.myklebust@fys.uio.no>,
-	Jan Kara <jack@suse.cz>, "J. Bruce Fields" <bfields@fieldses.org>,
-	"Serge E. Hallyn" <serue@us.ibm.com>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-	jamie@shareable.org
-References: <1256579869.8576.7.camel@heimdal.trondhjem.org>
- <20091025093604.GA1501@ucw.cz>
- <m1zl7cb1c5.fsf@fess.ebiederm.org>
- <20091028081653.GA18290@elf.ucw.cz>
- <m1k4yfkbfg.fsf@fess.ebiederm.org>
- <20091028210323.GA4159@elf.ucw.cz>
- <m1hbtj7xgj.fsf@fess.ebiederm.org>
- <20091029110344.GA1517@ucw.cz>
- <m1d4466uel.fsf@fess.ebiederm.org>
- <20091030183559.GF7008@elf.ucw.cz>
+	Fri, 30 Oct 2009 16:36:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56071 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757359AbZJ3Ugl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 16:36:41 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: [linux-pm] intermittent suspend problem again
+Date: Fri, 30 Oct 2009 21:38:37 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910301918.53301.rjw@sisk.pl> <87k4yc3drd.fsf@tac.ki.iif.hu>
+In-Reply-To: <87k4yc3drd.fsf@tac.ki.iif.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091030183559.GF7008@elf.ucw.cz>
-Organization: Elliptic Technologies Inc.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910302138.37938.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19:35 Fri 30 Oct     , Pavel Machek wrote:
-> > How many linux shell scripts and other applications that use /dev/fd/N
-> > or /proc/self/fd/N will you be breaking?
+On Friday 30 October 2009, Ferenc Wagner wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Zero. (Well unless someone is exploiting it in wild).
+> > On Thursday 29 October 2009, Ferenc Wagner wrote:
+> >
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >> 
+> >>> Which part of it is getting slower?  Saving the image, suspending
+> >>> devices or the entire hibernation overall?
+> >> 
+> >> "Snapshotting system" before saving the image
+> >
+> > That may be a result of changing the way in which image memory is reserved.
+> > How much memory is there in your machine?
+> 
+> 512 MB.
 
-I've definitely written at least one script before that does something
-along the lines of 'echo foo > /dev/fd/N'.  It's not one that I remember
-anything else about, so perhaps its behaviour would be unaffected by
-forbidding this if the particular file descriptor did not originally
-have read-write permissions.  I have a hard time believing that amongst
-millions of users, not one of them has a script that would be affected.
+So it's likely the slowdown results from the memory management rework.
+Hopefully, it'll improve in the future.
 
-Frankly, I don't understand what is particularly surprising about the
-fact that people can write to files with world write permissions.
+> >> and saving the image as well.  If s2disk didn't report funny huge negative
+> >> ratios all the time,
+> >
+> > Hmm.  This looks like a bug in s2disk.
+> 
+> Definitely.  Do you also experience this?
 
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+Not really, but I use newer versions.
 
+> Probably an easy one, but I've never had the chance to check the CVS version
+> (running 0.7 at the moment).  I can probably give 0.8 a spin if you deem
+> necessary.  I always thought it wasn't more than a cosmetic flaw.
+
+It probably is.  You can try the current version from my git tree at:
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-utils.git
+
+Thanks,
+Rafael
