@@ -1,74 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932877AbZJ3SrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932867AbZJ3Szz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932877AbZJ3SrM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 14:47:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932844AbZJ3SrL
+	id S932867AbZJ3Szz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 14:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbZJ3Szz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 14:47:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55815 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932792AbZJ3SrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 14:47:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Help needed, Re: [Bug #14334] pcmcia suspend regression from 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
-Date: Fri, 30 Oct 2009 19:48:24 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Jose Marino" <braket@hotmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.EqH.Nse5KB@chimera>
-In-Reply-To: <6dRYo8ss7vL.A.EqH.Nse5KB@chimera>
+	Fri, 30 Oct 2009 14:55:55 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51344 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757330AbZJ3Szy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 14:55:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=RcHqcfYawsiX8lDmzEAsr6XusBJ/1RSvZn9GUYF49UO1qxWmbgnqYshCxL3GLZFQ7Y
+         TKkRs846WrEoi13p5e9EfbjKblrItIdRaHmxS/VAbvXlg2drp08Eq9XX9aszenEODI3Z
+         +eOoYZBq+7tul74FAl0dO9v0mX72zPuGnSqvc=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910301948.24473.rjw@sisk.pl>
+In-Reply-To: <20091030083742.48f5d4f3@jbarnes-g45>
+References: <cb0375e10910030939v8d03df7m861a2f05219f173c@mail.gmail.com>
+	 <cb0375e10910030950kcd19fe9i7835eaaf4314c0fb@mail.gmail.com>
+	 <20091005092148.4341d9ab@jbarnes-g45>
+	 <cb0375e10910072044m470c8cbasef33de3b36bb62ee@mail.gmail.com>
+	 <20091029094723.7e5a3376@jbarnes-g45>
+	 <cb0375e10910291022l5650994dyc4a36d55f1e5bbc4@mail.gmail.com>
+	 <cb0375e10910291040i31a7b9aatb6da5c20778d9791@mail.gmail.com>
+	 <cb0375e10910292325l659034c4u36cf263cda8e90c8@mail.gmail.com>
+	 <20091030083742.48f5d4f3@jbarnes-g45>
+Date: Fri, 30 Oct 2009 14:55:57 -0400
+X-Google-Sender-Auth: e9d1a03f9c9363bf
+Message-ID: <cb0375e10910301155s5e2b2e79t562bfa798ba75e23@mail.gmail.com>
+Subject: Re: [resend] i915: high power consumption after suspend/resume
+From: Andrew Lutomirski <luto@mit.edu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Oct 30, 2009 at 11:37 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Fri, 30 Oct 2009 02:25:21 -0400
+> Andrew Lutomirski <luto@mit.edu> wrote:
+>
+>> On Thu, Oct 29, 2009 at 1:40 PM, Andrew Lutomirski <luto@mit.edu>
+>> wrote:
+>> >
+>> > I just suspended and resumed and power consumption stayed low.  I'll
+>> > try and get an intel_reg_dumper diff next time I trigger this bug.
+>>
+>> intel_reg_dumper blames RENCLK_GATE_D2.  Patch coming.
+>>
+>> Maybe my BIOS doesn't always reset it.
+>
+> Does resetting that reg get your power savings back?
 
-On Monday 26 October 2009, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
+Surprisingly, no.  With my kernel patched to restore it on resume, I
+still see high power consumption, and rebinding still fixes it.  (As
+an aside, I think hat i915's ability to survive rebinding without
+crashing on the next X startup has gotten worse recently.  I
+invariably OOPS awhile after rebinding with recent kernels.)
 
-Here's a puzzle for whoever likes hardware detective work.
+I diffed the output of intel_reg_dumper (2.9.0, I think):
 
-Suspend to RAM worked just fine on the Jose's box before commit
-53024df259e37ad49ee3d1f3721d4cecdd7bc357 (PM / yenta: Fix cardbus
-suspend/resume regression, mainline commit
-0c570cdeb8fdfcb354a3e9cd81bfc6a09c19de0c) that made the resume of CardBus
-devices actually work.  After this commit, the box hangs during resume 100% of
-the time.
 
-We've done quite some debugging and here's the summary of findings:
+--- /tmp/pre-rebind     2009-10-30 14:35:24.267236469 -0400
++++ /tmp/post-rebind    2009-10-30 14:39:22.649986477 -0400
+@@ -46,7 +46,7 @@
+ (II):         PFIT_CONTROL: 0x00000000
+ (II):      PFIT_PGM_RATIOS: 0x00000000
+ (II):      PORT_HOTPLUG_EN: 0x3e040320
+-(II):    PORT_HOTPLUG_STAT: 0x38560800
++(II):    PORT_HOTPLUG_STAT: 0x38000000
+ (II):             DSPACNTR: 0x00000000 (disabled, pipe A)
+ (II):           DSPASTRIDE: 0x00000000 (0 bytes)
+ (II):              DSPAPOS: 0x00000000 (0, 0)
+@@ -149,7 +149,7 @@
+ (II):          FBC_COMMAND: 0x08c80034
+ (II):           FBC_STATUS: 0x00000000
+ (II):         FBC_CONTROL2: 0x00000000
+-(II):        FBC_FENCE_OFF: 0x00008000
++(II):        FBC_FENCE_OFF: 0x10000000
+ (II):          FBC_MOD_NUM: 0x00000060
+ (II):              MI_MODE: 0x00000200
+ (II):         MI_ARB_STATE: 0x00000040
 
-1) Resume works if pcmcia_socket_dev_resume(dev) is moved to the "regular"
-   resume phase, after resume_device_irqs().
+intel_reg_write doesn't seem to work right on FBC_FENCE_OFF (previous
+value doesn't agree w/ intel_reg_dumper), and I'm not sure exactly
+what that's supposed to do.
 
-2) Resume works if yenta_set_power() is not called during resume
-   (from yenta_set_socket()).
-
-3) It doesn't help to resume all ACPI devices before yenta.
-
-4) It doesn't help to disable yenta events during resume (unconditionally).
-
-5) There are two CardBus bridges in the box and according to the PM_TRACE
-   information the _second_ one is the last device we attempt to wake up
-   during a failing resume.
-
-Please look into http://bugzilla.kernel.org/show_bug.cgi?id=14334 for details.
-
-OK, any ideas anyone?
-
-Rafael
+--Andy
