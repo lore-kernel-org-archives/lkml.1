@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbZJ3Wyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbZJ3WzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbZJ3Wyw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 18:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933046AbZJ3Wyf
+	id S933044AbZJ3WzV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 18:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933077AbZJ3WzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 18:54:35 -0400
-Received: from kroah.org ([198.145.64.141]:38985 "EHLO coco.kroah.org"
+	Fri, 30 Oct 2009 18:55:06 -0400
+Received: from kroah.org ([198.145.64.141]:38989 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933000AbZJ3Wyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 18:54:32 -0400
+	id S933043AbZJ3Wyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 18:54:33 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alex Chiang <achiang@hp.com>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 7/9] Documentation: ABI: /sys/devices/system/cpu/sched_[mc|smt]_power_savings
-Date: Fri, 30 Oct 2009 15:54:26 -0700
-Message-Id: <1256943268-12164-7-git-send-email-gregkh@suse.de>
+Cc: Alex Chiang <achiang@hp.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <lenb@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 8/9] Documentation: ABI: /sys/devices/system/cpu/cpuidle/
+Date: Fri, 30 Oct 2009 15:54:27 -0700
+Message-Id: <1256943268-12164-8-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.1
 In-Reply-To: <20091030220930.GA11297@kroah.com>
 References: <20091030220930.GA11297@kroah.com>
@@ -25,52 +26,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alex Chiang <achiang@hp.com>
 
-Document sched_[mc|smt]_power_savings by reading existing code and
-git logs.
+Document cpuidle sysfs attributes by reading code, Documentation/cpuidle/,
+and git logs.
 
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/ABI/testing/sysfs-devices-system-cpu |   24 ++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 2ade5c0..8cdda1c 100644
+index 8cdda1c..968d8ba 100644
 --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
 +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -9,6 +9,30 @@ Description:
+@@ -101,6 +101,26 @@ Description:	CPU topology files that describe a logical CPU's relationship
+ 		See Documentation/cputopology.txt for more information.
  
- 		/sys/devices/system/cpu/cpu#/
  
-+What:		/sys/devices/system/cpu/sched_mc_power_savings
-+		/sys/devices/system/cpu/sched_smt_power_savings
-+Date:		June 2006
++What:		/sys/devices/system/cpu/cpuidle/current_driver
++		/sys/devices/system/cpu/cpuidle/current_governer_ro
++Date:		September 2007
 +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:	Discover and adjust the kernel's multi-core scheduler support.
++Description:	Discover cpuidle policy and mechanism
 +
-+		Possible values are:
++		Various CPUs today support multiple idle levels that are
++		differentiated by varying exit latencies and power
++		consumption during idle.
 +
-+		0 - No power saving load balance (default value)
-+		1 - Fill one thread/core/package first for long running threads
-+		2 - Also bias task wakeups to semi-idle cpu package for power
-+		    savings
++		Idle policy (governor) is differentiated from idle mechanism
++		(driver)
 +
-+		sched_mc_power_savings is dependent upon SCHED_MC, which is
-+		itself architecture dependent.
++		current_driver: displays current idle mechanism
 +
-+		sched_smt_power_savings is dependent upon SCHED_SMT, which
-+		is itself architecture dependent.
++		current_governor_ro: displays current idle policy
 +
-+		The two files are independent of each other. It is possible
-+		that one file may be present without the other.
++		See files in Documentation/cpuidle/ for more information.
 +
-+		Introduced by git commit 5c45bf27.
 +
- 
- What:		/sys/devices/system/cpu/kernel_max
- 		/sys/devices/system/cpu/offline
+ What:      /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
+ Date:      August 2008
+ KernelVersion:	2.6.27
 -- 
 1.6.4.2
 
