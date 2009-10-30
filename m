@@ -1,141 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZJ3Nkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbZJ3NlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbZJ3Nkb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 09:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbZJ3Nka
+	id S1757252AbZJ3NlV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 09:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZJ3NlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 09:40:30 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19492 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757214AbZJ3Nk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 09:40:29 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-aio@kvack.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, zach.brown@oracle.com
-Subject: [patch] aio: Don't zero out the pages array inside struct dio
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 30 Oct 2009 09:39:55 -0400
-Message-ID: <x49tyxhroes.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	Fri, 30 Oct 2009 09:41:21 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:47821 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757220AbZJ3NlU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 09:41:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=bw2Hy9NeegTzL3TRlzgeePHN5/xaL/RlpgXLfRapp01vsFOK0x78KV2L0GHGz7VM7Y
+         ubopd9S+7M9WJPUorfUkn8in7UQxfUmENIf3wjzDb/YBIhscN75toGxBDYxgVQTTqONZ
+         GaAe403RnaCaFeo6bsCOssHUpamQeZgRSD28M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <38b2ab8a0910300533l4bbc9d3cj8812fe38726c8278@mail.gmail.com>
+References: <38b2ab8a0909290109m3f82c161j4fb0f1266152877e@mail.gmail.com>
+	 <4AC1D0F5.4050709@gmail.com>
+	 <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com>
+	 <4AEACD88.8080108@gmail.com>
+	 <38b2ab8a0910300533l4bbc9d3cj8812fe38726c8278@mail.gmail.com>
+Date: Fri, 30 Oct 2009 14:41:24 +0100
+Message-ID: <38b2ab8a0910300641q78c08124o800a9dfc9486fba7@mail.gmail.com>
+Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
+From: Francis Moreau <francis.moro@gmail.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Oct 30, 2009 at 1:33 PM, Francis Moreau <francis.moro@gmail.com> wrote:
+> On Fri, Oct 30, 2009 at 12:27 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
+>>
+>> This oops occurring again and again with SUNRPC finally gave me the right pointer.
+>>
+>> David, we added two years ago memory accounting to UDP, and this changed
+>> requirements about calling skb_free_datagram() in the right context.
+>>
+>> I wish we had an ASSERT_SOCK_LOCKED() debugging facility :(
+>>
+>> Francis, would you please test following patch ?
+>
+> I'm applying it and testing it during a couple of days and see if
+> something wrong still happens.
 
-Intel reported a performance regression caused by the following commit:
+Hmm, with the patch applied on a 2.6.32-rc5, my machine locks hard
+when starting nfsd.
 
-commit 848c4dd5153c7a0de55470ce99a8e13a63b4703f
-Author: Zach Brown <zach.brown@oracle.com>
-Date:   Mon Aug 20 17:12:01 2007 -0700
-
-    dio: zero struct dio with kzalloc instead of manually
-
-    This patch uses kzalloc to zero all of struct dio rather than
-    manually trying to track which fields we rely on being zero.  It
-    passed aio+dio stress testing and some bug regression testing on
-    ext3.
-
-    This patch was introduced by Linus in the conversation that lead up
-    to Badari's minimal fix to manually zero .map_bh.b_state in commit:
-
-      6a648fa72161d1f6468dabd96c5d3c0db04f598a
-
-    It makes the code a bit smaller.  Maybe a couple fewer cachelines to
-    load, if we're lucky:
-
-       text    data     bss     dec     hex filename
-    3285925  568506 1304616 5159047  4eb887 vmlinux
-    3285797  568506 1304616 5158919  4eb807 vmlinux.patched
-
-    I was unable to measure a stable difference in the number of cpu
-    cycles spent in blockdev_direct_IO() when pushing aio+dio 256K reads
-    at ~340MB/s.
-
-    So the resulting intent of the patch isn't a performance gain but to
-    avoid exposing ourselves to the risk of finding another field like
-    .map_bh.b_state where we rely on zeroing but don't enforce it in the
-    code.
-
-Zach surmised that zeroing out the page array was what caused most of
-the problem, and suggested the approach taken in the attached patch for
-resolving the issue.  Intel re-tested with this patch and saw a 0.6%
-performance gain (the original regression was 0.5%).
-
-Comments, as always, are appreciated.
-
-Cheers,
-Jeff
-
-Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
-Acked-by: Zach Brown <zach.brown@oracle.com>
-
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index 8b10b87..533bd30 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -104,6 +104,18 @@ struct dio {
- 	unsigned cur_page_len;		/* Nr of bytes at cur_page_offset */
- 	sector_t cur_page_block;	/* Where it starts */
- 
-+	/* BIO completion state */
-+	spinlock_t bio_lock;		/* protects BIO fields below */
-+	unsigned long refcount;		/* direct_io_worker() and bios */
-+	struct bio *bio_list;		/* singly linked via bi_private */
-+	struct task_struct *waiter;	/* waiting task (NULL if none) */
-+
-+	/* AIO related stuff */
-+	struct kiocb *iocb;		/* kiocb */
-+	int is_async;			/* is IO async ? */
-+	int io_error;			/* IO error in completion path */
-+	ssize_t result;                 /* IO result */
-+
- 	/*
- 	 * Page fetching state. These variables belong to dio_refill_pages().
- 	 */
-@@ -115,22 +127,10 @@ struct dio {
- 	 * Page queue.  These variables belong to dio_refill_pages() and
- 	 * dio_get_page().
- 	 */
--	struct page *pages[DIO_PAGES];	/* page buffer */
- 	unsigned head;			/* next page to process */
- 	unsigned tail;			/* last valid page + 1 */
- 	int page_errors;		/* errno from get_user_pages() */
--
--	/* BIO completion state */
--	spinlock_t bio_lock;		/* protects BIO fields below */
--	unsigned long refcount;		/* direct_io_worker() and bios */
--	struct bio *bio_list;		/* singly linked via bi_private */
--	struct task_struct *waiter;	/* waiting task (NULL if none) */
--
--	/* AIO related stuff */
--	struct kiocb *iocb;		/* kiocb */
--	int is_async;			/* is IO async ? */
--	int io_error;			/* IO error in completion path */
--	ssize_t result;                 /* IO result */
-+	struct page *pages[DIO_PAGES];	/* page buffer */
- };
- 
- /*
-@@ -1151,10 +1151,16 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
- 		}
- 	}
- 
--	dio = kzalloc(sizeof(*dio), GFP_KERNEL);
-+	dio = kmalloc(sizeof(*dio), GFP_KERNEL);
- 	retval = -ENOMEM;
- 	if (!dio)
- 		goto out;
-+	/*
-+	 * Believe it or not, zeroing out the page array caused a .5%
-+	 * performance regression in a database benchmark.  So, we take
-+	 * care to only zero out what's needed.
-+	 */
-+	memset(dio, 0, offsetof(struct dio, pages));
- 
- 	/*
- 	 * For block device access DIO_NO_LOCKING is used,
+-- 
+Francis
