@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZJ3Abz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZJ3AgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbZJ3Abz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 20:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbZJ3Abz
+	id S1755984AbZJ3AgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 20:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZJ3AgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 20:31:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56210 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755430AbZJ3Aby (ORCPT
+	Thu, 29 Oct 2009 20:36:19 -0400
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:36421 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753007AbZJ3AgS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 20:31:54 -0400
-Date: Fri, 30 Oct 2009 00:33:37 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: hancockrwd@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] ide: update Kconfig text to mark as deprecated
-Message-ID: <20091030003337.57b712e7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091029.173028.248393897.davem@davemloft.net>
-References: <4AE64FCC.4030102@gmail.com>
-	<20091029.031344.102288703.davem@davemloft.net>
-	<51f3faa70910291719kecb5edcp3b8812981b69acb1@mail.gmail.com>
-	<20091029.173028.248393897.davem@davemloft.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Oct 2009 20:36:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=S/9B/LAFAmoJPkDPt7K672pVLcTjrFCtJZcfeKq0Udf1vcINdvFF1YuxyYCawAVk0V
+         jx/HwTBkQ19vP3n0NG0bBbMm5LhS5LxbE1DMihaO8Q2WariNvrKR2JYgP8p8TBPqEKM9
+         b1OvRg/8P6u7bhkrN5lK+XPLra02Ks2iSw01U=
+MIME-Version: 1.0
+In-Reply-To: <962b2e4e-74f1-47ea-8847-e16edeef151b@VA3EHSMHS013.ehs.local>
+References: <962b2e4e-74f1-47ea-8847-e16edeef151b@VA3EHSMHS013.ehs.local>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 29 Oct 2009 20:36:03 -0400
+Message-ID: <8bd0f97a0910291736m24f20c7ep27027691492a4bcb@mail.gmail.com>
+Subject: Re: virtual vs physical addresses to cache functions
+To: John Linn <John.Linn@xilinx.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And I know I won't be the only person in this kind of situation.
-> 
-> So, proceeding in any other way is really a non-starter.
+On Thu, Oct 29, 2009 at 12:26, John Linn wrote:
+> Maybe this is a dumb question...
 
-Then keep old IDE until the hardware rots. Its not worth contaminating
-libata and the scsi core with magic glue that only Dave Miller uses ;)
+you should see the stuff people put into hardware ...
 
-Alan
+> I believe that the kernel expects virtual addresses to be passed to the
+> defined cache functions across all architectures.
+
+i believe they're virtual since most (sane) hardware virtual memory
+implementations are done with caches based on virtual addresses, but
+what do i know (leading into next point ...)
+
+> Looking at PowerPC and Blackfin confirm this I think.
+
+the Blackfin arch (which is what i work on) is a bad example as it
+lacks virtual memory support
+-mike
