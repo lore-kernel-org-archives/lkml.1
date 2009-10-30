@@ -1,135 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZJ3CxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZJ3DNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZJ3CxN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 22:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZJ3CxM
+	id S1753902AbZJ3DNz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 23:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZJ3DNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 22:53:12 -0400
-Received: from ausxipps301.us.dell.com ([143.166.148.223]:56123 "EHLO
-	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbZJ3CxL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 22:53:11 -0400
-Date: Thu, 29 Oct 2009 21:53:14 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Zhang Yanmin <yanmin.zhang@intel.com>, linux-kernel@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Huong_Nguyen@dell.com
-Subject: Re: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
-Message-ID: <20091030025313.GA1042@mock.linuxdev.us.dell.com>
-Reply-To: Matt Domsch <Matt_Domsch@dell.com>
-References: <20091006173311.GA15751@auslistsprd01.us.dell.com> <4ACEE220.1020705@jp.fujitsu.com> <20091009182810.GB24889@mock.linuxdev.us.dell.com> <20091009183319.GC24889@mock.linuxdev.us.dell.com> <4AEA4C82.6010604@jp.fujitsu.com>
+	Thu, 29 Oct 2009 23:13:54 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44378 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751073AbZJ3DNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 23:13:53 -0400
+From: Neil Brown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 30 Oct 2009 14:15:26 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AEA4C82.6010604@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19178.23118.321053.935200@notabene.brown>
+Subject: [PULL REQUEST - resend] md fixes for 2.6.32
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       Vladimir Dronnikov <dronnikov@gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 11:16:34AM +0900, Hidetoshi Seto wrote:
-> Hi Matt,
-> 
-> Sorry to late response.
 
-Thank you for your review.
- 
-> Matt Domsch wrote:
-> > +		/* These three should never appear */
-> > +		case ACPI_HEST_TYPE_NOT_USED3:
-> > +		case ACPI_HEST_TYPE_NOT_USED4:
-> > +		case ACPI_HEST_TYPE_NOT_USED5:
-> > +			break;
-> 
-> Yes, these should never.  But if there, what will happen?
-> I'd like to see a error message rather than hang in infinite loops.
-> 
-> > +		/* These should never appear either */
-> > +		case ACPI_HEST_TYPE_RESERVED:
-> > +		default:
-> > +			break;
-> 
-> Ditto.
 
-It won't infinite loop, due to i incrementing.  If one of these types
-appears early in the error_source list, it would prevent us from
-seeing the (correct) source types later in the list.
+Hi Linus,
+ please pull some md fixes for 2.6.32 as described below. 
 
-But we can't advance the pointer because we can't know by how much to
-advance it.  We could print a debug message.  How about:
+ The main issues related to:
+  - The recently merged hardware offload for RAID6 calculations, which
+    didn't handle the DDF style properly, and
+  - The less recently added reshaping code that allows a RAID5 to be
+    reshaped to have fewer devices.  Restarting such an array if it
+    was shutdown during the reshape did not work.
 
-printk(KERN_DEBUG PREFIX
-       "HEST Error Source list contains an obsolete type.\n");
+ Also we remove a build-time dependency on perl.
+
+Thanks,
+NeilBrown
 
 
 
-At some point, the RESERVED type will move to higher number as new
-sources are defined in the spec, so that would be different message.
-How about:
+The following changes since commit 964fe080d94db82a3268443e9b9ece4c60246414:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../rusty/linux-2.6-for-linus
 
-printk(KERN_DEBUG PREFIX
-       "HEST Error Source list contains a reserved type.\n");
+are available in the git repository at:
 
+  git://neil.brown.name/md/ for-linus
 
-and I'll have it print only once.
+Dan Williams (6):
+      md/raid5: initialize conf->device_lock earlier
+      md/raid456: downlevel multicore operations to raid_run_ops
+      md/raid6: kill a gcc-4.0.1 'uninitialized variable' warning
+      async_pq: kill a stray dma_map() call and other cleanups
+      async_pq: rename scribble page
+      async_tx: fix asynchronous raid6 recovery for ddf layouts
 
-> > +int acpi_hest_firmware_first_pci(struct pci_dev *pci)
-> > +{
-> 
-> It is OK, but if args of this function were (bus_n, dev_n, fn_n)
-> then "#include <linux/pci.h>" will not be required.
+NeilBrown (8):
+      Revert "md: do not progress the resync process if the stripe was blocked"
+      md/raid1/raid10: add a cond_resched
+      md: raid1/raid10: handle allocation errors during array setup.
+      md: remove clumsy usage of do_sync_mapping_range from bitmap code
+      md: fix problems with RAID6 calculations for DDF.
+      md: Fix handling of raid5 array which is being reshaped to fewer devices.
+      md/async: don't pass a memory pointer as a page pointer.
+      raid6/async_tx: handle holes in block list in async_syndrome_val
 
-I prefer to pass the pci_dev rather than 3 or 4 parts thereof down
-through the functions.  Several other .c files in drivers/acpi do
-likewise.
+Vladimir Dronnikov (1):
+      md: drivers/md/unroll.pl replaced with awk analog
 
-> One another concern I got here is if there was a seg_n, segment
-> number, how we can handle it... but it will be one of future works,
-> so this would be OK at this time.
-
-Yes, but this ACPI table doesn't have a domain / segment number in
-it.  Does this test:
-
-        if (p->flags & ACPI_HEST_FIRMWARE_FIRST &&
-            (p->flags & ACPI_HEST_GLOBAL ||
-             (p->bus      == pci->bus->number &&
-              p->device   == PCI_SLOT(pci->devfn) &&
-              p->function == PCI_FUNC(pci->devfn))))
-                *firmware_first = 1;
-
-need to add an explicit test for && 0 == pci_domain_nr(pci->bus) ?
-
-
-> > @@ -35,6 +36,9 @@ int pci_enable_pcie_error_reporting(struct pci_dev *dev)
-> >  	u16 reg16 = 0;
-> >  	int pos;
-> >  
-> > +	if (dev->aer_firmware_first)
-> > +		return -EIO;
-> > +
-> 
-> The aer_init() will be called for root ports (via aer_probe() of
-> aer service driver), but not for end point devices or so on.
-> So you need to call aer_init() for end points from here or somewhere
-> else, to set aer_firmware_first correctly.
-
-Good catch.  I'll move the setting of dev->aer_firmware_first into the
-PCI device discovery path.  By that point, ACPI is configured and
-available.
-
-> > +	if (acpi_hest_firmware_first_pci(dev->port)) {
-> > +		dev_printk(KERN_DEBUG, &dev->device,
-> > +			   "PCIe device errors handled by platform firmware.\n");
-> > +		dev->port->aer_firmware_first=1;
-> 
-> Coding style requests you to add spaces before and after of "=".
-
-OK.  This and the next will move as noted above.
-
--- 
-Matt Domsch
-Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+ crypto/async_tx/async_pq.c          |   60 +++++++-----
+ crypto/async_tx/async_raid6_recov.c |  100 +++++++++++++-------
+ crypto/async_tx/async_xor.c         |   18 ++--
+ drivers/md/Makefile                 |   22 ++--
+ drivers/md/bitmap.c                 |    9 +-
+ drivers/md/md.c                     |    2 +-
+ drivers/md/raid1.c                  |    6 +-
+ drivers/md/raid10.c                 |    5 +-
+ drivers/md/raid5.c                  |  182 ++++++++++++++++++-----------------
+ drivers/md/raid5.h                  |   14 +++-
+ drivers/md/raid6altivec.uc          |    2 +-
+ drivers/md/raid6int.uc              |    2 +-
+ drivers/md/raid6test/Makefile       |   42 ++++----
+ drivers/md/unroll.awk               |   20 ++++
+ drivers/md/unroll.pl                |   24 -----
+ 15 files changed, 284 insertions(+), 224 deletions(-)
+ create mode 100644 drivers/md/unroll.awk
+ delete mode 100644 drivers/md/unroll.pl
