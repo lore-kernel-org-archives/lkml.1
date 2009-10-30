@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbZJ3T4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932607AbZJ3T67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932301AbZJ3T4g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 15:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbZJ3T4g
+	id S932607AbZJ3T67 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 15:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbZJ3T66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 15:56:36 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:56339 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756129AbZJ3T4f (ORCPT
+	Fri, 30 Oct 2009 15:58:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48531 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932190AbZJ3T65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 15:56:35 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
-Date: Fri, 30 Oct 2009 13:56:27 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
-In-reply-to: <4AEA0B71.5050805@redhat.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Theodore Tso <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, bugzilla-daemon@bugzilla.kernel.org
-Message-id: <3D6E88E0-7271-4CEC-85DC-9E4416F030F5@sun.com>
-X-Mailer: Apple Mail (2.936)
-References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
- <20091016091558.GA10184@mit.edu>
- <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
- <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com>
- <4AEA0B71.5050805@redhat.com>
+	Fri, 30 Oct 2009 15:58:57 -0400
+Subject: Re: [patch 3/3] x86_64, cpa: use only text section in
+ set_kernel_text_rw/ro
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1256930228.2679.5.camel@sbs-t61.sc.intel.com>
+References: <20091029024820.996634347@sbs-t61.sc.intel.com>
+	 <20091029024821.164525222@sbs-t61.sc.intel.com>
+	 <1256781977.26028.2139.camel@gandalf.stny.rr.com>
+	 <1256930228.2679.5.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Fri, 30 Oct 2009 15:59:00 -0400
+Message-Id: <1256932740.26028.3310.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-10-29, at 15:38, Eric Sandeen wrote:
-> Parag Warudkar wrote:
->> On Tue, Oct 27, 2009 at 6:15 AM, Aneesh Kumar K.V
->> <aneesh.kumar@linux.vnet.ibm.com> wrote:
->>> Can you try this patch ?
->>>
->>> commit a8836b1d6f92273e001012c7705ae8f4c3d5fb65
->>> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>> Date:   Tue Oct 27 15:36:38 2009 +0530
->>>
->>>   ext4: discard preallocation during truncate
->>>
->>>   We need to make sure when we drop and reacquire the inode's
->>>   i_data_sem we discard the inode preallocation. Otherwise we
->>>   could have blocks marked as free in bitmap but still belonging
->>>   to prealloc space.
->> Just wanted to let you know that I have applied this patch and one
->> unclean shutdown later it seems to have not given me any trouble.
->> I will continue testing it - hopefully I won't have to reformat  this
->> time ( every time I tested previously I ended up having weird issues
->> that I decided to get rid of by reformatting /).
->
-> I've been running my testcase, and I just hit the usual corruption  
-> with this patch in place after 8 iterations, I'm afraid.
+On Fri, 2009-10-30 at 11:17 -0800, Suresh Siddha wrote:
+> On Wed, 2009-10-28 at 19:06 -0700, Steven Rostedt wrote:
+> > On Wed, 2009-10-28 at 18:46 -0800, Suresh Siddha wrote:
+> > > plain text document attachment (fix_kernel_text_ro_rw.patch)
+> > > set_kernel_text_rw()/set_kernel_text_ro() are marking pages starting
+> > > from _text to __start_rodata as RW or RO.
+> > > 
+> > > With CONFIG_DEBUG_RODATA, there might be free pages (associated with
+> > > padding the sections to 2MB large page boundary) between text
+> > > and rodata sections that are given back to page allocator. So we should
+> > > use only use the start (__text) and end (__stop___ex_table) of the
+> > > text section in set_kernel_text_rw()/set_kernel_text_ro().
+> > > 
+> > > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> > > ---
+> > >  
+> > 
+> > I'll go ahead and test this to make sure it does not bust ftrace with an
+> > allyesconfig.
+> 
+> Steve, Good to go?
 
+Yep. Sorry, during the testing I hit the jprobe vs function graph bug
+and got distracted. But as for this patch set ...
 
-I wonder if there are multiple problems involved here?  Eric, it seems
-possible that your reproducer is exercising a similar, though unrelated
-codepath.  I would agree with Ted that if this patch is solving the
-problem for some of the users it is definitely worth landing, even if it
-ends up not solving all of the problems.
+Tested-by: Steven Rostedt <rostedt@goodmis.org>
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+Thanks,
+
+-- Steve
+
+> 
+> If so, Ingo can you please consider this patchset?
+
 
