@@ -1,113 +1,420 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbZJ3IVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZJ3Igm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbZJ3IVA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 04:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbZJ3IU6
+	id S1756246AbZJ3Igm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 04:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZJ3Igl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 04:20:58 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49681 "EHLO smtps.tip.net.au"
+	Fri, 30 Oct 2009 04:36:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49331 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756214AbZJ3IUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 04:20:54 -0400
-Date: Fri, 30 Oct 2009 19:20:55 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zachary Amsden <zamsden@redhat.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
-       Avi Kivity <avi@redhat.com>
-Subject: linux-next: manual merge of the percpu tree with the kvm tree
-Message-Id: <20091030192055.cbf6905b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753500AbZJ3Igj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 04:36:39 -0400
+Message-ID: <4AEAA579.9040707@kernel.org>
+Date: Fri, 30 Oct 2009 01:36:09 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Chiang <achiang@hp.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: [PATCH 1/2] pci: release that leaf bridge' resource that is not big
+ -v8
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com> <4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org> <4AE897B4.9030206@kernel.org>	<m1eionia3y.fsf@fess.ebiederm.org> <4AE8A080.1040208@kernel.org>	<m1pr87cilf.fsf@fess.ebiederm.org> <4AE8BA1D.5030908@kernel.org>	<4AE8C4BF.8040306@kernel.org> <m1my3aboon.fsf@fess.ebiederm.org>	<4AE95A57.6050504@kernel.org> <m1zl7a9ped.fsf@fess.ebiederm.org>	<4AE9CA10.10302@kernel.org> <m1pr86x9qj.fsf@fess.ebiederm.org>
+In-Reply-To: <m1pr86x9qj.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-Today's linux-next merge of the percpu tree got a conflict in
-arch/x86/kvm/svm.c between commits
-41c39c658561cde3e27d3ae38c589598fc22f633 ("KVM: Activate Virtualization
-On Demand") and 971ea59279a67136729fda49311f7edb8c2092a1 ("KVM: Fix
-printk name error in svm.c") from the kvm tree and commit
-0fe1e009541e925adc1748a605d8b66188e4b2ab ("percpu: make percpu symbols in
-x86 unique") from the percpu tree.
 
-Just context changes.  I fixed them up (see below) and can carry the
-changes as necessary.
+only for index < 3
 
-I do wonder if the local variable name changes in the percpu tree change
-were a good idea?
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+v2: Jesse doesn't like it is in find_free_bus_resource...
+    try to move out of pci_bus_size_bridges loop.
+v3: add pci_setup_bridge calling after pci_bridge_release_not_used_res.
+    only clear release those res for x86.
+v4: Bjorn want to release use dev instead of bus.
+v5: Kenji pointed out it will have problem with several level bridge.
+    so let only handle leaf bridge.
+v6: address Kenji's request (new pci_bus_release...). and change applying order
+    move back release to pci_assign_unassigned_resource
+v7: change functions name pci_bus_release_unused_bridge_res according to Jesse
+v8: address Eric's concern, only overwrite leaf bridge resource that is not big enough
+    need to do it in two steps, and first step recore the failed res, and don't
+    touch bridge res that programmed by firmware. second step will try to release
+    bridge resource that is too small at first.
 
-diff --cc arch/x86/kvm/svm.c
-index 279a2ae,6c79a14..0000000
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@@ -316,46 -316,40 +316,46 @@@ static void svm_hardware_disable(void *
-  	cpu_svm_disable();
-  }
-  
- -static void svm_hardware_enable(void *garbage)
- +static int svm_hardware_enable(void *garbage)
-  {
-  
-- 	struct svm_cpu_data *svm_data;
-+ 	struct svm_cpu_data *sd;
-  	uint64_t efer;
-  	struct descriptor_table gdt_descr;
-  	struct desc_struct *gdt;
-  	int me = raw_smp_processor_id();
-  
- +	rdmsrl(MSR_EFER, efer);
- +	if (efer & EFER_SVME)
- +		return -EBUSY;
- +
-  	if (!has_svm()) {
- -		printk(KERN_ERR "svm_cpu_init: err EOPNOTSUPP on %d\n", me);
- -		return;
- +		printk(KERN_ERR "svm_hardware_enable: err EOPNOTSUPP on %d\n",
- +		       me);
- +		return -EINVAL;
-  	}
-- 	svm_data = per_cpu(svm_data, me);
-+ 	sd = per_cpu(svm_data, me);
-  
-- 	if (!svm_data) {
-+ 	if (!sd) {
- -		printk(KERN_ERR "svm_cpu_init: svm_data is NULL on %d\n",
- +		printk(KERN_ERR "svm_hardware_enable: svm_data is NULL on %d\n",
-  		       me);
- -		return;
- +		return -EINVAL;
-  	}
-  
-- 	svm_data->asid_generation = 1;
-- 	svm_data->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
-- 	svm_data->next_asid = svm_data->max_asid + 1;
-+ 	sd->asid_generation = 1;
-+ 	sd->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
-+ 	sd->next_asid = sd->max_asid + 1;
-  
-  	kvm_get_gdt(&gdt_descr);
-  	gdt = (struct desc_struct *)gdt_descr.base;
-- 	svm_data->tss_desc = (struct kvm_ldttss_desc *)(gdt + GDT_ENTRY_TSS);
-+ 	sd->tss_desc = (struct kvm_ldttss_desc *)(gdt + GDT_ENTRY_TSS);
-  
-  	wrmsrl(MSR_EFER, efer | EFER_SVME);
-  
-  	wrmsrl(MSR_VM_HSAVE_PA,
-- 	       page_to_pfn(svm_data->save_area) << PAGE_SHIFT);
-+ 	       page_to_pfn(sd->save_area) << PAGE_SHIFT);
- +
- +	return 0;
-  }
-  
-  static void svm_cpu_uninit(int cpu)
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ drivers/pci/setup-bus.c |  258 ++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 239 insertions(+), 19 deletions(-)
+
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -27,11 +27,54 @@
+ #include <linux/slab.h>
+ #include "pci.h"
+ 
+-static void pbus_assign_resources_sorted(const struct pci_bus *bus)
++
++static void add_to_failed_list(struct resource_list *head, struct pci_dev *dev,
++				 struct resource *res)
++{
++	struct resource_list *list = head;
++	struct resource_list *ln = list->next;
++	struct resource_list *tmp;
++
++	tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
++	if (!tmp) {
++		pr_warning("add_to_failed_list: kmalloc() failed!\n");
++		return;
++	}
++
++	tmp->next = ln;
++	tmp->res = res;
++	tmp->dev = dev;
++	list->next = tmp;
++}
++
++static void free_failed_list(struct resource_list *head)
++{
++	struct resource_list *list, *tmp;
++	struct resource *res;
++	/*
++	 * Try to release leaf bridge's resources that there is no child
++	 * under it
++	 */
++	for (list = head->next; list;) {
++		res = list->res;
++		res->start = 0;
++		res->end = 0;
++		res->flags = 0;
++		tmp = list;
++		list = list->next;
++		kfree(tmp);
++	}
++
++	head->next = NULL;
++}
++
++static void pbus_assign_resources_sorted(const struct pci_bus *bus,
++					 struct resource_list *fail_head)
+ {
+ 	struct pci_dev *dev;
+ 	struct resource *res;
+ 	struct resource_list head, *list, *tmp;
++	resource_size_t size;
+ 	int idx;
+ 
+ 	head.next = NULL;
+@@ -57,10 +100,22 @@ static void pbus_assign_resources_sorted
+ 	for (list = head.next; list;) {
+ 		res = list->res;
+ 		idx = res - &list->dev->resource[0];
++		/* save the size at first */
++		size = resource_size(res);
+ 		if (pci_assign_resource(list->dev, idx)) {
+-			res->start = 0;
+-			res->end = 0;
+-			res->flags = 0;
++			if (fail_head && !list->dev->subordinate) {
++				/*
++				 * device need to keep flags and size
++				 * for second try
++				 */
++				res->start = 0;
++				res->end   = size - 1;
++				add_to_failed_list(fail_head, list->dev, res);
++			} else {
++				res->start = 0;
++				res->end = 0;
++				res->flags = 0;
++			}
+ 		}
+ 		tmp = list;
+ 		list = list->next;
+@@ -137,18 +192,12 @@ EXPORT_SYMBOL(pci_setup_cardbus);
+    config space writes, so it's quite possible that an I/O window of
+    the bridge will have some undesirable address (e.g. 0) after the
+    first write. Ditto 64-bit prefetchable MMIO.  */
+-static void pci_setup_bridge(struct pci_bus *bus)
++
++static void pci_setup_bridge_io(struct pci_bus *bus)
+ {
+ 	struct pci_dev *bridge = bus->self;
+ 	struct pci_bus_region region;
+-	u32 l, bu, lu, io_upper16;
+-	int pref_mem64;
+-
+-	if (pci_is_enabled(bridge))
+-		return;
+-
+-	dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
+-		 pci_domain_nr(bus), bus->number);
++	u32 l, io_upper16;
+ 
+ 	/* Set up the top and bottom of the PCI I/O segment for this bus. */
+ 	pcibios_resource_to_bus(bridge, &region, bus->resource[0]);
+@@ -175,7 +224,12 @@ static void pci_setup_bridge(struct pci_
+ 	pci_write_config_dword(bridge, PCI_IO_BASE, l);
+ 	/* Update upper 16 bits of I/O base/limit. */
+ 	pci_write_config_dword(bridge, PCI_IO_BASE_UPPER16, io_upper16);
+-
++}
++static void pci_setup_bridge_mmio(struct pci_bus *bus)
++{
++	struct pci_dev *bridge = bus->self;
++	struct pci_bus_region region;
++	u32 l;
+ 	/* Set up the top and bottom of the PCI Memory segment
+ 	   for this bus. */
+ 	pcibios_resource_to_bus(bridge, &region, bus->resource[1]);
+@@ -191,6 +245,13 @@ static void pci_setup_bridge(struct pci_
+ 		dev_info(&bridge->dev, "  MEM window: disabled\n");
+ 	}
+ 	pci_write_config_dword(bridge, PCI_MEMORY_BASE, l);
++}
++static void pci_setup_bridge_mmio_pref(struct pci_bus *bus)
++{
++	struct pci_dev *bridge = bus->self;
++	struct pci_bus_region region;
++	u32 l, bu, lu;
++	int pref_mem64;
+ 
+ 	/* Clear out the upper 32 bits of PREF limit.
+ 	   If PCI_PREF_BASE_UPPER32 was non-zero, this temporarily
+@@ -226,10 +287,37 @@ static void pci_setup_bridge(struct pci_
+ 		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+ 		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+ 	}
++}
++static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
++{
++	struct pci_dev *bridge = bus->self;
++
++	if (pci_is_enabled(bridge))
++		return;
++
++	dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
++		 pci_domain_nr(bus), bus->number);
++
++	if (type & IORESOURCE_IO)
++		pci_setup_bridge_io(bus);
++
++	if (type & IORESOURCE_MEM)
++		pci_setup_bridge_mmio(bus);
++
++	if (type & IORESOURCE_PREFETCH)
++		pci_setup_bridge_mmio_pref(bus);
+ 
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+ }
+ 
++static void pci_setup_bridge(struct pci_bus *bus)
++{
++	unsigned long type = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++
++	__pci_setup_bridge(bus, type);
++}
++
+ /* Check whether the bridge supports optional I/O and
+    prefetchable memory ranges. If not, the respective
+    base/limit registers must be read-only and read as 0. */
+@@ -541,19 +629,20 @@ void __ref pci_bus_size_bridges(struct p
+ }
+ EXPORT_SYMBOL(pci_bus_size_bridges);
+ 
+-void __ref pci_bus_assign_resources(const struct pci_bus *bus)
++static void __ref __pci_bus_assign_resources(const struct pci_bus *bus,
++					 struct resource_list *fail_head)
+ {
+ 	struct pci_bus *b;
+ 	struct pci_dev *dev;
+ 
+-	pbus_assign_resources_sorted(bus);
++	pbus_assign_resources_sorted(bus, fail_head);
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		b = dev->subordinate;
+ 		if (!b)
+ 			continue;
+ 
+-		pci_bus_assign_resources(b);
++		__pci_bus_assign_resources(b, fail_head);
+ 
+ 		switch (dev->class >> 8) {
+ 		case PCI_CLASS_BRIDGE_PCI:
+@@ -571,15 +660,105 @@ void __ref pci_bus_assign_resources(cons
+ 		}
+ 	}
+ }
++
++void __ref pci_bus_assign_resources(const struct pci_bus *bus)
++{
++	__pci_bus_assign_resources(bus, NULL);
++}
+ EXPORT_SYMBOL(pci_bus_assign_resources);
+ 
++static void release_children_resource(struct resource *r)
++{
++	struct resource *p;
++	resource_size_t size;
++
++	p = r->child;
++	while (p) {
++		release_children_resource(p);
++		release_resource(p);
++		printk(KERN_DEBUG "PCI: release child resource %pRt\n", p);
++		/* need to restore size, and keep flags */
++		size = resource_size(p);
++		p->start = 0;
++		p->end = size - 1;
++		p = r->child;
++	}
++}
++
++static void pci_bridge_release_unused_res(struct pci_bus *bus,
++					  unsigned long type)
++{
++	int idx;
++	bool changed = false;
++	struct pci_dev *dev;
++	struct resource *r;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++
++	/* for pci bridges res only */
++	dev = bus->self;
++	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES + 3;
++	    idx++) {
++		r = &dev->resource[idx];
++		if ((r->flags & type_mask) != type)
++			continue;
++		if (!r->parent)
++			continue;
++		/*
++		 * if there are children under that, we should release them
++		 *  all
++		 */
++		release_children_resource(r);
++		if (!release_resource(r)) {
++			dev_printk(KERN_DEBUG, &dev->dev,
++				 "resource %d %pRt released\n", idx, r);
++			r->flags = 0;
++			changed = true;
++		}
++	}
++
++	if (changed) {
++		if (type & IORESOURCE_PREFETCH) {
++			/* avoiding touch the one without PREF */
++			type = IORESOURCE_PREFETCH;
++		}
++		__pci_setup_bridge(bus, type);
++	}
++}
++
++/*
++ * try to release pci bridge resources that is from leaf bridge,
++ * so we can allocate big new one later
++ */
++static void __ref pci_bus_release_unused_bridge_res(struct pci_bus *bus,
++						    unsigned long type)
++{
++	struct pci_bus *b;
++
++	/* If the bus is cardbus, do nothing */
++	if (bus->self && (bus->self->class >> 8) == PCI_CLASS_BRIDGE_CARDBUS)
++		return;
++
++	/* We only release the resources under the leaf bridge */
++	if (list_empty(&bus->children)) {
++		if (!pci_is_root_bus(bus))
++			pci_bridge_release_unused_res(bus, type);
++		return;
++	}
++
++	/* Scan child buses if the bus is not leaf */
++	list_for_each_entry(b, &bus->children, node)
++		pci_bus_release_unused_bridge_res(b, type);
++}
++
+ static void pci_bus_dump_res(struct pci_bus *bus)
+ {
+         int i;
+ 
+         for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+                 struct resource *res = bus->resource[i];
+-                if (!res || !res->end)
++
++		if (!res || !res->end || !res->flags)
+                         continue;
+ 
+ 		dev_printk(KERN_DEBUG, &bus->dev, "resource %d %pRt\n", i, res);
+@@ -607,6 +786,12 @@ void __init
+ pci_assign_unassigned_resources(void)
+ {
+ 	struct pci_bus *bus;
++	bool second_tried = false;
++	struct resource_list head, *list, *tmp;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++again:
++	head.next = NULL;
+ 
+ 	/* Depth first, calculate sizes and alignments of all
+ 	   subordinate buses. */
+@@ -615,7 +800,42 @@ pci_assign_unassigned_resources(void)
+ 	}
+ 	/* Depth last, allocate resources and update the hardware. */
+ 	list_for_each_entry(bus, &pci_root_buses, node) {
+-		pci_bus_assign_resources(bus);
++		__pci_bus_assign_resources(bus, &head);
++	}
++
++	/* any device complain? */
++	if (!head.next)
++		goto enable_and_dump;
++
++	if (second_tried) {
++		/* still fail, don't want to try more */
++		free_failed_list(&head);
++		goto enable_and_dump;
++	}
++
++	second_tried = true;
++	printk(KERN_DEBUG "PCI: second try to assign unassigned res\n");
++
++	/*
++	 * Try to release leaf bridge's resources that doesn't fit resource of
++	 * child device under that bridge
++	 */
++	for (list = head.next; list;) {
++		bus = list->dev->bus;
++		/* don't need to play with root bus */
++		if (!pci_is_root_bus(bus))
++			pci_bus_release_unused_bridge_res(bus,
++					 list->res->flags & type_mask);
++		tmp = list;
++		list = list->next;
++		kfree(tmp);
++	}
++
++	goto again;
++
++enable_and_dump:
++	/* Depth last, update the hardware. */
++	list_for_each_entry(bus, &pci_root_buses, node) {
+ 		pci_enable_bridges(bus);
+ 	}
+ 
