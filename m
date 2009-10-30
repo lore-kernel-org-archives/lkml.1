@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933118AbZJ3Xz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbZJ3X5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933118AbZJ3Xz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 19:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933105AbZJ3XzZ
+	id S933125AbZJ3X5g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 19:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbZJ3X5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 19:55:25 -0400
-Received: from gate.crashing.org ([63.228.1.57]:50295 "EHLO gate.crashing.org"
+	Fri, 30 Oct 2009 19:57:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34558 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933100AbZJ3XzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 19:55:24 -0400
+	id S933077AbZJ3X5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 19:57:32 -0400
 Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from
  2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -20,16 +20,13 @@ Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
        Linux PCI <linux-pci@vger.kernel.org>,
        Dominik Brodowski <linux@dominikbrodowski.net>
-In-Reply-To: <alpine.LFD.2.01.0910301412500.31845@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910301228430.31845@localhost.localdomain>
 References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-	 <200910301948.24473.rjw@sisk.pl>
+	 <6dRYo8ss7vL.A.EqH.Nse5KB@chimera> <200910301948.24473.rjw@sisk.pl>
 	 <alpine.LFD.2.01.0910301228430.31845@localhost.localdomain>
-	 <200910302132.44759.rjw@sisk.pl>
-	 <alpine.LFD.2.01.0910301335570.31845@localhost.localdomain>
-	 <alpine.LFD.2.01.0910301412500.31845@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 31 Oct 2009 10:54:57 +1100
-Message-ID: <1256946897.6372.161.camel@pasglop>
+Date: Sat, 31 Oct 2009 10:57:21 +1100
+Message-ID: <1256947041.6372.165.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -37,17 +34,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-10-30 at 12:47 -0700, Linus Torvalds wrote:
+> 
+> On Fri, 30 Oct 2009, Rafael J. Wysocki wrote:
+> > 
+> >
+> > 1) Resume works if pcmcia_socket_dev_resume(dev) is moved to the "regular"
+> >    resume phase, after resume_device_irqs().
+> 
+> Hmm. We really probably shouldn't call pcmcia_socket_dev_resume() in 
+> early_resume. It takes mutexes etc, and it calls "socket_resume()", which 
+> sleeps etc. That per se should be ok these days (since we don't actualyl 
+> disable CPU irq's, just device irqs), but it also does that whole card 
+> insertion events etc. And _that_ code I wouldn't trust at all.
+> 
+> The PCMCIA code is better than it used to be a long time ago, but some of 
+> it is still pretty crazy. 
+> 
+> I get the feeling that we should just revert that commit 0c570cdeb, and 
+> instead always do PCMCIA suspend as a "eject" event. That way we have no 
+> driver behind it to resume at resume time - and we'll see any plugged-in 
+> device as just a new insertion. 
 
-> Put another way: five years ago I would have felt that it could be 
-> important that people can suspend and resume while they have a CD-ROM 
-> mounted through a PCMCIA IDE card. Or something like that where you want 
-> to keep session information.
+To me the proper approach would be to split it so that
 
-I think you are a bit too much laptop centric :-) It's sadly still
-common in the embedded space to use PCMCIA or Cardbus for ... root
-filesystems.
+ - early_resume() restores power & config space etc... so that existing
+devices can move on (might check for removal). There's no other hotplug
+activity
+
+ - normal resume() restarts handling of events such as insertions
+
+Now, while I do have some cardbus & pcmcia stuff somewhere, I also don't
+have much time to hack on this right now...
 
 Cheers,
 Ben.
-
 
