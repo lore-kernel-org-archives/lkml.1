@@ -1,188 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbZJ3UGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZJ3UbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932706AbZJ3UGb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 16:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbZJ3UGb
+	id S1757386AbZJ3UbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 16:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZJ3UbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 16:06:31 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:53673 "EHLO e4.ny.us.ibm.com"
+	Fri, 30 Oct 2009 16:31:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56054 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932574AbZJ3UGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 16:06:30 -0400
-Subject: [RFC][PATCH] Allow threads to rename siblings via
- /proc/pid/tasks/tid/comm
-From: john stultz <johnstul@us.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
-       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <1256347303.5059.26.camel@localhost.localdomain>
-References: <1256347303.5059.26.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 30 Oct 2009 13:06:25 -0700
-Message-Id: <1256933185.3634.19.camel@work-vm>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1754179AbZJ3UbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 16:31:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
+Date: Fri, 30 Oct 2009 21:32:44 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <200910301948.24473.rjw@sisk.pl> <alpine.LFD.2.01.0910301228430.31845@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910301228430.31845@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910302132.44759.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, third attempt at this. 
+On Friday 30 October 2009, Linus Torvalds wrote:
+> 
+> On Fri, 30 Oct 2009, Rafael J. Wysocki wrote:
+> > 
+> >
+> > 1) Resume works if pcmcia_socket_dev_resume(dev) is moved to the "regular"
+> >    resume phase, after resume_device_irqs().
+> 
+> Hmm. We really probably shouldn't call pcmcia_socket_dev_resume() in 
+> early_resume. It takes mutexes etc, and it calls "socket_resume()", which 
+> sleeps etc. That per se should be ok these days (since we don't actualyl 
+> disable CPU irq's, just device irqs), but it also does that whole card 
+> insertion events etc. And _that_ code I wouldn't trust at all.
 
-I've added some minor tweaks from Darren's review, and I think the
-memory barrier bits are in the right place.
+I thought so when I worked on commit 0c570cdeb, but then it turned out to
+work just fine with a number of boxes.
 
-Please let me know if you have any comments or feedback! If not I'll
-probably send this on to -mm next week.
+> The PCMCIA code is better than it used to be a long time ago, but some of 
+> it is still pretty crazy. 
+> 
+> I get the feeling that we should just revert that commit 0c570cdeb,
 
-thanks
--john
+Well, there's nothing wrong with doing the PCI stuff and restoring the state at
+the _noirq stage IMO, so instead of reverting it altogether, I'd add
+yenta_dev_suspend|resume() that would just call
+pcmcia_socket_dev_suspend|resume() during "regular" suspend|resume.
 
+> and instead always do PCMCIA suspend as a "eject" event. That way we have no 
+> driver behind it to resume at resume time - and we'll see any plugged-in 
+> device as just a new insertion. 
 
-===============
+In fact I thought about that.
 
-Setting a thread's comm to be something unique is a very useful ability
-and is helpful for debugging complicated threaded applications. However
-currently the only way to set a thread name is for the thread to name
-itself via the PR_SET_NAME prctl.
+It looks like I need to find a CardBus adapter somewhere and clean that thing up.
 
-However, there may be situations where it would be advantageous for a
-thread dispatcher to be naming the threads its managing, rather then
-having the threads self-describe themselves. This sort of behavior is
-available on other systems via the pthread_setname_np() interface.
+That said, I'd really like to know what's going on in there. :-)
 
-This patch exports a task's comm via proc/pid/comm and
-proc/pid/task/tid/comm interfaces, and allows thread siblings to write
-to these values.
-
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/fs/exec.c b/fs/exec.c
-index d49be6b..ce70e55 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -926,7 +926,18 @@ char *get_task_comm(char *buf, struct task_struct *tsk)
- void set_task_comm(struct task_struct *tsk, char *buf)
- {
- 	task_lock(tsk);
--	strlcpy(tsk->comm, buf, sizeof(tsk->comm));
-+
-+	/*
-+	 * Threads may access current->comm without holding
-+	 * the task lock, so write the string carefully
-+	 * to avoid non-terminating reads. Readers without a lock
-+	 * will get the oldname, the newname or an empty string.
-+	 */
-+	tsk->comm[0] = 0;
-+	wmb();
-+	strlcpy(tsk->comm+1, buf+1, sizeof(tsk->comm)-1);
-+	wmb();
-+	tsk->comm[0] = buf[0];
- 	task_unlock(tsk);
- 	perf_event_comm(tsk);
- }
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 837469a..7f59af1 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1265,6 +1265,78 @@ static const struct file_operations proc_pid_sched_operations = {
- 
- #endif
- 
-+
-+
-+static ssize_t
-+comm_write(struct file *file, const char __user *buf,
-+	    size_t count, loff_t *offset)
-+{
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	struct task_struct *p;
-+	char buffer[TASK_COMM_LEN];
-+
-+	memset(buffer, 0, sizeof(buffer));
-+	if (count > sizeof(buffer) - 1)
-+		count = sizeof(buffer) - 1;
-+	if (copy_from_user(buffer, buf, count))
-+		return -EFAULT;
-+
-+	p = get_proc_task(inode);
-+	if (!p)
-+		return -ESRCH;
-+
-+	if (same_thread_group(current, p))
-+		set_task_comm(p, buffer);
-+	else
-+		count = -EINVAL;
-+
-+	put_task_struct(p);
-+
-+	return count;
-+}
-+
-+
-+static int comm_show(struct seq_file *m, void *v)
-+{
-+	struct inode *inode = m->private;
-+	struct task_struct *p;
-+
-+	p = get_proc_task(inode);
-+	if (!p)
-+		return -ESRCH;
-+
-+	task_lock(p);
-+	seq_printf(m, "%s\n", p->comm);
-+	task_unlock(p);
-+
-+	put_task_struct(p);
-+
-+	return 0;
-+}
-+
-+static int comm_open(struct inode *inode, struct file *filp)
-+{
-+	int ret;
-+
-+	ret = single_open(filp, comm_show, NULL);
-+	if (!ret) {
-+		struct seq_file *m = filp->private_data;
-+
-+		m->private = inode;
-+	}
-+	return ret;
-+}
-+
-+
-+static const struct file_operations proc_pid_set_comm_operations = {
-+	.open		= comm_open,
-+	.read		= seq_read,
-+	.write		= comm_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+
- /*
-  * We added or removed a vma mapping the executable. The vmas are only mapped
-  * during exec and are not mapped with the mmap system call.
-@@ -2504,6 +2576,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
-+	REG("comm",      S_IRUGO|S_IWUSR, proc_pid_set_comm_operations),
- #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
- 	INF("syscall",    S_IRUSR, proc_pid_syscall),
- #endif
-@@ -2839,6 +2912,7 @@ static const struct pid_entry tid_base_stuff[] = {
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
-+	REG("comm",      S_IRUGO|S_IWUSR, proc_pid_set_comm_operations),
- #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
- 	INF("syscall",   S_IRUSR, proc_pid_syscall),
- #endif
-
-
-
+Thanks,
+Rafael
