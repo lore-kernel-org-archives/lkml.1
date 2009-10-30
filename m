@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZJ3DSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZJ3D2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbZJ3DSE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 23:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZJ3DSD
+	id S1754898AbZJ3D2L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 23:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZJ3D2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 23:18:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56334 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752351AbZJ3DSC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 23:18:02 -0400
-Date: Fri, 30 Oct 2009 14:18:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: linux-next: manual merge of the net/wireless tree with the
- staging.current tree
-Message-Id: <20091030141800.eb72e320.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Oct 2009 23:28:11 -0400
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:40251 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752351AbZJ3D2K convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Oct 2009 23:28:10 -0400
+X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Oct 2009 23:28:09 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=JI9wI5F16BA4SY9bvxHHefGk42pDG9RvOWUxh0/+sKvIftDjN1tXaJX6xjLk17VnxP
+         ZxkrerGWA/xcAauhx5/Gw3IWGl5VoysVRL6buHvbhp8m77C9DDyvwn39LEEC/8aqpk9L
+         5uW8bAnR1ih/8cLPfag6fvTGsqBGiCKKhOvHg=
+MIME-Version: 1.0
+In-Reply-To: <1254691822.21044.9.camel@laptop>
+References: <Pine.LNX.4.64.0910041229300.20203@digraph.polyomino.org.uk> 
+	<1254691822.21044.9.camel@laptop>
+From: Ulrich Drepper <drepper@gmail.com>
+Date: Thu, 29 Oct 2009 20:21:02 -0700
+Message-ID: <a36005b50910292021y392075d5lddc620e3bdfc3ede@mail.gmail.com>
+Subject: Re: F_SETOWN_EX and F_GETLK64 conflict
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Joseph S. Myers" <joseph@codesourcery.com>, linux-api@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <onestero@redhat.com>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Roland McGrath <roland@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sun, Oct 4, 2009 at 14:30, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>  arch/alpha/include/asm/fcntl.h |    4 ++--
+>  include/asm-generic/fcntl.h    |   19 +++++++++++--------
+>  2 files changed, 13 insertions(+), 10 deletions(-)
 
-Today's linux-next merge of the net tree got conflicts in
-drivers/staging/rtl8187se/Kconfig and drivers/staging/rtl8192e/Kconfig
-between commit a26961e914c88e3e2ed46ef67f83a33ad7b57c36 ("Staging: fix
-wireless drivers depends") from the staging.current tree and commit
-125b181aec7a67c71234284ecf6d9c729d05deda ("staging: Add proper selection
-of WIRELESS_EXT and WEXT_PRIV") from the net/wireless tree.
+This patch looks fine:
 
-Just context changes.  I fixed it up (see below) and can carry the fix
-for a while.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Acked-by: Ulrich Drepper <drepper@redhat.com>
 
-diff --cc drivers/staging/rtl8187se/Kconfig
-index 203c79b,faf6c60..0000000
---- a/drivers/staging/rtl8187se/Kconfig
-+++ b/drivers/staging/rtl8187se/Kconfig
-@@@ -1,6 -1,7 +1,7 @@@
-  config RTL8187SE
-  	tristate "RealTek RTL8187SE Wireless LAN NIC driver"
- -	depends on PCI
- +	depends on PCI && WLAN
-- 	depends on WIRELESS_EXT
-+ 	select WIRELESS_EXT
-+ 	select WEXT_PRIV
-  	default N
-  	---help---
-diff --cc drivers/staging/rtl8192e/Kconfig
-index 37e4fde,5c077b9..0000000
---- a/drivers/staging/rtl8192e/Kconfig
-+++ b/drivers/staging/rtl8192e/Kconfig
-@@@ -1,6 -1,7 +1,7 @@@
-  config RTL8192E
-  	tristate "RealTek RTL8192E Wireless LAN NIC driver"
- -	depends on PCI
- +	depends on PCI && WLAN
-- 	depends on WIRELESS_EXT
-+ 	select WIRELESS_EXT
-+ 	select WEXT_PRIV
-  	default N
-  	---help---
+
+Linus, can you please apply it in whatever form so that we know the
+value of the constants?
