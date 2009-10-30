@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbZJ3K7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbZJ3LCD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932077AbZJ3K7j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 06:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbZJ3K7j
+	id S1757163AbZJ3LCD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 07:02:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757145AbZJ3LCC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 06:59:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57954 "EHLO mx2.suse.de"
+	Fri, 30 Oct 2009 07:02:02 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58016 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757069AbZJ3K7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 06:59:38 -0400
-Date: Fri, 30 Oct 2009 11:59:42 +0100
-Message-ID: <s5hk4ydywo1.wl%tiwai@suse.de>
+	id S1757142AbZJ3LCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 07:02:00 -0400
+Date: Fri, 30 Oct 2009 12:02:05 +0100
+Message-ID: <s5hiqdxywk2.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: peer chen <peerchen@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, pchen@nvidia.com
-Subject: Re: [alsa-devel][PATCH] hda_intel: Add the Linux device ID for NVIDIA HDA 	controller
-In-Reply-To: <cfaab6210910150137x5086ebb1j7a32512f04f83dca@mail.gmail.com>
-References: <cfaab6210910150137x5086ebb1j7a32512f04f83dca@mail.gmail.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 2/14] sound: Move dereference after NULL test and drop unnecessary NULL tests
+In-Reply-To: <Pine.LNX.4.64.0910170832570.9213@ask.diku.dk>
+References: <Pine.LNX.4.64.0910170832570.9213@ask.diku.dk>
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.7 Emacs/23.1
  (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -27,28 +27,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 15 Oct 2009 16:37:47 +0800,
-peer chen wrote:
+At Sat, 17 Oct 2009 08:33:22 +0200 (CEST),
+Julia Lawall wrote:
 > 
-> Add the generic device ID for NVIDIA HDA controller.
+> From: Julia Lawall <julia@diku.dk>
 > 
-> Signed-off-by: Peer Chen<peerchen@gmail.com>
+> In pcm.c, if the NULL test on pcm is needed, then the dereference should be
+> after the NULL test.
+> 
+> In dummy.c and ali5451.c, the context of the calls to
+> snd_card_dummy_new_mixer and snd_ali_free_voice show that dummy and pvoice,
+> respectively cannot be NULL.
+> 
+> A simplified version of the semantic match that detects this problem is as
+> follows (http://coccinelle.lip6.fr/):
+> 
+> // <smpl>
+> @match exists@
+> expression x, E;
+> identifier fld;
+> @@
+> 
+> * x->fld
+>   ... when != \(x = E\|&x\)
+> * x == NULL
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Thanks, applied now.  Will be included in the next pull request.
+Thanks, applied now.
 
 
 Takashi
 
+> 
 > ---
-> --- linux-2.6.32-rc4/sound/pci/hda/hda_intel.c.orig
-> +++ linux-2.6.32-rc4/sound/pci/hda/hda_intel.c
-> @@ -2674,6 +2674,7 @@ static struct pci_device_id azx_ids[] =
->  	{ PCI_DEVICE(0x10de, 0x044b), .driver_data = AZX_DRIVER_NVIDIA },
->  	{ PCI_DEVICE(0x10de, 0x055c), .driver_data = AZX_DRIVER_NVIDIA },
->  	{ PCI_DEVICE(0x10de, 0x055d), .driver_data = AZX_DRIVER_NVIDIA },
-> +	{ PCI_DEVICE(0x10de, 0x0590), .driver_data = AZX_DRIVER_NVIDIA },
->  	{ PCI_DEVICE(0x10de, 0x0774), .driver_data = AZX_DRIVER_NVIDIA },
->  	{ PCI_DEVICE(0x10de, 0x0775), .driver_data = AZX_DRIVER_NVIDIA },
->  	{ PCI_DEVICE(0x10de, 0x0776), .driver_data = AZX_DRIVER_NVIDIA },
-> -
+>  sound/core/pcm.c            |    5 +++--
+>  sound/drivers/dummy.c       |    2 --
+>  sound/pci/ali5451/ali5451.c |    2 +-
+> 
+> diff --git a/sound/core/pcm.c b/sound/core/pcm.c
+> index 0c14401..c69c60b 100644
+> --- a/sound/core/pcm.c
+> +++ b/sound/core/pcm.c
+> @@ -953,11 +953,12 @@ static int snd_pcm_dev_register(struct snd_device *device)
+>  	struct snd_pcm_substream *substream;
+>  	struct snd_pcm_notify *notify;
+>  	char str[16];
+> -	struct snd_pcm *pcm = device->device_data;
+> +	struct snd_pcm *pcm;
+>  	struct device *dev;
+>  
+> -	if (snd_BUG_ON(!pcm || !device))
+> +	if (snd_BUG_ON(!device || !device->device_data))
+>  		return -ENXIO;
+> +	pcm = device->device_data;
+>  	mutex_lock(&register_mutex);
+>  	err = snd_pcm_add(pcm);
+>  	if (err) {
+> diff --git a/sound/drivers/dummy.c b/sound/drivers/dummy.c
+> index 6ba066c..146ef00 100644
+> --- a/sound/drivers/dummy.c
+> +++ b/sound/drivers/dummy.c
+> @@ -808,8 +808,6 @@ static int __devinit snd_card_dummy_new_mixer(struct snd_dummy *dummy)
+>  	unsigned int idx;
+>  	int err;
+>  
+> -	if (snd_BUG_ON(!dummy))
+> -		return -EINVAL;
+>  	spin_lock_init(&dummy->mixer_lock);
+>  	strcpy(card->mixername, "Dummy Mixer");
+>  
+> diff --git a/sound/pci/ali5451/ali5451.c b/sound/pci/ali5451/ali5451.c
+> index b458d20..aaf4da6 100644
+> --- a/sound/pci/ali5451/ali5451.c
+> +++ b/sound/pci/ali5451/ali5451.c
+> @@ -973,7 +973,7 @@ static void snd_ali_free_voice(struct snd_ali * codec,
+>  	void *private_data;
+>  
+>  	snd_ali_printk("free_voice: channel=%d\n",pvoice->number);
+> -	if (pvoice == NULL || !pvoice->use)
+> +	if (!pvoice->use)
+>  		return;
+>  	snd_ali_clear_voices(codec, pvoice->number, pvoice->number);
+>  	spin_lock_irq(&codec->voice_alloc);
 > 
