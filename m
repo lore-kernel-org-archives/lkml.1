@@ -1,57 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932541AbZJ3Pzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZJ3QFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932541AbZJ3Pzf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 11:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932502AbZJ3Pzf
+	id S932555AbZJ3QFY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 12:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbZJ3QFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 11:55:35 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:63104 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932473AbZJ3Pze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 11:55:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=owDekbiBOwSiEwkBlT+C5YFts2NYRUgT+fvcwyDneYEqQhof48qaqZA9antT9O5VP7
-         v6JJhCFw6nKgM8kq02k7081HjZHRzwm0hWtXtkSX/TvXxDEQhYQftpKh4swvD2LtRr77
-         Ey1PGlfXHWTWMBvW94ME9h7EjRkpviT2139xQ=
-MIME-Version: 1.0
-In-Reply-To: <292693080910300320q1857cc70s73eb524c34af8233@mail.gmail.com>
-References: <292693080910290808x69f25f6fgc49cb646c1c00466@mail.gmail.com> 
-	<4AE9F3D2.8030502@nortel.com> <292693080910300320q1857cc70s73eb524c34af8233@mail.gmail.com>
-From: Mulyadi Santosa <mulyadi.santosa@gmail.com>
-Date: Fri, 30 Oct 2009 22:55:19 +0700
-Message-ID: <f284c33d0910300855k3ec50ac3pc4cb4053e4341b52@mail.gmail.com>
-Subject: Re: Questions about linux scheduler
-To: Daniel Rodrick <daniel.rodrick@gmail.com>
-Cc: Chris Friesen <cfriesen@nortel.com>,
-       Linux Newbie <linux-newbie@vger.kernel.org>,
-       Kernel Newbies <kernelnewbies@nl.linux.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 30 Oct 2009 12:05:23 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:5546 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932461AbZJ3QFW convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;8:2>);
+	Fri, 30 Oct 2009 12:05:22 -0400
+Message-Id: <4AEB1CD4020000780001CD66@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Fri, 30 Oct 2009 16:05:24 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Tony Luck" <tony.luck@intel.com>, "Tejun Heo" <tj@kernel.org>
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "akpm" <akpm@linux-foundation.org>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Sam Ravnborg" <sam@ravnborg.org>,
+       "Andreas Gruenbacher" <agruen@suse.de>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>
+Subject: Re: [PATCH -next] ia64/sn: fix percpu warnings
+References: <20091014163445.f0441473.sfr@canb.auug.org.au>
+ <20091014151003.0ef42973.randy.dunlap@oracle.com>
+ <4AD67C05.2030201@kernel.org>
+ <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com>
+ <57C9024A16AD2D4C97DC78E552063EA3E345953E@orsmsx505.amr.corp.intel.com>
+ <4AE85D28.90809@kernel.org>
+ <57C9024A16AD2D4C97DC78E552063EA3E34C0108@orsmsx505.amr.corp.intel.com>
+ <4AE87344.6030708@kernel.org>
+ <57C9024A16AD2D4C97DC78E552063EA3E34C018B@orsmsx505.amr.corp.intel.com>
+ <57C9024A16AD2D4C97DC78E552063EA3E34C0629@orsmsx505.amr.corp.intel.com>
+ <4AE9AA0E.5070104@kernel.org> <4AE9B812.2080307@kernel.org>
+In-Reply-To: <4AE9B812.2080307@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 5:20 PM, Daniel Rodrick
-<daniel.rodrick@gmail.com> wrote:
-> One last question ... the nice value of a process never changes
-> (unless done explicitly using nice system call), right?
+>>> Tejun Heo <tj@kernel.org> 29.10.09 16:43 >>>
+>So, the problem is that genksyms can't understand the following.
 >
+>  __typeof__(int [10]) my_ar;
+>  EXPORT_SYMBOL(my_ar);
 
-Correct.... notice that only root who is able to alter the nice value
-of any processes freely. Normal user can only renice its own created
-process and only increase its nice value (thus decreasing its static
-priority)
+In fact almost no use of typeof() works with genksyms: Out of
 
+#include <linux/module.h>
 
--- 
-regards,
+extern int x;
 
-Mulyadi Santosa
-Freelance Linux trainer and consultant
+#define export(t, n) typeof(t) export_##n; EXPORT_SYMBOL(export_##n)
 
-blog: the-hydra.blogspot.com
-training: mulyaditraining.blogspot.com
+export(x, a);
+export(&x, b);
+export(int, c);
+export(int*, d);
+export(int**, e);
+export(int[4], f);
+export(typeof(x), g);
+export(typeof(&x), h);
+export(typeof(x)*, i);
+
+only c and d get a non-zero CRC. This is clearly due to the naive parsing
+scripts/genksyms/parse.y does:
+
+type_specifier:
+	simple_type_specifier
+	| cvar_qualifier
+	| TYPEOF_KEYW '(' decl_specifier_seq '*' ')'
+	| TYPEOF_KEYW '(' decl_specifier_seq ')'
+	...
+
+>Would it be difficult to teach it how to parse it?
+
+For someone familiar with bison/yacc this would seem not very difficult
+a job, but as far as I'm concerned this is not something I would feel
+comfortable trying to fix. Of course one could go the simplistic route
+and just add the array case here, but imo this wouldn't be the right
+way to deal with it.
+
+Jan
+
