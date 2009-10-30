@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbZJ3SgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932877AbZJ3SrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932886AbZJ3SgD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 14:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932870AbZJ3SgD
+	id S932877AbZJ3SrM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 14:47:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932844AbZJ3SrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 14:36:03 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39753 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932861AbZJ3SgC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 14:36:02 -0400
-Date: Fri, 30 Oct 2009 19:35:59 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-Message-ID: <20091030183559.GF7008@elf.ucw.cz>
-References: <20091026174631.GD7233@duck.suse.cz>
- <1256579869.8576.7.camel@heimdal.trondhjem.org>
- <20091025093604.GA1501@ucw.cz>
- <m1zl7cb1c5.fsf@fess.ebiederm.org>
- <20091028081653.GA18290@elf.ucw.cz>
- <m1k4yfkbfg.fsf@fess.ebiederm.org>
- <20091028210323.GA4159@elf.ucw.cz>
- <m1hbtj7xgj.fsf@fess.ebiederm.org>
- <20091029110344.GA1517@ucw.cz>
- <m1d4466uel.fsf@fess.ebiederm.org>
+	Fri, 30 Oct 2009 14:47:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55815 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932792AbZJ3SrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 14:47:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Help needed, Re: [Bug #14334] pcmcia suspend regression from 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
+Date: Fri, 30 Oct 2009 19:48:24 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Jose Marino" <braket@hotmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.EqH.Nse5KB@chimera>
+In-Reply-To: <6dRYo8ss7vL.A.EqH.Nse5KB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1d4466uel.fsf@fess.ebiederm.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910301948.24473.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi,
 
-> > Basically, that follow link should behave as dup(), not as open().
+On Monday 26 October 2009, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> There are reasons why an open is an open here.  I don't remember the
-> details but I found the archive of that conversation once.  Maybe it was
-> just technical limitations of the time.
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
 
-That would be really really useful to bring 
+Here's a puzzle for whoever likes hardware detective work.
 
-> >> I certainly am not interested in debugging or maintaining the stacking
-> >> inode code that would be necessary to close this theoretical corner
-> >> case.  There are much more real bugs that need attention.
-> >
-> > But if we can get trivial 10-liner, that should be acceptable, right?
-> 
-> How many linux shell scripts and other applications that use /dev/fd/N
-> or /proc/self/fd/N will you be breaking?
+Suspend to RAM worked just fine on the Jose's box before commit
+53024df259e37ad49ee3d1f3721d4cecdd7bc357 (PM / yenta: Fix cardbus
+suspend/resume regression, mainline commit
+0c570cdeb8fdfcb354a3e9cd81bfc6a09c19de0c) that made the resume of CardBus
+devices actually work.  After this commit, the box hangs during resume 100% of
+the time.
 
-Zero. (Well unless someone is exploiting it in wild).
+We've done quite some debugging and here's the summary of findings:
 
-> Closing a theoretical security hole at the expense of breaking real
-> applications is a show stopper.
+1) Resume works if pcmcia_socket_dev_resume(dev) is moved to the "regular"
+   resume phase, after resume_device_irqs().
 
-I don't plan to remove /proc/*/fd; but I would like it to behave like
-dup().
+2) Resume works if yenta_set_power() is not called during resume
+   (from yenta_set_socket()).
 
-(I still hope some security team does work for me :-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+3) It doesn't help to resume all ACPI devices before yenta.
+
+4) It doesn't help to disable yenta events during resume (unconditionally).
+
+5) There are two CardBus bridges in the box and according to the PM_TRACE
+   information the _second_ one is the last device we attempt to wake up
+   during a failing resume.
+
+Please look into http://bugzilla.kernel.org/show_bug.cgi?id=14334 for details.
+
+OK, any ideas anyone?
+
+Rafael
