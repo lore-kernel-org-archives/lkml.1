@@ -1,274 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbZJ3KEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbZJ3KN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756532AbZJ3KEr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 06:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZJ3KEq
+	id S1756868AbZJ3KN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 06:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbZJ3KNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 06:04:46 -0400
-Received: from mtagate5.de.ibm.com ([195.212.17.165]:34516 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754153AbZJ3KEo (ORCPT
+	Fri, 30 Oct 2009 06:13:55 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:54311 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755037AbZJ3KNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 06:04:44 -0400
-Date: Fri, 30 Oct 2009 11:04:50 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [GIT PULL] s390 patches for 2.6.32-rc5
-Message-ID: <20091030110450.608a6671@mschwide.boeblingen.de.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 Oct 2009 06:13:55 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Dave Airlie <airlied@gmail.com>
+Subject: Re: is avoiding compat ioctls possible?
+Date: Fri, 30 Oct 2009 11:13:42 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: David Miller <davem@davemloft.net>, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org
+References: <20091027.222814.137568780.davem@davemloft.net> <20091028.005342.60092591.davem@davemloft.net> <21d7e9970910291813u19cdd361u2facb864db58a712@mail.gmail.com>
+In-Reply-To: <21d7e9970910291813u19cdd361u2facb864db58a712@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910301113.43174.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/5aEPkmGU2TrqKmCGm9u+gNly21jPoGBxDwoK
+ cG5FHV6GxqiolDC5VWokr7qtc5kX5NOO58ZmLY1mmAwG0UcUZY
+ f5No5iZPOaIJb+eLuUddA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Friday 30 October 2009, Dave Airlie wrote:
+> Btw when I mentioned ioctls I meant more than radeon, all the KMS
+> ioctls in the common drm_crtc.c file suffer from this problem as well.
+> 
+> Hence why I still believe either my drm specific inline or something
+> more generic (granted I can see why a generic solution would be ugly).
+> 
+> You patch below does suffer from a lot of #ifdefs and cut-n-paste
+> that is a lot better suited to doing in an inline or macro. We can then
+> comment that inline saying if anyone else does this we will be most
+> unhappy.
 
-the latest bug fixes for s390, please pull from 'for-linus' branch of
+I think it would be better to do a conversion of the pointers in
+a separate compat handler, but then call the regular function, which
+in case of drm already take a kernel pointer. That would be much simpler
+than the compat_alloc_user_space tricks in the current code and
+also cleaner than trying to handle both cases in one function using
+is_compat_task().
 
-	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
+See the (not even compile-tested) example below as an illustration
+of what I think you should do. If you convert all functions in
+drm_ioc32.c to this scheme, you can replace drm_compat_ioctl and
+drm_compat_ioctls[] with drm_generic_compat_ioctl.
 
-to receive the following updates:
+	Arnd <><
 
-Heiko Carstens (5):
-      [S390] smp: fix prefix handling of offlined cpus
-      [S390] call home: fix error handling in init function
-      [S390] call home: fix string length handling
-      [S390] smp: fix sigp stop handling
-      [S390] smp: fix sigp sense handling
-
-Martin Schwidefsky (2):
-      [S390] s/r: cmm resume fix
-      [S390] cputime: fix overflow on 31 bit systems
-
-Sebastian Ott (1):
-      [S390] call home: fix local buffer usage in proc handler
-
- arch/s390/include/asm/cputime.h |    6 ++--
- arch/s390/kernel/ipl.c          |    7 ++---
- arch/s390/kernel/smp.c          |    7 +++--
- arch/s390/kernel/swsusp_asm64.S |    2 +
- drivers/s390/char/sclp_async.c  |   47 +++++++++++++++------------------------
- drivers/s390/net/smsgiucv.c     |    7 +++++-
- 6 files changed, 36 insertions(+), 40 deletions(-)
-
-diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
-index 24b1244..f23961a 100644
---- a/arch/s390/include/asm/cputime.h
-+++ b/arch/s390/include/asm/cputime.h
-@@ -78,7 +78,7 @@ cputime64_to_jiffies64(cputime64_t cputime)
- static inline unsigned int
- cputime_to_msecs(const cputime_t cputime)
- {
--	return __div(cputime, 4096000);
-+	return cputime_div(cputime, 4096000);
- }
- 
- static inline cputime_t
-@@ -160,7 +160,7 @@ cputime_to_timeval(const cputime_t cputime, struct timeval *value)
- static inline clock_t
- cputime_to_clock_t(cputime_t cputime)
- {
--	return __div(cputime, 4096000000ULL / USER_HZ);
-+	return cputime_div(cputime, 4096000000ULL / USER_HZ);
- }
- 
- static inline cputime_t
-@@ -175,7 +175,7 @@ clock_t_to_cputime(unsigned long x)
- static inline clock_t
- cputime64_to_clock_t(cputime64_t cputime)
- {
--       return __div(cputime, 4096000000ULL / USER_HZ);
-+       return cputime_div(cputime, 4096000000ULL / USER_HZ);
- }
- 
- struct s390_idle_data {
-diff --git a/arch/s390/kernel/ipl.c b/arch/s390/kernel/ipl.c
-index ee57a42..4890ac6 100644
---- a/arch/s390/kernel/ipl.c
-+++ b/arch/s390/kernel/ipl.c
-@@ -1595,10 +1595,9 @@ static void stop_run(struct shutdown_trigger *trigger)
- {
- 	if (strcmp(trigger->name, ON_PANIC_STR) == 0)
- 		disabled_wait((unsigned long) __builtin_return_address(0));
--	else {
--		signal_processor(smp_processor_id(), sigp_stop);
--		for (;;);
--	}
-+	while (signal_processor(smp_processor_id(), sigp_stop) == sigp_busy)
-+		cpu_relax();
-+	for (;;);
- }
- 
- static struct shutdown_action stop_action = {SHUTDOWN_ACTION_STOP_STR,
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index c932caa..93e5203 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -76,7 +76,6 @@ static int cpu_stopped(int cpu)
- 	__u32 status;
- 
- 	switch (signal_processor_ps(&status, 0, cpu, sigp_sense)) {
--	case sigp_order_code_accepted:
- 	case sigp_status_stored:
- 		/* Check for stopped and check stop state */
- 		if (status & 0x50)
-@@ -638,6 +637,8 @@ void __cpu_die(unsigned int cpu)
- 	/* Wait until target cpu is down */
- 	while (!cpu_stopped(cpu))
- 		cpu_relax();
-+	while (signal_processor_p(0, cpu, sigp_set_prefix) == sigp_busy)
-+		udelay(10);
- 	smp_free_lowcore(cpu);
- 	pr_info("Processor %d stopped\n", cpu);
- }
-@@ -645,8 +646,8 @@ void __cpu_die(unsigned int cpu)
- void cpu_die(void)
- {
- 	idle_task_exit();
--	signal_processor(smp_processor_id(), sigp_stop);
--	BUG();
-+	while (signal_processor(smp_processor_id(), sigp_stop) == sigp_busy)
-+		cpu_relax();
- 	for (;;);
- }
- 
-diff --git a/arch/s390/kernel/swsusp_asm64.S b/arch/s390/kernel/swsusp_asm64.S
-index 7c8653e..0c26cc1 100644
---- a/arch/s390/kernel/swsusp_asm64.S
-+++ b/arch/s390/kernel/swsusp_asm64.S
-@@ -199,6 +199,7 @@ pgm_check_entry:
- 	brc	2,4b			/* busy, try again */
- 5:
- 	sigp	%r9,%r2,__SIGP_STOP	/* stop resume (current) CPU */
-+	brc	2,5b			/* busy, try again */
- 6:	j	6b
- 
- restart_suspend:
-@@ -206,6 +207,7 @@ restart_suspend:
- 	llgh	%r2,0(%r1)
- 7:
- 	sigp	%r9,%r2,__SIGP_SENSE	/* Wait for resume CPU */
-+	brc	8,7b			/* accepted, status 0, still running */
- 	brc	2,7b			/* busy, try again */
- 	tmll	%r9,0x40		/* Test if resume CPU is stopped */
- 	jz	7b
-diff --git a/drivers/s390/char/sclp_async.c b/drivers/s390/char/sclp_async.c
-index a4f68e5..b44462a 100644
---- a/drivers/s390/char/sclp_async.c
-+++ b/drivers/s390/char/sclp_async.c
-@@ -26,7 +26,6 @@ static struct sclp_async_sccb *sccb;
- static int sclp_async_send_wait(char *message);
- static struct ctl_table_header *callhome_sysctl_header;
- static DEFINE_SPINLOCK(sclp_async_lock);
--static char nodename[64];
- #define SCLP_NORMAL_WRITE	0x00
- 
- struct async_evbuf {
-@@ -52,9 +51,10 @@ static struct sclp_register sclp_async_register = {
- static int call_home_on_panic(struct notifier_block *self,
- 			      unsigned long event, void *data)
- {
--		strncat(data, nodename, strlen(nodename));
--		sclp_async_send_wait(data);
--		return NOTIFY_DONE;
-+	strncat(data, init_utsname()->nodename,
-+		sizeof(init_utsname()->nodename));
-+	sclp_async_send_wait(data);
-+	return NOTIFY_DONE;
- }
- 
- static struct notifier_block call_home_panic_nb = {
-@@ -68,15 +68,14 @@ static int proc_handler_callhome(struct ctl_table *ctl, int write,
- {
- 	unsigned long val;
- 	int len, rc;
--	char buf[2];
-+	char buf[3];
- 
--	if (!*count | (*ppos && !write)) {
-+	if (!*count || (*ppos && !write)) {
- 		*count = 0;
- 		return 0;
- 	}
- 	if (!write) {
--		len =  sprintf(buf, "%d\n", callhome_enabled);
--		buf[len] = '\0';
-+		len = snprintf(buf, sizeof(buf), "%d\n", callhome_enabled);
- 		rc = copy_to_user(buffer, buf, sizeof(buf));
- 		if (rc != 0)
- 			return -EFAULT;
-@@ -171,39 +170,29 @@ static int __init sclp_async_init(void)
- 	rc = sclp_register(&sclp_async_register);
- 	if (rc)
- 		return rc;
--	callhome_sysctl_header = register_sysctl_table(kern_dir_table);
--	if (!callhome_sysctl_header) {
--		rc = -ENOMEM;
--		goto out_sclp;
--	}
--	if (!(sclp_async_register.sclp_receive_mask & EVTYP_ASYNC_MASK)) {
--		rc = -EOPNOTSUPP;
-+	rc = -EOPNOTSUPP;
-+	if (!(sclp_async_register.sclp_receive_mask & EVTYP_ASYNC_MASK))
- 		goto out_sclp;
--	}
- 	rc = -ENOMEM;
-+	callhome_sysctl_header = register_sysctl_table(kern_dir_table);
-+	if (!callhome_sysctl_header)
-+		goto out_sclp;
- 	request = kzalloc(sizeof(struct sclp_req), GFP_KERNEL);
--	if (!request)
--		goto out_sys;
- 	sccb = (struct sclp_async_sccb *) get_zeroed_page(GFP_KERNEL | GFP_DMA);
--	if (!sccb)
-+	if (!request || !sccb)
- 		goto out_mem;
--	rc =  atomic_notifier_chain_register(&panic_notifier_list,
--					     &call_home_panic_nb);
--	if (rc)
--		goto out_mem;
--
--	strncpy(nodename, init_utsname()->nodename, 64);
--	return 0;
--
-+	rc = atomic_notifier_chain_register(&panic_notifier_list,
-+					    &call_home_panic_nb);
-+	if (!rc)
-+		goto out;
- out_mem:
- 	kfree(request);
- 	free_page((unsigned long) sccb);
--out_sys:
- 	unregister_sysctl_table(callhome_sysctl_header);
- out_sclp:
- 	sclp_unregister(&sclp_async_register);
-+out:
- 	return rc;
--
- }
- module_init(sclp_async_init);
- 
-diff --git a/drivers/s390/net/smsgiucv.c b/drivers/s390/net/smsgiucv.c
-index 102000d..3012355 100644
---- a/drivers/s390/net/smsgiucv.c
-+++ b/drivers/s390/net/smsgiucv.c
-@@ -158,7 +158,12 @@ static int smsg_pm_restore_thaw(struct device *dev)
- 		smsg_path->flags = 0;
- 		rc = iucv_path_connect(smsg_path, &smsg_handler, "*MSG    ",
- 				       NULL, NULL, NULL);
--		printk(KERN_ERR "iucv_path_connect returned with rc %i\n", rc);
-+#ifdef CONFIG_PM_DEBUG
-+		if (rc)
-+			printk(KERN_ERR
-+			       "iucv_path_connect returned with rc %i\n", rc);
-+#endif
-+		cpcmd("SET SMSG IUCV", NULL, 0, NULL);
- 	}
+diff --git a/drivers/gpu/drm/drm_ioc32.c b/drivers/gpu/drm/drm_ioc32.c
+index 282d9fd..334345b 100644
+--- a/drivers/gpu/drm/drm_ioc32.c
++++ b/drivers/gpu/drm/drm_ioc32.c
+@@ -1040,6 +1040,122 @@ static int compat_drm_wait_vblank(struct file *file, unsigned int cmd,
  	return 0;
  }
+ 
++static int compat_drm_mode_getblob_ioctl(struct drm_device *dev,
++			struct drm_mode_get_blob __user *out_resp_user,
++			struct drm_file *file_priv)
++{
++	struct drm_mode_get_blob out_resp;
++	int ret;
++
++	ret = copy_from_user(&out_resp, out_resp_user, sizeof(out_resp))
++	if (ret)
++		return -EFAULT;
++
++	out_resp.data = (unsigned long)compat_ptr(out_resp.data);
++
++	ret = drm_mode_getblob_ioctl(dev, &out_resp, file_priv);
++	if (ret)
++		return ret;
++
++	ret = copy_to_user(out_resp_user, &out_resp, sizeof(out_resp))
++	if (ret)
++		return -EFAULT;
++	return 0;
++}
++
++static int compat_drm_mode_gamma_set_ioctl(struct drm_device *dev,
++			struct drm_mode_crtc_lut __user *crtc_lut_user,
++			struct drm_file *file_priv)
++{
++	struct drm_mode_crtc_lut crtc_lut;
++
++	ret = copy_from_user(&crtc_lut, crtc_lut_user, sizeof(crtc_lut))
++	if (ret)
++		return -EFAULT;
++
++	crtc_lut.red   = (unsigned long)compat_ptr(crtc_lut.red);
++	crtc_lut.green = (unsigned long)compat_ptr(crtc_lut.green);
++	crtc_lut.blue  = (unsigned long)compat_ptr(crtc_lut.blue);
++
++	ret = drm_mode_gamma_set_ioctl(dev, &crtc_lut, file_priv);
++
++	return ret;
++}
++
++static int compat_drm_mode_gamma_get_ioctl(struct drm_device *dev,
++			struct drm_mode_crtc_lut __user *crtc_lut_user,
++			struct drm_file *file_priv)
++{
++	struct drm_mode_crtc_lut crtc_lut;
++
++	ret = copy_from_user(&crtc_lut, crtc_lut_user, sizeof(crtc_lut))
++	if (ret)
++		return -EFAULT;
++
++	crtc_lut.red   = (unsigned long)compat_ptr(crtc_lut.red);
++	crtc_lut.green = (unsigned long)compat_ptr(crtc_lut.green);
++	crtc_lut.blue  = (unsigned long)compat_ptr(crtc_lut.blue);
++
++	ret = drm_mode_gamma_get_ioctl(dev, &crtc_lut, file_priv);
++
++	return ret;
++}
++
++static int drm_generic_compat_ioctl(struct file *filp, unsigned int cmd,
++			       unsigned long arg)
++{
++	struct drm_file *file_priv = filp->private_data;
++	struct drm_device *dev = file_priv->minor->dev;
++	unsigned int nr = DRM_IOCTL_NR(cmd);
++	int ret;
++
++	atomic_inc(&dev->ioctl_count);
++	atomic_inc(&dev->counts[_DRM_STAT_IOCTLS]);
++	++file_priv->ioctl_count;
++
++	if ((nr >= DRM_CORE_IOCTL_COUNT) &&
++	    ((nr < DRM_COMMAND_BASE) || (nr >= DRM_COMMAND_END)))
++		goto err_i1;
++	if ((nr >= DRM_COMMAND_BASE) && (nr < DRM_COMMAND_END) &&
++	    (nr < DRM_COMMAND_BASE + dev->driver->num_ioctls))
++		ioctl = &dev->driver->ioctls[nr - DRM_COMMAND_BASE];
++	else if ((nr >= DRM_COMMAND_END) || (nr < DRM_COMMAND_BASE)) {
++		ioctl = &drm_ioctls[nr];
++		cmd = ioctl->cmd;
++	} else
++		goto err_i1;
++
++	if (((ioctl->flags & DRM_ROOT_ONLY) && !capable(CAP_SYS_ADMIN)) ||
++		   ((ioctl->flags & DRM_AUTH) && !file_priv->authenticated) ||
++		   ((ioctl->flags & DRM_MASTER) && !file_priv->is_master) ||
++		   (!(ioctl->flags & DRM_CONTROL_ALLOW) && (file_priv->minor->type == DRM_MINOR_CONTROL))) {
++		ret = -EACCES;
++		goto err_il;
++	}
++
++	switch (cmd) {
++	case DRM_IOCTL_MODE_GETPROPBLOB:
++		ret = compat_drm_mode_getblob_ioctl(dev,
++					compat_ptr(arg), file_priv);
++		break;
++
++	case DRM_IOCTL_MODE_GETGAMMA:
++		ret = compat_drm_mode_gamma_set_ioctl(dev,
++					compat_ptr(arg), file_priv);
++		break;
++
++	case DRM_IOCTL_MODE_GETGAMMA:
++		ret = compat_drm_mode_gamma_get_ioctl(dev,
++					compat_ptr(arg), file_priv);
++		break;
++	}
++
++      err_i1:
++	atomic_dec(&dev->ioctl_count);
++
++	return ret;
++}
++
+ drm_ioctl_compat_t *drm_compat_ioctls[] = {
+ 	[DRM_IOCTL_NR(DRM_IOCTL_VERSION32)] = compat_drm_version,
+ 	[DRM_IOCTL_NR(DRM_IOCTL_GET_UNIQUE32)] = compat_drm_getunique,
+@@ -1072,6 +1188,9 @@ drm_ioctl_compat_t *drm_compat_ioctls[] = {
+ 	[DRM_IOCTL_NR(DRM_IOCTL_UPDATE_DRAW32)] = compat_drm_update_draw,
+ #endif
+ 	[DRM_IOCTL_NR(DRM_IOCTL_WAIT_VBLANK32)] = compat_drm_wait_vblank,
++	[DRM_IOCTL_MODE_GETPROPBLOB] = drm_generic_compat_ioctl,
++	[DRM_IOCTL_MODE_GETGAMMA] = drm_generic_compat_ioctl,
++	[DRM_IOCTL_MODE_SETGAMMA] = drm_generic_compat_ioctl,
+ };
+ 
+ /**
