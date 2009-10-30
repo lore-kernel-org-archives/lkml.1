@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbZJ3OXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbZJ3PAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244AbZJ3OXy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 10:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932202AbZJ3OXx
+	id S932330AbZJ3PAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 11:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932298AbZJ3PAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 10:23:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:57144 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932180AbZJ3OXw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 10:23:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FADnm1NdD0GZ5mdsIH0IHoiNuPM1IBGk9hyHrgQKwcMXDJiTwln1y7B8kfrZE9nDUb
-         9gHID9XOUHFE6Aop5kzGmrpeIn9WH/VoSMMcpBAj7zrirBbG2/gqkSiZu1B0bQaPMS7P
-         Z7THI3uVrsmAzpA8owyUS6tbjO6c1egKB+KcE=
-Date: Fri, 30 Oct 2009 15:23:50 +0100
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mel LKML <mel.lkml@gmail.com>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
-	failures V2
-Message-ID: <20091030142350.GA9343@bizet.domek.prywatny>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091023165810.GA4588@bizet.domek.prywatny> <20091023211239.GA6185@bizet.domek.prywatny> <9ec2d7290910240646p75b93c68v6ea1648d628a9660@mail.gmail.com> <20091028114208.GA14476@bizet.domek.prywatny> <20091028115926.GW8900@csn.ul.ie>
+	Fri, 30 Oct 2009 11:00:53 -0400
+Received: from rs1.rw-gmbh.net ([213.239.201.58]:44425 "EHLO rs1.rw-gmbh.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932294AbZJ3PAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 11:00:52 -0400
+X-Greylist: delayed 1553 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Oct 2009 11:00:52 EDT
+Message-ID: <4AEAF987.2080809@rw-gmbh.de>
+Date: Fri, 30 Oct 2009 15:34:47 +0100
+From: =?UTF-8?B?UmFsZiBSw7ZzY2g=?= <ralf.roesch@rw-gmbh.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028115926.GW8900@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: a.p.zijlstra@chello.nl
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu
+Subject: [PATCH] x86: sched: fix for non SMP systems in sched.h
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 11:59:26AM +0000, Mel Gorman wrote:
-> On Wed, Oct 28, 2009 at 12:42:08PM +0100, Karol Lewandowski wrote:
-> > On Sat, Oct 24, 2009 at 02:46:56PM +0100, Mel LKML wrote:
-> > I've tested patches 1+2+3+4 in my normal usage scenario (do some work,
-> > suspend, do work, suspend, ...) and it failed today after 4 days (== 4
-> > suspend-resume cycles).
-> > 
-> > I'll test 1-5 now.
+commit d65d153bc23b84e4709a49137a9a03ae139d51a0 introduced
+two new prototypes: default_scale_freq_power and default_scale_smt_power.
+Both of them use struct sched_domain which is not defined on non SMP 
+systems.
+Just moved the prototypes to the correct place.
 
-2.6.32-rc5 with patches 1-5 fails too.
+Signed-off-by: Ralf Roesch <ralf.roesch@rw-gmbh.de>
+---
+ include/linux/sched.h |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
+ mode change 100644 => 100755 include/linux/sched.h
 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+old mode 100644
+new mode 100755
+index c231a24..b633308
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1036,6 +1036,9 @@ static inline int test_sd_parent(struct 
+sched_domain *sd, int flag)
+     return 0;
+ }
+ 
++unsigned long default_scale_freq_power(struct sched_domain *sd, int cpu);
++unsigned long default_scale_smt_power(struct sched_domain *sd, int cpu);
++
+ #else /* CONFIG_SMP */
+ 
+ struct sched_domain_attr;
+@@ -1047,10 +1050,6 @@ partition_sched_domains(int ndoms_new, struct 
+cpumask *doms_new,
+ }
+ #endif    /* !CONFIG_SMP */
+ 
+-
+-unsigned long default_scale_freq_power(struct sched_domain *sd, int cpu);
+-unsigned long default_scale_smt_power(struct sched_domain *sd, int cpu);
+-
+ struct io_context;            /* See blkdev.h */
+ 
+ 
+-- 
+1.6.5
 
-> Also, what was the behaviour of the e100 driver when suspending before
-> this commit?
-> 
-> 6905b1f1a03a48dcf115a2927f7b87dba8d5e566: Net / e100: Fix suspend of devices that cannot be power managed
-
-This was discussed before with e100 maintainers and Rafael.  Reverting
-this patch didn't change anything.
-
-
-Thanks.
