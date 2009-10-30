@@ -1,91 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932567AbZJ3QNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932576AbZJ3QTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932567AbZJ3QNR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 12:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932530AbZJ3QNQ
+	id S932576AbZJ3QTK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 12:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932534AbZJ3QTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 12:13:16 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:62734 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932522AbZJ3QNP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 12:13:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=gJYixZHacQ0o0XVBC2+1iVc3F30WuRRItbnON8wfy9DKUXZdRh9H3Yxb15WcyPCDeR
-         UNB+7vG0TWOYxkbsevvlW4doD8ePQlkY0L4JNqx7V5yB0odK0In+NWe/kJfFhiwzoM9P
-         T3v73X/Zycp5nU4cQcqcGZ2KVR2yYUxfyJVug=
-Message-ID: <4AEB109A.7090506@gmail.com>
-Date: Fri, 30 Oct 2009 12:13:14 -0400
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Fri, 30 Oct 2009 12:19:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58166 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932336AbZJ3QTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 12:19:08 -0400
+Date: Fri, 30 Oct 2009 16:18:46 GMT
+From: tip-bot for Li Hong <lihong.hi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, lihong.hi@gmail.com, hpa@zytor.com,
+       mingo@redhat.com, rostedt@goodmis.org, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, lihong.hi@gmail.com,
+       linux-kernel@vger.kernel.org, rostedt@goodmis.org, tglx@linutronix.de
+In-Reply-To: <20091028050138.GA30758@uhli>
+References: <20091028050138.GA30758@uhli>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/core] tracing: Amend documentation in recordmcount.pl to reflect implementation
+Message-ID: <tip-d49f6aa76d24c60a52530474cb662e8ad9f09471@git.kernel.org>
+Git-Commit-ID: d49f6aa76d24c60a52530474cb662e8ad9f09471
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: apetlund@simula.no,
-       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "shemminger@vyatta.com" <shemminger@vyatta.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       Christian Samsel <christian.samsel@rwth-aachen.de>
-Subject: Re: [PATCH 1/3] net: TCP thin-stream detection
-References: <52481f5b4edfdbd96dcde46aed403fcf.squirrel@webmail.uio.no>
-In-Reply-To: <52481f5b4edfdbd96dcde46aed403fcf.squirrel@webmail.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-apetlund@simula.no wrote:
-> I share the opinion that the linear timeouts should be limited, and back
-> off exponentially after the limit, as Eric suggested. I believe this will
-> be a sufficient safety-valve for the black-hole scenario, although I would
-> like to run some tests.
-> 
-> As I wrote to Arnd, there are many similarities with the EFR approach and
-> what our patch does. The largest difference is that the thin-stream
-> patterns are identified as an indication of time dependent/interactive
-> apps. This is the reason why the proposed patch does not try to keep an
-> inflated cwnd open, but only focuses on the cases of few packets in
-> flight. The target is time-dependent/interactive applications, and as such
-> we don't want a generally enabled mechanism, but want to give the option
-> of enabling it only in the cases where they are most needed (in contrast
-> to a generally enabled "automagically" triggered EFR).
-> 
-> Below is a link to a table presenting some of the applications that we
-> have traced and analysed the packet interarrival times of:
-> 
-> http://folk.uio.no/apetlund/lktmp/thin_apps_table.pdf
-> 
-> We were surprised to see how many cases of "thin-stream" traffic patterns
-> were indicative of time-dependent/interactive apps.
-> 
-I'm finding it hard to follow 3 threads, for the 3 parts of the patch.
+Commit-ID:  d49f6aa76d24c60a52530474cb662e8ad9f09471
+Gitweb:     http://git.kernel.org/tip/d49f6aa76d24c60a52530474cb662e8ad9f09471
+Author:     Li Hong <lihong.hi@gmail.com>
+AuthorDate: Wed, 28 Oct 2009 13:01:38 +0800
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Thu, 29 Oct 2009 15:11:40 -0400
 
-As I mentioned in one of these threads, I've plenty of experience with
-designing and implementing protocols for gaming.  And it seems to me that
-you're making changes to the entire TCP stack to make up for shortcomings
-in the implementor's design.  Yet, these changes require application
-implementors to set a sockopt that's only available in Linux.  Unlikely,
-as they probably don't even keep track of such things....
+tracing: Amend documentation in recordmcount.pl to reflect implementation
 
-There are other efforts in this area, they've been mentioned.
+The documentation currently says we will use the first function in a section
+as a reference. The actual algorithm is: choose the first global function we
+meet as a reference. If there is none, choose the first local one.
+Change the documentation to be consistent with the code.
 
-I'm new to this list, so I'm not entirely sure that protocol design is
-regularly discussed here.  But I'd prefer that the discussion moved to
-one of the lists that's dedicated to such protocol design and testing.
+Also add several other clarifications.
 
-I've already suggested the end-to-end interest list, where you'll find many
-of us with a strong interest in this topic.
+Signed-off-by: Li Hong <lihong.hi@gmail.com>
+LKML-Reference: <20091028050138.GA30758@uhli>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ scripts/recordmcount.pl |   84 +++++++++++++++++++++++++++-------------------
+ 1 files changed, 49 insertions(+), 35 deletions(-)
 
-List-Subscribe: <http://mailman.postel.org/mailman/listinfo/end2end-interest>,
-	<mailto:end2end-interest-request@postel.org?subject=subscribe>
-
-The IETF has two related working groups:
-   tcpm -- tcp modifications
-   tsvwg -- general transport, including sctp modifications
-
-Without further ado, just count me as opposed at this time.
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index bfb8b2c..a569be7 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -6,73 +6,89 @@
+ #                   all the offsets to the calls to mcount.
+ #
+ #
+-# What we want to end up with is a section in vmlinux called
+-# __mcount_loc that contains a list of pointers to all the
+-# call sites in the kernel that call mcount. Later on boot up, the kernel
+-# will read this list, save the locations and turn them into nops.
+-# When tracing or profiling is later enabled, these locations will then
+-# be converted back to pointers to some function.
++# What we want to end up with this is that each object file will have a
++# section called __mcount_loc that will hold the list of pointers to mcount
++# callers. After final linking, the vmlinux will have within .init.data the
++# list of all callers to mcount between __start_mcount_loc and __stop_mcount_loc.
++# Later on boot up, the kernel will read this list, save the locations and turn
++# them into nops. When tracing or profiling is later enabled, these locations
++# will then be converted back to pointers to some function.
+ #
+ # This is no easy feat. This script is called just after the original
+ # object is compiled and before it is linked.
+ #
+-# The references to the call sites are offsets from the section of text
+-# that the call site is in. Hence, all functions in a section that
+-# has a call site to mcount, will have the offset from the beginning of
+-# the section and not the beginning of the function.
++# When parse this object file using 'objdump', the references to the call
++# sites are offsets from the section that the call site is in. Hence, all
++# functions in a section that has a call site to mcount, will have the
++# offset from the beginning of the section and not the beginning of the
++# function.
++#
++# But where this section will reside finally in vmlinx is undetermined at
++# this point. So we can't use this kind of offsets to record the final
++# address of this call site.
++#
++# The trick is to change the call offset referring the start of a section to
++# referring a function symbol in this section. During the link step, 'ld' will
++# compute the final address according to the information we record.
+ #
+-# The trick is to find a way to record the beginning of the section.
+-# The way we do this is to look at the first function in the section
+-# which will also be the location of that section after final link.
+ # e.g.
+ #
+ #  .section ".sched.text", "ax"
+-#  .globl my_func
+-#  my_func:
+ #        [...]
+-#        call mcount  (offset: 0x5)
++#  func1:
++#        [...]
++#        call mcount  (offset: 0x10)
++#        [...]
++#        ret
++#  .globl fun2
++#  func2:             (offset: 0x20)
++#        [...]
+ #        [...]
+ #        ret
+-#  other_func:
++#  func3:
+ #        [...]
+-#        call mcount (offset: 0x1b)
++#        call mcount (offset: 0x30)
+ #        [...]
+ #
+ # Both relocation offsets for the mcounts in the above example will be
+-# offset from .sched.text. If we make another file called tmp.s with:
++# offset from .sched.text. If we choose global symbol func2 as a reference and
++# make another file called tmp.s with the new offsets:
+ #
+ #  .section __mcount_loc
+-#  .quad  my_func + 0x5
+-#  .quad  my_func + 0x1b
++#  .quad  func2 - 0x10
++#  .quad  func2 + 0x10
+ #
+-# We can then compile this tmp.s into tmp.o, and link it to the original
++# We can then compile this tmp.s into tmp.o, and link it back to the original
+ # object.
+ #
+-# But this gets hard if my_func is not globl (a static function).
+-# In such a case we have:
++# In our algorithm, we will choose the first global function we meet in this
++# section as the reference. But this gets hard if there is no global functions
++# in this section. In such a case we have to select a local one. E.g. func1:
+ #
+ #  .section ".sched.text", "ax"
+-#  my_func:
++#  func1:
+ #        [...]
+-#        call mcount  (offset: 0x5)
++#        call mcount  (offset: 0x10)
+ #        [...]
+ #        ret
+-#  other_func:
++#  func2:
+ #        [...]
+-#        call mcount (offset: 0x1b)
++#        call mcount (offset: 0x20)
+ #        [...]
++#  .section "other.section"
+ #
+ # If we make the tmp.s the same as above, when we link together with
+-# the original object, we will end up with two symbols for my_func:
++# the original object, we will end up with two symbols for func1:
+ # one local, one global.  After final compile, we will end up with
+-# an undefined reference to my_func.
++# an undefined reference to func1 or a wrong reference to another global
++# func1 in other files.
+ #
+ # Since local objects can reference local variables, we need to find
+ # a way to make tmp.o reference the local objects of the original object
+-# file after it is linked together. To do this, we convert the my_func
++# file after it is linked together. To do this, we convert func1
+ # into a global symbol before linking tmp.o. Then after we link tmp.o
+-# we will only have a single symbol for my_func that is global.
+-# We can convert my_func back into a local symbol and we are done.
++# we will only have a single symbol for func1 that is global.
++# We can convert func1 back into a local symbol and we are done.
+ #
+ # Here are the steps we take:
+ #
+@@ -86,10 +102,8 @@
+ # 6) Link together this new object with the list object.
+ # 7) Convert the local functions back to local symbols and rename
+ #    the result as the original object.
+-#    End.
+ # 8) Link the object with the list object.
+ # 9) Move the result back to the original object.
+-#    End.
+ #
+ 
+ use strict;
