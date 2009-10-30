@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932660AbZJ3Q3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932677AbZJ3QfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932660AbZJ3Q3L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 12:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932613AbZJ3Q3L
+	id S932677AbZJ3QfE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 12:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbZJ3QfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 12:29:11 -0400
-Received: from mail2.ecunet.org ([72.250.175.188]:59791 "EHLO mail2.ecunet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932599AbZJ3Q3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 12:29:10 -0400
-Date: Fri, 30 Oct 2009 12:28:51 -0400
-Message-Id: <200910301628.n9UGSpeq014970@ecunet-web-1.ecunet.org>
-From: Roselyn_Martins1@ecunet.org
-Subject: Hello Dear,
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ecunet.org [192.168.0.90]); Fri, 30 Oct 2009 12:28:51 -0400 (EDT)
-To: unlisted-recipients:; (no To-header on input)
+	Fri, 30 Oct 2009 12:35:03 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:42806 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932665AbZJ3QfD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 12:35:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=yB2Y3AxO1O/+rra/0y4sr900XOlUNW4QpMnIy9VB/qv8HQl5JQX0/ON35WJoNP2coA
+         OVO61jZY95G1keijOBR8nInLdXUq8cIFFSXR/fFCQevfjJrFmPdB6SySu5l4oW5y/sQU
+         uRxlohp3mF/gxtRW0k45G7FXtV+11a67QNWas=
+MIME-Version: 1.0
+Date: Fri, 30 Oct 2009 13:35:07 -0300
+Message-ID: <6217e0a0910300935l3e2d279fr5b889a4929a9912d@mail.gmail.com>
+Subject: Initialize a runqueue
+From: Lucas Prado Melo <lucaspradomelo@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dear,
-Kind regard, am Roselyn, please, kindly permit me by contacting you through
-this medium of mail. and i belive you will understand me when we discuss
-details of myheart desire. Please i will like you to reply me direct to my
-mail box[roselynmartins20@yahoo.com] so that we will know each other
-very well, i am looking forward to your positive confirmation to enable me
-send you my picture further and communication,
-thank you and God bless,
-Regards
-Roselyn Martins
+Hello, I would like to know where the runqueue structs are initialized.
+
+Thanks in advance.
