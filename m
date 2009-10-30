@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbZJ3S0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbZJ3T0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932847AbZJ3S0x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 14:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932796AbZJ3S0w
+	id S1757090AbZJ3T0R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 15:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368AbZJ3T0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 14:26:52 -0400
-Received: from mga01.intel.com ([192.55.52.88]:48694 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932790AbZJ3S0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 14:26:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,655,1249282800"; 
-   d="scan'208";a="742325950"
-Subject: Re: [patch 0/6] x86: cleanups and fixes for irq migration code
- during cpu offline
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-Cc: "hpa@zytor.com" <hpa@zytor.com>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "garyhade@us.ibm.com" <garyhade@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091026222430.313656103@sbs-t61.sc.intel.com>
-References: <20091026222430.313656103@sbs-t61.sc.intel.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 30 Oct 2009 11:25:29 -0800
-Message-Id: <1256930729.2679.10.camel@sbs-t61.sc.intel.com>
+	Fri, 30 Oct 2009 15:26:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59414
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755838AbZJ3T0P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 15:26:15 -0400
+Date: Fri, 30 Oct 2009 12:26:40 -0700 (PDT)
+Message-Id: <20091030.122640.137286305.davem@davemloft.net>
+To: eric.dumazet@gmail.com
+Cc: francis.moro@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4AEB0059.1050400@gmail.com>
+References: <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com>
+	<4AEACD88.8080108@gmail.com>
+	<4AEB0059.1050400@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 15:24 -0700, Siddha, Suresh B wrote:
-> First four patches in the series unify the fixup_irqs() along with
-> couple of cleanups. It also fixes an issue where the interrupt subsystem can 
-> point the interrupt to the offlined cpu (for non interrupt-remapping case)
-> causing the device to not work. This was observed by Gary.
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Fri, 30 Oct 2009 16:03:53 +0100
+
+> [PATCH take2] net: fix sk_forward_alloc corruption
 > 
-> These four patches are ready for inclusion
-
-Ingo, if no one has any objections, can you please consider the first
-four patches in this patchset for -tip testing?
-
-> and while there was a debate
-> in the past that fixup_irqs() is kind of broken (because of migrating
-> interrupts in the process context for non intr-remapping platforms)
-> we think that these patches enhance the existing code and not introduce any
-> more new races.
+> On UDP sockets, we must call skb_free_datagram() with socket locked,
+> or risk sk_forward_alloc corruption. This requirement is not respected
+> in SUNRPC.
 > 
-> The last two patches in the series are titled as RFC. 
-
-Eric, any thoughts on these two RFC patches or the other 4 patches that
-are ready to go.
-
-> These patches
-> address removing the local_irq_enable()/local_irq_disable() in
-> the fixup_irqs(). All the patches (including these last two RFC patches) are
-> tested on Intel platforms (by myself) and on AMD platforms(by Gary).
+> Add a convenient helper, skb_free_datagram_locked() and use it in SUNRPC
 > 
-> We labeled the last two patches as RFC mainly because they need more testing and
-> thoughts from Eric and others who did some unsuccessful experiments in this
-> area (migrating irq in the process context for non intr-remapping platforms)
-> before.
+> Reported-by: Francis Moreau <francis.moro@gmail.com>
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 
-thanks,
-suresh
-
+I've tentatively applied this to my net-2.6 tree, I won't
+push it out until we have positive testing results.
