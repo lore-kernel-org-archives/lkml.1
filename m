@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZJ3AFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbZJ3AGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZJ3AFM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Oct 2009 20:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZJ3AFM
+	id S1755668AbZJ3AGP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Oct 2009 20:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbZJ3AGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Oct 2009 20:05:12 -0400
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:53273 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033AbZJ3AFL (ORCPT
+	Thu, 29 Oct 2009 20:06:14 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:58257 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754068AbZJ3AGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Oct 2009 20:05:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=tj+w4xcn30g5ohescKU9LMI0jEjdOLoZbWR0OxjWdN1rT4cY5s2ECK5ANUBQUTZFKb
-         hLKVF22TznsPPoaDAXlW62LSbHZ8wZZf1xz5NDq1T7nixhMkzibGWoOaBUsqUSqr9URp
-         bfIjJz2tDcMhXF+z4jzQVBzf5egg2PzhjF8zc=
-From: Thiago Farina <tfransosi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: greg@kroah.com, otus-devel@venema.h4ckr.net, Luis.Rodriguez@Atheros.com,
-       Thiago Farina <tfransosi@gmail.com>
-Subject: [PATCH] staging/otus: trivial, fix sparse warnig.
-Date: Thu, 29 Oct 2009 20:04:26 -0400
-Message-Id: <1256861066-21954-1-git-send-email-tfransosi@gmail.com>
-X-Mailer: git-send-email 1.6.5.1.61.ge79999
+	Thu, 29 Oct 2009 20:06:14 -0400
+Subject: Re: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from
+ crashing function graph tracer
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+In-Reply-To: <4AEA23AB.9020605@redhat.com>
+References: <20091029205151.852744305@goodmis.org>
+	 <4AEA10EC.8000103@redhat.com>
+	 <1256854653.26028.3255.camel@gandalf.stny.rr.com>
+	 <4AEA23AB.9020605@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 29 Oct 2009 20:06:14 -0400
+Message-Id: <1256861174.26028.3261.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*apdbg.c: use NULL pointer instead of 0 integer.
+On Thu, 2009-10-29 at 19:22 -0400, Masami Hiramatsu wrote:
+> Steven Rostedt wrote:
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- drivers/staging/otus/apdbg.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> >> I think we can skip those user handlers, because those are irregular
+> >> functions and user can control (enable/disable) it.
+> > 
+> > True, but it may be nice to still trace them.
+> 
+> Hm, in that case, I think we can change jprobe_return() to call
+> f-g-tracer's return handler if needed as below;
+> ---
+> static inline jprobe_return(void)
+> {
+> 	implicit_function_return();	/* This executes f-g-tracer prologue */
+> 	__jprobe_return();	/* This should be notraced */
+> }
 
-diff --git a/drivers/staging/otus/apdbg.c b/drivers/staging/otus/apdbg.c
-index d3e2f62..70a40b8 100644
---- a/drivers/staging/otus/apdbg.c
-+++ b/drivers/staging/otus/apdbg.c
-@@ -109,7 +109,7 @@ int set_ioctl(int sock, struct ifreq *req)
- 
- int read_reg(int sock, struct ifreq *req)
- {
--    struct zdap_ioctl *zdreq = 0;
-+    struct zdap_ioctl *zdreq = NULL;
- 
-     if (!set_ioctl(sock, req))
-         return -1;
-@@ -123,7 +123,7 @@ int read_reg(int sock, struct ifreq *req)
- 
- int read_mem(int sock, struct ifreq *req)
- {
--    struct zdap_ioctl *zdreq = 0;
-+    struct zdap_ioctl *zdreq = NULL;
-     int i;
- 
-     if (!set_ioctl(sock, req))
--- 
-1.6.5.1.61.ge79999
+Hmm, That looks like it can be quite a hack. We don't know at that
+moment if the handler has been traced or not. We can't always do the
+function graph logic.
+
+-- Steve
+
 
