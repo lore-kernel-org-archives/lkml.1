@@ -1,52 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbZJ3FYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbZJ3F3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311AbZJ3FYR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 01:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZJ3FYQ
+	id S1755530AbZJ3F3K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 01:29:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbZJ3F3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 01:24:16 -0400
-Received: from stargate.chelsio.com ([67.207.112.58]:18081 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754410AbZJ3FYP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 01:24:15 -0400
-Message-ID: <4AEA7870.4010804@chelsio.com>
-Date: Fri, 30 Oct 2009 10:54:00 +0530
-From: Rakesh Ranjan <rakesh@chelsio.com>
-Organization: Chelsio Communications
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
-MIME-Version: 1.0
-To: Mike Christie <michaelc@cs.wisc.edu>
-CC: davem@davemloft.net, James Bottomley <James.Bottomley@suse.de>,
-       Karen Xie <kxie@chelsio.com>,
-       "open-iscsi@googlegroups.com" <open-iscsi@googlegroups.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [RFC-PATCH] dhcp provisioning support in cxgb3i
-References: <4AE995C4.4080909@chelsio.com> <4AEA04A4.1060800@cs.wisc.edu>
-In-Reply-To: <4AEA04A4.1060800@cs.wisc.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 30 Oct 2009 01:29:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34448 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750898AbZJ3F3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 01:29:08 -0400
+Date: Fri, 30 Oct 2009 16:29:06 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Joseph S. Myers" <joseph@codesourcery.com>, linux-api@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <onestero@redhat.com>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Roland McGrath <roland@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: F_SETOWN_EX and F_GETLK64 conflict
+Message-Id: <20091030162906.fbc1c40b.sfr@canb.auug.org.au>
+In-Reply-To: <20091030161320.17d07dc9.sfr@canb.auug.org.au>
+References: <Pine.LNX.4.64.0910041229300.20203@digraph.polyomino.org.uk>
+	<1254691822.21044.9.camel@laptop>
+	<20091030161320.17d07dc9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Oct 2009 05:26:10.0890 (UTC) FILETIME=[7D9092A0:01CA5921]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Christie wrote:
-> Rakesh Ranjan wrote:
->> Hi Mike,
->>
->> Herein attached patches for having dhcp provisioning support in 
->> cxgb3i. I have added one new iscsi netlink message 
->> ISCSI_UEVENT_REQ_IPCONF. 
-> 
-> Is the idea to have iscsid/uip send down this msg?
-> 
-> Was it not possible to hook in more like how bnx2i does dhcp?
+On Fri, 30 Oct 2009 16:13:20 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+> This is why we have F_LINUX_SPECIFIC_BASE and use it in
+> include/linux/fcntl.h ... it should be used as a base for any new fcntl
+> types since they don't require backward compatibility.
 
-yep, idea is to have iscsid send down ISCSI_UEVENT_REQ_IPCONF msg. bnx2i 
-approach in our case for at least T3 is not feasible.
+Something like this (not even built, but pretty obvious):
 
-Regards
-Rakesh Ranjan
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 30 Oct 2009 16:25:51 +1100
+Subject: [PATCH] fcntl: use consistent valuse for F_SETOWN_EX/F_GETOWN_EX
+
+This is what F_LINUX_SPECIFIC_BASE was meant for.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/alpha/include/asm/fcntl.h  |    2 --
+ arch/parisc/include/asm/fcntl.h |    2 --
+ include/asm-generic/fcntl.h     |   14 --------------
+ include/linux/fcntl.h           |   12 ++++++++++++
+ 4 files changed, 12 insertions(+), 18 deletions(-)
+
+diff --git a/arch/alpha/include/asm/fcntl.h b/arch/alpha/include/asm/fcntl.h
+index e42823e..25da001 100644
+--- a/arch/alpha/include/asm/fcntl.h
++++ b/arch/alpha/include/asm/fcntl.h
+@@ -26,8 +26,6 @@
+ #define F_GETOWN	6	/*  for sockets. */
+ #define F_SETSIG	10	/*  for sockets. */
+ #define F_GETSIG	11	/*  for sockets. */
+-#define F_SETOWN_EX	12
+-#define F_GETOWN_EX	13
+ 
+ /* for posix fcntl() and lockf() */
+ #define F_RDLCK		1
+diff --git a/arch/parisc/include/asm/fcntl.h b/arch/parisc/include/asm/fcntl.h
+index 5f39d55..1e1c824 100644
+--- a/arch/parisc/include/asm/fcntl.h
++++ b/arch/parisc/include/asm/fcntl.h
+@@ -28,8 +28,6 @@
+ #define F_SETOWN	12	/*  for sockets. */
+ #define F_SETSIG	13	/*  for sockets. */
+ #define F_GETSIG	14	/*  for sockets. */
+-#define F_GETOWN_EX	15
+-#define F_SETOWN_EX	16
+ 
+ /* for posix fcntl() and lockf() */
+ #define F_RDLCK		01
+diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
+index 0c3dd86..980d6b5 100644
+--- a/include/asm-generic/fcntl.h
++++ b/include/asm-generic/fcntl.h
+@@ -73,20 +73,6 @@
+ #define F_SETSIG	10	/* for sockets. */
+ #define F_GETSIG	11	/* for sockets. */
+ #endif
+-#ifndef F_SETOWN_EX
+-#define F_SETOWN_EX	12
+-#define F_GETOWN_EX	13
+-#endif
+-
+-#define F_OWNER_TID	0
+-#define F_OWNER_PID	1
+-#define F_OWNER_GID	2
+-
+-struct f_owner_ex {
+-	int	type;
+-	pid_t	pid;
+-};
+-
+ /* for F_[GET|SET]FL */
+ #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
+ 
+diff --git a/include/linux/fcntl.h b/include/linux/fcntl.h
+index 8603740..b34c41d 100644
+--- a/include/linux/fcntl.h
++++ b/include/linux/fcntl.h
+@@ -40,6 +40,18 @@
+                                            unlinking file.  */
+ #define AT_SYMLINK_FOLLOW	0x400   /* Follow symbolic links.  */
+ 
++#define F_SETOWN_EX	(F_LINUX_SPECIFIC_BASE + 7)
++#define F_GETOWN_EX	(F_LINUX_SPECIFIC_BASE + 8)
++
++#define F_OWNER_TID	0
++#define F_OWNER_PID	1
++#define F_OWNER_GID	2
++
++struct f_owner_ex {
++	int	type;
++	pid_t	pid;
++};
++
+ #ifdef __KERNEL__
+ 
+ #ifndef force_o_largefile
+-- 
+1.6.5.2
+
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
