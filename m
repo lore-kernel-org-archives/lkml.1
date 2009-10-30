@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbZJ3Tz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbZJ3T4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbZJ3Tz4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 15:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbZJ3Tzz
+	id S932301AbZJ3T4g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 15:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbZJ3T4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 15:55:55 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:18211 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754088AbZJ3Tzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 15:55:55 -0400
-Message-ID: <4AEB44B0.7020005@redhat.com>
-Date: Fri, 30 Oct 2009 15:55:28 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: ananth@in.ibm.com
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       fweisbec@gmail.com
-Subject: Re: [PATCH] kprobes: Sanitize struct kretprobe_instance allocations
-References: <20091030135310.GA22230@in.ibm.com>
-In-Reply-To: <20091030135310.GA22230@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Oct 2009 15:56:36 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:56339 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756129AbZJ3T4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 15:56:35 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
+Date: Fri, 30 Oct 2009 13:56:27 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+In-reply-to: <4AEA0B71.5050805@redhat.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Parag Warudkar <parag.lkml@gmail.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Theodore Tso <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, bugzilla-daemon@bugzilla.kernel.org
+Message-id: <3D6E88E0-7271-4CEC-85DC-9E4416F030F5@sun.com>
+X-Mailer: Apple Mail (2.936)
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
+ <20091016091558.GA10184@mit.edu>
+ <20091027101534.GA27584@skywalker.linux.vnet.ibm.com>
+ <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com>
+ <4AEA0B71.5050805@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ananth N Mavinakayanahalli wrote:
-> From: Ananth N Mavinakayanahalli<ananth@in.ibm.com>
+On 2009-10-29, at 15:38, Eric Sandeen wrote:
+> Parag Warudkar wrote:
+>> On Tue, Oct 27, 2009 at 6:15 AM, Aneesh Kumar K.V
+>> <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>>> Can you try this patch ?
+>>>
+>>> commit a8836b1d6f92273e001012c7705ae8f4c3d5fb65
+>>> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>> Date:   Tue Oct 27 15:36:38 2009 +0530
+>>>
+>>>   ext4: discard preallocation during truncate
+>>>
+>>>   We need to make sure when we drop and reacquire the inode's
+>>>   i_data_sem we discard the inode preallocation. Otherwise we
+>>>   could have blocks marked as free in bitmap but still belonging
+>>>   to prealloc space.
+>> Just wanted to let you know that I have applied this patch and one
+>> unclean shutdown later it seems to have not given me any trouble.
+>> I will continue testing it - hopefully I won't have to reformat  this
+>> time ( every time I tested previously I ended up having weird issues
+>> that I decided to get rid of by reformatting /).
 >
-> For as long as kretprobes have existed, we've allocated NR_CPUS
-> instances of kretprobe_instance structures. With the default value of
-> CONFIG_NR_CPUS increasing on certain architectures, we are potentially
-> wasting kernel memory.
->
-> See http://sourceware.org/bugzilla/show_bug.cgi?id=10839#c3 for more
-> details.
->
-> Use a saner num_possible_cpus() instead of NR_CPUS for allocation.
->
-> Signed-off-by: Ananth N Mavinakayanahalli<ananth@in.ibm.com>
+> I've been running my testcase, and I just hit the usual corruption  
+> with this patch in place after 8 iterations, I'm afraid.
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-Thanks!
+I wonder if there are multiple problems involved here?  Eric, it seems
+possible that your reproducer is exercising a similar, though unrelated
+codepath.  I would agree with Ted that if this patch is solving the
+problem for some of the users it is definitely worth landing, even if it
+ends up not solving all of the problems.
 
-> ---
->   kernel/kprobes.c |    4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
->
-> Index: linux-2.6.32-rc5/kernel/kprobes.c
-> ===================================================================
-> --- linux-2.6.32-rc5.orig/kernel/kprobes.c
-> +++ linux-2.6.32-rc5/kernel/kprobes.c
-> @@ -1014,9 +1014,9 @@ int __kprobes register_kretprobe(struct
->   	/* Pre-allocate memory for max kretprobe instances */
->   	if (rp->maxactive<= 0) {
->   #ifdef CONFIG_PREEMPT
-> -		rp->maxactive = max(10, 2 * NR_CPUS);
-> +		rp->maxactive = max(10, 2 * num_possible_cpus());
->   #else
-> -		rp->maxactive = NR_CPUS;
-> +		rp->maxactive = num_possible_cpus();
->   #endif
->   	}
->   	spin_lock_init(&rp->lock);
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
