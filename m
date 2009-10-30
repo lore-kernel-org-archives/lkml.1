@@ -1,46 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbZJ3Iiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZJ3IoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756311AbZJ3Iiv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 04:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbZJ3Iiu
+	id S1756574AbZJ3IoS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 04:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbZJ3IoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 04:38:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57238
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756194AbZJ3Iit (ORCPT
+	Fri, 30 Oct 2009 04:44:17 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:43188 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756351AbZJ3IoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 04:38:49 -0400
-Date: Fri, 30 Oct 2009 01:39:13 -0700 (PDT)
-Message-Id: <20091030.013913.238587076.davem@davemloft.net>
-To: Martin@lichtvoll.de
-Cc: linux-kernel@vger.kernel.org, hancockrwd@gmail.com,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] ide: update Kconfig text to mark as deprecated
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200910300918.39261.Martin@lichtvoll.de>
-References: <20091029.173028.248393897.davem@davemloft.net>
-	<200910300915.51836.Martin@lichtvoll.de>
-	<200910300918.39261.Martin@lichtvoll.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Oct 2009 04:44:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=C6ZOHUcZal8HD6nkIIUJMCThVs7sBevfaZlWQIz+KxY3HS/WATlCbRi4EN1yW/tL2D
+         UMI5BSX0kEcoYhP5bHK0Wj6mAZmnoXTXVRuHzP5jiEClSMadJS3jFHq1+Qjju0c4sUh0
+         f2jTsQk9NIRdsf6NqRONLiKmvO/8e2X7CoRIM=
+MIME-Version: 1.0
+In-Reply-To: <4AC1D0F5.4050709@gmail.com>
+References: <38b2ab8a0909290109m3f82c161j4fb0f1266152877e@mail.gmail.com>
+	 <4AC1D0F5.4050709@gmail.com>
+Date: Fri, 30 Oct 2009 09:44:19 +0100
+Message-ID: <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com>
+Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
+From: Francis Moreau <francis.moro@gmail.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Date: Fri, 30 Oct 2009 09:18:39 +0100
+Hello Eric,
 
-> One thing to add: If you use a InitRD, you can use UUID or LABEL in GRUB 1 
-> as well. I believe GRUB 2 at leasts supports UUID out of the box, but 
-> better check this, before relying on my word.
+It seems I still have a related bug, please have a look to the following oops.
 
-Since I recently implement sparc64 support for GRUB2 I know that
-indeed it does support UUID out of the box.
+This happened on a 2.6.32-rc5 where your patch is included.
 
-But grub2 sparc64 support is very new and the existing sparc64 boot
-loader 'SILO' doesn't support UUIDs.
+[107304.558821] nfsd: last server has exited, flushing export cache
+[107304.558848] ------------[ cut here ]------------
+[107304.558858] WARNING: at net/ipv4/af_inet.c:153
+inet_sock_destruct+0x161/0x17c()
+[107304.558862] Hardware name: P5K-VM
+[107304.558865] Modules linked in: kvm_intel kvm jfs loop nfsd lockd
+nfs_acl auth_rpcgss exportfs sunrpc [last unloaded: microcode]
+[107304.558889] Pid: 8198, comm: nfsd Tainted: G   M       2.6.32-rc5 #25
+[107304.558892] Call Trace:
+[107304.558899]  [<ffffffff81429f19>] ? inet_sock_destruct+0x161/0x17c
+[107304.558907]  [<ffffffff810487e9>] warn_slowpath_common+0x7c/0xa9
+[107304.558914]  [<ffffffff8104882a>] warn_slowpath_null+0x14/0x16
+[107304.558920]  [<ffffffff81429f19>] inet_sock_destruct+0x161/0x17c
+[107304.558927]  [<ffffffff813c8741>] __sk_free+0x23/0xe7
+[107304.558933]  [<ffffffff813c8881>] sk_free+0x1f/0x21
+[107304.558939]  [<ffffffff813c894b>] sk_common_release+0xc8/0xcd
+[107304.558944]  [<ffffffff81420b59>] udp_lib_close+0xe/0x10
+[107304.558951]  [<ffffffff814299bf>] inet_release+0x55/0x5c
+[107304.558957]  [<ffffffff813c5aa9>] sock_release+0x1f/0x71
+[107304.558962]  [<ffffffff813c5b22>] sock_close+0x27/0x2b
+[107304.558968]  [<ffffffff810eb60f>] __fput+0xfb/0x1c0
+[107304.558973]  [<ffffffff810eb6f1>] fput+0x1d/0x1f
+[107304.558995]  [<ffffffffa0013e23>] svc_sock_free+0x40/0x56 [sunrpc]
+[107304.559018]  [<ffffffffa001f392>] svc_xprt_free+0x43/0x53 [sunrpc]
+[107304.559038]  [<ffffffffa001f34f>] ? svc_xprt_free+0x0/0x53 [sunrpc]
+[107304.559048]  [<ffffffff811d9275>] kref_put+0x43/0x4f
+[107304.559069]  [<ffffffffa001e67a>] svc_close_xprt+0x55/0x5e [sunrpc]
+[107304.559088]  [<ffffffffa001e6d3>] svc_close_all+0x50/0x69 [sunrpc]
+[107304.559107]  [<ffffffffa0012a2b>] svc_destroy+0x9e/0x142 [sunrpc]
+[107304.559126]  [<ffffffffa0012b88>] svc_exit_thread+0xb9/0xc2 [sunrpc]
+[107304.559138]  [<ffffffffa008981b>] ? nfsd+0x0/0x13f [nfsd]
+[107304.559149]  [<ffffffffa0089940>] nfsd+0x125/0x13f [nfsd]
+[107304.559157]  [<ffffffff810685e3>] kthread+0x82/0x8a
+[107304.559164]  [<ffffffff8100c13a>] child_rip+0xa/0x20
+[107304.559172]  [<ffffffff8100baad>] ? restore_args+0x0/0x30
+[107304.559179]  [<ffffffff81068561>] ? kthread+0x0/0x8a
+[107304.559185]  [<ffffffff8100c130>] ? child_rip+0x0/0x20
+[107304.559191] ---[ end trace c107131f4762168c ]---
+[107304.927931] NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state
+recovery directory
+[107304.932765] NFSD: starting 90-second grace period
 
-Personally, I also don't use initrds, I avoid them like the
-plague. :-)
+-- 
+Francis
