@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbZJ3F7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbZJ3GHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbZJ3F7U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 01:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbZJ3F7T
+	id S1755902AbZJ3GHh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 02:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbZJ3GHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 01:59:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:48308 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754764AbZJ3F7S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 01:59:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=XrwdVQBSgvtDfjAG3sQgL7mWl7bzFjmjrZEQR1yYNspPFI7gAZki3g+HrTDdLWCD5u
-         SSuIGR+/XkNbnaCvyXnwF+KFr9e0VpO1YjNG5KXxvXI+wO3E1y0NHVDASJLumAjrqU+V
-         LHI/+d/iLbd7e6sY76BfrGSCqsp/u8GH+eNZc=
-MIME-Version: 1.0
-In-Reply-To: <200910292248.42229.bzolnier@gmail.com>
-References: <200910291212.41656.bzolnier@gmail.com>
-	 <200910291514.40318.bzolnier@gmail.com>
-	 <84144f020910291245l1a7a3fd6o8822ecd4ce3b5504@mail.gmail.com>
-	 <200910292248.42229.bzolnier@gmail.com>
-Date: Fri, 30 Oct 2009 07:59:21 +0200
-X-Google-Sender-Auth: 346dbe464ed7cdad
-Message-ID: <84144f020910292259g4635e3c3v652a27f8ac4d42de@mail.gmail.com>
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linville@tuxdriver.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 30 Oct 2009 02:07:36 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56917 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755043AbZJ3GHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 02:07:36 -0400
+Subject: Re: [GIT PULL] perf_event/tracing/powerpc patches from Anton
+ Blanchard
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Anton Blanchard <anton@samba.org>
+In-Reply-To: <20091029065501.GB12874@elte.hu>
+References: <19176.59441.523075.445864@drongo.ozlabs.ibm.com>
+	 <20091029065501.GB12874@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 30 Oct 2009 17:04:09 +1100
+Message-ID: <1256882649.6372.65.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bart,
+On Thu, 2009-10-29 at 07:55 +0100, Ingo Molnar wrote:
+> * Paul Mackerras <paulus@samba.org> wrote:
+> 
+> > Here is a series of patches from Anton Blanchard that implement some 
+> > nice tracing and perf_event features on powerpc.  One of them is 
+> > generic perf_event stuff (adding software events for alignment faults 
+> > and instruction emulation faults).
+> > 
+> > Since this touches the perf_event and tracing subsystems as well as 
+> > the powerpc architecture code, I think the best way forward is for 
+> > both Ingo and Ben to pull it into their trees.  I have based it on the 
+> > most recent point in Linus' tree that Ingo had pulled into his perf 
+> > branches (as of yesterday or so).
+> 
+> The generic perf bits look good to me - can pull it if Ben OKs the 
+> PowerPC bits.
 
-On Thu, Oct 29, 2009 at 11:48 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
->> _really_ prefer to spend your time in pointless arguments, go ahead.
->
-> I don't think that my technical arguments are pointless.
->
-> Quite the contrary, I'm pretty confident that addressing my review concerns
-> would result in better RT28x00 / RT30x0 support in the very near future.
+Yup. Just went through all of them, they look fine. I also test built on
+a number of default configs and it seems to pass.
 
-I don't think your technical arguments are pointless either. However,
-asking Dave to revert something over John and then arguing about it is
-pointless and will likely just piss people off and make them ignore
-you.
+Cheers,
+Ben.
 
-                        Pekka
