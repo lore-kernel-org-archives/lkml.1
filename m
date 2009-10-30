@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZJ3IPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbZJ3IQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZJ3IPv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 04:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZJ3IPu
+	id S1755678AbZJ3IQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 04:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZJ3IQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 04:15:50 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:55946 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754369AbZJ3IPt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 04:15:49 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ide: update Kconfig text to mark as deprecated
-Date: Fri, 30 Oct 2009 09:15:51 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-tp42-toi-3.0.1-04850-g4eddd0d; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>, hancockrwd@gmail.com,
-       linux-ide@vger.kernel.org
-References: <4AE64FCC.4030102@gmail.com> <51f3faa70910291719kecb5edcp3b8812981b69acb1@mail.gmail.com> <20091029.173028.248393897.davem@davemloft.net> (sfid-20091030_084126_843316_FFA89DBC)
-In-Reply-To: <20091029.173028.248393897.davem@davemloft.net>
+	Fri, 30 Oct 2009 04:16:16 -0400
+Received: from thunk.org ([69.25.196.29]:43376 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755033AbZJ3IQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 04:16:14 -0400
+Date: Fri, 30 Oct 2009 04:16:02 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Parag Warudkar <parag.lkml@gmail.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       bugzilla-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+Message-ID: <20091030081602.GM18464@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Sandeen <sandeen@redhat.com>,
+	Parag Warudkar <parag.lkml@gmail.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+	bugzilla-daemon@bugzilla.kernel.org
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com> <20091016091558.GA10184@mit.edu> <20091027101534.GA27584@skywalker.linux.vnet.ibm.com> <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com> <4AEA0B71.5050805@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1930772.Lympb3PX7R";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910300915.51836.Martin@lichtvoll.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AEA0B71.5050805@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1930772.Lympb3PX7R
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Thu, Oct 29, 2009 at 04:38:57PM -0500, Eric Sandeen wrote:
+>
+> I've been running my testcase, and I just hit the usual corruption with  
+> this patch in place after 8 iterations, I'm afraid.
 
-Am Freitag 30 Oktober 2009 schrieb David Miller:
-> And yes I absolutely do consider it too onerous to change my fstab
-> because I have to (or want to be able to) go back to older kernels
-> which will only have the IDE stack enabled.  I refuse to have to
-> monkey around with my fstab every time I want to go back and forth.
+Eric, since you have a relatively controllable reproduction case, have
+you tried reproducing Alexey's bisection results?  Specifically he
+seemed to find that commit fe188c0e shows no problem, and commit
+91ac6f43 is the first commit with problems?
 
-You don't need to when you used UUID or LABEL - I prefer the later cause=20
-its more readable. Actually I never quite understood while one would want=20
-to use dynamic things like /dev/hdd or /dev/sdb in the first place. Thats=20
-for me not that much better than C: or D:. Connect your harddisks=20
-differently and you are screwed.
+Having to do multiple iterations will make doing a bisection a major
+pain, but maybe we'll get something out of that.
 
-On AmigaOS partitions were refered by names since the beginning. When I=20
-copied my OS to a different harddisk I gave the new partition the same=20
-name, copied all files over, removed the old harddisk or renamed the old=20
-partition and reduced its boot priority and be done with it. (Not that=20
-AmigaOS had a fstab that I could have edited anyway.) This way I could=20
-connect an IDE disk with the IDE controller on board, an IDE controller=20
-card like FastATA or via bridge to the UWSCSI controller on the CyberStorm=
-=20
-PPC turbo board without having to change any configuration in order to be=20
-able to boot.
+Other things that might be worth doing given that you have a test case
+would be to try reverting commit 91ac6f43, and see if that helps, and
+to try this patch: http://bugzilla.kernel.org/attachment.cgi?id=23468
 
-(Another thing to copy would be how removable storage devices are handled.=
-=20
-If you remove a disk or usb stick prematurely while the OS is still=20
-writing to it you get a "You MUST insert volume xyz again!" requester and=20
-if you do, the writes will be completed. I never have seen any other OS=20
-that does it this sane way as a standard. Other OS either disallow device=20
-removal where possible or loose data.)
+Or have you tried some of these experiments already?
 
-Ciao,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+Regards,
 
---nextPart1930772.Lympb3PX7R
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkrqoLcACgkQmRvqrKWZhMfkmgCgiKSFTacVvgxyN97P8Wk2c05w
-U/4AnibEcqjw/Htgrug3P0WPSIQukp3a
-=2ObX
------END PGP SIGNATURE-----
-
---nextPart1930772.Lympb3PX7R--
+						- Ted
