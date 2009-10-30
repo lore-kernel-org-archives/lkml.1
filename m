@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZJ3QFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932574AbZJ3QFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932555AbZJ3QFY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 12:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbZJ3QFX
+	id S932574AbZJ3QFf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 12:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932569AbZJ3QFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 12:05:23 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:5546 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932461AbZJ3QFW convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;8:2>);
-	Fri, 30 Oct 2009 12:05:22 -0400
-Message-Id: <4AEB1CD4020000780001CD66@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 30 Oct 2009 16:05:24 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Tony Luck" <tony.luck@intel.com>, "Tejun Heo" <tj@kernel.org>
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "akpm" <akpm@linux-foundation.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Sam Ravnborg" <sam@ravnborg.org>,
-       "Andreas Gruenbacher" <agruen@suse.de>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>
-Subject: Re: [PATCH -next] ia64/sn: fix percpu warnings
-References: <20091014163445.f0441473.sfr@canb.auug.org.au>
- <20091014151003.0ef42973.randy.dunlap@oracle.com>
- <4AD67C05.2030201@kernel.org>
- <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com>
- <57C9024A16AD2D4C97DC78E552063EA3E345953E@orsmsx505.amr.corp.intel.com>
- <4AE85D28.90809@kernel.org>
- <57C9024A16AD2D4C97DC78E552063EA3E34C0108@orsmsx505.amr.corp.intel.com>
- <4AE87344.6030708@kernel.org>
- <57C9024A16AD2D4C97DC78E552063EA3E34C018B@orsmsx505.amr.corp.intel.com>
- <57C9024A16AD2D4C97DC78E552063EA3E34C0629@orsmsx505.amr.corp.intel.com>
- <4AE9AA0E.5070104@kernel.org> <4AE9B812.2080307@kernel.org>
-In-Reply-To: <4AE9B812.2080307@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 30 Oct 2009 12:05:33 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41403 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932511AbZJ3QFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 12:05:32 -0400
+Message-ID: <4AEB0F0C.2040106@suse.de>
+Date: Fri, 30 Oct 2009 17:06:36 +0100
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 2/3] Sysfs: Allow directories to be populated	dynamically
+References: <20091020054740.GC29158@parisc-linux.org> <20091020055021.GE29158@parisc-linux.org> <4AE9C0B0.3030304@suse.de> <20091029162145.GM10555@parisc-linux.org> <4AE9C29E.6090706@suse.de> <20091029192414.GN10555@parisc-linux.org> <4AEABD32.8010509@suse.de> <20091030111452.GP10555@parisc-linux.org>
+In-Reply-To: <20091030111452.GP10555@parisc-linux.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Tejun Heo <tj@kernel.org> 29.10.09 16:43 >>>
->So, the problem is that genksyms can't understand the following.
->
->  __typeof__(int [10]) my_ar;
->  EXPORT_SYMBOL(my_ar);
+Hello,
 
-In fact almost no use of typeof() works with genksyms: Out of
+Matthew Wilcox wrote:
+>> In this particular case, the trade off is actually much worse because
+>> sysfs_dirent is being increased but the only one which is seeing any
+>> kind of memory usage drop is the new msi-x code.  Given that there can
+>> be only a handful of msi-x controllers even in a fairly large system,
+>> I don't think memory usage will be reduced in any meaningful way even
+>> on affected systems and if you think about large systems with
+>> thousands and tens of thousands block devices, the bloat in
+>> sysfs_dirent will waste a lot of memory.
+> 
+> Every attribute sees a drop in memory usage.  I think I saw about 30%
+> fewer dirents created on boot with this laptop.  Why not try this patch
+> on one of your machines and see the difference?
 
-#include <linux/module.h>
+Heh... Sorry, I'm still travelling so testing is a bit difficult but
+even if you reduce the number of dirents by 30% if you add three
+pointers worth of memory to each sysfs_dirent, I don't think it will
+amount to any meaningful amount of memory usage drop and given that
+sysfs_dirent can be reduced further in size with some tricks, I think
+that would be the better way to reduce memory footprint.
 
-extern int x;
+Thanks.
 
-#define export(t, n) typeof(t) export_##n; EXPORT_SYMBOL(export_##n)
-
-export(x, a);
-export(&x, b);
-export(int, c);
-export(int*, d);
-export(int**, e);
-export(int[4], f);
-export(typeof(x), g);
-export(typeof(&x), h);
-export(typeof(x)*, i);
-
-only c and d get a non-zero CRC. This is clearly due to the naive parsing
-scripts/genksyms/parse.y does:
-
-type_specifier:
-	simple_type_specifier
-	| cvar_qualifier
-	| TYPEOF_KEYW '(' decl_specifier_seq '*' ')'
-	| TYPEOF_KEYW '(' decl_specifier_seq ')'
-	...
-
->Would it be difficult to teach it how to parse it?
-
-For someone familiar with bison/yacc this would seem not very difficult
-a job, but as far as I'm concerned this is not something I would feel
-comfortable trying to fix. Of course one could go the simplistic route
-and just add the array case here, but imo this wouldn't be the right
-way to deal with it.
-
-Jan
-
+-- 
+tejun
