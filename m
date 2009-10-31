@@ -1,72 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbZJ3X5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933130AbZJaACA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933125AbZJ3X5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 19:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbZJ3X5d
+	id S933130AbZJaACA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 20:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933077AbZJaACA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 19:57:33 -0400
-Received: from gate.crashing.org ([63.228.1.57]:34558 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933077AbZJ3X5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 19:57:32 -0400
-Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from
- 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-In-Reply-To: <alpine.LFD.2.01.0910301228430.31845@localhost.localdomain>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-	 <6dRYo8ss7vL.A.EqH.Nse5KB@chimera> <200910301948.24473.rjw@sisk.pl>
-	 <alpine.LFD.2.01.0910301228430.31845@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 31 Oct 2009 10:57:21 +1100
-Message-ID: <1256947041.6372.165.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Oct 2009 20:02:00 -0400
+Received: from [118.217.181.54] ([118.217.181.54]:3731 "EHLO svctag-42p1gbx"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933060AbZJaAB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 20:01:59 -0400
+From: returnedm@return.pec.pchome.com.tw
+Message-ID: <SVCTAG-42P1GBXZd4xN0024a01b@svctag-42p1gbx>
+X-OriginalArrivalTime: 31 Oct 2009 00:01:51.0215 (UTC) FILETIME=[591B8FF0:01CA59BD]
+Date: 31 Oct 2009 09:01:51 +0900
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-On Fri, 2009-10-30 at 12:47 -0700, Linus Torvalds wrote:
-> 
-> On Fri, 30 Oct 2009, Rafael J. Wysocki wrote:
-> > 
-> >
-> > 1) Resume works if pcmcia_socket_dev_resume(dev) is moved to the "regular"
-> >    resume phase, after resume_device_irqs().
-> 
-> Hmm. We really probably shouldn't call pcmcia_socket_dev_resume() in 
-> early_resume. It takes mutexes etc, and it calls "socket_resume()", which 
-> sleeps etc. That per se should be ok these days (since we don't actualyl 
-> disable CPU irq's, just device irqs), but it also does that whole card 
-> insertion events etc. And _that_ code I wouldn't trust at all.
-> 
-> The PCMCIA code is better than it used to be a long time ago, but some of 
-> it is still pretty crazy. 
-> 
-> I get the feeling that we should just revert that commit 0c570cdeb, and 
-> instead always do PCMCIA suspend as a "eject" event. That way we have no 
-> driver behind it to resume at resume time - and we'll see any plugged-in 
-> device as just a new insertion. 
-
-To me the proper approach would be to split it so that
-
- - early_resume() restores power & config space etc... so that existing
-devices can move on (might check for removal). There's no other hotplug
-activity
-
- - normal resume() restarts handling of events such as insertions
-
-Now, while I do have some cardbus & pcmcia stuff somewhere, I also don't
-have much time to hack on this right now...
-
-Cheers,
-Ben.
 
