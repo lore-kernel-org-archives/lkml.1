@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbZJaJlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbZJaJoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbZJaJlP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 05:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbZJaJlO
+	id S1757520AbZJaJoD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 05:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbZJaJoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 05:41:14 -0400
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:33643 "EHLO
+	Sat, 31 Oct 2009 05:44:00 -0400
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:35835 "EHLO
 	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757492AbZJaJlE convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757499AbZJaJlJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 05:41:04 -0400
+	Sat, 31 Oct 2009 05:41:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:from:date:message-id:subject:to:cc:content-type
          :content-transfer-encoding;
-        b=qhgG5AjLsjHNBL/bV7p9mr0vJG6RWS4Qz/e83yJk2ujYzrRnT+4WOnf/ZX+++5Ei33
-         aQ8vChn/HkCPpD9O9rR9tfuVvnGNcYifLvIk48y8wEAcDmgHLjCGzVg7c9AwgBRVSBca
-         bqstaJdIMfEyqhoLiL0hQHvIEy9rMK/0kFMiQ=
+        b=tASXCmlu6blPNnu0chJQqyDCLcKMk3gjogw84CZqEz2THd74Cx/hsi7/ZnOdB2rWD/
+         CfhkUaRv/qIxzoz+5O8NxoAdhA4aMuCiT8hnI7iQX7EJy0xU9UrFuSEEqbt8qoXv0agW
+         /zIoYCfUn/cvtjG7HQuYwZ4x92vm/4qw7Z9A8=
 MIME-Version: 1.0
 From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 31 Oct 2009 07:40:49 -0200
-Message-ID: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>
-Subject: [PATCH 03/16] trivial: fix assorted "through" typos
+Date: Sat, 31 Oct 2009 07:40:54 -0200
+Message-ID: <b8bf37780910310240k34b2b307g790d45709411fe0e@mail.gmail.com>
+Subject: [PATCH 04/16] trivial: fix assorted "performance" typos
 To: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
 Cc: me <andre.goddard@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -30,427 +30,302 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From f5d73ba151304056e4f7ea37e515493d1d3df38f Mon Sep 17 00:00:00 2001
+>From c00af2871d9f53c9873d51a2dfa013f46dceba4d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Fri, 30 Oct 2009 06:16:07 -0200
-Subject: [PATCH 03/16] trivial: fix assorted "through" typos
+Date: Fri, 30 Oct 2009 06:26:46 -0200
+Subject: [PATCH 04/16] trivial: fix assorted "performance" typos
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-diff --git a/arch/arm/plat-mxc/include/mach/iomux-mx3.h
-b/arch/arm/plat-mxc/include/mach/iomux-mx3.h
-index 446f867..0c7802b 100644
---- a/arch/arm/plat-mxc/include/mach/iomux-mx3.h
-+++ b/arch/arm/plat-mxc/include/mach/iomux-mx3.h
-@@ -112,7 +112,7 @@ enum iomux_gp_func {
-  * setups a single pin:
-  * 	- reserves the pin so that it is not claimed by another driver
-  * 	- setups the iomux according to the configuration
-- * 	- if the pin is configured as a GPIO, we claim it throug kernel gpiolib
-+ * 	- if the pin is configured as a GPIO, we claim it through kernel gpiolib
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index f178270..b3a1cb3 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -3523,7 +3523,7 @@ pfm_use_debug_registers(struct task_struct *task)
+  * IA64_THREAD_DBG_VALID set. This indicates a task which was
+  * able to use the debug registers for debugging purposes via
+  * ptrace(). Therefore we know it was not using them for
+- * perfmormance monitoring, so we only decrement the number
++ * performance monitoring, so we only decrement the number
+  * of "ptraced" debug register users to keep the count up to date
   */
- int mxc_iomux_alloc_pin(const unsigned int pin, const char *label);
- /*
-diff --git a/arch/arm/plat-mxc/include/mach/iomux-mxc91231.h
-b/arch/arm/plat-mxc/include/mach/iomux-mxc91231.h
-index 9f13061..3887f3f 100644
---- a/arch/arm/plat-mxc/include/mach/iomux-mxc91231.h
-+++ b/arch/arm/plat-mxc/include/mach/iomux-mxc91231.h
-@@ -48,7 +48,7 @@
-  * setups a single pin:
-  * 	- reserves the pin so that it is not claimed by another driver
-  * 	- setups the iomux according to the configuration
-- * 	- if the pin is configured as a GPIO, we claim it throug kernel gpiolib
-+ * 	- if the pin is configured as a GPIO, we claim it through kernel gpiolib
-  */
- int mxc_iomux_alloc_pin(const unsigned int pin_mode, const char *label);
- /*
-diff --git a/arch/avr32/boards/hammerhead/Kconfig
-b/arch/avr32/boards/hammerhead/Kconfig
-index fda2331..5c13d78 100644
---- a/arch/avr32/boards/hammerhead/Kconfig
-+++ b/arch/avr32/boards/hammerhead/Kconfig
-@@ -24,7 +24,7 @@ config BOARD_HAMMERHEAD_SND
- 	bool "Atmel AC97 Sound support"
- 	help
- 	  This enables Sound support for the Hammerhead board. You may
--	  also go trough the ALSA settings to get it working.
-+	  also go through the ALSA settings to get it working.
+ int
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index 641c74b..b6bd1ea 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -52,7 +52,7 @@ static struct hard_trap_info
+ 	{ 0x2030, 0x08 /* SIGFPE */  },		/* spe fp data */
+ 	{ 0x2040, 0x08 /* SIGFPE */  },		/* spe fp data */
+ 	{ 0x2050, 0x08 /* SIGFPE */  },		/* spe fp round */
+-	{ 0x2060, 0x0e /* SIGILL */  },		/* performace monitor */
++	{ 0x2060, 0x0e /* SIGILL */  },		/* performance monitor */
+ 	{ 0x2900, 0x08 /* SIGFPE */  },		/* apu unavailable */
+ 	{ 0x3100, 0x0e /* SIGALRM */ },		/* fixed interval timer */
+ 	{ 0x3200, 0x02 /* SIGINT */  }, 	/* watchdog */
+diff --git a/arch/powerpc/oprofile/op_model_cell.c
+b/arch/powerpc/oprofile/op_model_cell.c
+index ae06c62..3b581b0 100644
+--- a/arch/powerpc/oprofile/op_model_cell.c
++++ b/arch/powerpc/oprofile/op_model_cell.c
+@@ -1594,7 +1594,7 @@ static void cell_handle_interrupt_spu(struct
+pt_regs *regs,
+ 		 * to a latch.  The new values (interrupt setting bits, reset
+ 		 * counter value etc.) are not copied to the actual registers
+ 		 * until the performance monitor is enabled.  In order to get
+-		 * this to work as desired, the permormance monitor needs to
++		 * this to work as desired, the performance monitor needs to
+ 		 * be disabled while writing to the latches.  This is a
+ 		 * HW design issue.
+ 		 */
+@@ -1668,7 +1668,7 @@ static void cell_handle_interrupt_ppu(struct
+pt_regs *regs,
+ 		 * to a latch.	The new values (interrupt setting bits, reset
+ 		 * counter value etc.) are not copied to the actual registers
+ 		 * until the performance monitor is enabled.  In order to get
+-		 * this to work as desired, the permormance monitor needs to
++		 * this to work as desired, the performance monitor needs to
+ 		 * be disabled while writing to the latches.  This is a
+ 		 * HW design issue.
+ 		 */
+diff --git a/drivers/isdn/mISDN/dsp_core.c b/drivers/isdn/mISDN/dsp_core.c
+index 77ee286..43ff4d3 100644
+--- a/drivers/isdn/mISDN/dsp_core.c
++++ b/drivers/isdn/mISDN/dsp_core.c
+@@ -110,7 +110,7 @@
+  * crossconnections and conferences via software if not possible through
+  * hardware. If hardware capability is available, hardware is used.
+  *
+- * Echo: Is generated by CMX and is used to check performane of hard and
++ * Echo: Is generated by CMX and is used to check performance of hard and
+  * software CMX.
+  *
+  * The CMX has special functions for conferences with one, two and more
+diff --git a/drivers/mtd/nand/nand_ecc.c b/drivers/mtd/nand/nand_ecc.c
+index db7ae9d..92320a6 100644
+--- a/drivers/mtd/nand/nand_ecc.c
++++ b/drivers/mtd/nand/nand_ecc.c
+@@ -475,7 +475,7 @@ int __nand_correct_data(unsigned char *buf,
+ 		 *
+ 		 * The b2 shift is there to get rid of the lowest two bits.
+ 		 * We could also do addressbits[b2] >> 1 but for the
+-		 * performace it does not make any difference
++		 * performance it does not make any difference
+ 		 */
+ 		if (eccsize_mult == 1)
+ 			byte_addr = (addressbits[b1] << 4) + addressbits[b0];
+diff --git a/drivers/net/82596.c b/drivers/net/82596.c
+index ea6b139..1663bc9 100644
+--- a/drivers/net/82596.c
++++ b/drivers/net/82596.c
+@@ -19,7 +19,7 @@
+    TBD:
+    * look at deferring rx frames rather than discarding (as per tulip)
+    * handle tx ring full as per tulip
+-   * performace test to tune rx_copybreak
++   * performance test to tune rx_copybreak
 
- 	  Choose 'Y' here if you have ordered a Corona daugther board and
- 	  want to make your board funky.
-diff --git a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
-b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
-index f7b9cdc..b52c1f8 100644
---- a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
-+++ b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
-@@ -38,7 +38,7 @@ void __init generate_cplb_tables_cpu(unsigned int cpu)
+    Most of my modifications relate to the braindead big-endian
+    implementation by Intel.  When the i596 is operating in
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index f866128..56ba872 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -1285,7 +1285,7 @@ netdev_tx_t t3_eth_xmit(struct sk_buff *skb,
+struct net_device *dev)
 
- #ifdef CONFIG_BFIN_EXTMEM_DCACHEABLE
- 	d_cache = CPLB_L1_CHBL;
--#ifdef CONFIG_BFIN_EXTMEM_WRITETROUGH
-+#ifdef CONFIG_BFIN_EXTMEM_WRITETHROUGH
- 	d_cache |= CPLB_L1_AOW | CPLB_WT;
- #endif
- #endif
-diff --git a/arch/ia64/ia32/ia32_entry.S b/arch/ia64/ia32/ia32_entry.S
-index af9405c..02d1fb7 100644
---- a/arch/ia64/ia32/ia32_entry.S
-+++ b/arch/ia64/ia32/ia32_entry.S
-@@ -79,7 +79,7 @@ GLOBAL_ENTRY(ia32_ret_from_clone)
- (p6)	br.cond.spnt .ia32_strace_check_retval
- 	;;					// prevent RAW on r8
- END(ia32_ret_from_clone)
--	// fall thrugh
-+	// fall through
- GLOBAL_ENTRY(ia32_ret_from_syscall)
- 	PT_REGS_UNWIND_INFO(0)
-
-diff --git a/arch/mips/math-emu/dp_sub.c b/arch/mips/math-emu/dp_sub.c
-index b30c5b1..a2127d6 100644
---- a/arch/mips/math-emu/dp_sub.c
-+++ b/arch/mips/math-emu/dp_sub.c
-@@ -110,7 +110,7 @@ ieee754dp ieee754dp_sub(ieee754dp x, ieee754dp y)
-
- 	case CLPAIR(IEEE754_CLASS_DNORM, IEEE754_CLASS_DNORM):
- 		DPDNORMX;
--		/* FAAL THOROUGH */
-+		/* FALL THROUGH */
-
- 	case CLPAIR(IEEE754_CLASS_NORM, IEEE754_CLASS_DNORM):
- 		/* normalize ym,ye */
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index ad59a92..67e86b8 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -2394,7 +2394,7 @@ int __init amd_iommu_init_passthrough(void)
- 	struct pci_dev *dev = NULL;
- 	u16 devid, devid2;
-
--	/* allocate passthroug domain */
-+	/* allocate passthrough domain */
- 	pt_domain = protection_domain_alloc();
- 	if (!pt_domain)
- 		return -ENOMEM;
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 1f3186c..5b8c750 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -481,7 +481,7 @@ static int __kprobes reenter_kprobe(struct kprobe
-*p, struct pt_regs *regs,
-
- /*
-  * Interrupts are disabled on entry as trap3 is an interrupt gate and they
-- * remain disabled thorough out this function.
-+ * remain disabled throughout this function.
-  */
- static int __kprobes kprobe_handler(struct pt_regs *regs)
- {
-@@ -818,7 +818,7 @@ no_change:
-
- /*
-  * Interrupts are disabled on entry as trap1 is an interrupt gate and they
-- * remain disabled thoroughout this function.
-+ * remain disabled throughout this function.
-  */
- static int __kprobes post_kprobe_handler(struct pt_regs *regs)
- {
-diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
-index 11a4ad4..07bcc30 100644
---- a/arch/x86/mm/kmmio.c
-+++ b/arch/x86/mm/kmmio.c
-@@ -203,7 +203,7 @@ static void disarm_kmmio_fault_page(struct
-kmmio_fault_page *f)
-  */
- /*
-  * Interrupts are disabled on entry as trap3 is an interrupt gate
-- * and they remain disabled thorough out this function.
-+ * and they remain disabled throughout this function.
-  */
- int kmmio_handler(struct pt_regs *regs, unsigned long addr)
- {
-@@ -302,7 +302,7 @@ no_kmmio:
-
- /*
-  * Interrupts are disabled on entry as trap1 is an interrupt gate
-- * and they remain disabled thorough out this function.
-+ * and they remain disabled throughout this function.
-  * This must always get called as the pair to kmmio_handler().
-  */
- static int post_kmmio_handler(unsigned long condition, struct pt_regs *regs)
-diff --git a/drivers/char/n_r3964.c b/drivers/char/n_r3964.c
-index 6934025..c1d8b54 100644
---- a/drivers/char/n_r3964.c
-+++ b/drivers/char/n_r3964.c
-@@ -602,7 +602,7 @@ static void receive_char(struct r3964_info *pInfo,
-const unsigned char c)
- 		}
- 		break;
- 	case R3964_WAIT_FOR_RX_REPEAT:
--		/* FALLTROUGH */
-+		/* FALLTHROUGH */
- 	case R3964_IDLE:
- 		if (c == STX) {
- 			/* Prevent rx_queue from overflow: */
-diff --git a/drivers/char/rio/route.h b/drivers/char/rio/route.h
-index 20ed73f..46e9637 100644
---- a/drivers/char/rio/route.h
-+++ b/drivers/char/rio/route.h
-@@ -67,7 +67,7 @@
- typedef struct COST_ROUTE COST_ROUTE;
- struct COST_ROUTE {
- 	unsigned char cost;	/* Cost down this link */
--	unsigned char route[NODE_BYTES];	/* Nodes thorough this route */
-+	unsigned char route[NODE_BYTES];	/* Nodes through this route */
- };
-
- typedef struct ROUTE_STR ROUTE_STR;
-diff --git a/drivers/isdn/hardware/mISDN/hfcsusb.c
-b/drivers/isdn/hardware/mISDN/hfcsusb.c
-index fc46a26..a64bb6c 100644
---- a/drivers/isdn/hardware/mISDN/hfcsusb.c
-+++ b/drivers/isdn/hardware/mISDN/hfcsusb.c
-@@ -721,7 +721,7 @@ hfcsusb_setup_bch(struct bchannel *bch, int protocol)
- 	switch (protocol) {
- 	case (-1):	/* used for init */
- 		bch->state = -1;
--		/* fall trough */
-+		/* fall through */
- 	case (ISDN_P_NONE):
- 		if (bch->state == ISDN_P_NONE)
- 			return 0; /* already in idle state */
-diff --git a/drivers/media/common/saa7146_i2c.c
-b/drivers/media/common/saa7146_i2c.c
-index 7e8f568..48cb154 100644
---- a/drivers/media/common/saa7146_i2c.c
-+++ b/drivers/media/common/saa7146_i2c.c
-@@ -98,7 +98,7 @@ static int saa7146_i2c_msg_cleanup(const struct
-i2c_msg *m, int num, __le32 *op)
-
- 		op_count++;
-
--		/* loop throgh all bytes of message i */
-+		/* loop through all bytes of message i */
- 		for(j = 0; j < m[i].len; j++) {
- 			/* write back all bytes that could have been read */
- 			m[i].buf[j] = (le32_to_cpu(op[op_count/3]) >> ((3-(op_count%3))*8));
-diff --git a/drivers/media/radio/radio-mr800.c
-b/drivers/media/radio/radio-mr800.c
-index a123908..5f79acb 100644
---- a/drivers/media/radio/radio-mr800.c
-+++ b/drivers/media/radio/radio-mr800.c
-@@ -28,7 +28,7 @@
-  * http://av-usbradio.sourceforge.net/index.php
-  * http://sourceforge.net/projects/av-usbradio/
-  * Latest release of theirs project was in 2005.
-- * Probably, this driver could be improved trough using their
-+ * Probably, this driver could be improved through using their
-  * achievements (specifications given).
-  * Also, Faidon Liambotis <paravoid@debian.org> wrote nice driver for
-this radio
-  * in 2007. He allowed to use his driver to improve current mr800 radio driver.
-diff --git a/drivers/media/video/cx231xx/cx231xx-avcore.c
-b/drivers/media/video/cx231xx/cx231xx-avcore.c
-index 28f48f4..c217441 100644
---- a/drivers/media/video/cx231xx/cx231xx-avcore.c
-+++ b/drivers/media/video/cx231xx/cx231xx-avcore.c
-@@ -2414,9 +2414,11 @@ int cx231xx_gpio_i2c_read_ack(struct cx231xx *dev)
- 		cx231xx_info("No ACK after %d msec -GPIO I2C failed!",
- 			     nInit * 10);
-
--	/* readAck
--	   throuth clock stretch ,slave has given a SCL signal,
--	   so the SDA data can be directly read.  */
-+	/*
-+	 * readAck
-+	 * through clock stretch, slave has given a SCL signal,
-+	 * so the SDA data can be directly read.
-+	 */
- 	status = cx231xx_get_gpio_bit(dev, dev->gpio_dir, (u8 *)&dev->gpio_val);
-
- 	if ((dev->gpio_val & 1 << dev->board.tuner_sda_gpio) == 0) {
-diff --git a/drivers/media/video/gspca/sonixb.c
-b/drivers/media/video/gspca/sonixb.c
-index cf3af8d..e39efb4 100644
---- a/drivers/media/video/gspca/sonixb.c
-+++ b/drivers/media/video/gspca/sonixb.c
-@@ -304,7 +304,7 @@ static const __u8 initOv6650[] = {
- };
- static const __u8 ov6650_sensor_init[][8] =
- {
--	/* Bright, contrast, etc are set througth SCBB interface.
-+	/* Bright, contrast, etc are set through SCBB interface.
- 	 * AVCAP on win2 do not send any data on this 	controls. */
- 	/* Anyway, some registers appears to alter bright and constrat */
-
-diff --git a/drivers/net/wireless/iwmc3200wifi/commands.c
-b/drivers/net/wireless/iwmc3200wifi/commands.c
-index 84158b6..8d154fa 100644
---- a/drivers/net/wireless/iwmc3200wifi/commands.c
-+++ b/drivers/net/wireless/iwmc3200wifi/commands.c
-@@ -49,7 +49,7 @@
- #include "commands.h"
- #include "debug.h"
-
--static int iwm_send_lmac_ptrough_cmd(struct iwm_priv *iwm,
-+static int iwm_send_lmac_pthrough_cmd(struct iwm_priv *iwm,
- 				     u8 lmac_cmd_id,
- 				     const void *lmac_payload,
- 				     u16 lmac_payload_size,
-@@ -185,7 +185,7 @@ int iwm_send_prio_table(struct iwm_priv *iwm)
- 	} else
- 		IWM_WARN(iwm, "coexistense disabled\n");
-
--	return iwm_send_lmac_ptrough_cmd(iwm, COEX_PRIORITY_TABLE_CMD,
-+	return iwm_send_lmac_pthrough_cmd(iwm, COEX_PRIORITY_TABLE_CMD,
- 				&coex_table_cmd,
- 				sizeof(struct iwm_coex_prio_table_cmd), 1);
- }
-@@ -202,7 +202,7 @@ int iwm_send_init_calib_cfg(struct iwm_priv *iwm,
-u8 calib_requested)
- 	cal_cfg_cmd.ucode_cfg.flags =
- 		cpu_to_le32(CALIB_CFG_FLAG_SEND_COMPLETE_NTFY_AFTER_MSK);
-
--	return iwm_send_lmac_ptrough_cmd(iwm, CALIBRATION_CFG_CMD, &cal_cfg_cmd,
-+	return iwm_send_lmac_pthrough_cmd(iwm, CALIBRATION_CFG_CMD, &cal_cfg_cmd,
- 				sizeof(struct iwm_lmac_cal_cfg_cmd), 1);
- }
-
-@@ -215,7 +215,7 @@ int iwm_send_periodic_calib_cfg(struct iwm_priv
-*iwm, u8 calib_requested)
- 	cal_cfg_cmd.ucode_cfg.periodic.enable = cpu_to_le32(calib_requested);
- 	cal_cfg_cmd.ucode_cfg.periodic.start = cpu_to_le32(calib_requested);
-
--	return iwm_send_lmac_ptrough_cmd(iwm, CALIBRATION_CFG_CMD, &cal_cfg_cmd,
-+	return iwm_send_lmac_pthrough_cmd(iwm, CALIBRATION_CFG_CMD, &cal_cfg_cmd,
- 				sizeof(struct iwm_lmac_cal_cfg_cmd), 0);
- }
-
-@@ -261,7 +261,7 @@ int iwm_send_calib_results(struct iwm_priv *iwm)
- 			     &iwm->calib_done_map)) {
- 			IWM_DBG_CMD(iwm, DBG,
- 				    "Send calibration %d result\n", i);
--			ret |= iwm_send_lmac_ptrough_cmd(iwm,
-+			ret |= iwm_send_lmac_pthrough_cmd(iwm,
- 					REPLY_PHY_CALIBRATION_CMD,
- 					iwm->calib_res[i].buf,
- 					iwm->calib_res[i].size, 0);
-diff --git a/drivers/net/wireless/iwmc3200wifi/hal.c
-b/drivers/net/wireless/iwmc3200wifi/hal.c
-index c430418..d13c885 100644
---- a/drivers/net/wireless/iwmc3200wifi/hal.c
-+++ b/drivers/net/wireless/iwmc3200wifi/hal.c
-@@ -411,7 +411,7 @@ static void iwm_build_lmac_hdr(struct iwm_priv
-*iwm, struct iwm_lmac_hdr *hdr,
- /*
-  * iwm_hal_send_host_cmd(): sends commands to the UMAC or the LMAC.
-  * Sending command to the LMAC is equivalent to sending a
-- * regular UMAC command with the LMAC passtrough or the LMAC
-+ * regular UMAC command with the LMAC passthrough or the LMAC
-  * wrapper UMAC command IDs.
-  */
- int iwm_hal_send_host_cmd(struct iwm_priv *iwm,
-diff --git a/drivers/staging/rt3090/common/spectrum.c
-b/drivers/staging/rt3090/common/spectrum.c
-index c26f057..f0e5508 100644
---- a/drivers/staging/rt3090/common/spectrum.c
-+++ b/drivers/staging/rt3090/common/spectrum.c
-@@ -1362,7 +1362,7 @@ VOID NotifyChSwAnnToPeerAPs(
- 	if (!((pRA[0] & 0xff) == 0xff)) // is pRA a broadcase address.
- 	{
- 		INT i;
--		// info neighbor APs that Radar signal found throgh WDS link.
-+		// info neighbor APs that Radar signal found through WDS link.
- 		for (i = 0; i < MAX_WDS_ENTRY; i++)
- 		{
- 			if (ValidWdsEntry(pAd, i))
-diff --git a/drivers/staging/rtl8187se/r8180_core.c
-b/drivers/staging/rtl8187se/r8180_core.c
-index 53e654d..c65de92 100644
---- a/drivers/staging/rtl8187se/r8180_core.c
-+++ b/drivers/staging/rtl8187se/r8180_core.c
-@@ -1919,8 +1919,8 @@ rate)
  	/*
- 	* This function doesn't require lock because we make
- 	* sure it's called with the tx_lock already acquired.
--	* this come from the kernel's hard_xmit callback (trought
--	* the ieee stack, or from the try_wake_queue (again trought
-+	* this come from the kernel's hard_xmit callback (throught
-+	* the ieee stack, or from the try_wake_queue (again throught
- 	* the ieee stack.
- 	*/
- 	priority = AC2Q(skb->priority);
-diff --git a/include/net/wimax.h b/include/net/wimax.h
-index 2af7bf8..3b07f6a 100644
---- a/include/net/wimax.h
-+++ b/include/net/wimax.h
-@@ -79,7 +79,7 @@
-  * drivers have to only report state changes due to external
-  * conditions.
-  *
-- * All API operations are 'atomic', serialized thorough a mutex in the
-+ * All API operations are 'atomic', serialized through a mutex in the
-  * `struct wimax_dev`.
-  *
-  * EXPORTING TO USER SPACE THROUGH GENERIC NETLINK
-diff --git a/net/irda/irlap.c b/net/irda/irlap.c
-index 356e65b..783c5f3 100644
---- a/net/irda/irlap.c
-+++ b/net/irda/irlap.c
-@@ -450,10 +450,10 @@ void irlap_disconnect_request(struct irlap_cb *self)
+ 	 * We do not use Tx completion interrupts to free DMAd Tx packets.
+-	 * This is good for performamce but means that we rely on new Tx
++	 * This is good for performance but means that we rely on new Tx
+ 	 * packets arriving to run the destructors of completed packets,
+ 	 * which open up space in their sockets' send queues.  Sometimes
+ 	 * we do not get such new packets causing Tx to stall.  A single
+diff --git a/drivers/net/lasi_82596.c b/drivers/net/lasi_82596.c
+index a0c5785..b77238d 100644
+--- a/drivers/net/lasi_82596.c
++++ b/drivers/net/lasi_82596.c
+@@ -47,7 +47,7 @@
+    TBD:
+    * look at deferring rx frames rather than discarding (as per tulip)
+    * handle tx ring full as per tulip
+-   * performace test to tune rx_copybreak
++   * performance test to tune rx_copybreak
 
- 	/* Check if we are in the right state for disconnecting */
- 	switch (self->state) {
--	case LAP_XMIT_P:        /* FALLTROUGH */
--	case LAP_XMIT_S:        /* FALLTROUGH */
--	case LAP_CONN:          /* FALLTROUGH */
--	case LAP_RESET_WAIT:    /* FALLTROUGH */
-+	case LAP_XMIT_P:        /* FALLTHROUGH */
-+	case LAP_XMIT_S:        /* FALLTHROUGH */
-+	case LAP_CONN:          /* FALLTHROUGH */
-+	case LAP_RESET_WAIT:    /* FALLTHROUGH */
- 	case LAP_RESET_CHECK:
- 		irlap_do_event(self, DISCONNECT_REQUEST, NULL, NULL);
- 		break;
-@@ -485,9 +485,9 @@ void irlap_disconnect_indication(struct irlap_cb
-*self, LAP_REASON reason)
- 		IRDA_DEBUG(1, "%s(), Sending reset request!\n", __func__);
- 		irlap_do_event(self, RESET_REQUEST, NULL, NULL);
- 		break;
--	case LAP_NO_RESPONSE:	   /* FALLTROUGH */
--	case LAP_DISC_INDICATION:  /* FALLTROUGH */
--	case LAP_FOUND_NONE:       /* FALLTROUGH */
-+	case LAP_NO_RESPONSE:	   /* FALLTHROUGH */
-+	case LAP_DISC_INDICATION:  /* FALLTHROUGH */
-+	case LAP_FOUND_NONE:       /* FALLTHROUGH */
- 	case LAP_MEDIA_BUSY:
- 		irlmp_link_disconnect_indication(self->notify.instance, self,
- 						 reason, NULL);
-diff --git a/sound/pci/cs46xx/imgs/cwcdma.asp b/sound/pci/cs46xx/imgs/cwcdma.asp
-index 09d24c7..a65e119 100644
---- a/sound/pci/cs46xx/imgs/cwcdma.asp
-+++ b/sound/pci/cs46xx/imgs/cwcdma.asp
-@@ -26,10 +26,11 @@
- //
- //
- // The purpose of this code is very simple: make it possible to tranfser
--// the samples 'as they are' with no alteration from a PCMreader SCB
-(DMA from host)
--// to any other SCB. This is useful for AC3 throug SPDIF. SRC (source
-rate converters)
--// task always alters the samples in some how, however it's from
-48khz -> 48khz. The
--// alterations are not audible, but AC3 wont work.
-+// the samples 'as they are' with no alteration from a PCMreader
-+// SCB (DMA from host) to any other SCB. This is useful for AC3 through SPDIF.
-+// SRC (source rate converters) task always alters the samples in somehow,
-+// however it's from 48khz -> 48khz.
-+// The alterations are not audible, but AC3 wont work.
- //
- //        ...
- //         |
+    Most of my modifications relate to the braindead big-endian
+    implementation by Intel.  When the i596 is operating in
+diff --git a/drivers/net/lib82596.c b/drivers/net/lib82596.c
+index 51e11c3..c0dbfc1 100644
+--- a/drivers/net/lib82596.c
++++ b/drivers/net/lib82596.c
+@@ -47,7 +47,7 @@
+    TBD:
+    * look at deferring rx frames rather than discarding (as per tulip)
+    * handle tx ring full as per tulip
+-   * performace test to tune rx_copybreak
++   * performance test to tune rx_copybreak
+
+    Most of my modifications relate to the braindead big-endian
+    implementation by Intel.  When the i596 is operating in
+diff --git a/drivers/staging/otus/80211core/ccmd.c
+b/drivers/staging/otus/80211core/ccmd.c
+index 83dd8ba..8da28ee 100644
+--- a/drivers/staging/otus/80211core/ccmd.c
++++ b/drivers/staging/otus/80211core/ccmd.c
+@@ -899,7 +899,7 @@ u16_t zfiWlanDisable(zdev_t *dev, u8_t ResetKeyCache)
+ 		zfStaDisableSWEncryption(dev);
+ 	}
+
+-	/* Improve WEP/TKIP performace with HT AP,
++	/* Improve WEP/TKIP performance with HT AP,
+ 	detail information please look bug#32495 */
+ 	/* zfHpSetTTSIFSTime(dev, 0x8); */
+
+@@ -1407,7 +1407,7 @@ u16_t zfWlanReset(zdev_t *dev)
+ 		zfStaDisableSWEncryption(dev);
+ 	}
+
+-	/* 	Improve WEP/TKIP performace with HT AP,
++	/* 	Improve WEP/TKIP performance with HT AP,
+ 		detail information please look bug#32495
+ 	*/
+ 	/* zfHpSetTTSIFSTime(dev, 0x8); */
+diff --git a/drivers/staging/otus/80211core/cmmsta.c
+b/drivers/staging/otus/80211core/cmmsta.c
+index b28a4e2..a11d559 100644
+--- a/drivers/staging/otus/80211core/cmmsta.c
++++ b/drivers/staging/otus/80211core/cmmsta.c
+@@ -216,7 +216,7 @@ void zfStaConnectFail(zdev_t* dev, u16_t reason,
+u16_t* bssid, u8_t weight)
+     /* Change internal state */
+     zfChangeAdapterState(dev, ZM_STA_STATE_DISCONNECT);
+
+-    /* Improve WEP/TKIP performace with HT AP, detail information
+please look bug#32495 */
++    /* Improve WEP/TKIP performance with HT AP, detail information
+please look bug#32495 */
+     //zfHpSetTTSIFSTime(dev, 0x8);
+
+     /* Notify wrapper of connection status changes */
+@@ -4148,7 +4148,7 @@ void zfInfraConnectNetwork(zdev_t* dev)
+             wd->sta.bIsSharedKey = 0;
+         }
+
+-        /* Improve WEP/TKIP performace with HT AP, detail information
+please look bug#32495 */
++        /* Improve WEP/TKIP performance with HT AP, detail
+information please look bug#32495 */
+         /*
+         if ( (pBssInfo->broadcomHTAp == 1)
+              && (wd->sta.SWEncryptEnable != 0) )
+diff --git a/drivers/staging/otus/80211core/pub_zfi.h
+b/drivers/staging/otus/80211core/pub_zfi.h
+index a35bd5d..17f3fe2 100644
+--- a/drivers/staging/otus/80211core/pub_zfi.h
++++ b/drivers/staging/otus/80211core/pub_zfi.h
+@@ -782,7 +782,7 @@ extern void zfiWlanSetDynamicSIFSParam(zdev_t*
+dev, u8_t val);
+
+ /***** End of section 2 *****/
+
+-/***** section 3 performace evaluation *****/
++/***** section 3 performance evaluation *****/
+ #ifdef ZM_ENABLE_PERFORMANCE_EVALUATION
+ extern void zfiTxPerformanceMSDU(zdev_t* dev, u32_t tick);
+ extern void zfiRxPerformanceMPDU(zdev_t* dev, zbuf_t* buf);
+diff --git a/drivers/staging/rt2860/common/cmm_data.c
+b/drivers/staging/rt2860/common/cmm_data.c
+index 22a7b0e..15994f1 100644
+--- a/drivers/staging/rt2860/common/cmm_data.c
++++ b/drivers/staging/rt2860/common/cmm_data.c
+@@ -1241,7 +1241,7 @@ VOID RTMPWriteTxWI(
+ 	pTxWI->txop= Txopmode;
+
+ 	pTxWI->NSEQ = NSeq;
+-	// John tune the performace with Intel Client in 20 MHz performance
++	// John tune the performance with Intel Client in 20 MHz performance
+ 	BASize = pAd->CommonCfg.TxBASize;
+
+ 	if( BASize >7 )
+@@ -1331,7 +1331,7 @@ VOID RTMPWriteTxWI_Data(
+ 	pTxWI->BW = (pTransmit->field.MODE <= MODE_OFDM) ? (BW_20) :
+(pTransmit->field.BW);
+ 	pTxWI->AMPDU	= ((pTxBlk->TxFrameType == TX_AMPDU_FRAME) ? TRUE : FALSE);
+
+-	// John tune the performace with Intel Client in 20 MHz performance
++	// John tune the performance with Intel Client in 20 MHz performance
+ 	BASize = pAd->CommonCfg.TxBASize;
+ 	if((pTxBlk->TxFrameType == TX_AMPDU_FRAME) && (pMacEntry))
+ 	{
+diff --git a/drivers/staging/rt2870/common/rtusb_bulk.c
+b/drivers/staging/rt2870/common/rtusb_bulk.c
+index a4244b5..b579292 100644
+--- a/drivers/staging/rt2870/common/rtusb_bulk.c
++++ b/drivers/staging/rt2870/common/rtusb_bulk.c
+@@ -290,7 +290,7 @@ VOID	RTUSBBulkOutDataPacket(
+ 			else if (((pAd->BulkOutMaxPacketSize < 512) &&
+((ThisBulkSize&0xfffff800) != 0) ) /*|| ( (ThisBulkSize != 0)  &&
+(pTxWI->AMPDU == 0))*/)
+ 			{
+ 				// For USB 1.1 or peer which didn't support AMPDU, limit the BulkOut size.
+-				// For performence in b/g mode, now just check for USB 1.1 and
+didn't care about the APMDU or not! 2008/06/04.
++				// For performance in b/g mode, now just check for USB 1.1 and
+didn't care about the APMDU or not! 2008/06/04.
+ 				pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
+ 				break;
+ 			}
+@@ -305,7 +305,7 @@ VOID	RTUSBBulkOutDataPacket(
+ 			}
+ 			else if (((pAd->BulkOutMaxPacketSize < 512) &&
+((ThisBulkSize&0xfffff800) != 0) ) /*|| ( (ThisBulkSize != 0)  &&
+(pTxWI->AMPDU == 0))*/)
+ 			{	// For USB 1.1 or peer which didn't support AMPDU, limit the BulkOut size.
+-				// For performence in b/g mode, now just check for USB 1.1 and
+didn't care about the APMDU or not! 2008/06/04.
++				// For performance in b/g mode, now just check for USB 1.1 and
+didn't care about the APMDU or not! 2008/06/04.
+ 				pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
+ 				break;
+ 			}
+diff --git a/drivers/staging/rt3090/common/cmm_data.c
+b/drivers/staging/rt3090/common/cmm_data.c
+index bf24858..992de77 100644
+--- a/drivers/staging/rt3090/common/cmm_data.c
++++ b/drivers/staging/rt3090/common/cmm_data.c
+@@ -1159,7 +1159,7 @@ VOID RTMPWriteTxWI(
+ 	pTxWI->txop= Txopmode;
+
+ 	pTxWI->NSEQ = NSeq;
+-	// John tune the performace with Intel Client in 20 MHz performance
++	// John tune the performance with Intel Client in 20 MHz performance
+ #ifdef DOT11_N_SUPPORT
+ 	BASize = pAd->CommonCfg.TxBASize;
+ 	if (pAd->MACVersion == 0x28720200)
+@@ -1283,7 +1283,7 @@ VOID RTMPWriteTxWI_Data(
+ #endif // DOT11N_DRAFT3 //
+ 	pTxWI->AMPDU	= ((pTxBlk->TxFrameType == TX_AMPDU_FRAME) ? TRUE : FALSE);
+
+-	// John tune the performace with Intel Client in 20 MHz performance
++	// John tune the performance with Intel Client in 20 MHz performance
+ 	BASize = pAd->CommonCfg.TxBASize;
+ 	if((pTxBlk->TxFrameType == TX_AMPDU_FRAME) && (pMacEntry))
+ 	{
+diff --git a/drivers/staging/rt3090/rt_ate.c b/drivers/staging/rt3090/rt_ate.c
+index 259aae4..fbc5838 100644
+--- a/drivers/staging/rt3090/rt_ate.c
++++ b/drivers/staging/rt3090/rt_ate.c
+@@ -3484,7 +3484,7 @@ static VOID ATEWriteTxWI(
+
+ 	pTxWI->NSEQ = NSeq;
+
+-	// John tune the performace with Intel Client in 20 MHz performance
++	// John tune the performance with Intel Client in 20 MHz performance
+ 	if ( BASize >7 )
+ 		BASize =7;
+
 -- 
 1.6.5.2.101.gcd0f8
