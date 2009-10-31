@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932513AbZJaJlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbZJaJlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932513AbZJaJlp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 05:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932371AbZJaJlo
+	id S932639AbZJaJlw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 05:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932371AbZJaJlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 05:41:44 -0400
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:33643 "EHLO
+	Sat, 31 Oct 2009 05:41:50 -0400
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:35835 "EHLO
 	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932373AbZJaJlk convert rfc822-to-8bit (ORCPT
+	with ESMTP id S932589AbZJaJlr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 05:41:40 -0400
+	Sat, 31 Oct 2009 05:41:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:from:date:message-id:subject:to:cc:content-type
          :content-transfer-encoding;
-        b=VtiDN5MhaVqrdxBk1MO1mv/eqdTWBEGDCtoszVJDZJnif6wnfFdLxoCrpSZbnI1z43
-         puRWktEN2+ra2EdcpUSg1cg1FtzyQv1LRzGY8YKCOVA0jsCI1tS7l80Aj2Od1Gyu8T9R
-         SJIJlSYzHYxTh+jIdu6qjHCbYyIZI3cRDjvNM=
+        b=C7UqRJO/p3Jc+hh7dam0ZHN1DKinhLmn3YTjaBGBs3Ri0JqT6hes54i+3kIMlLOXzS
+         OO0Io2EqpGShRFcZl0+BHQxq0niCiSgMWLgpmK7ZPLHDzzL5FP0MkCjEaQpYHPBdFKjt
+         mCqab4xcJp1kS1I8LtEvzuUQHkOp39Whe3+oE=
 MIME-Version: 1.0
 From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 31 Oct 2009 07:41:26 -0200
-Message-ID: <b8bf37780910310241j1694270bo2712428226659d2c@mail.gmail.com>
-Subject: [PATCH 09/16] trivial: fix assorted "[con]currently" typos
+Date: Sat, 31 Oct 2009 07:41:32 -0200
+Message-ID: <b8bf37780910310241r1bf7eaffqf0ad0079cdd2c3ff@mail.gmail.com>
+Subject: [PATCH 10/16] trivial: fix assorted "temperature" typos
 To: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
 Cc: me <andre.goddard@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -30,234 +30,196 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 1a1727bd799cec083b42d98f8604968072b14023 Mon Sep 17 00:00:00 2001
+>From 82c935b26acbcdc6f3067341b0639a5836b85faf Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Fri, 30 Oct 2009 06:57:46 -0200
-Subject: [PATCH 09/16] trivial: fix assorted "[con]currently" typos
+Date: Fri, 30 Oct 2009 07:00:13 -0200
+Subject: [PATCH 10/16] trivial: fix assorted "temperature" typos
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-diff --git a/drivers/gpu/drm/i915/intel_fb.c b/drivers/gpu/drm/i915/intel_fb.c
-index 2b0fe54..40fcf6f 100644
---- a/drivers/gpu/drm/i915/intel_fb.c
-+++ b/drivers/gpu/drm/i915/intel_fb.c
-@@ -70,7 +70,7 @@ static struct drm_fb_helper_funcs intel_fb_helper_funcs = {
+diff --git a/drivers/hwmon/lm93.c b/drivers/hwmon/lm93.c
+index fc36cad..c48a284 100644
+--- a/drivers/hwmon/lm93.c
++++ b/drivers/hwmon/lm93.c
+@@ -928,7 +928,7 @@ static void lm93_update_client_common(struct
+lm93_data *data,
+ 	data->prochot_interval = lm93_read_byte(client,
+ 			LM93_REG_PROCHOT_INTERVAL);
 
+-	/* Fan Boost Termperature registers */
++	/* Fan Boost Temperature registers */
+ 	for (i = 0; i < 4; i++)
+ 		data->boost[i] = lm93_read_byte(client, LM93_REG_BOOST(i));
 
- /**
-- * Curretly it is assumed that the old framebuffer is reused.
-+ * Currently it is assumed that the old framebuffer is reused.
+diff --git a/drivers/macintosh/therm_windtunnel.c
+b/drivers/macintosh/therm_windtunnel.c
+index 8b93644..3fbe41b 100644
+--- a/drivers/macintosh/therm_windtunnel.c
++++ b/drivers/macintosh/therm_windtunnel.c
+@@ -15,7 +15,7 @@
   *
-  * LOCKING
-  * caller should hold the mode config lock.
-diff --git a/drivers/gpu/drm/radeon/radeon_fb.c
-b/drivers/gpu/drm/radeon/radeon_fb.c
-index b38c4c8..d10eb43 100644
---- a/drivers/gpu/drm/radeon/radeon_fb.c
-+++ b/drivers/gpu/drm/radeon/radeon_fb.c
-@@ -59,7 +59,7 @@ static struct fb_ops radeonfb_ops = {
- };
-
- /**
-- * Curretly it is assumed that the old framebuffer is reused.
-+ * Currently it is assumed that the old framebuffer is reused.
+  *	WARNING: This driver has only been testen on Apple's
+  *	1.25 MHz Dual G4 (March 03). It is tuned for a CPU
+- *	temperatur around 57 C.
++ *	temperature around 57 C.
   *
-  * LOCKING
-  * caller should hold the mode config lock.
-diff --git a/drivers/media/video/cx23885/cx23885-dvb.c
-b/drivers/media/video/cx23885/cx23885-dvb.c
-index 45e13ee..16c6a92 100644
---- a/drivers/media/video/cx23885/cx23885-dvb.c
-+++ b/drivers/media/video/cx23885/cx23885-dvb.c
-@@ -940,7 +940,7 @@ int cx23885_dvb_register(struct cx23885_tsport *port)
- 	int err, i;
-
- 	/* Here we need to allocate the correct number of frontends,
--	 * as reflected in the cards struct. The reality is that currrently
-+	 * as reflected in the cards struct. The reality is that currently
- 	 * no cx23885 boards support this - yet. But, if we don't modify this
- 	 * code then the second frontend would never be allocated (later)
- 	 * and fail with error before the attach in dvb_register().
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-b/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-index 5b152ff..5fcad28 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-@@ -332,7 +332,7 @@ struct pvr2_hdw {
-
- 	/* Bit mask of PVR2_CVAL_INPUT choices which are valid for the hardware */
- 	unsigned int input_avail_mask;
--	/* Bit mask of PVR2_CVAL_INPUT choices which are currenly allowed */
-+	/* Bit mask of PVR2_CVAL_INPUT choices which are currently allowed */
- 	unsigned int input_allowed_mask;
-
- 	/* Location of eeprom or a negative number if none */
-diff --git a/drivers/net/benet/be_cmds.h b/drivers/net/benet/be_cmds.h
-index 4995378..f0bb62b 100644
---- a/drivers/net/benet/be_cmds.h
-+++ b/drivers/net/benet/be_cmds.h
-@@ -435,7 +435,7 @@ enum be_if_flags {
-  * filtering capabilities. */
- struct be_cmd_req_if_create {
- 	struct be_cmd_req_hdr hdr;
--	u32 version;		/* ignore currntly */
-+	u32 version;		/* ignore currently */
- 	u32 capability_flags;
- 	u32 enable_flags;
- 	u8 mac_addr[ETH_ALEN];
-diff --git a/drivers/net/wireless/wavelan_cs.c
-b/drivers/net/wireless/wavelan_cs.c
-index 431a20e..b3b0b5b 100644
---- a/drivers/net/wireless/wavelan_cs.c
-+++ b/drivers/net/wireless/wavelan_cs.c
-@@ -4011,7 +4011,7 @@ wavelan_interrupt(int		irq,
- #endif
-
-   /* Prevent reentrancy. We need to do that because we may have
--   * multiple interrupt handler running concurently.
-+   * multiple interrupt handler running concurrently.
-    * It is safe because interrupts are disabled before aquiring
-    * the spinlock. */
-   spin_lock(&lp->spinlock);
-diff --git a/drivers/ps3/ps3-sys-manager.c b/drivers/ps3/ps3-sys-manager.c
-index 88cb740..3cbaf18 100644
---- a/drivers/ps3/ps3-sys-manager.c
-+++ b/drivers/ps3/ps3-sys-manager.c
-@@ -46,7 +46,7 @@
- /**
-  * struct ps3_sys_manager_header - System manager message header.
-  * @version: Header version, currently 1.
-- * @size: Header size in bytes, curently 16.
-+ * @size: Header size in bytes, currently 16.
-  * @payload_size: Message payload size in bytes.
-  * @service_id: Message type, one of enum ps3_sys_manager_service_id.
-  * @request_tag: Unique number to identify reply.
-diff --git a/drivers/staging/comedi/drivers/cb_pcidio.c
-b/drivers/staging/comedi/drivers/cb_pcidio.c
-index 09e6e3b..7daad0a 100644
---- a/drivers/staging/comedi/drivers/cb_pcidio.c
-+++ b/drivers/staging/comedi/drivers/cb_pcidio.c
-@@ -109,12 +109,12 @@ MODULE_DEVICE_TABLE(pci, pcidio_pci_table);
-    several hardware drivers keep similar information in this structure,
-    feel free to suggest moving the variable to the struct
-comedi_device struct.  */
- struct pcidio_private {
--	int data;		/*  curently unused */
-+	int data;		/*  currently unused */
-
- 	/* would be useful for a PCI device */
- 	struct pci_dev *pci_dev;
-
--	/* used for DO readback, curently unused */
-+	/* used for DO readback, currently unused */
- 	unsigned int do_readback[4];	/* up to 4 unsigned int suffice to hold
-96 bits for PCI-DIO96 */
-
- 	unsigned long dio_reg_base;	/*  address of port A of the first 8255
-chip on board */
-diff --git a/drivers/staging/octeon/ethernet-tx.c
-b/drivers/staging/octeon/ethernet-tx.c
-index 81a8513..5352941 100644
---- a/drivers/staging/octeon/ethernet-tx.c
-+++ b/drivers/staging/octeon/ethernet-tx.c
-@@ -624,7 +624,7 @@ int cvm_oct_transmit_qos(struct net_device *dev,
-void *work_queue_entry,
- EXPORT_SYMBOL(cvm_oct_transmit_qos);
-
- /**
-- * This function frees all skb that are currenty queued for TX.
-+ * This function frees all skb that are currently queued for TX.
+  *   Copyright (C) 2003, 2004 Samuel Rydh (samuel@ibrium.se)
   *
-  * @dev:    Device being shutdown
-  */
-diff --git a/drivers/staging/rtl8187se/r8180_core.c
-b/drivers/staging/rtl8187se/r8180_core.c
-index c65de92..95674cf 100644
---- a/drivers/staging/rtl8187se/r8180_core.c
-+++ b/drivers/staging/rtl8187se/r8180_core.c
-@@ -4144,7 +4144,7 @@ void rtl8180_tx_isr(struct net_device *dev, int
-pri,short error)
- 		}
-
- 	/* we check all the descriptors between the head and the nic,
--	 * but not the currenly pointed by the nic (the next to be txed)
-+	 * but not the currently pointed by the nic (the next to be txed)
- 	 * and the previous of the pointed (might be in process ??)
- 	*/
- 	offs = (nic - nicbegin);
-diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
-index 5d0fde1..4b35f7e 100644
---- a/fs/cifs/cifsglob.h
-+++ b/fs/cifs/cifsglob.h
-@@ -39,7 +39,7 @@
+diff --git a/drivers/net/wireless/ath/ath5k/phy.c
+b/drivers/net/wireless/ath/ath5k/phy.c
+index 6464e31..6f04cc7 100644
+--- a/drivers/net/wireless/ath/ath5k/phy.c
++++ b/drivers/net/wireless/ath/ath5k/phy.c
+@@ -117,7 +117,7 @@ static unsigned int ath5k_hw_rfb_op(struct ath5k_hw *ah,
 
  /*
-  * MAX_REQ is the maximum number of requests that WE will send
-- * on one socket concurently. It also matches the most common
-+ * on one socket concurrently. It also matches the most common
-  * value of max multiplex returned by servers.  We may
-  * eventually want to use the negotiated value (in case
-  * future servers can handle more) when we are more confident that
-diff --git a/fs/jffs2/xattr.c b/fs/jffs2/xattr.c
-index 082e844..4b10788 100644
---- a/fs/jffs2/xattr.c
-+++ b/fs/jffs2/xattr.c
-@@ -31,7 +31,7 @@
-  *   is used to release xattr name/value pair and detach from c->xattrindex.
-  * reclaim_xattr_datum(c)
-  *   is used to reclaim xattr name/value pairs on the xattr
-name/value pair cache when
-- *   memory usage by cache is over c->xdatum_mem_threshold.
-Currentry, this threshold
-+ *   memory usage by cache is over c->xdatum_mem_threshold.
-Currently, this threshold
-  *   is hard coded as 32KiB.
-  * do_verify_xattr_datum(c, xd)
-  *   is used to load the xdatum informations without name/value pair
-from the medium.
-diff --git a/fs/jfs/jfs_dmap.c b/fs/jfs/jfs_dmap.c
-index 93fcb6c..2cfd5f0 100644
---- a/fs/jfs/jfs_dmap.c
-+++ b/fs/jfs/jfs_dmap.c
-@@ -755,7 +755,7 @@ int dbAlloc(struct inode *ip, s64 hint, s64
-nblocks, s64 * results)
- 	 * allocation group.
- 	 */
- 	if ((blkno & (bmp->db_agsize - 1)) == 0)
--		/* check if the AG is currenly being written to.
-+		/* check if the AG is currently being written to.
- 		 * if so, call dbNextAG() to find a non-busy
- 		 * AG with sufficient free space.
- 		 */
-diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
-index 600f473..7607420 100644
---- a/lib/decompress_bunzip2.c
-+++ b/lib/decompress_bunzip2.c
-@@ -299,7 +299,7 @@ static int INIT get_next_block(struct bunzip_data *bd)
- 		   again when using them (during symbol decoding).*/
- 		base = hufGroup->base-1;
- 		limit = hufGroup->limit-1;
--		/* Calculate permute[].  Concurently, initialize
-+		/* Calculate permute[].  Concurrently, initialize
- 		 * temp[] and limit[]. */
- 		pp = 0;
- 		for (i = minLen; i <= maxLen; i++) {
-diff --git a/sound/soc/s3c24xx/s3c24xx_simtec.c
-b/sound/soc/s3c24xx/s3c24xx_simtec.c
-index 1966e0d..3c7ccb7 100644
---- a/sound/soc/s3c24xx/s3c24xx_simtec.c
-+++ b/sound/soc/s3c24xx/s3c24xx_simtec.c
-@@ -270,7 +270,7 @@ static int attach_gpio_amp(struct device *dev,
- 		gpio_direction_output(pd->amp_gain[1], 0);
- 	}
+  * This code is used to optimize rf gain on different environments
+- * (temprature mostly) based on feedback from a power detector.
++ * (temperature mostly) based on feedback from a power detector.
+  *
+  * It's only used on RF5111 and RF5112, later RF chips seem to have
+  * auto adjustment on hw -notice they have a much smaller BANK 7 and
+diff --git a/drivers/sbus/char/envctrl.c b/drivers/sbus/char/envctrl.c
+index 58e583b..aa2b60a 100644
+--- a/drivers/sbus/char/envctrl.c
++++ b/drivers/sbus/char/envctrl.c
+@@ -92,11 +92,11 @@
+ #define ENVCTRL_CPUTEMP_MON			1    /* cpu temperature monitor */
+ #define ENVCTRL_CPUVOLTAGE_MON	  	2    /* voltage monitor         */
+ #define ENVCTRL_FANSTAT_MON  		3    /* fan status monitor      */
+-#define ENVCTRL_ETHERTEMP_MON		4    /* ethernet temperarture */
++#define ENVCTRL_ETHERTEMP_MON		4    /* ethernet temperature */
+ 					     /* monitor                     */
+ #define ENVCTRL_VOLTAGESTAT_MON	  	5    /* voltage status monitor  */
+ #define ENVCTRL_MTHRBDTEMP_MON		6    /* motherboard temperature */
+-#define ENVCTRL_SCSITEMP_MON		7    /* scsi temperarture */
++#define ENVCTRL_SCSITEMP_MON		7    /* scsi temperature */
+ #define ENVCTRL_GLOBALADDR_MON		8    /* global address */
 
--	/* note, curently we assume GPA0 isn't valid amp */
-+	/* note, currently we assume GPA0 isn't valid amp */
- 	if (pdata->amp_gpio > 0) {
- 		ret = gpio_request(pd->amp_gpio, "gpio-amp");
- 		if (ret) {
+ /* Child device type.
+diff --git a/drivers/scsi/megaraid.h b/drivers/scsi/megaraid.h
+index 512c2cc..d310f49 100644
+--- a/drivers/scsi/megaraid.h
++++ b/drivers/scsi/megaraid.h
+@@ -381,7 +381,7 @@ typedef struct {
+ 	u8	battery_status;	/*
+ 				 * BIT 0: battery module missing
+ 				 * BIT 1: VBAD
+-				 * BIT 2: temprature high
++				 * BIT 2: temperature high
+ 				 * BIT 3: battery pack missing
+ 				 * BIT 4,5:
+ 				 *   00 - charge complete
+diff --git a/drivers/scsi/megaraid/mbox_defs.h
+b/drivers/scsi/megaraid/mbox_defs.h
+index b25b747..ce2487a 100644
+--- a/drivers/scsi/megaraid/mbox_defs.h
++++ b/drivers/scsi/megaraid/mbox_defs.h
+@@ -497,7 +497,7 @@ typedef struct {
+  * @inserted_drive		: channel:Id of inserted drive
+  * @battery_status		: bit 0: battery module missing
+  *				bit 1: VBAD
+- *				bit 2: temprature high
++ *				bit 2: temperature high
+  *				bit 3: battery pack missing
+  *				bit 4,5:
+  *					00 - charge complete
+diff --git a/drivers/staging/rtl8192e/r8192E_dm.c
+b/drivers/staging/rtl8192e/r8192E_dm.c
+index bf87632..23afca4 100644
+--- a/drivers/staging/rtl8192e/r8192E_dm.c
++++ b/drivers/staging/rtl8192e/r8192E_dm.c
+@@ -571,7 +571,7 @@ static u32 OFDMSwingTable[OFDM_Table_Length] = {
+ 	0x5a400169,	// 3, +3db
+ 	0x50800142,	// 4, +2db
+ 	0x47c0011f,	// 5, +1db
+-	0x40000100,	// 6, +0db ===> default, upper for higher temprature,
+lower for low temprature
++	0x40000100,	// 6, +0db ===> default, upper for higher temperature,
+lower for low temperature
+ 	0x390000e4,	// 7, -1db
+ 	0x32c000cb,	// 8, -2db
+ 	0x2d4000b5,	// 9, -3db
+@@ -932,14 +932,14 @@ static void
+dm_TXPowerTrackingCallback_ThermalMeter(struct net_device * dev)
+ 	RT_TRACE(COMP_POWER_TRACKING, "Readback ThermalMeterA = %d \n", tmpRegA);
+ 	if(tmpRegA < 3 || tmpRegA > 13)
+ 		return;
+-	if(tmpRegA >= 12)	// if over 12, TP will be bad when high temprature
++	if(tmpRegA >= 12)	// if over 12, TP will be bad when high temperature
+ 		tmpRegA = 12;
+ 	RT_TRACE(COMP_POWER_TRACKING, "Valid ThermalMeterA = %d \n", tmpRegA);
+ 	priv->ThermalMeter[0] = ThermalMeterVal;	//We use fixed value by
+Bryant's suggestion
+ 	priv->ThermalMeter[1] = ThermalMeterVal;	//We use fixed value by
+Bryant's suggestion
+
+-	//Get current RF-A temprature index
+-	if(priv->ThermalMeter[0] >= (u8)tmpRegA)	//lower temprature
++	//Get current RF-A temperature index
++	if(priv->ThermalMeter[0] >= (u8)tmpRegA)	//lower temperature
+ 	{
+ 		tmpOFDMindex = tmpCCK20Mindex = 6+(priv->ThermalMeter[0]-(u8)tmpRegA);
+ 		tmpCCK40Mindex = tmpCCK20Mindex - 6;
+@@ -953,7 +953,7 @@ static void
+dm_TXPowerTrackingCallback_ThermalMeter(struct net_device * dev)
+ 	else
+ 	{
+ 		tmpval = ((u8)tmpRegA - priv->ThermalMeter[0]);
+-		if(tmpval >= 6)								// higher temprature
++		if(tmpval >= 6)								// higher temperature
+ 			tmpOFDMindex = tmpCCK20Mindex = 0;		// max to +6dB
+ 		else
+ 			tmpOFDMindex = tmpCCK20Mindex = 6 - tmpval;
+diff --git a/drivers/staging/rtl8192su/r8192U_dm.c
+b/drivers/staging/rtl8192su/r8192U_dm.c
+index 5358ae8..7891e96 100644
+--- a/drivers/staging/rtl8192su/r8192U_dm.c
++++ b/drivers/staging/rtl8192su/r8192U_dm.c
+@@ -593,7 +593,7 @@ static u32 OFDMSwingTable[OFDM_Table_Length] = {
+ 	0x5a400169,	// 3, +3db
+ 	0x50800142,	// 4, +2db
+ 	0x47c0011f,	// 5, +1db
+-	0x40000100,	// 6, +0db ===> default, upper for higher temprature,
+lower for low temprature
++	0x40000100,	// 6, +0db ===> default, upper for higher temperature,
+lower for low temperature
+ 	0x390000e4,	// 7, -1db
+ 	0x32c000cb,	// 8, -2db
+ 	0x2d4000b5,	// 9, -3db
+@@ -912,14 +912,14 @@ static void
+dm_TXPowerTrackingCallback_ThermalMeter(struct net_device * dev)
+ 	RT_TRACE(COMP_POWER_TRACKING, "Readback ThermalMeterA = %d \n", tmpRegA);
+ 	if(tmpRegA < 3 || tmpRegA > 13)
+ 		return;
+-	if(tmpRegA >= 12)	// if over 12, TP will be bad when high temprature
++	if(tmpRegA >= 12)	// if over 12, TP will be bad when high temperature
+ 		tmpRegA = 12;
+ 	RT_TRACE(COMP_POWER_TRACKING, "Valid ThermalMeterA = %d \n", tmpRegA);
+ 	priv->ThermalMeter[0] = ThermalMeterVal;	//We use fixed value by
+Bryant's suggestion
+ 	priv->ThermalMeter[1] = ThermalMeterVal;	//We use fixed value by
+Bryant's suggestion
+
+-	//Get current RF-A temprature index
+-	if(priv->ThermalMeter[0] >= (u8)tmpRegA)	//lower temprature
++	//Get current RF-A temperature index
++	if(priv->ThermalMeter[0] >= (u8)tmpRegA)	//lower temperature
+ 	{
+ 		tmpOFDMindex = tmpCCK20Mindex = 6+(priv->ThermalMeter[0]-(u8)tmpRegA);
+ 		tmpCCK40Mindex = tmpCCK20Mindex - 6;
+@@ -933,7 +933,7 @@ static void
+dm_TXPowerTrackingCallback_ThermalMeter(struct net_device * dev)
+ 	else
+ 	{
+ 		tmpval = ((u8)tmpRegA - priv->ThermalMeter[0]);
+-		if(tmpval >= 6)								// higher temprature
++		if(tmpval >= 6)								// higher temperature
+ 			tmpOFDMindex = tmpCCK20Mindex = 0;		// max to +6dB
+ 		else
+ 			tmpOFDMindex = tmpCCK20Mindex = 6 - tmpval;
 -- 
 1.6.5.2.101.gcd0f8
