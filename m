@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbZJaJoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbZJaJlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757520AbZJaJoD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 05:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbZJaJoA
+	id S1757573AbZJaJlZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 05:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757371AbZJaJlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 05:44:00 -0400
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:35835 "EHLO
+	Sat, 31 Oct 2009 05:41:22 -0400
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:33643 "EHLO
 	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757499AbZJaJlJ convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757497AbZJaJlP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 05:41:09 -0400
+	Sat, 31 Oct 2009 05:41:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:from:date:message-id:subject:to:cc:content-type
          :content-transfer-encoding;
-        b=tASXCmlu6blPNnu0chJQqyDCLcKMk3gjogw84CZqEz2THd74Cx/hsi7/ZnOdB2rWD/
-         CfhkUaRv/qIxzoz+5O8NxoAdhA4aMuCiT8hnI7iQX7EJy0xU9UrFuSEEqbt8qoXv0agW
-         /zIoYCfUn/cvtjG7HQuYwZ4x92vm/4qw7Z9A8=
+        b=vbElo43x3NP/ayiINizpNGHp66F/ElOh6yZ2f1ILlBSHx7PTusNnhU1EQtQ07au7Vu
+         V+tyWidwkjku72mjfJ+sElfQWm2jjw4CkGB+XSYLgVW3NsYaM6eY1t1guSYyJbI2BYHe
+         wb2hk0z1+GaOjOLkX/0/fNFXAL0JBE9aWcvpM=
 MIME-Version: 1.0
 From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 31 Oct 2009 07:40:54 -0200
-Message-ID: <b8bf37780910310240k34b2b307g790d45709411fe0e@mail.gmail.com>
-Subject: [PATCH 04/16] trivial: fix assorted "performance" typos
+Date: Sat, 31 Oct 2009 07:41:00 -0200
+Message-ID: <b8bf37780910310241o751ac523i87de85a8fe88481f@mail.gmail.com>
+Subject: [PATCH 05/16] trivial: fix assorted "[re|un]mapping" typos
 To: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
 Cc: me <andre.goddard@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -30,302 +30,278 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From c00af2871d9f53c9873d51a2dfa013f46dceba4d Mon Sep 17 00:00:00 2001
+>From 9df77a53a0ce5198a2efb06ed91ba11885283a9c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Fri, 30 Oct 2009 06:26:46 -0200
-Subject: [PATCH 04/16] trivial: fix assorted "performance" typos
+Date: Fri, 30 Oct 2009 06:36:08 -0200
+Subject: [PATCH 05/16] trivial: fix assorted "[re|un]mapping" typos
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index f178270..b3a1cb3 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -3523,7 +3523,7 @@ pfm_use_debug_registers(struct task_struct *task)
-  * IA64_THREAD_DBG_VALID set. This indicates a task which was
-  * able to use the debug registers for debugging purposes via
-  * ptrace(). Therefore we know it was not using them for
-- * perfmormance monitoring, so we only decrement the number
-+ * performance monitoring, so we only decrement the number
-  * of "ptraced" debug register users to keep the count up to date
-  */
- int
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 641c74b..b6bd1ea 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -52,7 +52,7 @@ static struct hard_trap_info
- 	{ 0x2030, 0x08 /* SIGFPE */  },		/* spe fp data */
- 	{ 0x2040, 0x08 /* SIGFPE */  },		/* spe fp data */
- 	{ 0x2050, 0x08 /* SIGFPE */  },		/* spe fp round */
--	{ 0x2060, 0x0e /* SIGILL */  },		/* performace monitor */
-+	{ 0x2060, 0x0e /* SIGILL */  },		/* performance monitor */
- 	{ 0x2900, 0x08 /* SIGFPE */  },		/* apu unavailable */
- 	{ 0x3100, 0x0e /* SIGALRM */ },		/* fixed interval timer */
- 	{ 0x3200, 0x02 /* SIGINT */  }, 	/* watchdog */
-diff --git a/arch/powerpc/oprofile/op_model_cell.c
-b/arch/powerpc/oprofile/op_model_cell.c
-index ae06c62..3b581b0 100644
---- a/arch/powerpc/oprofile/op_model_cell.c
-+++ b/arch/powerpc/oprofile/op_model_cell.c
-@@ -1594,7 +1594,7 @@ static void cell_handle_interrupt_spu(struct
-pt_regs *regs,
- 		 * to a latch.  The new values (interrupt setting bits, reset
- 		 * counter value etc.) are not copied to the actual registers
- 		 * until the performance monitor is enabled.  In order to get
--		 * this to work as desired, the permormance monitor needs to
-+		 * this to work as desired, the performance monitor needs to
- 		 * be disabled while writing to the latches.  This is a
- 		 * HW design issue.
- 		 */
-@@ -1668,7 +1668,7 @@ static void cell_handle_interrupt_ppu(struct
-pt_regs *regs,
- 		 * to a latch.	The new values (interrupt setting bits, reset
- 		 * counter value etc.) are not copied to the actual registers
- 		 * until the performance monitor is enabled.  In order to get
--		 * this to work as desired, the permormance monitor needs to
-+		 * this to work as desired, the performance monitor needs to
- 		 * be disabled while writing to the latches.  This is a
- 		 * HW design issue.
- 		 */
-diff --git a/drivers/isdn/mISDN/dsp_core.c b/drivers/isdn/mISDN/dsp_core.c
-index 77ee286..43ff4d3 100644
---- a/drivers/isdn/mISDN/dsp_core.c
-+++ b/drivers/isdn/mISDN/dsp_core.c
-@@ -110,7 +110,7 @@
-  * crossconnections and conferences via software if not possible through
-  * hardware. If hardware capability is available, hardware is used.
-  *
-- * Echo: Is generated by CMX and is used to check performane of hard and
-+ * Echo: Is generated by CMX and is used to check performance of hard and
-  * software CMX.
-  *
-  * The CMX has special functions for conferences with one, two and more
-diff --git a/drivers/mtd/nand/nand_ecc.c b/drivers/mtd/nand/nand_ecc.c
-index db7ae9d..92320a6 100644
---- a/drivers/mtd/nand/nand_ecc.c
-+++ b/drivers/mtd/nand/nand_ecc.c
-@@ -475,7 +475,7 @@ int __nand_correct_data(unsigned char *buf,
- 		 *
- 		 * The b2 shift is there to get rid of the lowest two bits.
- 		 * We could also do addressbits[b2] >> 1 but for the
--		 * performace it does not make any difference
-+		 * performance it does not make any difference
- 		 */
- 		if (eccsize_mult == 1)
- 			byte_addr = (addressbits[b1] << 4) + addressbits[b0];
-diff --git a/drivers/net/82596.c b/drivers/net/82596.c
-index ea6b139..1663bc9 100644
---- a/drivers/net/82596.c
-+++ b/drivers/net/82596.c
-@@ -19,7 +19,7 @@
-    TBD:
-    * look at deferring rx frames rather than discarding (as per tulip)
-    * handle tx ring full as per tulip
--   * performace test to tune rx_copybreak
-+   * performance test to tune rx_copybreak
-
-    Most of my modifications relate to the braindead big-endian
-    implementation by Intel.  When the i596 is operating in
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index f866128..56ba872 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -1285,7 +1285,7 @@ netdev_tx_t t3_eth_xmit(struct sk_buff *skb,
-struct net_device *dev)
+diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
+index 098de5b..4220851 100644
+--- a/Documentation/lguest/lguest.c
++++ b/Documentation/lguest/lguest.c
+@@ -304,7 +304,7 @@ static void *map_zeroed_pages(unsigned int num)
+ 	addr = mmap(NULL, getpagesize() * num,
+ 		    PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE, fd, 0);
+ 	if (addr == MAP_FAILED)
+-		err(1, "Mmaping %u pages of /dev/zero", num);
++		err(1, "Mmapping %u pages of /dev/zero", num);
 
  	/*
- 	 * We do not use Tx completion interrupts to free DMAd Tx packets.
--	 * This is good for performamce but means that we rely on new Tx
-+	 * This is good for performance but means that we rely on new Tx
- 	 * packets arriving to run the destructors of completed packets,
- 	 * which open up space in their sockets' send queues.  Sometimes
- 	 * we do not get such new packets causing Tx to stall.  A single
-diff --git a/drivers/net/lasi_82596.c b/drivers/net/lasi_82596.c
-index a0c5785..b77238d 100644
---- a/drivers/net/lasi_82596.c
-+++ b/drivers/net/lasi_82596.c
-@@ -47,7 +47,7 @@
-    TBD:
-    * look at deferring rx frames rather than discarding (as per tulip)
-    * handle tx ring full as per tulip
--   * performace test to tune rx_copybreak
-+   * performance test to tune rx_copybreak
+ 	 * One neat mmap feature is that you can close the fd, and it
+diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+index a6e360d..fc5790d 100644
+--- a/Documentation/sysctl/vm.txt
++++ b/Documentation/sysctl/vm.txt
+@@ -370,7 +370,7 @@ The default is 1 percent.
+ mmap_min_addr
 
-    Most of my modifications relate to the braindead big-endian
-    implementation by Intel.  When the i596 is operating in
-diff --git a/drivers/net/lib82596.c b/drivers/net/lib82596.c
-index 51e11c3..c0dbfc1 100644
---- a/drivers/net/lib82596.c
-+++ b/drivers/net/lib82596.c
-@@ -47,7 +47,7 @@
-    TBD:
-    * look at deferring rx frames rather than discarding (as per tulip)
-    * handle tx ring full as per tulip
--   * performace test to tune rx_copybreak
-+   * performance test to tune rx_copybreak
+ This file indicates the amount of address space  which a user process will
+-be restricted from mmaping.  Since kernel null dereference bugs could
++be restricted from mmapping.  Since kernel null dereference bugs could
+ accidentally operate based on the information in the first couple of pages
+ of memory userspace processes should not be allowed to write to them.  By
+ default this value is set to 0 and no protections will be enforced by the
+diff --git a/arch/arm/mach-orion5x/pci.c b/arch/arm/mach-orion5x/pci.c
+index 36dc541..bdf96eb 100644
+--- a/arch/arm/mach-orion5x/pci.c
++++ b/arch/arm/mach-orion5x/pci.c
+@@ -463,7 +463,7 @@ static void __init orion5x_setup_pci_wins(struct
+mbus_dram_target_info *dram)
+ 	writel(win_enable, PCI_BAR_ENABLE);
 
-    Most of my modifications relate to the braindead big-endian
-    implementation by Intel.  When the i596 is operating in
-diff --git a/drivers/staging/otus/80211core/ccmd.c
-b/drivers/staging/otus/80211core/ccmd.c
-index 83dd8ba..8da28ee 100644
---- a/drivers/staging/otus/80211core/ccmd.c
-+++ b/drivers/staging/otus/80211core/ccmd.c
-@@ -899,7 +899,7 @@ u16_t zfiWlanDisable(zdev_t *dev, u8_t ResetKeyCache)
- 		zfStaDisableSWEncryption(dev);
- 	}
+ 	/*
+-	 * Disable automatic update of address remaping when writing to BARs.
++	 * Disable automatic update of address remapping when writing to BARs.
+ 	 */
+ 	orion5x_setbits(PCI_ADDR_DECODE_CTRL, 1);
+ }
+diff --git a/arch/arm/plat-omap/include/mach/omap16xx.h
+b/arch/arm/plat-omap/include/mach/omap16xx.h
+index 0e69b50..7560b4d 100644
+--- a/arch/arm/plat-omap/include/mach/omap16xx.h
++++ b/arch/arm/plat-omap/include/mach/omap16xx.h
+@@ -124,7 +124,7 @@
+ #define TIPB_SWITCH_BASE		 (0xfffbc800)
+ #define OMAP16XX_MMCSD2_SSW_MPU_CONF	(TIPB_SWITCH_BASE + 0x160)
 
--	/* Improve WEP/TKIP performace with HT AP,
-+	/* Improve WEP/TKIP performance with HT AP,
- 	detail information please look bug#32495 */
- 	/* zfHpSetTTSIFSTime(dev, 0x8); */
+-/* UART3 Registers Maping through MPU bus */
++/* UART3 Registers Mapping through MPU bus */
+ #define UART3_RHR               (OMAP_UART3_BASE + 0)
+ #define UART3_THR               (OMAP_UART3_BASE + 0)
+ #define UART3_DLL               (OMAP_UART3_BASE + 0)
+diff --git a/arch/arm/plat-s3c24xx/include/plat/map.h
+b/arch/arm/plat-s3c24xx/include/plat/map.h
+index c4d1334..bd534d3 100644
+--- a/arch/arm/plat-s3c24xx/include/plat/map.h
++++ b/arch/arm/plat-s3c24xx/include/plat/map.h
+@@ -64,7 +64,7 @@
+ /* the calculation for the VA of this must ensure that
+  * it is the same distance apart from the UART in the
+  * phsyical address space, as the initial mapping for the IO
+- * is done as a 1:1 maping. This puts it (currently) at
++ * is done as a 1:1 mapping. This puts it (currently) at
+  * 0xFA800000, which is not in the way of any current mapping
+  * by the base system.
+ */
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 87eee07..fb1035c 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -1123,7 +1123,7 @@ static int __init acpi_parse_madt_ioapic_entries(void)
+ 	if (!acpi_sci_override_gsi)
+ 		acpi_sci_ioapic_setup(acpi_gbl_FADT.sci_interrupt, 0, 0);
 
-@@ -1407,7 +1407,7 @@ u16_t zfWlanReset(zdev_t *dev)
- 		zfStaDisableSWEncryption(dev);
- 	}
+-	/* Fill in identity legacy mapings where no override */
++	/* Fill in identity legacy mappings where no override */
+ 	mp_config_acpi_legacy_irqs();
 
--	/* 	Improve WEP/TKIP performace with HT AP,
-+	/* 	Improve WEP/TKIP performance with HT AP,
- 		detail information please look bug#32495
- 	*/
- 	/* zfHpSetTTSIFSTime(dev, 0x8); */
-diff --git a/drivers/staging/otus/80211core/cmmsta.c
-b/drivers/staging/otus/80211core/cmmsta.c
-index b28a4e2..a11d559 100644
---- a/drivers/staging/otus/80211core/cmmsta.c
-+++ b/drivers/staging/otus/80211core/cmmsta.c
-@@ -216,7 +216,7 @@ void zfStaConnectFail(zdev_t* dev, u16_t reason,
-u16_t* bssid, u8_t weight)
-     /* Change internal state */
-     zfChangeAdapterState(dev, ZM_STA_STATE_DISCONNECT);
+ 	count =
+diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index ad82ec9..30eff80 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -5,7 +5,7 @@
+  *
+  *  Added devfs support.
+  *    Jan-11-1998, C. Scott Ananian <cananian@alumni.princeton.edu>
+- *  Shared /dev/zero mmaping support, Feb 2000, Kanoj Sarcar <kanoj@sgi.com>
++ *  Shared /dev/zero mmapping support, Feb 2000, Kanoj Sarcar <kanoj@sgi.com>
+  */
 
--    /* Improve WEP/TKIP performace with HT AP, detail information
-please look bug#32495 */
-+    /* Improve WEP/TKIP performance with HT AP, detail information
-please look bug#32495 */
-     //zfHpSetTTSIFSTime(dev, 0x8);
+ #include <linux/mm.h>
+diff --git a/drivers/char/mspec.c b/drivers/char/mspec.c
+index 1997270..ecb89d7 100644
+--- a/drivers/char/mspec.c
++++ b/drivers/char/mspec.c
+@@ -248,7 +248,7 @@ static const struct vm_operations_struct mspec_vm_ops = {
+ /*
+  * mspec_mmap
+  *
+- * Called when mmaping the device.  Initializes the vma with a fault handler
++ * Called when mmapping the device.  Initializes the vma with a fault handler
+  * and private data structure necessary to allocate, track, and free the
+  * underlying pages.
+  */
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index abfc27b..a2a3fa5 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -1309,7 +1309,7 @@ out_free_list:
+  * i915_gem_release_mmap - remove physical page mappings
+  * @obj: obj in question
+  *
+- * Preserve the reservation of the mmaping with the DRM core code, but
++ * Preserve the reservation of the mmapping with the DRM core code, but
+  * relinquish ownership of the pages back to the system.
+  *
+  * It is vital that we remove the page mapping if we have mapped a tiled
+diff --git a/drivers/misc/sgi-gru/grufile.c b/drivers/misc/sgi-gru/grufile.c
+index 41c8fe2..ce5eda9 100644
+--- a/drivers/misc/sgi-gru/grufile.c
++++ b/drivers/misc/sgi-gru/grufile.c
+@@ -92,7 +92,7 @@ static void gru_vma_close(struct vm_area_struct *vma)
+ /*
+  * gru_file_mmap
+  *
+- * Called when mmaping the device.  Initializes the vma with a fault handler
++ * Called when mmapping the device.  Initializes the vma with a fault handler
+  * and private data structure necessary to allocate, track, and free the
+  * underlying pages.
+  */
+diff --git a/drivers/net/mlx4/en_rx.c b/drivers/net/mlx4/en_rx.c
+index 03b781a..829b9ec 100644
+--- a/drivers/net/mlx4/en_rx.c
++++ b/drivers/net/mlx4/en_rx.c
+@@ -204,7 +204,7 @@ static void mlx4_en_free_rx_desc(struct mlx4_en_priv *priv,
+ 		en_dbg(DRV, priv, "Freeing fragment:%d\n", nr);
+ 		dma = be64_to_cpu(rx_desc->data[nr].addr);
 
-     /* Notify wrapper of connection status changes */
-@@ -4148,7 +4148,7 @@ void zfInfraConnectNetwork(zdev_t* dev)
-             wd->sta.bIsSharedKey = 0;
-         }
+-		en_dbg(DRV, priv, "Unmaping buffer at dma:0x%llx\n", (u64) dma);
++		en_dbg(DRV, priv, "Unmapping buffer at dma:0x%llx\n", (u64) dma);
+ 		pci_unmap_single(mdev->pdev, dma, skb_frags[nr].size,
+ 				 PCI_DMA_FROMDEVICE);
+ 		put_page(skb_frags[nr].page);
+diff --git a/drivers/net/wireless/ath/ath5k/phy.c
+b/drivers/net/wireless/ath/ath5k/phy.c
+index 1a039f2..6464e31 100644
+--- a/drivers/net/wireless/ath/ath5k/phy.c
++++ b/drivers/net/wireless/ath/ath5k/phy.c
+@@ -2675,7 +2675,7 @@ ath5k_setup_channel_powertable(struct ath5k_hw *ah,
+ 		/* Fill curves in reverse order
+ 		 * from lower power (max gain)
+ 		 * to higher power. Use curve -> idx
+-		 * backmaping we did on eeprom init */
++		 * backmapping we did on eeprom init */
+ 		u8 idx = pdg_curve_to_idx[pdg];
 
--        /* Improve WEP/TKIP performace with HT AP, detail information
-please look bug#32495 */
-+        /* Improve WEP/TKIP performance with HT AP, detail
-information please look bug#32495 */
-         /*
-         if ( (pBssInfo->broadcomHTAp == 1)
-              && (wd->sta.SWEncryptEnable != 0) )
-diff --git a/drivers/staging/otus/80211core/pub_zfi.h
-b/drivers/staging/otus/80211core/pub_zfi.h
-index a35bd5d..17f3fe2 100644
---- a/drivers/staging/otus/80211core/pub_zfi.h
-+++ b/drivers/staging/otus/80211core/pub_zfi.h
-@@ -782,7 +782,7 @@ extern void zfiWlanSetDynamicSIFSParam(zdev_t*
-dev, u8_t val);
-
- /***** End of section 2 *****/
-
--/***** section 3 performace evaluation *****/
-+/***** section 3 performance evaluation *****/
- #ifdef ZM_ENABLE_PERFORMANCE_EVALUATION
- extern void zfiTxPerformanceMSDU(zdev_t* dev, u32_t tick);
- extern void zfiRxPerformanceMPDU(zdev_t* dev, zbuf_t* buf);
-diff --git a/drivers/staging/rt2860/common/cmm_data.c
-b/drivers/staging/rt2860/common/cmm_data.c
-index 22a7b0e..15994f1 100644
---- a/drivers/staging/rt2860/common/cmm_data.c
-+++ b/drivers/staging/rt2860/common/cmm_data.c
-@@ -1241,7 +1241,7 @@ VOID RTMPWriteTxWI(
- 	pTxWI->txop= Txopmode;
-
- 	pTxWI->NSEQ = NSeq;
--	// John tune the performace with Intel Client in 20 MHz performance
-+	// John tune the performance with Intel Client in 20 MHz performance
- 	BASize = pAd->CommonCfg.TxBASize;
-
- 	if( BASize >7 )
-@@ -1331,7 +1331,7 @@ VOID RTMPWriteTxWI_Data(
- 	pTxWI->BW = (pTransmit->field.MODE <= MODE_OFDM) ? (BW_20) :
-(pTransmit->field.BW);
- 	pTxWI->AMPDU	= ((pTxBlk->TxFrameType == TX_AMPDU_FRAME) ? TRUE : FALSE);
-
--	// John tune the performace with Intel Client in 20 MHz performance
-+	// John tune the performance with Intel Client in 20 MHz performance
- 	BASize = pAd->CommonCfg.TxBASize;
- 	if((pTxBlk->TxFrameType == TX_AMPDU_FRAME) && (pMacEntry))
- 	{
-diff --git a/drivers/staging/rt2870/common/rtusb_bulk.c
-b/drivers/staging/rt2870/common/rtusb_bulk.c
-index a4244b5..b579292 100644
---- a/drivers/staging/rt2870/common/rtusb_bulk.c
-+++ b/drivers/staging/rt2870/common/rtusb_bulk.c
-@@ -290,7 +290,7 @@ VOID	RTUSBBulkOutDataPacket(
- 			else if (((pAd->BulkOutMaxPacketSize < 512) &&
-((ThisBulkSize&0xfffff800) != 0) ) /*|| ( (ThisBulkSize != 0)  &&
-(pTxWI->AMPDU == 0))*/)
- 			{
- 				// For USB 1.1 or peer which didn't support AMPDU, limit the BulkOut size.
--				// For performence in b/g mode, now just check for USB 1.1 and
-didn't care about the APMDU or not! 2008/06/04.
-+				// For performance in b/g mode, now just check for USB 1.1 and
-didn't care about the APMDU or not! 2008/06/04.
- 				pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
- 				break;
+ 		/* Grab the needed curves by index */
+@@ -2777,7 +2777,7 @@ ath5k_setup_channel_powertable(struct ath5k_hw *ah,
+ 	/* Now we have a set of curves for this
+ 	 * channel on tmpL (x range is table_max - table_min
+ 	 * and y values are tmpL[pdg][]) sorted in the same
+-	 * order as EEPROM (because we've used the backmaping).
++	 * order as EEPROM (because we've used the backmapping).
+ 	 * So for RF5112 it's from higher power to lower power
+ 	 * and for RF2413 it's from lower power to higher power.
+ 	 * For RF5111 we only have one curve. */
+diff --git a/drivers/staging/vt6656/channel.c b/drivers/staging/vt6656/channel.c
+index e49796f..f7136b0 100644
+--- a/drivers/staging/vt6656/channel.c
++++ b/drivers/staging/vt6656/channel.c
+@@ -19,7 +19,7 @@
+  *
+  * File: channel.c
+  *
+- * Purpose: Channel number maping
++ * Purpose: Channel number mapping
+  *
+  * Author: Lucas Lin
+  *
+diff --git a/drivers/video/console/sticore.c b/drivers/video/console/sticore.c
+index 857b366..6468a29 100644
+--- a/drivers/video/console/sticore.c
++++ b/drivers/video/console/sticore.c
+@@ -436,7 +436,7 @@ sti_init_glob_cfg(struct sti_struct *sti,
+ 			    (offs < PCI_BASE_ADDRESS_0 ||
+ 			     offs > PCI_BASE_ADDRESS_5)) {
+ 				printk (KERN_WARNING
+-					"STI pci region maping for region %d (%02x) can't be mapped\n",
++					"STI pci region mapping for region %d (%02x) can't be mapped\n",
+ 					i,sti->rm_entry[i]);
+ 				continue;
  			}
-@@ -305,7 +305,7 @@ VOID	RTUSBBulkOutDataPacket(
- 			}
- 			else if (((pAd->BulkOutMaxPacketSize < 512) &&
-((ThisBulkSize&0xfffff800) != 0) ) /*|| ( (ThisBulkSize != 0)  &&
-(pTxWI->AMPDU == 0))*/)
- 			{	// For USB 1.1 or peer which didn't support AMPDU, limit the BulkOut size.
--				// For performence in b/g mode, now just check for USB 1.1 and
-didn't care about the APMDU or not! 2008/06/04.
-+				// For performance in b/g mode, now just check for USB 1.1 and
-didn't care about the APMDU or not! 2008/06/04.
- 				pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
- 				break;
- 			}
-diff --git a/drivers/staging/rt3090/common/cmm_data.c
-b/drivers/staging/rt3090/common/cmm_data.c
-index bf24858..992de77 100644
---- a/drivers/staging/rt3090/common/cmm_data.c
-+++ b/drivers/staging/rt3090/common/cmm_data.c
-@@ -1159,7 +1159,7 @@ VOID RTMPWriteTxWI(
- 	pTxWI->txop= Txopmode;
+diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
+index ff43c88..9805483 100644
+--- a/drivers/video/tdfxfb.c
++++ b/drivers/video/tdfxfb.c
+@@ -52,7 +52,7 @@
+  *
+  * 0.1.3 (released 1999-11-02)	added Attila's panning support, code
+  *				reorg, hwcursor address page size alignment
+- *				(for mmaping both frame buffer and regs),
++ *				(for mmapping both frame buffer and regs),
+  *				and my changes to get rid of hardcoded
+  *				VGA i/o register locations (uses PCI
+  *				configuration info now)
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index b9b3bb5..d15ea17 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -767,7 +767,7 @@ static int load_elf_binary(struct linux_binprm
+*bprm, struct pt_regs *regs)
+ 	
+ 	current->mm->start_stack = bprm->p;
 
- 	pTxWI->NSEQ = NSeq;
--	// John tune the performace with Intel Client in 20 MHz performance
-+	// John tune the performance with Intel Client in 20 MHz performance
- #ifdef DOT11_N_SUPPORT
- 	BASize = pAd->CommonCfg.TxBASize;
- 	if (pAd->MACVersion == 0x28720200)
-@@ -1283,7 +1283,7 @@ VOID RTMPWriteTxWI_Data(
- #endif // DOT11N_DRAFT3 //
- 	pTxWI->AMPDU	= ((pTxBlk->TxFrameType == TX_AMPDU_FRAME) ? TRUE : FALSE);
-
--	// John tune the performace with Intel Client in 20 MHz performance
-+	// John tune the performance with Intel Client in 20 MHz performance
- 	BASize = pAd->CommonCfg.TxBASize;
- 	if((pTxBlk->TxFrameType == TX_AMPDU_FRAME) && (pMacEntry))
- 	{
-diff --git a/drivers/staging/rt3090/rt_ate.c b/drivers/staging/rt3090/rt_ate.c
-index 259aae4..fbc5838 100644
---- a/drivers/staging/rt3090/rt_ate.c
-+++ b/drivers/staging/rt3090/rt_ate.c
-@@ -3484,7 +3484,7 @@ static VOID ATEWriteTxWI(
-
- 	pTxWI->NSEQ = NSeq;
-
--	// John tune the performace with Intel Client in 20 MHz performance
-+	// John tune the performance with Intel Client in 20 MHz performance
- 	if ( BASize >7 )
- 		BASize =7;
-
+-	/* Now we do a little grungy work by mmaping the ELF image into
++	/* Now we do a little grungy work by mmapping the ELF image into
+ 	   the correct location in memory. */
+ 	for(i = 0, elf_ppnt = elf_phdata;
+ 	    i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
+diff --git a/fs/cifs/README b/fs/cifs/README
+index 79c1a93..a727b7c 100644
+--- a/fs/cifs/README
++++ b/fs/cifs/README
+@@ -423,7 +423,7 @@ A partial list of the supported mount options follows:
+ 		source name to use to represent the client netbios machine
+ 		name when doing the RFC1001 netbios session initialize.
+   direct        Do not do inode data caching on files opened on this mount.
+-		This precludes mmaping files on this mount. In some cases
++		This precludes mmapping files on this mount. In some cases
+ 		with fast networks and little or no caching benefits on the
+ 		client (e.g. when the application is doing large sequential
+ 		reads bigger than page size without rereading the same data)
+diff --git a/fs/ntfs/file.c b/fs/ntfs/file.c
+index 5397396..43179dd 100644
+--- a/fs/ntfs/file.c
++++ b/fs/ntfs/file.c
+@@ -399,7 +399,7 @@ static inline void
+ntfs_fault_in_pages_readable_iovec(const struct iovec *iov,
+  * @cached_page: allocated but as yet unused page
+  * @lru_pvec:	lru-buffering pagevec of caller
+  *
+- * Obtain @nr_pages locked page cache pages from the mapping @maping and
++ * Obtain @nr_pages locked page cache pages from the mapping @mapping and
+  * starting at index @index.
+  *
+  * If a page is newly created, increment its refcount and add it to the
+diff --git a/mm/memory-failure.c b/mm/memory-failure.c
+index dacc641..1ac49fe 100644
+--- a/mm/memory-failure.c
++++ b/mm/memory-failure.c
+@@ -174,7 +174,7 @@ static void kill_procs_ao(struct list_head
+*to_kill, int doit, int trapno,
+ 	list_for_each_entry_safe (tk, next, to_kill, nd) {
+ 		if (doit) {
+ 			/*
+-			 * In case something went wrong with munmaping
++			 * In case something went wrong with munmapping
+ 			 * make sure the process doesn't catch the
+ 			 * signal and then access the memory. Just kill it.
+ 			 * the signal handlers
 -- 
 1.6.5.2.101.gcd0f8
