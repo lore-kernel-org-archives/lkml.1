@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbZJaJlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932716AbZJaJl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932639AbZJaJlw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 05:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932371AbZJaJlu
+	id S932716AbZJaJl5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 05:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbZJaJlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 05:41:50 -0400
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:35835 "EHLO
+	Sat, 31 Oct 2009 05:41:55 -0400
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:33643 "EHLO
 	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932589AbZJaJlr convert rfc822-to-8bit (ORCPT
+	with ESMTP id S932371AbZJaJlx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 05:41:47 -0400
+	Sat, 31 Oct 2009 05:41:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:from:date:message-id:subject:to:cc:content-type
          :content-transfer-encoding;
-        b=C7UqRJO/p3Jc+hh7dam0ZHN1DKinhLmn3YTjaBGBs3Ri0JqT6hes54i+3kIMlLOXzS
-         OO0Io2EqpGShRFcZl0+BHQxq0niCiSgMWLgpmK7ZPLHDzzL5FP0MkCjEaQpYHPBdFKjt
-         mCqab4xcJp1kS1I8LtEvzuUQHkOp39Whe3+oE=
+        b=JB8GovN/aE9IGp7DSge+qY8Q4leD/FlmL2DG5e0nA+6A/rxcjEL/O5gLfdD7M5mi86
+         XFxgNeVuMce9gsZGt92YMpr5gisTekydJC8NmjsL0BQZVx1Gaz79xNvesE8IYaCp8tlI
+         Jr3wxzCW90U8zX5vduoLqY4i52LHvQFU/T1Js=
 MIME-Version: 1.0
 From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 31 Oct 2009 07:41:32 -0200
-Message-ID: <b8bf37780910310241r1bf7eaffqf0ad0079cdd2c3ff@mail.gmail.com>
-Subject: [PATCH 10/16] trivial: fix assorted "temperature" typos
+Date: Sat, 31 Oct 2009 07:41:38 -0200
+Message-ID: <b8bf37780910310241v6a6acd9bo9d1f63e04d7b91a0@mail.gmail.com>
+Subject: [PATCH 11/16] trivial: fix assorted "channel" typos
 To: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
 Cc: me <andre.goddard@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -30,196 +30,128 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 82c935b26acbcdc6f3067341b0639a5836b85faf Mon Sep 17 00:00:00 2001
+>From 6b663c88691e4d53859d8eb68a508ab31639a005 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Fri, 30 Oct 2009 07:00:13 -0200
-Subject: [PATCH 10/16] trivial: fix assorted "temperature" typos
+Date: Fri, 30 Oct 2009 07:03:37 -0200
+Subject: [PATCH 11/16] trivial: fix assorted "channel" typos
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-diff --git a/drivers/hwmon/lm93.c b/drivers/hwmon/lm93.c
-index fc36cad..c48a284 100644
---- a/drivers/hwmon/lm93.c
-+++ b/drivers/hwmon/lm93.c
-@@ -928,7 +928,7 @@ static void lm93_update_client_common(struct
-lm93_data *data,
- 	data->prochot_interval = lm93_read_byte(client,
- 			LM93_REG_PROCHOT_INTERVAL);
+diff --git a/arch/arm/mach-sa1100/dma.c b/arch/arm/mach-sa1100/dma.c
+index cb4521a..ad66035 100644
+--- a/arch/arm/mach-sa1100/dma.c
++++ b/arch/arm/mach-sa1100/dma.c
+@@ -65,7 +65,7 @@ static irqreturn_t dma_irq_handler(int irq, void *dev_id)
 
--	/* Fan Boost Termperature registers */
-+	/* Fan Boost Temperature registers */
- 	for (i = 0; i < 4; i++)
- 		data->boost[i] = lm93_read_byte(client, LM93_REG_BOOST(i));
 
-diff --git a/drivers/macintosh/therm_windtunnel.c
-b/drivers/macintosh/therm_windtunnel.c
-index 8b93644..3fbe41b 100644
---- a/drivers/macintosh/therm_windtunnel.c
-+++ b/drivers/macintosh/therm_windtunnel.c
-@@ -15,7 +15,7 @@
-  *
-  *	WARNING: This driver has only been testen on Apple's
-  *	1.25 MHz Dual G4 (March 03). It is tuned for a CPU
-- *	temperatur around 57 C.
-+ *	temperature around 57 C.
-  *
-  *   Copyright (C) 2003, 2004 Samuel Rydh (samuel@ibrium.se)
-  *
-diff --git a/drivers/net/wireless/ath/ath5k/phy.c
-b/drivers/net/wireless/ath/ath5k/phy.c
-index 6464e31..6f04cc7 100644
---- a/drivers/net/wireless/ath/ath5k/phy.c
-+++ b/drivers/net/wireless/ath/ath5k/phy.c
-@@ -117,7 +117,7 @@ static unsigned int ath5k_hw_rfb_op(struct ath5k_hw *ah,
+ /**
+- *	sa1100_request_dma - allocate one of the SA11x0's DMA chanels
++ *	sa1100_request_dma - allocate one of the SA11x0's DMA channels
+  *	@device: The SA11x0 peripheral targeted by this request
+  *	@device_id: An ascii name for the claiming device
+  *	@callback: Function to be called when the DMA completes
+diff --git a/drivers/staging/comedi/drivers/addi-data/addi_common.h
+b/drivers/staging/comedi/drivers/addi-data/addi_common.h
+index edd657b..3ab27cf 100644
+--- a/drivers/staging/comedi/drivers/addi-data/addi_common.h
++++ b/drivers/staging/comedi/drivers/addi-data/addi_common.h
+@@ -82,7 +82,7 @@ struct addi_board {
 
- /*
-  * This code is used to optimize rf gain on different environments
-- * (temprature mostly) based on feedback from a power detector.
-+ * (temperature mostly) based on feedback from a power detector.
-  *
-  * It's only used on RF5111 and RF5112, later RF chips seem to have
-  * auto adjustment on hw -notice they have a much smaller BANK 7 and
-diff --git a/drivers/sbus/char/envctrl.c b/drivers/sbus/char/envctrl.c
-index 58e583b..aa2b60a 100644
---- a/drivers/sbus/char/envctrl.c
-+++ b/drivers/sbus/char/envctrl.c
-@@ -92,11 +92,11 @@
- #define ENVCTRL_CPUTEMP_MON			1    /* cpu temperature monitor */
- #define ENVCTRL_CPUVOLTAGE_MON	  	2    /* voltage monitor         */
- #define ENVCTRL_FANSTAT_MON  		3    /* fan status monitor      */
--#define ENVCTRL_ETHERTEMP_MON		4    /* ethernet temperarture */
-+#define ENVCTRL_ETHERTEMP_MON		4    /* ethernet temperature */
- 					     /* monitor                     */
- #define ENVCTRL_VOLTAGESTAT_MON	  	5    /* voltage status monitor  */
- #define ENVCTRL_MTHRBDTEMP_MON		6    /* motherboard temperature */
--#define ENVCTRL_SCSITEMP_MON		7    /* scsi temperarture */
-+#define ENVCTRL_SCSITEMP_MON		7    /* scsi temperature */
- #define ENVCTRL_GLOBALADDR_MON		8    /* global address */
+ 	int i_NbrDiChannel;	/*  Number of DI channels */
+ 	int i_NbrDoChannel;	/*  Number of DO channels */
+-	int i_DoMaxdata;	/*  data to set all chanels high */
++	int i_DoMaxdata;	/*  data to set all channels high */
 
- /* Child device type.
-diff --git a/drivers/scsi/megaraid.h b/drivers/scsi/megaraid.h
-index 512c2cc..d310f49 100644
---- a/drivers/scsi/megaraid.h
-+++ b/drivers/scsi/megaraid.h
-@@ -381,7 +381,7 @@ typedef struct {
- 	u8	battery_status;	/*
- 				 * BIT 0: battery module missing
- 				 * BIT 1: VBAD
--				 * BIT 2: temprature high
-+				 * BIT 2: temperature high
- 				 * BIT 3: battery pack missing
- 				 * BIT 4,5:
- 				 *   00 - charge complete
-diff --git a/drivers/scsi/megaraid/mbox_defs.h
-b/drivers/scsi/megaraid/mbox_defs.h
-index b25b747..ce2487a 100644
---- a/drivers/scsi/megaraid/mbox_defs.h
-+++ b/drivers/scsi/megaraid/mbox_defs.h
-@@ -497,7 +497,7 @@ typedef struct {
-  * @inserted_drive		: channel:Id of inserted drive
-  * @battery_status		: bit 0: battery module missing
-  *				bit 1: VBAD
-- *				bit 2: temprature high
-+ *				bit 2: temperature high
-  *				bit 3: battery pack missing
-  *				bit 4,5:
-  *					00 - charge complete
-diff --git a/drivers/staging/rtl8192e/r8192E_dm.c
-b/drivers/staging/rtl8192e/r8192E_dm.c
-index bf87632..23afca4 100644
---- a/drivers/staging/rtl8192e/r8192E_dm.c
-+++ b/drivers/staging/rtl8192e/r8192E_dm.c
-@@ -571,7 +571,7 @@ static u32 OFDMSwingTable[OFDM_Table_Length] = {
- 	0x5a400169,	// 3, +3db
- 	0x50800142,	// 4, +2db
- 	0x47c0011f,	// 5, +1db
--	0x40000100,	// 6, +0db ===> default, upper for higher temprature,
-lower for low temprature
-+	0x40000100,	// 6, +0db ===> default, upper for higher temperature,
-lower for low temperature
- 	0x390000e4,	// 7, -1db
- 	0x32c000cb,	// 8, -2db
- 	0x2d4000b5,	// 9, -3db
-@@ -932,14 +932,14 @@ static void
-dm_TXPowerTrackingCallback_ThermalMeter(struct net_device * dev)
- 	RT_TRACE(COMP_POWER_TRACKING, "Readback ThermalMeterA = %d \n", tmpRegA);
- 	if(tmpRegA < 3 || tmpRegA > 13)
- 		return;
--	if(tmpRegA >= 12)	// if over 12, TP will be bad when high temprature
-+	if(tmpRegA >= 12)	// if over 12, TP will be bad when high temperature
- 		tmpRegA = 12;
- 	RT_TRACE(COMP_POWER_TRACKING, "Valid ThermalMeterA = %d \n", tmpRegA);
- 	priv->ThermalMeter[0] = ThermalMeterVal;	//We use fixed value by
-Bryant's suggestion
- 	priv->ThermalMeter[1] = ThermalMeterVal;	//We use fixed value by
-Bryant's suggestion
-
--	//Get current RF-A temprature index
--	if(priv->ThermalMeter[0] >= (u8)tmpRegA)	//lower temprature
-+	//Get current RF-A temperature index
-+	if(priv->ThermalMeter[0] >= (u8)tmpRegA)	//lower temperature
- 	{
- 		tmpOFDMindex = tmpCCK20Mindex = 6+(priv->ThermalMeter[0]-(u8)tmpRegA);
- 		tmpCCK40Mindex = tmpCCK20Mindex - 6;
-@@ -953,7 +953,7 @@ static void
-dm_TXPowerTrackingCallback_ThermalMeter(struct net_device * dev)
- 	else
- 	{
- 		tmpval = ((u8)tmpRegA - priv->ThermalMeter[0]);
--		if(tmpval >= 6)								// higher temprature
-+		if(tmpval >= 6)								// higher temperature
- 			tmpOFDMindex = tmpCCK20Mindex = 0;		// max to +6dB
- 		else
- 			tmpOFDMindex = tmpCCK20Mindex = 6 - tmpval;
-diff --git a/drivers/staging/rtl8192su/r8192U_dm.c
-b/drivers/staging/rtl8192su/r8192U_dm.c
-index 5358ae8..7891e96 100644
---- a/drivers/staging/rtl8192su/r8192U_dm.c
-+++ b/drivers/staging/rtl8192su/r8192U_dm.c
-@@ -593,7 +593,7 @@ static u32 OFDMSwingTable[OFDM_Table_Length] = {
- 	0x5a400169,	// 3, +3db
- 	0x50800142,	// 4, +2db
- 	0x47c0011f,	// 5, +1db
--	0x40000100,	// 6, +0db ===> default, upper for higher temprature,
-lower for low temprature
-+	0x40000100,	// 6, +0db ===> default, upper for higher temperature,
-lower for low temperature
- 	0x390000e4,	// 7, -1db
- 	0x32c000cb,	// 8, -2db
- 	0x2d4000b5,	// 9, -3db
-@@ -912,14 +912,14 @@ static void
-dm_TXPowerTrackingCallback_ThermalMeter(struct net_device * dev)
- 	RT_TRACE(COMP_POWER_TRACKING, "Readback ThermalMeterA = %d \n", tmpRegA);
- 	if(tmpRegA < 3 || tmpRegA > 13)
- 		return;
--	if(tmpRegA >= 12)	// if over 12, TP will be bad when high temprature
-+	if(tmpRegA >= 12)	// if over 12, TP will be bad when high temperature
- 		tmpRegA = 12;
- 	RT_TRACE(COMP_POWER_TRACKING, "Valid ThermalMeterA = %d \n", tmpRegA);
- 	priv->ThermalMeter[0] = ThermalMeterVal;	//We use fixed value by
-Bryant's suggestion
- 	priv->ThermalMeter[1] = ThermalMeterVal;	//We use fixed value by
-Bryant's suggestion
-
--	//Get current RF-A temprature index
--	if(priv->ThermalMeter[0] >= (u8)tmpRegA)	//lower temprature
-+	//Get current RF-A temperature index
-+	if(priv->ThermalMeter[0] >= (u8)tmpRegA)	//lower temperature
- 	{
- 		tmpOFDMindex = tmpCCK20Mindex = 6+(priv->ThermalMeter[0]-(u8)tmpRegA);
- 		tmpCCK40Mindex = tmpCCK20Mindex - 6;
-@@ -933,7 +933,7 @@ static void
-dm_TXPowerTrackingCallback_ThermalMeter(struct net_device * dev)
- 	else
- 	{
- 		tmpval = ((u8)tmpRegA - priv->ThermalMeter[0]);
--		if(tmpval >= 6)								// higher temprature
-+		if(tmpval >= 6)								// higher temperature
- 			tmpOFDMindex = tmpCCK20Mindex = 0;		// max to +6dB
- 		else
- 			tmpOFDMindex = tmpCCK20Mindex = 6 - tmpval;
+ 	int i_NbrTTLChannel;	/*  Number of TTL channels */
+ 	const struct comedi_lrange *pr_TTLRangelist;	/* rangelist for TTL */
+diff --git a/drivers/staging/otus/80211core/cmm.c
+b/drivers/staging/otus/80211core/cmm.c
+index bed16b5..a6c1b41 100644
+--- a/drivers/staging/otus/80211core/cmm.c
++++ b/drivers/staging/otus/80211core/cmm.c
+@@ -1428,7 +1428,7 @@ void zfProcessManagement(zdev_t* dev, zbuf_t*
+buf, struct zsAdditionInfo* AddInf
+         {
+                 /* Beacon */
+             case ZM_WLAN_FRAME_TYPE_BEACON :
+-                /* if enable 802.11h and current chanel is silent but
+receive beacon from other AP */
++                /* if enable 802.11h and current channel is silent
+but receive beacon from other AP */
+                 if
+(((wd->regulationTable.allowChannel[wd->regulationTable.CurChIndex].channelFlags
+                         & ZM_REG_FLAG_CHANNEL_CSA) != 0) && wd->sta.DFSEnable)
+                 {
+@@ -1469,7 +1469,7 @@ void zfProcessManagement(zdev_t* dev, zbuf_t*
+buf, struct zsAdditionInfo* AddInf
+                 break;
+                 /* Probe response */
+             case ZM_WLAN_FRAME_TYPE_PROBERSP :
+-                /* if enable 802.11h and current chanel is silent but
+receive probe response from other AP */
++                /* if enable 802.11h and current channel is silent
+but receive probe response from other AP */
+                 if
+(((wd->regulationTable.allowChannel[wd->regulationTable.CurChIndex].channelFlags
+                         & ZM_REG_FLAG_CHANNEL_CSA) != 0) && wd->sta.DFSEnable)
+                 {
+diff --git a/drivers/staging/rtl8187se/r8180_dm.c
+b/drivers/staging/rtl8187se/r8180_dm.c
+index 4c9d46f..9acfbcd 100644
+--- a/drivers/staging/rtl8187se/r8180_dm.c
++++ b/drivers/staging/rtl8187se/r8180_dm.c
+@@ -36,7 +36,7 @@ bool CheckHighPower(struct net_device *dev)
+ //
+ //	Note:
+ //		The reason why we udpate Tx power level here instead of DoRxHighPower()
+-//		is the number of IO to change Tx power is much more than chane TR switch
++//		is the number of IO to change Tx power is much more than channel TR switch
+ //		and they are related to OFDM and MAC registers.
+ //		So, we don't want to update it so frequently in per-Rx packet base.
+ //
+diff --git a/drivers/staging/rtl8192e/r819xE_phyreg.h
+b/drivers/staging/rtl8192e/r819xE_phyreg.h
+index d4a4392..37f0fee 100644
+--- a/drivers/staging/rtl8192e/r819xE_phyreg.h
++++ b/drivers/staging/rtl8192e/r819xE_phyreg.h
+@@ -294,7 +294,7 @@
+ #define bR2RCCAMask               		0x00000f00
+ #define bHSSI_R2TDelay            		0xf8000000
+ #define bHSSI_T2RDelay            		0xf80000
+-#define bContTxHSSI               		0x400     //chane gain at continue Tx
++#define bContTxHSSI               		0x400     //channel gain at continue Tx
+ #define bIGFromCCK                		0x200
+ #define bAGCAddress               		0x3f
+ #define bRxHPTx                   			0x7000
+diff --git a/drivers/staging/rtl8192su/r8192S_phyreg.h
+b/drivers/staging/rtl8192su/r8192S_phyreg.h
+index 96c7cfa..1584378 100644
+--- a/drivers/staging/rtl8192su/r8192S_phyreg.h
++++ b/drivers/staging/rtl8192su/r8192S_phyreg.h
+@@ -453,7 +453,7 @@
+ #define		bR2RCCAMask               			0x00000f00
+ #define		bHSSI_R2TDelay            		0xf8000000
+ #define		bHSSI_T2RDelay            		0xf80000
+-#define		bContTxHSSI               			0x400     //chane gain at continue Tx
++#define		bContTxHSSI               			0x400     //channel gain at continue Tx
+ #define		bIGFromCCK                			0x200
+ #define		bAGCAddress               			0x3f
+ #define		bRxHPTx                   			0x7000
+diff --git a/sound/pci/emu10k1/emu10k1x.c b/sound/pci/emu10k1/emu10k1x.c
+index 36e08bd..360e380 100644
+--- a/sound/pci/emu10k1/emu10k1x.c
++++ b/sound/pci/emu10k1/emu10k1x.c
+@@ -184,7 +184,7 @@ MODULE_PARM_DESC(enable, "Enable the EMU10K1X soundcard.");
+  * The hardware has 3 channels for playback and 1 for capture.
+  *  - channel 0 is the front channel
+  *  - channel 1 is the rear channel
+- *  - channel 2 is the center/lfe chanel
++ *  - channel 2 is the center/lfe channel
+  * Volume is controlled by the AC97 for the front and rear channels by
+  * the PCM Playback Volume, Sigmatel Surround Playback Volume and
+  * Surround Playback Volume. The Sigmatel 4-Speaker Stereo switch affects
 -- 
 1.6.5.2.101.gcd0f8
