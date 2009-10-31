@@ -1,69 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbZJaKXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbZJaLEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094AbZJaKXA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 06:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbZJaKXA
+	id S932265AbZJaLEi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 07:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbZJaLEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 06:23:00 -0400
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:65113 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752906AbZJaKW7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 06:22:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=YmXWDUgfqbHm8Cy6a97DGQcsG7CguuscQF2lj/N2ru9wP018gWL6MkNok+wV4ktJ5G
-         Q4l/a5wjD7ruWWPyonQNuL1neh6MxML5TYsWwdTo2aOw7BTKtDl8IxMR3b+Yw3meRs1T
-         zmW8tQdbrrpKayxvb9e8mrpxJUZh0ftU4HBo0=
-MIME-Version: 1.0
-In-Reply-To: <4AEC0EBE.2040308@crca.org.au>
-References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com> 
-	<4AEC0EBE.2040308@crca.org.au>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 31 Oct 2009 08:22:44 -0200
-Message-ID: <b8bf37780910310322h32fd4b4anb5424dd22099c1f4@mail.gmail.com>
-Subject: Re: [PATCH 03/16] trivial: fix assorted "through" typos
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 31 Oct 2009 07:04:37 -0400
+Received: from nn7.de ([85.214.94.156]:46199 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757031AbZJaLEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 07:04:37 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Oct 2009 07:04:36 EDT
+Subject: [PATCH] mouse button #1 emulation for mac_hid
+From: Soeren Sonnenburg <sonne@debian.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="=-TGjpDj1vtaR6MqEe307E"
+Date: Sat, 31 Oct 2009 11:57:58 +0100
+Message-ID: <1256986678.18934.13.camel@no>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 31, 2009 at 8:17 AM, Nigel Cunningham
-<ncunningham@crca.org.au> wrote:
-> I've only looked at this one, but something caught my eye...
->
-> André Goddard Rosa wrote:
->> diff --git a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> index f7b9cdc..b52c1f8 100644
->> --- a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> +++ b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> @@ -38,7 +38,7 @@ void __init generate_cplb_tables_cpu(unsigned int cpu)
->>
->>  #ifdef CONFIG_BFIN_EXTMEM_DCACHEABLE
->>       d_cache = CPLB_L1_CHBL;
->> -#ifdef CONFIG_BFIN_EXTMEM_WRITETROUGH
->> +#ifdef CONFIG_BFIN_EXTMEM_WRITETHROUGH
->>       d_cache |= CPLB_L1_AOW | CPLB_WT;
->>  #endif
->>  #endif
->
-> "Surely that can't be the only time?", I thought. But it is - all of the
-> other #ifdefs are spelled correctly, so you're probably fixing a
-> hard-to-find bug here! Good catch!
 
-Good, that's why I made it a separate patch.
+--=-TGjpDj1vtaR6MqEe307E
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: quoted-printable
 
-> Makes me wonder if anyone's written a tool to find things like this -
-> #ifdefs that will never be defined...
+Dear all,
 
-Yeah, I thought the same thing; surely it would be nice...
-Probably it's not only the one case, I suppose.
+I am not sure what the future of mac_hid is (the source says will be
+removed, but since 9 years). In case it stays in kernel the attached
+patch adds support for mouse button 1 emulation. If this driver stays in
+the kernel I would also suggest to rename it - it is not mac specific (I
+am using this on a netbook).
 
-With regards,
-André
+Rationale? Broken touchpads, within linux unsupported (multi-)touch pads
+where click and hold + moving the mouse does not work.
+
+Soeren
+--=20
+For the one fact about the future of which we can be certain is that it
+will be utterly fantastic. -- Arthur C. Clarke, 1962
+
+--=-TGjpDj1vtaR6MqEe307E
+Content-Disposition: attachment; filename="mac_hid_lmb.diff"
+Content-Type: text/x-patch; name="mac_hid_lmb.diff"; charset="ISO-8859-15"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWFjaW50b3NoL21hY19oaWQuYyBiL2RyaXZlcnMvbWFjaW50
+b3NoL21hY19oaWQuYw0KaW5kZXggY2M5ZjI3NS4uM2FhYzkwZiAxMDA2NDQNCi0tLSBhL2RyaXZl
+cnMvbWFjaW50b3NoL21hY19oaWQuYw0KKysrIGIvZHJpdmVycy9tYWNpbnRvc2gvbWFjX2hpZC5j
+DQpAQCAtMTksNiArMTksNyBAQA0KIHN0YXRpYyBzdHJ1Y3QgaW5wdXRfZGV2ICplbXVtb3VzZWJ0
+bjsNCiBzdGF0aWMgaW50IGVtdW1vdXNlYnRuX2lucHV0X3JlZ2lzdGVyKHZvaWQpOw0KIHN0YXRp
+YyBpbnQgbW91c2VfZW11bGF0ZV9idXR0b25zOw0KK3N0YXRpYyBpbnQgbW91c2VfYnV0dG9uMV9r
+ZXljb2RlID0gS0VZX1JJR0hUU0hJRlQ7CS8qIHJpZ2h0IHNoaWZ0IGtleSAqLw0KIHN0YXRpYyBp
+bnQgbW91c2VfYnV0dG9uMl9rZXljb2RlID0gS0VZX1JJR0hUQ1RSTDsJLyogcmlnaHQgY29udHJv
+bCBrZXkgKi8NCiBzdGF0aWMgaW50IG1vdXNlX2J1dHRvbjNfa2V5Y29kZSA9IEtFWV9SSUdIVEFM
+VDsJLyogcmlnaHQgb3B0aW9uIGtleSAqLw0KIHN0YXRpYyBpbnQgbW91c2VfbGFzdF9rZXljb2Rl
+Ow0KQEAgLTM1LDYgKzM2LDE0IEBAIHN0YXRpYyBjdGxfdGFibGUgbWFjX2hpZF9maWxlc1tdID0g
+ew0KIAkJLnByb2NfaGFuZGxlcgk9ICZwcm9jX2RvaW50dmVjLA0KIAl9LA0KIAl7DQorCQkuY3Rs
+X25hbWUJPSBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT04xX0tFWUNPREUsDQorCQkucHJvY25hbWUJ
+PSAibW91c2VfYnV0dG9uMV9rZXljb2RlIiwNCisJCS5kYXRhCQk9ICZtb3VzZV9idXR0b24xX2tl
+eWNvZGUsDQorCQkubWF4bGVuCQk9IHNpemVvZihpbnQpLA0KKwkJLm1vZGUJCT0gMDY0NCwNCisJ
+CS5wcm9jX2hhbmRsZXIJPSAmcHJvY19kb2ludHZlYywNCisJfSwNCisJew0KIAkJLmN0bF9uYW1l
+CT0gREVWX01BQ19ISURfTU9VU0VfQlVUVE9OMl9LRVlDT0RFLA0KIAkJLnByb2NuYW1lCT0gIm1v
+dXNlX2J1dHRvbjJfa2V5Y29kZSIsDQogCQkuZGF0YQkJPSAmbW91c2VfYnV0dG9uMl9rZXljb2Rl
+LA0KQEAgLTgzLDE2ICs5MiwyNCBAQCBzdGF0aWMgc3RydWN0IGN0bF90YWJsZV9oZWFkZXIgKm1h
+Y19oaWRfc3lzY3RsX2hlYWRlcjsNCiANCiBpbnQgbWFjX2hpZF9tb3VzZV9lbXVsYXRlX2J1dHRv
+bnMoaW50IGNhbGxlciwgdW5zaWduZWQgaW50IGtleWNvZGUsIGludCBkb3duKQ0KIHsNCisJdW5z
+aWduZWQgaW50IHJlcG9ydGNvZGU7DQorDQogCXN3aXRjaCAoY2FsbGVyKSB7DQogCWNhc2UgMToN
+CiAJCS8qIENhbGxlZCBmcm9tIGtleWJvYXJkLmMgKi8NCiAJCWlmIChtb3VzZV9lbXVsYXRlX2J1
+dHRvbnMNCi0JCSAgICAmJiAoa2V5Y29kZSA9PSBtb3VzZV9idXR0b24yX2tleWNvZGUNCi0JCQl8
+fCBrZXljb2RlID09IG1vdXNlX2J1dHRvbjNfa2V5Y29kZSkpIHsNCisJCSAgICAmJiAoa2V5Y29k
+ZSA9PSBtb3VzZV9idXR0b24xX2tleWNvZGUgfHwNCisJCQkJa2V5Y29kZSA9PSBtb3VzZV9idXR0
+b24yX2tleWNvZGUgfHwNCisJCQkJa2V5Y29kZSA9PSBtb3VzZV9idXR0b24zX2tleWNvZGUpKSB7
+DQogCQkJaWYgKG1vdXNlX2VtdWxhdGVfYnV0dG9ucyA9PSAxKSB7DQotCQkJCWlucHV0X3JlcG9y
+dF9rZXkoZW11bW91c2VidG4sDQotCQkJCQkJIGtleWNvZGUgPT0gbW91c2VfYnV0dG9uMl9rZXlj
+b2RlID8gQlROX01JRERMRSA6IEJUTl9SSUdIVCwNCi0JCQkJCQkgZG93bik7DQorCQkJCWlmIChr
+ZXljb2RlPT1tb3VzZV9idXR0b24xX2tleWNvZGUpDQorCQkJCQlyZXBvcnRjb2RlPUJUTl9MRUZU
+Ow0KKwkJCQllbHNlIGlmIChrZXljb2RlPT1tb3VzZV9idXR0b24yX2tleWNvZGUpDQorCQkJCQly
+ZXBvcnRjb2RlPUJUTl9NSURETEU7DQorCQkJCWVsc2UNCisJCQkJCXJlcG9ydGNvZGU9QlROX1JJ
+R0hUOw0KKw0KKwkJCQlpbnB1dF9yZXBvcnRfa2V5KGVtdW1vdXNlYnRuLCByZXBvcnRjb2RlLCBk
+b3duKTsNCiAJCQkJaW5wdXRfc3luYyhlbXVtb3VzZWJ0bik7DQogCQkJCXJldHVybiAxOw0KIAkJ
+CX0NCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3N5c2N0bC5oIGIvaW5jbHVkZS9saW51eC9z
+eXNjdGwuaA0KaW5kZXggMWU0NzQzZS4uZDM4ZjVhMCAxMDA2NDQNCi0tLSBhL2luY2x1ZGUvbGlu
+dXgvc3lzY3RsLmgNCisrKyBiL2luY2x1ZGUvbGludXgvc3lzY3RsLmgNCkBAIC05MTMsOSArOTEz
+LDEwIEBAIGVudW0gew0KIAlERVZfTUFDX0hJRF9LRVlCT0FSRF9TRU5EU19MSU5VWF9LRVlDT0RF
+Uz0xLA0KIAlERVZfTUFDX0hJRF9LRVlCT0FSRF9MT0NLX0tFWUNPREVTPTIsDQogCURFVl9NQUNf
+SElEX01PVVNFX0JVVFRPTl9FTVVMQVRJT049MywNCi0JREVWX01BQ19ISURfTU9VU0VfQlVUVE9O
+Ml9LRVlDT0RFPTQsDQotCURFVl9NQUNfSElEX01PVVNFX0JVVFRPTjNfS0VZQ09ERT01LA0KLQlE
+RVZfTUFDX0hJRF9BREJfTU9VU0VfU0VORFNfS0VZQ09ERVM9Ng0KKwlERVZfTUFDX0hJRF9NT1VT
+RV9CVVRUT04xX0tFWUNPREU9NCwNCisJREVWX01BQ19ISURfTU9VU0VfQlVUVE9OMl9LRVlDT0RF
+PTUsDQorCURFVl9NQUNfSElEX01PVVNFX0JVVFRPTjNfS0VZQ09ERT02LA0KKwlERVZfTUFDX0hJ
+RF9BREJfTU9VU0VfU0VORFNfS0VZQ09ERVM9Nw0KIH07DQogDQogLyogL3Byb2Mvc3lzL2Rldi9z
+Y3NpICovDQpkaWZmIC0tZ2l0IGEva2VybmVsL3N5c2N0bF9jaGVjay5jIGIva2VybmVsL3N5c2N0
+bF9jaGVjay5jDQppbmRleCBiNmU3YWFlLi42MGZhN2ZlIDEwMDY0NA0KLS0tIGEva2VybmVsL3N5
+c2N0bF9jaGVjay5jDQorKysgYi9rZXJuZWwvc3lzY3RsX2NoZWNrLmMNCkBAIC04MTYsNiArODE2
+LDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCB0cmFuc19jdGxfdGFibGUgdHJhbnNfbWFjX2hpZF9m
+aWxlc1tdID0gew0KIAkvKiBERVZfTUFDX0hJRF9LRVlCT0FSRF9TRU5EU19MSU5VWF9LRVlDT0RF
+UyB1bnVzZWQgKi8NCiAJLyogREVWX01BQ19ISURfS0VZQk9BUkRfTE9DS19LRVlDT0RFUyB1bnVz
+ZWQgKi8NCiAJeyBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT05fRU1VTEFUSU9OLAkibW91c2VfYnV0
+dG9uX2VtdWxhdGlvbiIgfSwNCisJeyBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT04xX0tFWUNPREUs
+CSJtb3VzZV9idXR0b24xX2tleWNvZGUiIH0sDQogCXsgREVWX01BQ19ISURfTU9VU0VfQlVUVE9O
+Ml9LRVlDT0RFLAkibW91c2VfYnV0dG9uMl9rZXljb2RlIiB9LA0KIAl7IERFVl9NQUNfSElEX01P
+VVNFX0JVVFRPTjNfS0VZQ09ERSwJIm1vdXNlX2J1dHRvbjNfa2V5Y29kZSIgfSwNCiAJLyogREVW
+X01BQ19ISURfQURCX01PVVNFX1NFTkRTX0tFWUNPREVTIHVudXNlZCAqLw0K
+
+
+--=-TGjpDj1vtaR6MqEe307E--
