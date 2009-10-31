@@ -1,55 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933360AbZJaXIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933401AbZJaXTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933360AbZJaXIk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 19:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933334AbZJaXIj
+	id S933401AbZJaXTf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 19:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933328AbZJaXTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 19:08:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59395 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933320AbZJaXIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 19:08:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
-Date: Sun, 1 Nov 2009 00:10:07 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <200910312227.15493.rjw@sisk.pl> <1257029775.7907.21.camel@pasglop>
-In-Reply-To: <1257029775.7907.21.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911010010.07394.rjw@sisk.pl>
+	Sat, 31 Oct 2009 19:19:33 -0400
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:1070 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933303AbZJaXTc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 19:19:32 -0400
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, jens.axboe@oracle.com, tj@kernel.org,
+       Alberto Bertogli <albertito@blitiri.com.ar>
+Subject: [PATCH] Fix bio_alloc() and bio_kmalloc() documentation
+Date: Sat, 31 Oct 2009 20:18:36 -0300
+Message-Id: <1257031116-17934-1-git-send-email-albertito@blitiri.com.ar>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 October 2009, Benjamin Herrenschmidt wrote:
-> On Sat, 2009-10-31 at 22:27 +0100, Rafael J. Wysocki wrote:
-> 
-> > In the meantime I invented a patch that works, ie. apparently fixes the problem
-> > and if there was a card in the socket during the suspend, it's standard config
-> > space is restored correctly.  I tested it on one of my boxes with two different
-> > CardBus adapters and Jose says it fixes the problem for him.
-> > 
-> > The patch is appended, please have a look.
-> 
-> Base idea of the patch sounds good, quick browse through looks good too,
-> 
-> I'll try to band on it with various PCMCIA & CB gear tomorrow.
+Commit 451a9ebf accidentally broke bio_alloc() and bio_kmalloc() comments by
+(almost) swapping them.
 
-Wait, I made a mistake when testing it, didn't notice that my distro ejected
-PCMCIA cards automatically before suspend (sigh).
+This patch fixes that, by placing the comments in the right place.
 
-Working on a better patch right now, will hopefully post it in a while.
+Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
+---
 
-Thanks,
-Rafael
+I'm not completely sure the mempool part is in the right place. If it's not,
+let me know and I'll fix the patch.
+
+Thanks a lot,
+		Alberto
+
+
+ fs/bio.c |   26 +++++++++++++-------------
+ 1 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/fs/bio.c b/fs/bio.c
+index bcab9e9..12da5db 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -325,8 +325,16 @@ static void bio_fs_destructor(struct bio *bio)
+  *	@gfp_mask: allocation mask to use
+  *	@nr_iovecs: number of iovecs
+  *
+- *	Allocate a new bio with @nr_iovecs bvecs.  If @gfp_mask
+- *	contains __GFP_WAIT, the allocation is guaranteed to succeed.
++ *	bio_alloc will allocate a bio and associated bio_vec array that can hold
++ *	at least @nr_iovecs entries. Allocations will be done from the
++ *	fs_bio_set. Also see @bio_alloc_bioset and @bio_kmalloc.
++ *
++ *	If %__GFP_WAIT is set, then bio_alloc will always be able to allocate
++ *	a bio. This is due to the mempool guarantees. To make this work, callers
++ *	must never allocate more than 1 bio at a time from this pool. Callers
++ *	that need to allocate more than 1 bio must always submit the previously
++ *	allocated bio for IO before attempting to allocate a new one. Failure to
++ *	do so can cause livelocks under memory pressure.
+  *
+  *	RETURNS:
+  *	Pointer to new bio on success, NULL on failure.
+@@ -350,21 +358,13 @@ static void bio_kmalloc_destructor(struct bio *bio)
+ }
+ 
+ /**
+- * bio_alloc - allocate a bio for I/O
++ * bio_kmalloc - allocate a bio for I/O using kmalloc()
+  * @gfp_mask:   the GFP_ mask given to the slab allocator
+  * @nr_iovecs:	number of iovecs to pre-allocate
+  *
+  * Description:
+- *   bio_alloc will allocate a bio and associated bio_vec array that can hold
+- *   at least @nr_iovecs entries. Allocations will be done from the
+- *   fs_bio_set. Also see @bio_alloc_bioset.
+- *
+- *   If %__GFP_WAIT is set, then bio_alloc will always be able to allocate
+- *   a bio. This is due to the mempool guarantees. To make this work, callers
+- *   must never allocate more than 1 bio at a time from this pool. Callers
+- *   that need to allocate more than 1 bio must always submit the previously
+- *   allocated bio for IO before attempting to allocate a new one. Failure to
+- *   do so can cause livelocks under memory pressure.
++ *   Allocate a new bio with @nr_iovecs bvecs.  If @gfp_mask contains
++ *   %__GFP_WAIT, the allocation is guaranteed to succeed.
+  *
+  **/
+ struct bio *bio_kmalloc(gfp_t gfp_mask, int nr_iovecs)
+-- 
+1.6.3.3
+
