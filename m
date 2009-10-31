@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932230AbZJaJlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932589AbZJaJnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932230AbZJaJlb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 05:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757588AbZJaJlZ
+	id S932589AbZJaJnj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 05:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932260AbZJaJng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 05:41:25 -0400
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:35835 "EHLO
+	Sat, 31 Oct 2009 05:43:36 -0400
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:33643 "EHLO
 	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757573AbZJaJlV convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757371AbZJaJl2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 05:41:21 -0400
+	Sat, 31 Oct 2009 05:41:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:from:date:message-id:subject:to:cc:content-type
          :content-transfer-encoding;
-        b=ZCwtRSdfOHAFILntfdG+sWYZcO/7hFr8SP3+1M5TsiT6NWlEbflc/jFaEvaxP1u7OU
-         3hHHI1hTfk31EuBUIP4eaE6ZofoYwoi2o+iYSEfZyOZkd8a7tuvQ3BEjj/LbqcKa5OrH
-         +qBRBNCAdleoH5dqEz53UgcD16MdhyuPzn3X0=
+        b=c5HOMA5FcS8vBng3vKrTxQNVp3QJr7s4yH040wtUsNdfUm1OzMKlK9xTfM4v/jmsa/
+         mIwLGepKLKDL4fSinFR+3PApy83W8OKv1N82ghNkS7PtmcRvS6LNlUMAtf5IOnhF2Nl3
+         5T9HFx0cOM94tgNSJWnPFWDYRkg2u+gBvTS/Y=
 MIME-Version: 1.0
 From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 31 Oct 2009 07:41:06 -0200
-Message-ID: <b8bf37780910310241o4f880fa8w5e888ec4e9da6e73@mail.gmail.com>
-Subject: [PATCH 06/16] trivial: fix assorted "access" typos
+Date: Sat, 31 Oct 2009 07:41:13 -0200
+Message-ID: <b8bf37780910310241j18f6a97do4b35e418c1c5781b@mail.gmail.com>
+Subject: [PATCH 07/16] trivial: fix assorted "default" typos
 To: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
 Cc: me <andre.goddard@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -30,192 +30,329 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 4209a3729836111f4c397e40a96cc1af66400f1d Mon Sep 17 00:00:00 2001
+>From 74388405ad7362b5db87b82790be5b2d719153b3 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Fri, 30 Oct 2009 06:42:26 -0200
-Subject: [PATCH 06/16] trivial: fix assorted "access" typos
+Date: Fri, 30 Oct 2009 06:48:13 -0200
+Subject: [PATCH 07/16] trivial: fix assorted "default" typos
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-diff --git a/Documentation/spi/spi-summary b/Documentation/spi/spi-summary
-index deab51d..4884cb3 100644
---- a/Documentation/spi/spi-summary
-+++ b/Documentation/spi/spi-summary
-@@ -538,7 +538,7 @@ SPI MESSAGE QUEUE
- The bulk of the driver will be managing the I/O queue fed by transfer().
+diff --git a/drivers/gpu/drm/i915/intel_sdvo.c
+b/drivers/gpu/drm/i915/intel_sdvo.c
+index 083bec2..e7fa327 100644
+--- a/drivers/gpu/drm/i915/intel_sdvo.c
++++ b/drivers/gpu/drm/i915/intel_sdvo.c
+@@ -2726,7 +2726,7 @@ bool intel_sdvo_init(struct drm_device *dev, int
+output_device)
+ 	/* Wrap with our custom algo which switches to DDC mode */
+ 	intel_output->ddc_bus->algo = &intel_sdvo_i2c_bit_algo;
 
- That queue could be purely conceptual.  For example, a driver used only
--for low-frequency sensor acess might be fine using synchronous PIO.
-+for low-frequency sensor access might be fine using synchronous PIO.
+-	/* In defaut case sdvo lvds is false */
++	/* In default case sdvo lvds is false */
+ 	intel_sdvo_get_capabilities(intel_output, &sdvo_priv->caps);
 
- But the queue will probably be very real, using message->queue, PIO,
- often DMA (especially if the root filesystem is in SPI flash), and
-diff --git a/arch/cris/mm/fault.c b/arch/cris/mm/fault.c
-index 4a7cdd9..380df1a 100644
---- a/arch/cris/mm/fault.c
-+++ b/arch/cris/mm/fault.c
-@@ -209,7 +209,7 @@ do_page_fault(unsigned long address, struct pt_regs *regs,
- 	/* Are we prepared to handle this kernel fault?
- 	 *
- 	 * (The kernel has valid exception-points in the source
--	 *  when it acesses user-memory. When it fails in one
-+	 *  when it accesses user-memory. When it fails in one
- 	 *  of those points, we find it in a table and do a jump
- 	 *  to some fixup code that loads an appropriate error
- 	 *  code)
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-index dd43114..da110bd 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -100,7 +100,7 @@ const struct of_device_id mpc52xx_pci_ids[] __initdata = {
- };
+ 	if (intel_sdvo_output_setup(intel_output,
+diff --git a/drivers/media/dvb/frontends/cx24110.c
+b/drivers/media/dvb/frontends/cx24110.c
+index ffbcfab..00a4e8f 100644
+--- a/drivers/media/dvb/frontends/cx24110.c
++++ b/drivers/media/dvb/frontends/cx24110.c
+@@ -1,4 +1,4 @@
+-	/*
++/*
+     cx24110 - Single Chip Satellite Channel Receiver driver module
 
- /* ======================================================================== */
--/* PCI configuration acess                                                  */
-+/* PCI configuration access                                                 */
- /* ======================================================================== */
-
- static int
-diff --git a/arch/x86/include/asm/desc_defs.h b/arch/x86/include/asm/desc_defs.h
-index 9d66848..278441f 100644
---- a/arch/x86/include/asm/desc_defs.h
-+++ b/arch/x86/include/asm/desc_defs.h
-@@ -12,9 +12,9 @@
- #include <linux/types.h>
-
- /*
-- * FIXME: Acessing the desc_struct through its fields is more elegant,
-+ * FIXME: Accessing the desc_struct through its fields is more elegant,
-  * and should be the one valid thing to do. However, a lot of open code
-- * still touches the a and b acessors, and doing this allow us to do it
-+ * still touches the a and b accessors, and doing this allow us to do it
-  * incrementally. We keep the signature as a struct, rather than an union,
-  * so we can get rid of it transparently in the future -- glommer
-  */
-diff --git a/drivers/infiniband/hw/ipath/ipath_sd7220.c
-b/drivers/infiniband/hw/ipath/ipath_sd7220.c
-index aa47eb5..cdd0b32 100644
---- a/drivers/infiniband/hw/ipath/ipath_sd7220.c
-+++ b/drivers/infiniband/hw/ipath/ipath_sd7220.c
-@@ -614,7 +614,7 @@ static int epb_trans(struct ipath_devdata *dd, u16
-reg, u64 i_val, u64 *o_vp)
-  * @wd: Write Data - value to set in register
-  * @mask: ones where data should be spliced into reg.
-  *
-- * Basic register read/modify/write, with un-needed acesses elided. That is,
-+ * Basic register read/modify/write, with un-needed accesses elided. That is,
-  * a mask of zero will prevent write, while a mask of 0xFF will prevent read.
-  * returns current (presumed, if a write was done) contents of selected
-  * register, or <0 if errors.
-diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
-index 61c083a..b7ce406 100644
---- a/drivers/net/e1000e/82571.c
-+++ b/drivers/net/e1000e/82571.c
-@@ -282,7 +282,7 @@ static s32 e1000_init_mac_params_82571(struct
-e1000_adapter *adapter)
-
- 	/*
- 	 * Ensure that the inter-port SWSM.SMBI lock bit is clear before
--	 * first NVM or PHY acess. This should be done for single-port
-+	 * first NVM or PHY access. This should be done for single-port
- 	 * devices, and for one port only on dual-port devices so that
- 	 * for those devices we can still use the SMBI lock to synchronize
- 	 * inter-port accesses to the PHY & NVM.
-diff --git a/drivers/platform/x86/thinkpad_acpi.c
-b/drivers/platform/x86/thinkpad_acpi.c
-index b408189..7e7da18 100644
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -6535,7 +6535,7 @@ static struct ibm_struct volume_driver_data = {
-  * 	The speeds are stored on handles
-  * 	(FANA:FAN9), (FANC:FANB), (FANE:FAND).
-  *
-- * 	There are three default speed sets, acessible as handles:
-+ * 	There are three default speed sets, accessible as handles:
-  * 	FS1L,FS1M,FS1H; FS2L,FS2M,FS2H; FS3L,FS3M,FS3H
-  *
-  * 	ACPI DSDT switches which set is in use depending on various
-diff --git a/drivers/scsi/53c700.c b/drivers/scsi/53c700.c
-index f5a9add..07ce9bf 100644
---- a/drivers/scsi/53c700.c
-+++ b/drivers/scsi/53c700.c
-@@ -1491,7 +1491,7 @@ NCR_700_intr(int irq, void *dev_id)
- 	unsigned long flags;
- 	int handled = 0;
-
--	/* Use the host lock to serialise acess to the 53c700
-+	/* Use the host lock to serialise access to the 53c700
- 	 * hardware.  Note: In future, we may need to take the queue
- 	 * lock to enter the done routines.  When that happens, we
- 	 * need to ensure that for this driver, the host lock and the
-diff --git a/drivers/serial/pmac_zilog.h b/drivers/serial/pmac_zilog.h
-index 570b0d9..f6e77f1 100644
---- a/drivers/serial/pmac_zilog.h
-+++ b/drivers/serial/pmac_zilog.h
-@@ -73,7 +73,7 @@ static inline struct uart_pmac_port
-*pmz_get_port_A(struct uart_pmac_port *uap)
+     Copyright (C) 2002 Peter Hettkamp <peter.hettkamp@htp-tel.de> based on
+@@ -96,7 +96,7 @@ static struct {u8 reg; u8 data;} cx24110_regdata[]=
+ 	 {0x42,0x00}, /* @ middle bytes " */
+ 	 {0x43,0x00}, /* @ LSB          " */
+ 		      /* leave the carrier tracking loop parameters on default */
+-		      /* leave the bit timing loop parameters at gefault */
++		      /* leave the bit timing loop parameters at default */
+ 	 {0x56,0x4d}, /* set the filtune voltage to 2.7V, as recommended by */
+ 		      /* the cx24108 data sheet for symbol rates above 15MS/s */
+ 	 {0x57,0x00}, /* @ Filter sigma delta enabled, positive */
+diff --git a/drivers/net/wireless/prism54/isl_ioctl.c
+b/drivers/net/wireless/prism54/isl_ioctl.c
+index cf91990..f7f5c79 100644
+--- a/drivers/net/wireless/prism54/isl_ioctl.c
++++ b/drivers/net/wireless/prism54/isl_ioctl.c
+@@ -1897,7 +1897,7 @@ prism54_get_mac(struct net_device *ndev, struct
+iw_request_info *info,
+ 	return 0;
  }
 
- /*
-- * Register acessors. Note that we don't need to enforce a recovery
-+ * Register accessors. Note that we don't need to enforce a recovery
-  * delay on PCI PowerMac hardware, it's dealt in HW by the MacIO chip,
-  * though if we try to use this driver on older machines, we might have
-  * to add it back
-diff --git a/drivers/usb/atm/ueagle-atm.c b/drivers/usb/atm/ueagle-atm.c
-index 9df9242..30e49f3 100644
---- a/drivers/usb/atm/ueagle-atm.c
-+++ b/drivers/usb/atm/ueagle-atm.c
-@@ -1958,7 +1958,7 @@ static void uea_dispatch_cmv_e1(struct uea_softc
-*sc, struct intr_pkt *intr)
- 		goto bad1;
-
- 	/* FIXME : ADI930 reply wrong preambule (func = 2, sub = 2) to
--	 * the first MEMACESS cmv. Ignore it...
-+	 * the first MEMACCESS cmv. Ignore it...
- 	 */
- 	if (cmv->bFunction != dsc->function) {
- 		if (UEA_CHIP_VERSION(sc) == ADI930
-diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
-index 5e24925..3b861eb 100644
---- a/fs/cifs/inode.c
-+++ b/fs/cifs/inode.c
-@@ -917,8 +917,8 @@ undo_setattr:
- /*
-  * If dentry->d_inode is null (usually meaning the cached dentry
-  * is a negative dentry) then we would attempt a standard SMB delete, but
-- * if that fails we can not attempt the fall back mechanisms on EACESS
-- * but will return the EACESS to the caller.  Note that the VFS does not call
-+ * if that fails we can not attempt the fall back mechanisms on EACCESS
-+ * but will return the EACCESS to the caller.  Note that the VFS does not call
-  * unlink on negative dentries currently.
+-/* Setting policy also clears the MAC acl, even if we don't change the defaut
++/* Setting policy also clears the MAC acl, even if we don't change the default
+  * policy
   */
- int cifs_unlink(struct inode *dir, struct dentry *dentry)
-diff --git a/include/linux/mfd/ezx-pcap.h b/include/linux/mfd/ezx-pcap.h
-index e5124ce..3402042 100644
---- a/include/linux/mfd/ezx-pcap.h
-+++ b/include/linux/mfd/ezx-pcap.h
-@@ -45,7 +45,7 @@ void pcap_set_ts_bits(struct pcap_chip *, u32);
- #define PCAP_CLEAR_INTERRUPT_REGISTER	0x01ffffff
- #define PCAP_MASK_ALL_INTERRUPT		0x01ffffff
 
--/* registers acessible by both pcap ports */
-+/* registers accessible by both pcap ports */
- #define PCAP_REG_ISR		0x0	/* Interrupt Status */
- #define PCAP_REG_MSR		0x1	/* Interrupt Mask */
- #define PCAP_REG_PSTAT		0x2	/* Processor Status */
-@@ -67,7 +67,7 @@ void pcap_set_ts_bits(struct pcap_chip *, u32);
- #define PCAP_REG_VENDOR_TEST1	0x1e
- #define PCAP_REG_VENDOR_TEST2	0x1f
+diff --git a/drivers/net/wireless/rt2x00/rt2400pci.h
+b/drivers/net/wireless/rt2x00/rt2400pci.h
+index ccd6441..aced057 100644
+--- a/drivers/net/wireless/rt2x00/rt2400pci.h
++++ b/drivers/net/wireless/rt2x00/rt2400pci.h
+@@ -35,7 +35,7 @@
 
--/* registers acessible by pcap port 1 only (a1200, e2 & e6) */
-+/* registers accessible by pcap port 1 only (a1200, e2 & e6) */
- #define PCAP_REG_INT_SEL	0x3	/* Interrupt Select */
- #define PCAP_REG_SWCTRL		0x4	/* Switching Regulator Control */
- #define PCAP_REG_VREG1		0x5	/* Regulator Bank 1 Control */
+ /*
+  * Signal information.
+- * Defaul offset is required for RSSI <-> dBm conversion.
++ * Default offset is required for RSSI <-> dBm conversion.
+  */
+ #define DEFAULT_RSSI_OFFSET		100
+
+diff --git a/drivers/net/wireless/rt2x00/rt2500pci.h
+b/drivers/net/wireless/rt2x00/rt2500pci.h
+index 54d3795..3db9041 100644
+--- a/drivers/net/wireless/rt2x00/rt2500pci.h
++++ b/drivers/net/wireless/rt2x00/rt2500pci.h
+@@ -46,7 +46,7 @@
+
+ /*
+  * Signal information.
+- * Defaul offset is required for RSSI <-> dBm conversion.
++ * Default offset is required for RSSI <-> dBm conversion.
+  */
+ #define DEFAULT_RSSI_OFFSET		121
+
+diff --git a/drivers/net/wireless/rt2x00/rt2500usb.h
+b/drivers/net/wireless/rt2x00/rt2500usb.h
+index b01edca..d300082 100644
+--- a/drivers/net/wireless/rt2x00/rt2500usb.h
++++ b/drivers/net/wireless/rt2x00/rt2500usb.h
+@@ -46,7 +46,7 @@
+
+ /*
+  * Signal information.
+- * Defaul offset is required for RSSI <-> dBm conversion.
++ * Default offset is required for RSSI <-> dBm conversion.
+  */
+ #define DEFAULT_RSSI_OFFSET		120
+
+diff --git a/drivers/net/wireless/rt2x00/rt2800usb.h
+b/drivers/net/wireless/rt2x00/rt2800usb.h
+index 2344571..4cc7026 100644
+--- a/drivers/net/wireless/rt2x00/rt2800usb.h
++++ b/drivers/net/wireless/rt2x00/rt2800usb.h
+@@ -61,7 +61,7 @@
+
+ /*
+  * Signal information.
+- * Defaul offset is required for RSSI <-> dBm conversion.
++ * Default offset is required for RSSI <-> dBm conversion.
+  */
+ #define DEFAULT_RSSI_OFFSET		120 /* FIXME */
+
+diff --git a/drivers/net/wireless/rt2x00/rt61pci.h
+b/drivers/net/wireless/rt2x00/rt61pci.h
+index 93eb699..77b5116 100644
+--- a/drivers/net/wireless/rt2x00/rt61pci.h
++++ b/drivers/net/wireless/rt2x00/rt61pci.h
+@@ -37,7 +37,7 @@
+
+ /*
+  * Signal information.
+- * Defaul offset is required for RSSI <-> dBm conversion.
++ * Default offset is required for RSSI <-> dBm conversion.
+  */
+ #define DEFAULT_RSSI_OFFSET		120
+
+diff --git a/drivers/net/wireless/rt2x00/rt73usb.h
+b/drivers/net/wireless/rt2x00/rt73usb.h
+index 81fe0be..e194332 100644
+--- a/drivers/net/wireless/rt2x00/rt73usb.h
++++ b/drivers/net/wireless/rt2x00/rt73usb.h
+@@ -37,7 +37,7 @@
+
+ /*
+  * Signal information.
+- * Defaul offset is required for RSSI <-> dBm conversion.
++ * Default offset is required for RSSI <-> dBm conversion.
+  */
+ #define DEFAULT_RSSI_OFFSET		120
+
+diff --git a/drivers/staging/comedi/drivers/pcl816.c
+b/drivers/staging/comedi/drivers/pcl816.c
+index 666be53..d7c0fde 100644
+--- a/drivers/staging/comedi/drivers/pcl816.c
++++ b/drivers/staging/comedi/drivers/pcl816.c
+@@ -112,7 +112,7 @@ struct pcl816_board {
+ 	int n_dichan;		/*  num of DI chans */
+ 	int n_dochan;		/*  num of DO chans */
+ 	const struct comedi_lrange *ai_range_type;	/*  default A/D rangelist */
+-	const struct comedi_lrange *ao_range_type;	/*  dafault D/A rangelist */
++	const struct comedi_lrange *ao_range_type;	/*  default D/A rangelist */
+ 	unsigned int io_range;	/*  len of IO space */
+ 	unsigned int IRQbits;	/*  allowed interrupts */
+ 	unsigned int DMAbits;	/*  allowed DMA chans */
+diff --git a/drivers/staging/rt2860/common/rtmp_init.c
+b/drivers/staging/rt2860/common/rtmp_init.c
+index 0e10e23..1b93945 100644
+--- a/drivers/staging/rt2860/common/rtmp_init.c
++++ b/drivers/staging/rt2860/common/rtmp_init.c
+@@ -3344,7 +3344,7 @@ VOID	UserCfgInit(
+ 	pAd->CommonCfg.TxPower = 100; //mW
+ 	pAd->CommonCfg.TxPowerPercentage = 0xffffffff; // AUTO
+ 	pAd->CommonCfg.TxPowerDefault = 0xffffffff; // AUTO
+-	pAd->CommonCfg.TxPreamble = Rt802_11PreambleAuto; // use Long
+preamble on TX by defaut
++	pAd->CommonCfg.TxPreamble = Rt802_11PreambleAuto; // use Long
+preamble on TX by default
+ 	pAd->CommonCfg.bUseZeroToDisableFragment = FALSE;
+ 	pAd->CommonCfg.RtsThreshold = 2347;
+ 	pAd->CommonCfg.FragmentThreshold = 2346;
+diff --git a/drivers/staging/rt3090/common/rtmp_init.c
+b/drivers/staging/rt3090/common/rtmp_init.c
+index 04b54fc..9c18528 100644
+--- a/drivers/staging/rt3090/common/rtmp_init.c
++++ b/drivers/staging/rt3090/common/rtmp_init.c
+@@ -2677,7 +2677,7 @@ VOID	UserCfgInit(
+ 	pAd->CommonCfg.TxPower = 100; //mW
+ 	pAd->CommonCfg.TxPowerPercentage = 0xffffffff; // AUTO
+ 	pAd->CommonCfg.TxPowerDefault = 0xffffffff; // AUTO
+-	pAd->CommonCfg.TxPreamble = Rt802_11PreambleAuto; // use Long
+preamble on TX by defaut
++	pAd->CommonCfg.TxPreamble = Rt802_11PreambleAuto; // use Long
+preamble on TX by default
+ 	pAd->CommonCfg.bUseZeroToDisableFragment = FALSE;
+ 	pAd->CommonCfg.RtsThreshold = 2347;
+ 	pAd->CommonCfg.FragmentThreshold = 2346;
+diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_module.c
+b/drivers/staging/rtl8192e/ieee80211/ieee80211_module.c
+index 16256a3..54ce8d7 100644
+--- a/drivers/staging/rtl8192e/ieee80211/ieee80211_module.c
++++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_module.c
+@@ -164,7 +164,7 @@ struct net_device *alloc_ieee80211(int sizeof_priv)
+  	ieee->privacy_invoked = 0;
+  	ieee->ieee802_1x = 1;
+ 	ieee->raw_tx = 0;
+-	//ieee->hwsec_support = 1; //defalt support hw security. //use
+module_param instead.
++	//ieee->hwsec_support = 1; //default support hw security. //use
+module_param instead.
+ 	ieee->hwsec_active = 0; //disable hwsec, switch it on when necessary.
+
+ 	ieee80211_softmac_init(ieee);
+diff --git a/drivers/staging/rtl8192e/r8192E_core.c
+b/drivers/staging/rtl8192e/r8192E_core.c
+index b0802a7..ff8fe7e 100644
+--- a/drivers/staging/rtl8192e/r8192E_core.c
++++ b/drivers/staging/rtl8192e/r8192E_core.c
+@@ -1041,7 +1041,7 @@ static void rtl8192_tx_isr(struct net_device
+*dev, int prio)
+         tx_desc_819x_pci *entry = &ring->desc[ring->idx];
+         struct sk_buff *skb;
+
+-        /* beacon packet will only use the first descriptor defautly,
++        /* beacon packet will only use the first descriptor defaultly,
+          * and the OWN may not be cleared by the hardware
+          * */
+         if(prio != BEACON_QUEUE) {
+@@ -2562,7 +2562,7 @@ static void rtl8192_read_eeprom_info(struct
+net_device* dev)
+ 		priv->bTXPowerDataReadFromEEPORM = false;
+ 	}
+
+-	// 2007/11/15 MH 8190PCI Default=2T4R, 8192PCIE dafault=1T2R
++	// 2007/11/15 MH 8190PCI Default=2T4R, 8192PCIE default=1T2R
+ 	priv->rf_type = RTL819X_DEFAULT_RF_TYPE;
+
+ 	if(priv->card_8192_version > VERSION_8190_BD)
+@@ -3554,7 +3554,7 @@ void rtl8192_prepare_beacon(struct r8192_priv *priv)
+ 	//spin_lock_irqsave(&priv->tx_lock,flags);
+ 	/* prepare misc info for the beacon xmit */
+ 	tcb_desc->queue_index = BEACON_QUEUE;
+-	/* IBSS does not support HT yet, use 1M defautly */
++	/* IBSS does not support HT yet, use 1M defaultly */
+ 	tcb_desc->data_rate = 2;
+ 	tcb_desc->RATRIndex = 7;
+ 	tcb_desc->bTxDisableRateFallBack = 1;
+diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
+b/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
+index 68dc8fa..a764476 100644
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
+@@ -156,7 +156,7 @@ struct net_device *alloc_ieee80211(int sizeof_priv)
+  	ieee->privacy_invoked = 0;
+  	ieee->ieee802_1x = 1;
+ 	ieee->raw_tx = 0;
+-	//ieee->hwsec_support = 1; //defalt support hw security. //use
+module_param instead.
++	//ieee->hwsec_support = 1; //default support hw security. //use
+module_param instead.
+ 	ieee->hwsec_active = 0; //disable hwsec, switch it on when necessary.
+
+ 	ieee80211_softmac_init(ieee);
+diff --git a/drivers/staging/serqt_usb2/serqt_usb2.c
+b/drivers/staging/serqt_usb2/serqt_usb2.c
+index 52af44c..060e9de 100644
+--- a/drivers/staging/serqt_usb2/serqt_usb2.c
++++ b/drivers/staging/serqt_usb2/serqt_usb2.c
+@@ -929,7 +929,7 @@ static int qt_open(struct tty_struct *tty,
+ 	dbg(__FILE__ "qt_setuart completed.\n");
+
+ 	/*
+-	 * Put this here to make it responsive to stty and defauls set by
++	 * Put this here to make it responsive to stty and defaults set by
+ 	 * the tty layer
+ 	 */
+ 	/* FIXME: is this needed? */
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c
+b/drivers/video/backlight/atmel-pwm-bl.c
+index 505c082..2cf7ba5 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -158,7 +158,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 			goto err_free_pwm;
+ 		}
+
+-		/* Turn display off by defatult. */
++		/* Turn display off by default. */
+ 		retval = gpio_direction_output(pwmbl->gpio_on,
+ 				0 ^ pdata->on_active_low);
+ 		if (retval)
+diff --git a/drivers/video/backlight/tosa_lcd.c
+b/drivers/video/backlight/tosa_lcd.c
+index 50ec17d..fa32b94 100644
+--- a/drivers/video/backlight/tosa_lcd.c
++++ b/drivers/video/backlight/tosa_lcd.c
+@@ -177,7 +177,7 @@ static int __devinit tosa_lcd_probe(struct spi_device *spi)
+ 	if (!data)
+ 		return -ENOMEM;
+
+-	data->is_vga = true; /* defaut to VGA mode */
++	data->is_vga = true; /* default to VGA mode */
+
+ 	/*
+ 	 * bits_per_word cannot be configured in platform data
+diff --git a/drivers/watchdog/coh901327_wdt.c b/drivers/watchdog/coh901327_wdt.c
+index 381026c..923cc68 100644
+--- a/drivers/watchdog/coh901327_wdt.c
++++ b/drivers/watchdog/coh901327_wdt.c
+@@ -508,7 +508,7 @@ void coh901327_watchdog_reset(void)
+ 	 * deactivating the watchdog before it is shut down by it.
+ 	 *
+ 	 * NOTE: on future versions of the watchdog, this restriction is
+-	 * gone: the watchdog will be reloaded with a defaul value (1 min)
++	 * gone: the watchdog will be reloaded with a default value (1 min)
+ 	 * instead of last value, and you can conveniently set the watchdog
+ 	 * timeout to 10ms (value = 1) without any problems.
+ 	 */
+diff --git a/sound/pci/hda/patch_cmedia.c b/sound/pci/hda/patch_cmedia.c
+index 780e1a7..8917071 100644
+--- a/sound/pci/hda/patch_cmedia.c
++++ b/sound/pci/hda/patch_cmedia.c
+@@ -66,7 +66,7 @@ struct cmi_spec {
+
+ 	struct hda_pcm pcm_rec[2];	/* PCM information */
+
+-	/* pin deafault configuration */
++	/* pin default configuration */
+ 	hda_nid_t pin_nid[NUM_PINS];
+ 	unsigned int def_conf[NUM_PINS];
+ 	unsigned int pin_def_confs;
 -- 
 1.6.5.2.101.gcd0f8
