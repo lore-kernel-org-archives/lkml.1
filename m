@@ -1,122 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZJaISk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903AbZJaIuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbZJaISk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 04:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZJaISj
+	id S1753903AbZJaIuW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 04:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZJaIuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 04:18:39 -0400
-Received: from mail.2ka.mipt.ru ([194.85.80.4]:53860 "EHLO mail.2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753901AbZJaISh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 04:18:37 -0400
-X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Oct 2009 04:18:37 EDT
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: Sage Weil <sage@newdream.net>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: ext3/jbd oops in journal_start
-References: <Pine.LNX.4.64.0910302253100.1867@cobra.newdream.net>
-Date: Sat, 31 Oct 2009 11:18:47 +0300
-In-reply-to: <Pine.LNX.4.64.0910302253100.1867@cobra.newdream.net>
-Message-id: <87bpjorn6g.fsf@openvz.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Sat, 31 Oct 2009 04:50:21 -0400
+Received: from mailgw.miraclelinux.com ([122.216.84.157]:11952 "EHLO
+	mailgw.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435AbZJaIuU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 04:50:20 -0400
+Message-ID: <4AEBFA46.8070709@miraclelinux.com>
+Date: Sat, 31 Oct 2009 17:50:14 +0900
+From: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       roland@redhat.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, oleg@redhat.com
+Subject: Re: [PATCH] show message when exceeded rlimit of pending signals
+References: <4AEACFBF.4060108@miraclelinux.com> <20091030143333.414ea29c.akpm@linux-foundation.org> <4AEBEE38.50108@miraclelinux.com>
+In-Reply-To: <4AEBEE38.50108@miraclelinux.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sage Weil <sage@newdream.net> writes:
+Naohiro Ooiwa wrote:
+> Andrew Morton wrote:
+>> On Fri, 30 Oct 2009 20:36:31 +0900
+>> Naohiro Ooiwa <nooiwa@miraclelinux.com> wrote:
+>>>
+>>> +static void show_reach_rlimit_sigpending(void)
+>>> +{
+>>> +	if (!printk_ratelimit())
+>>> +		return;
+>> printk_ratelimit() is a bad thing and we should be working toward
+>> removing it altogether, not adding new callers.
+>>
+>> Because it uses global state.  So if subsystem A is trying to generate
+>> lots of printk's, subsystem B's important message might get
+>> accidentally suppressed.
+>>
+>> It's better to use DEFINE_RATELIMIT_STATE() and __ratelimit() directly.
+> 
+> 
+> Thank you for your advices.
+> And I was glad to talk to you in Japan Linux Symposium.
+> 
+> I got it, now that you mention it.
+> I will fix my patch.
+> 
+>>> +	printk(KERN_INFO "%s/%d: reached the limit of pending signals.\n",
+>>> +				current->comm, current->pid);
+>> I suggest that this be
+>>
+>> 	"reached RLIMIT_SIGPENDING"
+>>
+>> because RLIMIT_SIGPENDING is a well-understood term and concept.
+>>
+> 
+> OK, I see.
 
-> Hi,
->
-> I'm consistently seeing ext3 oops on a fresh ~60 GB fs on 2.6.32-rc3 (and 
-> 2.6.31).  data=writeback or data=ordered.  It's not the hardware or 
-> drive... I have 8 boxes (each with slightly different hardware) that crash 
-> identically.
-Strange, 2.6.31 with ext3 is quite popular configuration...
-Can you please post exact test-case.
->
-> The oops is at fs/jbd/transaction.c, journal_start():
->
-> 		J_ASSERT(handle->h_transaction->t_journal == journal);
-*handle = journal_current_handle()
+I fixed my patch.
+Could you please check it.
 
-IMHO it's looks like you have entered here with current->journal_info != NULL
+Thanks you.
+Naohiro Ooiwa
 
-, but journal_info contains unexpected data
-This may happens in two cases:
-1) calling jbd code from other filesystem.
-2) Some fs forget to zero current->journal_info on exit from vfs
-According to call trace we have got second case. Do you use some 
-unusual/experimental fs?
->
-> because handle->h_transaction is 0x1bf (or some other value close to 
-> that).  I can trigger on the 10th or so call to journal_start after 
-> mounting.
->
-> Has anyone seen this before?  I feel like I must be doing something silly 
-> here, since I can't find any references to this particular crash, but I'm 
-> having no problem triggering it right away, even after a fresh mke2fs 
-> -j...
->
-> Any suggestions on where to look or should I just start testing older 
-> kernel versions and bisect?
->
-> sage
->
->
-> [   83.550657] handle->h_transaction 00000000000001bf
-> [   83.555564] BUG: unable to handle kernel NULL pointer dereference at 00000000000001bf
-> [   83.559531] IP: [<ffffffff8118793c>] journal_start+0x87/0x184
-> [   83.559531] PGD 10e351067 PUD 10e1cb067 PMD 0 
-> [   83.559531] Oops: 0000 [#1] PREEMPT SMP 
-> [   83.559531] last sysfs file: /sys/class/net/lo/operstate
-> [   83.559531] CPU 1 
-> [   83.559531] Modules linked in: btrfs zlib_deflate fan ac battery 
-> ide_pci_generic shpchp k8temp serio_raw psmouse pcspkr ehci_hcd 
-> serverworks processor ohci_hcd pci_hotplug thermal button
-> [   83.559531] Pid: 2849, comm: cosd Not tainted 2.6.32-rc5 #7 H8SSL-I2
-> [   83.559531] RIP: 0010:[<ffffffff8118793c>]  [<ffffffff8118793c>] journal_start+0x87/0x184
-> [   83.559531] RSP: 0018:ffff88010e335b28  EFLAGS: 00010292
-> [   83.559531] RAX: 00000000000001bf RBX: ffff88010eeee4e0 RCX: 000000000000ad01
-> [   83.559531] RDX: ffff88002f400000 RSI: 0000000000000001 RDI: ffffffff81610214
-> [   83.559531] RBP: ffff88010e335b58 R08: ffff88010e3359d7 R09: 0000000000000000
-> [   83.559531] R10: ffffffff8106314b R11: ffff88010e335908 R12: ffff88010eeee4e0
-> [   83.559531] R13: ffff88010e17a200 R14: ffff88010f535800 R15: 000000000000000b
-> [   83.559531] FS:  00007fe3bce8b6f0(0000) GS:ffff88002f400000(0000) knlGS:0000000000000000
-> [   83.559531] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> [   83.559531] CR2: 00000000000001bf CR3: 0000000110223000 CR4: 00000000000006e0
-> [   83.559531] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [   83.559531] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [   83.559531] Process cosd (pid: 2849, threadinfo ffff88010e334000, task ffff88010e17a200)
-> [   83.559531] Stack:
-> [   83.559531]  ffff88010e335b58 ffffffff814cbb10 ffffea0006cf6038 ffff88010eeea888
-> [   83.559531] <0> 0000000000000000 00000000000005f4 ffff88010e335b68 ffffffff811443b3
-> [   83.559531] <0> ffff88010e335c08 ffffffff8113c347 ffff88010e335ca8 ffffffff81070369
-> [   83.559531] Call Trace:
-> [   83.559531]  [<ffffffff811443b3>] ext3_journal_start_sb+0x4a/0x4c
-> [   83.559531]  [<ffffffff8113c347>] ext3_write_begin+0x9c/0x1e2
-> [   83.559531]  [<ffffffff81070369>] ? __lock_acquire+0x17d8/0x17ea
-> [   83.559531]  [<ffffffff810a5021>] generic_file_buffered_write+0x120/0x2a5
-> [   83.559531]  [<ffffffff810a564d>] __generic_file_aio_write+0x34f/0x383
-> [   83.559531]  [<ffffffff810a56e4>] generic_file_aio_write+0x63/0xaa
-> [   83.559531]  [<ffffffff810d98b2>] do_sync_write+0xe7/0x12d
-> [   83.559531]  [<ffffffff8105f368>] ? autoremove_wake_function+0x0/0x38
-> [   83.559531]  [<ffffffff8106a7fc>] ? put_lock_stats+0xe/0x27
-> [   83.559531]  [<ffffffff8125752c>] ? security_file_permission+0x11/0x13
-> [   83.559531]  [<ffffffff810da240>] vfs_write+0xae/0x14a
-> [   83.559531]  [<ffffffff810da3a0>] sys_write+0x47/0x6e
-> [   83.559531]  [<ffffffff8100baab>] system_call_fastpath+0x16/0x1b
-> [   83.559531] Code: 89 de 48 c7 c7 e9 01 61 81 31 c0 e8 71 f6 31 00 48 8b 
-> 33 48 c7 c7 f7 01 61 81 31 c0 e8 60 f6 31 00 48 8b 03 48 c7 c7 14 02 61 81 
-> <48> 8b 30 31 c0 e8 4c f6 31 00 48 8b 03 48 8b 30 4c 39 f6 74 11 
-> [   83.559531] RIP  [<ffffffff8118793c>] journal_start+0x87/0x184
-> [   83.559531]  RSP <ffff88010e335b28>
-> [   83.559531] CR2: 00000000000001bf
-> [   83.847504] ---[ end trace 450f151cbabc2177 ]---
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Signed-off-by: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+---
+ Documentation/kernel-parameters.txt |   11 +++++++++--
+ kernel/signal.c                     |   21 ++++++++++++++++++---
+ 2 files changed, 27 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt
+b/Documentation/kernel-parameters.txt
+index 9107b38..3bbd92f 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2032,8 +2032,15 @@ and is between 256 and 4096 characters. It is defined in
+the file
+
+ 	print-fatal-signals=
+ 			[KNL] debug: print fatal signals
+-			print-fatal-signals=1: print segfault info to
+-			the kernel console.
++
++			If enabled, warn about various signal handling
++			related application anomalies: too many signals,
++			too many POSIX.1 timers, fatal signals causing a
++			coredump - etc.
++
++			If you hit the warning due to signal overflow,
++			you might want to try "ulimit -i unlimited".
++
+ 			default: off.
+
+ 	printk.time=	Show timing data prefixed to each printk message line
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 6705320..624a626 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -41,6 +41,8 @@
+
+ static struct kmem_cache *sigqueue_cachep;
+
++int print_fatal_signals __read_mostly;
++
+ static void __user *sig_handler(struct task_struct *t, int sig)
+ {
+ 	return t->sighand->action[sig - 1].sa.sa_handler;
+@@ -188,6 +190,17 @@ int next_signal(struct sigpending *pending, sigset_t *mask)
+ 	return sig;
+ }
+
++static void show_reach_rlimit_sigpending(void)
++{
++	DEFINE_RATELIMIT_STATE(printk_rl_state, 5 * HZ, 10);
++
++	if (!__ratelimit(&printk_rl_state))
++		return;
++
++	printk(KERN_INFO "%s/%d: reached RLIMIT_SIGPENDING.\n",
++				current->comm, current->pid);
++}
++
+ /*
+  * allocate a new signal queue record
+  * - this may be called without locks if and only if t == current, otherwise an
+@@ -209,8 +222,12 @@ static struct sigqueue *__sigqueue_alloc(struct task_struct
+*t, gfp_t flags,
+ 	atomic_inc(&user->sigpending);
+ 	if (override_rlimit ||
+ 	    atomic_read(&user->sigpending) <=
+-			t->signal->rlim[RLIMIT_SIGPENDING].rlim_cur)
++			t->signal->rlim[RLIMIT_SIGPENDING].rlim_cur) {
+ 		q = kmem_cache_alloc(sigqueue_cachep, flags);
++	} else {
++		if (print_fatal_signals)
++			show_reach_rlimit_sigpending();
++	}
+ 	if (unlikely(q == NULL)) {
+ 		atomic_dec(&user->sigpending);
+ 		free_uid(user);
+@@ -925,8 +942,6 @@ static int send_signal(int sig, struct siginfo *info, struct
+task_struct *t,
+ 	return __send_signal(sig, info, t, group, from_ancestor_ns);
+ }
+
+-int print_fatal_signals;
+-
+ static void print_fatal_signal(struct pt_regs *regs, int signr)
+ {
+ 	printk("%s/%d: potentially unexpected fatal signal %d.\n",
+
