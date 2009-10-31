@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZJaD7C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750989AbZJaEJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757728AbZJaD7C (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 23:59:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932849AbZJaD67
+	id S1750989AbZJaEJj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 00:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZJaEJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 23:58:59 -0400
-Received: from mailout-apollo.uni-duesseldorf.de ([134.99.128.36]:46691 "EHLO
-	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757640AbZJaD67 (ORCPT
+	Sat, 31 Oct 2009 00:09:35 -0400
+Received: from smtp106.prem.mail.sp1.yahoo.com ([98.136.44.61]:38676 "HELO
+	smtp106.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750710AbZJaEJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 23:58:59 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Sat, 31 Oct 2009 04:58:55 +0100 (CET)
-From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: Re: Fwd: [PATCH] [RFC] ataflop: remove buggy IRQ disable from
- do_fd_request()
-In-reply-to: <m3k4yqfmeb.fsf@hase.home>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-m68k <linux-m68k@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Message-id: <alpine.DEB.2.00.0910310455190.17692@zirkon.biophys.uni-duesseldorf.de>
-References: <alpine.LSU.2.00.0910091141150.19284@wotan.suse.de>
- <10f740e80910100201n30367714uc57ec3c9c39b92af@mail.gmail.com>
- <alpine.DEB.2.00.0910110846420.20140@zirkon.biophys.uni-duesseldorf.de>
- <alpine.LSU.2.00.0910121106330.19284@wotan.suse.de>
- <alpine.DEB.2.00.0910182126120.6395@zirkon.biophys.uni-duesseldorf.de>
- <alpine.LSU.2.00.0910190932030.8582@wotan.suse.de>
- <alpine.DEB.2.00.0910200847320.8658@zirkon.biophys.uni-duesseldorf.de>
- <m3k4yqfmeb.fsf@hase.home>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 31 Oct 2009 00:09:34 -0400
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: Rn_bTpwVM1m4zoXYz1tsinM6DX7srgetNuJNQGT8IAgdalgabZabF0qf6.IshEhD94RPwCgIT585_Ze_rmUaMrx5XhVRx8kTTkB_AsVXJ5cF_0c9iVCc4YOZ8WynNJ6ZwYilS_hppq_Zq6zbMpk_bAi9htKgJeagOZK8ChhYbcmqavGNVNemvVq.tXGnrNeZ55kZTBvfxymC8lGagLGJmL6DwdW1Bcps01gFIwVhKy2ZTtYrtJa7hBEmfikK4F6dJSS2i1URJxLBPE1jlrtCFQwMQ_qAHKZm.xYF02WrcpUsOLvDotAs_90-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AEBB86F.3090601@schaufler-ca.com>
+Date: Fri, 30 Oct 2009 21:09:19 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: David Wagner <daw-news@cs.berkeley.edu>, linux-kernel@vger.kernel.org,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: symlinks with permissions
+References: <20091025062953.GC1391@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org> <20091028081653.GA18290@elf.ucw.cz> <4AE87292.20802@schaufler-ca.com> <hcahnb$mgp$1@taverner.cs.berkeley.edu> <4AE91658.9090105@schaufler-ca.com> <20091030140745.GC1481@ucw.cz>
+In-Reply-To: <20091030140745.GC1481@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andreas,
+Pavel Machek wrote:
+> Hi!
+>
+>
+>   
+>>> Perhaps take a look at Pavel's post describing the attack again?
+>>>       
+>> Yeah, I did that. It still looks like the complaint is that
+>> /proc/8675309/fd/3 gives you the ability to gain RW access to
+>> an object for which you have RW access.
+>>
+>> Look, with hard links and the various mount options available
+>> today you just can't count on setting the mode on a directory
+>> to completely protect the files that it references. Look carefully
+>>     
+>
+> Look again. I can count on paths if I can prevent mounts and
+> hardlinks.
 
-> > That. too :-) What I meant to say - the reason why someone chose to comment out 
-> > the original sti() wasn't really clear. I guess the reason for that particular 
-> > change has been lost in the pre-git or bk era.
-> 
-> FWIW, this can be traced back to as much as the 2.0 era (1996).  Going
+But you can't. I refer you back to the long and tedious arguments
+against pathname based access controls. At any given time the only
+access controls that you can actually count on are those on the
+object itself.
 
-Thanks, that definitely settles it. Around that time was my only exposure to the 
-floppy code (making mtools work). Brings back some memories ...
 
-> back further is difficult because a lot of files on ftp.uni-erlangen.de
-> are corrupt.
+>  Mounts are irrelevant as they are root-only,
 
-You haven't really dug around on the old FTP site just for this? 
+That hardly makes them irrelevant. It makes them explicable, and
+thus generally acceptable, but as always, with privilege comes
+responsibility.
 
-Cheers,
+> and I was checking for hardlinks.
+>   
 
-	Michael
+So that was not an issue in this particular case.
+
+>> Now, ask me if I think that /proc/8675309/fd/3 is a good idea,
+>> and we'll have a different discussion, but from an old school
+>>     
+>
+> Cool, so we actually agree, and can drop this thread?
+> 								Pavel
+>   
+
+The "fd" file system was introduced in SystemV long before Linux
+was on anyone's radar. It was a response to the fact that a born
+shell script (not Born Again SHell, SHell) couldn't redirect to
+arbitrary descriptors the way that csh could. It was an amazing
+example of every problem looking like a nail to the wielder of
+the special purpose file system hammer. I dislike the /proc/.../fd
+scheme for the same reasons, not because it is a security issue.
+I would have preferred that the shell code get improved instead.
+But, as I say, my opinion and $4.35 will get you the beverage of
+your choice at Starbuck's.
 
