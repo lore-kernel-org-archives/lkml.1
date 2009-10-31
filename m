@@ -1,105 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbZJaJPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZJaJUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbZJaJPi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 05:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZJaJPi
+	id S1756576AbZJaJUc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 05:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZJaJUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 05:15:38 -0400
-Received: from thunk.org ([69.25.196.29]:36750 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751433AbZJaJPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 05:15:36 -0400
-Date: Sat, 31 Oct 2009 05:15:28 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Eric Sandeen <sandeen@redhat.com>, Parag Warudkar <parag.lkml@gmail.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       bugzilla-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
-Message-ID: <20091031091528.GO18464@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andreas Dilger <adilger@sun.com>, Eric Sandeen <sandeen@redhat.com>,
-	Parag Warudkar <parag.lkml@gmail.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-	bugzilla-daemon@bugzilla.kernel.org
-References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com> <20091016091558.GA10184@mit.edu> <20091027101534.GA27584@skywalker.linux.vnet.ibm.com> <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com> <4AEA0B71.5050805@redhat.com> <3D6E88E0-7271-4CEC-85DC-9E4416F030F5@sun.com>
+	Sat, 31 Oct 2009 05:20:32 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:37362 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754477AbZJaJUa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 05:20:30 -0400
+Message-ID: <4AEC015D.80601@gmail.com>
+Date: Sat, 31 Oct 2009 10:20:29 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3D6E88E0-7271-4CEC-85DC-9E4416F030F5@sun.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: David Miller <davem@davemloft.net>
+CC: francis.moro@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
+References: <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com>	<4AEACD88.8080108@gmail.com>	<4AEB0059.1050400@gmail.com> <20091030.122640.137286305.davem@davemloft.net>
+In-Reply-To: <20091030.122640.137286305.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 31 Oct 2009 10:20:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 01:56:27PM -0600, Andreas Dilger wrote:
-> I wonder if there are multiple problems involved here?  Eric, it seems
-> possible that your reproducer is exercising a similar, though unrelated
-> codepath.  
+David Miller a écrit :
+> From: Eric Dumazet <eric.dumazet@gmail.com>
+> Date: Fri, 30 Oct 2009 16:03:53 +0100
+> 
+>> [PATCH take2] net: fix sk_forward_alloc corruption
+>>
+>> On UDP sockets, we must call skb_free_datagram() with socket locked,
+>> or risk sk_forward_alloc corruption. This requirement is not respected
+>> in SUNRPC.
+>>
+>> Add a convenient helper, skb_free_datagram_locked() and use it in SUNRPC
+>>
+>> Reported-by: Francis Moreau <francis.moro@gmail.com>
+>> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> 
+> I've tentatively applied this to my net-2.6 tree, I won't
+> push it out until we have positive testing results.
 
-Note that Aneesh has pubished two patches which insert a call to
-ext4_discard_preallocations().  One is a patch which inserts it into
-fs/inode.c's truncate path (for direct/indirect-mapped inodes) and one
-which is patch which inserts it into fs/extents.c truncate path (for
-extent-mapped inodes).  As near as I can tell both patches are
-necessary, and it looks to me like they should be combined into a
-single patch, since commit 487caeef9 affects both truncate paths.
-Aneesh, do you concur?
+I tested nfs/nfsd with fillowing additional debugging patch.
 
-Like Andreas, I am suspicious that there may be multiple problems
-occurring here, so here is a proposed plan of attack.
+Without the fix (net: fix sk_forward_alloc corruption), I got warnings,
+while with fix applied, I got no warnings. Its probably hard to hit
+original bug since its a very small race window.
 
-Step 1) Sanity check that commit 0a80e986 shows the problem.  This is
-immediately after the first batch of ext4 patches which I sent to
-Linus during the post-2.6.31 merge window.  Given that patches in the
-middle of this first patch have been reported by Avery as showing the
-problem, and while we may have some "git bisect good" revisions that
-were really bad, in general if a revision is reported bad, the problem
-is probably there at that version and successive versions.  Hence, I'm
-_pretty_ sure that 0a80e986 should demonstrate the problem.
+Trace without fix :
 
-Step 2) Sanity check that commit ab86e576 does _not_ show the problem.
-This commit corresponds to 2.6.31-git6, and there are no ext4 patches
-that I pushed before that point.  There are three commits that show up
-in response to the command "git log v2.6.31..v2.6.31-git6 -- fs/ext4
-fs/jbd2", but they weren't pushed by me.  Although come to think of
-it, Jan Kara's commit 0d34ec62, "ext4: Remove syncing logic from
-ext4_file_write" is one we might want to look at very carefully if
-commit ab86e576 also shows the problem....
+[  226.686788] RPC: Registered udp transport module.
+[  226.686791] RPC: Registered tcp transport module.
+[  226.686792] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[  226.851677] Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+[  226.869381] NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
+[  226.869443] NFSD: unable to find recovery directory /var/lib/nfs/v4recovery
+[  226.869488] NFSD: starting 90-second grace period
+[  226.870564] svc: failed to register lockdv1 RPC service (errno 97).
+[  244.401237] ------------[ cut here ]------------
+[  244.401288] WARNING: at include/net/sock.h:886 sock_rfree+0x54/0x70()
+[  244.401334] Hardware name: ProLiant BL460c G1
+[  244.401379] Modules linked in: nfsd lockd auth_rpcgss sunrpc exportfs bonding ipv6
+[  244.401699] Pid: 5295, comm: nfsd Not tainted 2.6.32-rc3-00920-gbdd6be3-dirty #342
+[  244.401745] Call Trace:
+[  244.401784]  [<c055355a>] ? printk+0x1d/0x23
+[  244.401827]  [<c023c3f2>] warn_slowpath_common+0x72/0xa0
+[  244.401869]  [<c04b0d54>] ? sock_rfree+0x54/0x70
+[  244.401909]  [<c04b0d54>] ? sock_rfree+0x54/0x70
+[  244.401950]  [<c023c43a>] warn_slowpath_null+0x1a/0x20
+[  244.401991]  [<c04b0d54>] sock_rfree+0x54/0x70
+[  244.402033]  [<c04b4cf5>] skb_release_head_state+0x45/0xe0
+[  244.402084]  [<c04b49f0>] __kfree_skb+0x10/0x90
+[  244.402125]  [<c04b4a8c>] consume_skb+0x1c/0x40
+[  244.402166]  [<c04b7c62>] skb_free_datagram+0x12/0x70
+[  244.402217]  [<fc9fa177>] svc_release_skb+0x37/0x60 [sunrpc]
+[  244.402261]  [<c026f452>] ? module_put+0x62/0xf0
+[  244.402308]  [<fca05c98>] svc_send+0x28/0xc0 [sunrpc]
+[  244.402356]  [<fc9f8acb>] svc_process+0x22b/0x770 [sunrpc]
+[  244.402416]  [<fd04895c>] nfsd+0xac/0x140 [nfsd]
+[  244.402484]  [<fd0488b0>] ? nfsd+0x0/0x140 [nfsd]
+[  244.402543]  [<c0257ab4>] kthread+0x74/0x80
+[  244.402602]  [<c0257a40>] ? kthread+0x0/0x80
+[  244.402656]  [<c020390f>] kernel_thread_helper+0x7/0x10
+[  244.402711] ---[ end trace e202cdb1b491aa15 ]---
 
-Step 3) Assuming that Step 1 and Step 2 are as I expect, with commit
-ab86e576 being "good", and commit 0a80e986 being "bad", we will have
-localized the problem commit(s) to the 63 commits that were initially
-pushed to Linus during the merge window.  One of the commits is
-487caeef9, which Aneesh has argued convincingly seems to be
-problematic, and which seems to solve at least one or two reporter's
-problems, but clearly isn't a complete solution.  So let's try to
-narrow things down further by testing this branch:
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git test-history
+Debugging patch :
 
-This branch corresponds to commit ab86e576 (from Step 2), but with the
-problematic commit 487caeef9 removed.  It was generated by applying
-the following guilt patch series to v2.6.31-git6:
+Intent is to make sure sock is locked by user or by softirq handler,
+unless we are currently dismantling socket (sk_refcnt==0)
 
-    git://repo.or.cz/ext4-patch-queue.git test-history
+To speedup this test, we could use several bits of sk_lock.owned instead 
+of one for the user case.
+(one for lock owned by user, one for lowk owned by softirq, one in dismantle phase)
 
-The advantage of starting with the head of test-history is that if
-there are multiple problematic commits, this should show the problem
-(just as reverting 487caeef9 would) --- but since 487caeef9 is
-actually removed, we can now do a "git bisect start test-history
-v2.6.31-git6" and hopefully be able to localize whatever additional
-commits might be bad.
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 55de3bd..08ecb0e 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -849,10 +849,15 @@ static inline int sk_rmem_schedule(struct sock *sk, int size)
+ 		__sk_mem_schedule(sk, size, SK_MEM_RECV);
+ }
+ 
++#define sock_owned_by_user(sk)	((sk)->sk_lock.owned)
++#define sock_owned(sk)		((sk)->sk_lock.owned ||		\
++				 spin_is_locked(&(sk)->sk_lock.slock))
++
+ static inline void sk_mem_reclaim(struct sock *sk)
+ {
+ 	if (!sk_has_account(sk))
+ 		return;
++	WARN_ON(!(sock_owned(sk) || atomic_read(&sk->sk_refcnt) == 0));
+ 	if (sk->sk_forward_alloc >= SK_MEM_QUANTUM)
+ 		__sk_mem_reclaim(sk);
+ }
+@@ -861,6 +866,7 @@ static inline void sk_mem_reclaim_partial(struct sock *sk)
+ {
+ 	if (!sk_has_account(sk))
+ 		return;
++	WARN_ON(!(sock_owned(sk) || atomic_read(&sk->sk_refcnt) == 0));
+ 	if (sk->sk_forward_alloc > SK_MEM_QUANTUM)
+ 		__sk_mem_reclaim(sk);
+ }
+@@ -869,6 +875,7 @@ static inline void sk_mem_charge(struct sock *sk, int size)
+ {
+ 	if (!sk_has_account(sk))
+ 		return;
++	WARN_ON(!sock_owned(sk));
+ 	sk->sk_forward_alloc -= size;
+ }
+ 
+@@ -876,6 +883,7 @@ static inline void sk_mem_uncharge(struct sock *sk, int size)
+ {
+ 	if (!sk_has_account(sk))
+ 		return;
++	WARN_ON(!sock_owned(sk));
+ 	sk->sk_forward_alloc += size;
+ }
+ 
+@@ -900,7 +908,6 @@ static inline void sk_wmem_free_skb(struct sock *sk, struct sk_buff *skb)
+  * Since ~2.3.5 it is also exclusive sleep lock serializing
+  * accesses from user process context.
+  */
+-#define sock_owned_by_user(sk)	((sk)->sk_lock.owned)
+ 
+ /*
+  * Macro so as to not evaluate some arguments when
 
-(We could also keep applying and unapplying the patch corresponding to
-the revert of 487caeef9 while doing a bisection, but that tends to be
-error prone.)
-
-Does that sounds like a plan?
-
-							- Ted
