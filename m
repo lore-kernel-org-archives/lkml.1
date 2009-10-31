@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbZJaJkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbZJaJlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbZJaJkz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 05:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbZJaJky
+	id S1757507AbZJaJlM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 05:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbZJaJlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 05:40:54 -0400
+	Sat, 31 Oct 2009 05:41:11 -0400
 Received: from mail-vw0-f192.google.com ([209.85.212.192]:33643 "EHLO
 	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757309AbZJaJks convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757333AbZJaJk5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 05:40:48 -0400
+	Sat, 31 Oct 2009 05:40:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:from:date:message-id:subject:to:cc:content-type
          :content-transfer-encoding;
-        b=Z6/bZGTcyOd9yVsf65d5O2tITmHbz3a+UT/1EcBY8sqy8t144lvMBabaLAHQHcybvn
-         0DC11lwr3Q8Blsw5NyWn15oqwZlss2HFlUJ2Bh40cvLz/KMVg53RKUC6AdexWfhsGR3C
-         Du47/KEwf8KXC7L8vf2iSCi37PAh1l9PIwyJg=
+        b=VeH6m5WQuAL97KadgqJX1S4ORufIG+O/I//ccwyraf2Y3Q5VeiYOoRVMqfZGvD6YcI
+         Mcnmxe+HZGg8gkgyv6S0zHR7Ta8nuPh+A+okDcyB3dYV96cf/7ipqUEBzoOo2aKEOQfK
+         kJ9qk1irua1YlBBKHps1VJTsfRrciz0b4IfA0=
 MIME-Version: 1.0
 From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 31 Oct 2009 07:40:32 -0200
-Message-ID: <b8bf37780910310240i55ec5e0ag74fee707bb4f5a8a@mail.gmail.com>
-Subject: [PATCH 01/16] trivial: fix assorted "success" typos
+Date: Sat, 31 Oct 2009 07:40:42 -0200
+Message-ID: <b8bf37780910310240u65355dm79c052b5969e759f@mail.gmail.com>
+Subject: [PATCH 02/16] trivial: fix assorted "unknown" typos
 To: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
 Cc: me <andre.goddard@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -30,2150 +30,2170 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b81a0ec27dd1c855362c0af105f0e89623bba52a Mon Sep 17 00:00:00 2001
+>From 481588175be83c47941b1390fc8a49281a06ca4d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Fri, 30 Oct 2009 03:40:34 -0200
-Subject: [PATCH 01/16] trivial: fix assorted "success" typos
+Date: Fri, 30 Oct 2009 03:48:35 -0200
+Subject: [PATCH 02/16] trivial: fix assorted "unknown" typos
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-diff --git a/Documentation/ABI/testing/procfs-diskstats
-b/Documentation/ABI/testing/procfs-diskstats
-index 9923390..f91a973 100644
---- a/Documentation/ABI/testing/procfs-diskstats
-+++ b/Documentation/ABI/testing/procfs-diskstats
-@@ -8,7 +8,7 @@ Description:
- 		 1 - major number
- 		 2 - minor mumber
- 		 3 - device name
--		 4 - reads completed succesfully
-+		 4 - reads completed successfully
- 		 5 - reads merged
- 		 6 - sectors read
- 		 7 - time spent reading (ms)
-diff --git a/Documentation/ABI/testing/sysfs-block
-b/Documentation/ABI/testing/sysfs-block
-index 5f3beda..d2f9033 100644
---- a/Documentation/ABI/testing/sysfs-block
-+++ b/Documentation/ABI/testing/sysfs-block
-@@ -4,7 +4,7 @@ Contact:	Jerome Marchand <jmarchan@redhat.com>
- Description:
- 		The /sys/block/<disk>/stat files displays the I/O
- 		statistics of disk <disk>. They contain 11 fields:
--		 1 - reads completed succesfully
-+		 1 - reads completed successfully
- 		 2 - reads merged
- 		 3 - sectors read
- 		 4 - time spent reading (ms)
-diff --git a/Documentation/scsi/ChangeLog.megaraid_sas
-b/Documentation/scsi/ChangeLog.megaraid_sas
-index c851ef4..84524e0 100644
---- a/Documentation/scsi/ChangeLog.megaraid_sas
-+++ b/Documentation/scsi/ChangeLog.megaraid_sas
-@@ -185,7 +185,7 @@ ii.	FW enables WCE bit in Mode Sense cmd for
-drives that are configured
- 	Disks are exposed with WCE=1. User is advised to enable Write Back
- 	mode only when the controller has battery backup. At this time
- 	Synhronize cache is not supported by the FW. Driver will short-cycle
--	the cmd and return sucess without sending down to FW.
-+	the cmd and return success without sending down to FW.
+diff --git a/Documentation/dvb/README.dvb-usb b/Documentation/dvb/README.dvb-usb
+index bf2a9cd..c8238e4 100644
+--- a/Documentation/dvb/README.dvb-usb
++++ b/Documentation/dvb/README.dvb-usb
+@@ -85,7 +85,7 @@ http://www.linuxtv.org/wiki/index.php/DVB_USB
+ 	     - moved transfer control (pid filter, fifo control) from usb
+driver to frontend, it seems
+ 	       better settled there (added xfer_ops-struct)
+ 	     - created a common files for frontends (mc/p/mb)
+-  2004-09-28 - added support for a new device (Unkown, vendor ID is
+Hyper-Paltek)
++  2004-09-28 - added support for a new device (Unknown, vendor ID is
+Hyper-Paltek)
+   2004-09-20 - added support for a new device (Compro DVB-U2000), thanks
+ 	       to Amaury Demol for reporting
+ 	     - changed usb TS transfer method (several urbs, stopping transfer
+diff --git a/Documentation/video4linux/gspca.txt
+b/Documentation/video4linux/gspca.txt
+index 3f61825..6b29555 100644
+--- a/Documentation/video4linux/gspca.txt
++++ b/Documentation/video4linux/gspca.txt
+@@ -6,7 +6,7 @@ The modules are:
 
- 1 Release Date    : Sun Jan. 14 11:21:32 PDT 2007 -
- 		 Sumant Patro <Sumant.Patro@lsil.com>/Bo Yang
-diff --git a/arch/arm/mach-bcmring/include/mach/csp/dmacHw_priv.h
-b/arch/arm/mach-bcmring/include/mach/csp/dmacHw_priv.h
-index 375066a..1e24420 100644
---- a/arch/arm/mach-bcmring/include/mach/csp/dmacHw_priv.h
-+++ b/arch/arm/mach-bcmring/include/mach/csp/dmacHw_priv.h
-@@ -83,7 +83,7 @@ typedef struct {
- *  @brief   Get next available transaction width
- *
- *
--*  @return  On sucess  : Next avail able transaction width
-+*  @return  On success  : Next avail able transaction width
- *           On failure : dmacHw_TRANSACTION_WIDTH_8
- *
- *  @note
-diff --git a/arch/arm/mach-bcmring/include/mach/dma.h
-b/arch/arm/mach-bcmring/include/mach/dma.h
-index 847980c..1f2c531 100644
---- a/arch/arm/mach-bcmring/include/mach/dma.h
-+++ b/arch/arm/mach-bcmring/include/mach/dma.h
-@@ -651,7 +651,7 @@ int dma_map_add_region(DMA_MemMap_t *memMap,	/*
-Stores state information about t
- /**
- *   Creates a descriptor ring from a memory mapping.
- *
--*   @return 0 on sucess, error code otherwise.
-+*   @return 0 on success, error code otherwise.
- */
- /****************************************************************************/
-
-diff --git a/arch/arm/mach-s3c6400/setup-sdhci.c
-b/arch/arm/mach-s3c6400/setup-sdhci.c
-index b93dafb..1039937 100644
---- a/arch/arm/mach-s3c6400/setup-sdhci.c
-+++ b/arch/arm/mach-s3c6400/setup-sdhci.c
-@@ -30,7 +30,7 @@ char *s3c6400_hsmmc_clksrcs[4] = {
- 	[0] = "hsmmc",
- 	[1] = "hsmmc",
- 	[2] = "mmc_bus",
--	/* [3] = "48m", - note not succesfully used yet */
-+	/* [3] = "48m", - note not successfully used yet */
- };
-
- void s3c6400_setup_sdhci_cfg_card(struct platform_device *dev,
-diff --git a/arch/arm/mach-s3c6410/setup-sdhci.c
-b/arch/arm/mach-s3c6410/setup-sdhci.c
-index 20666f3..816d2d9 100644
---- a/arch/arm/mach-s3c6410/setup-sdhci.c
-+++ b/arch/arm/mach-s3c6410/setup-sdhci.c
-@@ -30,7 +30,7 @@ char *s3c6410_hsmmc_clksrcs[4] = {
- 	[0] = "hsmmc",
- 	[1] = "hsmmc",
- 	[2] = "mmc_bus",
--	/* [3] = "48m", - note not succesfully used yet */
-+	/* [3] = "48m", - note not successfully used yet */
- };
-
-
-diff --git a/arch/arm/plat-omap/dma.c b/arch/arm/plat-omap/dma.c
-index b53125f..0e30891 100644
---- a/arch/arm/plat-omap/dma.c
-+++ b/arch/arm/plat-omap/dma.c
-@@ -1232,7 +1232,7 @@ static void create_dma_lch_chain(int lch_head,
-int lch_queue)
-  * 					      OMAP_DMA_DYNAMIC_CHAIN
-  * @params - Channel parameters
-  *
-- * @return - Succes : 0
-+ * @return - Success : 0
-  * 	     Failure: -EINVAL/-ENOMEM
-  */
- int omap_request_dma_chain(int dev_id, const char *dev_name,
-diff --git a/arch/blackfin/kernel/traps.c b/arch/blackfin/kernel/traps.c
-index 6b7325d..78cb3d3 100644
---- a/arch/blackfin/kernel/traps.c
-+++ b/arch/blackfin/kernel/traps.c
-@@ -619,7 +619,7 @@ asmlinkage notrace void trap_c(struct pt_regs *fp)
-
- /*
-  * Similar to get_user, do some address checking, then dereference
-- * Return true on sucess, false on bad address
-+ * Return true on success, false on bad address
-  */
- static bool get_instruction(unsigned short *val, unsigned short *address)
- {
-diff --git a/arch/microblaze/lib/memcpy.c b/arch/microblaze/lib/memcpy.c
-index 6a907c5..cc2108b 100644
---- a/arch/microblaze/lib/memcpy.c
-+++ b/arch/microblaze/lib/memcpy.c
-@@ -9,7 +9,7 @@
-  * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-  * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-  *
-- * Attempts were made, unsuccesfully, to contact the original
-+ * Attempts were made, unsuccessfully, to contact the original
-  * author of this code (Michael Morrow, Intel).  Below is the original
-  * copyright notice.
-  *
-diff --git a/arch/microblaze/lib/memmove.c b/arch/microblaze/lib/memmove.c
-index d4e9f49..0929198 100644
---- a/arch/microblaze/lib/memmove.c
-+++ b/arch/microblaze/lib/memmove.c
-@@ -9,7 +9,7 @@
-  * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-  * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-  *
-- * Attempts were made, unsuccesfully, to contact the original
-+ * Attempts were made, unsuccessfully, to contact the original
-  * author of this code (Michael Morrow, Intel).  Below is the original
-  * copyright notice.
-  *
-diff --git a/arch/microblaze/lib/memset.c b/arch/microblaze/lib/memset.c
-index 941dc8f..4df851d 100644
---- a/arch/microblaze/lib/memset.c
-+++ b/arch/microblaze/lib/memset.c
-@@ -9,7 +9,7 @@
-  * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-  * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-  *
-- * Attempts were made, unsuccesfully, to contact the original
-+ * Attempts were made, unsuccessfully, to contact the original
-  * author of this code (Michael Morrow, Intel).  Below is the original
-  * copyright notice.
-  *
-diff --git a/arch/powerpc/platforms/powermac/pci.c
-b/arch/powerpc/platforms/powermac/pci.c
-index e81403b..ab2027c 100644
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -302,7 +302,7 @@ static void __init setup_chaos(struct pci_controller *hose,
-  *  1 -> Skip the device but act as if the access was successfull
-  *       (return 0xff's on reads, eventually, cache config space
-  *       accesses in a later version)
-- * -1 -> Hide the device (unsuccessful acess)
-+ * -1 -> Hide the device (unsuccessful access)
-  */
- static int u3_ht_skip_device(struct pci_controller *hose,
- 			     struct pci_bus *bus, unsigned int devfn)
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 98f230f..ad59a92 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -1635,7 +1635,7 @@ retry:
- 			goto out;
-
- 		/*
--		 * aperture was sucessfully enlarged by 128 MB, try
-+		 * aperture was successfully enlarged by 128 MB, try
- 		 * allocation again
- 		 */
- 		goto retry;
-diff --git a/block/blk-iopoll.c b/block/blk-iopoll.c
-index ca56420..58916af 100644
---- a/block/blk-iopoll.c
-+++ b/block/blk-iopoll.c
-@@ -28,7 +28,7 @@ static DEFINE_PER_CPU(struct list_head, blk_cpu_iopoll);
-  * Description:
-  *     Add this blk_iopoll structure to the pending poll list and trigger the
-  *     raise of the blk iopoll softirq. The driver must already have gotten a
-- *     succesful return from blk_iopoll_sched_prep() before calling this.
-+ *     successful return from blk_iopoll_sched_prep() before calling this.
-  **/
- void blk_iopoll_sched(struct blk_iopoll *iop)
- {
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 979d159..ee95c76 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -188,7 +188,7 @@ EXPORT_SYMBOL_GPL(wait_for_device_probe);
-  * @dev: device to try to bind to the driver
-  *
-  * This function returns -ENODEV if the device is not registered,
-- * 1 if the device is bound sucessfully and 0 otherwise.
-+ * 1 if the device is bound successfully and 0 otherwise.
-  *
-  * This function must be called with @dev->sem held.  When called for a
-  * USB interface, @dev->parent->sem must be held as well.
-diff --git a/drivers/crypto/hifn_795x.c b/drivers/crypto/hifn_795x.c
-index 5f753fc..09ad915 100644
---- a/drivers/crypto/hifn_795x.c
-+++ b/drivers/crypto/hifn_795x.c
-@@ -863,7 +863,7 @@ static int hifn_init_pubrng(struct hifn_device *dev)
- 		dev->dmareg |= HIFN_DMAIER_PUBDONE;
- 		hifn_write_1(dev, HIFN_1_DMA_IER, dev->dmareg);
-
--		dprintk("Chip %s: Public key engine has been sucessfully "
-+		dprintk("Chip %s: Public key engine has been successfully "
- 				"initialised.\n", dev->name);
- 	}
-
-diff --git a/drivers/firewire/core-topology.c b/drivers/firewire/core-topology.c
-index fddf2b3..d373d17 100644
---- a/drivers/firewire/core-topology.c
-+++ b/drivers/firewire/core-topology.c
-@@ -183,7 +183,7 @@ static inline struct fw_node *fw_node(struct list_head *l)
-  * This function builds the tree representation of the topology given
-  * by the self IDs from the latest bus reset.  During the construction
-  * of the tree, the function checks that the self IDs are valid and
-- * internally consistent.  On succcess this function returns the
-+ * internally consistent.  On success this function returns the
-  * fw_node corresponding to the local card otherwise NULL.
-  */
- static struct fw_node *build_tree(struct fw_card *card,
-diff --git a/drivers/gpu/drm/drm_crtc.c b/drivers/gpu/drm/drm_crtc.c
-index 5cae0b3..0321889 100644
---- a/drivers/gpu/drm/drm_crtc.c
-+++ b/drivers/gpu/drm/drm_crtc.c
-@@ -2328,7 +2328,7 @@ int drm_mode_connector_property_set_ioctl(struct
-drm_device *dev,
- 	} else if (connector->funcs->set_property)
- 		ret = connector->funcs->set_property(connector, property, out_resp->value);
-
--	/* store the property value if succesful */
-+	/* store the property value if successful */
- 	if (!ret)
- 		drm_connector_property_set_value(connector, property, out_resp->value);
- out:
-diff --git a/drivers/input/serio/hp_sdc.c b/drivers/input/serio/hp_sdc.c
-index 1c9410d..bcc2d30 100644
---- a/drivers/input/serio/hp_sdc.c
-+++ b/drivers/input/serio/hp_sdc.c
-@@ -955,7 +955,7 @@ static int __init hp_sdc_init_hppa(struct parisc_device *d)
- 	INIT_DELAYED_WORK(&moduleloader_work, request_module_delayed);
-
- 	ret = hp_sdc_init();
--	/* after sucessfull initialization give SDC some time to settle
-+	/* after successfull initialization give SDC some time to settle
- 	 * and then load the hp_sdc_mlc upper layer driver */
- 	if (!ret)
- 		schedule_delayed_work(&moduleloader_work,
-diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
-index e04bad6..6d4da60 100644
---- a/drivers/isdn/mISDN/tei.c
-+++ b/drivers/isdn/mISDN/tei.c
-@@ -725,7 +725,7 @@ tei_id_ver_tout_net(struct FsmInst *fi, int event,
-void *arg)
- 	if (tm->rcnt == 1) {
- 		if (*debug & DEBUG_L2_TEI)
- 			tm->tei_m.printdebug(fi,
--			    "check req for tei %d sucessful\n", tm->l2->tei);
-+			    "check req for tei %d successful\n", tm->l2->tei);
- 		mISDN_FsmChangeState(fi, ST_TEI_NOP);
- 	} else if (tm->rcnt > 1) {
- 		/* duplicate assignment; remove */
-diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.h
-b/drivers/media/dvb/dvb-core/dvb_frontend.h
-index 810f07d..52e4ce4 100644
---- a/drivers/media/dvb/dvb-core/dvb_frontend.h
-+++ b/drivers/media/dvb/dvb-core/dvb_frontend.h
-@@ -160,7 +160,7 @@ struct tuner_state {
-  * search callback possible return status
-  *
-  * DVBFE_ALGO_SEARCH_SUCCESS
-- * The frontend search algorithm completed and returned succesfully
-+ * The frontend search algorithm completed and returned successfully
-  *
-  * DVBFE_ALGO_SEARCH_ASLEEP
-  * The frontend search algorithm is sleeping
-diff --git a/drivers/media/dvb/frontends/cx24113.c
-b/drivers/media/dvb/frontends/cx24113.c
-index 075b2b5..e9ee555 100644
---- a/drivers/media/dvb/frontends/cx24113.c
-+++ b/drivers/media/dvb/frontends/cx24113.c
-@@ -589,7 +589,7 @@ struct dvb_frontend *cx24113_attach(struct dvb_frontend *fe,
- 		info("detected CX24113 variant\n");
- 		break;
- 	case REV_CX24113:
--		info("sucessfully detected\n");
-+		info("successfully detected\n");
- 		break;
- 	default:
- 		err("unsupported device id: %x\n", state->rev);
-diff --git a/drivers/media/dvb/frontends/stb0899_drv.c
-b/drivers/media/dvb/frontends/stb0899_drv.c
-index a04c782..1570669 100644
---- a/drivers/media/dvb/frontends/stb0899_drv.c
-+++ b/drivers/media/dvb/frontends/stb0899_drv.c
-@@ -1571,7 +1571,7 @@ static enum dvbfe_search stb0899_search(struct
-dvb_frontend *fe, struct dvb_fron
-  * stb0899_track
-  * periodically check the signal level against a specified
-  * threshold level and perform derotator centering.
-- * called once we have a lock from a succesful search
-+ * called once we have a lock from a successful search
-  * event.
-  *
-  * Will be called periodically called to maintain the
-diff --git a/drivers/message/i2o/i2o_block.c b/drivers/message/i2o/i2o_block.c
-index d505b68..e39986a 100644
---- a/drivers/message/i2o/i2o_block.c
-+++ b/drivers/message/i2o/i2o_block.c
-@@ -940,7 +940,7 @@ static const struct block_device_operations
-i2o_block_fops = {
-  *	Allocate memory for the i2o_block_device struct, gendisk and request
-  *	queue and initialize them as far as no additional information is needed.
-  *
-- *	Returns a pointer to the allocated I2O Block device on succes or a
-+ *	Returns a pointer to the allocated I2O Block device on success or a
-  *	negative error code on failure.
-  */
- static struct i2o_block_device *i2o_block_device_alloc(void)
-diff --git a/drivers/message/i2o/iop.c b/drivers/message/i2o/iop.c
-index 27cf4af..e5ab621 100644
---- a/drivers/message/i2o/iop.c
-+++ b/drivers/message/i2o/iop.c
-@@ -132,7 +132,7 @@ u32 i2o_cntxt_list_add(struct i2o_controller * c, void *ptr)
-  *	Removes a previously added pointer from the context list and returns
-  *	the matching context id.
-  *
-- *	Returns context id on succes or 0 on failure.
-+ *	Returns context id on success or 0 on failure.
-  */
- u32 i2o_cntxt_list_remove(struct i2o_controller * c, void *ptr)
- {
-@@ -198,7 +198,7 @@ void *i2o_cntxt_list_get(struct i2o_controller *c,
-u32 context)
-  *	@c: controller to which the context list belong
-  *	@ptr: pointer to which the context id should be fetched
-  *
-- *	Returns context id which matches to the pointer on succes or 0 on
-+ *	Returns context id which matches to the pointer on success or 0 on
-  *	failure.
-  */
- u32 i2o_cntxt_list_get_ptr(struct i2o_controller * c, void *ptr)
-diff --git a/drivers/mtd/nand/diskonchip.c b/drivers/mtd/nand/diskonchip.c
-index e51c1ed..b126cf8 100644
---- a/drivers/mtd/nand/diskonchip.c
-+++ b/drivers/mtd/nand/diskonchip.c
-@@ -1056,7 +1056,7 @@ static struct nand_ecclayout doc200x_oobinfo = {
- };
-
- /* Find the (I)NFTL Media Header, and optionally also the mirror media header.
--   On sucessful return, buf will contain a copy of the media header for
-+   On successful return, buf will contain a copy of the media header for
-    further processing.  id is the string to scan for, and will presumably be
-    either "ANAND" or "BNAND".  If findmirror=1, also look for the mirror media
-    header.  The page #s of the found media headers are placed in mh0_page and
-diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
-index 11dc7e6..68b5b3a 100644
---- a/drivers/mtd/nand/s3c2410.c
-+++ b/drivers/mtd/nand/s3c2410.c
-@@ -875,7 +875,7 @@ static void s3c2410_nand_init_chip(struct
-s3c2410_nand_info *info,
-  * @info: The controller instance.
-  * @nmtd: The driver version of the MTD instance.
-  *
-- * This routine is called after the chip probe has succesfully completed
-+ * This routine is called after the chip probe has successfully completed
-  * and the relevant per-chip information updated. This call ensure that
-  * we update the internal state accordingly.
-  *
-diff --git a/drivers/net/benet/be_main.c b/drivers/net/benet/be_main.c
-index 1f941f0..02a0908 100644
---- a/drivers/net/benet/be_main.c
-+++ b/drivers/net/benet/be_main.c
-@@ -1876,7 +1876,7 @@ int be_load_fw(struct be_adapter *adapter, u8 *func)
- 		goto fw_exit;
- 	}
-
--	dev_info(&adapter->pdev->dev, "Firmware flashed succesfully\n");
-+	dev_info(&adapter->pdev->dev, "Firmware flashed successfully\n");
-
- fw_exit:
- 	release_firmware(fw);
-diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
-index d1e0563..61c083a 100644
---- a/drivers/net/e1000e/82571.c
-+++ b/drivers/net/e1000e/82571.c
-@@ -1412,7 +1412,7 @@ static s32
-e1000_check_for_serdes_link_82571(struct e1000_hw *hw)
- 		case e1000_serdes_link_autoneg_progress:
- 			/*
- 			 * If the LU bit is set in the STATUS register,
--			 * autoneg has completed sucessfully. If not,
-+			 * autoneg has completed successfully. If not,
- 			 * try foring the link because the far end may be
- 			 * available but not capable of autonegotiation.
- 			 */
-diff --git a/drivers/net/e1000e/lib.c b/drivers/net/e1000e/lib.c
-index 99ba2b8..b065ba4 100644
---- a/drivers/net/e1000e/lib.c
-+++ b/drivers/net/e1000e/lib.c
-@@ -571,7 +571,7 @@ s32 e1000e_check_for_serdes_link(struct e1000_hw *hw)
- 				if (!(rxcw & E1000_RXCW_IV)) {
- 					mac->serdes_has_link = true;
- 					hw_dbg(hw, "SERDES: Link up - autoneg "
--					   "completed sucessfully.\n");
-+					   "completed successfully.\n");
- 				} else {
- 					mac->serdes_has_link = false;
- 					hw_dbg(hw, "SERDES: Link down - invalid"
-diff --git a/drivers/net/ehea/ehea_ethtool.c b/drivers/net/ehea/ehea_ethtool.c
-index d768852..75b099c 100644
---- a/drivers/net/ehea/ehea_ethtool.c
-+++ b/drivers/net/ehea/ehea_ethtool.c
-@@ -118,7 +118,7 @@ doit:
- 	ret = ehea_set_portspeed(port, sp);
-
- 	if (!ret)
--		ehea_info("%s: Port speed succesfully set: %dMbps "
-+		ehea_info("%s: Port speed successfully set: %dMbps "
- 			  "%s Duplex",
- 			  port->netdev->name, port->port_speed,
- 			  port->full_duplex == 1 ? "Full" : "Half");
-@@ -134,7 +134,7 @@ static int ehea_nway_reset(struct net_device *dev)
- 	ret = ehea_set_portspeed(port, EHEA_SPEED_AUTONEG);
-
- 	if (!ret)
--		ehea_info("%s: Port speed succesfully set: %dMbps "
-+		ehea_info("%s: Port speed successfully set: %dMbps "
- 			  "%s Duplex",
- 			  port->netdev->name, port->port_speed,
- 			  port->full_duplex == 1 ? "Full" : "Half");
-diff --git a/drivers/net/mlx4/mlx4_en.h b/drivers/net/mlx4/mlx4_en.h
-index 4376147..82c3ebc 100644
---- a/drivers/net/mlx4/mlx4_en.h
-+++ b/drivers/net/mlx4/mlx4_en.h
-@@ -162,7 +162,7 @@ enum {
- #define MLX4_EN_DEF_RX_PAUSE	1
- #define MLX4_EN_DEF_TX_PAUSE	1
-
--/* Interval between sucessive polls in the Tx routine when polling is used
-+/* Interval between successive polls in the Tx routine when polling is used
-    instead of interrupts (in per-core Tx rings) - should be power of 2 */
- #define MLX4_EN_TX_POLL_MODER	16
- #define MLX4_EN_TX_POLL_TIMEOUT	(HZ / 4)
-diff --git a/drivers/net/ps3_gelic_net.c b/drivers/net/ps3_gelic_net.c
-index b211613..86fde1a 100644
---- a/drivers/net/ps3_gelic_net.c
-+++ b/drivers/net/ps3_gelic_net.c
-@@ -296,7 +296,7 @@ static void gelic_card_reset_chain(struct gelic_card *card,
-  * @card: card structure
-  * @descr: descriptor to re-init
-  *
-- * return 0 on succes, <0 on failure
-+ * return 0 on success, <0 on failure
-  *
-  * allocates a new rx skb, iommu-maps it and attaches it to the descriptor.
-  * Activate the descriptor state-wise
-diff --git a/drivers/net/sfc/falcon.c b/drivers/net/sfc/falcon.c
-index c049364..70c1232 100644
---- a/drivers/net/sfc/falcon.c
-+++ b/drivers/net/sfc/falcon.c
-@@ -1264,7 +1264,7 @@ int falcon_flush_queues(struct efx_nic *efx)
- 		msleep(FALCON_FLUSH_INTERVAL);
- 		falcon_poll_flush_events(efx);
-
--		/* Check if every queue has been succesfully flushed */
-+		/* Check if every queue has been successfully flushed */
- 		outstanding = false;
- 		efx_for_each_tx_queue(tx_queue, efx)
- 			outstanding |= !tx_queue->flushed;
-diff --git a/drivers/net/smsc911x.c b/drivers/net/smsc911x.c
-index ccdd196..4a00940 100644
---- a/drivers/net/smsc911x.c
-+++ b/drivers/net/smsc911x.c
-@@ -816,7 +816,7 @@ static int smsc911x_mii_probe(struct net_device *dev)
- 	SMSC_TRACE(HW, "Passed Loop Back Test");
- #endif				/* USE_PHY_WORK_AROUND */
-
--	SMSC_TRACE(HW, "phy initialised succesfully");
-+	SMSC_TRACE(HW, "phy initialised successfully");
- 	return 0;
- }
-
-diff --git a/drivers/net/smsc911x.h b/drivers/net/smsc911x.h
-index b5716bd..016360c 100644
---- a/drivers/net/smsc911x.h
-+++ b/drivers/net/smsc911x.h
-@@ -30,7 +30,7 @@
- #define SMSC_NAPI_WEIGHT	16
-
- /* implements a PHY loopback test at initialisation time, to ensure a packet
-- * can be succesfully looped back */
-+ * can be successfully looped back */
- #define USE_PHY_WORK_AROUND
-
- #define DPRINTK(nlevel, klevel, fmt, args...) \
-diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
-index 90e663f..40b51e6 100644
---- a/drivers/net/spider_net.c
-+++ b/drivers/net/spider_net.c
-@@ -409,7 +409,7 @@ spider_net_free_rx_chain_contents(struct
-spider_net_card *card)
-  * @card: card structure
-  * @descr: descriptor to re-init
-  *
-- * Return 0 on succes, <0 on failure.
-+ * Return 0 on success, <0 on failure.
-  *
-  * Allocates a new rx skb, iommu-maps it and attaches it to the
-  * descriptor. Mark the descriptor as activated, ready-to-use.
-diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
-index 03a6ca0..a007e2a 100644
---- a/drivers/net/ucc_geth.h
-+++ b/drivers/net/ucc_geth.h
-@@ -80,16 +80,16 @@ struct ucc_geth {
- 				   frames) received that were between 128
- 				   (Including FCS length==4) and 255 octets */
- 	u32 txok;		/* Total number of octets residing in frames
--				   that where involved in succesfull
-+				   that where involved in successfull
- 				   transmission */
- 	u16 txcf;		/* Total number of PAUSE control frames
- 				   transmitted by this MAC */
- 	u8 res4[0x2];
- 	u32 tmca;		/* Total number of frames that were transmitted
--				   succesfully with the group address bit set
-+				   successfully with the group address bit set
- 				   that are not broadcast frames */
- 	u32 tbca;		/* Total number of frames transmitted
--				   succesfully that had destination address
-+				   successfully that had destination address
- 				   field equal to the broadcast address */
- 	u32 rxfok;		/* Total number of frames received OK */
- 	u32 rxbok;		/* Total number of octets received OK */
-@@ -98,9 +98,9 @@ struct ucc_geth {
- 				   HW because it includes octets in frames that
- 				   never even reach the UCC */
- 	u32 rmca;		/* Total number of frames that were received
--				   succesfully with the group address bit set
-+				   successfully with the group address bit set
- 				   that are not broadcast frames */
--	u32 rbca;		/* Total number of frames received succesfully
-+	u32 rbca;		/* Total number of frames received successfully
- 				   that had destination address equal to the
- 				   broadcast address */
- 	u32 scar;		/* Statistics carry register */
-@@ -759,15 +759,15 @@ struct ucc_geth_hardware_statistics {
- 				   frames) received that were between 128
- 				   (Including FCS length==4) and 255 octets */
- 	u32 txok;		/* Total number of octets residing in frames
--				   that where involved in succesfull
-+				   that where involved in successfull
- 				   transmission */
- 	u16 txcf;		/* Total number of PAUSE control frames
- 				   transmitted by this MAC */
- 	u32 tmca;		/* Total number of frames that were transmitted
--				   succesfully with the group address bit set
-+				   successfully with the group address bit set
- 				   that are not broadcast frames */
- 	u32 tbca;		/* Total number of frames transmitted
--				   succesfully that had destination address
-+				   successfully that had destination address
- 				   field equal to the broadcast address */
- 	u32 rxfok;		/* Total number of frames received OK */
- 	u32 rxbok;		/* Total number of octets received OK */
-@@ -776,9 +776,9 @@ struct ucc_geth_hardware_statistics {
- 				   HW because it includes octets in frames that
- 				   never even reach the UCC */
- 	u32 rmca;		/* Total number of frames that were received
--				   succesfully with the group address bit set
-+				   successfully with the group address bit set
- 				   that are not broadcast frames */
--	u32 rbca;		/* Total number of frames received succesfully
-+	u32 rbca;		/* Total number of frames received successfully
- 				   that had destination address equal to the
- 				   broadcast address */
- } __attribute__ ((packed));
-diff --git a/drivers/net/usb/smsc95xx.c b/drivers/net/usb/smsc95xx.c
-index c6c9222..0c3c738 100644
---- a/drivers/net/usb/smsc95xx.c
-+++ b/drivers/net/usb/smsc95xx.c
-@@ -748,7 +748,7 @@ static int smsc95xx_phy_initialize(struct usbnet *dev)
- 	mii_nway_restart(&dev->mii);
-
- 	if (netif_msg_ifup(dev))
--		devdbg(dev, "phy initialised succesfully");
-+		devdbg(dev, "phy initialised successfully");
- 	return 0;
- }
-
-diff --git a/drivers/net/wimax/i2400m/rx.c b/drivers/net/wimax/i2400m/rx.c
-index 07c32e6..99d2747 100644
---- a/drivers/net/wimax/i2400m/rx.c
-+++ b/drivers/net/wimax/i2400m/rx.c
-@@ -1114,7 +1114,7 @@ error:
-  * device. See the file header for the format. Run all checks on the
-  * buffer header, then run over each payload's descriptors, verify
-  * their consistency and act on each payload's contents.  If
-- * everything is succesful, update the device's statistics.
-+ * everything is successful, update the device's statistics.
-  *
-  * Note: You need to set the skb to contain only the length of the
-  * received buffer; for that, use skb_trim(skb, RECEIVED_SIZE).
-diff --git a/drivers/net/wireless/ath/ath9k/rc.c
-b/drivers/net/wireless/ath/ath9k/rc.c
-index 16a2717..2d3b4e7 100644
---- a/drivers/net/wireless/ath/ath9k/rc.c
-+++ b/drivers/net/wireless/ath/ath9k/rc.c
-@@ -969,7 +969,7 @@ static bool ath_rc_update_per(struct ath_softc *sc,
- 				 * Since this probe succeeded, we allow the next
- 				 * probe twice as soon.  This allows the maxRate
- 				 * to move up faster if the probes are
--				 * succesful.
-+				 * successful.
- 				 */
- 				ath_rc_priv->probe_time =
- 					now_msec - rate_table->probe_interval / 2;
-diff --git a/drivers/net/wireless/rt2x00/rt2x00usb.c
-b/drivers/net/wireless/rt2x00/rt2x00usb.c
-index 5015448..422288b 100644
---- a/drivers/net/wireless/rt2x00/rt2x00usb.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00usb.c
-@@ -193,7 +193,7 @@ static void rt2x00usb_interrupt_txdone(struct urb *urb)
- 	 * Obtain the status about this packet.
- 	 * Note that when the status is 0 it does not mean the
- 	 * frame was send out correctly. It only means the frame
--	 * was succesfully pushed to the hardware, we have no
-+	 * was successfully pushed to the hardware, we have no
- 	 * way to determine the transmission status right now.
- 	 * (Only indirectly by looking at the failed TX counters
- 	 * in the register).
-diff --git a/drivers/net/wireless/zd1211rw/zd_mac.c
-b/drivers/net/wireless/zd1211rw/zd_mac.c
-index 6d66635..2b7f965 100644
---- a/drivers/net/wireless/zd1211rw/zd_mac.c
-+++ b/drivers/net/wireless/zd1211rw/zd_mac.c
-@@ -312,7 +312,7 @@ static void tx_status(struct ieee80211_hw *hw,
-struct sk_buff *skb,
-  * zd_mac_tx_failed - callback for failed frames
-  * @dev: the mac80211 wireless device
-  *
-- * This function is called if a frame couldn't be succesfully be
-+ * This function is called if a frame couldn't be successfully be
-  * transferred. The first frame from the tx queue, will be selected and
-  * reported as error to the upper layers.
-  */
-diff --git a/drivers/s390/char/fs3270.c b/drivers/s390/char/fs3270.c
-index 097d384..f54b1ee 100644
---- a/drivers/s390/char/fs3270.c
-+++ b/drivers/s390/char/fs3270.c
-@@ -74,7 +74,7 @@ fs3270_do_io(struct raw3270_view *view, struct
-raw3270_request *rq)
+ xxxx		vend:prod
+ ----
+-spca501		0000:0000	MystFromOri Unknow Camera
++spca501		0000:0000	MystFromOri Unknown Camera
+ m5602		0402:5602	ALi Video Camera Controller
+ spca501		040a:0002	Kodak DVC-325
+ spca500		040a:0300	Kodak EZ200
+diff --git a/Documentation/vm/page-types.c b/Documentation/vm/page-types.c
+index 3ec4f2a..aa7f4d0 100644
+--- a/Documentation/vm/page-types.c
++++ b/Documentation/vm/page-types.c
+@@ -301,7 +301,7 @@ static char *page_flag_name(uint64_t flags)
+ 		present = (flags >> i) & 1;
+ 		if (!page_flag_names[i]) {
+ 			if (present)
+-				fatal("unkown flag bit %d\n", i);
++				fatal("unknown flag bit %d\n", i);
+ 			continue;
  		}
- 		rc = raw3270_start(view, rq);
- 		if (rc == 0) {
--			/* Started sucessfully. Now wait for completion. */
-+			/* Started successfully. Now wait for completion. */
- 			wait_event(fp->wait, raw3270_request_final(rq));
+ 		buf[j++] = present ? page_flag_names[i][0] : '_';
+diff --git a/arch/arm/mach-pxa/include/mach/palmld.h
+b/arch/arm/mach-pxa/include/mach/palmld.h
+index 8721b80..ae536e8 100644
+--- a/arch/arm/mach-pxa/include/mach/palmld.h
++++ b/arch/arm/mach-pxa/include/mach/palmld.h
+@@ -91,7 +91,7 @@
+ /* BATTERY */
+ #define PALMLD_BAT_MAX_VOLTAGE		4000	/* 4.00V maximum voltage */
+ #define PALMLD_BAT_MIN_VOLTAGE		3550	/* 3.55V critical voltage */
+-#define PALMLD_BAT_MAX_CURRENT		0	/* unknokn */
++#define PALMLD_BAT_MAX_CURRENT		0	/* unknown */
+ #define PALMLD_BAT_MIN_CURRENT		0	/* unknown */
+ #define PALMLD_BAT_MAX_CHARGE		1	/* unknown */
+ #define PALMLD_BAT_MIN_CHARGE		1	/* unknown */
+diff --git a/arch/arm/mach-pxa/include/mach/palmt5.h
+b/arch/arm/mach-pxa/include/mach/palmt5.h
+index d15662a..6baf746 100644
+--- a/arch/arm/mach-pxa/include/mach/palmt5.h
++++ b/arch/arm/mach-pxa/include/mach/palmt5.h
+@@ -66,7 +66,7 @@
+ /* BATTERY */
+ #define PALMT5_BAT_MAX_VOLTAGE		4000	/* 4.00v current voltage */
+ #define PALMT5_BAT_MIN_VOLTAGE		3550	/* 3.55v critical voltage */
+-#define PALMT5_BAT_MAX_CURRENT		0	/* unknokn */
++#define PALMT5_BAT_MAX_CURRENT		0	/* unknown */
+ #define PALMT5_BAT_MIN_CURRENT		0	/* unknown */
+ #define PALMT5_BAT_MAX_CHARGE		1	/* unknown */
+ #define PALMT5_BAT_MIN_CHARGE		1	/* unknown */
+diff --git a/arch/arm/mach-pxa/include/mach/palmtc.h
+b/arch/arm/mach-pxa/include/mach/palmtc.h
+index 3dc9b07..3f9dd3f 100644
+--- a/arch/arm/mach-pxa/include/mach/palmtc.h
++++ b/arch/arm/mach-pxa/include/mach/palmtc.h
+@@ -68,7 +68,7 @@
+ /* BATTERY */
+ #define PALMTC_BAT_MAX_VOLTAGE		4000	/* 4.00V maximum voltage */
+ #define PALMTC_BAT_MIN_VOLTAGE		3550	/* 3.55V critical voltage */
+-#define PALMTC_BAT_MAX_CURRENT		0	/* unknokn */
++#define PALMTC_BAT_MAX_CURRENT		0	/* unknown */
+ #define PALMTC_BAT_MIN_CURRENT		0	/* unknown */
+ #define PALMTC_BAT_MAX_CHARGE		1	/* unknown */
+ #define PALMTC_BAT_MIN_CHARGE		1	/* unknown */
+diff --git a/arch/arm/mach-pxa/include/mach/palmte2.h
+b/arch/arm/mach-pxa/include/mach/palmte2.h
+index 1236134..f89e989 100644
+--- a/arch/arm/mach-pxa/include/mach/palmte2.h
++++ b/arch/arm/mach-pxa/include/mach/palmte2.h
+@@ -59,7 +59,7 @@
+ /* BATTERY */
+ #define PALMTE2_BAT_MAX_VOLTAGE		4000	/* 4.00v current voltage */
+ #define PALMTE2_BAT_MIN_VOLTAGE		3550	/* 3.55v critical voltage */
+-#define PALMTE2_BAT_MAX_CURRENT		0	/* unknokn */
++#define PALMTE2_BAT_MAX_CURRENT		0	/* unknown */
+ #define PALMTE2_BAT_MIN_CURRENT		0	/* unknown */
+ #define PALMTE2_BAT_MAX_CHARGE		1	/* unknown */
+ #define PALMTE2_BAT_MIN_CHARGE		1	/* unknown */
+diff --git a/arch/arm/mach-pxa/include/mach/palmtx.h
+b/arch/arm/mach-pxa/include/mach/palmtx.h
+index 1be0db6..10abc4f 100644
+--- a/arch/arm/mach-pxa/include/mach/palmtx.h
++++ b/arch/arm/mach-pxa/include/mach/palmtx.h
+@@ -94,7 +94,7 @@
+ /* BATTERY */
+ #define PALMTX_BAT_MAX_VOLTAGE		4000	/* 4.00v current voltage */
+ #define PALMTX_BAT_MIN_VOLTAGE		3550	/* 3.55v critical voltage */
+-#define PALMTX_BAT_MAX_CURRENT		0	/* unknokn */
++#define PALMTX_BAT_MAX_CURRENT		0	/* unknown */
+ #define PALMTX_BAT_MIN_CURRENT		0	/* unknown */
+ #define PALMTX_BAT_MAX_CHARGE		1	/* unknown */
+ #define PALMTX_BAT_MIN_CHARGE		1	/* unknown */
+diff --git a/arch/arm/mach-pxa/include/mach/palmz72.h
+b/arch/arm/mach-pxa/include/mach/palmz72.h
+index 2806ef6..2bbcf70 100644
+--- a/arch/arm/mach-pxa/include/mach/palmz72.h
++++ b/arch/arm/mach-pxa/include/mach/palmz72.h
+@@ -49,7 +49,7 @@
+ /* Battery */
+ #define PALMZ72_BAT_MAX_VOLTAGE		4000	/* 4.00v current voltage */
+ #define PALMZ72_BAT_MIN_VOLTAGE		3550	/* 3.55v critical voltage */
+-#define PALMZ72_BAT_MAX_CURRENT		0	/* unknokn */
++#define PALMZ72_BAT_MAX_CURRENT		0	/* unknown */
+ #define PALMZ72_BAT_MIN_CURRENT		0	/* unknown */
+ #define PALMZ72_BAT_MAX_CHARGE		1	/* unknown */
+ #define PALMZ72_BAT_MIN_CHARGE		1	/* unknown */
+diff --git a/arch/ia64/kernel/esi.c b/arch/ia64/kernel/esi.c
+index d5764a3..b091111 100644
+--- a/arch/ia64/kernel/esi.c
++++ b/arch/ia64/kernel/esi.c
+@@ -84,7 +84,7 @@ static int __init esi_init (void)
+ 		      case ESI_DESC_ENTRY_POINT:
+ 			break;
+ 		      default:
+-			printk(KERN_WARNING "Unkown table type %d found in "
++			printk(KERN_WARNING "Unknown table type %d found in "
+ 			       "ESI table, ignoring rest of table\n", *p);
+ 			return -ENODEV;
  		}
- 	} while (rc == -EACCES);
-diff --git a/drivers/s390/cio/chp.c b/drivers/s390/cio/chp.c
-index 8ab5160..c268a2e 100644
---- a/drivers/s390/cio/chp.c
-+++ b/drivers/s390/cio/chp.c
-@@ -65,7 +65,7 @@ static void set_chp_logically_online(struct chp_id
-chpid, int onoff)
- 	chpid_to_chp(chpid)->state = onoff;
- }
-
--/* On succes return 0 if channel-path is varied offline, 1 if it is varied
-+/* On success return 0 if channel-path is varied offline, 1 if it is varied
-  * online. Return -ENODEV if channel-path is not registered. */
- int chp_get_status(struct chp_id chpid)
- {
-diff --git a/drivers/scsi/aic7xxx/aic79xx.seq b/drivers/scsi/aic7xxx/aic79xx.seq
-index 58bc175..da2bcec 100644
---- a/drivers/scsi/aic7xxx/aic79xx.seq
-+++ b/drivers/scsi/aic7xxx/aic79xx.seq
-@@ -217,7 +217,7 @@ BEGIN_CRITICAL;
- scbdma_tohost_done:
- 	test	CCSCBCTL, CCARREN jz fill_qoutfifo_dmadone;
- 	/*
--	 * An SCB has been succesfully uploaded to the host.
-+	 * An SCB has been successfully uploaded to the host.
- 	 * If the SCB was uploaded for some reason other than
- 	 * bad SCSI status (currently only for underruns), we
- 	 * queue the SCB for normal completion.  Otherwise, we
-diff --git a/drivers/scsi/aic7xxx/aic79xx_core.c
-b/drivers/scsi/aic7xxx/aic79xx_core.c
-index 63b521d..4d419c1 100644
---- a/drivers/scsi/aic7xxx/aic79xx_core.c
-+++ b/drivers/scsi/aic7xxx/aic79xx_core.c
-@@ -2487,7 +2487,7 @@ ahd_handle_scsiint(struct ahd_softc *ahd, u_int intstat)
- 		/*
- 		 * Although the driver does not care about the
- 		 * 'Selection in Progress' status bit, the busy
--		 * LED does.  SELINGO is only cleared by a sucessfull
-+		 * LED does.  SELINGO is only cleared by a successfull
- 		 * selection, so we must manually clear it to insure
- 		 * the LED turns off just incase no future successful
- 		 * selections occur (e.g. no devices on the bus).
-diff --git a/drivers/scsi/aic7xxx/aic7xxx_core.c
-b/drivers/scsi/aic7xxx/aic7xxx_core.c
-index 8dfb59d..45aa728 100644
---- a/drivers/scsi/aic7xxx/aic7xxx_core.c
-+++ b/drivers/scsi/aic7xxx/aic7xxx_core.c
-@@ -1733,7 +1733,7 @@ ahc_handle_scsiint(struct ahc_softc *ahc, u_int intstat)
- 		/*
- 		 * Although the driver does not care about the
- 		 * 'Selection in Progress' status bit, the busy
--		 * LED does.  SELINGO is only cleared by a sucessfull
-+		 * LED does.  SELINGO is only cleared by a successfull
- 		 * selection, so we must manually clear it to insure
- 		 * the LED turns off just incase no future successful
- 		 * selections occur (e.g. no devices on the bus).
-diff --git a/drivers/scsi/libfc/fc_lport.c b/drivers/scsi/libfc/fc_lport.c
-index bd2f771..6486ae4 100644
---- a/drivers/scsi/libfc/fc_lport.c
-+++ b/drivers/scsi/libfc/fc_lport.c
-@@ -56,7 +56,7 @@
-  * at the same time.
-  *
-  * When discovery succeeds or fails a callback is made to the lport as
-- * notification. Currently, succesful discovery causes the lport to take no
-+ * notification. Currently, successful discovery causes the lport to take no
-  * action. A failure will cause the lport to reset. There is likely a circular
-  * locking problem with this implementation.
-  */
-diff --git a/drivers/scsi/libiscsi_tcp.c b/drivers/scsi/libiscsi_tcp.c
-index 2e0746d..ca25ee5 100644
---- a/drivers/scsi/libiscsi_tcp.c
-+++ b/drivers/scsi/libiscsi_tcp.c
-@@ -1004,7 +1004,7 @@ static struct iscsi_r2t_info
-*iscsi_tcp_get_curr_r2t(struct iscsi_task *task)
-  * iscsi_tcp_task_xmit - xmit normal PDU task
-  * @task: iscsi command task
-  *
-- * We're expected to return 0 when everything was transmitted succesfully,
-+ * We're expected to return 0 when everything was transmitted successfully,
-  * -EAGAIN if there's still data in the queue, or != 0 for any other kind
-  * of error.
-  */
-diff --git a/drivers/scsi/lpfc/lpfc_attr.c b/drivers/scsi/lpfc/lpfc_attr.c
-index e1a30a1..9bd19aa 100644
---- a/drivers/scsi/lpfc/lpfc_attr.c
-+++ b/drivers/scsi/lpfc/lpfc_attr.c
-@@ -654,7 +654,7 @@ lpfc_selective_reset(struct lpfc_hba *phba)
-  * Notes:
-  * Assumes any error from lpfc_selective_reset() will be negative.
-  * If lpfc_selective_reset() returns zero then the length of the buffer
-- * is returned which indicates succcess
-+ * is returned which indicates success
-  *
-  * Returns:
-  * -EINVAL if the buffer does not contain the string "selective"
-@@ -3147,7 +3147,7 @@ sysfs_ctlreg_write(struct kobject *kobj, struct
-bin_attribute *bin_attr,
-  * sysfs_ctlreg_read - Read method for reading from ctlreg
-  * @kobj: kernel kobject that contains the kernel class device.
-  * @bin_attr: kernel attributes passed to us.
-- * @buf: if succesful contains the data from the adapter IOREG space.
-+ * @buf: if successful contains the data from the adapter IOREG space.
-  * @off: offset into buffer to beginning of data.
-  * @count: bytes to transfer.
-  *
-diff --git a/drivers/scsi/lpfc/lpfc_els.c b/drivers/scsi/lpfc/lpfc_els.c
-index b31ff7f..30200ee 100644
---- a/drivers/scsi/lpfc/lpfc_els.c
-+++ b/drivers/scsi/lpfc/lpfc_els.c
-@@ -802,7 +802,7 @@ lpfc_cmpl_els_flogi(struct lpfc_hba *phba, struct
-lpfc_iocbq *cmdiocb,
-
- 	/* FLOGI completes successfully */
- 	lpfc_printf_vlog(vport, KERN_INFO, LOG_ELS,
--			 "0101 FLOGI completes sucessfully "
-+			 "0101 FLOGI completes successfully "
- 			 "Data: x%x x%x x%x x%x\n",
- 			 irsp->un.ulpWord[4], sp->cmn.e_d_tov,
- 			 sp->cmn.w2.r_a_tov, sp->cmn.edtovResolution);
-@@ -4134,7 +4134,7 @@ lpfc_els_rcv_rscn(struct lpfc_vport *vport,
-struct lpfc_iocbq *cmdiocb,
- 	/* Indicate we are walking fc_rscn_id_list on this vport */
- 	vport->fc_rscn_flush = 1;
- 	spin_unlock_irq(shost->host_lock);
--	/* Get the array count after sucessfully have the token */
-+	/* Get the array count after successfully have the token */
- 	rscn_cnt = vport->fc_rscn_id_cnt;
- 	/* If we are already processing an RSCN, save the received
- 	 * RSCN payload buffer, cmdiocb->context2 to process later.
-diff --git a/drivers/scsi/lpfc/lpfc_init.c b/drivers/scsi/lpfc/lpfc_init.c
-index 562d8ce..82f8ab5 100644
---- a/drivers/scsi/lpfc/lpfc_init.c
-+++ b/drivers/scsi/lpfc/lpfc_init.c
-@@ -645,7 +645,7 @@ lpfc_hba_down_prep(struct lpfc_hba *phba)
-  * down the SLI Layer.
-  *
-  * Return codes
-- *   0 - sucess.
-+ *   0 - success.
-  *   Any other value - error.
-  **/
- static int
-@@ -700,7 +700,7 @@ lpfc_hba_down_post_s3(struct lpfc_hba *phba)
-  * down the SLI Layer.
-  *
-  * Return codes
-- *   0 - sucess.
-+ *   0 - success.
-  *   Any other value - error.
-  **/
- static int
-@@ -755,7 +755,7 @@ lpfc_hba_down_post_s4(struct lpfc_hba *phba)
-  * uninitialization after the HBA is reset when bring down the SLI Layer.
-  *
-  * Return codes
-- *   0 - sucess.
-+ *   0 - success.
-  *   Any other value - error.
-  **/
- int
-@@ -1254,7 +1254,7 @@ lpfc_handle_eratt_s4(struct lpfc_hba *phba)
-  * routine from the API jump table function pointer from the lpfc_hba struct.
-  *
-  * Return codes
-- *   0 - sucess.
-+ *   0 - success.
-  *   Any other value - error.
-  **/
- void
-@@ -3124,7 +3124,7 @@ static void lpfc_log_intr_mode(struct lpfc_hba
-*phba, uint32_t intr_mode)
-  * PCI devices.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  **/
- static int
-@@ -3220,7 +3220,7 @@ lpfc_reset_hba(struct lpfc_hba *phba)
-  * support the SLI-3 HBA device it attached to.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  **/
- static int
-@@ -3321,7 +3321,7 @@ lpfc_sli_driver_resource_unset(struct lpfc_hba *phba)
-  * support the SLI-4 HBA device it attached to.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  **/
- static int
-@@ -3642,7 +3642,7 @@ lpfc_init_api_table_setup(struct lpfc_hba *phba,
-uint8_t dev_grp)
-  * device specific resource setup to support the HBA device it attached to.
-  *
-  * Return codes
-- *	0 - sucessful
-+ *	0 - successful
-  *	other values - error
-  **/
- static int
-@@ -3688,7 +3688,7 @@ lpfc_setup_driver_resource_phase1(struct lpfc_hba *phba)
-  * device specific resource setup to support the HBA device it attached to.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  **/
- static int
-@@ -3753,7 +3753,7 @@ lpfc_free_iocb_list(struct lpfc_hba *phba)
-  * list and set up the IOCB tag array accordingly.
-  *
-  * Return codes
-- *	0 - sucessful
-+ *	0 - successful
-  *	other values - error
-  **/
- static int
-@@ -3872,7 +3872,7 @@ lpfc_free_active_sgl(struct lpfc_hba *phba)
-  * list and set up the sgl xritag tag array accordingly.
-  *
-  * Return codes
-- *	0 - sucessful
-+ *	0 - successful
-  *	other values - error
-  **/
- static int
-@@ -3986,7 +3986,7 @@ out_free_mem:
-  * enabled and the driver is reinitializing the device.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	ENOMEM - No availble memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -4146,7 +4146,7 @@ lpfc_sli4_remove_rpi_hdrs(struct lpfc_hba *phba)
-  * PCI device data structure is set.
-  *
-  * Return codes
-- *      pointer to @phba - sucessful
-+ *      pointer to @phba - successful
-  *      NULL - error
-  **/
- static struct lpfc_hba *
-@@ -4202,7 +4202,7 @@ lpfc_hba_free(struct lpfc_hba *phba)
-  * host with it.
-  *
-  * Return codes
-- *      0 - sucessful
-+ *      0 - successful
-  *      other values - error
-  **/
- static int
-@@ -4365,7 +4365,7 @@ lpfc_post_init_setup(struct lpfc_hba *phba)
-  * with SLI-3 interface spec.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  **/
- static int
-@@ -4662,7 +4662,7 @@ lpfc_sli4_bar2_register_memmap(struct lpfc_hba
-*phba, uint32_t vf)
-  * this routine.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	ENOMEM - could not allocated memory.
-  **/
- static int
-@@ -4761,7 +4761,7 @@ lpfc_destroy_bootstrap_mbox(struct lpfc_hba *phba)
-  * allocation for the port.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	ENOMEM - No availble memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -4861,7 +4861,7 @@ lpfc_sli4_read_config(struct lpfc_hba *phba)
-  * HBA consistent with the SLI-4 interface spec.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	ENOMEM - No availble memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -4910,7 +4910,7 @@ lpfc_setup_endian_order(struct lpfc_hba *phba)
-  * we just use some constant number as place holder.
-  *
-  * Return codes
-- *      0 - sucessful
-+ *      0 - successful
-  *      ENOMEM - No availble memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -5218,7 +5218,7 @@ out_error:
-  * operation.
-  *
-  * Return codes
-- *      0 - sucessful
-+ *      0 - successful
-  *      ENOMEM - No availble memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -5286,7 +5286,7 @@ lpfc_sli4_queue_destroy(struct lpfc_hba *phba)
-  * operation.
-  *
-  * Return codes
-- *      0 - sucessful
-+ *      0 - successful
-  *      ENOMEM - No availble memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -5552,7 +5552,7 @@ out_error:
-  * operation.
-  *
-  * Return codes
-- *      0 - sucessful
-+ *      0 - successful
-  *      ENOMEM - No availble memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -5599,7 +5599,7 @@ lpfc_sli4_queue_unset(struct lpfc_hba *phba)
-  * Later, this can be used for all the slow-path events.
-  *
-  * Return codes
-- *      0 - sucessful
-+ *      0 - successful
-  *      -ENOMEM - No availble memory
-  **/
- static int
-@@ -5760,7 +5760,7 @@ lpfc_sli4_cq_event_release_all(struct lpfc_hba *phba)
-  * all resources assigned to the PCI function which originates this request.
-  *
-  * Return codes
-- *      0 - sucessful
-+ *      0 - successful
-  *      ENOMEM - No availble memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -5923,7 +5923,7 @@ lpfc_sli4_fcfi_unreg(struct lpfc_hba *phba, uint16_t fcfi)
-  * with SLI-4 interface spec.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  **/
- static int
-@@ -6052,7 +6052,7 @@ lpfc_sli4_pci_mem_unset(struct lpfc_hba *phba)
-  * will be left with MSI-X enabled and leaks its vectors.
-  *
-  * Return codes
-- *   0 - sucessful
-+ *   0 - successful
-  *   other values - error
-  **/
- static int
-@@ -6184,7 +6184,7 @@ lpfc_sli_disable_msix(struct lpfc_hba *phba)
-  * is done in this function.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  */
- static int
-@@ -6243,7 +6243,7 @@ lpfc_sli_disable_msi(struct lpfc_hba *phba)
-  * MSI-X -> MSI -> IRQ.
-  *
-  * Return codes
-- *   0 - sucessful
-+ *   0 - successful
-  *   other values - error
-  **/
- static uint32_t
-@@ -6333,7 +6333,7 @@ lpfc_sli_disable_intr(struct lpfc_hba *phba)
-  * enabled and leaks its vectors.
-  *
-  * Return codes
-- * 0 - sucessful
-+ * 0 - successful
-  * other values - error
-  **/
- static int
-@@ -6443,7 +6443,7 @@ lpfc_sli4_disable_msix(struct lpfc_hba *phba)
-  * which is done in this function.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  **/
- static int
-@@ -6508,7 +6508,7 @@ lpfc_sli4_disable_msi(struct lpfc_hba *phba)
-  * MSI-X -> MSI -> IRQ.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	other values - error
-  **/
- static uint32_t
-diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
-index 43cbe33..0a4bcac 100644
---- a/drivers/scsi/lpfc/lpfc_sli.c
-+++ b/drivers/scsi/lpfc/lpfc_sli.c
-@@ -4163,7 +4163,7 @@ lpfc_sli4_read_fcoe_params(struct lpfc_hba *phba,
-  * addition, this routine gets the port vpd data.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	ENOMEM - could not allocated memory.
-  **/
- static int
-@@ -11091,7 +11091,7 @@ lpfc_sli4_handle_received_buffer(struct lpfc_hba *phba)
-  * sequential.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  *      EIO - The mailbox failed to complete successfully.
-  * 	When this error occurs, the driver is not guaranteed
-  *	to have any rpi regions posted to the device and
-@@ -11129,7 +11129,7 @@ lpfc_sli4_post_all_rpi_hdrs(struct lpfc_hba *phba)
-  * maps up to 64 rpi context regions.
-  *
-  * Return codes
-- * 	0 - sucessful
-+ * 	0 - successful
-  * 	ENOMEM - No available memory
-  *      EIO - The mailbox failed to complete successfully.
-  **/
-@@ -11191,7 +11191,7 @@ lpfc_sli4_post_rpi_hdr(struct lpfc_hba *phba,
-struct lpfc_rpi_hdr *rpi_page)
-  * PAGE_SIZE modulo 64 rpi context headers.
-  *
-  * Returns
-- * 	A nonzero rpi defined as rpi_base <= rpi < max_rpi if sucessful
-+ * 	A nonzero rpi defined as rpi_base <= rpi < max_rpi if successful
-  * 	LPFC_RPI_ALLOC_ERROR if no rpis are available.
-  **/
- int
-diff --git a/drivers/scsi/megaraid/megaraid_mbox.c
-b/drivers/scsi/megaraid/megaraid_mbox.c
-index 234f0b7..f9ae803 100644
---- a/drivers/scsi/megaraid/megaraid_mbox.c
-+++ b/drivers/scsi/megaraid/megaraid_mbox.c
-@@ -2704,7 +2704,7 @@ megaraid_reset_handler(struct scsi_cmnd *scp)
- 	}
+diff --git a/arch/mips/txx9/generic/smsc_fdc37m81x.c
+b/arch/mips/txx9/generic/smsc_fdc37m81x.c
+index a2b2d62..8ebc384 100644
+--- a/arch/mips/txx9/generic/smsc_fdc37m81x.c
++++ b/arch/mips/txx9/generic/smsc_fdc37m81x.c
+@@ -117,7 +117,7 @@ unsigned long __init smsc_fdc37m81x_init(unsigned long port)
+ 	if (chip_id == SMSC_FDC37M81X_CHIP_ID)
+ 		smsc_fdc37m81x_config_end();
  	else {
- 		con_log(CL_ANN, (KERN_NOTICE
--		"megaraid mbox: reset sequence completed sucessfully\n"));
-+		"megaraid mbox: reset sequence completed successfully\n"));
+-		printk(KERN_WARNING "%s: unknow chip id 0x%02x\n", __func__,
++		printk(KERN_WARNING "%s: unknown chip id 0x%02x\n", __func__,
+ 		       chip_id);
+ 		g_smsc_fdc37m81x_base = 0;
  	}
+diff --git a/arch/s390/include/asm/topology.h b/arch/s390/include/asm/topology.h
+index 6e7211a..842cf00 100644
+--- a/arch/s390/include/asm/topology.h
++++ b/arch/s390/include/asm/topology.h
+@@ -14,7 +14,7 @@ extern cpumask_t cpu_core_map[NR_CPUS];
+ int topology_set_cpu_management(int fc);
+ void topology_schedule_update(void);
 
-
-diff --git a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-index 86ab32d..756e509 100644
---- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-@@ -2894,7 +2894,7 @@ _scsih_normalize_sense(char *sense_buffer,
-struct sense_info *data)
-
- #ifdef CONFIG_SCSI_MPT2SAS_LOGGING
- /**
-- * _scsih_scsi_ioc_info - translated non-succesfull SCSI_IO request
-+ * _scsih_scsi_ioc_info - translated non-successfull SCSI_IO request
-  * @ioc: per adapter object
-  * @scmd: pointer to scsi command object
-  * @mpi_reply: reply mf payload returned from firmware
-diff --git a/drivers/scsi/pmcraid.c b/drivers/scsi/pmcraid.c
-index f7c70e2..d3d39f8 100644
---- a/drivers/scsi/pmcraid.c
-+++ b/drivers/scsi/pmcraid.c
-@@ -3342,7 +3342,7 @@ static int pmcraid_chr_fasync(int fd, struct
-file *filep, int mode)
-  * @direction : data transfer direction
-  *
-  * Return value
-- *  0 on sucess, non-zero error code on failure
-+ *  0 on success, non-zero error code on failure
-  */
- static int pmcraid_build_passthrough_ioadls(
- 	struct pmcraid_cmd *cmd,
-@@ -3401,7 +3401,7 @@ static int pmcraid_build_passthrough_ioadls(
-  * @direction: data transfer direction
-  *
-  * Return value
-- *  0 on sucess, non-zero error code on failure
-+ *  0 on success, non-zero error code on failure
-  */
- static void pmcraid_release_passthrough_ioadls(
- 	struct pmcraid_cmd *cmd,
-@@ -3429,7 +3429,7 @@ static void pmcraid_release_passthrough_ioadls(
-  * @arg: pointer to pmcraid_passthrough_buffer user buffer
-  *
-  * Return value
-- *  0 on sucess, non-zero error code on failure
-+ *  0 on success, non-zero error code on failure
-  */
- static long pmcraid_ioctl_passthrough(
- 	struct pmcraid_instance *pinstance,
-diff --git a/drivers/scsi/scsi_netlink.c b/drivers/scsi/scsi_netlink.c
-index 723fdec..0fd6ae6 100644
---- a/drivers/scsi/scsi_netlink.c
-+++ b/drivers/scsi/scsi_netlink.c
-@@ -613,7 +613,7 @@ EXPORT_SYMBOL_GPL(scsi_nl_send_transport_msg);
-  * @data_buf:		pointer to vendor unique data buffer
-  *
-  * Returns:
-- *   0 on succesful return
-+ *   0 on successful return
-  *   otherwise, failing error code
-  *
-  * Notes:
-diff --git a/drivers/scsi/scsi_transport_sas.c
-b/drivers/scsi/scsi_transport_sas.c
-index fd47cb1..f27e52d 100644
---- a/drivers/scsi/scsi_transport_sas.c
-+++ b/drivers/scsi/scsi_transport_sas.c
-@@ -666,7 +666,7 @@ EXPORT_SYMBOL(sas_phy_add);
-  *
-  * Note:
-  *   This function must only be called on a PHY that has not
-- *   sucessfully been added using sas_phy_add().
-+ *   successfully been added using sas_phy_add().
-  */
- void sas_phy_free(struct sas_phy *phy)
- {
-@@ -896,7 +896,7 @@ EXPORT_SYMBOL(sas_port_add);
-  *
-  * Note:
-  *   This function must only be called on a PORT that has not
-- *   sucessfully been added using sas_port_add().
-+ *   successfully been added using sas_port_add().
-  */
- void sas_port_free(struct sas_port *port)
- {
-@@ -1476,7 +1476,7 @@ EXPORT_SYMBOL(sas_rphy_add);
-  *
-  * Note:
-  *   This function must only be called on a remote
-- *   PHY that has not sucessfully been added using
-+ *   PHY that has not successfully been added using
-  *   sas_rphy_add() (or has been sas_rphy_remove()'d)
-  */
- void sas_rphy_free(struct sas_rphy *rphy)
-diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c
-b/drivers/scsi/sym53c8xx_2/sym_glue.c
-index 45374d6..2b38f6a 100644
---- a/drivers/scsi/sym53c8xx_2/sym_glue.c
-+++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
-@@ -1864,7 +1864,7 @@ static pci_ers_result_t sym2_io_slot_dump(struct
-pci_dev *pdev)
-  *
-  * This routine is similar to sym_set_workarounds(), except
-  * that, at this point, we already know that the device was
-- * succesfully intialized at least once before, and so most
-+ * successfully intialized at least once before, and so most
-  * of the steps taken there are un-needed here.
-  */
- static void sym2_reset_workarounds(struct pci_dev *pdev)
-diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
-index 0c08f28..46de564 100644
---- a/drivers/serial/ucc_uart.c
-+++ b/drivers/serial/ucc_uart.c
-@@ -313,7 +313,7 @@ static void qe_uart_stop_tx(struct uart_port *port)
-  * This function will attempt to stuff of all the characters from the
-  * kernel's transmit buffer into TX BDs.
-  *
-- * A return value of non-zero indicates that it sucessfully stuffed all
-+ * A return value of non-zero indicates that it successfully stuffed all
-  * characters from the kernel buffer.
-  *
-  * A return value of zero indicates that there are still characters in the
-diff --git a/drivers/staging/altpciechdma/altpciechdma.c
-b/drivers/staging/altpciechdma/altpciechdma.c
-index e0c5ba4..2f07dd4 100644
---- a/drivers/staging/altpciechdma/altpciechdma.c
-+++ b/drivers/staging/altpciechdma/altpciechdma.c
-@@ -212,7 +212,7 @@ struct ape_dev {
- 	int msi_enabled;
- 	/* whether this driver could obtain the regions */
- 	int got_regions;
--	/* irq line succesfully requested by this driver, -1 otherwise */
-+	/* irq line successfully requested by this driver, -1 otherwise */
- 	int irq_line;
- 	/* board revision */
- 	u8 revision;
-@@ -336,7 +336,7 @@ static int __devinit map_bars(struct ape_dev *ape,
-struct pci_dev *dev)
- 		printk(KERN_DEBUG "BAR[%d] mapped at 0x%p with length %lu(/%lu).\n", i,
- 		ape->bar[i], bar_min_len[i], bar_length);
- 	}
--	/* succesfully mapped all required BAR regions */
-+	/* successfully mapped all required BAR regions */
- 	rc = 0;
- 	goto success;
- fail:
-@@ -911,7 +911,7 @@ static int __devinit probe(struct pci_dev *dev,
-const struct pci_device_id *id)
- 	/* perform DMA engines loop back test */
- 	rc = dma_test(ape, dev);
- 	(void)rc;
--	/* succesfully took the device */
-+	/* successfully took the device */
- 	rc = 0;
- 	printk(KERN_DEBUG "probe() successful.\n");
- 	goto end;
-diff --git a/drivers/staging/comedi/drivers/me4000.c
-b/drivers/staging/comedi/drivers/me4000.c
-index 6079913..8b9fa0f 100644
---- a/drivers/staging/comedi/drivers/me4000.c
-+++ b/drivers/staging/comedi/drivers/me4000.c
-@@ -840,7 +840,7 @@ static int xilinx_download(struct comedi_device *dev)
- 		       "comedi%d: me4000: xilinx_download(): DONE flag is not set\n",
- 		       dev->minor);
- 		printk(KERN_ERR
--		       "comedi%d: me4000: xilinx_download(): Download not succesful\n",
-+		       "comedi%d: me4000: xilinx_download(): Download not successful\n",
- 		       dev->minor);
- 		return -EIO;
- 	}
-diff --git a/drivers/staging/dst/export.c b/drivers/staging/dst/export.c
-index 4fbd848..a4ed16c 100644
---- a/drivers/staging/dst/export.c
-+++ b/drivers/staging/dst/export.c
-@@ -202,7 +202,7 @@ err_out_exit:
-  * so to play good with all cases we just queue BIO into the queue
-  * and wake up processing thread, which gets completed request and
-  * send (encrypting if needed) it back to the client (if it was a read
-- * request), or sends back reply that writing succesfully completed.
-+ * request), or sends back reply that writing successfully completed.
-  */
- static int dst_export_process_request_queue(struct dst_state *st)
- {
-diff --git a/drivers/staging/hv/hv_api.h b/drivers/staging/hv/hv_api.h
-index 251e2d1..9eb818e 100644
---- a/drivers/staging/hv/hv_api.h
-+++ b/drivers/staging/hv/hv_api.h
-@@ -316,13 +316,13 @@
-
- /*
-  * HV_STATUS_VMX_INSTRUCTION_FAILED
-- * The requested VMX instruction failed to complete succesfully.
-+ * The requested VMX instruction failed to complete successfully.
-  */
- #define HV_STATUS_VMX_INSTRUCTION_FAILED		((u16)0x1011)
-
- /*
-  * HV_STATUS_VMX_INSTRUCTION_FAILED_WITH_STATUS
-- * The requested VMX instruction failed to complete succesfully indicating
-+ * The requested VMX instruction failed to complete successfully indicating
-  * status.
-  */
- #define HV_STATUS_VMX_INSTRUCTION_FAILED_WITH_STATUS	((u16)0x1012)
-diff --git a/drivers/staging/octeon/cvmx-pow.h
-b/drivers/staging/octeon/cvmx-pow.h
-index c5d66f2..bf9e069 100644
---- a/drivers/staging/octeon/cvmx-pow.h
-+++ b/drivers/staging/octeon/cvmx-pow.h
-@@ -1959,7 +1959,7 @@ static inline uint32_t
-cvmx_pow_tag_get_hw_bits(uint64_t tag)
-  * @buffer_size:
-  *               The size of the supplied buffer
-  *
-- * Returns Zero on sucess, negative on failure
-+ * Returns Zero on success, negative on failure
-  */
- extern int cvmx_pow_capture(void *buffer, int buffer_size);
-
-diff --git a/drivers/staging/quatech_usb2/quatech_usb2.c
-b/drivers/staging/quatech_usb2/quatech_usb2.c
-index 2acef94..81877e7 100644
---- a/drivers/staging/quatech_usb2/quatech_usb2.c
-+++ b/drivers/staging/quatech_usb2/quatech_usb2.c
-@@ -1670,7 +1670,7 @@ __func__);
- 		dbg("%s(): failed resubmitting read urb, error %d",
- 			__func__, result);
- 	} else {
--		dbg("%s() sucessfully resumitted read urb", __func__);
-+		dbg("%s() successfully resumitted read urb", __func__);
- 		if (tty_st && RxCount) {
- 			/* if some inbound data was processed, then
- 			 * we need to push that through the tty layer
-diff --git a/drivers/staging/rar/rar_driver.c b/drivers/staging/rar/rar_driver.c
-index 9805d74..24700b1 100644
---- a/drivers/staging/rar/rar_driver.c
-+++ b/drivers/staging/rar/rar_driver.c
-@@ -66,7 +66,7 @@ static int __init rar_init_handler(void);
- static void __exit rar_exit_handler(void);
-
- /*
--  function that is activated on the succesfull probe of the RAR device
-+  function that is activated on the successfull probe of the RAR device
- */
- static int __devinit rar_probe(struct pci_dev *pdev, const struct
-pci_device_id *ent);
-
-@@ -319,7 +319,7 @@ static int memrar_init_rar_params(struct pci_dev *pdev)
+-#define POLARIZATION_UNKNWN	(-1)
++#define POLARIZATION_UNKNOWN	(-1)
+ #define POLARIZATION_HRZ	(0)
+ #define POLARIZATION_VL		(1)
+ #define POLARIZATION_VM		(2)
+diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+index c932caa..608fb44 100644
+--- a/arch/s390/kernel/smp.c
++++ b/arch/s390/kernel/smp.c
+@@ -309,7 +309,7 @@ static int smp_rescan_cpus_sigp(cpumask_t avail)
+ 		if (cpu_known(cpu_id))
+ 			continue;
+ 		__cpu_logical_map[logical_cpu] = cpu_id;
+-		smp_cpu_polarization[logical_cpu] = POLARIZATION_UNKNWN;
++		smp_cpu_polarization[logical_cpu] = POLARIZATION_UNKNOWN;
+ 		if (!cpu_stopped(logical_cpu))
+ 			continue;
+ 		cpu_set(logical_cpu, cpu_present_map);
+@@ -343,7 +343,7 @@ static int smp_rescan_cpus_sclp(cpumask_t avail)
+ 		if (cpu_known(cpu_id))
+ 			continue;
+ 		__cpu_logical_map[logical_cpu] = cpu_id;
+-		smp_cpu_polarization[logical_cpu] = POLARIZATION_UNKNWN;
++		smp_cpu_polarization[logical_cpu] = POLARIZATION_UNKNOWN;
+ 		cpu_set(logical_cpu, cpu_present_map);
+ 		if (cpu >= info->configured)
+ 			smp_cpu_state[logical_cpu] = CPU_STATE_STANDBY;
+@@ -709,7 +709,7 @@ void __init smp_prepare_boot_cpu(void)
+ 	S390_lowcore.percpu_offset = __per_cpu_offset[0];
+ 	current_set[0] = current;
+ 	smp_cpu_state[0] = CPU_STATE_CONFIGURED;
+-	smp_cpu_polarization[0] = POLARIZATION_UNKNWN;
++	smp_cpu_polarization[0] = POLARIZATION_UNKNOWN;
  }
 
- /*
--  function that is activaed on the succesfull probe of the RAR device
-+  function that is activaed on the successfull probe of the RAR device
- */
- static int __devinit rar_probe(struct pci_dev *pdev, const struct
-pci_device_id *ent)
- {
-diff --git a/drivers/staging/rt2860/common/rtmp_init.c
-b/drivers/staging/rt2860/common/rtmp_init.c
-index 20c2ce2..0e10e23 100644
---- a/drivers/staging/rt2860/common/rtmp_init.c
-+++ b/drivers/staging/rt2860/common/rtmp_init.c
-@@ -2691,7 +2691,7 @@ VOID NICUpdateFifoStaCounters(
-
- 				pEntry->FIFOCount = 0;
- 				pEntry->OneSecTxNoRetryOkCount++;
--				// update NoDataIdleCount when sucessful send packet to STA.
-+				// update NoDataIdleCount when successful send packet to STA.
- 				pEntry->NoDataIdleCount = 0;
- 				pEntry->ContinueTxFailCnt = 0;
+ void __init smp_cpus_done(unsigned int max_cpus)
+@@ -764,7 +764,7 @@ static ssize_t cpu_configure_store(struct sys_device *dev,
+ 			rc = sclp_cpu_deconfigure(__cpu_logical_map[cpu]);
+ 			if (!rc) {
+ 				smp_cpu_state[cpu] = CPU_STATE_STANDBY;
+-				smp_cpu_polarization[cpu] = POLARIZATION_UNKNWN;
++				smp_cpu_polarization[cpu] = POLARIZATION_UNKNOWN;
  			}
-diff --git a/drivers/staging/rt2860/sta/connect.c
-b/drivers/staging/rt2860/sta/connect.c
-index 7bc75ab..0dae822 100644
---- a/drivers/staging/rt2860/sta/connect.c
-+++ b/drivers/staging/rt2860/sta/connect.c
-@@ -58,8 +58,8 @@ UCHAR	CipherSuiteWpaNoneAes[] = {
- 		};
- UCHAR	CipherSuiteWpaNoneAesLen = (sizeof(CipherSuiteWpaNoneAes) /
-sizeof(UCHAR));
-
--// The following MACRO is called after 1. starting an new IBSS, 2.
-succesfully JOIN an IBSS,
--// or 3. succesfully ASSOCIATE to a BSS, 4. successfully RE_ASSOCIATE to a BSS
-+// The following MACRO is called after 1. starting an new IBSS, 2.
-successfully JOIN an IBSS,
-+// or 3. successfully ASSOCIATE to a BSS, 4. successfully RE_ASSOCIATE to a BSS
- // All settings successfuly negotiated furing MLME state machines
-become final settings
- // and are copied to pAd->StaActive
- #define COPY_SETTINGS_FROM_MLME_AUX_TO_ACTIVE_CFG(_pAd)
-                  \
-diff --git a/drivers/staging/rt2860/sta/rtmp_data.c
-b/drivers/staging/rt2860/sta/rtmp_data.c
-index f751ab6..6df1fe2 100644
---- a/drivers/staging/rt2860/sta/rtmp_data.c
-+++ b/drivers/staging/rt2860/sta/rtmp_data.c
-@@ -898,7 +898,7 @@ Arguments:
- 	pPacket 	Pointer to send packet
-
- Return Value:
--	NDIS_STATUS_SUCCESS			If succes to queue the packet into TxSwQueue.
-+	NDIS_STATUS_SUCCESS			If success to queue the packet into TxSwQueue.
- 	NDIS_STATUS_FAILURE			If failed to do en-queue.
-
- Note:
-diff --git a/drivers/staging/rt2860/sta/wpa.c b/drivers/staging/rt2860/sta/wpa.c
-index 8c34e39..dc3e6e2 100644
---- a/drivers/staging/rt2860/sta/wpa.c
-+++ b/drivers/staging/rt2860/sta/wpa.c
-@@ -276,7 +276,7 @@ VOID WpaEAPOLKeyAction(
- 			DBGPRINT(RT_DEBUG_TRACE, ("Receive EAPOL Key Group Message 1\n"));
  		}
-
--		// We will assume link is up (assoc suceess and port not secured).
-+		// We will assume link is up (assoc success and port not secured).
- 		// All state has to be able to process message from previous state
- 		switch(pAd->StaCfg.WpaState)
- 		{
-@@ -366,7 +366,7 @@ VOID WpaEAPOLKeyAction(
- 			DBGPRINT(RT_DEBUG_TRACE, ("Receive EAPOL Key Group Message 1\n"));
+ 		break;
+@@ -773,7 +773,7 @@ static ssize_t cpu_configure_store(struct sys_device *dev,
+ 			rc = sclp_cpu_configure(__cpu_logical_map[cpu]);
+ 			if (!rc) {
+ 				smp_cpu_state[cpu] = CPU_STATE_CONFIGURED;
+-				smp_cpu_polarization[cpu] = POLARIZATION_UNKNWN;
++				smp_cpu_polarization[cpu] = POLARIZATION_UNKNOWN;
+ 			}
  		}
+ 		break;
+diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
+index 3c72c9c..1bc2dcf 100644
+--- a/arch/s390/kernel/topology.c
++++ b/arch/s390/kernel/topology.c
+@@ -209,7 +209,7 @@ int topology_set_cpu_management(int fc)
+ 	if (rc)
+ 		return -EBUSY;
+ 	for_each_possible_cpu(cpu)
+-		smp_cpu_polarization[cpu] = POLARIZATION_UNKNWN;
++		smp_cpu_polarization[cpu] = POLARIZATION_UNKNOWN;
+ 	return rc;
+ }
 
--		// We will assume link is up (assoc suceess and port not secured).
-+		// We will assume link is up (assoc success and port not secured).
- 		// All state has to be able to process message from previous state
- 		switch(pAd->StaCfg.WpaState)
- 		{
-diff --git a/drivers/staging/rt3090/common/rtmp_init.c
-b/drivers/staging/rt3090/common/rtmp_init.c
-index 48b95b7..04b54fc 100644
---- a/drivers/staging/rt3090/common/rtmp_init.c
-+++ b/drivers/staging/rt3090/common/rtmp_init.c
-@@ -2111,7 +2111,7 @@ VOID NICUpdateFifoStaCounters(
- #endif // DOT11_N_SUPPORT //
- 				pEntry->FIFOCount = 0;
- 				pEntry->OneSecTxNoRetryOkCount++;
--				// update NoDataIdleCount when sucessful send packet to STA.
-+				// update NoDataIdleCount when successful send packet to STA.
- 				pEntry->NoDataIdleCount = 0;
- 				pEntry->ContinueTxFailCnt = 0;
- #ifdef WDS_SUPPORT
-diff --git a/drivers/staging/rt3090/sta/connect.c
-b/drivers/staging/rt3090/sta/connect.c
-index 4aa35ee..583d6ee 100644
---- a/drivers/staging/rt3090/sta/connect.c
-+++ b/drivers/staging/rt3090/sta/connect.c
-@@ -60,8 +60,8 @@ UCHAR	CipherSuiteWpaNoneAes[] = {
- 		};
- UCHAR	CipherSuiteWpaNoneAesLen = (sizeof(CipherSuiteWpaNoneAes) /
-sizeof(UCHAR));
+diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+index 9ac4e37..3aadded 100644
+--- a/drivers/ata/ata_piix.c
++++ b/drivers/ata/ata_piix.c
+@@ -599,7 +599,7 @@ static const struct ich_laptop ich_laptop[] = {
+ 	{ 0x27DF, 0x1028, 0x02b0 },	/* ICH7 on unknown Dell */
+ 	{ 0x27DF, 0x1043, 0x1267 },	/* ICH7 on Asus W5F */
+ 	{ 0x27DF, 0x103C, 0x30A1 },	/* ICH7 on HP Compaq nc2400 */
+-	{ 0x27DF, 0x103C, 0x361a },	/* ICH7 on unkown HP  */
++	{ 0x27DF, 0x103C, 0x361a },	/* ICH7 on unknown HP  */
+ 	{ 0x27DF, 0x1071, 0xD221 },	/* ICH7 on Hercules EC-900 */
+ 	{ 0x27DF, 0x152D, 0x0778 },	/* ICH7 on unknown Intel */
+ 	{ 0x24CA, 0x1025, 0x0061 },	/* ICH4 on ACER Aspire 2023WLMi */
+diff --git a/drivers/bluetooth/btmrvl_sdio.c b/drivers/bluetooth/btmrvl_sdio.c
+index 5b33b85..63bfc54 100644
+--- a/drivers/bluetooth/btmrvl_sdio.c
++++ b/drivers/bluetooth/btmrvl_sdio.c
+@@ -535,7 +535,7 @@ static int btmrvl_sdio_card_to_host(struct
+btmrvl_private *priv)
+ 		break;
 
--// The following MACRO is called after 1. starting an new IBSS, 2.
-succesfully JOIN an IBSS,
--// or 3. succesfully ASSOCIATE to a BSS, 4. successfully RE_ASSOCIATE to a BSS
-+// The following MACRO is called after 1. starting an new IBSS, 2.
-successfully JOIN an IBSS,
-+// or 3. successfully ASSOCIATE to a BSS, 4. successfully RE_ASSOCIATE to a BSS
- // All settings successfuly negotiated furing MLME state machines
-become final settings
- // and are copied to pAd->StaActive
- #define COPY_SETTINGS_FROM_MLME_AUX_TO_ACTIVE_CFG(_pAd)
-                  \
-diff --git a/drivers/staging/rt3090/sta/rtmp_data.c
-b/drivers/staging/rt3090/sta/rtmp_data.c
-index 5591364..c1b83be 100644
---- a/drivers/staging/rt3090/sta/rtmp_data.c
-+++ b/drivers/staging/rt3090/sta/rtmp_data.c
-@@ -981,7 +981,7 @@ Arguments:
- 	pPacket		Pointer to send packet
+ 	default:
+-		BT_ERR("Unknow packet type:%d", type);
++		BT_ERR("Unknown packet type:%d", type);
+ 		print_hex_dump_bytes("", DUMP_PREFIX_OFFSET, payload,
+ 						blksz * buf_block_len);
 
- Return Value:
--	NDIS_STATUS_SUCCESS			If succes to queue the packet into TxSwQueue.
-+	NDIS_STATUS_SUCCESS			If success to queue the packet into TxSwQueue.
- 	NDIS_STATUS_FAILURE			If failed to do en-queue.
+diff --git a/drivers/bluetooth/hci_ldisc.c b/drivers/bluetooth/hci_ldisc.c
+index 4895f0e..aa09193 100644
+--- a/drivers/bluetooth/hci_ldisc.c
++++ b/drivers/bluetooth/hci_ldisc.c
+@@ -214,7 +214,7 @@ static int hci_uart_send_frame(struct sk_buff *skb)
+ 	struct hci_uart *hu;
 
- Note:
-diff --git a/drivers/staging/rt3090/sta_ioctl.c
-b/drivers/staging/rt3090/sta_ioctl.c
-index b8ab84a..b1c2b5a 100644
---- a/drivers/staging/rt3090/sta_ioctl.c
-+++ b/drivers/staging/rt3090/sta_ioctl.c
-@@ -5000,7 +5000,7 @@ INT RTMPQueryInformation(
-                 // add the most up-to-date h/w raw counters into
-software counters
- 			    NICUpdateRawCounters(pAd);
+ 	if (!hdev) {
+-		BT_ERR("Frame for uknown device (hdev=NULL)");
++		BT_ERR("Frame for unknown device (hdev=NULL)");
+ 		return -ENODEV;
+ 	}
 
--                // Sanity check for calculation of sucessful count
-+                // Sanity check for calculation of successful count
-                 if
-(pAd->WlanCounters.TransmittedFragmentCount.QuadPart <
-pAd->WlanCounters.RetryCount.QuadPart)
+diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
+index d3400b2..5b32992 100644
+--- a/drivers/char/nozomi.c
++++ b/drivers/char/nozomi.c
+@@ -193,7 +193,7 @@ enum card_type {
 
-pAd->WlanCounters.TransmittedFragmentCount.QuadPart =
-pAd->WlanCounters.RetryCount.QuadPart;
+ /* Initialization states a card can be in */
+ enum card_state {
+-	NOZOMI_STATE_UKNOWN	= 0,
++	NOZOMI_STATE_UNKNOWN	= 0,
+ 	NOZOMI_STATE_ENABLED	= 1,	/* pci device enabled */
+ 	NOZOMI_STATE_ALLOCATED	= 2,	/* config setup done */
+ 	NOZOMI_STATE_READY	= 3,	/* flowcontrols received */
+diff --git a/drivers/input/serio/hp_sdc_mlc.c b/drivers/input/serio/hp_sdc_mlc.c
+index 820e516..7d2b820 100644
+--- a/drivers/input/serio/hp_sdc_mlc.c
++++ b/drivers/input/serio/hp_sdc_mlc.c
+@@ -125,7 +125,7 @@ static void hp_sdc_mlc_isr (int irq, void *dev_id,
+ 		break;
 
-diff --git a/drivers/staging/sep/sep_driver.c b/drivers/staging/sep/sep_driver.c
-index f890a16..be19afe 100644
---- a/drivers/staging/sep/sep_driver.c
-+++ b/drivers/staging/sep/sep_driver.c
-@@ -2447,7 +2447,7 @@ static void sep_configure_dma_burst(struct
-sep_device *sep)
+ 	default:
+-		printk(KERN_WARNING PREFIX "Unkown HIL Error status (%x)!\n", data);
++		printk(KERN_WARNING PREFIX "Unknown HIL Error status (%x)!\n", data);
+ 		break;
+ 	}
+
+diff --git a/drivers/input/touchscreen/atmel-wm97xx.c
+b/drivers/input/touchscreen/atmel-wm97xx.c
+index 35377f5..a12242f 100644
+--- a/drivers/input/touchscreen/atmel-wm97xx.c
++++ b/drivers/input/touchscreen/atmel-wm97xx.c
+@@ -59,7 +59,7 @@
+ #define ATMEL_WM97XX_AC97C_IRQ		(29)
+ #define ATMEL_WM97XX_GPIO_DEFAULT	(32+16) /* Pin 16 on port B. */
+ #else
+-#error Unkown CPU, this driver only supports AT32AP700X CPUs.
++#error Unknown CPU, this driver only supports AT32AP700X CPUs.
  #endif
 
- /*
--  Function that is activaed on the succesful probe of the SEP device
-+  Function that is activaed on the successful probe of the SEP device
- */
- static int __devinit sep_probe(struct pci_dev *pdev, const struct
-pci_device_id *ent)
- {
-diff --git a/drivers/staging/vt6655/device_main.c
-b/drivers/staging/vt6655/device_main.c
-index 53450b4..0db8d7b 100644
---- a/drivers/staging/vt6655/device_main.c
-+++ b/drivers/staging/vt6655/device_main.c
-@@ -661,7 +661,7 @@ else
-    if(zonetype!=pDevice->abyEEPROM[EEP_OFS_ZONETYPE])
-       printk("zonetype in file[%02x] mismatch with in
-EEPROM[%02x]\n",zonetype,pDevice->abyEEPROM[EEP_OFS_ZONETYPE]);
-    else
--      printk("Read Zonetype file sucess,use default zonetype
-setting[%02x]\n",zonetype);
-+      printk("Read Zonetype file success,use default zonetype
-setting[%02x]\n",zonetype);
-  }
-  	}
-   else
-diff --git a/drivers/staging/vt6655/ioctl.c b/drivers/staging/vt6655/ioctl.c
-index fc9cbe0..b15ce8a 100644
---- a/drivers/staging/vt6655/ioctl.c
-+++ b/drivers/staging/vt6655/ioctl.c
-@@ -692,7 +692,7 @@ if(wpa_Result.authenticated==TRUE) {
-      wireless_send_event(pDevice->dev, IWEVCUSTOM, &wrqu, pItemSSID->abySSID);
-    }
-    #endif
--         pDevice->fWPA_Authened = TRUE;           //is sucessful peer
-to wpa_Result.authenticated?
-+         pDevice->fWPA_Authened = TRUE;           //is successful
-peer to wpa_Result.authenticated?
+ struct continuous {
+diff --git a/drivers/isdn/capi/capidrv.c b/drivers/isdn/capi/capidrv.c
+index 1c3a371..2e411fe 100644
+--- a/drivers/isdn/capi/capidrv.c
++++ b/drivers/isdn/capi/capidrv.c
+@@ -830,7 +830,7 @@ static void handle_controller(_cmsg * cmsg)
+ 		      case 0: break;
+ 		      case 1: s = "unknown class"; break;
+ 		      case 2: s = "unknown function"; break;
+-		      default: s = "unkown error"; break;
++		      default: s = "unknown error"; break;
+ 		   }
+ 		   if (s)
+ 	           printk(KERN_INFO "capidrv-%d: %s from controller 0x%x
+function %d: %s\n",
+diff --git a/drivers/isdn/hardware/eicon/maintidi.c
+b/drivers/isdn/hardware/eicon/maintidi.c
+index ac88242..df53451 100644
+--- a/drivers/isdn/hardware/eicon/maintidi.c
++++ b/drivers/isdn/hardware/eicon/maintidi.c
+@@ -385,7 +385,7 @@ static int SuperTraceMessageInput (void* hLib) {
+                   }
+                   break;
+                 default:
+-                  diva_mnt_internal_dprintf (0, DLI_ERR, "Unknon IDI
+Ind (DMA mode): %02x", Ind);
++                  diva_mnt_internal_dprintf (0, DLI_ERR, "Unknown IDI
+Ind (DMA mode): %02x", Ind);
+               }
+               p += (this_ind_length+1);
+               total_length -= (4 + this_ind_length);
+@@ -420,7 +420,7 @@ static int SuperTraceMessageInput (void* hLib) {
+             }
+             break;
+           default:
+-            diva_mnt_internal_dprintf (0, DLI_ERR, "Unknon IDI Ind:
+%02x", Ind);
++            diva_mnt_internal_dprintf (0, DLI_ERR, "Unknown IDI Ind:
+%02x", Ind);
+         }
+       }
+     }
+diff --git a/drivers/isdn/hardware/mISDN/hfcsusb.h
+b/drivers/isdn/hardware/mISDN/hfcsusb.h
+index 43efe73..369196a 100644
+--- a/drivers/isdn/hardware/mISDN/hfcsusb.h
++++ b/drivers/isdn/hardware/mISDN/hfcsusb.h
+@@ -150,7 +150,7 @@ symbolic(struct hfcusb_symbolic_list list[], const int num)
+ 	for (i = 0; list[i].name != NULL; i++)
+ 		if (list[i].num == num)
+ 			return list[i].name;
+-	return "<unkown USB Error>";
++	return "<unknown USB Error>";
  }
 
-         //printk("get private wpa_supplicant announce WPA SM\n");
-diff --git a/drivers/staging/vt6655/mib.h b/drivers/staging/vt6655/mib.h
-index 69e04f7..2aa2b91 100644
---- a/drivers/staging/vt6655/mib.h
-+++ b/drivers/staging/vt6655/mib.h
-@@ -325,10 +325,10 @@ typedef struct tagSStatCounter {
-    #ifdef Calcu_LinkQual
-        //Tx count:
-     ULONG TxNoRetryOkCount;         //success tx no retry !
--    ULONG TxRetryOkCount;              //sucess tx but retry !
-+    ULONG TxRetryOkCount;              //success tx but retry !
-     ULONG TxFailCount;                      //fail tx ?
-       //Rx count:
--    ULONG RxOkCnt;                          //sucess rx !
-+    ULONG RxOkCnt;                          //success rx !
-     ULONG RxFcsErrCnt;                    //fail rx ?
-       //statistic
-     ULONG SignalStren;
-diff --git a/drivers/staging/vt6656/baseband.c
-b/drivers/staging/vt6656/baseband.c
-index 820a7b8..49f419e 100644
---- a/drivers/staging/vt6656/baseband.c
-+++ b/drivers/staging/vt6656/baseband.c
-@@ -1041,7 +1041,7 @@ else {
-    if(pDevice->config_file.ZoneType !=pDevice->abyEEPROM[EEP_OFS_ZONETYPE])
-       printk("zonetype in file[%02x] mismatch with in
-EEPROM[%02x]\n",pDevice->config_file.ZoneType,pDevice->abyEEPROM[EEP_OFS_ZONETYPE]);
-    else
--      printk("Read Zonetype file sucess,use default zonetype
-setting[%02x]\n",pDevice->config_file.ZoneType);
-+      printk("Read Zonetype file success,use default zonetype
-setting[%02x]\n",pDevice->config_file.ZoneType);
-  }
- }
-
-diff --git a/drivers/staging/vt6656/ioctl.c b/drivers/staging/vt6656/ioctl.c
-index d94131f..76dcb5e 100644
---- a/drivers/staging/vt6656/ioctl.c
-+++ b/drivers/staging/vt6656/ioctl.c
-@@ -679,7 +679,7 @@ if(wpa_Result.authenticated==TRUE) {
-      wireless_send_event(pDevice->dev, IWEVCUSTOM, &wrqu, pItemSSID->abySSID);
-    }
-    #endif
--         pDevice->fWPA_Authened = TRUE;           //is sucessful peer
-to wpa_Result.authenticated?
-+         pDevice->fWPA_Authened = TRUE;           //is successful
-peer to wpa_Result.authenticated?
- }
-
-         //printk("get private wpa_supplicant announce WPA SM\n");
-diff --git a/drivers/staging/vt6656/iwctl.c b/drivers/staging/vt6656/iwctl.c
-index aa8d1a2..b7c6a22 100644
---- a/drivers/staging/vt6656/iwctl.c
-+++ b/drivers/staging/vt6656/iwctl.c
-@@ -1724,7 +1724,7 @@ int iwctl_siwauth(struct net_device *dev,
- 	case IW_AUTH_WPA_ENABLED:
- 		//pDevice->bWPADEVUp = !! wrq->value;
- 		//if(pDevice->bWPADEVUp==TRUE)
--		  // printk("iwctl_siwauth:set WPADEV to enable sucessful*******\n");
-+		  // printk("iwctl_siwauth:set WPADEV to enable successful*******\n");
- 		//else
- 		 //  printk("iwctl_siwauth:set WPADEV to enable fail?????\n");
+ /* USB descriptor need to contain one of the following EndPoint combination: */
+diff --git a/drivers/isdn/hardware/mISDN/mISDNisar.c
+b/drivers/isdn/hardware/mISDN/mISDNisar.c
+index de352a1..09095c7 100644
+--- a/drivers/isdn/hardware/mISDN/mISDNisar.c
++++ b/drivers/isdn/hardware/mISDN/mISDNisar.c
+@@ -860,7 +860,7 @@ isar_pump_statev_modem(struct isar_ch *ch, u8 devt) {
+ 		pr_debug("%s: pump stev GSTN CLEAR\n", ch->is->name);
  		break;
-diff --git a/drivers/staging/vt6656/main_usb.c
-b/drivers/staging/vt6656/main_usb.c
-index 7f96bca..fefec79 100644
---- a/drivers/staging/vt6656/main_usb.c
-+++ b/drivers/staging/vt6656/main_usb.c
-@@ -1546,7 +1546,7 @@ if(result!=0) {
-   return buffer;
+ 	default:
+-		pr_info("u%s: nknown pump stev %x\n", ch->is->name, devt);
++		pr_info("u%s: unknown pump stev %x\n", ch->is->name, devt);
+ 		break;
+ 	}
  }
+diff --git a/drivers/isdn/hisax/hfc_usb.c b/drivers/isdn/hisax/hfc_usb.c
+index 9de5420..ad5831f 100644
+--- a/drivers/isdn/hisax/hfc_usb.c
++++ b/drivers/isdn/hisax/hfc_usb.c
+@@ -1086,7 +1086,7 @@ hfc_usb_l2l1(struct hisax_if *my_hisax_if, int
+pr, void *arg)
+ 			break;
+ 		default:
+ 			DBG(HFCUSB_DBG_STATES,
+-			       "HFC_USB: hfc_usb_d_l2l1: unkown state : %#x", pr);
++			       "HFC_USB: hfc_usb_d_l2l1: unknown state : %#x", pr);
+ 			break;
+ 	}
+ }
+diff --git a/drivers/media/dvb/dvb-usb/anysee.c
+b/drivers/media/dvb/dvb-usb/anysee.c
+index 2ae7f64..bb69f37 100644
+--- a/drivers/media/dvb/dvb-usb/anysee.c
++++ b/drivers/media/dvb/dvb-usb/anysee.c
+@@ -344,7 +344,7 @@ static int anysee_frontend_attach(struct
+dvb_usb_adapter *adap)
+ 	if (ret)
+ 		return ret;
 
--//return --->-1:fail;  >=0:sucessful
-+//return --->-1:fail;  >=0:successful
- static int Read_config_file(PSDevice pDevice) {
-   int result=0;
-   UCHAR      tmpbuffer[100];
-diff --git a/drivers/staging/vt6656/mib.h b/drivers/staging/vt6656/mib.h
-index b806b4d..ac996d2 100644
---- a/drivers/staging/vt6656/mib.h
-+++ b/drivers/staging/vt6656/mib.h
-@@ -357,10 +357,10 @@ typedef struct tagSStatCounter {
-    #ifdef Calcu_LinkQual
-        //Tx count:
-     ULONG TxNoRetryOkCount;         //success tx no retry !
--    ULONG TxRetryOkCount;              //sucess tx but retry !
-+    ULONG TxRetryOkCount;              //success tx but retry !
-     ULONG TxFailCount;                      //fail tx ?
-       //Rx count:
--    ULONG RxOkCnt;                          //sucess rx !
-+    ULONG RxOkCnt;                          //success rx !
-     ULONG RxFcsErrCnt;                    //fail rx ?
-       //statistic
-     ULONG SignalStren;
-diff --git a/drivers/staging/vt6656/wcmd.c b/drivers/staging/vt6656/wcmd.c
-index 6912344..f0dfcd0 100644
---- a/drivers/staging/vt6656/wcmd.c
-+++ b/drivers/staging/vt6656/wcmd.c
-@@ -1332,7 +1332,7 @@ BSSvSecondTxData(
+-	err("Unkown Anysee version: %02x %02x %02x. "\
++	err("Unknown Anysee version: %02x %02x %02x. "\
+ 	    "Please report the <linux-dvb@linuxtv.org>.",
+ 	    hw_info[0], hw_info[1], hw_info[2]);
+
+diff --git a/drivers/media/dvb/dvb-usb/dibusb-mb.c
+b/drivers/media/dvb/dvb-usb/dibusb-mb.c
+index eeef50b..5c0126d 100644
+--- a/drivers/media/dvb/dvb-usb/dibusb-mb.c
++++ b/drivers/media/dvb/dvb-usb/dibusb-mb.c
+@@ -242,7 +242,7 @@ static struct dvb_usb_device_properties
+dibusb1_1_properties = {
+ 			{ &dibusb_dib3000mb_table[9],  &dibusb_dib3000mb_table[11], NULL },
+ 			{ &dibusb_dib3000mb_table[10], &dibusb_dib3000mb_table[12], NULL },
+ 		},
+-		{	"Unkown USB1.1 DVB-T device ???? please report the name to the author",
++		{	"Unknown USB1.1 DVB-T device ???? please report the name to the author",
+ 			{ &dibusb_dib3000mb_table[13], NULL },
+ 			{ &dibusb_dib3000mb_table[14], NULL },
+ 		},
+diff --git a/drivers/media/dvb/dvb-usb/dvb-usb-remote.c
+b/drivers/media/dvb/dvb-usb/dvb-usb-remote.c
+index edde87c..6b5ded9 100644
+--- a/drivers/media/dvb/dvb-usb/dvb-usb-remote.c
++++ b/drivers/media/dvb/dvb-usb/dvb-usb-remote.c
+@@ -259,7 +259,7 @@ int dvb_usb_nec_rc_key_to_event(struct dvb_usb_device *d,
+ 			*state = REMOTE_KEY_REPEAT;
+ 			break;
+ 		default:
+-			deb_err("unkown type of remote status: %d\n",keybuf[0]);
++			deb_err("unknown type of remote status: %d\n",keybuf[0]);
+ 			break;
+ 	}
+ 	return 0;
+diff --git a/drivers/media/dvb/dvb-usb/usb-urb.c
+b/drivers/media/dvb/dvb-usb/usb-urb.c
+index 9da2cc9..f9702e3 100644
+--- a/drivers/media/dvb/dvb-usb/usb-urb.c
++++ b/drivers/media/dvb/dvb-usb/usb-urb.c
+@@ -56,7 +56,7 @@ static void usb_urb_complete(struct urb *urb)
+ 				stream->complete(stream, b, urb->actual_length);
+ 			break;
+ 		default:
+-			err("unkown endpoint type in completition handler.");
++			err("unknown endpoint type in completition handler.");
+ 			return;
+ 	}
+ 	usb_submit_urb(urb,GFP_ATOMIC);
+@@ -228,7 +228,7 @@ int usb_urb_init(struct usb_data_stream *stream,
+struct usb_data_stream_properti
+ 		case USB_ISOC:
+ 			return usb_isoc_urb_init(stream);
+ 		default:
+-			err("unkown URB-type for data transfer.");
++			err("unknown URB-type for data transfer.");
+ 			return -EINVAL;
+ 	}
+ }
+diff --git a/drivers/media/dvb/frontends/au8522_decoder.c
+b/drivers/media/dvb/frontends/au8522_decoder.c
+index 74981ee..7c6431f 100644
+--- a/drivers/media/dvb/frontends/au8522_decoder.c
++++ b/drivers/media/dvb/frontends/au8522_decoder.c
+@@ -315,7 +315,7 @@ static void setup_decoder_defaults(struct
+au8522_state *state, u8 input_mode)
+ 	if (input_mode == AU8522_INPUT_CONTROL_REG081H_SVIDEO_CH13 ||
+ 	    input_mode == AU8522_INPUT_CONTROL_REG081H_SVIDEO_CH24) {
+ 		/* Despite what the table says, for the HVR-950q we still need
+-		   to be in CVBS mode for the S-Video input (reason uknown). */
++		   to be in CVBS mode for the S-Video input (reason unknown). */
+ 		/* filter_coef_type = 3; */
+ 		filter_coef_type = 5;
+ 	} else {
+diff --git a/drivers/media/dvb/frontends/dib3000mb.c
+b/drivers/media/dvb/frontends/dib3000mb.c
+index 136b9d2..ad4c8cf 100644
+--- a/drivers/media/dvb/frontends/dib3000mb.c
++++ b/drivers/media/dvb/frontends/dib3000mb.c
+@@ -154,7 +154,7 @@ static int dib3000mb_set_frontend(struct dvb_frontend* fe,
+ 			case BANDWIDTH_AUTO:
+ 				return -EOPNOTSUPP;
+ 			default:
+-				err("unkown bandwidth value.");
++				err("unknown bandwidth value.");
+ 				return -EINVAL;
+ 		}
+ 	}
+diff --git a/drivers/media/video/gspca/spca500.c
+b/drivers/media/video/gspca/spca500.c
+index fab7ef8..7dbd5ee 100644
+--- a/drivers/media/video/gspca/spca500.c
++++ b/drivers/media/video/gspca/spca500.c
+@@ -589,7 +589,7 @@ static void spca500_reinit(struct gspca_dev *gspca_dev)
+ 	int err;
+ 	__u8 Data;
+
+-	/* some unknow command from Aiptek pocket dv and family300 */
++	/* some unknown command from Aiptek pocket dv and family300 */
+
+ 	reg_w(gspca_dev, 0x00, 0x0d01, 0x01);
+ 	reg_w(gspca_dev, 0x00, 0x0d03, 0x00);
+diff --git a/drivers/media/video/gspca/spca501.c
+b/drivers/media/video/gspca/spca501.c
+index b74a342..66f9f00 100644
+--- a/drivers/media/video/gspca/spca501.c
++++ b/drivers/media/video/gspca/spca501.c
+@@ -1636,7 +1636,7 @@ static const __u16 spca501c_arowana_init_data[][3] = {
+ 	{}
+ };
+
+-/* Unknow camera from Ori Usbid 0x0000:0x0000 */
++/* Unknown camera from Ori Usbid 0x0000:0x0000 */
+ /* Based on snoops from Ori Cohen */
+ static const __u16 spca501c_mysterious_open_data[][3] = {
+ 	{0x02, 0x000f, 0x0005},
+@@ -1945,7 +1945,7 @@ static int sd_init(struct gspca_dev *gspca_dev)
+ 			goto error;
+ 		break;
+ 	case MystFromOriUnknownCamera:
+-		/* UnKnow Ori CMOS Camera data */
++		/* Unknown Ori CMOS Camera data */
+ 		if (write_vector(gspca_dev, spca501c_mysterious_open_data))
+ 			goto error;
+ 		break;
+@@ -1978,7 +1978,7 @@ static int sd_start(struct gspca_dev *gspca_dev)
+ 		write_vector(gspca_dev, spca501c_arowana_open_data);
+ 		break;
+ 	case MystFromOriUnknownCamera:
+-		/* UnKnow  CMOS Camera data */
++		/* Unknown CMOS Camera data */
+ 		write_vector(gspca_dev, spca501c_mysterious_init_data);
+ 		break;
+ 	default:
+diff --git a/drivers/media/video/gspca/zc3xx.c
+b/drivers/media/video/gspca/zc3xx.c
+index cdf3357..49c3c12 100644
+--- a/drivers/media/video/gspca/zc3xx.c
++++ b/drivers/media/video/gspca/zc3xx.c
+@@ -7065,7 +7065,7 @@ static int sd_config(struct gspca_dev *gspca_dev,
+ 				break;
+ 			default:
+ 				PDEBUG(D_PROBE,
+-					"Sensor UNKNOW_0 force Tas5130");
++					"Sensor UNKNOWN_0 force Tas5130");
+ 				sd->sensor = SENSOR_TAS5130CXX;
+ 			}
+ 			break;
+diff --git a/drivers/media/video/s2255drv.c b/drivers/media/video/s2255drv.c
+index 9e3262c..a4c8436 100644
+--- a/drivers/media/video/s2255drv.c
++++ b/drivers/media/video/s2255drv.c
+@@ -1985,7 +1985,7 @@ static int save_frame(struct s2255_dev *dev,
+struct s2255_pipeinfo *pipe_info)
+ 					wake_up(&dev->fw_data->wait_fw);
+ 					break;
+ 				default:
+-					printk(KERN_INFO "s2255 unknwn resp\n");
++					printk(KERN_INFO "s2255 unknown resp\n");
+ 				}
+ 			default:
+ 				pdata++;
+diff --git a/drivers/message/fusion/lsi/mpi_cnfg.h
+b/drivers/message/fusion/lsi/mpi_cnfg.h
+index 013c7d8..7d17e13 100644
+--- a/drivers/message/fusion/lsi/mpi_cnfg.h
++++ b/drivers/message/fusion/lsi/mpi_cnfg.h
+@@ -1800,13 +1800,13 @@ typedef struct _CONFIG_PAGE_FC_PORT_0
+ #define MPI_FCPORTPAGE0_SUPPORT_CLASS_2                 (0x00000002)
+ #define MPI_FCPORTPAGE0_SUPPORT_CLASS_3                 (0x00000004)
+
+-#define MPI_FCPORTPAGE0_SUPPORT_SPEED_UKNOWN            (0x00000000)
+/* (SNIA)HBA_PORTSPEED_UNKNOWN 0   Unknown - transceiver incapable of
+reporting */
++#define MPI_FCPORTPAGE0_SUPPORT_SPEED_UNKNOWN           (0x00000000)
+/* (SNIA)HBA_PORTSPEED_UNKNOWN 0   Unknown - transceiver incapable of
+reporting */
+ #define MPI_FCPORTPAGE0_SUPPORT_1GBIT_SPEED             (0x00000001)
+/* (SNIA)HBA_PORTSPEED_1GBIT   1   1 GBit/sec */
+ #define MPI_FCPORTPAGE0_SUPPORT_2GBIT_SPEED             (0x00000002)
+/* (SNIA)HBA_PORTSPEED_2GBIT   2   2 GBit/sec */
+ #define MPI_FCPORTPAGE0_SUPPORT_10GBIT_SPEED            (0x00000004)
+/* (SNIA)HBA_PORTSPEED_10GBIT  4  10 GBit/sec */
+ #define MPI_FCPORTPAGE0_SUPPORT_4GBIT_SPEED             (0x00000008)
+/* (SNIA)HBA_PORTSPEED_4GBIT   8   4 GBit/sec */
+
+-#define MPI_FCPORTPAGE0_CURRENT_SPEED_UKNOWN
+MPI_FCPORTPAGE0_SUPPORT_SPEED_UKNOWN
++#define MPI_FCPORTPAGE0_CURRENT_SPEED_UNKNOWN
+MPI_FCPORTPAGE0_SUPPORT_SPEED_UNKNOWN
+ #define MPI_FCPORTPAGE0_CURRENT_SPEED_1GBIT
+MPI_FCPORTPAGE0_SUPPORT_1GBIT_SPEED
+ #define MPI_FCPORTPAGE0_CURRENT_SPEED_2GBIT
+MPI_FCPORTPAGE0_SUPPORT_2GBIT_SPEED
+ #define MPI_FCPORTPAGE0_CURRENT_SPEED_10GBIT
+MPI_FCPORTPAGE0_SUPPORT_10GBIT_SPEED
+diff --git a/drivers/message/fusion/mptfc.c b/drivers/message/fusion/mptfc.c
+index ebf6ae0..6302278 100644
+--- a/drivers/message/fusion/mptfc.c
++++ b/drivers/message/fusion/mptfc.c
+@@ -695,7 +695,7 @@ mptfc_display_port_link_speed(MPT_ADAPTER *ioc,
+int portnum, FCPortPage0_t *pp0d
+ 	state = pp0dest->PortState;
+
+ 	if (state != MPI_FCPORTPAGE0_PORTSTATE_OFFLINE &&
+-	    new_speed != MPI_FCPORTPAGE0_CURRENT_SPEED_UKNOWN) {
++	    new_speed != MPI_FCPORTPAGE0_CURRENT_SPEED_UNKNOWN) {
+
+ 		old = old_speed == MPI_FCPORTPAGE0_CURRENT_SPEED_1GBIT ? "1 Gbps" :
+ 		       old_speed == MPI_FCPORTPAGE0_CURRENT_SPEED_2GBIT ? "2 Gbps" :
+diff --git a/drivers/net/appletalk/cops.c b/drivers/net/appletalk/cops.c
+index b5dc7f5..9d828ae 100644
+--- a/drivers/net/appletalk/cops.c
++++ b/drivers/net/appletalk/cops.c
+@@ -120,7 +120,7 @@ static int irq = 5;		/* Default IRQ */
+  *      DAYNA driver mode:
+  *              Dayna DL2000/DaynaTalk PC (Half Length), COPS LT-95,
+  *		Farallon PhoneNET PC III, Farallon PhoneNET PC II
+- *	Other cards possibly supported mode unkown though:
++ *	Other cards possibly supported mode unknown though:
+  *		Dayna DL2000 (Full length), COPS LT/M (Micro-Channel)
+  *
+  *	Cards NOT supported by this driver but supported by the ltpc.c
+diff --git a/drivers/net/sis900.c b/drivers/net/sis900.c
+index c072f7f..69a62af 100644
+--- a/drivers/net/sis900.c
++++ b/drivers/net/sis900.c
+@@ -1775,7 +1775,7 @@ static int sis900_rx(struct net_device *net_dev)
+ 			}
+
+ 			/* This situation should never happen, but due to
+-			   some unknow bugs, it is possible that
++			   some unknown bugs, it is possible that
+ 			   we are working on NULL sk_buff :-( */
+ 			if (sis_priv->rx_skbuff[entry] == NULL) {
+ 				if (netif_msg_rx_err(sis_priv))
+diff --git a/drivers/net/skfp/skfddi.c b/drivers/net/skfp/skfddi.c
+index b27156e..db216a7 100644
+--- a/drivers/net/skfp/skfddi.c
++++ b/drivers/net/skfp/skfddi.c
+@@ -1002,7 +1002,7 @@ static int skfp_ioctl(struct net_device *dev,
+struct ifreq *rq, int cmd)
+ 		}
+ 		break;
+ 	default:
+-		printk("ioctl for %s: unknow cmd: %04x\n", dev->name, ioc.cmd);
++		printk("ioctl for %s: unknown cmd: %04x\n", dev->name, ioc.cmd);
+ 		status = -EOPNOTSUPP;
+
+ 	}			// switch
+diff --git a/drivers/net/wan/lmc/lmc_main.c b/drivers/net/wan/lmc/lmc_main.c
+index 7ea71b3..ee784e0 100644
+--- a/drivers/net/wan/lmc/lmc_main.c
++++ b/drivers/net/wan/lmc/lmc_main.c
+@@ -927,7 +927,7 @@ static int __devinit lmc_init_one(struct pci_dev *pdev,
+         sc->lmc_media = &lmc_t1_media;
+         break;
+     default:
+-	printk(KERN_WARNING "%s: LMC UNKOWN CARD!\n", dev->name);
++	printk(KERN_WARNING "%s: LMC UNKNOWN CARD!\n", dev->name);
+         break;
      }
 
-   spin_lock_irq(&pDevice->lock);
--  //is wap_supplicant running sucessful OR only open && sharekey mode!
-+  //is wap_supplicant running successful OR only open && sharekey mode!
-   #if 1
-   if(((pDevice->bLinkPass ==TRUE)&&(pMgmt->eAuthenMode <
-WMAC_AUTH_WPA)) ||  //open && sharekey linking
-       (pDevice->fWPA_Authened == TRUE)) {   //wpa linking
-diff --git a/drivers/usb/core/message.c b/drivers/usb/core/message.c
-index da718e8..e80f1af 100644
---- a/drivers/usb/core/message.c
-+++ b/drivers/usb/core/message.c
-@@ -1890,7 +1890,7 @@ static void cancel_async_set_config(struct
-usb_device *udev)
-  * routine gets around the normal restrictions by using a work thread to
-  * submit the change-config request.
-  *
-- * Returns 0 if the request was succesfully queued, error code otherwise.
-+ * Returns 0 if the request was successfully queued, error code otherwise.
-  * The caller has no way to know whether the queued request will eventually
-  * succeed.
-  */
-diff --git a/drivers/usb/gadget/f_acm.c b/drivers/usb/gadget/f_acm.c
-index 7953948..4e36578 100644
---- a/drivers/usb/gadget/f_acm.c
-+++ b/drivers/usb/gadget/f_acm.c
-@@ -432,7 +432,7 @@ static void acm_disable(struct usb_function *f)
-  * @length: size of data
-  * Context: irqs blocked, acm->lock held, acm_notify_req non-null
-  *
-- * Returns zero on sucess or a negative errno.
-+ * Returns zero on success or a negative errno.
-  *
-  * See section 6.3.5 of the CDC 1.1 specification for information
-  * about the only notification we issue:  SerialState change.
-diff --git a/drivers/usb/gadget/pxa27x_udc.c b/drivers/usb/gadget/pxa27x_udc.c
-index 1937d8c..adda120 100644
---- a/drivers/usb/gadget/pxa27x_udc.c
-+++ b/drivers/usb/gadget/pxa27x_udc.c
-@@ -1524,7 +1524,7 @@ static int pxa_udc_get_frame(struct usb_gadget *_gadget)
-  * pxa_udc_wakeup - Force udc device out of suspend
-  * @_gadget: usb gadget
-  *
-- * Returns 0 if succesfull, error code otherwise
-+ * Returns 0 if successfull, error code otherwise
-  */
- static int pxa_udc_wakeup(struct usb_gadget *_gadget)
- {
-diff --git a/drivers/usb/host/fhci-sched.c b/drivers/usb/host/fhci-sched.c
-index 62a226b..00a2985 100644
---- a/drivers/usb/host/fhci-sched.c
-+++ b/drivers/usb/host/fhci-sched.c
-@@ -627,7 +627,7 @@ irqreturn_t fhci_irq(struct usb_hcd *hcd)
+diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c
+b/drivers/net/wireless/ipw2x00/ipw2200.c
+index 827824d..2eb4e44 100644
+--- a/drivers/net/wireless/ipw2x00/ipw2200.c
++++ b/drivers/net/wireless/ipw2x00/ipw2200.c
+@@ -7751,7 +7751,7 @@ static void ipw_rebuild_decrypted_skb(struct
+ipw_priv *priv,
+ 	case SEC_LEVEL_0:
+ 		break;
+ 	default:
+-		printk(KERN_ERR "Unknow security level %d\n",
++		printk(KERN_ERR "Unknown security level %d\n",
+ 		       priv->ieee->sec.level);
+ 		break;
+ 	}
+@@ -10290,7 +10290,7 @@ static int ipw_tx_skb(struct ipw_priv *priv,
+struct libipw_txb *txb,
+ 		case SEC_LEVEL_0:
+ 			break;
+ 		default:
+-			printk(KERN_ERR "Unknow security level %d\n",
++			printk(KERN_ERR "Unknown security level %d\n",
+ 			       priv->ieee->sec.level);
+ 			break;
+ 		}
+diff --git a/drivers/net/wireless/iwmc3200wifi/rx.c
+b/drivers/net/wireless/iwmc3200wifi/rx.c
+index 771a301..8ddb51a 100644
+--- a/drivers/net/wireless/iwmc3200wifi/rx.c
++++ b/drivers/net/wireless/iwmc3200wifi/rx.c
+@@ -1448,7 +1448,7 @@ static void iwm_rx_process_packet(struct iwm_priv *iwm,
+ 		kfree_skb(packet->skb);
+ 		break;
+ 	default:
+-		IWM_ERR(iwm, "Unknow ticket action: %d\n",
++		IWM_ERR(iwm, "Unknown ticket action: %d\n",
+ 			le16_to_cpu(ticket_node->ticket->action));
+ 		kfree_skb(packet->skb);
+ 	}
+diff --git a/drivers/net/wireless/libertas/if_sdio.c
+b/drivers/net/wireless/libertas/if_sdio.c
+index 485a8d4..afe6abe 100644
+--- a/drivers/net/wireless/libertas/if_sdio.c
++++ b/drivers/net/wireless/libertas/if_sdio.c
+@@ -934,7 +934,7 @@ static int if_sdio_probe(struct sdio_func *func,
+ 	}
 
+ 	if (i == ARRAY_SIZE(if_sdio_models)) {
+-		lbs_pr_err("unkown card model 0x%x\n", card->model);
++		lbs_pr_err("unknown card model 0x%x\n", card->model);
+ 		ret = -ENODEV;
+ 		goto free;
+ 	}
+diff --git a/drivers/net/wireless/prism54/isl_ioctl.c
+b/drivers/net/wireless/prism54/isl_ioctl.c
+index bc08464..cf91990 100644
+--- a/drivers/net/wireless/prism54/isl_ioctl.c
++++ b/drivers/net/wireless/prism54/isl_ioctl.c
+@@ -2323,7 +2323,7 @@ prism54_process_trap_helper(islpci_private
+*priv, enum oid_num_t oid,
 
- /*
-- * Process normal completions(error or sucess) and clean the schedule.
-+ * Process normal completions(error or success) and clean the schedule.
-  *
-  * This is the main path for handing urbs back to drivers. The only other patth
-  * is process_del_list(),which unlinks URBs by scanning EDs,instead of scanning
-diff --git a/drivers/usb/wusbcore/crypto.c b/drivers/usb/wusbcore/crypto.c
-index 9ec7fd5..9579cf4 100644
---- a/drivers/usb/wusbcore/crypto.c
-+++ b/drivers/usb/wusbcore/crypto.c
-@@ -111,7 +111,7 @@ struct aes_ccm_b1 {
-  *
-  * CCM uses Ax blocks to generate a keystream with which the MIC and
-  * the message's payload are encoded. A0 always encrypts/decrypts the
-- * MIC. Ax (x>0) are used for the sucesive payload blocks.
-+ * MIC. Ax (x>0) are used for the successive payload blocks.
-  *
-  * The x is the counter, and is increased for each block.
-  */
-diff --git a/drivers/usb/wusbcore/wa-xfer.c b/drivers/usb/wusbcore/wa-xfer.c
-index 613a5fc..489b478 100644
---- a/drivers/usb/wusbcore/wa-xfer.c
-+++ b/drivers/usb/wusbcore/wa-xfer.c
-@@ -558,7 +558,7 @@ static void wa_seg_dto_cb(struct urb *urb)
- /*
-  * Callback for the segment request
-  *
-- * If succesful transition state (unless already transitioned or
-+ * If successful transition state (unless already transitioned or
-  * outbound transfer); otherwise, take a note of the error, mark this
-  * segment done and try completion.
-  *
-@@ -1364,7 +1364,7 @@ segment_aborted:
- /*
-  * Callback for the IN data phase
-  *
-- * If succesful transition state; otherwise, take a note of the
-+ * If successful transition state; otherwise, take a note of the
-  * error, mark this segment done and try completion.
-  *
-  * Note we don't access until we are sure that the transfer hasn't
-diff --git a/drivers/uwb/i1480/dfu/usb.c b/drivers/uwb/i1480/dfu/usb.c
-index c7080d4..0bb665a 100644
---- a/drivers/uwb/i1480/dfu/usb.c
-+++ b/drivers/uwb/i1480/dfu/usb.c
-@@ -229,7 +229,7 @@ void i1480_usb_neep_cb(struct urb *urb)
-  * will verify it.
-  *
-  * Set i1480->evt_result with the result of getting the event or its
-- * size (if succesful).
-+ * size (if successful).
-  *
-  * Delivers the data directly to i1480->evt_buf
-  */
-diff --git a/drivers/uwb/wlp/txrx.c b/drivers/uwb/wlp/txrx.c
-index 86a853b..7350ed6 100644
---- a/drivers/uwb/wlp/txrx.c
-+++ b/drivers/uwb/wlp/txrx.c
-@@ -282,7 +282,7 @@ EXPORT_SYMBOL_GPL(wlp_receive_frame);
-  *         and transmission will be done by the calling function.
-  * @dst:   On return this will contain the device address to which the
-  *         frame is destined.
-- * @returns: 0 on success no tx : WLP header sucessfully applied to skb buffer,
-+ * @returns: 0 on success no tx : WLP header successfully applied to
-skb buffer,
-  *                                calling function can proceed with tx
-  *           1 on success with tx : WLP will take over transmission of this
-  *                                  frame
-diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
-index 3bde56b..5bfb1f2 100644
---- a/drivers/watchdog/wdrtas.c
-+++ b/drivers/watchdog/wdrtas.c
-@@ -542,7 +542,7 @@ static struct notifier_block wdrtas_notifier = {
- /**
-  * wdrtas_get_tokens - reads in RTAS tokens
-  *
-- * returns 0 on succes, <0 on failure
-+ * returns 0 on success, <0 on failure
-  *
-  * wdrtas_get_tokens reads in the tokens for the RTAS calls used in
-  * this watchdog driver. It tolerates, if "get-sensor-state" and
-@@ -598,7 +598,7 @@ static void wdrtas_unregister_devs(void)
- /**
-  * wdrtas_register_devs - registers the misc dev handlers
-  *
-- * returns 0 on succes, <0 on failure
-+ * returns 0 on success, <0 on failure
-  *
-  * wdrtas_register_devs registers the watchdog and temperature watchdog
-  * misc devs
-@@ -630,7 +630,7 @@ static int wdrtas_register_devs(void)
- /**
-  * wdrtas_init - init function of the watchdog driver
-  *
-- * returns 0 on succes, <0 on failure
-+ * returns 0 on success, <0 on failure
-  *
-  * registers the file handlers and the reboot notifier
-  */
-diff --git a/fs/bio.c b/fs/bio.c
-index 402cb84..a82f389 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -272,7 +272,7 @@ EXPORT_SYMBOL(bio_init);
-  *   for a &struct bio to become free. If a %NULL @bs is passed in, we will
-  *   fall back to just using @kmalloc to allocate the required memory.
-  *
-- *   Note that the caller must set ->bi_destructor on succesful return
-+ *   Note that the caller must set ->bi_destructor on successful return
-  *   of a bio, to do the appropriate freeing of the bio once the reference
-  *   count drops to zero.
-  **/
-diff --git a/fs/btrfs/extent_map.c b/fs/btrfs/extent_map.c
-index 2c726b7..6815d2a 100644
---- a/fs/btrfs/extent_map.c
-+++ b/fs/btrfs/extent_map.c
-@@ -256,7 +256,7 @@ out:
-  * Insert @em into @tree or perform a simple forward/backward merge with
-  * existing mappings.  The extent_map struct passed in will be inserted
-  * into the tree directly, with an additional reference taken, or a
-- * reference dropped if the merge attempt was sucessfull.
-+ * reference dropped if the merge attempt was successfull.
-  */
- int add_extent_mapping(struct extent_map_tree *tree,
- 		       struct extent_map *em)
-diff --git a/fs/dlm/plock.c b/fs/dlm/plock.c
-index 16f682e..b540aa5 100644
---- a/fs/dlm/plock.c
-+++ b/fs/dlm/plock.c
-@@ -143,7 +143,7 @@ out:
- }
- EXPORT_SYMBOL_GPL(dlm_posix_lock);
+ 	case DOT11_OID_BEACON:
+ 		send_formatted_event(priv,
+-				     "Received a beacon from an unkown AP",
++				     "Received a beacon from an unknown AP",
+ 				     mlme, 0);
+ 		break;
 
--/* Returns failure iff a succesful lock operation should be canceled */
-+/* Returns failure iff a successful lock operation should be canceled */
- static int dlm_plock_callback(struct plock_op *op)
- {
- 	struct file *file;
-diff --git a/fs/jffs2/readinode.c b/fs/jffs2/readinode.c
-index 1a80301..378991c 100644
---- a/fs/jffs2/readinode.c
-+++ b/fs/jffs2/readinode.c
-@@ -931,7 +931,7 @@ static inline int read_unknown(struct
-jffs2_sb_info *c, struct jffs2_raw_node_re
-  * Helper function for jffs2_get_inode_nodes().
-  * The function detects whether more data should be read and reads it if yes.
-  *
-- * Returns: 0 on succes;
-+ * Returns: 0 on success;
-  * 	    negative error code on failure.
-  */
- static int read_more(struct jffs2_sb_info *c, struct jffs2_raw_node_ref *ref,
-diff --git a/fs/ntfs/file.c b/fs/ntfs/file.c
-index 663c0e3..5397396 100644
---- a/fs/ntfs/file.c
-+++ b/fs/ntfs/file.c
-@@ -1281,7 +1281,7 @@ rl_not_mapped_enoent:
+diff --git a/drivers/net/wireless/rt2x00/rt2800usb.c
+b/drivers/net/wireless/rt2x00/rt2800usb.c
+index 9fe770f..409f4d4 100644
+--- a/drivers/net/wireless/rt2x00/rt2800usb.c
++++ b/drivers/net/wireless/rt2x00/rt2800usb.c
+@@ -924,17 +924,17 @@ static void rt2800usb_config_txpower(struct
+rt2x00_dev *rt2x00dev,
+ 	rt2x00_set_field32(&reg, TX_PWR_CFG_3_MCS13, value);
+ 	rt2x00_set_field32(&reg, TX_PWR_CFG_3_MCS14, value);
+ 	rt2x00_set_field32(&reg, TX_PWR_CFG_3_MCS15, value);
+-	rt2x00_set_field32(&reg, TX_PWR_CFG_3_UKNOWN1, value);
+-	rt2x00_set_field32(&reg, TX_PWR_CFG_3_UKNOWN2, value);
+-	rt2x00_set_field32(&reg, TX_PWR_CFG_3_UKNOWN3, value);
+-	rt2x00_set_field32(&reg, TX_PWR_CFG_3_UKNOWN4, value);
++	rt2x00_set_field32(&reg, TX_PWR_CFG_3_UNKNOWN1, value);
++	rt2x00_set_field32(&reg, TX_PWR_CFG_3_UNKNOWN2, value);
++	rt2x00_set_field32(&reg, TX_PWR_CFG_3_UNKNOWN3, value);
++	rt2x00_set_field32(&reg, TX_PWR_CFG_3_UNKNOWN4, value);
+ 	rt2x00usb_register_write(rt2x00dev, TX_PWR_CFG_3, reg);
 
- /*
-  * Copy as much as we can into the pages and return the number of bytes which
-- * were sucessfully copied.  If a fault is encountered then clear the pages
-+ * were successfully copied.  If a fault is encountered then clear the pages
-  * out to (ofs + bytes) and return the number of bytes which were copied.
-  */
- static inline size_t ntfs_copy_from_user(struct page **pages,
-diff --git a/fs/ntfs/logfile.c b/fs/ntfs/logfile.c
-index 89b0298..4dadcdf 100644
---- a/fs/ntfs/logfile.c
-+++ b/fs/ntfs/logfile.c
-@@ -338,7 +338,7 @@ err_out:
-  * copy of the complete multi sector transfer deprotected page.  On failure,
-  * *@wrp is undefined.
-  *
-- * Simillarly, if @lsn is not NULL, on succes *@lsn will be set to the current
-+ * Simillarly, if @lsn is not NULL, on success *@lsn will be set to the current
-  * logfile lsn according to this restart page.  On failure, *@lsn is undefined.
-  *
-  * The following error codes are defined:
-diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
-index 38a42f5..7c7198a 100644
---- a/fs/ocfs2/alloc.c
-+++ b/fs/ocfs2/alloc.c
-@@ -2398,7 +2398,7 @@ static int ocfs2_leftmost_rec_contains(struct
-ocfs2_extent_list *el, u32 cpos)
-  *
-  * The array is assumed to be large enough to hold an entire path (tree depth).
-  *
-- * Upon succesful return from this function:
-+ * Upon successful return from this function:
-  *
-  * - The 'right_path' array will contain a path to the leaf block
-  *   whose range contains e_cpos.
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 0d38d67..c5e4a49 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -1855,7 +1855,7 @@ int ocfs2_file_lock(struct file *file, int ex,
-int trylock)
- 		 * outstanding lock request, so a cancel convert is
- 		 * required. We intentionally overwrite 'ret' - if the
- 		 * cancel fails and the lock was granted, it's easier
--		 * to just bubble sucess back up to the user.
-+		 * to just bubble success back up to the user.
- 		 */
- 		ret = ocfs2_flock_handle_signal(lockres, level);
- 	} else if (!ret && (level > lockres->l_level)) {
-diff --git a/fs/omfs/bitmap.c b/fs/omfs/bitmap.c
-index e1c0ec0..0822345 100644
---- a/fs/omfs/bitmap.c
-+++ b/fs/omfs/bitmap.c
-@@ -85,7 +85,7 @@ out:
+ 	rt2x00usb_register_read(rt2x00dev, TX_PWR_CFG_4, &reg);
+-	rt2x00_set_field32(&reg, TX_PWR_CFG_4_UKNOWN5, value);
+-	rt2x00_set_field32(&reg, TX_PWR_CFG_4_UKNOWN6, value);
+-	rt2x00_set_field32(&reg, TX_PWR_CFG_4_UKNOWN7, value);
+-	rt2x00_set_field32(&reg, TX_PWR_CFG_4_UKNOWN8, value);
++	rt2x00_set_field32(&reg, TX_PWR_CFG_4_UNKNOWN5, value);
++	rt2x00_set_field32(&reg, TX_PWR_CFG_4_UNKNOWN6, value);
++	rt2x00_set_field32(&reg, TX_PWR_CFG_4_UNKNOWN7, value);
++	rt2x00_set_field32(&reg, TX_PWR_CFG_4_UNKNOWN8, value);
+ 	rt2x00usb_register_write(rt2x00dev, TX_PWR_CFG_4, reg);
  }
 
+diff --git a/drivers/net/wireless/rt2x00/rt2800usb.h
+b/drivers/net/wireless/rt2x00/rt2800usb.h
+index 4d9991c..2344571 100644
+--- a/drivers/net/wireless/rt2x00/rt2800usb.h
++++ b/drivers/net/wireless/rt2x00/rt2800usb.h
+@@ -766,19 +766,19 @@
+ #define TX_PWR_CFG_3_MCS13		FIELD32(0x000000f0)
+ #define TX_PWR_CFG_3_MCS14		FIELD32(0x00000f00)
+ #define TX_PWR_CFG_3_MCS15		FIELD32(0x0000f000)
+-#define TX_PWR_CFG_3_UKNOWN1		FIELD32(0x000f0000)
+-#define TX_PWR_CFG_3_UKNOWN2		FIELD32(0x00f00000)
+-#define TX_PWR_CFG_3_UKNOWN3		FIELD32(0x0f000000)
+-#define TX_PWR_CFG_3_UKNOWN4		FIELD32(0xf0000000)
++#define TX_PWR_CFG_3_UNKNOWN1		FIELD32(0x000f0000)
++#define TX_PWR_CFG_3_UNKNOWN2		FIELD32(0x00f00000)
++#define TX_PWR_CFG_3_UNKNOWN3		FIELD32(0x0f000000)
++#define TX_PWR_CFG_3_UNKNOWN4		FIELD32(0xf0000000)
+
  /*
-- * Tries to allocate exactly one block.  Returns true if sucessful.
-+ * Tries to allocate exactly one block.  Returns true if successful.
+  * TX_PWR_CFG_4:
   */
- int omfs_allocate_block(struct super_block *sb, u64 block)
+ #define TX_PWR_CFG_4			0x1324
+-#define TX_PWR_CFG_4_UKNOWN5		FIELD32(0x0000000f)
+-#define TX_PWR_CFG_4_UKNOWN6		FIELD32(0x000000f0)
+-#define TX_PWR_CFG_4_UKNOWN7		FIELD32(0x00000f00)
+-#define TX_PWR_CFG_4_UKNOWN8		FIELD32(0x0000f000)
++#define TX_PWR_CFG_4_UNKNOWN5		FIELD32(0x0000000f)
++#define TX_PWR_CFG_4_UNKNOWN6		FIELD32(0x000000f0)
++#define TX_PWR_CFG_4_UNKNOWN7		FIELD32(0x00000f00)
++#define TX_PWR_CFG_4_UNKNOWN8		FIELD32(0x0000f000)
+
+ /*
+  * TX_PIN_CFG:
+diff --git a/drivers/pnp/pnpbios/rsparser.c b/drivers/pnp/pnpbios/rsparser.c
+index 87b4f49..a5135eb 100644
+--- a/drivers/pnp/pnpbios/rsparser.c
++++ b/drivers/pnp/pnpbios/rsparser.c
+@@ -191,7 +191,7 @@ static unsigned char
+*pnpbios_parse_allocated_resource_data(struct pnp_dev *dev,
+ 			return (unsigned char *)p;
+ 			break;
+
+-		default:	/* an unkown tag */
++		default:	/* an unknown tag */
+ len_err:
+ 			dev_err(&dev->dev, "unknown tag %#x length %d\n",
+ 				tag, len);
+@@ -405,7 +405,7 @@ pnpbios_parse_resource_option_data(unsigned char
+*p, unsigned char *end,
+ 		case SMALL_TAG_END:
+ 			return p + 2;
+
+-		default:	/* an unkown tag */
++		default:	/* an unknown tag */
+ len_err:
+ 			dev_err(&dev->dev, "unknown tag %#x length %d\n",
+ 				tag, len);
+@@ -475,7 +475,7 @@ static unsigned char
+*pnpbios_parse_compatible_ids(unsigned char *p,
+ 			return (unsigned char *)p;
+ 			break;
+
+-		default:	/* an unkown tag */
++		default:	/* an unknown tag */
+ len_err:
+ 			dev_err(&dev->dev, "unknown tag %#x length %d\n",
+ 				tag, len);
+@@ -744,7 +744,7 @@ static unsigned char
+*pnpbios_encode_allocated_resource_data(struct pnp_dev
+ 			return (unsigned char *)p;
+ 			break;
+
+-		default:	/* an unkown tag */
++		default:	/* an unknown tag */
+ len_err:
+ 			dev_err(&dev->dev, "unknown tag %#x length %d\n",
+ 				tag, len);
+diff --git a/drivers/scsi/FlashPoint.c b/drivers/scsi/FlashPoint.c
+index b898d38..28a6143 100644
+--- a/drivers/scsi/FlashPoint.c
++++ b/drivers/scsi/FlashPoint.c
+@@ -730,7 +730,7 @@ typedef struct SCCBscam_info {
+ #define  DI    0x13		/*Data Out */
+ #define  DC    0x19		/*Disconnect Message */
+ #define  ST    0x1D		/*Status Phase */
+-#define  UNKNWN 0x24		/*Unknown bus action */
++#define  UNKNOWN 0x24		/*Unknown bus action */
+ #define  CC    0x25		/*Command Completion failure */
+ #define  TICK  0x26		/*New target reselected us. */
+ #define  SELCHK 0x28		/*Select & Check SCSI ID latch reg */
+@@ -4616,13 +4616,13 @@ static void FPT_autoLoadDefaultMap(unsigned long p_port)
+ 	map_addr += 2;
+ 	WRW_HARPOON(map_addr, (CRD_OP + SDATA + 0x04));	/*DISCONNECT MSG? */
+ 	map_addr += 2;
+-	WRW_HARPOON(map_addr, (BRH_OP + NOT_EQ + UNKNWN));	/*UKNKNOWN MSG */
++	WRW_HARPOON(map_addr, (BRH_OP + NOT_EQ + UNKNOWN));	/*UNKNOWN MSG */
+ 	map_addr += 2;
+ 	WRW_HARPOON(map_addr, (MRR_OP + SDATA + D_BUCKET));	/*XFER DISCONNECT MSG */
+ 	map_addr += 2;
+ 	WRW_HARPOON(map_addr, (SSI_OP + SSI_ITAR_DISC));	/*STOP AND INTERRUPT */
+ 	map_addr += 2;
+-	WRW_HARPOON(map_addr, (CPN_OP + ASTATUS + UNKNWN));	/*JUMP IF NOT
+STATUS PHZ. */
++	WRW_HARPOON(map_addr, (CPN_OP + ASTATUS + UNKNOWN));	/*JUMP IF NOT
+STATUS PHZ. */
+ 	map_addr += 2;
+ 	WRW_HARPOON(map_addr, (MRR_OP + SDATA + D_AR0));	/*GET STATUS BYTE */
+ 	map_addr += 2;
+diff --git a/drivers/scsi/bfa/include/defs/bfa_defs_pport.h
+b/drivers/scsi/bfa/include/defs/bfa_defs_pport.h
+index a000bc4..bf32041 100644
+--- a/drivers/scsi/bfa/include/defs/bfa_defs_pport.h
++++ b/drivers/scsi/bfa/include/defs/bfa_defs_pport.h
+@@ -61,7 +61,7 @@ enum bfa_pport_speed {
+  * 		Port operational type (in sync with SNIA port type).
+  */
+ enum bfa_pport_type {
+-	BFA_PPORT_TYPE_UNKNOWN = 1,	/*  port type is unkown */
++	BFA_PPORT_TYPE_UNKNOWN = 1,	/*  port type is unknown */
+ 	BFA_PPORT_TYPE_TRUNKED = 2,	/*  Trunked mode */
+ 	BFA_PPORT_TYPE_NPORT   = 5,	/*  P2P with switched fabric */
+ 	BFA_PPORT_TYPE_NLPORT  = 6,	/*  public loop */
+diff --git a/drivers/scsi/bfa/include/defs/bfa_defs_tsensor.h
+b/drivers/scsi/bfa/include/defs/bfa_defs_tsensor.h
+index 31881d2..ade763d 100644
+--- a/drivers/scsi/bfa/include/defs/bfa_defs_tsensor.h
++++ b/drivers/scsi/bfa/include/defs/bfa_defs_tsensor.h
+@@ -25,7 +25,7 @@
+  * Temperature sensor status values
+  */
+ enum bfa_tsensor_status {
+-	BFA_TSENSOR_STATUS_UNKNOWN   = 1,   /*  unkown status */
++	BFA_TSENSOR_STATUS_UNKNOWN   = 1,   /*  unknown status */
+ 	BFA_TSENSOR_STATUS_FAULTY    = 2,   /*  sensor is faulty */
+ 	BFA_TSENSOR_STATUS_BELOW_MIN = 3,   /*  temperature below mininum */
+ 	BFA_TSENSOR_STATUS_NOMINAL   = 4,   /*  normal temperature */
+diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
+index a0e7e71..5be67a6 100644
+--- a/drivers/scsi/hptiop.c
++++ b/drivers/scsi/hptiop.c
+@@ -834,7 +834,7 @@ static int hptiop_reset_hba(struct hptiop_hba *hba)
+ 			atomic_read(&hba->resetting) == 0, 60 * HZ);
+
+ 	if (atomic_read(&hba->resetting)) {
+-		/* IOP is in unkown state, abort reset */
++		/* IOP is in unknown state, abort reset */
+ 		printk(KERN_ERR "scsi%d: reset failed\n", hba->host->host_no);
+ 		return -1;
+ 	}
+diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
+index 0a4bcac..42d4f3d 100644
+--- a/drivers/scsi/lpfc/lpfc_sli.c
++++ b/drivers/scsi/lpfc/lpfc_sli.c
+@@ -1794,7 +1794,7 @@ lpfc_sli_handle_mb_event(struct lpfc_hba *phba)
+ 		 */
+ 		if (lpfc_sli_chk_mbx_command(pmbox->mbxCommand) ==
+ 		    MBX_SHUTDOWN) {
+-			/* Unknow mailbox command compl */
++			/* Unknown mailbox command compl */
+ 			lpfc_printf_log(phba, KERN_ERR, LOG_MBOX | LOG_SLI,
+ 					"(%d):0323 Unknown Mailbox command "
+ 					"x%x (x%x) Cmpl\n",
+diff --git a/drivers/serial/8250_pnp.c b/drivers/serial/8250_pnp.c
+index d71dfe3..36ede02 100644
+--- a/drivers/serial/8250_pnp.c
++++ b/drivers/serial/8250_pnp.c
+@@ -361,9 +361,9 @@ static const struct pnp_device_id pnp_dev_table[] = {
+ 	{	"LTS0001",		0       },
+ 	/* Rockwell's (PORALiNK) 33600 INT PNP */
+ 	{	"WCI0003",		0	},
+-	/* Unkown PnP modems */
++	/* Unknown PnP modems */
+ 	{	"PNPCXXX",		UNKNOWN_DEV	},
+-	/* More unkown PnP modems */
++	/* More unknown PnP modems */
+ 	{	"PNPDXXX",		UNKNOWN_DEV	},
+ 	{	"",			0	}
+ };
+diff --git a/drivers/staging/comedi/drivers/addi-data/hwdrv_apci3120.c
+b/drivers/staging/comedi/drivers/addi-data/hwdrv_apci3120.c
+index 169cee4..be361f0 100644
+--- a/drivers/staging/comedi/drivers/addi-data/hwdrv_apci3120.c
++++ b/drivers/staging/comedi/drivers/addi-data/hwdrv_apci3120.c
+@@ -1468,7 +1468,7 @@ void v_APCI3120_Interrupt(int irq, void *d)
+ 	int_amcc = inl(devpriv->i_IobaseAmcc + AMCC_OP_REG_INTCSR);	/*  get
+AMCC int register */
+
+ 	if ((!int_daq) && (!(int_amcc & ANY_S593X_INT))) {
+-		comedi_error(dev, "IRQ from unknow source");
++		comedi_error(dev, "IRQ from unknown source");
+ 		return;
+ 	}
+
+diff --git a/drivers/staging/comedi/drivers/addi-data/hwdrv_apci3501.c
+b/drivers/staging/comedi/drivers/addi-data/hwdrv_apci3501.c
+index ef21f03..7b38d17 100644
+--- a/drivers/staging/comedi/drivers/addi-data/hwdrv_apci3501.c
++++ b/drivers/staging/comedi/drivers/addi-data/hwdrv_apci3501.c
+@@ -724,7 +724,7 @@ void v_APCI3501_Interrupt(int irq, void *d)
+ 		APCI3501_TCW_IRQ) & 0x1;
+
+ 	if ((!ui_Timer_AOWatchdog)) {
+-		comedi_error(dev, "IRQ from unknow source");
++		comedi_error(dev, "IRQ from unknown source");
+ 		return;
+ 	}
+
+diff --git a/drivers/staging/comedi/drivers/pcl812.c
+b/drivers/staging/comedi/drivers/pcl812.c
+index 0b51a48..0a5bc3d 100644
+--- a/drivers/staging/comedi/drivers/pcl812.c
++++ b/drivers/staging/comedi/drivers/pcl812.c
+@@ -51,7 +51,7 @@ Options for PCL-812:
+         5=A/D input range is +/-0.3125V
+   [5] - 0=D/A outputs 0-5V  (internal reference -5V)
+         1=D/A outputs 0-10V (internal reference -10V)
+-        2=D/A outputs unknow (external reference)
++        2=D/A outputs unknown (external reference)
+
+ Options for PCL-812PG, ACL-8112PG:
+   [0] - IO Base
+@@ -63,7 +63,7 @@ Options for PCL-812PG, ACL-8112PG:
+         1=A/D have max +/-10V input
+   [5] - 0=D/A outputs 0-5V  (internal reference -5V)
+         1=D/A outputs 0-10V (internal reference -10V)
+-        2=D/A outputs unknow (external reference)
++        2=D/A outputs unknown (external reference)
+
+ Options for ACL-8112DG/HG, A-822PGL/PGH, A-823PGL/PGH, ACL-8216, A-826PG:
+   [0] - IO Base
+@@ -75,7 +75,7 @@ Options for ACL-8112DG/HG, A-822PGL/PGH,
+A-823PGL/PGH, ACL-8216, A-826PG:
+         1=A/D channels are DIFF
+   [5] - 0=D/A outputs 0-5V  (internal reference -5V)
+         1=D/A outputs 0-10V (internal reference -10V)
+-        2=D/A outputs unknow (external reference)
++        2=D/A outputs unknown (external reference)
+
+ Options for A-821PGL/PGH:
+   [0] - IO Base
+diff --git a/drivers/staging/comedi/drivers/pcl816.c
+b/drivers/staging/comedi/drivers/pcl816.c
+index fa24145..666be53 100644
+--- a/drivers/staging/comedi/drivers/pcl816.c
++++ b/drivers/staging/comedi/drivers/pcl816.c
+@@ -445,7 +445,7 @@ static irqreturn_t interrupt_pcl816(int irq, void *d)
+ 		comedi_error(dev, "bad IRQ!");
+ 		return IRQ_NONE;
+ 	}
+-	comedi_error(dev, "IRQ from unknow source!");
++	comedi_error(dev, "IRQ from unknown source!");
+ 	return IRQ_NONE;
+ }
+
+diff --git a/drivers/staging/comedi/drivers/pcl818.c
+b/drivers/staging/comedi/drivers/pcl818.c
+index e95229b..a008d18 100644
+--- a/drivers/staging/comedi/drivers/pcl818.c
++++ b/drivers/staging/comedi/drivers/pcl818.c
+@@ -50,7 +50,7 @@ A word or two about DMA. Driver support DMA
+operations at two ways:
+           1, 10=A/D input -10V..+10V
+     [5] - 0,  5=D/A output 0-5V  (internal reference -5V)
+           1, 10=D/A output 0-10V (internal reference -10V)
+-	  2    =D/A output unknow (external reference)
++	  2    =D/A output unknown (external reference)
+
+    Options for PCL-818, PCL-818H:
+     [0] - IO Base
+@@ -60,7 +60,7 @@ A word or two about DMA. Driver support DMA
+operations at two ways:
+               1= 1MHz clock for 8254
+     [4] - 0,  5=D/A output 0-5V  (internal reference -5V)
+           1, 10=D/A output 0-10V (internal reference -10V)
+-	  2    =D/A output unknow (external reference)
++	  2    =D/A output unknown (external reference)
+
+    Options for PCL-818HD, PCL-818HG:
+     [0] - IO Base
+@@ -71,7 +71,7 @@ A word or two about DMA. Driver support DMA
+operations at two ways:
+               1= 1MHz clock for 8254
+     [4] - 0,  5=D/A output 0-5V  (internal reference -5V)
+           1, 10=D/A output 0-10V (internal reference -10V)
+-   	  2    =D/A output unknow (external reference)
++   	  2    =D/A output unknown (external reference)
+
+    Options for PCL-718:
+     [0] - IO Base
+@@ -92,7 +92,7 @@ A word or two about DMA. Driver support DMA
+operations at two ways:
+ 	     10=	     user defined unipolar
+     [5] - 0,  5=D/A outputs 0-5V  (internal reference -5V)
+           1, 10=D/A outputs 0-10V (internal reference -10V)
+-	      2=D/A outputs unknow (external reference)
++	      2=D/A outputs unknown (external reference)
+     [6] - 0, 60=max  60kHz A/D sampling
+           1,100=max 100kHz A/D sampling (PCL-718 with Option 001 installed)
+
+@@ -876,7 +876,7 @@ static irqreturn_t interrupt_pcl818(int irq, void *d)
+ 		return IRQ_NONE;
+ 	}
+
+-	comedi_error(dev, "IRQ from unknow source!");
++	comedi_error(dev, "IRQ from unknown source!");
+ 	return IRQ_NONE;
+ }
+
+diff --git a/drivers/staging/rt2860/common/cmm_data.c
+b/drivers/staging/rt2860/common/cmm_data.c
+index 774fabb..22a7b0e 100644
+--- a/drivers/staging/rt2860/common/cmm_data.c
++++ b/drivers/staging/rt2860/common/cmm_data.c
+@@ -712,7 +712,7 @@ static UCHAR TxPktClassification(
+ 	IN RTMP_ADAPTER *pAd,
+ 	IN PNDIS_PACKET  pPacket)
  {
-diff --git a/fs/ubifs/recovery.c b/fs/ubifs/recovery.c
-index f94ddf7..868a55e 100644
---- a/fs/ubifs/recovery.c
-+++ b/fs/ubifs/recovery.c
-@@ -23,7 +23,7 @@
- /*
-  * This file implements functions needed to recover from unclean un-mounts.
-  * When UBIFS is mounted, it checks a flag on the master node to determine if
-- * an un-mount was completed sucessfully. If not, the process of mounting
-+ * an un-mount was completed successfully. If not, the process of mounting
-  * incorparates additional checking and fixing of on-flash data structures.
-  * UBIFS always cleans away all remnants of an unclean un-mount, so that
-  * errors do not accumulate. However UBIFS defers recovery if it is mounted
-diff --git a/include/linux/pktcdvd.h b/include/linux/pktcdvd.h
-index 6c0d7cf..4434453 100644
---- a/include/linux/pktcdvd.h
-+++ b/include/linux/pktcdvd.h
-@@ -30,7 +30,7 @@
+-	UCHAR			TxFrameType = TX_UNKOWN_FRAME;
++	UCHAR			TxFrameType = TX_UNKNOWN_FRAME;
+ 	UCHAR			Wcid;
+ 	MAC_TABLE_ENTRY	*pMacEntry = NULL;
+ 	BOOLEAN			bHTRate = FALSE;
+diff --git a/drivers/staging/rt2860/common/cmm_info.c
+b/drivers/staging/rt2860/common/cmm_info.c
+index 019cc44..d4ae081 100644
+--- a/drivers/staging/rt2860/common/cmm_info.c
++++ b/drivers/staging/rt2860/common/cmm_info.c
+@@ -1736,7 +1736,7 @@ CHAR *GetEncryptType(CHAR enc)
+ 	if(enc == Ndis802_11Encryption4Enabled)
+     	return "TKIPAES";
+     else
+-    	return "UNKNOW";
++    	return "UNKNOWN";
+ }
+
+ CHAR *GetAuthMode(CHAR auth)
+@@ -1762,7 +1762,7 @@ CHAR *GetAuthMode(CHAR auth)
+ 	if(auth == Ndis802_11AuthModeWPA1PSKWPA2PSK)
+     	return "WPA1PSKWPA2PSK";
+
+-    	return "UNKNOW";
++    	return "UNKNOWN";
+ }
 
  /*
-  * use drive write caching -- we need deferred error handling to be
-- * able to sucessfully recover with this option (drive will return good
-+ * able to successfully recover with this option (drive will return good
-  * status as soon as the cdb is validated).
-  */
- #if defined(CONFIG_CDROM_PKTCDVD_WCACHE)
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 03a49c7..1827e7f 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -1260,7 +1260,7 @@ static inline struct sk_buff
-*tcp_write_queue_prev(struct sock *sk, struct sk_bu
- 	skb_queue_walk_from_safe(&(sk)->sk_write_queue, skb, tmp)
+@@ -1843,7 +1843,7 @@ VOID RTMPIoctlGetSiteSurvey(
+ 		sprintf(msg+strlen(msg),"%-8s",GetEncryptType(pAdapter->ScanTab.BssEntry[i].WepStatus));
+ 		//Authentication Mode
+ 		if (pAdapter->ScanTab.BssEntry[i].WepStatus == Ndis802_11WEPEnabled)
+-			sprintf(msg+strlen(msg),"%-10s", "UNKNOW");
++			sprintf(msg+strlen(msg),"%-10s", "UNKNOWN");
+ 		else
+ 			sprintf(msg+strlen(msg),"%-10s",GetAuthMode(pAdapter->ScanTab.BssEntry[i].AuthMode));
+ 		// Rssi
+@@ -1869,9 +1869,9 @@ VOID RTMPIoctlGetSiteSurvey(
+ 		else if (wireless_mode == Ndis802_11OFDM24)
+ 			sprintf(msg+strlen(msg),"%-7s", "11b/g");
+ 		else if (wireless_mode == Ndis802_11OFDM24_N)
+-			sprintf(msg+strlen(msg),"%-7s", "11b/g/n");
++			sprintf(msg+strlen(msg),"%-8s", "11b/g/n");
+ 		else
+-			sprintf(msg+strlen(msg),"%-7s", "unknow");
++			sprintf(msg+strlen(msg),"%-8s", "unknown");
+ 		//Network Type
+ 		if (pAdapter->ScanTab.BssEntry[i].BssType == BSS_ADHOC)
+ 			sprintf(msg+strlen(msg),"%-3s", " Ad");
+@@ -2727,7 +2727,7 @@ PCHAR   RTMPGetRalinkAuthModeStr(
+ 		case Ndis802_11AuthModeWPANone:
+ 			return "WPANONE";
+ 		default:
+-			return "UNKNOW";
++			return "UNKNOWN";
+ 	}
+ }
 
- /* This function calculates a "timeout" which is equivalent to the timeout of a
-- * TCP connection after "boundary" unsucessful, exponentially backed-off
-+ * TCP connection after "boundary" unsuccessful, exponentially backed-off
-  * retransmissions with an initial RTO of TCP_RTO_MIN.
-  */
- static inline bool retransmits_timed_out(const struct sock *sk,
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index a69d4ed..b1d0e10 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -420,7 +420,7 @@ static void perf_event_remove_from_context(struct
-perf_event *event)
- 	if (!task) {
- 		/*
- 		 * Per cpu events are removed via an smp call and
--		 * the removal is always sucessful.
-+		 * the removal is always successful.
- 		 */
- 		smp_call_function_single(event->cpu,
- 					 __perf_event_remove_from_context,
-@@ -828,7 +828,7 @@ perf_install_in_context(struct perf_event_context *ctx,
- 	if (!task) {
- 		/*
- 		 * Per cpu events are installed via an smp call and
--		 * the install is always sucessful.
-+		 * the install is always successful.
- 		 */
- 		smp_call_function_single(cpu, __perf_install_in_context,
- 					 event, 1);
-diff --git a/mm/filemap.c b/mm/filemap.c
-index ef169f3..c3d3506 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1844,7 +1844,7 @@ static size_t __iovec_copy_from_user_inatomic(char *vaddr,
+@@ -2751,7 +2751,7 @@ PCHAR   RTMPGetRalinkEncryModeStr(
+ 			return "TKIPAES";
+ #if !defined(RT2860) && !defined(RT30xx)
+ 		default:
+-			return "UNKNOW";
++			return "UNKNOWN";
+ #endif
+ 	}
+ }
+@@ -2834,7 +2834,7 @@ INT	Show_WirelessMode_Proc(
+ 			sprintf(pBuf, "\t11N only with 5G");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%d)", pAd->CommonCfg.PhyMode);
++			sprintf(pBuf, "\tUnknown Value(%d)", pAd->CommonCfg.PhyMode);
+ 			break;
+ 	}
+ 	return 0;
+@@ -2865,7 +2865,7 @@ INT	Show_TxPreamble_Proc(
+ 			sprintf(pBuf, "\tAuto");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%lu)", pAd->CommonCfg.TxPreamble);
++			sprintf(pBuf, "\tUnknown Value(%lu)", pAd->CommonCfg.TxPreamble);
+ 			break;
+ 	}
 
- /*
-  * Copy as much as we can into the page and return the number of bytes which
-- * were sucessfully copied.  If a fault is encountered then return
-the number of
-+ * were successfully copied.  If a fault is encountered then return
-the number of
-  * bytes which were copied.
-  */
- size_t iov_iter_copy_from_user_atomic(struct page *page,
-diff --git a/net/mac80211/mesh_pathtbl.c b/net/mac80211/mesh_pathtbl.c
-index 751c4d0..719ddbc 100644
---- a/net/mac80211/mesh_pathtbl.c
-+++ b/net/mac80211/mesh_pathtbl.c
-@@ -244,7 +244,7 @@ struct mesh_path *mesh_path_lookup_by_idx(int idx,
-struct ieee80211_sub_if_data
-  * @addr: destination address of the path (ETH_ALEN length)
-  * @sdata: local subif
-  *
-- * Returns: 0 on sucess
-+ * Returns: 0 on success
-  *
-  * State: the initial state of the new path is set to 0
-  */
-@@ -530,7 +530,7 @@ static void mesh_path_node_reclaim(struct rcu_head *rp)
-  * @addr: dst address (ETH_ALEN length)
-  * @sdata: local subif
-  *
-- * Returns: 0 if succesful
-+ * Returns: 0 if successful
-  */
- int mesh_path_del(u8 *addr, struct ieee80211_sub_if_data *sdata)
+@@ -2904,7 +2904,7 @@ INT	Show_BGProtection_Proc(
+ 			sprintf(pBuf, "\tAuto");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%lu)", pAd->CommonCfg.UseBGProtection);
++			sprintf(pBuf, "\tUnknown Value(%lu)", pAd->CommonCfg.UseBGProtection);
+ 			break;
+ 	}
+ 	return 0;
+@@ -2962,7 +2962,7 @@ INT	Show_HtGi_Proc(
+ 			sprintf(pBuf, "\tGI_800");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.ShortGI);
++			sprintf(pBuf, "\tUnknown Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.ShortGI);
+ 			break;
+ 	}
+ 	return 0;
+@@ -2981,7 +2981,7 @@ INT	Show_HtOpMode_Proc(
+ 			sprintf(pBuf, "\tMM");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.HTMODE);
++			sprintf(pBuf, "\tUnknown Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.HTMODE);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3000,7 +3000,7 @@ INT	Show_HtExtcha_Proc(
+ 			sprintf(pBuf, "\tAbove");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.EXTCHA);
++			sprintf(pBuf, "\tUnknown Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.EXTCHA);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3119,7 +3119,7 @@ INT	Show_NetworkType_Proc(
+ 			sprintf(pBuf, "\tMonitor");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%d)", pAd->StaCfg.BssType);
++			sprintf(pBuf, "\tUnknown Value(%d)", pAd->StaCfg.BssType);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3137,7 +3137,7 @@ INT	Show_AuthMode_Proc(
+ 		(AuthMode <= Ndis802_11AuthModeWPA1PSKWPA2PSK))
+ 		sprintf(pBuf, "\t%s", RTMPGetRalinkAuthModeStr(AuthMode));
+ 	else
+-		sprintf(pBuf, "\tUnknow Value(%d)", AuthMode);
++		sprintf(pBuf, "\tUnknown Value(%d)", AuthMode);
+
+ 	return 0;
+ }
+@@ -3154,7 +3154,7 @@ INT	Show_EncrypType_Proc(
+ 		(WepStatus <= Ndis802_11Encryption4KeyAbsent))
+ 		sprintf(pBuf, "\t%s", RTMPGetRalinkEncryModeStr(WepStatus));
+ 	else
+-		sprintf(pBuf, "\tUnknow Value(%d)", WepStatus);
++		sprintf(pBuf, "\tUnknown Value(%d)", WepStatus);
+
+ 	return 0;
+ }
+diff --git a/drivers/staging/rt2860/common/mlme.c
+b/drivers/staging/rt2860/common/mlme.c
+index 61a2a4e..63f8498 100644
+--- a/drivers/staging/rt2860/common/mlme.c
++++ b/drivers/staging/rt2860/common/mlme.c
+@@ -1632,14 +1632,14 @@ VOID MlmeSelectTxRateTable(
+ 					*ppTable = RateSwitchTable11N1S;
+ 					*pTableSize = RateSwitchTable11N1S[0];
+ 					*pInitTxRateIdx = RateSwitchTable11N1S[1];
+-					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N
+1S AP \n"));
++					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode,default use 11N
+1S AP \n"));
+ 				}
+ 				else
+ 				{
+ 					*ppTable = RateSwitchTable11N2S;
+ 					*pTableSize = RateSwitchTable11N2S[0];
+ 					*pInitTxRateIdx = RateSwitchTable11N2S[1];
+-					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N
+2S AP \n"));
++					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode,default use 11N
+2S AP \n"));
+ 				}
+ 			}
+ 			else
+@@ -1649,18 +1649,18 @@ VOID MlmeSelectTxRateTable(
+ 					*ppTable = RateSwitchTable11N1S;
+ 					*pTableSize = RateSwitchTable11N1S[0];
+ 					*pInitTxRateIdx = RateSwitchTable11N1S[1];
+-					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N
+1S AP \n"));
++					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode,default use 11N
+1S AP \n"));
+ 				}
+ 				else
+ 				{
+ 					*ppTable = RateSwitchTable11N2SForABand;
+ 					*pTableSize = RateSwitchTable11N2SForABand[0];
+ 					*pInitTxRateIdx = RateSwitchTable11N2SForABand[1];
+-					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N
+2S AP \n"));
++					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode,default use 11N
+2S AP \n"));
+ 				}
+ 			}
+
+-			DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode (SupRateLen=%d,
+ExtRateLen=%d, MCSSet[0]=0x%x, MCSSet[1]=0x%x)\n",
++			DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode (SupRateLen=%d,
+ExtRateLen=%d, MCSSet[0]=0x%x, MCSSet[1]=0x%x)\n",
+ 				pAd->StaActive.SupRateLen, pAd->StaActive.ExtRateLen,
+pAd->StaActive.SupportedPhyInfo.MCSSet[0],
+pAd->StaActive.SupportedPhyInfo.MCSSet[1]));
+ 		}
+ 	} while(FALSE);
+diff --git a/drivers/staging/rt2860/common/spectrum.c
+b/drivers/staging/rt2860/common/spectrum.c
+index c658bf3..47cf224 100644
+--- a/drivers/staging/rt2860/common/spectrum.c
++++ b/drivers/staging/rt2860/common/spectrum.c
+@@ -1773,7 +1773,7 @@ INT Set_MeasureReq_Proc(
+ 				MeasureReqType = simple_strtol(thisChar, 0, 16);
+ 				if (MeasureReqType > 3)
+ 				{
+-					DBGPRINT(RT_DEBUG_ERROR, ("%s: unknow MeasureReqType(%d)\n",
+__func__, MeasureReqType));
++					DBGPRINT(RT_DEBUG_ERROR, ("%s: unknown MeasureReqType(%d)\n",
+__func__, MeasureReqType));
+ 					return TRUE;
+ 				}
+ 				break;
+@@ -1788,7 +1788,7 @@ INT Set_MeasureReq_Proc(
+ 	DBGPRINT(RT_DEBUG_TRACE, ("%s::Aid = %d, MeasureReqType=%d
+MeasureCh=%d\n", __func__, Aid, MeasureReqType, MeasureCh));
+ 	if (!VALID_WCID(Aid))
+ 	{
+-		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknow sta of Aid(%d)\n", __func__, Aid));
++		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknown sta of Aid(%d)\n", __func__, Aid));
+ 		return TRUE;
+ 	}
+
+@@ -1816,7 +1816,7 @@ INT Set_TpcReq_Proc(
+ 	DBGPRINT(RT_DEBUG_TRACE, ("%s::Aid = %d\n", __func__, Aid));
+ 	if (!VALID_WCID(Aid))
+ 	{
+-		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknow sta of Aid(%d)\n", __func__, Aid));
++		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknown sta of Aid(%d)\n", __func__, Aid));
+ 		return TRUE;
+ 	}
+
+diff --git a/drivers/staging/rt2860/rtmp.h b/drivers/staging/rt2860/rtmp.h
+index 90fd40f..28a171d 100644
+--- a/drivers/staging/rt2860/rtmp.h
++++ b/drivers/staging/rt2860/rtmp.h
+@@ -3012,7 +3012,7 @@ typedef struct _RX_BLK_
+ #define LENGTH_ARALINK_SUBFRAMEHEAD	14
+ #define LENGTH_ARALINK_HEADER_FIELD	 2
+
+-#define TX_UNKOWN_FRAME			0x00
++#define TX_UNKNOWN_FRAME		0x00
+ #define TX_MCAST_FRAME			0x01
+ #define TX_LEGACY_FRAME			0x02
+ #define TX_AMPDU_FRAME			0x04
+diff --git a/drivers/staging/rt2860/sta/connect.c
+b/drivers/staging/rt2860/sta/connect.c
+index 0dae822..e69e692 100644
+--- a/drivers/staging/rt2860/sta/connect.c
++++ b/drivers/staging/rt2860/sta/connect.c
+@@ -1423,7 +1423,7 @@ VOID LinkUp(
+ 				pAd->SharedKey[BSS0][0].CipherAlg = CIPHER_AES;
+ 			else
+             {
+-                DBGPRINT(RT_DEBUG_TRACE, ("Unknow Cipher (=%d), set
+Cipher to AES\n", pAd->StaCfg.PairCipher));
++                DBGPRINT(RT_DEBUG_TRACE, ("Unknown Cipher (=%d), set
+Cipher to AES\n", pAd->StaCfg.PairCipher));
+ 				pAd->SharedKey[BSS0][0].CipherAlg = CIPHER_AES;
+             }
+
+diff --git a/drivers/staging/rt2860/sta_ioctl.c
+b/drivers/staging/rt2860/sta_ioctl.c
+index c0e0425..29596f2 100644
+--- a/drivers/staging/rt2860/sta_ioctl.c
++++ b/drivers/staging/rt2860/sta_ioctl.c
+@@ -1835,7 +1835,7 @@ rt_private_show(struct net_device *dev, struct
+iw_request_info *info,
+ 			}
+ 			break;
+         default:
+-            DBGPRINT(RT_DEBUG_TRACE, ("%s - unknow subcmd = %d\n",
+__func__, subcmd));
++            DBGPRINT(RT_DEBUG_TRACE, ("%s - unknown subcmd = %d\n",
+__func__, subcmd));
+             break;
+     }
+
+@@ -1891,7 +1891,7 @@ int rt_ioctl_siwmlme(struct net_device *dev,
+ 			break;
+ #endif // IW_MLME_DISASSOC //
+ 		default:
+-			DBGPRINT(RT_DEBUG_TRACE, ("====> %s - Unknow Command\n", __func__));
++			DBGPRINT(RT_DEBUG_TRACE, ("====> %s - Unknown Command\n", __func__));
+ 			break;
+ 	}
+
+@@ -2464,7 +2464,7 @@ int rt_ioctl_siwpmksa(struct net_device *dev,
+ 			DBGPRINT(RT_DEBUG_TRACE ,("rt_ioctl_siwpmksa - IW_PMKSA_ADD\n"));
+ 			break;
+ 		default:
+-			DBGPRINT(RT_DEBUG_TRACE ,("rt_ioctl_siwpmksa - Unknow Command!!\n"));
++			DBGPRINT(RT_DEBUG_TRACE ,("rt_ioctl_siwpmksa - Unknown Command!!\n"));
+ 			break;
+ 	}
+
+diff --git a/drivers/staging/rt3090/common/cmm_data.c
+b/drivers/staging/rt3090/common/cmm_data.c
+index 6340071..bf24858 100644
+--- a/drivers/staging/rt3090/common/cmm_data.c
++++ b/drivers/staging/rt3090/common/cmm_data.c
+@@ -569,7 +569,7 @@ static UCHAR TxPktClassification(
+ 	IN RTMP_ADAPTER *pAd,
+ 	IN PNDIS_PACKET  pPacket)
  {
-diff --git a/net/netlabel/netlabel_domainhash.c
-b/net/netlabel/netlabel_domainhash.c
-index 7a10bbe..c5d9f97 100644
---- a/net/netlabel/netlabel_domainhash.c
-+++ b/net/netlabel/netlabel_domainhash.c
-@@ -682,7 +682,7 @@ struct netlbl_domaddr6_map
-*netlbl_domhsh_getentry_af6(const char *domain,
-  * buckets and @skip_chain entries.  For each entry in the table call
-  * @callback, if @callback returns a negative value stop 'walking' through the
-  * table and return.  Updates the values in @skip_bkt and @skip_chain on
-- * return.  Returns zero on succcess, negative values on failure.
-+ * return.  Returns zero on success, negative values on failure.
-  *
-  */
- int netlbl_domhsh_walk(u32 *skip_bkt,
-diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
-index 8674d49..29d8501 100644
---- a/net/sctp/sm_sideeffect.c
-+++ b/net/sctp/sm_sideeffect.c
-@@ -719,7 +719,7 @@ static void sctp_cmd_new_state(sctp_cmd_seq_t *cmds,
+-	UCHAR			TxFrameType = TX_UNKOWN_FRAME;
++	UCHAR			TxFrameType = TX_UNKNOWN_FRAME;
+ 	UCHAR			Wcid;
+ 	MAC_TABLE_ENTRY	*pMacEntry = NULL;
+ #ifdef DOT11_N_SUPPORT
+diff --git a/drivers/staging/rt3090/common/cmm_info.c
+b/drivers/staging/rt3090/common/cmm_info.c
+index 3e51e98..743a1d6 100644
+--- a/drivers/staging/rt3090/common/cmm_info.c
++++ b/drivers/staging/rt3090/common/cmm_info.c
+@@ -1948,7 +1948,7 @@ PSTRING GetEncryptType(CHAR enc)
+ 	if(enc == Ndis802_11Encryption4Enabled)
+ 	return "TKIPAES";
+     else
+-	return "UNKNOW";
++	return "UNKNOWN";
+ }
 
- 	if (sctp_style(sk, TCP)) {
- 		/* Change the sk->sk_state of a TCP-style socket that has
--		 * sucessfully completed a connect() call.
-+		 * successfully completed a connect() call.
- 		 */
- 		if (sctp_state(asoc, ESTABLISHED) && sctp_sstate(sk, CLOSED))
- 			sk->sk_state = SCTP_SS_ESTABLISHED;
-diff --git a/net/wimax/op-reset.c b/net/wimax/op-reset.c
-index ca26917..35f3700 100644
---- a/net/wimax/op-reset.c
-+++ b/net/wimax/op-reset.c
-@@ -62,7 +62,7 @@
-  * Called when wanting to reset the device for any reason. Device is
-  * taken back to power on status.
-  *
-- * This call blocks; on succesful return, the device has completed the
-+ * This call blocks; on successful return, the device has completed the
-  * reset process and is ready to operate.
-  */
- int wimax_reset(struct wimax_dev *wimax_dev)
-diff --git a/security/selinux/netlabel.c b/security/selinux/netlabel.c
-index e688237..2534400 100644
---- a/security/selinux/netlabel.c
-+++ b/security/selinux/netlabel.c
-@@ -204,7 +204,7 @@ int selinux_netlbl_skbuff_getsid(struct sk_buff *skb,
-  *
-  * Description
-  * Call the NetLabel mechanism to set the label of a packet using @sid.
-- * Returns zero on auccess, negative values on failure.
-+ * Returns zero on success, negative values on failure.
-  *
-  */
- int selinux_netlbl_skbuff_setsid(struct sk_buff *skb,
-diff --git a/sound/sound_core.c b/sound/sound_core.c
-index 49c9981..dbca7c9 100644
---- a/sound/sound_core.c
-+++ b/sound/sound_core.c
-@@ -353,7 +353,7 @@ static struct sound_unit *chains[SOUND_STEP];
-  *      @dev: device pointer
-  *
-  *	Allocate a special sound device by minor number from the sound
-- *	subsystem. The allocated number is returned on succes. On failure
-+ *	subsystem. The allocated number is returned on success. On failure
-  *	a negative error code is returned.
-  */
+ PSTRING GetAuthMode(CHAR auth)
+@@ -1974,7 +1974,7 @@ PSTRING GetAuthMode(CHAR auth)
+ 	if(auth == Ndis802_11AuthModeWPA1PSKWPA2PSK)
+ 	return "WPA1PSKWPA2PSK";
 
+-	return "UNKNOW";
++	return "UNKNOWN";
+ }
+
+
+@@ -2146,9 +2146,9 @@ VOID	RTMPCommSiteSurveyData(
+ 		else if (wireless_mode == Ndis802_11OFDM24)
+ 			sprintf(msg+strlen(msg),"%-7s", "11b/g");
+ 		else if (wireless_mode == Ndis802_11OFDM24_N)
+-			sprintf(msg+strlen(msg),"%-7s", "11b/g/n");
++			sprintf(msg+strlen(msg),"%-8s", "11b/g/n");
+ 		else
+-			sprintf(msg+strlen(msg),"%-7s", "unknow");
++			sprintf(msg+strlen(msg),"%-8s", "unknown");
+ 		//Network Type
+ 		if (pBss->BssType == BSS_ADHOC)
+ 			sprintf(msg+strlen(msg),"%-3s", " Ad");
+@@ -3172,7 +3172,7 @@ PSTRING RTMPGetRalinkAuthModeStr(
+ 		case Ndis802_11AuthModeWPANone:
+ 			return "WPANONE";
+ 		default:
+-			return "UNKNOW";
++			return "UNKNOWN";
+ 	}
+ }
+
+@@ -3192,7 +3192,7 @@ PSTRING RTMPGetRalinkEncryModeStr(
+         case Ndis802_11Encryption4Enabled:
+ 			return "TKIPAES";
+ 		default:
+-			return "UNKNOW";
++			return "UNKNOWN";
+ 	}
+ }
+
+@@ -3280,7 +3280,7 @@ INT	Show_WirelessMode_Proc(
+ 			break;
+ #endif // DOT11_N_SUPPORT //
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%d)", pAd->CommonCfg.PhyMode);
++			sprintf(pBuf, "\tUnknown Value(%d)", pAd->CommonCfg.PhyMode);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3311,7 +3311,7 @@ INT	Show_TxPreamble_Proc(
+ 			sprintf(pBuf, "\tAuto");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%lu)", pAd->CommonCfg.TxPreamble);
++			sprintf(pBuf, "\tUnknown Value(%lu)", pAd->CommonCfg.TxPreamble);
+ 			break;
+ 	}
+
+@@ -3350,7 +3350,7 @@ INT	Show_BGProtection_Proc(
+ 			sprintf(pBuf, "\tAuto");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%lu)", pAd->CommonCfg.UseBGProtection);
++			sprintf(pBuf, "\tUnknown Value(%lu)", pAd->CommonCfg.UseBGProtection);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3413,7 +3413,7 @@ INT	Show_HtGi_Proc(
+ 			sprintf(pBuf, "\tGI_800");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.ShortGI);
++			sprintf(pBuf, "\tUnknown Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.ShortGI);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3432,7 +3432,7 @@ INT	Show_HtOpMode_Proc(
+ 			sprintf(pBuf, "\tMM");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.HTMODE);
++			sprintf(pBuf, "\tUnknown Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.HTMODE);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3451,7 +3451,7 @@ INT	Show_HtExtcha_Proc(
+ 			sprintf(pBuf, "\tAbove");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.EXTCHA);
++			sprintf(pBuf, "\tUnknown Value(%u)",
+pAd->CommonCfg.RegTransmitSetting.field.EXTCHA);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3576,7 +3576,7 @@ INT	Show_NetworkType_Proc(
+ 			sprintf(pBuf, "\tMonitor");
+ 			break;
+ 		default:
+-			sprintf(pBuf, "\tUnknow Value(%d)", pAd->StaCfg.BssType);
++			sprintf(pBuf, "\tUnknown Value(%d)", pAd->StaCfg.BssType);
+ 			break;
+ 	}
+ 	return 0;
+@@ -3600,7 +3600,7 @@ INT	Show_AuthMode_Proc(
+ 		(AuthMode <= Ndis802_11AuthModeWPA1PSKWPA2PSK))
+ 		sprintf(pBuf, "\t%s", RTMPGetRalinkAuthModeStr(AuthMode));
+ 	else
+-		sprintf(pBuf, "\tUnknow Value(%d)", AuthMode);
++		sprintf(pBuf, "\tUnknown Value(%d)", AuthMode);
+
+ 	return 0;
+ }
+@@ -3620,7 +3620,7 @@ INT	Show_EncrypType_Proc(
+ 		(WepStatus <= Ndis802_11Encryption4KeyAbsent))
+ 		sprintf(pBuf, "\t%s", RTMPGetRalinkEncryModeStr(WepStatus));
+ 	else
+-		sprintf(pBuf, "\tUnknow Value(%d)", WepStatus);
++		sprintf(pBuf, "\tUnknown Value(%d)", WepStatus);
+
+ 	return 0;
+ }
+diff --git a/drivers/staging/rt3090/common/igmp_snoop.c
+b/drivers/staging/rt3090/common/igmp_snoop.c
+index 680658f..844bdc7 100644
+--- a/drivers/staging/rt3090/common/igmp_snoop.c
++++ b/drivers/staging/rt3090/common/igmp_snoop.c
+@@ -594,7 +594,7 @@ VOID IGMPSnooping(
+ 			break;
+
+ 		default:
+-			DBGPRINT(RT_DEBUG_TRACE, ("unknow IGMP Type=%d\n", IgmpVerType));
++			DBGPRINT(RT_DEBUG_TRACE, ("unknown IGMP Type=%d\n", IgmpVerType));
+ 			break;
+ 		}
+ 	}
+@@ -1353,7 +1353,7 @@ VOID MLDSnooping(
+ 				break;
+
+ 			default:
+-				DBGPRINT(RT_DEBUG_TRACE, ("unknow MLD Type=%d\n", MldType));
++				DBGPRINT(RT_DEBUG_TRACE, ("unknown MLD Type=%d\n", MldType));
+ 				break;
+ 		}
+ 	}
+diff --git a/drivers/staging/rt3090/common/mlme.c
+b/drivers/staging/rt3090/common/mlme.c
+index 1613c04..14966b0 100644
+--- a/drivers/staging/rt3090/common/mlme.c
++++ b/drivers/staging/rt3090/common/mlme.c
+@@ -1253,14 +1253,14 @@ VOID MlmeSelectTxRateTable(
+ 					*ppTable = RateSwitchTable11N1S;
+ 					*pTableSize = RateSwitchTable11N1S[0];
+ 					*pInitTxRateIdx = RateSwitchTable11N1S[1];
+-					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N
+1S AP \n"));
++					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode,default use 11N
+1S AP \n"));
+ 				}
+ 				else
+ 				{
+ 					*ppTable = RateSwitchTable11N2S;
+ 					*pTableSize = RateSwitchTable11N2S[0];
+ 					*pInitTxRateIdx = RateSwitchTable11N2S[1];
+-					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N
+2S AP \n"));
++					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode,default use 11N
+2S AP \n"));
+ 				}
+ 			}
+ 			else
+@@ -1270,18 +1270,18 @@ VOID MlmeSelectTxRateTable(
+ 					*ppTable = RateSwitchTable11N1S;
+ 					*pTableSize = RateSwitchTable11N1S[0];
+ 					*pInitTxRateIdx = RateSwitchTable11N1S[1];
+-					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N
+1S AP \n"));
++					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode,default use 11N
+1S AP \n"));
+ 				}
+ 				else
+ 				{
+ 					*ppTable = RateSwitchTable11N2SForABand;
+ 					*pTableSize = RateSwitchTable11N2SForABand[0];
+ 					*pInitTxRateIdx = RateSwitchTable11N2SForABand[1];
+-					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N
+2S AP \n"));
++					DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode,default use 11N
+2S AP \n"));
+ 				}
+ 			}
+ #endif // DOT11_N_SUPPORT //
+-			DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode (SupRateLen=%d,
+ExtRateLen=%d, MCSSet[0]=0x%x, MCSSet[1]=0x%x)\n",
++			DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unknown mode (SupRateLen=%d,
+ExtRateLen=%d, MCSSet[0]=0x%x, MCSSet[1]=0x%x)\n",
+ 				pAd->StaActive.SupRateLen, pAd->StaActive.ExtRateLen,
+pAd->StaActive.SupportedPhyInfo.MCSSet[0],
+pAd->StaActive.SupportedPhyInfo.MCSSet[1]));
+ 		}
+ #endif // CONFIG_STA_SUPPORT //
+diff --git a/drivers/staging/rt3090/common/spectrum.c
+b/drivers/staging/rt3090/common/spectrum.c
+index 12d2125..c26f057 100644
+--- a/drivers/staging/rt3090/common/spectrum.c
++++ b/drivers/staging/rt3090/common/spectrum.c
+@@ -780,7 +780,7 @@ VOID InsertChannelRepIE(
+ 	{
+ 		if (RegulatoryClass >= USA_REGULATORY_INFO_SIZE)
+ 		{
+-			DBGPRINT(RT_DEBUG_ERROR, ("%s: USA Unknow Requlatory class (%d)\n",
++			DBGPRINT(RT_DEBUG_ERROR, ("%s: USA Unknown Requlatory class (%d)\n",
+ 						__FUNCTION__, RegulatoryClass));
+ 			return;
+ 		}
+@@ -792,7 +792,7 @@ VOID InsertChannelRepIE(
+ 	{
+ 		if (RegulatoryClass >= JP_REGULATORY_INFO_SIZE)
+ 		{
+-			DBGPRINT(RT_DEBUG_ERROR, ("%s: JP Unknow Requlatory class (%d)\n",
++			DBGPRINT(RT_DEBUG_ERROR, ("%s: JP Unknown Requlatory class (%d)\n",
+ 						__FUNCTION__, RegulatoryClass));
+ 			return;
+ 		}
+@@ -802,7 +802,7 @@ VOID InsertChannelRepIE(
+ 	}
+ 	else
+ 	{
+-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Unknow Country (%s)\n",
++		DBGPRINT(RT_DEBUG_ERROR, ("%s: Unknown Country (%s)\n",
+ 					__FUNCTION__, pCountry));
+ 		return;
+ 	}
+@@ -2138,7 +2138,7 @@ INT Set_MeasureReq_Proc(
+ 				MeasureReqType = simple_strtol(thisChar, 0, 16);
+ 				if (MeasureReqType > 3)
+ 				{
+-					DBGPRINT(RT_DEBUG_ERROR, ("%s: unknow MeasureReqType(%d)\n",
+__FUNCTION__, MeasureReqType));
++					DBGPRINT(RT_DEBUG_ERROR, ("%s: unknown MeasureReqType(%d)\n",
+__FUNCTION__, MeasureReqType));
+ 					goto END_OF_MEASURE_REQ;
+ 				}
+ 				break;
+@@ -2153,7 +2153,7 @@ INT Set_MeasureReq_Proc(
+ 	DBGPRINT(RT_DEBUG_TRACE, ("%s::Aid = %d, MeasureReqType=%d
+MeasureCh=%d\n", __FUNCTION__, Aid, MeasureReqType, MeasureCh));
+ 	if (!VALID_WCID(Aid))
+ 	{
+-		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknow sta of Aid(%d)\n", __FUNCTION__, Aid));
++		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknown sta of Aid(%d)\n",
+__FUNCTION__, Aid));
+ 		goto END_OF_MEASURE_REQ;
+ 	}
+
+@@ -2209,7 +2209,7 @@ INT Set_TpcReq_Proc(
+ 	DBGPRINT(RT_DEBUG_TRACE, ("%s::Aid = %d\n", __FUNCTION__, Aid));
+ 	if (!VALID_WCID(Aid))
+ 	{
+-		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknow sta of Aid(%d)\n", __FUNCTION__, Aid));
++		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknown sta of Aid(%d)\n",
+__FUNCTION__, Aid));
+ 		return TRUE;
+ 	}
+
+diff --git a/drivers/staging/rt3090/rtmp.h b/drivers/staging/rt3090/rtmp.h
+index 8ef6d0b..7e5ca11 100644
+--- a/drivers/staging/rt3090/rtmp.h
++++ b/drivers/staging/rt3090/rtmp.h
+@@ -2705,13 +2705,13 @@ typedef struct _RX_BLK_
+ /***************************************************************************
+   *	Tx Path software control block related data structures
+   **************************************************************************/
+-#define TX_UNKOWN_FRAME		0x00
+-#define TX_MCAST_FRAME			0x01
++#define TX_UNKNOWN_FRAME	0x00
++#define TX_MCAST_FRAME		0x01
+ #define TX_LEGACY_FRAME		0x02
+ #define TX_AMPDU_FRAME		0x04
+ #define TX_AMSDU_FRAME		0x08
+ #define TX_RALINK_FRAME		0x10
+-#define TX_FRAG_FRAME			0x20
++#define TX_FRAG_FRAME		0x20
+
+
+ //	Currently the sizeof(TX_BLK) is 148 bytes.
+diff --git a/drivers/staging/rt3090/sta/connect.c
+b/drivers/staging/rt3090/sta/connect.c
+index 583d6ee..23a9e51 100644
+--- a/drivers/staging/rt3090/sta/connect.c
++++ b/drivers/staging/rt3090/sta/connect.c
+@@ -1516,7 +1516,7 @@ VOID LinkUp(
+ 				pAd->SharedKey[BSS0][0].CipherAlg = CIPHER_AES;
+ 			else
+             {
+-                DBGPRINT(RT_DEBUG_TRACE, ("Unknow Cipher (=%d), set
+Cipher to AES\n", pAd->StaCfg.PairCipher));
++                DBGPRINT(RT_DEBUG_TRACE, ("Unknown Cipher (=%d), set
+Cipher to AES\n", pAd->StaCfg.PairCipher));
+ 				pAd->SharedKey[BSS0][0].CipherAlg = CIPHER_AES;
+             }
+
+diff --git a/drivers/staging/rt3090/sta_ioctl.c
+b/drivers/staging/rt3090/sta_ioctl.c
+index b1c2b5a..bd7c61c 100644
+--- a/drivers/staging/rt3090/sta_ioctl.c
++++ b/drivers/staging/rt3090/sta_ioctl.c
+@@ -2258,7 +2258,7 @@ rt_private_show(struct net_device *dev, struct
+iw_request_info *info,
+ 			wrq->length = strlen(extra) + 1; // 1: size of '\0'
+ 			break;
+         default:
+-            DBGPRINT(RT_DEBUG_TRACE, ("%s - unknow subcmd = %d\n",
+__FUNCTION__, subcmd));
++            DBGPRINT(RT_DEBUG_TRACE, ("%s - unknown subcmd = %d\n",
+__FUNCTION__, subcmd));
+             break;
+     }
+
+@@ -2315,7 +2315,7 @@ int rt_ioctl_siwmlme(struct net_device *dev,
+ 			break;
+ #endif // IW_MLME_DISASSOC //
+ 		default:
+-			DBGPRINT(RT_DEBUG_TRACE, ("====> %s - Unknow Command\n", __FUNCTION__));
++			DBGPRINT(RT_DEBUG_TRACE, ("====> %s - Unknown Command\n", __FUNCTION__));
+ 			break;
+ 	}
+
+@@ -2909,7 +2909,7 @@ int rt_ioctl_siwpmksa(struct net_device *dev,
+ 			DBGPRINT(RT_DEBUG_TRACE ,("rt_ioctl_siwpmksa - IW_PMKSA_ADD\n"));
+ 			break;
+ 		default:
+-			DBGPRINT(RT_DEBUG_TRACE ,("rt_ioctl_siwpmksa - Unknow Command!!\n"));
++			DBGPRINT(RT_DEBUG_TRACE ,("rt_ioctl_siwpmksa - Unknown Command!!\n"));
+ 			break;
+ 	}
+
+@@ -7554,4 +7554,5 @@ INT	Set_Antenna_Proc(
+
+ 	return TRUE;
+ }
+-#endif // ANT_DIVERSITY_SUPPORT //
+\ No newline at end of file
++#endif // ANT_DIVERSITY_SUPPORT //
++
+diff --git a/drivers/staging/rtl8187se/r8180_dm.c
+b/drivers/staging/rtl8187se/r8180_dm.c
+index b6eeeec..4c9d46f 100644
+--- a/drivers/staging/rtl8187se/r8180_dm.c
++++ b/drivers/staging/rtl8187se/r8180_dm.c
+@@ -1326,7 +1326,7 @@ SetAntenna8185(
+ 			break;
+
+ 		default:
+-			printk("SetAntenna8185: unkown RFChipID(%d)\n", priv->rf_chip);
++			printk("SetAntenna8185: unknown RFChipID(%d)\n", priv->rf_chip);
+ 			break;
+ 		}
+ 		break;
+@@ -1346,13 +1346,13 @@ SetAntenna8185(
+ 			break;
+
+ 		default:
+-			printk("SetAntenna8185: unkown RFChipID(%d)\n", priv->rf_chip);
++			printk("SetAntenna8185: unknown RFChipID(%d)\n", priv->rf_chip);
+ 			break;
+ 		}
+ 		break;
+
+ 	default:
+-		printk("SetAntenna8185: unkown u1bAntennaIndex(%d)\n", u1bAntennaIndex);
++		printk("SetAntenna8185: unknown u1bAntennaIndex(%d)\n", u1bAntennaIndex);
+ 		break;
+ 	}
+
+diff --git a/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+index b648751..60ee3bc 100644
+--- a/drivers/staging/rtl8187se/r8180_rtl8225z2.c
++++ b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+@@ -1058,7 +1058,7 @@ bool SetZebraRFPowerState8185(struct net_device *dev,
+ 			break;
+ 		default:
+ 			bResult = false;
+-			printk("SetZebraRFPowerState8185(): unknow state to set:
+0x%X!!!\n", eRFPowerState);
++			printk("SetZebraRFPowerState8185(): unknown state to set:
+0x%X!!!\n", eRFPowerState);
+ 			break;
+ 		}
+ 		break;
+diff --git a/drivers/staging/rtl8192e/r8190_rtl8256.c
+b/drivers/staging/rtl8192e/r8190_rtl8256.c
+index 0eaee3a..3d67fbb 100644
+--- a/drivers/staging/rtl8192e/r8190_rtl8256.c
++++ b/drivers/staging/rtl8192e/r8190_rtl8256.c
+@@ -629,7 +629,7 @@ SetRFPowerState8190(
+
+ 			default:
+ 					bResult = false;
+-					RT_TRACE(COMP_ERR, "SetRFPowerState8190(): unknow state to set:
+0x%X!!!\n", eRFPowerState);
++					RT_TRACE(COMP_ERR, "SetRFPowerState8190(): unknown state to set:
+0x%X!!!\n", eRFPowerState);
+ 					break;
+ 		}
+
+diff --git a/drivers/staging/rtl8192e/r819xE_cmdpkt.c
+b/drivers/staging/rtl8192e/r819xE_cmdpkt.c
+index d6b7d2f..2aaa4e1 100644
+--- a/drivers/staging/rtl8192e/r819xE_cmdpkt.c
++++ b/drivers/staging/rtl8192e/r819xE_cmdpkt.c
+@@ -783,7 +783,7 @@ u32 cmpk_message_handle_rx(struct net_device *dev,
+struct ieee80211_rx_stats *ps
+
+ 			default:
+
+-			        RT_TRACE(COMP_EVENTS,
+"---->cmpk_message_handle_rx():unknow CMD Element\n");
++			        RT_TRACE(COMP_EVENTS,
+"---->cmpk_message_handle_rx():unknown CMD Element\n");
+ 				return 1;	/* This is a command packet. */
+ 		}
+ 		// 2007/01/22 MH Display received rx command packet info.
+diff --git a/drivers/staging/rtl8192su/r8192S_phy.c
+b/drivers/staging/rtl8192su/r8192S_phy.c
+index 2c111d7..b8d4c43 100644
+--- a/drivers/staging/rtl8192su/r8192S_phy.c
++++ b/drivers/staging/rtl8192su/r8192S_phy.c
+@@ -1728,7 +1728,7 @@ static bool phy_SetRFPowerState8192SU(struct
+net_device* dev,RT_RF_POWER_STATE e
+
+ 			default:
+ 				bResult = FALSE;
+-				//RT_ASSERT(FALSE, ("phy_SetRFPowerState8192SU(): unknow state to
+set: 0x%X!!!\n", eRFPowerState));
++				//RT_ASSERT(FALSE, ("phy_SetRFPowerState8192SU(): unknown state
+to set: 0x%X!!!\n", eRFPowerState));
+ 				break;
+ 		}
+ 		break;
+diff --git a/drivers/staging/rtl8192su/r819xU_cmdpkt.c
+b/drivers/staging/rtl8192su/r819xU_cmdpkt.c
+index e2ba93e..3ebfe79 100644
+--- a/drivers/staging/rtl8192su/r819xU_cmdpkt.c
++++ b/drivers/staging/rtl8192su/r819xU_cmdpkt.c
+@@ -697,7 +697,7 @@ cmpk_message_handle_rx(
+
+ 			default:
+
+-			        RT_TRACE(COMP_ERR, "---->cmpk_message_handle_rx():unknow
+CMD Element\n");
++			        RT_TRACE(COMP_ERR, "---->cmpk_message_handle_rx():unknown
+CMD Element\n");
+ 				return 1;	/* This is a command packet. */
+ 		}
+ 		// 2007/01/22 MH Display received rx command packet info.
+diff --git a/drivers/staging/vt6655/ioctl.c b/drivers/staging/vt6655/ioctl.c
+index b15ce8a..d9a5fd2 100644
+--- a/drivers/staging/vt6655/ioctl.c
++++ b/drivers/staging/vt6655/ioctl.c
+@@ -159,7 +159,7 @@ int private_ioctl(PSDevice pDevice, struct ifreq *rq) {
+ 	 else if(zonetype == 0x02) { //Europe
+              sZoneTypeCmd.ZoneType = ZoneType_Europe;
+ 	 }
+-	 else { //Unknow ZoneType
++	 else { //Unknown ZoneType
+ 	        printk("Error:ZoneType[%x] Unknown ???\n",zonetype);
+ 	         result = -EFAULT;
+ 		break;
+diff --git a/drivers/staging/vt6656/ioctl.c b/drivers/staging/vt6656/ioctl.c
+index 76dcb5e..6f33005 100644
+--- a/drivers/staging/vt6656/ioctl.c
++++ b/drivers/staging/vt6656/ioctl.c
+@@ -152,7 +152,7 @@ int private_ioctl(PSDevice pDevice, struct ifreq *rq) {
+ 	 else if(zonetype == 0x02) { //Europe
+              sZoneTypeCmd.ZoneType = ZoneType_Europe;
+ 	 }
+-	 else { //Unknow ZoneType
++	 else { //Unknown ZoneType
+ 	        printk("Error:ZoneType[%x] Unknown ???\n",zonetype);
+ 	         result = -EFAULT;
+ 		break;
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 1fe5379..b380bf4 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -3278,7 +3278,7 @@ static void __devinit aty_init_lcd(struct
+atyfb_par *par, u32 bios_base)
+ 				txtformat = "24 bit interface";
+ 				break;
+ 			default:
+-				txtformat = "unkown format";
++				txtformat = "unknown format";
+ 			}
+ 		} else {
+ 			switch (format & 7) {
+@@ -3301,7 +3301,7 @@ static void __devinit aty_init_lcd(struct
+atyfb_par *par, u32 bios_base)
+ 				txtformat = "262144 colours (FDPI-2 mode)";
+ 				break;
+ 			default:
+-				txtformat = "unkown format";
++				txtformat = "unknown format";
+ 			}
+ 		}
+ 		PRINTKI("%s%s %s monitor detected: %s\n",
+diff --git a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
+index 7351e66..c747660 100644
+--- a/drivers/video/aty/radeonfb.h
++++ b/drivers/video/aty/radeonfb.h
+@@ -35,7 +35,7 @@
+  * Chip families. Must fit in the low 16 bits of a long word
+  */
+ enum radeon_family {
+-	CHIP_FAMILY_UNKNOW,
++	CHIP_FAMILY_UNKNOWN,
+ 	CHIP_FAMILY_LEGACY,
+ 	CHIP_FAMILY_RADEON,
+ 	CHIP_FAMILY_RV100,
+diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
+index c5c32b6..67b3693 100644
+--- a/drivers/video/via/dvi.c
++++ b/drivers/video/via/dvi.c
+@@ -467,7 +467,7 @@ static int dvi_get_panel_size_from_DDCv1(void)
+ 	default:
+ 		viaparinfo->tmds_setting_info->dvi_panel_size =
+ 			VIA_RES_1024X768;
+-		DEBUG_MSG(KERN_INFO "Unknow panel size max resolution = %d !\
++		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d !\
+ 					 set default panel size.\n", max_h);
+ 		break;
+ 	}
+@@ -534,7 +534,7 @@ static int dvi_get_panel_size_from_DDCv2(void)
+ 	default:
+ 		viaparinfo->tmds_setting_info->dvi_panel_size =
+ 			VIA_RES_1024X768;
+-		DEBUG_MSG(KERN_INFO "Unknow panel size max resolution = %d!\
++		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d!\
+ 					set default panel size.\n", HSize);
+ 		break;
+ 	}
+diff --git a/fs/jffs2/compr.c b/fs/jffs2/compr.c
+index f25e70c..f029441 100644
+--- a/fs/jffs2/compr.c
++++ b/fs/jffs2/compr.c
+@@ -177,7 +177,7 @@ uint16_t jffs2_compress(struct jffs2_sb_info *c,
+struct jffs2_inode_info *f,
+ 		spin_unlock(&jffs2_compressor_list_lock);
+ 		break;
+ 	default:
+-		printk(KERN_ERR "JFFS2: unknow compression mode.\n");
++		printk(KERN_ERR "JFFS2: unknown compression mode.\n");
+ 	}
+  out:
+ 	if (ret == JFFS2_COMPR_NONE) {
+diff --git a/fs/ncpfs/ioctl.c b/fs/ncpfs/ioctl.c
+index 0d58caf..ec8f45f 100644
+--- a/fs/ncpfs/ioctl.c
++++ b/fs/ncpfs/ioctl.c
+@@ -835,7 +835,7 @@ static int ncp_ioctl_need_write(unsigned int cmd)
+ 	case NCP_IOC_SETROOT:
+ 		return 0;
+ 	default:
+-		/* unkown IOCTL command, assume write */
++		/* unknown IOCTL command, assume write */
+ 		return 1;
+ 	}
+ }
+diff --git a/fs/ntfs/compress.c b/fs/ntfs/compress.c
+index 9669541..08f7530 100644
+--- a/fs/ntfs/compress.c
++++ b/fs/ntfs/compress.c
+@@ -927,7 +927,7 @@ lock_retry_remap:
+ 		return 0;
+
+ 	ntfs_debug("Failed. Returning error code %s.", err == -EOVERFLOW ?
+-			"EOVERFLOW" : (!err ? "EIO" : "unkown error"));
++			"EOVERFLOW" : (!err ? "EIO" : "unknown error"));
+ 	return err < 0 ? err : -EIO;
+
+ read_err:
+diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
+index 83bcaf2..03ccf9a 100644
+--- a/fs/ocfs2/dlm/dlmmaster.c
++++ b/fs/ocfs2/dlm/dlmmaster.c
+@@ -2586,7 +2586,7 @@ fail:
+ 	 * is complete everywhere.  if the target dies while this is
+ 	 * going on, some nodes could potentially see the target as the
+ 	 * master, so it is important that my recovery finds the migration
+-	 * mle and sets the master to UNKNONWN. */
++	 * mle and sets the master to UNKNOWN. */
+
+
+ 	/* wait for new node to assert master */
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index 54c16b6..bf34c49 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -659,7 +659,7 @@ static int __ocfs2_journal_access(handle_t *handle,
+
+ 	default:
+ 		status = -EINVAL;
+-		mlog(ML_ERROR, "Uknown access type!\n");
++		mlog(ML_ERROR, "Unknown access type!\n");
+ 	}
+ 	if (!status && ocfs2_meta_ecc(osb) && triggers)
+ 		jbd2_journal_set_triggers(bh, &triggers->ot_triggers);
+diff --git a/include/net/sctp/structs.h b/include/net/sctp/structs.h
+index 6e5f0e0..ca4789e 100644
+--- a/include/net/sctp/structs.h
++++ b/include/net/sctp/structs.h
+@@ -988,7 +988,7 @@ struct sctp_transport {
+ 	int init_sent_count;
+
+ 	/* state       : The current state of this destination,
+-	 *             : i.e. SCTP_ACTIVE, SCTP_INACTIVE, SCTP_UNKOWN.
++	 *             : i.e. SCTP_ACTIVE, SCTP_INACTIVE, SCTP_UNKNOWN.
+ 	 */
+ 	int state;
+
+diff --git a/net/irda/irlmp.c b/net/irda/irlmp.c
+index 7bf5b91..c1ffe6d 100644
+--- a/net/irda/irlmp.c
++++ b/net/irda/irlmp.c
+@@ -1842,7 +1842,7 @@ LM_REASON irlmp_convert_lap_reason( LAP_REASON lap_reason)
+ 		reason = LM_CONNECT_FAILURE;
+ 		break;
+ 	default:
+-		IRDA_DEBUG(1, "%s(), Unknow IrLAP disconnect reason %d!\n",
++		IRDA_DEBUG(1, "%s(), Unknown IrLAP disconnect reason %d!\n",
+ 			   __func__, lap_reason);
+ 		reason = LM_LAP_DISCONNECT;
+ 		break;
+diff --git a/sound/isa/cs423x/cs4236.c b/sound/isa/cs423x/cs4236.c
+index a076a6c..a828baa 100644
+--- a/sound/isa/cs423x/cs4236.c
++++ b/sound/isa/cs423x/cs4236.c
+@@ -177,7 +177,7 @@ static struct pnp_card_device_id snd_cs423x_pnpids[] = {
+ 	{ .id = "CSC0437", .devs = { { "CSC0000" }, { "CSC0010" }, { "CSC0003" } } },
+ 	/* Digital PC 5000 Onboard - CS4236B */
+ 	{ .id = "CSC0735", .devs = { { "CSC0000" }, { "CSC0010" } } },
+-	/* some uknown CS4236B */
++	/* some unknown CS4236B */
+ 	{ .id = "CSC0b35", .devs = { { "CSC0000" }, { "CSC0010" }, { "CSC0003" } } },
+ 	/* Intel PR440FX Onboard sound */
+ 	{ .id = "CSC0b36", .devs = { { "CSC0000" }, { "CSC0010" }, { "CSC0003" } } },
+diff --git a/sound/isa/opti9xx/miro.c b/sound/isa/opti9xx/miro.c
+index 02e30d7..ddad60e 100644
+--- a/sound/isa/opti9xx/miro.c
++++ b/sound/isa/opti9xx/miro.c
+@@ -137,7 +137,7 @@ struct snd_miro {
+ static void snd_miro_proc_init(struct snd_miro * miro);
+
+ static char * snd_opti9xx_names[] = {
+-	"unkown",
++	"unknown",
+ 	"82C928", "82C929",
+ 	"82C924", "82C925",
+ 	"82C930", "82C931", "82C933"
+diff --git a/sound/isa/opti9xx/opti92x-ad1848.c
+b/sound/isa/opti9xx/opti92x-ad1848.c
+index 5cd5553..8480075 100644
+--- a/sound/isa/opti9xx/opti92x-ad1848.c
++++ b/sound/isa/opti9xx/opti92x-ad1848.c
+@@ -185,7 +185,7 @@ MODULE_DEVICE_TABLE(pnp_card, snd_opti9xx_pnpids);
+ #endif
+
+ static char * snd_opti9xx_names[] = {
+-	"unkown",
++	"unknown",
+ 	"82C928",	"82C929",
+ 	"82C924",	"82C925",
+ 	"82C930",	"82C931",	"82C933"
+diff --git a/sound/pci/ca0106/ca0106_proc.c b/sound/pci/ca0106/ca0106_proc.c
+index c62b7d1..8d13092 100644
+--- a/sound/pci/ca0106/ca0106_proc.c
++++ b/sound/pci/ca0106/ca0106_proc.c
+@@ -233,7 +233,7 @@ static void snd_ca0106_proc_dump_iec958( struct
+snd_info_buffer *buffer, u32 val
+ 			snd_iprintf(buffer, "user-defined\n");
+ 			break;
+ 		default:
+-			snd_iprintf(buffer, "unkown\n");
++			snd_iprintf(buffer, "unknown\n");
+ 			break;
+ 		}
+ 		snd_iprintf(buffer, "Sample Bits: ");
+diff --git a/sound/pci/rme9652/hdspm.c b/sound/pci/rme9652/hdspm.c
+index 0dce331..a1b10d1 100644
+--- a/sound/pci/rme9652/hdspm.c
++++ b/sound/pci/rme9652/hdspm.c
+@@ -3017,7 +3017,7 @@ snd_hdspm_proc_read_madi(struct snd_info_entry * entry,
+ 		insel = "Coaxial";
+ 		break;
+ 	default:
+-		insel = "Unkown";
++		insel = "Unknown";
+ 	}
+
+ 	switch (hdspm->control_register & HDSPM_SyncRefMask) {
+@@ -3028,7 +3028,7 @@ snd_hdspm_proc_read_madi(struct snd_info_entry * entry,
+ 		syncref = "MADI";
+ 		break;
+ 	default:
+-		syncref = "Unkown";
++		syncref = "Unknown";
+ 	}
+ 	snd_iprintf(buffer, "Inputsel = %s, SyncRef = %s\n", insel,
+ 		    syncref);
+diff --git a/sound/soc/codecs/uda134x.c b/sound/soc/codecs/uda134x.c
+index c33b92e..8ce1c9b 100644
+--- a/sound/soc/codecs/uda134x.c
++++ b/sound/soc/codecs/uda134x.c
+@@ -101,7 +101,7 @@ static int uda134x_write(struct snd_soc_codec
+*codec, unsigned int reg,
+ 	pr_debug("%s reg: %02X, value:%02X\n", __func__, reg, value);
+
+ 	if (reg >= UDA134X_REGS_NUM) {
+-		printk(KERN_ERR "%s unkown register: reg: %u",
++		printk(KERN_ERR "%s unknown register: reg: %u",
+ 		       __func__, reg);
+ 		return -EINVAL;
+ 	}
+@@ -552,7 +552,7 @@ static int uda134x_soc_probe(struct platform_device *pdev)
+ 					ARRAY_SIZE(uda1341_snd_controls));
+ 	break;
+ 	default:
+-		printk(KERN_ERR "%s unkown codec type: %d",
++		printk(KERN_ERR "%s unknown codec type: %d",
+ 			__func__, pd->model);
+ 	return -EINVAL;
+ 	}
 -- 
 1.6.5.2.101.gcd0f8
