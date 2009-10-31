@@ -1,51 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbZJaJIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbZJaJPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbZJaJIc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 05:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZJaJIb
+	id S1755974AbZJaJPi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 05:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZJaJPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 05:08:31 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46079 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbZJaJIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 05:08:30 -0400
-Date: Sat, 31 Oct 2009 07:07:01 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-media@vger.kernel.org
-Subject: Re: [PATCH 5/8] drivers/media/video/uvc: Use %pUl to print UUIDs
-Message-ID: <20091031070701.4ccf27d5@caramujo.chehab.org>
-In-Reply-To: <200910120034.58943.laurent.pinchart@ideasonboard.com>
-References: <1254890742-28245-1-git-send-email-joe@perches.com>
-	<ef810b1f134d8b5f07b849b13751445d7d49956b.1254884776.git.joe@perches.com>
-	<200910120034.58943.laurent.pinchart@ideasonboard.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 31 Oct 2009 05:15:38 -0400
+Received: from thunk.org ([69.25.196.29]:36750 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751433AbZJaJPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 05:15:36 -0400
+Date: Sat, 31 Oct 2009 05:15:28 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Eric Sandeen <sandeen@redhat.com>, Parag Warudkar <parag.lkml@gmail.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       bugzilla-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+Message-ID: <20091031091528.GO18464@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andreas Dilger <adilger@sun.com>, Eric Sandeen <sandeen@redhat.com>,
+	Parag Warudkar <parag.lkml@gmail.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+	bugzilla-daemon@bugzilla.kernel.org
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com> <20091016091558.GA10184@mit.edu> <20091027101534.GA27584@skywalker.linux.vnet.ibm.com> <f7848160910291425q30377641qfe23e74fbc643d89@mail.gmail.com> <4AEA0B71.5050805@redhat.com> <3D6E88E0-7271-4CEC-85DC-9E4416F030F5@sun.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3D6E88E0-7271-4CEC-85DC-9E4416F030F5@sun.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Laurent,
+On Fri, Oct 30, 2009 at 01:56:27PM -0600, Andreas Dilger wrote:
+> I wonder if there are multiple problems involved here?  Eric, it seems
+> possible that your reproducer is exercising a similar, though unrelated
+> codepath.  
 
-Em Mon, 12 Oct 2009 00:34:58 +0200
-Laurent Pinchart <laurent.pinchart@ideasonboard.com> escreveu:
+Note that Aneesh has pubished two patches which insert a call to
+ext4_discard_preallocations().  One is a patch which inserts it into
+fs/inode.c's truncate path (for direct/indirect-mapped inodes) and one
+which is patch which inserts it into fs/extents.c truncate path (for
+extent-mapped inodes).  As near as I can tell both patches are
+necessary, and it looks to me like they should be combined into a
+single patch, since commit 487caeef9 affects both truncate paths.
+Aneesh, do you concur?
 
-> As this will go through the linuxtv v4l-dvb tree, I'll have to add backward
-> compatibility code (that will not make it to mainline). If that's ok with you
-> it will be easier for me to test and apply that part of the patch through my
-> tree once the vsprintf extension gets in. 
+Like Andreas, I am suspicious that there may be multiple problems
+occurring here, so here is a proposed plan of attack.
 
-I'm assuming that those printk patches from Joe to uvc will go via your tree,
-so please submit a pull request when they'll be ready for upstream.
+Step 1) Sanity check that commit 0a80e986 shows the problem.  This is
+immediately after the first batch of ext4 patches which I sent to
+Linus during the post-2.6.31 merge window.  Given that patches in the
+middle of this first patch have been reported by Avery as showing the
+problem, and while we may have some "git bisect good" revisions that
+were really bad, in general if a revision is reported bad, the problem
+is probably there at that version and successive versions.  Hence, I'm
+_pretty_ sure that 0a80e986 should demonstrate the problem.
 
+Step 2) Sanity check that commit ab86e576 does _not_ show the problem.
+This commit corresponds to 2.6.31-git6, and there are no ext4 patches
+that I pushed before that point.  There are three commits that show up
+in response to the command "git log v2.6.31..v2.6.31-git6 -- fs/ext4
+fs/jbd2", but they weren't pushed by me.  Although come to think of
+it, Jan Kara's commit 0d34ec62, "ext4: Remove syncing logic from
+ext4_file_write" is one we might want to look at very carefully if
+commit ab86e576 also shows the problem....
 
+Step 3) Assuming that Step 1 and Step 2 are as I expect, with commit
+ab86e576 being "good", and commit 0a80e986 being "bad", we will have
+localized the problem commit(s) to the 63 commits that were initially
+pushed to Linus during the merge window.  One of the commits is
+487caeef9, which Aneesh has argued convincingly seems to be
+problematic, and which seems to solve at least one or two reporter's
+problems, but clearly isn't a complete solution.  So let's try to
+narrow things down further by testing this branch:
 
+    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git test-history
 
-Cheers,
-Mauro
+This branch corresponds to commit ab86e576 (from Step 2), but with the
+problematic commit 487caeef9 removed.  It was generated by applying
+the following guilt patch series to v2.6.31-git6:
+
+    git://repo.or.cz/ext4-patch-queue.git test-history
+
+The advantage of starting with the head of test-history is that if
+there are multiple problematic commits, this should show the problem
+(just as reverting 487caeef9 would) --- but since 487caeef9 is
+actually removed, we can now do a "git bisect start test-history
+v2.6.31-git6" and hopefully be able to localize whatever additional
+commits might be bad.
+
+(We could also keep applying and unapplying the patch corresponding to
+the revert of 487caeef9 while doing a bisection, but that tends to be
+error prone.)
+
+Does that sounds like a plan?
+
+							- Ted
