@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbZJaC2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757683AbZJaCaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757662AbZJaC2w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 22:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757615AbZJaC2w
+	id S1757683AbZJaCaV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 22:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757653AbZJaCaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 22:28:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:43908 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757608AbZJaC2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 22:28:51 -0400
-Date: Sat, 31 Oct 2009 03:24:02 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptrace: cleanup ptrace_init_task()->ptrace_link() path
-Message-ID: <20091031022402.GA9883@redhat.com>
-References: <20091029235656.GA26438@redhat.com> <20091030155057.270cf1a0.akpm@linux-foundation.org> <20091031005507.GA4005@redhat.com> <20091030185620.b8e0fc8b.akpm@linux-foundation.org>
+	Fri, 30 Oct 2009 22:30:20 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:57912 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757638AbZJaCaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 22:30:19 -0400
+Date: Sat, 31 Oct 2009 02:30:10 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Jan Kara <jack@suse.cz>, "J. Bruce Fields" <bfields@fieldses.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: symlinks with permissions
+Message-ID: <20091031023010.GB17680@shareable.org>
+References: <20091025093604.GA1501@ucw.cz> <m1zl7cb1c5.fsf@fess.ebiederm.org> <20091028081653.GA18290@elf.ucw.cz> <m1k4yfkbfg.fsf@fess.ebiederm.org> <20091028210323.GA4159@elf.ucw.cz> <m1hbtj7xgj.fsf@fess.ebiederm.org> <20091029110344.GA1517@ucw.cz> <m1d4466uel.fsf@fess.ebiederm.org> <20091030183559.GF7008@elf.ucw.cz> <m1ocnomqlz.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091030185620.b8e0fc8b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <m1ocnomqlz.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/30, Andrew Morton wrote:
->
-> On Sat, 31 Oct 2009 01:55:07 +0100 Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > On 10/30, Andrew Morton wrote:
-> > >
-> > > On Fri, 30 Oct 2009 00:56:56 +0100
-> > > Oleg Nesterov <oleg@redhat.com> wrote:
-> > >
-> > > >  ptrace
-> > >
-> > > Speaking of which, I'm still sitting on
-> > > do_wait-optimization-do-not-place-sub-threads-on-task_struct-children-list.patch.
+Eric W. Biederman wrote:
+> Pavel Machek <pavel@ucw.cz> writes:
+> >> How many linux shell scripts and other applications that use /dev/fd/N
+> >> or /proc/self/fd/N will you be breaking?
 > >
-> > (this patch has nothing to do with ptrace)
+> > Zero. (Well unless someone is exploiting it in wild).
+> 
+> There are other differences like different offsets etc that may matter.
+> 
+> >> Closing a theoretical security hole at the expense of breaking real
+> >> applications is a show stopper.
 > >
-> > > Should I drop it?
+> > I don't plan to remove /proc/*/fd; but I would like it to behave like
+> > dup().
 > >
-> > Why? I think this is good optimization and imho cleanup.
-> >
-> > There is no point to have sub-thread in ->children list and this
-> > slows down do_wait() if a child has a lot of threads, it has to
-> > iterate over all sub-threads just to filter them out.
-> >
->
-> On 17 Sep you said:
->
-> : Yes, risky... God knows who can do list_for_each(->children) and expect to
-> : find the sub-threads. But this is obviously good optimization/simplification.
-> :
-> : It is just ugly to place sub-threads on ->children list, this buys nothing
-> : but slown downs do_wait(). (this was needed, afaics, to handle ptraced but
-> : not re-parented threads a long ago).
->
-> so that's why I didn't merge it into 2.6.32.  Is the patch still
-> considered "risky"?
+> > (I still hope some security team does work for me :-).
 
-I hope not, it didn't cause any problems during 3 months in -mm.
+Yes, it must not be like dup(), sharing the file pointer, because I'm
+sure that really will break some programs.
 
-Oleg.
+Like all the ones using gnulib (formerly libiberty) which use
+/proc/self/fd/N/path/to/file to implement fake openat(N,"path/to/file").
 
+> I bet you will get a lot more traction and discussion if you write
+> a basic mostly working version of the patch.
+
+I agree, and I'll be happy to review/break it ;-)
+
+-- Jamie
