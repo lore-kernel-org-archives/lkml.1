@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbZJaVCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933336AbZJaVpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933285AbZJaVCD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 17:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933275AbZJaVCB
+	id S933336AbZJaVpQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 17:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933326AbZJaVpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 17:02:01 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53293 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933270AbZJaVCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 17:02:00 -0400
-Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from
- 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-In-Reply-To: <200910311031.17660.rjw@sisk.pl>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-	 <alpine.LFD.2.01.0910301228430.31845@localhost.localdomain>
-	 <1256947041.6372.165.camel@pasglop>  <200910311031.17660.rjw@sisk.pl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 01 Nov 2009 08:01:30 +1100
-Message-ID: <1257022890.7907.14.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 31 Oct 2009 17:45:03 -0400
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:1075 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933282AbZJaVoy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 17:44:54 -0400
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: linux-kernel@vger.kernel.org
+Cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org, trivial@kernel.org,
+       Alberto Bertogli <albertito@blitiri.com.ar>
+Subject: [PATCH] bio_put(): add bio_clone() to the list of functions in the comment
+Date: Sat, 31 Oct 2009 18:18:52 -0300
+Message-Id: <1257023932-22868-1-git-send-email-albertito@blitiri.com.ar>
+X-Mailer: git-send-email 1.6.5.2.250.g2bd30
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-31 at 10:31 +0100, Rafael J. Wysocki wrote:
+In bio_put()'s comment, add bio_clone() to the list of functions that can
+give you a bio reference.
 
-> > To me the proper approach would be to split it so that
-> 
-> Well, agreed, but ...
-> 
-> >  - early_resume() restores power & config space etc... so that existing
-> > devices can move on (might check for removal). There's no other hotplug
-> > activity
-> 
-> ... that's exactly what doesn't work at the moment.
+Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
+---
+ fs/bio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-BTW. This is a PCMCIA problem, a Cardbus or both ? I'll see if I can dig
-something on monday ?
-
->From the little email history I caught, it smells like pcmcia old style.
-
-I don't see a problem per-se with the mutex usage with the new interrupt
-masking style as Linus says. socket_resume() also looks reasonably sane,
-it's the whole handling of removal that should be deferred. Maybe
-instead of doing socket_remove_drivers()...send_event() etc.. in there,
-we could simply just shut the socket down (PCMCIA drivers should cope
-with sockets returning ffff's for a short amount of time), flag it dead
-in skt->state and have the "late" resume  actually fire off the driver
-removal and sending of the event.
-
-BTW. Have we ever documented whether it's kosher to ->remove() a driver
-before ->resume()'ing it ? (In which case obviously we wouldn't resume
-it).
-
-Cheers,  
-Ben.
-
+diff --git a/fs/bio.c b/fs/bio.c
+index 402cb84..bcab9e9 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -407,7 +407,7 @@ EXPORT_SYMBOL(zero_fill_bio);
+  *
+  * Description:
+  *   Put a reference to a &struct bio, either one you have gotten with
+- *   bio_alloc or bio_get. The last put of a bio will free it.
++ *   bio_alloc, bio_get or bio_clone. The last put of a bio will free it.
+  **/
+ void bio_put(struct bio *bio)
+ {
+-- 
+1.6.5.2.250.g2bd30
 
