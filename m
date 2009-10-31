@@ -1,93 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933401AbZJaXTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933408AbZJaXSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933401AbZJaXTf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 19:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933328AbZJaXTd
+	id S933408AbZJaXSw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 19:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933396AbZJaXSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 19:19:33 -0400
-Received: from alerce.vps.bitfolk.com ([212.13.194.134]:1070 "EHLO
-	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933303AbZJaXTc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 19:19:32 -0400
-From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, jens.axboe@oracle.com, tj@kernel.org,
-       Alberto Bertogli <albertito@blitiri.com.ar>
-Subject: [PATCH] Fix bio_alloc() and bio_kmalloc() documentation
-Date: Sat, 31 Oct 2009 20:18:36 -0300
-Message-Id: <1257031116-17934-1-git-send-email-albertito@blitiri.com.ar>
-X-Mailer: git-send-email 1.6.3.3
+	Sat, 31 Oct 2009 19:18:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59420 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933338AbZJaXSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 19:18:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: kerneloops.org report for the week of October 31 2009
+Date: Sun, 1 Nov 2009 00:20:20 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-acpi@vger.kernel.org, tytso@mit.edu, netdev@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, akpm@linux-foundation.org,
+       Matt Domsch <Matt_Domsch@dell.com>
+References: <20091031160351.26fcc6c5@infradead.org>
+In-Reply-To: <20091031160351.26fcc6c5@infradead.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911010020.20284.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 451a9ebf accidentally broke bio_alloc() and bio_kmalloc() comments by
-(almost) swapping them.
+On Sunday 01 November 2009, Arjan van de Ven wrote:
+> 
+> This week, a total of 18023 oopses and warnings have been reported,
+> compared to 5816 reports in the previous week. This number and this
+> report only includes kernel 2.6.31 and later.
+> 
+> This week, the Ubuntu 9.10 distribution got released, which includes
+> kerneloops.org integration in the quality feedback system. I'd like
+> to thank the Ubuntu team for their effort in helping to get the quality
+> feedback about the kernel integrated into kerneloops.org.
+> 
+> 
+> One thing to note is that the Ubuntu 9.10 release ships with the kernel
+> debug option CONFIG_PM_TEST_SUSPEND enabled, causing many warnings to 
+> be submitted. This huge volume triggered me to split these reports, as well
+> as the check_bios_for_corruption() reports into a per machine entry.
+> 
+> The top 5 machines for which the suspend test fails:
+>    319 | suspend_test_finish(Latitude D830)
+>    231 | suspend_test_finish(XPS M1530)
+>    225 | suspend_test_finish(MacBook2,1)
+>    171 | suspend_test_finish(Compaq Presario CQ60 Notebook PC)
+>    157 | suspend_test_finish(Studio XPS 1340)
+> 
+> and there is also the very elegant 
+>    267 | suspend_test_finish(To Be Filled By O.E.M)
+> 
+> 
+> The top 5 machines where the BIOS corrupts memory:
+>     80 | check_for_bios_corruption(HP Compaq nx6110)
+>     69 | check_for_bios_corruption(HP Compaq nc6120)
+>     62 | check_for_bios_corruption(HP Pavilion dv6700 Notebook PC)
+>     49 | check_for_bios_corruption(HP Pavilion dv2700 Notebook PC)
+>     32 | check_for_bios_corruption(Compaq Presario F700 Notebook PC)
+> 
+> 
+> The report this week looks different from previous reports; the version
+> cut-off has moved to 2.6.31 so that a lot of older bugs now dropped out of the report.
+> 
+> New this week are some inotify bugs, that have been fixed in Linus' git tree after -rc5.
+> There's also an ext2 warning for when the user unplugs a USB stick, as well as the
+> usual binary and external kernel modules.
+> 
+> If you have (better) descriptions for some of these, let me know and I can add them to the
+> database.
+> 
+> 
+> 
+> 
+> Rank 1: suspend_test_finish(System Product Name) (warning)
+> 	Reported 930 times (1510 total reports)
+> 	This warning was last seen in version 2.6.31, and first seen in 2.6.27.15.
+> 	More info: http://www.kerneloops.org/searchweek.php?search=suspend_test_finish(System Product Name)
 
-This patch fixes that, by placing the comments in the right place.
+This should be fixed by commit 04bf7539c08d64184736cdc5e4ad617eda77eb0f
+(PM: Make warning in suspend_test_finish() less likely to happen), at least on some
+machines that report it.
 
-Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
----
-
-I'm not completely sure the mempool part is in the right place. If it's not,
-let me know and I'll fix the patch.
-
-Thanks a lot,
-		Alberto
-
-
- fs/bio.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
-
-diff --git a/fs/bio.c b/fs/bio.c
-index bcab9e9..12da5db 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -325,8 +325,16 @@ static void bio_fs_destructor(struct bio *bio)
-  *	@gfp_mask: allocation mask to use
-  *	@nr_iovecs: number of iovecs
-  *
-- *	Allocate a new bio with @nr_iovecs bvecs.  If @gfp_mask
-- *	contains __GFP_WAIT, the allocation is guaranteed to succeed.
-+ *	bio_alloc will allocate a bio and associated bio_vec array that can hold
-+ *	at least @nr_iovecs entries. Allocations will be done from the
-+ *	fs_bio_set. Also see @bio_alloc_bioset and @bio_kmalloc.
-+ *
-+ *	If %__GFP_WAIT is set, then bio_alloc will always be able to allocate
-+ *	a bio. This is due to the mempool guarantees. To make this work, callers
-+ *	must never allocate more than 1 bio at a time from this pool. Callers
-+ *	that need to allocate more than 1 bio must always submit the previously
-+ *	allocated bio for IO before attempting to allocate a new one. Failure to
-+ *	do so can cause livelocks under memory pressure.
-  *
-  *	RETURNS:
-  *	Pointer to new bio on success, NULL on failure.
-@@ -350,21 +358,13 @@ static void bio_kmalloc_destructor(struct bio *bio)
- }
- 
- /**
-- * bio_alloc - allocate a bio for I/O
-+ * bio_kmalloc - allocate a bio for I/O using kmalloc()
-  * @gfp_mask:   the GFP_ mask given to the slab allocator
-  * @nr_iovecs:	number of iovecs to pre-allocate
-  *
-  * Description:
-- *   bio_alloc will allocate a bio and associated bio_vec array that can hold
-- *   at least @nr_iovecs entries. Allocations will be done from the
-- *   fs_bio_set. Also see @bio_alloc_bioset.
-- *
-- *   If %__GFP_WAIT is set, then bio_alloc will always be able to allocate
-- *   a bio. This is due to the mempool guarantees. To make this work, callers
-- *   must never allocate more than 1 bio at a time from this pool. Callers
-- *   that need to allocate more than 1 bio must always submit the previously
-- *   allocated bio for IO before attempting to allocate a new one. Failure to
-- *   do so can cause livelocks under memory pressure.
-+ *   Allocate a new bio with @nr_iovecs bvecs.  If @gfp_mask contains
-+ *   %__GFP_WAIT, the allocation is guaranteed to succeed.
-  *
-  **/
- struct bio *bio_kmalloc(gfp_t gfp_mask, int nr_iovecs)
--- 
-1.6.3.3
-
+Thanks,
+Rafael
