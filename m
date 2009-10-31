@@ -1,91 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932602AbZJaMLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbZJaNhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932602AbZJaMLb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 08:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbZJaMLa
+	id S1757779AbZJaNhi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 09:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932351AbZJaNhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 08:11:30 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:37111 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757678AbZJaMLa (ORCPT
+	Sat, 31 Oct 2009 09:37:38 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:34874 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757766AbZJaNhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 08:11:30 -0400
-X-Sasl-enc: CRQF7CxrP/bavJtvZyLmG9RZ92LSzJ6P92oDKXabmfdN 1256991094
-Message-ID: <4AEC2971.8050105@imap.cc>
-Date: Sat, 31 Oct 2009 13:11:29 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 31 Oct 2009 09:37:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version:content-type;
+        b=YnwXnZKtZdikKYfG32vfKGL6Z7xy0JbojNq1YW1u+hhbeWUMP3QaJvRhpUyVYl8ayG
+         29t5SMvTsSdXPEzlAlw2RZ5Aqf3ojQrxBboLYrcz8IYyqLsI9QJS4JfkQiAbANVwzIpU
+         4dpKa91vE0TtI+6JOCV7uF/pBWLOajHOYsRbM=
+Date: Sat, 31 Oct 2009 09:37:33 -0400 (EDT)
+From: Parag Warudkar <parag.lkml@gmail.com>
+X-X-Sender: parag@parag-laptop
+To: Johannes Berg <johannes@sipsolutions.net>
+cc: Parag Warudkar <parag.lkml@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Subject: Re: OOPS in cfg80211_conn_work
+In-Reply-To: <1256970899.3555.86.camel@johannes.local>
+Message-ID: <alpine.DEB.2.00.0910310936110.5317@parag-laptop>
+References: <f7848160910291617q2b168089l5ce489d2f47ebe96@mail.gmail.com> <1256885343.3555.0.camel@johannes.local> <alpine.DEB.2.00.0910300652350.2223@parag-laptop> <1256903425.3555.47.camel@johannes.local> <f7848160910301622t2cf43b5bo5ffeda03ec2cdbfe@mail.gmail.com>
+ <1256970899.3555.86.camel@johannes.local>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Nigel Cunningham <ncunningham@crca.org.au>
-CC: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
-       trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 03/16] trivial: fix assorted "through" typos
-References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com> <4AEC0EBE.2040308@crca.org.au>
-In-Reply-To: <4AEC0EBE.2040308@crca.org.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig7FA32ED3347CE590E4A70F75"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig7FA32ED3347CE590E4A70F75
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Am 31.10.2009 11:17 schrieb Nigel Cunningham:
-> I've only looked at this one, but something caught my eye...
->=20
-> Andr=E9 Goddard Rosa wrote:
->> diff --git a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> index f7b9cdc..b52c1f8 100644
->> --- a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> +++ b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> @@ -38,7 +38,7 @@ void __init generate_cplb_tables_cpu(unsigned int cp=
-u)
->>
->>  #ifdef CONFIG_BFIN_EXTMEM_DCACHEABLE
->>  	d_cache =3D CPLB_L1_CHBL;
->> -#ifdef CONFIG_BFIN_EXTMEM_WRITETROUGH
->> +#ifdef CONFIG_BFIN_EXTMEM_WRITETHROUGH
->>  	d_cache |=3D CPLB_L1_AOW | CPLB_WT;
->>  #endif
->>  #endif
->=20
-> "Surely that can't be the only time?", I thought. But it is - all of th=
-e
-> other #ifdefs are spelled correctly, so you're probably fixing a
-> hard-to-find bug here! Good catch!
->=20
-> Makes me wonder if anyone's written a tool to find things like this -
-> #ifdefs that will never be defined...
-
-I seem to remember someone (Joe Perches?) did, and regularly posted
-results to LKML in the past, but at some point switched to publishing
-them on a web page instead.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
---------------enig7FA32ED3347CE590E4A70F75
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+On Sat, 31 Oct 2009, Johannes Berg wrote:
+> 
+> iw event -t -f > /tmp/log
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+Here it goes - this is while trying couple times to reproduce the issue.
 
-iD8DBQFK7ClxQ3+did9BuFsRAl4PAKCa1buhT5R7YufueLTYCdcDaRALRgCeOUSy
-IZ3UuQmpIsoJq/W+FhudGcA=
-=y5Fi
------END PGP SIGNATURE-----
+Parag
 
---------------enig7FA32ED3347CE590E4A70F75--
+1256995923.900741: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:1d:7e:93:3a:58 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 1d 7e 93 3a 58 00 21 6a 1e 33 1a 00 1d 7e 93 3a 58 00 00 03 00]
+1256995923.900918: wlan0 (phy #0): disconnected (local request)
+1256995923.900953: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:16:01:d6:6f:12 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 16 01 d6 6f 12 00 21 6a 1e 33 1a 00 16 01 d6 6f 12 00 00 03 00]
+1256995923.901000: wlan0 (phy #0): failed to connect to 00:16:01:d6:6f:12, status: 1: Unspecified failure
+1256995923.901861: wlan0 (phy #0): scan started
+1256995923.918218: wlan0 (phy #0): failed to connect, status: 1: Unspecified failure
+1256995923.918270: wlan0 (phy #0): scan finished: 2452, "f2\x0d\xb71X\xa3Z%]\x05\x17X\xe9^\xd4\xab\xb2\xcd\xc6\x9b\xb4T\x11\x0e\x82tA!=\xdc\x87"
+1256995933.941448: wlan0 (phy #0): scan started
+1256995937.245751: wlan0 (phy #0): scan finished: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 5180 5200 5220 5240 5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700 5745 5765 5785 5805 5825, ""
+1256995937.247315: wlan0 (phy #0): scan started
+1256995937.247366: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:16:01:d6:6f:12 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 16 01 d6 6f 12 00 21 6a 1e 33 1a 00 16 01 d6 6f 12 00 00 03 00]
+1256995937.247417: wlan0 (phy #0): failed to connect to 00:16:01:d6:6f:12, status: 1: Unspecified failure
+1256995937.287319: wlan0 (phy #0): scan finished: 2452, "f2\x0d\xb71X\xa3Z%]\x05\x17X\xe9^\xd4\xab\xb2\xcd\xc6\x9b\xb4T\x11\x0e\x82tA!=\xdc\x87"
+1256995937.293899: wlan0 (phy #0): auth 00:1d:7e:93:3a:58 -> 00:21:6a:1e:33:1a status: 0: Successful [frame: b0 00 3a 01 00 21 6a 1e 33 1a 00 1d 7e 93 3a 58 00 1d 7e 93 3a 58 10 f0 00 00 02 00 00 00]
+1256995937.298275: wlan0 (phy #0): assoc 00:1d:7e:93:3a:58 -> 00:21:6a:1e:33:1a status: 0: Successful [frame: 10 00 3a 01 00 21 6a 1e 33 1a 00 1d 7e 93 3a 58 00 1d 7e 93 3a 58 20 f0 11 04 00 00 02 c0 01 04 82 84 8b 96 32 08 8c 12 98 24 b0 48 60 6c dd 18 00 50 f2 02 01 01 80 00 03 a4 00 00 27 a4 00 00 42 43 5e 00 62 32 2f 00 dd 07 00 0c 43 01 00 00 00]
+1256995937.298391: wlan0 (phy #0): connected to 00:1d:7e:93:3a:58
+1256995941.863589: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:1d:7e:93:3a:58 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 1d 7e 93 3a 58 00 21 6a 1e 33 1a 00 1d 7e 93 3a 58 00 00 03 00]
+1256995941.863706: wlan0 (phy #0): disconnected (local request)
+1256995941.863744: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:16:01:d6:6f:12 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 16 01 d6 6f 12 00 21 6a 1e 33 1a 00 16 01 d6 6f 12 00 00 03 00]
+1256995941.863791: wlan0 (phy #0): failed to connect to 00:16:01:d6:6f:12, status: 1: Unspecified failure
+1256995941.864860: wlan0 (phy #0): scan started
+1256995941.883549: wlan0 (phy #0): failed to connect, status: 1: Unspecified failure
+1256995941.883658: wlan0 (phy #0): scan finished: 2452, "p\xe9>\xa1A\xe1\xfcg>\x01~\x97\xea\xdck\x96\x8f8\*\xec\xb0;\xfb2\xaf<T\xec\x18\xdb\"
+1256995951.192371: wlan0 (phy #0): scan started
+1256995954.482288: wlan0 (phy #0): scan finished: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 5180 5200 5220 5240 5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700 5745 5765 5785 5805 5825, "pbwloft2"
+1256995954.483920: wlan0 (phy #0): scan started
+1256995954.483976: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:16:01:d6:6f:12 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 16 01 d6 6f 12 00 21 6a 1e 33 1a 00 16 01 d6 6f 12 00 00 03 00]
+1256995954.484027: wlan0 (phy #0): failed to connect to 00:16:01:d6:6f:12, status: 1: Unspecified fa
