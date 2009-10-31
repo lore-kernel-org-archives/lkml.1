@@ -1,111 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbZJaLEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbZJaLFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932265AbZJaLEi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 07:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbZJaLEh
+	id S1757511AbZJaLFX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 07:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757462AbZJaLFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 07:04:37 -0400
-Received: from nn7.de ([85.214.94.156]:46199 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757031AbZJaLEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 07:04:37 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Oct 2009 07:04:36 EDT
-Subject: [PATCH] mouse button #1 emulation for mac_hid
-From: Soeren Sonnenburg <sonne@debian.org>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary="=-TGjpDj1vtaR6MqEe307E"
-Date: Sat, 31 Oct 2009 11:57:58 +0100
-Message-ID: <1256986678.18934.13.camel@no>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sat, 31 Oct 2009 07:05:23 -0400
+Received: from mailgw.miraclelinux.com ([122.216.84.157]:22627 "EHLO
+	mailgw.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757094AbZJaLFW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 07:05:22 -0400
+Message-ID: <4AEC19F3.2040804@miraclelinux.com>
+Date: Sat, 31 Oct 2009 20:05:23 +0900
+From: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       roland@redhat.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, oleg@redhat.com
+Subject: Re: [PATCH] show message when exceeded rlimit of pending signals
+References: <4AEACFBF.4060108@miraclelinux.com>	<20091030143333.414ea29c.akpm@linux-foundation.org>	<4AEBEE38.50108@miraclelinux.com>	<4AEBFA46.8070709@miraclelinux.com> <20091031015708.1307aea5.akpm@linux-foundation.org>
+In-Reply-To: <20091031015708.1307aea5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Sat, 31 Oct 2009 17:50:14 +0900 Naohiro Ooiwa <nooiwa@miraclelinux.com> wrote:
+> 
+>> Naohiro Ooiwa wrote:
+>>> Andrew Morton wrote:
+>>>> On Fri, 30 Oct 2009 20:36:31 +0900
+>>>> Naohiro Ooiwa <nooiwa@miraclelinux.com> wrote:
+> 
+> Please always include the full changelog and signoff with each
+> iteration of a patch.  That changelog might of course need updating as
+> the patch changes.
+> 
 
---=-TGjpDj1vtaR6MqEe307E
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: quoted-printable
+I'm sorry...
+I will be very careful from the next time.
 
-Dear all,
+>>
+>> +static void show_reach_rlimit_sigpending(void)
+>> +{
+>> +	DEFINE_RATELIMIT_STATE(printk_rl_state, 5 * HZ, 10);
+> 
+> This needs to have `static' storage.  This bug should have been
+> apparent in your testing?
+> 
 
-I am not sure what the future of mac_hid is (the source says will be
-removed, but since 9 years). In case it stays in kernel the attached
-patch adds support for mouse button 1 emulation. If this driver stays in
-the kernel I would also suggest to rename it - it is not mac specific (I
-am using this on a netbook).
+Again, I'm sorry, I failed to make sure.
+But right now, I have test environment.
+I tested my patch, result is good.
 
-Rationale? Broken touchpads, within linux unsupported (multi-)touch pads
-where click and hold + moving the mouse does not work.
-
-Soeren
---=20
-For the one fact about the future of which we can be certain is that it
-will be utterly fantastic. -- Arthur C. Clarke, 1962
-
---=-TGjpDj1vtaR6MqEe307E
-Content-Disposition: attachment; filename="mac_hid_lmb.diff"
-Content-Type: text/x-patch; name="mac_hid_lmb.diff"; charset="ISO-8859-15"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWFjaW50b3NoL21hY19oaWQuYyBiL2RyaXZlcnMvbWFjaW50
-b3NoL21hY19oaWQuYw0KaW5kZXggY2M5ZjI3NS4uM2FhYzkwZiAxMDA2NDQNCi0tLSBhL2RyaXZl
-cnMvbWFjaW50b3NoL21hY19oaWQuYw0KKysrIGIvZHJpdmVycy9tYWNpbnRvc2gvbWFjX2hpZC5j
-DQpAQCAtMTksNiArMTksNyBAQA0KIHN0YXRpYyBzdHJ1Y3QgaW5wdXRfZGV2ICplbXVtb3VzZWJ0
-bjsNCiBzdGF0aWMgaW50IGVtdW1vdXNlYnRuX2lucHV0X3JlZ2lzdGVyKHZvaWQpOw0KIHN0YXRp
-YyBpbnQgbW91c2VfZW11bGF0ZV9idXR0b25zOw0KK3N0YXRpYyBpbnQgbW91c2VfYnV0dG9uMV9r
-ZXljb2RlID0gS0VZX1JJR0hUU0hJRlQ7CS8qIHJpZ2h0IHNoaWZ0IGtleSAqLw0KIHN0YXRpYyBp
-bnQgbW91c2VfYnV0dG9uMl9rZXljb2RlID0gS0VZX1JJR0hUQ1RSTDsJLyogcmlnaHQgY29udHJv
-bCBrZXkgKi8NCiBzdGF0aWMgaW50IG1vdXNlX2J1dHRvbjNfa2V5Y29kZSA9IEtFWV9SSUdIVEFM
-VDsJLyogcmlnaHQgb3B0aW9uIGtleSAqLw0KIHN0YXRpYyBpbnQgbW91c2VfbGFzdF9rZXljb2Rl
-Ow0KQEAgLTM1LDYgKzM2LDE0IEBAIHN0YXRpYyBjdGxfdGFibGUgbWFjX2hpZF9maWxlc1tdID0g
-ew0KIAkJLnByb2NfaGFuZGxlcgk9ICZwcm9jX2RvaW50dmVjLA0KIAl9LA0KIAl7DQorCQkuY3Rs
-X25hbWUJPSBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT04xX0tFWUNPREUsDQorCQkucHJvY25hbWUJ
-PSAibW91c2VfYnV0dG9uMV9rZXljb2RlIiwNCisJCS5kYXRhCQk9ICZtb3VzZV9idXR0b24xX2tl
-eWNvZGUsDQorCQkubWF4bGVuCQk9IHNpemVvZihpbnQpLA0KKwkJLm1vZGUJCT0gMDY0NCwNCisJ
-CS5wcm9jX2hhbmRsZXIJPSAmcHJvY19kb2ludHZlYywNCisJfSwNCisJew0KIAkJLmN0bF9uYW1l
-CT0gREVWX01BQ19ISURfTU9VU0VfQlVUVE9OMl9LRVlDT0RFLA0KIAkJLnByb2NuYW1lCT0gIm1v
-dXNlX2J1dHRvbjJfa2V5Y29kZSIsDQogCQkuZGF0YQkJPSAmbW91c2VfYnV0dG9uMl9rZXljb2Rl
-LA0KQEAgLTgzLDE2ICs5MiwyNCBAQCBzdGF0aWMgc3RydWN0IGN0bF90YWJsZV9oZWFkZXIgKm1h
-Y19oaWRfc3lzY3RsX2hlYWRlcjsNCiANCiBpbnQgbWFjX2hpZF9tb3VzZV9lbXVsYXRlX2J1dHRv
-bnMoaW50IGNhbGxlciwgdW5zaWduZWQgaW50IGtleWNvZGUsIGludCBkb3duKQ0KIHsNCisJdW5z
-aWduZWQgaW50IHJlcG9ydGNvZGU7DQorDQogCXN3aXRjaCAoY2FsbGVyKSB7DQogCWNhc2UgMToN
-CiAJCS8qIENhbGxlZCBmcm9tIGtleWJvYXJkLmMgKi8NCiAJCWlmIChtb3VzZV9lbXVsYXRlX2J1
-dHRvbnMNCi0JCSAgICAmJiAoa2V5Y29kZSA9PSBtb3VzZV9idXR0b24yX2tleWNvZGUNCi0JCQl8
-fCBrZXljb2RlID09IG1vdXNlX2J1dHRvbjNfa2V5Y29kZSkpIHsNCisJCSAgICAmJiAoa2V5Y29k
-ZSA9PSBtb3VzZV9idXR0b24xX2tleWNvZGUgfHwNCisJCQkJa2V5Y29kZSA9PSBtb3VzZV9idXR0
-b24yX2tleWNvZGUgfHwNCisJCQkJa2V5Y29kZSA9PSBtb3VzZV9idXR0b24zX2tleWNvZGUpKSB7
-DQogCQkJaWYgKG1vdXNlX2VtdWxhdGVfYnV0dG9ucyA9PSAxKSB7DQotCQkJCWlucHV0X3JlcG9y
-dF9rZXkoZW11bW91c2VidG4sDQotCQkJCQkJIGtleWNvZGUgPT0gbW91c2VfYnV0dG9uMl9rZXlj
-b2RlID8gQlROX01JRERMRSA6IEJUTl9SSUdIVCwNCi0JCQkJCQkgZG93bik7DQorCQkJCWlmIChr
-ZXljb2RlPT1tb3VzZV9idXR0b24xX2tleWNvZGUpDQorCQkJCQlyZXBvcnRjb2RlPUJUTl9MRUZU
-Ow0KKwkJCQllbHNlIGlmIChrZXljb2RlPT1tb3VzZV9idXR0b24yX2tleWNvZGUpDQorCQkJCQly
-ZXBvcnRjb2RlPUJUTl9NSURETEU7DQorCQkJCWVsc2UNCisJCQkJCXJlcG9ydGNvZGU9QlROX1JJ
-R0hUOw0KKw0KKwkJCQlpbnB1dF9yZXBvcnRfa2V5KGVtdW1vdXNlYnRuLCByZXBvcnRjb2RlLCBk
-b3duKTsNCiAJCQkJaW5wdXRfc3luYyhlbXVtb3VzZWJ0bik7DQogCQkJCXJldHVybiAxOw0KIAkJ
-CX0NCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3N5c2N0bC5oIGIvaW5jbHVkZS9saW51eC9z
-eXNjdGwuaA0KaW5kZXggMWU0NzQzZS4uZDM4ZjVhMCAxMDA2NDQNCi0tLSBhL2luY2x1ZGUvbGlu
-dXgvc3lzY3RsLmgNCisrKyBiL2luY2x1ZGUvbGludXgvc3lzY3RsLmgNCkBAIC05MTMsOSArOTEz
-LDEwIEBAIGVudW0gew0KIAlERVZfTUFDX0hJRF9LRVlCT0FSRF9TRU5EU19MSU5VWF9LRVlDT0RF
-Uz0xLA0KIAlERVZfTUFDX0hJRF9LRVlCT0FSRF9MT0NLX0tFWUNPREVTPTIsDQogCURFVl9NQUNf
-SElEX01PVVNFX0JVVFRPTl9FTVVMQVRJT049MywNCi0JREVWX01BQ19ISURfTU9VU0VfQlVUVE9O
-Ml9LRVlDT0RFPTQsDQotCURFVl9NQUNfSElEX01PVVNFX0JVVFRPTjNfS0VZQ09ERT01LA0KLQlE
-RVZfTUFDX0hJRF9BREJfTU9VU0VfU0VORFNfS0VZQ09ERVM9Ng0KKwlERVZfTUFDX0hJRF9NT1VT
-RV9CVVRUT04xX0tFWUNPREU9NCwNCisJREVWX01BQ19ISURfTU9VU0VfQlVUVE9OMl9LRVlDT0RF
-PTUsDQorCURFVl9NQUNfSElEX01PVVNFX0JVVFRPTjNfS0VZQ09ERT02LA0KKwlERVZfTUFDX0hJ
-RF9BREJfTU9VU0VfU0VORFNfS0VZQ09ERVM9Nw0KIH07DQogDQogLyogL3Byb2Mvc3lzL2Rldi9z
-Y3NpICovDQpkaWZmIC0tZ2l0IGEva2VybmVsL3N5c2N0bF9jaGVjay5jIGIva2VybmVsL3N5c2N0
-bF9jaGVjay5jDQppbmRleCBiNmU3YWFlLi42MGZhN2ZlIDEwMDY0NA0KLS0tIGEva2VybmVsL3N5
-c2N0bF9jaGVjay5jDQorKysgYi9rZXJuZWwvc3lzY3RsX2NoZWNrLmMNCkBAIC04MTYsNiArODE2
-LDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCB0cmFuc19jdGxfdGFibGUgdHJhbnNfbWFjX2hpZF9m
-aWxlc1tdID0gew0KIAkvKiBERVZfTUFDX0hJRF9LRVlCT0FSRF9TRU5EU19MSU5VWF9LRVlDT0RF
-UyB1bnVzZWQgKi8NCiAJLyogREVWX01BQ19ISURfS0VZQk9BUkRfTE9DS19LRVlDT0RFUyB1bnVz
-ZWQgKi8NCiAJeyBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT05fRU1VTEFUSU9OLAkibW91c2VfYnV0
-dG9uX2VtdWxhdGlvbiIgfSwNCisJeyBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT04xX0tFWUNPREUs
-CSJtb3VzZV9idXR0b24xX2tleWNvZGUiIH0sDQogCXsgREVWX01BQ19ISURfTU9VU0VfQlVUVE9O
-Ml9LRVlDT0RFLAkibW91c2VfYnV0dG9uMl9rZXljb2RlIiB9LA0KIAl7IERFVl9NQUNfSElEX01P
-VVNFX0JVVFRPTjNfS0VZQ09ERSwJIm1vdXNlX2J1dHRvbjNfa2V5Y29kZSIgfSwNCiAJLyogREVW
-X01BQ19ISURfQURCX01PVVNFX1NFTkRTX0tFWUNPREVTIHVudXNlZCAqLw0K
+Thanks you.
+Naohiro Ooiwa
 
 
---=-TGjpDj1vtaR6MqEe307E--
+When the system has too many timers or too many aggregate
+queued signals, the EAGAIN error is returned to application
+from kernel, including timer_create().
+It means that exceeded limit of pending signals at all.
+But we can't imagine it.
+
+This patch show the message when reached limit of pending signals.
+If you see this message and your system behaved unexpectedly,
+you can run following command.
+   # ulimit -i unlimited
+
+With help from Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>.
+
+
+Signed-off-by: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+---
+ Documentation/kernel-parameters.txt |   11 +++++++++--
+ kernel/signal.c                     |   21 ++++++++++++++++++---
+ 2 files changed, 27 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt
+b/Documentation/kernel-parameters.txt
+index 9107b38..3bbd92f 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2032,8 +2032,15 @@ and is between 256 and 4096 characters. It is defined in
+the file
+
+ 	print-fatal-signals=
+ 			[KNL] debug: print fatal signals
+-			print-fatal-signals=1: print segfault info to
+-			the kernel console.
++
++			If enabled, warn about various signal handling
++			related application anomalies: too many signals,
++			too many POSIX.1 timers, fatal signals causing a
++			coredump - etc.
++
++			If you hit the warning due to signal overflow,
++			you might want to try "ulimit -i unlimited".
++
+ 			default: off.
+
+ 	printk.time=	Show timing data prefixed to each printk message line
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 6705320..56e9c00 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -41,6 +41,8 @@
+
+ static struct kmem_cache *sigqueue_cachep;
+
++int print_fatal_signals __read_mostly;
++
+ static void __user *sig_handler(struct task_struct *t, int sig)
+ {
+ 	return t->sighand->action[sig - 1].sa.sa_handler;
+@@ -188,6 +190,17 @@ int next_signal(struct sigpending *pending, sigset_t *mask)
+ 	return sig;
+ }
+
++static void show_reach_rlimit_sigpending(void)
++{
++	static DEFINE_RATELIMIT_STATE(printk_rl_state, 5 * HZ, 10);
++
++	if (!__ratelimit(&printk_rl_state))
++		return;
++
++	printk(KERN_INFO "%s/%d: reached RLIMIT_SIGPENDING.\n",
++				current->comm, current->pid);
++}
++
+ /*
+  * allocate a new signal queue record
+  * - this may be called without locks if and only if t == current, otherwise an
+@@ -209,8 +222,12 @@ static struct sigqueue *__sigqueue_alloc(struct task_struct
+*t, gfp_t flags,
+ 	atomic_inc(&user->sigpending);
+ 	if (override_rlimit ||
+ 	    atomic_read(&user->sigpending) <=
+-			t->signal->rlim[RLIMIT_SIGPENDING].rlim_cur)
++			t->signal->rlim[RLIMIT_SIGPENDING].rlim_cur) {
+ 		q = kmem_cache_alloc(sigqueue_cachep, flags);
++	} else {
++		if (print_fatal_signals)
++			show_reach_rlimit_sigpending();
++	}
+ 	if (unlikely(q == NULL)) {
+ 		atomic_dec(&user->sigpending);
+ 		free_uid(user);
+@@ -925,8 +942,6 @@ static int send_signal(int sig, struct siginfo *info, struct
+task_struct *t,
+ 	return __send_signal(sig, info, t, group, from_ancestor_ns);
+ }
+
+-int print_fatal_signals;
+-
+ static void print_fatal_signal(struct pt_regs *regs, int signr)
+ {
+ 	printk("%s/%d: potentially unexpected fatal signal %d.\n",
+-- 1.5.4.1
