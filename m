@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbZJaCpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZJaD7C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757731AbZJaCpU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Oct 2009 22:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbZJaCpT
+	id S1757728AbZJaD7C (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Oct 2009 23:59:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932849AbZJaD67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Oct 2009 22:45:19 -0400
-Received: from gate.crashing.org ([63.228.1.57]:52006 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757614AbZJaCpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Oct 2009 22:45:18 -0400
-Subject: Filtering bits in set_pte_at()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@lists.ozlabs.org,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 31 Oct 2009 13:44:41 +1100
-Message-ID: <1256957081.6372.344.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Oct 2009 23:58:59 -0400
+Received: from mailout-apollo.uni-duesseldorf.de ([134.99.128.36]:46691 "EHLO
+	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757640AbZJaD67 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Oct 2009 23:58:59 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 31 Oct 2009 04:58:55 +0100 (CET)
+From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Subject: Re: Fwd: [PATCH] [RFC] ataflop: remove buggy IRQ disable from
+ do_fd_request()
+In-reply-to: <m3k4yqfmeb.fsf@hase.home>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-m68k <linux-m68k@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Message-id: <alpine.DEB.2.00.0910310455190.17692@zirkon.biophys.uni-duesseldorf.de>
+References: <alpine.LSU.2.00.0910091141150.19284@wotan.suse.de>
+ <10f740e80910100201n30367714uc57ec3c9c39b92af@mail.gmail.com>
+ <alpine.DEB.2.00.0910110846420.20140@zirkon.biophys.uni-duesseldorf.de>
+ <alpine.LSU.2.00.0910121106330.19284@wotan.suse.de>
+ <alpine.DEB.2.00.0910182126120.6395@zirkon.biophys.uni-duesseldorf.de>
+ <alpine.LSU.2.00.0910190932030.8582@wotan.suse.de>
+ <alpine.DEB.2.00.0910200847320.8658@zirkon.biophys.uni-duesseldorf.de>
+ <m3k4yqfmeb.fsf@hase.home>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks !
+Hi Andreas,
 
-So I have a little problem on powerpc ... :-)
+> > That. too :-) What I meant to say - the reason why someone chose to comment out 
+> > the original sti() wasn't really clear. I guess the reason for that particular 
+> > change has been lost in the pre-git or bk era.
+> 
+> FWIW, this can be traced back to as much as the 2.0 era (1996).  Going
 
-Due to the way I'm attempting to do my I$/D$ coherency on embedded
-processors, I basically need to "filter out" _PAGE_EXEC in set_pte_at()
-if the page isn't clean (PG_arch_1) and the set_pte_at() isn't caused by
-an exec fault. etc...
+Thanks, that definitely settles it. Around that time was my only exposure to the 
+floppy code (making mtools work). Brings back some memories ...
 
-The problem with that approach (current upstream) is that the generic
-code tends not to read back the PTE, and thus still carries around a PTE
-value that doesn't match what was actually written.
+> back further is difficult because a lot of files on ftp.uni-erlangen.de
+> are corrupt.
 
-For example, we end up with update_mmu_cache() called with an "entry"
-argument that has _PAGE_EXEC set while we really didn't write it into
-the page tables. This will be problematic when we finally add preloading
-directly into the TLB on those processors. There's at least one other
-fishy case where huetlbfs would carry the PTE value around and later do
-the wrong thing because pte_same() with the loaded one failed.
-
-What do you suggest we do here ? Among the options at hand:
-
- - Ugly but would probably "just work" with the last amount of changes:
-we could make set_pte_at() be a macro on powerpc that modifies it's PTE
-value argument :-) (I -did- warn it was ugly !)
-
- - Another one slightly less bad that would require more work but mostly
-mechanical arch header updates would be to make set_pte_at() return the
-new value of the PTE, and thus change the callsites to something like:
-
-	entry = set_pte_at(mm, addr, ptep, entry)
-
- - Any other idea ? We could use another PTE bit (_PAGE_HWEXEC), in
-fact, we used to, but we are really short on PTE bits nowadays and I
-freed that one up to get _PAGE_SPECIAL... _PAGE_EXEC is trivial to
-"recover" from ptep_set_access_flags() on an exec fault or from the VM
-prot.
+You haven't really dug around on the old FTP site just for this? 
 
 Cheers,
-Ben.
 
+	Michael
 
