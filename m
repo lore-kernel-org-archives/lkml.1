@@ -1,63 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZJaICc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZJaISk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbZJaICc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 04:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZJaICb
+	id S1754540AbZJaISk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 04:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZJaISj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 04:02:31 -0400
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:61720 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbZJaICa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 04:02:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=maEwiIicxyQCGW1SOOwX2kCyGfILw4u3gCBpev9yOuk+UUaoc2MjFlCWVZzvs8AITO
-         qVMze4DPtefccZ1Y88+qt2pDmHvnfAcr7osu3wT7xEBVymhh+6BokFCq8OgrvRhTIph5
-         byzfEZy7es34vOgca3TKRGDFa3CY/vgeYtSOU=
-MIME-Version: 1.0
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 31 Oct 2009 06:02:15 -0200
-Message-ID: <b8bf37780910310102x6ee7bb36ic149e17f81406a1@mail.gmail.com>
-Subject: [PATCH] blackfin: fix typo on using CONFIG_BFIN_EXTMEM_WRITETHROUGH 
-	kconfig definition
-To: vapier@gentoo.org, cooloney@kernel.org, graf.yang@analog.com,
-       bernds_cb1@t-online.de, robin.getz@analog.com,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       linux list <linux-kernel@vger.kernel.org>
-Cc: me <andre.goddard@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 31 Oct 2009 04:18:39 -0400
+Received: from mail.2ka.mipt.ru ([194.85.80.4]:53860 "EHLO mail.2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753901AbZJaISh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 04:18:37 -0400
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Oct 2009 04:18:37 EDT
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Sage Weil <sage@newdream.net>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: ext3/jbd oops in journal_start
+References: <Pine.LNX.4.64.0910302253100.1867@cobra.newdream.net>
+Date: Sat, 31 Oct 2009 11:18:47 +0300
+In-reply-to: <Pine.LNX.4.64.0910302253100.1867@cobra.newdream.net>
+Message-id: <87bpjorn6g.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 32a763924b8735243f8a0accd1d003d5a7dd4bad Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Fri, 30 Oct 2009 05:57:22 -0200
-Subject: [PATCH] blackfin: fix typo on using
-CONFIG_BFIN_EXTMEM_WRITETHROUGH kconfig definition
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Sage Weil <sage@newdream.net> writes:
 
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+> Hi,
+>
+> I'm consistently seeing ext3 oops on a fresh ~60 GB fs on 2.6.32-rc3 (and 
+> 2.6.31).  data=writeback or data=ordered.  It's not the hardware or 
+> drive... I have 8 boxes (each with slightly different hardware) that crash 
+> identically.
+Strange, 2.6.31 with ext3 is quite popular configuration...
+Can you please post exact test-case.
+>
+> The oops is at fs/jbd/transaction.c, journal_start():
+>
+> 		J_ASSERT(handle->h_transaction->t_journal == journal);
+*handle = journal_current_handle()
 
-diff --git a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
-b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
-index f7b9cdc..b52c1f8 100644
---- a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
-+++ b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
-@@ -38,7 +38,7 @@ void __init generate_cplb_tables_cpu(unsigned int cpu)
+IMHO it's looks like you have entered here with current->journal_info != NULL
 
- #ifdef CONFIG_BFIN_EXTMEM_DCACHEABLE
- 	d_cache = CPLB_L1_CHBL;
--#ifdef CONFIG_BFIN_EXTMEM_WRITETROUGH
-+#ifdef CONFIG_BFIN_EXTMEM_WRITETHROUGH
- 	d_cache |= CPLB_L1_AOW | CPLB_WT;
- #endif
- #endif
--- 
-1.6.5.2.101.gcd0f8
+, but journal_info contains unexpected data
+This may happens in two cases:
+1) calling jbd code from other filesystem.
+2) Some fs forget to zero current->journal_info on exit from vfs
+According to call trace we have got second case. Do you use some 
+unusual/experimental fs?
+>
+> because handle->h_transaction is 0x1bf (or some other value close to 
+> that).  I can trigger on the 10th or so call to journal_start after 
+> mounting.
+>
+> Has anyone seen this before?  I feel like I must be doing something silly 
+> here, since I can't find any references to this particular crash, but I'm 
+> having no problem triggering it right away, even after a fresh mke2fs 
+> -j...
+>
+> Any suggestions on where to look or should I just start testing older 
+> kernel versions and bisect?
+>
+> sage
+>
+>
+> [   83.550657] handle->h_transaction 00000000000001bf
+> [   83.555564] BUG: unable to handle kernel NULL pointer dereference at 00000000000001bf
+> [   83.559531] IP: [<ffffffff8118793c>] journal_start+0x87/0x184
+> [   83.559531] PGD 10e351067 PUD 10e1cb067 PMD 0 
+> [   83.559531] Oops: 0000 [#1] PREEMPT SMP 
+> [   83.559531] last sysfs file: /sys/class/net/lo/operstate
+> [   83.559531] CPU 1 
+> [   83.559531] Modules linked in: btrfs zlib_deflate fan ac battery 
+> ide_pci_generic shpchp k8temp serio_raw psmouse pcspkr ehci_hcd 
+> serverworks processor ohci_hcd pci_hotplug thermal button
+> [   83.559531] Pid: 2849, comm: cosd Not tainted 2.6.32-rc5 #7 H8SSL-I2
+> [   83.559531] RIP: 0010:[<ffffffff8118793c>]  [<ffffffff8118793c>] journal_start+0x87/0x184
+> [   83.559531] RSP: 0018:ffff88010e335b28  EFLAGS: 00010292
+> [   83.559531] RAX: 00000000000001bf RBX: ffff88010eeee4e0 RCX: 000000000000ad01
+> [   83.559531] RDX: ffff88002f400000 RSI: 0000000000000001 RDI: ffffffff81610214
+> [   83.559531] RBP: ffff88010e335b58 R08: ffff88010e3359d7 R09: 0000000000000000
+> [   83.559531] R10: ffffffff8106314b R11: ffff88010e335908 R12: ffff88010eeee4e0
+> [   83.559531] R13: ffff88010e17a200 R14: ffff88010f535800 R15: 000000000000000b
+> [   83.559531] FS:  00007fe3bce8b6f0(0000) GS:ffff88002f400000(0000) knlGS:0000000000000000
+> [   83.559531] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [   83.559531] CR2: 00000000000001bf CR3: 0000000110223000 CR4: 00000000000006e0
+> [   83.559531] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [   83.559531] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [   83.559531] Process cosd (pid: 2849, threadinfo ffff88010e334000, task ffff88010e17a200)
+> [   83.559531] Stack:
+> [   83.559531]  ffff88010e335b58 ffffffff814cbb10 ffffea0006cf6038 ffff88010eeea888
+> [   83.559531] <0> 0000000000000000 00000000000005f4 ffff88010e335b68 ffffffff811443b3
+> [   83.559531] <0> ffff88010e335c08 ffffffff8113c347 ffff88010e335ca8 ffffffff81070369
+> [   83.559531] Call Trace:
+> [   83.559531]  [<ffffffff811443b3>] ext3_journal_start_sb+0x4a/0x4c
+> [   83.559531]  [<ffffffff8113c347>] ext3_write_begin+0x9c/0x1e2
+> [   83.559531]  [<ffffffff81070369>] ? __lock_acquire+0x17d8/0x17ea
+> [   83.559531]  [<ffffffff810a5021>] generic_file_buffered_write+0x120/0x2a5
+> [   83.559531]  [<ffffffff810a564d>] __generic_file_aio_write+0x34f/0x383
+> [   83.559531]  [<ffffffff810a56e4>] generic_file_aio_write+0x63/0xaa
+> [   83.559531]  [<ffffffff810d98b2>] do_sync_write+0xe7/0x12d
+> [   83.559531]  [<ffffffff8105f368>] ? autoremove_wake_function+0x0/0x38
+> [   83.559531]  [<ffffffff8106a7fc>] ? put_lock_stats+0xe/0x27
+> [   83.559531]  [<ffffffff8125752c>] ? security_file_permission+0x11/0x13
+> [   83.559531]  [<ffffffff810da240>] vfs_write+0xae/0x14a
+> [   83.559531]  [<ffffffff810da3a0>] sys_write+0x47/0x6e
+> [   83.559531]  [<ffffffff8100baab>] system_call_fastpath+0x16/0x1b
+> [   83.559531] Code: 89 de 48 c7 c7 e9 01 61 81 31 c0 e8 71 f6 31 00 48 8b 
+> 33 48 c7 c7 f7 01 61 81 31 c0 e8 60 f6 31 00 48 8b 03 48 c7 c7 14 02 61 81 
+> <48> 8b 30 31 c0 e8 4c f6 31 00 48 8b 03 48 8b 30 4c 39 f6 74 11 
+> [   83.559531] RIP  [<ffffffff8118793c>] journal_start+0x87/0x184
+> [   83.559531]  RSP <ffff88010e335b28>
+> [   83.559531] CR2: 00000000000001bf
+> [   83.847504] ---[ end trace 450f151cbabc2177 ]---
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
