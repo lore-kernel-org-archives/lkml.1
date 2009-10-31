@@ -1,75 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbZJaNhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757796AbZJaNig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757779AbZJaNhi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 09:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932351AbZJaNhi
+	id S1757796AbZJaNig (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 09:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbZJaNif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 09:37:38 -0400
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:34874 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757766AbZJaNhh (ORCPT
+	Sat, 31 Oct 2009 09:38:35 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:58802 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757768AbZJaNie convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 09:37:37 -0400
+	Sat, 31 Oct 2009 09:38:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=YnwXnZKtZdikKYfG32vfKGL6Z7xy0JbojNq1YW1u+hhbeWUMP3QaJvRhpUyVYl8ayG
-         29t5SMvTsSdXPEzlAlw2RZ5Aqf3ojQrxBboLYrcz8IYyqLsI9QJS4JfkQiAbANVwzIpU
-         4dpKa91vE0TtI+6JOCV7uF/pBWLOajHOYsRbM=
-Date: Sat, 31 Oct 2009 09:37:33 -0400 (EDT)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-laptop
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: Parag Warudkar <parag.lkml@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: OOPS in cfg80211_conn_work
-In-Reply-To: <1256970899.3555.86.camel@johannes.local>
-Message-ID: <alpine.DEB.2.00.0910310936110.5317@parag-laptop>
-References: <f7848160910291617q2b168089l5ce489d2f47ebe96@mail.gmail.com> <1256885343.3555.0.camel@johannes.local> <alpine.DEB.2.00.0910300652350.2223@parag-laptop> <1256903425.3555.47.camel@johannes.local> <f7848160910301622t2cf43b5bo5ffeda03ec2cdbfe@mail.gmail.com>
- <1256970899.3555.86.camel@johannes.local>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Q96Iv67DLLqmhufIA4xh9rlyuAnkma0XdLkRmwBSK2kjbfZQaBKUGg9RVrWnWZFZMx
+         LAG7fFwhLsoQy8uQL9qxF8D8iLNXOnfeJgYnH93z5oP8sFybrjIiQceF+vSEu5lMMtgN
+         T4JT+p7wsrgNPxgnhMNSjd5Rs4rZ0qwC+dpLM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1256940813-11610-1-git-send-email-gregkh@suse.de>
+References: <20091030220949.GD11297@kroah.com>
+	 <1256940813-11610-1-git-send-email-gregkh@suse.de>
+Date: Sat, 31 Oct 2009 14:38:38 +0100
+X-Google-Sender-Auth: cc81f03c86cc8ca1
+Message-ID: <10f740e80910310638l33d387f1hd4758a9af0657fcf@mail.gmail.com>
+Subject: Fwd: [PATCH 1/1] tty: Mark generic_serial users as BROKEN
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Linux/m68k" <linux-m68k@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+---------- Forwarded message ----------
+From: Greg Kroah-Hartman <gregkh@suse.de>
+Date: Fri, Oct 30, 2009 at 23:13
+Subject: [PATCH 1/1] tty: Mark generic_serial users as BROKEN
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@linux.intel.com>, stable <stable@kernel.org>, Greg
+Kroah-Hartman <gregkh@suse.de>
 
 
-On Sat, 31 Oct 2009, Johannes Berg wrote:
-> 
-> iw event -t -f > /tmp/log
+From: Alan Cox <alan@linux.intel.com>
 
-Here it goes - this is while trying couple times to reproduce the issue.
+There isn't much else I can do with these. I can find no hardware for any
+of them and no users. The code is broken.
 
-Parag
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ arch/m68k/Kconfig    |    6 +++---
+ drivers/char/Kconfig |    6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-1256995923.900741: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:1d:7e:93:3a:58 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 1d 7e 93 3a 58 00 21 6a 1e 33 1a 00 1d 7e 93 3a 58 00 00 03 00]
-1256995923.900918: wlan0 (phy #0): disconnected (local request)
-1256995923.900953: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:16:01:d6:6f:12 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 16 01 d6 6f 12 00 21 6a 1e 33 1a 00 16 01 d6 6f 12 00 00 03 00]
-1256995923.901000: wlan0 (phy #0): failed to connect to 00:16:01:d6:6f:12, status: 1: Unspecified failure
-1256995923.901861: wlan0 (phy #0): scan started
-1256995923.918218: wlan0 (phy #0): failed to connect, status: 1: Unspecified failure
-1256995923.918270: wlan0 (phy #0): scan finished: 2452, "f2\x0d\xb71X\xa3Z%]\x05\x17X\xe9^\xd4\xab\xb2\xcd\xc6\x9b\xb4T\x11\x0e\x82tA!=\xdc\x87"
-1256995933.941448: wlan0 (phy #0): scan started
-1256995937.245751: wlan0 (phy #0): scan finished: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 5180 5200 5220 5240 5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700 5745 5765 5785 5805 5825, ""
-1256995937.247315: wlan0 (phy #0): scan started
-1256995937.247366: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:16:01:d6:6f:12 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 16 01 d6 6f 12 00 21 6a 1e 33 1a 00 16 01 d6 6f 12 00 00 03 00]
-1256995937.247417: wlan0 (phy #0): failed to connect to 00:16:01:d6:6f:12, status: 1: Unspecified failure
-1256995937.287319: wlan0 (phy #0): scan finished: 2452, "f2\x0d\xb71X\xa3Z%]\x05\x17X\xe9^\xd4\xab\xb2\xcd\xc6\x9b\xb4T\x11\x0e\x82tA!=\xdc\x87"
-1256995937.293899: wlan0 (phy #0): auth 00:1d:7e:93:3a:58 -> 00:21:6a:1e:33:1a status: 0: Successful [frame: b0 00 3a 01 00 21 6a 1e 33 1a 00 1d 7e 93 3a 58 00 1d 7e 93 3a 58 10 f0 00 00 02 00 00 00]
-1256995937.298275: wlan0 (phy #0): assoc 00:1d:7e:93:3a:58 -> 00:21:6a:1e:33:1a status: 0: Successful [frame: 10 00 3a 01 00 21 6a 1e 33 1a 00 1d 7e 93 3a 58 00 1d 7e 93 3a 58 20 f0 11 04 00 00 02 c0 01 04 82 84 8b 96 32 08 8c 12 98 24 b0 48 60 6c dd 18 00 50 f2 02 01 01 80 00 03 a4 00 00 27 a4 00 00 42 43 5e 00 62 32 2f 00 dd 07 00 0c 43 01 00 00 00]
-1256995937.298391: wlan0 (phy #0): connected to 00:1d:7e:93:3a:58
-1256995941.863589: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:1d:7e:93:3a:58 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 1d 7e 93 3a 58 00 21 6a 1e 33 1a 00 1d 7e 93 3a 58 00 00 03 00]
-1256995941.863706: wlan0 (phy #0): disconnected (local request)
-1256995941.863744: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:16:01:d6:6f:12 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 16 01 d6 6f 12 00 21 6a 1e 33 1a 00 16 01 d6 6f 12 00 00 03 00]
-1256995941.863791: wlan0 (phy #0): failed to connect to 00:16:01:d6:6f:12, status: 1: Unspecified failure
-1256995941.864860: wlan0 (phy #0): scan started
-1256995941.883549: wlan0 (phy #0): failed to connect, status: 1: Unspecified failure
-1256995941.883658: wlan0 (phy #0): scan finished: 2452, "p\xe9>\xa1A\xe1\xfcg>\x01~\x97\xea\xdck\x96\x8f8\*\xec\xb0;\xfb2\xaf<T\xec\x18\xdb\"
-1256995951.192371: wlan0 (phy #0): scan started
-1256995954.482288: wlan0 (phy #0): scan finished: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 5180 5200 5220 5240 5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700 5745 5765 5785 5805 5825, "pbwloft2"
-1256995954.483920: wlan0 (phy #0): scan started
-1256995954.483976: wlan0 (phy #0): deauth 00:21:6a:1e:33:1a -> 00:16:01:d6:6f:12 reason 3: Deauthenticated because sending station is leaving (or has left) the IBSS or ESS [frame: c0 00 00 00 00 16 01 d6 6f 12 00 21 6a 1e 33 1a 00 16 01 d6 6f 12 00 00 03 00]
-1256995954.484027: wlan0 (phy #0): failed to connect to 00:16:01:d6:6f:12, status: 1: Unspecified fa
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 29dd848..ecdc19a 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -561,7 +561,7 @@ config HPAPCI
+
+ config MVME147_SCC
+       bool "SCC support for MVME147 serial ports"
+-       depends on MVME147
++       depends on MVME147 && BROKEN
+       help
+         This is the driver for the serial ports on the Motorola MVME147
+         boards.  Everyone using one of these boards should say Y here.
+@@ -576,14 +576,14 @@ config SERIAL167
+
+ config MVME162_SCC
+       bool "SCC support for MVME162 serial ports"
+-       depends on MVME16x
++       depends on MVME16x && BROKEN
+       help
+         This is the driver for the serial ports on the Motorola MVME162 and
+         172 boards.  Everyone using one of these boards should say Y here.
+
+ config BVME6000_SCC
+       bool "SCC support for BVME6000 serial ports"
+-       depends on BVME6000
++       depends on BVME6000 && BROKEN
+       help
+         This is the driver for the serial ports on the BVME4000 and BVME6000
+         boards from BVM Ltd.  Everyone using one of these boards should say
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 08a6f50..6aad99e 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -323,7 +323,7 @@ config SPECIALIX
+
+ config SX
+       tristate "Specialix SX (and SI) card support"
+-       depends on SERIAL_NONSTANDARD && (PCI || EISA || ISA)
++       depends on SERIAL_NONSTANDARD && (PCI || EISA || ISA) && BROKEN
+       help
+         This is a driver for the SX and SI multiport serial cards.
+         Please read the file <file:Documentation/serial/sx.txt> for details.
+@@ -334,7 +334,7 @@ config SX
+
+ config RIO
+       tristate "Specialix RIO system support"
+-       depends on SERIAL_NONSTANDARD
++       depends on SERIAL_NONSTANDARD && BROKEN
+       help
+         This is a driver for the Specialix RIO, a smart serial card which
+         drives an outboard box that can support up to 128 ports.  Product
+@@ -395,7 +395,7 @@ config NOZOMI
+
+ config A2232
+       tristate "Commodore A2232 serial support (EXPERIMENTAL)"
+-       depends on EXPERIMENTAL && ZORRO && BROKEN_ON_SMP
++       depends on EXPERIMENTAL && ZORRO && BROKEN
+       ---help---
+         This option supports the 2232 7-port serial card shipped with the
+         Amiga 2000 and other Zorro-bus machines, dating from 1989.  At
+--
+1.6.4.2
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+
+
+-- 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
