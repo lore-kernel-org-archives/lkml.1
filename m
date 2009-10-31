@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbZJaW4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933340AbZJaW4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933351AbZJaW4l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 18:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933344AbZJaW4i
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S933340AbZJaW4i (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 31 Oct 2009 18:56:38 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:20846 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933310AbZJaW4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933326AbZJaW4d
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sat, 31 Oct 2009 18:56:33 -0400
-Message-ID: <4AECC04B.9060808@redhat.com>
-Date: Sat, 31 Oct 2009 18:55:07 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       stable@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       kernel-testers@vger.kernel.org
-Subject: Re: [PATCH 2/3] page allocator: Do not allow interrupts to use ALLOC_HARDER
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <1256650833-15516-3-git-send-email-mel@csn.ul.ie> <20091027130924.fa903f5a.akpm@linux-foundation.org> <alpine.DEB.2.00.0910271411530.9183@chino.kir.corp.google.com> <20091031184054.GB1475@ucw.cz> <alpine.DEB.2.00.0910311248490.13829@chino.kir.corp.google.com> <20091031201158.GB29536@elf.ucw.cz> <alpine.DEB.2.00.0910311413160.25524@chino.kir.corp.google.com> <20091031222905.GA32720@elf.ucw.cz>
-In-Reply-To: <20091031222905.GA32720@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Received: from gate.crashing.org ([63.228.1.57]:43215 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933294AbZJaW4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 18:56:32 -0400
+Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from
+ 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+In-Reply-To: <200910312227.15493.rjw@sisk.pl>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
+	 <200910311031.17660.rjw@sisk.pl> <1257022890.7907.14.camel@pasglop>
+	 <200910312227.15493.rjw@sisk.pl>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 01 Nov 2009 09:56:15 +1100
+Message-ID: <1257029775.7907.21.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/31/2009 06:29 PM, Pavel Machek wrote:
+On Sat, 2009-10-31 at 22:27 +0100, Rafael J. Wysocki wrote:
 
-> Well, you are trying to make rt heuristic more precise.
+> In the meantime I invented a patch that works, ie. apparently fixes the problem
+> and if there was a card in the socket during the suspend, it's standard config
+> space is restored correctly.  I tested it on one of my boxes with two different
+> CardBus adapters and Jose says it fixes the problem for him.
+> 
+> The patch is appended, please have a look.
 
-No he's not.  He is trying to make it only apply to real time
-tasks, not to interrupts that happen to interrupt the realtime
-tasks.
+Base idea of the patch sounds good, quick browse through looks good too,
 
- > I believe it would be better to simply remove it.
+I'll try to band on it with various PCMCIA & CB gear tomorrow.
 
-You are against trying to give the realtime tasks a best effort
-advantage at memory allocation?
+Cheers,
+Ben.
 
-Realtime apps often *have* to allocate memory on the kernel side,
-because they use network system calls, etc...
 
--- 
-All rights reversed.
