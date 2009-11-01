@@ -1,113 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbZKAW1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbZKAWeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbZKAW1k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 17:27:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZKAW1g
+	id S1753748AbZKAWeI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 17:34:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZKAWeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 17:27:36 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38285 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753864AbZKAW1c (ORCPT
+	Sun, 1 Nov 2009 17:34:07 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36771 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbZKAWeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 17:27:32 -0500
-Date: Sun, 1 Nov 2009 23:27:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>, Greg KH <greg@kroah.com>
-Subject: [PATCH 3/3] staging/dream: Add final missing bits
-Message-ID: <20091101222733.GC20740@elf.ucw.cz>
+	Sun, 1 Nov 2009 17:34:07 -0500
+Message-ID: <4AEE0CAA.4070403@zytor.com>
+Date: Mon, 02 Nov 2009 07:33:14 +0900
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Pavel Machek <pavel@ucw.cz>
+CC: Borislav Petkov <borislav.petkov@amd.com>,
+       Doug Thompson <norsk5@yahoo.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, x86 <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] amd64_edac: syndromes loading
+References: <20091028163534.GA625@aftab> <143841.81095.qm@web50110.mail.re2.yahoo.com> <20091028172853.GE625@aftab> <20091101211305.GB2085@ucw.cz>
+In-Reply-To: <20091101211305.GB2085@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/02/2009 06:13 AM, Pavel Machek wrote:
+>>
+>> Alternatively, we could make the syndromes builtin thus removing the
+>> requirement to go to userspace for the loading. For that we'll need
+>> two new .c files in drivers/edac/ which represent the x4 and x8 tables
+>> respectively:
+>>
+>> unsigned short x8_raw_data[] = {
+>>          0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+>>          0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+>>          0x0000, 0x0100, 0x0001, 0x0101, 0x01B8, 0x015C, 0x012E, 0x01C6, 0x0163,
+>>          0x01FD, 0x0189, 0x019D, 0xB801, 0x5C01, 0x2E01, 0xC601, 0x6301, 0xFD01,
+>>          0x8901, 0x9D01, 0x0200, 0x0002, 0x0202, 0x0201, 0x02B8, 0x025C, 0x02FD,
+>> 	....
+>>
+>> The drawback with these is that they'll always be builtin, enlarging
+>> kernel code by 10-15K although only one of them is in use.
+>
+> I believe that 15K is reasonable price to pay for not having to
+> install another 'firmware' file.
+> 								Pavel
 
-This adds final missing bits that allow drivers/staging to compile.
+a) aren't these computable somehow?  If so, it's probably easier to 
+include the algorithm in the kernel rather than a table.
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+b) "I believe that 15K is reasonable price to pay for not having to 
+install another 'firmware' file."  I think that's a tradeoff a lot of 
+people would *not* choose to make.  This is of course why we have (or at 
+least, should have) to either compile in firmware blobs or not.
 
-diff --git a/drivers/staging/dream/include/mach/camera.h b/drivers/staging/dream/include/mach/camera.h
-index c20f042..6ccc521 100644
---- a/drivers/staging/dream/include/mach/camera.h
-+++ b/drivers/staging/dream/include/mach/camera.h
-@@ -277,3 +277,39 @@ void msm_camio_disable(struct platform_device *);
- int msm_camio_probe_on(struct platform_device *);
- int msm_camio_probe_off(struct platform_device *);
- #endif
-+
-+struct msm_camera_io_ext {
-+	uint32_t mdcphy;
-+	uint32_t mdcsz;
-+	uint32_t appphy;
-+	uint32_t appsz;
-+};
-+
-+struct msm_camera_device_platform_data {
-+	void (*camera_gpio_on) (void);
-+	void (*camera_gpio_off)(void);
-+	struct msm_camera_io_ext ioext;
-+};
-+
-+#ifdef CONFIG_SENSORS_MT9T013
-+struct msm_camera_legacy_device_platform_data {
-+	int sensor_reset;
-+	int sensor_pwd;
-+	int vcm_pwd;
-+	void (*config_gpio_on) (void);
-+	void (*config_gpio_off)(void);
-+};
-+#endif
-+
-+#define MSM_CAMERA_FLASH_NONE 0
-+#define MSM_CAMERA_FLASH_LED  1
-+
-+struct msm_camera_sensor_info {
-+	const char *sensor_name;
-+	int sensor_reset;
-+	int sensor_pwd;
-+	int vcm_pwd;
-+	int mclk;
-+	int flash_type;
-+	struct msm_camera_device_platform_data *pdata;
-+};
-diff --git a/drivers/staging/dream/include/mach/msm_rpcrouter.h b/drivers/staging/dream/include/mach/msm_rpcrouter.h
-index 9724ece..2ad21de 100644
---- a/drivers/staging/dream/include/mach/msm_rpcrouter.h
-+++ b/drivers/staging/dream/include/mach/msm_rpcrouter.h
-@@ -176,4 +176,14 @@ struct msm_rpc_server
- 
- int msm_rpc_create_server(struct msm_rpc_server *server);
- 
-+struct snd_endpoint {
-+	int id;
-+	const char *name;
-+};
-+
-+struct msm_snd_endpoints {
-+	struct snd_endpoint *endpoints;
-+	unsigned num;
-+};
-+
- #endif
-diff --git a/drivers/staging/dream/qdsp5/adsp.c b/drivers/staging/dream/qdsp5/adsp.c
-index 9069535..1fab9ce 100644
---- a/drivers/staging/dream/qdsp5/adsp.c
-+++ b/drivers/staging/dream/qdsp5/adsp.c
-@@ -45,6 +45,7 @@ static inline void allow_suspend(void)
- #include "adsp.h"
- 
- #define INT_ADSP INT_ADSP_A9_A11
-+#define MSM_AD5_BASE          IOMEM(0xE0300000)
- 
- static struct adsp_info adsp_info;
- static struct msm_rpc_endpoint *rpc_cb_server_client;
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	-hpa
