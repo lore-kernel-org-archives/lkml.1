@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZKAWKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbZKAWM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZKAWKX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 17:10:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZKAWKX
+	id S1753757AbZKAWM5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 17:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbZKAWM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 17:10:23 -0500
-Received: from tundra.namei.org ([65.99.196.166]:49216 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753511AbZKAWKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 17:10:22 -0500
-Date: Mon, 2 Nov 2009 09:09:54 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Eric Paris <eparis@parisplace.org>
-cc: David Smith <david.daniel.smith@gmail.com>,
-       tpmdd-devel@lists.sourceforge.net,
-       Seiji Munetoh <seiji.munetoh@gmail.com>, akpm@linux-foundation.org,
-       Daniel Walker <dwalker@fifo99.com>, Andy Isaacson <adi@hexapodia.org>,
-       len.brown@intel.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
-       Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Shahbaz Khan <shaz.linux@gmail.com>
-Subject: Re: [PATCH] tpm_tis: TPM_STS_DATA_EXPECT workaround
-In-Reply-To: <7e0fb38c0910310724i6f440b3dmc2a16920d2ef4900@mail.gmail.com>
-Message-ID: <alpine.LRH.2.00.0911020909420.9773@tundra.namei.org>
-References: <1246410255-6839-1-git-send-email-adi@vmware.com>  <1246455920.9140.28.camel@blackbox>  <20090720182732.GL6370@hexapodia.org>  <1252609714.4837.87.camel@blackbox>  <1252612471.4837.107.camel@blackbox>  <1252612709.30578.219.camel@desktop> 
- <1252613375.4837.121.camel@blackbox>  <f02dbbe70909111634q24df8746o8589394f7c30b28@mail.gmail.com>  <1253817781.8653.3.camel@dyn531367.br.ibm.com>  <b8394ab90910271945j10bd0aduda01cdc0610271f4@mail.gmail.com>
- <7e0fb38c0910310724i6f440b3dmc2a16920d2ef4900@mail.gmail.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 1 Nov 2009 17:12:56 -0500
+Received: from server1.wserver.cz ([82.113.45.157]:60287 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752884AbZKAWM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 17:12:56 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: npiggin@suse.de
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, Tejun Heo <tj@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH 1/1] MM: slqb, fix per_cpu access
+Date: Sun,  1 Nov 2009 23:12:58 +0100
+Message-Id: <1257113578-1584-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Oct 2009, Eric Paris wrote:
+We cannot use the same local variable name as the declared per_cpu
+variable since commit "percpu: remove per_cpu__ prefix."
 
-> On Tue, Oct 27, 2009 at 10:45 PM, David Smith
-> <david.daniel.smith@gmail.com> wrote:
-> > Hi, can this be merged, please? Using the module parameter is not
-> > optimal but it's better than the complete lack of support today.
-> >
-> > On Fri, Sep 25, 2009 at 3:43 AM, Rajiv Andrade
-> > <srajiv@linux.vnet.ibm.com> wrote:
-> >> This was already tested and, given no more comments on it, finally
-> >> reviewed. Can it already be merged?
-> 
-> James can we get this merged?
-> 
-> Acked-by: Eric Paris <eparis@redhat.com>
+Otherwise we would see crashes like:
+general protection fault: 0000 [#1] SMP
+last sysfs file:
+CPU 1
+Modules linked in:
+Pid: 1, comm: swapper Tainted: G        W  2.6.32-rc5-mm1_64 #860
+RIP: 0010:[<ffffffff8142ff94>]  [<ffffffff8142ff94>] start_cpu_timer+0x2b/0x87
+...
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+---
+ mm/slqb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
-
-
+diff --git a/mm/slqb.c b/mm/slqb.c
+index e745d9a..27f5025 100644
+--- a/mm/slqb.c
++++ b/mm/slqb.c
+@@ -2770,16 +2770,16 @@ static DEFINE_PER_CPU(struct delayed_work, cache_trim_work);
+ 
+ static void __cpuinit start_cpu_timer(int cpu)
+ {
+-	struct delayed_work *cache_trim_work = &per_cpu(cache_trim_work, cpu);
++	struct delayed_work *_cache_trim_work = &per_cpu(cache_trim_work, cpu);
+ 
+ 	/*
+ 	 * When this gets called from do_initcalls via cpucache_init(),
+ 	 * init_workqueues() has already run, so keventd will be setup
+ 	 * at that time.
+ 	 */
+-	if (keventd_up() && cache_trim_work->work.func == NULL) {
+-		INIT_DELAYED_WORK(cache_trim_work, cache_trim_worker);
+-		schedule_delayed_work_on(cpu, cache_trim_work,
++	if (keventd_up() && _cache_trim_work->work.func == NULL) {
++		INIT_DELAYED_WORK(_cache_trim_work, cache_trim_worker);
++		schedule_delayed_work_on(cpu, _cache_trim_work,
+ 					__round_jiffies_relative(HZ, cpu));
+ 	}
+ }
 -- 
-James Morris
-<jmorris@namei.org>
+1.6.4.2
+
