@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZKARwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbZKAR4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150AbZKARwW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 12:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZKARwV
+	id S1753131AbZKAR4N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 12:56:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZKAR4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 12:52:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1997 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752966AbZKARwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 12:52:21 -0500
-Message-ID: <4AEDCAA6.8050301@redhat.com>
-Date: Sun, 01 Nov 2009 12:51:34 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCHv2 3/5] vmscan: Stop zone_reclaim()'s wrong swap_cluster_max
- usage
-References: <20091101234614.F401.A69D9226@jp.fujitsu.com> <20091102000951.F407.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091102000951.F407.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Nov 2009 12:56:12 -0500
+Received: from xenotime.net ([72.52.64.118]:54026 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752974AbZKAR4M convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 12:56:12 -0500
+Date: Sun, 1 Nov 2009 09:52:08 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       =?ISO-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
+       trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/16] trivial: fix assorted "through" typos
+Message-Id: <20091101095208.10d57e8f.rdunlap@xenotime.net>
+In-Reply-To: <4AEC2971.8050105@imap.cc>
+References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>
+	<4AEC0EBE.2040308@crca.org.au>
+	<4AEC2971.8050105@imap.cc>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/01/2009 10:11 AM, KOSAKI Motohiro wrote:
-> In old days, we didn't have sc.nr_to_reclaim and it brought
-> sc.swap_cluster_max misuse.
->
-> huge sc.swap_cluster_max might makes unnecessary OOM and
-> no performance benefit.
->
-> Now, we can remove above dangerous one.
->
-> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
+On Sat, 31 Oct 2009 13:11:29 +0100 Tilman Schmidt wrote:
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+> Am 31.10.2009 11:17 schrieb Nigel Cunningham:
+> > I've only looked at this one, but something caught my eye...
+> > 
+> > André Goddard Rosa wrote:
+> >> diff --git a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
+> >> b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
+> >> index f7b9cdc..b52c1f8 100644
+> >> --- a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
+> >> +++ b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
+> >> @@ -38,7 +38,7 @@ void __init generate_cplb_tables_cpu(unsigned int cpu)
+> >>
+> >>  #ifdef CONFIG_BFIN_EXTMEM_DCACHEABLE
+> >>  	d_cache = CPLB_L1_CHBL;
+> >> -#ifdef CONFIG_BFIN_EXTMEM_WRITETROUGH
+> >> +#ifdef CONFIG_BFIN_EXTMEM_WRITETHROUGH
+> >>  	d_cache |= CPLB_L1_AOW | CPLB_WT;
+> >>  #endif
+> >>  #endif
+> > 
+> > "Surely that can't be the only time?", I thought. But it is - all of the
+> > other #ifdefs are spelled correctly, so you're probably fixing a
+> > hard-to-find bug here! Good catch!
+> > 
+> > Makes me wonder if anyone's written a tool to find things like this -
+> > #ifdefs that will never be defined...
+> 
+> I seem to remember someone (Joe Perches?) did, and regularly posted
+> results to LKML in the past, but at some point switched to publishing
+> them on a web page instead.
 
--- 
-All rights reversed.
+It was Robert PJ Day.
+See http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
+
+
+---
+~Randy
