@@ -1,116 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbZKARus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZKARwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbZKARus (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 12:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZKARur
+	id S1753150AbZKARwW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 12:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZKARwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 12:50:47 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:36618 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752974AbZKARuq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 12:50:46 -0500
-Date: Sun, 1 Nov 2009 12:50:43 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Huang Ying <ying.huang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: Re: [PATCH -v4] crypto: Add PCLMULQDQ accelerated GHASH
-	implementation
-Message-ID: <20091101175043.GA25257@gondor.apana.org.au>
-References: <1253064946.15717.372.camel@yhuang-dev.sh.intel.com> <20091019025332.GA26624@gondor.apana.org.au> <20091031173015.69e8e9f8.akpm@linux-foundation.org>
+	Sun, 1 Nov 2009 12:52:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1997 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752966AbZKARwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 12:52:21 -0500
+Message-ID: <4AEDCAA6.8050301@redhat.com>
+Date: Sun, 01 Nov 2009 12:51:34 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091031173015.69e8e9f8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCHv2 3/5] vmscan: Stop zone_reclaim()'s wrong swap_cluster_max
+ usage
+References: <20091101234614.F401.A69D9226@jp.fujitsu.com> <20091102000951.F407.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091102000951.F407.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 31, 2009 at 05:30:15PM -0700, Andrew Morton wrote:
-> 
-> x86_64 allmodconfig, GNU assembler 2.16.1:
-> 
-> arch/x86/crypto/ghash-clmulni-intel_asm.S: Assembler messages:
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:103: Error: no such instruction: `pshufb %xmm5,%xmm0'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:105: Error: no such instruction: `pshufb %xmm5,%xmm0'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:119: Error: no such instruction: `pshufb %xmm5,%xmm0'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:123: Error: no such instruction: `pshufb %xmm5,%xmm6'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:130: Error: no such instruction: `pshufb %xmm5,%xmm0'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:143: Error: no such instruction: `pshufb %xmm5,%xmm0'
+On 11/01/2009 10:11 AM, KOSAKI Motohiro wrote:
+> In old days, we didn't have sc.nr_to_reclaim and it brought
+> sc.swap_cluster_max misuse.
+>
+> huge sc.swap_cluster_max might makes unnecessary OOM and
+> no performance benefit.
+>
+> Now, we can remove above dangerous one.
+>
+> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
 
-This patch should fix it.
+Reviewed-by: Rik van Riel <riel@redhat.com>
 
-commit 2d06ef7f42ed8c9969c9aa84e95df5d5c6378327
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Sun Nov 1 12:49:44 2009 -0500
-
-    crypto: ghash-intel - Hard-code pshufb
-    
-    Old gases don't have a clue what pshufb stands for so we have
-    to hard-code it for now.
-    
-    Reported-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/arch/x86/crypto/ghash-clmulni-intel_asm.S b/arch/x86/crypto/ghash-clmulni-intel_asm.S
-index b9e787a..71768d5 100644
---- a/arch/x86/crypto/ghash-clmulni-intel_asm.S
-+++ b/arch/x86/crypto/ghash-clmulni-intel_asm.S
-@@ -100,9 +100,11 @@ ENTRY(clmul_ghash_mul)
- 	movups (%rdi), DATA
- 	movups (%rsi), SHASH
- 	movaps .Lbswap_mask, BSWAP
--	pshufb BSWAP, DATA
-+	# pshufb BSWAP, DATA
-+	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
- 	call __clmul_gf128mul_ble
--	pshufb BSWAP, DATA
-+	# pshufb BSWAP, DATA
-+	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
- 	movups DATA, (%rdi)
- 	ret
- 
-@@ -116,18 +118,21 @@ ENTRY(clmul_ghash_update)
- 	movaps .Lbswap_mask, BSWAP
- 	movups (%rdi), DATA
- 	movups (%rcx), SHASH
--	pshufb BSWAP, DATA
-+	# pshufb BSWAP, DATA
-+	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
- .align 4
- .Lupdate_loop:
- 	movups (%rsi), IN1
--	pshufb BSWAP, IN1
-+	# pshufb BSWAP, IN1
-+	.byte 0x66, 0x0f, 0x38, 0x00, 0xf5
- 	pxor IN1, DATA
- 	call __clmul_gf128mul_ble
- 	sub $16, %rdx
- 	add $16, %rsi
- 	cmp $16, %rdx
- 	jge .Lupdate_loop
--	pshufb BSWAP, DATA
-+	# pshufb BSWAP, DATA
-+	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
- 	movups DATA, (%rdi)
- .Lupdate_just_ret:
- 	ret
-@@ -140,7 +145,8 @@ ENTRY(clmul_ghash_update)
- ENTRY(clmul_ghash_setkey)
- 	movaps .Lbswap_mask, BSWAP
- 	movups (%rsi), %xmm0
--	pshufb BSWAP, %xmm0
-+	# pshufb BSWAP, %xmm0
-+	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
- 	movaps %xmm0, %xmm1
- 	psllq $1, %xmm0
- 	psrlq $63, %xmm1
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+All rights reversed.
