@@ -1,62 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbZKAWeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZKAWgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbZKAWeI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 17:34:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZKAWeH
+	id S1753872AbZKAWgs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 17:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbZKAWgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 17:34:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36771 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbZKAWeH (ORCPT
+	Sun, 1 Nov 2009 17:36:48 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:57637 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753595AbZKAWgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 17:34:07 -0500
-Message-ID: <4AEE0CAA.4070403@zytor.com>
-Date: Mon, 02 Nov 2009 07:33:14 +0900
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Borislav Petkov <borislav.petkov@amd.com>,
-       Doug Thompson <norsk5@yahoo.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, x86 <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] amd64_edac: syndromes loading
-References: <20091028163534.GA625@aftab> <143841.81095.qm@web50110.mail.re2.yahoo.com> <20091028172853.GE625@aftab> <20091101211305.GB2085@ucw.cz>
-In-Reply-To: <20091101211305.GB2085@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Nov 2009 17:36:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=IvxLtQzhs+DAx/rGnp+7+6jhZMDRpe+z9AmeOEXK0MW395Me4v9J1rbhx7frdblKUM
+         6u45slLW/LfDzL/y0dmaQ/61NHYy1NE16qyCreAfJg5skII08rMLiAfQ2FmnGWZzw70A
+         iFPZ3CAFkexogfQx3slU7ei5AH2JQkfI6scPY=
+From: Thiago Farina <tfransosi@gmail.com>
+To: trivial@kernel.org
+Cc: lenb@kernel.org, ming.m.lin@intel.com, robert.moore@intel.com,
+       jkosina@suze.cz, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thiago Farina <tfransosi@gmail.com>
+Subject: [PATCH] trivial: remove ACPI_ARRAY_LENGTH macro.
+Date: Sun,  1 Nov 2009 17:36:12 -0500
+Message-Id: <1257114972-16039-1-git-send-email-tfransosi@gmail.com>
+X-Mailer: git-send-email 1.6.5.1.61.ge79999
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/02/2009 06:13 AM, Pavel Machek wrote:
->>
->> Alternatively, we could make the syndromes builtin thus removing the
->> requirement to go to userspace for the loading. For that we'll need
->> two new .c files in drivers/edac/ which represent the x4 and x8 tables
->> respectively:
->>
->> unsigned short x8_raw_data[] = {
->>          0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
->>          0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
->>          0x0000, 0x0100, 0x0001, 0x0101, 0x01B8, 0x015C, 0x012E, 0x01C6, 0x0163,
->>          0x01FD, 0x0189, 0x019D, 0xB801, 0x5C01, 0x2E01, 0xC601, 0x6301, 0xFD01,
->>          0x8901, 0x9D01, 0x0200, 0x0002, 0x0202, 0x0201, 0x02B8, 0x025C, 0x02FD,
->> 	....
->>
->> The drawback with these is that they'll always be builtin, enlarging
->> kernel code by 10-15K although only one of them is in use.
->
-> I believe that 15K is reasonable price to pay for not having to
-> install another 'firmware' file.
-> 								Pavel
+Since the kernel already has a macro (ARRAY_SIZE) that does the same thing,
+just use it instead of defining another macro for the same propose.
 
-a) aren't these computable somehow?  If so, it's probably easier to 
-include the algorithm in the kernel rather than a table.
+Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+---
+ drivers/acpi/acpica/hwvalid.c |    2 +-
+ drivers/acpi/acpica/uteval.c  |    4 ++--
+ include/acpi/actypes.h        |    4 ----
+ 3 files changed, 3 insertions(+), 7 deletions(-)
 
-b) "I believe that 15K is reasonable price to pay for not having to 
-install another 'firmware' file."  I think that's a tradeoff a lot of 
-people would *not* choose to make.  This is of course why we have (or at 
-least, should have) to either compile in firmware blobs or not.
+diff --git a/drivers/acpi/acpica/hwvalid.c b/drivers/acpi/acpica/hwvalid.c
+index ec33f27..ca2eb02 100644
+--- a/drivers/acpi/acpica/hwvalid.c
++++ b/drivers/acpi/acpica/hwvalid.c
+@@ -103,7 +103,7 @@ static const struct acpi_port_info acpi_protected_ports[] = {
+ 	{"PCI", 0x0CF8, 0x0CFF, ACPI_OSI_WIN_XP}
+ };
+ 
+-#define ACPI_PORT_INFO_ENTRIES  ACPI_ARRAY_LENGTH (acpi_protected_ports)
++#define ACPI_PORT_INFO_ENTRIES  ARRAY_SIZE(acpi_protected_ports)
+ 
+ /******************************************************************************
+  *
+diff --git a/drivers/acpi/acpica/uteval.c b/drivers/acpi/acpica/uteval.c
+index 5d54e36..54efbaa 100644
+--- a/drivers/acpi/acpica/uteval.c
++++ b/drivers/acpi/acpica/uteval.c
+@@ -126,7 +126,7 @@ acpi_status acpi_ut_osi_implementation(struct acpi_walk_state *walk_state)
+ 
+ 	/* Compare input string to static table of supported interfaces */
+ 
+-	for (i = 0; i < ACPI_ARRAY_LENGTH(acpi_interfaces_supported); i++) {
++	for (i = 0; i < ARRAY_SIZE(acpi_interfaces_supported); i++) {
+ 		if (!ACPI_STRCMP(string_desc->string.pointer,
+ 				 acpi_interfaces_supported[i].name)) {
+ 			/*
+@@ -186,7 +186,7 @@ acpi_status acpi_osi_invalidate(char *interface)
+ {
+ 	int i;
+ 
+-	for (i = 0; i < ACPI_ARRAY_LENGTH(acpi_interfaces_supported); i++) {
++	for (i = 0; i < ARRAY_SIZE(acpi_interfaces_supported); i++) {
+ 		if (!ACPI_STRCMP(interface, acpi_interfaces_supported[i].name)) {
+ 			*acpi_interfaces_supported[i].name = '\0';
+ 			return AE_OK;
+diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
+index 153f12d..641d746 100644
+--- a/include/acpi/actypes.h
++++ b/include/acpi/actypes.h
+@@ -441,10 +441,6 @@ typedef unsigned long long acpi_integer;
+ #define ACPI_MIN(a,b)                   (((a)<(b))?(a):(b))
+ #define ACPI_MAX(a,b)                   (((a)>(b))?(a):(b))
+ 
+-/* Size calculation */
+-
+-#define ACPI_ARRAY_LENGTH(x)            (sizeof(x) / sizeof((x)[0]))
+-
+ /* Pointer manipulation */
+ 
+ #define ACPI_CAST_PTR(t, p)             ((t *) (acpi_uintptr_t) (p))
+-- 
+1.6.5.1.61.ge79999
 
-	-hpa
