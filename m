@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbZKAUkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZKAU7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbZKAUkY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 15:40:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbZKAUkX
+	id S1753456AbZKAU7z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 15:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZKAU7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 15:40:23 -0500
-Received: from icculus.org ([67.106.77.212]:45293 "EHLO icculus.org"
+	Sun, 1 Nov 2009 15:59:53 -0500
+Received: from icculus.org ([67.106.77.212]:46095 "EHLO icculus.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753329AbZKAUkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 15:40:23 -0500
-Date: Sun, 1 Nov 2009 15:40:23 -0500 (EST)
+	id S1753356AbZKAU7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 15:59:53 -0500
+Date: Sun, 1 Nov 2009 15:59:56 -0500 (EST)
 From: "Ryan C. Gordon" <icculus@icculus.org>
 X-X-Sender: icculus@caridad.local
-To: David Hagood <david.hagood@gmail.com>
+To: =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
 cc: linux-kernel@vger.kernel.org
 Subject: Re: FatELF patches...
-In-Reply-To: <1257103201.2865.6.camel@chumley>
-Message-ID: <alpine.OSX.1.10.0911011531570.53392@caridad.local>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <1257103201.2865.6.camel@chumley>
+In-Reply-To: <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
+Message-ID: <alpine.OSX.1.10.0911011540400.53392@caridad.local>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
 User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,21 +26,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Format (ANDF), such that, given a fat binary which does NOT support a
-> given CPU, you could at least in theory process the ANDF section to
-> create the needed target binary? Bonus points for being able to then
-> append the newly created section to the file.
+> Am I the only one who sees this as nothing bloat for its own sake?
 
-It's not a goal of mine, but I suppose you could have an ELF OSABI for it.
+I posted a fairly large list of benefits here:  http://icculus.org/fatelf/
 
-I don't think it changes the FatELF kernel patch at all. I don't know much 
-about ANDF, but you'd probably just want to set the ELF "interpreter" to 
-something other than ld.so and do this all in userspace, and maybe add a 
-change to elf_check_arch() to approve ANDF binaries...or something.
+Some are more far-fetched than others, I will grant. Also, I suspect most 
+people will find one benefit and ten things they don't care about, but 
+that benefit is different for different people. I'm confident that the 
+benefits far outweigh the size of the kernel patch.
 
-To me, ANDF is interesting in an academic sense, but not enough to spend 
-effort on it. YMMV.  :)
+> Did I miss a massive drop in intelligence of Linux users, causing them
+> to no longer be capable of picking the correct file themselves?
+
+Also known as "market saturation."   :)
+
+(But really, there are benefits beyond helping dumb people, even if 
+helping dumb people wasn't a worthwhile goal in itself.)
+
+> As an embedded systems guy, I'm more concerned about precious flash
+> space going to waste than about some hypothetical convenience.
+
+I wouldn't imagine this is the target audience for FatELF. For embedded 
+devices, just use the same ELF files you've always used.
 
 --ryan.
-
 
