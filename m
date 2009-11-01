@@ -1,108 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbZKARn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbZKARus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbZKARn4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 12:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZKARnz
+	id S1753091AbZKARus (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 12:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZKARur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 12:43:55 -0500
-Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:48272 "HELO
-	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752966AbZKARny (ORCPT
+	Sun, 1 Nov 2009 12:50:47 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:36618 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752974AbZKARuq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 12:43:54 -0500
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: w8xwOJ4VM1nOuwoqmP7OmPFKVWrHaruIb3H1mYej0U.ncGIKONm_q0AF0sgMGNJFN9q7S.GGpzvwzYSihKltcSgm.kFgqK810ucuTA6Yte5NP2qvpZ6yhFNhsKQKipAWTyOu6DGKK8KEl_avwTUvakeL4XLYN5mBRiBoY7h4imzZXXD.wi0b0p7AjsUrYVJTLmUv7RWC0UVjMlIfEuAOf6T5v1UHPdTpwE22psmMy7WiuXnVyW8O998FGkUalbzes3lyP1FVUlHSV1fec2phpbwzc4RnaJis558m_I3s7xnvXACAa1nkxFOu74gnpS.7fQajciQy7KC9LvjF2nRWa5YKlvIlZWVzISvrrjrBJkj0i_C10AlYv_c7ILOPZ6jjipfCvPfofbAfcg--
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4AEDC8DD.4080806@schaufler-ca.com>
-Date: Sun, 01 Nov 2009 09:43:57 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 1 Nov 2009 12:50:46 -0500
+Date: Sun, 1 Nov 2009 12:50:43 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Huang Ying <ying.huang@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       Daniel Walker <dwalker@fifo99.com>
+Subject: Re: [PATCH -v4] crypto: Add PCLMULQDQ accelerated GHASH
+	implementation
+Message-ID: <20091101175043.GA25257@gondor.apana.org.au>
+References: <1253064946.15717.372.camel@yhuang-dev.sh.intel.com> <20091019025332.GA26624@gondor.apana.org.au> <20091031173015.69e8e9f8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: David Wagner <daw-news@cs.berkeley.edu>
-CC: linux-kernel@vger.kernel.org, Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: symlinks with permissions
-References: <20091025062953.GC1391@ucw.cz> <4AE91658.9090105@schaufler-ca.com> <20091030140745.GC1481@ucw.cz> <4AEBB86F.3090601@schaufler-ca.com> <hcjk2m$v46$1@taverner.cs.berkeley.edu>
-In-Reply-To: <hcjk2m$v46$1@taverner.cs.berkeley.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091031173015.69e8e9f8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Wagner wrote:
-> Casey Schaufler  wrote:
->   
->> Pavel Machek wrote:
->>     
->>> Look again. I can count on paths if I can prevent mounts and
->>> hardlinks.
->>>       
->> But you can't.
->>     
->
-> Yes, he can and did.  See Pavel's original post with his
-> attack script.  It's all there!
->
-> Hardlinks: in his *original* post, listing the attack script,
-> Pavel checks the hardlink count, which does defend against
-> hardlinks.  So can we drop the hardlink objection?
->
-> Mounts: can only be exploited by root.  On many Linux systems,
-> one cannot defend against a threat model where root is malicious,
-> and as a consequence, root-only attacks are out of scope for
-> those systems.  For those systems, this /proc mechanism is
-> a security hole: it enables attacker to do bad stuff they
-> couldn't have done without it.
->
->   
->> I refer you back to the long and tedious arguments
->> against pathname based access controls.
->>     
->
-> I don't find that reference helpful.  Those arguments don't
-> seem relevant to this situation, as far as I can see.  I would
-> find specificity more useful than analogies.
->
-> Pavel has provided a concrete attack script.  If you believe
-> that the protections afforded by that script can be circumvented,
-> how about showing us the specific attack, described to a similar
-> level of concreteness and specifity, that demonstrates how to
-> upgrade the read-only fd to a read-write fd without using /proc?
->
-> Put another way: if you are right that the arguments about
-> pathname based access controls apply here and lead to the
-> conclusions you are espousing, then you should be able to
-> exhibit a specific, concrete, fully specified attack on Pavel's
-> script, without using /proc.  Right?
->   
+On Sat, Oct 31, 2009 at 05:30:15PM -0700, Andrew Morton wrote:
+> 
+> x86_64 allmodconfig, GNU assembler 2.16.1:
+> 
+> arch/x86/crypto/ghash-clmulni-intel_asm.S: Assembler messages:
+> arch/x86/crypto/ghash-clmulni-intel_asm.S:103: Error: no such instruction: `pshufb %xmm5,%xmm0'
+> arch/x86/crypto/ghash-clmulni-intel_asm.S:105: Error: no such instruction: `pshufb %xmm5,%xmm0'
+> arch/x86/crypto/ghash-clmulni-intel_asm.S:119: Error: no such instruction: `pshufb %xmm5,%xmm0'
+> arch/x86/crypto/ghash-clmulni-intel_asm.S:123: Error: no such instruction: `pshufb %xmm5,%xmm6'
+> arch/x86/crypto/ghash-clmulni-intel_asm.S:130: Error: no such instruction: `pshufb %xmm5,%xmm0'
+> arch/x86/crypto/ghash-clmulni-intel_asm.S:143: Error: no such instruction: `pshufb %xmm5,%xmm0'
 
-No. The going in premise, that the behavior is a security flaw,
-is incorrect. The mode bits on the file allow the requested access.
-What the mode bits were when the file was opened, and what the mode
-bits on the path used to get to the file were at the time of
-the open are irrelevant and no amount of sound logic that assumes
-otherwise has any value.
+This patch should fix it.
 
-I can accept that you don't like the behavior. The behavior is
-nonetheless consistent with the access controls of the file system.
-If you change the current behavior you will introduce an arbitrary
-special case to the file system object access control model. It is
-unfortunate that the people who invented the fd file system (now
-implemented as part of /proc) did not take the consequences of
-adding an additional object naming mechanism for files into
-account, but they were hardly the first to skip that step and I
-dare say that they weren't the last.
+commit 2d06ef7f42ed8c9969c9aa84e95df5d5c6378327
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Sun Nov 1 12:49:44 2009 -0500
 
-So "fix" the "problem". You'll just be replacing one questionable
-behavior with another, and you'll be making the security model
-one paragraph harder to describe.
+    crypto: ghash-intel - Hard-code pshufb
+    
+    Old gases don't have a clue what pshufb stands for so we have
+    to hard-code it for now.
+    
+    Reported-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->   
-
+diff --git a/arch/x86/crypto/ghash-clmulni-intel_asm.S b/arch/x86/crypto/ghash-clmulni-intel_asm.S
+index b9e787a..71768d5 100644
+--- a/arch/x86/crypto/ghash-clmulni-intel_asm.S
++++ b/arch/x86/crypto/ghash-clmulni-intel_asm.S
+@@ -100,9 +100,11 @@ ENTRY(clmul_ghash_mul)
+ 	movups (%rdi), DATA
+ 	movups (%rsi), SHASH
+ 	movaps .Lbswap_mask, BSWAP
+-	pshufb BSWAP, DATA
++	# pshufb BSWAP, DATA
++	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
+ 	call __clmul_gf128mul_ble
+-	pshufb BSWAP, DATA
++	# pshufb BSWAP, DATA
++	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
+ 	movups DATA, (%rdi)
+ 	ret
+ 
+@@ -116,18 +118,21 @@ ENTRY(clmul_ghash_update)
+ 	movaps .Lbswap_mask, BSWAP
+ 	movups (%rdi), DATA
+ 	movups (%rcx), SHASH
+-	pshufb BSWAP, DATA
++	# pshufb BSWAP, DATA
++	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
+ .align 4
+ .Lupdate_loop:
+ 	movups (%rsi), IN1
+-	pshufb BSWAP, IN1
++	# pshufb BSWAP, IN1
++	.byte 0x66, 0x0f, 0x38, 0x00, 0xf5
+ 	pxor IN1, DATA
+ 	call __clmul_gf128mul_ble
+ 	sub $16, %rdx
+ 	add $16, %rsi
+ 	cmp $16, %rdx
+ 	jge .Lupdate_loop
+-	pshufb BSWAP, DATA
++	# pshufb BSWAP, DATA
++	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
+ 	movups DATA, (%rdi)
+ .Lupdate_just_ret:
+ 	ret
+@@ -140,7 +145,8 @@ ENTRY(clmul_ghash_update)
+ ENTRY(clmul_ghash_setkey)
+ 	movaps .Lbswap_mask, BSWAP
+ 	movups (%rsi), %xmm0
+-	pshufb BSWAP, %xmm0
++	# pshufb BSWAP, %xmm0
++	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
+ 	movaps %xmm0, %xmm1
+ 	psllq $1, %xmm0
+ 	psrlq $63, %xmm1
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
