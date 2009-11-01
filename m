@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933394AbZKAABP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933387AbZKAAEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933394AbZKAABP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 20:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933360AbZKAABP
+	id S933387AbZKAAEd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Oct 2009 20:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbZKAAEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 20:01:15 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34261 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933348AbZKAABO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 20:01:14 -0400
-Message-ID: <4AECCF6A.4020206@redhat.com>
-Date: Sat, 31 Oct 2009 19:59:38 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	Sat, 31 Oct 2009 20:04:32 -0400
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:47730 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933348AbZKAAEc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Oct 2009 20:04:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mvtHgyCI5or8awkriEYdPJ8M8LWoW7NIofIMftGlBJL9MIncPp9Vpav8yVTUXNkkFV
+         d3iLKORHbYN9E2R9LgKyRpPVvxl3LdaxdVQvRZnbE4T8meiZ/xRLtBCB3SRsL3Yjp7gX
+         HqMvRSd943wjTeyeFLn8es8i7z8pnI6zE2abw=
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       stable@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       kernel-testers@vger.kernel.org
-Subject: Re: [PATCH 2/3] page allocator: Do not allow interrupts to use ALLOC_HARDER
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <1256650833-15516-3-git-send-email-mel@csn.ul.ie> <20091027130924.fa903f5a.akpm@linux-foundation.org> <alpine.DEB.2.00.0910271411530.9183@chino.kir.corp.google.com> <20091031184054.GB1475@ucw.cz> <alpine.DEB.2.00.0910311248490.13829@chino.kir.corp.google.com> <20091031201158.GB29536@elf.ucw.cz>
-In-Reply-To: <20091031201158.GB29536@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4AEC27AD.9060400@imap.cc>
+References: <b8bf37780910310240i55ec5e0ag74fee707bb4f5a8a@mail.gmail.com>
+	 <4AEC27AD.9060400@imap.cc>
+Date: Sat, 31 Oct 2009 22:04:37 -0200
+Message-ID: <b8bf37780910311704r7ee5e3bcw230e0e0d5f2f6c52@mail.gmail.com>
+Subject: Re: [PATCH 01/16] trivial: fix assorted "success" typos
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/31/2009 04:11 PM, Pavel Machek wrote:
+On 10/31/09, Tilman Schmidt <tilman@imap.cc> wrote:
+> Am 31.10.2009 10:40 schrieb André Goddard Rosa:
+>> Subject: [PATCH 01/16] trivial: fix assorted "success" typos
+>>
+>> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+>>
+>> diff --git a/Documentation/ABI/testing/procfs-diskstats
+>
+> Please provide a diffstat for that kind of patches in the future.
+> I don't want to scan sixteen patches in their entirety just to
+> make sure none of them touches the little driver I maintain.
+>
 
-> But we can't guarantee that enough memory will be ready in the
-> reserves. So if realtime task relies on it, it is broken, and will
-> fail to meet its deadlines from time to time.
+No problem, I will do it next time.
 
-Any realtime task that does networking (which may be the
-majority of realtime tasks) relies on the kernel memory
-allocator.
-
--- 
-All rights reversed.
+Thanks,
+André
