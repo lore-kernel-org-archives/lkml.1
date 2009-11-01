@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZKAOt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752706AbZKAPGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752713AbZKAOt1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 09:49:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZKAOt0
+	id S1752706AbZKAPGs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 10:06:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZKAPGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 09:49:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38683 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752439AbZKAOtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 09:49:25 -0500
-Message-ID: <4AED9FCD.6010202@redhat.com>
-Date: Sun, 01 Nov 2009 09:48:45 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from crashing
- function graph tracer
-References: <20091029205151.852744305@goodmis.org> <y0m4opfz5u6.fsf@fche.csb>
-In-Reply-To: <y0m4opfz5u6.fsf@fche.csb>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 1 Nov 2009 10:06:47 -0500
+Received: from www84.your-server.de ([213.133.104.84]:55601 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752569AbZKAPGq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 10:06:46 -0500
+Subject: Re: [PATCH] proc: fix ->stack_start in compat mode
+From: Stefani Seibold <stefani@seibold.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, m.s.tsirkin@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091101124301.GA16100@x200>
+References: <20091028115602.GA26295@x200> <1257069245.3975.6.camel@wall-e>
+	 <20091101124301.GA16100@x200>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Sun, 01 Nov 2009 16:06:46 +0100
+Message-ID: <1257088006.9292.5.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frank Ch. Eigler wrote:
-> Steven Rostedt<rostedt@goodmis.org>  writes:
->
->> [...]  Jprobes and the function graph tracer use the same mechanism
->> to trace the exit of a function. Unfortunately, only one can be done
->> at a time.  The function graph tracer replaces the return address
->> with its own handler, but so does jprobes. The two are not
->> compatible. [...]
->
-> What about kretprobes?  It too uses the same mechanism.
+Am Sonntag, den 01.11.2009, 15:43 +0300 schrieb Alexey Dobriyan:
+> > >  Stefani, I get "Stack usage: 0 kB", you may want to look at it.
+> > > 
+> > 
+> > Under which circumstance do you get 0 kb reported? What is your system
+> > (mmu/nommu, 32bit/64bit, architecture and so on).
+> 
+> Well, no wonder it doesn't work:
+> 
+> 	#define KSTK_ESP(tsk)           -1 /* sorry. doesn't work for syscall. */
+> 
+> How does it supposed to work on live task?
 
-Exactly, kretprobe uses similar mechanism with func-graph tracer.
+Okay, you are right. That's really strange. I just build a 64 bit kernel
+i will try to fix this odd behavior. This is a break in the kernel API.
+KSTP_ESP should return the value of the kernel stack and not a -1. Sh..
 
-Fortunately, it doesn't cause any problem, because kretprobe doesn't
-skip any function-return, and func-graph tracer(mcount) always intrudes
-a function after kretprobe.
-
----
-call func
-	<-- kretprobe prehandler changes return address
-	func()
-	<-- func-graph prehandler changes return address
-	...
-	return
-	--> func-graph trampoline sets ip to "kretprobe trampoline"
-	--> kretprobe trampoline sets ip to "real return address"
-(return address)
----
-
-So that kretprobe handler doesn't conflict with function graph tracer.
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
