@@ -1,60 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZKAMnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbZKAMrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752401AbZKAMnD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 07:43:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZKAMnD
+	id S1752469AbZKAMrZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 07:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZKAMrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 07:43:03 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:40381 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752253AbZKAMnB (ORCPT
+	Sun, 1 Nov 2009 07:47:24 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:33170 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752045AbZKAMrX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 07:43:01 -0500
+	Sun, 1 Nov 2009 07:47:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SkfJ+7JFM/wxMBcoHOWZPsD7F1Odh8mLfvXIrZTbtTRT5JUNtMOFtl57SAl3n5l32F
-         BUN6Bn72IsiiZ03bL6WAnp2WOyz0JjgNOapv/1jehOKVFmEo3Ce4P+Rxh3BX/tEb2Tgl
-         6RlQxnlEsSBgo8rIy6t+wIqCOnpQ0zM4iC0Ck=
-Date: Sun, 1 Nov 2009 15:43:01 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: akpm@linux-foundation.org, m.s.tsirkin@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] proc: fix ->stack_start in compat mode
-Message-ID: <20091101124301.GA16100@x200>
-References: <20091028115602.GA26295@x200>
- <1257069245.3975.6.camel@wall-e>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=GeCMbxPt5SA8FXnkpLSbcqaQuU4APPiccUvdGnuhv/VhqNNFbL7grSNwSCnwxfmJNS
+         Ate5KN+8Y8ZZ+4JdIKM5O3PV2xnk4ROznm/smS2RmZ+l3tWW+K/Suvyt8sXj4ZpxBYRD
+         y+CVx2wXnBOix+b8JsUIpOQ7mdv7K23O6FTxM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257069245.3975.6.camel@wall-e>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1256563190.3742.4.camel@heimdal.trondhjem.org>
+References: <6278d2220910251631j40caec00lf2dee6159947d983@mail.gmail.com>
+	 <1256563190.3742.4.camel@heimdal.trondhjem.org>
+Date: Sun, 1 Nov 2009 12:47:26 +0000
+Message-ID: <6278d2220911010447v5889b9bbt33f685ef7669cc45@mail.gmail.com>
+Subject: Re: regression, bisected: getcwd() ENOENT on NFS4...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 01, 2009 at 10:54:05AM +0100, Stefani Seibold wrote:
-> Am Mittwoch, den 28.10.2009, 14:56 +0300 schrieb Alexey Dobriyan:
-> > Assign tsk->stack_start even when doing compat execve(2).
-> > 
-> > As side effect, fix segfault inside boehm-gc library.
-> > http://bugzilla.kernel.org/show_bug.cgi?id=14478
-> > 
-> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> > ---
-> > 
-> >  Michael, please, confirm.
-> > 
-> >  Stefani, I get "Stack usage: 0 kB", you may want to look at it.
-> > 
-> 
-> Under which circumstance do you get 0 kb reported? What is your system
-> (mmu/nommu, 32bit/64bit, architecture and so on).
+Hi Trond,
 
-Well, no wonder it doesn't work:
+On Mon, Oct 26, 2009 at 1:19 PM, Trond Myklebust
+<Trond.Myklebust@netapp.com> wrote:
+> On Sun, 2009-10-25 at 23:31 +0000, Daniel J Blueman wrote:
+>> Since 2.6.30-rc, I've been experiencing various issues relating to
+>> getcwd() returning ENOENT on NFS4 clients. I used an over-complicated
+>> but reliable reproducer [1] (on Karmic RC against a 2.6.32-rc5 NFS4
+>> server) to bisect [2].
+>>
+>> The impact of this regression is moderate (side-effects range from
+>> benign to failure), so we should get a fix into 2.6.32 if at all
+>> possible and strongly consider a 2.6.31 stable update.
+>>
+>> Thanks,
+>>   Daniel
+>>
+>> --- [1]
+>>
+>> $ apt-get source apt
+>> $ cd apt-*
+>> $ ./configure && make
+>> [snip]
+>> sh: getcwd() failed: No such file or directory
+>>
+>> --- [2]
+>>
+>> a65318bf3afc93ce49227e849d213799b072c5fd is first bad commit
+>> commit a65318bf3afc93ce49227e849d213799b072c5fd
+>> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+>> Date:   Wed Mar 11 14:10:28 2009 -0400
+>>
+>>     NFSv4: Simplify some cache consistency post-op GETATTRs
+>
+> I'm having a lot of trouble seeing how this patch could result in
+> ENOENT. All it should be doing is reducing the frequency with which we
+> update some of the inode metadata.
+>
+> Have you ever been able to capture one of these errors using strace?
 
-	#define KSTK_ESP(tsk)           -1 /* sorry. doesn't work for syscall. */
+Backing this patch out by hand against stock 2.6.32-rc5 (w/ 2.6.32-rc5
+on server) corrects the behaviour. It's readily reproducible [1];
+using 2.6.30, the issue is not seen, thus is a regression.
 
-How does it supposed to work on live task?
+To observe the change to user-level behaviour (after the reproducer commands):
+# make clean
+# strace -ffe getcwd make -n >list
+[pid  3829] getcwd(0x7fffa269a380, 4096) = -1 ENOENT (No such file or directory)
+make: getcwd: No such file or directory
+
+Would this help for me to log this via a bugzilla.kernel.org ticket?
+
+Thanks,
+  Daniel
+
+--- [1]
+
+booting eg:
+http://mira.sunsite.utk.edu/ubuntu-releases/karmic/ubuntu-9.10-desktop-amd64.iso
+
+$ sudo bash
+# apt-get install build-essential
+# apt-get build-dep apt
+# mount server:/ /mnt -tnfs4 && cd /mnt
+# apt-get source apt
+# cd apt-0.7.23.1ubuntu2
+# ./configure && make
+ -> "getcwd: No such file or directory" messages observed with cited
+patch and not without
+-- 
+Daniel J Blueman
