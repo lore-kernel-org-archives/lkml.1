@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751361AbZKAJvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751688AbZKAJyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751361AbZKAJvN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 04:51:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZKAJvL
+	id S1751688AbZKAJyL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 04:54:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZKAJyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 04:51:11 -0500
-Received: from www84.your-server.de ([213.133.104.84]:33779 "EHLO
+	Sun, 1 Nov 2009 04:54:08 -0500
+Received: from www84.your-server.de ([213.133.104.84]:57783 "EHLO
 	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbZKAJvK (ORCPT
+	with ESMTP id S1750872AbZKAJyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 04:51:10 -0500
-Subject: Re: [PATCH 0/7] kfifo: new API v0.6
+	Sun, 1 Nov 2009 04:54:07 -0500
+Subject: Re: [PATCH] proc: fix ->stack_start in compat mode
 From: Stefani Seibold <stefani@seibold.net>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-In-Reply-To: <20091031191040.GB15121@kroah.com>
-References: <1256391194.7362.7.camel@wall-e>
-	 <20091030222447.GA11671@kroah.com> <1256975440.32191.2.camel@wall-e>
-	 <20091031191040.GB15121@kroah.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, m.s.tsirkin@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091028115602.GA26295@x200>
+References: <20091028115602.GA26295@x200>
 Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sun, 01 Nov 2009 10:50:56 +0100
-Message-ID: <1257069056.3975.3.camel@wall-e>
+Date: Sun, 01 Nov 2009 10:54:05 +0100
+Message-ID: <1257069245.3975.6.camel@wall-e>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -32,15 +28,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, den 31.10.2009, 12:10 -0700 schrieb Greg KH:
+Am Mittwoch, den 28.10.2009, 14:56 +0300 schrieb Alexey Dobriyan:
+> Assign tsk->stack_start even when doing compat execve(2).
 > 
-> I realize it fixes all current usages of kfifo, which is why I offered
-> to take it through my driver-core tree so it has a path into Linus's
-> tree for the 2.6.33 kernel release.  Unless you are submitting it some
-> other way?
+> As side effect, fix segfault inside boehm-gc library.
+> http://bugzilla.kernel.org/show_bug.cgi?id=14478
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+> 
+>  Michael, please, confirm.
+> 
+>  Stefani, I get "Stack usage: 0 kB", you may want to look at it.
 > 
 
-Andrew's last plan was merge it after the linux kernel hit 2.6.32-rc7. 
+Under which circumstance do you get 0 kb reported? What is your system
+(mmu/nommu, 32bit/64bit, architecture and so on).
 
 Stefani
 
