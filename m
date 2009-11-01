@@ -1,39 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZKAVJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbZKAVJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbZKAVJR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 16:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZKAVJP
+	id S1753660AbZKAVJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 16:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbZKAVJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 16:09:15 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:32918 "EHLO
+	Sun, 1 Nov 2009 16:09:17 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:42263 "EHLO
 	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753440AbZKAVJM (ORCPT
+	with ESMTP id S1753447AbZKAVJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 16:09:12 -0500
+	Sun, 1 Nov 2009 16:09:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=LVm4msW8meHuQUnkq1A6UB6mTRGiyqUUzyTOLbll1sNlkjfxhwhtuBY3DdiSZwmPjl
-         vnmDf/afhF3+inVaXodSzAqawi9mjhqxh441tSmw8eJtBVPk8BcYXaNduRLnhIu/JO/O
-         PCL4P8Zz8D2XMGkQCaDOfXqoEpYw5TZtY2N+c=
+        b=YmDUrOkWQdYVbU3hoOrcFI3bLXsjsI6ydfttD8VnU4WGucSqIOAMib6yitfpH6GPlh
+         wg5gNh8FBEbudBYLOVwdvzIJYHiUksnGCqXwAhlsptDqGCE4x6bVI9Phj2j9YvDqnxuL
+         6lUVtVty/8GLCmRxiqLL2hjB2WIoFx4SaH5JU=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jan Kiszka <jan.kiszka@siemens.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>, Jan Kiszka <jan.kiszka@web.de>,
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Stern <stern@rowland.harvard.edu>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/6] perf/core: Provide a kernel-internal interface to get to performance counters
-Date: Sun,  1 Nov 2009 22:09:08 +0100
-Message-Id: <1257109753-6464-2-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 2/6] x86/hw-breakpoints: Actually flush thread breakpoints in flush_thread().
+Date: Sun,  1 Nov 2009 22:09:09 +0100
+Message-Id: <1257109753-6464-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <4AE55B1B.2030006@web.de>
 References: <4AE55B1B.2030006@web.de>
@@ -41,168 +31,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@infradead.org>
+From: Paul Mundt <lethal@linux-sh.org>
 
-There are reasons for kernel code to ask for, and use, performance
-counters.
-For example, in CPU freq governors this tends to be a good idea, but
-there are other examples possible as well of course.
+flush_thread() tries to do a TIF_DEBUG check before calling in to
+flush_thread_hw_breakpoint() (which subsequently clears the thread flag),
+but for some reason, the x86 code is manually clearing TIF_DEBUG
+immediately before the test, so this path will never be taken.
 
-This patch adds the needed bits to do enable this functionality; they
-have been tested in an experimental cpufreq driver that I'm working on,
-and the changes are all that I needed to access counters properly.
+This kills off the erroneous clear_tsk_thread_flag() and lets
+flush_thread_hw_breakpoint() actually get invoked.
 
-[fweisbec@gmail.com: added pid to perf_event_create_kernel_counter so
-that we can profile a particular task too
+Presumably folks were getting lucky with testing and the
+free_thread_info() -> free_thread_xstate() path was taking care of the
+flush there.
 
-TODO: Have a better error reporting, don't just return NULL in fail
-case.]
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Acked-by: "K.Prasad" <prasad@linux.vnet.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Kiszka <jan.kiszka@siemens.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Jan Kiszka <jan.kiszka@web.de>
-Cc: Avi Kivity <avi@redhat.com>
-LKML-Reference: <20090925122556.2f8bd939@infradead.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+LKML-Reference: <20091005102306.GA7889@linux-sh.org>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- include/linux/perf_event.h |    6 ++++
- kernel/perf_event.c        |   72 +++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 77 insertions(+), 1 deletions(-)
+ arch/x86/kernel/process.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index df9d964..fa151d4 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -744,6 +744,12 @@ extern int hw_perf_group_sched_in(struct perf_event *group_leader,
- 	       struct perf_cpu_context *cpuctx,
- 	       struct perf_event_context *ctx, int cpu);
- extern void perf_event_update_userpage(struct perf_event *event);
-+extern int perf_event_release_kernel(struct perf_event *event);
-+extern struct perf_event *
-+perf_event_create_kernel_counter(struct perf_event_attr *attr,
-+				int cpu,
-+				pid_t pid);
-+extern u64 perf_event_read_value(struct perf_event *event);
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 2275ce5..cf8ee00 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -107,8 +107,6 @@ void flush_thread(void)
+ 	}
+ #endif
  
- struct perf_sample_data {
- 	u64				type;
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 12b5ec3..1fc69d8 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -1725,6 +1725,26 @@ static int perf_release(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
-+int perf_event_release_kernel(struct perf_event *event)
-+{
-+	struct perf_event_context *ctx = event->ctx;
-+
-+	WARN_ON_ONCE(ctx->parent_ctx);
-+	mutex_lock(&ctx->mutex);
-+	perf_event_remove_from_context(event);
-+	mutex_unlock(&ctx->mutex);
-+
-+	mutex_lock(&event->owner->perf_event_mutex);
-+	list_del_init(&event->owner_entry);
-+	mutex_unlock(&event->owner->perf_event_mutex);
-+	put_task_struct(event->owner);
-+
-+	free_event(event);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(perf_event_release_kernel);
-+
- static int perf_event_read_size(struct perf_event *event)
- {
- 	int entry = sizeof(u64); /* value */
-@@ -1750,7 +1770,7 @@ static int perf_event_read_size(struct perf_event *event)
- 	return size;
- }
- 
--static u64 perf_event_read_value(struct perf_event *event)
-+u64 perf_event_read_value(struct perf_event *event)
- {
- 	struct perf_event *child;
- 	u64 total = 0;
-@@ -1761,6 +1781,7 @@ static u64 perf_event_read_value(struct perf_event *event)
- 
- 	return total;
- }
-+EXPORT_SYMBOL_GPL(perf_event_read_value);
- 
- static int perf_event_read_entry(struct perf_event *event,
- 				   u64 read_format, char __user *buf)
-@@ -4639,6 +4660,55 @@ err_put_context:
- }
- 
- /*
-+ * perf_event_create_kernel_counter
-+ * MUST be called from a kernel thread.
-+ */
-+struct perf_event *
-+perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
-+				 pid_t pid)
-+{
-+	struct perf_event *event;
-+	struct perf_event_context *ctx;
-+	int err;
-+
-+	/*
-+	 * Get the target context (task or percpu):
-+	 */
-+
-+	ctx = find_get_context(pid, cpu);
-+	if (IS_ERR(ctx))
-+		return NULL ;
-+
-+	event = perf_event_alloc(attr, cpu, ctx, NULL,
-+				     NULL, GFP_KERNEL);
-+	err = PTR_ERR(event);
-+	if (IS_ERR(event))
-+		goto err_put_context;
-+
-+	event->filp = NULL;
-+	WARN_ON_ONCE(ctx->parent_ctx);
-+	mutex_lock(&ctx->mutex);
-+	perf_install_in_context(ctx, event, cpu);
-+	++ctx->generation;
-+	mutex_unlock(&ctx->mutex);
-+
-+	event->owner = current;
-+	get_task_struct(current);
-+	mutex_lock(&current->perf_event_mutex);
-+	list_add_tail(&event->owner_entry, &current->perf_event_list);
-+	mutex_unlock(&current->perf_event_mutex);
-+
-+	return event;
-+
-+err_put_context:
-+	if (err < 0)
-+		put_ctx(ctx);
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(perf_event_create_kernel_counter);
-+
-+/*
-  * inherit a event from parent task to child task:
-  */
- static struct perf_event *
+-	clear_tsk_thread_flag(tsk, TIF_DEBUG);
+-
+ 	if (unlikely(test_tsk_thread_flag(tsk, TIF_DEBUG)))
+ 		flush_thread_hw_breakpoint(tsk);
+ 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
 -- 
 1.6.2.3
 
