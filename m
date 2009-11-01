@@ -1,103 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbZKAVgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbZKAVrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753650AbZKAVgu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 16:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbZKAVgr
+	id S1753633AbZKAVrL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 16:47:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZKAVrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 16:36:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33927 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693AbZKAVgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 16:36:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCHv2 2/5] vmscan: Kill hibernation specific reclaim logic and unify it
-Date: Sun, 1 Nov 2009 22:38:13 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
-       "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20091101234614.F401.A69D9226@jp.fujitsu.com> <20091102000855.F404.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091102000855.F404.A69D9226@jp.fujitsu.com>
+	Sun, 1 Nov 2009 16:47:07 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:43591 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752815AbZKAVrG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 16:47:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=sol9mcHsWlAf7Qi+V9J8eU4nfD2cEBMJYgvOgolWrRYWhdL97L2TPPCgkjBF5uk7F8
+         xvEbtMJ3uu7m/PsWXl/6t1a2D1NjMF4BnDF+t940cIgiMquLGAea3qFb1YkHa/AhYcnL
+         n4kox6aCJKk65uTyb1/uGcB3JJxT+4YWEuoyI=
+Message-ID: <4AEE01D9.8040902@gmail.com>
+Date: Sun, 01 Nov 2009 22:47:05 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+CC: mm-commits@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Tiago Vignatti <tiago.vignatti@nokia.com>,
+       Dave Airlie <airlied@redhat.com>, kvm@vger.kernel.org
+Subject: vga_arb warning [was: mmotm 2009-11-01-10-01 uploaded]
+References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
+In-Reply-To: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
+X-Enigmail-Version: 0.97b
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911012238.13083.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 November 2009, KOSAKI Motohiro wrote:
-> shrink_all_zone() was introduced by commit d6277db4ab (swsusp: rework
-> memory shrinker) for hibernate performance improvement. and sc.swap_cluster_max
-> was introduced by commit a06fe4d307 (Speed freeing memory for suspend).
-> 
-> commit a06fe4d307 said
-> 
->    Without the patch:
->    Freed  14600 pages in  1749 jiffies = 32.61 MB/s (Anomolous!)
->    Freed  88563 pages in 14719 jiffies = 23.50 MB/s
->    Freed 205734 pages in 32389 jiffies = 24.81 MB/s
-> 
->    With the patch:
->    Freed  68252 pages in   496 jiffies = 537.52 MB/s
->    Freed 116464 pages in   569 jiffies = 798.54 MB/s
->    Freed 209699 pages in   705 jiffies = 1161.89 MB/s
-> 
-> At that time, their patch was pretty worth. However, Modern Hardware
-> trend and recent VM improvement broke its worth. From several reason,
-> I think we should remove shrink_all_zones() at all.
-> 
-> detail:
-> 
-> 1) Old days, shrink_zone()'s slowness was mainly caused by stupid io-throttle
->   at no i/o congestion.
->   but current shrink_zone() is sane, not slow.
-> 
-> 2) shrink_all_zone() try to shrink all pages at a time. but it doesn't works
->   fine on numa system.
->   example)
->     System has 4GB memory and each node have 2GB. and hibernate need 1GB.
-> 
->     optimal)
->        steal 500MB from each node.
->     shrink_all_zones)
->        steal 1GB from node-0.
-> 
->   Oh, Cache balancing logic was broken. ;)
->   Unfortunately, Desktop system moved ahead NUMA at nowadays.
->   (Side note, if hibernate require 2GB, shrink_all_zones() never success
->    on above machine)
-> 
-> 3) if the node has several I/O flighting pages, shrink_all_zones() makes
->   pretty bad result.
-> 
->   schenario) hibernate need 1GB
-> 
->   1) shrink_all_zones() try to reclaim 1GB from Node-0
->   2) but it only reclaimed 990MB
->   3) stupidly, shrink_all_zones() try to reclaim 1GB from Node-1
->   4) it reclaimed 990MB
-> 
->   Oh, well. it reclaimed twice much than required.
->   In the other hand, current shrink_zone() has sane baling out logic.
->   then, it doesn't make overkill reclaim. then, we lost shrink_zones()'s risk.
-> 
-> 4) SplitLRU VM always keep active/inactive ratio very carefully. inactive list only
->   shrinking break its assumption. it makes unnecessary OOM risk. it obviously suboptimal.
-> 
-> Then, This patch changed shrink_all_memory() to only the wrapper function of 
-> do_try_to_free_pages(). it bring good reviewability and debuggability, and solve 
-> above problems.
-> 
-> side note: Reclaim logic unificication makes two good side effect.
->  - Fix recursive reclaim bug on shrink_all_memory().
->    it did forgot to use PF_MEMALLOC. it mean the system be able to stuck into deadlock.
->  - Now, shrink_all_memory() got lockdep awareness. it bring good debuggability.
+On 11/01/2009 07:07 PM, akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
 
-As I said previously, I don't really see a reason to keep shrink_all_memory().
+Hi, I got the following warning while booting an image in qemu-kvm:
 
-Do you think that removing it will result in performance degradation?
+WARNING: at fs/attr.c:158 notify_change+0x2da/0x310()
+Hardware name:
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.32-rc5-mm1_64 #862
+Call Trace:
+ [<ffffffff81038008>] warn_slowpath_common+0x78/0xb0
+ [<ffffffff8103804f>] warn_slowpath_null+0xf/0x20
+ [<ffffffff810d32ba>] notify_change+0x2da/0x310
+ [<ffffffff810c5b88>] ? fsnotify_create+0x48/0x60
+ [<ffffffff810c6d2b>] ? vfs_mknod+0xbb/0xe0
+ [<ffffffff812487b6>] devtmpfs_create_node+0x1e6/0x270
+ [<ffffffff811170d0>] ? sysfs_addrm_finish+0x20/0x280
+ [<ffffffff811175d6>] ? __sysfs_add_one+0x26/0xf0
+ [<ffffffff81117b6c>] ? sysfs_do_create_link+0xcc/0x160
+ [<ffffffff81241cf0>] device_add+0x1e0/0x5b0
+ [<ffffffff8124adb1>] ? pm_runtime_init+0xa1/0xb0
+ [<ffffffff81248f05>] ? device_pm_init+0x65/0x70
+ [<ffffffff812420d9>] device_register+0x19/0x20
+ [<ffffffff81242290>] device_create_vargs+0xf0/0x120
+ [<ffffffff812422ec>] device_create+0x2c/0x30
+ [<ffffffff810c0516>] ? __register_chrdev+0x86/0xf0
+ [<ffffffff81245599>] ? __class_create+0x69/0xa0
+ [<ffffffff814326e9>] ? mutex_lock+0x19/0x50
+ [<ffffffff811d4e23>] misc_register+0x93/0x170
+ [<ffffffff818994a0>] ? vga_arb_device_init+0x0/0x77
+ [<ffffffff818994b3>] vga_arb_device_init+0x13/0x77
+ [<ffffffff818994a0>] ? vga_arb_device_init+0x0/0x77
+ [<ffffffff810001e7>] do_one_initcall+0x37/0x190
+ [<ffffffff8187d6ce>] kernel_init+0x172/0x1c8
+ [<ffffffff81003c7a>] child_rip+0xa/0x20
+ [<ffffffff8187d55c>] ? kernel_init+0x0/0x1c8
+ [<ffffffff81003c70>] ? child_rip+0x0/0x20
+---[ end trace 4eaa2a86a8e2da22 ]---
 
-Rafael
