@@ -1,136 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZKAWtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZKAXBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZKAWtE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 17:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZKAWtD
+	id S1753824AbZKAXBF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 18:01:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZKAXBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 17:49:03 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:45369 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753864AbZKAWtD (ORCPT
+	Sun, 1 Nov 2009 18:01:05 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:55323 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752112AbZKAXBE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 17:49:03 -0500
+	Sun, 1 Nov 2009 18:01:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p/n3Kmn6rG1i6VZ0+s/5cTXxlaaHBeapRMD8Vodgv4GZ9RxCeZnCn/x0x/erxWMkNB
-         UBIzklHX3eWzPQ2ME07Blu0yGggfl1MsZPrav1Qsfu7j37rJIHWK8bEoB+aw+TzLUztC
-         puJqkto1AAPkruAN88ASxa/oQ8hz+mbnxUk3Q=
-Date: Sun, 1 Nov 2009 23:49:06 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jan Kiszka <jan.kiszka@web.de>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
-	on top of perf events
-Message-ID: <20091101224904.GC5263@nowhere>
-References: <4AE55B1B.2030006@web.de> <1257109753-6464-5-git-send-email-fweisbec@gmail.com> <4AEE06FF.9080807@web.de>
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=gT9KOJYftuVIDK0U/nKEC1YPB1M8w/XoATuYfSZopgwL87ndfEkWgTj9mVm6jEbzAi
+         tcRufGSXvO34l9ypbQ/Bfik4UPAPViYoBf5fbmHK76sTu91PbWmU1CbV5ua6r+jQQ0yB
+         hvlM6BfA6I2s3x2cZq+7bJeClED67Pqxx/JlY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AEE06FF.9080807@web.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091101224547.GB5263@nowhere>
+References: <b8bf37780911010901i3426f143ve394ae569be74ec1@mail.gmail.com> 
+	<20091101224547.GB5263@nowhere>
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Date: Sun, 1 Nov 2009 21:00:48 -0200
+Message-ID: <b8bf37780911011500o741bef51sf8a057e2cedcf22c@mail.gmail.com>
+Subject: Re: [PATCH] vsprintf: reduce code size, clean up
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: laijs@cn.fujitsu.com, mingo@elte.hu, davem@davemloft.net,
+       akpm@linux-foundation.org, harvey.harrison@gmail.com,
+       linux list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 01, 2009 at 11:09:03PM +0100, Jan Kiszka wrote:
-> Frederic Weisbecker wrote:
-> [...]
-> > @@ -94,6 +87,12 @@ static inline void hw_breakpoint_disable(void)
-> >  	set_debugreg(0UL, 3);
-> >  }
-> >
-> > +#ifdef CONFIG_KVM
-> > +extern void hw_breakpoint_restore(void);
-> > +#else
-> > +static inline void hw_breakpoint_restore(void)	{ }
-> > +#endif
-> > +
-> 
-> Hmm, if this shall become a KVM-only API, why the empty wrapper?
+Hi, Frederic!
+
+On Sun, Nov 1, 2009 at 8:45 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> On Sun, Nov 01, 2009 at 03:01:40PM -0200, André Goddard Rosa wrote:
+>> +static char null[] = "(null)";
+>> +
+>
+>
+> This should be static const.
+> Also, may be chose a better name, as "null" is too much
+> generic and somehow collide with NULL.
+>
+> null_str ?
+>
+
+If I make it a "static const" it's necessary to cast it in two places
+to "char *" and code size goes up
+
+lib/vsprintf.c: In function ‘string’:
+lib/vsprintf.c:556: warning: assignment discards qualifiers from
+pointer target type
+lib/vsprintf.c: In function ‘pointer’:
+lib/vsprintf.c:828: warning: passing argument 3 of ‘string’ discards
+qualifiers from pointer target type
+lib/vsprintf.c:551: note: expected ‘char *’ but argument is of type
+‘const char *’
+
+   text    data     bss     dec     hex filename
+ 15383       7       8   15398    3c26 lib/vsprintf.o-static-before
+ 15431       0       8   15439    3c4f lib/vsprintf.o-static-const-after
+
+as it moves the variable from data section to code section. Is this
+the preferred method?
 
 
+Thanks for reviewing! I'll fix the other points per your suggestions
+and post back.
 
-Right, this is an odd reflex.
-
-
- 
-> [...]
-> > -void arch_flush_thread_hw_breakpoint(struct task_struct *tsk)
-> > +#ifdef CONFIG_KVM
-> > +void hw_breakpoint_restore(void)
-> >  {
-> > -	int i;
-> > -	struct thread_struct *thread = &(tsk->thread);
-> > -
-> > -	thread->debugreg7 = 0;
-> > -	for (i = 0; i < HBP_NUM; i++)
-> > -		thread->debugreg[i] = 0;
-> > +	set_debugreg(__get_cpu_var(cpu_debugreg[0]), 0);
-> > +	set_debugreg(__get_cpu_var(cpu_debugreg[1]), 1);
-> > +	set_debugreg(__get_cpu_var(cpu_debugreg[2]), 2);
-> > +	set_debugreg(__get_cpu_var(cpu_debugreg[3]), 3);
-> > +	set_debugreg(current->thread.debugreg6, 6);
-> > +	set_debugreg(__get_cpu_var(dr7), 7);
-> >  }
-> > +#endif
-> 
-> EXPORT_SYMBOL_GPL(hw_breakpoint_restore);
-> 
-> as KVM can be built as module.
-
-
-
-Indeed.
-
-
- 
-> [...]
-> > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> > index fc2974a..32d7bca 100644
-> > --- a/arch/x86/kvm/x86.c
-> > +++ b/arch/x86/kvm/x86.c
-> > @@ -42,6 +42,7 @@
-> >  #define CREATE_TRACE_POINTS
-> >  #include "trace.h"
-> >  
-> > +#include <asm/debugreg.h>
-> >  #include <asm/uaccess.h>
-> >  #include <asm/msr.h>
-> >  #include <asm/desc.h>
-> > @@ -3643,14 +3644,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
-> >  	trace_kvm_entry(vcpu->vcpu_id);
-> >  	kvm_x86_ops->run(vcpu, kvm_run);
-> >  
-> > -	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG))) {
-> > -		set_debugreg(current->thread.debugreg[0], 0);
-> > -		set_debugreg(current->thread.debugreg[1], 1);
-> > -		set_debugreg(current->thread.debugreg[2], 2);
-> > -		set_debugreg(current->thread.debugreg[3], 3);
-> > -		set_debugreg(current->thread.debugreg6, 6);
-> > -		set_debugreg(current->thread.debugreg7, 7);
-> > -	}
-> > +	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG)))
-> > +		hw_breakpoint_restore();
-> 
-> TIF_DEBUG is only set on active ptrace hw-breakpoints, thus we miss
-> other types here, right? (Note: arch.switch_db_regs is guest-related,
-> thus does not help in this regard.)
-> 
-> Jan
-> 
-
-
-True :)
-Thanks a lot for this review, I'm going to fix that quickly.
-
+With regards,
+André
