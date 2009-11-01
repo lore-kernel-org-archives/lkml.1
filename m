@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752397AbZKAL4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485AbZKAL5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752397AbZKAL4p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 06:56:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZKAL4n
+	id S1752485AbZKAL5O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 06:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZKAL4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 06:56:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58306 "EHLO mx1.redhat.com"
+	Sun, 1 Nov 2009 06:56:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40456 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbZKAL4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 06:56:31 -0500
+	id S1752092AbZKAL4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 06:56:30 -0500
 From: Gleb Natapov <gleb@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 10/11] Handle async PF in non preemptable context.
-Date: Sun,  1 Nov 2009 13:56:29 +0200
-Message-Id: <1257076590-29559-11-git-send-email-gleb@redhat.com>
+Subject: [PATCH 11/11] Send async PF when guest is not in userspace too.
+Date: Sun,  1 Nov 2009 13:56:30 +0200
+Message-Id: <1257076590-29559-12-git-send-email-gleb@redhat.com>
 In-Reply-To: <1257076590-29559-1-git-send-email-gleb@redhat.com>
 References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If async page fault is received by idle task or when preemp_count is
-not zero guest cannot reschedule, so make "wait for page" hypercall
-and comtinue only after a page is ready.
 
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 ---
- arch/x86/kernel/kvm.c |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletions(-)
+ arch/x86/kvm/mmu.c |   16 ++++++----------
+ 1 files changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index 79d291f..1bd8b8d 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -162,10 +162,24 @@ int kvm_handle_pf(struct pt_regs *regs, unsigned long error_code)
- 	switch (reason) {
- 	default:
- 		return 0;
--	case KVM_PV_REASON_PAGE_NP:
-+	case KVM_PV_REASON_PAGE_NP: {
-+		int cpu, idle;
-+		cpu = get_cpu();
-+		idle = idle_cpu(cpu);
-+		put_cpu();
-+
-+		/*
-+		 * We cannot reschedule. Wait for page to be ready.
-+		 */
-+		if (idle || preempt_count()) {
-+			kvm_hypercall0(KVM_HC_WAIT_FOR_ASYNC_PF);
-+			break;
-+		}
-+
- 		/* real page is missing. */
- 		apf_task_wait(current, token);
- 		break;
-+	}
- 	case KVM_PV_REASON_PAGE_READY:
- 		apf_task_wake(token);
- 		break;
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 3d33994..21ec65a 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -2358,7 +2358,7 @@ static bool kvm_asyc_pf_is_done(struct kvm_vcpu *vcpu)
+ 
+ 	spin_lock(&vcpu->arch.mmu_async_pf_lock);
+ 	list_for_each_entry_safe(p, node, &vcpu->arch.mmu_async_pf_done, link) {
+-		if (p->guest_task != vcpu->arch.pv_shm->current_task)
++		if (p->token != vcpu->arch.pv_shm->param)
+ 			continue;
+ 		list_del(&p->link);
+ 		found = true;
+@@ -2370,7 +2370,7 @@ static bool kvm_asyc_pf_is_done(struct kvm_vcpu *vcpu)
+ 					  p->error_code);
+ 		put_page(p->page);
+ 		async_pf_work_free(p);
+-		trace_kvm_mmu_async_pf_wait(vcpu->arch.pv_shm->current_task, 0);
++		trace_kvm_mmu_async_pf_wait(vcpu->arch.pv_shm->param, 0);
+ 	}
+ 	return found;
+ }
+@@ -2378,7 +2378,7 @@ static bool kvm_asyc_pf_is_done(struct kvm_vcpu *vcpu)
+ int kvm_pv_wait_for_async_pf(struct kvm_vcpu *vcpu)
+ {
+ 	++vcpu->stat.pf_async_wait;
+-	trace_kvm_mmu_async_pf_wait(vcpu->arch.pv_shm->current_task, 1);
++	trace_kvm_mmu_async_pf_wait(vcpu->arch.pv_shm->param, 1);
+ 	wait_event(vcpu->wq, kvm_asyc_pf_is_done(vcpu));
+ 
+ 	return 0;
+@@ -2386,17 +2386,13 @@ int kvm_pv_wait_for_async_pf(struct kvm_vcpu *vcpu)
+ 
+ static bool can_do_async_pf(struct kvm_vcpu *vcpu)
+ {
+-	struct kvm_segment kvm_seg;
+-
+ 	if (!vcpu->arch.pv_shm ||
+ 	    !(vcpu->arch.pv_shm->features & KVM_PV_SHM_FEATURES_ASYNC_PF) ||
+-	    kvm_event_needs_reinjection(vcpu))
++	    kvm_event_needs_reinjection(vcpu) ||
++	    !kvm_x86_ops->interrupt_allowed(vcpu))
+ 		return false;
+ 
+-	kvm_get_segment(vcpu, &kvm_seg, VCPU_SREG_CS);
+-
+-	/* is userspace code? TODO check VM86 mode */
+-	return !!(kvm_seg.selector & 3);
++	return true;
+ }
+ 
+ static int setup_async_pf(struct kvm_vcpu *vcpu, gpa_t cr3, gva_t gva,
 -- 
 1.6.3.3
 
