@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbZKAWXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbZKAWZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753622AbZKAWXJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 17:23:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZKAWXI
+	id S1753779AbZKAWZn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 17:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZKAWZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 17:23:08 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:46555 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbZKAWXH (ORCPT
+	Sun, 1 Nov 2009 17:25:43 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:48839 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753504AbZKAWZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 17:23:07 -0500
+	Sun, 1 Nov 2009 17:25:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=cfrfY2rMR01mdq4uPwg6FR/HrqLsukRYmkAbNDvPe+J2wLigpfSAYA/HILCOrwrjUo
-         9ZH4gYd+4atEZ3UgIMcCWaqfpdyoqBZS4gzX73XLkfBU/9cGMLTkz2DRV4aEpYvRuu/2
-         QX4ERG9wPveILnuuNmCNdSPN0CNUn3V/dvwqg=
-Subject: [ RFC, PATCH - 1/2 ] x86-microcode: refactor microcode output
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=mLuxC45ZomQ098+SLyNbLh318+wec+cSlEF3l7y3LYza8HAM+DUe4oufMacNW+Riro
+         ORl5pUL1wr5WOsrqBYfc54f16Qw7pEOe9OjBN5xWAwCKxivEhv8ODzh0HUIrakU0Xz1F
+         SUhhiim6Pq04KKESpGibF73h3tyFlu9voAicE=
+Subject: [ RFC, PATCH - 2/2 ] x86-microcode: refactor microcode output
  messages
 From: dimm <dmitry.adamushko@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
@@ -26,9 +26,11 @@ Cc: "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
        Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1257114179.6833.47.camel@dimm>
+References: <1257114179.6833.47.camel@dimm>
 Content-Type: text/plain
-Date: Sun, 01 Nov 2009 23:22:59 +0100
-Message-Id: <1257114179.6833.47.camel@dimm>
+Date: Sun, 01 Nov 2009 23:25:43 +0100
+Message-Id: <1257114343.6833.50.camel@dimm>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -37,334 +39,342 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
 
+patch-2: see the summary in the 1st message.
 
-this is in response to Mike's patch "Limit the number of microcode
-messages".
-
-What's about the following (yet preliminary and not thoroughly tested)
-approach?
-
-patch-1:
-
-simplify 'struct ucode_cpu_info' and related operational logic.
-
-
-patch-2: 
-
-reduce a number of similar 'microcode version' messages by printing a
-single message for all cpus with equal microcode version, like:
-
-(1)
-[   96.589437] microcode: original microcode versions...
-[   96.589451] microcode: CPU0-1: sig=0x6f2, pf=0x20, revision=0x57
-
-(2)
-[   96.603176] microcode: microcode versions after update...
-[   96.603193] microcode: CPU0-1: sig=0x6f2, pf=0x20, revision=0x57
-
-
-The new approach is used in microcode_init() [ i.e. when loading a
-module ] and microcode_write(), that's when we update all the cpus at
-once.
-
-reload_for_cpu() and update-all-cpus-upon-resuming() use the old
-approach - a new microcode version is being reported upon applying it.
-
-The latter might employ the similar 'report-for-all' approach as above
-but that would somewhat complicate the logic. Anyways, there are plenty
-of per-cpu messages upon system resuming so having some more
-update-microcode related ones won't harm that muc, I guess :-)
+summarize_cpu_info() perhaps require some more polishing.
 
 
 (Not-yet-)signed-off-by: Dmitry Adaushko <dmitry.adamushko@gmail.com>
 
-Patch-1:
 
-diff --git a/arch/x86/include/asm/microcode.h
-b/arch/x86/include/asm/microcode.h
-index ef51b50..68fd54c 100644
+
+diff --git a/arch/x86/include/asm/microcode.h b/arch/x86/include/asm/microcode.h
+index 68fd54c..38011a3 100644
 --- a/arch/x86/include/asm/microcode.h
 +++ b/arch/x86/include/asm/microcode.h
-@@ -31,8 +31,6 @@ struct microcode_ops {
+@@ -26,8 +26,10 @@ struct microcode_ops {
+ 	 * are being called.
+ 	 * See also the "Synchronization" section in microcode_core.c.
+ 	 */
+-	int (*apply_microcode) (int cpu);
++	int (*apply_microcode) (int cpu, int verbose);
+ 	int (*collect_cpu_info) (int cpu, struct cpu_signature *csig);
++
++	int (*version_snprintf) (char *buf, int len, struct cpu_signature *csig);
  };
  
  struct ucode_cpu_info {
--	struct cpu_signature	cpu_sig;
--	int			valid;
- 	void			*mc;
- };
- extern struct ucode_cpu_info ucode_cpu_info[];
-diff --git a/arch/x86/kernel/microcode_amd.c
-b/arch/x86/kernel/microcode_amd.c
-index 366baa1..c205d37 100644
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index c205d37..0928fb3 100644
 --- a/arch/x86/kernel/microcode_amd.c
 +++ b/arch/x86/kernel/microcode_amd.c
-@@ -156,8 +156,6 @@ static int apply_microcode_amd(int cpu)
- 	printk(KERN_INFO "microcode: CPU%d: updated (new patch_level=0x%x)\n",
- 	       cpu, rev);
- 
--	uci->cpu_sig.rev = rev;
--
+@@ -81,10 +81,14 @@ static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
+ 		return -1;
+ 	}
+ 	rdmsr(MSR_AMD64_PATCH_LEVEL, csig->rev, dummy);
+-	printk(KERN_INFO "microcode: CPU%d: patch_level=0x%x\n", cpu, csig->rev);
  	return 0;
  }
  
-@@ -249,14 +247,18 @@ static enum ucode_state
- generic_load_microcode(int cpu, const u8 *data, size_t size)
++static int version_snprintf(char *buf, int len, struct cpu_signature *csig)
++{
++	return snprintf(buf, len, "patch_level=0x%x\n", csig->rev);
++}
++
+ static int get_matching_microcode(int cpu, void *mc, int rev)
  {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	struct cpu_signature cpu_sig;
- 	const u8 *ucode_ptr = data;
--	void *new_mc = NULL;
--	void *mc;
--	int new_rev = uci->cpu_sig.rev;
--	unsigned int leftover;
-+	void *new_mc = NULL, *mc;
-+	unsigned int leftover, new_rev;
- 	unsigned long offset;
- 	enum ucode_state state = UCODE_OK;
+ 	struct microcode_header_amd *mc_header = mc;
+@@ -129,7 +133,7 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+ 	return 1;
+ }
  
-+	if (collect_cpu_info_amd(cpu, &cpu_sig))
-+		return UCODE_ERROR;
-+
-+	new_rev = cpu_sig.rev;
-+
- 	offset = install_equiv_cpu_table(ucode_ptr);
- 	if (!offset) {
- 		printk(KERN_ERR "microcode: failed to create "
-@@ -293,7 +295,7 @@ generic_load_microcode(int cpu, const u8 *data,
-size_t size)
- 			uci->mc = new_mc;
- 			pr_debug("microcode: CPU%d found a matching microcode "
- 				 "update with version 0x%x (current=0x%x)\n",
--				 cpu, new_rev, uci->cpu_sig.rev);
-+				 cpu, new_rev, cpu_sig.rev);
- 		} else {
- 			vfree(new_mc);
- 			state = UCODE_ERROR;
-diff --git a/arch/x86/kernel/microcode_core.c
-b/arch/x86/kernel/microcode_core.c
-index 378e9a8..b7ead3a 100644
+-static int apply_microcode_amd(int cpu)
++static int apply_microcode_amd(int cpu, int verbose)
+ {
+ 	u32 rev, dummy;
+ 	int cpu_num = raw_smp_processor_id();
+@@ -153,8 +157,8 @@ static int apply_microcode_amd(int cpu)
+ 		return -1;
+ 	}
+ 
+-	printk(KERN_INFO "microcode: CPU%d: updated (new patch_level=0x%x)\n",
+-	       cpu, rev);
++	if (verbose)
++		printk(KERN_INFO "microcode: CPU%d: updated (new patch_level=0x%x)\n", cpu, rev);
+ 
+ 	return 0;
+ }
+@@ -347,6 +351,7 @@ static struct microcode_ops microcode_amd_ops = {
+ 	.request_microcode_fw             = request_microcode_fw,
+ 	.collect_cpu_info                 = collect_cpu_info_amd,
+ 	.apply_microcode                  = apply_microcode_amd,
++	.version_snprintf		  = version_snprintf,
+ 	.microcode_fini_cpu               = microcode_fini_cpu_amd,
+ };
+ 
+diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+index b7ead3a..fb18304 100644
 --- a/arch/x86/kernel/microcode_core.c
 +++ b/arch/x86/kernel/microcode_core.c
-@@ -138,20 +138,6 @@ static int collect_cpu_info_on_target(int cpu,
-struct cpu_signature *cpu_sig)
+@@ -138,20 +138,33 @@ static int collect_cpu_info_on_target(int cpu, struct cpu_signature *cpu_sig)
  	return ret;
  }
  
--static int collect_cpu_info(int cpu)
--{
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	int ret;
--
--	memset(uci, 0, sizeof(*uci));
--
--	ret = collect_cpu_info_on_target(cpu, &uci->cpu_sig);
--	if (!ret)
--		uci->valid = 1;
--
--	return ret;
--}
--
++struct cpu_info_array_ctx {
++	struct cpu_signature	cpu_sig;
++	int			err;
++};
++
++static void collect_cpu_info_array(void *arg)
++{
++	int cpu = smp_processor_id();
++	struct cpu_info_array_ctx *ctx = arg;
++
++	ctx[cpu].err = microcode_ops->collect_cpu_info(cpu, &ctx[cpu].cpu_sig);
++}
++
  struct apply_microcode_ctx {
- 	int err;
+-	int err;
++	int err, verbose;
  };
-@@ -182,12 +168,8 @@ static int do_microcode_update(const void __user
-*buf, size_t size)
- 	int cpu;
  
- 	for_each_online_cpu(cpu) {
--		struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 		enum ucode_state ustate;
- 
--		if (!uci->valid)
--			continue;
--
- 		ustate = microcode_ops->request_microcode_user(cpu, buf, size);
- 		if (ustate == UCODE_ERROR) {
- 			error = -1;
-@@ -269,23 +251,16 @@ static struct platform_device	*microcode_pdev;
- 
- static int reload_for_cpu(int cpu)
+ static void apply_microcode_local(void *arg)
  {
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	int err = 0;
-+	enum ucode_state ustate;
+ 	struct apply_microcode_ctx *ctx = arg;
  
- 	mutex_lock(&microcode_mutex);
--	if (uci->valid) {
--		enum ucode_state ustate;
+-	ctx->err = microcode_ops->apply_microcode(smp_processor_id());
++	ctx->err = microcode_ops->apply_microcode(smp_processor_id(), ctx->verbose);
+ }
  
--		ustate = microcode_ops->request_microcode_fw(cpu,
-&microcode_pdev->dev);
--		if (ustate == UCODE_OK)
+-static int apply_microcode_on_target(int cpu)
++static int apply_microcode_on_target(int cpu, int verbose)
+ {
+-	struct apply_microcode_ctx ctx = { .err = 0 };
++	struct apply_microcode_ctx ctx = { .err = 0, .verbose = verbose };
+ 	int ret;
+ 
+ 	ret = smp_call_function_single(cpu, apply_microcode_local, &ctx, 1);
+@@ -161,6 +174,68 @@ static int apply_microcode_on_target(int cpu)
+ 	return ret;
+ }
+ 
++static int summarize_cpu_range(cpumask_var_t range, struct cpu_signature *csig)
++{
++	char *cpu_str, *ver_str;
++	int ret = -1;
++
++	cpu_str = kmalloc(128, GFP_KERNEL);
++	ver_str = kmalloc(128, GFP_KERNEL);
++	if (!cpu_str || !ver_str)
++		goto out;
++
++	cpulist_scnprintf(cpu_str, 128, range);
++	microcode_ops->version_snprintf(ver_str, 128, csig);
++
++	printk(KERN_INFO "microcode: CPU%s: %s\n", cpu_str, ver_str);
++	ret = 0;
++out:
++	if (cpu_str)
++		kfree(cpu_str);
++	if (ver_str)
++		kfree(ver_str);
++
++	return ret;
++}
++
++static void summarize_cpu_info(void)
++{
++	struct cpu_info_array_ctx *ctx_array;
++	cpumask_var_t cpulist;
++	int base, cpu, ret;
++
++	if (!alloc_cpumask_var(&cpulist, GFP_KERNEL))
++		return;
++
++	ctx_array = kmalloc(nr_cpu_ids * sizeof(*ctx_array), GFP_KERNEL);
++	if (!ctx_array)
++		goto out;
++
++	ret = on_each_cpu(collect_cpu_info_array, ctx_array, 1);
++	if (ret)
++		goto out;
++
++	base = cpumask_first(cpu_online_mask);
++	cpu  = base;
++	cpumask_set_cpu(cpu, cpulist);
++
++	while ((cpu = cpumask_next(cpu, cpu_online_mask)) < nr_cpu_ids) {
++		if (memcmp(&ctx_array[base].cpu_sig, &ctx_array[cpu].cpu_sig,
++				sizeof(ctx_array[base].cpu_sig)) != 0) {
++			summarize_cpu_range(cpulist, &ctx_array[base].cpu_sig);
++			cpumask_clear(cpulist);
++			base = cpu;
++		}
++		cpumask_set_cpu(cpu, cpulist);
++	}
++	summarize_cpu_range(cpulist, &ctx_array[base].cpu_sig);
++
++out:
++	free_cpumask_var(cpulist);
++	if (ctx_array)
++		kfree(ctx_array);
++}
++
+ #ifdef CONFIG_MICROCODE_OLD_INTERFACE
+ static int do_microcode_update(const void __user *buf, size_t size)
+ {
+@@ -175,7 +250,7 @@ static int do_microcode_update(const void __user *buf, size_t size)
+ 			error = -1;
+ 			break;
+ 		} else if (ustate == UCODE_OK)
 -			apply_microcode_on_target(cpu);
--		else
--			if (ustate == UCODE_ERROR)
--				err = -EINVAL;
--	}
-+	ustate = microcode_ops->request_microcode_fw(cpu,
-&microcode_pdev->dev);
-+	if (ustate == UCODE_OK)
-+		apply_microcode_on_target(cpu);
++			apply_microcode_on_target(cpu, 0);
+ 	}
+ 
+ 	return error;
+@@ -203,6 +278,8 @@ static ssize_t microcode_write(struct file *file, const char __user *buf,
+ 	if (do_microcode_update(buf, len) == 0)
+ 		ret = (ssize_t)len;
+ 
++	printk(KERN_INFO "microcode: microcode versions after update...\n");
++	summarize_cpu_info();
+ 	mutex_unlock(&microcode_mutex);
+ 	put_online_cpus();
+ 
+@@ -257,7 +334,7 @@ static int reload_for_cpu(int cpu)
+ 
+ 	ustate = microcode_ops->request_microcode_fw(cpu, &microcode_pdev->dev);
+ 	if (ustate == UCODE_OK)
+-		apply_microcode_on_target(cpu);
++		apply_microcode_on_target(cpu, 1);
  	mutex_unlock(&microcode_mutex);
  
--	return err;
-+	return (ustate == UCODE_ERROR)? -EINVAL : 0;
+ 	return (ustate == UCODE_ERROR)? -EINVAL : 0;
+@@ -340,12 +417,12 @@ static enum ucode_state microcode_resume_cpu(int cpu)
+ 		return UCODE_NFOUND;
+ 
+ 	pr_debug("microcode: CPU%d updated upon resume\n", cpu);
+-	apply_microcode_on_target(cpu);
++	apply_microcode_on_target(cpu, 1);
+ 
+ 	return UCODE_OK;
  }
  
- static ssize_t reload_store(struct sys_device *dev,
-@@ -317,17 +292,23 @@ static ssize_t reload_store(struct sys_device
-*dev,
- static ssize_t version_show(struct sys_device *dev,
- 			struct sysdev_attribute *attr, char *buf)
+-static enum ucode_state microcode_init_cpu(int cpu)
++static enum ucode_state microcode_init_cpu(int cpu, int verbose)
  {
--	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
-+	struct cpu_signature cpu_sig;
- 
--	return sprintf(buf, "0x%x\n", uci->cpu_sig.rev);
-+	if (collect_cpu_info_on_target(dev->id, &cpu_sig))
-+		return 0;
-+
-+	return sprintf(buf, "0x%x\n", cpu_sig.rev);
- }
- 
- static ssize_t pf_show(struct sys_device *dev,
- 			struct sysdev_attribute *attr, char *buf)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
-+	struct cpu_signature cpu_sig;
-+
-+	if (collect_cpu_info_on_target(dev->id, &cpu_sig))
-+		return 0;
- 
--	return sprintf(buf, "0x%x\n", uci->cpu_sig.pf);
-+	return sprintf(buf, "0x%x\n", cpu_sig.pf);
- }
- 
- static SYSDEV_ATTR(reload, 0200, NULL, reload_store);
-@@ -348,10 +329,7 @@ static struct attribute_group mc_attr_group = {
- 
- static void microcode_fini_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--
- 	microcode_ops->microcode_fini_cpu(cpu);
--	uci->valid = 0;
- }
- 
- static enum ucode_state microcode_resume_cpu(int cpu)
-@@ -369,10 +347,10 @@ static enum ucode_state microcode_resume_cpu(int
-cpu)
- 
- static enum ucode_state microcode_init_cpu(int cpu)
- {
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
  	enum ucode_state ustate;
+@@ -360,7 +437,7 @@ static enum ucode_state microcode_init_cpu(int cpu)
  
--	if (collect_cpu_info(cpu))
--		return UCODE_ERROR;
-+	memset(uci, 0, sizeof(*uci));
+ 	if (ustate == UCODE_OK) {
+ 		pr_debug("microcode: CPU%d updated upon init\n", cpu);
+-		apply_microcode_on_target(cpu);
++		apply_microcode_on_target(cpu, verbose);
+ 	}
  
- 	/* --dimm. Trigger a delayed update? */
- 	if (system_state != SYSTEM_RUNNING)
-@@ -388,19 +366,6 @@ static enum ucode_state microcode_init_cpu(int cpu)
  	return ustate;
- }
+@@ -379,7 +456,7 @@ static int mc_sysdev_add(struct sys_device *sys_dev)
+ 	if (err)
+ 		return err;
  
--static enum ucode_state microcode_update_cpu(int cpu)
--{
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	enum ucode_state ustate;
--
--	if (uci->valid)
--		ustate = microcode_resume_cpu(cpu);
--	else
--		ustate = microcode_init_cpu(cpu);
--
--	return ustate;
--}
--
- static int mc_sysdev_add(struct sys_device *sys_dev)
- {
- 	int err, cpu = sys_dev->id;
-@@ -450,7 +415,7 @@ static int mc_sysdev_resume(struct sys_device *dev)
- 	 */
+-	if (microcode_init_cpu(cpu) == UCODE_ERROR)
++	if (microcode_init_cpu(cpu, 0) == UCODE_ERROR)
+ 		err = -EINVAL;
+ 
+ 	return err;
+@@ -416,7 +493,7 @@ static int mc_sysdev_resume(struct sys_device *dev)
  	WARN_ON(cpu != 0);
  
--	if (uci->valid && uci->mc)
-+	if (uci->mc)
- 		microcode_ops->apply_microcode(cpu);
+ 	if (uci->mc)
+-		microcode_ops->apply_microcode(cpu);
++		microcode_ops->apply_microcode(cpu, 1);
  
  	return 0;
-@@ -472,7 +437,10 @@ mc_cpu_callback(struct notifier_block *nb, unsigned
-long action, void *hcpu)
- 	switch (action) {
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
--		microcode_update_cpu(cpu);
-+		if (action == CPU_ONLINE_FROZEN)
-+			microcode_resume_cpu(cpu);
-+		else
-+			microcode_init_cpu(cpu);
+ }
+@@ -440,7 +517,7 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
+ 		if (action == CPU_ONLINE_FROZEN)
+ 			microcode_resume_cpu(cpu);
+ 		else
+-			microcode_init_cpu(cpu);
++			microcode_init_cpu(cpu, 1);
  	case CPU_DOWN_FAILED:
  	case CPU_DOWN_FAILED_FROZEN:
  		pr_debug("microcode: CPU%d added\n", cpu);
-diff --git a/arch/x86/kernel/microcode_intel.c
-b/arch/x86/kernel/microcode_intel.c
-index 0d334dd..6589765 100644
+@@ -491,8 +568,14 @@ static int __init microcode_init(void)
+ 	get_online_cpus();
+ 	mutex_lock(&microcode_mutex);
+ 
++	printk(KERN_INFO "microcode: original microcode versions...\n");
++	summarize_cpu_info();
++
+ 	error = sysdev_driver_register(&cpu_sysdev_class, &mc_sysdev_driver);
+ 
++	printk(KERN_INFO "microcode: microcode versions after update...\n");
++	summarize_cpu_info();
++
+ 	mutex_unlock(&microcode_mutex);
+ 	put_online_cpus();
+ 
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index 6589765..96c5cf5 100644
 --- a/arch/x86/kernel/microcode_intel.c
 +++ b/arch/x86/kernel/microcode_intel.c
-@@ -339,8 +339,6 @@ static int apply_microcode(int cpu)
- 		mc_intel->hdr.date >> 24,
- 		(mc_intel->hdr.date >> 16) & 0xff);
+@@ -165,12 +165,14 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
+ 	/* get the current revision from MSR 0x8B */
+ 	rdmsr(MSR_IA32_UCODE_REV, val[0], csig->rev);
  
--	uci->cpu_sig.rev = val[1];
+-	printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
+-			cpu_num, csig->sig, csig->pf, csig->rev);
 -
  	return 0;
  }
  
-@@ -348,11 +346,16 @@ static enum ucode_state generic_load_microcode(int
-cpu, void *data, size_t size,
- 				int (*get_ucode_data)(void *, const void *, size_t))
++static int version_snprintf(char *buf, int len, struct cpu_signature *csig)
++{
++	return snprintf(buf, len, "sig=0x%x, pf=0x%x, revision=0x%x\n", csig->sig, csig->pf, csig->rev);
++}
++
+ static inline int update_match_cpu(struct cpu_signature *csig, int sig, int pf)
  {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	struct cpu_signature cpu_sig;
- 	u8 *ucode_ptr = data, *new_mc = NULL, *mc;
--	int new_rev = uci->cpu_sig.rev;
--	unsigned int leftover = size;
-+	unsigned int leftover = size, new_rev;
- 	enum ucode_state state = UCODE_OK;
- 
-+	if (collect_cpu_info(cpu, &cpu_sig))
-+		return UCODE_ERROR;
-+
-+	new_rev = cpu_sig.rev;
-+
- 	while (leftover) {
- 		struct microcode_header_intel mc_header;
- 		unsigned int mc_size;
-@@ -377,7 +380,7 @@ static enum ucode_state generic_load_microcode(int
-cpu, void *data, size_t size,
- 			break;
- 		}
- 
--		if (get_matching_microcode(&uci->cpu_sig, mc, new_rev)) {
-+		if (get_matching_microcode(&cpu_sig, mc, new_rev)) {
- 			if (new_mc)
- 				vfree(new_mc);
- 			new_rev = mc_header.rev;
-@@ -407,7 +410,7 @@ static enum ucode_state generic_load_microcode(int
-cpu, void *data, size_t size,
- 
- 	pr_debug("microcode: CPU%d found a matching microcode update with"
- 		 " version 0x%x (current=0x%x)\n",
--			cpu, new_rev, uci->cpu_sig.rev);
-+			cpu, new_rev, cpu_sig.rev);
- out:
- 	return state;
+ 	return (!sigmatch(sig, csig->sig, pf, csig->pf)) ? 0 : 1;
+@@ -297,7 +299,7 @@ get_matching_microcode(struct cpu_signature *cpu_sig, void *mc, int rev)
+ 	return 0;
  }
-
+ 
+-static int apply_microcode(int cpu)
++static int apply_microcode(int cpu, int verbose)
+ {
+ 	struct microcode_intel *mc_intel;
+ 	struct ucode_cpu_info *uci;
+@@ -332,12 +334,14 @@ static int apply_microcode(int cpu)
+ 			cpu_num, mc_intel->hdr.rev);
+ 		return -1;
+ 	}
+-	printk(KERN_INFO "microcode: CPU%d updated to revision "
++
++	if (verbose)
++		printk(KERN_INFO "microcode: CPU%d updated to revision "
+ 			 "0x%x, date = %04x-%02x-%02x \n",
+-		cpu_num, val[1],
+-		mc_intel->hdr.date & 0xffff,
+-		mc_intel->hdr.date >> 24,
+-		(mc_intel->hdr.date >> 16) & 0xff);
++			cpu_num, val[1],
++			mc_intel->hdr.date & 0xffff,
++			mc_intel->hdr.date >> 24,
++			(mc_intel->hdr.date >> 16) & 0xff);
+ 
+ 	return 0;
+ }
+@@ -468,6 +472,7 @@ static struct microcode_ops microcode_intel_ops = {
+ 	.request_microcode_fw             = request_microcode_fw,
+ 	.collect_cpu_info                 = collect_cpu_info,
+ 	.apply_microcode                  = apply_microcode,
++	.version_snprintf		  = version_snprintf,
+ 	.microcode_fini_cpu               = microcode_fini_cpu,
+ };
+ 
 
 
