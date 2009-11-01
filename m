@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807AbZKAPYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbZKAP0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752807AbZKAPYm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 10:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZKAPYm
+	id S1752862AbZKAP0k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 10:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZKAP0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 10:24:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55770 "EHLO mx2.mail.elte.hu"
+	Sun, 1 Nov 2009 10:26:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60937 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752713AbZKAPYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 10:24:41 -0500
-Date: Sun, 1 Nov 2009 16:24:33 +0100
+	id S1752719AbZKAP0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 10:26:38 -0500
+Date: Sun, 1 Nov 2009 16:26:37 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] x86 fixes
-Message-ID: <20091101152433.GA30390@elte.hu>
+Subject: [GIT PULL] tracing fixes
+Message-ID: <20091101152637.GA17882@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,160 +34,194 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Please pull the latest tracing-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Arjan van de Ven (1):
-      x86: Remove STACKPROTECTOR_ALL
-
-Feng Tang (1):
-      x86: Make EFI RTC function depend on 32bit again
-
-Jan Beulich (1):
-      x86-64: Fix register leak in 32-bit syscall audting
-
-Jiri Slaby (1):
-      x86: crash_dump: Fix non-pae kdump kernel memory accesses
-
-Rusty Russell (1):
-      x86: Side-step lguest problem by only building cmpxchg8b_emu for pre-Pentium
+Jiri Olsa (4):
+      tracing: Update *ppos instead of filp->f_pos
+      tracing: Fix trace_seq_printf() return value
+      tracing: Fix comment typo and documentation example
+      tracing: Remove cpu arg from the rb_time_stamp() function
 
 
- arch/x86/Kconfig                |    4 ----
- arch/x86/Kconfig.cpu            |    2 +-
- arch/x86/Makefile               |    1 -
- arch/x86/ia32/ia32entry.S       |    5 ++---
- arch/x86/kernel/crash_dump_32.c |   19 +++++++++++++++++++
- arch/x86/kernel/efi.c           |    2 ++
- 6 files changed, 24 insertions(+), 9 deletions(-)
+ Documentation/trace/ftrace.txt |    2 ++
+ include/linux/trace_seq.h      |    2 +-
+ kernel/trace/ftrace.c          |    2 +-
+ kernel/trace/ring_buffer.c     |   12 ++++++------
+ kernel/trace/trace.c           |    8 ++++----
+ kernel/trace/trace_output.c    |    5 ++++-
+ 6 files changed, 18 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 07e0114..72ace95 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1443,12 +1443,8 @@ config SECCOMP
+diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
+index 957b22f..8179692 100644
+--- a/Documentation/trace/ftrace.txt
++++ b/Documentation/trace/ftrace.txt
+@@ -1231,6 +1231,7 @@ something like this simple program:
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <string.h>
  
- 	  If unsure, say Y. Only embedded should say N here.
+ #define _STR(x) #x
+ #define STR(x) _STR(x)
+@@ -1265,6 +1266,7 @@ const char *find_debugfs(void)
+                return NULL;
+        }
  
--config CC_STACKPROTECTOR_ALL
--	bool
--
- config CC_STACKPROTECTOR
- 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
--	select CC_STACKPROTECTOR_ALL
- 	---help---
- 	  This option turns on the -fstack-protector GCC feature. This
- 	  feature puts, at the beginning of functions, a canary value on
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index f2824fb..2649840 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -400,7 +400,7 @@ config X86_TSC
++       strcat(debugfs, "/tracing/");
+        debugfs_found = 1;
  
- config X86_CMPXCHG64
- 	def_bool y
--	depends on X86_PAE || X86_64 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MATOM
-+	depends on !M386 && !M486
+        return debugfs;
+diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
+index c134dd1..09077f6 100644
+--- a/include/linux/trace_seq.h
++++ b/include/linux/trace_seq.h
+@@ -7,7 +7,7 @@
  
- # this should be set for all -march=.. options where the compiler
- # generates cmov.
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index a012ee8..d2d24c9 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -76,7 +76,6 @@ ifdef CONFIG_CC_STACKPROTECTOR
- 	cc_has_sp := $(srctree)/scripts/gcc-x86_$(BITS)-has-stack-protector.sh
-         ifeq ($(shell $(CONFIG_SHELL) $(cc_has_sp) $(CC) $(biarch)),y)
-                 stackp-y := -fstack-protector
--                stackp-$(CONFIG_CC_STACKPROTECTOR_ALL) += -fstack-protector-all
-                 KBUILD_CFLAGS += $(stackp-y)
-         else
-                 $(warning stack protector enabled but no compiler support)
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 1733f9f..581b056 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -204,7 +204,7 @@ sysexit_from_sys_call:
- 	movl RDI-ARGOFFSET(%rsp),%r8d	/* reload 5th syscall arg */
- 	.endm
+ /*
+  * Trace sequences are used to allow a function to call several other functions
+- * to create a string of data to use (up to a max of PAGE_SIZE.
++ * to create a string of data to use (up to a max of PAGE_SIZE).
+  */
  
--	.macro auditsys_exit exit,ebpsave=RBP
-+	.macro auditsys_exit exit
- 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
- 	jnz ia32_ret_from_sys_call
- 	TRACE_IRQS_ON
-@@ -217,7 +217,6 @@ sysexit_from_sys_call:
- 	call audit_syscall_exit
- 	GET_THREAD_INFO(%r10)
- 	movl RAX-ARGOFFSET(%rsp),%eax	/* reload syscall return value */
--	movl \ebpsave-ARGOFFSET(%rsp),%ebp /* reload user register value */
- 	movl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),%edi
- 	cli
- 	TRACE_IRQS_OFF
-@@ -351,7 +350,7 @@ cstar_auditsys:
- 	jmp cstar_dispatch
+ struct trace_seq {
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 37ba67e..9c451a1 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -740,7 +740,7 @@ ftrace_profile_write(struct file *filp, const char __user *ubuf,
+  out:
+ 	mutex_unlock(&ftrace_profile_lock);
  
- sysretl_audit:
--	auditsys_exit sysretl_from_sys_call, RCX /* user %ebp in RCX slot */
-+	auditsys_exit sysretl_from_sys_call
- #endif
+-	filp->f_pos += cnt;
++	*ppos += cnt;
  
- cstar_tracesys:
-diff --git a/arch/x86/kernel/crash_dump_32.c b/arch/x86/kernel/crash_dump_32.c
-index f7cdb3b..cd97ce1 100644
---- a/arch/x86/kernel/crash_dump_32.c
-+++ b/arch/x86/kernel/crash_dump_32.c
-@@ -16,6 +16,22 @@ static void *kdump_buf_page;
- /* Stores the physical address of elf header of crash image. */
- unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
+ 	return cnt;
+ }
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index d4ff019..3ffa502 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -483,7 +483,7 @@ struct ring_buffer_iter {
+ /* Up this if you want to test the TIME_EXTENTS and normalization */
+ #define DEBUG_SHIFT 0
  
-+static inline bool is_crashed_pfn_valid(unsigned long pfn)
-+{
-+#ifndef CONFIG_X86_PAE
-+	/*
-+	 * non-PAE kdump kernel executed from a PAE one will crop high pte
-+	 * bits and poke unwanted space counting again from address 0, we
-+	 * don't want that. pte must fit into unsigned long. In fact the
-+	 * test checks high 12 bits for being zero (pfn will be shifted left
-+	 * by PAGE_SHIFT).
-+	 */
-+	return pte_pfn(pfn_pte(pfn, __pgprot(0))) == pfn;
-+#else
-+	return true;
-+#endif
-+}
-+
+-static inline u64 rb_time_stamp(struct ring_buffer *buffer, int cpu)
++static inline u64 rb_time_stamp(struct ring_buffer *buffer)
+ {
+ 	/* shift to debug/test normalization and TIME_EXTENTS */
+ 	return buffer->clock() << DEBUG_SHIFT;
+@@ -494,7 +494,7 @@ u64 ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu)
+ 	u64 time;
+ 
+ 	preempt_disable_notrace();
+-	time = rb_time_stamp(buffer, cpu);
++	time = rb_time_stamp(buffer);
+ 	preempt_enable_no_resched_notrace();
+ 
+ 	return time;
+@@ -599,7 +599,7 @@ static struct list_head *rb_list_head(struct list_head *list)
+ }
+ 
+ /*
+- * rb_is_head_page - test if the give page is the head page
++ * rb_is_head_page - test if the given page is the head page
+  *
+  * Because the reader may move the head_page pointer, we can
+  * not trust what the head page is (it may be pointing to
+@@ -1868,7 +1868,7 @@ rb_move_tail(struct ring_buffer_per_cpu *cpu_buffer,
+ 		 * Nested commits always have zero deltas, so
+ 		 * just reread the time stamp
+ 		 */
+-		*ts = rb_time_stamp(buffer, cpu_buffer->cpu);
++		*ts = rb_time_stamp(buffer);
+ 		next_page->page->time_stamp = *ts;
+ 	}
+ 
+@@ -2111,7 +2111,7 @@ rb_reserve_next_event(struct ring_buffer *buffer,
+ 	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 1000))
+ 		goto out_fail;
+ 
+-	ts = rb_time_stamp(cpu_buffer->buffer, cpu_buffer->cpu);
++	ts = rb_time_stamp(cpu_buffer->buffer);
+ 
+ 	/*
+ 	 * Only the first commit can update the timestamp.
+@@ -2681,7 +2681,7 @@ unsigned long ring_buffer_entries(struct ring_buffer *buffer)
+ EXPORT_SYMBOL_GPL(ring_buffer_entries);
+ 
  /**
-  * copy_oldmem_page - copy one page from "oldmem"
-  * @pfn: page frame number to be copied
-@@ -41,6 +57,9 @@ ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
- 	if (!csize)
- 		return 0;
+- * ring_buffer_overrun_cpu - get the number of overruns in buffer
++ * ring_buffer_overruns - get the number of overruns in buffer
+  * @buffer: The ring buffer
+  *
+  * Returns the total number of overruns in the ring buffer
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index c820b03..b20d3ec 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2440,7 +2440,7 @@ tracing_trace_options_write(struct file *filp, const char __user *ubuf,
+ 			return ret;
+ 	}
  
-+	if (!is_crashed_pfn_valid(pfn))
-+		return -EFAULT;
-+
- 	vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
+-	filp->f_pos += cnt;
++	*ppos += cnt;
  
- 	if (!userbuf) {
-diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
-index ad5bd98..cdcfb12 100644
---- a/arch/x86/kernel/efi.c
-+++ b/arch/x86/kernel/efi.c
-@@ -454,8 +454,10 @@ void __init efi_init(void)
- 	if (add_efi_memmap)
- 		do_add_efi_memmap();
+ 	return cnt;
+ }
+@@ -2582,7 +2582,7 @@ tracing_ctrl_write(struct file *filp, const char __user *ubuf,
+ 	}
+ 	mutex_unlock(&trace_types_lock);
  
-+#ifdef CONFIG_X86_32
- 	x86_platform.get_wallclock = efi_get_time;
- 	x86_platform.set_wallclock = efi_set_rtc_mmss;
-+#endif
+-	filp->f_pos += cnt;
++	*ppos += cnt;
  
- 	/* Setup for EFI runtime service */
- 	reboot_type = BOOT_EFI;
+ 	return cnt;
+ }
+@@ -2764,7 +2764,7 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
+ 	if (err)
+ 		return err;
+ 
+-	filp->f_pos += ret;
++	*ppos += ret;
+ 
+ 	return ret;
+ }
+@@ -3299,7 +3299,7 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+ 		}
+ 	}
+ 
+-	filp->f_pos += cnt;
++	*ppos += cnt;
+ 
+ 	/* If check pages failed, return ENOMEM */
+ 	if (tracing_disabled)
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index ed17565..b6c12c6 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -69,6 +69,9 @@ enum print_line_t trace_print_printk_msg_only(struct trace_iterator *iter)
+  * @s: trace sequence descriptor
+  * @fmt: printf format string
+  *
++ * It returns 0 if the trace oversizes the buffer's free
++ * space, 1 otherwise.
++ *
+  * The tracer may use either sequence operations or its own
+  * copy to user routines. To simplify formating of a trace
+  * trace_seq_printf is used to store strings into a special
+@@ -95,7 +98,7 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+ 
+ 	s->len += ret;
+ 
+-	return len;
++	return 1;
+ }
+ EXPORT_SYMBOL_GPL(trace_seq_printf);
+ 
