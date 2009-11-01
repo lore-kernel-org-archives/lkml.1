@@ -1,57 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZKAOWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbZKAOkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZKAOWA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 09:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZKAOWA
+	id S1752621AbZKAOkH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 09:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZKAOkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 09:22:00 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:44425 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752538AbZKAOV7 (ORCPT
+	Sun, 1 Nov 2009 09:40:04 -0500
+Received: from www84.your-server.de ([213.133.104.84]:36242 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752153AbZKAOkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 09:21:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=N8H5oSLx6jTFlnxKFieldT3yhzw4G3zaKDxoAXwxgv68FMDRQNOiwMElODpzgovtVS
-         iljNurUftvmPDOFIRqxS5sMtEDQZuY018WF1aqvP22BDUn68dnGpvQnB3LqnwWdVXGKv
-         VIBqp/VN9576bFUa1t7pyysLfvBEWTR8eILcI=
-Message-ID: <4AED9C22.3040301@gmail.com>
-Date: Sun, 01 Nov 2009 15:33:06 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Hirokazu Takata <takata@linux-m32r.org>, linux-m32r@ml.linux-m32r.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] m32r: Should index be positive?
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 1 Nov 2009 09:40:03 -0500
+Subject: Re: [PATCH] proc: remove /proc/*/status "Stack usage:"
+From: Stefani Seibold <stefani@seibold.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20091101131518.GA18284@x200>
+References: <20091101131518.GA18284@x200>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Sun, 01 Nov 2009 15:39:57 +0100
+Message-ID: <1257086397.31587.5.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Index `ipi_num' is signed, test whether it is negative to
-make sure we don't get a negative array element.
+Am Sonntag, den 01.11.2009, 16:15 +0300 schrieb Alexey Dobriyan:
+> We have /proc/*/pagemap to determine how much stack was consumed.
+> Leave "threadstack" though.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+> 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- arch/m32r/kernel/smp.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Stop! /proc/*/pagemap is not a real substitute for the stackm usage
+patch. If you have problems with this patch i will have a look on it.
 
-Found by code analysis, is it required?
+>  fs/proc/array.c |   90 --------------------------------------------------------
+>  1 file changed, 90 deletions(-)
+> 
+> --- a/fs/proc/array.c
+> +++ b/fs/proc/array.c
+> @@ -82,7 +82,6 @@
+>  #include <linux/pid_namespace.h>
+>  #include <linux/ptrace.h>
+>  #include <linux/tracehook.h>
+> -#include <linux/swapops.h>
+>  
+>  #include <asm/pgtable.h>
+>  #include <asm/processor.h>
+> @@ -322,94 +321,6 @@ static inline void task_context_switch_counts(struct seq_file *m,
+>  			p->nivcsw);
+>  }
+>  
+> -#ifdef CONFIG_MMU
+> -
+> -struct stack_stats {
+> -	struct vm_area_struct *vma;
+> -	unsigned long	startpage;
+> -	unsigned long	usage;
+> -};
+> -
+> -static int stack_usage_pte_range(pmd_t *pmd, unsigned long addr,
+> -				unsigned long end, struct mm_walk *walk)
+> -{
+> -	struct stack_stats *ss = walk->private;
+> -	struct vm_area_struct *vma = ss->vma;
+> -	pte_t *pte, ptent;
+> -	spinlock_t *ptl;
+> -	int ret = 0;
+> -
+> -	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+> -	for (; addr != end; pte++, addr += PAGE_SIZE) {
+> -		ptent = *pte;
+> -
+> -#ifdef CONFIG_STACK_GROWSUP
+> -		if (pte_present(ptent) || is_swap_pte(ptent))
+> -			ss->usage = addr - ss->startpage + PAGE_SIZE;
+> -#else
+> -		if (pte_present(ptent) || is_swap_pte(ptent)) {
+> -			ss->usage = ss->startpage - addr + PAGE_SIZE;
+> -			pte++;
+> -			ret = 1;
+> -			break;
+> -		}
+> -#endif
+> -	}
+> -	pte_unmap_unlock(pte - 1, ptl);
+> -	cond_resched();
+> -	return ret;
+> -}
+> -
+> -static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
+> -				struct task_struct *task)
+> -{
+> -	struct stack_stats ss;
+> -	struct mm_walk stack_walk = {
+> -		.pmd_entry = stack_usage_pte_range,
+> -		.mm = vma->vm_mm,
+> -		.private = &ss,
+> -	};
+> -
+> -	if (!vma->vm_mm || is_vm_hugetlb_page(vma))
+> -		return 0;
+> -
+> -	ss.vma = vma;
+> -	ss.startpage = task->stack_start & PAGE_MASK;
+> -	ss.usage = 0;
+> -
+> -#ifdef CONFIG_STACK_GROWSUP
+> -	walk_page_range(KSTK_ESP(task) & PAGE_MASK, vma->vm_end,
+> -		&stack_walk);
+> -#else
+> -	walk_page_range(vma->vm_start, (KSTK_ESP(task) & PAGE_MASK) + PAGE_SIZE,
+> -		&stack_walk);
+> -#endif
+> -	return ss.usage;
+> -}
+> -
+> -static inline void task_show_stack_usage(struct seq_file *m,
+> -						struct task_struct *task)
+> -{
+> -	struct vm_area_struct	*vma;
+> -	struct mm_struct	*mm = get_task_mm(task);
+> -
+> -	if (mm) {
+> -		down_read(&mm->mmap_sem);
+> -		vma = find_vma(mm, task->stack_start);
+> -		if (vma)
+> -			seq_printf(m, "Stack usage:\t%lu kB\n",
+> -				get_stack_usage_in_bytes(vma, task) >> 10);
+> -
+> -		up_read(&mm->mmap_sem);
+> -		mmput(mm);
+> -	}
+> -}
+> -#else
+> -static void task_show_stack_usage(struct seq_file *m, struct task_struct *task)
+> -{
+> -}
+> -#endif		/* CONFIG_MMU */
+> -
+>  int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
+>  			struct pid *pid, struct task_struct *task)
+>  {
+> @@ -429,7 +340,6 @@ int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
+>  	task_show_regs(m, task);
+>  #endif
+>  	task_context_switch_counts(m, task);
+> -	task_show_stack_usage(m, task);
+>  	return 0;
+>  }
+>  
 
-diff --git a/arch/m32r/kernel/smp.c b/arch/m32r/kernel/smp.c
-index 8a88f1f..31cef20 100644
---- a/arch/m32r/kernel/smp.c
-+++ b/arch/m32r/kernel/smp.c
-@@ -806,7 +806,7 @@ unsigned long send_IPI_mask_phys(cpumask_t physid_mask, int ipi_num,
- 
- 	if (mask & ~physids_coerce(phys_cpu_present_map))
- 		BUG();
--	if (ipi_num >= NR_IPIS)
-+	if (ipi_num >= NR_IPIS || ipi_num < 0)
- 		BUG();
- 
- 	mask <<= IPI_SHIFT;
+
