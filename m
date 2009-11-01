@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbZKAVNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZKAVN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbZKAVNM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 16:13:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZKAVNL
+	id S1753582AbZKAVN2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 16:13:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZKAVN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 16:13:11 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49240 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753435AbZKAVNK (ORCPT
+	Sun, 1 Nov 2009 16:13:27 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:64178 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753513AbZKAVN0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 16:13:10 -0500
-Date: Sun, 1 Nov 2009 22:13:06 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Doug Thompson <norsk5@yahoo.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] amd64_edac: syndromes loading
-Message-ID: <20091101211305.GB2085@ucw.cz>
-References: <20091028163534.GA625@aftab> <143841.81095.qm@web50110.mail.re2.yahoo.com> <20091028172853.GE625@aftab>
+	Sun, 1 Nov 2009 16:13:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ByFxi+ALwErgcOrxqg3F91RK/FJwoWJYIrYConRmT1zLIzlYm/jIhNkD3Fzc2RgfYN
+         Oae06FhYAHqOyUEK7oKSQlPoM7DaFXrdL+nv/7GeOibNlbryF9nM4KfO8Ox4m5uB3hD3
+         vfopBdjlZCn4clCnWyD+BndL3xWa/0MnyRYNI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028172853.GE625@aftab>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091101095208.10d57e8f.rdunlap@xenotime.net>
+References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>
+	 <4AEC0EBE.2040308@crca.org.au> <4AEC2971.8050105@imap.cc>
+	 <20091101095208.10d57e8f.rdunlap@xenotime.net>
+Date: Sun, 1 Nov 2009 19:13:30 -0200
+Message-ID: <a4c8a6d00911011313k39a6805dr590967cc8fc3a204@mail.gmail.com>
+Subject: Re: [PATCH 03/16] trivial: fix assorted "through" typos
+From: Thiago Farina <tfransosi@gmail.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Tilman Schmidt <tilman@imap.cc>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>,
+       trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-10-28 18:28:53, Borislav Petkov wrote:
-> On Wed, Oct 28, 2009 at 10:15:03AM -0700, Doug Thompson wrote:
-> > Where does the syndrome table/module/firmware live in the file system?
-> > In with the amd64 module area or elsewhere?
-> 
-> Yeah, I was thinking maybe drivers/edac/amd64_x(4|8).bin or so.
-> 
-> Alternatively, we could make the syndromes builtin thus removing the
-> requirement to go to userspace for the loading. For that we'll need
-> two new .c files in drivers/edac/ which represent the x4 and x8 tables
-> respectively:
-> 
-> unsigned short x8_raw_data[] = {
->         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
->         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
->         0x0000, 0x0100, 0x0001, 0x0101, 0x01B8, 0x015C, 0x012E, 0x01C6, 0x0163,
->         0x01FD, 0x0189, 0x019D, 0xB801, 0x5C01, 0x2E01, 0xC601, 0x6301, 0xFD01,
->         0x8901, 0x9D01, 0x0200, 0x0002, 0x0202, 0x0201, 0x02B8, 0x025C, 0x02FD,
-> 	....
-> 
-> The drawback with these is that they'll always be builtin, enlarging
-> kernel code by 10-15K although only one of them is in use.
+On Sun, Nov 1, 2009 at 3:52 PM, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> It was Robert PJ Day.
+> See http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
 
-I believe that 15K is reasonable price to pay for not having to
-install another 'firmware' file.
-								Pavel
+Talking about cleanup, there are many definitions of ARRAY_SIZE, found
+using cscope:
+0 spidev_test.c  24 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+1 page-types.c  194 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+2 types.h         4 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+3 user.h         17 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+4 boot.h         35 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
+5 relocs.c       13 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+6 kernel.h       46 #define ARRAY_SIZE(arr) (sizeof(arr) /
+sizeof((arr)[0]) + __must_be_array(arr))
+7 dtc.h          83 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+8 genksyms.c    314 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+9 kallsyms.c     27 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+a file2alias.c  520 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+b util.h         28 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Please forgive me if this is not the right place to post this.
