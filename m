@@ -1,42 +1,37 @@
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbZKAXQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751714AbZJaEfH (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 31 Oct 2009 00:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZJaEfG
+	id S1752052AbZKAXQi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 18:16:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZKAXQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 00:35:06 -0400
-Received: from mk-outboundfilter-5-a-2.mail.uk.tiscali.com ([212.74.114.4]:5721
-	"EHLO mk-outboundfilter-5-a-2.mail.uk.tiscali.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750926AbZJaEfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 00:35:04 -0400
-X-Trace: 209711687/mk-outboundfilter-5.mail.uk.tiscali.com/F2S/$F2S-MX-ACCEPTED/f2s-freedom2surf-infrastructure/194.106.33.239/None/unfor@f2s.com
-X-SBRS: None
-X-RemoteIP: 194.106.33.239
-X-IP-MAIL-FROM: unfor@f2s.com
-X-SMTP-AUTH: 
-X-MUA: Internet Messaging Program (IMP) 3.2.3
-X-IP-BHB: Once
-X-IP-Webmail: TRUE
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkIZAPtY60rCaiHv/2dsb2JhbACcKiQDhgK8NIQ6BIthAg
-X-IronPort-AV: E=Sophos;i="4.44,657,1249254000"; 
-   d="scan'208";a="209711687"
-X-IP-Direction: IN
-Message-ID: <1256963112.4aebbc2809eaa@webmail.freedom2surf.net>
-Date: Sat, 31 Oct 2009 04:25:12 +0000
-From: unfor@f2s.com
-Subject: KADIR KASIM LOAN AGENCY
+	Sun, 1 Nov 2009 18:16:38 -0500
+Received: from smtp.ravangrad.net ([82.208.247.197]:54255 "EHLO
+	smtp.ravangrad.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbZKAXQh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 18:16:37 -0500
+X-Greylist: delayed 69776 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Nov 2009 18:16:37 EST
+Message-ID: <62811.41.220.75.3.1257047600.squirrel@www.ravangrad.net>
+Date: Sun, 1 Nov 2009 11:53:20 +0800 (CST)
+Subject: 
+From: "CHEVRON TEXACO COMPANY" <info@chevron.com>
+Reply-To: chevrontexaco87@live.com
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.3
-X-Originating-IP: 115.134.208.77
-To: undisclosed-recipients:;
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Antivirus-Scanned: Clean
+X-Spam-Report: Spam detection software, running on the system "smtp.ravangrad.net", has
+	evaluated this message like this:
+	Content analysis details:   (1.8 points, 5.0 required)
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KADIR KASIM LOAN AGENCY offer loans at 3% interest rate($1,000 to $3M USD).Get
-back via this email if interested: kkloanservices00@sify.com
-Mr. Bin Dauwat (General Consultant)
+You have been choosen for a cash of {$850.000.00 USD}contact
+chevrontexaco87@live.com with your Full Informations i.e Full
+Name,Address,Phone Number and any form of identification
 
