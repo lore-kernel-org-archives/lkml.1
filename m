@@ -1,84 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485AbZKAL5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbZKAMRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752485AbZKAL5O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 06:57:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZKAL4i
+	id S1752074AbZKAMRA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 07:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbZKAMQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 06:56:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40456 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752092AbZKAL4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 06:56:30 -0500
-From: Gleb Natapov <gleb@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 11/11] Send async PF when guest is not in userspace too.
-Date: Sun,  1 Nov 2009 13:56:30 +0200
-Message-Id: <1257076590-29559-12-git-send-email-gleb@redhat.com>
-In-Reply-To: <1257076590-29559-1-git-send-email-gleb@redhat.com>
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
+	Sun, 1 Nov 2009 07:16:59 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52712 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbZKAMQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 07:16:58 -0500
+Date: Sun, 1 Nov 2009 21:16:27 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Timo Sirainen <tss@iki.fi>, Bryan Donlan <bdonlan@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org
+Subject: [PATCH v4] Added PR_SET_PROCTITLE_AREA option for prctl()
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20091101211321.F3FC.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
----
- arch/x86/kvm/mmu.c |   16 ++++++----------
- 1 files changed, 6 insertions(+), 10 deletions(-)
+ChangeLog
+  v3 -> v4
+    - Use mutex instead seq_lock as akpm requested.
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 3d33994..21ec65a 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -2358,7 +2358,7 @@ static bool kvm_asyc_pf_is_done(struct kvm_vcpu *vcpu)
+========================================
+
+From: Timo Sirainen <tss@iki.fi>
+
+Currently glibc2 doesn't have setproctitle(3), so several userland
+daemons attempt to emulate it by doing some brutal stack modifications.
+This works most of the time, but it has problems. For example:
+
+ % ps -ef |grep avahi-daemon
+ avahi     1679     1  0 09:20 ?        00:00:00 avahi-daemon: running [kosadesk.local]
+
+ # cat /proc/1679/cmdline
+ avahi-daemon: running [kosadesk.local]
+
+This looks good, but the process has also overwritten its environment
+area and made the environ file useless:
+
+ # cat /proc/1679/environ
+ adesk.local]
+
+Another problem is that the process title length is limited by the size of
+the environment. Security conscious people try to avoid potential information
+leaks by clearing most of the environment before running a daemon:
+
+ # env - MINIMUM_NEEDED_VAR=foo /path/to/daemon
+
+The resulting environment size may be too small to fit the wanted process
+titles.
+
+This patch makes it possible for userspace to implement setproctitle()
+cleanly. It adds a new PR_SET_PROCTITLE_AREA option for prctl(), which
+updates task's mm_struct->arg_start and arg_end to the given area.
+
+ test_setproctitle.c
+ ================================================
+ #include <string.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <sys/prctl.h>
+
+ #define ERR(str) (perror(str), exit(1))
+
+ void settitle(char* title){
+         int err;
+
+         err = prctl(34, title, strlen(title)+1);
+         if (err < 0)
+                 ERR("prctl ");
+ }
+
+ void main(void){
+         long i;
+         char buf[1024];
+
+         for (i = 0; i < 10000000000LL; i++){
+                 sprintf(buf, "loooooooooooooooooooooooong string %d",i);
+                 settitle(buf);
+         }
+ }
+ ==================================================
+
+Cc: Bryan Donlan <bdonlan@gmail.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Timo Sirainen <tss@iki.fi>
+---
+ fs/proc/base.c           |   31 ++++++++++++++++++++++---------
+ include/linux/mm_types.h |    2 ++
+ include/linux/prctl.h    |    3 +++
+ kernel/fork.c            |    1 +
+ kernel/sys.c             |   22 ++++++++++++++++++++++
+ 5 files changed, 50 insertions(+), 9 deletions(-)
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 837469a..ac800b4 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -255,32 +255,45 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
+ 	int res = 0;
+ 	unsigned int len;
+ 	struct mm_struct *mm = get_task_mm(task);
++
+ 	if (!mm)
+ 		goto out;
++
++	/* The process was not constructed yet? */
+ 	if (!mm->arg_end)
+ 		goto out_mm;	/* Shh! No looking before we're done */
  
- 	spin_lock(&vcpu->arch.mmu_async_pf_lock);
- 	list_for_each_entry_safe(p, node, &vcpu->arch.mmu_async_pf_done, link) {
--		if (p->guest_task != vcpu->arch.pv_shm->current_task)
-+		if (p->token != vcpu->arch.pv_shm->param)
- 			continue;
- 		list_del(&p->link);
- 		found = true;
-@@ -2370,7 +2370,7 @@ static bool kvm_asyc_pf_is_done(struct kvm_vcpu *vcpu)
- 					  p->error_code);
- 		put_page(p->page);
- 		async_pf_work_free(p);
--		trace_kvm_mmu_async_pf_wait(vcpu->arch.pv_shm->current_task, 0);
-+		trace_kvm_mmu_async_pf_wait(vcpu->arch.pv_shm->param, 0);
+- 	len = mm->arg_end - mm->arg_start;
+- 
++	mutex_lock(&mm->arg_lock);
++	len = mm->arg_end - mm->arg_start;
+ 	if (len > PAGE_SIZE)
+ 		len = PAGE_SIZE;
+- 
++
+ 	res = access_process_vm(task, mm->arg_start, buffer, len, 0);
++	if (mm->arg_end != mm->env_start)
++		/* prctl(PR_SET_PROCTITLE_AREA) used */
++		goto out_unlock;
+ 
+-	// If the nul at the end of args has been overwritten, then
+-	// assume application is using setproctitle(3).
++	/*
++	 * If the nul at the end of args has been overwritten, then assume
++	 * application is using sendmail's SPT_REUSEARGV style argv override.
++	 */
+ 	if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
+ 		len = strnlen(buffer, res);
+-		if (len < res) {
+-		    res = len;
+-		} else {
++		if (len < res)
++			res = len;
++		else {
+ 			len = mm->env_end - mm->env_start;
+ 			if (len > PAGE_SIZE - res)
+ 				len = PAGE_SIZE - res;
+-			res += access_process_vm(task, mm->env_start, buffer+res, len, 0);
++			res += access_process_vm(task, mm->env_start,
++						 buffer+res, len, 0);
+ 			res = strnlen(buffer, res);
+ 		}
  	}
- 	return found;
- }
-@@ -2378,7 +2378,7 @@ static bool kvm_asyc_pf_is_done(struct kvm_vcpu *vcpu)
- int kvm_pv_wait_for_async_pf(struct kvm_vcpu *vcpu)
- {
- 	++vcpu->stat.pf_async_wait;
--	trace_kvm_mmu_async_pf_wait(vcpu->arch.pv_shm->current_task, 1);
-+	trace_kvm_mmu_async_pf_wait(vcpu->arch.pv_shm->param, 1);
- 	wait_event(vcpu->wq, kvm_asyc_pf_is_done(vcpu));
++
++out_unlock:
++	mutex_unlock(&mm->arg_lock);
++
+ out_mm:
+ 	mmput(mm);
+ out:
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 84a524a..3e2a346 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -12,6 +12,7 @@
+ #include <linux/completion.h>
+ #include <linux/cpumask.h>
+ #include <linux/page-debug-flags.h>
++#include <linux/mutex.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
  
- 	return 0;
-@@ -2386,17 +2386,13 @@ int kvm_pv_wait_for_async_pf(struct kvm_vcpu *vcpu)
+@@ -236,6 +237,7 @@ struct mm_struct {
+ 	unsigned long stack_vm, reserved_vm, def_flags, nr_ptes;
+ 	unsigned long start_code, end_code, start_data, end_data;
+ 	unsigned long start_brk, brk, start_stack;
++	struct mutex arg_lock;
+ 	unsigned long arg_start, arg_end, env_start, env_end;
  
- static bool can_do_async_pf(struct kvm_vcpu *vcpu)
- {
--	struct kvm_segment kvm_seg;
--
- 	if (!vcpu->arch.pv_shm ||
- 	    !(vcpu->arch.pv_shm->features & KVM_PV_SHM_FEATURES_ASYNC_PF) ||
--	    kvm_event_needs_reinjection(vcpu))
-+	    kvm_event_needs_reinjection(vcpu) ||
-+	    !kvm_x86_ops->interrupt_allowed(vcpu))
- 		return false;
+ 	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
+diff --git a/include/linux/prctl.h b/include/linux/prctl.h
+index 9311505..da47542 100644
+--- a/include/linux/prctl.h
++++ b/include/linux/prctl.h
+@@ -90,4 +90,7 @@
  
--	kvm_get_segment(vcpu, &kvm_seg, VCPU_SREG_CS);
--
--	/* is userspace code? TODO check VM86 mode */
--	return !!(kvm_seg.selector & 3);
-+	return true;
- }
+ #define PR_MCE_KILL	33
  
- static int setup_async_pf(struct kvm_vcpu *vcpu, gpa_t cr3, gva_t gva,
++/* Set process title memory area for setproctitle() */
++#define PR_SET_PROCTITLE_AREA 34
++
+ #endif /* _LINUX_PRCTL_H */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 4c20fff..881a6b4 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -459,6 +459,7 @@ static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
+ 	mm->cached_hole_size = ~0UL;
+ 	mm_init_aio(mm);
+ 	mm_init_owner(mm, p);
++	mutex_init(&mm->arg_lock);
+ 
+ 	if (likely(!mm_alloc_pgd(mm))) {
+ 		mm->def_flags = 0;
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 255475d..434ea13 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1564,6 +1564,28 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+ 			error = 0;
+ 			break;
+ 
++		case PR_SET_PROCTITLE_AREA: {
++			struct mm_struct *mm = current->mm;
++			unsigned long addr = arg2;
++			unsigned long len = arg3;
++			unsigned long end = arg2 + arg3;
++
++			if (len > PAGE_SIZE)
++				return -EINVAL;
++
++			if (addr >= end)
++				return -EINVAL;
++
++			if (!access_ok(VERIFY_READ, addr, len))
++				return -EFAULT;
++
++			mutex_lock(&mm->arg_lock);
++			mm->arg_start = addr;
++			mm->arg_end = addr + len;
++			mutex_unlock(&mm->arg_lock);
++
++			return 0;
++		}
+ 		default:
+ 			error = -EINVAL;
+ 			break;
 -- 
-1.6.3.3
+1.6.2.5
+
+
 
