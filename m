@@ -1,140 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZKAWJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZKAWKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbZKAWJG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 17:09:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbZKAWJF
+	id S1753846AbZKAWKX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 17:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZKAWKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 17:09:05 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:52508 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753468AbZKAWJE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 17:09:04 -0500
-Message-ID: <4AEE06FF.9080807@web.de>
-Date: Sun, 01 Nov 2009 23:09:03 +0100
-From: Jan Kiszka <jan.kiszka@web.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+	Sun, 1 Nov 2009 17:10:23 -0500
+Received: from tundra.namei.org ([65.99.196.166]:49216 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753511AbZKAWKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 17:10:22 -0500
+Date: Mon, 2 Nov 2009 09:09:54 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Eric Paris <eparis@parisplace.org>
+cc: David Smith <david.daniel.smith@gmail.com>,
+       tpmdd-devel@lists.sourceforge.net,
+       Seiji Munetoh <seiji.munetoh@gmail.com>, akpm@linux-foundation.org,
+       Daniel Walker <dwalker@fifo99.com>, Andy Isaacson <adi@hexapodia.org>,
+       len.brown@intel.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
+       Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>
+Subject: Re: [PATCH] tpm_tis: TPM_STS_DATA_EXPECT workaround
+In-Reply-To: <7e0fb38c0910310724i6f440b3dmc2a16920d2ef4900@mail.gmail.com>
+Message-ID: <alpine.LRH.2.00.0911020909420.9773@tundra.namei.org>
+References: <1246410255-6839-1-git-send-email-adi@vmware.com>  <1246455920.9140.28.camel@blackbox>  <20090720182732.GL6370@hexapodia.org>  <1252609714.4837.87.camel@blackbox>  <1252612471.4837.107.camel@blackbox>  <1252612709.30578.219.camel@desktop> 
+ <1252613375.4837.121.camel@blackbox>  <f02dbbe70909111634q24df8746o8589394f7c30b28@mail.gmail.com>  <1253817781.8653.3.camel@dyn531367.br.ibm.com>  <b8394ab90910271945j10bd0aduda01cdc0610271f4@mail.gmail.com>
+ <7e0fb38c0910310724i6f440b3dmc2a16920d2ef4900@mail.gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
- on top of perf events
-References: <4AE55B1B.2030006@web.de> <1257109753-6464-5-git-send-email-fweisbec@gmail.com>
-In-Reply-To: <1257109753-6464-5-git-send-email-fweisbec@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6B1708462926783FB23D0871"
-X-Provags-ID: V01U2FsdGVkX193ZTwZCCw/N+rOC89kA8SGV1hAeR4DGuAVzgMm
-	42TyOQ73cR7VHGo/QtU4tw3UgldvjCdfkSffpeNKu+NSSNh3jz
-	51oL9t4ZM=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6B1708462926783FB23D0871
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Sat, 31 Oct 2009, Eric Paris wrote:
 
-Frederic Weisbecker wrote:
-[...]
-> @@ -94,6 +87,12 @@ static inline void hw_breakpoint_disable(void)
->  	set_debugreg(0UL, 3);
->  }
->
-> +#ifdef CONFIG_KVM
-> +extern void hw_breakpoint_restore(void);
-> +#else
-> +static inline void hw_breakpoint_restore(void)	{ }
-> +#endif
-> +
-
-Hmm, if this shall become a KVM-only API, why the empty wrapper?
-
-[...]
-> -void arch_flush_thread_hw_breakpoint(struct task_struct *tsk)
-> +#ifdef CONFIG_KVM
-> +void hw_breakpoint_restore(void)
->  {
-> -	int i;
-> -	struct thread_struct *thread =3D &(tsk->thread);
-> -
-> -	thread->debugreg7 =3D 0;
-> -	for (i =3D 0; i < HBP_NUM; i++)
-> -		thread->debugreg[i] =3D 0;
-> +	set_debugreg(__get_cpu_var(cpu_debugreg[0]), 0);
-> +	set_debugreg(__get_cpu_var(cpu_debugreg[1]), 1);
-> +	set_debugreg(__get_cpu_var(cpu_debugreg[2]), 2);
-> +	set_debugreg(__get_cpu_var(cpu_debugreg[3]), 3);
-> +	set_debugreg(current->thread.debugreg6, 6);
-> +	set_debugreg(__get_cpu_var(dr7), 7);
->  }
-> +#endif
-
-EXPORT_SYMBOL_GPL(hw_breakpoint_restore);
-
-as KVM can be built as module.
-
-[...]
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index fc2974a..32d7bca 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -42,6 +42,7 @@
->  #define CREATE_TRACE_POINTS
->  #include "trace.h"
-> =20
-> +#include <asm/debugreg.h>
->  #include <asm/uaccess.h>
->  #include <asm/msr.h>
->  #include <asm/desc.h>
-> @@ -3643,14 +3644,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcp=
-u, struct kvm_run *kvm_run)
->  	trace_kvm_entry(vcpu->vcpu_id);
->  	kvm_x86_ops->run(vcpu, kvm_run);
-> =20
-> -	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG)=
-)) {
-> -		set_debugreg(current->thread.debugreg[0], 0);
-> -		set_debugreg(current->thread.debugreg[1], 1);
-> -		set_debugreg(current->thread.debugreg[2], 2);
-> -		set_debugreg(current->thread.debugreg[3], 3);
-> -		set_debugreg(current->thread.debugreg6, 6);
-> -		set_debugreg(current->thread.debugreg7, 7);
-> -	}
-> +	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG)=
-))
-> +		hw_breakpoint_restore();
-
-TIF_DEBUG is only set on active ptrace hw-breakpoints, thus we miss
-other types here, right? (Note: arch.switch_db_regs is guest-related,
-thus does not help in this regard.)
-
-Jan
+> On Tue, Oct 27, 2009 at 10:45 PM, David Smith
+> <david.daniel.smith@gmail.com> wrote:
+> > Hi, can this be merged, please? Using the module parameter is not
+> > optimal but it's better than the complete lack of support today.
+> >
+> > On Fri, Sep 25, 2009 at 3:43 AM, Rajiv Andrade
+> > <srajiv@linux.vnet.ibm.com> wrote:
+> >> This was already tested and, given no more comments on it, finally
+> >> reviewed. Can it already be merged?
+> 
+> James can we get this merged?
+> 
+> Acked-by: Eric Paris <eparis@redhat.com>
 
 
---------------enig6B1708462926783FB23D0871
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-iEYEARECAAYFAkruBwMACgkQitSsb3rl5xQjDACgtiFUKWUqUA9K4rCA9bGsQxMI
-+OoAoPAFfZb3tFukprl437TnA1ToOvGj
-=pmUV
------END PGP SIGNATURE-----
-
---------------enig6B1708462926783FB23D0871--
+-- 
+James Morris
+<jmorris@namei.org>
