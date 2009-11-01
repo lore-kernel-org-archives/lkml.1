@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbZKAXcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbZKAXdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752475AbZKAXcO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 18:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZKAXcN
+	id S1752432AbZKAXdl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 18:33:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbZKAXdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 18:32:13 -0500
-Received: from www84.your-server.de ([213.133.104.84]:51047 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752232AbZKAXcN (ORCPT
+	Sun, 1 Nov 2009 18:33:40 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:47655 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbZKAXdk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 18:32:13 -0500
-Subject: Re: [PATCH] proc: remove /proc/*/status "Stack usage:"
-From: Stefani Seibold <stefani@seibold.net>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20091101155345.GA3867@x200>
-References: <20091101131518.GA18284@x200> <1257086397.31587.5.camel@wall-e>
-	 <20091101155345.GA3867@x200>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 02 Nov 2009 00:32:08 +0100
-Message-ID: <1257118328.7978.9.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Sun, 1 Nov 2009 18:33:40 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=yoZ2jOJOabEiPbFj0kmBeYAbWx8lQKgej/Yo9K7leVPrKyT3X4tC/4MHMurfTLw5U
+	x2Kd9HmlPeXMpAKbwYVAQ==
+MIME-Version: 1.0
+In-Reply-To: <20091101231950.GF20740@elf.ucw.cz>
+References: <20091101221345.GA16926@elf.ucw.cz>
+	 <a55d774e0911011501x6abdb6a2p117f7038a4fa80cf@mail.gmail.com>
+	 <20091101231950.GF20740@elf.ucw.cz>
+Date: Sun, 1 Nov 2009 15:33:39 -0800
+Message-ID: <a55d774e0911011533xf9b1285k7dc92745f2fb4edf@mail.gmail.com>
+Subject: Re: [3/3,ARM] msm: add minimal board file for HTC Dream device
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, den 01.11.2009, 18:53 +0300 schrieb Alexey Dobriyan:
-> On Sun, Nov 01, 2009 at 03:39:57PM +0100, Stefani Seibold wrote:
-> > Am Sonntag, den 01.11.2009, 16:15 +0300 schrieb Alexey Dobriyan:
-> > > We have /proc/*/pagemap to determine how much stack was consumed.
-> > > Leave "threadstack" though.
-> > > 
-> > 
-> > Stop! /proc/*/pagemap is not a real substitute for the stackm usage
-> > patch. If you have problems with this patch i will have a look on it.
-> 
-> Why?
-> 
-> You grab thread stack start from /proc/*/stat, then for every page of
-> stack VMA, you lookup state of page, which is exactly what you're doing
-> by employing page walker.
+On Sun, Nov 1, 2009 at 3:19 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>>
+>> Pretty sure it's something later than .29
+>
+> I guess I should try 2.6.31.
+>
+>> Does enabling DEBUG_LL help?  If something's dying before the serial
+>> port is registered, you might never see any console chatter.
+>
+> DEBUG_LL does not help. Is that early_printk() equivalent?
+> With DEBUG_ICEDC I don't even get "uncompressing linux" message.
 
-First, as you figured out there is currently no way to get the stack
-start of a thread. But i currently check this and hope to find a
-solution in the next 24 hours.
+ICEDCC will try to send messages to JTAG DCC.
 
-Second, this patch aims to the embedded world and there is normally no
-tools available when you need it, but /proc is always there. Especially
-outside in the field.
+Sticking a call to printascii(printk_buf) after the vscnprintf() in
+vprintk() in kernel/printk.c is sometimes useful alongside DEBUG_LL
+(so that printks will go to the serial port immediately).
 
-Like Dr Frank. N. Furter in the "Rocky Horror Picture Show" says: remove
-the cause but NOT the symptoms!
-
-And the cause is the miss implemented KSTK_ESP in a x86_64. I also
-checked all other architekture depended KSTK_ESP definitions and this
-definitions looks okay for me. 
-
-Stand by....
-
-
+> Yes, I believe it dies before serial registration :-(. Being able to
+> call puts() that decompressor uses would be useful...
+>
+>> Also, I believe you'll want to pass console=ttyMSM2,115200n8 on the
+>> kernel commandline  (-c parameter to fastboot or mkbootimg).
+>
+> I'm using "console=ttyMSM2 rootdelay=5 fbcon=rotate:1" that worked for
+> me on another kernel version...
+>
