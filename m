@@ -1,104 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbZKANfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZKAOGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752505AbZKANfY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 08:35:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbZKANfW
+	id S1752559AbZKAOGe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 09:06:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZKAOGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 08:35:22 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:41471 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbZKANfT (ORCPT
+	Sun, 1 Nov 2009 09:06:34 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:44977 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbZKAOGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 08:35:19 -0500
+	Sun, 1 Nov 2009 09:06:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=aQrx6cxifZe/1YKzdqoIL7cwux69boevcLfywBgUq2CGUnYYx8PsB/SF0Ah6DaRwGk
-         /DZRuASZ7nbDZ7V6130wIAkVUlxFVmRZA25tKyGBVobBBRb2hPaspdYvYy6wzEWtlQZZ
-         sGMWi+gwXV4HkhSvfNctage+4Zxt20WqMmeF4=
-Message-ID: <4AED9132.2060507@gmail.com>
-Date: Sun, 01 Nov 2009 14:46:26 +0100
+        b=T9UwEkAmPdcRNzSijC+Uy037asqmBF0/Lrtl9zQvyw4kJ/nqtKU2aEVPqSQ/tUUTmX
+         SdzEz7laNnl5g5bkg4Ne73ZGSZ2b7+8/gxGcb1hyaCUc0ZWHKMSG4DHxjQ8P7eUnRtpO
+         sQQVeRNyaDF4Uxt/+XcqdAMyIWhoMnbCy7jIs=
+Message-ID: <4AED9884.7050800@gmail.com>
+Date: Sun, 01 Nov 2009 15:17:40 +0100
 From: Roel Kluin <roel.kluin@gmail.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Mikael Starvik <starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-cris-kernel@axis.com,
+To: David Howells <dhowells@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] CRIS v32: Should index be positive?
+Subject: [PATCH] FRV: ensure dma is within bounds.
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-`port' is used as index for writing to pins during
-allocation/deallocation. It should be positive.
+Ensure the index `dma' is within bounds before reading from or
+writing to frv_dma_channels[dma] and members.
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- arch/cris/arch-v32/kernel/pinmux.c  |    4 ++--
- arch/cris/arch-v32/mach-a3/pinmux.c |    2 +-
- arch/cris/arch-v32/mach-fs/pinmux.c |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ arch/frv/kernel/dma.c |   57 ++++++++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 49 insertions(+), 8 deletions(-)
 
-Found by code analysis, is it required?
+Found by code analysis, is this required?
 
-diff --git a/arch/cris/arch-v32/kernel/pinmux.c b/arch/cris/arch-v32/kernel/pinmux.c
-index 6eb54ea..f6f3637 100644
---- a/arch/cris/arch-v32/kernel/pinmux.c
-+++ b/arch/cris/arch-v32/kernel/pinmux.c
-@@ -54,7 +54,7 @@ crisv32_pinmux_alloc(int port, int first_pin, int last_pin, enum pin_mode mode)
+questions:
+* Can is_frv_dma_interrupting() return -EINVAL?
+* Do we need more verbosity (i.e. printk's on errors)?
+
+I tried to build test it, but it seems not to work
+for me due to an unrelated problem:
+
+  CHECK   /home/roel/development/linux-git/arch/frv/kernel/dma.c
+/home/roel/development/linux-git/arch/frv/kernel/dma.c:19:11: error: unable to open 'asm/gpio-regs.h'
+make[2]: *** [arch/frv/kernel/dma.o] Fout 1
+make[1]: *** [arch/frv/kernel/dma.o] Fout 2
+make: *** [sub-make] Fout 2
+
+So this patch was not yet tested.
+
+diff --git a/arch/frv/kernel/dma.c b/arch/frv/kernel/dma.c
+index 156184e..7cfa461 100644
+--- a/arch/frv/kernel/dma.c
++++ b/arch/frv/kernel/dma.c
+@@ -9,6 +9,7 @@
+  * 2 of the License, or (at your option) any later version.
+  */
  
- 	crisv32_pinmux_init();
++#include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/spinlock.h>
+@@ -238,9 +239,14 @@ EXPORT_SYMBOL(frv_dma_open);
+  */
+ void frv_dma_close(int dma)
+ {
+-	struct frv_dma_channel *channel = &frv_dma_channels[dma];
++	struct frv_dma_channel *channel;
+ 	unsigned long flags;
  
--	if (port > PORTS)
-+	if (port > PORTS || port < 0)
- 		return -EINVAL;
++	if (dma < 0 || dma >= ARRAY_SIZE(frv_dma_channels))
++		return;
++
++	channel = &frv_dma_channels[dma];
++
+ 	write_lock_irqsave(&frv_dma_channels_lock, flags);
  
- 	spin_lock_irqsave(&pinmux_lock, flags);
-@@ -197,7 +197,7 @@ crisv32_pinmux_dealloc(int port, int first_pin, int last_pin)
+ 	free_irq(channel->irq, channel);
+@@ -259,7 +265,12 @@ EXPORT_SYMBOL(frv_dma_close);
+  */
+ void frv_dma_config(int dma, unsigned long ccfr, unsigned long cctr, unsigned long apr)
+ {
+-	unsigned long ioaddr = frv_dma_channels[dma].ioaddr;
++	unsigned long ioaddr;
++
++	if (dma < 0 || dma >= ARRAY_SIZE(frv_dma_channels))
++		return;
++
++	ioaddr = frv_dma_channels[dma].ioaddr;
  
- 	crisv32_pinmux_init();
+ 	___set_DMAC(ioaddr, CCFR, ccfr);
+ 	___set_DMAC(ioaddr, CCTR, cctr);
+@@ -278,7 +289,12 @@ void frv_dma_start(int dma,
+ 		   unsigned long sba, unsigned long dba,
+ 		   unsigned long pix, unsigned long six, unsigned long bcl)
+ {
+-	unsigned long ioaddr = frv_dma_channels[dma].ioaddr;
++	unsigned long ioaddr;
++
++	if (dma < 0 || dma >= ARRAY_SIZE(frv_dma_channels))
++		return;
++
++	ioaddr = frv_dma_channels[dma].ioaddr;
  
--	if (port > PORTS)
-+	if (port > PORTS || port < 0)
- 		return -EINVAL;
+ 	___set_DMAC(ioaddr, SBA,  sba);
+ 	___set_DMAC(ioaddr, DBA,  dba);
+@@ -301,7 +317,12 @@ EXPORT_SYMBOL(frv_dma_start);
+  */
+ void frv_dma_restart_circular(int dma, unsigned long six)
+ {
+-	unsigned long ioaddr = frv_dma_channels[dma].ioaddr;
++	unsigned long ioaddr;
++
++	if (dma < 0 || dma >= ARRAY_SIZE(frv_dma_channels))
++		return;
++
++	ioaddr = frv_dma_channels[dma].ioaddr;
  
- 	spin_lock_irqsave(&pinmux_lock, flags);
-diff --git a/arch/cris/arch-v32/mach-a3/pinmux.c b/arch/cris/arch-v32/mach-a3/pinmux.c
-index 0a28c9b..18648ef 100644
---- a/arch/cris/arch-v32/mach-a3/pinmux.c
-+++ b/arch/cris/arch-v32/mach-a3/pinmux.c
-@@ -242,7 +242,7 @@ crisv32_pinmux_dealloc(int port, int first_pin, int last_pin)
+ 	___set_DMAC(ioaddr, SIX,  six);
+ 	___set_DMAC(ioaddr, CSTR, __get_DMAC(ioaddr, CSTR) & ~DMAC_CSTRx_CE);
+@@ -320,9 +341,14 @@ EXPORT_SYMBOL(frv_dma_restart_circular);
+  */
+ void frv_dma_stop(int dma)
+ {
+-	unsigned long ioaddr = frv_dma_channels[dma].ioaddr;
++	unsigned long ioaddr;
+ 	uint32_t cctr;
  
- 	crisv32_pinmux_init();
++	if (dma < 0 || dma >= ARRAY_SIZE(frv_dma_channels))
++		return;
++
++	ioaddr = frv_dma_channels[dma].ioaddr;
++
+ 	___set_DMAC(ioaddr, CSTR, 0);
+ 	cctr = __get_DMAC(ioaddr, CCTR);
+ 	cctr &= ~(DMAC_CCTRx_IE | DMAC_CCTRx_ACT);
+@@ -340,7 +366,12 @@ EXPORT_SYMBOL(frv_dma_stop);
+  */
+ int is_frv_dma_interrupting(int dma)
+ {
+-	unsigned long ioaddr = frv_dma_channels[dma].ioaddr;
++	unsigned long ioaddr;
++
++	if (dma < 0 || dma >= ARRAY_SIZE(frv_dma_channels))
++		return -EINVAL;
++
++	ioaddr = frv_dma_channels[dma].ioaddr;
  
--	if (port > PORTS)
-+	if (port > PORTS || port < 0)
- 		return -EINVAL;
+ 	return __get_DMAC(ioaddr, CSTR) & (1 << 23);
  
- 	spin_lock_irqsave(&pinmux_lock, flags);
-diff --git a/arch/cris/arch-v32/mach-fs/pinmux.c b/arch/cris/arch-v32/mach-fs/pinmux.c
-index d722ad9..38f29ee 100644
---- a/arch/cris/arch-v32/mach-fs/pinmux.c
-+++ b/arch/cris/arch-v32/mach-fs/pinmux.c
-@@ -54,7 +54,7 @@ crisv32_pinmux_alloc(int port, int first_pin, int last_pin, enum pin_mode mode)
+@@ -354,8 +385,13 @@ EXPORT_SYMBOL(is_frv_dma_interrupting);
+  */
+ void frv_dma_dump(int dma)
+ {
+-	unsigned long ioaddr = frv_dma_channels[dma].ioaddr;
+ 	unsigned long cstr, pix, six, bcl;
++	unsigned long ioaddr;
++
++	if (dma < 0 || dma >= ARRAY_SIZE(frv_dma_channels))
++		return;
++
++	ioaddr = frv_dma_channels[dma].ioaddr;
  
- 	crisv32_pinmux_init();
+ 	cstr = __get_DMAC(ioaddr, CSTR);
+ 	pix  = __get_DMAC(ioaddr, PIX);
+@@ -453,8 +489,13 @@ EXPORT_SYMBOL(frv_dma_resume_all);
+  */
+ void frv_dma_status_clear(int dma)
+ {
+-	unsigned long ioaddr = frv_dma_channels[dma].ioaddr;
++	unsigned long ioaddr;
+ 	uint32_t cctr;
++
++	if (dma < 0 || dma >= ARRAY_SIZE(frv_dma_channels))
++		return;
++
++	ioaddr = frv_dma_channels[dma].ioaddr;
+ 	___set_DMAC(ioaddr, CSTR, 0);
  
--	if (port > PORTS)
-+	if (port > PORTS || port < 0)
- 		return -EINVAL;
- 
- 	spin_lock_irqsave(&pinmux_lock, flags);
-@@ -195,7 +195,7 @@ int crisv32_pinmux_dealloc(int port, int first_pin, int last_pin)
- 
- 	crisv32_pinmux_init();
- 
--	if (port > PORTS)
-+	if (port > PORTS || port < 0)
- 		return -EINVAL;
- 
- 	spin_lock_irqsave(&pinmux_lock, flags);
+ 	cctr = __get_DMAC(ioaddr, CCTR);
