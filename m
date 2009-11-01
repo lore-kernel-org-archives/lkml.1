@@ -1,79 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbZKAVrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbZKAVsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753633AbZKAVrL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 16:47:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZKAVrH
+	id S1753735AbZKAVsM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 16:48:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbZKAVsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 16:47:07 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43591 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbZKAVrG (ORCPT
+	Sun, 1 Nov 2009 16:48:12 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:11103 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752815AbZKAVsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 16:47:06 -0500
+	Sun, 1 Nov 2009 16:48:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=sol9mcHsWlAf7Qi+V9J8eU4nfD2cEBMJYgvOgolWrRYWhdL97L2TPPCgkjBF5uk7F8
-         xvEbtMJ3uu7m/PsWXl/6t1a2D1NjMF4BnDF+t940cIgiMquLGAea3qFb1YkHa/AhYcnL
-         n4kox6aCJKk65uTyb1/uGcB3JJxT+4YWEuoyI=
-Message-ID: <4AEE01D9.8040902@gmail.com>
-Date: Sun, 01 Nov 2009 22:47:05 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mm-commits@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Tiago Vignatti <tiago.vignatti@nokia.com>,
-       Dave Airlie <airlied@redhat.com>, kvm@vger.kernel.org
-Subject: vga_arb warning [was: mmotm 2009-11-01-10-01 uploaded]
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
-In-Reply-To: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
-X-Enigmail-Version: 0.97b
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=qbkR4taU63wWbMzzzZo8kcWBYkCfF+q4zqgkq8p6texai59vvr2+WkppuuABGb4AqP
+         Bna5zGLGjAqER/0tTFl3RghfJgNYBmMoDh42X/cPsRqhPc7B9Wg4Ny6P3Cuet9WtLlnl
+         Ry8rVUsS7d0h/onwu8PEXqWllZt+ITsJzemxI=
+From: Thiago Farina <tfransosi@gmail.com>
+To: trivial@kernel.org
+Cc: linux-kernel@vger.kernel.org, Thiago Farina <tfransosi@gmail.com>
+Subject: [PATCH] trivial: Make use of ARRAY_SIZE.
+Date: Sun,  1 Nov 2009 16:47:35 -0500
+Message-Id: <1257112055-14011-1-git-send-email-tfransosi@gmail.com>
+X-Mailer: git-send-email 1.6.5.1.61.ge79999
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/01/2009 07:07 PM, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
+Cleanup the usage of DBE_VT_SIZE since the kernel already defines the
+same macro for the same propose.
 
-Hi, I got the following warning while booting an image in qemu-kvm:
+Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+---
+ drivers/video/sgivwfb.c |    4 ++--
+ include/video/sgivw.h   |   11 +++++------
+ 2 files changed, 7 insertions(+), 8 deletions(-)
 
-WARNING: at fs/attr.c:158 notify_change+0x2da/0x310()
-Hardware name:
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.32-rc5-mm1_64 #862
-Call Trace:
- [<ffffffff81038008>] warn_slowpath_common+0x78/0xb0
- [<ffffffff8103804f>] warn_slowpath_null+0xf/0x20
- [<ffffffff810d32ba>] notify_change+0x2da/0x310
- [<ffffffff810c5b88>] ? fsnotify_create+0x48/0x60
- [<ffffffff810c6d2b>] ? vfs_mknod+0xbb/0xe0
- [<ffffffff812487b6>] devtmpfs_create_node+0x1e6/0x270
- [<ffffffff811170d0>] ? sysfs_addrm_finish+0x20/0x280
- [<ffffffff811175d6>] ? __sysfs_add_one+0x26/0xf0
- [<ffffffff81117b6c>] ? sysfs_do_create_link+0xcc/0x160
- [<ffffffff81241cf0>] device_add+0x1e0/0x5b0
- [<ffffffff8124adb1>] ? pm_runtime_init+0xa1/0xb0
- [<ffffffff81248f05>] ? device_pm_init+0x65/0x70
- [<ffffffff812420d9>] device_register+0x19/0x20
- [<ffffffff81242290>] device_create_vargs+0xf0/0x120
- [<ffffffff812422ec>] device_create+0x2c/0x30
- [<ffffffff810c0516>] ? __register_chrdev+0x86/0xf0
- [<ffffffff81245599>] ? __class_create+0x69/0xa0
- [<ffffffff814326e9>] ? mutex_lock+0x19/0x50
- [<ffffffff811d4e23>] misc_register+0x93/0x170
- [<ffffffff818994a0>] ? vga_arb_device_init+0x0/0x77
- [<ffffffff818994b3>] vga_arb_device_init+0x13/0x77
- [<ffffffff818994a0>] ? vga_arb_device_init+0x0/0x77
- [<ffffffff810001e7>] do_one_initcall+0x37/0x190
- [<ffffffff8187d6ce>] kernel_init+0x172/0x1c8
- [<ffffffff81003c7a>] child_rip+0xa/0x20
- [<ffffffff8187d55c>] ? kernel_init+0x0/0x1c8
- [<ffffffff81003c70>] ? child_rip+0x0/0x20
----[ end trace 4eaa2a86a8e2da22 ]---
+diff --git a/drivers/video/sgivwfb.c b/drivers/video/sgivwfb.c
+index bba5371..f860122 100644
+--- a/drivers/video/sgivwfb.c
++++ b/drivers/video/sgivwfb.c
+@@ -260,13 +260,13 @@ static int sgivwfb_check_var(struct fb_var_screeninfo *var,
+ 	var->grayscale = 0;	/* No grayscale for now */
+ 
+ 	/* determine valid resolution and timing */
+-	for (min_mode = 0; min_mode < DBE_VT_SIZE; min_mode++) {
++	for (min_mode = 0; min_mode < ARRAY_SIZE(dbeVTimings); min_mode++) {
+ 		if (dbeVTimings[min_mode].width >= var->xres &&
+ 		    dbeVTimings[min_mode].height >= var->yres)
+ 			break;
+ 	}
+ 
+-	if (min_mode == DBE_VT_SIZE)
++	if (min_mode == ARRAY_SIZE(dbeVTimings))
+ 		return -EINVAL;	/* Resolution to high */
+ 
+ 	/* XXX FIXME - should try to pick best refresh rate */
+diff --git a/include/video/sgivw.h b/include/video/sgivw.h
+index 55f2a7c..f6aa569 100644
+--- a/include/video/sgivw.h
++++ b/include/video/sgivw.h
+@@ -351,7 +351,7 @@ typedef enum {
+ struct dbe_timing_info
+ {
+   dbe_timing_t type;
+-  int flags;				
++  int flags;
+   short width;		    /* Monitor resolution		*/
+   short height;
+   int fields_sec;	    /* fields/sec  (Hz -3 dec. places */
+@@ -389,11 +389,11 @@ struct dbe_timing_info dbeVTimings[] = {
+   {
+     DBE_VT_640_480_60,
+     /*	flags,	width,			height,		fields_sec,		cfreq */
+-    0,  	640,			480,		59940,			25175,
++    0,	        640,			480,		59940,			25175,
+     /*	htotal,	hblank_start,	hblank_end,	hsync_start,	hsync_end */
+-    800,	640,		    800,		656,	    	752,
++    800,	640,		        800,		656,		752,
+     /*	vtotal,	vblank_start,	vblank_end,	vsync_start,	vsync_end */
+-    525,	480,		    525,		490,		    492,
++    525,	480,		        525,		490,		    492,
+     /*	pll_m,	pll_n,			pll_p */
+     15,	    2,				3
+   },
+@@ -650,7 +650,7 @@ struct dbe_timing_info dbeVTimings[] = {
+     /* pll_m,  pll_n,          pll_p */
+     6,      1,              0
+   },
+-	
++
+   {
+     DBE_VT_1920_1200_60,
+     /* flags,  width,          height,         fields_sec,     cfreq */
+@@ -676,7 +676,6 @@ struct dbe_timing_info dbeVTimings[] = {
+   }
+ };
+ 
+-#define DBE_VT_SIZE  (sizeof(dbeVTimings)/sizeof(dbeVTimings[0]))
+ #endif // INCLUDE_TIMING_TABLE_DATA
+ 
+ #endif // ! __SGIVWFB_H__
+-- 
+1.6.5.1.61.ge79999
 
