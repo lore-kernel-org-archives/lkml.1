@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZKAVN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZKAVZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582AbZKAVN2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 16:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZKAVN1
+	id S1753684AbZKAVZq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 16:25:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbZKAVZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 16:13:27 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:64178 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753513AbZKAVN0 (ORCPT
+	Sun, 1 Nov 2009 16:25:36 -0500
+Received: from agrajag.mansr.com ([78.86.181.102]:55674 "EHLO mail.mansr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753447AbZKAVZa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 16:13:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ByFxi+ALwErgcOrxqg3F91RK/FJwoWJYIrYConRmT1zLIzlYm/jIhNkD3Fzc2RgfYN
-         Oae06FhYAHqOyUEK7oKSQlPoM7DaFXrdL+nv/7GeOibNlbryF9nM4KfO8Ox4m5uB3hD3
-         vfopBdjlZCn4clCnWyD+BndL3xWa/0MnyRYNI=
+	Sun, 1 Nov 2009 16:25:30 -0500
+X-Greylist: delayed 626 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Nov 2009 16:25:29 EST
+To: "Ryan C. Gordon" <icculus@icculus.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: FatELF patches...
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+	<1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
+	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Date: Sun, 01 Nov 2009 21:15:07 +0000
+In-Reply-To: <alpine.OSX.1.10.0911011540400.53392@caridad.local> (Ryan C. Gordon's message of "Sun, 1 Nov 2009 15:59:56 -0500 (EST)")
+Message-ID: <yw1xhbte0wx0.fsf@unicorn.mansr.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.22 (Instant Classic, linux)
 MIME-Version: 1.0
-In-Reply-To: <20091101095208.10d57e8f.rdunlap@xenotime.net>
-References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>
-	 <4AEC0EBE.2040308@crca.org.au> <4AEC2971.8050105@imap.cc>
-	 <20091101095208.10d57e8f.rdunlap@xenotime.net>
-Date: Sun, 1 Nov 2009 19:13:30 -0200
-Message-ID: <a4c8a6d00911011313k39a6805dr590967cc8fc3a204@mail.gmail.com>
-Subject: Re: [PATCH 03/16] trivial: fix assorted "through" typos
-From: Thiago Farina <tfransosi@gmail.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Tilman Schmidt <tilman@imap.cc>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>,
-       trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 1, 2009 at 3:52 PM, Randy Dunlap <rdunlap@xenotime.net> wrote:
-> It was Robert PJ Day.
-> See http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
+"Ryan C. Gordon" <icculus@icculus.org> writes:
 
-Talking about cleanup, there are many definitions of ARRAY_SIZE, found
-using cscope:
-0 spidev_test.c  24 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-1 page-types.c  194 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-2 types.h         4 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-3 user.h         17 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-4 boot.h         35 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
-5 relocs.c       13 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-6 kernel.h       46 #define ARRAY_SIZE(arr) (sizeof(arr) /
-sizeof((arr)[0]) + __must_be_array(arr))
-7 dtc.h          83 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-8 genksyms.c    314 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-9 kallsyms.c     27 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
-a file2alias.c  520 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-b util.h         28 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+>> Am I the only one who sees this as nothing bloat for its own sake?
+>
+> I posted a fairly large list of benefits here:  http://icculus.org/fatelf/
 
-Please forgive me if this is not the right place to post this.
+I've read the list, and I can't find anything I agree with.  Honestly.
+
+> Some are more far-fetched than others, I will grant. Also, I suspect most 
+> people will find one benefit and ten things they don't care about, but 
+> that benefit is different for different people. I'm confident that the 
+> benefits far outweigh the size of the kernel patch.
+
+It's not the size of the kernel patch I'm worried about.  What worries
+me is the disk space needed when *all* my executables and libraries
+are suddenly 3, 4, or 5 times the size they need to be.
+
+There is also the issue of speed to launch these things.  It *has* to
+be slower than executing a native file directly.
+
+>> Did I miss a massive drop in intelligence of Linux users, causing them
+>> to no longer be capable of picking the correct file themselves?
+>
+> Also known as "market saturation."   :)
+>
+> (But really, there are benefits beyond helping dumb people, even if 
+> helping dumb people wasn't a worthwhile goal in itself.)
+
+It's far too easy to use computers already.  That's the reason for the
+spam problem.
+
+Besides, clueless users would be installing a distro, which could
+easily download the correct packages automatically.  In fact, that is
+what they already do.  The bootable installation media would still
+need to be distributed separately, since the boot formats differ
+vastly between architectures.  It is not possible to create a CD/DVD
+that is bootable on multiple system types (with a few exceptions).
+
+>> As an embedded systems guy, I'm more concerned about precious flash
+>> space going to waste than about some hypothetical convenience.
+>
+> I wouldn't imagine this is the target audience for FatELF. For embedded 
+> devices, just use the same ELF files you've always used.
+
+Of course I will.  The question is, will everybody else?  I'm seeing
+enough bloat in the embedded world as it is without handing out new
+ways to make it even easier.
+
+-- 
+Måns Rullgård
+mans@mansr.com
