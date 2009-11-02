@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753015AbZKBBOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZKBBSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753015AbZKBBOd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 20:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZKBBOd
+	id S1753299AbZKBBSq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 20:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZKBBSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 20:14:33 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60936 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752780AbZKBBOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 20:14:32 -0500
-Date: Sun, 1 Nov 2009 17:15:42 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] compiler: Introduce __always_unused
-Message-ID: <20091101171542.56a44a49@infradead.org>
-In-Reply-To: <4AEE2CEC.8040206@cn.fujitsu.com>
-References: <4AEE2CEC.8040206@cn.fujitsu.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 1 Nov 2009 20:18:45 -0500
+Received: from icculus.org ([67.106.77.212]:45648 "EHLO icculus.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752874AbZKBBSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 20:18:45 -0500
+Date: Sun, 1 Nov 2009 20:17:50 -0500 (EST)
+From: "Ryan C. Gordon" <icculus@icculus.org>
+X-X-Sender: icculus@caridad.local
+To: Rayson Ho <raysonlogin@gmail.com>
+cc: =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: FatELF patches...
+In-Reply-To: <73a01bf20911011408v5b6d335fj46c893a8e7d26ab4@mail.gmail.com>
+Message-ID: <alpine.OSX.1.10.0911012017450.55434@caridad.local>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>  <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>  <alpine.OSX.1.10.0911011540400.53392@caridad.local>  <yw1xhbte0wx0.fsf@unicorn.mansr.com>
+ <73a01bf20911011408v5b6d335fj46c893a8e7d26ab4@mail.gmail.com>
+User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Nov 2009 08:50:52 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Hi,
+> Adding code that might bring lawsuits to Linux developers,
+> distributors, users is a BIG disadvantage.
 
-> I wrote some code which is used as compile-time checker, and the
-> code should be elided after compile.
-> +#define __always_unused
-> __attribute__((unused)) 
+I'm tracking down a lawyer to discuss the issue. I'm surprised there 
+aren't a few hanging around here, honestly. I sent a request in to the 
+SFLC, and if that doesn't pan out, I'll dig for coins in my car seat to 
+pay a lawyer for a few hours of her time.
 
-I have a suggestion.
-In addition to marking it attribute unused, would it be useful to also
-put a section attribute as part of this, to a section that we can then
-drop from the binary by way of the linker script ?
+If it's a big deal, we'll figure out what to do from there. But let's not 
+talk about the sky falling until we get to that point, please.
+
+> "Given enough disc space, there's no reason you couldn't have one DVD
+> .iso that installs an x86-64, x86, PowerPC, SPARC, and MIPS system"
+
+I've had about a million people point out the boot loader thing. There's 
+an x86/amd64 forest if you can see past the MIPS trees.
+
+Still, I said there were different points that were more compelling for 
+different individuals. I don't think this is the most compelling argument 
+on that page, and I think there's a value in talking about theoretical 
+benefits in addition to practical ones. Theoretical ones become practical 
+the moment someone decides to roll out a company-internal distribution 
+that works on all the workstations inside IBM or Google or whatever...even 
+if Fedora would turn their nose up at the idea for a general-purpose 
+release.
+
+> IMO, the biggest problem users get is not with which hardware binary
+> to download, but the incompatibly of different Linux kernels and glibc
+> (the API/ABI).
+
+These are concerns, too, but the kernel has been, in my experience, very 
+good at binary compatibility with user space back as far as I can 
+remember. glibc has had some painful progress, but since NPTL stabilized a 
+long time ago, even this hasn't been bad at all.
+
+Certainly one has to be careful--I would even use the word diligent--to 
+maintain binary compatibility, but this was much more of a hurting for 
+application developers a decade ago.
+
+At least, that's been my experience.
+
+--ryan.
 
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
