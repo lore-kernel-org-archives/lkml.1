@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbZKCX7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZKBIbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753886AbZKCX7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZKCX7U
+	id S1754163AbZKBIbL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 03:31:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZKBIbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:59:20 -0500
-Received: from balam.unicach.edu.mx ([201.116.104.144]:37691 "EHLO correo"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753052AbZKCX7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:59:19 -0500
-Message-ID: <8dbd24ea2683b83a569885ed7f821a9a.squirrel@webmail.unicach.edu.mx>
-Date: Mon, 2 Nov 2009 02:27:37 -0600 (CST)
-Subject: 
-From: "Cole Mandyzwall" <cole_mandyzwl@tokyo.ir>
-Reply-To: cole_mandyzwall@tokyo.ir
-User-Agent: SquirrelMail/1.4.17
+	Mon, 2 Nov 2009 03:31:10 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:54678 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754103AbZKBIbJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 03:31:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=kZA4V5jkYVX7nnRtyTjmzZMMsIYcIwUyDNIVdXtKYLLJb5CtF2l5+Ll1HL3qkbcf8s
+         WXXDGMNAQMhfSppMClo6E3HtaJUPk/3+ghY3FTs3ljLcoP6I+reVZE05NByASCF2n7MY
+         ADM9qjlSZkjprPV7V6eDIYFC4sCADbAICQvmQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+In-Reply-To: <200911010020.20284.rjw@sisk.pl>
+References: <20091031160351.26fcc6c5@infradead.org>
+	 <200911010020.20284.rjw@sisk.pl>
+Date: Mon, 2 Nov 2009 08:31:12 +0000
+X-Google-Sender-Auth: 1b53bfa9375d7209
+Message-ID: <25d66d860911020031p6f7772d2w3aca808d25c6d7@mail.gmail.com>
+Subject: Re: kerneloops.org report for the week of October 31 2009
+From: Andy Whitcroft <apw@canonical.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, linux-acpi@vger.kernel.org,
+       tytso@mit.edu, netdev@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       akpm@linux-foundation.org, Matt Domsch <Matt_Domsch@dell.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> This should be fixed by commit 04bf7539c08d64184736cdc5e4ad617eda77eb0f
+> (PM: Make warning in suspend_test_finish() less likely to happen), at least on some
+> machines that report it.
 
-100% LEGAL LOAN
+That commit has been pulled back to the first 9.10 updates kernel to
+reduce the noise.
 
-We offer legal loan for 3-percent,if interested provide your datas for
-notification loan update:
-
-Name:
-Amount:
-Address:
-Monthly Income:
-Duration:
-Country:
-Age:Sex:
-Email Address:
-Phone Number:
-
-Send to EMAIL. cole_mandyzwall@tokyo.ir
-
-Regards.
-
-Cole Mandyzwall
-
-
-
+-apw
