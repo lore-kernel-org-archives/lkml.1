@@ -1,93 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZKBLLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZKBLMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbZKBLLg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 06:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbZKBLLf
+	id S1754619AbZKBLMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 06:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZKBLMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 06:11:35 -0500
-Received: from mga10.intel.com ([192.55.52.92]:14900 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754623AbZKBLLe (ORCPT
+	Mon, 2 Nov 2009 06:12:42 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37489 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754309AbZKBLMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 06:11:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,665,1249282800"; 
-   d="scan'208";a="509859413"
-Message-ID: <4AEEBE65.3070202@linux.intel.com>
-Date: Mon, 02 Nov 2009 12:11:33 +0100
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 2 Nov 2009 06:12:41 -0500
+Date: Mon, 2 Nov 2009 12:12:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-mmc@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: msm_sdcc.c: add missing include, fix compilation
+Message-ID: <20091102111239.GB26989@elf.ucw.cz>
+References: <20091022072119.GA3285@elf.ucw.cz>
+ <20091022185126.GA4401@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: Limit the number of processor bootup messages
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233746.128967000@alcatraz.americas.sgi.com> <87tyxmy6x6.fsf@basil.nowhere.org> <4AE5E48F.6020408@sgi.com> <20091026215544.GA3355@basil.fritz.box> <4AEB3D95.50300@sgi.com>
-In-Reply-To: <4AEB3D95.50300@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091022185126.GA4401@n2100.arm.linux.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
+Hi!
+
+> > Add missing include for	msm_sdcc compilation.
+> > 
+> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
 > 
-> This set of patches limits the number of repetitious messages which contain
-> no additional information.  Much of this information is obtainable from the
-> /proc and /sysfs.   Most of the messages are also sent to the kernel log
-> buffer as KERN_DEBUG messages so it can be used to examine more closely any
-> details specific to a processor.
-
-What would be good is to put the information from the booting CPUs
-into some buffer and print it visibly if there's a timeout detected on the BP.
-
-Also power of two summaries at a bit odd, but ok.
-
-> For Processor Information printout:
+> I don't think this is the right solution - why should MSM have a
+> platform specific include in the ARM generic include files?
 > 
->     [   90.968381] Summary Processor Information for CPUS: 0-639
->     [   90.972033] Genuine Intel(R) CPU    0000 @ 2.13GHz stepping 04
+> (If anything, we should be getting rid of any non-shared platform
+> specific includes in the arch/arm/include/asm/mach directory.)
 
-It would be good to print family/model in this line
+Ok.
 
->     [   90.981402] CPU: L1 I cache: 32K, L1 D cache: 32K
->     [   90.985888] CPU: L2 cache: 256K
->     [   90.988032] CPU: L3 cache: 24576K
+---
 
-I would recommend to drop the cache information; this can be easily
-gotten at runtime and is often implied in the CPU name anyways
-(and especially L1 and increasingly L2 too change only very rarely)
+Add missing include for msm_sdcc compilation, and remove pwrsink
+support that is not mainline, yet.
 
->     [   90.992032] MIN 4266.68 BogoMIPS (lpj=8533371)
->     [   91.000033] MAX 4267.89 BogoMIPS (lpj=8535789)
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Perhaps an average too? You could put all that on one line.
+diff --git a/arch/arm/mach-msm/include/mach/mmc.h b/arch/arm/mach-msm/include/mach/mmc.h
+new file mode 100644
+index 0000000..8948dec
+--- /dev/null
++++ b/arch/arm/mach-msm/include/mach/mmc.h
+@@ -0,0 +1,26 @@
++/*
++ *  arch/arm/include/asm/mach/mmc.h
++ */
++#ifndef ASMARM_MACH_MMC_H
++#define ASMARM_MACH_MMC_H
++
++#include <linux/mmc/host.h>
++#include <linux/mmc/card.h>
++#include <linux/mmc/sdio_func.h>
++
++struct embedded_sdio_data {
++        struct sdio_cis cis;
++        struct sdio_cccr cccr;
++        struct sdio_embedded_func *funcs;
++        int num_funcs;
++};
++
++struct mmc_platform_data {
++	unsigned int ocr_mask;			/* available voltages */
++	u32 (*translate_vdd)(struct device *, unsigned int);
++	unsigned int (*status)(struct device *);
++	struct embedded_sdio_data *embedded_sdio;
++	int (*register_status_notify)(void (*callback)(int card_present, void *dev_id), void *dev_id);
++};
++
++#endif
+diff --git a/drivers/mmc/host/msm_sdcc.c b/drivers/mmc/host/msm_sdcc.c
+index dba4600..b31946e 100644
+--- a/drivers/mmc/host/msm_sdcc.c
++++ b/drivers/mmc/host/msm_sdcc.c
+@@ -38,10 +38,9 @@
+ #include <asm/div64.h>
+ #include <asm/sizes.h>
+ 
+-#include <asm/mach/mmc.h>
++#include <mach/mmc.h>
+ #include <mach/msm_iomap.h>
+ #include <mach/dma.h>
+-#include <mach/htc_pwrsink.h>
+ 
+ #include "msm_sdcc.h"
+ 
+@@ -775,13 +774,11 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 
+ 	switch (ios->power_mode) {
+ 	case MMC_POWER_OFF:
+-		htc_pwrsink_set(PWRSINK_SDCARD, 0);
+ 		break;
+ 	case MMC_POWER_UP:
+ 		pwr |= MCI_PWR_UP;
+ 		break;
+ 	case MMC_POWER_ON:
+-		htc_pwrsink_set(PWRSINK_SDCARD, 100);
+ 		pwr |= MCI_PWR_ON;
+ 		break;
+ 	}
 
 
-> These lines have been moved to loglevel KERN_DEBUG:
-> 
->     CPU: Physical Processor ID:
->     CPU: Processor Core ID:
->     CPU %d/0x%x -> Node %d
->     <cache line sizes per cpu>
-
-I think you can just remove them.
-
->     CPUx is down
-
-This should be still printed if there's a timeout, or rather print
-a "CPUx is not down" message. Right now there's no timeout detection on shutdown, but
-I guess that wouldn't be too hard to add.
-
--Andi
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
