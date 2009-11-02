@@ -1,96 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZKBE6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750924AbZKBFFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753912AbZKBE6r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 23:58:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZKBE6q
+	id S1750924AbZKBFFs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 00:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZKBFFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 23:58:46 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:43322 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753619AbZKBE6q (ORCPT
+	Mon, 2 Nov 2009 00:05:48 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46098 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbZKBFFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 23:58:46 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Cc: =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-In-Reply-To: Your message of "Sun, 01 Nov 2009 16:35:05 EST."
-             <alpine.OSX.1.10.0911011623070.55174@caridad.local>
-From: Valdis.Kletnieks@vt.edu
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com> <alpine.OSX.1.10.0911011540400.53392@caridad.local> <yw1xhbte0wx0.fsf@unicorn.mansr.com>
-            <alpine.OSX.1.10.0911011623070.55174@caridad.local>
+	Mon, 2 Nov 2009 00:05:47 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 2 Nov 2009 14:02:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Norbert Preining <preining@logic.at>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: OOM killer, page fault
+Message-Id: <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at>
+	<20091102005218.8352.A69D9226@jp.fujitsu.com>
+	<20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1257137919_10149P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Sun, 01 Nov 2009 23:58:39 -0500
-Message-ID: <63587.1257137919@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.34.98 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020208.4AEE6701.0009,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1257137919_10149P
-Content-Type: text/plain; charset=us-ascii
+On Mon, 2 Nov 2009 13:56:40 +0900
+Minchan Kim <minchan.kim@gmail.com> wrote:
 
-On Sun, 01 Nov 2009 16:35:05 EST, "Ryan C. Gordon" said:
+> On Mon,  2 Nov 2009 13:24:06 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > Hi,
+> > 
+> > (Cc to linux-mm)
+> > 
+> > Wow, this is very strange log.
+> > 
+> > > Dear all,
+> > > 
+> > > (please Cc)
+> > > 
+> > > With 2.6.32-rc5 I got that one:
+> > > [13832.210068] Xorg invoked oom-killer: gfp_mask=0x0, order=0, oom_adj=0
+> > 
+> > order = 0
+> 
+> I think this problem results from 'gfp_mask = 0x0'.
+> Is it possible?
+> 
+> If it isn't H/W problem, Who passes gfp_mask with 0x0?
+> It's culpit. 
+> 
+> Could you add BUG_ON(gfp_mask == 0x0) in __alloc_pages_nodemask's head?
+> 
 
-> I glued two full Ubuntu installs together as a proof of concept, but I 
-> think if Ubuntu did this as a distribution-wide policy, then people would 
-> probably choose a different distribution.
+Maybe some code returns VM_FAULT_OOM by mistake and pagefault_oom_killer()
+is called. digging mm/memory.c is necessary...
 
-Hmm.. so let's see - people compiling stuff for themselves won't use this
-feature.  And if a distro uses it, users would probably go to a different
-distro.
+I wonder why...now is this code
+===
+static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+                unsigned long address, pte_t *page_table, pmd_t *pmd,
+                unsigned int flags, pte_t orig_pte)
+{
+        pgoff_t pgoff;
 
-That's a bad sign right there...
+        flags |= FAULT_FLAG_NONLINEAR;
 
-> Then again, I hope Ubuntu uses FatELF on a handful of binaries, and 
-> removes the /lib64 and /lib32 directories.
+	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
+                return 0;
 
-Actually, they can't nuke the /lib{32,64} directories unless *all* binaries
-are using FatELF - as long as there's any binaries doing things The Old Way,
-you need to keep the supporting binaries around.
+        if (unlikely(!(vma->vm_flags & VM_NONLINEAR))) {
+                /*
+                 * Page table corrupted: show pte and kill process.
+                 */
+                print_bad_pte(vma, address, orig_pte, NULL);
+                return VM_FAULT_OOM;
+        }
 
-> > There is also the issue of speed to launch these things.  It *has* to
-> > be slower than executing a native file directly.
+        pgoff = pte_to_pgoff(orig_pte);
+        return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
+}
+==
+Then, OOM...is this really OOM ?
 
-> In that there will be one extra read of 128 bytes, yes, but I'm not sure 
-> that's a measurable performance hit. For regular ELF files, the overhead 
-> is approximately one extra branch instruction. Considering that most files 
-> won't be FatELF, that seems like an acceptable cost.
-
-Don't forget you take that hit once for each shared library involved.  Plus
-I'm not sure if there's hidden gotchas lurking in there (is there code that
-assumes that if executable code is mmap'ed, it's only done so in one arch?
-Or will a FatELF glibc.so screw up somebody's refcounts if it's mapped
-in both 32 and 64 bit modes?
-
---==_Exmh_1257137919_10149P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK7mb/cC3lWbTT17ARAsCPAKC/3qQ2cEXJxFCC/c8V051QRH13xQCZAfVx
-KwwRNMyurESmnRcD+bjcJJQ=
-=hViS
------END PGP SIGNATURE-----
-
---==_Exmh_1257137919_10149P--
+Thanks,
+-Kame
 
