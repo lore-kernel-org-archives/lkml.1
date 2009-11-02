@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZKBKud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbZKBKvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbZKBKud (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 05:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZKBKud
+	id S1754888AbZKBKvo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbZKBKvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 05:50:33 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49325
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754427AbZKBKuc (ORCPT
+	Mon, 2 Nov 2009 05:51:43 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37545 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754774AbZKBKvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 05:50:32 -0500
-Date: Mon, 02 Nov 2009 02:50:56 -0800 (PST)
-Message-Id: <20091102.025056.232061328.davem@davemloft.net>
-To: william.allen.simpson@gmail.com
-Cc: eric.dumazet@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [net-next-2.6 PATCH RFC] TCPCT part 1d: generate Responder
- Cookie
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4AEEB6D2.7090505@gmail.com>
-References: <4AED86AD.6010906@gmail.com>
-	<4AEDCD7C.2010403@gmail.com>
-	<4AEEB6D2.7090505@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Nov 2009 05:51:43 -0500
+Date: Mon, 2 Nov 2009 11:51:41 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Haojian Zhuang <haojian.zhuang@gmail.com>
+Cc: dsaxena@laptop.org, alan@linux.intel.com, gregkh@suse.de,
+       Daniel Mack <daniel@caiaq.de>, linux-arm-kernel@lists.infradead.org,
+       Eric <eric.y.miao@gmail.com>,
+       Haojian Zhuang <haojian.zhuang@marvell.com>, rpurdie@rpsys.net,
+       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
+       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
+       thommycheck@gmail.com, dbaryshkov@gmail.com, omegamoon@gmail.com,
+       utx@penguin.cz, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Possible suspend/resume regression in .32-rc?
+Message-ID: <20091102105141.GB11426@elf.ucw.cz>
+References: <20091031013427.GL14091@buzzloop.caiaq.de>
+ <20091101205449.GT14091@buzzloop.caiaq.de>
+ <20091101213343.GA31345@elf.ucw.cz>
+ <20091101220341.GA16698@elf.ucw.cz>
+ <771cded00911020122o3bb5cc96q957c8be1ce7cae46@mail.gmail.com>
+ <20091102093840.GA11426@elf.ucw.cz>
+ <771cded00911020248s2b2b6577o5ec2f3772a09e7b9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <771cded00911020248s2b2b6577o5ec2f3772a09e7b9@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-Date: Mon, 02 Nov 2009 05:39:14 -0500
+On Mon 2009-11-02 06:48:28, Haojian Zhuang wrote:
+> On Mon, Nov 2, 2009 at 5:38 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Mon 2009-11-02 05:22:30, Haojian Zhuang wrote:
+> >> On Sun, Nov 1, 2009 at 6:03 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> >>
+> >> Em, it's not caused by the IRQ patch.
+> >>
+> >> The kernel is blocked in resume path. When console is resumed, IRQ is
+> >> already disabled and system is blocked. Actually, IRQ shouldn't be
+> >> disabled at here. Up to now, I only find which patch will cause this
+> >> issue. But I can't find the best solution on it. The patch with issue
+> >> is pasted in below.
+> >>
+> >> So this issue is only occused when console suspend is enabled. If you
+> >> enable no_console_suspend in command, you won't meet this issue. It
+> >> seems that it's caused by removing termios setting in
+> >> uart_resume_port() in the below patch. If I add these code back, the
+> >> issue doesn't occur any more.
+> >
+> > Given that it hangs very early, in arch_suspend_enable_irqs() (see my
+> > other mail), I don't trust your analysis.
+> >
+> > I'm not using serial console on spitz, and I have never had successful
+> > resume with the patch applied.
+> 
+> It seems that we're talking on different issue with similar symptom.
+> Please check my test method. While I'm testing suspend with devices
+> level, kernel is blocked in console resume. In this level, it won't
+> call arch_suspend_enable_irqs(). This function call is only invoked in
+> processor level or below.
 
-> Thank you for your helpful comments.  I'm not familiar with LKS.  Is
-> that a month long project?
+For me, everything but real suspend works. I do _not_ have serial
+console for spitz.
 
-It's the Linux Kernel Summit.  It's well publicized:
+> Up to now, I can't reproduce the issue you're talking on my platform
+> yet. I'll check this issue continuously. I also want to know your
+> hardware information.
 
-	http://events.linuxfoundation.org/events/kernel-summit
+Spitz, aka Sharp Zaurus c3000.
 
-It's the yearly meeting of the top Linux kernel developers, it usually
-lasts several days and since a large portion of the kernel developers
-who attend have to travel on 10+ hour flights to reach the summit
-location most choose to pad their trip on either side by several days
-in order to recover from jet lag and other effects of travelling.
-
-This year most kernel developers stayed for the rest of the week in
-order to attend the Japan Linux Symposium.
-
-Many people were offline a total of 2 weeks or more because of these
-events.  Some still haven't returned from Japan.
-
-But that's neither here nor there, people sometimes are simply
-overloaded with work that is important to them, or from their
-view more important than reviewing your work.
-
-Sometimes that happens and you just have to be patient and
-understanding.
-
-Complaining that your work isn't getting looked at in a timely manner
-will always have the exact opposite effect that you want, it makes
-people have a smaller desire to look at your stuff.
+Can we get the patch reverted till its fixed, so other development can
+continue?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
