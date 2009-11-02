@@ -1,54 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZKBPjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZKBPlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbZKBPjL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZKBPjK
+	id S1755367AbZKBPlR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbZKBPlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:39:10 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:34021 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755262AbZKBPjJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:39:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=RnlENrvM40JNAbkeA6qM6LLbduTV373ZPUDuACxteIYlxSrdObyR+AHfgfsyTSnEew
-         8J2sr/Wu1QLWRPZEyWi2SW2/HUX1+MCYojie4pFAYrEs27jWCD/zdqjtEbcp9X4Gu95J
-         oW+5ZXUzGlnfBO1d+qe4LbL5YNeEs2amE81lk=
-From: Diego Calleja <diegocg@gmail.com>
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Subject: Re: FatELF patches...
-Date: Mon, 2 Nov 2009 16:40:13 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc5-00336-g8d5eb43; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <20091102000147.424f104b@lxorguk.ukuu.org.uk> <alpine.OSX.1.10.0911012023020.55434@caridad.local>
-In-Reply-To: <alpine.OSX.1.10.0911012023020.55434@caridad.local>
+	Mon, 2 Nov 2009 10:41:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23938 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755190AbZKBPlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:41:15 -0500
+Date: Mon, 2 Nov 2009 17:41:17 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/11] Inject asynchronous page fault into a guest if
+ page is swapped out.
+Message-ID: <20091102154117.GD27911@redhat.com>
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
+ <1257076590-29559-7-git-send-email-gleb@redhat.com>
+ <4AEED70E.4050007@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911021640.14114.diegocg@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AEED70E.4050007@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Lunes 02 Noviembre 2009 03:21:47 Ryan C. Gordon escribió:
-> FatELF solves different problems than package managers, and in the case of 
-> ia32 compatibility packages, it helps the package manager solve its 
-> problems better.
+On Mon, Nov 02, 2009 at 02:56:46PM +0200, Avi Kivity wrote:
+> On 11/01/2009 01:56 PM, Gleb Natapov wrote:
+> >If guest access swapped out memory do not swap it in from vcpu thread
+> >context. Setup slow work to do swapping and send async page fault to
+> >a guest.
+> >
+> >Allow async page fault injection only when guest is in user mode since
+> >otherwise guest may be in non-sleepable context and will not be able to
+> >reschedule.
+> 
+> That loses us page cache accesses, which may be the majority of
+> accesses in some workloads.
+> 
+This is addressed later in the patch series.
 
-Package managers can be modified to allow embeddeding a package inside of
-another package. That could allow shipping support for multiple architectures
-in a single package, and it could even do things that fatelf can't, like
-in the case of experimental packages that need other experimental
-dependencies: all of them could be packed in a single package, even with
-support for multiple architectures. Heck, it could even be a new kind of
-container that would allow packing .rpm and .debs for multiple distros
-together. And it wouldnt touch a single line of kernel code.
+> If we allow the guest to ignore a fault, and ensure that a second
+> access to an apf page from the same vcpu doesn't trigger another
+> apf, we can simply ignore the apf in a guest when we can't schedule.
+> 
+> Probably best done with an enable bit for kernel-mode apfs.
+> 
+> >Signed-off-by: Gleb Natapov<gleb@redhat.com>
+> >---
+> >  arch/x86/include/asm/kvm_host.h |   20 +++
+> >  arch/x86/kvm/mmu.c              |  243 ++++++++++++++++++++++++++++++++++++++-
+> >  arch/x86/kvm/mmutrace.h         |   60 ++++++++++
+> >  arch/x86/kvm/paging_tmpl.h      |   16 +++-
+> >  arch/x86/kvm/x86.c              |   22 +++-
+> 
+> Much of the code is generic, please move it to virt/kvm.
+> 
+OK, Will move generic part to virt.
 
-So I don't think that fatelf is solving the problems of package managers,
-it's quite the opposite.
+> >+static void async_pf_execute(struct slow_work *work)
+> >+{
+> >+	struct page *page[1];
+> 
+> No need to make it an array, just pass its address.
+> 
+OK
+
+> >+	struct kvm_mmu_async_pf *apf =
+> >+		container_of(work, struct kvm_mmu_async_pf, work);
+> >+	wait_queue_head_t *q =&apf->vcpu->wq;
+> >+
+> >+	might_sleep();
+> >+
+> >+	down_read(&apf->mm->mmap_sem);
+> >+	get_user_pages(current, apf->mm, apf->addr, 1, 1, 0, page, NULL);
+> >+	up_read(&apf->mm->mmap_sem);
+> >+
+> >+	spin_lock(&apf->vcpu->arch.mmu_async_pf_lock);
+> >+	list_add_tail(&apf->link,&apf->vcpu->arch.mmu_async_pf_done);
+> >+	apf->page = page[0];
+> >+	spin_unlock(&apf->vcpu->arch.mmu_async_pf_lock);
+> >+
+> >+	trace_kvm_mmu_async_pf_executed(apf->addr, apf->page, apf->token,
+> >+					apf->gva);
+> 
+> _completed, but maybe better placed in vcpu context.
+> 
+> >+
+> >+static bool can_do_async_pf(struct kvm_vcpu *vcpu)
+> >+{
+> >+	struct kvm_segment kvm_seg;
+> >+
+> >+	if (!vcpu->arch.pv_shm ||
+> >+	    !(vcpu->arch.pv_shm->features&  KVM_PV_SHM_FEATURES_ASYNC_PF) ||
+> >+	    kvm_event_needs_reinjection(vcpu))
+> >+		return false;
+> >+
+> >+	kvm_get_segment(vcpu,&kvm_seg, VCPU_SREG_CS);
+> >+
+> >+	/* is userspace code? TODO check VM86 mode */
+> >+	return !!(kvm_seg.selector&  3);
+> 
+> There's a ->get_cpl() which is slightly faster.  Note vm86 is
+> perfectly fine for async pf.
+> 
+OK. But the code is removed by following patches anyway.
+
+> >+static int setup_async_pf(struct kvm_vcpu *vcpu, gva_t gva, gfn_t gfn)
+> >+{
+> >+	struct kvm_mmu_async_pf *work;
+> >+
+> >+	/* setup slow work */
+> >+
+> >+	/* do alloc atomic since if we are going to sleep anyway we
+> >+	   may as well sleep faulting in page */
+> >+	work = kmem_cache_zalloc(mmu_async_pf_cache, GFP_ATOMIC);
+> >+	if (!work)
+> >+		return 0;
+> >+
+> >+	atomic_set(&work->used, 1);
+> >+	work->page = NULL;
+> >+	work->vcpu = vcpu;
+> >+	work->gva = gva;
+> >+	work->addr = gfn_to_hva(vcpu->kvm, gfn);
+> >+	work->token = (vcpu->arch.async_pf_id++<<  12) | vcpu->vcpu_id;
+> 
+> The shift truncates async_pf_id.
+> 
+Will fix.
+
+--
+			Gleb.
