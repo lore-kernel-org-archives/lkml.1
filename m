@@ -1,37 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932187AbZKBS26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbZKBS3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932187AbZKBS26 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbZKBS25
+	id S932200AbZKBS3k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbZKBS3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:28:57 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:41960 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932143AbZKBS25 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:28:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ng5b9Ap1qkLxNBXJVRxOwhznwL4a9ooUcsZtJMWhvKAYhhGczZfJ19Ukt2FEEcOw3f
-         253OXoopCRgaLchj9+NyFpllFtC9AV76d2AtCAnj7obI2vbQ83aKWRBBUN3L+Y8swdfy
-         JeY1iK4Lm+MllFY7SiuDssHhk6mjANsxztXeQ=
-MIME-Version: 1.0
-In-Reply-To: <b8bf37780911020949t4bed5cb6g92230b59efc7923b@mail.gmail.com>
-References: <b8bf37780911020949t4bed5cb6g92230b59efc7923b@mail.gmail.com>
-Date: Mon, 2 Nov 2009 16:29:00 -0200
-Message-ID: <a4c8a6d00911021029n3b34c0b0w9acd3f82a07ae766@mail.gmail.com>
-Subject: Re: [PATCH] trivial: fix assorted typos all over the place
-From: Thiago Farina <tfransosi@gmail.com>
-To: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Cc: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 2 Nov 2009 13:29:39 -0500
+Received: from mail.perches.com ([173.55.12.10]:1177 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932152AbZKBS3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:29:39 -0500
+Subject: Re: [PATCH v2 5/7] vsprintf: reduce code size by avoiding extra
+ check
+From: Joe Perches <joe@perches.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: =?ISO-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
+       laijs@cn.fujitsu.com, mingo@elte.hu, davem@davemloft.net,
+       akpm@linux-foundation.org, harvey.harrison@gmail.com,
+       linux list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091102181944.GA4880@nowhere>
+References: <b8bf37780911020926rd5e40b1h957c803f7bb21196@mail.gmail.com>
+	 <20091102181944.GA4880@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 02 Nov 2009 10:29:43 -0800
+Message-ID: <1257186583.28925.47.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I thought that this kind of patches were not allowed.
+On Mon, 2009-11-02 at 19:19 +0100, Frederic Weisbecker wrote:
+> On Mon, Nov 02, 2009 at 03:26:36PM -0200, André Goddard Rosa wrote:
+> > Subject: [PATCH v2 5/7] vsprintf: reduce code size by avoiding extra check
+> >    text    data     bss     dec     hex filename
+> >   15735       0       8   15743    3d7f lib/vsprintf.o-before
+> >   15719       0       8   15727    3d6f lib/vsprintf.o-minus-double-check
+> Please add a changelog in your patches, I mean something that
+> explain your practical change.
 
-Don't you need to split this in individual patches, to make the work
-in reviewing this, more easier?
+Read the subject and try not to go overboard.
+I think the changelog André provided is perfect.
+
+
