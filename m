@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbZKBPZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZKBPZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413AbZKBPZQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbZKBPZN
+	id S1755389AbZKBPZD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:25:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbZKBPZC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:25:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57379 "EHLO hera.kernel.org"
+	Mon, 2 Nov 2009 10:25:02 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:46778 "EHLO trinity.fluff.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755320AbZKBPZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:25:09 -0500
-Message-ID: <4AEEF9AE.1090904@kernel.org>
-Date: Tue, 03 Nov 2009 00:24:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1755309AbZKBPZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:25:01 -0500
+Date: Mon, 2 Nov 2009 15:25:00 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>, Antonio Ospite <ospite@studenti.unina.it>,
+       openezx-devel@lists.openezx.org, Samuel Ortiz <sameo@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Mike Rapoport <mike@compulab.co.il>, Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Using statically allocated memory for platform_data.
+Message-ID: <20091102152500.GD23772@trinity.fluff.org>
+References: <20091102112316.16163f6a.ospite@studenti.unina.it> <20091102150011.GB20341@fluff.org.uk> <20091102150525.GB5785@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: npiggin@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 1/1] MM: slqb, fix per_cpu access
-References: <4AEE5EA2.6010905@kernel.org> <1257151763-11507-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1257151763-11507-1-git-send-email-jirislaby@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102150525.GB5785@n2100.arm.linux.org.uk>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009년 11월 02일 17:49, Jiri Slaby wrote:
-> We cannot use the same local variable name as the declared per_cpu
-> variable since commit "percpu: remove per_cpu__ prefix."
+On Mon, Nov 02, 2009 at 03:05:25PM +0000, Russell King - ARM Linux wrote:
+> On Mon, Nov 02, 2009 at 03:00:11PM +0000, Ben Dooks wrote:
+> > This looks like something is freeing stuff that it did not allocate in
+> > the first place, which is IMHO bad. The call platform_device_alloc()
+> > is setting platform_device_release() as the default release function
+> > but platform_device_release() releases more than platform_device_alloc()
+> > actually created.
+> > 
+> > My view is that platform_device_alloc()'s default release shouldn't
+> > be freeing the platform data, and that using platform_device_add_data()
+> > or platform_device_add_resources() should change either the behvaiour 
+> > of platform_device_release() or it should change the pointer to a new
+> > release function.
 > 
-> Otherwise we would see crashes like:
-> general protection fault: 0000 [#1] SMP
-> last sysfs file:
-> CPU 1
-> Modules linked in:
-> Pid: 1, comm: swapper Tainted: G        W  2.6.32-rc5-mm1_64 #860
-> RIP: 0010:[<ffffffff8142ff94>]  [<ffffffff8142ff94>] start_cpu_timer+0x2b/0x87
-> ...
-> 
-> Use slqb_ prefix for the global variable so that we don't collide
-> even with the rest of the kernel (s390 and alpha need this).
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
+> That doesn't work - how do those other functions (adding) know what data
+> has also been added by other functions?  That can't work reliably.
 
-Acked-by: Tejun Heo <tj@kernel.org>
-
-Thanks.
+You could wrapper platform device, and each of the add functions could
+update it, but that would assume the platform device had been allocated
+with platform_device_alloc().
 
 -- 
-tejun
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
