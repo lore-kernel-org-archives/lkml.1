@@ -1,103 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbZKBXV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZKBXbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757274AbZKBXV2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 18:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229AbZKBXV1
+	id S932545AbZKBXbZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 18:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbZKBXbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 18:21:27 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:51602 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757221AbZKBXV0 (ORCPT
+	Mon, 2 Nov 2009 18:31:25 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:52624 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757216AbZKBXbY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 18:21:26 -0500
+	Mon, 2 Nov 2009 18:31:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=GCwjIvfH2T116+qBm5bjF77HnVvfQJKkBeDnROHB+8B412fQ7+xa4cEl7FziaYskip
-         ZDZOVcpxSdrWpEkzTu4yRJ41DejWpJPhNAaLn/BT2mkC6EasEuPeGL4eE94xSAH0pShh
-         2YQn+WzPRCk9PSo/mt/3Jk8qW6MLTqVZzfwJI=
-Subject: Re: ALPS touchpad with 4 directions button doesnt work as intended
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200911021425.32714.dmitry.torokhov@gmail.com>
-References: <1256955018.9681.23.camel@maxim-laptop>
-	 <1257199967.3164.8.camel@localhost.localdomain>
-	 <1257200188.3164.11.camel@localhost.localdomain>
-	 <200911021425.32714.dmitry.torokhov@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 03 Nov 2009 01:21:26 +0200
-Message-ID: <1257204086.7122.0.camel@maxim-laptop>
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=N0ba9M2fNUuQcoOYwEXAyJipp9nNRuPq3dw6Nin7m+VklVlFEDsVHZZ+yCCi/2ECTZ
+         cJnKnKOKcYIJbqH8q85EQi2IcOP6bRUKVsMt5mzecyobCLYEfdZif3SxpyEd0Zp7icW2
+         jMFPB2jrbhsyyBLELwzmnAUKmhCMct9q9RgEU=
+Date: Tue, 3 Nov 2009 08:28:29 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Norbert Preining <preining@logic.at>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: OOM killer, page fault
+Message-Id: <20091103082829.db0b1e33.minchan.kim@barrios-desktop>
+In-Reply-To: <Pine.LNX.4.64.0911021556020.12937@sister.anvils>
+References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at>
+	<20091102005218.8352.A69D9226@jp.fujitsu.com>
+	<20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+	<20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091102150110.74f8a601.minchan.kim@barrios-desktop>
+	<Pine.LNX.4.64.0911021556020.12937@sister.anvils>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-02 at 14:25 -0800, Dmitry Torokhov wrote: 
-> On Monday 02 November 2009 02:16:28 pm Maxim Levitsky wrote:
-> > On Tue, 2009-11-03 at 00:12 +0200, Maxim Levitsky wrote:
-> > > On Mon, 2009-11-02 at 10:00 -0800, Dmitry Torokhov wrote:
-> > > > On Mon, Nov 02, 2009 at 07:20:26PM +0200, Maxim Levitsky wrote:
-> > > > > On Sun, 2009-11-01 at 21:38 -0800, Dmitry Torokhov wrote:
-> > > > > > Hi Maxim,
-> > > > > >
-> > > > > > On Sat, Oct 31, 2009 at 04:10:18AM +0200, Maxim Levitsky wrote:
-> > > > > > > I have a acer 5720G laptop, and its touchpad (ALPS) has three
-> > > > > > > buttons, usual left/right, and middle button that can be pressed
-> > > > > > > in 4 directions. Up/down direction work fine, but left/right
-> > > > > > > doesn't. This means that left direction  produces middle button
-> > > > > > > click, and right direction doesn't work at all.
-> > > > > > > I took a look at source, and I see that driver doesn't even know
-> > > > > > > about such configuration.
-> > > > > > >
-> > > > > > > Now I am sure its very easy to figure out what is send when no
-> > > > > > > working button is pressed, but I am a bit confused what BTN_*
-> > > > > > > event to assign to it, so it will work as horizontal scroll as
-> > > > > > > intended.
-> > > > > > > And unassign middle button from other direction....
-> > > > > >
-> > > > > > Synaptics driver maps multi-button to BTN_0...BTN_8 and it looks
-> > > > > > like synaptics X driver maps teh 4-button case by default to
-> > > > > > up/down/left/right scroll so I'd map ALPS the same.
-> > > > >
-> > > > > Thanks!
-> > > > >
-> > > > > One question, should I expect some resistance because the button
-> > > > > won't work as middle button by default? (I am sure that in X its easy
-> > > > > remap it back)
-> > > >
-> > > > I am pretty sure these kind of buttons allow 5 distinct presses - left,
-> > > > right, up, down and "straight" (which may be reported either with
-> > > > distinct packet or by reporting both up/down or left/right presses) so
-> > > > you don't have to loose the middle button. This is a speculation
-> > > > though...
-> > >
-> > > Mine doesn't unfortunately, this is if I press it 'straight' I both feel
-> > > physicaly 4 different presses and it reports currently, 'back button'
-> > > 'forward button' and 'middle button' as I press it.
-> > >
-> > > It is possible to implement emulation, but I think that pressing it
-> > > straight might also put some stress and damage it in long run.
-> > >
-> > >
-> > > I think that pressing left+right buttons will be enough for the
-> > > replacement. If not, xmodmap can be used to map each of the 4 buttons
-> > > (or all of them to middle one)
-> > >
-> > >
-> > > Best regards,
-> > > 	Maxim Levitsky
-> > 
-> > Sorry,  forgot to CC lkml...
-> > 
-> 
-> OK, fair enough.
-> 
-Thanks, no more questions.
+Hi, Hugh. 
 
-Best regards,
-Maxim Levitsky
+On Mon, 2 Nov 2009 16:26:56 +0000 (GMT)
+Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
 
+> On Mon, 2 Nov 2009, Minchan Kim wrote:
+> > On Mon, 2 Nov 2009 14:02:16 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > 
+> > > Maybe some code returns VM_FAULT_OOM by mistake and pagefault_oom_killer()
+> > > is called. digging mm/memory.c is necessary...
+> > > 
+> > > I wonder why...now is this code
+> > > ===
+> > > static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+> > >                 unsigned long address, pte_t *page_table, pmd_t *pmd,
+> > >                 unsigned int flags, pte_t orig_pte)
+> > > {
+> > >         pgoff_t pgoff;
+> > > 
+> > >         flags |= FAULT_FLAG_NONLINEAR;
+> > > 
+> > > 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
+> > >                 return 0;
+> > > 
+> > >         if (unlikely(!(vma->vm_flags & VM_NONLINEAR))) {
+> > >                 /*
+> > >                  * Page table corrupted: show pte and kill process.
+> > >                  */
+> > >                 print_bad_pte(vma, address, orig_pte, NULL);
+> > >                 return VM_FAULT_OOM;
+> > >         }
+> > > 
+> > >         pgoff = pte_to_pgoff(orig_pte);
+> > >         return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
+> > > }
+> > > ==
+> > > Then, OOM...is this really OOM ?
+> > 
+> > It seems that the goal is to kill process by OOM trick as comment said.
+> > 
+> > I found It results from Hugh's commit 65500d234e74fc4e8f18e1a429bc24e51e75de4a.
+> > I think it's not a real OOM. 
+> > 
+> > BTW, If it is culpit in this case, print_bad_pte should have remained any log. :)
+> 
+> Yes, the chances are that this is not related to Norbert's problem.
+> But thank you for reminding me of that not-very-nice hack of mine.
+> 
+> It was kind-of valid at the time that I wrote it (2.6.15), when
+> VM_FAULT_OOM did kill the faulting process.  But since then the fault
+> path has rightly been changed (in x86 at least, I didn't check the rest)
+> to let the OOM killer decide who to kill: so now there's a danger that
+> a pagetable corruption there will instead kill some unrelated process.
+> 
+> Being lazy, I'm inclined simply to change that to VM_FAULT_SIGBUS now:
+> which doesn't actually guarantee that the process will be killed, but
+> should be better than just repeatedly re-faulting on the entry.  (I
+> don't much want to SIGKILL current since mm might not be current's.)
+> 
+> That aberrant use of VM_FAULT_OOM has recently been copied into
+> do_swap_page() (the first instance; the second instance is right -
+> hmm, well, the second instance is normally right, but I guess it
+> also covers pagetable corruption cases which we can't distinguish
+> there; oh well) and should be corrected there too.
+> 
+> Does VM_FAULT_SIGBUS sound good enough to you?
+
+I am Okay. 
+First of all, we have to prevent innocent process killing.
+Second, although it returns SIGBUS, we can distinguish it from normal SIGBUS
+by bad pte log.
+Third, we don't want to add new VM_FAULT_XXX as possible as. :)
+
+
+> 
+> Hugh
+
+
+-- 
+Kind regards,
+Minchan Kim
