@@ -1,88 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbZKBRmC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbZKBRm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbZKBRmC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:42:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZKBRmB
+	id S932102AbZKBRm2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbZKBRm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:42:01 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:58333 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753103AbZKBRmA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:42:00 -0500
-Message-ID: <4AEF19EA.6020003@gmail.com>
-Date: Mon, 02 Nov 2009 18:42:02 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 2 Nov 2009 12:42:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57856 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756586AbZKBRm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 12:42:26 -0500
+Date: Mon, 2 Nov 2009 19:42:08 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
+Message-ID: <20091102174208.GJ27911@redhat.com>
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
+ <1257076590-29559-3-git-send-email-gleb@redhat.com>
+ <20091102092214.GB8933@elte.hu>
+ <20091102160410.GF27911@redhat.com>
+ <20091102161248.GB15423@elte.hu>
+ <20091102162234.GH27911@redhat.com>
+ <20091102162941.GC14544@elte.hu>
 MIME-Version: 1.0
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-Subject: Re: [net-next-2.6 PATCH RFC] TCPCT part 1d: generate Responder Cookie
-References: <4AEAC763.4070200@gmail.com> <4AED86AD.6010906@gmail.com> <4AEDCD7C.2010403@gmail.com> <4AEEB6D2.7090505@gmail.com> <4AEEBAC6.7020308@gmail.com> <4AEED23A.7070009@gmail.com> <4AEEDBBC.40800@gmail.com> <4AEF1534.4090506@gmail.com>
-In-Reply-To: <4AEF1534.4090506@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 02 Nov 2009 18:42:03 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102162941.GC14544@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Allen Simpson a écrit :
-> Eric Dumazet wrote:
->> Large part of network code is run by softirq handler, and a softirq
->> handler
->> is not preemptable with another softirq (including itself).
->>
-> Thank you.  That's helpful to know, as some existing locks have a "bh".
-> I've never figured out the ip_local_deliver_finish() context.
+On Mon, Nov 02, 2009 at 05:29:41PM +0100, Ingo Molnar wrote:
 > 
-> Knowing that there can only be one instance of the tcp stack running at
-> any one time, and the cpu never changes even after being interrupted, will
-> make it much easier to code.
-
-Correction :
-
-There is one instance of sofirq handler running per cpu.
-
-So TCP (or UDP) stack can run simultaneously on several (and eventually all online) cpus.
-
-This is why we still need some locks in various places.
-
-
->>
-> (No, I've not yet added locks; obviously, I'm still asking about them.)
+> * Gleb Natapov <gleb@redhat.com> wrote:
 > 
-> Unlikely, as it was easy to reproduce by changing one line, without
-> *any* of
-> my code present.  Usually works, but doesn't work with tcpdump running on
-> the interface:
-
-Yes, tcpdump has the nasty habit to consume a lot of ram, queuing a copy of
-all network traffic on an af_packet socket. (or using a mmap buffer, it depends
-on libpcap version you use)
-
+> > On Mon, Nov 02, 2009 at 05:12:48PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Gleb Natapov <gleb@redhat.com> wrote:
+> > > 
+> > > > On Mon, Nov 02, 2009 at 10:22:14AM +0100, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Gleb Natapov <gleb@redhat.com> wrote:
+> > > > > 
+> > > > > > diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> > > > > > index f4cee90..14707dc 100644
+> > > > > > --- a/arch/x86/mm/fault.c
+> > > > > > +++ b/arch/x86/mm/fault.c
+> > > > > > @@ -952,6 +952,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
+> > > > > >  	int write;
+> > > > > >  	int fault;
+> > > > > >  
+> > > > > > +	if (arch_handle_page_fault(regs, error_code))
+> > > > > > +		return;
+> > > > > > +
+> > > > > 
+> > > > > This patch is not acceptable unless it's done cleaner. Currently we 
+> > > > > already have 3 callbacks in do_page_fault() (kmemcheck, mmiotrace, 
+> > > > > notifier), and this adds a fourth one. Please consolidate them into a 
+> > > > > single callback site, this is a hotpath on x86.
+> > > > > 
+> > > > This call is patched out by paravirt patching mechanism so overhead 
+> > > > should be zero for non paravirt cases. [...]
+> > > 
+> > > arch_handle_page_fault() isnt upstream yet - precisely what is the 
+> > > instruction sequence injected into do_page_fault() in the patched-out 
+> > > case?
+> > 
+> > It is introduced by the same patch. The instruction inserted is:
+> >  xor %rax, %rax
 > 
->  struct sock *tcp_create_openreq_child(struct sock *sk, struct
-> request_sock *req, struct sk_buff *skb)
->  {
-> -    struct sock *newsk = inet_csk_clone(sk, req, GFP_ATOMIC);
-> +    struct sock *newsk = inet_csk_clone(sk, req, GFP_KERNEL);
+> ok.
+> 
+> My observations still stand:
+> 
+> > > > [...] What do you want to achieve by consolidate them into single 
+> > > > callback? [...]
+> > > 
+> > > Less bloat in a hotpath and a shared callback infrastructure.
+> > > 
+> > > > [...] I mean the code will still exist and will have to be executed on 
+> > > > every #PF. Is the goal to move them out of line?
+> > > 
+> > > The goal is to have a single callback site for all the users - which 
+> > > call-site is patched out ideally - on non-paravirt too if needed. Most 
+> > > of these callbacks/notifier-chains have are inactive most of the time.
+> > > 
+> > > I.e. a very low overhead 'conditional callback' facility, and a single 
+> > > one - not just lots of them sprinkled around the code.
+> 
+> looks like a golden opportunity to get this right.
+>
+Three existing callbacks are: kmemcheck, mmiotrace, notifier. Two
+of them kmemcheck, mmiotrace are enabled only for debugging, should
+not be performance concern. And notifier call sites (two of them)
+are deliberately, as explained by comment, not at the function entry,
+so can't be unified with others. (And kmemcheck also has two different
+call site BTW)
 
-Here you want a GFP_KERNEL allocation, that is allowed to sleep if there is not
-enough available memory. (It's allowed to sleep to let some processes to free
-bit of ram, eventually)
-
-But as the caller of tcp_create_openreq_child() runs from {soft}irq context,
-its not allowed to sleep at all, even 10 usecs.
-
-Therefore, linux kernel kindly warns you that's its illegal and deadlockable.
-
-Dont change GFP_ATOMIC here, its really there for a valid reason.
-And be prepared to get a NULL result from allocation.
-
-If your machine has problems when running tcpdump, maybe it lacks some ram, maybe you could
-tune tcpdump socket to not exhaust all LOWMEM.
-I see your kernel is 32bits, so you have only 860 MB of kernel memory, called LOWMEM.
-I believe last kernels might have some problems in OOM situations... 
-
+--
+			Gleb.
