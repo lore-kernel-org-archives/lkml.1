@@ -1,101 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZKBVLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZKBVRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbZKBVLN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 16:11:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbZKBVLM
+	id S1755523AbZKBVRT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 16:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbZKBVRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 16:11:12 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:23490 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754480AbZKBVLL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 16:11:11 -0500
-Message-ID: <4AEF4ACB.5040302@nokia.com>
-Date: Mon, 02 Nov 2009 23:10:35 +0200
-From: Luciano Coelho <luciano.coelho@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 2 Nov 2009 16:17:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11131 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754471AbZKBVRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 16:17:18 -0500
+Message-ID: <4AEF4C29.2060501@redhat.com>
+Date: Mon, 02 Nov 2009 16:16:25 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: "ext John W. Linville" <linville@tuxdriver.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: linux-next: Tree for November 2 (wireless/wl1271)
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au> <4AEF1E7F.50306@oracle.com> <20091102184449.GJ14046@tuxdriver.com> <20091102184843.GK14046@tuxdriver.com>
-In-Reply-To: <20091102184843.GK14046@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?ISO-8859-1?Q?Fr=E9d=E9r?= =?ISO-8859-1?Q?ic_Weisbecker?= 
+	<fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes and
+ perf-probe syntax changes
+References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu> <4AE9C919.4070003@redhat.com>
+In-Reply-To: <4AE9C919.4070003@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Nov 2009 21:10:47.0112 (UTC) FILETIME=[F276FC80:01CA5C00]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext John W. Linville wrote:
-> Helps if I actually Cc: Luca...
-
-Yes, it does. :) I would see this at some point but CCing me speed things up 
-quite a lot.
-
-> On Mon, Nov 02, 2009 at 01:44:49PM -0500, John W. Linville wrote:
->> On Mon, Nov 02, 2009 at 10:01:35AM -0800, Randy Dunlap wrote:
->>> Stephen Rothwell wrote:
->>>> Hi all,
->>>>
->>>> Changes since 20091030:
->>>
->>> wl1271 build fails when CONFIG_INET=n.
->>> Should this driver depend on INET?
->>>
->>> Why does this driver, unlike all other wireless drivers,
->>> want to use register_inetaddr_notifier()?
->>>
->>> wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
->>> wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
->> Yeah, that driver is doing some filtering based on IPv4.
+Masami Hiramatsu wrote:
+> Ingo Molnar wrote:
+>> What we want here is two fold:
 >>
->> Luca, is that necessary?  If so, then we need a patch like the one below...?
+>>    - enable kprobes event support when perf events is enabled and kprobes
+>>      is enabled. We dont want another config option for it.
+>
+> Sure, at least that combination should enable kprobe-tracer forcibly.
 
-Yes, this is necessary.  We are doing ARP filtering according to the IP address 
-of the interface, as you have realized.  Our implementation is rather ugly at 
-the moment, so the plan is to try to get rid of this dependency on INET, but we 
-need it for now.
+Hmm, someone may not want to enables kprobe-tracer. Perhaps,
+"default y if (EVENT_PROFILE)" is enough, isn't it?
 
-Thanks Randy for finding this and thanks John for fixing it.
 
->> From ba823accfad68151d80503ff5fb04c049c9eadc2 Mon Sep 17 00:00:00 2001
->> From: John W. Linville <linville@tuxdriver.com>
->> Date: Mon, 2 Nov 2009 13:43:32 -0500
->> Subject: [PATCH] wl1271: depend on INET
+>> A few further (and very small) UI tweaks i'd suggest:
 >>
->> wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
->> wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
+>> Firstly, could we please make the first probe inserted named plain after
+>> the symbol it specifies, with no _0 postfix? I.e. instead of:
 >>
->> Driver is doing some filtering based on IP addresses...
+>>              7358  perfprobe:__switch_to_0  #      0.000 M/sec
 >>
->> Signed-off-by: John W. Linville <linville@tuxdriver.com>
->> ---
->>  drivers/net/wireless/wl12xx/Kconfig |    1 +
->>  1 files changed, 1 insertions(+), 0 deletions(-)
+>> we'd get:
 >>
->> diff --git a/drivers/net/wireless/wl12xx/Kconfig b/drivers/net/wireless/wl12xx/Kconfig
->> index 33de7fa..785e024 100644
->> --- a/drivers/net/wireless/wl12xx/Kconfig
->> +++ b/drivers/net/wireless/wl12xx/Kconfig
->> @@ -42,6 +42,7 @@ config WL1251_SDIO
->>  config WL1271
->>  	tristate "TI wl1271 support"
->>  	depends on WL12XX && SPI_MASTER && GENERIC_HARDIRQS
->> +	depends on INET
->>  	select FW_LOADER
->>  	select CRC7
->>  	---help---
->> -- 
->> 1.6.2.5
+>>              7358  perfprobe:__switch_to    #      0.000 M/sec
+>>
+>> Subsequent probes for the same symbol can be named _1, _2 - but the
+>> first symbol should not have this needless post-fix.
+>
+> Ah, this prefix means the offset from the symbol. Of course we can
+> remove it if the offset == 0. Or, would you think make the postfix
+> sequence number of probes on the same symbol?
 
-Acked-by: Luciano Coelho <luciano.coelho@nokia.com>
+If so, we'd better have --list option before that and check the
+postfix is already used, since we may not want to overwrite
+existing probes, right?
+
+Thank you,
 
 -- 
-Cheers,
-Luca.
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
