@@ -1,76 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZKBLEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbZKBK6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbZKBLEJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 06:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbZKBLEI
+	id S1754648AbZKBK6E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:58:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbZKBK6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 06:04:08 -0500
-Received: from bear.ext.ti.com ([192.94.94.41]:55616 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754213AbZKBLEH convert rfc822-to-8bit (ORCPT
+	Mon, 2 Nov 2009 05:58:03 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:55180 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754389AbZKBK6C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 06:04:07 -0500
-From: "Dasgupta, Romit" <romit@ti.com>
-To: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "rjw@sisk.pl" <rjw@sisk.pl>
-CC: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Date: Mon, 2 Nov 2009 16:33:42 +0530
-Subject: [PATCH 1/1] PM: Making bdi threads non-freezable
-Thread-Topic: [PATCH 1/1] PM: Making bdi threads non-freezable
-Thread-Index: AcpbrCOsHp5kpaNZSRe8xI+8AVsI3Q==
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE1EBC66@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Mon, 2 Nov 2009 05:58:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=MmTaaA2taw+qbI2P+4jNI0VJv+CumFqoKpGA9Ny+QxPnxa4Qt0rJdzkTXmbMYZ+6lA
+         j7DNuTGURLorvKmlRGJgKmJaPaFNDp52k1wm2AEPs3T6NmtQN6ZqpjEpEyh6r8Q/jDgz
+         QKkK9HtLL2cAD6aygImp5HFwywG+9A3GQ2q8M=
+Message-ID: <4AEEBDD8.5080808@gmail.com>
+Date: Mon, 02 Nov 2009 12:09:12 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
+To: Mike Frysinger <vapier@gentoo.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Blackfin arch: ensure index is positive
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes the case when bdi threads are in the refrigerator but file system sync
-can happen after this. This is possible in MMC when CONFIG_MMC_UNSAFE_RESUME is
-not set.
+The indices are signed, it's not negative before we read an
+array element.
 
-Signed-off-by: Romit Dasgupta <romit@ti.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 9d5360c..661229d 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -956,7 +956,6 @@ int bdi_writeback_task(struct bdi_writeback *wb)
- 
- 		wait_jiffies = msecs_to_jiffies(dirty_writeback_interval * 10);
- 		schedule_timeout_interruptible(wait_jiffies);
--		try_to_freeze();
- 	}
- 
- 	return 0;
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 5a37e20..9383271 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -273,7 +273,6 @@ static void bdi_task_init(struct backing_dev_info *bdi,
- 	spin_unlock(&bdi->wb_lock);
- 
- 	tsk->flags |= PF_FLUSHER | PF_SWAPWRITE;
--	set_freezable();
- 
- 	/*
- 	 * Our parent may run at a different priority, just set us to normal
-@@ -419,7 +418,6 @@ static int bdi_forker_task(void *ptr)
- 			spin_unlock_bh(&bdi_lock);
- 			wait = msecs_to_jiffies(dirty_writeback_interval * 10);
- 			schedule_timeout(wait);
--			try_to_freeze();
- 			continue;
- 		}
+ arch/blackfin/kernel/gptimers.c |   32 ++++++++++++++++----------------
+ 1 files changed, 16 insertions(+), 16 deletions(-)
 
+Found by code analysis, is this required?
+
+diff --git a/arch/blackfin/kernel/gptimers.c b/arch/blackfin/kernel/gptimers.c
+index 7281a91..3b2a1c5 100644
+--- a/arch/blackfin/kernel/gptimers.c
++++ b/arch/blackfin/kernel/gptimers.c
+@@ -139,7 +139,7 @@ static uint32_t const timil_mask[MAX_BLACKFIN_GPTIMERS] =
+ 
+ void set_gptimer_pwidth(int timer_id, uint32_t value)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	timer_regs[timer_id]->width = value;
+ 	SSYNC();
+ }
+@@ -147,14 +147,14 @@ EXPORT_SYMBOL(set_gptimer_pwidth);
+ 
+ uint32_t get_gptimer_pwidth(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	return timer_regs[timer_id]->width;
+ }
+ EXPORT_SYMBOL(get_gptimer_pwidth);
+ 
+ void set_gptimer_period(int timer_id, uint32_t period)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	timer_regs[timer_id]->period = period;
+ 	SSYNC();
+ }
+@@ -162,28 +162,28 @@ EXPORT_SYMBOL(set_gptimer_period);
+ 
+ uint32_t get_gptimer_period(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	return timer_regs[timer_id]->period;
+ }
+ EXPORT_SYMBOL(get_gptimer_period);
+ 
+ uint32_t get_gptimer_count(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	return timer_regs[timer_id]->counter;
+ }
+ EXPORT_SYMBOL(get_gptimer_count);
+ 
+ uint32_t get_gptimer_status(int group)
+ {
+-	tassert(group < BFIN_TIMER_NUM_GROUP);
++	tassert(group < BFIN_TIMER_NUM_GROUP && group >= 0);
+ 	return group_regs[group]->status;
+ }
+ EXPORT_SYMBOL(get_gptimer_status);
+ 
+ void set_gptimer_status(int group, uint32_t value)
+ {
+-	tassert(group < BFIN_TIMER_NUM_GROUP);
++	tassert(group < BFIN_TIMER_NUM_GROUP && group >= 0);
+ 	group_regs[group]->status = value;
+ 	SSYNC();
+ }
+@@ -191,42 +191,42 @@ EXPORT_SYMBOL(set_gptimer_status);
+ 
+ int get_gptimer_intr(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	return !!(group_regs[BFIN_TIMER_OCTET(timer_id)]->status & timil_mask[timer_id]);
+ }
+ EXPORT_SYMBOL(get_gptimer_intr);
+ 
+ void clear_gptimer_intr(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	group_regs[BFIN_TIMER_OCTET(timer_id)]->status = timil_mask[timer_id];
+ }
+ EXPORT_SYMBOL(clear_gptimer_intr);
+ 
+ int get_gptimer_over(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	return !!(group_regs[BFIN_TIMER_OCTET(timer_id)]->status & tovf_mask[timer_id]);
+ }
+ EXPORT_SYMBOL(get_gptimer_over);
+ 
+ void clear_gptimer_over(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	group_regs[BFIN_TIMER_OCTET(timer_id)]->status = tovf_mask[timer_id];
+ }
+ EXPORT_SYMBOL(clear_gptimer_over);
+ 
+ int get_gptimer_run(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	return !!(group_regs[BFIN_TIMER_OCTET(timer_id)]->status & trun_mask[timer_id]);
+ }
+ EXPORT_SYMBOL(get_gptimer_run);
+ 
+ void set_gptimer_config(int timer_id, uint16_t config)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	timer_regs[timer_id]->config = config;
+ 	SSYNC();
+ }
+@@ -234,7 +234,7 @@ EXPORT_SYMBOL(set_gptimer_config);
+ 
+ uint16_t get_gptimer_config(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	return timer_regs[timer_id]->config;
+ }
+ EXPORT_SYMBOL(get_gptimer_config);
+@@ -282,7 +282,7 @@ EXPORT_SYMBOL(disable_gptimers_sync);
+ 
+ void set_gptimer_pulse_hi(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	timer_regs[timer_id]->config |= TIMER_PULSE_HI;
+ 	SSYNC();
+ }
+@@ -290,7 +290,7 @@ EXPORT_SYMBOL(set_gptimer_pulse_hi);
+ 
+ void clear_gptimer_pulse_hi(int timer_id)
+ {
+-	tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
++	tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+ 	timer_regs[timer_id]->config &= ~TIMER_PULSE_HI;
+ 	SSYNC();
+ }
