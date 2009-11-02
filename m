@@ -1,185 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZKBSvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbZKBS45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbZKBSvi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:51:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZKBSvi
+	id S1756718AbZKBS45 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbZKBS44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:51:38 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41789 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755911AbZKBSvh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:51:37 -0500
-Date: Mon, 2 Nov 2009 18:53:15 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Cc: =?ISO-8859-14?B?TeVucyBSdWxsZ+VyZA==?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: FatELF patches...
-Message-ID: <20091102185315.6326e148@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.OSX.1.10.0911021057450.464@caridad.icculuslan>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	<1257103201.2865.6.camel@chumley>
-	<yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
-	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
-	<alpine.OSX.1.10.0911021057450.464@caridad.icculuslan>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Nov 2009 13:56:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44017 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756703AbZKBS4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:56:55 -0500
+Date: Mon, 2 Nov 2009 18:54:35 GMT
+From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20091029024820.996634347@sbs-t61.sc.intel.com>
+References: <20091029024820.996634347@sbs-t61.sc.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/mm] x86, cpa: Fix kernel text RO checks in static_protection()
+Message-ID: <tip-502f660466ba7a66711ffdf414b1f7f1131dcbf7@git.kernel.org>
+Git-Commit-ID: 502f660466ba7a66711ffdf414b1f7f1131dcbf7
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sure, this doesn't work for everyone, but this list isn't meant to be a 
+Commit-ID:  502f660466ba7a66711ffdf414b1f7f1131dcbf7
+Gitweb:     http://git.kernel.org/tip/502f660466ba7a66711ffdf414b1f7f1131dcbf7
+Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+AuthorDate: Wed, 28 Oct 2009 18:46:56 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 2 Nov 2009 17:16:35 +0100
 
-You've not shown a single meaningful use case yet.
+x86, cpa: Fix kernel text RO checks in static_protection()
 
-> some of the same issues, they cause other issues. The fact that Debian is 
-> now talking about "multiarch" shows that they've experienced some of these 
-> problems, too, despite having a world-class package manager.
+Steven Rostedt reported that we are unconditionally making the
+kernel text mapping as read-only. i.e., if someone does cpa() to
+the kernel text area for setting/clearing any page table
+attribute, we unconditionally clear the read-write attribute for
+the kernel text mapping that is set at compile time.
 
-No it means that Debian is finally catching up with rpm on this issue,
-where it has been solved for years.
+We should delay (to forbid the write attribute) and enforce only
+after the kernel has mapped the text as read-only.
 
-> 
-> > - Separate lib, lib32, lib64
-> > 	- So you have one file with 3 files in it rather than three files
-> > 	  with one file in them. Directories were invented for a reason
-> 
-> We covered this when talking about shell scripts.
+Reported-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Tested-by: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <20091029024820.996634347@sbs-t61.sc.intel.com>
+[ marked kernel_set_to_readonly as __read_mostly ]
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/cacheflush.h |    1 +
+ arch/x86/mm/init_32.c             |    2 +-
+ arch/x86/mm/init_64.c             |    2 +-
+ arch/x86/mm/pageattr.c            |   10 ++++++----
+ 4 files changed, 9 insertions(+), 6 deletions(-)
 
-Without providing a justification
-
-> I'm sure, but I'm not sure the increase is a staggering amount. We're not 
-> talking about making all packages into FatELF binaries.
-
-How will you jhandle cross package dependancies
-
-> > 	- Stops users only having 32bit libs for some packages
-> 
-> Is that a serious concern?
-
-Yes from a space perspective and a minimising updates perspective.
-
-> > - Third party packagers no longer have to publish multiple rpm/deb etc
-> > 	- By vastly increasing download size
-> > 	- By making updates vastly bigger
-> 
-> It's true that /bin/ls would double in size (although I'm sure at least 
-> the download saves some of this in compression). But how much of, say, 
-> Gnome or OpenOffice or Doom 3 is executable code? These things would be 
-> nowhere near "vastly" bigger.
-
-Guess what: all the data files for Doom and OpenOffice are already
-packaged separately as are many of the gnome ones, or automagically
-shared by the two rpm packages.
-
-> 
-> > 	- Assumes data files are not dependant on binary (often not true)
-> 
-> Turns out that /usr/sbin/hald's cache file was. That would need to be 
-> fixed, which is trivial, but in my virtual machine test I had it delete 
-> and regenerate the file on each boot as a fast workaround.
-> 
-> The rest of the Ubuntu install boots and runs. This is millions of lines 
-> of code that does not depend on the byte order, alignment, and word size 
-> for its data files.
-
-That you've noticed. But you've not done any formal testing with tens of
-thousands of users so you've not done more than the "hey mummy it boots"
-test (which is about one point over the Linus 'it might compile' stage)
+diff --git a/arch/x86/include/asm/cacheflush.h b/arch/x86/include/asm/cacheflush.h
+index b54f6af..eebb2cd 100644
+--- a/arch/x86/include/asm/cacheflush.h
++++ b/arch/x86/include/asm/cacheflush.h
+@@ -176,6 +176,7 @@ void clflush_cache_range(void *addr, unsigned int size);
+ #ifdef CONFIG_DEBUG_RODATA
+ void mark_rodata_ro(void);
+ extern const int rodata_test_data;
++extern int kernel_set_to_readonly;
+ void set_kernel_text_rw(void);
+ void set_kernel_text_ro(void);
+ #else
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index f64d0d5..c973f8e 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -997,7 +997,7 @@ static noinline int do_test_wp_bit(void)
+ const int rodata_test_data = 0xC3;
+ EXPORT_SYMBOL_GPL(rodata_test_data);
  
-> I don't claim to be an expert on the inner workings of every package you 
-> would find on a Linux system, but like you, I expected there would be a 
-> lot of things to fix. It turns out that "often not true" just turned out 
-> to actually _not_ be true at all.
-
-You need an expert on the inner workings of each package to review and
-test them. Fortunately that work is already done- by the rpm packagers
-for all the distros
-
-> > - The ELF OSABI for your system changes someday?
-> > 	- We already handle that
-> 
-> Do we? I grepped for OSABI in the 2.6.31 sources, and can't find anywhere, 
-> outside of my FatELF patches, where we check an ELF file's OSABI or OSABI 
-> version at all.
-
-ARM has migrated ABI at least once.
-
-> Where do we handle an ABI change gracefully? Am I misunderstanding the 
-> code?
-
-You add code for the migration as needed, in the distro
-
-> single point, but you can't see a scenario where this adds a benefit? Even 
-> in a world that's still running 32-bit web browsers on _every major 
-> operating system_ because some crucial plugins aren't 64-bit yet?
-
-Your distro must be out of date or a bit backward. Good ones thunk those
-or run them in a different process (which is a very good idea for quality
-reasons as well as security)
-
-> 
-> > - Ship web browser plugins that work out of the box with multiple
-> >   platforms.
-> > 	- yum install just works, and there is a search path in firefox
-> > 	  etc
-> 
-> So it's better to have a thousand little unique solutions to the same 
-> problem? 
-
-We have one solution - package management. You want to add the extra one.
-
-> it doesn't change the fact that I downloaded the wrong nvidia drivers the 
-> other day because I accidentally grabbed the ia32 package instead of the 
-> amd64 one. So much for saving bandwidth.
-
-You mean your package manager didn't do it for you ? Anyway kernel
-drivers are dependant on about 1500 variables and 1500! is a very very
-large FatELF binary so it won't work.
-
-> Not really. compat_binfmt_elf will run legacy binaries on new systems, but 
-> not vice versa. The goal is having something that will let it work on both 
-> without having to go through a package manager infrastructure.
-
-See binfmt_misc. In fact you can probably do your ELF hacks in userspace
-that way if you really must.
-
-> In a world where terrabyte hard drives are cheap consumer-level 
-> commodities, the tradeoff seems like a complete no-brainer to me.
-
-Except that
-- we are moving away from rotating storage for primary media
-- flash still costs rather more
-- virtual machines mean that disk space is now a real cost again as is RAM
-
-> version. It's easier on me, I have other projects to work on, and too bad 
-> for you. Granted, the x86_64 version _works_ on Linux, but shipping it is 
-> a serious pain, so it just won't ship.
-
-Distro problem, in the open source world someone will package it.
-
-> That is anecdotal, and I apologize for that. But I'm not the only 
-> developer that's not in an apt repository, and all of these rebuttals are 
-> anecdotal: "I just use yum [...because I don't personally care about 
-> Debian users]."
-
-No. See yum/rpm demonstrates that it can be done right. Debian has fallen
-a bit behind on that issue. We know it can be done right, and that tells
-us that the Debian tools will eventually catch up and also do it right.
-
-You have a solution (quite a nicely programmed one) in search of a
-problem, and with patent concerns. That's a complete non-flier for the
-kernel. It's not a dumping ground for neat toys and it would be several
-gigabytes of code if it was.
-
-You are also ignoring the other inconvenient detail. The architecture
-selection used even by package managers is far more complex than i386 v
-x86_64. Some distros build i686, some i686 optimisation but without cmov,
-some i386, some install i386 or i686, others optimise for newer
-processors only and so on.
-
-Alan
+-static int kernel_set_to_readonly;
++int kernel_set_to_readonly __read_mostly;
+ 
+ void set_kernel_text_rw(void)
+ {
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 0ed09fa..4b507c0 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -695,7 +695,7 @@ void __init mem_init(void)
+ const int rodata_test_data = 0xC3;
+ EXPORT_SYMBOL_GPL(rodata_test_data);
+ 
+-static int kernel_set_to_readonly;
++int kernel_set_to_readonly;
+ 
+ void set_kernel_text_rw(void)
+ {
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 78d3168..8d1e8d9 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -282,14 +282,16 @@ static inline pgprot_t static_protections(pgprot_t prot, unsigned long address,
+ #if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA) && \
+ 	!defined(CONFIG_DYNAMIC_FTRACE)
+ 	/*
+-	 * Kernel text mappings for the large page aligned .rodata section
+-	 * will be read-only. For the kernel identity mappings covering
+-	 * the holes caused by this alignment can be anything.
++	 * Once the kernel maps the text as RO (kernel_set_to_readonly is set),
++	 * kernel text mappings for the large page aligned text, rodata sections
++	 * will be always read-only. For the kernel identity mappings covering
++	 * the holes caused by this alignment can be anything that user asks.
+ 	 *
+ 	 * This will preserve the large page mappings for kernel text/data
+ 	 * at no extra cost.
+ 	 */
+-	if (within(address, (unsigned long)_text,
++	if (kernel_set_to_readonly &&
++	    within(address, (unsigned long)_text,
+ 		   (unsigned long)__end_rodata_hpage_align))
+ 		pgprot_val(forbidden) |= _PAGE_RW;
+ #endif
