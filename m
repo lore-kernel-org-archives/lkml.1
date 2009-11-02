@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZKBFig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbZKBFhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbZKBFig (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 00:38:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZKBFig
+	id S1752185AbZKBFhc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 00:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbZKBFhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 00:38:36 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:47949 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbZKBFif (ORCPT
+	Mon, 2 Nov 2009 00:37:32 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46519 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbZKBFhb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 00:38:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Olgz0Z15uloMjrTimtBIOOX7XCORQeSzt7y/DNmPzshOV/rJwBAf2vwTaPN3DKyDj7
-         5kwbe7oaTD695dZMGuAHJkW2YLzHbooybSzc+GquyxjmFiJzIZSc8HP3uFWfeExnOwxa
-         K04QhLAkQDdQjok00w3PQOA37ZS+hSQ2BX+zY=
-Date: Sun, 1 Nov 2009 21:38:35 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Vojtech Pavlik <vojtech@suse.cz>
-Subject: Re: ALPS touchpad with 4 directions button doesnt work as intended
-Message-ID: <20091102053834.GA3354@core.coreip.homeip.net>
-References: <1256955018.9681.23.camel@maxim-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256955018.9681.23.camel@maxim-laptop>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 2 Nov 2009 00:37:31 -0500
+Date: Sun, 1 Nov 2009 21:38:39 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jan Kiszka <jan.kiszka@siemens.com>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>, Jan Kiszka <jan.kiszka@web.de>
+Subject: Re: [PATCH 1/6] perf/core: Provide a kernel-internal interface to
+ get to performance counters
+Message-ID: <20091101213839.28b4054a@infradead.org>
+In-Reply-To: <19182.22063.788927.708332@cargo.ozlabs.ibm.com>
+References: <4AE55B1B.2030006@web.de>
+	<1257109753-6464-2-git-send-email-fweisbec@gmail.com>
+	<19182.22063.788927.708332@cargo.ozlabs.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Maxim,
+On Mon, 2 Nov 2009 14:46:55 +1100
+Paul Mackerras <paulus@samba.org> wrote:
 
-On Sat, Oct 31, 2009 at 04:10:18AM +0200, Maxim Levitsky wrote:
-> I have a acer 5720G laptop, and its touchpad (ALPS) has three buttons,
-> usual left/right, and middle button that can be pressed in 4 directions.
-> Up/down direction work fine, but left/right doesn't. This means that
-> left direction  produces middle button click, and right direction
-> doesn't work at all.
-> I took a look at source, and I see that driver doesn't even know about
-> such configuration.
+> Frederic Weisbecker writes:
 > 
-> Now I am sure its very easy to figure out what is send when no working
-> button is pressed, but I am a bit confused what BTN_* event to assign to
-> it, so it will work as horizontal scroll as intended.
-> And unassign middle button from other direction....
+> >  /*
+> > + * perf_event_create_kernel_counter
+> > + * MUST be called from a kernel thread.
 > 
+> Why?  The reason for this requirement isn't obvious to me.  It would
+> be good to have the reason documented in the comment for the sake of
+> people modifying the code in future.
 
-Synaptics driver maps multi-button to BTN_0...BTN_8 and it looks like
-synaptics X driver maps teh 4-button case by default to
-up/down/left/right scroll so I'd map ALPS the same.
+because if you call it from another context it will attach to that
+context... and go away when that context goes away...
+
+
 
 -- 
-Dmitry
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
