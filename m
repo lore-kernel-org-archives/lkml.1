@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZKBRIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZKBRRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbZKBRIJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbZKBRII
+	id S1755349AbZKBRRB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:17:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZKBRRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:08:08 -0500
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:46555 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755379AbZKBRIH (ORCPT
+	Mon, 2 Nov 2009 12:17:01 -0500
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:53824 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751042AbZKBRRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:08:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=B/qzuxxUUzAIkO9RXE3xTBBTSjHKSNaeqhj9cW5Tu0Yl/EHJNdaaqvB3xH68ptRV0l
-         KvTZIq4X8EfrrCoRgU1oGKXV6KZmyW02r9KRLQiqWFMuR7pPFT3NpdE+HeL+sOXzpS87
-         UL20ZVA7wvuAAhzg4VEFgdkIiSLbNLXpOQ+is=
+	Mon, 2 Nov 2009 12:17:00 -0500
+Date: Mon, 2 Nov 2009 12:09:45 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       aarcange@redhat.com, akpm@linux-foundation.org, minchan.kim@gmail.com,
+       rientjes@google.com, vedran.furac@gmail.com,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: Re: [RFC][-mm][PATCH 3/6] oom-killer: count lowmem rss
+In-Reply-To: <20091102162617.9d07e05f.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0911021209180.2028@V090114053VZO-1>
+References: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com> <20091102162617.9d07e05f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 2 Nov 2009 09:07:52 -0800
-Message-ID: <43e72e890911020907m7cfc48edpd300243de7af36ed@mail.gmail.com>
-Subject: Kmemleak for mips
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: subscriptions@stroomer.com, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Curious what the limitations are on restricting kmemleak to non-mips
-archs. I have a user and situation [1] where this could be helpful [1]
-in debugging an issue. The user reports he cannot enable it on mips.
 
-[1] http://bugzilla.kernel.org/show_bug.cgi?id=14502
+I dont think this patch will work in !NUMA but its useful there too. Can
+you make this work in general?
 
-  Luis
+
