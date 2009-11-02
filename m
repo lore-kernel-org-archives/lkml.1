@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbZKBPTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZKBPUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbZKBPTU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZKBPTT
+	id S1755379AbZKBPUV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:20:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbZKBPUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:19:19 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17887 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755161AbZKBPTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:19:18 -0500
-Message-ID: <4AEEF878.2090805@redhat.com>
-Date: Mon, 02 Nov 2009 17:19:20 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 2 Nov 2009 10:20:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58917 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754814AbZKBPUT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:20:19 -0500
+Date: Mon, 2 Nov 2009 07:20:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nick Piggin <npiggin@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch][rfc] x86, mutex: non-atomic unlock (and a rant)
+In-Reply-To: <20091102120739.GA20318@wotan.suse.de>
+Message-ID: <alpine.LFD.2.01.0911020710030.31845@localhost.localdomain>
+References: <20091102120739.GA20318@wotan.suse.de>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Gleb Natapov <gleb@redhat.com>
-CC: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/11] Add "wait for page" hypercall.
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-9-git-send-email-gleb@redhat.com> <4AEED907.5030306@redhat.com> <20091102151320.GC27911@redhat.com>
-In-Reply-To: <20091102151320.GC27911@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/02/2009 05:13 PM, Gleb Natapov wrote:
-> On Mon, Nov 02, 2009 at 03:05:11PM +0200, Avi Kivity wrote:
->    
->> On 11/01/2009 01:56 PM, Gleb Natapov wrote:
->>      
->>> We want to be able to inject async pagefault into guest event if a guest
->>> is not executing userspace code. But in this case guest may receive
->>> async page fault in non-sleepable context. In this case it will be
->>> able to make "wait for page" hypercall vcpu will be put to sleep until
->>> page is swapped in and guest can continue without reschedule.
->>>        
->> What's wrong with just 'hlt' and checking in the guest?
->>
->>      
-> Halting here will leave vcpu with interrupt disabled and this will prevent
-> "wake up" signal delivery.
 
-Page faults can be delivered with interrupts disabled.
 
->   Enabling interrupts is also not an options
-> since we can't be sure that vcpu can process interrupt at this point.
->    
+On Mon, 2 Nov 2009, Nick Piggin wrote:
+> 
+> Non-atomic unlock for mutexs maybe? I do this by relying on cache
+> coherence on a cacheline basis for ordering rather than the memory
+> consistency of the x86. Linus I know you've told me this is an incorrect
+> assumption in the past, but I'm not so sure.
 
-That's too bad, allowing interrupts in this context can help maintain 
-responsiveness.
+I'm sure.
 
--- 
-error compiling committee.c: too many arguments to function
+This is simply buggy:
 
+> +	atomic_set(&lock->count, 1);
+> +	barrier();
+> +	if (unlikely(lock->waiters))
+> +		fail_fn(lock);
+
+because it doesn't matter one whit whether 'lock->count' and 
+'lock->waiters' are in the same cacheline or not.
+
+The cache coherency deals in cachelines, but the instruction re-ordering 
+logic does not. It's entirely possible that the CPU will turn this into
+
+	tmp = lock->waiters;
+	...
+	atomic_set(&lock->count, 1);
+	if (tmp)
+		fail_fn(lock);
+
+and your "barrier()" did absolutely nothing.
+
+The fact that it may _work_ in almost all circumstances (and perhaps even 
+"always" on some microarchitectures) is irrelevant. It's simply not 
+guaranteed to work. Yes, you need just the right timings, and yes, it's 
+probably hard to hit. And yes, I can well imagine that some micro-
+architecture will even guarantee the write->read ordering, and that it 
+would _always_ work on that micro-architecture.
+
+But I can see your thing failing even on an in-order CPU. It literally 
+doesn't even need OoO to fail, all it needs is a sufficiently deep write 
+buffer on an in-order core. And to fail in practice, maybe there needs to 
+be lots of writes in that buffer, and some bad luck, but the thing is, 
+write buffers are not coherent between cores - so the write may have 
+happened as far as the core that does it is concerned, but other cores 
+(or even HT) may not see the new value until after the read has taken 
+effect.
+
+			Linus
