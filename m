@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbZKBJSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZKBJW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbZKBJSN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 04:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZKBJSN
+	id S1754134AbZKBJW0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 04:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZKBJWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 04:18:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44885 "EHLO mx2.mail.elte.hu"
+	Mon, 2 Nov 2009 04:22:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46970 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753788AbZKBJSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 04:18:12 -0500
-Date: Mon, 2 Nov 2009 10:18:10 +0100
+	id S1753896AbZKBJWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 04:22:24 -0500
+Date: Mon, 2 Nov 2009 10:22:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
-Cc: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 03/16] trivial: fix assorted "through" typos
-Message-ID: <20091102091810.GA8933@elte.hu>
-References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>
+To: Gleb Natapov <gleb@redhat.com>
+Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
+Message-ID: <20091102092214.GB8933@elte.hu>
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>
+In-Reply-To: <1257076590-29559-3-git-send-email-gleb@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -34,30 +34,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* André Goddard Rosa <andre.goddard@gmail.com> wrote:
+* Gleb Natapov <gleb@redhat.com> wrote:
 
-> >From f5d73ba151304056e4f7ea37e515493d1d3df38f Mon Sep 17 00:00:00 2001
-> From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-> Date: Fri, 30 Oct 2009 06:16:07 -0200
-> Subject: [PATCH 03/16] trivial: fix assorted "through" typos
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=UTF-8
-> Content-Transfer-Encoding: 8bit
-> 
-> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
-> 
-> diff --git a/arch/arm/plat-mxc/include/mach/iomux-mx3.h
-> b/arch/arm/plat-mxc/include/mach/iomux-mx3.h
-> index 446f867..0c7802b 100644
-> --- a/arch/arm/plat-mxc/include/mach/iomux-mx3.h
-> +++ b/arch/arm/plat-mxc/include/mach/iomux-mx3.h
+> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> index f4cee90..14707dc 100644
+> --- a/arch/x86/mm/fault.c
+> +++ b/arch/x86/mm/fault.c
+> @@ -952,6 +952,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
+>  	int write;
+>  	int fault;
+>  
+> +	if (arch_handle_page_fault(regs, error_code))
+> +		return;
+> +
 
-> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-> index ad59a92..67e86b8 100644
-> --- a/arch/x86/kernel/amd_iommu.c
-> +++ b/arch/x86/kernel/amd_iommu.c
+This patch is not acceptable unless it's done cleaner. Currently we 
+already have 3 callbacks in do_page_fault() (kmemcheck, mmiotrace, 
+notifier), and this adds a fourth one. Please consolidate them into a 
+single callback site, this is a hotpath on x86.
 
-Please _always_ generate a diffstat as well, so that people reviewing 
-patches can see the scope of your patch at a glance.
+And please always Cc: the x86 maintainers to patches that touch x86 
+code.
 
 	Ingo
