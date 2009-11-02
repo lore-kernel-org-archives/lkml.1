@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbZKBPKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZKBPMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbZKBPKs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755358AbZKBPKr
+	id S1755383AbZKBPMl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:12:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbZKBPMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:10:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44914 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755343AbZKBPKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:10:46 -0500
-Date: Mon, 2 Nov 2009 16:10:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com
-Subject: Re: [PATCH 2/3] extend get/setrlimit to support setting rlimits
-	external to a process (v7)
-Message-ID: <20091102151032.GF23776@elte.hu>
-References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091012161342.GA32088@hmsreliant.think-freely.org> <20091012201304.GG32088@hmsreliant.think-freely.org> <20091020005214.GA8886@localhost.localdomain> <20091020005412.GC8886@localhost.localdomain>
+	Mon, 2 Nov 2009 10:12:40 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34010 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755241AbZKBPMj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:12:39 -0500
+Date: Mon, 2 Nov 2009 15:12:42 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: [PATCH] mfd/mc13783: near complete rewrite
+Message-ID: <20091102151242.GA26170@rakim.wolfsonmicro.main>
+References: <1256330323-13300-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <20091102115101.GF29351@sirena.org.uk>
+ <20091102135827.GA4855@pengutronix.de>
+ <20091102140925.GB6840@sirena.org.uk>
+ <20091102143229.GB4855@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091020005412.GC8886@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091102143229.GB4855@pengutronix.de>
+X-Cookie: Nothing is but what is not.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 02, 2009 at 03:32:29PM +0100, Uwe Kleine-König wrote:
 
-two small comments:
+> On mc13783 the 1HZ irq triggers immediately after unmasking provided
+> that it has power for more than 1s.  Because of locking the irq isn't
+> recognized as 1HZ as the irqhandler tries to take the lock that the rtc
+> probe function is holding and only releasing after the irq is masked.
+> So for me it's just a spurious irq.
 
-this is a really dangerous pattern:
+Hrm, I can't see that in the RTC driver code?  I'd have expected that if
+there is a lock it'd ensure that the handler is in place before the
+interrupt is unmasked.
 
-> +	if (!lock_task_sighand(tsk, &flags))
-> +		goto out_put_all;
-> +
-
-as it's followed by:
-
-> +	else {
-> +		struct rlimit val;
-> +
-> +		task_lock(tsk->group_leader);
-> +		val = current->signal->rlim[resource];
-> +		task_unlock(tsk->group_leader);
-> +		retval = copy_to_user(rlim, &val, sizeof(*rlim)) ? -EFAULT : 0;
-> +	}
-
-please turn that into the regular:
-
-	if () {
-		...
-	} else {
-		...
-	}
-
-pattern that is a lot harder to mess up later on.
-
-> +	return retval;
-> +}
-> +
-> +
->  #ifdef __ARCH_WANT_SYS_OLD_GETRLIMIT
-
-one too many newlines?
-
-	Ingo
+Looking at the IRQ handler I do notice that you require all the handlers
+to explicitly ack their interrupts - are there circumstances where a
+handler wouldn't want to do the ack?  If there aren't it'd seem like
+it'd save work to have the core driver do the acks.
