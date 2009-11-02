@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZKBPFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZKBPFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZKBPFY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbZKBPFX
+	id S1755349AbZKBPFz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbZKBPFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:05:23 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48934 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754764AbZKBPFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:05:22 -0500
-Date: Mon, 2 Nov 2009 16:05:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC Patch 0/4] Enhance perf-events to profile memory accesses
-	using hw-breakpoints - ver II
-Message-ID: <20091102150503.GE23776@elte.hu>
-References: <20091028155827.GA8604@in.ibm.com> <20091029081917.GC26970@elte.hu> <c62985530910310919u6ee28ad8qcaa3046b86ecaaee@mail.gmail.com>
+	Mon, 2 Nov 2009 10:05:54 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:43384 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754439AbZKBPFy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:05:54 -0500
+Date: Mon, 2 Nov 2009 15:05:25 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Antonio Ospite <ospite@studenti.unina.it>, openezx-devel@lists.openezx.org,
+       Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org,
+       Mike Rapoport <mike@compulab.co.il>, Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Using statically allocated memory for platform_data.
+Message-ID: <20091102150525.GB5785@n2100.arm.linux.org.uk>
+References: <20091102112316.16163f6a.ospite@studenti.unina.it> <20091102150011.GB20341@fluff.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c62985530910310919u6ee28ad8qcaa3046b86ecaaee@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20091102150011.GB20341@fluff.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 02, 2009 at 03:00:11PM +0000, Ben Dooks wrote:
+> This looks like something is freeing stuff that it did not allocate in
+> the first place, which is IMHO bad. The call platform_device_alloc()
+> is setting platform_device_release() as the default release function
+> but platform_device_release() releases more than platform_device_alloc()
+> actually created.
+> 
+> My view is that platform_device_alloc()'s default release shouldn't
+> be freeing the platform data, and that using platform_device_add_data()
+> or platform_device_add_resources() should change either the behvaiour 
+> of platform_device_release() or it should change the pointer to a new
+> release function.
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Well this ascii art should be a bit more complicated actually. But 
-> anyway. Prasad's patchset is another branch of evolution of 
-> tracing/hw-breakpoints.
->
-> I've expressed my opinion about that in a mail yesterday. I basically 
-> think it limits the perf events possibilities and rewrites the context 
-> binding / register allocation that perf already handles.
-
-Ok, in hindsight i agree with your point of view - we really dont want a 
-duplicate layer but a single handler/arbitrer of hw-breakpoint state.
-
-	Ingo
+That doesn't work - how do those other functions (adding) know what data
+has also been added by other functions?  That can't work reliably.
