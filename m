@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZKBQrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZKBQro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZKBQrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbZKBQrV
+	id S1756053AbZKBQro (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbZKBQrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:47:21 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:40401 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755805AbZKBQrU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:47:20 -0500
-Message-ID: <4AEF0D0B.1000100@austin.ibm.com>
-Date: Mon, 02 Nov 2009 10:47:07 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 2 Nov 2009 11:47:43 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:44095 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755925AbZKBQrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 11:47:43 -0500
+Date: Mon, 2 Nov 2009 16:47:44 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>, Antonio Ospite <ospite@studenti.unina.it>,
+       openezx-devel@lists.openezx.org, Samuel Ortiz <sameo@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Mike Rapoport <mike@compulab.co.il>, Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Using statically allocated memory for platform_data.
+Message-ID: <20091102164743.GE23772@trinity.fluff.org>
+References: <20091102112316.16163f6a.ospite@studenti.unina.it> <20091102150011.GB20341@fluff.org.uk> <20091102150525.GB5785@n2100.arm.linux.org.uk> <20091102152500.GD23772@trinity.fluff.org> <20091102155231.GC20341@fluff.org.uk> <20091102155625.GC5785@n2100.arm.linux.org.uk> <20091102162839.GD20341@fluff.org.uk> <20091102163701.GD5785@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6 v5] Kernel DLPAR Infrastructure
-References: <4AE8ADCF.6090104@austin.ibm.com> <4AE8AF4D.4030403@austin.ibm.com> 	<1256785731.26770.38.camel@pasglop> <4AEF086D.9010600@austin.ibm.com> <fa686aa40911020840s3a6a4819g85f3be3a305820bf@mail.gmail.com>
-In-Reply-To: <fa686aa40911020840s3a6a4819g85f3be3a305820bf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102163701.GD5785@n2100.arm.linux.org.uk>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Likely wrote:
-> On Mon, Nov 2, 2009 at 9:27 AM, Nathan Fontenot <nfont@austin.ibm.com> wrote:
->> I saw that Grant Likely is doing updates to all of the of_* stuff right now,
->> would it be ok to have these routines here, renamed as dlpar_*, and look
->> to merge them in with Grant's updates when he finishes?
+On Mon, Nov 02, 2009 at 04:37:01PM +0000, Russell King - ARM Linux wrote:
+> On Mon, Nov 02, 2009 at 04:28:39PM +0000, Ben Dooks wrote:
+> > On Mon, Nov 02, 2009 at 03:56:25PM +0000, Russell King - ARM Linux wrote:
+> > > The reason we have platform_device_add_data() is that people think that
+> > > the device data needs to persist for the lifetime of the device.  I
+> > > personally disagree with that - once you unregister the device, it's
+> > > guaranteed that device drivers will have been unregistered, so who's
+> > > going to use the platform data?
+> > 
+> > That doesn't make any sense, in the current case of using the
+> > platform_device_alloc() and those calls the data is only living
+> > for the lifetime of the device, as the release call is tidying up
+> > the result.
 > 
-> No because then we're stuck with renaming the API at a later date.
-> Name it what it is, and put it where it belongs.  I'll deal with any
-> merge breakage as it occurs.
+> What I'm saying is that the lifetime of the data finishes once
+> the _unregister() call has returned.  So:
 > 
+> 	data = pdev->dev.platform_data;
+> 	platform_device_unregister(pdev);
+> 	kfree(data);
+> 
+> is an entirely valid way of handling the "I allocated my platform
+> data" problem - it doesn't need to exist to the point where the
+> device itself is freed.
 
-ok.  Would this be better off in powerpc code, or should I go ahead and put it
-in something like drivers/of/dynamic.c?
+Unforutnately pretty much everyone now assumes that the act of
+unregistering the device will get rid of the data that the allocated
+by the add functions.
 
--Nathan Fontenot
+This would mean going around fixing a number of current drivers which
+all make that assumption.
+
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
