@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZKBSzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZKBS4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbZKBSzx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbZKBSzw
+	id S1756695AbZKBS4q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:56:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbZKBS4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:55:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43992 "EHLO hera.kernel.org"
+	Mon, 2 Nov 2009 13:56:45 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44014 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756618AbZKBSzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:55:51 -0500
-Date: Mon, 2 Nov 2009 18:55:06 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
+	id S1756132AbZKBS4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:56:44 -0500
+Date: Mon, 2 Nov 2009 18:55:38 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
+       a.p.zijlstra@chello.nl, eparis@redhat.com, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20091029024821.164525222@sbs-t61.sc.intel.com>
-References: <20091029024821.164525222@sbs-t61.sc.intel.com>
+       eparis@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1256813310.7574.3.camel@marge.simson.net>
+References: <1256813310.7574.3.camel@marge.simson.net>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mm] x86_64, cpa: Use only text section in set_kernel_text_rw/ro
-Message-ID: <tip-e7d23dde9b7ebb575e2bcee2abefc9ec1e4adde9@git.kernel.org>
-Git-Commit-ID: e7d23dde9b7ebb575e2bcee2abefc9ec1e4adde9
+Subject: [tip:sched/urgent] sched: Fix kthread_bind() by moving the body of kthread_bind() to sched.c
+Message-ID: <tip-48f69b95afd3b8f3d0dab1b822f12ed4f5bdb247@git.kernel.org>
+Git-Commit-ID: 48f69b95afd3b8f3d0dab1b822f12ed4f5bdb247
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,74 +31,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e7d23dde9b7ebb575e2bcee2abefc9ec1e4adde9
-Gitweb:     http://git.kernel.org/tip/e7d23dde9b7ebb575e2bcee2abefc9ec1e4adde9
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Wed, 28 Oct 2009 18:46:58 -0800
+Commit-ID:  48f69b95afd3b8f3d0dab1b822f12ed4f5bdb247
+Gitweb:     http://git.kernel.org/tip/48f69b95afd3b8f3d0dab1b822f12ed4f5bdb247
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Thu, 29 Oct 2009 11:48:30 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 2 Nov 2009 17:17:24 +0100
+CommitDate: Mon, 2 Nov 2009 19:37:57 +0100
 
-x86_64, cpa: Use only text section in set_kernel_text_rw/ro
+sched: Fix kthread_bind() by moving the body of kthread_bind() to sched.c
 
-set_kernel_text_rw()/set_kernel_text_ro() are marking pages
-starting from _text to __start_rodata as RW or RO.
+Eric Paris reported that commit
+f685ceacab07d3f6c236f04803e2f2f0dbcc5afb causes boot time
+PREEMPT_DEBUG complaints.
 
-With CONFIG_DEBUG_RODATA, there might be free pages (associated
-with padding the sections to 2MB large page boundary) between
-text and rodata sections that are given back to page allocator.
-So we should use only use the start (__text) and end
-(__stop___ex_table) of the text section in
-set_kernel_text_rw()/set_kernel_text_ro().
+ [    4.590699] BUG: using smp_processor_id() in preemptible [00000000] code: rmmod/1314
+ [    4.593043] caller is task_hot+0x86/0xd0
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Tested-by: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <20091029024821.164525222@sbs-t61.sc.intel.com>
+Since kthread_bind() messes with scheduler internals, move the
+body to sched.c, and lock the runqueue.
+
+Reported-by: Eric Paris <eparis@redhat.com>
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Tested-by: Eric Paris <eparis@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1256813310.7574.3.camel@marge.simson.net>
+[ v2: fix !SMP build and clean up ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/mm/init_64.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+ kernel/kthread.c |   23 -----------------------
+ kernel/sched.c   |   31 +++++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 23 deletions(-)
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 4b507c0..5198b9b 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -700,7 +700,7 @@ int kernel_set_to_readonly;
- void set_kernel_text_rw(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
--	unsigned long end = PFN_ALIGN(__start_rodata);
-+	unsigned long end = PFN_ALIGN(__stop___ex_table);
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index 5fe7099..ab7ae57 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -150,29 +150,6 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
+ EXPORT_SYMBOL(kthread_create);
  
- 	if (!kernel_set_to_readonly)
- 		return;
-@@ -708,13 +708,18 @@ void set_kernel_text_rw(void)
- 	pr_debug("Set kernel text: %lx - %lx for read write\n",
- 		 start, end);
- 
-+	/*
-+	 * Make the kernel identity mapping for text RW. Kernel text
-+	 * mapping will always be RO. Refer to the comment in
-+	 * static_protections() in pageattr.c
-+	 */
- 	set_memory_rw(start, (end - start) >> PAGE_SHIFT);
+ /**
+- * kthread_bind - bind a just-created kthread to a cpu.
+- * @k: thread created by kthread_create().
+- * @cpu: cpu (might not be online, must be possible) for @k to run on.
+- *
+- * Description: This function is equivalent to set_cpus_allowed(),
+- * except that @cpu doesn't need to be online, and the thread must be
+- * stopped (i.e., just returned from kthread_create()).
+- */
+-void kthread_bind(struct task_struct *k, unsigned int cpu)
+-{
+-	/* Must have done schedule() in kthread() before we set_task_cpu */
+-	if (!wait_task_inactive(k, TASK_UNINTERRUPTIBLE)) {
+-		WARN_ON(1);
+-		return;
+-	}
+-	set_task_cpu(k, cpu);
+-	k->cpus_allowed = cpumask_of_cpu(cpu);
+-	k->rt.nr_cpus_allowed = 1;
+-	k->flags |= PF_THREAD_BOUND;
+-}
+-EXPORT_SYMBOL(kthread_bind);
+-
+-/**
+  * kthread_stop - stop a thread created by kthread_create().
+  * @k: thread created by kthread_create().
+  *
+diff --git a/kernel/sched.c b/kernel/sched.c
+index bf21adb..a7df695 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1996,6 +1996,37 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
+ 		p->sched_class->prio_changed(rq, p, oldprio, running);
  }
  
- void set_kernel_text_ro(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
--	unsigned long end = PFN_ALIGN(__start_rodata);
-+	unsigned long end = PFN_ALIGN(__stop___ex_table);
- 
- 	if (!kernel_set_to_readonly)
- 		return;
-@@ -722,6 +727,9 @@ void set_kernel_text_ro(void)
- 	pr_debug("Set kernel text: %lx - %lx for read only\n",
- 		 start, end);
- 
-+	/*
-+	 * Set the kernel identity mapping for text RO.
-+	 */
- 	set_memory_ro(start, (end - start) >> PAGE_SHIFT);
- }
- 
++/**
++ * kthread_bind - bind a just-created kthread to a cpu.
++ * @k: thread created by kthread_create().
++ * @cpu: cpu (might not be online, must be possible) for @k to run on.
++ *
++ * Description: This function is equivalent to set_cpus_allowed(),
++ * except that @cpu doesn't need to be online, and the thread must be
++ * stopped (i.e., just returned from kthread_create()).
++ *
++ * Function lives here instead of kthread.c because it messes with
++ * scheduler internals which require locking.
++ */
++void kthread_bind(struct task_struct *p, unsigned int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++	unsigned long flags;
++
++	/* Must have done schedule() in kthread() before we set_task_cpu */
++	if (!wait_task_inactive(p, TASK_UNINTERRUPTIBLE)) {
++		WARN_ON(1);
++		return;
++	}
++
++	spin_lock_irqsave(&rq->lock, flags);
++	set_task_cpu(p, cpu);
++	p->cpus_allowed = cpumask_of_cpu(cpu);
++	p->rt.nr_cpus_allowed = 1;
++	p->flags |= PF_THREAD_BOUND;
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
+ #ifdef CONFIG_SMP
+ /*
+  * Is this task likely cache-hot:
