@@ -1,184 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZKBAhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbZKBAhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbZKBAhu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 19:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZKBAht
+	id S1752451AbZKBAhX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 19:37:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbZKBAhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 19:37:49 -0500
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:58856 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbZKBAhs (ORCPT
+	Sun, 1 Nov 2009 19:37:22 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:64622 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751774AbZKBAhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 19:37:48 -0500
+	Sun, 1 Nov 2009 19:37:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=wXUAYQmEP9oglZ2LkW045TKvwIbbuVQ/oh2IANPlUbGT/8darqi/trJ7acl80t5XDk
-         mcf2l0OTtPLNJtwaCwNWTgUCidq4xNMkubmDoujKSWOPtXUjelpyNOZaQnzvFhuJIUtB
-         bncoP5qjr76iWMIbj/64LIRhQTCpLr61kgHDI=
-Date: Mon, 2 Nov 2009 09:35:17 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCHv2 1/5] vmscan: separate sc.swap_cluster_max and
- sc.nr_max_reclaim
-Message-Id: <20091102093517.32021780.minchan.kim@barrios-desktop>
-In-Reply-To: <20091101234614.F401.A69D9226@jp.fujitsu.com>
-References: <20091101234614.F401.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=khP5iZn4qA0k+7BUd5J0kgmybAO6cBc8hUZde5S154+ny0mRiAhIkN19C7vVlOUYtU
+         p1Rp8FRqmNjAo5s6nqT8B5YHNUIJTcohFdRLlOY/r+NLsKKH/XrMnKDY/wbZrA181IJh
+         KkEY9SjBFGrtOlHioJuRzDn86RT9JyiyWbGJc=
+Date: Mon, 2 Nov 2009 01:37:25 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from
+	crashing function graph tracer
+Message-ID: <20091102003723.GF5263@nowhere>
+References: <20091029205151.852744305@goodmis.org> <4AEA10EC.8000103@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AEA10EC.8000103@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Kosaki.
-
-On Mon, 2 Nov 2009 00:08:44 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> Currently, sc.scap_cluster_max has double meanings.
+On Thu, Oct 29, 2009 at 06:02:20PM -0400, Masami Hiramatsu wrote:
+> Steven Rostedt wrote:
+> > Lately I've been testing with an allyesconfig. When I ran the function graph
+> > tracer, it immediately crashed the kernel. Thanks to the new frame pointer
+> > test in function graph, it reported directly what the issue was and then
+> > panicked the kernel to prevent any unexpected damage from happening.
+> > 
+> > It pointed the error to be with jtcp_rcv_established. Which is a jprobe
+> > function added to tcp_rcv_established at bootup when CONFIG_NET_TCPPROBE
+> > is enabled.
+> > 
+> > Jprobes and the function graph tracer use the same mechanism to trace
+> > the exit of a function. Unfortunately, only one can be done at a time.
+> > The function graph tracer replaces the return address with its own handler,
+> > but so does jprobes. The two are not compatible.
 > 
->  1) reclaim batch size as isolate_lru_pages()'s argument
->  2) reclaim baling out thresolds
+> AFAIK, Jprobe doesn't trace the exit of a function. I assume that
+> jprobe's user handler causes the problem, since the handler never
+> returns normal way.
+> Instead of that, it just calls jprobe_return() which causes
+> int3 to be trapped by kprobe's break handler. And the break handler
+> fixup regs->ip to back to traced function.
 > 
-> The two meanings pretty unrelated. Thus, Let's separate it.
-> this patch doesn't change any behavior.
+> Actually, this will cause a problem with function graph tracer.
+> The f-g-tracer push the return address into the special stack and replaces
+> it with fixup function (This is similar (not same) mechanism of kretprobe.)
+> And then the traced function returns, it returns to the fixup function and
+> it pops the return address up and back to the real caller.
 > 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> ---
->  mm/vmscan.c |   21 +++++++++++++++------
->  1 files changed, 15 insertions(+), 6 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index f805958..6a3eb9f 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -55,6 +55,9 @@ struct scan_control {
->  	/* Number of pages freed so far during a call to shrink_zones() */
->  	unsigned long nr_reclaimed;
->  
-> +	/* How many pages shrink_list() should reclaim */
-> +	unsigned long nr_to_reclaim;
-
-If you try to divide meaning of swap_cluster_max, 
-How about changing 'swap_cluster_max', too?
-
-It has a meaning which represents 'batch size'. ;)
-I hope we change it in this chance.
-
-> +
->  	/* This context's GFP mask */
->  	gfp_t gfp_mask;
->  
-> @@ -1585,6 +1588,7 @@ static void shrink_zone(int priority, struct zone *zone,
->  	enum lru_list l;
->  	unsigned long nr_reclaimed = sc->nr_reclaimed;
->  	unsigned long swap_cluster_max = sc->swap_cluster_max;
-> +	unsigned long nr_to_reclaim = sc->nr_to_reclaim;
->  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
->  	int noswap = 0;
->  
-> @@ -1634,8 +1638,7 @@ static void shrink_zone(int priority, struct zone *zone,
->  		 * with multiple processes reclaiming pages, the total
->  		 * freeing target can get unreasonably large.
->  		 */
-
-How about adding following comment or more good one.
-'kswapd doesn't bail out because it has 'MAX' nr_to_reclaim'.
-
-> -		if (nr_reclaimed > swap_cluster_max &&
-> -			priority < DEF_PRIORITY && !current_is_kswapd())
-> +		if (nr_reclaimed > nr_to_reclaim && priority < DEF_PRIORITY)
->  			break;
->  	}
->  
-> @@ -1733,6 +1736,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
->  	struct zoneref *z;
->  	struct zone *zone;
->  	enum zone_type high_zoneidx = gfp_zone(sc->gfp_mask);
-> +	unsigned long writeback_threshold;
->  
->  	delayacct_freepages_start();
->  
-> @@ -1768,7 +1772,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
->  			}
->  		}
->  		total_scanned += sc->nr_scanned;
-> -		if (sc->nr_reclaimed >= sc->swap_cluster_max) {
-> +		if (sc->nr_reclaimed >= sc->nr_to_reclaim) {
->  			ret = sc->nr_reclaimed;
->  			goto out;
->  		}
-> @@ -1780,8 +1784,8 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
->  		 * that's undesirable in laptop mode, where we *want* lumpy
->  		 * writeout.  So in laptop mode, write out the whole world.
->  		 */
-> -		if (total_scanned > sc->swap_cluster_max +
-> -					sc->swap_cluster_max / 2) {
-> +		writeback_threshold = sc->nr_to_reclaim + sc->nr_to_reclaim / 2;
-> +		if (total_scanned > writeback_threshold) {
->  			wakeup_flusher_threads(laptop_mode ? 0 : total_scanned);
->  			sc->may_writepage = 1;
->  		}
-> @@ -1827,6 +1831,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
->  		.gfp_mask = gfp_mask,
->  		.may_writepage = !laptop_mode,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
-> +		.nr_to_reclaim = SWAP_CLUSTER_MAX,
->  		.may_unmap = 1,
->  		.may_swap = 1,
->  		.swappiness = vm_swappiness,
-> @@ -1885,6 +1890,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
->  		.may_unmap = 1,
->  		.may_swap = !noswap,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
-> +		.nr_to_reclaim = SWAP_CLUSTER_MAX,
->  		.swappiness = swappiness,
->  		.order = 0,
->  		.mem_cgroup = mem_cont,
-> @@ -1932,6 +1938,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
->  		.may_unmap = 1,
->  		.may_swap = 1,
->  
-		.swap_cluster_max = SWAP_CLUSTER_MAX,
-Or add comment in here. 
-
-'kswapd doesn't want to be bailed out while reclaim.'
-
-> +		.nr_to_reclaim = ULONG_MAX,
->  		.swappiness = vm_swappiness,
->  		.order = order,
->  		.mem_cgroup = NULL,
-> @@ -2549,7 +2556,9 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  		.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
->  		.may_swap = 1,
->  		.swap_cluster_max = max_t(unsigned long, nr_pages,
-> -					SWAP_CLUSTER_MAX),
-> +				       SWAP_CLUSTER_MAX),
-> +		.nr_to_reclaim = max_t(unsigned long, nr_pages,
-> +				       SWAP_CLUSTER_MAX),
->  		.gfp_mask = gfp_mask,
->  		.swappiness = vm_swappiness,
->  		.order = order,
-> -- 
-> 1.6.2.5
-> 
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> So, if the f-g-tracer traces jprobe user handler, the pop operation
+> will be skipped because the the handler never returns.
 
 
--- 
-Kind regards,
-Minchan Kim
+I'm not sure I've well understood how is performed the call to the jprobe
+handler.
+But if I understand well we have:
+
+	func() {
+		int3() {
+			jprobe_handler() {
+				(-)
+				set ip after iret to user_handler()
+			}
+		}
+		user_handler() {
+			jprobe_return() {
+				(+)
+				int3() {
+					set ip after iret to func+...()
+				}
+			       |
+			       |
+			       |
+                <--------------
+                (execute the rest of func())
+	}
+
+If we replace (-) with pause_graph_tracing() and (+) with
+unpause_graph_tracing(), this should do the trick...I hope.
+
