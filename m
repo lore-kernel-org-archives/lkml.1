@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbZKBLQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZKBLLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbZKBLQf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 06:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZKBLQe
+	id S1754491AbZKBLLX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 06:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZKBLLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 06:16:34 -0500
-Received: from ocean.emcraft.com ([213.221.7.182]:45430 "EHLO
-	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754497AbZKBLQd (ORCPT
+	Mon, 2 Nov 2009 06:11:23 -0500
+Received: from smtprelay02.ispgateway.de ([80.67.31.36]:40207 "EHLO
+	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754358AbZKBLLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 06:16:33 -0500
-X-Greylist: delayed 1122 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Nov 2009 06:16:33 EST
-Date: Mon, 2 Nov 2009 13:57:50 +0300
-From: Sergei Poselenov <sposelenov@emcraft.com>
-To: Steffen Sledz <sledz@dresearch.de>, Steffen Sledz <sledz@zone42.org>
-Cc: sledz@dresearch.de, wd@denx.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Patch: Fix userland build failure in linux/if_tunnel.h
-Message-ID: <20091102135750.436a7b54@emcraft.com>
-In-Reply-To: <4AEDCBA6.7040206@dresearch.de>
-References: <4AEDCBA6.7040206@dresearch.de>
-Organization: Emcraft Systems
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Mon, 2 Nov 2009 06:11:22 -0500
+X-Greylist: delayed 562 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Nov 2009 06:11:22 EST
+References: <20091019102116.222ff9c3.peter@piie.net> <9ea470500910191151j370cec68w67ee8e31f42f3303@mail.gmail.com> <cone.1255986667.852662.3188.1000@deskpiie> <20091020072752.GA9326@liondog.tnic>
+Message-ID: <cone.1257159721.959115.3271.1000@onepiie>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <pfe@piie.net>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Borislav Petkov <petkovbb@gmail.com>, linux-kernel@vger.kernel.org,
+       Andreas Mohr <andi@lisas.de>
+Subject: Re: [Patch] acerhdf: Return temperature in milidegree
+Date: Mon, 02 Nov 2009 12:02:01 +0100
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Steffen,
+Hi Boris,
 
-Hm, I received a confirmation, that my fix was applied
-http://www.spinics.net/lists/netdev/msg103860.html
+Borislav Petkov writes:
 
-However, it indeed didn't find their way into the mainline.
-I have no idea why, received no objections.
-
-I'm sending the reply to the resp. mailing lists too; hope you don't
-mind.
-
-Regards,
-Sergei
-
-On Sun, 01 Nov 2009 18:55:50 +0100
-Steffen Sledz <sledz@dresearch.de> wrote:
-
-> Hello Sergei,
+> On Mon, Oct 19, 2009 at 11:11:07PM +0200, Peter Feuerer wrote:
+>> I just had a look at the documentation concerning this topic:
+>> 
+>> Documentation/thermal/sysfs-api.txt:162
+>> 
+>> temp           Current temperature as reported by thermal zone (sensor)
+>>            Unit: millidegree Celsius
+>>            RO
+>>            Required
+>> 
+>> 
+>> It is expected to be in millidegree, so I think we should discuss,
+>> modify and apply the patch.
 > 
-> i'm working for the OpenEmbedded project and we hit the same busybox
-> problem you mentioned in <http://patchwork.kernel.org/patch/31164/>.
-> 
-> It doesn't look like you got much feedback on you patch suggestion.
-> Did it made it's way to the kernel sources? Or where there any
-> objections on it?
-> 
-> Steffen
+> Well well, looka here, it is an interface! I guess the temperature has
+> to be in millidegrees for better granularity or similar. Now userspace
+> has to do temp / 1000.0 and so on.
 
+This is what the userspace applications like thermal-plugin of xfce-panel 
+do.
+
+> 
+> In that case, the patch should be applied. I'll give it a run later.
+
+Did you already give it a try?
+
+> 
+> Minor nitpick: Add the sysfs-api requirement to the commit message
+> instead of "userspace applications."
+
+will change this, when submitting the patch to Andrew.
+
+kind regards,
+--peter
