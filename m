@@ -1,81 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbZKBUpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbZKBUrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932472AbZKBUpk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 15:45:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932453AbZKBUpj
+	id S932476AbZKBUrY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 15:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZKBUrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 15:45:39 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:35729 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932443AbZKBUph (ORCPT
+	Mon, 2 Nov 2009 15:47:23 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:21848 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754799AbZKBUrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 15:45:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=i313E8epfmu0yftoYZ9KQ2mI7IkDSTzpP5zcpLxy6W2xwhTclN1FbFOz/u/IqVhCx5
-         +yLhI90SRn/bnKP1oukHzr7jEOHaMJmb2e9kJRdH6PiD4/4bPJotS91pca81+TanjlCW
-         d82lCvFtUmWIKnB4RWIw7+wZb5fzWwEgneo0E=
-From: Thiago Farina <tfransosi@gmail.com>
-To: trivial@kernel.com
-Cc: baum@tehutinetworks.net, andy@greyhouse.net, davem@davemloft.net,
-       shemminger@vyatta.com, apkm@linux-fundation.org, ben@decadent.org.uk,
-       yanghy@cn.fujitsu.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thiago Farina <tfransosi@gmail.com>
-Subject: [PATCH] trivial: remove duplicated MIN macro from tehuti.
-Date: Mon,  2 Nov 2009 15:45:14 -0500
-Message-Id: <1257194714-5218-1-git-send-email-tfransosi@gmail.com>
-X-Mailer: git-send-email 1.6.5.1.61.ge79999
-In-Reply-To: <y>
-References: <y>
+	Mon, 2 Nov 2009 15:47:22 -0500
+Date: Mon, 2 Nov 2009 13:47:26 -0700
+From: Alex Chiang <achiang@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Badari Pulavarty <pbadari@us.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch -mm] mm: slab allocate memory section nodemask for
+	large systems
+Message-ID: <20091102204726.GG5525@ldl.fc.hp.com>
+References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041510.15705.5410.stgit@bob.kio> <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com> <20091027195907.GJ14102@ldl.fc.hp.com> <alpine.DEB.2.00.0910271422090.22335@chino.kir.corp.google.com> <20091028083137.GA24140@osiris.boeblingen.de.ibm.com> <alpine.DEB.2.00.0910280159380.7122@chino.kir.corp.google.com> <20091028183905.GF22743@ldl.fc.hp.com> <alpine.DEB.2.00.0910281315370.23279@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910281315370.23279@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the kernel api already has the macro "min",
-just use it instead of declaring another one.
+Hi Andrew,
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- drivers/net/tehuti.c |    4 ++--
- drivers/net/tehuti.h |    2 --
- 2 files changed, 2 insertions(+), 4 deletions(-)
+* David Rientjes <rientjes@google.com>:
+> On Wed, 28 Oct 2009, Alex Chiang wrote:
+> 
+> > Am I not understanding the code? It looks like we do this
+> > already...
+> > 
+> > /* unregister memory section under all nodes that it spans */
+> > int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+> > {
+> > 	nodemask_t unlinked_nodes;
+> > 	unsigned long pfn, sect_start_pfn, sect_end_pfn;
+> > 
+> > 	if (!mem_blk)
+> > 		return -EFAULT;
+> > 	nodes_clear(unlinked_nodes);
+> > 	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
+> > 	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
+> > 	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
+> > 		int nid;
+> > 
+> > 		nid = get_nid_for_pfn(pfn);
+> > 		if (nid < 0)
+> > 			continue;
+> > 		if (!node_online(nid))
+> > 			continue;
+> > 		if (node_test_and_set(nid, unlinked_nodes))
+> > 			continue;
+> > 		sysfs_remove_link(&node_devices[nid].sysdev.kobj,
+> > 			 kobject_name(&mem_blk->sysdev.kobj));
+> > 		sysfs_remove_link(&mem_blk->sysdev.kobj,
+> > 			 kobject_name(&node_devices[nid].sysdev.kobj));
+> > 	}
+> > 	return 0;
+> > }
+> > 
+> 
+> That shound be sufficient with the exception that allocating nodemask_t 
+> on the stack is usually dangerous because it can be extremely large; we 
+> typically use NODEMASK_ALLOC() for such code.  It's had some changes in 
+> -mm, but since this patchset will likely be going through that tree anyway 
+> we can fix it now with the patch below.
+> 
+> Otherwise, it looks like the iteration is already there and will remove 
+> links for memory sections bound to multiple nodes if they exist through 
+> hotplug.
 
-diff --git a/drivers/net/tehuti.c b/drivers/net/tehuti.c
-index ec9dfb2..8d116a9 100644
---- a/drivers/net/tehuti.c
-+++ b/drivers/net/tehuti.c
-@@ -1878,7 +1878,7 @@ static void bdx_tx_push_desc_safe(struct bdx_priv *priv, void *data, int size)
- 			udelay(50);	/* give hw a chance to clean fifo */
- 			continue;
- 		}
--		avail = MIN(avail, size);
-+		avail = min(avail, size);
- 		DBG("about to push  %d bytes starting %p size %d\n", avail,
- 		    data, size);
- 		bdx_tx_push_desc(priv, data, avail);
-@@ -1889,7 +1889,7 @@ static void bdx_tx_push_desc_safe(struct bdx_priv *priv, void *data, int size)
- }
- 
- static const struct net_device_ops bdx_netdev_ops = {
--	.ndo_open	 	= bdx_open,
-+	.ndo_open	        = bdx_open,
- 	.ndo_stop		= bdx_close,
- 	.ndo_start_xmit		= bdx_tx_transmit,
- 	.ndo_validate_addr	= eth_validate_addr,
-diff --git a/drivers/net/tehuti.h b/drivers/net/tehuti.h
-index 4fc875e..1241419 100644
---- a/drivers/net/tehuti.h
-+++ b/drivers/net/tehuti.h
-@@ -76,8 +76,6 @@
- #define FIFO_SIZE  4096
- #define FIFO_EXTRA_SPACE            1024
- 
--#define MIN(x, y)  ((x) < (y) ? (x) : (y))
--
- #if BITS_PER_LONG == 64
- #    define H32_64(x)  (u32) ((u64)(x) >> 32)
- #    define L32_64(x)  (u32) ((u64)(x) & 0xffffffff)
--- 
-1.6.5.1.61.ge79999
+Any comments on this patch series?
 
+Turns out that Kame-san's fear about a memory section spanning
+several nodes on certain architectures (S390) isn't really
+applicable and even if it were, we have code to handle situation
+anyway.
+
+Kame-san was generally supportive of these convenience symlinks
+although he did not give a formal ACK.
+
+David has given an ACK on the two patches that do real work, as
+well as supplied the below patch.
+
+I can respin this series once more, including David's Acked-by:
+and adding his patch if that makes life easier for you.
+
+Thanks,
+/ac
+
+
+> mm: slab allocate memory section nodemask for large systems
+> 
+> Nodemasks should not be allocated on the stack for large systems (when it
+> is larger than 256 bytes) since there is a threat of overflow.
+> 
+> This patch causes the unregister_mem_sect_under_nodes() nodemask to be
+> allocated on the stack for smaller systems and be allocated by slab for
+> larger systems.
+> 
+> GFP_KERNEL is used since remove_memory_block() can block.
+> 
+> Cc: Gary Hade <garyhade@us.ibm.com>
+> Cc: Badari Pulavarty <pbadari@us.ibm.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  Depends on NODEMASK_ALLOC() changes currently present only in -mm.
+> 
+>  drivers/base/node.c |   11 +++++++----
+>  1 files changed, 7 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/base/node.c b/drivers/base/node.c
+> --- a/drivers/base/node.c
+> +++ b/drivers/base/node.c
+> @@ -363,12 +363,14 @@ int register_mem_sect_under_node(struct memory_block *mem_blk, int nid)
+>  /* unregister memory section under all nodes that it spans */
+>  int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+>  {
+> -	nodemask_t unlinked_nodes;
+> +	NODEMASK_ALLOC(nodemask_t, unlinked_nodes, GFP_KERNEL);
+>  	unsigned long pfn, sect_start_pfn, sect_end_pfn;
+>  
+> -	if (!mem_blk)
+> +	if (!mem_blk) {
+> +		NODEMASK_FREE(unlinked_nodes);
+>  		return -EFAULT;
+> -	nodes_clear(unlinked_nodes);
+> +	}
+> +	nodes_clear(*unlinked_nodes);
+>  	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
+>  	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
+>  	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
+> @@ -379,13 +381,14 @@ int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+>  			continue;
+>  		if (!node_online(nid))
+>  			continue;
+> -		if (node_test_and_set(nid, unlinked_nodes))
+> +		if (node_test_and_set(nid, *unlinked_nodes))
+>  			continue;
+>  		sysfs_remove_link(&node_devices[nid].sysdev.kobj,
+>  			 kobject_name(&mem_blk->sysdev.kobj));
+>  		sysfs_remove_link(&mem_blk->sysdev.kobj,
+>  			 kobject_name(&node_devices[nid].sysdev.kobj));
+>  	}
+> +	NODEMASK_FREE(unlinked_nodes);
+>  	return 0;
+>  }
+>  
+> 
