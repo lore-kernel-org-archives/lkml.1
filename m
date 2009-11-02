@@ -1,97 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204AbZKBWZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932517AbZKBW2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757204AbZKBWZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 17:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbZKBWZj
+	id S932517AbZKBW2d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 17:28:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932498AbZKBW2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 17:25:39 -0500
-Received: from mail-px0-f179.google.com ([209.85.216.179]:35649 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757037AbZKBWZj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 17:25:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=Dpwj8tFBULEMJ9W29aSj3OrznSyEtnrE+6P7Vz628AKXtHPvHoLRGyaqnwLScew3JY
-         80IH6/rLyo9jXo9/RwWfAUC9FCxgUyK6Ya875o6yiwtWeplD9g7RphPvVxoUPvdOygAw
-         5bsGrJuf0qTYh2Q+lbziuOJLbbz9JNXmwLF3w=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: ALPS touchpad with 4 directions button doesnt work as intended
-Date: Mon, 2 Nov 2009 14:25:32 -0800
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc5; KDE/4.3.2; x86_64; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <1256955018.9681.23.camel@maxim-laptop> <1257199967.3164.8.camel@localhost.localdomain> <1257200188.3164.11.camel@localhost.localdomain>
-In-Reply-To: <1257200188.3164.11.camel@localhost.localdomain>
+	Mon, 2 Nov 2009 17:28:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29040 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932378AbZKBW2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 17:28:30 -0500
+Date: Tue, 3 Nov 2009 00:25:51 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com
+Subject: [PATCHv6 0/3] vhost: a kernel-level virtio server
+Message-ID: <20091102222551.GA15184@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911021425.32714.dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 November 2009 02:16:28 pm Maxim Levitsky wrote:
-> On Tue, 2009-11-03 at 00:12 +0200, Maxim Levitsky wrote:
-> > On Mon, 2009-11-02 at 10:00 -0800, Dmitry Torokhov wrote:
-> > > On Mon, Nov 02, 2009 at 07:20:26PM +0200, Maxim Levitsky wrote:
-> > > > On Sun, 2009-11-01 at 21:38 -0800, Dmitry Torokhov wrote:
-> > > > > Hi Maxim,
-> > > > >
-> > > > > On Sat, Oct 31, 2009 at 04:10:18AM +0200, Maxim Levitsky wrote:
-> > > > > > I have a acer 5720G laptop, and its touchpad (ALPS) has three
-> > > > > > buttons, usual left/right, and middle button that can be pressed
-> > > > > > in 4 directions. Up/down direction work fine, but left/right
-> > > > > > doesn't. This means that left direction  produces middle button
-> > > > > > click, and right direction doesn't work at all.
-> > > > > > I took a look at source, and I see that driver doesn't even know
-> > > > > > about such configuration.
-> > > > > >
-> > > > > > Now I am sure its very easy to figure out what is send when no
-> > > > > > working button is pressed, but I am a bit confused what BTN_*
-> > > > > > event to assign to it, so it will work as horizontal scroll as
-> > > > > > intended.
-> > > > > > And unassign middle button from other direction....
-> > > > >
-> > > > > Synaptics driver maps multi-button to BTN_0...BTN_8 and it looks
-> > > > > like synaptics X driver maps teh 4-button case by default to
-> > > > > up/down/left/right scroll so I'd map ALPS the same.
-> > > >
-> > > > Thanks!
-> > > >
-> > > > One question, should I expect some resistance because the button
-> > > > won't work as middle button by default? (I am sure that in X its easy
-> > > > remap it back)
-> > >
-> > > I am pretty sure these kind of buttons allow 5 distinct presses - left,
-> > > right, up, down and "straight" (which may be reported either with
-> > > distinct packet or by reporting both up/down or left/right presses) so
-> > > you don't have to loose the middle button. This is a speculation
-> > > though...
-> >
-> > Mine doesn't unfortunately, this is if I press it 'straight' I both feel
-> > physicaly 4 different presses and it reports currently, 'back button'
-> > 'forward button' and 'middle button' as I press it.
-> >
-> > It is possible to implement emulation, but I think that pressing it
-> > straight might also put some stress and damage it in long run.
-> >
-> >
-> > I think that pressing left+right buttons will be enough for the
-> > replacement. If not, xmodmap can be used to map each of the 4 buttons
-> > (or all of them to middle one)
-> >
-> >
-> > Best regards,
-> > 	Maxim Levitsky
-> 
-> Sorry,  forgot to CC lkml...
-> 
+Rusty, ok, I think I've addressed your comments so far here.  In
+particular I have added write logging for live migration, indirect
+buffers and virtio net header (enables gso).  I'd like this to go
+into linux-next, through your tree, and hopefully 2.6.33.
+What do you think?
 
-OK, fair enough.
+---
 
--- 
-Dmitry
+This implements vhost: a kernel-level backend for virtio,
+The main motivation for this work is to reduce virtualization
+overhead for virtio by removing system calls on data path,
+without guest changes. For virtio-net, this removes up to
+4 system calls per packet: vm exit for kick, reentry for kick,
+iothread wakeup for packet, interrupt injection for packet.
+
+This driver is pretty minimal, but it's fully functional (including
+migration support interfaces), and already shows performance (especially
+latency) improvement over userspace.
+
+Some more detailed description attached to the patch itself.
+
+The patches apply to both 2.6.32-rc5 and kvm.git.  I'd like them to go
+into linux-next if possible.  Please comment.
+
+Changelog from v5:
+- tun support
+- backends with virtio net header support (enables GSO, checksum etc)
+- 32 bit compat fixed
+- support indirect buffers, tx exit mitigation,
+  tx interrupt mitigation
+- support write logging (allows migration without virtio ring code in userspace)
+
+Changelog from v4:
+- disable rx notification when have rx buffers
+- addressed all comments from Rusty's review
+- copy bugfixes from lguest commits:
+	ebf9a5a99c1a464afe0b4dfa64416fc8b273bc5c
+	e606490c440900e50ccf73a54f6fc6150ff40815
+
+Changelog from v3:
+- checkpatch fixes
+
+Changelog from v2:
+- Comments on RCU usage
+- Compat ioctl support
+- Make variable static
+- Copied more idiomatic english from Rusty
+
+Changes from v1:
+- Move use_mm/unuse_mm from fs/aio.c to mm instead of copying.
+- Reorder code to avoid need for forward declarations
+- Kill a couple of debugging printks
+
+Michael S. Tsirkin (3):
+  tun: export underlying socket
+  mm: export use_mm/unuse_mm to modules
+  vhost_net: a kernel-level virtio server
+
+ MAINTAINERS                |   10 +
+ arch/x86/kvm/Kconfig       |    1 +
+ drivers/Makefile           |    1 +
+ drivers/net/tun.c          |  101 ++++-
+ drivers/vhost/Kconfig      |   11 +
+ drivers/vhost/Makefile     |    2 +
+ drivers/vhost/net.c        |  634 +++++++++++++++++++++++++++++
+ drivers/vhost/vhost.c      |  968 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/vhost/vhost.h      |  158 +++++++
+ include/linux/Kbuild       |    1 +
+ include/linux/if_tun.h     |   14 +
+ include/linux/miscdevice.h |    1 +
+ include/linux/vhost.h      |  126 ++++++
+ mm/mmu_context.c           |    3 +
+ 14 files changed, 2012 insertions(+), 19 deletions(-)
+ create mode 100644 drivers/vhost/Kconfig
+ create mode 100644 drivers/vhost/Makefile
+ create mode 100644 drivers/vhost/net.c
+ create mode 100644 drivers/vhost/vhost.c
+ create mode 100644 drivers/vhost/vhost.h
+ create mode 100644 include/linux/vhost.h
