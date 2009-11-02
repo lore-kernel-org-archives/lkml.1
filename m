@@ -1,91 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZKBOPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbZKBOTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbZKBOPO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 09:15:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZKBOPN
+	id S1755226AbZKBOTR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 09:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbZKBOTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 09:15:13 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:46240 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754043AbZKBOPM (ORCPT
+	Mon, 2 Nov 2009 09:19:17 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:56192 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754797AbZKBOTQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 09:15:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Xlip2lSHgwBdzSe27ABpkC5ABTZxIFLZk/YaX6MN8BdroTGFEE/0zqhS1Uhml+vyhE
-         ExKZPAbsLGWydis04RvZ7ZN58jRYUwzt+jCmgu7dZfQMKoRmVqdRDyRyXOuzxnHtYN15
-         D2IBhyDGf1SwpM7XAJ8b2MNu+rI/eebNSPUqk=
-Date: Mon, 2 Nov 2009 15:15:15 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Robin Getz <rgetz@analog.com>, Dave Young <hidave.darkstar@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH 1/8] SGI x86_64 UV: Add limit console output function
-Message-ID: <20091102141511.GE4878@nowhere>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233746.128967000@alcatraz.americas.sgi.com> <20091024010906.GA4938@nowhere> <4AE5E293.6090703@sgi.com>
+	Mon, 2 Nov 2009 09:19:16 -0500
+Date: Mon, 2 Nov 2009 15:19:17 +0100
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
+Subject: Re: OOM killer, page fault
+Message-ID: <20091102141917.GJ2116@gamma.logic.tuwien.ac.at>
+References: <20091102135640.93de7c2a.minchan.kim@barrios-desktop> <20091102155543.E60E.A69D9226@jp.fujitsu.com> <28c262360911012300h4535118ewd65238c746b91a52@mail.gmail.com> <20091102005218.8352.A69D9226@jp.fujitsu.com> <20091102135640.93de7c2a.minchan.kim@barrios-desktop> <20091102155543.E60E.A69D9226@jp.fujitsu.com> <20091030063216.GA30712@gamma.logic.tuwien.ac.at> <20091102005218.8352.A69D9226@jp.fujitsu.com> <20091102135640.93de7c2a.minchan.kim@barrios-desktop> <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AE5E293.6090703@sgi.com>
+In-Reply-To: <28c262360911012300h4535118ewd65238c746b91a52@mail.gmail.com> <20091102155543.E60E.A69D9226@jp.fujitsu.com> <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 10:55:31AM -0700, Mike Travis wrote:
->
->
-> Frederic Weisbecker wrote:
->> On Fri, Oct 23, 2009 at 06:37:44PM -0500, Mike Travis wrote:
->>> With a large number of processors in a system there is an excessive amount
->>> of messages sent to the system console.  It's estimated that with 4096
->>> processors in a system, and the console baudrate set to 56K, the startup
->>> messages will take about 84 minutes to clear the serial port.
->>>
->>> This patch adds (for SGI UV only) a kernel start option "limit_console_
->>> output" (or 'lco' for short), which when set provides the ability to
->>> temporarily reduce the console loglevel during system startup.  This allows
->>> informative messages to still be seen on the console without producing
->>> excessive amounts of repetious messages.
->>>
->>> Note that all the messages are still available in the kernel log buffer.
->>
->>
->>
->> Well, this problem does not only concerns SGI UV but all boxes with a large
->> number of cpus.
->>
->> Also, instead of adding the same conditionals in multiple places to solve
->> the same problem (and that may even expand if we go further the SGI UV case,
->> for example with other archs cpu up/down events), may be can you centralize,
->> institutionalize this issue by using the existing printk mechanisms.
->>
->> I mean, may be that could be addressed by adding a new printk
->> level flag, and then associate the desired filters against it.
->>
->> KERN_CPU could be a name, since this is targetting cpu events.
->>
->
-> I did try out something like this but the changes quickly became very intrusive,
-> and I was hoping for a "lighter" touch.  The other potential fallout of adding
-> another printk level might affect user programs that sift through the dmesg
-> log for "interesting" info.
->
-> Also, I could use some other config option to enable this, it's just that the
-> existing X86_UV was too convenient.  ;-)  I believe most systems would want this
-> turned off so the code size shrinks.  And until you get the number of cpus into
-> the hundreds and thousands, the messages usually just fly by - particularly if
-> you're on a desktop system which has almost an infinite baud rate to the screen,
-> and usually hides the messages behind a splash screen anyways.
+Hi all,
 
+wow, many messages ... At the end I lost track of which patch I should try?
 
-Ok :)
+BTW, that happened only once, and whatever I do I cannot reproduce that.
 
+I will anyway include any patch you send me and hope that it happens again.
+
+Thanks
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining                                        Associate Professor
+JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
+Vienna University of Technology                               preining@logic.at
+Debian Developer (Debian TeX Task Force)                    preining@debian.org
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+BAUMBER
+A fitted elasticated bottom sheet which turns your mattress
+bananashaped.
+			--- Douglas Adams, The Meaning of Liff
