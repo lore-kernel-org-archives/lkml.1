@@ -1,131 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZKBMNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZKBMSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbZKBMNr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 07:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZKBMNq
+	id S1754811AbZKBMSw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 07:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZKBMSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 07:13:46 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44074 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754637AbZKBMNq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 07:13:46 -0500
-Date: Mon, 2 Nov 2009 13:13:34 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: trivial@kernel.org, David Brownell <dbrownell@users.sourceforge.net>,
-       linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [PATCH] trivial: some fixes in spi
-	documentation
-Message-ID: <20091102121334.GA4696@pengutronix.de>
-References: <1256938094-8137-1-git-send-email-cascardo@holoscopio.com>
+	Mon, 2 Nov 2009 07:18:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49592 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754660AbZKBMSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 07:18:51 -0500
+Message-ID: <4AEECE2E.2050609@redhat.com>
+Date: Mon, 02 Nov 2009 14:18:54 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
-Content-Disposition: inline
-In-Reply-To: <1256938094-8137-1-git-send-email-cascardo@holoscopio.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Gleb Natapov <gleb@redhat.com>
+CC: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/11] Add shared memory hypercall to PV Linux guest.
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-2-git-send-email-gleb@redhat.com>
+In-Reply-To: <1257076590-29559-2-git-send-email-gleb@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/01/2009 01:56 PM, Gleb Natapov wrote:
+> Add hypercall that allows guest and host to setup per cpu shared
+> memory.
+>
+>    
 
---OXfL5xGRrasGEqWY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Better to set this up as an MSR (with bit zero enabling, bits 1-5 
+features, and 64-byte alignment).  This allows auto-reset on INIT and 
+live migration using the existing MSR save/restore infrastructure.
 
-Hi,
+>   arch/x86/include/asm/kvm_host.h |    3 +
+>   arch/x86/include/asm/kvm_para.h |   11 +++++
+>   arch/x86/kernel/kvm.c           |   82 +++++++++++++++++++++++++++++++++++++++
+>   arch/x86/kernel/setup.c         |    1 +
+>   arch/x86/kernel/smpboot.c       |    3 +
+>   arch/x86/kvm/x86.c              |   70 +++++++++++++++++++++++++++++++++
+>   include/linux/kvm.h             |    1 +
+>   include/linux/kvm_para.h        |    4 ++
+>   8 files changed, 175 insertions(+), 0 deletions(-)
+>    
 
-the typo fixes look good, still...
+Please separate into guest and host patches.
 
-On Fri, Oct 30, 2009 at 07:28:14PM -0200, Thadeu Lima de Souza Cascardo wro=
-te:
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> ---
->  Documentation/spi/spi-summary |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/Documentation/spi/spi-summary b/Documentation/spi/spi-summary
-> index deab51d..607aa97 100644
-> --- a/Documentation/spi/spi-summary
-> +++ b/Documentation/spi/spi-summary
-> @@ -121,7 +121,7 @@ active.  So the master must set the clock to inactive=
- before selecting
->  a slave, and the slave can tell the chosen polarity by sampling the
->  clock level when its select line goes active.  That's why many devices
->  support for example both modes 0 and 3:  they don't care about polarity,
-> -and alway clock data in/out on rising clock edges.
-> +and always clock data in/out on rising clock edges.
-> =20
-> =20
->  How do these driver programming interfaces work?
-> @@ -236,7 +236,7 @@ And SOC-specific utility code might look something li=
-ke:
->  		struct mysoc_spi_data *pdata2;
-> =20
->  		pdata2 =3D kmalloc(sizeof *pdata2, GFP_KERNEL);
-> -		*pdata2 =3D pdata;
-> +		*pdata2 =3D *pdata;
+> +#define KVM_PV_SHM_VERSION 1
+>    
 
-=2E.. this looks correct, because a few lines above it is stated:
+versions = bad, feature bits = good
 
-        static struct mysoc_spi_data __initdata pdata =3D { ... };
+> +
+> +#define KVM_PV_SHM_FEATURES_ASYNC_PF		(1<<  0)
+> +
+> +struct kvm_vcpu_pv_shm {
+> +	__u64 features;
+> +	__u64 reason;
+> +	__u64 param;
+> +};
+> +
+>    
 
-No pointer here. But yeah, pretty confusing for an example.
+Some documentation for this?
 
->  		...
->  		if (n =3D=3D 2) {
->  			spi2->dev.platform_data =3D pdata2;
-> @@ -427,8 +427,8 @@ any more such messages.
->      it, should only be used with small amounts of data where the
->      cost of an extra copy may be ignored.  It's designed to support
->      common RPC-style requests, such as writing an eight bit command
-> -    and reading a sixteen bit response -- spi_w8r16() being one its
-> -    wrappers, doing exactly that.
-> +    and reading a sixteen bit response -- spi_w8r16() being one of
-> +    its wrappers, doing exactly that.
-> =20
->  Some drivers may need to modify spi_device characteristics like the
->  transfer mode, wordsize, or clock rate.  This is done with spi_setup(),
-> --=20
-> 1.6.3.3
->=20
->=20
-> -------------------------------------------------------------------------=
------
-> Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-> is the only developer event you need to attend this year. Jumpstart your
-> developing skills, take BlackBerry mobile applications to market and stay=
-=20
-> ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-> http://p.sf.net/sfu/devconference
-> _______________________________________________
-> spi-devel-general mailing list
-> spi-devel-general@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/spi-devel-general
+Also, the name should reflect the pv pagefault use.  For other uses we 
+can register other areas.
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+>   #define MMU_QUEUE_SIZE 1024
+>
+> @@ -37,6 +41,7 @@ struct kvm_para_state {
+>   };
+>
+>   static DEFINE_PER_CPU(struct kvm_para_state, para_state);
+> +static DEFINE_PER_CPU(struct kvm_vcpu_pv_shm *, kvm_vcpu_pv_shm);
+>    
 
---OXfL5xGRrasGEqWY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Easier to put the entire structure here, not a pointer.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> +
+> +static int kvm_pv_reboot_notify(struct notifier_block *nb,
+> +				unsigned long code, void *unused)
+> +{
+> +	if (code == SYS_RESTART)
+> +		on_each_cpu(kvm_pv_unregister_shm, NULL, 1);
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +static struct notifier_block kvm_pv_reboot_nb = {
+> +        .notifier_call = kvm_pv_reboot_notify,
+> +};
+>    
 
-iEYEARECAAYFAkruzO4ACgkQD27XaX1/VRttcACgq+6NGGvxtwflQt3uVs5LbyDx
-2FMAn3JhWqcmdr8hDzA+AJctZ07HxPVW
-=BOYp
------END PGP SIGNATURE-----
+Is this called on kexec, or do we need another hook?
 
---OXfL5xGRrasGEqWY--
+> +static int kvm_pv_setup_shm(struct kvm_vcpu *vcpu, unsigned long gpa,
+> +			    unsigned long size, unsigned long version,
+> +			    unsigned long *ret)
+> +{
+> +	addr = gfn_to_hva(vcpu->kvm, gfn);
+> +	if (kvm_is_error_hva(addr))
+> +		return -EFAULT;
+> +
+> +	/* pin page with pv shared memory */
+> +	down_read(&mm->mmap_sem);
+> +	r = get_user_pages(current, mm, addr, 1, 1, 0,&vcpu->arch.pv_shm_page,
+> +			   NULL);
+> +	up_read(&mm->mmap_sem);
+>    
+
+This fails if the memory area straddles a page boundary.  Aligning would 
+solve this.  I prefer using put_user() though than a permanent 
+get_user_pages().
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
