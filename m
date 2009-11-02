@@ -1,108 +1,502 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbZKBQ1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZKBQ13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755788AbZKBQ1A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:27:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZKBQ1A
+	id S1755911AbZKBQ13 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZKBQ12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:27:00 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:25879 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755364AbZKBQ07 (ORCPT
+	Mon, 2 Nov 2009 11:27:28 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56690 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755813AbZKBQ11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:26:59 -0500
-X-Trace: 279405545/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.19.148/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.19.148
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkcFAF+X7kpPRROU/2dsb2JhbACBUNsghDwE
-X-IronPort-AV: E=Sophos;i="4.44,668,1249254000"; 
-   d="scan'208";a="279405545"
-Date: Mon, 2 Nov 2009 16:26:56 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Norbert Preining <preining@logic.at>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: OOM killer, page fault
-In-Reply-To: <20091102150110.74f8a601.minchan.kim@barrios-desktop>
-Message-ID: <Pine.LNX.4.64.0911021556020.12937@sister.anvils>
-References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at>
- <20091102005218.8352.A69D9226@jp.fujitsu.com> <20091102135640.93de7c2a.minchan.kim@barrios-desktop>
- <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
- <20091102150110.74f8a601.minchan.kim@barrios-desktop>
+	Mon, 2 Nov 2009 11:27:27 -0500
+Message-ID: <4AEF086D.9010600@austin.ibm.com>
+Date: Mon, 02 Nov 2009 10:27:25 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6 v5] Kernel DLPAR Infrastructure
+References: <4AE8ADCF.6090104@austin.ibm.com>	 <4AE8AF4D.4030403@austin.ibm.com> <1256785731.26770.38.camel@pasglop>
+In-Reply-To: <1256785731.26770.38.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009, Minchan Kim wrote:
-> On Mon, 2 Nov 2009 14:02:16 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> > Maybe some code returns VM_FAULT_OOM by mistake and pagefault_oom_killer()
-> > is called. digging mm/memory.c is necessary...
-> > 
-> > I wonder why...now is this code
-> > ===
-> > static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
-> >                 unsigned long address, pte_t *page_table, pmd_t *pmd,
-> >                 unsigned int flags, pte_t orig_pte)
-> > {
-> >         pgoff_t pgoff;
-> > 
-> >         flags |= FAULT_FLAG_NONLINEAR;
-> > 
-> > 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
-> >                 return 0;
-> > 
-> >         if (unlikely(!(vma->vm_flags & VM_NONLINEAR))) {
-> >                 /*
-> >                  * Page table corrupted: show pte and kill process.
-> >                  */
-> >                 print_bad_pte(vma, address, orig_pte, NULL);
-> >                 return VM_FAULT_OOM;
-> >         }
-> > 
-> >         pgoff = pte_to_pgoff(orig_pte);
-> >         return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
-> > }
-> > ==
-> > Then, OOM...is this really OOM ?
+
+Benjamin Herrenschmidt wrote:
+> On Wed, 2009-10-28 at 15:53 -0500, Nathan Fontenot wrote:
+>> This patch provides the kernel DLPAR infrastructure in a new filed named
+>> dlpar.c.  The functionality provided is for acquiring and releasing a resource
+>> from firmware and the parsing of information returned from the
+>> ibm,configure-connector rtas call.  Additionally this exports the pSeries
+>> reconfiguration notifier chain so that it can be invoked when device tree 
+>> updates are made.
+>>
+>> Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com> 
+>> ---
 > 
-> It seems that the goal is to kill process by OOM trick as comment said.
+> Hi Nathan !
 > 
-> I found It results from Hugh's commit 65500d234e74fc4e8f18e1a429bc24e51e75de4a.
-> I think it's not a real OOM. 
+> Finally I get to review this stuff :-)
 > 
-> BTW, If it is culpit in this case, print_bad_pte should have remained any log. :)
 
-Yes, the chances are that this is not related to Norbert's problem.
-But thank you for reminding me of that not-very-nice hack of mine.
+Thanks!
 
-It was kind-of valid at the time that I wrote it (2.6.15), when
-VM_FAULT_OOM did kill the faulting process.  But since then the fault
-path has rightly been changed (in x86 at least, I didn't check the rest)
-to let the OOM killer decide who to kill: so now there's a danger that
-a pagetable corruption there will instead kill some unrelated process.
+>> +#define CFG_CONN_WORK_SIZE	4096
+>> +static char workarea[CFG_CONN_WORK_SIZE];
+>> +static DEFINE_SPINLOCK(workarea_lock);
+> 
+> So I'm not a huge fan of this workarea static. First a static is in
+> effect a global name (as far as System.map etc... are concerned) so it
+> would warrant a better name. Then, do we really want that 4K of BSS
+> taken even on platforms that don't do dlpar ? Any reason why you don't
+> just pop a free page with __get_free_page() inside of
+> configure_connector() ?
+> 
 
-Being lazy, I'm inclined simply to change that to VM_FAULT_SIGBUS now:
-which doesn't actually guarantee that the process will be killed, but
-should be better than just repeatedly re-faulting on the entry.  (I
-don't much want to SIGKILL current since mm might not be current's.)
+I'm not either, having a static buffer and a lock feels like overkill
+for this.  I tried kmalloc, but that didn't work.  I'll try using
+__get_free_page.
 
-That aberrant use of VM_FAULT_OOM has recently been copied into
-do_swap_page() (the first instance; the second instance is right -
-hmm, well, the second instance is normally right, but I guess it
-also covers pagetable corruption cases which we can't distinguish
-there; oh well) and should be corrected there too.
+>> +struct cc_workarea {
+>> +	u32	drc_index;
+>> +	u32	zero;
+>> +	u32	name_offset;
+>> +	u32	prop_length;
+>> +	u32	prop_offset;
+>> +};
+>> +
+>> +static struct property *parse_cc_property(char *workarea)
+>> +{
+>> +	struct property *prop;
+>> +	struct cc_workarea *ccwa;
+>> +	char *name;
+>> +	char *value;
+>> +
+>> +	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
+>> +	if (!prop)
+>> +		return NULL;
+>> +
+>> +	ccwa = (struct cc_workarea *)workarea;
+>> +	name = workarea + ccwa->name_offset;
+>> +	prop->name = kzalloc(strlen(name) + 1, GFP_KERNEL);
+>> +	if (!prop->name) {
+>> +		kfree(prop);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	strcpy(prop->name, name);
+>> +
+>> +	prop->length = ccwa->prop_length;
+>> +	value = workarea + ccwa->prop_offset;
+>> +	prop->value = kzalloc(prop->length, GFP_KERNEL);
+>> +	if (!prop->value) {
+>> +		kfree(prop->name);
+>> +		kfree(prop);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	memcpy(prop->value, value, prop->length);
+>> +	return prop;
+>> +}
+>> +
+>> +static void free_property(struct property *prop)
+>> +{
+>> +	kfree(prop->name);
+>> +	kfree(prop->value);
+>> +	kfree(prop);
+>> +}
+>> +
+>> +static struct device_node *parse_cc_node(char *work_area)
+>> +{
+> 
+> const char* maybe ?
 
-Does VM_FAULT_SIGBUS sound good enough to you?
+sure.
 
-Hugh
+> 
+>> +	struct device_node *dn;
+>> +	struct cc_workarea *ccwa;
+>> +	char *name;
+>> +
+>> +	dn = kzalloc(sizeof(*dn), GFP_KERNEL);
+>> +	if (!dn)
+>> +		return NULL;
+>> +
+>> +	ccwa = (struct cc_workarea *)work_area;
+>> +	name = work_area + ccwa->name_offset;
+> 
+> I'm wondering whether work_area should be a struct cc_workarea * in the
+> first place with a char data[] at the end, but that would mean probably
+> tweaking the offsets... no big deal, up to you.
+>
+
+I'll look onto that.  Anything that makes this easier to understand is good.
+
+ 
+>> +	dn->full_name = kzalloc(strlen(name) + 1, GFP_KERNEL);
+>> +	if (!dn->full_name) {
+>> +		kfree(dn);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	strcpy(dn->full_name, name);
+> 
+> kstrdup ?
+
+yep, should have used kstrdup.
+
+> 
+>  .../...
+> 
+>> +#define NEXT_SIBLING    1
+>> +#define NEXT_CHILD      2
+>> +#define NEXT_PROPERTY   3
+>> +#define PREV_PARENT     4
+>> +#define MORE_MEMORY     5
+>> +#define CALL_AGAIN	-2
+>> +#define ERR_CFG_USE     -9003
+>> +
+>> +struct device_node *configure_connector(u32 drc_index)
+>> +{
+> 
+> It's a global exported function, I'd rather you call it
+> dlpar_configure_connector()
+>
+
+ok.
+ 
+>> +	struct device_node *dn;
+>> +	struct device_node *first_dn = NULL;
+>> +	struct device_node *last_dn = NULL;
+>> +	struct property *property;
+>> +	struct property *last_property = NULL;
+>> +	struct cc_workarea *ccwa;
+>> +	int cc_token;
+>> +	int rc;
+>> +
+>> +	cc_token = rtas_token("ibm,configure-connector");
+>> +	if (cc_token == RTAS_UNKNOWN_SERVICE)
+>> +		return NULL;
+>> +
+>> +	spin_lock(&workarea_lock);
+>> +
+>> +	ccwa = (struct cc_workarea *)&workarea[0];
+>> +	ccwa->drc_index = drc_index;
+>> +	ccwa->zero = 0;
+> 
+> Popping a free page with gfp (or just kmalloc'ing 4K) would avoid the
+> need for the lock too.
+
+yes, see comment at beginning.
+
+> 
+>> +	rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
+>> +	while (rc) {
+>> +		switch (rc) {
+>> +		case NEXT_SIBLING:
+>> +			dn = parse_cc_node(workarea);
+>> +			if (!dn)
+>> +				goto cc_error;
+>> +
+>> +			dn->parent = last_dn->parent;
+>> +			last_dn->sibling = dn;
+>> +			last_dn = dn;
+>> +			break;
+>> +
+>> +		case NEXT_CHILD:
+>> +			dn = parse_cc_node(workarea);
+>> +			if (!dn)
+>> +				goto cc_error;
+>> +
+>> +			if (!first_dn)
+>> +				first_dn = dn;
+>> +			else {
+>> +				dn->parent = last_dn;
+>> +				if (last_dn)
+>> +					last_dn->child = dn;
+>> +			}
+>> +
+>> +			last_dn = dn;
+>> +			break;
+>> +
+>> +		case NEXT_PROPERTY:
+>> +			property = parse_cc_property(workarea);
+>> +			if (!property)
+>> +				goto cc_error;
+>> +
+>> +			if (!last_dn->properties)
+>> +				last_dn->properties = property;
+>> +			else
+>> +				last_property->next = property;
+>> +
+>> +			last_property = property;
+>> +			break;
+>> +
+>> +		case PREV_PARENT:
+>> +			last_dn = last_dn->parent;
+>> +			break;
+>> +
+>> +		case CALL_AGAIN:
+>> +			break;
+>> +
+>> +		case MORE_MEMORY:
+>> +		case ERR_CFG_USE:
+>> +		default:
+>> +			printk(KERN_ERR "Unexpected Error (%d) "
+>> +			       "returned from configure-connector\n", rc);
+>> +			goto cc_error;
+>> +		}
+>> +
+>> +		rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
+>> +	}
+>> +
+>> +	spin_unlock(&workarea_lock);
+>> +	return first_dn;
+>> +
+>> +cc_error:
+>> +	spin_unlock(&workarea_lock);
+>> +
+>> +	if (first_dn)
+>> +		free_cc_nodes(first_dn);
+>> +
+>> +	return NULL;
+>> +}
+>> +
+>> +static struct device_node *derive_parent(const char *path)
+>> +{
+>> +	struct device_node *parent;
+>> +	char parent_path[128];
+>> +	int parent_path_len;
+>> +
+>> +	parent_path_len = strrchr(path, '/') - path + 1;
+>> +	strlcpy(parent_path, path, parent_path_len);
+>> +
+>> +	parent = of_find_node_by_path(parent_path);
+>> +
+>> +	return parent;
+>> +}
+> 
+> This ...
+> 
+>> +static int add_one_node(struct device_node *dn)
+>> +{
+>> +	struct proc_dir_entry *ent;
+>> +	int rc;
+>> +
+>> +	of_node_set_flag(dn, OF_DYNAMIC);
+>> +	kref_init(&dn->kref);
+>> +	dn->parent = derive_parent(dn->full_name);
+>> +
+>> +	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
+>> +					  PSERIES_RECONFIG_ADD, dn);
+>> +	if (rc == NOTIFY_BAD) {
+>> +		printk(KERN_ERR "Failed to add device node %s\n",
+>> +		       dn->full_name);
+>> +		return -ENOMEM; /* For now, safe to assume kmalloc failure */
+>> +	}
+>> +
+>> +	of_attach_node(dn);
+>> +
+>> +#ifdef CONFIG_PROC_DEVICETREE
+>> +	ent = proc_mkdir(strrchr(dn->full_name, '/') + 1, dn->parent->pde);
+>> +	if (ent)
+>> +		proc_device_tree_add_node(dn, ent);
+>> +#endif
+>> +
+>> +	of_node_put(dn->parent);
+>> +	return 0;
+>> +}
+> 
+>  ... and this ...
+> 
+>> +int add_device_tree_nodes(struct device_node *dn)
+>> +{
+>> +	struct device_node *child = dn->child;
+>> +	struct device_node *sibling = dn->sibling;
+>> +	int rc;
+>> +
+>> +	dn->child = NULL;
+>> +	dn->sibling = NULL;
+>> +	dn->parent = NULL;
+>> +
+>> +	rc = add_one_node(dn);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	if (child) {
+>> +		rc = add_device_tree_nodes(child);
+>> +		if (rc)
+>> +			return rc;
+>> +	}
+>> +
+>> +	if (sibling)
+>> +		rc = add_device_tree_nodes(sibling);
+>> +
+>> +	return rc;
+>> +}
+> 
+>  ... and this ...
+> 
+>> +static int remove_one_node(struct device_node *dn)
+>> +{
+>> +	struct device_node *parent = dn->parent;
+>> +	struct property *prop = dn->properties;
+>> +
+>> +#ifdef CONFIG_PROC_DEVICETREE
+>> +	while (prop) {
+>> +		remove_proc_entry(prop->name, dn->pde);
+>> +		prop = prop->next;
+>> +	}
+>> +
+>> +	if (dn->pde)
+>> +		remove_proc_entry(dn->pde->name, parent->pde);
+>> +#endif
+>> +
+>> +	blocking_notifier_call_chain(&pSeries_reconfig_chain,
+>> +			    PSERIES_RECONFIG_REMOVE, dn);
+>> +	of_detach_node(dn);
+>> +	of_node_put(dn); /* Must decrement the refcount */
+>> +
+>> +	return 0;
+>> +}
+> 
+>  ... and this ...
+> 
+>> +static int _remove_device_tree_nodes(struct device_node *dn)
+>> +{
+>> +	int rc;
+>> +
+>> +	if (dn->child) {
+>> +		rc = _remove_device_tree_nodes(dn->child);
+>> +		if (rc)
+>> +			return rc;
+>> +	}
+>> +
+>> +	if (dn->sibling) {
+>> +		rc = _remove_device_tree_nodes(dn->sibling);
+>> +		if (rc)
+>> +			return rc;
+>> +	}
+>> +
+>> +	rc = remove_one_node(dn);
+>> +	return rc;
+>> +}
+> 
+>  ... repeat myself ...
+> 
+>> +int remove_device_tree_nodes(struct device_node *dn)
+>> +{
+>> +	int rc;
+>> +
+>> +	if (dn->child) {
+>> +		rc = _remove_device_tree_nodes(dn->child);
+>> +		if (rc)
+>> +			return rc;
+>> +	}
+>> +
+>> +	rc = remove_one_node(dn);
+>> +	return rc;
+>> +}
+> 
+>  ... should probably all go to something like drivers/of/dynamic.c or at
+> least for now arch/powerpc/kernel/of_dynamic.c along with everything
+> related to dynamically adding and removing nodes. I see that potentially
+> useful for more than just DLPAR (though DLPAR is the only user right
+> now) and should also all be prefixed with of_*
+
+I agree, there should be at least a powerpc generic implementation of these
+routines.  The reason I put them here is that I am doing some oddities with
+the next, child, and sibling pointers since they point to items not yet in
+the device tree.
+
+I saw that Grant Likely is doing updates to all of the of_* stuff right now,
+would it be ok to have these routines here, renamed as dlpar_*, and look
+to merge them in with Grant's updates when he finishes?
+  
+> 
+>> +#define DR_ENTITY_SENSE		9003
+>> +#define DR_ENTITY_PRESENT	1
+>> +#define DR_ENTITY_UNUSABLE	2
+>> +#define ALLOCATION_STATE	9003
+>> +#define ALLOC_UNUSABLE		0
+>> +#define ALLOC_USABLE		1
+>> +#define ISOLATION_STATE		9001
+>> +#define ISOLATE			0
+>> +#define UNISOLATE		1
+>> +
+>> +int acquire_drc(u32 drc_index)
+>> +{
+>> +	int dr_status, rc;
+>> +
+>> +	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
+>> +		       DR_ENTITY_SENSE, drc_index);
+>> +	if (rc || dr_status != DR_ENTITY_UNUSABLE)
+>> +		return -1;
+>> +
+>> +	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_USABLE);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
+>> +	if (rc) {
+>> +		rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
+>> +		return rc;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +int release_drc(u32 drc_index)
+>> +{
+>> +	int dr_status, rc;
+>> +
+>> +	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
+>> +		       DR_ENTITY_SENSE, drc_index);
+>> +	if (rc || dr_status != DR_ENTITY_PRESENT)
+>> +		return -1;
+>> +
+>> +	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, ISOLATE);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
+>> +	if (rc) {
+>> +		rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
+>> +		return rc;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+> 
+> Both above should have a dlpar_* prefix
+
+will do.
+
+> 
+>> +static int pseries_dlpar_init(void)
+>> +{
+>> +	if (!machine_is(pseries))
+>> +		return 0;
+>> +
+>> +	return 0;
+>> +}
+>> +device_initcall(pseries_dlpar_init);
+> 
+> What the point ? :-)
+
+Yeah, its a bit odd looking but later patches actually add code to the init routine
+to set up memory probe/release and cpu probe/release handlers.
+
+I'll look to add ifdef's around the initcall for cases where no work is to be done.
+
+-Nathan Fontenot
+
+> 
+> Cheers
+> Ben.
+> 
