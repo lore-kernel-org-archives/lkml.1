@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbZKBO0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZKBO2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbZKBO0K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 09:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbZKBO0K
+	id S1755266AbZKBO2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 09:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZKBO2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 09:26:10 -0500
-Received: from mail.gmx.net ([213.165.64.20]:50221 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755217AbZKBO0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 09:26:09 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX183dbErs/Y3VQKAWvjL/GVtUvsHVfQnq/Zt7ZikSX
-	kyD/TfBivJIMmD
-Subject: Re: [PATCH][RFC] Adding benchmark subsystem to perf
-From: Mike Galbraith <efault@gmx.de>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: mingo@elte.hu, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl, acme@redhat.com,
-       fweisbec@gmail.com
-In-Reply-To: <20091102.225129.149607581235026541.mitake@dcl.info.waseda.ac.jp>
-References: <20091101.131027.680961629714047921.mitake@dcl.info.waseda.ac.jp>
-	 <20091102104124.GA5193@elte.hu> <200911022357.36541.rusty@rustcorp.com.au>
-	 <20091102.225129.149607581235026541.mitake@dcl.info.waseda.ac.jp>
-Content-Type: text/plain
-Date: Mon, 02 Nov 2009 15:26:09 +0100
-Message-Id: <1257171969.8623.11.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.68
+	Mon, 2 Nov 2009 09:28:38 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:45378 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755232AbZKBO2h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 09:28:37 -0500
+Date: Mon, 2 Nov 2009 09:28:24 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Huang Ying <ying.huang@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       Daniel Walker <dwalker@fifo99.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH -v4] crypto: Add PCLMULQDQ accelerated GHASH
+	implementation
+Message-ID: <20091102142824.GA31981@gondor.apana.org.au>
+References: <1253064946.15717.372.camel@yhuang-dev.sh.intel.com> <20091019025332.GA26624@gondor.apana.org.au> <20091031173015.69e8e9f8.akpm@linux-foundation.org> <20091101175043.GA25257@gondor.apana.org.au> <20091102075039.GA15942@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102075039.GA15942@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Nov 02, 2009 at 08:50:39AM +0100, Ingo Molnar wrote:
+> 
+> A cleanup request: mind creating two macros for this PSHUFB MMX/SSE 
+> instruction in arch/x86/include/asm/i387.h, instead of open-coding the 
+> .byte sequences in ~6 places?
 
-On Mon, 2009-11-02 at 22:51 +0900, Hitoshi Mitake wrote:
+I had a go at doing that, but it seems that i387.h isn't really
+meant to be included in an asm file at this point :)
 
-> Example of usage:
-> % perf bench sched -t -l 1000
-> 2.863
+> ( After the .33 merge window we'll collect such instruction format 
+>   knowledge in arch/x86/include/asm/inst.h. That file is not upstream 
+>   yet so i387.h will do for now for FPU/SSE instructions. )
 
-I think this should allow other benchmarks to be added is a logical
-manner.  Perhaps perf bench -t hackbench -t -l 1000, ie bench should
-process args to allow the user to select a benchmark from a suite, and
-pass args to it as well, but with a default set built in so people can
-just type perf bench -t foo, to run any benchmark with it's defaults.
+I'm happy to revisit this once inst.h exists.
 
-	-Mike
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
