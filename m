@@ -1,72 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZKBVqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbZKBVq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756912AbZKBVqJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 16:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbZKBVqH
+	id S1756983AbZKBVq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 16:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbZKBVq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 16:46:07 -0500
-Received: from lucidpixels.com ([75.144.35.66]:60979 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756482AbZKBVqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 16:46:06 -0500
-Date: Mon, 2 Nov 2009 16:46:10 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Dave Chinner <david@fromorbit.com>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48
- hours (sysrq-t+w available)
-In-Reply-To: <alpine.DEB.2.00.0910260723150.22950@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0910281915400.29166@p34.internal.lan>
-References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan> <20091019030456.GS9464@discord.disaster> <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan> <20091020003358.GW9464@discord.disaster>
- <alpine.DEB.2.00.0910200431290.21878@p34.internal.lan> <alpine.DEB.2.00.0910210618210.10288@p34.internal.lan> <alpine.DEB.2.00.0910221849001.24576@p34.internal.lan> <alpine.DEB.2.00.0910260723150.22950@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Mon, 2 Nov 2009 16:46:28 -0500
+Received: from xenotime.net ([72.52.64.118]:57270 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756960AbZKBVq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 16:46:27 -0500
+Date: Mon, 2 Nov 2009 13:46:30 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Ben Blum <bblum@andrew.cmu.edu>, netdev <netdev@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       lizf@cn.fujistu.com, akpm@linux-foundation.org, menage@google.com
+Subject: Re: [RFC][PATCH 3/3] cgroups: net_cls subsys as module
+Message-Id: <20091102134630.9947e8cf.rdunlap@xenotime.net>
+In-Reply-To: <20091102213103.GD13692@andrew.cmu.edu>
+References: <20091102212825.GA13692@andrew.cmu.edu>
+	<20091102213103.GD13692@andrew.cmu.edu>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2 Nov 2009 16:31:03 -0500 Ben Blum wrote:
+
+> Allows the net_cls cgroup subsystem to be compiled as a module
+
+Please cc: netdev on networking patches.  [done]
 
 
-On Mon, 26 Oct 2009, Justin Piszcz wrote:
-
->
->
-> On Thu, 22 Oct 2009, Justin Piszcz wrote:
->
->> 
->> Any other ideas?
->> 
->> Currently stuck on 2.6.30.9.. (no issues, no lockups)-- Box normally has no 
->> load at all either.. Has anyone else reported similar problems?
->> 
->> Justin.
->> 
->
+> From: Ben Blum <bblum@andrew.cmu.edu>
+> 
+> This patch modifies net/sched/cls_cgroup.c to allow the net_cls subsystem to
+> be optionally compiled as a module instead of builtin. The cgroup_subsys
+> struct is moved around a bit to allow the subsys_id to be either declared as a
+> compile-time constant by the cgroup_subsys.h include in cgroup.h, or, if it's
+> a module, initialized within the struct by cgroup_load_subsys.
+> 
+> Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
+> ---
+> 
+>  net/sched/Kconfig      |    2 +-
+>  net/sched/cls_cgroup.c |   37 ++++++++++++++++++++++++++++---------
+>  2 files changed, 29 insertions(+), 10 deletions(-)
+> 
+> 
+> diff --git a/net/sched/Kconfig b/net/sched/Kconfig
+> index 929218a..8489951 100644
+> --- a/net/sched/Kconfig
+> +++ b/net/sched/Kconfig
+> @@ -328,7 +328,7 @@ config NET_CLS_FLOW
+>  	  module will be called cls_flow.
+>  
+>  config NET_CLS_CGROUP
+> -	bool "Control Group Classifier"
+> +	tristate "Control Group Classifier"
+>  	select NET_CLS
+>  	depends on CGROUPS
+>  	---help---
+> diff --git a/net/sched/cls_cgroup.c b/net/sched/cls_cgroup.c
+> index e4877ca..df9723b 100644
+> --- a/net/sched/cls_cgroup.c
+> +++ b/net/sched/cls_cgroup.c
+> @@ -24,6 +24,25 @@ struct cgroup_cls_state
+>  	u32 classid;
+>  };
+>  
+> +static struct cgroup_subsys_state *cgrp_create(struct cgroup_subsys *ss,
+> +					       struct cgroup *cgrp);
+> +static void cgrp_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp);
+> +static int cgrp_populate(struct cgroup_subsys *ss, struct cgroup *cgrp);
+> +
+> +struct cgroup_subsys net_cls_subsys = {
+> +	.name		= "net_cls",
+> +	.create		= cgrp_create,
+> +	.destroy	= cgrp_destroy,
+> +	.populate	= cgrp_populate,
+> +#ifdef CONFIG_NET_CLS_CGROUP
+> +	.subsys_id	= net_cls_subsys_id,
+> +#else
+> +#define net_cls_subsys_id net_cls_subsys.subsys_id
+> +#endif
+> +	.module		= THIS_MODULE,
+> +};
+> +
+> +
+>  static inline struct cgroup_cls_state *cgrp_cls_state(struct cgroup *cgrp)
+>  {
+>  	return container_of(cgroup_subsys_state(cgrp, net_cls_subsys_id),
+> @@ -79,14 +98,6 @@ static int cgrp_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
+>  	return cgroup_add_files(cgrp, ss, ss_files, ARRAY_SIZE(ss_files));
+>  }
+>  
+> -struct cgroup_subsys net_cls_subsys = {
+> -	.name		= "net_cls",
+> -	.create		= cgrp_create,
+> -	.destroy	= cgrp_destroy,
+> -	.populate	= cgrp_populate,
+> -	.subsys_id	= net_cls_subsys_id,
+> -};
+> -
+>  struct cls_cgroup_head
+>  {
+>  	u32			handle;
+> @@ -277,12 +288,20 @@ static struct tcf_proto_ops cls_cgroup_ops __read_mostly = {
+>  
+>  static int __init init_cgroup_cls(void)
+>  {
+> -	return register_tcf_proto_ops(&cls_cgroup_ops);
+> +	int ret = register_tcf_proto_ops(&cls_cgroup_ops);
+> +	if (ret)
+> +		return ret;
+> +	ret = cgroup_load_subsys(&net_cls_subsys);
+> +	if (ret)
+> +		unregister_tcf_proto_ops(&cls_cgroup_ops);
+> +	return ret;
+>  }
+>  
+>  static void __exit exit_cgroup_cls(void)
+>  {
+>  	unregister_tcf_proto_ops(&cls_cgroup_ops);
+> +	/* TODO: unload subsystem. for now, the try_module_get in load_subsys
+> +	 * prevents us from getting here. */
+>  }
+>  
+>  module_init(init_cgroup_cls);
 > --
->
-> Currently running 2.6.31-rc1 for 2 days now, no crashes, will go to -rc2 
-> later today and wait another 48 hours.
->
-> Justin.
->
->
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Kernel report:
 
-2.6.31-rc1: no crash - uptime 2+ days
-2.6.31-rc2: no crash - uptime 2+ days
-2.6.31-rc3: no crash - uptime 2+ days
-2.6.31-rc4: no crash but network kept dropping out
-2.6.31-rc5: cannot test, service owner needs host available
-2.6.31-rc6: cannot test, service owner needs host available
-2.6.31-rc7: cannot test, service owner needs host available
-2.6.31-rc8: cannot test, service owner needs host available
-2.6.31-rc9: cannot test, service owner needs host available
-   2.6.31.x: locks up D-state
-
-It would be somewhere between -rc4 and 2.6.31.x.
-
-Justin.
-
+---
+~Randy
