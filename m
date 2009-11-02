@@ -1,83 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZKBQqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbZKBRAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbZKBQqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbZKBQqU
+	id S1756374AbZKBRAH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:00:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbZKBQ7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:46:20 -0500
-Received: from gv-out-0910.google.com ([216.239.58.191]:19879 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755430AbZKBQqU (ORCPT
+	Mon, 2 Nov 2009 11:59:55 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40016 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756311AbZKBQ7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:46:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aWOPb59gPh8HkI9p5XtLumhdY1pmeyR4p0xPc8fj9gelyLH7u62zaC/8gZWF2MO1hQ
-         GDidOKenB0PEmnrTrcOJPjxSzhSp4by1JpddHHIe+74uxRKmNHTrXQWqVbv58M06iHq6
-         T+PKvND22BVlRK0b/Ph+MZkTIOn/1SEwLu9LM=
-Date: Mon, 2 Nov 2009 17:46:21 +0100
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-To: dimm <dmitry.adamushko@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Mike Travis <travis@sgi.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [ RFC, PATCH - 1/2 ] x86-microcode: refactor microcode output
- messages
-Message-ID: <20091102164621.GF30802@alberich.amd.com>
-References: <1257114179.6833.47.camel@dimm>
+	Mon, 2 Nov 2009 11:59:53 -0500
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH 6/6] sdio_uart: Style fixes
+To: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com, nico@cam.org
+Date: Mon, 02 Nov 2009 16:46:24 +0000
+Message-ID: <20091102164621.11877.25315.stgit@localhost.localdomain>
+In-Reply-To: <20091102164039.11877.88825.stgit@localhost.localdomain>
+References: <20091102164039.11877.88825.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257114179.6833.47.camel@dimm>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 01, 2009 at 11:22:59PM +0100, dimm wrote:
-> 
-> Hi,
-> 
-> 
-> this is in response to Mike's patch "Limit the number of microcode
-> messages".
-> 
-> What's about the following (yet preliminary and not thoroughly tested)
-> approach?
+Running the current code through checkpatch shows a few bits of noise
+mostly but not entirely from before the changes.
 
-Hmm, patch-1 doesn't apply:
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
 
- patching file arch/x86/include/asm/microcode.h
- patching file arch/x86/kernel/microcode_amd.c
- Hunk #1 succeeded at 152 (offset -4 lines).
- Hunk #2 succeeded at 240 (offset -7 lines).
- patch: **** malformed patch at line 99: size_t size)
+ drivers/mmc/card/sdio_uart.c |   33 +++++++++++++++------------------
+ 1 files changed, 15 insertions(+), 18 deletions(-)
 
 
-> patch-1:
-> 
-> simplify 'struct ucode_cpu_info' and related operational logic.
-> 
-> 
-> patch-2: 
-> 
-> reduce a number of similar 'microcode version' messages by printing a
-> single message for all cpus with equal microcode version, like:
+diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
+index c4fc27d..ff93f47 100644
+--- a/drivers/mmc/card/sdio_uart.c
++++ b/drivers/mmc/card/sdio_uart.c
+@@ -462,7 +462,8 @@ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
+ 
+ 	tty = tty_port_tty_get(&port->port);
+ 
+-	if (tty == NULL || !kfifo_len(xmit) || tty->stopped || tty->hw_stopped) {
++	if (tty == NULL || !kfifo_len(xmit)
++				|| tty->stopped || tty->hw_stopped) {
+ 		sdio_uart_stop_tx(port);
+ 		return;
+ 	}
+@@ -590,7 +591,6 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ {
+ 	struct sdio_uart_port *port =
+ 			container_of(tport, struct sdio_uart_port, port);
+-	unsigned long page;
+ 	int ret;
+ 
+ 	/*
+@@ -633,7 +633,7 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ 	 */
+ 	sdio_out(port, UART_LCR, UART_LCR_WLEN8);
+ 
+-	port->ier = UART_IER_RLSI | UART_IER_RDI | UART_IER_RTOIE | UART_IER_UUE;
++	port->ier = UART_IER_RLSI|UART_IER_RDI|UART_IER_RTOIE|UART_IER_UUE;
+ 	port->mctrl = TIOCM_OUT2;
+ 
+ 	sdio_uart_change_speed(port, tty->termios, NULL);
+@@ -660,7 +660,6 @@ err1:
+ 	return ret;
+ }
+ 
+-	
+ /**
+  *	sdio_uart_shutdown	-	stop hardware
+  *	@tport: tty port to shut down
+@@ -675,11 +674,8 @@ static void sdio_uart_shutdown(struct tty_port *tport)
+ {
+ 	struct sdio_uart_port *port =
+ 			container_of(tport, struct sdio_uart_port, port);
+-	int ret;
+-
+-	ret = sdio_uart_claim_func(port);
+-	if (ret)
+-		return ret;
++	if (sdio_uart_claim_func(port))
++		return;
+ 
+ 	sdio_uart_stop_rx(port);
+ 
+@@ -727,7 +723,6 @@ static int sdio_uart_install(struct tty_driver *driver, struct tty_struct *tty)
+ 	} else
+ 		sdio_uart_port_put(port);
+ 	return ret;
+-		
+ }
+ 
+ /**
+@@ -767,7 +762,7 @@ static void sdio_uart_hangup(struct tty_struct *tty)
+ 	tty_port_hangup(&port->port);
+ }
+ 
+-static int sdio_uart_write(struct tty_struct * tty, const unsigned char *buf,
++static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
+ 			   int count)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
+@@ -778,7 +773,7 @@ static int sdio_uart_write(struct tty_struct * tty, const unsigned char *buf,
+ 
+ 	ret = kfifo_put(port->xmit_fifo, buf, count);
+ 
+-	if ( !(port->ier & UART_IER_THRI)) {
++	if (!(port->ier & UART_IER_THRI)) {
+ 		int err = sdio_uart_claim_func(port);
+ 		if (!err) {
+ 			sdio_uart_start_tx(port);
+@@ -865,7 +860,8 @@ static void sdio_uart_unthrottle(struct tty_struct *tty)
+ 	sdio_uart_release_func(port);
+ }
+ 
+-static void sdio_uart_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
++static void sdio_uart_set_termios(struct tty_struct *tty,
++						struct ktermios *old_termios)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
+ 	unsigned int cflag = tty->termios->c_cflag;
+@@ -944,7 +940,7 @@ static int sdio_uart_tiocmset(struct tty_struct *tty, struct file *file,
+ 	int result;
+ 
+ 	result = sdio_uart_claim_func(port);
+-	if(!result) {
++	if (!result) {
+ 		sdio_uart_update_mctrl(port, set, clear);
+ 		sdio_uart_release_func(port);
+ 	}
+@@ -962,7 +958,7 @@ static int sdio_uart_proc_show(struct seq_file *m, void *v)
+ 		struct sdio_uart_port *port = sdio_uart_port_get(i);
+ 		if (port) {
+ 			seq_printf(m, "%d: uart:SDIO", i);
+-			if(capable(CAP_SYS_ADMIN)) {
++			if (capable(CAP_SYS_ADMIN)) {
+ 				seq_printf(m, " tx:%d rx:%d",
+ 					      port->icount.tx, port->icount.rx);
+ 				if (port->icount.frame)
+@@ -1015,7 +1011,7 @@ static const struct tty_port_operations sdio_uart_port_ops = {
+ 	.shutdown = sdio_uart_shutdown,
+ 	.activate = sdio_uart_activate,
+ };
+-	
++
+ static const struct tty_operations sdio_uart_ops = {
+ 	.open			= sdio_uart_open,
+ 	.close			= sdio_uart_close,
+@@ -1068,7 +1064,7 @@ static int sdio_uart_probe(struct sdio_func *func,
+ 		}
+ 		if (!tpl) {
+ 			printk(KERN_WARNING
+-			       "%s: can't find tuple 0x91 subtuple 0 (SUBTPL_SIOREG) for GPS class\n",
++       "%s: can't find tuple 0x91 subtuple 0 (SUBTPL_SIOREG) for GPS class\n",
+ 			       sdio_func_id(func));
+ 			kfree(port);
+ 			return -EINVAL;
+@@ -1101,7 +1097,8 @@ static int sdio_uart_probe(struct sdio_func *func,
+ 		kfree(port);
+ 	} else {
+ 		struct device *dev;
+-		dev = tty_register_device(sdio_uart_tty_driver, port->index, &func->dev);
++		dev = tty_register_device(sdio_uart_tty_driver,
++						port->index, &func->dev);
+ 		if (IS_ERR(dev)) {
+ 			sdio_uart_port_remove(port);
+ 			ret = PTR_ERR(dev);
 
-Would be useful on systems with many cores.
-
-On AMD multi-socket systems often you have the same CPU revisions and
-thus you'd like to have similar ucode on all cores. Hence there is a
-high chance that your code would reduce the amount of microcode log
-messages during boot.
-
-I'd like to test it but would need patches that do apply ...
-
-
-Thanks,
-Andreas
