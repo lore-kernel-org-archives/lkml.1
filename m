@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZKBPON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbZKBPTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbZKBPON (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZKBPON
+	id S1755362AbZKBPTU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZKBPTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:14:13 -0500
-Received: from icculus.org ([67.106.77.212]:40528 "EHLO icculus.org"
+	Mon, 2 Nov 2009 10:19:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17887 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755256AbZKBPON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:14:13 -0500
-Date: Mon, 2 Nov 2009 10:14:15 -0500 (EST)
-From: "Ryan C. Gordon" <icculus@icculus.org>
-X-X-Sender: icculus@caridad.icculuslan
-To: Valdis.Kletnieks@vt.edu
-cc: =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-In-Reply-To: <63587.1257137919@turing-police.cc.vt.edu>
-Message-ID: <alpine.OSX.1.10.0911020012500.56087@caridad.local>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com> <alpine.OSX.1.10.0911011540400.53392@caridad.local> <yw1xhbte0wx0.fsf@unicorn.mansr.com>           
- <alpine.OSX.1.10.0911011623070.55174@caridad.local> <63587.1257137919@turing-police.cc.vt.edu>
-User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
+	id S1755161AbZKBPTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:19:18 -0500
+Message-ID: <4AEEF878.2090805@redhat.com>
+Date: Mon, 02 Nov 2009 17:19:20 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gleb Natapov <gleb@redhat.com>
+CC: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/11] Add "wait for page" hypercall.
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-9-git-send-email-gleb@redhat.com> <4AEED907.5030306@redhat.com> <20091102151320.GC27911@redhat.com>
+In-Reply-To: <20091102151320.GC27911@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/02/2009 05:13 PM, Gleb Natapov wrote:
+> On Mon, Nov 02, 2009 at 03:05:11PM +0200, Avi Kivity wrote:
+>    
+>> On 11/01/2009 01:56 PM, Gleb Natapov wrote:
+>>      
+>>> We want to be able to inject async pagefault into guest event if a guest
+>>> is not executing userspace code. But in this case guest may receive
+>>> async page fault in non-sleepable context. In this case it will be
+>>> able to make "wait for page" hypercall vcpu will be put to sleep until
+>>> page is swapped in and guest can continue without reschedule.
+>>>        
+>> What's wrong with just 'hlt' and checking in the guest?
+>>
+>>      
+> Halting here will leave vcpu with interrupt disabled and this will prevent
+> "wake up" signal delivery.
 
-> > think if Ubuntu did this as a distribution-wide policy, then people would 
-> > probably choose a different distribution.
-> 
-> Hmm.. so let's see - people compiling stuff for themselves won't use this
-> feature.  And if a distro uses it, users would probably go to a different
-> distro.
+Page faults can be delivered with interrupts disabled.
 
-I probably wasn't clear when I said "distribution-wide policy" followed by 
-a "then again." I meant there would be backlash if the distribution glued 
-the whole system together, instead of just binaries that made sense to do 
-it to.
+>   Enabling interrupts is also not an options
+> since we can't be sure that vcpu can process interrupt at this point.
+>    
 
-And, again, there's a third use-case besides compiling your programs and 
-getting them from the package manager, and FatELF is meant to address 
-that.
+That's too bad, allowing interrupts in this context can help maintain 
+responsiveness.
 
-> Actually, they can't nuke the /lib{32,64} directories unless *all* binaries
-> are using FatELF - as long as there's any binaries doing things The Old Way,
-> you need to keep the supporting binaries around.
-
-Binaries don't refer directly to /libXX, they count on ld.so to tapdance 
-on their behalf. My virtual machine example left the dirs there as 
-symlinks to /lib, but they could probably just go away directly.
-
-> Don't forget you take that hit once for each shared library involved.  Plus
-
-That happens in user space in ld.so, so it's not a kernel problem in any 
-case, but still...we're talking about, what? Twenty more branch 
-instructions per-process?
-
-> I'm not sure if there's hidden gotchas lurking in there (is there code that
-> assumes that if executable code is mmap'ed, it's only done so in one arch?
-
-The current code sets up file mappings based on the offset of the desired 
-ELF binary.
-
-> Or will a FatELF glibc.so screw up somebody's refcounts if it's mapped
-> in both 32 and 64 bit modes?
-
-Whose refcounts would this screw up? If there's a possible bug, I'd like 
-to make sure it gets resolved, of course.
-
---ryan.
+-- 
+error compiling committee.c: too many arguments to function
 
