@@ -1,37 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbZKBTOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbZKBTQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbZKBTOc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 14:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbZKBTOb
+	id S1756615AbZKBTQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 14:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbZKBTQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 14:14:31 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52169 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755766AbZKBTOb (ORCPT
+	Mon, 2 Nov 2009 14:16:14 -0500
+Received: from nfitmail.nfit.au.dk ([130.225.31.129]:30310 "EHLO
+	smtp.nfit.au.dk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753480AbZKBTQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 14:14:31 -0500
-Date: Mon, 2 Nov 2009 19:16:04 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Nicolas Pitre <nico@fluxnic.net>
-Cc: Alan Cox <alan@linux.intel.com>, linux-mmc@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, dhowells@redhat.com
-Subject: Re: [PATCH 0/6] Clean up the sdio_uart driver and fix the tty code
-Message-ID: <20091102191604.010acbc9@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0911021243040.13333@xanadu.home>
-References: <20091102164039.11877.88825.stgit@localhost.localdomain>
-	<alpine.LFD.2.00.0911021243040.13333@xanadu.home>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Nov 2009 14:16:14 -0500
+To: linux-kernel@vger.kernel.org, gnome-announce-list@gnome.org
+Cc: giallu@gmail.com
+Subject: Announce: Sysprof 1.1.4 CPU profiler for Linux 
+From: Soeren Sandmann <sandmann@daimi.au.dk>
+Date: 02 Nov 2009 20:16:17 +0100
+Message-ID: <ye8tyxc20vy.fsf@camel24.daimi.au.dk>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-NFIT-RelayAddr: 130.225.16.143
+X-NFIT-Solido-Score: 0.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> However I have problems applying your patches.  Most of them require 
-> fuzzy patching to apply, and one of them even doesn't apply that way.  
-> What is your base tree?
+Sysprof 1.1.4 is now available. This is a development release leading
+up to a stable 1.2.0 release.
 
-Linux-next, but there is a patch I posted afterwards that goes before the
-sdio_uart patches. Want me to send you a set with all the patches
-including the other one ?
+Sysprof is a sampling system-wide CPU profiler for Linux.  This
+version is based on the perf counter interface in 2.6.31 kernels and
+will not work with earlier kernels.
+
+News since 1.1.2:
+
+  - Support for hrtimer fallbacks
+
+  - Work around the kernel producing spurious IRQ and NMI stacks
+
+  - Misc. bug fixes
+
+
+Major new features since version 1.0:
+
+  * Commandline interface, [Lorenzo Colitti]
+
+  * Stacktraces for both kernel and userspace
+
+  * More accurate accounting when processes rapidly appear or
+    disappear.
+
+  * Profiles can be cutted and pasted 
+
+  * Improved performance
+
+
+Version 1.1.4 is a development release. Please report bugs to
+sandmann@daimi.au.dk.
+
+
+Download:
+
+        http://www.daimi.au.dk/~sandmann/sysprof/sysprof-1.1.4.tar.gz
+
+
+Git:
+
+        git://git.gnome.org/sysprof
+
+
+
+Thanks,
+Soren
