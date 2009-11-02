@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZKBSGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZKBSA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbZKBSGe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:06:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbZKBSGe
+	id S1756074AbZKBSA0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbZKBSAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:06:34 -0500
-Received: from mms1.broadcom.com ([216.31.210.17]:1132 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756024AbZKBSGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:06:33 -0500
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Subject: Re: [PATCH] cnic: ensure ulp_type is not negative
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Roel Kluin" <roel.kluin@gmail.com>
-cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, davem@davemloft.net
-In-Reply-To: <4AEF0E98.5050304@gmail.com>
-References: <4AEF0E98.5050304@gmail.com>
-Date: Mon, 2 Nov 2009 09:56:59 -0800
-Message-ID: <1257184619.31958.3.camel@HP1>
+	Mon, 2 Nov 2009 13:00:25 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:54464 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754346AbZKBSAY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:00:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BFMNowoLkKXXz2FgPqo36s2iet66rpfPfPBP9QsJe68Es+Yyu0y/VUuLhEZWYqbGmD
+         IZvQb6CDAttf8YXlAd+EP8IRzac1Px4ySN7WgzPyLifQ0xXufnab4GpJozsVuGPMckqw
+         sjb202jK2AB4zeIN1mVMhIUyXMQkvQY2g3mBU=
+Date: Mon, 2 Nov 2009 10:00:24 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Vojtech Pavlik <vojtech@suse.cz>
+Subject: Re: ALPS touchpad with 4 directions button doesnt work as intended
+Message-ID: <20091102180024.GA3437@core.coreip.homeip.net>
+References: <1256955018.9681.23.camel@maxim-laptop> <20091102053834.GA3354@core.coreip.homeip.net> <1257182426.3682.2.camel@maxim-laptop>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
-X-WSS-ID: 66F1C0225F4277843-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257182426.3682.2.camel@maxim-laptop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2009-11-02 at 08:53 -0800, Roel Kluin wrote:
-> `ulp_type' is signed, make sure it is not negative
-> when we read the array element.
+On Mon, Nov 02, 2009 at 07:20:26PM +0200, Maxim Levitsky wrote:
+> On Sun, 2009-11-01 at 21:38 -0800, Dmitry Torokhov wrote: 
+> > Hi Maxim,
+> > 
+> > On Sat, Oct 31, 2009 at 04:10:18AM +0200, Maxim Levitsky wrote:
+> > > I have a acer 5720G laptop, and its touchpad (ALPS) has three buttons,
+> > > usual left/right, and middle button that can be pressed in 4 directions.
+> > > Up/down direction work fine, but left/right doesn't. This means that
+> > > left direction  produces middle button click, and right direction
+> > > doesn't work at all.
+> > > I took a look at source, and I see that driver doesn't even know about
+> > > such configuration.
+> > > 
+> > > Now I am sure its very easy to figure out what is send when no working
+> > > button is pressed, but I am a bit confused what BTN_* event to assign to
+> > > it, so it will work as horizontal scroll as intended.
+> > > And unassign middle button from other direction....
+> > > 
+> > 
+> > Synaptics driver maps multi-button to BTN_0...BTN_8 and it looks like
+> > synaptics X driver maps teh 4-button case by default to
+> > up/down/left/right scroll so I'd map ALPS the same.
+> > 
+> Thanks!
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-
-Looks good to me.  Thanks.
-Acked-by: Michael Chan <mchan@broadcom.com>
-
-> ---
->  drivers/net/cnic.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/cnic.c b/drivers/net/cnic.c
-> index 3bf1b04..f384b0a 100644
-> --- a/drivers/net/cnic.c
-> +++ b/drivers/net/cnic.c
-> @@ -347,7 +347,7 @@ int cnic_register_driver(int ulp_type, struct cnic_ulp_ops *ulp_ops)
->  {
->  	struct cnic_dev *dev;
->  
-> -	if (ulp_type >= MAX_CNIC_ULP_TYPE) {
-> +	if (ulp_type < 0 || ulp_type >= MAX_CNIC_ULP_TYPE) {
->  		printk(KERN_ERR PFX "cnic_register_driver: Bad type %d\n",
->  		       ulp_type);
->  		return -EINVAL;
-> @@ -393,7 +393,7 @@ int cnic_unregister_driver(int ulp_type)
->  	struct cnic_ulp_ops *ulp_ops;
->  	int i = 0;
->  
-> -	if (ulp_type >= MAX_CNIC_ULP_TYPE) {
-> +	if (ulp_type < 0 || ulp_type >= MAX_CNIC_ULP_TYPE) {
->  		printk(KERN_ERR PFX "cnic_unregister_driver: Bad type %d\n",
->  		       ulp_type);
->  		return -EINVAL;
-> @@ -449,7 +449,7 @@ static int cnic_register_device(struct cnic_dev *dev, int ulp_type,
->  	struct cnic_local *cp = dev->cnic_priv;
->  	struct cnic_ulp_ops *ulp_ops;
->  
-> -	if (ulp_type >= MAX_CNIC_ULP_TYPE) {
-> +	if (ulp_type < 0 || ulp_type >= MAX_CNIC_ULP_TYPE) {
->  		printk(KERN_ERR PFX "cnic_register_device: Bad type %d\n",
->  		       ulp_type);
->  		return -EINVAL;
-> @@ -490,7 +490,7 @@ static int cnic_unregister_device(struct cnic_dev *dev, int ulp_type)
->  	struct cnic_local *cp = dev->cnic_priv;
->  	int i = 0;
->  
-> -	if (ulp_type >= MAX_CNIC_ULP_TYPE) {
-> +	if (ulp_type < 0 || ulp_type >= MAX_CNIC_ULP_TYPE) {
->  		printk(KERN_ERR PFX "cnic_unregister_device: Bad type %d\n",
->  		       ulp_type);
->  		return -EINVAL;
+> One question, should I expect some resistance because the button won't
+> work as middle button by default? (I am sure that in X its easy remap it
+> back)
 > 
 
+I am pretty sure these kind of buttons allow 5 distinct presses - left,
+right, up, down and "straight" (which may be reported either with
+distinct packet or by reporting both up/down or left/right presses) so
+you don't have to loose the middle button. This is a speculation
+though...
 
+-- 
+Dmitry
