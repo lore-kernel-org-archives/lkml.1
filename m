@@ -1,96 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbZKBVnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZKBVqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbZKBVnw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 16:43:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbZKBVnw
+	id S1756912AbZKBVqJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 16:46:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbZKBVqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 16:43:52 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:59631 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756313AbZKBVnv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 16:43:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=F6wh4sZinmOFvy2YheS+kAVAzANDnMjvIFqg10SQatyZDqepDolyEHYTCCY8efeG7d
-         GqQfspsrpK+biSmcbcm0Sf5amsIJq08/i+rzoFaah8/ViTMi7dFXnu6VGIEVQh0EGjPp
-         kL3OVI476Xboa19AjxzX2zHkfJ3D1orJOd3ls=
-Date: Mon, 2 Nov 2009 22:43:55 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Adam Nemet <anemet@caviumnetworks.com>,
-       Patrik Kluba <kpajko79@gmail.com>
-Subject: Re: [PATCH -v5 08/11] tracing: not trace mips_timecounter_init()
-	in MIPS
-Message-ID: <20091102214351.GI4880@nowhere>
-References: <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256483735.git.wuzhangjin@gmail.com> <3e0c2d7d8b8f196a8153beb41ea7f3cbf42b3d84.1256483735.git.wuzhangjin@gmail.com> <54c417629e91f40b2bbb4e08cda2a4e6527824c0.1256483735.git.wuzhangjin@gmail.com> <29bccff04932e993ecd9f516d8b6dcf84e2ceecf.1256483735.git.wuzhangjin@gmail.com> <72f2270f7b6e01ca7a4cdf4ac8c21778e5d9652f.1256483735.git.wuzhangjin@gmail.com> <cover.1256483735.git.wuzhangjin@gmail.com> <6140dd8f4e1783e5ac30977cf008bb98e4698322.1256483735.git.wuzhangjin@gmail.com> <49b3c441a57f4db423732f81432a3450ccb3240e.1256483735.git.wuzhangjin@gmail.com> <c62985530910251727o23beafcco539870e4b2f84637@mail.gmail.com> <1256550156.5642.148.camel@falcon>
+	Mon, 2 Nov 2009 16:46:07 -0500
+Received: from lucidpixels.com ([75.144.35.66]:60979 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756482AbZKBVqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 16:46:06 -0500
+Date: Mon, 2 Nov 2009 16:46:10 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Dave Chinner <david@fromorbit.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48
+ hours (sysrq-t+w available)
+In-Reply-To: <alpine.DEB.2.00.0910260723150.22950@p34.internal.lan>
+Message-ID: <alpine.DEB.2.00.0910281915400.29166@p34.internal.lan>
+References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan> <20091019030456.GS9464@discord.disaster> <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan> <20091020003358.GW9464@discord.disaster>
+ <alpine.DEB.2.00.0910200431290.21878@p34.internal.lan> <alpine.DEB.2.00.0910210618210.10288@p34.internal.lan> <alpine.DEB.2.00.0910221849001.24576@p34.internal.lan> <alpine.DEB.2.00.0910260723150.22950@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256550156.5642.148.camel@falcon>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 05:42:36PM +0800, Wu Zhangjin wrote:
-> On Mon, 2009-10-26 at 01:27 +0100, Frederic Weisbecker wrote:
-> > 2009/10/25 Wu Zhangjin <wuzhangjin@gmail.com>:
-> > > -static inline u64 mips_timecounter_read(void)
-> > > +static inline u64 notrace mips_timecounter_read(void)
-> > 
-> > 
-> > You don't need to set notrace functions, unless their addresses
-> > are referenced somewhere, which unfortunately might happen
-> > for some functions but this is rare.
-> > 
-> 
-> Okay, Will remove it.
 
 
+On Mon, 26 Oct 2009, Justin Piszcz wrote:
 
-Oops, a word has escaped from my above sentence. I wanted to say:
+>
+>
+> On Thu, 22 Oct 2009, Justin Piszcz wrote:
+>
+>> 
+>> Any other ideas?
+>> 
+>> Currently stuck on 2.6.30.9.. (no issues, no lockups)-- Box normally has no 
+>> load at all either.. Has anyone else reported similar problems?
+>> 
+>> Justin.
+>> 
+>
+> --
+>
+> Currently running 2.6.31-rc1 for 2 days now, no crashes, will go to -rc2 
+> later today and wait another 48 hours.
+>
+> Justin.
+>
+>
 
-"You don't need to set notrace to inline functions" :)
+Kernel report:
 
+2.6.31-rc1: no crash - uptime 2+ days
+2.6.31-rc2: no crash - uptime 2+ days
+2.6.31-rc3: no crash - uptime 2+ days
+2.6.31-rc4: no crash but network kept dropping out
+2.6.31-rc5: cannot test, service owner needs host available
+2.6.31-rc6: cannot test, service owner needs host available
+2.6.31-rc7: cannot test, service owner needs host available
+2.6.31-rc8: cannot test, service owner needs host available
+2.6.31-rc9: cannot test, service owner needs host available
+   2.6.31.x: locks up D-state
 
-> > Hmm yeah this is not very nice to do that in core functions because
-> > of a specific arch problem.
-> > At least you have __notrace_funcgraph, this is a notrace
-> > that only applies if CONFIG_FUNCTION_GRAPH_TRACER
-> > so that it's still traceable by the function tracer in this case.
-> > 
-> > But I would rather see a __mips_notrace on these two core functions.
-> 
-> What about this: __arch_notrace? If the arch need this, define it,
-> otherwise, ignore it! if only graph tracer need it, define it in "#ifdef
-> CONFIG_FUNCTION_GRAPH_TRACER ... #endif".
+It would be somewhere between -rc4 and 2.6.31.x.
 
-
-
-The problem is that archs may want to disable tracing on different
-places.
-For example mips wants to disable tracing in timecounter_read_delta,
-but another arch may want to disable tracing somewhere else.
-
-We'll then have several unrelated __arch_notrace. One that is relevant
-for mips, another that is relevant for arch_foo, but all of them will
-apply for all arch that have defined a __arch_notrace.
-
-It's true that __mips_notrace is not very elegant as it looks like
-a specific arch annotation intruder.
-
-But at least that gives us a per arch filter granularity.
-
-If only static ftrace could disappear, we could keep only dynamic
-ftrace and we would then be able to filter dynamically.
-But I'm not sure it's a good idea for archs integration.
+Justin.
 
