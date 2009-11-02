@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbZKBJOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbZKBJSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753471AbZKBJOv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 04:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZKBJOv
+	id S1754044AbZKBJSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 04:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZKBJSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 04:14:51 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48225 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751008AbZKBJOu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 04:14:50 -0500
-Date: Mon, 2 Nov 2009 09:16:11 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Cc: =?ISO-8859-14?B?TeVucyBSdWxsZ+VyZA==?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-Message-ID: <20091102091611.60dfeea1@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.OSX.1.10.0911012023020.55434@caridad.local>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	<1257103201.2865.6.camel@chumley>
-	<yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
-	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
-	<alpine.OSX.1.10.0911012023020.55434@caridad.local>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Nov 2009 04:18:13 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44885 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753788AbZKBJSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 04:18:12 -0500
+Date: Mon, 2 Nov 2009 10:18:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
+Cc: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/16] trivial: fix assorted "through" typos
+Message-ID: <20091102091810.GA8933@elte.hu>
+References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm certain if we made a Venn diagram, there would be an overlap. But 
-> FatELF solves different problems than package managers, and in the case of 
-> ia32 compatibility packages, it helps the package manager solve its 
-> problems better.
 
-Not really - as I said it drives disk usage up, it drives network
-bandwidth up (which is a big issue for a distro vendor) and the package
-manager and file system exist to avoid this kind of mess being needed.
+* André Goddard Rosa <andre.goddard@gmail.com> wrote:
 
-You can ask the same question as FatELF the other way around and it
-becomes even more obvious that it's a bad idea.
+> >From f5d73ba151304056e4f7ea37e515493d1d3df38f Mon Sep 17 00:00:00 2001
+> From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
+> Date: Fri, 30 Oct 2009 06:16:07 -0200
+> Subject: [PATCH 03/16] trivial: fix assorted "through" typos
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=UTF-8
+> Content-Transfer-Encoding: 8bit
+> 
+> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+> 
+> diff --git a/arch/arm/plat-mxc/include/mach/iomux-mx3.h
+> b/arch/arm/plat-mxc/include/mach/iomux-mx3.h
+> index 446f867..0c7802b 100644
+> --- a/arch/arm/plat-mxc/include/mach/iomux-mx3.h
+> +++ b/arch/arm/plat-mxc/include/mach/iomux-mx3.h
 
-Imagine you did it by name not by architecture. So you had a single
-"FatDirectory" file for /bin, /sbin and /usr/bin. It means you don't have
-to worry about people having different sets of binaries, it means they
-are always compatible. And like FatELF it's not a very good idea.
+> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+> index ad59a92..67e86b8 100644
+> --- a/arch/x86/kernel/amd_iommu.c
+> +++ b/arch/x86/kernel/amd_iommu.c
 
-Welcome to the invention of the directory.
+Please _always_ generate a diffstat as well, so that people reviewing 
+patches can see the scope of your patch at a glance.
 
-Alan
+	Ingo
