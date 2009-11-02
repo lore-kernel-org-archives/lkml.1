@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbZKBHop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbZKBHmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754104AbZKBHop (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 02:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZKBHoo
+	id S1754065AbZKBHmi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 02:42:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZKBHmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 02:44:44 -0500
-Received: from smtprelay03.ispgateway.de ([80.67.31.26]:59411 "EHLO
-	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753942AbZKBHon (ORCPT
+	Mon, 2 Nov 2009 02:42:38 -0500
+Received: from smtprelay06.ispgateway.de ([80.67.31.29]:39566 "EHLO
+	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbZKBHmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 02:44:43 -0500
-Message-ID: <4AEE8D4D.7070703@ladisch.de>
-Date: Mon, 02 Nov 2009 08:42:05 +0100
+	Mon, 2 Nov 2009 02:42:37 -0500
+Message-ID: <4AEE8D6F.60209@ladisch.de>
+Date: Mon, 02 Nov 2009 08:42:39 +0100
 From: Clemens Ladisch <clemens@ladisch.de>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Dave Airlie <airlied@redhat.com>
+To: Dave Airlie <airlied@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Eric Anholt <eric@anholt.net>
 CC: dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] drm/radeon/kms: allocate framebuffer cmap
+Subject: [PATCH 3/3] drm/i915: allocate framebuffer cmap
 References: <4AEE8CDD.10600@ladisch.de>
 In-Reply-To: <4AEE8CDD.10600@ladisch.de>
 Content-Type: text/plain; charset=us-ascii
@@ -33,24 +34,26 @@ programs restore an all-black colormap ("links -g") or fail to work
 altogether ("mplayer -vo fbdev2").
 
 Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+---
+Untested.
 
---- linux-2.6/drivers/gpu/drm/radeon/radeon_fb.c
-+++ linux-2.6/drivers/gpu/drm/radeon/radeon_fb.c
-@@ -242,6 +242,10 @@ int radeonfb_create(struct drm_device *d
- 		goto out_unref;
- 	}
+--- linux-2.6/drivers/gpu/drm/i915/intel_fb.c
++++ linux-2.6/drivers/gpu/drm/i915/intel_fb.c
+@@ -227,6 +227,10 @@ static int intelfb_create(struct drm_dev
+ 
+ 	fb->fbdev = info;
  
 +	ret = fb_alloc_cmap(&info->cmap, 256, 0);
 +	if (ret)
-+		goto out_unref;
++		goto out_unpin;
 +
- 	memset_io(fbptr, 0, aligned_size);
+ 	par->intel_fb = intel_fb;
  
- 	strcpy(info->fix.id, "radeondrmfb");
-@@ -341,6 +345,7 @@ int radeonfb_remove(struct drm_device *d
- 		radeon_object_kunmap(robj);
- 		radeon_object_unpin(robj);
- 		drm_fb_helper_free(&rfbdev->helper);
+ 	/* To allow resizeing without swapping buffers */
+@@ -270,6 +274,7 @@ int intelfb_remove(struct drm_device *de
+ 		iounmap(info->screen_base);
+ 		if (info->par)
+ 			drm_fb_helper_free(&par->helper);
 +		fb_dealloc_cmap(&info->cmap);
  		framebuffer_release(info);
  	}
