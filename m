@@ -1,83 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZKBG2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbZKBG0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbZKBG2N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 01:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZKBG2M
+	id S1753832AbZKBG0H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 01:26:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZKBG0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 01:28:12 -0500
-Received: from ix.technologeek.org ([213.41.157.215]:51239 "EHLO
-	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753290AbZKBG2L (ORCPT
+	Mon, 2 Nov 2009 01:26:06 -0500
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:51614 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbZKBG0F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 01:28:11 -0500
-X-Greylist: delayed 646 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Nov 2009 01:28:11 EST
-From: Julien BLACHE <jb@jblache.org>
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	<1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
-	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
-	<alpine.OSX.1.10.0911012023020.55434@caridad.local>
-Date: Mon, 02 Nov 2009 07:17:26 +0100
-In-Reply-To: <alpine.OSX.1.10.0911012023020.55434@caridad.local> (Ryan
-	C. Gordon's message of "Sun, 1 Nov 2009 21:21:47 -0500 (EST)")
-Message-ID: <87zl75h2mh.fsf@sonic.technologeek.org>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) XEmacs/21.4.22 (linux)
+	Mon, 2 Nov 2009 01:26:05 -0500
+Date: Mon, 2 Nov 2009 11:55:50 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Avi Kivity <avi@redhat.com>, Paul Mackerras <paulus@samba.org>,
+       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL v2] hw-breakpoints: Rewrite on top of perf events
+Message-ID: <20091102062550.GA3146@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1256393818-8921-1-git-send-email-fweisbec@gmail.com> <20091026213104.GA8573@in.ibm.com> <c62985530910291207n22b83357s51d9ba88f5f09944@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530910291207n22b83357s51d9ba88f5f09944@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Ryan C. Gordon" <icculus@icculus.org> wrote:
+On Thu, Oct 29, 2009 at 08:07:15PM +0100, Frederic Weisbecker wrote:
+> 2009/10/26 K.Prasad <prasad@linux.vnet.ibm.com>:
+> > Outside the specific comments about the implementation here, I think
+> > the patchset begets a larger question about hw-breakpoint layer's
+> > integration with perf-events.
+> >
+> > Upon being a witness to the proposed changes and after some exploration
+> > of perf_events' functionality, I'm afraid that hw-breakpoint integration
+> > with perf doesn't benefit the former as much as originally wished to be
+> > (http://lkml.org/lkml/2009/8/26/149).
+> >
+> > Some of the prevalent concerns (which have been raised in different
+> > threads earlier) are:
+> >
+> > - While kernel-space breakpoints need to reside on every processor
+> >  (irrespective of the process in user-space), perf-events' notion of a
+> >  counter is always linked to a process context (although there could be
+> >  workarounds by making it 'pinned', etc).
+> 
+> 
+> No. A counter (let's talk about an event profiling instance now) is not
+> always attached to a single process.
+> It is attached to a context. Such contexts are defined by perf as gathering
+> a group of tasks or it can be a whole cpu.
+> 
 
-Hi,
+Okay.
 
-With my Debian Developer hat on...
+> The breakpoint API only supports two kind of contexts: one task, or every
+> cpus (or per cpu after your last patchset).
+> 
 
-> Package managers are a _fantastic_ invention. They are a killer
-> feature over other operating systems, including ones people pay way
-> too much money to use. That being said, there are lots of places where
-> using a package manager doesn't make sense:
+Yes, and please see the replies to your concerns below.
 
-> experimental software that might have an audience but isn't ready for
-> wide adoption
+> That said, perf events can be enhanced to support the context of a wide counter.
+> 
+> 
+> >
+> > - HW Breakpoints register allocation mechanism is 'greedy', which in my
+> >  opinion is more suitable for allocating a finite and contended
+> >  resource such as debug register while that of perf-events can give
+> >  rise to roll-backs (with side-effects such as stray exceptions and
+> >  race conditions).
+> 
+> 
+> I don't get your point. The only possible rollback is when we allocate
+> a wide breakpoint (then one per cpu).
+> If you worry about such races, we can register these breakpoints as
+> being disabled
+> and enable them once we know the allocation succeeded for every cpu.
+> 
+> 
 
-That usually ships as sources or prebuilt binaries in a tarball - target
-/opt and voila! For a bigger audience you'll see a lot of experimental
-stuff that gets packaged (even in quick'n'dirty mode).
+Not just stray exceptions, as explained before here:
+http://lkml.org/lkml/2009/10/1/76
+- Races between the requests (also leading to temporary failure of
+  all CPU requests) presenting an unclear picture about free debug
+  registers (making it difficult to predict the need for a retry).
 
-> software that isn't appropriate for an apt/yum repository
+> >
+> > - Given that the notion of a per-process context for counters is
+> >  well-ingrained into the design of perf-events (even system-wide
+> >  counters are sometimes implemented through individual syscalls over
+> >  nr_cpus as in builtin-stat.c), it requires huge re-design and
+> >  user-space changes.
+> 
+> 
+> It doesn't require a huge redesign to support wide perf events.
+> 
+> 
 
-Just create a repository for the damn thing if you want to distribute it
-that way. There's no "appropriate / not appropriate" that applies here.
+I contest that :-)...and the sheer amount of code movement, re-design
+(including core data structures) in the patchset here:
+http://lkml.org/lkml/2009/10/24/53.
+And all this with a loss of a well-layered, modular code and a
+loss of true system-wide support for bkpt counters!
 
-> software that distros refuse to package but is still perfectly useful
+> > Trying to scoop out the hw-breakpoint layer off its book-keeping/register
+> > allocation features only to replace with that of perf-events leads to a
+> > poor retrofit. On the other hand, an implementation to enable perf to use
+> > hw-breakpoint layer (and its APIs) to profile memory accesses over
+> > kernel-space variables (in the context of a process) is very elegant,
+> > modular and fits cleanly within the frame-work of the perf-events as a
+> > new perf-type (refer http://lkml.org/lkml/2009/10/26/467). A working
+> > patchset (under development and containing bugs) is posted for RFC here:
+> > http://lkml.org/lkml/2009/10/26/461
+> 
+> 
+> The non-perf based api is fine for ptrace, kgdb and ftrace uses.
+> But it is too limited for perf use.
+> 
+> - It has an ad-hoc context binding (register scheduling) abstraction.
+> Perf is able to manage
+>   that already: binding to defined group of processes, cpu, etc...
+> 
 
-Look at what happens today. A lot of that gets packaged by third
-parties, and more often than not they involve distribution
-maintainers. (See debian-multimedia, PLF for Mandriva, ...)
+I don't see what's ad-hoc in the scheduling behaviour of the hw-bkpt
+layer. Hw-breakpoint layer does the following with respect to register
+scheduling:
 
-> closed-source software
+- User-space breakpoints are always tied to a thread
+  (thread_info/task_struct) and are hence
+  active when the corresponding thread is scheduled.
 
-Why do we even care? Besides, commercial companies can just stop sitting
-on their hands and start distributing real packages. It's no different
-from rolling out a Windows Installer or Innosetup. It's packaging.
+- Kernel-space addresses (requests from in-kernel sources) should be
+  always active and aren't affected by process context-switches/schedule
+  operations. Some of the sophisticated mechanisms for scheduling
+  kernel vs user-space breakpoints (such as trapping syscalls to restore
+  register context) were pre-empted by the community (as seen here:
+  http://lkml.org/lkml/2009/3/11/145).
 
-> and software that wants to work between distros that don't have 
-> otherwise-compatible rpm/debs (or perhaps no package manager at all).
+Any further abstraction required by the end-user (as in the case of
+perf) can be well-implemented through the powerful breakpoint
+interfaces. For instance - perf-events with its unique requirement
+wherein a kernel-space breakpoint need to be active only when a given
+process is active. Hardware breakpoint layer handles them quite well
+as seen here: http://lkml.org/lkml/2009/10/29/300.
 
-Tarball, /opt, static build.
+> - It doesn't allow non-pinned events, when a breakpoint is disabled
+> (due to context schedule out), it is
+>   only virtually disabled, it's slot is not freed.
+> 
 
+The <enable><disable>_hw_breakpoint() are designed such. If a user want
+the slot to be freed (which is ill-advised for a requirement here) it
+can invoke (un)register_kernel_hw_breakpoint() instead (would have very
+little overhead for the 1-CPU case without IPIs).
 
-And, about the /lib, /lib32, /lib64 situation Debian and Debian-derived
-systems, the solution to that is multiarch and it's being worked
-on. It's a lot better and cleaner than the fat binary kludge.
+> Basically, the breakpoints are performance monitoring and debug
+> events. Something
+> that perf can already handle.
+> 
+> The current breakpoint API does all that in an ad-hoc way
+> (debug register scheduling when cpu get up/down, when we context
+> switch, etc...).
+> It is also not powerful enough to support non-pinned events.
+> 
+> The only downside I can see in perf events: it does not support wide
+> system contexts.
+> I don't think it requires a huge redesign. But instead of continuing
+> this ad-hoc context-handling
+> to cover this hole in perf, why not enhance perf so that it can cover that?
 
-JB.
+The advantages of having perf-events to use hw-breakpoint layer is
+explained here and in many of my previous emails. It entails no loss of
+functionality for either perf-events of hw-breakpoints, while allowing
+users to harness the power of both.
 
--- 
-Julien BLACHE                                   <http://www.jblache.org> 
-<jb@jblache.org>                                  GPG KeyID 0xF5D65169
+Thanks,
+K.Prasad
+
