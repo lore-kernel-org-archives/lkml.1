@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZKBPwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZKBPwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461AbZKBPwE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:52:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbZKBPwD
+	id S1755585AbZKBPwr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbZKBPwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:52:03 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:57489 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755190AbZKBPwD (ORCPT
+	Mon, 2 Nov 2009 10:52:46 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:56454 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755317AbZKBPwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:52:03 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
-Date: Mon, 2 Nov 2009 16:51:52 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: John Kacur <jkacur@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arndbergmann@googlemail.com>
-References: <20091010153314.827301943@linutronix.de> <alpine.LFD.2.00.0910212350210.3526@localhost.localdomain> <20091021221619.GF4880@nowhere>
-In-Reply-To: <20091021221619.GF4880@nowhere>
+	Mon, 2 Nov 2009 10:52:46 -0500
+Date: Mon, 2 Nov 2009 15:52:31 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Antonio Ospite <ospite@studenti.unina.it>,
+       openezx-devel@lists.openezx.org, Samuel Ortiz <sameo@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Mike Rapoport <mike@compulab.co.il>, Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Using statically allocated memory for platform_data.
+Message-ID: <20091102155231.GC20341@fluff.org.uk>
+References: <20091102112316.16163f6a.ospite@studenti.unina.it>
+ <20091102150011.GB20341@fluff.org.uk>
+ <20091102150525.GB5785@n2100.arm.linux.org.uk>
+ <20091102152500.GD23772@trinity.fluff.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911021651.53331.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/KnmIKYLrknQ9e9LEzbQvcWKpk5Ft7qh2KWMS
- kuj1ZDwWspkdRc0I0Xn8/v/EFri3TvdalfieZOcBrDacWq5hrM
- +OlIfqGGePFLEGwoQRJDA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102152500.GD23772@trinity.fluff.org>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 October 2009, Frederic Weisbecker wrote:
-> > I'm thinking that the simplier approach, would be to make the 
-> > default_llseek the unlocked one. Then you only have to audit the drivers 
-> > that have the BKL - ie the ones we are auditing anyway, and explicitly set 
-> > them to the bkl locked llseek.
+On Mon, Nov 02, 2009 at 03:25:00PM +0000, Ben Dooks wrote:
+> On Mon, Nov 02, 2009 at 03:05:25PM +0000, Russell King - ARM Linux wrote:
+> > On Mon, Nov 02, 2009 at 03:00:11PM +0000, Ben Dooks wrote:
+> > > This looks like something is freeing stuff that it did not allocate in
+> > > the first place, which is IMHO bad. The call platform_device_alloc()
+> > > is setting platform_device_release() as the default release function
+> > > but platform_device_release() releases more than platform_device_alloc()
+> > > actually created.
+> > > 
+> > > My view is that platform_device_alloc()'s default release shouldn't
+> > > be freeing the platform data, and that using platform_device_add_data()
+> > > or platform_device_add_resources() should change either the behvaiour 
+> > > of platform_device_release() or it should change the pointer to a new
+> > > release function.
 > > 
-> > There might be a hidden interaction though between the non-unlocked 
-> > variety of ioctls and default llseek though.
+> > That doesn't work - how do those other functions (adding) know what data
+> > has also been added by other functions?  That can't work reliably.
 > 
-> 
-> I fear that won't work because the bkl in default_llseek() does not
-> only synchronizes with others uses of the bkl in a driver, it also
-> synchronizes lseek() itself.
-> 
-> As an example offset change is not atomic. This is a long long, so
-> updating its value is not atomic in 32 bits archs.
+> You could wrapper platform device, and each of the add functions could
+> update it, but that would assume the platform device had been allocated
+> with platform_device_alloc().
 
-A late follow-up on this one:
+Having had a look, all the current users of platform_device_add_data()
+are from a platform_alloc_device() created device. 
 
-I looked at what places in the code manipulate file->f_pos directly
-and found that almost all the uses in driver code are broken because
-they don't take any locks. Most of them are in driver specific
-lseek operations. Others are in read/write methods and are even
-more broken because the change gets immediately overwritten by
-vfs_read/vfs_write when the driver method returns.
+The number of calls to platform_device_add_resources() are many, but
+the ones I checked are from platform_alloc_device().
 
-IMHO, we should complete the pushdown into all ioctl methods
-that John and Thomas have started working on, fixing the lseek
-methods in those files we touch.
+However your point being that these add calls may not be used on a
+device that has been created from platform_device_alloc() is one I
+overlooked.
 
-When that is done, all interaction between default_llseek and
-driver locking has to be with explicit calls to lock_kernel
-in those drivers, so we can reasonably well script the search
-for drivers needing the BKL in llseek: everyhing that
- a) defines file_operations without an llseek function,
- b) touches f_pos somewhere, and
- c) calls lock_kernel() somewhere
-That should only be a small number and when they are fixed,
-we can remove default_llseek and instead call generic_file_llseek
-for any file operation without a separate llseek method.
+Having a state machine that changed the release call from
+platform_device_release() to say platform_device_release_resources()
+or platform_device_release_all() and then platform_device_release_all()
+may be another way to do it.
 
-	Arnd <><
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
