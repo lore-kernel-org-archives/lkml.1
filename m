@@ -1,86 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZKBItW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZKBIt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbZKBItW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 03:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZKBItV
+	id S1754073AbZKBIt7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 03:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZKBIt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 03:49:21 -0500
-Received: from server1.wserver.cz ([82.113.45.157]:49650 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbZKBItU (ORCPT
+	Mon, 2 Nov 2009 03:49:59 -0500
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:49326 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbZKBIt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 03:49:20 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: npiggin@suse.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Tejun Heo <tj@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [PATCH 1/1] MM: slqb, fix per_cpu access
-Date: Mon,  2 Nov 2009 09:49:23 +0100
-Message-Id: <1257151763-11507-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <4AEE5EA2.6010905@kernel.org>
-References: <4AEE5EA2.6010905@kernel.org>
+	Mon, 2 Nov 2009 03:49:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=eQ/FmUTuYHPiVuxhVXC5mgJwfEaoAOwL927wFyN+irasCH2MkcT2y5/GS8I2LKaaiO
+         UrOm9aqAMvFdEtMY70P871wXHQEPK4GhbAN6K/ACf5NoYfergqZW8u/eZMCplZktSzIc
+         dWjG8i95n4bOWe7S5DL35kKvuYQ/ot2n7Ou4c=
+MIME-Version: 1.0
+Date: Mon, 2 Nov 2009 17:50:02 +0900
+Message-ID: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
+Subject: [patch] added brightness feature to lcd class.
+From: InKi Dae <daeinki@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: Kyungmin Park <kmpark@infradead.org>
+Content-Type: multipart/mixed; boundary=0015177411469e53b204775f7660
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We cannot use the same local variable name as the declared per_cpu
-variable since commit "percpu: remove per_cpu__ prefix."
+--0015177411469e53b204775f7660
+Content-Type: text/plain; charset=ISO-8859-1
 
-Otherwise we would see crashes like:
-general protection fault: 0000 [#1] SMP
-last sysfs file:
-CPU 1
-Modules linked in:
-Pid: 1, comm: swapper Tainted: G        W  2.6.32-rc5-mm1_64 #860
-RIP: 0010:[<ffffffff8142ff94>]  [<ffffffff8142ff94>] start_cpu_timer+0x2b/0x87
-...
+This patch adds brightness feature to lcd class.
+(kernel/driver/video/backlight/lcd.c)
 
-Use slqb_ prefix for the global variable so that we don't collide
-even with the rest of the kernel (s390 and alpha need this).
+In the past, most of the lcd panels for embedded system was TFT-LCD
+Panel needing backlight device.
+But now AMOLED LCD Panel appeared so we should consider brightness
+control for AMOLED Panel.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>
----
- mm/slqb.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+For the time being, I used backlight fake driver for brightness
+control of AMOLED LCD Panel.
+But this way is not good, so I propose to add brightness feature to lcd class.
 
-diff --git a/mm/slqb.c b/mm/slqb.c
-index e745d9a..e4bb53f 100644
---- a/mm/slqb.c
-+++ b/mm/slqb.c
-@@ -2766,11 +2766,12 @@ out:
- 	schedule_delayed_work(work, round_jiffies_relative(3*HZ));
- }
- 
--static DEFINE_PER_CPU(struct delayed_work, cache_trim_work);
-+static DEFINE_PER_CPU(struct delayed_work, slqb_cache_trim_work);
- 
- static void __cpuinit start_cpu_timer(int cpu)
- {
--	struct delayed_work *cache_trim_work = &per_cpu(cache_trim_work, cpu);
-+	struct delayed_work *cache_trim_work = &per_cpu(slqb_cache_trim_work,
-+			cpu);
- 
- 	/*
- 	 * When this gets called from do_initcalls via cpucache_init(),
-@@ -3136,8 +3137,9 @@ static int __cpuinit slab_cpuup_callback(struct notifier_block *nfb,
- 
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
--		cancel_rearming_delayed_work(&per_cpu(cache_trim_work, cpu));
--		per_cpu(cache_trim_work, cpu).work.func = NULL;
-+		cancel_rearming_delayed_work(&per_cpu(slqb_cache_trim_work,
-+					cpu));
-+		per_cpu(slqb_cache_trim_work, cpu).work.func = NULL;
- 		break;
- 
- 	case CPU_UP_CANCELED:
--- 
-1.6.4.2
+For this, I attached patch file and if my proposal is approved
+Then I will send s6e63m0 and tl2796 AMOLED lcd panel driver based on
+lcd class modified soon.
 
+signed-off-by : InKi Dae <inki.dae@samsung.com>
+
+Best Regards,
+InKi Dae.
+
+--0015177411469e53b204775f7660
+Content-Type: application/octet-stream; name="lcd.patch"
+Content-Disposition: attachment; filename="lcd.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g1iz2s3l0
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2xjZC5jIGIvZHJpdmVycy92aWRl
+by9iYWNrbGlnaHQvbGNkLmMKaW5kZXggYjY0NDk0Ny4uY2MxOWVlOSAxMDA2NDQKLS0tIGEvZHJp
+dmVycy92aWRlby9iYWNrbGlnaHQvbGNkLmMKKysrIGIvZHJpdmVycy92aWRlby9iYWNrbGlnaHQv
+bGNkLmMKQEAgLTE2NCw2ICsxNjQsNTMgQEAgc3RhdGljIHNzaXplX3QgbGNkX3Nob3dfbWF4X2Nv
+bnRyYXN0KHN0cnVjdCBkZXZpY2UgKmRldiwKIAlyZXR1cm4gc3ByaW50ZihidWYsICIlZFxuIiwg
+bGQtPnByb3BzLm1heF9jb250cmFzdCk7CiB9CiAKK3N0YXRpYyBzc2l6ZV90IGxjZF9zaG93X2Jy
+aWdodG5lc3Moc3RydWN0IGRldmljZSAqZGV2LAorCQlzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAq
+YXR0ciwgY2hhciAqYnVmKQoreworCWludCByYyA9IC1FTlhJTzsKKwlzdHJ1Y3QgbGNkX2Rldmlj
+ZSAqbGQgPSB0b19sY2RfZGV2aWNlKGRldik7CisKKwltdXRleF9sb2NrKCZsZC0+b3BzX2xvY2sp
+OworCWlmIChsZC0+b3BzICYmIGxkLT5vcHMtPmdldF9icmlnaHRuZXNzKQorCQlyYyA9IHNwcmlu
+dGYoYnVmLCAiJWRcbiIsIGxkLT5vcHMtPmdldF9icmlnaHRuZXNzKGxkKSk7CisJbXV0ZXhfdW5s
+b2NrKCZsZC0+b3BzX2xvY2spOworCisJcmV0dXJuIHJjOworfQorCitzdGF0aWMgc3NpemVfdCBs
+Y2Rfc3RvcmVfYnJpZ2h0bmVzcyhzdHJ1Y3QgZGV2aWNlICpkZXYsCisJCXN0cnVjdCBkZXZpY2Vf
+YXR0cmlidXRlICphdHRyLCBjb25zdCBjaGFyICpidWYsIHNpemVfdCBjb3VudCkKK3sKKwlpbnQg
+cmMgPSAtRU5YSU87CisJY2hhciAqZW5kcDsKKwlzdHJ1Y3QgbGNkX2RldmljZSAqbGQgPSB0b19s
+Y2RfZGV2aWNlKGRldik7CisJaW50IGJyaWdodG5lc3MgPSBzaW1wbGVfc3RydG91bChidWYsICZl
+bmRwLCAwKTsKKwlzaXplX3Qgc2l6ZSA9IGVuZHAgLSBidWY7CisKKwlpZiAoKmVuZHAgJiYgaXNz
+cGFjZSgqZW5kcCkpCisJCXNpemUrKzsKKwlpZiAoc2l6ZSAhPSBjb3VudCkKKwkJcmV0dXJuIC1F
+SU5WQUw7CisKKwltdXRleF9sb2NrKCZsZC0+b3BzX2xvY2spOworCWlmIChsZC0+b3BzICYmIGxk
+LT5vcHMtPnNldF9icmlnaHRuZXNzKSB7CisJCXByX2RlYnVnKCJsY2Q6IHNldCBicmlnaHRuZXNz
+IHRvICVkXG4iLCBicmlnaHRuZXNzKTsKKwkJbGQtPm9wcy0+c2V0X2JyaWdodG5lc3MobGQsIGJy
+aWdodG5lc3MpOworCQlyYyA9IGNvdW50OworCX0KKwltdXRleF91bmxvY2soJmxkLT5vcHNfbG9j
+ayk7CisKKwlyZXR1cm4gcmM7Cit9CisKK3N0YXRpYyBzc2l6ZV90IGxjZF9zaG93X21heF9icmln
+aHRuZXNzKHN0cnVjdCBkZXZpY2UgKmRldiwKKwkJc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0
+dHIsIGNoYXIgKmJ1ZikKK3sKKwlzdHJ1Y3QgbGNkX2RldmljZSAqbGQgPSB0b19sY2RfZGV2aWNl
+KGRldik7CisKKwlyZXR1cm4gc3ByaW50ZihidWYsICIlZFxuIiwgbGQtPnByb3BzLm1heF9icmln
+aHRuZXNzKTsKK30KKwogc3RhdGljIHN0cnVjdCBjbGFzcyAqbGNkX2NsYXNzOwogCiBzdGF0aWMg
+dm9pZCBsY2RfZGV2aWNlX3JlbGVhc2Uoc3RydWN0IGRldmljZSAqZGV2KQpAQCAtMTc2LDYgKzIy
+Myw4IEBAIHN0YXRpYyBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSBsY2RfZGV2aWNlX2F0dHJpYnV0
+ZXNbXSA9IHsKIAlfX0FUVFIobGNkX3Bvd2VyLCAwNjQ0LCBsY2Rfc2hvd19wb3dlciwgbGNkX3N0
+b3JlX3Bvd2VyKSwKIAlfX0FUVFIoY29udHJhc3QsIDA2NDQsIGxjZF9zaG93X2NvbnRyYXN0LCBs
+Y2Rfc3RvcmVfY29udHJhc3QpLAogCV9fQVRUUihtYXhfY29udHJhc3QsIDA0NDQsIGxjZF9zaG93
+X21heF9jb250cmFzdCwgTlVMTCksCisJX19BVFRSKGJyaWdodG5lc3MsIDA2NDQsIGxjZF9zaG93
+X2JyaWdodG5lc3MsIGxjZF9zdG9yZV9icmlnaHRuZXNzKSwKKwlfX0FUVFIobWF4X2JyaWdodG5l
+c3MsIDA0NDQsIGxjZF9zaG93X21heF9icmlnaHRuZXNzLCBOVUxMKSwKIAlfX0FUVFJfTlVMTCwK
+IH07CiAKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvbGNkLmggYi9pbmNsdWRlL2xpbnV4L2xj
+ZC5oCmluZGV4IGM2N2ZlY2EuLjUxNDVmYzYgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvbGNk
+LmgKKysrIGIvaW5jbHVkZS9saW51eC9sY2QuaApAQCAtMzQsNiArMzQsOSBAQCBzdHJ1Y3QgZmJf
+aW5mbzsKIHN0cnVjdCBsY2RfcHJvcGVydGllcyB7CiAJLyogVGhlIG1heGltdW0gdmFsdWUgZm9y
+IGNvbnRyYXN0IChyZWFkLW9ubHkpICovCiAJaW50IG1heF9jb250cmFzdDsKKworCS8qIFRoZSBt
+YXhpbXVtIHZhbHVlIGZvciBicmlnaHRuZXNzIChyZWFkLW9ubHkpICovCisJaW50IG1heF9icmln
+aHRuZXNzOwogfTsKIAogc3RydWN0IGxjZF9vcHMgewpAQCAtNDYsNiArNDksMTAgQEAgc3RydWN0
+IGxjZF9vcHMgewogCWludCAoKmdldF9jb250cmFzdCkoc3RydWN0IGxjZF9kZXZpY2UgKik7CiAJ
+LyogU2V0IExDRCBwYW5lbCBjb250cmFzdCAqLwogICAgICAgICBpbnQgKCpzZXRfY29udHJhc3Qp
+KHN0cnVjdCBsY2RfZGV2aWNlICosIGludCBjb250cmFzdCk7CisJLyogR2V0IHRoZSBjdXJyZW50
+IGJyaWdobmVzcyBzZXR0aW5nIChvbmx5IEFNT0xFRCBsY2QgcGFuZWwpICovCisJaW50ICgqZ2V0
+X2JyaWdodG5lc3MpKHN0cnVjdCBsY2RfZGV2aWNlICopOworCS8qIFNldCBMQ0QgcGFuZWwgYnJp
+Z2h0bmVzcyAob25seSBBTU9MRUQgbGNkIHBhbmVsKSAqLworCWludCAoKnNldF9icmlnaHRuZXNz
+KShzdHJ1Y3QgbGNkX2RldmljZSAqLCBpbnQgYnJpZ2h0bmVzcyk7CiAJLyogU2V0IExDRCBwYW5l
+bCBtb2RlIChyZXNvbHV0aW9ucyAuLi4pICovCiAJaW50ICgqc2V0X21vZGUpKHN0cnVjdCBsY2Rf
+ZGV2aWNlICosIHN0cnVjdCBmYl92aWRlb21vZGUgKik7CiAJLyogQ2hlY2sgaWYgZ2l2ZW4gZnJh
+bWVidWZmZXIgZGV2aWNlIGlzIHRoZSBvbmUgTENEIGlzIGJvdW5kIHRvOwo=
+--0015177411469e53b204775f7660--
