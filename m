@@ -1,119 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932538AbZKBXL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbZKBXV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932538AbZKBXL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 18:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932478AbZKBXL6
+	id S1757274AbZKBXV2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 18:21:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229AbZKBXV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 18:11:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:14099 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932378AbZKBXL5 (ORCPT
+	Mon, 2 Nov 2009 18:21:27 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51602 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757221AbZKBXV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 18:11:57 -0500
+	Mon, 2 Nov 2009 18:21:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=COiwIKi4lUgFroLaEzwc1RmVsOGE3XJCfQZFOshccgoCJjPtMD+RHC6v31gzF9AZZ6
-         OygOjdGmR4ZnOB8AwY3DSVTGTcSwnPlpDinhORptXrj7uEp0NIJmvgnUSsLHujhdP81V
-         8mXEzZrluKOTYrvzmfL1qep2AdajP7HgRW3rA=
-Message-ID: <4AEF673E.5030509@gmail.com>
-Date: Tue, 03 Nov 2009 00:11:58 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mm-commits@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, hbabu@us.ibm.com,
-       kexec@lists.infradead.org
-Subject: kdump fails to load and crashes [was: mmotm 2009-11-01-10-01 uploaded]
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
-In-Reply-To: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
-X-Enigmail-Version: 0.97b
-Content-Type: text/plain; charset=ISO-8859-2
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=GCwjIvfH2T116+qBm5bjF77HnVvfQJKkBeDnROHB+8B412fQ7+xa4cEl7FziaYskip
+         ZDZOVcpxSdrWpEkzTu4yRJ41DejWpJPhNAaLn/BT2mkC6EasEuPeGL4eE94xSAH0pShh
+         2YQn+WzPRCk9PSo/mt/3Jk8qW6MLTqVZzfwJI=
+Subject: Re: ALPS touchpad with 4 directions button doesnt work as intended
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200911021425.32714.dmitry.torokhov@gmail.com>
+References: <1256955018.9681.23.camel@maxim-laptop>
+	 <1257199967.3164.8.camel@localhost.localdomain>
+	 <1257200188.3164.11.camel@localhost.localdomain>
+	 <200911021425.32714.dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Nov 2009 01:21:26 +0200
+Message-ID: <1257204086.7122.0.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/01/2009 07:07 PM, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
+On Mon, 2009-11-02 at 14:25 -0800, Dmitry Torokhov wrote: 
+> On Monday 02 November 2009 02:16:28 pm Maxim Levitsky wrote:
+> > On Tue, 2009-11-03 at 00:12 +0200, Maxim Levitsky wrote:
+> > > On Mon, 2009-11-02 at 10:00 -0800, Dmitry Torokhov wrote:
+> > > > On Mon, Nov 02, 2009 at 07:20:26PM +0200, Maxim Levitsky wrote:
+> > > > > On Sun, 2009-11-01 at 21:38 -0800, Dmitry Torokhov wrote:
+> > > > > > Hi Maxim,
+> > > > > >
+> > > > > > On Sat, Oct 31, 2009 at 04:10:18AM +0200, Maxim Levitsky wrote:
+> > > > > > > I have a acer 5720G laptop, and its touchpad (ALPS) has three
+> > > > > > > buttons, usual left/right, and middle button that can be pressed
+> > > > > > > in 4 directions. Up/down direction work fine, but left/right
+> > > > > > > doesn't. This means that left direction  produces middle button
+> > > > > > > click, and right direction doesn't work at all.
+> > > > > > > I took a look at source, and I see that driver doesn't even know
+> > > > > > > about such configuration.
+> > > > > > >
+> > > > > > > Now I am sure its very easy to figure out what is send when no
+> > > > > > > working button is pressed, but I am a bit confused what BTN_*
+> > > > > > > event to assign to it, so it will work as horizontal scroll as
+> > > > > > > intended.
+> > > > > > > And unassign middle button from other direction....
+> > > > > >
+> > > > > > Synaptics driver maps multi-button to BTN_0...BTN_8 and it looks
+> > > > > > like synaptics X driver maps teh 4-button case by default to
+> > > > > > up/down/left/right scroll so I'd map ALPS the same.
+> > > > >
+> > > > > Thanks!
+> > > > >
+> > > > > One question, should I expect some resistance because the button
+> > > > > won't work as middle button by default? (I am sure that in X its easy
+> > > > > remap it back)
+> > > >
+> > > > I am pretty sure these kind of buttons allow 5 distinct presses - left,
+> > > > right, up, down and "straight" (which may be reported either with
+> > > > distinct packet or by reporting both up/down or left/right presses) so
+> > > > you don't have to loose the middle button. This is a speculation
+> > > > though...
+> > >
+> > > Mine doesn't unfortunately, this is if I press it 'straight' I both feel
+> > > physicaly 4 different presses and it reports currently, 'back button'
+> > > 'forward button' and 'middle button' as I press it.
+> > >
+> > > It is possible to implement emulation, but I think that pressing it
+> > > straight might also put some stress and damage it in long run.
+> > >
+> > >
+> > > I think that pressing left+right buttons will be enough for the
+> > > replacement. If not, xmodmap can be used to map each of the 4 buttons
+> > > (or all of them to middle one)
+> > >
+> > >
+> > > Best regards,
+> > > 	Maxim Levitsky
+> > 
+> > Sorry,  forgot to CC lkml...
+> > 
+> 
+> OK, fair enough.
+> 
+Thanks, no more questions.
 
-Hi, kdump loading crashes:
-BUG: unable to handle kernel paging request at ffff8800010a7000
-IP: [<ffffffff8101cd8b>] machine_kexec_prepare+0x16b/0x13e0
-PGD 1806063 PUD 180a063 PMD 10001e1
-Oops: 0003 [#1] SMP
-last sysfs file: /sys/firmware/memmap/10/type
-CPU 1
-Modules linked in: fuse ath5k ath
-Pid: 3250, comm: kexec Tainted: G        W  2.6.32-rc5-mm1_64 #869 To Be
-Filled By O.E.M.
-RIP: 0010:[<ffffffff8101cd8b>]  [<ffffffff8101cd8b>]
-machine_kexec_prepare+0x16b/0x13e0
-RSP: 0018:ffff8801c95d1e88  EFLAGS: 00010206
-RAX: 00000000000001e3 RBX: ffff8801ca2aac00 RCX: 0000000040000000
-RDX: 0000000000200000 RSI: ffff8800010a7000 RDI: ffff8800010a7000
-RBP: ffff8801c95d1ee8 R08: 00000000000010a7 R09: 00000000010a7fff
-R10: 0000000000000fff R11: 0000000004ffffff R12: 0000000000000000
-R13: ffff8800010a6000 R14: 0000008000000000 R15: ffff880000000000
-FS:  00007f4f97b4c6f0(0000) GS:ffff880028280000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffff8800010a7000 CR3: 00000001c8cf2000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process kexec (pid: 3250, threadinfo ffff8801c95d0000, task
-ffff8801ca116700)
-Stack:
-ffff8801c95d1ee8 ffff8800010a6000 ffff8800010a4000 ffff8800010a4000
-<0> 0000000000000000 00000001cc000000 ffff8801c95d1ee8 0000000000000006
-<0> ffff8801ca2aac00 0000000000000000 0000000000000000 000000000146eae0
-Call Trace:
-[<ffffffff8106d32c>] sys_kexec_load+0xec/0x5e0
-[<ffffffff814365b5>] ? do_page_fault+0x185/0x350
-[<ffffffff81002e6b>] system_call_fastpath+0x16/0x1b
-Code: 00 40 48 c1 e6 0c 4c 01 fe 48 39 ca 73 21 48 89 f7 0f 1f 80 00 00
-00 00 48 89 d0 48 81 c2 00 00 20 00 48 0d e3 01 00 00 48 39 d1 <48> ab
-77 e9 48 89 f7 49 81 c4 00 00 00 40 e8 e2 93 00 00 4c 89
-RIP  [<ffffffff8101cd8b>] machine_kexec_prepare+0x16b/0x13e0
-RSP <ffff8801c95d1e88>
-CR2: ffff8800010a7000
----[ end trace 4eaa2a86a8e2da24 ]---
-
-ffff8800010a7000 should be OK, as crashkernel=64M@16M was passed to the
-kernel.
-
-It's here:
-static void init_level2_page(pmd_t *level2p, unsigned long addr)
-{
-        unsigned long end_addr;
-
-        addr &= PAGE_MASK;
-        end_addr = addr + PUD_SIZE;
-        while (addr < end_addr) {
-here ->         set_pmd(level2p++, __pmd(addr | __PAGE_KERNEL_LARGE_EXEC));
-                addr += PMD_SIZE;
-        }
-}
-
-Corresponding -fverbose-asm with -g:
-        .loc 1 65 0
-        addq    $2097152, %rdx  #, addr
-.LVL31:
-.LBB416:
-        .loc 5 77 0
-        orq     $483, %rax      #, tmp140
-.LBE416:
-        .loc 1 63 0
-        cmpq    %rdx, %rcx      # addr, end_addr
-.LBB417:
-        .loc 5 77 0
-        stosq
-.LVL32:
-.LBE417:
-        .loc 1 63 0
-        ja      .L26    #,
-
-
+Best regards,
+Maxim Levitsky
 
