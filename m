@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZKBQ4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZKBQ4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbZKBQ4J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbZKBQ4H
+	id S1756134AbZKBQ4k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbZKBQ4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:56:07 -0500
-Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:55979
-	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755193AbZKBQ4G (ORCPT
+	Mon, 2 Nov 2009 11:56:39 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:57830 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755412AbZKBQ4j convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:56:06 -0500
-Date: Mon, 2 Nov 2009 14:56:09 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci: remove pci_find_slot from PCI_LEGACY config
-	description
-Message-ID: <20091102165608.GB20277@vespa.holoscopio.com>
-References: <1256932009-5905-1-git-send-email-cascardo@holoscopio.com> <alpine.LSU.2.00.0911021648320.4203@wotan.suse.de>
+	Mon, 2 Nov 2009 11:56:39 -0500
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="XF85m9dhOBO43t/C"
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.00.0911021648320.4203@wotan.suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4AEF0D0B.1000100@austin.ibm.com>
+References: <4AE8ADCF.6090104@austin.ibm.com> <4AE8AF4D.4030403@austin.ibm.com> 
+	<1256785731.26770.38.camel@pasglop> <4AEF086D.9010600@austin.ibm.com> 
+	<fa686aa40911020840s3a6a4819g85f3be3a305820bf@mail.gmail.com> 
+	<4AEF0D0B.1000100@austin.ibm.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 2 Nov 2009 09:56:21 -0700
+X-Google-Sender-Auth: eb83f1fa9afed273
+Message-ID: <fa686aa40911020856u1dba88feib46cb40dce7de6dc@mail.gmail.com>
+Subject: Re: [PATCH 1/6 v5] Kernel DLPAR Infrastructure
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 2, 2009 at 9:47 AM, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> Grant Likely wrote:
+>>
+>> On Mon, Nov 2, 2009 at 9:27 AM, Nathan Fontenot <nfont@austin.ibm.com>
+>> wrote:
+>>>
+>>> I saw that Grant Likely is doing updates to all of the of_* stuff right
+>>> now,
+>>> would it be ok to have these routines here, renamed as dlpar_*, and look
+>>> to merge them in with Grant's updates when he finishes?
+>>
+>> No because then we're stuck with renaming the API at a later date.
+>> Name it what it is, and put it where it belongs.  I'll deal with any
+>> merge breakage as it occurs.
+>>
+>
+> ok.  Would this be better off in powerpc code, or should I go ahead and put
+> it
+> in something like drivers/of/dynamic.c?
 
---XF85m9dhOBO43t/C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+drivers/of/dynamic.c sounds fine to me.  I can always move them if it
+find a better place.  Send the patch to me and cc: the
+devicetree-discuss@lists.ozlabs.org mailing list.
 
-On Mon, Nov 02, 2009 at 04:49:01PM +0100, Jiri Kosina wrote:
-> On Fri, 30 Oct 2009, Thadeu Lima de Souza Cascardo wrote:
->=20
-> > Commit 3b073eda has removed pci_find_slot, so there's no point in
-> > mentioning it in the config description as one of the deprecated APIs
-> > there are enabled by PCI_LEGACY and still used by some drivers.
-> >=20
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > ---
-> >  drivers/pci/Kconfig |    8 ++++----
-> >  1 files changed, 4 insertions(+), 4 deletions(-)
-> >=20
-> > diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
-> > index fdc864f..48a3ea7 100644
-> > --- a/drivers/pci/Kconfig
-> > +++ b/drivers/pci/Kconfig
-> > @@ -27,10 +27,10 @@ config PCI_LEGACY
-> >  	default y
-> >  	help
-> >  	  Say Y here if you want to include support for the deprecated
-> > -	  pci_find_slot() and pci_find_device() APIs.  Most drivers have
-> > -	  been converted over to using the proper hotplug APIs, so this
-> > -	  option serves to include/exclude only a few drivers that are
-> > -	  still using this API.
-> > +	  pci_find_device() API.  Most drivers have been converted over
-> > +	  to using the proper hotplug APIs, so this option serves to
-> > +	  include/exclude only a few drivers that are still using this
-> > +	  API.
->=20
-> While you are at it, how about removing the references in=20
-> Documentation/PCI/pci.txt as well?
->=20
-> Thanks,
->=20
-> --=20
-> Jiri Kosina
-> SUSE Labs, Novell Inc.
+g.
 
-I've hit them. But, on a first fast look, they seemed important
-historically. I will take a closer look and point that if it's proper or
-remove them entirely as you suggest.
 
-Regards,
-Cascardo.
-
---XF85m9dhOBO43t/C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrvDygACgkQyTpryRcqtS2kyACeO6LXR+c/meIHBgjpX8DhR2gx
-X64An1Jp8Piq/mkkZPiairVlq8+Uz98i
-=dQPg
------END PGP SIGNATURE-----
-
---XF85m9dhOBO43t/C--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
