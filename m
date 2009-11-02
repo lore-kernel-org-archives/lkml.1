@@ -1,108 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZKBKJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZKBKM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbZKBKJf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 05:09:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbZKBKJe
+	id S1754904AbZKBKM5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbZKBKMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 05:09:34 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:41480 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754399AbZKBKJc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 05:09:32 -0500
-X-Sasl-enc: Gn4D8az9gA6b78YfbHuqfMFfDEXXB7emdtXmncZwiOFi 1257156575
-Message-ID: <4AEEAFD1.5070703@imap.cc>
-Date: Mon, 02 Nov 2009 11:09:21 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 2 Nov 2009 05:12:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47793 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754886AbZKBKMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 05:12:53 -0500
+Date: Mon, 2 Nov 2009 10:12:34 GMT
+From: tip-bot for Avi Kivity <avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, avi@redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, avi@redhat.com
+In-Reply-To: <1253342422-13811-1-git-send-email-avi@redhat.com>
+References: <1253342422-13811-1-git-send-email-avi@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/entry] core, x86: Add user return notifiers
+Message-ID: <tip-7c68af6e32c73992bad24107311f3433c89016e2@git.kernel.org>
+Git-Commit-ID: 7c68af6e32c73992bad24107311f3433c89016e2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: Nigel Cunningham <ncunningham@crca.org.au>,
-       =?ISO-8859-1?Q?Andr=E9_?= =?ISO-8859-1?Q?Goddard_Rosa?= 
-	<andre.goddard@gmail.com>,
-       trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
-Subject: Kernel cleanup Wiki (was: [PATCH 03/16] trivial: fix assorted "through"
- typos)
-References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>	<4AEC0EBE.2040308@crca.org.au>	<4AEC2971.8050105@imap.cc> <20091101095208.10d57e8f.rdunlap@xenotime.net>
-In-Reply-To: <20091101095208.10d57e8f.rdunlap@xenotime.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4099070810D89DEA574EC440"
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4099070810D89DEA574EC440
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Commit-ID:  7c68af6e32c73992bad24107311f3433c89016e2
+Gitweb:     http://git.kernel.org/tip/7c68af6e32c73992bad24107311f3433c89016e2
+Author:     Avi Kivity <avi@redhat.com>
+AuthorDate: Sat, 19 Sep 2009 09:40:22 +0300
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Thu, 1 Oct 2009 12:12:18 -0700
 
-Am 01.11.2009 18:52 schrieb Randy Dunlap:
-> On Sat, 31 Oct 2009 13:11:29 +0100 Tilman Schmidt wrote:
->=20
->> Am 31.10.2009 11:17 schrieb Nigel Cunningham:
->>> I've only looked at this one, but something caught my eye...
->>>
->>> Andr=E9 Goddard Rosa wrote:
->>>> diff --git a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->>>> b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->>>> index f7b9cdc..b52c1f8 100644
->>>> --- a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->>>> +++ b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->>>> @@ -38,7 +38,7 @@ void __init generate_cplb_tables_cpu(unsigned int =
-cpu)
->>>>
->>>>  #ifdef CONFIG_BFIN_EXTMEM_DCACHEABLE
->>>>  	d_cache =3D CPLB_L1_CHBL;
->>>> -#ifdef CONFIG_BFIN_EXTMEM_WRITETROUGH
->>>> +#ifdef CONFIG_BFIN_EXTMEM_WRITETHROUGH
->>>>  	d_cache |=3D CPLB_L1_AOW | CPLB_WT;
->>>>  #endif
->>>>  #endif
->>> "Surely that can't be the only time?", I thought. But it is - all of =
-the
->>> other #ifdefs are spelled correctly, so you're probably fixing a
->>> hard-to-find bug here! Good catch!
->>>
->>> Makes me wonder if anyone's written a tool to find things like this -=
+core, x86: Add user return notifiers
 
->>> #ifdefs that will never be defined...
->> I seem to remember someone (Joe Perches?) did, and regularly posted
->> results to LKML in the past, but at some point switched to publishing
->> them on a web page instead.
->=20
-> It was Robert PJ Day.
+Add a general per-cpu notifier that is called whenever the kernel is
+about to return to userspace.  The notifier uses a thread_info flag
+and existing checks, so there is no impact on user return or context
+switch fast paths.
 
-Indeed it was, and kudos to him for doing it.
-Please forgive my middle-aged brain for the misattribution.
+This will be used initially to speed up KVM task switching by lazily
+updating MSRs.
 
-> See http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
+Signed-off-by: Avi Kivity <avi@redhat.com>
+LKML-Reference: <1253342422-13811-1-git-send-email-avi@redhat.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/Kconfig                         |   10 +++++++
+ arch/x86/Kconfig                     |    1 +
+ arch/x86/include/asm/thread_info.h   |    7 +++-
+ arch/x86/kernel/process.c            |    2 +
+ arch/x86/kernel/signal.c             |    3 ++
+ include/linux/user-return-notifier.h |   42 +++++++++++++++++++++++++++++++
+ kernel/user-return-notifier.c        |   46 ++++++++++++++++++++++++++++++++++
+ 7 files changed, 109 insertions(+), 2 deletions(-)
 
-And sure enough, CONFIG_BFIN_EXTMEM_WRITETROUGH is listed there on the
-"Badref CONFIG variables" page.
-
-It seems that page would merit a bit of advertising. :-)
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig4099070810D89DEA574EC440
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFK7q/cQ3+did9BuFsRAlITAJ0TrweoVe9CX+cK2Afo+f1Ie7GFlwCfb9w2
-+4f3+sfwbYF//kM8VDyDXXc=
-=Ix7N
------END PGP SIGNATURE-----
-
---------------enig4099070810D89DEA574EC440--
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 7f418bb..4e312ff 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -83,6 +83,13 @@ config KRETPROBES
+ 	def_bool y
+ 	depends on KPROBES && HAVE_KRETPROBES
+ 
++config USER_RETURN_NOTIFIER
++	bool
++	depends on HAVE_USER_RETURN_NOTIFIER
++	help
++	  Provide a kernel-internal notification when a cpu is about to
++	  switch to user mode.
++
+ config HAVE_IOREMAP_PROT
+ 	bool
+ 
+@@ -126,4 +133,7 @@ config HAVE_DMA_API_DEBUG
+ config HAVE_DEFAULT_NO_SPIN_MUTEXES
+ 	bool
+ 
++config HAVE_USER_RETURN_NOTIFIER
++	bool
++
+ source "kernel/gcov/Kconfig"
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 8da9374..1df175d 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -50,6 +50,7 @@ config X86
+ 	select HAVE_KERNEL_BZIP2
+ 	select HAVE_KERNEL_LZMA
+ 	select HAVE_ARCH_KMEMCHECK
++	select HAVE_USER_RETURN_NOTIFIER
+ 
+ config OUTPUT_FORMAT
+ 	string
+diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
+index d27d0a2..375c917 100644
+--- a/arch/x86/include/asm/thread_info.h
++++ b/arch/x86/include/asm/thread_info.h
+@@ -83,6 +83,7 @@ struct thread_info {
+ #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+ #define TIF_SECCOMP		8	/* secure computing */
+ #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
++#define TIF_USER_RETURN_NOTIFY	11	/* notify kernel of userspace return */
+ #define TIF_NOTSC		16	/* TSC is not accessible in userland */
+ #define TIF_IA32		17	/* 32bit process */
+ #define TIF_FORK		18	/* ret_from_fork */
+@@ -107,6 +108,7 @@ struct thread_info {
+ #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+ #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
+ #define _TIF_MCE_NOTIFY		(1 << TIF_MCE_NOTIFY)
++#define _TIF_USER_RETURN_NOTIFY	(1 << TIF_USER_RETURN_NOTIFY)
+ #define _TIF_NOTSC		(1 << TIF_NOTSC)
+ #define _TIF_IA32		(1 << TIF_IA32)
+ #define _TIF_FORK		(1 << TIF_FORK)
+@@ -142,13 +144,14 @@ struct thread_info {
+ 
+ /* Only used for 64 bit */
+ #define _TIF_DO_NOTIFY_MASK						\
+-	(_TIF_SIGPENDING|_TIF_MCE_NOTIFY|_TIF_NOTIFY_RESUME)
++	(_TIF_SIGPENDING | _TIF_MCE_NOTIFY | _TIF_NOTIFY_RESUME |	\
++	 _TIF_USER_RETURN_NOTIFY)
+ 
+ /* flags to check in __switch_to() */
+ #define _TIF_WORK_CTXSW							\
+ 	(_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_NOTSC)
+ 
+-#define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
++#define _TIF_WORK_CTXSW_PREV (_TIF_WORK_CTXSW|_TIF_USER_RETURN_NOTIFY)
+ #define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW|_TIF_DEBUG)
+ 
+ #define PREEMPT_ACTIVE		0x10000000
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 5284cd2..e51b056 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -9,6 +9,7 @@
+ #include <linux/pm.h>
+ #include <linux/clockchips.h>
+ #include <linux/random.h>
++#include <linux/user-return-notifier.h>
+ #include <trace/events/power.h>
+ #include <asm/system.h>
+ #include <asm/apic.h>
+@@ -224,6 +225,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+ 		 */
+ 		memset(tss->io_bitmap, 0xff, prev->io_bitmap_max);
+ 	}
++	propagate_user_return_notify(prev_p, next_p);
+ }
+ 
+ int sys_fork(struct pt_regs *regs)
+diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+index 6a44a76..c49f90f 100644
+--- a/arch/x86/kernel/signal.c
++++ b/arch/x86/kernel/signal.c
+@@ -19,6 +19,7 @@
+ #include <linux/stddef.h>
+ #include <linux/personality.h>
+ #include <linux/uaccess.h>
++#include <linux/user-return-notifier.h>
+ 
+ #include <asm/processor.h>
+ #include <asm/ucontext.h>
+@@ -872,6 +873,8 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
+ 		if (current->replacement_session_keyring)
+ 			key_replace_session_keyring();
+ 	}
++	if (thread_info_flags & _TIF_USER_RETURN_NOTIFY)
++		fire_user_return_notifiers();
+ 
+ #ifdef CONFIG_X86_32
+ 	clear_thread_flag(TIF_IRET);
+diff --git a/include/linux/user-return-notifier.h b/include/linux/user-return-notifier.h
+new file mode 100644
+index 0000000..b6ac056
+--- /dev/null
++++ b/include/linux/user-return-notifier.h
+@@ -0,0 +1,42 @@
++#ifndef _LINUX_USER_RETURN_NOTIFIER_H
++#define _LINUX_USER_RETURN_NOTIFIER_H
++
++#ifdef CONFIG_USER_RETURN_NOTIFIER
++
++#include <linux/list.h>
++#include <linux/sched.h>
++
++struct user_return_notifier {
++	void (*on_user_return)(struct user_return_notifier *urn);
++	struct hlist_node link;
++};
++
++
++void user_return_notifier_register(struct user_return_notifier *urn);
++void user_return_notifier_unregister(struct user_return_notifier *urn);
++
++static inline void propagate_user_return_notify(struct task_struct *prev,
++						struct task_struct *next)
++{
++	if (test_tsk_thread_flag(prev, TIF_USER_RETURN_NOTIFY)) {
++		clear_tsk_thread_flag(prev, TIF_USER_RETURN_NOTIFY);
++		set_tsk_thread_flag(next, TIF_USER_RETURN_NOTIFY);
++	}
++}
++
++void fire_user_return_notifiers(void);
++
++#else
++
++struct user_return_notifier {};
++
++static inline void propagate_user_return_notify(struct task_struct *prev,
++						struct task_struct *next)
++{
++}
++
++static inline void fire_user_return_notifiers(void) {}
++
++#endif
++
++#endif
+diff --git a/kernel/user-return-notifier.c b/kernel/user-return-notifier.c
+new file mode 100644
+index 0000000..530ccb8
+--- /dev/null
++++ b/kernel/user-return-notifier.c
+@@ -0,0 +1,46 @@
++
++#include <linux/user-return-notifier.h>
++#include <linux/percpu.h>
++#include <linux/sched.h>
++#include <linux/module.h>
++
++static DEFINE_PER_CPU(struct hlist_head, return_notifier_list);
++
++#define URN_LIST_HEAD per_cpu(return_notifier_list, raw_smp_processor_id())
++
++/*
++ * Request a notification when the current cpu returns to userspace.  Must be
++ * called in atomic context.  The notifier will also be called in atomic
++ * context.
++ */
++void user_return_notifier_register(struct user_return_notifier *urn)
++{
++	set_tsk_thread_flag(current, TIF_USER_RETURN_NOTIFY);
++	hlist_add_head(&urn->link, &URN_LIST_HEAD);
++}
++EXPORT_SYMBOL_GPL(user_return_notifier_register);
++
++/*
++ * Removes a registered user return notifier.  Must be called from atomic
++ * context, and from the same cpu registration occured in.
++ */
++void user_return_notifier_unregister(struct user_return_notifier *urn)
++{
++	hlist_del(&urn->link);
++	if (hlist_empty(&URN_LIST_HEAD))
++		clear_tsk_thread_flag(current, TIF_USER_RETURN_NOTIFY);
++}
++EXPORT_SYMBOL_GPL(user_return_notifier_unregister);
++
++/* Calls registered user return notifiers */
++void fire_user_return_notifiers(void)
++{
++	struct user_return_notifier *urn;
++	struct hlist_node *tmp1, *tmp2;
++	struct hlist_head *head;
++
++	head = &get_cpu_var(return_notifier_list);
++	hlist_for_each_entry_safe(urn, tmp1, tmp2, head, link)
++		urn->on_user_return(urn);
++	put_cpu_var();
++}
