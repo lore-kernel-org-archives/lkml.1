@@ -1,126 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbZKBUag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbZKBUbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932411AbZKBUag (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 15:30:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932319AbZKBUaf
+	id S932435AbZKBUbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 15:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbZKBUbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 15:30:35 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:40484 "EHLO gir.skynet.ie"
+	Mon, 2 Nov 2009 15:31:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35697 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932193AbZKBUae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 15:30:34 -0500
-Date: Mon, 2 Nov 2009 20:30:34 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
-	failures V2
-Message-ID: <20091102203034.GC22046@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091023165810.GA4588@bizet.domek.prywatny> <20091023211239.GA6185@bizet.domek.prywatny> <9ec2d7290910240646p75b93c68v6ea1648d628a9660@mail.gmail.com> <20091028114208.GA14476@bizet.domek.prywatny> <20091028115926.GW8900@csn.ul.ie> <20091030142350.GA9343@bizet.domek.prywatny>
+	id S1756259AbZKBUbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 15:31:48 -0500
+Message-ID: <4AEF4178.90907@redhat.com>
+Date: Mon, 02 Nov 2009 15:30:48 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091030142350.GA9343@bizet.domek.prywatny>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from crashing
+ function graph tracer
+References: <20091029205151.852744305@goodmis.org> <4AEA10EC.8000103@redhat.com> <20091102003723.GF5263@nowhere> <4AEEF47F.7090101@redhat.com> <20091102202201.GF4880@nowhere>
+In-Reply-To: <20091102202201.GF4880@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 03:23:50PM +0100, Karol Lewandowski wrote:
-> On Wed, Oct 28, 2009 at 11:59:26AM +0000, Mel Gorman wrote:
-> > On Wed, Oct 28, 2009 at 12:42:08PM +0100, Karol Lewandowski wrote:
-> > > On Sat, Oct 24, 2009 at 02:46:56PM +0100, Mel LKML wrote:
-> > > I've tested patches 1+2+3+4 in my normal usage scenario (do some work,
-> > > suspend, do work, suspend, ...) and it failed today after 4 days (== 4
-> > > suspend-resume cycles).
-> > > 
-> > > I'll test 1-5 now.
-> 
-> 2.6.32-rc5 with patches 1-5 fails too.
-> 
-> 
-> > Also, what was the behaviour of the e100 driver when suspending before
-> > this commit?
-> > 
-> > 6905b1f1a03a48dcf115a2927f7b87dba8d5e566: Net / e100: Fix suspend of devices that cannot be power managed
-> 
-> This was discussed before with e100 maintainers and Rafael.  Reverting
-> this patch didn't change anything.
-> 
+Frederic Weisbecker wrote:
+> On Mon, Nov 02, 2009 at 10:02:23AM -0500, Masami Hiramatsu wrote:
+>> Frederic Weisbecker wrote:
+>>> I'm not sure I've well understood how is performed the call to the jprobe
+>>> handler.
+>>> But if I understand well we have:
+>>>
+>>> 	func() {
+>>> 		int3() {
+>>> 			jprobe_handler() {
+>>> 				(-)
+>>> 				set ip after iret to user_handler()
+>>> 			}
+>>> 		}
+>>> 		user_handler() {
+>>> 			jprobe_return() {
+>>> 				(+)
+>>> 				int3() {
+>>> 					set ip after iret to func+...()
+>>> 				}
+>>> 			       |
+>>> 			       |
+>>> 			       |
+>>>                   <--------------
+>>>                   (execute the rest of func())
+>>> 	}
+>>>
+>>> If we replace (-) with pause_graph_tracing() and (+) with
+>>> unpause_graph_tracing(), this should do the trick...I hope.
+>>
+>> I'm not so sure about pause_graph_tracing(), however, it seems that
+>> int3() and jprobe_handler() already pushed on the stack of the
+>> func graph tracer at (-). If it's true, where are those entries
+>> popped up?
+>>
+>
+>
+> pause_graph_tracing() will disable the tracing for the current task
+> but it won't disable the address pop from stack.
+>
+> If the above jprobe scheme is right, the scenario will be:
+>
+>        func() {
+>                /* push func ret */
+>                int3() {
+>                        /* push do_trap ret */
+>                        jprobe_handler() {
+>                                /* push jprobe_handler ret */
+>                                pause_graph_tracing();
+>                                set ip after iret to user_handler()
+>                        } /* pop jprobe_handler ret */
+>                } /* pop do_trap ret */
+>                user_handler() {
+>                        jprobe_return() {
+>                                unpause_graph_tracing()
+>                                int3() {
+>                                       /* push do_trap ret */
+>                                        set ip after iret to func+...()
+>                                } /* pop do_trap ret */
+>                               |
+>                               |
+>                               |
+>                 <--------------
+>                 (execute the rest of func())
+>        } /* pop func ret */
+>
+>
+> Hmm?
 
-Does applying the following on top make any difference?
+Oh, I see. That should work. :-)
 
-==== CUT HERE ====
-PM: Shrink memory before suspend
+Thank you,
 
-This is a partial revert of c6f37f12197ac3bd2e5a35f2f0e195ae63d437de. It
-is an outside possibility for fixing the e100 bug where an order-5
-allocation is failing during resume. The commit notes that the shrinking
-of memory should be unnecessary but maybe it is in error.
+-- 
+Masami Hiramatsu
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 6f10dfc..4f6ae64 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -23,6 +23,9 @@ const char *const pm_states[PM_SUSPEND_MAX] = {
- 	[PM_SUSPEND_MEM]	= "mem",
- };
- 
-+/* This is just an arbitrary number */
-+#define FREE_PAGE_NUMBER (100)
-+
- static struct platform_suspend_ops *suspend_ops;
- 
- /**
-@@ -78,6 +81,7 @@ static int suspend_test(int level)
- static int suspend_prepare(void)
- {
- 	int error;
-+	unsigned int free_pages;
- 
- 	if (!suspend_ops || !suspend_ops->enter)
- 		return -EPERM;
-@@ -92,10 +96,24 @@ static int suspend_prepare(void)
- 	if (error)
- 		goto Finish;
- 
--	error = suspend_freeze_processes();
-+	if (suspend_freeze_processes()) {
-+		error = -EAGAIN;
-+		goto Thaw;
-+	}
-+
-+	free_pages = global_page_state(NR_FREE_PAGES);
-+	if (free_pages < FREE_PAGE_NUMBER) {
-+		pr_debug("PM: free some memory\n");
-+		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
-+		if (nr_free_pages() < FREE_PAGE_NUMBER) {
-+			error = -ENOMEM;
-+			printk(KERN_ERR "PM: No enough memory\n");
-+		}
-+	}
- 	if (!error)
- 		return 0;
- 
-+ Thaw:
- 	suspend_thaw_processes();
- 	usermodehelper_enable();
-  Finish:
+e-mail: mhiramat@redhat.com
+
