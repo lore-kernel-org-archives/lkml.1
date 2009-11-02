@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750924AbZKBFFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751378AbZKBFRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750924AbZKBFFs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 00:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZKBFFs
+	id S1751378AbZKBFRb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 00:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZKBFR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 00:05:48 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46098 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbZKBFFr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 00:05:47 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 2 Nov 2009 14:02:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Norbert Preining <preining@logic.at>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: OOM killer, page fault
-Message-Id: <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091102135640.93de7c2a.minchan.kim@barrios-desktop>
-References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at>
-	<20091102005218.8352.A69D9226@jp.fujitsu.com>
-	<20091102135640.93de7c2a.minchan.kim@barrios-desktop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 2 Nov 2009 00:17:28 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:47077 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751048AbZKBFR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 00:17:26 -0500
+Date: Mon, 2 Nov 2009 16:17:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: linux-next: percpu/kvm/tip tree build failure
+Message-Id: <20091102161722.eea4358d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,66 +28,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009 13:56:40 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+Hi all,
 
-> On Mon,  2 Nov 2009 13:24:06 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > Hi,
-> > 
-> > (Cc to linux-mm)
-> > 
-> > Wow, this is very strange log.
-> > 
-> > > Dear all,
-> > > 
-> > > (please Cc)
-> > > 
-> > > With 2.6.32-rc5 I got that one:
-> > > [13832.210068] Xorg invoked oom-killer: gfp_mask=0x0, order=0, oom_adj=0
-> > 
-> > order = 0
-> 
-> I think this problem results from 'gfp_mask = 0x0'.
-> Is it possible?
-> 
-> If it isn't H/W problem, Who passes gfp_mask with 0x0?
-> It's culpit. 
-> 
-> Could you add BUG_ON(gfp_mask == 0x0) in __alloc_pages_nodemask's head?
-> 
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-Maybe some code returns VM_FAULT_OOM by mistake and pagefault_oom_killer()
-is called. digging mm/memory.c is necessary...
+kernel/user-return-notifier.c: In function 'fire_user_return_notifiers':
+kernel/user-return-notifier.c:45: error: expected expression before ')' token
 
-I wonder why...now is this code
-===
-static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
-                unsigned long address, pte_t *page_table, pmd_t *pmd,
-                unsigned int flags, pte_t orig_pte)
-{
-        pgoff_t pgoff;
+Introduced by commit 7c68af6e32c73992bad24107311f3433c89016e2 ("core,
+x86: Add user return notifiers") from the tip and kvm trees but revealed
+by commit e0fdb0e050eae331046385643618f12452aa7e73 ("percpu: add __percpu
+for sparse") from the percpu tree.  Before that percpu tree commit,
+"put_cpu_var()" would compile without error (even though it really needs
+a parameter).
 
-        flags |= FAULT_FLAG_NONLINEAR;
+I have applied the following patch for today.
 
-	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
-                return 0;
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 2 Nov 2009 15:54:43 +1100
+Subject: [PATCH] x86: fix put_cpu_var invocation in user return notifiers code
 
-        if (unlikely(!(vma->vm_flags & VM_NONLINEAR))) {
-                /*
-                 * Page table corrupted: show pte and kill process.
-                 */
-                print_bad_pte(vma, address, orig_pte, NULL);
-                return VM_FAULT_OOM;
-        }
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ kernel/user-return-notifier.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-        pgoff = pte_to_pgoff(orig_pte);
-        return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
-}
-==
-Then, OOM...is this really OOM ?
+diff --git a/kernel/user-return-notifier.c b/kernel/user-return-notifier.c
+index 530ccb8..03e2d6f 100644
+--- a/kernel/user-return-notifier.c
++++ b/kernel/user-return-notifier.c
+@@ -42,5 +42,5 @@ void fire_user_return_notifiers(void)
+ 	head = &get_cpu_var(return_notifier_list);
+ 	hlist_for_each_entry_safe(urn, tmp1, tmp2, head, link)
+ 		urn->on_user_return(urn);
+-	put_cpu_var();
++	put_cpu_var(return_notifier_list);
+ }
+-- 
+1.6.5.2
 
-Thanks,
--Kame
 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
