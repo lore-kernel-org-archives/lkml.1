@@ -1,24 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375AbZKBKHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbZKBKKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754375AbZKBKHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 05:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZKBKH3
+	id S1754754AbZKBKKR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:10:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbZKBKHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 05:07:29 -0500
-Received: from cantor.suse.de ([195.135.220.2]:47274 "EHLO mx1.suse.de"
+	Mon, 2 Nov 2009 05:07:19 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58537 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754383AbZKBKHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 05:07:00 -0500
+	id S1754400AbZKBKHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 05:07:04 -0500
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org
 Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Jan Blunck <jblunck@suse.de>, Chris Mason <chris.mason@oracle.com>,
-       Christoph Hellwig <hch@lst.de>, Yan Zheng <zheng.yan@oracle.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Sage Weil <sage@newdream.net>,
-       linux-btrfs@vger.kernel.org
-Subject: [PATCH 12/27] BKL: Remove BKL from btrfs
-Date: Mon,  2 Nov 2009 11:04:52 +0100
-Message-Id: <1257156307-24175-13-git-send-email-jblunck@suse.de>
+       Jan Blunck <jblunck@suse.de>, Joel Becker <joel.becker@oracle.com>
+Subject: [PATCH 13/27] BKL: Remove BKL from configfs
+Date: Mon,  2 Nov 2009 11:04:53 +0100
+Message-Id: <1257156307-24175-14-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1257156307-24175-1-git-send-email-jblunck@suse.de>
 References: <1257156307-24175-1-git-send-email-jblunck@suse.de>
@@ -26,50 +23,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BKL is only used in get_sb. It is safe to remove it.
+BKL is only used in fill_super. It is safe to remove it.
+
+Since this filesystem uses get_sb_single(), fill_super is only called once.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- fs/btrfs/super.c |    8 +-------
- 1 files changed, 1 insertions(+), 7 deletions(-)
+ fs/configfs/mount.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
-diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index e5cd2cf..752a546 100644
---- a/fs/btrfs/super.c
-+++ b/fs/btrfs/super.c
-@@ -480,17 +480,13 @@ static int btrfs_get_sb(struct file_system_type *fs_type, int flags,
- 	fmode_t mode = FMODE_READ;
- 	int error = 0;
+diff --git a/fs/configfs/mount.c b/fs/configfs/mount.c
+index 5b2e06e..8421cea 100644
+--- a/fs/configfs/mount.c
++++ b/fs/configfs/mount.c
+@@ -71,8 +71,6 @@ static int configfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	struct inode *inode;
+ 	struct dentry *root;
  
 -	lock_kernel();
 -
- 	if (!(flags & MS_RDONLY))
- 		mode |= FMODE_WRITE;
- 
- 	error = btrfs_parse_early_options(data, mode, fs_type,
- 					  &subvol_name, &fs_devices);
--	if (error) {
+ 	sb->s_blocksize = PAGE_CACHE_SIZE;
+ 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+ 	sb->s_magic = CONFIGFS_MAGIC;
+@@ -89,7 +87,6 @@ static int configfs_fill_super(struct super_block *sb, void *data, int silent)
+ 		inc_nlink(inode);
+ 	} else {
+ 		pr_debug("configfs: could not get root inode\n");
 -		unlock_kernel();
-+	if (error)
- 		return error;
--	}
+ 		return -ENOMEM;
+ 	}
  
- 	error = btrfs_scan_one_device(dev_name, mode, fs_type, &fs_devices);
- 	if (error)
-@@ -559,7 +555,6 @@ static int btrfs_get_sb(struct file_system_type *fs_type, int flags,
- 	mnt->mnt_root = root;
- 
- 	kfree(subvol_name);
+@@ -97,14 +94,12 @@ static int configfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	if (!root) {
+ 		pr_debug("%s: could not get root dentry!\n",__func__);
+ 		iput(inode);
+-		unlock_kernel();
+ 		return -ENOMEM;
+ 	}
+ 	config_group_init(&configfs_root_group);
+ 	configfs_root_group.cg_item.ci_dentry = root;
+ 	root->d_fsdata = &configfs_root;
+ 	sb->s_root = root;
 -	unlock_kernel();
  	return 0;
- 
- error_s:
-@@ -568,7 +563,6 @@ error_close_devices:
- 	btrfs_close_devices(fs_devices);
- error_free_subvol_name:
- 	kfree(subvol_name);
--	unlock_kernel();
- 	return error;
  }
  
 -- 
