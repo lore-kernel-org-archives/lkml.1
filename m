@@ -1,128 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932172AbZKBTqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbZKBTzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932172AbZKBTqJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 14:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbZKBTqI
+	id S1756780AbZKBTzz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 14:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756495AbZKBTzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 14:46:08 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:53104 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754113AbZKBTqH (ORCPT
+	Mon, 2 Nov 2009 14:55:54 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:39713 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755381AbZKBTzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 14:46:07 -0500
+	Mon, 2 Nov 2009 14:55:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=d9n8q5966WFZW4q/BXq1hiiYSnyZWRB/PBdmhogVlYkP7lKePPRuf9/vyqqEYfSxlT
-         ct/64euW3J+TPJdx3GiZBBqceQDPcgojALpzeAZL5J0T8O2H+FxlDEanZKjhbKwG0cO7
-         B4ZxMChKRbiTtZGbTA1597wea3O7Bx0Z6vtVc=
+        h=sender:message-id:date:from:reply-to:organization:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to:x-age:x-location
+         :x-os:x-face:content-type:content-transfer-encoding;
+        b=uqTlwBasFT5YOkjPbR5pCnumdA9vrAizCMBlGNJvUEKqK1y9Kp92YzItyqq5XngaDb
+         iDAxaT2s//kMMlCQsG8x5k5GRnrxmBImZ2avAI/9OHRrvYywvRHO62CUr/RDpU4LGWhs
+         9Wa+ItbLaTvjCtaidncCa9PUHxe+UiR2LK3DU=
+Message-ID: <4AEF394A.4050102@gmail.com>
+Date: Mon, 02 Nov 2009 20:55:54 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+Organization: Home
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0911021620580.12138@localhost.localdomain>
-References: <alpine.LFD.2.00.0910230007030.3737@localhost.localdomain>
-	 <alpine.LFD.2.00.0911021620580.12138@localhost.localdomain>
-Date: Mon, 2 Nov 2009 20:46:11 +0100
-X-Google-Sender-Auth: 5f39f071ccb9d7a6
-Message-ID: <520f0cf10911021146i136af7bfg370a217185b5154c@mail.gmail.com>
-Subject: Re: [PATCH -rt] Updates-from-Jon-Masters-for-hwlat_detector.c.patch
-From: John Kacur <jkacur@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Jon Masters <jcm@redhat.com>,
-       linux-rt-users@vger.kernel.org, Clark Williams <williams@redhat.com>
-Content-Type: multipart/mixed; boundary=0016e6d648612bc72a047768a1ab
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>	 <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>	 <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>	 <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>	 <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>	 <2f11576a0911010529t688ed152qbb72c87c85869c45@mail.gmail.com>	 <alpine.DEB.2.00.0911020237440.13146@chino.kir.corp.google.com> <2f11576a0911020435n103538d0p9d2afed4d39b4726@mail.gmail.com>
+In-Reply-To: <2f11576a0911020435n103538d0p9d2afed4d39b4726@mail.gmail.com>
+X-Age: 25
+X-Location: Lovran, Croatia
+X-OS: Debian GNU/Linux
+X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e6d648612bc72a047768a1ab
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+KOSAKI Motohiro wrote:
 
-On Mon, Nov 2, 2009 at 4:43 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Hi,
->
-> On Fri, 23 Oct 2009, John Kacur wrote:
->> I took Jon Masters' latest hwlat_detector patch for upstream, and grabbe=
-d
->> the bits that aren't currently in -rt. The patch is fairly small.
->>
->> Please consider it for the next -rt release.
->
-> Not really.
->
->> diff --git a/drivers/misc/hwlat_detector.c b/drivers/misc/hwlat_detector=
-.c
->> index be6553f..7191e17 100644
->> --- a/drivers/misc/hwlat_detector.c
->> +++ b/drivers/misc/hwlat_detector.c
->> @@ -262,6 +262,8 @@ static int get_sample(void *unused)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Keep a running maximum ever recorded hard=
-ware latency */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (sample > data.max_sample)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 data.max_sample =3D sample;
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 wake_up(&data.wq); /* wake up reader(s) */
->> =A0 =A0 =A0 }
->>
->> =A0 =A0 =A0 ret =3D 0;
->> @@ -299,8 +301,6 @@ static int kthread_fn(void *unused)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_out;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
->>
->> - =A0 =A0 =A0 =A0 =A0 =A0 wake_up(&data.wq); /* wake up reader(s) */
->> -
->
-> This reverts -rt commit 5fc485f6341c177e9d5f641c6fb9e33ca465aa84.
->
-> CONFIG_DEBUG_SPINLOCK_SLEEP resp. CONFIG_DEBUG_PREEMPT will tell you
-> why this is a bad idea on -rt :)
->
-> Thanks,
->
-> =A0 =A0 =A0 =A0tglx
-> --
+> Oh, I'm sorry. I mesured with rss patch.
+> Then, I haven't understand what makes Xorg bad score.
+> 
+> Hmm...
+> Vedran,  Can you please post following command result?
+> 
+> # cat /proc/`pidof Xorg`/smaps
+> 
+> I hope to undestand the issue clearly before modify any code.
 
-Ugh. Thanks for catching that. To be honest not sure how it happened,
-so it must be my fault. :)
 
-Updated patch just adds the error checking from Jon Masters then,
-patched against -rt.
+No problem:
 
---0016e6d648612bc72a047768a1ab
-Content-Type: text/x-diff; charset=US-ASCII; 
-	name="0001-Updates-from-Jon-Masters-for-hwlat_detector.c.patch"
-Content-Disposition: attachment; 
-	filename="0001-Updates-from-Jon-Masters-for-hwlat_detector.c.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g1jn335r0
+http://pastebin.com/d66972025 (long)
 
-RnJvbSAwNjIxOTE3OGM2MzJkOWE5NDkwMjlhZGUxYTg1MDMzNjI5MzY1ZGJmIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBKb24gTWFzdGVycyA8amNtQGpvbm1hc3RlcnMub3JnPgpEYXRl
-OiBUaHUsIDIyIE9jdCAyMDA5IDE5OjMzOjU2ICswMjAwClN1YmplY3Q6IFtQQVRDSF0gVXBkYXRl
-cyBmcm9tIEpvbiBNYXN0ZXJzIGZvciBod2xhdF9kZXRlY3Rvci5jCgpTaWduZWQtb2ZmLWJ5OiBK
-b24gTWFzdGVycyA8amNtQGpvbm1hc3RlcnMub3JnPgpTaWduZWQtb2ZmLWJ5OiBKb2huIEthY3Vy
-IDxqa2FjdXJAcmVkaGF0LmNvbT4KLS0tCiBkcml2ZXJzL21pc2MvS2NvbmZpZyAgICAgICAgICB8
-ICAgIDIgKy0KIGRyaXZlcnMvbWlzYy9od2xhdF9kZXRlY3Rvci5jIHwgICAxMiArKysrKysrKysr
-LS0KIDIgZmlsZXMgY2hhbmdlZCwgMTEgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKCmRp
-ZmYgLS1naXQgYS9kcml2ZXJzL21pc2MvS2NvbmZpZyBiL2RyaXZlcnMvbWlzYy9LY29uZmlnCmlu
-ZGV4IDE1Y2Q2YmMuLjM1ZjQ0MWMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbWlzYy9LY29uZmlnCisr
-KyBiL2RyaXZlcnMvbWlzYy9LY29uZmlnCkBAIC05NSw3ICs5NSw3IEBAIGNvbmZpZyBJQk1fQVNN
-CiBjb25maWcgSFdMQVRfREVURUNUT1IKIAl0cmlzdGF0ZSAiVGVzdGluZyBtb2R1bGUgdG8gZGV0
-ZWN0IGhhcmR3YXJlLWluZHVjZWQgbGF0ZW5jaWVzIgogCWRlcGVuZHMgb24gREVCVUdfRlMKLQlz
-ZWxlY3QgUklOR19CVUZGRVIKKwlkZXBlbmRzIG9uIFJJTkdfQlVGRkVSCiAJZGVmYXVsdCBtCiAJ
-LS0taGVscC0tLQogCSAgQSBzaW1wbGUgaGFyZHdhcmUgbGF0ZW5jeSBkZXRlY3Rvci4gVXNlIHRo
-aXMgbW9kdWxlIHRvIGRldGVjdApkaWZmIC0tZ2l0IGEvZHJpdmVycy9taXNjL2h3bGF0X2RldGVj
-dG9yLmMgYi9kcml2ZXJzL21pc2MvaHdsYXRfZGV0ZWN0b3IuYwppbmRleCBiZTY1NTNmLi4wZmZi
-NDNhIDEwMDY0NAotLS0gYS9kcml2ZXJzL21pc2MvaHdsYXRfZGV0ZWN0b3IuYworKysgYi9kcml2
-ZXJzL21pc2MvaHdsYXRfZGV0ZWN0b3IuYwpAQCAtNjA3LDcgKzYwNywxMSBAQCBzdGF0aWMgc3Np
-emVfdCAgZGVidWdfZW5hYmxlX2Z3cml0ZShzdHJ1Y3QgZmlsZSAqZmlscCwKIAkJaWYgKCFlbmFi
-bGVkKQogCQkJZ290byB1bmxvY2s7CiAJCWVuYWJsZWQgPSAwOwotCQlzdG9wX2t0aHJlYWQoKTsK
-KwkJZXJyID0gc3RvcF9rdGhyZWFkKCk7CisJCWlmICgwICE9IGVycikgeworCQkJcHJpbnRrKEtF
-Uk5fRVJSIEJBTk5FUiAiY2Fubm90IHN0b3Aga3RocmVhZFxuIik7CisJCQlyZXR1cm4gLUVGQVVM
-VDsKKwkJfQogCQl3YWtlX3VwKCZkYXRhLndxKTsJCS8qIHJlYWRlcihzKSBzaG91bGQgcmV0dXJu
-ICovCiAJfQogdW5sb2NrOgpAQCAtMTE5NCw5ICsxMTk4LDEzIEBAIG91dDoKICAqLwogc3RhdGlj
-IHZvaWQgZGV0ZWN0b3JfZXhpdCh2b2lkKQogeworCWludCBlcnI7CisKIAlpZiAoZW5hYmxlZCkg
-ewogCQllbmFibGVkID0gMDsKLQkJc3RvcF9rdGhyZWFkKCk7CisJCWVyciA9IHN0b3Bfa3RocmVh
-ZCgpOworCQlpZiAoMCAhPSBlcnIpCisJCQlwcmludGsoS0VSTl9FUlIgQkFOTkVSICJjYW5ub3Qg
-c3RvcCBrdGhyZWFkXG4iKTsKIAl9CiAKIAlmcmVlX2RlYnVnZnMoKTsKLS0gCjEuNi4wLjYKCg==
---0016e6d648612bc72a047768a1ab--
+Xorg is from debian unstable.
+
+Regards,
+
+Vedran
+
+
