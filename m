@@ -1,28 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZKBAAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZKBAhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbZKBAAO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 19:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZKBAAN
+	id S1752842AbZKBAhu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 19:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZKBAht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 19:00:13 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56679 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752740AbZKBAAM (ORCPT
+	Sun, 1 Nov 2009 19:37:49 -0500
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:58856 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751682AbZKBAhs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 19:00:12 -0500
-Date: Mon, 2 Nov 2009 00:01:47 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Cc: =?ISO-8859-14?B?TeVucyBSdWxsZ+VyZA==?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-Message-ID: <20091102000147.424f104b@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.OSX.1.10.0911011540400.53392@caridad.local>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	<1257103201.2865.6.camel@chumley>
-	<yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Sun, 1 Nov 2009 19:37:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=wXUAYQmEP9oglZ2LkW045TKvwIbbuVQ/oh2IANPlUbGT/8darqi/trJ7acl80t5XDk
+         mcf2l0OTtPLNJtwaCwNWTgUCidq4xNMkubmDoujKSWOPtXUjelpyNOZaQnzvFhuJIUtB
+         bncoP5qjr76iWMIbj/64LIRhQTCpLr61kgHDI=
+Date: Mon, 2 Nov 2009 09:35:17 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCHv2 1/5] vmscan: separate sc.swap_cluster_max and
+ sc.nr_max_reclaim
+Message-Id: <20091102093517.32021780.minchan.kim@barrios-desktop>
+In-Reply-To: <20091101234614.F401.A69D9226@jp.fujitsu.com>
+References: <20091101234614.F401.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,94 +36,149 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lets go down the list of "benefits"
+Hi, Kosaki.
 
-- Separate downloads
-	- Doesn't work. The network usage would increase dramatically
-	  pulling all sorts of unneeded crap.
-	- Already solved by having a packaging system (in fact FatELF is
-	  basically obsoleted by packaging tools)
+On Mon, 2 Nov 2009 00:08:44 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-- Separate lib, lib32, lib64
-	- So you have one file with 3 files in it rather than three files
-	  with one file in them. Directories were invented for a reason
-	- Makes updates bigger
-	- Stops users only having 32bit libs for some packages
+> Currently, sc.scap_cluster_max has double meanings.
+> 
+>  1) reclaim batch size as isolate_lru_pages()'s argument
+>  2) reclaim baling out thresolds
+> 
+> The two meanings pretty unrelated. Thus, Let's separate it.
+> this patch doesn't change any behavior.
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> ---
+>  mm/vmscan.c |   21 +++++++++++++++------
+>  1 files changed, 15 insertions(+), 6 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index f805958..6a3eb9f 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -55,6 +55,9 @@ struct scan_control {
+>  	/* Number of pages freed so far during a call to shrink_zones() */
+>  	unsigned long nr_reclaimed;
+>  
+> +	/* How many pages shrink_list() should reclaim */
+> +	unsigned long nr_to_reclaim;
 
-- Third party packagers no longer have to publish multiple rpm/deb etc
-	- By vastly increasing download size
-	- By making updates vastly bigger
-	- Assumes data files are not dependant on binary (often not true)
-	- And is irrelevant really because 90% or more of the cost is
-	  testing
+If you try to divide meaning of swap_cluster_max, 
+How about changing 'swap_cluster_max', too?
 
-- You no longer need to use shell scripts and flakey logic to pick the
-  right binary ...
-	- Since the 1990s we've used package managers to do that instead.
-	  I just type "yum install bzflag", the rest is done for me.
+It has a meaning which represents 'batch size'. ;)
+I hope we change it in this chance.
 
-- The ELF OSABI for your system changes someday?
-	- We already handle that
+> +
+>  	/* This context's GFP mask */
+>  	gfp_t gfp_mask;
+>  
+> @@ -1585,6 +1588,7 @@ static void shrink_zone(int priority, struct zone *zone,
+>  	enum lru_list l;
+>  	unsigned long nr_reclaimed = sc->nr_reclaimed;
+>  	unsigned long swap_cluster_max = sc->swap_cluster_max;
+> +	unsigned long nr_to_reclaim = sc->nr_to_reclaim;
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  	int noswap = 0;
+>  
+> @@ -1634,8 +1638,7 @@ static void shrink_zone(int priority, struct zone *zone,
+>  		 * with multiple processes reclaiming pages, the total
+>  		 * freeing target can get unreasonably large.
+>  		 */
 
-- Ship a single shared library that provides bindings for a scripting
-  language and not have to worry about whether the scripting language
-  itself is built for the same architecture as your bindings. 
-	- Except if they don't overlap it won't run
+How about adding following comment or more good one.
+'kswapd doesn't bail out because it has 'MAX' nr_to_reclaim'.
 
-- Ship web browser plugins that work out of the box with multiple
-  platforms.
-	- yum install just works, and there is a search path in firefox
-	  etc
+> -		if (nr_reclaimed > swap_cluster_max &&
+> -			priority < DEF_PRIORITY && !current_is_kswapd())
+> +		if (nr_reclaimed > nr_to_reclaim && priority < DEF_PRIORITY)
+>  			break;
+>  	}
+>  
+> @@ -1733,6 +1736,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
+>  	struct zoneref *z;
+>  	struct zone *zone;
+>  	enum zone_type high_zoneidx = gfp_zone(sc->gfp_mask);
+> +	unsigned long writeback_threshold;
+>  
+>  	delayacct_freepages_start();
+>  
+> @@ -1768,7 +1772,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
+>  			}
+>  		}
+>  		total_scanned += sc->nr_scanned;
+> -		if (sc->nr_reclaimed >= sc->swap_cluster_max) {
+> +		if (sc->nr_reclaimed >= sc->nr_to_reclaim) {
+>  			ret = sc->nr_reclaimed;
+>  			goto out;
+>  		}
+> @@ -1780,8 +1784,8 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
+>  		 * that's undesirable in laptop mode, where we *want* lumpy
+>  		 * writeout.  So in laptop mode, write out the whole world.
+>  		 */
+> -		if (total_scanned > sc->swap_cluster_max +
+> -					sc->swap_cluster_max / 2) {
+> +		writeback_threshold = sc->nr_to_reclaim + sc->nr_to_reclaim / 2;
+> +		if (total_scanned > writeback_threshold) {
+>  			wakeup_flusher_threads(laptop_mode ? 0 : total_scanned);
+>  			sc->may_writepage = 1;
+>  		}
+> @@ -1827,6 +1831,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+>  		.gfp_mask = gfp_mask,
+>  		.may_writepage = !laptop_mode,
+>  		.swap_cluster_max = SWAP_CLUSTER_MAX,
+> +		.nr_to_reclaim = SWAP_CLUSTER_MAX,
+>  		.may_unmap = 1,
+>  		.may_swap = 1,
+>  		.swappiness = vm_swappiness,
+> @@ -1885,6 +1890,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
+>  		.may_unmap = 1,
+>  		.may_swap = !noswap,
+>  		.swap_cluster_max = SWAP_CLUSTER_MAX,
+> +		.nr_to_reclaim = SWAP_CLUSTER_MAX,
+>  		.swappiness = swappiness,
+>  		.order = 0,
+>  		.mem_cgroup = mem_cont,
+> @@ -1932,6 +1938,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+>  		.may_unmap = 1,
+>  		.may_swap = 1,
+>  
+		.swap_cluster_max = SWAP_CLUSTER_MAX,
+Or add comment in here. 
 
-- Ship kernel drivers for multiple processors in one file.
-	- Not useful see separate downloads
+'kswapd doesn't want to be bailed out while reclaim.'
 
-- Transition to a new architecture in incremental steps. 
-	- IFF the CPU supports both old and new
-	- and we can already do that
+> +		.nr_to_reclaim = ULONG_MAX,
+>  		.swappiness = vm_swappiness,
+>  		.order = order,
+>  		.mem_cgroup = NULL,
+> @@ -2549,7 +2556,9 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  		.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
+>  		.may_swap = 1,
+>  		.swap_cluster_max = max_t(unsigned long, nr_pages,
+> -					SWAP_CLUSTER_MAX),
+> +				       SWAP_CLUSTER_MAX),
+> +		.nr_to_reclaim = max_t(unsigned long, nr_pages,
+> +				       SWAP_CLUSTER_MAX),
+>  		.gfp_mask = gfp_mask,
+>  		.swappiness = vm_swappiness,
+>  		.order = order,
+> -- 
+> 1.6.2.5
+> 
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-- Support 64-bit and 32-bit compatibility binaries in one file. 
-	- Not useful as we've already seen
 
-- No more ia32 compatibility libraries! Even if your distro
-  doesn't make a complete set of FatELF binaries available, they can
-  still provide it for the handful of packages you need for 99% of 32-bit
-  apps you want to run on a 64-bit system. 
-
-	- Argument against FatELF - why waste the disk space if its rare ?
-
-- Have a CPU that can handle different byte orders? Ship one binary that
-  satisfies all configurations!
-
-	- Variant of the distribution "advantage" - same problem - its
-	  better to have two files, its all about testing anyway
-
-- Ship one file that works across Linux and FreeBSD (without a platform
-  compatibility layer on either of them). 
-
-	- Ditto
-
-- One hard drive partition can be booted on different machines with
-  different CPU architectures, for development and experimentation. Same
-  root file system, different kernel and CPU architecture. 
-
-	- Now we are getting desperate.
-
-- Prepare your app on a USB stick for sneakernet, know it'll work on
-  whatever Linux box you are likely to plug it into.
-
-	- No I don't because of the dependancies, architecture ordering
-	  of data files, lack of testing on each platform and the fact
-	  architecture isn't sufficient to define a platform
-
-- Prepare your app on a network share, know it will work with all
-  the workstations on your LAN. 
-
-	- Variant of the distribution idea, again better to have multiple
-	  files for updating and management, need to deal with
-	  dependancies etc. Waste of storage space.
-	- We have search paths, multiple mount points etc.
-
-So why exactly do we want FatELF. It was obsoleted in the early 1990s
-when architecture handling was introduced into package managers.
-
+-- 
+Kind regards,
+Minchan Kim
