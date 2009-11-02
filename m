@@ -1,35 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbZKBWQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbZKBWTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757149AbZKBWQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 17:16:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756940AbZKBWQ2
+	id S1757058AbZKBWTm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 17:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756940AbZKBWTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 17:16:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:50325 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756922AbZKBWQ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 17:16:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=L2TNtWYCqqsiKM8CImcg8HZZ6Fv2Lkavs+JB0FfBsRlzfYduXabTAj54u/ZZ9daHA+
-         Oe7rS3mygJa9hN2IWjr4R3m3VyGs5PmdPy7Ul7E8HSrnKWJqtLvWliAPzjfCvPDvKplg
-         p7xT+NbsBdTIEbbehux5XQCwjK1pcyuPLBMqQ=
-Subject: Re: ALPS touchpad with 4 directions button doesnt work as intended
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1257199967.3164.8.camel@localhost.localdomain>
-References: <1256955018.9681.23.camel@maxim-laptop>
-	 <20091102053834.GA3354@core.coreip.homeip.net>
-	 <1257182426.3682.2.camel@maxim-laptop>
-	 <20091102180024.GA3437@core.coreip.homeip.net>
-	 <1257199967.3164.8.camel@localhost.localdomain>
+	Mon, 2 Nov 2009 17:19:41 -0500
+Received: from gate.crashing.org ([63.228.1.57]:40886 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753058AbZKBWTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 17:19:41 -0500
+Subject: Re: Filtering bits in set_pte_at()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <Pine.LNX.4.64.0911021256330.32400@sister.anvils>
+References: <1256957081.6372.344.camel@pasglop>
+	 <Pine.LNX.4.64.0911021256330.32400@sister.anvils>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 03 Nov 2009 00:16:28 +0200
-Message-ID: <1257200188.3164.11.camel@localhost.localdomain>
+Date: Tue, 03 Nov 2009 09:19:27 +1100
+Message-ID: <1257200367.7907.50.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -37,64 +28,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-03 at 00:12 +0200, Maxim Levitsky wrote:
-> On Mon, 2009-11-02 at 10:00 -0800, Dmitry Torokhov wrote:
-> > On Mon, Nov 02, 2009 at 07:20:26PM +0200, Maxim Levitsky wrote:
-> > > On Sun, 2009-11-01 at 21:38 -0800, Dmitry Torokhov wrote: 
-> > > > Hi Maxim,
-> > > > 
-> > > > On Sat, Oct 31, 2009 at 04:10:18AM +0200, Maxim Levitsky wrote:
-> > > > > I have a acer 5720G laptop, and its touchpad (ALPS) has three buttons,
-> > > > > usual left/right, and middle button that can be pressed in 4 directions.
-> > > > > Up/down direction work fine, but left/right doesn't. This means that
-> > > > > left direction  produces middle button click, and right direction
-> > > > > doesn't work at all.
-> > > > > I took a look at source, and I see that driver doesn't even know about
-> > > > > such configuration.
-> > > > > 
-> > > > > Now I am sure its very easy to figure out what is send when no working
-> > > > > button is pressed, but I am a bit confused what BTN_* event to assign to
-> > > > > it, so it will work as horizontal scroll as intended.
-> > > > > And unassign middle button from other direction....
-> > > > > 
-> > > > 
-> > > > Synaptics driver maps multi-button to BTN_0...BTN_8 and it looks like
-> > > > synaptics X driver maps teh 4-button case by default to
-> > > > up/down/left/right scroll so I'd map ALPS the same.
-> > > > 
-> > > Thanks!
-> > > 
-> > > One question, should I expect some resistance because the button won't
-> > > work as middle button by default? (I am sure that in X its easy remap it
-> > > back)
-> > > 
+On Mon, 2009-11-02 at 13:27 +0000, Hugh Dickins wrote:
+> On Sat, 31 Oct 2009, Benjamin Herrenschmidt wrote:
+> 
+> > Hi folks !
 > > 
-> > I am pretty sure these kind of buttons allow 5 distinct presses - left,
-> > right, up, down and "straight" (which may be reported either with
-> > distinct packet or by reporting both up/down or left/right presses) so
-> > you don't have to loose the middle button. This is a speculation
-> > though...
+> > So I have a little problem on powerpc ... :-)
+> 
+> Thanks a lot for running this by us.
+
+Heh, I though you may have been bored :-)
+
+> I've not looked to see if there are more such issues in arch/powerpc
+> itself, but those instances you mention are the only ones I managed
+> to find: uses of update_mmu_cache() and that hugetlb_cow() one.
+
+Right, that's all I spotted so far
+
+> The hugetlb_cow() one involves not set_pte_at() but set_huge_pte_at(),
+> so you'd want to change that too?  And presumably set_pte_at_notify()?
+> It all seems a lot of tedium, when so very few places are interested
+> in the pte after they've set it.
+
+We need to change set_huge_pte_at() too. Currently, David fixed the
+problem in a local tree by making hugetlb_cow() re-read the PTE . 
+
+set_pte_at_notify() would probably be similar, I'm not too familiar with
+its usage scenario yet to be honest.
+
+> > What do you suggest we do here ? Among the options at hand:
 > > 
+> >  - Ugly but would probably "just work" with the last amount of changes:
+> > we could make set_pte_at() be a macro on powerpc that modifies it's PTE
+> > value argument :-) (I -did- warn it was ugly !)
 > 
-> Mine doesn't unfortunately, this is if I press it 'straight' I both feel
-> physicaly 4 different presses and it reports currently, 'back button'
-> 'forward button' and 'middle button' as I press it.
-> 
-> It is possible to implement emulation, but I think that pressing it
-> straight might also put some stress and damage it in long run.
-> 
-> 
-> I think that pressing left+right buttons will be enough for the
-> replacement. If not, xmodmap can be used to map each of the 4 buttons
-> (or all of them to middle one)
-> 
-> 
-> Best regards,
-> 	Maxim Levitsky
-> 
+> I'm not keen on that one :)
 
+Yeah. Me neither :-)
 
-Sorry,  forgot to CC lkml...
+> >  - Another one slightly less bad that would require more work but mostly
+> > mechanical arch header updates would be to make set_pte_at() return the
+> > new value of the PTE, and thus change the callsites to something like:
+> > 
+> > 	entry = set_pte_at(mm, addr, ptep, entry)
+> 
+> I prefer that, but it still seems more trouble than it's worth.
 
+Right. I was hoping you might have a better idea :-)
+
+> And though I prefer it to set_pte_at(mm, addr, ptep, &entry)
+> (which would anyway complicate many of the callsites), it might
+> unnecessarily increase the codesize for all architectures (depends
+> on whether gcc notices entry isn't used afterwards anyway).
+
+Macro or static inlines back to __set_pte_at(..., entry) in those archs
+would probably take care of avoiding the bloat but still a lot of churn.
+> >
+> >  - Any other idea ? We could use another PTE bit (_PAGE_HWEXEC), in
+> > fact, we used to, but we are really short on PTE bits nowadays and I
+> > freed that one up to get _PAGE_SPECIAL... _PAGE_EXEC is trivial to
+> > "recover" from ptep_set_access_flags() on an exec fault or from the VM
+> > prot.
+> 
+> No, please don't go ransacking your PTE for a sparish bit.
+
+Yeah, the whole exercise for me was initially to -save- PTE bits :-)
+
+> You're being a very good citizen to want to bring this so forcefully
+> to the attention of any user of set_pte_at(); but given how few care,
+> and the other such functions you'd want to change too, am I being
+> disgracefully lazy to suggest that you simply change the occasional
+> 
+> 		update_mmu_cache(vma, address, pte);
+> to
+> 		/* powerpc's set_pte_at might have adjusted the pte */
+> 		update_mmu_cache(vma, address, *ptep);
+> 
+> ?  Which would make no difference to those architectures whose
+> update_mmu_cache() is an empty macro.  And fix the mm/hugetlb.c
+> instance in a similar way?
+
+That would do fine. In fact, I've always been slightly annoyed by
+set_pte_at() not taking the PTE pointer for other reasons such as on
+64-K pages, we have a "hidden" part of the PTE that is at PTE address +
+32K, or we may want to get to the PTE page for some reason (some arch
+store things there) etc...
+
+IE. update_mmu_cache() would be more generally useful if it took the
+ptep instead of the pte. Of course, I'm sure some embedded archs are
+going to cry for the added load here ... 
+
+I like your idea. I'll look into doing a patch converting it and will
+post it here.
+
+Thanks !
+
+Cheers,
+Ben.
 
 
