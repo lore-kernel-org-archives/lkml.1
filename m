@@ -1,502 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZKBQ13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZKBQ2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911AbZKBQ13 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZKBQ12
+	id S1755857AbZKBQ2z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:28:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbZKBQ2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:27:28 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:56690 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755813AbZKBQ11 (ORCPT
+	Mon, 2 Nov 2009 11:28:54 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:42154 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755347AbZKBQ2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:27:27 -0500
-Message-ID: <4AEF086D.9010600@austin.ibm.com>
-Date: Mon, 02 Nov 2009 10:27:25 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 2 Nov 2009 11:28:53 -0500
+Date: Mon, 2 Nov 2009 16:28:39 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>, Antonio Ospite <ospite@studenti.unina.it>,
+       openezx-devel@lists.openezx.org, Samuel Ortiz <sameo@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Mike Rapoport <mike@compulab.co.il>, Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Using statically allocated memory for platform_data.
+Message-ID: <20091102162839.GD20341@fluff.org.uk>
+References: <20091102112316.16163f6a.ospite@studenti.unina.it>
+ <20091102150011.GB20341@fluff.org.uk>
+ <20091102150525.GB5785@n2100.arm.linux.org.uk>
+ <20091102152500.GD23772@trinity.fluff.org>
+ <20091102155231.GC20341@fluff.org.uk>
+ <20091102155625.GC5785@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6 v5] Kernel DLPAR Infrastructure
-References: <4AE8ADCF.6090104@austin.ibm.com>	 <4AE8AF4D.4030403@austin.ibm.com> <1256785731.26770.38.camel@pasglop>
-In-Reply-To: <1256785731.26770.38.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102155625.GC5785@n2100.arm.linux.org.uk>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Benjamin Herrenschmidt wrote:
-> On Wed, 2009-10-28 at 15:53 -0500, Nathan Fontenot wrote:
->> This patch provides the kernel DLPAR infrastructure in a new filed named
->> dlpar.c.  The functionality provided is for acquiring and releasing a resource
->> from firmware and the parsing of information returned from the
->> ibm,configure-connector rtas call.  Additionally this exports the pSeries
->> reconfiguration notifier chain so that it can be invoked when device tree 
->> updates are made.
->>
->> Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com> 
->> ---
+On Mon, Nov 02, 2009 at 03:56:25PM +0000, Russell King - ARM Linux wrote:
+> On Mon, Nov 02, 2009 at 03:52:31PM +0000, Ben Dooks wrote:
+> > On Mon, Nov 02, 2009 at 03:25:00PM +0000, Ben Dooks wrote:
+> > > On Mon, Nov 02, 2009 at 03:05:25PM +0000, Russell King - ARM Linux wrote:
+> > > > On Mon, Nov 02, 2009 at 03:00:11PM +0000, Ben Dooks wrote:
+> > > > > This looks like something is freeing stuff that it did not allocate in
+> > > > > the first place, which is IMHO bad. The call platform_device_alloc()
+> > > > > is setting platform_device_release() as the default release function
+> > > > > but platform_device_release() releases more than platform_device_alloc()
+> > > > > actually created.
+> > > > > 
+> > > > > My view is that platform_device_alloc()'s default release shouldn't
+> > > > > be freeing the platform data, and that using platform_device_add_data()
+> > > > > or platform_device_add_resources() should change either the behvaiour 
+> > > > > of platform_device_release() or it should change the pointer to a new
+> > > > > release function.
+> > > > 
+> > > > That doesn't work - how do those other functions (adding) know what data
+> > > > has also been added by other functions?  That can't work reliably.
+> > > 
+> > > You could wrapper platform device, and each of the add functions could
+> > > update it, but that would assume the platform device had been allocated
+> > > with platform_device_alloc().
+> > 
+> > Having had a look, all the current users of platform_device_add_data()
+> > are from a platform_alloc_device() created device. 
+> > 
+> > The number of calls to platform_device_add_resources() are many, but
+> > the ones I checked are from platform_alloc_device().
+> > 
+> > However your point being that these add calls may not be used on a
+> > device that has been created from platform_device_alloc() is one I
+> > overlooked.
 > 
-> Hi Nathan !
-> 
-> Finally I get to review this stuff :-)
-> 
+> I did not say that.  I said your idea of replacing the release function
+> on each _add() is impractical when you have multiple _add() functions.
 
-Thanks!
+Sorry, that was what I read into it.
 
->> +#define CFG_CONN_WORK_SIZE	4096
->> +static char workarea[CFG_CONN_WORK_SIZE];
->> +static DEFINE_SPINLOCK(workarea_lock);
-> 
-> So I'm not a huge fan of this workarea static. First a static is in
-> effect a global name (as far as System.map etc... are concerned) so it
-> would warrant a better name. Then, do we really want that 4K of BSS
-> taken even on platforms that don't do dlpar ? Any reason why you don't
-> just pop a free page with __get_free_page() inside of
-> configure_connector() ?
-> 
+As a note, this would be my proposed fix:
 
-I'm not either, having a static buffer and a lock feels like overkill
-for this.  I tried kmalloc, but that didn't work.  I'll try using
-__get_free_page.
-
->> +struct cc_workarea {
->> +	u32	drc_index;
->> +	u32	zero;
->> +	u32	name_offset;
->> +	u32	prop_length;
->> +	u32	prop_offset;
->> +};
->> +
->> +static struct property *parse_cc_property(char *workarea)
->> +{
->> +	struct property *prop;
->> +	struct cc_workarea *ccwa;
->> +	char *name;
->> +	char *value;
->> +
->> +	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
->> +	if (!prop)
->> +		return NULL;
->> +
->> +	ccwa = (struct cc_workarea *)workarea;
->> +	name = workarea + ccwa->name_offset;
->> +	prop->name = kzalloc(strlen(name) + 1, GFP_KERNEL);
->> +	if (!prop->name) {
->> +		kfree(prop);
->> +		return NULL;
->> +	}
->> +
->> +	strcpy(prop->name, name);
->> +
->> +	prop->length = ccwa->prop_length;
->> +	value = workarea + ccwa->prop_offset;
->> +	prop->value = kzalloc(prop->length, GFP_KERNEL);
->> +	if (!prop->value) {
->> +		kfree(prop->name);
->> +		kfree(prop);
->> +		return NULL;
->> +	}
->> +
->> +	memcpy(prop->value, value, prop->length);
->> +	return prop;
->> +}
->> +
->> +static void free_property(struct property *prop)
->> +{
->> +	kfree(prop->name);
->> +	kfree(prop->value);
->> +	kfree(prop);
->> +}
->> +
->> +static struct device_node *parse_cc_node(char *work_area)
->> +{
-> 
-> const char* maybe ?
-
-sure.
-
-> 
->> +	struct device_node *dn;
->> +	struct cc_workarea *ccwa;
->> +	char *name;
->> +
->> +	dn = kzalloc(sizeof(*dn), GFP_KERNEL);
->> +	if (!dn)
->> +		return NULL;
->> +
->> +	ccwa = (struct cc_workarea *)work_area;
->> +	name = work_area + ccwa->name_offset;
-> 
-> I'm wondering whether work_area should be a struct cc_workarea * in the
-> first place with a char data[] at the end, but that would mean probably
-> tweaking the offsets... no big deal, up to you.
->
-
-I'll look onto that.  Anything that makes this easier to understand is good.
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index ed156a1..302543e 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -141,16 +141,42 @@ void platform_device_put(struct platform_device *pdev)
+ }
+ EXPORT_SYMBOL_GPL(platform_device_put);
+ 
++static inline platform_object *to_platform_object(struct device *dev)
++{
++	return container_of(dev, struct platform_object, pdev.dev);
++}
++
++static void platform_device_release_all(struct device *dev)
++{
++	struct platform_object *pa = to_platform_object(dev);
++
++	kfree(pa->pdev.dev.platform_data);
++	kfree(pa->pdev.resource);
++	kfree(pa);
++}
++
+ static void platform_device_release(struct device *dev)
+ {
+-	struct platform_object *pa = container_of(dev, struct platform_object,
+-						  pdev.dev);
++	kfree(to_platform_object(dev));
++}
++
++static void platform_device_release_pdata(struct device *dev)
++{
++	struct platform_object *pa = to_platform_object(dev);
+ 
+ 	kfree(pa->pdev.dev.platform_data);
++	kfree(pa);
++}
++
++static void platform_device_release_res(struct device *dev)
++{
++	struct platform_object *pa = to_platform_object(dev);
++
+ 	kfree(pa->pdev.resource);
+ 	kfree(pa);
+ }
+ 
++
+ /**
+  * platform_device_alloc
+  * @name: base name of the device we're adding
+@@ -196,6 +222,11 @@ int platform_device_add_resources(struct platform_device *pdev,
+ 		memcpy(r, res, sizeof(struct resource) * num);
+ 		pdev->resource = r;
+ 		pdev->num_resources = num;
++
++		if (pdev->dev.release == platform_device_release)
++			pdev->dev.release = platform_device_release_res;
++		else if (pdev->dev.release ==  platform_device_release_pdata)
++			pdev->dev.release = platform_device_release_all;
+ 	}
+ 	return r ? 0 : -ENOMEM;
+ }
+@@ -218,6 +249,12 @@ int platform_device_add_data(struct platform_device *pdev, const void *data,
+ 
+ 	if (d) {
+ 		pdev->dev.platform_data = d;
++
++		if (pdev->dev.release == platform_device_release)
++			pdev->dev.release = platform_device_release_pdata;
++		else if (pdev->dev.release ==  platform_device_release_res)
++			pdev->dev.release = platform_device_release_all;
++
+ 		return 0;
+ 	}
+ 	return -ENOMEM;
 
  
->> +	dn->full_name = kzalloc(strlen(name) + 1, GFP_KERNEL);
->> +	if (!dn->full_name) {
->> +		kfree(dn);
->> +		return NULL;
->> +	}
->> +
->> +	strcpy(dn->full_name, name);
+> > Having a state machine that changed the release call from
+> > platform_device_release() to say platform_device_release_resources()
+> > or platform_device_release_all() and then platform_device_release_all()
+> > may be another way to do it.
 > 
-> kstrdup ?
+> The reason we have platform_device_add_data() is that people think that
+> the device data needs to persist for the lifetime of the device.  I
+> personally disagree with that - once you unregister the device, it's
+> guaranteed that device drivers will have been unregistered, so who's
+> going to use the platform data?
 
-yep, should have used kstrdup.
+That doesn't make any sense, in the current case of using the
+platform_device_alloc() and those calls the data is only living
+for the lifetime of the device, as the release call is tidying up
+the result.
 
-> 
->  .../...
-> 
->> +#define NEXT_SIBLING    1
->> +#define NEXT_CHILD      2
->> +#define NEXT_PROPERTY   3
->> +#define PREV_PARENT     4
->> +#define MORE_MEMORY     5
->> +#define CALL_AGAIN	-2
->> +#define ERR_CFG_USE     -9003
->> +
->> +struct device_node *configure_connector(u32 drc_index)
->> +{
-> 
-> It's a global exported function, I'd rather you call it
-> dlpar_configure_connector()
->
+platform_device_add_data() is often being used to create platform data
+from some stack based data or similar that isn't guarnateed to live
+beyond the liftime of the call that is creating the platform_device
+in the first place, let alone getting to the driver stage.
 
-ok.
- 
->> +	struct device_node *dn;
->> +	struct device_node *first_dn = NULL;
->> +	struct device_node *last_dn = NULL;
->> +	struct property *property;
->> +	struct property *last_property = NULL;
->> +	struct cc_workarea *ccwa;
->> +	int cc_token;
->> +	int rc;
->> +
->> +	cc_token = rtas_token("ibm,configure-connector");
->> +	if (cc_token == RTAS_UNKNOWN_SERVICE)
->> +		return NULL;
->> +
->> +	spin_lock(&workarea_lock);
->> +
->> +	ccwa = (struct cc_workarea *)&workarea[0];
->> +	ccwa->drc_index = drc_index;
->> +	ccwa->zero = 0;
-> 
-> Popping a free page with gfp (or just kmalloc'ing 4K) would avoid the
-> need for the lock too.
+The default release function would be doing the right thing if the
+data had been allocated on the fly by one of the subsequent calls
+after platform_device_alloc(), but there is no guarantee that these
+calls where used to create the data.
 
-yes, see comment at beginning.
+The problem comes when we already have the data copied somewhere, such
+as from an init-time board that has already done the necessary copying
+and this data is then being passed down to sub-drivers of an mfd
+device, which use platform_device_alloc() to create a new device.
 
-> 
->> +	rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
->> +	while (rc) {
->> +		switch (rc) {
->> +		case NEXT_SIBLING:
->> +			dn = parse_cc_node(workarea);
->> +			if (!dn)
->> +				goto cc_error;
->> +
->> +			dn->parent = last_dn->parent;
->> +			last_dn->sibling = dn;
->> +			last_dn = dn;
->> +			break;
->> +
->> +		case NEXT_CHILD:
->> +			dn = parse_cc_node(workarea);
->> +			if (!dn)
->> +				goto cc_error;
->> +
->> +			if (!first_dn)
->> +				first_dn = dn;
->> +			else {
->> +				dn->parent = last_dn;
->> +				if (last_dn)
->> +					last_dn->child = dn;
->> +			}
->> +
->> +			last_dn = dn;
->> +			break;
->> +
->> +		case NEXT_PROPERTY:
->> +			property = parse_cc_property(workarea);
->> +			if (!property)
->> +				goto cc_error;
->> +
->> +			if (!last_dn->properties)
->> +				last_dn->properties = property;
->> +			else
->> +				last_property->next = property;
->> +
->> +			last_property = property;
->> +			break;
->> +
->> +		case PREV_PARENT:
->> +			last_dn = last_dn->parent;
->> +			break;
->> +
->> +		case CALL_AGAIN:
->> +			break;
->> +
->> +		case MORE_MEMORY:
->> +		case ERR_CFG_USE:
->> +		default:
->> +			printk(KERN_ERR "Unexpected Error (%d) "
->> +			       "returned from configure-connector\n", rc);
->> +			goto cc_error;
->> +		}
->> +
->> +		rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
->> +	}
->> +
->> +	spin_unlock(&workarea_lock);
->> +	return first_dn;
->> +
->> +cc_error:
->> +	spin_unlock(&workarea_lock);
->> +
->> +	if (first_dn)
->> +		free_cc_nodes(first_dn);
->> +
->> +	return NULL;
->> +}
->> +
->> +static struct device_node *derive_parent(const char *path)
->> +{
->> +	struct device_node *parent;
->> +	char parent_path[128];
->> +	int parent_path_len;
->> +
->> +	parent_path_len = strrchr(path, '/') - path + 1;
->> +	strlcpy(parent_path, path, parent_path_len);
->> +
->> +	parent = of_find_node_by_path(parent_path);
->> +
->> +	return parent;
->> +}
-> 
-> This ...
-> 
->> +static int add_one_node(struct device_node *dn)
->> +{
->> +	struct proc_dir_entry *ent;
->> +	int rc;
->> +
->> +	of_node_set_flag(dn, OF_DYNAMIC);
->> +	kref_init(&dn->kref);
->> +	dn->parent = derive_parent(dn->full_name);
->> +
->> +	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
->> +					  PSERIES_RECONFIG_ADD, dn);
->> +	if (rc == NOTIFY_BAD) {
->> +		printk(KERN_ERR "Failed to add device node %s\n",
->> +		       dn->full_name);
->> +		return -ENOMEM; /* For now, safe to assume kmalloc failure */
->> +	}
->> +
->> +	of_attach_node(dn);
->> +
->> +#ifdef CONFIG_PROC_DEVICETREE
->> +	ent = proc_mkdir(strrchr(dn->full_name, '/') + 1, dn->parent->pde);
->> +	if (ent)
->> +		proc_device_tree_add_node(dn, ent);
->> +#endif
->> +
->> +	of_node_put(dn->parent);
->> +	return 0;
->> +}
-> 
->  ... and this ...
-> 
->> +int add_device_tree_nodes(struct device_node *dn)
->> +{
->> +	struct device_node *child = dn->child;
->> +	struct device_node *sibling = dn->sibling;
->> +	int rc;
->> +
->> +	dn->child = NULL;
->> +	dn->sibling = NULL;
->> +	dn->parent = NULL;
->> +
->> +	rc = add_one_node(dn);
->> +	if (rc)
->> +		return rc;
->> +
->> +	if (child) {
->> +		rc = add_device_tree_nodes(child);
->> +		if (rc)
->> +			return rc;
->> +	}
->> +
->> +	if (sibling)
->> +		rc = add_device_tree_nodes(sibling);
->> +
->> +	return rc;
->> +}
-> 
->  ... and this ...
-> 
->> +static int remove_one_node(struct device_node *dn)
->> +{
->> +	struct device_node *parent = dn->parent;
->> +	struct property *prop = dn->properties;
->> +
->> +#ifdef CONFIG_PROC_DEVICETREE
->> +	while (prop) {
->> +		remove_proc_entry(prop->name, dn->pde);
->> +		prop = prop->next;
->> +	}
->> +
->> +	if (dn->pde)
->> +		remove_proc_entry(dn->pde->name, parent->pde);
->> +#endif
->> +
->> +	blocking_notifier_call_chain(&pSeries_reconfig_chain,
->> +			    PSERIES_RECONFIG_REMOVE, dn);
->> +	of_detach_node(dn);
->> +	of_node_put(dn); /* Must decrement the refcount */
->> +
->> +	return 0;
->> +}
-> 
->  ... and this ...
-> 
->> +static int _remove_device_tree_nodes(struct device_node *dn)
->> +{
->> +	int rc;
->> +
->> +	if (dn->child) {
->> +		rc = _remove_device_tree_nodes(dn->child);
->> +		if (rc)
->> +			return rc;
->> +	}
->> +
->> +	if (dn->sibling) {
->> +		rc = _remove_device_tree_nodes(dn->sibling);
->> +		if (rc)
->> +			return rc;
->> +	}
->> +
->> +	rc = remove_one_node(dn);
->> +	return rc;
->> +}
-> 
->  ... repeat myself ...
-> 
->> +int remove_device_tree_nodes(struct device_node *dn)
->> +{
->> +	int rc;
->> +
->> +	if (dn->child) {
->> +		rc = _remove_device_tree_nodes(dn->child);
->> +		if (rc)
->> +			return rc;
->> +	}
->> +
->> +	rc = remove_one_node(dn);
->> +	return rc;
->> +}
-> 
->  ... should probably all go to something like drivers/of/dynamic.c or at
-> least for now arch/powerpc/kernel/of_dynamic.c along with everything
-> related to dynamically adding and removing nodes. I see that potentially
-> useful for more than just DLPAR (though DLPAR is the only user right
-> now) and should also all be prefixed with of_*
+> So we could just fix it by killing off platform_device_add_data() and
+> removing the kfree of the platform data, and ensuring that data marked
+> with __initdata either loses that attributation or is kmalloc+copied.
 
-I agree, there should be at least a powerpc generic implementation of these
-routines.  The reason I put them here is that I am doing some oddities with
-the next, child, and sibling pointers since they point to items not yet in
-the device tree.
+There are a number of places where this data isn't __initdata, and
+still needs to be copied, and then freed once the device has been
+removed.
 
-I saw that Grant Likely is doing updates to all of the of_* stuff right now,
-would it be ok to have these routines here, renamed as dlpar_*, and look
-to merge them in with Grant's updates when he finishes?
-  
-> 
->> +#define DR_ENTITY_SENSE		9003
->> +#define DR_ENTITY_PRESENT	1
->> +#define DR_ENTITY_UNUSABLE	2
->> +#define ALLOCATION_STATE	9003
->> +#define ALLOC_UNUSABLE		0
->> +#define ALLOC_USABLE		1
->> +#define ISOLATION_STATE		9001
->> +#define ISOLATE			0
->> +#define UNISOLATE		1
->> +
->> +int acquire_drc(u32 drc_index)
->> +{
->> +	int dr_status, rc;
->> +
->> +	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
->> +		       DR_ENTITY_SENSE, drc_index);
->> +	if (rc || dr_status != DR_ENTITY_UNUSABLE)
->> +		return -1;
->> +
->> +	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_USABLE);
->> +	if (rc)
->> +		return rc;
->> +
->> +	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
->> +	if (rc) {
->> +		rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
->> +		return rc;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +int release_drc(u32 drc_index)
->> +{
->> +	int dr_status, rc;
->> +
->> +	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
->> +		       DR_ENTITY_SENSE, drc_index);
->> +	if (rc || dr_status != DR_ENTITY_PRESENT)
->> +		return -1;
->> +
->> +	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, ISOLATE);
->> +	if (rc)
->> +		return rc;
->> +
->> +	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
->> +	if (rc) {
->> +		rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
->> +		return rc;
->> +	}
->> +
->> +	return 0;
->> +}
-> 
-> Both above should have a dlpar_* prefix
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-will do.
-
-> 
->> +static int pseries_dlpar_init(void)
->> +{
->> +	if (!machine_is(pseries))
->> +		return 0;
->> +
->> +	return 0;
->> +}
->> +device_initcall(pseries_dlpar_init);
-> 
-> What the point ? :-)
-
-Yeah, its a bit odd looking but later patches actually add code to the init routine
-to set up memory probe/release and cpu probe/release handlers.
-
-I'll look to add ifdef's around the initcall for cases where no work is to be done.
-
--Nathan Fontenot
-
-> 
-> Cheers
-> Ben.
-> 
+  'a smiley only costs 4 bytes'
