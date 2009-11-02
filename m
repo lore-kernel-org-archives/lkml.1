@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZKBK0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbZKBK3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbZKBK0y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 05:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZKBK0y
+	id S1754443AbZKBK3W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbZKBK3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 05:26:54 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36408 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754349AbZKBK0x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 05:26:53 -0500
-Date: Mon, 2 Nov 2009 11:26:54 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Jan Kara <jack@suse.cz>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@lst.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 04/27] ext2: Add ext2_sb_info mutex
-Message-ID: <20091102102654.GG31511@one.firstfloor.org>
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-5-git-send-email-jblunck@suse.de>
-Mime-Version: 1.0
+	Mon, 2 Nov 2009 05:29:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47599 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754264AbZKBK3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 05:29:20 -0500
+Date: Mon, 2 Nov 2009 11:28:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@redhat.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <tj@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: linux-next: percpu/kvm/tip tree build failure
+Message-ID: <20091102102830.GA3724@elte.hu>
+References: <20091102161722.eea4358d.sfr@canb.auug.org.au> <4AEEAA82.8070705@redhat.com> <20091102100735.GB16963@elte.hu> <4AEEB0AF.5000904@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257156307-24175-5-git-send-email-jblunck@suse.de>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <4AEEB0AF.5000904@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -762,6 +767,12 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
->  	sbi->s_sb_block = sb_block;
->  
->  	/*
-> +	 * mutex for protection of modifications of the superblock while being
-> +	 * write out by ext2_write_super() or ext2_sync_fs().
-> +	 */
-> +	mutex_init(&sbi->s_mutex);
 
-I didn't go over all the code paths in detail, but if you replace
-the BKL with a mutex that is hold over a longer write-out sleep
-period you potentially limit IO parallelism a lot.
+* Avi Kivity <avi@redhat.com> wrote:
 
-In this case since the BKL didn't protect over the sleep anyways it might
-be reasonable to drop it during the IO operation (and possibly if
-you're sure nothing else sleeps use a spin lock)
+> On 11/02/2009 12:07 PM, Ingo Molnar wrote:
+>>> Ingo, can you queue this on x86/entry?
+>>>      
+>> Already done, tested and pushed out.
+>
+> Usually there is an ack from tip-bot?
 
--Andi
+Yeah, the final, committed form of the patch (with small edits done in 
+99% of the cases) gets sent to the discussion thread on lkml and can be 
+reviewed (and double checked) there.
 
+<plug> We use the tip-bot mechanism to:
+
+ - increase transparency (every commit gets posted into the lkml thread 
+   it originates from),
+
+ - avoid patch-bombing/spamming lkml every week/month with new patches,
+
+ - it also makes the patch postings much more on-topic and easier to
+   ignore for those who are not interested in a discussion,
+
+ - it can also be used to fine-tune any workflow details - the specific
+   timings can be seen in the discussion, missed or incorrectly queued 
+   patches can be identified,
+
+ - new discussions/bugreports can be started based on that commit
+   notification, on lkml.
+
+Developers and maintainers involved in the process absolutely love it as 
+it visibly increases workflow reliability and transparency and increases 
+the information density on lkml - you might want to consider something 
+similar too, for kvm.git ;-)
+
+</plug>
+
+Should be in your mbox any minute.
+
+	Ingo
