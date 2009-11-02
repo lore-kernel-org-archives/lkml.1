@@ -1,125 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbZKBSwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZKBSvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756644AbZKBSwu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:52:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbZKBSwu
+	id S1756603AbZKBSvi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZKBSvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:52:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:35225 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756082AbZKBSwt (ORCPT
+	Mon, 2 Nov 2009 13:51:38 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41789 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755911AbZKBSvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:52:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=j6u6DNBy+eD91mv8Gu+kHSCI8FDqofjp0PSpaaY0LzADRo4keUbCq2Tlq6/4ZBOcmi
-         TowQ9MKXfyzF/HKWyZ0pf+2U3l5CtJxnqo09YqY/2Pr+qNqG0ndIxXKqxbhLjMao7SYk
-         p9imxJSD2X/QBvL4Lcr10pHeBN0Od0UPqibIs=
-Date: Mon, 2 Nov 2009 19:52:52 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
-Cc: laijs@cn.fujitsu.com, mingo@elte.hu, davem@davemloft.net,
-       akpm@linux-foundation.org, harvey.harrison@gmail.com,
-       linux list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 6/7] vsprintf: move local vars to block local vars
-	and remove unneeded ones
-Message-ID: <20091102185249.GB4880@nowhere>
-References: <b8bf37780911020926p2c9e0fccva255c003b563c3ed@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b8bf37780911020926p2c9e0fccva255c003b563c3ed@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 2 Nov 2009 13:51:37 -0500
+Date: Mon, 2 Nov 2009 18:53:15 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Ryan C. Gordon" <icculus@icculus.org>
+Cc: =?ISO-8859-14?B?TeVucyBSdWxsZ+VyZA==?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: FatELF patches...
+Message-ID: <20091102185315.6326e148@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.OSX.1.10.0911021057450.464@caridad.icculuslan>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+	<1257103201.2865.6.camel@chumley>
+	<yw1xy6mq0z2s.fsf@unicorn.mansr.com>
+	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
+	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
+	<alpine.OSX.1.10.0911021057450.464@caridad.icculuslan>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 03:26:48PM -0200, André Goddard Rosa wrote:
-> From 636fc10ec894c83ba3b73433fee6df94529bc930 Mon Sep 17 00:00:00 2001
-> From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-> Date: Sun, 1 Nov 2009 14:04:37 -0200
-> Subject: [PATCH v2 6/7] vsprintf: move local vars to block local vars
-> and remove unneeded ones
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=UTF-8
-> Content-Transfer-Encoding: 8bit
+> Sure, this doesn't work for everyone, but this list isn't meant to be a 
+
+You've not shown a single meaningful use case yet.
+
+> some of the same issues, they cause other issues. The fact that Debian is 
+> now talking about "multiarch" shows that they've experienced some of these 
+> problems, too, despite having a world-class package manager.
+
+No it means that Debian is finally catching up with rpm on this issue,
+where it has been solved for years.
+
 > 
-> It also decreases code size:
->    text    data     bss     dec     hex filename
->   15719       0       8   15727    3d6f lib/vsprintf.o-before
->   15703       0       8   15711    3d5f lib/vsprintf.o-after
+> > - Separate lib, lib32, lib64
+> > 	- So you have one file with 3 files in it rather than three files
+> > 	  with one file in them. Directories were invented for a reason
+> 
+> We covered this when talking about shell scripts.
 
+Without providing a justification
 
+> I'm sure, but I'm not sure the increase is a staggering amount. We're not 
+> talking about making all packages into FatELF binaries.
 
-Actually, moving variable scope from function local to block
-local is nice for code reviewing, it increases the code readability.
-And this is a more important impact than binary code size IMO.
+How will you jhandle cross package dependancies
 
+> > 	- Stops users only having 32bit libs for some packages
+> 
+> Is that a serious concern?
 
+Yes from a space perspective and a minimising updates perspective.
+
+> > - Third party packagers no longer have to publish multiple rpm/deb etc
+> > 	- By vastly increasing download size
+> > 	- By making updates vastly bigger
+> 
+> It's true that /bin/ls would double in size (although I'm sure at least 
+> the download saves some of this in compression). But how much of, say, 
+> Gnome or OpenOffice or Doom 3 is executable code? These things would be 
+> nowhere near "vastly" bigger.
+
+Guess what: all the data files for Doom and OpenOffice are already
+packaged separately as are many of the gnome ones, or automagically
+shared by the two rpm packages.
+
+> 
+> > 	- Assumes data files are not dependant on binary (often not true)
+> 
+> Turns out that /usr/sbin/hald's cache file was. That would need to be 
+> fixed, which is trivial, but in my virtual machine test I had it delete 
+> and regenerate the file on each boot as a fast workaround.
+> 
+> The rest of the Ubuntu install boots and runs. This is millions of lines 
+> of code that does not depend on the byte order, alignment, and word size 
+> for its data files.
+
+That you've noticed. But you've not done any formal testing with tens of
+thousands of users so you've not done more than the "hey mummy it boots"
+test (which is about one point over the Linus 'it might compile' stage)
  
-> @@ -1616,7 +1609,9 @@ int bstr_printf(char *buf, size_t size, const
-> char *fmt, const u32 *bin_buf)
->  			spec.precision = get_arg(int);
->  			break;
+> I don't claim to be an expert on the inner workings of every package you 
+> would find on a Linux system, but like you, I expected there would be a 
+> lot of things to fix. It turns out that "often not true" just turned out 
+> to actually _not_ be true at all.
+
+You need an expert on the inner workings of each package to review and
+test them. Fortunately that work is already done- by the rpm packagers
+for all the distros
+
+> > - The ELF OSABI for your system changes someday?
+> > 	- We already handle that
 > 
-> -		case FORMAT_TYPE_CHAR:
-> +		case FORMAT_TYPE_CHAR: {
-> +			char c;
-> +
->  			if (!(spec.flags & LEFT)) {
->  				while (--spec.field_width > 0) {
->  					if (str < end)
-> @@ -1634,11 +1629,11 @@ int bstr_printf(char *buf, size_t size, const
-> char *fmt, const u32 *bin_buf)
->  				++str;
->  			}
->  			break;
-> +		}
+> Do we? I grepped for OSABI in the 2.6.31 sources, and can't find anywhere, 
+> outside of my FatELF patches, where we check an ELF file's OSABI or OSABI 
+> version at all.
+
+ARM has migrated ABI at least once.
+
+> Where do we handle an ABI change gracefully? Am I misunderstanding the 
+> code?
+
+You add code for the migration as needed, in the distro
+
+> single point, but you can't see a scenario where this adds a benefit? Even 
+> in a world that's still running 32-bit web browsers on _every major 
+> operating system_ because some crucial plugins aren't 64-bit yet?
+
+Your distro must be out of date or a bit backward. Good ones thunk those
+or run them in a different process (which is a very good idea for quality
+reasons as well as security)
+
 > 
->  		case FORMAT_TYPE_STR: {
->  			const char *str_arg = args;
-> -			size_t len = strlen(str_arg);
-> -			args += len + 1;
-> +			args += strlen(str_arg) + 1;
->  			str = string(str, end, (char *)str_arg, spec);
->  			break;
->  		}
-> @@ -1655,6 +1650,10 @@ int bstr_printf(char *buf, size_t size, const
-> char *fmt, const u32 *bin_buf)
->  			++str;
->  			break;
+> > - Ship web browser plugins that work out of the box with multiple
+> >   platforms.
+> > 	- yum install just works, and there is a search path in firefox
+> > 	  etc
 > 
-> +		/*
-> +		 * Merging this handling with the above one increases code size!
-> +		 * Why, gcc, why?!
-> +		 */
->  		case FORMAT_TYPE_INVALID:
+> So it's better to have a thousand little unique solutions to the same 
+> problem? 
 
+We have one solution - package management. You want to add the extra one.
 
+> it doesn't change the fact that I downloaded the wrong nvidia drivers the 
+> other day because I accidentally grabbed the ia32 package instead of the 
+> amd64 one. So much for saving bandwidth.
 
-Please do this merge:
+You mean your package manager didn't do it for you ? Anyway kernel
+drivers are dependant on about 1500 variables and 1500! is a very very
+large FatELF binary so it won't work.
 
-@@ -1633,11 +1633,6 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
-                        break;
- 
-                case FORMAT_TYPE_PERCENT_CHAR:
--                       if (str < end)
--                               *str = '%';
--                       ++str;
--                       break;
--
-                case FORMAT_TYPE_INVALID:
-                        if (str < end)
-                                *str = '%';
+> Not really. compat_binfmt_elf will run legacy binaries on new systems, but 
+> not vice versa. The goal is having something that will let it work on both 
+> without having to go through a package manager infrastructure.
 
-We don't care that much about binary code size in vsprintf.c
-Code readability has a really higher priority over binary code size
-here.
+See binfmt_misc. In fact you can probably do your ELF hacks in userspace
+that way if you really must.
 
+> In a world where terrabyte hard drives are cheap consumer-level 
+> commodities, the tradeoff seems like a complete no-brainer to me.
 
-The rest looks good.
+Except that
+- we are moving away from rotating storage for primary media
+- flash still costs rather more
+- virtual machines mean that disk space is now a real cost again as is RAM
 
+> version. It's easier on me, I have other projects to work on, and too bad 
+> for you. Granted, the x86_64 version _works_ on Linux, but shipping it is 
+> a serious pain, so it just won't ship.
+
+Distro problem, in the open source world someone will package it.
+
+> That is anecdotal, and I apologize for that. But I'm not the only 
+> developer that's not in an apt repository, and all of these rebuttals are 
+> anecdotal: "I just use yum [...because I don't personally care about 
+> Debian users]."
+
+No. See yum/rpm demonstrates that it can be done right. Debian has fallen
+a bit behind on that issue. We know it can be done right, and that tells
+us that the Debian tools will eventually catch up and also do it right.
+
+You have a solution (quite a nicely programmed one) in search of a
+problem, and with patent concerns. That's a complete non-flier for the
+kernel. It's not a dumping ground for neat toys and it would be several
+gigabytes of code if it was.
+
+You are also ignoring the other inconvenient detail. The architecture
+selection used even by package managers is far more complex than i386 v
+x86_64. Some distros build i686, some i686 optimisation but without cmov,
+some i386, some install i386 or i686, others optimise for newer
+processors only and so on.
+
+Alan
