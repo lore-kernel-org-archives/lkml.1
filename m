@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbZKBKzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZKBK4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbZKBKzP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 05:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbZKBKzO
+	id S1754858AbZKBK4E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:56:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbZKBK4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 05:55:14 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38199 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754278AbZKBKzN (ORCPT
+	Mon, 2 Nov 2009 05:56:04 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:41276 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754302AbZKBK4D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 05:55:13 -0500
-Date: Mon, 2 Nov 2009 11:55:12 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: [PATCH 3/3] msm: Add memory map for HTC Dream
-Message-ID: <20091102105512.GA23559@elf.ucw.cz>
+	Mon, 2 Nov 2009 05:56:03 -0500
+Message-ID: <4AEEBAC6.7020308@gmail.com>
+Date: Mon, 02 Nov 2009 11:56:06 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: [net-next-2.6 PATCH RFC] TCPCT part 1d: generate Responder Cookie
+References: <4AEAC763.4070200@gmail.com> <4AED86AD.6010906@gmail.com> <4AEDCD7C.2010403@gmail.com> <4AEEB6D2.7090505@gmail.com>
+In-Reply-To: <4AEEB6D2.7090505@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 02 Nov 2009 11:56:06 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+William Allen Simpson a écrit :
+>
+> The (buggy?) syncookie code that I'm avoiding/replacing is:
+> 
+> static DEFINE_PER_CPU(__u32 [16 + 5 + SHA_WORKSPACE_WORDS],
+>               ipv4_cookie_scratch);
+> 
+> static u32 cookie_hash(__be32 saddr, __be32 daddr, __be16 sport, __be16
+> dport,
+>                u32 count, int c)
+> {
+>     __u32 *tmp = __get_cpu_var(ipv4_cookie_scratch);
+> 
+>     memcpy(tmp + 4, syncookie_secret[c], sizeof(syncookie_secret[c]));
+>     tmp[0] = (__force u32)saddr;
+>     tmp[1] = (__force u32)daddr;
+>     tmp[2] = ((__force u32)sport << 16) + (__force u32)dport;
+>     tmp[3] = count;
+>     sha_transform(tmp + 16, (__u8 *)tmp, tmp + 16 + 5);
+> 
+>     return tmp[17];
+> }
+> 
+> It appears to me that the operations could be interrupted at any time, and
+> the fairly expensive sha transform (or probably any of the assignments)
+> could be corrupted?
+> 
+> That is, cpu0 grabs a scratch area, copies some data into it, interrupts,
+> cpu0 comes along again with another packet, points into the same workspace,
+> mashes the data, while cpu1 completes the previous operation with the
+> old tmp pointer on the stack.
+> 
+> Worse, this is called twice, each time getting tmp, and mashing the data,
+> and at the same time others are calling it twice more for verification.
+> 
+> Since syncookies only occur under stress, the code isn't well tested, and
+> the only symptom would be the returned packet would be dropped after
+> failing to verify.  Since this only happens when lots of packets are
+> arriving, dropped packets probably aren't noticed.
+> 
+> However, that would be unacceptable for my code.
+>
 
-Add memory map to HTC Dream, so that boot can proceed further.
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+cookie_hash() runs in a non preemptable context. CPU cannot change under us.
 
---- linux-good//arch/arm/mach-msm/board-dream.c	2009-11-02 11:54:12.000000000 +0100
-+++ linux-dream-mainline/arch/arm/mach-msm/board-dream.c	2009-11-02 11:11:47.000000000 +0100
-@@ -21,6 +21,7 @@
- #include <asm/mach-types.h>
- #include <asm/mach/arch.h>
- #include <asm/mach/map.h>
-+#include <asm/setup.h>
- 
- #include <mach/board.h>
- #include <mach/hardware.h>
-@@ -44,6 +45,15 @@
- 	msm_init_irq();
- }
- 
-+static void __init trout_fixup(struct machine_desc *desc, struct tag *tags,
-+				char **cmdline, struct meminfo *mi)
-+{
-+	mi->nr_banks = 1;
-+	mi->bank[0].start = PHYS_OFFSET;
-+	mi->bank[0].node = PHYS_TO_NID(PHYS_OFFSET);
-+	mi->bank[0].size = (101*1024*1024);
-+}
-+
- static void __init trout_init(void)
- {
- 	platform_add_devices(devices, ARRAY_SIZE(devices));
-@@ -77,6 +87,7 @@
- 	.io_pg_offst	= ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
- #endif
- 	.boot_params	= 0x10000100,
-+	.fixup		= trout_fixup,
- 	.map_io		= trout_map_io,
- 	.init_irq	= trout_init_irq,
- 	.init_machine	= trout_init,
+(or else, we would not use __get_cpu_var(ipv4_cookie_scratch); )
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+And of course, each cpu gets its own scratch area, thanks to __get_cpu_var()
+
