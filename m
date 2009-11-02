@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbZKBPgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZKBPjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbZKBPgg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZKBPg3
+	id S1755459AbZKBPjL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:39:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZKBPjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:36:29 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36571 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755526AbZKBPg2 (ORCPT
+	Mon, 2 Nov 2009 10:39:10 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:34021 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755262AbZKBPjJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:36:28 -0500
-Date: Tue, 3 Nov 2009 00:35:31 +0900 (JST)
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCHv2 2/5] vmscan: Kill hibernation specific reclaim logic and unify it
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <4AEE0536.6020605@crca.org.au>
-References: <20091102000855.F404.A69D9226@jp.fujitsu.com> <4AEE0536.6020605@crca.org.au>
-Message-Id: <20091103002520.886C.A69D9226@jp.fujitsu.com>
+	Mon, 2 Nov 2009 10:39:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=RnlENrvM40JNAbkeA6qM6LLbduTV373ZPUDuACxteIYlxSrdObyR+AHfgfsyTSnEew
+         8J2sr/Wu1QLWRPZEyWi2SW2/HUX1+MCYojie4pFAYrEs27jWCD/zdqjtEbcp9X4Gu95J
+         oW+5ZXUzGlnfBO1d+qe4LbL5YNeEs2amE81lk=
+From: Diego Calleja <diegocg@gmail.com>
+To: "Ryan C. Gordon" <icculus@icculus.org>
+Subject: Re: FatELF patches...
+Date: Mon, 2 Nov 2009 16:40:13 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc5-00336-g8d5eb43; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <20091102000147.424f104b@lxorguk.ukuu.org.uk> <alpine.OSX.1.10.0911012023020.55434@caridad.local>
+In-Reply-To: <alpine.OSX.1.10.0911012023020.55434@caridad.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200911021640.14114.diegocg@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Lunes 02 Noviembre 2009 03:21:47 Ryan C. Gordon escribió:
+> FatELF solves different problems than package managers, and in the case of 
+> ia32 compatibility packages, it helps the package manager solve its 
+> problems better.
 
-Thank you for the reviewing :)
+Package managers can be modified to allow embeddeding a package inside of
+another package. That could allow shipping support for multiple architectures
+in a single package, and it could even do things that fatelf can't, like
+in the case of experimental packages that need other experimental
+dependencies: all of them could be packed in a single package, even with
+support for multiple architectures. Heck, it could even be a new kind of
+container that would allow packing .rpm and .debs for multiple distros
+together. And it wouldnt touch a single line of kernel code.
 
-> > 2) shrink_all_zone() try to shrink all pages at a time. but it doesn't works
-> >   fine on numa system.
-> >   example)
-> >     System has 4GB memory and each node have 2GB. and hibernate need 1GB.
-> > 
-> >     optimal)
-> >        steal 500MB from each node.
-> >     shrink_all_zones)
-> >        steal 1GB from node-0.
-> 
-> I haven't given much thought to numa awareness in hibernate code, but I
-> can say that the shrink_all_memory interface is woefully inadequate as
-> far as zone awareness goes. Since lowmem needs to be atomically restored
-> before we can restore highmem, we really need to be able to ask for a
-> particular number of pages of a particular zone type to be freed.
-
-Honestly, I am not suspend/hibernation expert. Can I ask why caller need to know
-per-zone number of freed pages information? if hibernation don't need highmem.
-following incremental patch prevent highmem reclaim perfectly. Is it enough?
-
-
----
- mm/vmscan.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index e6ea011..7fb3435 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2265,7 +2265,7 @@ unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
- {
- 	struct reclaim_state reclaim_state;
- 	struct scan_control sc = {
--		.gfp_mask = GFP_HIGHUSER_MOVABLE,
-+		.gfp_mask = GFP_KERNEL,
- 		.may_swap = 1,
- 		.may_unmap = 1,
- 		.may_writepage = 1,
--- 
-1.6.2.5
-
-
-
+So I don't think that fatelf is solving the problems of package managers,
+it's quite the opposite.
