@@ -1,131 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZKBQTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZKBQSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbZKBQTM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbZKBQTL
+	id S1755903AbZKBQSL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbZKBQSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:19:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53702 "EHLO hera.kernel.org"
+	Mon, 2 Nov 2009 11:18:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19609 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755797AbZKBQTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:19:09 -0500
-Date: Mon, 2 Nov 2009 16:17:58 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       ebiederm@xmission.com, garyhade@us.ibm.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, garyhade@us.ibm.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20091026230002.043281924@sbs-t61.sc.intel.com>
-References: <20091026230002.043281924@sbs-t61.sc.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/apic] x86: Remove local_irq_enable()/local_irq_disable() in fixup_irqs()
-Message-ID: <tip-5231a68614b94f60e8f6c56bc6e3d75955b9e75e@git.kernel.org>
-Git-Commit-ID: 5231a68614b94f60e8f6c56bc6e3d75955b9e75e
-X-Mailer: tip-git-log-daemon
+	id S1755542AbZKBQSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 11:18:07 -0500
+Date: Mon, 2 Nov 2009 18:18:09 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/11] Add shared memory hypercall to PV Linux guest.
+Message-ID: <20091102161809.GG27911@redhat.com>
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
+ <1257076590-29559-2-git-send-email-gleb@redhat.com>
+ <4AEECE2E.2050609@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4AEECE2E.2050609@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5231a68614b94f60e8f6c56bc6e3d75955b9e75e
-Gitweb:     http://git.kernel.org/tip/5231a68614b94f60e8f6c56bc6e3d75955b9e75e
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Mon, 26 Oct 2009 14:24:36 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 2 Nov 2009 15:56:37 +0100
+On Mon, Nov 02, 2009 at 02:18:54PM +0200, Avi Kivity wrote:
+> On 11/01/2009 01:56 PM, Gleb Natapov wrote:
+> >Add hypercall that allows guest and host to setup per cpu shared
+> >memory.
+> >
+> 
+> Better to set this up as an MSR (with bit zero enabling, bits 1-5
+> features, and 64-byte alignment).  This allows auto-reset on INIT
+> and live migration using the existing MSR save/restore
+> infrastructure.
+> 
+Hmm. Will do.
 
-x86: Remove local_irq_enable()/local_irq_disable() in fixup_irqs()
+> >  arch/x86/include/asm/kvm_host.h |    3 +
+> >  arch/x86/include/asm/kvm_para.h |   11 +++++
+> >  arch/x86/kernel/kvm.c           |   82 +++++++++++++++++++++++++++++++++++++++
+> >  arch/x86/kernel/setup.c         |    1 +
+> >  arch/x86/kernel/smpboot.c       |    3 +
+> >  arch/x86/kvm/x86.c              |   70 +++++++++++++++++++++++++++++++++
+> >  include/linux/kvm.h             |    1 +
+> >  include/linux/kvm_para.h        |    4 ++
+> >  8 files changed, 175 insertions(+), 0 deletions(-)
+> 
+> Please separate into guest and host patches.
+> 
+OK.
 
-To ensure that we handle all the pending interrupts (destined
-for this cpu that is going down) in the interrupt subsystem
-before the cpu goes offline, fixup_irqs() does:
+> >+#define KVM_PV_SHM_VERSION 1
+> 
+> versions = bad, feature bits = good
+> 
+I have both! Do you want me to drop version?
 
-	local_irq_enable();
-	mdelay(1);
-	local_irq_disable();
+> >+
+> >+#define KVM_PV_SHM_FEATURES_ASYNC_PF		(1<<  0)
+> >+
+> >+struct kvm_vcpu_pv_shm {
+> >+	__u64 features;
+> >+	__u64 reason;
+> >+	__u64 param;
+> >+};
+> >+
+> 
+> Some documentation for this?
+> 
+> Also, the name should reflect the pv pagefault use.  For other uses
+> we can register other areas.
+> 
+I wanted it to be generic, but I am fine with making it apf specific.
+It will allow to make it smaller too.
 
-Enabling interrupts is not a good thing as this cpu is already
-offline. So this patch replaces that logic with,
+> >  #define MMU_QUEUE_SIZE 1024
+> >
+> >@@ -37,6 +41,7 @@ struct kvm_para_state {
+> >  };
+> >
+> >  static DEFINE_PER_CPU(struct kvm_para_state, para_state);
+> >+static DEFINE_PER_CPU(struct kvm_vcpu_pv_shm *, kvm_vcpu_pv_shm);
+> 
+> Easier to put the entire structure here, not a pointer.
+OK.
 
-	mdelay(1);
-	check APIC_IRR bits
-	Retrigger the irq at the new destination if any interrupt has arrived
-	via IPI.
+> 
+> >+
+> >+static int kvm_pv_reboot_notify(struct notifier_block *nb,
+> >+				unsigned long code, void *unused)
+> >+{
+> >+	if (code == SYS_RESTART)
+> >+		on_each_cpu(kvm_pv_unregister_shm, NULL, 1);
+> >+	return NOTIFY_DONE;
+> >+}
+> >+
+> >+static struct notifier_block kvm_pv_reboot_nb = {
+> >+        .notifier_call = kvm_pv_reboot_notify,
+> >+};
+> 
+> Is this called on kexec, or do we need another hook?
+> 
+This was added specifically for kexec to work. It was called in my test,
 
-For IO-APIC level triggered interrupts, this retrigger IPI will
-appear as an edge interrupt. ack_apic_level() will detect this
-condition and IO-APIC RTE's remoteIRR is cleared using directed
-EOI(using IO-APIC EOI register) on Intel platforms and for
-others it uses the existing mask+edge logic followed by
-unmask+level.
+> >+static int kvm_pv_setup_shm(struct kvm_vcpu *vcpu, unsigned long gpa,
+> >+			    unsigned long size, unsigned long version,
+> >+			    unsigned long *ret)
+> >+{
+> >+	addr = gfn_to_hva(vcpu->kvm, gfn);
+> >+	if (kvm_is_error_hva(addr))
+> >+		return -EFAULT;
+> >+
+> >+	/* pin page with pv shared memory */
+> >+	down_read(&mm->mmap_sem);
+> >+	r = get_user_pages(current, mm, addr, 1, 1, 0,&vcpu->arch.pv_shm_page,
+> >+			   NULL);
+> >+	up_read(&mm->mmap_sem);
+> 
+> This fails if the memory area straddles a page boundary.  Aligning
+Good point.
 
-We can also remove mdelay() and then send spuriuous interrupts
-to new cpu targets for all the irqs that were handled previously
-by this cpu that is going offline. While it works, I have seen
-spurious interrupt messages (nothing wrong but still annoying
-messages during cpu offline, which can be seen during
-suspend/resume etc)
+> would solve this.  I prefer using put_user() though than a permanent
+> get_user_pages().
+> 
+I want to prevent it from been swapped out.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Acked-by: Gary Hade <garyhade@us.ibm.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-LKML-Reference: <20091026230002.043281924@sbs-t61.sc.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/irq.c |   32 ++++++++++++++++++++++++++++----
- 1 files changed, 28 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index b10a5e1..8a82728 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -281,7 +281,7 @@ EXPORT_SYMBOL_GPL(vector_used_by_percpu_irq);
- /* A cpu has been removed from cpu_online_mask.  Reset irq affinities. */
- void fixup_irqs(void)
- {
--	unsigned int irq;
-+	unsigned int irq, vector;
- 	static int warned;
- 	struct irq_desc *desc;
- 
-@@ -336,9 +336,33 @@ void fixup_irqs(void)
- 			printk("Cannot set affinity for irq %i\n", irq);
- 	}
- 
--	/* That doesn't seem sufficient.  Give it 1ms. */
--	local_irq_enable();
-+	/*
-+	 * We can remove mdelay() and then send spuriuous interrupts to
-+	 * new cpu targets for all the irqs that were handled previously by
-+	 * this cpu. While it works, I have seen spurious interrupt messages
-+	 * (nothing wrong but still...).
-+	 *
-+	 * So for now, retain mdelay(1) and check the IRR and then send those
-+	 * interrupts to new targets as this cpu is already offlined...
-+	 */
- 	mdelay(1);
--	local_irq_disable();
-+
-+	for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS; vector++) {
-+		unsigned int irr;
-+
-+		if (__get_cpu_var(vector_irq)[vector] < 0)
-+			continue;
-+
-+		irr = apic_read(APIC_IRR + (vector / 32 * 0x10));
-+		if (irr  & (1 << (vector % 32))) {
-+			irq = __get_cpu_var(vector_irq)[vector];
-+
-+			desc = irq_to_desc(irq);
-+			spin_lock(&desc->lock);
-+			if (desc->chip->retrigger)
-+				desc->chip->retrigger(irq);
-+			spin_unlock(&desc->lock);
-+		}
-+	}
- }
- #endif
+--
+			Gleb.
