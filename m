@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbZKBHmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZKBHoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbZKBHmi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 02:42:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZKBHmi
+	id S1754073AbZKBHoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 02:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbZKBHoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 02:42:38 -0500
-Received: from smtprelay06.ispgateway.de ([80.67.31.29]:39566 "EHLO
-	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbZKBHmh (ORCPT
+	Mon, 2 Nov 2009 02:44:17 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:56212 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753949AbZKBHoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 02:42:37 -0500
-Message-ID: <4AEE8D6F.60209@ladisch.de>
-Date: Mon, 02 Nov 2009 08:42:39 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 2 Nov 2009 02:44:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=O/XT96JEKm0CoLEtaZx1XoQ1PQJUFqj7QfKy5ac6QdQCkF1EK9pPUctVnVBkFA6+qt
+         BbUpBH0a4Tzm/30HIArhbvJTeGJZGSmh48Ar2eOeoP6IBzvsLy4PdcjdGbb0v6zoP1/l
+         Sm48wBBbRZmZ6sirW8CMb0PZQdg1gmvtNcclQ=
 MIME-Version: 1.0
-To: Dave Airlie <airlied@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Eric Anholt <eric@anholt.net>
-CC: dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] drm/i915: allocate framebuffer cmap
-References: <4AEE8CDD.10600@ladisch.de>
-In-Reply-To: <4AEE8CDD.10600@ladisch.de>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
+Date: Mon, 2 Nov 2009 15:44:22 +0800
+Message-ID: <b741c2440911012344n7a6f7241ma873abac2fc9507e@mail.gmail.com>
+Subject: [PATCH 0/3] Fix the 'current css_set' problem in debug subsystem
+From: Liu Aleaxander <aleaxander@gmail.com>
+To: menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Without an allocated colormap, FBIOGETCMAP fails.  This would make
-programs restore an all-black colormap ("links -g") or fail to work
-altogether ("mplayer -vo fbdev2").
+Hello all.
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
----
-Untested.
+(Sorry for the resending, it seems I opened the HTML encoding before)
 
---- linux-2.6/drivers/gpu/drm/i915/intel_fb.c
-+++ linux-2.6/drivers/gpu/drm/i915/intel_fb.c
-@@ -227,6 +227,10 @@ static int intelfb_create(struct drm_dev
- 
- 	fb->fbdev = info;
- 
-+	ret = fb_alloc_cmap(&info->cmap, 256, 0);
-+	if (ret)
-+		goto out_unpin;
-+
- 	par->intel_fb = intel_fb;
- 
- 	/* To allow resizeing without swapping buffers */
-@@ -270,6 +274,7 @@ int intelfb_remove(struct drm_device *de
- 		iounmap(info->screen_base);
- 		if (info->par)
- 			drm_fb_helper_free(&par->helper);
-+		fb_dealloc_cmap(&info->cmap);
- 		framebuffer_release(info);
- 	}
- 
+This a three-patch set to fix the 'current css_set' problem in debug
+subsystem of cgroup system. (well, in fact, it's a two-patch set; the
+third one just fixes a typo).
 
+Say I mount a cgroup fs in /cgroup, and here is the problem:
+$ cat debug.current_css_set_refcount
+268
+$ mkdir test
+$ cd test
+$ cat debug.curernt_css_set_refcount
+268
+
+$ echo $$ > tasks
+$ cat debug.current_css_set_refcount
+2
+$ cd ../
+$ cat debug.current_css_set_refcount
+2
+
+That means it always print the css_set_refcount of the cgroup that
+comprise the current task(bash, here), instead of the current cgroup
+whatever cgroup you are in. And this would be meaningless to put the
+same content in all the cgroups. So, to make it more meaningful, we
+should make it print the css_set_refcount of the cgroup you are
+currently in.
+
+Patch 1 adds a cgroup_first_css_set function to get the current
+css_set of one cgroup.
+Patch 2 fixes the problem.
+Patch 3 just fixes a typo.
+
+--
+regards
+Liu Aleaxander
