@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbZKBQUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZKBQM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017AbZKBQUv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:20:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZKBQUp
+	id S1755588AbZKBQM7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZKBQM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:20:45 -0500
-Received: from bee.hiwaay.net ([216.180.54.11]:17472 "EHLO bee.hiwaay.net"
+	Mon, 2 Nov 2009 11:12:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49519 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755840AbZKBQUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:20:42 -0500
-X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Nov 2009 11:20:42 EST
-Date: Mon, 2 Nov 2009 10:11:27 -0600
-From: Chris Adams <cmadams@hiwaay.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-Message-ID: <20091102161127.GA1432522@hiwaay.net>
-References: <dAPfP-5R6-1@gated-at.bofh.it> <dBOhH-uY-9@gated-at.bofh.it> <dBPdM-16Z-1@gated-at.bofh.it>
-Mime-Version: 1.0
+	id S1755389AbZKBQM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 11:12:58 -0500
+Date: Mon, 2 Nov 2009 17:12:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Gleb Natapov <gleb@redhat.com>
+Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
+Message-ID: <20091102161248.GB15423@elte.hu>
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com> <20091102092214.GB8933@elte.hu> <20091102160410.GF27911@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.OSX.1.10.0911011540400.53392@caridad.local>
-User-Agent: Mutt/1.4i
+In-Reply-To: <20091102160410.GF27911@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Once upon a time, Ryan C. Gordon <icculus@icculus.org> said:
->I wouldn't imagine this is the target audience for FatELF. For embedded 
->devices, just use the same ELF files you've always used.
 
-What _is_ the target audience?
+* Gleb Natapov <gleb@redhat.com> wrote:
 
-As I see it, there are three main groups of Linux consumers:
+> On Mon, Nov 02, 2009 at 10:22:14AM +0100, Ingo Molnar wrote:
+> > 
+> > * Gleb Natapov <gleb@redhat.com> wrote:
+> > 
+> > > diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> > > index f4cee90..14707dc 100644
+> > > --- a/arch/x86/mm/fault.c
+> > > +++ b/arch/x86/mm/fault.c
+> > > @@ -952,6 +952,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
+> > >  	int write;
+> > >  	int fault;
+> > >  
+> > > +	if (arch_handle_page_fault(regs, error_code))
+> > > +		return;
+> > > +
+> > 
+> > This patch is not acceptable unless it's done cleaner. Currently we 
+> > already have 3 callbacks in do_page_fault() (kmemcheck, mmiotrace, 
+> > notifier), and this adds a fourth one. Please consolidate them into a 
+> > single callback site, this is a hotpath on x86.
+> > 
+> This call is patched out by paravirt patching mechanism so overhead 
+> should be zero for non paravirt cases. [...]
 
-- embedded: No interest in this; adds significant bloat, generally
-  embedded systems don't allow random binaries anyway
+arch_handle_page_fault() isnt upstream yet - precisely what is the 
+instruction sequence injected into do_page_fault() in the patched-out 
+case?
 
-- enterprise distributions (e.g. Red Hat, SuSE): They have specific
-  supported architectures, with partner programs to support those archs.
-  If something is supported, they can support all archs with
-  arch-specific binaries.
+> [...] What do you want to achieve by consolidate them into single 
+> callback? [...]
 
-- community distributions (e.g. Ubuntu, Fedora, Debian): This would
-  greatly increase build infrastructure complexity, mirror disk space,
-  and download bandwidth, and (from a user perspective) slow down update
-  downloads significantly.
+Less bloat in a hotpath and a shared callback infrastructure.
 
-If you don't have buy-in from at least a large majority of one of these
-segments, this is a big waste.  If none of the above support it, it will
-not be used by any binary-only software distributors.
+> [...] I mean the code will still exist and will have to be executed on 
+> every #PF. Is the goal to move them out of line?
 
-Is any major distribution (enterprise or community) going to use this?
-If not, kill it now.
+The goal is to have a single callback site for all the users - which 
+call-site is patched out ideally - on non-paravirt too if needed. Most 
+of these callbacks/notifier-chains have are inactive most of the time.
 
--- 
-Chris Adams <cmadams@hiwaay.net>
-Systems and Network Administrator - HiWAAY Internet Services
-I don't speak for anybody but myself - that's enough trouble.
+I.e. a very low overhead 'conditional callback' facility, and a single 
+one - not just lots of them sprinkled around the code.
+
+	Ingo
