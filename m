@@ -1,110 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZKBR1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZKBR1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbZKBR1P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbZKBR1N
+	id S1756533AbZKBR1V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbZKBR1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:27:13 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:43316 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756253AbZKBR1K convert rfc822-to-8bit (ORCPT
+	Mon, 2 Nov 2009 12:27:20 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46716 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756505AbZKBR1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:27:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=Urk45cfEJ7QgQrGkfZT94nAXyKq60+wC+HtWJuw4hH59g0i4aaOyFUpA2YeQU6F6Cf
-         17sgQF77yr1FwCQmlecotM1hAqOwqOjcUyZ++Hdd80PnNnHb6I8AoNKQeEUJYaisF1do
-         JglxsCgzD5tU7701VHubTBcNoxB/NbKmPQiLc=
+	Mon, 2 Nov 2009 12:27:18 -0500
+Date: Mon, 2 Nov 2009 17:27:20 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+Cc: alsa-devel@alsa-project.org, linux-omap@vger.kernel.org,
+       sameo@linux.intel.com, linux-kernel@vger.kernel.org, tony@atomide.com
+Subject: Re: [PATCH 5/5] ASoC: TWL4030: Do not modify the APLL_CTL register
+Message-ID: <20091102172720.GA8546@rakim.wolfsonmicro.main>
+References: <1257165295-9352-1-git-send-email-peter.ujfalusi@nokia.com>
+ <1257165295-9352-2-git-send-email-peter.ujfalusi@nokia.com>
+ <1257165295-9352-3-git-send-email-peter.ujfalusi@nokia.com>
+ <1257165295-9352-4-git-send-email-peter.ujfalusi@nokia.com>
+ <1257165295-9352-5-git-send-email-peter.ujfalusi@nokia.com>
+ <1257165295-9352-6-git-send-email-peter.ujfalusi@nokia.com>
 MIME-Version: 1.0
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Mon, 2 Nov 2009 15:26:55 -0200
-Message-ID: <b8bf37780911020926p77ca30d1maa4384f21323adb@mail.gmail.com>
-Subject: [PATCH v2 7/7] vsprintf: factor out skip_space code in a separate 
-	function
-To: Frederic Weisbecker <fweisbec@gmail.com>, laijs@cn.fujitsu.com,
-       mingo@elte.hu, davem@davemloft.net, akpm@linux-foundation.org,
-       harvey.harrison@gmail.com, linux list <linux-kernel@vger.kernel.org>
-Cc: me <andre.goddard@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257165295-9352-6-git-send-email-peter.ujfalusi@nokia.com>
+X-Cookie: Humpty Dumpty was pushed.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 584d9bfc7c1d41b76a05655b4562b98fcbef6ee4 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Sun, 1 Nov 2009 14:09:06 -0200
-Subject: [PATCH v2 7/7] vsprintf: factor out skip_space code in a
-separate function
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+On Mon, Nov 02, 2009 at 02:34:55PM +0200, Peter Ujfalusi wrote:
+> APLL_CTL register is configured by the twl4030-codec MFD
+> driver.
+> Remove code, which makes changes in the APLL_CTL register,
+> and replace those with checks against the configured
+> audio_mclk configuration done in the MFD driver.
 
-It decreases code size:
-   text    data     bss     dec     hex filename
-  15703       0       8   15711    3d5f lib/vsprintf.o-before
-  15527       0       8   15535    3caf lib/vsprintf.o-after
+This all looks mostly OK.  It might be nice to combine this patch with
+the change to the MFD driver, simply because when the previous patch
+said "move" but didn't remove anything from the CODEC driver it seemed a
+bit surprising.  The MFD part of this is queued in ASoC ATM so it
+shouldn't cause cross tree issues.
 
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
----
- lib/vsprintf.c |   19 +++++++++++--------
- 1 files changed, 11 insertions(+), 8 deletions(-)
+> -	twl4030_write(codec, TWL4030_REG_APLL_CTL, apll_ctrl);
+> +	if ((freq / 1000) != twl4030->sysclk) {
+> +		dev_err(codec->dev,
+> +			"Mismatch in APLL infrequency %u (configred: %u)\n",
+> +			freq, twl4030->sysclk * 1000);
 
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 957e252..c3b19d7 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -1745,6 +1745,13 @@ EXPORT_SYMBOL_GPL(bprintf);
+Typos in the log message here (and similarly for the other DAI).
 
- #endif /* CONFIG_BINARY_PRINTF */
+> -	if (infreq != TWL4030_APLL_INFREQ_26000KHZ) {
+> +	if (twl4030->sysclk != 26000) {
+>  		printk(KERN_ERR "TWL4030 voice startup: "
+>  			"MCLK is not 26MHz, call set_sysclk() on init\n");
+>  		return -EINVAL;
 
-+static noinline const char *skip_space(const char *str)
-+{
-+	while (isspace(*str))
-+		++str;
-+	return str;
-+}
-+
- /**
-  * vsscanf - Unformat a buffer into a list of arguments
-  * @buf:	input buffer
-@@ -1766,10 +1773,8 @@ int vsscanf(const char *buf, const char *fmt,
-va_list args)
- 		 * white space, including none, in the input.
- 		 */
- 		if (isspace(*fmt)) {
--			while (isspace(*fmt))
--				++fmt;
--			while (isspace(*str))
--				++str;
-+			fmt = skip_space(fmt);
-+			str = skip_space(str);
- 		}
+Is that advice still appropriate if things are specified via the
+codec device now?
 
- 		/* anything that is not a conversion must match exactly */
-@@ -1839,8 +1844,7 @@ int vsscanf(const char *buf, const char *fmt,
-va_list args)
- 			if (field_width == -1)
- 				field_width = INT_MAX;
- 			/* first, skip leading white space in buffer */
--			while (isspace(*str))
--				str++;
-+			str = skip_space(str);
+> @@ -2233,6 +2215,7 @@ static int __devinit twl4030_codec_probe(struct platform_device *pdev)
+>  	twl4030_codec = codec;
+>  
+>  	/* Set the defaults, and power up the codec */
+> +	twl4030->sysclk = twl4030_codec_get_mclk() / 1000;
+>  	twl4030_init_chip(codec);
+>  	codec->bias_level = SND_SOC_BIAS_OFF;
+>  	twl4030_set_bias_level(codec, SND_SOC_BIAS_STANDBY);
 
- 			/* now copy until next white space */
- 			while (*str && !isspace(*str) && field_width--)
-@@ -1882,8 +1886,7 @@ int vsscanf(const char *buf, const char *fmt,
-va_list args)
- 		/* have some sort of integer conversion.
- 		 * first, skip white space in buffer.
- 		 */
--		while (isspace(*str))
--			str++;
-+		str = skip_space(str);
-
- 		digit = *str;
- 		if (is_sign && digit == '-')
--- 
-1.6.5.2.140.g5f809
+twl4030_codec_get_mclk() feels like it ought to take a parameter saying
+which twl4030, though the chances of having multiple twl4030s in one
+system are remote so it's not a real issue.
