@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZKBLN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbZKBLdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZKBLN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 06:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbZKBLN5
+	id S1754464AbZKBLdP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 06:33:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZKBLdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 06:13:57 -0500
-Received: from outbound.icp-qv1-irony-out5.iinet.net.au ([203.59.1.105]:30202
-	"EHLO outbound.icp-qv1-irony-out5.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754398AbZKBLN4 (ORCPT
+	Mon, 2 Nov 2009 06:33:14 -0500
+Received: from proxy.DResearch.DE ([87.193.137.100]:37331 "EHLO
+	mail.dresearch.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754134AbZKBLdN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 06:13:56 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAANO7krLzn0N/2dsb2JhbADaV4Q5BIFidA
-X-IronPort-AV: E=Sophos;i="4.44,666,1249228800"; 
-   d="scan'208";a="53876496"
-Message-ID: <4AEEBEF1.8050807@themaw.net>
-Date: Mon, 02 Nov 2009 19:13:53 +0800
-From: Ian Kent <raven@themaw.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Mon, 2 Nov 2009 06:33:13 -0500
+X-Greylist: delayed 1197 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Nov 2009 06:33:13 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Jan Blunck <jblunck@suse.de>
-CC: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, Jeff Moyer <jmoyer@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, autofs@linux.kernel.org
-Subject: Re: [PATCH 10/27] BKL: Remove BKL from autofs4
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-11-git-send-email-jblunck@suse.de>
-In-Reply-To: <1257156307-24175-11-git-send-email-jblunck@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: Patch: Fix userland build failure in linux/if_tunnel.h
+Date: Mon, 2 Nov 2009 12:15:38 +0100
+Message-ID: <69E6C70090A0A14498CC98FAE5E06B6E3CFA6B@hiob.intern.dresearch.de>
+In-Reply-To: <20091102135750.436a7b54@emcraft.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Patch: Fix userland build failure in linux/if_tunnel.h
+Thread-Index: AcpbrWgq24k6l2bUQ+e8NTQ1z6Jceg==
+References: <4AEDCBA6.7040206@dresearch.de> <20091102135750.436a7b54@emcraft.com>
+From: "Sledz, Steffen" <sledz@DResearch.DE>
+To: "Sergei Poselenov" <sposelenov@emcraft.com>
+Cc: <wd@denx.de>, <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Blunck wrote:
-> BKL is only used in fill_super. It is safe to remove it.
+Hello Sergei, hello other maintainers,
 
-Yes, I think so too.
-Of course this will make co-coordinating the rename of autofs4 to autofs
-a bit more painful, ;)
+> > i'm working for the OpenEmbedded project and we hit the same busybox
+> > problem you mentioned in <http://patchwork.kernel.org/patch/31164/>.
+> > 
+> > It doesn't look like you got much feedback on you patch suggestion.
+> > Did it made it's way to the kernel sources? Or where there any
+> > objections on it?
 
-> 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-Acked-by: Ian Kent <raven@themaw.net>
+> Hm, I received a confirmation, that my fix was applied
+> http://www.spinics.net/lists/netdev/msg103860.html
 
-> ---
->  fs/autofs4/inode.c |    4 ----
->  1 files changed, 0 insertions(+), 4 deletions(-)
-> 
-> diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-> index 3adaba9..69c8142 100644
-> --- a/fs/autofs4/inode.c
-> +++ b/fs/autofs4/inode.c
-> @@ -323,8 +323,6 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
->  	struct autofs_sb_info *sbi;
->  	struct autofs_info *ino;
->  
-> -	lock_kernel();
-> -
->  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
->  	if (!sbi)
->  		goto fail_unlock;
-> @@ -420,7 +418,6 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
->  	 * Success! Install the root dentry now to indicate completion.
->  	 */
->  	s->s_root = root;
-> -	unlock_kernel();
->  	return 0;
->  	
->  	/*
-> @@ -442,7 +439,6 @@ fail_free:
->  	kfree(sbi);
->  	s->s_fs_info = NULL;
->  fail_unlock:
-> -	unlock_kernel();
->  	return -EINVAL;
->  }
->  
+No, i think it didn't. This confirmation is related to a patch from
+Joe Perches to the MAINTAINERS file.
+
+> However, it indeed didn't find their way into the mainline.
+> I have no idea why, received no objections.
+
+What are the maintainers saying?
+
+Steffen
 
