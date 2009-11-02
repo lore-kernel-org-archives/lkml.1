@@ -1,98 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbZKBTAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbZKBSvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbZKBTAM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 14:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932293AbZKBTAK
+	id S1756650AbZKBSvu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:51:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbZKBSvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 14:00:10 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:45513 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932267AbZKBTAI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 14:00:08 -0500
-Date: Mon, 2 Nov 2009 13:48:44 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
-       Luciano Coelho <luciano.coelho@nokia.com>
-Subject: Re: linux-next: Tree for November 2 (wireless/wl1271)
-Message-ID: <20091102184843.GK14046@tuxdriver.com>
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au> <4AEF1E7F.50306@oracle.com> <20091102184449.GJ14046@tuxdriver.com>
+	Mon, 2 Nov 2009 13:51:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39040 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756621AbZKBSvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:51:47 -0500
+Date: Mon, 2 Nov 2009 19:51:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
+	external to a process (v7)
+Message-ID: <20091102185137.GA28803@elte.hu>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091012161342.GA32088@hmsreliant.think-freely.org> <20091012201304.GG32088@hmsreliant.think-freely.org> <20091020005214.GA8886@localhost.localdomain> <20091102152520.GG23776@elte.hu> <20091102175407.GE4075@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091102184449.GJ14046@tuxdriver.com>
+In-Reply-To: <20091102175407.GE4075@hmsreliant.think-freely.org>
 User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Helps if I actually Cc: Luca...
 
-On Mon, Nov 02, 2009 at 01:44:49PM -0500, John W. Linville wrote:
-> On Mon, Nov 02, 2009 at 10:01:35AM -0800, Randy Dunlap wrote:
-> > Stephen Rothwell wrote:
-> > > Hi all,
-> > > 
-> > > Changes since 20091030:
-> > 
-> > 
-> > wl1271 build fails when CONFIG_INET=n.
-> > Should this driver depend on INET?
-> > 
-> > Why does this driver, unlike all other wireless drivers,
-> > want to use register_inetaddr_notifier()?
-> > 
-> > wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
-> > wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
-> 
-> Yeah, that driver is doing some filtering based on IPv4.
-> 
-> Luca, is that necessary?  If so, then we need a patch like the one below...?
-> 
-> John
-> 
-> From ba823accfad68151d80503ff5fb04c049c9eadc2 Mon Sep 17 00:00:00 2001
-> From: John W. Linville <linville@tuxdriver.com>
-> Date: Mon, 2 Nov 2009 13:43:32 -0500
-> Subject: [PATCH] wl1271: depend on INET
-> 
-> wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
-> wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
-> 
-> Driver is doing some filtering based on IP addresses...
-> 
-> Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> ---
->  drivers/net/wireless/wl12xx/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/wl12xx/Kconfig b/drivers/net/wireless/wl12xx/Kconfig
-> index 33de7fa..785e024 100644
-> --- a/drivers/net/wireless/wl12xx/Kconfig
-> +++ b/drivers/net/wireless/wl12xx/Kconfig
-> @@ -42,6 +42,7 @@ config WL1251_SDIO
->  config WL1271
->  	tristate "TI wl1271 support"
->  	depends on WL12XX && SPI_MASTER && GENERIC_HARDIRQS
-> +	depends on INET
->  	select FW_LOADER
->  	select CRC7
->  	---help---
-> -- 
-> 1.6.2.5
-> 
-> -- 
-> John W. Linville		Someday the world will need a hero, and you
-> linville@tuxdriver.com			might be all we have.  Be ready.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+* Neil Horman <nhorman@tuxdriver.com> wrote:
 
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+> > Have you ensured that no rlimit gets propagated during task init 
+> > into some other value - under the previously correct assumption that 
+> > rlimits dont change asynchronously under the feet of tasks?
+> 
+> I've looked, and the only place that I see the rlim array getting 
+> copied is via copy_signal when we're in the clone path.  The entire 
+> rlim array is copied from old task_struct to new task_struct under the 
+> protection of the current->group_leader task lock, which I also hold 
+> when updating via sys_setprlimit, so I think we're safe in this case.
+
+I mean - do we set up any data structure based on a particular rlimit, 
+that can get out of sync with the rlimit being updated?
+
+A prominent example would be the stack limit - we base address layout 
+decisions on it. Check arch/x86/mm/mmap.c. RLIM_INFINITY has a special 
+meaning plus we also set mmap_base() based on the rlim.
+
+Also, there appears to be almost no security checks in the new syscall! 
+We look up a PID but that's it - this code will allow unprivileged users 
+to lower various rlimits of system daemons - as if it were their own 
+limit. That's a rather big security hole.
+
+	Ingo
