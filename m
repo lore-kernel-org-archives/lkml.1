@@ -1,150 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZKBPyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZKBP4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbZKBPyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbZKBPyL
+	id S1755630AbZKBP4F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:56:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbZKBP4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:54:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:18890 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755593AbZKBPyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:54:09 -0500
-Date: Mon, 2 Nov 2009 17:54:10 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/11] Handle asynchronous page fault in a PV guest.
-Message-ID: <20091102155410.GE27911@redhat.com>
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
- <1257076590-29559-4-git-send-email-gleb@redhat.com>
- <4AEED2C6.6030508@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AEED2C6.6030508@redhat.com>
+	Mon, 2 Nov 2009 10:56:05 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36182 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755333AbZKBP4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:56:03 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+K2slxbRSKrvkMVZKY9j8/2VYvdET3y0vyzuCEr1
+	rZ3bdFhqMXl3nI
+Subject: Re: [Bug 12309] Large I/O operations result in slow performance
+ and high iowait times
+From: Mike Galbraith <efault@gmx.de>
+To: Thomas Pilarski <thomas.pi@arcor.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091101134207.b97e4f5f.akpm@linux-foundation.org>
+References: <20091101134207.b97e4f5f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 02 Nov 2009 16:56:04 +0100
+Message-Id: <1257177364.10173.23.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 02:38:30PM +0200, Avi Kivity wrote:
-> On 11/01/2009 01:56 PM, Gleb Natapov wrote:
-> >Asynchronous page fault notifies vcpu that page it is trying to access
-> >is swapped out by a host. In response guest puts a task that caused the
-> >fault to sleep until page is swapped in again. When missing page is
-> >brought back into the memory guest is notified and task resumes execution.
-> >
-> >diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
-> >index 90708b7..61e2aa3 100644
-> >--- a/arch/x86/include/asm/kvm_para.h
-> >+++ b/arch/x86/include/asm/kvm_para.h
-> >@@ -52,6 +52,9 @@ struct kvm_mmu_op_release_pt {
-> >
-> >  #define KVM_PV_SHM_FEATURES_ASYNC_PF		(1<<  0)
-> >
-> >+#define KVM_PV_REASON_PAGE_NP 1
-> >+#define KVM_PV_REASON_PAGE_READY 2
-> 
-> _NOT_PRESENT would improve readability.
-> 
-> >+static void apf_task_wait(struct task_struct *tsk, u64 token)
-> >  {
-> >+	u64 key = hash_64(token, KVM_TASK_SLEEP_HASHBITS);
-> >+	struct kvm_task_sleep_head *b =&async_pf_sleepers[key];
-> >+	struct kvm_task_sleep_node n, *e;
-> >+	DEFINE_WAIT(wait);
-> >+
-> >+	spin_lock(&b->lock);
-> >+	e = _find_apf_task(b, token);
-> >+	if (e) {
-> >+		/* dummy entry exist ->  wake up was delivered ahead of PF */
-> >+		hlist_del(&e->link);
-> >+		kfree(e);
-> >+		spin_unlock(&b->lock);
-> >+		return;
-> >+	}
-> >+
-> >+	n.token = token;
-> >+	init_waitqueue_head(&n.wq);
-> >+	hlist_add_head(&n.link,&b->list);
-> >+	spin_unlock(&b->lock);
-> >+
-> >+	for (;;) {
-> >+		prepare_to_wait(&n.wq,&wait, TASK_UNINTERRUPTIBLE);
-> >+		if (hlist_unhashed(&n.link))
-> >+			break;
-> 
-> Don't you need locking here?  At least for the implied memory barriers.
-> 
-May be memory barrier will be enough. Will look at it.
 
-> >+		schedule();
-> >+	}
-> >+	finish_wait(&n.wq,&wait);
-> >+
-> >+	return;
-> >+}
-> >+
-> >+static void apf_task_wake(u64 token)
-> >+{
-> >+	u64 key = hash_64(token, KVM_TASK_SLEEP_HASHBITS);
-> >+	struct kvm_task_sleep_head *b =&async_pf_sleepers[key];
-> >+	struct kvm_task_sleep_node *n;
-> >+
-> >+	spin_lock(&b->lock);
-> >+	n = _find_apf_task(b, token);
-> >+	if (!n) {
-> >+		/* PF was not yet handled. Add dummy entry for the token */
-> >+		n = kmalloc(sizeof(*n), GFP_ATOMIC);
-> >+		if (!n) {
-> >+			printk(KERN_EMERG"async PF can't allocate memory\n");
+> --- Comment #412 from Thomas Pilarski <thomas.pi@arcor.de>  2009-11-01 21:28:24 ---
+> Created an attachment (id=23618)
+>  --> (http://bugzilla.kernel.org/attachment.cgi?id=23618)
+> Simple sleeper test case
 > 
-> Worrying.  We could have an emergency pool of one node per cpu, and
-> disable apf if we use it until it's returned.  But that's a lot of
-> complexity for an edge case, so a simpler solution would be welcome.
+> As this bug occurs more permanent while working in an virtual machine or while
+> using java and I still think, that's this is a process scheduler bug (or
+> something related). Here another test case, which shows the suspected
+> behaviour. As there are many system calls while using a virtual machine, I have
+> tries to find an equal test. The test case just sleeps for 1__s and measures the
+> time difference of the usleep operation. I am using such many of the usleep
+> operations, as the problems does not occur deterministic and I tried to catch
+> as many as possibly occurrences. 
 > 
-Currently this code can't trigger since "wake up" is always sent on the
-same vcpu as "not present", but I don't want this implementation detail
-to be part of guest/host interface. Idea you've described can be easy
-to implement. Will look into it.
+> I have run this test case on three machines. The first one was a Core2 Duo with
+> a first generation SDD (OCZ Core Series) with a poor write performance and on a
+> Ubuntu kernel 2.6.31-14-generic. The partitions are block aligned. I have run
+> this test, while my wife was using firefox. Every time, she was submitting
+> something and firefox is using sqlite for writing the history, there was a high
+> latency for the sleep test.
+> 
+> Timediff    7629094:   16.80ms Total:  61.12ms
+> Timediff    7629100:   18.82ms Total:  93.68ms
+> Timediff    7629101:   19.96ms Total: 113.54ms
+> Timediff    7629102:   19.98ms Total: 133.43ms
+> Timediff    7629103:   19.97ms Total: 153.31ms
+> Timediff    7629104:   20.00ms Total: 173.24ms
+> Timediff    7629105:   19.96ms Total: 193.09ms
+> Timediff    7629106:   20.02ms Total: 213.02ms
+> Timediff    7629107:   19.94ms Total: 232.86ms
+> Timediff    7636162:   16.40ms Total:  34.44ms
+> Timediff    7636164:   19.90ms Total:  64.00ms
+> 
+> While the duration of 100 usleep should be somewhere between 10ms and 20ms, 10
+> usleep(1) takes more than 200ms. This behaviour is reproducible. 
 
-> >+int kvm_handle_pf(struct pt_regs *regs, unsigned long error_code)
-> >+{
-> >+	u64 reason, token;
-> >  	struct kvm_vcpu_pv_shm *pv_shm =
-> >  		per_cpu(kvm_vcpu_pv_shm, smp_processor_id());
-> >
-> >  	if (!pv_shm)
-> >-		return;
-> >+		return 0;
-> >+
-> >+	reason = pv_shm->reason;
-> >+	pv_shm->reason = 0;
-> >+
-> >+	token = pv_shm->param;
-> >+
-> >+	switch (reason) {
-> >+	default:
-> >+		return 0;
-> >+	case KVM_PV_REASON_PAGE_NP:
-> >+		/* real page is missing. */
-> >+		apf_task_wait(current, token);
-> >+		break;
-> >+	case KVM_PV_REASON_PAGE_READY:
-> >+		apf_task_wake(token);
-> >+		break;
-> >+	}
-> 
-> Ah, reason is not a bitmask but an enumerator.  __u32 is more
-> friendly to i386 in that case.
-> 
-OK. Will need padding for 64 bit host case.
+Can you please try the latest -rc?  I spent the day trying to coax a
+latency spike out of -tip, including thumping disk with dd, mysql+oltp
+rw test et al, and failed.
 
-> Much of the code here is arch independent and would work well on
-> non-x86 kvm ports.  But we can always lay the burden of moving it on
-> the non-x86 maintainers.
-> 
-> -- 
-> error compiling committee.c: too many arguments to function
+	-Mike
 
---
-			Gleb.
