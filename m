@@ -1,79 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZKBUdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbZKBUgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZKBUdS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 15:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZKBUdS
+	id S1756826AbZKBUgz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 15:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbZKBUgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 15:33:18 -0500
-Received: from khc.piap.pl ([195.187.100.11]:54059 "EHLO khc.piap.pl"
+	Mon, 2 Nov 2009 15:36:54 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:56446 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756751AbZKBUdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 15:33:17 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: david@lang.hm
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Ryan C. Gordon" <icculus@icculus.org>,
-       =?utf-8?Q?M=C3=A5ns_Rullg=C3=A5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	<1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
-	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
-	<alpine.OSX.1.10.0911012023020.55434@caridad.local>
-	<20091102091611.60dfeea1@lxorguk.ukuu.org.uk>
-	<alpine.DEB.2.00.0911020936500.12321@asgard.lang.hm>
-	<m3eioghf9n.fsf@intrepid.localdomain>
-	<alpine.DEB.2.00.0911021205540.12321@asgard.lang.hm>
-Date: Mon, 02 Nov 2009 21:33:20 +0100
-In-Reply-To: <alpine.DEB.2.00.0911021205540.12321@asgard.lang.hm>
-	(david@lang.hm's message of "Mon, 2 Nov 2009 12:11:39 -0800 (PST)")
-Message-ID: <m3aaz4hdkf.fsf@intrepid.localdomain>
+	id S1756779AbZKBUgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 15:36:53 -0500
+Date: Mon, 2 Nov 2009 20:36:55 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Frans Pop <elendil@planet.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 3/3] vmscan: Force kswapd to take notice faster when
+	high-order watermarks are being hit
+Message-ID: <20091102203654.GD22046@csn.ul.ie>
+References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <20091028124756.7af44b6b.akpm@linux-foundation.org> <20091102160534.GA22046@csn.ul.ie> <200911021832.59035.elendil@planet.nl> <20091102173837.GB22046@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091102173837.GB22046@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm writes:
+On Mon, Nov 02, 2009 at 05:38:38PM +0000, Mel Gorman wrote:
+> On Mon, Nov 02, 2009 at 06:32:54PM +0100, Frans Pop wrote:
+> > On Monday 02 November 2009, Mel Gorman wrote:
+> > > vmscan: Help debug kswapd issues by counting number of rewakeups and
+> > > premature sleeps
+> > >
+> > > There is a growing amount of anedotal evidence that high-order atomic
+> > > allocation failures have been increasing since 2.6.31-rc1. The two
+> > > strongest possibilities are a marked increase in the number of
+> > > GFP_ATOMIC allocations and alterations in timing. Debugging printk
+> > > patches have shown for example that kswapd is sleeping for shorter
+> > > intervals and going to sleep when watermarks are still not being met.
+> > >
+> > > This patch adds two kswapd counters to help identify if timing is an
+> > > issue. The first counter kswapd_highorder_rewakeup counts the number of
+> > > times that kswapd stops reclaiming at one order and restarts at a higher
+> > > order. The second counter kswapd_slept_prematurely counts the number of
+> > > times kswapd went to sleep when the high watermark was not met.
+> > 
+> > What testing would you like done with this patch?
+> > 
+> 
+> Same reproduction as before except post what the contents of
+> /proc/vmstat were after the problem was triggered.
+> 
 
->> In terms on disk space on distro TFTP servers only. You'll need to
->> transfer more, both from user's and distro's POV (obviously). This one
->> simple fact alone is more than enough to forget the FatELF.
->
-> it depends on if there is only one arch being downloaded ot not.
+In the event there is a positive count for kswapd_slept_prematurely after
+the error is produced, can you also check if the following patch makes a
+difference and what the contents of vmstat are please? It alters how kswapd
+behaves and when it goes to sleep.
 
-Well, from user's POV it may get close if the user downloads maybe 5
-different archs out of all supported by the distro. Not very typical
-I guess.
+Thanks
 
-> it could be considerably cheaper for mirroring bandwidth.
+==== CUT HERE ====
+vmscan: Have kswapd sleep for a short interval and double check it should be asleep
 
-Maybe (though it can be solved with the existing techniques).
-What does now count - bandwidth consumed by users or by mirrors?
+After kswapd balances all zones in a pgdat, it goes to sleep. In the event
+of no IO congestion, kswapd can go to sleep very shortly after the high
+watermark was reached. If there are a constant stream of allocations from
+parallel processes, it can mean that kswapd went to sleep too quickly and
+the high watermark is not being maintained for sufficient length time.
 
-> Even if Alan
-> is correct and distros have re-packaged everything so that the arch
-> independant stuff is really in seperate packages, most
-> mirroring/repository systems keep each distro release/arch in a
-> seperate directory tree, so each of these arch-independant things gets
-> copied multiple times.
+This patch makes kswapd go to sleep as a two-stage process. It first
+tries to sleep for HZ/10. If it is woken up by another process or the
+high watermark is no longer met, it's considered a premature sleep and
+kswapd continues work. Otherwise it goes fully to sleep.
 
-If it was a (serious) problem (I think it's not), it could be easily
-solved. Think rsync, sha1|256-based mirroring stuff etc.
+This adds more counters to distinguish between fast and slow breaches of
+watermarks. A "fast" premature sleep is one where the low watermark was
+hit in a very short time after kswapd going to sleep. A "slow" premature
+sleep indicates that the high watermark was breached after a very short
+interval.
 
-> you don't have to compile multiple arches anymore than you have to
-> provide any other support for that arch. FatELF is a way to bundle the
-> binaries that you were already creating, not something to force you to
-> support an arch you otherwise wouldn't (although if it did make it
-> easy enough for you to do so that you started to support additional
-> arches, that would be a good thing)
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ include/linux/vmstat.h |    3 ++-
+ mm/vmscan.c            |   31 +++++++++++++++++++++++++++----
+ mm/vmstat.c            |    3 ++-
+ 3 files changed, 31 insertions(+), 6 deletions(-)
 
-Not sure - longer compile times, longer downloads, no testing.
-
-> if you have a 1M binary with 500M data, repeated for 5 arches it is
-> not a win vs a single 505M FatELF package in all cases.
-
-A real example of such binary maybe?
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index 2e0d18d..f344878 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -40,7 +40,8 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+ 		PGSCAN_ZONE_RECLAIM_FAILED,
+ #endif
+ 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+-		KSWAPD_HIGHORDER_REWAKEUP, KSWAPD_PREMATURE_SLEEP,
++		KSWAPD_HIGHORDER_REWAKEUP,
++		KSWAPD_PREMATURE_FAST, KSWAPD_PREMATURE_SLOW,
+ 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+ #ifdef CONFIG_HUGETLB_PAGE
+ 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 11a69a8..70aeb05 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1905,10 +1905,14 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
+ #endif
+ 
+ /* is kswapd sleeping prematurely? */
+-static int sleeping_prematurely(int order)
++static int sleeping_prematurely(int order, long remaining)
+ {
+ 	struct zone *zone;
+ 
++	/* If a direct reclaimer woke kswapd within HZ/10, it's premature */
++	if (remaining)
++		return 1;
++
+ 	/* If after HZ/10, a zone is below the high mark, it's premature */
+ 	for_each_populated_zone(zone)
+ 		if (!zone_watermark_ok(zone, order, high_wmark_pages(zone),
+@@ -2209,9 +2213,28 @@ static int kswapd(void *p)
+ 			order = new_order;
+ 		} else {
+ 			if (!freezing(current)) {
+-				if (sleeping_prematurely(order))
+-					count_vm_event(KSWAPD_PREMATURE_SLEEP);
+-				schedule();
++				long remaining = 0;
++
++				/* Try to sleep for a short interval */
++				if (!sleeping_prematurely(order, remaining)) {
++					remaining = schedule_timeout(HZ/10);
++					finish_wait(&pgdat->kswapd_wait, &wait);
++					prepare_to_wait(&pgdat->kswapd_wait, &wait, TASK_INTERRUPTIBLE);
++				}
++
++				/*
++				 * After a short sleep, check if it was a
++				 * premature sleep. If not, then go fully
++				 * to sleep until explicitly woken up
++				 */
++				if (!sleeping_prematurely(order, remaining))
++					schedule();
++				else {
++					if (remaining)
++						count_vm_event(KSWAPD_PREMATURE_FAST);
++					else
++						count_vm_event(KSWAPD_PREMATURE_SLOW);
++				}
+ 			}
+ 
+ 			order = pgdat->kswapd_max_order;
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index fa881c5..47a6914 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -684,7 +684,8 @@ static const char * const vmstat_text[] = {
+ 	"kswapd_steal",
+ 	"kswapd_inodesteal",
+ 	"kswapd_highorder_rewakeup",
+-	"kswapd_slept_prematurely",
++	"kswapd_slept_prematurely_fast",
++	"kswapd_slept_prematurely_slow",
+ 	"pageoutrun",
+ 	"allocstall",
+ 
 -- 
-Krzysztof Halasa
+1.6.3.3
+
