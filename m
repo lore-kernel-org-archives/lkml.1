@@ -1,115 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbZKBPDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZKBPEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbZKBPDF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:03:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbZKBPDE
+	id S1755291AbZKBPEk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbZKBPEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:03:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24758 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755186AbZKBPDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:03:03 -0500
-Message-ID: <4AEEF47F.7090101@redhat.com>
-Date: Mon, 02 Nov 2009 10:02:23 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 2 Nov 2009 10:04:39 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:49856 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754964AbZKBPEi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:04:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=hll0wXmW+AKy0AnQNd2wrOQlPPXDPJEuoMiA2ssPtn0MCYSdlCo954oxP99JHod4Bp
+         5dtt0Oqhty/1+AJRbom/qlAY316o05QmXmo8rxxpfGd4cf6att+NBry5pwY7x2g9HtUW
+         nCI278B5v1G9JT+jP+2Dwfyg55ehyjRa3xxls=
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH 0/3][RFC] tracing/kprobes: prevent jprobes from	crashing
- function graph tracer
-References: <20091029205151.852744305@goodmis.org> <4AEA10EC.8000103@redhat.com> <20091102003723.GF5263@nowhere>
-In-Reply-To: <20091102003723.GF5263@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 3 Nov 2009 00:04:43 +0900
+Message-ID: <28c262360911020704r45d7f4fmd347d270622fe2c5@mail.gmail.com>
+Subject: Re: [RFC][-mm][PATCH 0/6] oom-killer: total renewal
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       aarcange@redhat.com, akpm@linux-foundation.org, rientjes@google.com,
+       vedran.furac@gmail.com,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Kame.
 
+I looked over the patch series.
+It's rather big change of OOM.
+I see you and David want to make OOM fresh from scratch.
+But, It makes for testers to test harder.
 
-Frederic Weisbecker wrote:
-> On Thu, Oct 29, 2009 at 06:02:20PM -0400, Masami Hiramatsu wrote:
->> Steven Rostedt wrote:
->>> Lately I've been testing with an allyesconfig. When I ran the function graph
->>> tracer, it immediately crashed the kernel. Thanks to the new frame pointer
->>> test in function graph, it reported directly what the issue was and then
->>> panicked the kernel to prevent any unexpected damage from happening.
->>>
->>> It pointed the error to be with jtcp_rcv_established. Which is a jprobe
->>> function added to tcp_rcv_established at bootup when CONFIG_NET_TCPPROBE
->>> is enabled.
->>>
->>> Jprobes and the function graph tracer use the same mechanism to trace
->>> the exit of a function. Unfortunately, only one can be done at a time.
->>> The function graph tracer replaces the return address with its own handler,
->>> but so does jprobes. The two are not compatible.
->>
->> AFAIK, Jprobe doesn't trace the exit of a function. I assume that
->> jprobe's user handler causes the problem, since the handler never
->> returns normal way.
->> Instead of that, it just calls jprobe_return() which causes
->> int3 to be trapped by kprobe's break handler. And the break handler
->> fixup regs->ip to back to traced function.
->>
->> Actually, this will cause a problem with function graph tracer.
->> The f-g-tracer push the return address into the special stack and replaces
->> it with fixup function (This is similar (not same) mechanism of kretprobe.)
->> And then the traced function returns, it returns to the fixup function and
->> it pops the return address up and back to the real caller.
->>
->> So, if the f-g-tracer traces jprobe user handler, the pop operation
->> will be skipped because the the handler never returns.
+I like your idea of fork-bomb detector.
+Don't we use it without big change of as-is OOM heuristic?
+
+Anyway,I need time to dive the code and test it.
+Maybe weekend.
+
+Thanks for great effort. :)
+
+On Mon, Nov 2, 2009 at 4:22 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> Hi, as discussed in "Memory overcommit" threads, I started rewrite.
+>
+> This is just for showing "I started" (not just chating or sleeping ;)
+>
+> All implemtations are not fixed yet. So feel free to do any comments.
+> This set is for minimum change set, I think. Some more rich functions
+> can be implemented based on this.
+>
+> All patches are against "mm-of-the-moment snapshot 2009-11-01-10-01"
+>
+> Patches are organized as
+>
+> (1) pass oom-killer more information, classification and fix mempolicy case.
+> (2) counting swap usage
+> (3) counting lowmem usage
+> (4) fork bomb detector/killer
+> (5) check expansion of total_vm
+> (6) rewrite __badness().
+>
+> passed small tests on x86-64 boxes.
+>
+> Thanks,
+> -Kame
 >
 >
-> I'm not sure I've well understood how is performed the call to the jprobe
-> handler.
-> But if I understand well we have:
->
-> 	func() {
-> 		int3() {
-> 			jprobe_handler() {
-> 				(-)
-> 				set ip after iret to user_handler()
-> 			}
-> 		}
-> 		user_handler() {
-> 			jprobe_return() {
-> 				(+)
-> 				int3() {
-> 					set ip after iret to func+...()
-> 				}
-> 			       |
-> 			       |
-> 			       |
->                  <--------------
->                  (execute the rest of func())
-> 	}
->
-> If we replace (-) with pause_graph_tracing() and (+) with
-> unpause_graph_tracing(), this should do the trick...I hope.
 
-I'm not so sure about pause_graph_tracing(), however, it seems that
-int3() and jprobe_handler() already pushed on the stack of the
-func graph tracer at (-). If it's true, where are those entries
-popped up?
 
-Thank you,
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Kind regards,
+Minchan Kim
