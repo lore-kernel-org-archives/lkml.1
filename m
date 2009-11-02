@@ -1,81 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbZKBF4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbZKBGDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753200AbZKBF4j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 00:56:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZKBF4j
+	id S1752894AbZKBGDw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 01:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZKBGDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 00:56:39 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:36180 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbZKBF4i (ORCPT
+	Mon, 2 Nov 2009 01:03:52 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:36347 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbZKBGDv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 00:56:38 -0500
+	Mon, 2 Nov 2009 01:03:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=us4B8ef1mYziKPxO4mXyN0cYrZxgXb+0zGtcTEtMlTYd46Yam4pzfvhA5FvHKsKicQ
-         DV5uiLt4bW48zRjc7tVV5RJWDZ6c5Inm+/UyF4b1zg4LAATB8yiG16crIGEgZiUXqMQJ
-         Lzuj+QvtsAjvKt4mTHE3kTCU4GhQfIEp8G9Tw=
-Date: Mon, 2 Nov 2009 08:56:38 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] proc: remove /proc/*/status "Stack usage:"
-Message-ID: <20091102055638.GA2186@x200>
-References: <20091101131518.GA18284@x200>
- <1257086397.31587.5.camel@wall-e>
- <20091101155345.GA3867@x200>
- <1257118328.7978.9.camel@wall-e>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257118328.7978.9.camel@wall-e>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=WKKaLQaBl3Vm6Lt5zPChKFKhgauDY1+Q/lIAvvjILxgXznqcEQNcA0lKQD+WUNSAus
+         HI69nTNNlLmJ864EceM0uFSkN0gLhm0QhEr7VkSNZ6t6QRQUPR9Qjcv/8sn3u689AFSE
+         /shxPmnEaNPu3Db3fPoiGKJaGVu4X3AS8dHoQ=
+Date: Mon, 2 Nov 2009 15:01:10 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Norbert Preining <preining@logic.at>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: OOM killer, page fault
+Message-Id: <20091102150110.74f8a601.minchan.kim@barrios-desktop>
+In-Reply-To: <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at>
+	<20091102005218.8352.A69D9226@jp.fujitsu.com>
+	<20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+	<20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 12:32:08AM +0100, Stefani Seibold wrote:
-> Am Sonntag, den 01.11.2009, 18:53 +0300 schrieb Alexey Dobriyan:
-> > On Sun, Nov 01, 2009 at 03:39:57PM +0100, Stefani Seibold wrote:
-> > > Am Sonntag, den 01.11.2009, 16:15 +0300 schrieb Alexey Dobriyan:
-> > > > We have /proc/*/pagemap to determine how much stack was consumed.
-> > > > Leave "threadstack" though.
-> > > > 
+On Mon, 2 Nov 2009 14:02:16 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Mon, 2 Nov 2009 13:56:40 +0900
+> Minchan Kim <minchan.kim@gmail.com> wrote:
+> 
+> > On Mon,  2 Nov 2009 13:24:06 +0900 (JST)
+> > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > 
+> > > Hi,
 > > > 
-> > > Stop! /proc/*/pagemap is not a real substitute for the stackm usage
-> > > patch. If you have problems with this patch i will have a look on it.
+> > > (Cc to linux-mm)
+> > > 
+> > > Wow, this is very strange log.
+> > > 
+> > > > Dear all,
+> > > > 
+> > > > (please Cc)
+> > > > 
+> > > > With 2.6.32-rc5 I got that one:
+> > > > [13832.210068] Xorg invoked oom-killer: gfp_mask=0x0, order=0, oom_adj=0
+> > > 
+> > > order = 0
 > > 
-> > Why?
+> > I think this problem results from 'gfp_mask = 0x0'.
+> > Is it possible?
 > > 
-> > You grab thread stack start from /proc/*/stat, then for every page of
-> > stack VMA, you lookup state of page, which is exactly what you're doing
-> > by employing page walker.
+> > If it isn't H/W problem, Who passes gfp_mask with 0x0?
+> > It's culpit. 
+> > 
+> > Could you add BUG_ON(gfp_mask == 0x0) in __alloc_pages_nodemask's head?
+> > 
 > 
-> First, as you figured out there is currently no way to get the stack
-> start of a thread. But i currently check this and hope to find a
-> solution in the next 24 hours.
+> Maybe some code returns VM_FAULT_OOM by mistake and pagefault_oom_killer()
+> is called. digging mm/memory.c is necessary...
 > 
-> Second, this patch aims to the embedded world and there is normally no
-> tools available when you need it, but /proc is always there. Especially
-> outside in the field.
+> I wonder why...now is this code
+> ===
+> static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+>                 unsigned long address, pte_t *page_table, pmd_t *pmd,
+>                 unsigned int flags, pte_t orig_pte)
+> {
+>         pgoff_t pgoff;
+> 
+>         flags |= FAULT_FLAG_NONLINEAR;
+> 
+> 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
+>                 return 0;
+> 
+>         if (unlikely(!(vma->vm_flags & VM_NONLINEAR))) {
+>                 /*
+>                  * Page table corrupted: show pte and kill process.
+>                  */
+>                 print_bad_pte(vma, address, orig_pte, NULL);
+>                 return VM_FAULT_OOM;
+>         }
+> 
+>         pgoff = pte_to_pgoff(orig_pte);
+>         return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
+> }
+> ==
+> Then, OOM...is this really OOM ?
 
-Poor embedded people!
+It seems that the goal is to kill process by OOM trick as comment said.
 
-There is even Documentation/vm/page-types.c which is trivially adapted
-to show stack pages state.
+I found It results from Hugh's commit 65500d234e74fc4e8f18e1a429bc24e51e75de4a.
+I think it's not a real OOM. 
 
-> Like Dr Frank. N. Furter in the "Rocky Horror Picture Show" says: remove
-> the cause but NOT the symptoms!
+BTW, If it is culpit in this case, print_bad_pte should have remained any log. :)
 
-The root of the problem is that you're measuring badly defined value.
+> 
+> Thanks,
+> -Kame
+> 
 
-Kernel doesn't know SP register of a running task until it stops it.
-Even if task is stopped or inside kernel, kernel doesn't know where
-userpace stack starts, because, in theory, application can move it's
-stack to anywhere.
 
-> And the cause is the miss implemented KSTK_ESP in a x86_64. I also
-> checked all other architekture depended KSTK_ESP definitions and this
-> definitions looks okay for me. 
+-- 
+Kind regards,
+Minchan Kim
