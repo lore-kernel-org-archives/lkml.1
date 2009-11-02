@@ -1,75 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbZKBNDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbZKBNEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755106AbZKBNDg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 08:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbZKBNDf
+	id S1755148AbZKBNEh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 08:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbZKBNEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 08:03:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:36324 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755077AbZKBNDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 08:03:34 -0500
-Message-ID: <4AEED8A8.9030606@redhat.com>
-Date: Mon, 02 Nov 2009 15:03:36 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 2 Nov 2009 08:04:36 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:38797 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755080AbZKBNEf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 08:04:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=lbqlNVPJvOl98nxQYltzsfS01534vC1zZZcLEWXQGLGrl9PY7GTSkDMPmEbiTqGjNi
+         202poL44A1JX3rrrIjn5PxGyDLUfh08gVfDwGzTmG7P1k/5JlJHX0PDvoiRGdtlcJny5
+         U01lLJoHO7qw6nR2bjMDrG3fLQjLoPLtapLWk=
+Date: Mon, 2 Nov 2009 14:04:40 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
+	on top of perf events
+Message-ID: <20091102130434.GC4878@nowhere>
+References: <4AE55B1B.2030006@web.de> <1257109753-6464-5-git-send-email-fweisbec@gmail.com> <4AEE06FF.9080807@web.de> <20091101233659.GE5263@nowhere> <4AEE8E34.8080105@web.de>
 MIME-Version: 1.0
-To: Gleb Natapov <gleb@redhat.com>
-CC: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/11] Retry fault before vmentry
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-8-git-send-email-gleb@redhat.com>
-In-Reply-To: <1257076590-29559-8-git-send-email-gleb@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AEE8E34.8080105@web.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/01/2009 01:56 PM, Gleb Natapov wrote:
-> When page is swapped in it is mapped into guest memory only after guest
-> tries to access it again and generate another fault. To save this fault
-> we can map it immediately since we know that guest is going to access
-> the page.
->
->    
->
-> diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-> index 9fe2ecd..b1fe61f 100644
-> --- a/arch/x86/kvm/paging_tmpl.h
-> +++ b/arch/x86/kvm/paging_tmpl.h
-> @@ -375,7 +375,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
->    *  Returns: 1 if we need to emulate the instruction, 0 otherwise, or
->    *           a negative value on error.
->    */
-> -static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
-> +static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gpa_t cr3, gva_t addr,
->   			       u32 error_code)
->   {
->   	int write_fault = error_code&  PFERR_WRITE_MASK;
-> @@ -388,6 +388,7 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
->   	pfn_t pfn;
->   	int level = PT_PAGE_TABLE_LEVEL;
->   	unsigned long mmu_seq;
-> +	gpa_t curr_cr3 = vcpu->arch.cr3;
->
->   	pgprintk("%s: addr %lx err %x\n", __func__, addr, error_code);
->   	kvm_mmu_audit(vcpu, "pre page fault");
-> @@ -396,6 +397,13 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
->   	if (r)
->   		return r;
->
-> +	if (curr_cr3 != cr3) {
-> +		vcpu->arch.cr3 = cr3;
-> +		paging_new_cr3(vcpu);
-> +		if (kvm_mmu_reload(vcpu))
-> +			goto switch_cr3;
-> +	}
-> +
->    
+On Mon, Nov 02, 2009 at 08:45:56AM +0100, Jan Kiszka wrote:
+> Frederic Weisbecker wrote:
+> > On Sun, Nov 01, 2009 at 11:09:03PM +0100, Jan Kiszka wrote:
+> >>> @@ -3643,14 +3644,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+> >>>  	trace_kvm_entry(vcpu->vcpu_id);
+> >>>  	kvm_x86_ops->run(vcpu, kvm_run);
+> >>>  
+> >>> -	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG))) {
+> >>> -		set_debugreg(current->thread.debugreg[0], 0);
+> >>> -		set_debugreg(current->thread.debugreg[1], 1);
+> >>> -		set_debugreg(current->thread.debugreg[2], 2);
+> >>> -		set_debugreg(current->thread.debugreg[3], 3);
+> >>> -		set_debugreg(current->thread.debugreg6, 6);
+> >>> -		set_debugreg(current->thread.debugreg7, 7);
+> >>> -	}
+> >>> +	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG)))
+> >>> +		hw_breakpoint_restore();
+> >> TIF_DEBUG is only set on active ptrace hw-breakpoints, thus we miss
+> >> other types here, right? (Note: arch.switch_db_regs is guest-related,
+> >> thus does not help in this regard.)
+> >>
+> >> Jan
+> >>
+> > 
+> > 
+> > About this. vcpu->arch.switch_db_regs is guest related but it looks
+> > like the only thing I need to check.
+> > 
+> > I'm not sure when it is activated. Is it always done once the guest
+> > changes its debug registers? I suspect there is a corner case.
+> 
+> It's set when we had to write to some debugreg[0..4], either for use by
+> the guest itself or for debugging it from the host. It used to be the
+> only condition for switching on exit as we saved the registers on entry
+> (under the same condition). This was reworked recently to avoid the
+> entry saving.
+> 
+> > 
+> > Because since I can't anymore assume TIF_DEBUG covers every
+> > breakpoints uses, it means I'll need to maintain a refcount of
+> > breakpoints in use.
+> > Well, I have one already, but it is splitted into several refcounts
+> > (per task events, per cpu, non-pinned, etc...). And since
+> > vcpu_enter_guest() is a fast path, I'll need to maintain another global
+> > per cpu one, without lock or further operations to know if we need
+> > to save the debug registers, just a simple check.
+> > 
+> 
+> I'm not 100% sure right now if we still need "switch_db_reg" in case we
+> have a reliable indicator that the host requires properly set registers.
+> ATM I would dare to say, we don't, but I need to think about this again.
+> 
+> Jan
+> 
 
-This is a little frightening.  I can't put my finger on anything 
-though.  But playing with cr3 under the guest's feet worries me.
 
--- 
-error compiling committee.c: too many arguments to function
+Ok. I'm going to just check if the host has active breakpoints pending and
+if so, I'll restore them while exiting the guest.
+
+Thanks.
 
