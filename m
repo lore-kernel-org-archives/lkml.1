@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbZKBEpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbZKBE7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbZKBEpd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 23:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZKBEpd
+	id S1753953AbZKBE7O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 23:59:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbZKBE7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 23:45:33 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17586 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753792AbZKBEpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 23:45:32 -0500
-Message-ID: <4AEE63E2.9010003@redhat.com>
-Date: Sun, 01 Nov 2009 23:45:22 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: loody <miloody@gmail.com>
-CC: linux-kernel@vger.kernel.org, Kernel Newbies <kernelnewbies@nl.linux.org>
-Subject: Re: why kernel implement "udelay" by cpu instructions?
-References: <3a665c760911011913q268b010cqb5da4f79df995b9b@mail.gmail.com>
-In-Reply-To: <3a665c760911011913q268b010cqb5da4f79df995b9b@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 1 Nov 2009 23:59:14 -0500
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:33157 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbZKBE7N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 23:59:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=UVWENZWXSKjwW+oTt8Y95YSQpw1vmweG/HE43EDn8EJsN0WUACITuKQe9neAPrCHjc
+         NKMD54ltIFaAhhl4sReb/BWl1UUY29L/HQY1X73hP+D4TeEZJ/yU0E+Jnu6AMmE6rUw6
+         Ro821q9pXrRzB1m8/yb7wc1X0tJM0Oz9cTvv4=
+Date: Mon, 2 Nov 2009 13:56:40 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Norbert Preining <preining@logic.at>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: OOM killer, page fault
+Message-Id: <20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+In-Reply-To: <20091102005218.8352.A69D9226@jp.fujitsu.com>
+References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at>
+	<20091102005218.8352.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/01/2009 10:13 PM, loody wrote:
-> Dear all:
-> I find the kernel use cpu instruction to implement the udelay function
-> as keeping decrease a big counter by 1.
->
-> If I search the right place in kernel, why kernel does so?
+On Mon,  2 Nov 2009 13:24:06 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Because udelay is used in places where the kernel cannot
-use other mechanisms, eg. because interrupts are blocked
-or the current process cannot be scheduled out.
+> Hi,
+> 
+> (Cc to linux-mm)
+> 
+> Wow, this is very strange log.
+> 
+> > Dear all,
+> > 
+> > (please Cc)
+> > 
+> > With 2.6.32-rc5 I got that one:
+> > [13832.210068] Xorg invoked oom-killer: gfp_mask=0x0, order=0, oom_adj=0
+> 
+> order = 0
 
-> the precision will be different if cpu runs faster or slower, right?
+I think this problem results from 'gfp_mask = 0x0'.
+Is it possible?
 
-At bootup the kernel measures the delay loop speed of
-each CPU.  CPU frequency scaling might make the loop
-run slower at times, but that is okay because udelay
-simply specifies a *minimum* delay.
+If it isn't H/W problem, Who passes gfp_mask with 0x0?
+It's culpit. 
 
-This is true even on systems without frequency scaling,
-because the udelay loop could be interrupted by an
-interrupt, an NMI or by having the CPU trap into SMM
-mode and execute code there.
+Could you add BUG_ON(gfp_mask == 0x0) in __alloc_pages_nodemask's head?
+
+---
+
+/*
+ * This is the 'heart' of the zoned buddy allocator.
+ */
+struct page *
+__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+                        struct zonelist *zonelist, nodemask_t *nodemask)
+{
+        enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+        struct zone *preferred_zone;
+        struct page *page;
+        int migratetype = allocflags_to_migratetype(gfp_mask);
+
++	BUG_ON(gfp_mask == 0x0);
+        gfp_mask &= gfp_allowed_mask;
+
+        lockdep_trace_alloc(gfp_mask);
+
+        might_sleep_if(gfp_mask & __GFP_WAIT);
+
+        if (should_fail_alloc_page(gfp_mask, order))
+                return NULL;
+
 
 -- 
-All rights reversed.
+Kind regards,
+Minchan Kim
