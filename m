@@ -1,120 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZKBLMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZKBLN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754619AbZKBLMn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 06:12:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZKBLMm
+	id S1754660AbZKBLN5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 06:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbZKBLN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 06:12:42 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37489 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbZKBLMl (ORCPT
+	Mon, 2 Nov 2009 06:13:57 -0500
+Received: from outbound.icp-qv1-irony-out5.iinet.net.au ([203.59.1.105]:30202
+	"EHLO outbound.icp-qv1-irony-out5.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754398AbZKBLN4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 06:12:41 -0500
-Date: Mon, 2 Nov 2009 12:12:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-mmc@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: msm_sdcc.c: add missing include, fix compilation
-Message-ID: <20091102111239.GB26989@elf.ucw.cz>
-References: <20091022072119.GA3285@elf.ucw.cz>
- <20091022185126.GA4401@n2100.arm.linux.org.uk>
+	Mon, 2 Nov 2009 06:13:56 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAANO7krLzn0N/2dsb2JhbADaV4Q5BIFidA
+X-IronPort-AV: E=Sophos;i="4.44,666,1249228800"; 
+   d="scan'208";a="53876496"
+Message-ID: <4AEEBEF1.8050807@themaw.net>
+Date: Mon, 02 Nov 2009 19:13:53 +0800
+From: Ian Kent <raven@themaw.net>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091022185126.GA4401@n2100.arm.linux.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jan Blunck <jblunck@suse.de>
+CC: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, Jeff Moyer <jmoyer@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, autofs@linux.kernel.org
+Subject: Re: [PATCH 10/27] BKL: Remove BKL from autofs4
+References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-11-git-send-email-jblunck@suse.de>
+In-Reply-To: <1257156307-24175-11-git-send-email-jblunck@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Jan Blunck wrote:
+> BKL is only used in fill_super. It is safe to remove it.
 
-> > Add missing include for	msm_sdcc compilation.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Yes, I think so too.
+Of course this will make co-coordinating the rename of autofs4 to autofs
+a bit more painful, ;)
+
 > 
-> I don't think this is the right solution - why should MSM have a
-> platform specific include in the ARM generic include files?
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+Acked-by: Ian Kent <raven@themaw.net>
+
+> ---
+>  fs/autofs4/inode.c |    4 ----
+>  1 files changed, 0 insertions(+), 4 deletions(-)
 > 
-> (If anything, we should be getting rid of any non-shared platform
-> specific includes in the arch/arm/include/asm/mach directory.)
+> diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
+> index 3adaba9..69c8142 100644
+> --- a/fs/autofs4/inode.c
+> +++ b/fs/autofs4/inode.c
+> @@ -323,8 +323,6 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
+>  	struct autofs_sb_info *sbi;
+>  	struct autofs_info *ino;
+>  
+> -	lock_kernel();
+> -
+>  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+>  	if (!sbi)
+>  		goto fail_unlock;
+> @@ -420,7 +418,6 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
+>  	 * Success! Install the root dentry now to indicate completion.
+>  	 */
+>  	s->s_root = root;
+> -	unlock_kernel();
+>  	return 0;
+>  	
+>  	/*
+> @@ -442,7 +439,6 @@ fail_free:
+>  	kfree(sbi);
+>  	s->s_fs_info = NULL;
+>  fail_unlock:
+> -	unlock_kernel();
+>  	return -EINVAL;
+>  }
+>  
 
-Ok.
-
----
-
-Add missing include for msm_sdcc compilation, and remove pwrsink
-support that is not mainline, yet.
-
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff --git a/arch/arm/mach-msm/include/mach/mmc.h b/arch/arm/mach-msm/include/mach/mmc.h
-new file mode 100644
-index 0000000..8948dec
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/mmc.h
-@@ -0,0 +1,26 @@
-+/*
-+ *  arch/arm/include/asm/mach/mmc.h
-+ */
-+#ifndef ASMARM_MACH_MMC_H
-+#define ASMARM_MACH_MMC_H
-+
-+#include <linux/mmc/host.h>
-+#include <linux/mmc/card.h>
-+#include <linux/mmc/sdio_func.h>
-+
-+struct embedded_sdio_data {
-+        struct sdio_cis cis;
-+        struct sdio_cccr cccr;
-+        struct sdio_embedded_func *funcs;
-+        int num_funcs;
-+};
-+
-+struct mmc_platform_data {
-+	unsigned int ocr_mask;			/* available voltages */
-+	u32 (*translate_vdd)(struct device *, unsigned int);
-+	unsigned int (*status)(struct device *);
-+	struct embedded_sdio_data *embedded_sdio;
-+	int (*register_status_notify)(void (*callback)(int card_present, void *dev_id), void *dev_id);
-+};
-+
-+#endif
-diff --git a/drivers/mmc/host/msm_sdcc.c b/drivers/mmc/host/msm_sdcc.c
-index dba4600..b31946e 100644
---- a/drivers/mmc/host/msm_sdcc.c
-+++ b/drivers/mmc/host/msm_sdcc.c
-@@ -38,10 +38,9 @@
- #include <asm/div64.h>
- #include <asm/sizes.h>
- 
--#include <asm/mach/mmc.h>
-+#include <mach/mmc.h>
- #include <mach/msm_iomap.h>
- #include <mach/dma.h>
--#include <mach/htc_pwrsink.h>
- 
- #include "msm_sdcc.h"
- 
-@@ -775,13 +774,11 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 
- 	switch (ios->power_mode) {
- 	case MMC_POWER_OFF:
--		htc_pwrsink_set(PWRSINK_SDCARD, 0);
- 		break;
- 	case MMC_POWER_UP:
- 		pwr |= MCI_PWR_UP;
- 		break;
- 	case MMC_POWER_ON:
--		htc_pwrsink_set(PWRSINK_SDCARD, 100);
- 		pwr |= MCI_PWR_ON;
- 		break;
- 	}
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
