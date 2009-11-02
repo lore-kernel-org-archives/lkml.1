@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbZKBTcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZKBTd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755299AbZKBTcq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 14:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZKBTcq
+	id S1756648AbZKBTd7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 14:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZKBTd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 14:32:46 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:34483 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754113AbZKBTcp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 14:32:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=Gea4g7sRWFCaQPalWta79vmbVRd9LXtku82lozBDHySb8Hab9YXQuccrIDXpOeLC1X
-         RXj7NpIUCSHxZ4zS9yj0c5QZBkfUKYYAqfx4rkJc07iy3QikEOSqgE9pdZBjq7qnuM8z
-         xO5X6Qf1OCFt47NR/yxnSil5nIoq0TKlXaBeQ=
-Date: Mon, 2 Nov 2009 20:32:50 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
-       laijs@cn.fujitsu.com, mingo@elte.hu, davem@davemloft.net,
-       akpm@linux-foundation.org, harvey.harrison@gmail.com,
-       linux list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 5/7] vsprintf: reduce code size by avoiding extra
-	check
-Message-ID: <20091102193248.GC4880@nowhere>
-References: <b8bf37780911020926rd5e40b1h957c803f7bb21196@mail.gmail.com> <20091102181944.GA4880@nowhere> <1257186583.28925.47.camel@Joe-Laptop.home>
+	Mon, 2 Nov 2009 14:33:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:4186 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754770AbZKBTd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 14:33:58 -0500
+Message-ID: <4AEF3419.1050200@redhat.com>
+Date: Mon, 02 Nov 2009 21:33:45 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1257186583.28925.47.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Rik van Riel <riel@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Gleb Natapov <gleb@redhat.com>,
+       kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com> <20091102092214.GB8933@elte.hu> <4AEF2D0A.4070807@redhat.com>
+In-Reply-To: <4AEF2D0A.4070807@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 10:29:43AM -0800, Joe Perches wrote:
-> On Mon, 2009-11-02 at 19:19 +0100, Frederic Weisbecker wrote:
-> > On Mon, Nov 02, 2009 at 03:26:36PM -0200, André Goddard Rosa wrote:
-> > > Subject: [PATCH v2 5/7] vsprintf: reduce code size by avoiding extra check
-> > >    text    data     bss     dec     hex filename
-> > >   15735       0       8   15743    3d7f lib/vsprintf.o-before
-> > >   15719       0       8   15727    3d6f lib/vsprintf.o-minus-double-check
-> > Please add a changelog in your patches, I mean something that
-> > explain your practical change.
-> 
-> Read the subject and try not to go overboard.
-> I think the changelog André provided is perfect.
+On 11/02/2009 09:03 PM, Rik van Riel wrote:
+>> This patch is not acceptable unless it's done cleaner. Currently we
+>> already have 3 callbacks in do_page_fault() (kmemcheck, mmiotrace,
+>> notifier), and this adds a fourth one.
+>
+>
+> There's another alternative - add our own exception vector
+> for async page faults.  Not sure if that is warranted though,
+> especially if we already have other callbacks in do_page_fault()
+> and we can consolidate them.
+>
 
+We can't add an exception vector since all the existing ones are either 
+taken or reserved.  We can try to use an interrupt vector as an 
+exception, but that becomes messy, and I'm not sure hardware will allow 
+us to inject an interrupt when interrupts are disabled.
 
-It took me some time yesterday to understand how ip6_compressed_string()
-does its job, hence it took me some time to ensure this patch is safe,
-hence this reaction for something that didn't seem obvious to me at
-a first glance.
-
-But you're right actually, the problem was more in my homework than in
-the changelog.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
