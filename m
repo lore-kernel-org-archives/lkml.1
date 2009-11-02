@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZKBRad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZKBRcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbZKBRad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:30:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbZKBRac
+	id S1756361AbZKBRcT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZKBRcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:30:32 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36002 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750816AbZKBRab (ORCPT
+	Mon, 2 Nov 2009 12:32:18 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:58797 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755374AbZKBRcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:30:31 -0500
-Date: Mon, 2 Nov 2009 17:30:35 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Cc: alsa-devel@alsa-project.org, linux-omap@vger.kernel.org,
-       sameo@linux.intel.com, linux-kernel@vger.kernel.org, tony@atomide.com
-Subject: Re: [PATCH 3/5] MFD: twl4030-codec: APLL_INFREQ handling in the
- MFD driver
-Message-ID: <20091102173035.GC8546@rakim.wolfsonmicro.main>
-References: <1257165295-9352-1-git-send-email-peter.ujfalusi@nokia.com>
- <1257165295-9352-2-git-send-email-peter.ujfalusi@nokia.com>
- <1257165295-9352-3-git-send-email-peter.ujfalusi@nokia.com>
- <1257165295-9352-4-git-send-email-peter.ujfalusi@nokia.com>
+	Mon, 2 Nov 2009 12:32:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=S/2LcrDwNxj0sTAiaDHGyknutQDcVDOMGWUK61ZitIOtGotmbpCMtYRDmiddKBteKM
+         0cJaFZQYfyFG5IONeziNGF7l9nnlZrfV8TT8bKQHrWgpdF25qso77qoAyXZzMNTtxpKu
+         0JKcZwySePwKVM26uhgPf/CN84Co93AkX8LG0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257165295-9352-4-git-send-email-peter.ujfalusi@nokia.com>
-X-Cookie: Humpty Dumpty was pushed.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091102170114.GE14046@tuxdriver.com>
+References: <1256886023.3555.5.camel@johannes.local>
+	 <20091030110616.GB6150@ff.dom.local>
+	 <20091030150223.GA2586@tuxdriver.com> <20091102091038.GA9044@elte.hu>
+	 <1257153807.3555.173.camel@johannes.local>
+	 <20091102100702.GA16963@elte.hu>
+	 <20091102170114.GE14046@tuxdriver.com>
+Date: Mon, 2 Nov 2009 17:32:18 +0000
+Message-ID: <efe7343f0911020932l21a570c8u9478568329d38e2c@mail.gmail.com>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+From: Luis Correia <luis.f.correia@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 02:34:53PM +0200, Peter Ujfalusi wrote:
-> Move the APLL_CTL register configuration to the twl4030-codec
-> MFD driver.
-> Provide also a function for childs to query the audio_mclk
-> frequency.
+[huge snip]
 
-This all looks good to me, some nitpicks below.
+This is going to be my last reply to this thread (even if I get to be insulted).
 
-> +unsigned int twl4030_codec_get_mclk(void)
-> +{
-> +	struct twl4030_codec *codec = platform_get_drvdata(twl4030_codec_dev);
-> +
-> +	return codec->audio_mclk;
-> +}
-> +EXPORT_SYMBOL_GPL(twl4030_codec_get_mclk);
+I'm not a coder, I'm a tester and administrator for the rt2x00 project.
+I'm not happy about the current state of the rt2x00 in-kernel drivers.
+I tend to agree that more could be done.
 
-As I said in my followup to patch 5 this feels like it should have a
-parameter to specify the twl4030 though in practical systems it won't
-matter.
+Even though I'm not a coder, I could be hipotetically responsable for
+the current situation. It is my job function to motivate people to
+work on the rt2x00 in-kernel drivers, but apparently I've failed here.
+It's not an atitude problem, as some have suggested, it's just life.
 
-> +	if (!(pdata->audio_mclk == 19200000 ||
-> +	      pdata->audio_mclk == 26000000 ||
-> +	      pdata->audio_mclk == 38400000)) {
-> +		dev_err(&pdev->dev, "Invalid audio_mclk\n");
-> +		return -EINVAL;
-> +	}
+About Bartlomiej, there is only one more thing that I'll say:
 
-Might flow more naturally with a switch statement?
+I've searched on my GMail archives and the only patch Bart has
+provided so far for the rt2x00 project is this:
+
+[PATCH] MAINTAINERS: rt2x00 list is moderated
+
+Which, while technically correct, adds nothing to the project.
+
+So, I will personally continue to ignore Bart's comments, regards and
+rants, until he provides patches for rt2x00 that actually make the
+driver better.
+
+Luis Correia
+rt2x00 project admin,
+(but not writing this email as an official project statement)
