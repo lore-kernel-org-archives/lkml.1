@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbZKBJpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbZKBJrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754281AbZKBJpN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 04:45:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZKBJpM
+	id S1754292AbZKBJrl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 04:47:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZKBJrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 04:45:12 -0500
-Received: from server1.wserver.cz ([82.113.45.157]:39035 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754175AbZKBJpL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 04:45:11 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: [PATCH 1/1] MM: swapfile, fix crash on double swapon
-Date: Mon,  2 Nov 2009 10:45:03 +0100
-Message-Id: <1257155103-9189-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
+	Mon, 2 Nov 2009 04:47:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39646 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754140AbZKBJrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 04:47:39 -0500
+Message-ID: <4AEEAA82.8070705@redhat.com>
+Date: Mon, 02 Nov 2009 11:46:42 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: linux-next: percpu/kvm/tip tree build failure
+References: <20091102161722.eea4358d.sfr@canb.auug.org.au>
+In-Reply-To: <20091102161722.eea4358d.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Double swapon on a device causes a crash:
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<ffffffff810af160>] sys_swapon+0x1f0/0xc60
-PGD 1dc0b067 PUD 1dc09067 PMD 0
-Oops: 0000 [#1] SMP
-last sysfs file:
-CPU 1
-Modules linked in:
-Pid: 562, comm: swapon Tainted: G        W  2.6.32-rc5-mm1_64 #867
-RIP: 0010:[<ffffffff810af160>]  [<ffffffff810af160>] sys_swapon+0x1f0/0xc60
-...
+On 11/02/2009 07:17 AM, Stephen Rothwell wrote:
+> Hi all,
+>
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+>
+> kernel/user-return-notifier.c: In function 'fire_user_return_notifiers':
+> kernel/user-return-notifier.c:45: error: expected expression before ')' token
+>
+> Introduced by commit 7c68af6e32c73992bad24107311f3433c89016e2 ("core,
+> x86: Add user return notifiers") from the tip and kvm trees but revealed
+> by commit e0fdb0e050eae331046385643618f12452aa7e73 ("percpu: add __percpu
+> for sparse") from the percpu tree.  Before that percpu tree commit,
+> "put_cpu_var()" would compile without error (even though it really needs
+> a parameter).
+>
+> I have applied the following patch for today.
+>    
 
-It is due to swap_info_struct->first_swap_extent.list not being
-initialized. ->next is NULL in such a situation and
-destroy_swap_extents fails to iterate over the list with the BUG
-above.
+Ingo, can you queue this on x86/entry?
 
-Introduced by swap_info-include-first_swap_extent.patch. Revert the
-INIT_LIST_HEAD move.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>
----
- mm/swapfile.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 93e71cf..26ef6a2 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -1313,7 +1313,6 @@ add_swap_extent(struct swap_info_struct *sis, unsigned long start_page,
- 	if (start_page == 0) {
- 		se = &sis->first_swap_extent;
- 		sis->curr_swap_extent = se;
--		INIT_LIST_HEAD(&se->list);
- 		se->start_page = 0;
- 		se->nr_pages = nr_pages;
- 		se->start_block = start_block;
-@@ -1769,6 +1768,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
- 		kfree(p);
- 		goto out;
- 	}
-+	INIT_LIST_HEAD(&p->first_swap_extent.list);
- 	if (type >= nr_swapfiles) {
- 		p->type = type;
- 		swap_info[type] = p;
 -- 
-1.6.4.2
+
+error compiling committee.c: too many arguments to function
 
