@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbZKBV0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZKBVmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756439AbZKBV0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 16:26:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbZKBV0b
+	id S1756907AbZKBVmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 16:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbZKBVmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 16:26:31 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:60262 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755410AbZKBV0a (ORCPT
+	Mon, 2 Nov 2009 16:42:17 -0500
+Received: from RELAY.ANDREW.CMU.EDU ([128.2.10.212]:58711 "EHLO
+	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756815AbZKBVly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 16:26:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hWyhkXJQFQqo54haRr5iN3y5s4F8mhtZt6ZLjb0UWqBmNJDlv2ALqmdfkev9fwDKm/
-         vwN2ue5oYKq8N8cd24T6oSfAbO4QRkakxDE58JKtLbu31Zh1K8Nsntvp+dOs5PdARl+g
-         PXtiwIAGVBpHDTuxU+aO2upxpnyVnReK54rYo=
-Date: Mon, 2 Nov 2009 22:26:33 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes and
-	perf-probe syntax changes
-Message-ID: <20091102212632.GH4880@nowhere>
-References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu> <4AE9C919.4070003@redhat.com> <4AEF4C29.2060501@redhat.com>
+	Mon, 2 Nov 2009 16:41:54 -0500
+Date: Mon, 2 Nov 2009 16:28:26 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       lizf@cn.fujistu.com, akpm@linux-foundation.org, menage@google.com,
+       bblum@andrew.cmu.edu
+Subject: [RFC][PATCH 0/3] cgroups: support for module-loadable subsystems
+Message-ID: <20091102212825.GA13692@andrew.cmu.edu>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	containers@lists.linux-foundation.org, lizf@cn.fujistu.com,
+	akpm@linux-foundation.org, menage@google.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AEF4C29.2060501@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 04:16:25PM -0500, Masami Hiramatsu wrote:
-> Masami Hiramatsu wrote:
->> Ingo Molnar wrote:
->>> What we want here is two fold:
->>>
->>>    - enable kprobes event support when perf events is enabled and kprobes
->>>      is enabled. We dont want another config option for it.
->>
->> Sure, at least that combination should enable kprobe-tracer forcibly.
->
-> Hmm, someone may not want to enables kprobe-tracer. Perhaps,
-> "default y if (EVENT_PROFILE)" is enough, isn't it?
->
+This patch series implements simple support for building and loading
+subsystems as modules, both within and outside the kernel source tree.
+Module unloading is as yet unimplemented - it will require more advanced
+reference counting in the mount/unmount code, and I plan to work on this
+soon.
 
+Patch #1 sets up the subsys[] array so its contents can be dynamic as
+modules appear and (eventually) disappear. I introduce an rwsem called
+subsys_mutex to protect against concurrent loads/unloads/reads, and
+modify iterations over the array to handle when subsystems are absent.
 
-I guess it should be sufficient yeah. We want to strongly recommend
-the kprobe events if we have enabled perf, but we don't want to force
-it.
+Patch #2 implements an interface for modules to load subsystems, called
+cgroup_load_subsys, similar to cgroup_init_subsys, and adds a module
+pointer in struct cgroup_subsys.
 
-Also in this case we need a verbose runtime report of the lack of this
-tracer in debugfs from perf probe if needed.
+Patch #3 modifies the net_cls subsystem, which already had some module
+declarations, to be configurable as a module, which also serves as a
+simple proof-of-concept.
 
+-- bblum
+ 
