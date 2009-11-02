@@ -1,134 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbZKBVfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbZKBVig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794AbZKBVfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 16:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbZKBVfa
+	id S1756833AbZKBVig (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 16:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756161AbZKBVif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 16:35:30 -0500
-Received: from mga03.intel.com ([143.182.124.21]:48417 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756675AbZKBVfa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 16:35:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,670,1249282800"; 
-   d="scan'208";a="206679065"
-From: "Moore, Robert" <robert.moore@intel.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>, Thiago Farina <tfransosi@gmail.com>
-CC: "trivial@kernel.org" <trivial@kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "Lin, Ming M" <ming.m.lin@intel.com>,
-       "jkosina@suze.cz" <jkosina@suze.cz>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 2 Nov 2009 13:35:33 -0800
-Subject: RE: [PATCH] trivial: remove ACPI_ARRAY_LENGTH macro.
-Thread-Topic: [PATCH] trivial: remove ACPI_ARRAY_LENGTH macro.
-Thread-Index: Acpb3IX9GV9zEkeWTqmmzxB2uPSXxQAJ8kOg
-Message-ID: <4911F71203A09E4D9981D27F9D8308583B6FCBE0@orsmsx503.amr.corp.intel.com>
-References: <1257114972-16039-1-git-send-email-tfransosi@gmail.com>
- <200911020949.58412.bjorn.helgaas@hp.com>
-In-Reply-To: <200911020949.58412.bjorn.helgaas@hp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 2 Nov 2009 16:38:35 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:39644 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755860AbZKBVif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 16:38:35 -0500
+Date: Mon, 2 Nov 2009 22:38:37 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pcmcia@lists.infradead.org,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Lockdep violation in pcmcia
+Message-ID: <20091102213837.GA26200@isilmar.linta.de>
+Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
+	linux-pcmcia@lists.infradead.org,
+	Kernel development list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0911021610030.28727-100000@netrider.rowland.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0911021610030.28727-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I seem to remember that Len Brown had some text like this.
+Hey,
 
+On Mon, Nov 02, 2009 at 04:21:23PM -0500, Alan Stern wrote:
+> I've been getting these warnings for a long, long time, and finally 
+> decided to report them:
 
->-----Original Message-----
->From: Bjorn Helgaas [mailto:bjorn.helgaas@hp.com]
->Sent: Monday, November 02, 2009 8:50 AM
->To: Thiago Farina
->Cc: trivial@kernel.org; lenb@kernel.org; Lin, Ming M; Moore, Robert;
->jkosina@suze.cz; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org
->Subject: Re: [PATCH] trivial: remove ACPI_ARRAY_LENGTH macro.
->
->On Sunday 01 November 2009 03:36:12 pm Thiago Farina wrote:
->> Since the kernel already has a macro (ARRAY_SIZE) that does the same
->thing,
->> just use it instead of defining another macro for the same propose.
->
->This changes the ACPICA, which is used in several OSes besides Linux.
->The CA is designed to have a small, controlled interface to the host OS.
->This patch would expand that interface, which would work fine on Linux,
->but would cause problems on other OSes that don't provide ARRAY_SIZE().
->
->It'd be nice to have a little text in Documentation/acpi/ that covered
->issues like this.  It could also talk about the special licensing
->requirements for ACPICA changes.  And MAINTAINERS could mention it for
->the path prefix "drivers/acpi/acpica/".
->
->Bjorn
->
->>  drivers/acpi/acpica/hwvalid.c |    2 +-
->>  drivers/acpi/acpica/uteval.c  |    4 ++--
->>  include/acpi/actypes.h        |    4 ----
->>  3 files changed, 3 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/acpi/acpica/hwvalid.c
->b/drivers/acpi/acpica/hwvalid.c
->> index ec33f27..ca2eb02 100644
->> --- a/drivers/acpi/acpica/hwvalid.c
->> +++ b/drivers/acpi/acpica/hwvalid.c
->> @@ -103,7 +103,7 @@ static const struct acpi_port_info
->acpi_protected_ports[] = {
->>  	{"PCI", 0x0CF8, 0x0CFF, ACPI_OSI_WIN_XP}
->>  };
->>
->> -#define ACPI_PORT_INFO_ENTRIES  ACPI_ARRAY_LENGTH (acpi_protected_ports)
->> +#define ACPI_PORT_INFO_ENTRIES  ARRAY_SIZE(acpi_protected_ports)
->>
->>
->/**************************************************************************
->****
->>   *
->> diff --git a/drivers/acpi/acpica/uteval.c b/drivers/acpi/acpica/uteval.c
->> index 5d54e36..54efbaa 100644
->> --- a/drivers/acpi/acpica/uteval.c
->> +++ b/drivers/acpi/acpica/uteval.c
->> @@ -126,7 +126,7 @@ acpi_status acpi_ut_osi_implementation(struct
->acpi_walk_state *walk_state)
->>
->>  	/* Compare input string to static table of supported interfaces */
->>
->> -	for (i = 0; i < ACPI_ARRAY_LENGTH(acpi_interfaces_supported); i++) {
->> +	for (i = 0; i < ARRAY_SIZE(acpi_interfaces_supported); i++) {
->>  		if (!ACPI_STRCMP(string_desc->string.pointer,
->>  				 acpi_interfaces_supported[i].name)) {
->>  			/*
->> @@ -186,7 +186,7 @@ acpi_status acpi_osi_invalidate(char *interface)
->>  {
->>  	int i;
->>
->> -	for (i = 0; i < ACPI_ARRAY_LENGTH(acpi_interfaces_supported); i++) {
->> +	for (i = 0; i < ARRAY_SIZE(acpi_interfaces_supported); i++) {
->>  		if (!ACPI_STRCMP(interface, acpi_interfaces_supported[i].name))
->{
->>  			*acpi_interfaces_supported[i].name = '\0';
->>  			return AE_OK;
->> diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
->> index 153f12d..641d746 100644
->> --- a/include/acpi/actypes.h
->> +++ b/include/acpi/actypes.h
->> @@ -441,10 +441,6 @@ typedef unsigned long long acpi_integer;
->>  #define ACPI_MIN(a,b)                   (((a)<(b))?(a):(b))
->>  #define ACPI_MAX(a,b)                   (((a)>(b))?(a):(b))
->>
->> -/* Size calculation */
->> -
->> -#define ACPI_ARRAY_LENGTH(x)            (sizeof(x) / sizeof((x)[0]))
->> -
->>  /* Pointer manipulation */
->>
->>  #define ACPI_CAST_PTR(t, p)             ((t *) (acpi_uintptr_t) (p))
->
+Thanks!
 
+> [ 1893.036023] other info that might help us debug this:
+> [ 1893.036023] 2 locks held by cardmgr/1457:
+
+Wow, cardmgr still in use... I had hoped it had already disappeared on
+non-embedded systems...
+
+> The cause is easy enough to track down.  In pcmcia_ioctl.c,
+> pcmcia_adjust_resource_info() does a down_read() on
+> pcmcia_socket_list_rwsem.  While holding the rwsem, one of the pathways
+> calls the s->resource_ops->add_mem method.  On my system this method is
+> realized by adjust_memory() in rsrc_nonstatic.c, which does its own
+> down_read() on the same rwsem -- i.e., a recursive locking attempt.
+> 
+> The reason lockdep warns about this behavior is that it can lead to
+> deadlock in the wrong circumstances, namely, if another thread were to
+> do a down_write() in between the two down_read() calls.
+> 
+> Would it be correct simply to omit the down_read() in adjust_memory()?
+
+No, for there are other code paths reaching adjust_memory() not holding a
+(read) lock on this semaphore. As pcmcia_ioctl.c is on its way out anyways:
+would you mind keeping it as it is, for a down_write() call is quite
+unlikely during the only time cardmgr actually does this call (system
+startup)?
+
+Best,
+	Dominik
