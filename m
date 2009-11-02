@@ -1,96 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZKBQ3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZKBQcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954AbZKBQ3r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbZKBQ3q
+	id S1755968AbZKBQcO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:32:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbZKBQcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:29:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55152 "EHLO mx3.mail.elte.hu"
+	Mon, 2 Nov 2009 11:32:14 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10799 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755688AbZKBQ3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:29:45 -0500
-Date: Mon, 2 Nov 2009 17:29:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gleb Natapov <gleb@redhat.com>
+	id S1755603AbZKBQcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 11:32:13 -0500
+Date: Mon, 2 Nov 2009 18:31:48 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+       =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>
 Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
-Message-ID: <20091102162941.GC14544@elte.hu>
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com> <20091102092214.GB8933@elte.hu> <20091102160410.GF27911@redhat.com> <20091102161248.GB15423@elte.hu> <20091102162234.GH27911@redhat.com>
+Message-ID: <20091102163148.GI27911@redhat.com>
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
+ <1257076590-29559-3-git-send-email-gleb@redhat.com>
+ <20091102092214.GB8933@elte.hu>
+ <20091102160410.GF27911@redhat.com>
+ <20091102161248.GB15423@elte.hu>
+ <20091102162234.GH27911@redhat.com>
+ <20091102162941.GC14544@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091102162234.GH27911@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091102162941.GC14544@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Gleb Natapov <gleb@redhat.com> wrote:
-
-> On Mon, Nov 02, 2009 at 05:12:48PM +0100, Ingo Molnar wrote:
-> > 
-> > * Gleb Natapov <gleb@redhat.com> wrote:
-> > 
-> > > On Mon, Nov 02, 2009 at 10:22:14AM +0100, Ingo Molnar wrote:
-> > > > 
-> > > > * Gleb Natapov <gleb@redhat.com> wrote:
-> > > > 
-> > > > > diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-> > > > > index f4cee90..14707dc 100644
-> > > > > --- a/arch/x86/mm/fault.c
-> > > > > +++ b/arch/x86/mm/fault.c
-> > > > > @@ -952,6 +952,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
-> > > > >  	int write;
-> > > > >  	int fault;
-> > > > >  
-> > > > > +	if (arch_handle_page_fault(regs, error_code))
-> > > > > +		return;
-> > > > > +
-> > > > 
-> > > > This patch is not acceptable unless it's done cleaner. Currently we 
-> > > > already have 3 callbacks in do_page_fault() (kmemcheck, mmiotrace, 
-> > > > notifier), and this adds a fourth one. Please consolidate them into a 
-> > > > single callback site, this is a hotpath on x86.
-> > > > 
-> > > This call is patched out by paravirt patching mechanism so overhead 
-> > > should be zero for non paravirt cases. [...]
-> > 
-> > arch_handle_page_fault() isnt upstream yet - precisely what is the 
-> > instruction sequence injected into do_page_fault() in the patched-out 
-> > case?
+On Mon, Nov 02, 2009 at 05:29:41PM +0100, Ingo Molnar wrote:
 > 
-> It is introduced by the same patch. The instruction inserted is:
->  xor %rax, %rax
-
-ok.
-
-My observations still stand:
-
-> > > [...] What do you want to achieve by consolidate them into single 
-> > > callback? [...]
+> * Gleb Natapov <gleb@redhat.com> wrote:
+> 
+> > On Mon, Nov 02, 2009 at 05:12:48PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Gleb Natapov <gleb@redhat.com> wrote:
+> > > 
+> > > > On Mon, Nov 02, 2009 at 10:22:14AM +0100, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Gleb Natapov <gleb@redhat.com> wrote:
+> > > > > 
+> > > > > > diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> > > > > > index f4cee90..14707dc 100644
+> > > > > > --- a/arch/x86/mm/fault.c
+> > > > > > +++ b/arch/x86/mm/fault.c
+> > > > > > @@ -952,6 +952,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
+> > > > > >  	int write;
+> > > > > >  	int fault;
+> > > > > >  
+> > > > > > +	if (arch_handle_page_fault(regs, error_code))
+> > > > > > +		return;
+> > > > > > +
+> > > > > 
+> > > > > This patch is not acceptable unless it's done cleaner. Currently we 
+> > > > > already have 3 callbacks in do_page_fault() (kmemcheck, mmiotrace, 
+> > > > > notifier), and this adds a fourth one. Please consolidate them into a 
+> > > > > single callback site, this is a hotpath on x86.
+> > > > > 
+> > > > This call is patched out by paravirt patching mechanism so overhead 
+> > > > should be zero for non paravirt cases. [...]
+> > > 
+> > > arch_handle_page_fault() isnt upstream yet - precisely what is the 
+> > > instruction sequence injected into do_page_fault() in the patched-out 
+> > > case?
 > > 
-> > Less bloat in a hotpath and a shared callback infrastructure.
-> > 
-> > > [...] I mean the code will still exist and will have to be executed on 
-> > > every #PF. Is the goal to move them out of line?
-> > 
-> > The goal is to have a single callback site for all the users - which 
-> > call-site is patched out ideally - on non-paravirt too if needed. Most 
-> > of these callbacks/notifier-chains have are inactive most of the time.
-> > 
-> > I.e. a very low overhead 'conditional callback' facility, and a single 
-> > one - not just lots of them sprinkled around the code.
+> > It is introduced by the same patch. The instruction inserted is:
+> >  xor %rax, %rax
+> 
+> ok.
+> 
+> My observations still stand:
+> 
+> > > > [...] What do you want to achieve by consolidate them into single 
+> > > > callback? [...]
+> > > 
+> > > Less bloat in a hotpath and a shared callback infrastructure.
+> > > 
+> > > > [...] I mean the code will still exist and will have to be executed on 
+> > > > every #PF. Is the goal to move them out of line?
+> > > 
+> > > The goal is to have a single callback site for all the users - which 
+> > > call-site is patched out ideally - on non-paravirt too if needed. Most 
+> > > of these callbacks/notifier-chains have are inactive most of the time.
+> > > 
+> > > I.e. a very low overhead 'conditional callback' facility, and a single 
+> > > one - not just lots of them sprinkled around the code.
+> 
+> looks like a golden opportunity to get this right.
+> 
+I'll look into it. Expect questions from me ;)
 
-looks like a golden opportunity to get this right.
-
-	Ingo
+--
+			Gleb.
