@@ -1,111 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZKBLs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbZKBLvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbZKBLs1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 06:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZKBLs1
+	id S1754685AbZKBLvB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 06:51:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZKBLvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 06:48:27 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:7467 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbZKBLs0 convert rfc822-to-8bit (ORCPT
+	Mon, 2 Nov 2009 06:51:00 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:41093 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754564AbZKBLu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 06:48:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZqHoZkVFgZkklL+9rFotava8CmY3NVlo9gvYYuPord1/8EwE252lo5Zboss8Ym7XFi
-         EcsPFku3dWHcwzaBNXJ3A/qg3bgY+u8TPwSrvXkVQ8HeUlHHvepjlYJAYqEoL3aTwb1h
-         uVaNV++DvnykL58mXFyCepbZ9GUtzUm8gJ4N0=
+	Mon, 2 Nov 2009 06:50:59 -0500
+Date: Mon, 2 Nov 2009 11:51:01 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: [PATCH] mfd/mc13783: near complete rewrite
+Message-ID: <20091102115101.GF29351@sirena.org.uk>
+References: <1256330323-13300-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <1257151763-11507-1-git-send-email-jirislaby@gmail.com>
-References: <4AEE5EA2.6010905@kernel.org>
-	 <1257151763-11507-1-git-send-email-jirislaby@gmail.com>
-Date: Mon, 2 Nov 2009 19:48:30 +0800
-Message-ID: <a8e1da0911020348m177420d2gd1aa25bdf8d53b03@mail.gmail.com>
-Subject: Re: [PATCH 1/1] MM: slqb, fix per_cpu access
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: npiggin@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256330323-13300-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Cookie: <ahzz_> i figured 17G oughta be enough.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 2, 2009 at 4:49 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> We cannot use the same local variable name as the declared per_cpu
-> variable since commit "percpu: remove per_cpu__ prefix."
->
-> Otherwise we would see crashes like:
-> general protection fault: 0000 [#1] SMP
-> last sysfs file:
-> CPU 1
-> Modules linked in:
-> Pid: 1, comm: swapper Tainted: G        W  2.6.32-rc5-mm1_64 #860
-> RIP: 0010:[<ffffffff8142ff94>]  [<ffffffff8142ff94>] start_cpu_timer+0x2b/0x87
-> ...
->
-> Use slqb_ prefix for the global variable so that we don't collide
-> even with the rest of the kernel (s390 and alpha need this).
->
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
+On Fri, Oct 23, 2009 at 10:38:43PM +0200, Uwe Kleine-K??nig wrote:
 
-Tested-by: Dave Young <hidave.darkstar@gmail.com>
+> -int mc13783_register_irq(struct mc13783 *mc13783, int irq,
+> -		void (*handler) (int, void *), void *data)
+> +int mc13783_irq_request_nounmask(struct mc13783 *mc13783, unsigned int irq,
+> +		irqreturn_t (*handler)(struct mc13783 *, unsigned int, void *),
+> +		const char *name, void *dev)
 
-> ---
->  mm/slqb.c |   10 ++++++----
->  1 files changed, 6 insertions(+), 4 deletions(-)
->
-> diff --git a/mm/slqb.c b/mm/slqb.c
-> index e745d9a..e4bb53f 100644
-> --- a/mm/slqb.c
-> +++ b/mm/slqb.c
-> @@ -2766,11 +2766,12 @@ out:
->        schedule_delayed_work(work, round_jiffies_relative(3*HZ));
->  }
->
-> -static DEFINE_PER_CPU(struct delayed_work, cache_trim_work);
-> +static DEFINE_PER_CPU(struct delayed_work, slqb_cache_trim_work);
->
->  static void __cpuinit start_cpu_timer(int cpu)
->  {
-> -       struct delayed_work *cache_trim_work = &per_cpu(cache_trim_work, cpu);
-> +       struct delayed_work *cache_trim_work = &per_cpu(slqb_cache_trim_work,
-> +                       cpu);
->
->        /*
->         * When this gets called from do_initcalls via cpucache_init(),
-> @@ -3136,8 +3137,9 @@ static int __cpuinit slab_cpuup_callback(struct notifier_block *nfb,
->
->        case CPU_DOWN_PREPARE:
->        case CPU_DOWN_PREPARE_FROZEN:
-> -               cancel_rearming_delayed_work(&per_cpu(cache_trim_work, cpu));
-> -               per_cpu(cache_trim_work, cpu).work.func = NULL;
-> +               cancel_rearming_delayed_work(&per_cpu(slqb_cache_trim_work,
-> +                                       cpu));
-> +               per_cpu(slqb_cache_trim_work, cpu).work.func = NULL;
->                break;
->
->        case CPU_UP_CANCELED:
-> --
-> 1.6.4.2
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+If you're changing the signature of the IRQ handler functions it'd be
+nice to change them to irq_handler_t - that way it'll be much easier to
+transition the driver to using genirq in future since it should end up
+being possible to just stub out the Atlas-specific calls in the header
+with calls to the standard IRQ functions when the core is transitioned,
+reducing cross-tree issues.
 
-
-
--- 
-Regards
-dave
+This might create issues with a request_nounmask() function, though a
+request plus mask is probably enough - I guess you're using this for
+your the RTC driver in which case a spurious periodic interrupt is
+unlikely to be an issue.
