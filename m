@@ -1,45 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZKBPce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZKBPgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbZKBPce (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZKBPcd
+	id S1755480AbZKBPgR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbZKBPgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:32:33 -0500
-Received: from icculus.org ([67.106.77.212]:48060 "EHLO icculus.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755520AbZKBPcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:32:33 -0500
-Date: Mon, 2 Nov 2009 10:32:32 -0500 (EST)
-From: "Ryan C. Gordon" <icculus@icculus.org>
-X-X-Sender: icculus@caridad.icculuslan
-To: David Miller <davem@davemloft.net>
-cc: alan@lxorguk.ukuu.org.uk, mans@mansr.com, linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-In-Reply-To: <20091101.222755.200487074.davem@davemloft.net>
-Message-ID: <alpine.OSX.1.10.0911021027210.444@caridad.icculuslan>
-References: <alpine.OSX.1.10.0911011540400.53392@caridad.local> <20091102000147.424f104b@lxorguk.ukuu.org.uk> <alpine.OSX.1.10.0911012023020.55434@caridad.local> <20091101.222755.200487074.davem@davemloft.net>
-User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
+	Mon, 2 Nov 2009 10:36:16 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38406 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755192AbZKBPgP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:36:15 -0500
+Date: Tue, 3 Nov 2009 00:35:30 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCHv2 2/5] vmscan: Kill hibernation specific reclaim logic and unify it
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>, "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200911012238.13083.rjw@sisk.pl>
+References: <20091102000855.F404.A69D9226@jp.fujitsu.com> <200911012238.13083.rjw@sisk.pl>
+Message-Id: <20091103002506.8869.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > That being said, there are lots of places where using a package 
-> > manager doesn't make sense:
+> > Then, This patch changed shrink_all_memory() to only the wrapper function of 
+> > do_try_to_free_pages(). it bring good reviewability and debuggability, and solve 
+> > above problems.
+> > 
+> > side note: Reclaim logic unificication makes two good side effect.
+> >  - Fix recursive reclaim bug on shrink_all_memory().
+> >    it did forgot to use PF_MEMALLOC. it mean the system be able to stuck into deadlock.
+> >  - Now, shrink_all_memory() got lockdep awareness. it bring good debuggability.
 > 
-> Yeah like maybe, just maybe, in an embedded system where increasing
-> space costs like FatELF does makes even less sense.
+> As I said previously, I don't really see a reason to keep shrink_all_memory().
+> 
+> Do you think that removing it will result in performance degradation?
 
-I listed several examples. Embedded systems wasn't one of them.
+Hmm...
+Probably, I misunderstood your mention. I thought you suggested to kill
+all hibernation specific reclaim code. I did. It's no performance degression.
+(At least, I didn't observe)
 
-> I think Alan's arguments against FatELF were the most comprehensive
-> and detailed, and I haven't seem them refuted very well, if at all.
+But, if you hope to kill shrink_all_memory() function itsef, the short answer is,
+it's impossible.
 
-I said I was trying to avoid talking everyone to death.  :)
+Current VM reclaim code need some preparetion to caller, and there are existing in
+both alloc_pages_slowpath() and try_to_free_pages(). We can't omit its preparation.
 
-I'll respond to them, then.
+Please see following shrink_all_memory() code. it's pretty small. it only have
+few vmscan preparation. I don't think it is hard to maintainance.
 
---ryan.
+
+=====================================================
+unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
+{
+        struct reclaim_state reclaim_state;
+        struct scan_control sc = {
+                .gfp_mask = GFP_HIGHUSER_MOVABLE,
+                .may_swap = 1,
+                .may_unmap = 1,
+                .may_writepage = 1,
+                .nr_to_reclaim = nr_to_reclaim,
+                .hibernation_mode = 1,
+                .swappiness = vm_swappiness,
+                .order = 0,
+                .isolate_pages = isolate_pages_global,
+        };
+        struct zonelist * zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
+        struct task_struct *p = current;
+        unsigned long nr_reclaimed;
+
+        p->flags |= PF_MEMALLOC;
+        lockdep_set_current_reclaim_state(sc.gfp_mask);
+        reclaim_state.reclaimed_slab = 0;
+        p->reclaim_state = &reclaim_state;
+
+        nr_reclaimed = do_try_to_free_pages(zonelist, &sc);
+
+        p->reclaim_state = NULL;
+        lockdep_clear_current_reclaim_state();
+        p->flags &= ~PF_MEMALLOC;
+
+        return nr_reclaimed;
+}
+
 
