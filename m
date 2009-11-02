@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZKBNak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbZKBNh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbZKBNak (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 08:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbZKBNaj
+	id S1755208AbZKBNh6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 08:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbZKBNh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 08:30:39 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39580 "EHLO mx2.suse.de"
+	Mon, 2 Nov 2009 08:37:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37495 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754232AbZKBNaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 08:30:39 -0500
-Date: Mon, 2 Nov 2009 14:30:42 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 00/27] Push down BKL to the filesystems (v2)
-Message-ID: <20091102133042.GE21750@bolzano.suse.de>
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <200911021229.02332.borntraeger@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911021229.02332.borntraeger@de.ibm.com>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.9i
+	id S1754250AbZKBNhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 08:37:55 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
+Date: Mon, 2 Nov 2009 14:35:57 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <200911010936.10409.rjw@sisk.pl> <20091101164736.GA5666@comet.dominikbrodowski.net>
+In-Reply-To: <20091101164736.GA5666@comet.dominikbrodowski.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911021435.57884.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, Christian Borntraeger wrote:
-
-> Am Montag 02 November 2009 11:04:40 schrieb Jan Blunck:
-> > During the realtime preemption mini-summit we discussed the entire removal
-> >  of the big kernel lock. I've started working on this for some filesystems.
-> >  My plan is to push the BKL down to the implementations first and remove it
-> >  from there later.
+On Sunday 01 November 2009, Dominik Brodowski wrote:
+> Hey,
+> 
+> On Sun, Nov 01, 2009 at 09:36:10AM +0100, Rafael J. Wysocki wrote:
+> > Commit 0c570cdeb8fdfcb354a3e9cd81bfc6a09c19de0c
+> > (PM / yenta: Fix cardbus suspend/resume regression) caused resume to
+> > fail on systems with two CardBus bridges.  While the exact nature
+> > of the failure is not known at the moment, it can be worked around by
+> > splitting the yenta resume into an early part, executed during the
+> > early phase of resume, that will only resume the socket and power it
+> > up if there was a card in it during suspend, and a late part,
+> > executed during "regular" resume, that will carry out all of the
+> > remaining yenta resume operations.
 > > 
-> > This series is pushing the BKL from do_new_mount() down to the filesystems
-> >  and removes it from ext series of filesystems and one other trivial use:
-> >  if the BKL is only used in get_sb/fill_super due to the push-down, we just
-> >  need to make sure that parallel calls to get_sb/fill_super would race
-> >  against each other.
+> > Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14334, which is a
+> > listed regression from 2.6.31.
 > 
-> seems that patch 1 (the pushdown) did not yet made it to the list.
+> The only issue I see is that we now return 0 unconditionally on the resume
+> callbacks.
 
-Seems that the CC list was too long because I used get_maintainer.pl together
-with git-send-email on this patch ...
+Hmm. pcmcia_socket_dev_suspend() and pcmcia_socket_dev_resume() return 0
+unconditionally even without the patch, so it doesn't change that.
 
-> Looking at 
-> you diffstat it seems that you only touched fs/*
+> Otherwise, it's
 > 
-> There are filesystems in other places, e.g.
-> drivers/isdn/capi/capifs.c,
-> arch/powerpc/platforms/cell/spufs/inode.c
-> or
-> arch/s390/hypfs/inode.c
-> 
-> I am really not an expert in filesystems, so my comment might be bogus: My 
-> expection was, that a simple pushdown should also affect these filesystems, 
-> especially if the filesystems dont use simple_fill_super, no?
+> Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
 
-D'Oh! You are totally correct. Seems that nothing important outside of fs/
-actually requires the BKL since my box is still wor
+Thanks!
+
+Rafael
+
