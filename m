@@ -1,109 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbZKBD1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZKBDeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753779AbZKBD1j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 22:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbZKBD1j
+	id S1753759AbZKBDeb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 22:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZKBDea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 22:27:39 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:40321 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753654AbZKBD1i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 22:27:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ez1ySj8tvfYec/HFCUvctnm62N9HNPbMzhe8P2JHuJrMV2tBxqPE5svkKpuIIrswl9
-         Mq8r7oM5hw+gwucwsKMW/ycYZf2H4O+yUEjuDYm8/oM7esrEH+hLey0l9OOBAvFHxUM4
-         J0Q6MZ3zsaHKkUoTV9eUzs1BZBL/OESvkBYZc=
-MIME-Version: 1.0
-In-Reply-To: <alpine.OSX.1.10.0911012017450.55434@caridad.local>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	 <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	 <alpine.OSX.1.10.0911011540400.53392@caridad.local>
-	 <yw1xhbte0wx0.fsf@unicorn.mansr.com>
-	 <73a01bf20911011408v5b6d335fj46c893a8e7d26ab4@mail.gmail.com>
-	 <alpine.OSX.1.10.0911012017450.55434@caridad.local>
-Date: Sun, 1 Nov 2009 22:27:42 -0500
-Message-ID: <73a01bf20911011927o717e5843r1f21099be791d634@mail.gmail.com>
-Subject: Re: FatELF patches...
-From: Rayson Ho <raysonlogin@gmail.com>
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Cc: =?ISO-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 1 Nov 2009 22:34:30 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36478 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753647AbZKBDe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 22:34:29 -0500
+Date: Mon, 2 Nov 2009 04:34:29 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, WU Fengguang <wfg@mail.ustc.edu.cn>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       hch@infradead.org, chris.mason@oracle.com
+Subject: Re: [RFC] [PATCH] Avoid livelock for fsync
+Message-ID: <20091102033429.GB28207@wotan.suse.de>
+References: <20091026181314.GE7233@duck.suse.cz> <20091028144731.b46a3341.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091028144731.b46a3341.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 1, 2009 at 8:17 PM, Ryan C. Gordon <icculus@icculus.org> wrote:
-> I'm tracking down a lawyer to discuss the issue. I'm surprised there
-> aren't a few hanging around here, honestly. I sent a request in to the
-> SFLC, and if that doesn't pan out, I'll dig for coins in my car seat to
-> pay a lawyer for a few hours of her time.
+On Wed, Oct 28, 2009 at 02:47:31PM -0700, Andrew Morton wrote:
+> On Mon, 26 Oct 2009 19:13:14 +0100
+> Jan Kara <jack@suse.cz> wrote:
+> 
+> >   Hi,
+> > 
+> >   on my way back from Kernel Summit, I've coded the attached patch which
+> > implements livelock avoidance for write_cache_pages. We tag patches that
+> > should be written in the beginning of write_cache_pages and then write
+> > only tagged pages (see the patch for details). The patch is based on Nick's
+> > idea.
+> >   The next thing I've aimed at with this patch is a simplification of
+> > current writeback code. Basically, with this patch I think we can just rip
+> > out all the range_cyclic and nr_to_write (or other "fairness logic"). The
+> > rationalle is following:
+> >   What we want to achieve with fairness logic is that when a page is
+> > dirtied, it gets written to disk within some reasonable time (like 30s or
+> > so). We track dirty time on per-inode basis only because keeping it
+> > per-page is simply too expensive. So in this setting fairness between
+> > inodes really does not make any sence - why should be a page in a file
+> > penalized and written later only because there are lots of other dirty
+> > pages in the file? It is enough to make sure that we don't write one file
+> > indefinitely when there are new dirty pages continuously created - and my
+> > patch achieves that.
+> >   So with my patch we can make write_cache_pages always write from
+> > range_start (or 0) to range_end (or EOF) and write all tagged pages. Also
+> > after changing balance_dirty_pages() so that a throttled process does not
+> > directly submit the IO (Fengguang has the patches for this), we can
+> > completely remove the nr_to_write logic because nothing really uses it
+> > anymore. Thus also the requeue_io logic should go away etc...
+> >   Fengguang, do you have the series somewhere publicly available? You had
+> > there a plenty of changes and quite some of them are not needed when the
+> > above is done. So could you maybe separate out the balance_dirty_pages
+> > change and I'd base my patch and further simplifications on top of that?
+> > Thanks.
+> > 
+> 
+> I need to think about this.  Hard.
+> 
+> So I'll defer that and nitpick the implementation instead ;)
+> 
+> My MUA doesn't understand text/x-patch.  Please use text/plain if you
+> must use attachments?
+> 
+> 	
+>  /**
+> > + * tag_pages_for_writeback - tag pages to be written by write_cache_pages
+> > + * @mapping: address space structure to write
+> > + * @start: starting page index
+> > + * @end: ending page index (inclusive)
+> > + *
+> > + * This function scans the page range from @start to @end and tags all pages
+> > + * that have DIRTY tag set with a special TOWRITE tag. The idea is that
+> > + * write_cache_pages (or whoever calls this function) will then use TOWRITE tag
+> > + * to identify pages eligible for writeback.  This mechanism is used to avoid
+> > + * livelocking of writeback by a process steadily creating new dirty pages in
+> > + * the file (thus it is important for this function to be damn quick so that it
+> > + * can tag pages faster than a dirtying process can create them).
+> > + */
+> > +void tag_pages_for_writeback(struct address_space *mapping,
+> > +			     pgoff_t start, pgoff_t end)
+> > +{
+> > +	struct pagevec pvec;
+> > +	int nr_pages, i;
+> > +	struct page *page;
+> > +
+> > +	pagevec_init(&pvec, 0);
+> > +	while (start <= end) {
+> > +		nr_pages = pagevec_lookup_tag(&pvec, mapping, &start,
+> > +			      PAGECACHE_TAG_DIRTY,
+> > +			      min(end - start, (pgoff_t)PAGEVEC_SIZE-1) + 1);
+> > +		if (!nr_pages)
+> > +			return;
+> > +
+> > +		spin_lock_irq(&mapping->tree_lock);
+> > +		for (i = 0; i < nr_pages; i++) {
+> > +			page = pvec.pages[i];
+> > +			/* Raced with someone freeing the page? */
+> > +			if (page->mapping != mapping)
+> > +				continue;
+> > +			if (page->index > end)
+> > +				break;
+> > +			radix_tree_tag_set(&mapping->page_tree,
+> > +				page_index(page), PAGECACHE_TAG_TOWRITE);
+> > +		}
+> > +		spin_unlock_irq(&mapping->tree_lock);
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL(tag_pages_for_writeback);
+> 
+> This is really inefficient.  We do a full tree descent for each dirty
+> page.
+> 
+> It would be far more efficient to do a combined lookup and set
+> operation.  Bascially that's the same as pagevec_lookup_tag(), only we
+> set the PAGECACHE_TAG_TOWRITE on each page instead of taking a copy
+> into the pagevec.
 
-Good!! And thanks :)
+I had a radix_tree_gang_set_if_tagged operation in my earlier
+patchset, which should basically do this.
 
-And is the lawyer specialized in patent laws??
+ 
+> Which makes one wonder: would such an operation require ->tree_lock? 
+> pagevec_lookup_tag() just uses rcu_read_lock() - what do we need to do
+> to use lighter locking in the new
+> radix_tree_gang_lookup_tag_slot_then_set_a_flag()?  Convert tag_set()
+> and tag_clear() to atomic ops, perhaps?
 
+Well that, but the hard part is propagating the tag back to the root
+in a coherent way (when other guys are setting and clearing tags in
+other nodes). Also, if we have more than a couple of atomic bitops,
+then the spinlock will win out in straight line performance (although
+scalability could still be better with an unlocked version... but I
+think the propagation is the hard part).
 
-> I've had about a million people point out the boot loader thing. There's
-> an x86/amd64 forest if you can see past the MIPS trees.
-
-If it's x86 vs. AMD64, then the installer can already do most of the
-work, and it can ask the user to insert the right 2nd/3rd/etc CD/DVD.
-
-
-> Theoretical ones become practical
-> the moment someone decides to roll out a company-internal distribution
-> that works on all the workstations inside IBM or Google or whatever...even
-> if Fedora would turn their nose up at the idea for a general-purpose
-> release.
-
-Don't you think that taking a CD/DVD to each workstation and start the
-installation or upgrade is so old school??
-
-Software updates inside those companies are done via the internet
-network, and it does not matter whether the DVD can handle all the
-architectures or not.
-
-And the idea of a general-purpose release might not work. As 90% of
-the users are using a single architecture (I count AMD64 as x86 with
-"some" extensions...), we won't get the benefits so having the extra
-code in the kernel and the userspace. Most of the shipped commercial
-binaries will be x86 anyways -- and as Alan stated, the packaging
-system is already doing most of the work for us already (I don't
-recall providing anything except the package name when I do apt-get).
-
-For embedded systems, they wanted to take away all the fat more than
-shipping a single app.
-
-
-> These are concerns, too, but the kernel has been, in my experience, very
-> good at binary compatibility with user space back as far as I can
-> remember. glibc has had some painful progress, but since NPTL stabilized a
-> long time ago, even this hasn't been bad at all.
->
-> Certainly one has to be careful--I would even use the word diligent--to
-> maintain binary compatibility, but this was much more of a hurting for
-> application developers a decade ago.
-
-The kernel part refers to kernel modules.
-
-But yes, binary compatibility was a real pain when I "really" (played
-with it in 1995, didn't really like it at that time) started using
-Linux in 1997. However, I think the installer/package manager took out
-most of the burden.
-
-Rayson
-
-
-
->
-> At least, that's been my experience.
->
-> --ryan.
->
->
->
