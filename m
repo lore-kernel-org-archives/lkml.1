@@ -1,89 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbZKBKlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZKBKmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439AbZKBKlo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 05:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbZKBKlo
+	id S1754683AbZKBKmI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:42:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZKBKmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 05:41:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45063 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754351AbZKBKln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 05:41:43 -0500
-Date: Mon, 2 Nov 2009 11:41:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH][RFC] Adding hackbench.c to tools/
-Message-ID: <20091102104124.GA5193@elte.hu>
-References: <20091101.131027.680961629714047921.mitake@dcl.info.waseda.ac.jp>
+	Mon, 2 Nov 2009 05:42:07 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:54469 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754402AbZKBKmG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 05:42:06 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=FMI2QVjkNJhSTzsfekA0KRk6Pl13wCHkxOq8gIN+XKaLZma+bWK8Eym/nH9h6v3YO
+	uRetByNLyQHorChE588mg==
+Date: Mon, 2 Nov 2009 02:42:03 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+In-Reply-To: <2f11576a0911010529t688ed152qbb72c87c85869c45@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0911020237440.13146@chino.kir.corp.google.com>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com> <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com> <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com> <2f11576a0911010529t688ed152qbb72c87c85869c45@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091101.131027.680961629714047921.mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 1 Nov 2009, KOSAKI Motohiro wrote:
 
-* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-
-> Hi Ingo,
+> > total_vm
+> > 673222 test
+> > 195695 krunner
+> > 168881 plasma-desktop
+> > 130567 ktorrent
+> > 127081 knotify4
+> > 125881 icedove-bin
+> > 123036 akregator
+> > 121869 firefox-bin
+> >
+> > rss
+> > 672271 test
+> > 42192 Xorg
+> > 30763 firefox-bin
+> > 13292 icedove-bin
+> > 10208 ktorrent
+> > 9260 akregator
+> > 8859 plasma-desktop
+> > 7528 krunner
+> >
+> > firefox-bin seems much more preferred in this case than total_vm, but Xorg
+> > still ranks very high with this patch compared to the current
+> > implementation.
 > 
-> It seems that hackbench is the de-fact standard benchmarking program 
-> for scheduler of Linux. But when I ask google where hackbench.c is, 
-> some answers are replied. Like these, (in order of google result)
+> Hi David,
 > 
-> http://devresources.linux-foundation.org/craiger/hackbench/ (this page 
-> containts link to hackbench.c) 
-> http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+> I'm very interesting your pointing out. thanks good testing.
+> So, I'd like to clarify your point a bit.
 > 
-> And it seems that second one is newer.
+> following are badness list on my desktop environment (x86_64 6GB mem).
+> it show Xorg have pretty small badness score. Do you know why such
+> different happen?
 > 
-> I think this situation is very confusable. So I wrote this patch to 
-> add hackbench to tools/ of kernel tree. This may help hackbench users 
-> like me.
 
-I think we can do something nicer: would you be interested in adding it 
-as a 'perf bench hackbench' sub-command of tools/perf/?
+I don't know specifically what's different on your machine than Vedran's, 
+my data is simply a collection of the /proc/sys/vm/oom_dump_tasks output 
+from Vedran's oom log.
 
-We already have the tools to measure scheduling behavior under 'perf 
-sched', so having a 'perf bench' array of common tests would be nice to 
-have.
+I guess we could add a call to badness() for the oom_dump_tasks tasklist 
+dump to get a clearer picture so we know the score for each thread group 
+leader.  Anything else would be speculation at this point, though.
 
-( I've Cc:-ed Rusty, the original author of hackbench.c. Rusty, the file 
-  has no explicit GPLv2 compatible license - is it fine to be put
-  into GPLv2 code? )
+> score    pid        comm
+> ==============================
+> 56382   3241    run-mozilla.sh
+> 23345   3289    run-mozilla.sh
+> 21461   3050    gnome-do
+> 20079   2867    gnome-session
+> 14016   3258    firefox
+> 9212    3306    firefox
+> 8468    3115    gnome-do
+> 6902    3325    emacs
+> 6783    3212    tomboy
+> 4865    2968    python
+> 4861    2948    nautilus
+> 4221    1       init
+> (snip about 100line)
+> 548     2590    Xorg
+> 
 
-Adding a new perf sub-command is easy:
-
-create a new tools/perf/builtin-bench.c file and copy hackbench.c to it, 
-add it to command-list.txt and to the Makefile - add it to perf.c's 
-array of built-in commands and [optional] add a 
-Documentation/perf-bench.txt file to generate manpages and usage strings 
-for it.
-
-Change the 'main' function to cmd_bench() and add option parsing like 
-you can see in the other builtin-*.c files. This should get you going.
-
-Eventually we'd add more scheduler (and other) benchmarks too, not just 
-hackbench. I'd also suggest to name it not 'hackbench' but something 
-more generic, like:
-
-  perf bench sched messaging
-
-So that we can have subsystem identifier first, then the type of 
-benchmark.
-
-	Ingo
+Are these scores with your rss patch or without?  If it's without the 
+patch, this is understandable since Xorg didn't appear highly in Vedran's 
+log either.
