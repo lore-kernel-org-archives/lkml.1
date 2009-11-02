@@ -1,113 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZKBIt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbZKBJKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbZKBIt7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 03:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZKBIt7
+	id S1754065AbZKBJKt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 04:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZKBJKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 03:49:59 -0500
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:49326 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbZKBIt6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 03:49:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=eQ/FmUTuYHPiVuxhVXC5mgJwfEaoAOwL927wFyN+irasCH2MkcT2y5/GS8I2LKaaiO
-         UrOm9aqAMvFdEtMY70P871wXHQEPK4GhbAN6K/ACf5NoYfergqZW8u/eZMCplZktSzIc
-         dWjG8i95n4bOWe7S5DL35kKvuYQ/ot2n7Ou4c=
+	Mon, 2 Nov 2009 04:10:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50359 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752960AbZKBJKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 04:10:47 -0500
+Date: Mon, 2 Nov 2009 10:10:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Message-ID: <20091102091038.GA9044@elte.hu>
+References: <1256886023.3555.5.camel@johannes.local> <20091030110616.GB6150@ff.dom.local> <20091030150223.GA2586@tuxdriver.com>
 MIME-Version: 1.0
-Date: Mon, 2 Nov 2009 17:50:02 +0900
-Message-ID: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
-Subject: [patch] added brightness feature to lcd class.
-From: InKi Dae <daeinki@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: Kyungmin Park <kmpark@infradead.org>
-Content-Type: multipart/mixed; boundary=0015177411469e53b204775f7660
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091030150223.GA2586@tuxdriver.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0015177411469e53b204775f7660
-Content-Type: text/plain; charset=ISO-8859-1
 
-This patch adds brightness feature to lcd class.
-(kernel/driver/video/backlight/lcd.c)
+* John W. Linville <linville@tuxdriver.com> wrote:
 
-In the past, most of the lcd panels for embedded system was TFT-LCD
-Panel needing backlight device.
-But now AMOLED LCD Panel appeared so we should consider brightness
-control for AMOLED Panel.
+> On Fri, Oct 30, 2009 at 11:06:16AM +0000, Jarek Poplawski wrote:
+> 
+> > There are various ways to disagree, and ignoring by John questions
+> > from a merited developer both in this referenced lkml and current
+> > threads looks at least strange (if not offensive) as well.
+> 
+> Did you read the thread for which Bartlomiej provided a link earlier? 
+> There were ten responses (only three of them from him) in that thread. 
+> His comments were not ignored, they were rejected.
+> 
+> Ever since Bartlomiej decided to tear himself away from 
+> drivers/staging, he has been nothing but negative -- petty, whining, 
+> indignat, whatever.  Just what has he done to merit any special 
+> consideration here?  Why should he have any sort of veto over rt2x00?
 
-For the time being, I used backlight fake driver for brightness
-control of AMOLED LCD Panel.
-But this way is not good, so I propose to add brightness feature to lcd class.
+I got curious, as my past experience with Bartlomiej is that he is a 
+factual, reliable, knowledgable upstream driver developer interested in 
+difficult pieces of code others are reluctant to touch, for whom it is 
+rather atypical to get 'petty, whining, indignant'.
 
-For this, I attached patch file and if my proposal is approved
-Then I will send s6e63m0 and tl2796 AMOLED lcd panel driver based on
-lcd class modified soon.
+So i have read the thread you and Bartlomiej referenced:
 
-signed-off-by : InKi Dae <inki.dae@samsung.com>
+    http://lkml.org/lkml/2009/10/17/81
 
-Best Regards,
-InKi Dae.
+... and my understanding of that discussion is very different from 
+yours. Here is my annotated history of the beginnings of that 
+discussion:
 
---0015177411469e53b204775f7660
-Content-Type: application/octet-stream; name="lcd.patch"
-Content-Disposition: attachment; filename="lcd.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g1iz2s3l0
+Bartlomiej (in <200910171654.03344.bzolnier@gmail.com>) started his 
+review of the driver with:
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2xjZC5jIGIvZHJpdmVycy92aWRl
-by9iYWNrbGlnaHQvbGNkLmMKaW5kZXggYjY0NDk0Ny4uY2MxOWVlOSAxMDA2NDQKLS0tIGEvZHJp
-dmVycy92aWRlby9iYWNrbGlnaHQvbGNkLmMKKysrIGIvZHJpdmVycy92aWRlby9iYWNrbGlnaHQv
-bGNkLmMKQEAgLTE2NCw2ICsxNjQsNTMgQEAgc3RhdGljIHNzaXplX3QgbGNkX3Nob3dfbWF4X2Nv
-bnRyYXN0KHN0cnVjdCBkZXZpY2UgKmRldiwKIAlyZXR1cm4gc3ByaW50ZihidWYsICIlZFxuIiwg
-bGQtPnByb3BzLm1heF9jb250cmFzdCk7CiB9CiAKK3N0YXRpYyBzc2l6ZV90IGxjZF9zaG93X2Jy
-aWdodG5lc3Moc3RydWN0IGRldmljZSAqZGV2LAorCQlzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAq
-YXR0ciwgY2hhciAqYnVmKQoreworCWludCByYyA9IC1FTlhJTzsKKwlzdHJ1Y3QgbGNkX2Rldmlj
-ZSAqbGQgPSB0b19sY2RfZGV2aWNlKGRldik7CisKKwltdXRleF9sb2NrKCZsZC0+b3BzX2xvY2sp
-OworCWlmIChsZC0+b3BzICYmIGxkLT5vcHMtPmdldF9icmlnaHRuZXNzKQorCQlyYyA9IHNwcmlu
-dGYoYnVmLCAiJWRcbiIsIGxkLT5vcHMtPmdldF9icmlnaHRuZXNzKGxkKSk7CisJbXV0ZXhfdW5s
-b2NrKCZsZC0+b3BzX2xvY2spOworCisJcmV0dXJuIHJjOworfQorCitzdGF0aWMgc3NpemVfdCBs
-Y2Rfc3RvcmVfYnJpZ2h0bmVzcyhzdHJ1Y3QgZGV2aWNlICpkZXYsCisJCXN0cnVjdCBkZXZpY2Vf
-YXR0cmlidXRlICphdHRyLCBjb25zdCBjaGFyICpidWYsIHNpemVfdCBjb3VudCkKK3sKKwlpbnQg
-cmMgPSAtRU5YSU87CisJY2hhciAqZW5kcDsKKwlzdHJ1Y3QgbGNkX2RldmljZSAqbGQgPSB0b19s
-Y2RfZGV2aWNlKGRldik7CisJaW50IGJyaWdodG5lc3MgPSBzaW1wbGVfc3RydG91bChidWYsICZl
-bmRwLCAwKTsKKwlzaXplX3Qgc2l6ZSA9IGVuZHAgLSBidWY7CisKKwlpZiAoKmVuZHAgJiYgaXNz
-cGFjZSgqZW5kcCkpCisJCXNpemUrKzsKKwlpZiAoc2l6ZSAhPSBjb3VudCkKKwkJcmV0dXJuIC1F
-SU5WQUw7CisKKwltdXRleF9sb2NrKCZsZC0+b3BzX2xvY2spOworCWlmIChsZC0+b3BzICYmIGxk
-LT5vcHMtPnNldF9icmlnaHRuZXNzKSB7CisJCXByX2RlYnVnKCJsY2Q6IHNldCBicmlnaHRuZXNz
-IHRvICVkXG4iLCBicmlnaHRuZXNzKTsKKwkJbGQtPm9wcy0+c2V0X2JyaWdodG5lc3MobGQsIGJy
-aWdodG5lc3MpOworCQlyYyA9IGNvdW50OworCX0KKwltdXRleF91bmxvY2soJmxkLT5vcHNfbG9j
-ayk7CisKKwlyZXR1cm4gcmM7Cit9CisKK3N0YXRpYyBzc2l6ZV90IGxjZF9zaG93X21heF9icmln
-aHRuZXNzKHN0cnVjdCBkZXZpY2UgKmRldiwKKwkJc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0
-dHIsIGNoYXIgKmJ1ZikKK3sKKwlzdHJ1Y3QgbGNkX2RldmljZSAqbGQgPSB0b19sY2RfZGV2aWNl
-KGRldik7CisKKwlyZXR1cm4gc3ByaW50ZihidWYsICIlZFxuIiwgbGQtPnByb3BzLm1heF9icmln
-aHRuZXNzKTsKK30KKwogc3RhdGljIHN0cnVjdCBjbGFzcyAqbGNkX2NsYXNzOwogCiBzdGF0aWMg
-dm9pZCBsY2RfZGV2aWNlX3JlbGVhc2Uoc3RydWN0IGRldmljZSAqZGV2KQpAQCAtMTc2LDYgKzIy
-Myw4IEBAIHN0YXRpYyBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSBsY2RfZGV2aWNlX2F0dHJpYnV0
-ZXNbXSA9IHsKIAlfX0FUVFIobGNkX3Bvd2VyLCAwNjQ0LCBsY2Rfc2hvd19wb3dlciwgbGNkX3N0
-b3JlX3Bvd2VyKSwKIAlfX0FUVFIoY29udHJhc3QsIDA2NDQsIGxjZF9zaG93X2NvbnRyYXN0LCBs
-Y2Rfc3RvcmVfY29udHJhc3QpLAogCV9fQVRUUihtYXhfY29udHJhc3QsIDA0NDQsIGxjZF9zaG93
-X21heF9jb250cmFzdCwgTlVMTCksCisJX19BVFRSKGJyaWdodG5lc3MsIDA2NDQsIGxjZF9zaG93
-X2JyaWdodG5lc3MsIGxjZF9zdG9yZV9icmlnaHRuZXNzKSwKKwlfX0FUVFIobWF4X2JyaWdodG5l
-c3MsIDA0NDQsIGxjZF9zaG93X21heF9icmlnaHRuZXNzLCBOVUxMKSwKIAlfX0FUVFJfTlVMTCwK
-IH07CiAKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvbGNkLmggYi9pbmNsdWRlL2xpbnV4L2xj
-ZC5oCmluZGV4IGM2N2ZlY2EuLjUxNDVmYzYgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvbGNk
-LmgKKysrIGIvaW5jbHVkZS9saW51eC9sY2QuaApAQCAtMzQsNiArMzQsOSBAQCBzdHJ1Y3QgZmJf
-aW5mbzsKIHN0cnVjdCBsY2RfcHJvcGVydGllcyB7CiAJLyogVGhlIG1heGltdW0gdmFsdWUgZm9y
-IGNvbnRyYXN0IChyZWFkLW9ubHkpICovCiAJaW50IG1heF9jb250cmFzdDsKKworCS8qIFRoZSBt
-YXhpbXVtIHZhbHVlIGZvciBicmlnaHRuZXNzIChyZWFkLW9ubHkpICovCisJaW50IG1heF9icmln
-aHRuZXNzOwogfTsKIAogc3RydWN0IGxjZF9vcHMgewpAQCAtNDYsNiArNDksMTAgQEAgc3RydWN0
-IGxjZF9vcHMgewogCWludCAoKmdldF9jb250cmFzdCkoc3RydWN0IGxjZF9kZXZpY2UgKik7CiAJ
-LyogU2V0IExDRCBwYW5lbCBjb250cmFzdCAqLwogICAgICAgICBpbnQgKCpzZXRfY29udHJhc3Qp
-KHN0cnVjdCBsY2RfZGV2aWNlICosIGludCBjb250cmFzdCk7CisJLyogR2V0IHRoZSBjdXJyZW50
-IGJyaWdobmVzcyBzZXR0aW5nIChvbmx5IEFNT0xFRCBsY2QgcGFuZWwpICovCisJaW50ICgqZ2V0
-X2JyaWdodG5lc3MpKHN0cnVjdCBsY2RfZGV2aWNlICopOworCS8qIFNldCBMQ0QgcGFuZWwgYnJp
-Z2h0bmVzcyAob25seSBBTU9MRUQgbGNkIHBhbmVsKSAqLworCWludCAoKnNldF9icmlnaHRuZXNz
-KShzdHJ1Y3QgbGNkX2RldmljZSAqLCBpbnQgYnJpZ2h0bmVzcyk7CiAJLyogU2V0IExDRCBwYW5l
-bCBtb2RlIChyZXNvbHV0aW9ucyAuLi4pICovCiAJaW50ICgqc2V0X21vZGUpKHN0cnVjdCBsY2Rf
-ZGV2aWNlICosIHN0cnVjdCBmYl92aWRlb21vZGUgKik7CiAJLyogQ2hlY2sgaWYgZ2l2ZW4gZnJh
-bWVidWZmZXIgZGV2aWNlIGlzIHRoZSBvbmUgTENEIGlzIGJvdW5kIHRvOwo=
---0015177411469e53b204775f7660--
+ | First let me say that I'm very happy to see this patch finally being 
+ | submitted and I appreciate the effort..
+ |
+ | (I'll give it a spin on Eee 901 w/ 2.6.32-rc5 sometime later..)
+
+Very friendly and constructive. Pretty much the Bartlomiej i have known 
+for years.
+
+Then he continues with his technical observations:
+
+ | Now to the less happy part..
+ |
+ | I also used the opportunity to take a closer look at this driver and 
+ | it seems that it needlessly adds around 2 KLOC to kernel by 
+ | duplicating the common content of rt2800usb.h to rt2800pci.h instead 
+ | of moving it to the shared header (like it is done in the staging 
+ | crap drivers):
+ |
+ | [...]
+ |
+ | All in all, the total amount of the kernel code needed for 
+ | implementing rt2800pci functionality should 1-2 KLOC instead of the 
+ | current 5 KLOC.
+
+Looks like a valid technical point that should be replied to in ernest.
+
+Johannes Berg's first reply (<1255792104.3434.2.camel@johannes.local>) 
+ignored Bartlomiej's friendly approach and launched a combative, 
+emotion-laden, unconstructive (and technically inapposite) attack:
+
+ | Tell me you're kidding -- comparing 2k duplicated LOC with a driver 
+ | that ships its own wifi stack?
+
+Bartlomiej's reply (<1255792104.3434.2.camel@johannes.local>) ignored 
+the attack (gracefully) and replied to the technical portion only:
+
+ | > Tell me you're kidding -- comparing 2k duplicated LOC with a driver 
+ | > that ships its own wifi stack?
+ |
+ | Why would I be?
+ |
+ | 1) The patch is submitted to kernel _proper_ not kernel staging so I 
+ | see no excuse for duplicating 2-4 KLOC and it should be fixed.
+ |
+ | 2) The fact that the some staging driver consists in 90% of crap 
+ | doesn't mean that it doesn't have some good design ideas..  (i.e. 
+ | abstracting chipset registers access in a discussed case)
+
+To which technical point Johannes elected not to reply. (Effectively 
+conceding Bartlomiej's point as per lkml discussion rules.)
+
+[ There are similar patterns in other threads of this discussion - the 
+  reply in (<200910181859.22413.IvDoorn@gmail.com>) and followups 
+  were similarly dismissive (while not as combative as Johannes's reply) 
+  - with an often offensive tone against Bartlomiej. ]
+
+Bartlomiej followed up with his test results in another message in 
+<200910172318.56929.bzolnier@gmail.com>. Corroborated by Luis Correia in 
+<efe7343f0910180240o223ac346j3dd7c45c7460ec41@mail.gmail.com>. Both 
+messages were factual, constructive and friendly.
+
+Neither failure report was replied to in that thread and remains ignored 
+up to today, 15 days down the line.
+
+Alas, the portion of the story that is visible in that discussion on 
+lkml contradicts your claim almost 180 degrees. The person being 
+attacked there was Bartlomiej and i simply dont see where you got the 
+conclusion from that he was 'petty, whining, indignant'.
+
+Now look at the aftermath from Bartlomiej's perspective: this 
+non-working driver with arguably unresponsive, unfriendly maintainers 
+got pulled twice (first by you and then by David), and it is now on the 
+unstoppable path upstream. By omission he's been forced to raise these 
+issues at every hop that pulls this piece of code - and it was not his 
+choice to be exposed to such a spiral of a workflow.
+
+I can understand David trusting your judgement and not wanting to get 
+involved in the fine details, but having read the surrounding discussion 
+i dont understand your interpretation of the events, and i dont 
+understand on what basis you launched your very serious accusation, that 
+he is being 'petty, whining, indignant'. Every reply from him in that 
+thread is the exact opposite of that. Care to elaborate?
+
+Thanks,
+
+	Ingo
