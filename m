@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbZKBKjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZKBKki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754606AbZKBKjm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 05:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZKBKjl
+	id S1754493AbZKBKki (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZKBKkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 05:39:41 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58988 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754507AbZKBKjk (ORCPT
+	Mon, 2 Nov 2009 05:40:37 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:41861 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754246AbZKBKkg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 05:39:40 -0500
-Date: Mon, 2 Nov 2009 11:39:40 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Antonio Ospite <ospite@studenti.unina.it>
-Cc: linux-arm-kernel@lists.infradead.org, openezx-devel@lists.openezx.org,
-       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>,
-       Daniel Ribeiro <drwyrm@gmail.com>, Mike Rapoport <mike@compulab.co.il>
-Subject: Re: Using statically allocated memory for platform_data.
-Message-ID: <20091102103940.GA25282@pengutronix.de>
-References: <20091102112316.16163f6a.ospite@studenti.unina.it>
+	Mon, 2 Nov 2009 05:40:36 -0500
+X-Sasl-enc: Vy+TOoOEN0/uYuY8Xgmjc2u2pyOa+KsU1quIuRNKxVpP 1257158440
+Message-ID: <4AEEB71B.2070502@imap.cc>
+Date: Mon, 02 Nov 2009 11:40:27 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091102112316.16163f6a.ospite@studenti.unina.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Thiago Farina <tfransosi@gmail.com>
+CC: Randy Dunlap <rdunlap@xenotime.net>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       =?UTF-8?B?QW5kcsOpIEdvZGRhcmQgUm9zYQ==?= <andre.goddard@gmail.com>,
+       trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
+Subject: ARRAY_SIZE (was: [PATCH 03/16] trivial: fix assorted "through" typos)
+References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com>	 <4AEC0EBE.2040308@crca.org.au> <4AEC2971.8050105@imap.cc>	 <20091101095208.10d57e8f.rdunlap@xenotime.net> <a4c8a6d00911011313k39a6805dr590967cc8fc3a204@mail.gmail.com>
+In-Reply-To: <a4c8a6d00911011313k39a6805dr590967cc8fc3a204@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig0D98CA65E68EA5D890A8E0F9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig0D98CA65E68EA5D890A8E0F9
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Nov 02, 2009 at 11:23:16AM +0100, Antonio Ospite wrote:
-> Hi,
-> 
-> I noted that in some mfd drivers (drivers/mfd/ezx-pcap.c and
-> drivers/mfd/da903x.c) there is code like this:
-> 
-> static int __devinit pcap_add_subdev(struct pcap_chip *pcap,
->                                      struct pcap_subdev *subdev)
-> {
->         struct platform_device *pdev;
-> 
->         pdev = platform_device_alloc(subdev->name, subdev->id);
->         pdev->dev.parent = &pcap->spi->dev;
->         pdev->dev.platform_data = subdev->platform_data;
-> 
->         return platform_device_add(pdev);
-> }
-> 
-> Note the _direct_assignment_ of platform data; then in board init code
-> there are often global struct pointers passed as subdev platform data,
-> see arch/arm/mach-pxa/em-x270.c::em_x270_da9030_subdevs for instance.
-> 
-> In these cases, whenever the subdev platform device is unregistered,
-> the call to platform_device_release() tries to kfree the platform data,
-> and being it statically allocated memory this triggers a bug from SLAB:
-> 	kernel BUG at mm/slab.c:521!
-> In my case this prevented proper device poweroff.
-> 
-> The question: should these mfd drivers use platform_device_add_data()
-> which allocates dynamic memory for *a copy* of platform data? Is this
-> simple solution acceptable even if there will be more memory used?
-If you move the original data lives in .init there is no duplication.
+Am 01.11.2009 22:13 schrieb Thiago Farina:
+>=20
+> Talking about cleanup, there are many definitions of ARRAY_SIZE, found
+> using cscope:
+> 0 spidev_test.c  24 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+> 1 page-types.c  194 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+> 2 types.h         4 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+> 3 user.h         17 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+> 4 boot.h         35 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
+> 5 relocs.c       13 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+> 6 kernel.h       46 #define ARRAY_SIZE(arr) (sizeof(arr) /
+> sizeof((arr)[0]) + __must_be_array(arr))
+> 7 dtc.h          83 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+> 8 genksyms.c    314 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)=
+[0]))
+> 9 kallsyms.c     27 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0=
+]))
+> a file2alias.c  520 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+> b util.h         28 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
-Best regards
-Uwe
+You should have included the files' directory paths. That would have
+shown that seven of these aren't in actual kernel source files at all:
+two in the Documentation tree, four in scripts, and one in tools.
+Four are in the arch tree, and are needed for boot or userspace code.
+There only remains one: the definition in include/linux/kernel.h which
+is the "official" one for regular kernel code.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Now the number of places which could use that macro but open-code it
+instead is a completely different story. See
+http://www.crashcourse.ca/wiki/index.php/The_style_script
+for a list of candidates.
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
+
+
+--------------enig0D98CA65E68EA5D890A8E0F9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFK7rcmQ3+did9BuFsRAmCKAJ0c1mZ3EygHNlDVtP4OmRAnsxY7WQCfcNK3
+XYlpH6RlyYcEzvxYl0OnpxA=
+=FMFh
+-----END PGP SIGNATURE-----
+
+--------------enig0D98CA65E68EA5D890A8E0F9--
