@@ -1,140 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZKBS4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932259AbZKBS7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbZKBS4q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:56:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbZKBS4p
+	id S932259AbZKBS7v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbZKBS7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:56:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44014 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756132AbZKBS4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:56:44 -0500
-Date: Mon, 2 Nov 2009 18:55:38 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, eparis@redhat.com, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eparis@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1256813310.7574.3.camel@marge.simson.net>
-References: <1256813310.7574.3.camel@marge.simson.net>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Fix kthread_bind() by moving the body of kthread_bind() to sched.c
-Message-ID: <tip-48f69b95afd3b8f3d0dab1b822f12ed4f5bdb247@git.kernel.org>
-Git-Commit-ID: 48f69b95afd3b8f3d0dab1b822f12ed4f5bdb247
-X-Mailer: tip-git-log-daemon
+	Mon, 2 Nov 2009 13:59:50 -0500
+Received: from ix.technologeek.org ([213.41.157.215]:38948 "EHLO
+	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932220AbZKBS7u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:59:50 -0500
+From: Julien BLACHE <jb@jblache.org>
+To: "Ryan C. Gordon" <icculus@icculus.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: FatELF patches...
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+	<1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
+	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
+	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
+	<alpine.OSX.1.10.0911012023020.55434@caridad.local>
+	<87zl75h2mh.fsf@sonic.technologeek.org>
+	<alpine.OSX.1.10.0911021258270.464@caridad.icculuslan>
+Date: Mon, 02 Nov 2009 19:59:53 +0100
+In-Reply-To: <alpine.OSX.1.10.0911021258270.464@caridad.icculuslan> (Ryan
+	C. Gordon's message of "Mon, 2 Nov 2009 13:18:41 -0500 (EST)")
+Message-ID: <87d4407nx2.fsf@sonic.technologeek.org>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) XEmacs/21.4.22 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  48f69b95afd3b8f3d0dab1b822f12ed4f5bdb247
-Gitweb:     http://git.kernel.org/tip/48f69b95afd3b8f3d0dab1b822f12ed4f5bdb247
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Thu, 29 Oct 2009 11:48:30 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 2 Nov 2009 19:37:57 +0100
+"Ryan C. Gordon" <icculus@icculus.org> wrote:
 
-sched: Fix kthread_bind() by moving the body of kthread_bind() to sched.c
+Hi,
 
-Eric Paris reported that commit
-f685ceacab07d3f6c236f04803e2f2f0dbcc5afb causes boot time
-PREEMPT_DEBUG complaints.
+> "A lot" is hard to quantify. We can certainly see thousands of forum
+> posts for help with software that hadn't been packaged yet.
 
- [    4.590699] BUG: using smp_processor_id() in preemptible [00000000] code: rmmod/1314
- [    4.593043] caller is task_hot+0x86/0xd0
+"A lot" certainly doesn't mean "all of it", sure, but that's already a
+clear improvement over the situation 10 years ago.
 
-Since kthread_bind() messes with scheduler internals, move the
-body to sched.c, and lock the runqueue.
+> I can't imagine most people are interested in building repositories and 
+> telling their users how to add it to their package manager, period, but 
+> even less so when you have to build different repositories for different 
+> sets of users, and not know what to build for whatever is the next popular 
+> distribution. For things like Gentoo, which for years didn't have a way to 
+> extend portage, what was the solution?
 
-Reported-by: Eric Paris <eparis@redhat.com>
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Tested-by: Eric Paris <eparis@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1256813310.7574.3.camel@marge.simson.net>
-[ v2: fix !SMP build and clean up ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/kthread.c |   23 -----------------------
- kernel/sched.c   |   31 +++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+), 23 deletions(-)
+You need to decide if and how you want to distribute your software,
+define your target audience and work from there. Yes, it takes some
+effort. Yes, it's not something that's very valued by today's
+standards. So what?
 
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 5fe7099..ab7ae57 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -150,29 +150,6 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
- EXPORT_SYMBOL(kthread_create);
- 
- /**
-- * kthread_bind - bind a just-created kthread to a cpu.
-- * @k: thread created by kthread_create().
-- * @cpu: cpu (might not be online, must be possible) for @k to run on.
-- *
-- * Description: This function is equivalent to set_cpus_allowed(),
-- * except that @cpu doesn't need to be online, and the thread must be
-- * stopped (i.e., just returned from kthread_create()).
-- */
--void kthread_bind(struct task_struct *k, unsigned int cpu)
--{
--	/* Must have done schedule() in kthread() before we set_task_cpu */
--	if (!wait_task_inactive(k, TASK_UNINTERRUPTIBLE)) {
--		WARN_ON(1);
--		return;
--	}
--	set_task_cpu(k, cpu);
--	k->cpus_allowed = cpumask_of_cpu(cpu);
--	k->rt.nr_cpus_allowed = 1;
--	k->flags |= PF_THREAD_BOUND;
--}
--EXPORT_SYMBOL(kthread_bind);
--
--/**
-  * kthread_stop - stop a thread created by kthread_create().
-  * @k: thread created by kthread_create().
-  *
-diff --git a/kernel/sched.c b/kernel/sched.c
-index bf21adb..a7df695 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1996,6 +1996,37 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
- 		p->sched_class->prio_changed(rq, p, oldprio, running);
- }
- 
-+/**
-+ * kthread_bind - bind a just-created kthread to a cpu.
-+ * @k: thread created by kthread_create().
-+ * @cpu: cpu (might not be online, must be possible) for @k to run on.
-+ *
-+ * Description: This function is equivalent to set_cpus_allowed(),
-+ * except that @cpu doesn't need to be online, and the thread must be
-+ * stopped (i.e., just returned from kthread_create()).
-+ *
-+ * Function lives here instead of kthread.c because it messes with
-+ * scheduler internals which require locking.
-+ */
-+void kthread_bind(struct task_struct *p, unsigned int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long flags;
-+
-+	/* Must have done schedule() in kthread() before we set_task_cpu */
-+	if (!wait_task_inactive(p, TASK_UNINTERRUPTIBLE)) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	set_task_cpu(p, cpu);
-+	p->cpus_allowed = cpumask_of_cpu(cpu);
-+	p->rt.nr_cpus_allowed = 1;
-+	p->flags |= PF_THREAD_BOUND;
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+}
-+
- #ifdef CONFIG_SMP
- /*
-  * Is this task likely cache-hot:
+You can as well decide that your software is so good that packagers from
+everywhere will package it for you. Except sometimes your software
+actually isn't that good and nobody gives a damn.
+
+As it stands, it really looks like your main problem is that it's too
+hard to distribute software for Linux, but you're really making it a lot
+more difficult than it really is.
+
+Basically, these days, if you can ship a generic RPM and a clean .deb,
+you've got most of your users covered. Oh, that's per-architecture, so
+with i386 and amd64, that makes 4 packages. And the accompanying source
+packages, because that can't hurt.
+
+Anyone that can't use those packages either knows how to build stuff on
+her distro of choice or needs to upgrade.
+
+> I'm hearing a lot of "a lot" ... what actually happens today is that you 
+> depend on the kindness of strangers to package your software or you make a 
+> bunch of incompatible packages for different distributions.
+
+Err. Excuse me, but if you "depend on the kindness of strangers" it's
+because you made that choice in the first place. There is nothing that
+prevents you from producing packages yourself. You might even learn a
+thing or ten in the process!
+
+When software doesn't get packaged properly after some time, it's
+usually because nobody knows about it or because it's not that good and
+nobody bothered. As the author, you can fix both issues.
+
+>> > closed-source software
+>> 
+>> Why do we even care?
+>
+> Maybe you don't care, but that doesn't mean no one cares.
+
+The ones who care have the resources to produce proper packages. They
+just don't do it.
+
+> I am on Team Stallman. I'll take a crappy free software solution over a 
+> high quality closed-source one, and strive to improve the free software 
+
+I don't think FatELF improves anything at all in the Free Software
+world.
+
+[static builds distributed as tarballs]
+> I think we can do better than that when we're outside of the package 
+> managers, but it's a rant for another time.
+
+Actually, no, you can't, because too many people out there writing
+software don't have a clue about shared libraries. If you want things to
+work everywhere, static is the way to go.
+
+> Having read the multiarch wiki briefly, I'm pleased to see other people 
+> find the current system "unwieldy," but it seems like FatELF "kludge" 
+> solves several of the points in the "unresolved issues" section.
+
+Err, the unresolved issues are all packaging issues, to which the
+solutions have not been decided yet. I don't see what FatELF can fix
+here.
+
+Now, to put it in a nutshell, you are coming forward with a technical
+solution to a problem that *isn't*:
+ - "my software, Zorglub++ isn't packaged anywhere!"
+   Did you package it? No? Why not? Besides, maybe nobody knows about
+   it, maybe nobody needs it, maybe it's just crap. Whatever. Find out
+   and act from there.
+
+ - "proprietary Blahblah7 is not packaged!"
+   Yeah, well, WeDoProprietaryStuff, Inc. decided not to package it
+   for whatever reason. What about contacting them, finding out the
+   reason and then working from there?
+
+JB.
+
+-- 
+Julien BLACHE                                   <http://www.jblache.org> 
+<jb@jblache.org>                                  GPG KeyID 0xF5D65169
