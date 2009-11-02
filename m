@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZKBHoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbZKBHo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbZKBHoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 02:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbZKBHoR
+	id S1754108AbZKBHo0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 02:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZKBHoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 02:44:17 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:56212 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753949AbZKBHoR (ORCPT
+	Mon, 2 Nov 2009 02:44:25 -0500
+Received: from smtprelay01.ispgateway.de ([80.67.31.35]:43880 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754084AbZKBHoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 02:44:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=O/XT96JEKm0CoLEtaZx1XoQ1PQJUFqj7QfKy5ac6QdQCkF1EK9pPUctVnVBkFA6+qt
-         BbUpBH0a4Tzm/30HIArhbvJTeGJZGSmh48Ar2eOeoP6IBzvsLy4PdcjdGbb0v6zoP1/l
-         Sm48wBBbRZmZ6sirW8CMb0PZQdg1gmvtNcclQ=
+	Mon, 2 Nov 2009 02:44:23 -0500
+Message-ID: <4AEE8DD9.1090504@ladisch.de>
+Date: Mon, 02 Nov 2009 08:44:25 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Date: Mon, 2 Nov 2009 15:44:22 +0800
-Message-ID: <b741c2440911012344n7a6f7241ma873abac2fc9507e@mail.gmail.com>
-Subject: [PATCH 0/3] Fix the 'current css_set' problem in debug subsystem
-From: Liu Aleaxander <aleaxander@gmail.com>
-To: menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dave Airlie <airlied@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Pavel Roskin <proski@gnu.org>, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] drm/kms: fix spelling of "CLOCK"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all.
+From: Pavel Roskin <proski@gnu.org>
+Signed-off-by: Pavel Roskin <proski@gnu.org>
+[clemens@ladisch.de: merged into drm_fb_helper]
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 
-(Sorry for the resending, it seems I opened the HTML encoding before)
-
-This a three-patch set to fix the 'current css_set' problem in debug
-subsystem of cgroup system. (well, in fact, it's a two-patch set; the
-third one just fixes a typo).
-
-Say I mount a cgroup fs in /cgroup, and here is the problem:
-$ cat debug.current_css_set_refcount
-268
-$ mkdir test
-$ cd test
-$ cat debug.curernt_css_set_refcount
-268
-
-$ echo $$ > tasks
-$ cat debug.current_css_set_refcount
-2
-$ cd ../
-$ cat debug.current_css_set_refcount
-2
-
-That means it always print the css_set_refcount of the cgroup that
-comprise the current task(bash, here), instead of the current cgroup
-whatever cgroup you are in. And this would be meaningless to put the
-same content in all the cgroups. So, to make it more meaningful, we
-should make it print the css_set_refcount of the cgroup you are
-currently in.
-
-Patch 1 adds a cgroup_first_css_set function to get the current
-css_set of one cgroup.
-Patch 2 fixes the problem.
-Patch 3 just fixes a typo.
-
---
-regards
-Liu Aleaxander
+--- linux-2.6/drivers/gpu/drm/drm_fb_helper.c
++++ linux-2.6/drivers/gpu/drm/drm_fb_helper.c
+@@ -676,7 +676,7 @@ int drm_fb_helper_set_par(struct fb_info
+ 	int i;
+ 
+ 	if (var->pixclock != 0) {
+-		DRM_ERROR("PIXEL CLCOK SET\n");
++		DRM_ERROR("PIXEL CLOCK SET\n");
+ 		return -EINVAL;
+ 	}
+ 
