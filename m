@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbZKBNBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZKBNBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbZKBNBJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 08:01:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZKBNBJ
+	id S1755027AbZKBNBu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 08:01:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZKBNBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 08:01:09 -0500
-Received: from mail-px0-f179.google.com ([209.85.216.179]:36096 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754491AbZKBNBI convert rfc822-to-8bit (ORCPT
+	Mon, 2 Nov 2009 08:01:49 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:42021 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751378AbZKBNBs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 08:01:08 -0500
+	Mon, 2 Nov 2009 08:01:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=pK4BCgXg4fDQaq9/qa+kX6JcoNUxjDNj7JlVtvtV9MGdznwFRkObgNlHkS+ZdS6EB3
-         xX2rfa5gspJESWyd9dpnO7ARHP98RGE7dPiKMvCGD2u7VltUAqqK6SJnBPXjrFTqCWUA
-         mGv+xfzXzxwylSzBg9uAUnqLf2Tk6t8/u9kGk=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=O1QtcCvH2qGR4e0J1EWJDgAmlRTPk34/mqrg8TlAhCmFNtXNGcQbiMNq9Fl6BZIiEj
+         1rBjq2DEJiMw9mTEMr2fTvj506GARXTaaojkv70C1XCPARqVI7Yh5xIUbpplgY5IW3PB
+         e/3xdb9JN/ufeDbw8Nw/5VJqQ39PONJaKzEqw=
+Date: Mon, 2 Nov 2009 14:01:51 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 3/6] perf/core: Add a callback to perf events
+Message-ID: <20091102130147.GB4878@nowhere>
+References: <4AE55B1B.2030006@web.de> <1257109753-6464-4-git-send-email-fweisbec@gmail.com> <19182.22220.389174.916544@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <4AEEBDD8.5080808@gmail.com>
-References: <4AEEBDD8.5080808@gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 2 Nov 2009 08:00:53 -0500
-Message-ID: <8bd0f97a0911020500r793d7414mb55c2ec8c62250f4@mail.gmail.com>
-Subject: Re: [PATCH] Blackfin arch: ensure index is positive
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: uclinux-dist-devel@blackfin.uclinux.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19182.22220.389174.916544@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 2, 2009 at 06:09, Roel Kluin wrote:
-> The indices are signed, it's not negative before we read an
-> array element.
->
-> Found by code analysis, is this required?
->
-> --- a/arch/blackfin/kernel/gptimers.c
-> +++ b/arch/blackfin/kernel/gptimers.c
-> @@ -139,7 +139,7 @@ static uint32_t const timil_mask[MAX_BLACKFIN_GPTIMERS] =
->
->  void set_gptimer_pwidth(int timer_id, uint32_t value)
->  {
-> -       tassert(timer_id < MAX_BLACKFIN_GPTIMERS);
-> +       tassert(timer_id < MAX_BLACKFIN_GPTIMERS && timer_id >= 0);
+On Mon, Nov 02, 2009 at 02:49:32PM +1100, Paul Mackerras wrote:
+> Frederic Weisbecker writes:
+> 
+> > @@ -4335,6 +4336,15 @@ perf_event_alloc(struct perf_event_attr *attr,
+> >  
+> >  	event->state		= PERF_EVENT_STATE_INACTIVE;
+> >  
+> > +	if (!callback) {
+> > +		if (parent_event)
+> > +			event->callback = parent_event->callback;
+> > +		else
+> > +			event->callback = NULL;
+> > +	} else {
+> > +		event->callback		= callback;
+> > +	}
+> 
+> Wouldn't this be simpler and clearer as:
+> 
+> 	if (!callback && parent_event)
+> 		callback = parent_event->callback;
+> 	event->callback = callback;
+> 
+> ?
+> 
+> Paul.
 
-the gptimer API is supposed to use symbolic defines only (TIMER#_id),
-but that doesnt mean people couldnt pass in negative numbers
-themselves.  but rather than fix it this way, i'll change the API to
-use unsigned ints.
--mike
+
+Yep, I'm going to change that.
+Thanks.
+
