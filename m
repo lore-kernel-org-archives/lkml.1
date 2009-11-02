@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbZKBP4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbZKBP5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755628AbZKBP4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZKBP4v
+	id S1755688AbZKBP5I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:57:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbZKBP5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:56:51 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47183 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755310AbZKBP4u (ORCPT
+	Mon, 2 Nov 2009 10:57:07 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36970 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755533AbZKBP5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:56:50 -0500
-Date: Mon, 2 Nov 2009 15:56:25 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Antonio Ospite <ospite@studenti.unina.it>, openezx-devel@lists.openezx.org,
-       Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org,
-       Mike Rapoport <mike@compulab.co.il>, Daniel Ribeiro <drwyrm@gmail.com>
-Subject: Re: Using statically allocated memory for platform_data.
-Message-ID: <20091102155625.GC5785@n2100.arm.linux.org.uk>
-References: <20091102112316.16163f6a.ospite@studenti.unina.it> <20091102150011.GB20341@fluff.org.uk> <20091102150525.GB5785@n2100.arm.linux.org.uk> <20091102152500.GD23772@trinity.fluff.org> <20091102155231.GC20341@fluff.org.uk>
+	Mon, 2 Nov 2009 10:57:06 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4AEF0144.3080505@s5r6.in-berlin.de>
+Date: Mon, 02 Nov 2009 16:56:52 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102155231.GC20341@fluff.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: Zubin Dittia <zubin@tintri.com>, linux-kernel@vger.kernel.org
+Subject: Re: SSD read latency negatively impacted by large writes (independent
+ of  choice of I/O scheduler)
+References: <47c554d90910301621y1f19a96bx454f539adec1ae35@mail.gmail.com> <x49eiohqa06.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x49eiohqa06.fsf@segfault.boston.devel.redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 03:52:31PM +0000, Ben Dooks wrote:
-> On Mon, Nov 02, 2009 at 03:25:00PM +0000, Ben Dooks wrote:
-> > On Mon, Nov 02, 2009 at 03:05:25PM +0000, Russell King - ARM Linux wrote:
-> > > On Mon, Nov 02, 2009 at 03:00:11PM +0000, Ben Dooks wrote:
-> > > > This looks like something is freeing stuff that it did not allocate in
-> > > > the first place, which is IMHO bad. The call platform_device_alloc()
-> > > > is setting platform_device_release() as the default release function
-> > > > but platform_device_release() releases more than platform_device_alloc()
-> > > > actually created.
-> > > > 
-> > > > My view is that platform_device_alloc()'s default release shouldn't
-> > > > be freeing the platform data, and that using platform_device_add_data()
-> > > > or platform_device_add_resources() should change either the behvaiour 
-> > > > of platform_device_release() or it should change the pointer to a new
-> > > > release function.
-> > > 
-> > > That doesn't work - how do those other functions (adding) know what data
-> > > has also been added by other functions?  That can't work reliably.
-> > 
-> > You could wrapper platform device, and each of the add functions could
-> > update it, but that would assume the platform device had been allocated
-> > with platform_device_alloc().
-> 
-> Having had a look, all the current users of platform_device_add_data()
-> are from a platform_alloc_device() created device. 
-> 
-> The number of calls to platform_device_add_resources() are many, but
-> the ones I checked are from platform_alloc_device().
-> 
-> However your point being that these add calls may not be used on a
-> device that has been created from platform_device_alloc() is one I
-> overlooked.
+Jeff Moyer wrote:
+> Zubin Dittia <zubin@tintri.com> writes:
+[...]
+>> about 30 seconds after the write (which is when the write is
+>> actually written back to the device from buffer cache), I see a very
+>> large spike in read latency: from 200 microseconds to 25 milliseconds.
+>>  This seems to imply that the writes issued by the scheduler are not
+>> being broken up into sufficiently small chunks with interspersed
+>> reads; instead, the whole sequential write seems to be getting issued
+>> while starving reads during that period.
+[...]
+>> Playing around with different I/O
+>> schedulers and parameters doesn't seem to help at all.
+[...]
+> I haven't verified your findings, but if what you state is true, then
+> you could try tuning max_sectors_kb for your device.  Making that
+> smaller will decrease the total amount of I/O that can be queued in the
+> device at any given time.  There's always a trade-off between bandwidth
+> and latency, of course.
 
-I did not say that.  I said your idea of replacing the release function
-on each _add() is impractical when you have multiple _add() functions.
+Maximum transfer size per request is indeed one factor; another one is
+queue_depth.  With a deep queue, a read request between many write
+requests will still be held up by many write requests queued up before
+the read request.  (Once the scheduler issued the requests to the queue,
+it can't reorder the requests any more --- only the disk's firmware
+could reorder the requests if it is sophisticated enough and there are
+no barriers in the mix.)
 
-> Having a state machine that changed the release call from
-> platform_device_release() to say platform_device_release_resources()
-> or platform_device_release_all() and then platform_device_release_all()
-> may be another way to do it.
-
-The reason we have platform_device_add_data() is that people think that
-the device data needs to persist for the lifetime of the device.  I
-personally disagree with that - once you unregister the device, it's
-guaranteed that device drivers will have been unregistered, so who's
-going to use the platform data?
-
-So we could just fix it by killing off platform_device_add_data() and
-removing the kfree of the platform data, and ensuring that data marked
-with __initdata either loses that attributation or is kmalloc+copied.
+When transfer size and queue depth are set different from the default,
+the various I/O schedulers should be tested again because then their
+behaviors may vary more than before.
+-- 
+Stefan Richter
+-=====-==--= =-== ---=-
+http://arcgraph.de/sr/
