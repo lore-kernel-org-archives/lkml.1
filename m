@@ -1,79 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZKBKkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZKBKrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbZKBKkG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 05:40:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZKBKkE
+	id S1754781AbZKBKrR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZKBKrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 05:40:04 -0500
-Received: from cantor.suse.de ([195.135.220.2]:48691 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754400AbZKBKkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 05:40:03 -0500
-Message-ID: <4AEEB8A4.8000700@suse.de>
-Date: Mon, 02 Nov 2009 18:47:00 +0800
-From: Coly Li <coly.li@suse.de>
-Reply-To: coly.li@suse.de
-Organization: SuSE Labs
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 16/27] BKL: Remove BKL from efs
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-17-git-send-email-jblunck@suse.de>
-In-Reply-To: <1257156307-24175-17-git-send-email-jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 2 Nov 2009 05:47:14 -0500
+Received: from www84.your-server.de ([213.133.104.84]:44662 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754501AbZKBKrL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 05:47:11 -0500
+Subject: [PATCH] fix X86_64 procfs provide stack information for threads
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Mon, 02 Nov 2009 11:47:09 +0100
+Message-ID: <1257158829.5199.26.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Coly Li <coly.li@suse.de>
+This patch fix two issues in the procfs stack information on X86_64
+linux. 
 
-On 2009年11月02日 18:04, Jan Blunck Wrote:
-> BKL is only used in fill_super. It is safe to remove it.
-> 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> ---
->  fs/efs/super.c |   10 ++--------
->  1 files changed, 2 insertions(+), 8 deletions(-)
-> 
-> diff --git a/fs/efs/super.c b/fs/efs/super.c
-> index 0981141..f049428 100644
-> --- a/fs/efs/super.c
-> +++ b/fs/efs/super.c
-> @@ -249,13 +249,9 @@ static int efs_fill_super(struct super_block *s, void *d, int silent)
->  	struct inode *root;
->  	int ret = -EINVAL;
->  
-> -	lock_kernel();
-> -
-> -	sb = kzalloc(sizeof(struct efs_sb_info), GFP_KERNEL);
-> -	if (!sb) {
-> -		unlock_kernel();
-> + 	sb = kzalloc(sizeof(struct efs_sb_info), GFP_KERNEL);
-> +	if (!sb)
->  		return -ENOMEM;
-> -	}
->  	s->s_fs_info = sb;
->   
->  	s->s_magic		= EFS_SUPER_MAGIC;
-> @@ -323,14 +319,12 @@ static int efs_fill_super(struct super_block *s, void *d, int silent)
->  		goto out_no_fs;
->  	}
->  
-> -	unlock_kernel();
->  	return 0;
->  
->  out_no_fs_ul:
->  out_no_fs:
->  	s->s_fs_info = NULL;
->  	kfree(sb);
-> -	unlock_kernel();
->  	return ret;
->  }
->  
+The 32 bit loader compat_do_execve did not store stack start (this was
+figured out by alexey).
 
--- 
-Coly Li
-SuSE Labs
+The stack information on a X64_64 kernel always show 0 kbyte stack
+usage, because of a miss implemented KSTK_ESP macro which always return
+-1. The new implementation returns now the right value. 
+
+The patch is against 2.6.32-rc5-git5.
+
+Andrew would you so kind to apply this patch?
+
+Greetings,
+Stefani
+
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ arch/x86/include/asm/processor.h |    9 ++++++++-
+ arch/x86/kernel/process_64.c     |    8 ++++++++
+ fs/compat.c                      |    2 ++
+ 3 files changed, 18 insertions(+), 1 deletion(-)
+
+--- linux-2.6.32-rc5/fs/compat.c	2009-10-16 02:41:50.000000000 +0200
++++ linux-2.6.32-rc5.new/fs/compat.c	2009-11-02 09:00:52.871909633 +0100
+@@ -1532,6 +1532,8 @@
+ 	if (retval < 0)
+ 		goto out;
+ 
++	current->stack_start = current->mm->start_stack;
++
+ 	/* execve succeeded */
+ 	current->fs->in_exec = 0;
+ 	current->in_execve = 0;
+--- linux-2.6.32-rc5/arch/x86/include/asm/processor.h	2009-10-16 02:41:50.000000000 +0200
++++ linux-2.6.32-rc5.new/arch/x86/include/asm/processor.h	2009-11-02 10:39:47.177909657 +0100
+@@ -29,6 +29,7 @@
+ #include <linux/threads.h>
+ #include <linux/math64.h>
+ #include <linux/init.h>
++//#include <linux/sched.h>
+ 
+ /*
+  * Default implementation of macro that returns current
+@@ -1000,7 +1001,13 @@
+ #define thread_saved_pc(t)	(*(unsigned long *)((t)->thread.sp - 8))
+ 
+ #define task_pt_regs(tsk)	((struct pt_regs *)(tsk)->thread.sp0 - 1)
+-#define KSTK_ESP(tsk)		-1 /* sorry. doesn't work for syscall. */
++
++#ifdef CONFIG_IA32_EMULATION
++extern unsigned long KSTK_ESP(struct task_struct *task);
++#else
++#define KSTK_ESP(task)		((task)->thread.usersp)
++#endif
++
+ #endif /* CONFIG_X86_64 */
+ 
+ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
+--- linux-2.6.32-rc5/arch/x86/kernel/process_64.c	2009-10-16 02:41:50.000000000 +0200
++++ linux-2.6.32-rc5.new/arch/x86/kernel/process_64.c	2009-11-02 10:48:23.614936810 +0100
+@@ -664,3 +669,11 @@
+ 	return do_arch_prctl(current, code, addr);
+ }
+ 
++#ifdef CONFIG_IA32_EMULATION
++unsigned long KSTK_ESP(struct task_struct *task)
++{
++	return (test_tsk_thread_flag(task, TIF_IA32)) ? \
++			(task_pt_regs(task)->sp) : \
++			((task)->thread.usersp);
++}
++#endif
+
+
