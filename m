@@ -1,48 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbZKBGyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbZKBG71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbZKBGyb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 01:54:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZKBGya
+	id S1753959AbZKBG71 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 01:59:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZKBG71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 01:54:30 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:54508 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751325AbZKBGya (ORCPT
+	Mon, 2 Nov 2009 01:59:27 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51355 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752891AbZKBG70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 01:54:30 -0500
-Date: Sun, 1 Nov 2009 22:53:58 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       torvalds@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.32-rc not booting with Xen-3.2 (bisected)
-In-Reply-To: <4AE7A816.3050607@goop.org>
-Message-ID: <alpine.DEB.2.01.0911012249370.9408@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0910261445170.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261513520.9408@bogon.housecafe.de> <4AE628DB.5010305@goop.org> <alpine.DEB.2.01.0910261759470.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261820050.9408@bogon.housecafe.de>
- <4AE67506.2040200@goop.org> <alpine.DEB.2.01.0910262154410.9408@bogon.housecafe.de> <4AE73973.3070709@goop.org> <alpine.DEB.2.01.0910271158100.9408@bogon.housecafe.de> <4AE7A816.3050607@goop.org>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Mon, 2 Nov 2009 01:59:26 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: OOM killer, page fault
+Cc: kosaki.motohiro@jp.fujitsu.com, Norbert Preining <preining@logic.at>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+References: <20091102005218.8352.A69D9226@jp.fujitsu.com> <20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+Message-Id: <20091102155543.E60E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/RjreemCczVWBvf2K1D9BYz7G0PxK4R6XmSYx
- t/9QRzX9qpqrGk4uedvm43ag4MqkxZnEOUWMTkEiOu2NWVwm0x
- csPh+CjSL90NI5XT0hiAw==
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  2 Nov 2009 15:59:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009 at 19:10, Jeremy Fitzhardinge wrote:
-> Please try the patch below.
+> On Mon,  2 Nov 2009 13:24:06 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > Hi,
+> > 
+> > (Cc to linux-mm)
+> > 
+> > Wow, this is very strange log.
+> > 
+> > > Dear all,
+> > > 
+> > > (please Cc)
+> > > 
+> > > With 2.6.32-rc5 I got that one:
+> > > [13832.210068] Xorg invoked oom-killer: gfp_mask=0x0, order=0, oom_adj=0
+> > 
+> > order = 0
+> 
+> I think this problem results from 'gfp_mask = 0x0'.
+> Is it possible?
+> 
+> If it isn't H/W problem, Who passes gfp_mask with 0x0?
+> It's culpit. 
+> 
+> Could you add BUG_ON(gfp_mask == 0x0) in __alloc_pages_nodemask's head?
 
-I see the patch made it into mainline already[0], so I just tried the 
-latest git checkout from Linus' tree and the DomU is booting now, with no 
-other ill effects afaict.
+No.
+In page fault case, gfp_mask show meaningless value. Please ignore it.
+pagefault_out_of_memory() always pass gfp_mask==0 to oom.
 
-Thanks so much for the quick fix!
 
-Christian.
+mm/oom_kill.c
+====================================
+void pagefault_out_of_memory(void)
+{
+        unsigned long freed = 0;
 
-[0] 2e2ec952350f25242f2e0539db16b1e46f9eb01b
--- 
-BOFH excuse #319:
+        blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
+        if (freed > 0)
+                /* Got some memory back in the last second. */
+                return;
 
-Your computer hasn't been returning all the bits it gets from the Internet.
+        /*
+         * If this is from memcg, oom-killer is already invoked.
+         * and not worth to go system-wide-oom.
+         */
+        if (mem_cgroup_oom_called(current))
+                goto rest_and_return;
+
+        if (sysctl_panic_on_oom)
+                panic("out of memory from page fault. panic_on_oom is selected.\n");
+
+        read_lock(&tasklist_lock);
+        __out_of_memory(0, 0);       <---- here! 
+        read_unlock(&tasklist_lock);
+
