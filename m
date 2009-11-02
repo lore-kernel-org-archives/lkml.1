@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZKBBSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZKBBWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299AbZKBBSq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 20:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZKBBSp
+	id S1753482AbZKBBWY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 20:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZKBBWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 20:18:45 -0500
-Received: from icculus.org ([67.106.77.212]:45648 "EHLO icculus.org"
+	Sun, 1 Nov 2009 20:22:24 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36770 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752874AbZKBBSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 20:18:45 -0500
-Date: Sun, 1 Nov 2009 20:17:50 -0500 (EST)
-From: "Ryan C. Gordon" <icculus@icculus.org>
-X-X-Sender: icculus@caridad.local
-To: Rayson Ho <raysonlogin@gmail.com>
-cc: =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-In-Reply-To: <73a01bf20911011408v5b6d335fj46c893a8e7d26ab4@mail.gmail.com>
-Message-ID: <alpine.OSX.1.10.0911012017450.55434@caridad.local>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>  <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>  <alpine.OSX.1.10.0911011540400.53392@caridad.local>  <yw1xhbte0wx0.fsf@unicorn.mansr.com>
- <73a01bf20911011408v5b6d335fj46c893a8e7d26ab4@mail.gmail.com>
-User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752886AbZKBBWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 20:22:23 -0500
+Date: Mon, 2 Nov 2009 12:22:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Mike Rapoport <mike@compulab.co.il>, Tony Lindgren <tony@atomide.com>,
+       <linux-omap@vger.kernel.org>
+Subject: linux-next: manual merge of the sound tree with the  tree
+Message-Id: <20091102122222.542dac88.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Takashi,
 
-> Adding code that might bring lawsuits to Linux developers,
-> distributors, users is a BIG disadvantage.
+Today's linux-next merge of the sound tree got a conflict in
+arch/arm/mach-omap2/board-omap3evm.c between commit
+fa48a99192e3ee862f6d26c5248347c772b33b84 ("omap3: evm: initialize vmmc
+and vmmc_aux regulators") from the omap tree and commit
+f8d9aad96d0d7b57d0bf2e4de21fdda3a42f4449 ("OMAP: Platform support for
+twl4030_codec MFD") from the sound tree.
 
-I'm tracking down a lawyer to discuss the issue. I'm surprised there 
-aren't a few hanging around here, honestly. I sent a request in to the 
-SFLC, and if that doesn't pan out, I'll dig for coins in my car seat to 
-pay a lawyer for a few hours of her time.
+Just overlapping additions.  I fixed it up (see below) and can carry the
+fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-If it's a big deal, we'll figure out what to do from there. But let's not 
-talk about the sky falling until we get to that point, please.
-
-> "Given enough disc space, there's no reason you couldn't have one DVD
-> .iso that installs an x86-64, x86, PowerPC, SPARC, and MIPS system"
-
-I've had about a million people point out the boot loader thing. There's 
-an x86/amd64 forest if you can see past the MIPS trees.
-
-Still, I said there were different points that were more compelling for 
-different individuals. I don't think this is the most compelling argument 
-on that page, and I think there's a value in talking about theoretical 
-benefits in addition to practical ones. Theoretical ones become practical 
-the moment someone decides to roll out a company-internal distribution 
-that works on all the workstations inside IBM or Google or whatever...even 
-if Fedora would turn their nose up at the idea for a general-purpose 
-release.
-
-> IMO, the biggest problem users get is not with which hardware binary
-> to download, but the incompatibly of different Linux kernels and glibc
-> (the API/ABI).
-
-These are concerns, too, but the kernel has been, in my experience, very 
-good at binary compatibility with user space back as far as I can 
-remember. glibc has had some painful progress, but since NPTL stabilized a 
-long time ago, even this hasn't been bad at all.
-
-Certainly one has to be careful--I would even use the word diligent--to 
-maintain binary compatibility, but this was much more of a hurting for 
-application developers a decade ago.
-
-At least, that's been my experience.
-
---ryan.
-
-
+diff --cc arch/arm/mach-omap2/board-omap3evm.c
+index 660ef8c,d9a6103..0000000
+--- a/arch/arm/mach-omap2/board-omap3evm.c
++++ b/arch/arm/mach-omap2/board-omap3evm.c
+@@@ -247,8 -211,7 +255,9 @@@ static struct twl4030_platform_data oma
+  	.madc		= &omap3evm_madc_data,
+  	.usb		= &omap3evm_usb_data,
+  	.gpio		= &omap3evm_gpio_data,
+ +	.vmmc1		= &omap3evm_vmmc1,
+ +	.vsim		= &omap3evm_vsim,
++ 	.codec		= &omap3evm_codec_data,
+  };
+  
+  static struct i2c_board_info __initdata omap3evm_i2c_boardinfo[] = {
