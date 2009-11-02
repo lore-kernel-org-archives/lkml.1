@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbZKBUBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932313AbZKBUGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932337AbZKBUBk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 15:01:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932234AbZKBUBj
+	id S932313AbZKBUGF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 15:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755397AbZKBUGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 15:01:39 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38533 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932231AbZKBUBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 15:01:39 -0500
-Date: Mon, 2 Nov 2009 21:01:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, a.p.zijlstra@chello.nl, tglx@linutronix.de
-Subject: Re: [patch] Re: [regression bisect -next] BUG: using
-	smp_processor_id() in preemptible [00000000] code: rmmod
-Message-ID: <20091102200133.GB4682@elte.hu>
-References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com> <1256805552.7158.22.camel@marge.simson.net> <20091029091411.GE22963@elte.hu> <1256807967.7158.58.camel@marge.simson.net> <1256813310.7574.3.camel@marge.simson.net> <20091102182808.GA8950@elte.hu> <1257190811.19608.2.camel@marge.simson.net>
+	Mon, 2 Nov 2009 15:06:05 -0500
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:50991 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755243AbZKBUGE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 15:06:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=gec2YhDf37Uy66udGyDLCf9dULaefiBykQTJHmypuhVAWkZaahSDahEjbf/7pKJHYw
+         ERhu/Quny1K01f+LCtsHaeke1azFxztex03rOAtmxH0rKAu+KfYLE1r8dKw/s/1sinkq
+         E2o34IhFO+b8hKvxF4aY6JO5zv/boMc2ekrQw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257190811.19608.2.camel@marge.simson.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Mon, 2 Nov 2009 14:06:07 -0600
+Message-ID: <a4e6962a0911021206r62989ba7pf8a204bcf440da47@mail.gmail.com>
+Subject: [GIT PULL] v9fs bug fixes
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       V9FS Developers <v9fs-developer@lists.sourceforge.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-* Mike Galbraith <efault@gmx.de> wrote:
+   Please pull a couple of bug fixes for the 9P filesystem for 2.6.32-rc5.
 
-> On Mon, 2009-11-02 at 19:28 +0100, Ingo Molnar wrote:
-> > FYI, non-SMP builds broke:
-> > 
-> > kernel/built-in.o: In function `kthread_bind':
-> > (.text+0x1d328): undefined reference to `sched_kthread_bind'
-> > make: *** [.tmp_vmlinux1] Error 1
-> 
-> Oops.  Outside the SMP block might work a little better.
-> 
-> sched: Move the body of kthread_bind() to sched.c.
+The following changes since commit b6727b12dd2ffb4a890eb5b13a298230c29ba45d:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/staging-2.6
 
-Check the -tip commit notification, i did a somewhat cleaner approach by 
-moving all of kthread_bind() into sched.c. No need to keep that small 
-wrapper in kthread.c.
+are available in the git repository at:
 
-Thanks,
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
 
-	Ingo
+Eric Van Hensbergen (1):
+      9p: fix readdir corner cases
+
+Martin Stava (2):
+      9p: fix a small bug in readdir for long directories
+      9p: fix readlink
+
+ fs/9p/vfs_dir.c         |   93 ++++++++++++++++++++++++++++++++++-------------
+ fs/9p/vfs_inode.c       |    5 +--
+ include/net/9p/client.h |    7 ++--
+ net/9p/client.c         |    5 +--
+ 4 files changed, 74 insertions(+), 36 deletions(-)
+
+
+       Thanks,
+
+            -eric
