@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbZKBSBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbZKBSJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932082AbZKBSBt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbZKBSBs
+	id S1756287AbZKBSJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbZKBSJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:01:48 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:23279 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752703AbZKBSBr (ORCPT
+	Mon, 2 Nov 2009 13:09:58 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:47635 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754190AbZKBSJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:01:47 -0500
-Message-ID: <4AEF1E7F.50306@oracle.com>
-Date: Mon, 02 Nov 2009 10:01:35 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 2 Nov 2009 13:09:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=x/Jwx2tV48/LZoDU6ZaLvGKCXrR15qXBLeTpecLBtzb605j7jJV+kOguZ11eZkQvaP
+         1o5pNCGdekV1iSlVCLJeQ0xQKriiRzdFdwghWMLwwmBvbG+JjIV9YRIwXHpMXJbuTl0Z
+         4Q4yC3NDFbpdwKjoHrOnlTp8WjrNQ80h+ak/M=
+Date: Mon, 2 Nov 2009 21:09:59 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch][rfc] x86, mutex: non-atomic unlock (and a rant)
+Message-ID: <20091102180959.GC10072@lenovo>
+References: <20091102120739.GA20318@wotan.suse.de> <alpine.LFD.2.01.0911020710030.31845@localhost.localdomain> <20091102164626.GA10072@lenovo>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: linux-next: Tree for November 2 (wireless/wl1271)
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
-In-Reply-To: <20091102173845.210d1c57.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4AEF1E89.0177:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102164626.GA10072@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
-> 
-> Changes since 20091030:
+[Cyrill Gorcunov - Mon, Nov 02, 2009 at 07:46:26PM +0300]
+| 
+| The other option could be that we put two mem-write operations
+| like
+| 	int tmp;
+| 	atomic_set(&lock->count, 1);
+| 	tmp = lock->waiters;
+| 	rmb();
+| 	lock->waiters = tmp;
+| 	if (unlikely(lock->waiters))
+| 		fail_fn(lock);
+| 
+| Which should work faster then cpuid (and we have to be sure somehow
+| that gcc doesn't suppress this redundant operations).
+|
 
-
-wl1271 build fails when CONFIG_INET=n.
-Should this driver depend on INET?
-
-Why does this driver, unlike all other wireless drivers,
-want to use register_inetaddr_notifier()?
-
-wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
-wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
-
--- 
-~Randy
+And which has nothing to do with OoO mem-read, and wouldn't
+work. Sorry for noise.
+ 
+	-- Cyrill
