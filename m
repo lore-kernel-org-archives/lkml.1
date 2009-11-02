@@ -1,43 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932176AbZKBS2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932187AbZKBS26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932176AbZKBS2V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbZKBS2V
+	id S932187AbZKBS26 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbZKBS25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:28:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49251 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932134AbZKBS2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:28:20 -0500
-Date: Mon, 2 Nov 2009 19:28:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, a.p.zijlstra@chello.nl, tglx@linutronix.de
-Subject: Re: [patch] Re: [regression bisect -next] BUG: using
-	smp_processor_id() in preemptible [00000000] code: rmmod
-Message-ID: <20091102182808.GA8950@elte.hu>
-References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com> <1256805552.7158.22.camel@marge.simson.net> <20091029091411.GE22963@elte.hu> <1256807967.7158.58.camel@marge.simson.net> <1256813310.7574.3.camel@marge.simson.net>
+	Mon, 2 Nov 2009 13:28:57 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:41960 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932143AbZKBS25 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:28:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ng5b9Ap1qkLxNBXJVRxOwhznwL4a9ooUcsZtJMWhvKAYhhGczZfJ19Ukt2FEEcOw3f
+         253OXoopCRgaLchj9+NyFpllFtC9AV76d2AtCAnj7obI2vbQ83aKWRBBUN3L+Y8swdfy
+         JeY1iK4Lm+MllFY7SiuDssHhk6mjANsxztXeQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256813310.7574.3.camel@marge.simson.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <b8bf37780911020949t4bed5cb6g92230b59efc7923b@mail.gmail.com>
+References: <b8bf37780911020949t4bed5cb6g92230b59efc7923b@mail.gmail.com>
+Date: Mon, 2 Nov 2009 16:29:00 -0200
+Message-ID: <a4c8a6d00911021029n3b34c0b0w9acd3f82a07ae766@mail.gmail.com>
+Subject: Re: [PATCH] trivial: fix assorted typos all over the place
+From: Thiago Farina <tfransosi@gmail.com>
+To: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Cc: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I thought that this kind of patches were not allowed.
 
-FYI, non-SMP builds broke:
-
-kernel/built-in.o: In function `kthread_bind':
-(.text+0x1d328): undefined reference to `sched_kthread_bind'
-make: *** [.tmp_vmlinux1] Error 1
-
-	Ingo
+Don't you need to split this in individual patches, to make the work
+in reviewing this, more easier?
