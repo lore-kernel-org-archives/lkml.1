@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbZKBQmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbZKBQsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbZKBQmx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:42:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbZKBQmw
+	id S1755983AbZKBQsv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbZKBQsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:42:52 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:42274 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755952AbZKBQmv (ORCPT
+	Mon, 2 Nov 2009 11:48:51 -0500
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:50493 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755637AbZKBQsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:42:51 -0500
-Subject: Re: KVM: powerpc: Fix BUILD_BUG_ON condition
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Avi Kivity <avi@redhat.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091102170815.86e2daf7.sfr@canb.auug.org.au>
-References: <20091102170815.86e2daf7.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 02 Nov 2009 08:42:31 -0800
-Message-Id: <1257180151.11206.3.camel@slab>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Nov 2009 11:48:50 -0500
+Date: Mon, 2 Nov 2009 11:42:36 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Rik van Riel <riel@redhat.com>
+cc: Pavel Machek <pavel@ucw.cz>, David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       stable@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       kernel-testers@vger.kernel.org
+Subject: Re: [PATCH 2/3] page allocator: Do not allow interrupts to use
+ ALLOC_HARDER
+In-Reply-To: <4AECCF6A.4020206@redhat.com>
+Message-ID: <alpine.DEB.1.10.0911021139100.24535@V090114053VZO-1>
+References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <1256650833-15516-3-git-send-email-mel@csn.ul.ie> <20091027130924.fa903f5a.akpm@linux-foundation.org> <alpine.DEB.2.00.0910271411530.9183@chino.kir.corp.google.com> <20091031184054.GB1475@ucw.cz>
+ <alpine.DEB.2.00.0910311248490.13829@chino.kir.corp.google.com> <20091031201158.GB29536@elf.ucw.cz> <4AECCF6A.4020206@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-02 at 17:08 +1100, Stephen Rothwell wrote:
-> Hi Hollis, Avi,
-> 
-> This commit was added to the kvm tree recently:
-> 
-> > Author: Hollis Blanchard <hollisb@us.ibm.com>
-> > Date:   Fri Oct 23 00:35:30 2009 +0000
-> > 
-> >     KVM: powerpc: Fix BUILD_BUG_ON condition
-> >     
-> >     The old BUILD_BUG_ON implementation didn't work with __builtin_constant_p().
-> >     Fixing that revealed this test had been inverted for a long time without
-> >     anybody noticing...
-> >     
-> >     Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
-> >     Signed-off-by: Avi Kivity <avi@redhat.com>
-> > 
-> > diff --git a/arch/powerpc/kvm/timing.h b/arch/powerpc/kvm/timing.h
-> > index bb13b1f..a550f0f 100644
-> > --- a/arch/powerpc/kvm/timing.h
-> > +++ b/arch/powerpc/kvm/timing.h
-> > @@ -48,7 +48,7 @@ static inline void kvmppc_set_exit_type(struct kvm_vcpu *vcpu, int type) {}
-> >  static inline void kvmppc_account_exit_stat(struct kvm_vcpu *vcpu, int type)
-> >  {
-> >  	/* type has to be known at build time for optimization */
-> > -	BUILD_BUG_ON(__builtin_constant_p(type));
-> > +	BUILD_BUG_ON(!__builtin_constant_p(type));
-> >  	switch (type) {
-> >  	case EXT_INTR_EXITS:
-> >  		vcpu->stat.ext_intr_exits++;
-> 
-> It is OK as far as it goes.  It still does not build, though, due to the
-> new BUILD_BUG_ON macro.
+On Sat, 31 Oct 2009, Rik van Riel wrote:
 
-Correct.
+> On 10/31/2009 04:11 PM, Pavel Machek wrote:
+>
+> > But we can't guarantee that enough memory will be ready in the
+> > reserves. So if realtime task relies on it, it is broken, and will
+> > fail to meet its deadlines from time to time.
+>
+> Any realtime task that does networking (which may be the
+> majority of realtime tasks) relies on the kernel memory
+> allocator.
 
-> So I have still commented out the BUILD_BUG_ON in linux-next.
+What is realtime in this scenario? There are no guarantees that reclaim
+wont have to occur. There are no guarantees anymore and therefore you
+cannot really call this realtime.
 
-I've pointed out a few times that Rusty's patch (Subject "BUILD_BUG_ON:
-make it handle more cases", Date "Tue, 20 Oct 2009 14:15:33 +1030") is
-needed to fix the problem with BUILD_BUG_ON().
+Is realtime anything more than: "I want to have my patches merged"?
 
-So far I haven't seen anybody acknowledge the patch or indicate it will
-actually be committed.
+Give some criteria as to what realtime is please. I am all for decreasing
+kernel latencies. But some of this work is adding bloat and increasing
+overhead.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+
 
