@@ -1,174 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbZKBRAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbZKBQq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756374AbZKBRAH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:00:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbZKBQ7z
+	id S1756030AbZKBQq1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:46:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbZKBQq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:59:55 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40016 "EHLO
-	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756311AbZKBQ7x (ORCPT
+	Mon, 2 Nov 2009 11:46:26 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:57732 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755430AbZKBQqZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:59:53 -0500
-From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 6/6] sdio_uart: Style fixes
-To: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, nico@cam.org
-Date: Mon, 02 Nov 2009 16:46:24 +0000
-Message-ID: <20091102164621.11877.25315.stgit@localhost.localdomain>
-In-Reply-To: <20091102164039.11877.88825.stgit@localhost.localdomain>
-References: <20091102164039.11877.88825.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Mon, 2 Nov 2009 11:46:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SBIXrBCqBKYCcnnqEIovv+4VCyBscr2YrCrmW929rg4pQKSoos582aW+SkFzLQxQXo
+         eW4h5cXeqHQEwSfW5YkWfO0PtLKwzYNzjx9/RHDfnh+y1vU/sa+ux0GiBjl1TjT3d6Jz
+         43OgvjtNfKnJekoWvro7kliI4EPeszf8gT+Vo=
+Date: Mon, 2 Nov 2009 19:46:26 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch][rfc] x86, mutex: non-atomic unlock (and a rant)
+Message-ID: <20091102164626.GA10072@lenovo>
+References: <20091102120739.GA20318@wotan.suse.de> <alpine.LFD.2.01.0911020710030.31845@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0911020710030.31845@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Running the current code through checkpatch shows a few bits of noise
-mostly but not entirely from before the changes.
+[Linus Torvalds - Mon, Nov 02, 2009 at 07:20:08AM -0800]
+| 
+| On Mon, 2 Nov 2009, Nick Piggin wrote:
+| > 
+| > Non-atomic unlock for mutexs maybe? I do this by relying on cache
+| > coherence on a cacheline basis for ordering rather than the memory
+| > consistency of the x86. Linus I know you've told me this is an incorrect
+| > assumption in the past, but I'm not so sure.
+| 
+| I'm sure.
+| 
+| This is simply buggy:
+| 
+| > +	atomic_set(&lock->count, 1);
+| > +	barrier();
+| > +	if (unlikely(lock->waiters))
+| > +		fail_fn(lock);
+| 
+| because it doesn't matter one whit whether 'lock->count' and 
+| 'lock->waiters' are in the same cacheline or not.
+| 
+| The cache coherency deals in cachelines, but the instruction re-ordering 
+| logic does not. It's entirely possible that the CPU will turn this into
+| 
+| 	tmp = lock->waiters;
+| 	...
+| 	atomic_set(&lock->count, 1);
+| 	if (tmp)
+| 		fail_fn(lock);
+| 
+| and your "barrier()" did absolutely nothing.
+...
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
+If we write it as
 
- drivers/mmc/card/sdio_uart.c |   33 +++++++++++++++------------------
- 1 files changed, 15 insertions(+), 18 deletions(-)
+	atomic_set(&lock->count, 1);
+	some-serializing-op(); /* say cpuid() */
+	if (unlikely(lock->waiters))
+		fail_fn(lock);
 
+This should do the trick, though this serializing operation
+is always cost too much.
 
-diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
-index c4fc27d..ff93f47 100644
---- a/drivers/mmc/card/sdio_uart.c
-+++ b/drivers/mmc/card/sdio_uart.c
-@@ -462,7 +462,8 @@ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
- 
- 	tty = tty_port_tty_get(&port->port);
- 
--	if (tty == NULL || !kfifo_len(xmit) || tty->stopped || tty->hw_stopped) {
-+	if (tty == NULL || !kfifo_len(xmit)
-+				|| tty->stopped || tty->hw_stopped) {
- 		sdio_uart_stop_tx(port);
- 		return;
- 	}
-@@ -590,7 +591,6 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
- {
- 	struct sdio_uart_port *port =
- 			container_of(tport, struct sdio_uart_port, port);
--	unsigned long page;
- 	int ret;
- 
- 	/*
-@@ -633,7 +633,7 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
- 	 */
- 	sdio_out(port, UART_LCR, UART_LCR_WLEN8);
- 
--	port->ier = UART_IER_RLSI | UART_IER_RDI | UART_IER_RTOIE | UART_IER_UUE;
-+	port->ier = UART_IER_RLSI|UART_IER_RDI|UART_IER_RTOIE|UART_IER_UUE;
- 	port->mctrl = TIOCM_OUT2;
- 
- 	sdio_uart_change_speed(port, tty->termios, NULL);
-@@ -660,7 +660,6 @@ err1:
- 	return ret;
- }
- 
--	
- /**
-  *	sdio_uart_shutdown	-	stop hardware
-  *	@tport: tty port to shut down
-@@ -675,11 +674,8 @@ static void sdio_uart_shutdown(struct tty_port *tport)
- {
- 	struct sdio_uart_port *port =
- 			container_of(tport, struct sdio_uart_port, port);
--	int ret;
--
--	ret = sdio_uart_claim_func(port);
--	if (ret)
--		return ret;
-+	if (sdio_uart_claim_func(port))
-+		return;
- 
- 	sdio_uart_stop_rx(port);
- 
-@@ -727,7 +723,6 @@ static int sdio_uart_install(struct tty_driver *driver, struct tty_struct *tty)
- 	} else
- 		sdio_uart_port_put(port);
- 	return ret;
--		
- }
- 
- /**
-@@ -767,7 +762,7 @@ static void sdio_uart_hangup(struct tty_struct *tty)
- 	tty_port_hangup(&port->port);
- }
- 
--static int sdio_uart_write(struct tty_struct * tty, const unsigned char *buf,
-+static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
- 			   int count)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
-@@ -778,7 +773,7 @@ static int sdio_uart_write(struct tty_struct * tty, const unsigned char *buf,
- 
- 	ret = kfifo_put(port->xmit_fifo, buf, count);
- 
--	if ( !(port->ier & UART_IER_THRI)) {
-+	if (!(port->ier & UART_IER_THRI)) {
- 		int err = sdio_uart_claim_func(port);
- 		if (!err) {
- 			sdio_uart_start_tx(port);
-@@ -865,7 +860,8 @@ static void sdio_uart_unthrottle(struct tty_struct *tty)
- 	sdio_uart_release_func(port);
- }
- 
--static void sdio_uart_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
-+static void sdio_uart_set_termios(struct tty_struct *tty,
-+						struct ktermios *old_termios)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
- 	unsigned int cflag = tty->termios->c_cflag;
-@@ -944,7 +940,7 @@ static int sdio_uart_tiocmset(struct tty_struct *tty, struct file *file,
- 	int result;
- 
- 	result = sdio_uart_claim_func(port);
--	if(!result) {
-+	if (!result) {
- 		sdio_uart_update_mctrl(port, set, clear);
- 		sdio_uart_release_func(port);
- 	}
-@@ -962,7 +958,7 @@ static int sdio_uart_proc_show(struct seq_file *m, void *v)
- 		struct sdio_uart_port *port = sdio_uart_port_get(i);
- 		if (port) {
- 			seq_printf(m, "%d: uart:SDIO", i);
--			if(capable(CAP_SYS_ADMIN)) {
-+			if (capable(CAP_SYS_ADMIN)) {
- 				seq_printf(m, " tx:%d rx:%d",
- 					      port->icount.tx, port->icount.rx);
- 				if (port->icount.frame)
-@@ -1015,7 +1011,7 @@ static const struct tty_port_operations sdio_uart_port_ops = {
- 	.shutdown = sdio_uart_shutdown,
- 	.activate = sdio_uart_activate,
- };
--	
-+
- static const struct tty_operations sdio_uart_ops = {
- 	.open			= sdio_uart_open,
- 	.close			= sdio_uart_close,
-@@ -1068,7 +1064,7 @@ static int sdio_uart_probe(struct sdio_func *func,
- 		}
- 		if (!tpl) {
- 			printk(KERN_WARNING
--			       "%s: can't find tuple 0x91 subtuple 0 (SUBTPL_SIOREG) for GPS class\n",
-+       "%s: can't find tuple 0x91 subtuple 0 (SUBTPL_SIOREG) for GPS class\n",
- 			       sdio_func_id(func));
- 			kfree(port);
- 			return -EINVAL;
-@@ -1101,7 +1097,8 @@ static int sdio_uart_probe(struct sdio_func *func,
- 		kfree(port);
- 	} else {
- 		struct device *dev;
--		dev = tty_register_device(sdio_uart_tty_driver, port->index, &func->dev);
-+		dev = tty_register_device(sdio_uart_tty_driver,
-+						port->index, &func->dev);
- 		if (IS_ERR(dev)) {
- 			sdio_uart_port_remove(port);
- 			ret = PTR_ERR(dev);
+The other option could be that we put two mem-write operations
+like
+	int tmp;
+	atomic_set(&lock->count, 1);
+	tmp = lock->waiters;
+	rmb();
+	lock->waiters = tmp;
+	if (unlikely(lock->waiters))
+		fail_fn(lock);
 
+Which should work faster then cpuid (and we have to be sure somehow
+that gcc doesn't suppress this redundant operations).
+
+	-- Cyrill
