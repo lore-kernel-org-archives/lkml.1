@@ -1,243 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZKBQ74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZKBRAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbZKBQ74 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:59:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbZKBQ7y
+	id S1756406AbZKBRAP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756380AbZKBRAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:59:54 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40015 "EHLO
-	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756192AbZKBQ7k (ORCPT
+	Mon, 2 Nov 2009 12:00:12 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:53997 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756379AbZKBRAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:59:40 -0500
-From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 5/6] sdio_uart: Use kfifo instead of the messy circ stuff
-To: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, nico@cam.org
-Date: Mon, 02 Nov 2009 16:46:15 +0000
-Message-ID: <20091102164610.11877.51014.stgit@localhost.localdomain>
-In-Reply-To: <20091102164039.11877.88825.stgit@localhost.localdomain>
-References: <20091102164039.11877.88825.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Mon, 2 Nov 2009 12:00:09 -0500
+Date: Mon, 2 Nov 2009 11:46:16 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jarek Poplawski <jarkao2@gmail.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Message-ID: <20091102164615.GD14046@tuxdriver.com>
+References: <1256886023.3555.5.camel@johannes.local> <20091030110616.GB6150@ff.dom.local> <20091030150223.GA2586@tuxdriver.com> <20091102091038.GA9044@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102091038.GA9044@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Probably all the tty code should switch to this, especially when the new
-lockless kfifo is merged.
+On Mon, Nov 02, 2009 at 10:10:38AM +0100, Ingo Molnar wrote:
+> 
+> * John W. Linville <linville@tuxdriver.com> wrote:
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
+<snip>
 
- drivers/mmc/card/sdio_uart.c |   86 +++++++++++++-----------------------------
- 1 files changed, 27 insertions(+), 59 deletions(-)
+> > Ever since Bartlomiej decided to tear himself away from 
+> > drivers/staging, he has been nothing but negative -- petty, whining, 
+> > indignat, whatever.  Just what has he done to merit any special 
+> > consideration here?  Why should he have any sort of veto over rt2x00?
+> 
+> I got curious, as my past experience with Bartlomiej is that he is a 
+> factual, reliable, knowledgable upstream driver developer interested in 
+> difficult pieces of code others are reluctant to touch, for whom it is 
+> rather atypical to get 'petty, whining, indignant'.
+ 
+YMMV...
 
+<snip>
 
-diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
-index e611bc6..c4fc27d 100644
---- a/drivers/mmc/card/sdio_uart.c
-+++ b/drivers/mmc/card/sdio_uart.c
-@@ -32,7 +32,7 @@
- #include <linux/mutex.h>
- #include <linux/seq_file.h>
- #include <linux/serial_reg.h>
--#include <linux/circ_buf.h>
-+#include <linux/kfifo.h>
- #include <linux/gfp.h>
- #include <linux/tty.h>
- #include <linux/tty_flip.h>
-@@ -46,18 +46,9 @@
- #define UART_NR		8	/* Number of UARTs this driver can handle */
- 
- 
--#define UART_XMIT_SIZE	PAGE_SIZE
-+#define FIFO_SIZE	PAGE_SIZE
- #define WAKEUP_CHARS	256
- 
--#define circ_empty(circ)	((circ)->head == (circ)->tail)
--#define circ_clear(circ)	((circ)->head = (circ)->tail = 0)
--
--#define circ_chars_pending(circ) \
--		(CIRC_CNT((circ)->head, (circ)->tail, UART_XMIT_SIZE))
--
--#define circ_chars_free(circ) \
--		(CIRC_SPACE((circ)->head, (circ)->tail, UART_XMIT_SIZE))
--
- 
- struct uart_icount {
- 	__u32	cts;
-@@ -82,7 +73,7 @@ struct sdio_uart_port {
- 	struct mutex		func_lock;
- 	struct task_struct	*in_sdio_uart_irq;
- 	unsigned int		regs_offset;
--	struct circ_buf		xmit;
-+	struct kfifo		*xmit_fifo;
- 	spinlock_t		write_lock;
- 	struct uart_icount	icount;
- 	unsigned int		uartclk;
-@@ -104,6 +95,9 @@ static int sdio_uart_add_port(struct sdio_uart_port *port)
- 	kref_init(&port->kref);
- 	mutex_init(&port->func_lock);
- 	spin_lock_init(&port->write_lock);
-+	port->xmit_fifo = kfifo_alloc(FIFO_SIZE, GFP_KERNEL, &port->write_lock);
-+	if (port->xmit_fifo == NULL)
-+		return -ENOMEM;
- 
- 	spin_lock(&sdio_uart_table_lock);
- 	for (index = 0; index < UART_NR; index++) {
-@@ -453,9 +447,11 @@ static void sdio_uart_receive_chars(struct sdio_uart_port *port,
- 
- static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
- {
--	struct circ_buf *xmit = &port->xmit;
-+	struct kfifo *xmit = port->xmit_fifo;
- 	int count;
- 	struct tty_struct *tty;
-+	u8 iobuf[16];
-+	int len;
- 
- 	if (port->x_char) {
- 		sdio_out(port, UART_TX, port->x_char);
-@@ -466,24 +462,21 @@ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
- 
- 	tty = tty_port_tty_get(&port->port);
- 
--	if (tty == NULL || circ_empty(xmit) || tty->stopped || tty->hw_stopped) {
-+	if (tty == NULL || !kfifo_len(xmit) || tty->stopped || tty->hw_stopped) {
- 		sdio_uart_stop_tx(port);
- 		return;
- 	}
- 
--	count = 16;
--	do {
--		sdio_out(port, UART_TX, xmit->buf[xmit->tail]);
--		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
-+	len = kfifo_get(xmit, iobuf, 16);
-+	for (count = 0; count < len; count++) {
-+		sdio_out(port, UART_TX, iobuf[count]);
- 		port->icount.tx++;
--		if (circ_empty(xmit))
--			break;
--	} while (--count > 0);
-+	}
- 
--	if (circ_chars_pending(xmit) < WAKEUP_CHARS)
-+	if (len < WAKEUP_CHARS)
- 		tty_wakeup(tty);
- 
--	if (circ_empty(xmit))
-+	if (len == 0)
- 		sdio_uart_stop_tx(port);
- 	tty_kref_put(tty);
- }
-@@ -606,22 +599,17 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
- 	 */
- 	set_bit(TTY_IO_ERROR, &tty->flags);
- 
--	/* Initialise and allocate the transmit buffer. */
--	page = __get_free_page(GFP_KERNEL);
--	if (!page)
--		return -ENOMEM;
--	port->xmit.buf = (unsigned char *)page;
--	circ_clear(&port->xmit);
-+	kfifo_reset(port->xmit_fifo);
- 
- 	ret = sdio_uart_claim_func(port);
- 	if (ret)
--		goto err1;
-+		return ret;
- 	ret = sdio_enable_func(port->func);
- 	if (ret)
--		goto err2;
-+		goto err1;
- 	ret = sdio_claim_irq(port->func, sdio_uart_irq);
- 	if (ret)
--		goto err3;
-+		goto err2;
- 
- 	/*
- 	 * Clear the FIFO buffers and disable them.
-@@ -665,12 +653,10 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
- 	sdio_uart_release_func(port);
- 	return 0;
- 
--err3:
--	sdio_disable_func(port->func);
- err2:
--	sdio_uart_release_func(port);
-+	sdio_disable_func(port->func);
- err1:
--	free_page((unsigned long)port->xmit.buf);
-+	sdio_uart_release_func(port);
- 	return ret;
- }
- 
-@@ -693,7 +679,7 @@ static void sdio_uart_shutdown(struct tty_port *tport)
- 
- 	ret = sdio_uart_claim_func(port);
- 	if (ret)
--		goto skip;
-+		return ret;
- 
- 	sdio_uart_stop_rx(port);
- 
-@@ -715,10 +701,6 @@ static void sdio_uart_shutdown(struct tty_port *tport)
- 	sdio_disable_func(port->func);
- 
- 	sdio_uart_release_func(port);
--
--skip:
--	/* Free the transmit buffer page. */
--	free_page((unsigned long)port->xmit.buf);
- }
- 
- /**
-@@ -789,26 +771,12 @@ static int sdio_uart_write(struct tty_struct * tty, const unsigned char *buf,
- 			   int count)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
--	struct circ_buf *circ = &port->xmit;
--	int c, ret = 0;
-+	int ret;
- 
- 	if (!port->func)
- 		return -ENODEV;
- 
--	spin_lock(&port->write_lock);
--	while (1) {
--		c = CIRC_SPACE_TO_END(circ->head, circ->tail, UART_XMIT_SIZE);
--		if (count < c)
--			c = count;
--		if (c <= 0)
--			break;
--		memcpy(circ->buf + circ->head, buf, c);
--		circ->head = (circ->head + c) & (UART_XMIT_SIZE - 1);
--		buf += c;
--		count -= c;
--		ret += c;
--	}
--	spin_unlock(&port->write_lock);
-+	ret = kfifo_put(port->xmit_fifo, buf, count);
- 
- 	if ( !(port->ier & UART_IER_THRI)) {
- 		int err = sdio_uart_claim_func(port);
-@@ -826,13 +794,13 @@ static int sdio_uart_write(struct tty_struct * tty, const unsigned char *buf,
- static int sdio_uart_write_room(struct tty_struct *tty)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
--	return port ? circ_chars_free(&port->xmit) : 0;
-+	return FIFO_SIZE - kfifo_len(port->xmit_fifo);
- }
- 
- static int sdio_uart_chars_in_buffer(struct tty_struct *tty)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
--	return port ? circ_chars_pending(&port->xmit) : 0;
-+	return kfifo_len(port->xmit_fifo);
- }
- 
- static void sdio_uart_send_xchar(struct tty_struct *tty, char ch)
+> Bartlomiej's reply (<1255792104.3434.2.camel@johannes.local>) ignored 
+> the attack (gracefully) and replied to the technical portion only:
+> 
+>  | > Tell me you're kidding -- comparing 2k duplicated LOC with a driver 
+>  | > that ships its own wifi stack?
+>  |
+>  | Why would I be?
+>  |
+>  | 1) The patch is submitted to kernel _proper_ not kernel staging so I 
+>  | see no excuse for duplicating 2-4 KLOC and it should be fixed.
+>  |
+>  | 2) The fact that the some staging driver consists in 90% of crap 
+>  | doesn't mean that it doesn't have some good design ideas..  (i.e. 
+>  | abstracting chipset registers access in a discussed case)
+> 
+> To which technical point Johannes elected not to reply. (Effectively 
+> conceding Bartlomiej's point as per lkml discussion rules.)
 
+Really?  "Last post wins" is the rule?  I hope you are joking...
+
+> I can understand David trusting your judgement and not wanting to get 
+> involved in the fine details, but having read the surrounding discussion 
+> i dont understand your interpretation of the events, and i dont 
+> understand on what basis you launched your very serious accusation, that 
+> he is being 'petty, whining, indignant'. Every reply from him in that 
+> thread is the exact opposite of that. Care to elaborate?
+
+Despite your links, we seem to be reading different threads.  I'm not
+sure I can reach your conclusions even with the most generous reading
+of Bartlomiej's posts and the most critical readings of _everyone_
+else's.
+
+It seems Bartlomiej has taken it personally that we don't like having
+the Ralink vendor drivers in the staging tree and he has decided to be
+an irritant in linux-wireless as some sort of revenge.  As a bonus,
+he has thrown-in some random ramblings attacking the inclusion of
+Pulseaudio in Fedora and criticizing Dave's handling of the ide tree.
+And worst of all he has chosen to make a big stink about whether or
+not the rt2x00 family of drivers (which shares tons of code already,
+BTW) is sharing enough code for his taste in drivers that are currently
+under active development.
+
+Now you have come along to defend him for whatever your reasons,
+and you have chosen to act as if Bartlomiej has been ignored simply
+because you don't like the responses he got.  Further, you seem to
+expect me to have given him some veto over a driver for which has
+has contributed essentially nothing[1].  Why?  Simply because he doesn't
+agree with the driver maintainer's JUDGMENT CALL?  Or mine?  Or Dave's?
+And for all his objections, he can't be bothered to offer a patch?
+
+I can only guess as to why you are being deferential to Bartlomiej
+and overlooking not only how he has treated the rest of us but also
+that his technical complaint is minor.  I can only ask you to consider
+that maybe Bartlomiej is not so aggrieved as he claims.
+
+John
+
+[1] Even his bug reports and code reviews have clearly been from the
+perspective of "you should just be using the staging driver".
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
