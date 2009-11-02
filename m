@@ -1,142 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbZKBVq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZKBVtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756983AbZKBVq3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 16:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbZKBVq2
+	id S1756978AbZKBVtm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 16:49:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbZKBVtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 16:46:28 -0500
-Received: from xenotime.net ([72.52.64.118]:57270 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756960AbZKBVq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 16:46:27 -0500
-Date: Mon, 2 Nov 2009 13:46:30 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Ben Blum <bblum@andrew.cmu.edu>, netdev <netdev@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       lizf@cn.fujistu.com, akpm@linux-foundation.org, menage@google.com
-Subject: Re: [RFC][PATCH 3/3] cgroups: net_cls subsys as module
-Message-Id: <20091102134630.9947e8cf.rdunlap@xenotime.net>
-In-Reply-To: <20091102213103.GD13692@andrew.cmu.edu>
-References: <20091102212825.GA13692@andrew.cmu.edu>
-	<20091102213103.GD13692@andrew.cmu.edu>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Nov 2009 16:49:41 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:60815 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756477AbZKBVtk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 16:49:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=YCoeJKKubtH4tUFxmuDvTut8ur2+K7J+EncYlNi3oFPRllt44d5fkXXW5mEikhTQq9
+         BUKXX7JxJlHEBKRsXZhryzF9Xzk+QB14Wjm1WOSP0NpKAn3lXxVCwZTH0gP7n+ROxM7q
+         nRum8hW0eeV/cU2IjcwyA3hYfJOmSOl2dxCww=
+Message-ID: <4AEF53F5.4020107@gmail.com>
+Date: Mon, 02 Nov 2009 22:49:41 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
+MIME-Version: 1.0
+To: Justin Mattock <justinmattock@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gcc@gcc.gnu.org
+Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
+References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com>
+In-Reply-To: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com>
+X-Enigmail-Version: 0.97b
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009 16:31:03 -0500 Ben Blum wrote:
-
-> Allows the net_cls cgroup subsystem to be compiled as a module
-
-Please cc: netdev on networking patches.  [done]
-
-
-> From: Ben Blum <bblum@andrew.cmu.edu>
+On 11/02/2009 10:29 PM, Justin Mattock wrote:
+> [  532.942324] cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
+> [  532.942330] Pid: 16002, comm: cc1plus Tainted: P
+> 2.6.32-rc5-00083-g04ea458 #2
+> [  532.942333] Call Trace:
+> [  532.942342]  [<ffffffff810bce11>] T.417+0x7c/0x245
+> [  532.942347]  [<ffffffff810bd11c>] __out_of_memory+0x142/0x159
+> [  532.942352]  [<ffffffff810bd1a1>] out_of_memory+0x6e/0x9d
+> [  532.942357]  [<ffffffff810c0086>] __alloc_pages_nodemask+0x47e/0x5cc
+> [  532.942363]  [<ffffffff810d2115>] handle_mm_fault+0x25d/0x68e
+> [  532.942369]  [<ffffffff813dfc1d>] do_page_fault+0x2bb/0x2d3
+> [  532.942373]  [<ffffffff813ddb25>] page_fault+0x25/0x30
+...
+> [  532.957951] Out of memory: kill process 16001 (c++) score 543727 or a child
+> [  532.957955] Killed process 16002 (cc1plus)
 > 
-> This patch modifies net/sched/cls_cgroup.c to allow the net_cls subsystem to
-> be optionally compiled as a module instead of builtin. The cgroup_subsys
-> struct is moved around a bit to allow the subsys_id to be either declared as a
-> compile-time constant by the cgroup_subsys.h include in cgroup.h, or, if it's
-> a module, initialized within the struct by cgroup_load_subsys.
-> 
-> Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
-> ---
-> 
->  net/sched/Kconfig      |    2 +-
->  net/sched/cls_cgroup.c |   37 ++++++++++++++++++++++++++++---------
->  2 files changed, 29 insertions(+), 10 deletions(-)
-> 
-> 
-> diff --git a/net/sched/Kconfig b/net/sched/Kconfig
-> index 929218a..8489951 100644
-> --- a/net/sched/Kconfig
-> +++ b/net/sched/Kconfig
-> @@ -328,7 +328,7 @@ config NET_CLS_FLOW
->  	  module will be called cls_flow.
->  
->  config NET_CLS_CGROUP
-> -	bool "Control Group Classifier"
-> +	tristate "Control Group Classifier"
->  	select NET_CLS
->  	depends on CGROUPS
->  	---help---
-> diff --git a/net/sched/cls_cgroup.c b/net/sched/cls_cgroup.c
-> index e4877ca..df9723b 100644
-> --- a/net/sched/cls_cgroup.c
-> +++ b/net/sched/cls_cgroup.c
-> @@ -24,6 +24,25 @@ struct cgroup_cls_state
->  	u32 classid;
->  };
->  
-> +static struct cgroup_subsys_state *cgrp_create(struct cgroup_subsys *ss,
-> +					       struct cgroup *cgrp);
-> +static void cgrp_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp);
-> +static int cgrp_populate(struct cgroup_subsys *ss, struct cgroup *cgrp);
-> +
-> +struct cgroup_subsys net_cls_subsys = {
-> +	.name		= "net_cls",
-> +	.create		= cgrp_create,
-> +	.destroy	= cgrp_destroy,
-> +	.populate	= cgrp_populate,
-> +#ifdef CONFIG_NET_CLS_CGROUP
-> +	.subsys_id	= net_cls_subsys_id,
-> +#else
-> +#define net_cls_subsys_id net_cls_subsys.subsys_id
-> +#endif
-> +	.module		= THIS_MODULE,
-> +};
-> +
-> +
->  static inline struct cgroup_cls_state *cgrp_cls_state(struct cgroup *cgrp)
->  {
->  	return container_of(cgroup_subsys_state(cgrp, net_cls_subsys_id),
-> @@ -79,14 +98,6 @@ static int cgrp_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
->  	return cgroup_add_files(cgrp, ss, ss_files, ARRAY_SIZE(ss_files));
->  }
->  
-> -struct cgroup_subsys net_cls_subsys = {
-> -	.name		= "net_cls",
-> -	.create		= cgrp_create,
-> -	.destroy	= cgrp_destroy,
-> -	.populate	= cgrp_populate,
-> -	.subsys_id	= net_cls_subsys_id,
-> -};
-> -
->  struct cls_cgroup_head
->  {
->  	u32			handle;
-> @@ -277,12 +288,20 @@ static struct tcf_proto_ops cls_cgroup_ops __read_mostly = {
->  
->  static int __init init_cgroup_cls(void)
->  {
-> -	return register_tcf_proto_ops(&cls_cgroup_ops);
-> +	int ret = register_tcf_proto_ops(&cls_cgroup_ops);
-> +	if (ret)
-> +		return ret;
-> +	ret = cgroup_load_subsys(&net_cls_subsys);
-> +	if (ret)
-> +		unregister_tcf_proto_ops(&cls_cgroup_ops);
-> +	return ret;
->  }
->  
->  static void __exit exit_cgroup_cls(void)
->  {
->  	unregister_tcf_proto_ops(&cls_cgroup_ops);
-> +	/* TODO: unload subsystem. for now, the try_module_get in load_subsys
-> +	 * prevents us from getting here. */
->  }
->  
->  module_init(init_cgroup_cls);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I just compiled the latest gcc snapshot a few days
+> ago.
 
-
----
-~Randy
+How many jobs did you run in parallel? Was there anything else memory
+consuming running on that machine? Do you run the same jobs count every
+time you compile such big c++ projects?
