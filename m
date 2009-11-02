@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZKBMf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbZKBMgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbZKBMf4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 07:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbZKBMfz
+	id S1755139AbZKBMgM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 07:36:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbZKBMgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 07:35:55 -0500
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:39475 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754725AbZKBMfb (ORCPT
+	Mon, 2 Nov 2009 07:36:11 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:64853 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754994AbZKBMgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 07:35:31 -0500
+	Mon, 2 Nov 2009 07:36:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=ZzZ7QZ9L6PTLmibGF7Zih6hZdmVxYyIeqjNgg5zTIijo9FH33/AkH8xwKxG2MLVcJs
-         1o2EzmzlJ6ygxJV6gyYadKgBcRVXPvrx/8uUE9COwjfgjHMhGL4k+iRhSnBtAidMsDMy
-         Yku0p04OXST8dT5Tin+Sz+DTbqgmoHOYEbjUs=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ts8QVgCvRMV+DQLZo7Os95+4lkgbGSzqkGgDUMxfcivr6A65+88kC2K+XYg8NVBddn
+         ZaI0eQfkBbf9Xnn8dTeYMKqzQ2Zjy7R6pHL9P82m126kBF+gFNLE/om9MJl3HVLa3r+S
+         uD4YE6ijxEmI1yt7xtA9QCgFyvEENspw+mMP0=
+Message-ID: <4AEED23A.7070009@gmail.com>
+Date: Mon, 02 Nov 2009 07:36:10 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0911020237440.13146@chino.kir.corp.google.com>
-References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
-	 <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
-	 <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
-	 <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
-	 <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>
-	 <2f11576a0911010529t688ed152qbb72c87c85869c45@mail.gmail.com>
-	 <alpine.DEB.2.00.0911020237440.13146@chino.kir.corp.google.com>
-Date: Mon, 2 Nov 2009 21:35:35 +0900
-X-Google-Sender-Auth: 6a0506c3b9dc5106
-Message-ID: <2f11576a0911020435n103538d0p9d2afed4d39b4726@mail.gmail.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>, vedran.furac@gmail.com
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Arcangeli <aarcange@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: [net-next-2.6 PATCH RFC] TCPCT part 1d: generate Responder Cookie
+References: <4AEAC763.4070200@gmail.com> <4AED86AD.6010906@gmail.com> <4AEDCD7C.2010403@gmail.com> <4AEEB6D2.7090505@gmail.com> <4AEEBAC6.7020308@gmail.com>
+In-Reply-To: <4AEEBAC6.7020308@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Hi David,
->>
->> I'm very interesting your pointing out. thanks good testing.
->> So, I'd like to clarify your point a bit.
->>
->> following are badness list on my desktop environment (x86_64 6GB mem).
->> it show Xorg have pretty small badness score. Do you know why such
->> different happen?
->
-> I don't know specifically what's different on your machine than Vedran's,
-> my data is simply a collection of the /proc/sys/vm/oom_dump_tasks output
-> from Vedran's oom log.
->
-> I guess we could add a call to badness() for the oom_dump_tasks tasklist
-> dump to get a clearer picture so we know the score for each thread group
-> leader.  Anything else would be speculation at this point, though.
->
->> score    pid        comm
->> ==============================
->> 56382   3241    run-mozilla.sh
->> 23345   3289    run-mozilla.sh
->> 21461   3050    gnome-do
->> 20079   2867    gnome-session
->> 14016   3258    firefox
->> 9212    3306    firefox
->> 8468    3115    gnome-do
->> 6902    3325    emacs
->> 6783    3212    tomboy
->> 4865    2968    python
->> 4861    2948    nautilus
->> 4221    1       init
->> (snip about 100line)
->> 548     2590    Xorg
->>
->
-> Are these scores with your rss patch or without?  If it's without the
-> patch, this is understandable since Xorg didn't appear highly in Vedran's
-> log either.
+Eric Dumazet wrote:
+> cookie_hash() runs in a non preemptable context. CPU cannot change under us.
+> 
+> (or else, we would not use __get_cpu_var(ipv4_cookie_scratch); )
+> 
+> And of course, each cpu gets its own scratch area, thanks to __get_cpu_var()
+> 
+Interesting.  I'm not sure that running CPU intensive functions like SHA1 in
+a non-preemptable context is a good idea.  I'd assumed it wasn't!
 
-Oh, I'm sorry. I mesured with rss patch.
-Then, I haven't understand what makes Xorg bad score.
+Perhaps you could point at the documentation in the code that explains this?
+Perhaps a function header comment that mentions it?
 
-Hmm...
-Vedran,  Can you please post following command result?
+All I know is (from testing) that the tcp_minisockets.c caller is sometimes
+called in a fashion that requires atomic allocation, and other times does not!
 
-# cat /proc/`pidof Xorg`/smaps
-
-
-I hope to undestand the issue clearly before modify any code.
+See my "Subject: query: tcpdump versus atomic?" thread from Oct 14th.
