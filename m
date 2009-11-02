@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZKBPtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZKBPwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbZKBPtE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 10:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZKBPtD
+	id S1755461AbZKBPwE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 10:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbZKBPwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 10:49:03 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34288 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754990AbZKBPtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 10:49:01 -0500
-Date: Mon, 2 Nov 2009 16:49:01 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci: remove pci_find_slot from PCI_LEGACY config
- description
-In-Reply-To: <1256932009-5905-1-git-send-email-cascardo@holoscopio.com>
-Message-ID: <alpine.LSU.2.00.0911021648320.4203@wotan.suse.de>
-References: <1256932009-5905-1-git-send-email-cascardo@holoscopio.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Mon, 2 Nov 2009 10:52:03 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:57489 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755190AbZKBPwD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 10:52:03 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
+Date: Mon, 2 Nov 2009 16:51:52 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: John Kacur <jkacur@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arnd Bergmann <arndbergmann@googlemail.com>
+References: <20091010153314.827301943@linutronix.de> <alpine.LFD.2.00.0910212350210.3526@localhost.localdomain> <20091021221619.GF4880@nowhere>
+In-Reply-To: <20091021221619.GF4880@nowhere>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911021651.53331.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/KnmIKYLrknQ9e9LEzbQvcWKpk5Ft7qh2KWMS
+ kuj1ZDwWspkdRc0I0Xn8/v/EFri3TvdalfieZOcBrDacWq5hrM
+ +OlIfqGGePFLEGwoQRJDA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Oct 2009, Thadeu Lima de Souza Cascardo wrote:
-
-> Commit 3b073eda has removed pci_find_slot, so there's no point in
-> mentioning it in the config description as one of the deprecated APIs
-> there are enabled by PCI_LEGACY and still used by some drivers.
+On Thursday 22 October 2009, Frederic Weisbecker wrote:
+> > I'm thinking that the simplier approach, would be to make the 
+> > default_llseek the unlocked one. Then you only have to audit the drivers 
+> > that have the BKL - ie the ones we are auditing anyway, and explicitly set 
+> > them to the bkl locked llseek.
+> > 
+> > There might be a hidden interaction though between the non-unlocked 
+> > variety of ioctls and default llseek though.
 > 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> ---
->  drivers/pci/Kconfig |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
-> index fdc864f..48a3ea7 100644
-> --- a/drivers/pci/Kconfig
-> +++ b/drivers/pci/Kconfig
-> @@ -27,10 +27,10 @@ config PCI_LEGACY
->  	default y
->  	help
->  	  Say Y here if you want to include support for the deprecated
-> -	  pci_find_slot() and pci_find_device() APIs.  Most drivers have
-> -	  been converted over to using the proper hotplug APIs, so this
-> -	  option serves to include/exclude only a few drivers that are
-> -	  still using this API.
-> +	  pci_find_device() API.  Most drivers have been converted over
-> +	  to using the proper hotplug APIs, so this option serves to
-> +	  include/exclude only a few drivers that are still using this
-> +	  API.
+> I fear that won't work because the bkl in default_llseek() does not
+> only synchronizes with others uses of the bkl in a driver, it also
+> synchronizes lseek() itself.
+> 
+> As an example offset change is not atomic. This is a long long, so
+> updating its value is not atomic in 32 bits archs.
 
-While you are at it, how about removing the references in 
-Documentation/PCI/pci.txt as well?
+A late follow-up on this one:
 
-Thanks,
+I looked at what places in the code manipulate file->f_pos directly
+and found that almost all the uses in driver code are broken because
+they don't take any locks. Most of them are in driver specific
+lseek operations. Others are in read/write methods and are even
+more broken because the change gets immediately overwritten by
+vfs_read/vfs_write when the driver method returns.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+IMHO, we should complete the pushdown into all ioctl methods
+that John and Thomas have started working on, fixing the lseek
+methods in those files we touch.
+
+When that is done, all interaction between default_llseek and
+driver locking has to be with explicit calls to lock_kernel
+in those drivers, so we can reasonably well script the search
+for drivers needing the BKL in llseek: everyhing that
+ a) defines file_operations without an llseek function,
+ b) touches f_pos somewhere, and
+ c) calls lock_kernel() somewhere
+That should only be a small number and when they are fixed,
+we can remove default_llseek and instead call generic_file_llseek
+for any file operation without a separate llseek method.
+
+	Arnd <><
