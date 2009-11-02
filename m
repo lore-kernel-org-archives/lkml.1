@@ -1,115 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZKBRAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZKBQqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbZKBRAP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:00:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756380AbZKBRAM
+	id S1755965AbZKBQqV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbZKBQqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:00:12 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:53997 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756379AbZKBRAJ (ORCPT
+	Mon, 2 Nov 2009 11:46:20 -0500
+Received: from gv-out-0910.google.com ([216.239.58.191]:19879 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755430AbZKBQqU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:00:09 -0500
-Date: Mon, 2 Nov 2009 11:46:16 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jarek Poplawski <jarkao2@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-Message-ID: <20091102164615.GD14046@tuxdriver.com>
-References: <1256886023.3555.5.camel@johannes.local> <20091030110616.GB6150@ff.dom.local> <20091030150223.GA2586@tuxdriver.com> <20091102091038.GA9044@elte.hu>
+	Mon, 2 Nov 2009 11:46:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=aWOPb59gPh8HkI9p5XtLumhdY1pmeyR4p0xPc8fj9gelyLH7u62zaC/8gZWF2MO1hQ
+         GDidOKenB0PEmnrTrcOJPjxSzhSp4by1JpddHHIe+74uxRKmNHTrXQWqVbv58M06iHq6
+         T+PKvND22BVlRK0b/Ph+MZkTIOn/1SEwLu9LM=
+Date: Mon, 2 Nov 2009 17:46:21 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: dimm <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Mike Travis <travis@sgi.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [ RFC, PATCH - 1/2 ] x86-microcode: refactor microcode output
+ messages
+Message-ID: <20091102164621.GF30802@alberich.amd.com>
+References: <1257114179.6833.47.camel@dimm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091102091038.GA9044@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1257114179.6833.47.camel@dimm>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 10:10:38AM +0100, Ingo Molnar wrote:
+On Sun, Nov 01, 2009 at 11:22:59PM +0100, dimm wrote:
 > 
-> * John W. Linville <linville@tuxdriver.com> wrote:
-
-<snip>
-
-> > Ever since Bartlomiej decided to tear himself away from 
-> > drivers/staging, he has been nothing but negative -- petty, whining, 
-> > indignat, whatever.  Just what has he done to merit any special 
-> > consideration here?  Why should he have any sort of veto over rt2x00?
+> Hi,
 > 
-> I got curious, as my past experience with Bartlomiej is that he is a 
-> factual, reliable, knowledgable upstream driver developer interested in 
-> difficult pieces of code others are reluctant to touch, for whom it is 
-> rather atypical to get 'petty, whining, indignant'.
- 
-YMMV...
-
-<snip>
-
-> Bartlomiej's reply (<1255792104.3434.2.camel@johannes.local>) ignored 
-> the attack (gracefully) and replied to the technical portion only:
 > 
->  | > Tell me you're kidding -- comparing 2k duplicated LOC with a driver 
->  | > that ships its own wifi stack?
->  |
->  | Why would I be?
->  |
->  | 1) The patch is submitted to kernel _proper_ not kernel staging so I 
->  | see no excuse for duplicating 2-4 KLOC and it should be fixed.
->  |
->  | 2) The fact that the some staging driver consists in 90% of crap 
->  | doesn't mean that it doesn't have some good design ideas..  (i.e. 
->  | abstracting chipset registers access in a discussed case)
+> this is in response to Mike's patch "Limit the number of microcode
+> messages".
 > 
-> To which technical point Johannes elected not to reply. (Effectively 
-> conceding Bartlomiej's point as per lkml discussion rules.)
+> What's about the following (yet preliminary and not thoroughly tested)
+> approach?
 
-Really?  "Last post wins" is the rule?  I hope you are joking...
+Hmm, patch-1 doesn't apply:
 
-> I can understand David trusting your judgement and not wanting to get 
-> involved in the fine details, but having read the surrounding discussion 
-> i dont understand your interpretation of the events, and i dont 
-> understand on what basis you launched your very serious accusation, that 
-> he is being 'petty, whining, indignant'. Every reply from him in that 
-> thread is the exact opposite of that. Care to elaborate?
+ patching file arch/x86/include/asm/microcode.h
+ patching file arch/x86/kernel/microcode_amd.c
+ Hunk #1 succeeded at 152 (offset -4 lines).
+ Hunk #2 succeeded at 240 (offset -7 lines).
+ patch: **** malformed patch at line 99: size_t size)
 
-Despite your links, we seem to be reading different threads.  I'm not
-sure I can reach your conclusions even with the most generous reading
-of Bartlomiej's posts and the most critical readings of _everyone_
-else's.
 
-It seems Bartlomiej has taken it personally that we don't like having
-the Ralink vendor drivers in the staging tree and he has decided to be
-an irritant in linux-wireless as some sort of revenge.  As a bonus,
-he has thrown-in some random ramblings attacking the inclusion of
-Pulseaudio in Fedora and criticizing Dave's handling of the ide tree.
-And worst of all he has chosen to make a big stink about whether or
-not the rt2x00 family of drivers (which shares tons of code already,
-BTW) is sharing enough code for his taste in drivers that are currently
-under active development.
+> patch-1:
+> 
+> simplify 'struct ucode_cpu_info' and related operational logic.
+> 
+> 
+> patch-2: 
+> 
+> reduce a number of similar 'microcode version' messages by printing a
+> single message for all cpus with equal microcode version, like:
 
-Now you have come along to defend him for whatever your reasons,
-and you have chosen to act as if Bartlomiej has been ignored simply
-because you don't like the responses he got.  Further, you seem to
-expect me to have given him some veto over a driver for which has
-has contributed essentially nothing[1].  Why?  Simply because he doesn't
-agree with the driver maintainer's JUDGMENT CALL?  Or mine?  Or Dave's?
-And for all his objections, he can't be bothered to offer a patch?
+Would be useful on systems with many cores.
 
-I can only guess as to why you are being deferential to Bartlomiej
-and overlooking not only how he has treated the rest of us but also
-that his technical complaint is minor.  I can only ask you to consider
-that maybe Bartlomiej is not so aggrieved as he claims.
+On AMD multi-socket systems often you have the same CPU revisions and
+thus you'd like to have similar ucode on all cores. Hence there is a
+high chance that your code would reduce the amount of microcode log
+messages during boot.
 
-John
+I'd like to test it but would need patches that do apply ...
 
-[1] Even his bug reports and code reviews have clearly been from the
-perspective of "you should just be using the staging driver".
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+
+Thanks,
+Andreas
