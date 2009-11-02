@@ -1,68 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbZKBQQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZKBQRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755738AbZKBQQv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbZKBQQu
+	id S1755873AbZKBQRo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbZKBQRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:16:50 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:47147 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755461AbZKBQQt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:16:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Gvn/oyxQOwCmtsNnDkCrp/CEzRnas3qkV2VVzfxHqOGBOTBzTSxqrP+qQrrw2xU29s
-         8iW1E4cAIgVlC2pqvahg5l1k3IxpTpDuzCAbyLHcYFgkjpPBuz3ykaXe4r6cTFGKZwFR
-         eQKsy+bkceJYUpszTg/r1bN/pU69BmxgvF/h0=
+	Mon, 2 Nov 2009 11:17:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53629 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755797AbZKBQRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 11:17:39 -0500
+Date: Mon, 2 Nov 2009 16:16:40 GMT
+From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       ebiederm@xmission.com, garyhade@us.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, garyhade@us.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20091026230001.562512739@sbs-t61.sc.intel.com>
+References: <20091026230001.562512739@sbs-t61.sc.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/apic] x86: Unify fixup_irqs() for 32-bit and 64-bit kernels
+Message-ID: <tip-7a7732bc0f7c46f217dbec723f25366b6285cc42@git.kernel.org>
+Git-Commit-ID: 7a7732bc0f7c46f217dbec723f25366b6285cc42
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <alpine.LSU.2.00.0911021658110.4203@wotan.suse.de>
-References: <b8bf37780910310240u4aecdf89hb938df7952b572e@mail.gmail.com> 
-	<alpine.LSU.2.00.0911021658110.4203@wotan.suse.de>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Mon, 2 Nov 2009 14:16:32 -0200
-Message-ID: <b8bf37780911020816r2cc4392cnb48645b09d15c0d2@mail.gmail.com>
-Subject: Re: [PATCH 03/16] trivial: fix assorted "through" typos
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Jiri!
+Commit-ID:  7a7732bc0f7c46f217dbec723f25366b6285cc42
+Gitweb:     http://git.kernel.org/tip/7a7732bc0f7c46f217dbec723f25366b6285cc42
+Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+AuthorDate: Mon, 26 Oct 2009 14:24:31 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 2 Nov 2009 15:56:34 +0100
 
-On Mon, Nov 2, 2009 at 2:00 PM, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Sat, 31 Oct 2009, André Goddard Rosa wrote:
->
->> diff --git a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> index f7b9cdc..b52c1f8 100644
->> --- a/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> +++ b/arch/blackfin/kernel/cplb-mpu/cplbinit.c
->> @@ -38,7 +38,7 @@ void __init generate_cplb_tables_cpu(unsigned int cpu)
->>
->>  #ifdef CONFIG_BFIN_EXTMEM_DCACHEABLE
->>       d_cache = CPLB_L1_CHBL;
->> -#ifdef CONFIG_BFIN_EXTMEM_WRITETROUGH
->> +#ifdef CONFIG_BFIN_EXTMEM_WRITETHROUGH
->
-> As this one is fixing a *real* bug, please separate it out from the other
-> changes which basically just fix typos in comments.
+x86: Unify fixup_irqs() for 32-bit and 64-bit kernels
 
-Already done and taken care here:
-http://marc.info/?l=linux-kernel&m=125701706006147&w=2
+There is no reason to have different fixup_irqs() for 32-bit and
+64-bit kernels. Unify by using the superior 64-bit version for
+both the kernels.
 
-> On the other hand, please merge all the other changes together into one
-> larger patch. We don't want gazillions of commits because you have found
-> gazillions of words typed wrongly in comments.
->
-> Thanks for taking care,
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+LKML-Reference: <20091026230001.562512739@sbs-t61.sc.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/irq.c    |   59 ++++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/irq_32.c |   45 -----------------------------------
+ arch/x86/kernel/irq_64.c |   58 ---------------------------------------------
+ 3 files changed, 59 insertions(+), 103 deletions(-)
 
-Sure thing, I will send a consolidated patch with these.
-
-Thank you,
-André
+diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+index 3912061..3ea6655 100644
+--- a/arch/x86/kernel/irq.c
++++ b/arch/x86/kernel/irq.c
+@@ -276,3 +276,62 @@ void smp_generic_interrupt(struct pt_regs *regs)
+ }
+ 
+ EXPORT_SYMBOL_GPL(vector_used_by_percpu_irq);
++
++#ifdef CONFIG_HOTPLUG_CPU
++/* A cpu has been removed from cpu_online_mask.  Reset irq affinities. */
++void fixup_irqs(void)
++{
++	unsigned int irq;
++	static int warned;
++	struct irq_desc *desc;
++
++	for_each_irq_desc(irq, desc) {
++		int break_affinity = 0;
++		int set_affinity = 1;
++		const struct cpumask *affinity;
++
++		if (!desc)
++			continue;
++		if (irq == 2)
++			continue;
++
++		/* interrupt's are disabled at this point */
++		spin_lock(&desc->lock);
++
++		affinity = desc->affinity;
++		if (!irq_has_action(irq) ||
++		    cpumask_equal(affinity, cpu_online_mask)) {
++			spin_unlock(&desc->lock);
++			continue;
++		}
++
++		if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids) {
++			break_affinity = 1;
++			affinity = cpu_all_mask;
++		}
++
++		if (desc->chip->mask)
++			desc->chip->mask(irq);
++
++		if (desc->chip->set_affinity)
++			desc->chip->set_affinity(irq, affinity);
++		else if (!(warned++))
++			set_affinity = 0;
++
++		if (desc->chip->unmask)
++			desc->chip->unmask(irq);
++
++		spin_unlock(&desc->lock);
++
++		if (break_affinity && set_affinity)
++			printk("Broke affinity for irq %i\n", irq);
++		else if (!set_affinity)
++			printk("Cannot set affinity for irq %i\n", irq);
++	}
++
++	/* That doesn't seem sufficient.  Give it 1ms. */
++	local_irq_enable();
++	mdelay(1);
++	local_irq_disable();
++}
++#endif
+diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
+index 7d35d0f..10709f2 100644
+--- a/arch/x86/kernel/irq_32.c
++++ b/arch/x86/kernel/irq_32.c
+@@ -211,48 +211,3 @@ bool handle_irq(unsigned irq, struct pt_regs *regs)
+ 
+ 	return true;
+ }
+-
+-#ifdef CONFIG_HOTPLUG_CPU
+-
+-/* A cpu has been removed from cpu_online_mask.  Reset irq affinities. */
+-void fixup_irqs(void)
+-{
+-	unsigned int irq;
+-	struct irq_desc *desc;
+-
+-	for_each_irq_desc(irq, desc) {
+-		const struct cpumask *affinity;
+-
+-		if (!desc)
+-			continue;
+-		if (irq == 2)
+-			continue;
+-
+-		affinity = desc->affinity;
+-		if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids) {
+-			printk("Breaking affinity for irq %i\n", irq);
+-			affinity = cpu_all_mask;
+-		}
+-		if (desc->chip->set_affinity)
+-			desc->chip->set_affinity(irq, affinity);
+-		else if (desc->action)
+-			printk_once("Cannot set affinity for irq %i\n", irq);
+-	}
+-
+-#if 0
+-	barrier();
+-	/* Ingo Molnar says: "after the IO-APIC masks have been redirected
+-	   [note the nop - the interrupt-enable boundary on x86 is two
+-	   instructions from sti] - to flush out pending hardirqs and
+-	   IPIs. After this point nothing is supposed to reach this CPU." */
+-	__asm__ __volatile__("sti; nop; cli");
+-	barrier();
+-#else
+-	/* That doesn't seem sufficient.  Give it 1ms. */
+-	local_irq_enable();
+-	mdelay(1);
+-	local_irq_disable();
+-#endif
+-}
+-#endif
+-
+diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
+index 977d8b4..acf8fbf 100644
+--- a/arch/x86/kernel/irq_64.c
++++ b/arch/x86/kernel/irq_64.c
+@@ -62,64 +62,6 @@ bool handle_irq(unsigned irq, struct pt_regs *regs)
+ 	return true;
+ }
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-/* A cpu has been removed from cpu_online_mask.  Reset irq affinities. */
+-void fixup_irqs(void)
+-{
+-	unsigned int irq;
+-	static int warned;
+-	struct irq_desc *desc;
+-
+-	for_each_irq_desc(irq, desc) {
+-		int break_affinity = 0;
+-		int set_affinity = 1;
+-		const struct cpumask *affinity;
+-
+-		if (!desc)
+-			continue;
+-		if (irq == 2)
+-			continue;
+-
+-		/* interrupt's are disabled at this point */
+-		spin_lock(&desc->lock);
+-
+-		affinity = desc->affinity;
+-		if (!irq_has_action(irq) ||
+-		    cpumask_equal(affinity, cpu_online_mask)) {
+-			spin_unlock(&desc->lock);
+-			continue;
+-		}
+-
+-		if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids) {
+-			break_affinity = 1;
+-			affinity = cpu_all_mask;
+-		}
+-
+-		if (desc->chip->mask)
+-			desc->chip->mask(irq);
+-
+-		if (desc->chip->set_affinity)
+-			desc->chip->set_affinity(irq, affinity);
+-		else if (!(warned++))
+-			set_affinity = 0;
+-
+-		if (desc->chip->unmask)
+-			desc->chip->unmask(irq);
+-
+-		spin_unlock(&desc->lock);
+-
+-		if (break_affinity && set_affinity)
+-			printk("Broke affinity for irq %i\n", irq);
+-		else if (!set_affinity)
+-			printk("Cannot set affinity for irq %i\n", irq);
+-	}
+-
+-	/* That doesn't seem sufficient.  Give it 1ms. */
+-	local_irq_enable();
+-	mdelay(1);
+-	local_irq_disable();
+-}
+-#endif
+ 
+ extern void call_softirq(void);
+ 
