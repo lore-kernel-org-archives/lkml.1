@@ -1,81 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZKBSi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932242AbZKBSnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbZKBSi6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932171AbZKBSi5
+	id S932242AbZKBSnO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:43:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932171AbZKBSnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:38:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39247 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754190AbZKBSiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:38:55 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
-Date: Mon, 2 Nov 2009 19:40:25 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <200911021439.28266.rjw@sisk.pl> <20091102173843.GA662@comet.dominikbrodowski.net>
-In-Reply-To: <20091102173843.GA662@comet.dominikbrodowski.net>
+	Mon, 2 Nov 2009 13:43:13 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:36288 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932107AbZKBSnL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:43:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=slMwjpFwtUwLhYqetqO3I8a9AypS8Mp6IQQgHyOL7fn/l/dj9c1fttX8I2pD8cKVau
+         e+SoJ13le9wWK59ZgtvJSeJYoi8R3bxPJ1mgeHdWACgQlz/npMy4Vt8WdMB5AXNm8T+Q
+         /AWzovdS9/a8+O10R0kF6B17cncNPm5PThElA=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: netdev@vger.kernel.org
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Date: Mon, 2 Nov 2009 19:43:10 +0100
+User-Agent: KMail/1.9.10
+Cc: Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1256886023.3555.5.camel@johannes.local> <efe7343f0911020932l21a570c8u9478568329d38e2c@mail.gmail.com> <4AEF1894.2010809@xenotime.net>
+In-Reply-To: <4AEF1894.2010809@xenotime.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
+Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911021940.25111.rjw@sisk.pl>
+Content-Disposition: inline
+Message-Id: <200911021943.12069.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 November 2009, Dominik Brodowski wrote:
-> Hey,
-> 
-> just two minor nit-pick which we could handle post-2.6.32:
-> 
-> > +++ linux-2.6/drivers/pcmcia/cs.c
-> > @@ -98,10 +98,13 @@ EXPORT_SYMBOL(pcmcia_socket_list_rwsem);
-> >   * These functions check for the appropriate struct pcmcia_soket arrays,
-> >   * and pass them to the low-level functions pcmcia_{suspend,resume}_socket
-> 
-> ... some documentation of the new functions, especially whether other socket
-> drivers should be updated?
+Well and then another rt2x00 developer discovered this nice little
+fight about rt2x00 on the mailinglists...
 
-OK, I'll post a separate patch for that for .33.
+First for the record, because at the start people where talking about the
+maintainership of rt2x00, one thing needs to be straight:
 
-> > -static int socket_resume(struct pcmcia_socket *skt)
-> > +static void socket_start_resume(struct pcmcia_socket *skt)
-> >  {
-> > -	int ret;
-> > -
-> > -	if (!(skt->state & SOCKET_SUSPEND))
-> > -		return -EBUSY;
-> > -
-> >  	skt->socket = dead_socket;
-> >  	skt->ops->init(skt);
-> >  	skt->ops->set_socket(skt, &skt->socket);
-> > +	if (skt->state & SOCKET_PRESENT)
-> > +		skt->resume_status = socket_setup(skt, resume_delay);
-> > +}
-> >  
-> > +static int socket_early_resume(struct pcmcia_socket *skt)
-> > +{
-> > +	socket_start_resume(skt);
-> > +	return 0;
-> > +}
-> 
-> Why do we need to have two functions doing the same? Wouldn't
-> 
-> static int socket_early_resume(...)
-> 
-> suffice, with the only call to socket_start_resume() being replaced with
-> socket_early_resume()?
+As mentioned in the MAINTAINERS file, the rt2x00 project is listed as maintainer
+for the rt2x00 drivers. The rt2x00 drivers include _all_ drivers in the
+drivers/net/wireless/rt2x00 folder.
 
-Yes, it would.  I'll do that in the final version of the patch.
+At this time I am hold the position within the rt2x00 team which is making the
+decisions about the rt2x00 code and design.
+I am also the one that is (N)Acks the patches from others when they are send
+to the rt2x00-users or linux-wireless mailinglist.
 
-Thanks,
-Rafael
+As for my behavior in discussions:
+
+I am doing my best to listen to all complains regarding the rt2x00 code and design and
+improve it if the complainer has a valid point. However, obviously I can disagree with
+the complainer and in that case I will explain to that person _why_ I disagree. It is up
+to the complainer to convince me that he is right, agree with my response, or whine.
+
+Now as for more specific responses:
+
+On Thursday 29 October 2009, Bartlomiej Zolnierkiewicz wrote:
+> rt2800 drivers have their maintainers and I would like to know what they
+> are doing besides complaining about users and staging tree..
+
+Working for Avanade, Zarafa and as freelancer for Linux Magazine.
+But I guess you mean rt2x00 specific work?
+Well that list consists of:
+ - Listening to people complain
+ - Responding to those people, because otherwise they complain that they are being ignored.
+ - Following bug reports, and request testing or additional information if required
+ - Bugfixing
+ - Reviewing patches from contributors
+ - Applying patches from contributors
+ - Discussing improvements over patches from contributors
+
+Well nothing of this list should be new to you, but apparently you needed some confirmation.
+
+On Thursday 29 October 2009, Johannes Berg wrote:
+> On Thu, 2009-10-29 at 07:20 -0700, David Miller wrote:
+> 
+> > In case you're concerned, I actually agree with John and others
+> > on this issue, and disagree with your position.
+> 
+> In this particular case, I think it makes more sense to duplicate the
+> code _especially_ because it's not working yet. That frees people
+> hacking on it of having to worry about breaking other devices.
+
+Thank you Johannes, that is exactly what I was trying to tell Bartlomiej
+in the previous discussion.
+
+On Wednesday 28 October 2009, Bartlomiej Zolnierkiewicz wrote:
+> I find it rather disappointing that all my review comments regarding
+> rt2800pci support were just completely ignored and then the initial
+> patch was merged just as it was..
+
+Your code review comments were commented upon with my reasons
+why this code duplication exists. I even admitted that when the time is
+ready I will remove the code duplication.
+
+On Thursday 29 October 2009, Bartlomiej Zolnierkiewicz wrote:
+> Quite the contrary, I'm pretty confident that addressing my review concerns
+> would result in better RT28x00 / RT30x0 support in the very near future.
+
+The review concerns regarding the duplicate code would only reduce the
+amount of code. It would not magically fix bugs (at least the chance of that
+would be quite small).
+
+So far rt2800usb performs better then rt2800pci, and the difference gets
+only bigger when I use the exact same register initialization from rt2800usb
+in rt2800pci.
+
+But Bartjmoiej knows that the register initialization can be exactly the same,
+from his experience with the staging drivers.
+So far hasn't been interested in sharing the knowledge in what must be
+changed in rt2800pci/usb to make them both work with the same register
+initialization.
+
+On Monday 02 November 2009, Randy Dunlap wrote:
+> Luis Correia wrote:
+> > [huge snip]
+> > I've searched on my GMail archives and the only patch Bart has
+> > provided so far for the rt2x00 project is this:
+> > 
+> > [PATCH] MAINTAINERS: rt2x00 list is moderated
+> > 
+> > Which, while technically correct, adds nothing to the project.
+> 
+> whatever.  That patch still needs to be applied.
+
+And I haven't seen anybody stating the opposite...
+
+Ivo
