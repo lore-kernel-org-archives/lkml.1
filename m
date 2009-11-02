@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932384AbZKBULv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbZKBUMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932384AbZKBULv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 15:11:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932350AbZKBULu
+	id S932403AbZKBUMc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 15:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932352AbZKBUMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 15:11:50 -0500
-Received: from mail.lang.hm ([64.81.33.126]:43115 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932234AbZKBULu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 15:11:50 -0500
-Date: Mon, 2 Nov 2009 12:11:39 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Ryan C. Gordon" <icculus@icculus.org>,
-       =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-In-Reply-To: <m3eioghf9n.fsf@intrepid.localdomain>
-Message-ID: <alpine.DEB.2.00.0911021205540.12321@asgard.lang.hm>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com> <alpine.OSX.1.10.0911011540400.53392@caridad.local> <20091102000147.424f104b@lxorguk.ukuu.org.uk>
- <alpine.OSX.1.10.0911012023020.55434@caridad.local> <20091102091611.60dfeea1@lxorguk.ukuu.org.uk> <alpine.DEB.2.00.0911020936500.12321@asgard.lang.hm> <m3eioghf9n.fsf@intrepid.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 2 Nov 2009 15:12:31 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:63456 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932350AbZKBUMa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 15:12:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=TeAPRiOsfJZhzYSWB+4/Yt4y55HYQgRYx7T9Zqc3CPGnfY9NLIfb2exj0v1Ir6inUT
+         BlR7Y5/yO7QRAsX6kf3u7PnWYmUxAkA4VwWezJV2oXl2VQKDZ1kJQIn8wpGpHIHra2oP
+         gfR22KxMD6ChC4kz/f0zfLOpSMtbKdjZe23Ns=
+Date: Mon, 2 Nov 2009 21:12:34 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
+Cc: laijs@cn.fujitsu.com, mingo@elte.hu, davem@davemloft.net,
+       akpm@linux-foundation.org, harvey.harrison@gmail.com,
+       linux list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 0/7] vsprintf: reduce code size and clean up
+Message-ID: <20091102201232.GE4880@nowhere>
+References: <b8bf37780911020926v20ebfcc0nc0b0712875bbb875@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <b8bf37780911020926v20ebfcc0nc0b0712875bbb875@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009, Krzysztof Halasa wrote:
+On Mon, Nov 02, 2009 at 03:26:07PM -0200, André Goddard Rosa wrote:
+> Subject: [PATCH v2 0/7] vsprintf: reduce code size and clean up
+> 
+> This patch reduces code size by 240 bytes on my Core 2 with gcc 4.4.1:
+>        text    data     bss     dec     hex filename
+>       15767       0       8   15775    3d9f lib/vsprintf.o-before
+>       15527       0       8   15535    3caf lib/vsprintf.o-after
+> 
+> and implements some cleanups.
+> 
+> Changelog:
+>     v2: addressed feedback from Frederic Weisbecker review (thanks!!)
+> and split into separate patches
+>     v1: original submission
+> 
+> André Goddard Rosa (7):
+>   vsprintf: factorize "(null)" string
+>   vsprintf: pre-calculate final string length
+>   vsprintf: give it some care to please checkpatch.pl
+>   vsprintf: use TOLOWER whenever possible
+>   vsprintf: reduce code size by avoiding extra check
+>   vsprintf: move local vars to block local vars and remove unneeded
+>     ones
+>   vsprintf: factor out skip_space code in a separate function
+> 
+>  lib/vsprintf.c |  306 ++++++++++++++++++++++++++++++--------------------------
+>  1 files changed, 163 insertions(+), 143 deletions(-)
 
-> david@lang.hm writes:
->
->> fo any individual user it will alsays be a larger download, but if you
->> have to support more than one architecture (even 32 bit vs 64 bit x86)
->> it may be smaller to have one fat package than to have two 'normal'
->> packages.
->
-> In terms on disk space on distro TFTP servers only. You'll need to
-> transfer more, both from user's and distro's POV (obviously). This one
-> simple fact alone is more than enough to forget the FatELF.
 
-it depends on if there is only one arch being downloaded ot not.
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-it could be considerably cheaper for mirroring bandwidth. Even if Alan is 
-correct and distros have re-packaged everything so that the arch 
-independant stuff is really in seperate packages, most 
-mirroring/repository systems keep each distro release/arch in a seperate 
-directory tree, so each of these arch-independant things gets copied 
-multiple times.
+But please add a more verbose changelog in the 5th as per Ingo's
+request, and do the case statement merge I suggested in the 6th.
 
-> Disk space on FTP servers is cheap (though maybe not so on 32 GB SSDs
-> and certainly not on 16 MB NOR flash chips). Bandwidth is expensive. And
-> it doesn't seem to be going to change.
->
-> FatELF means you have to compile for many archs. Do you even have the
-> necessary compilers? Extra time and disk space used for what, to solve
-> a non-problem?
+Thanks!
 
-you don't have to compile multiple arches anymore than you have to provide 
-any other support for that arch. FatELF is a way to bundle the binaries 
-that you were already creating, not something to force you to support an 
-arch you otherwise wouldn't (although if it did make it easy enough for 
-you to do so that you started to support additional arches, that would be 
-a good thing)
-
->> yes, the package manager could handle this by splitting the package up
->> into more pieces, with some of the pieces being arch independant, but
->> that also adds complexity.
->
-> Even without splitting, separate per-arch packages are a clear win.
->
-> I'm surprised this idea made it here. It certainly has merit for
-> installation medium, but it's called directory tree and/or .tar or .zip
-> there.
-
-if you have a 1M binary with 500M data, repeated for 5 arches it is not a 
-win vs a single 505M FatELF package in all cases.
-
-David Lang
