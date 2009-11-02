@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZKBXpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZKBXsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbZKBXpq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 18:45:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZKBXpp
+	id S1757303AbZKBXsc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 18:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZKBXsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 18:45:45 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:36830 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754762AbZKBXpo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 18:45:44 -0500
-X-Trace: 279609710/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.71.196/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.71.196
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlgFAID+7kpPRUfE/2dsb2JhbACBUNpahD0E
-X-IronPort-AV: E=Sophos;i="4.44,670,1249254000"; 
-   d="scan'208";a="279609710"
-Date: Mon, 2 Nov 2009 23:45:44 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@lists.ozlabs.org
-Subject: Re: Filtering bits in set_pte_at()
-In-Reply-To: <1257200367.7907.50.camel@pasglop>
-Message-ID: <Pine.LNX.4.64.0911022342070.30581@sister.anvils>
-References: <1256957081.6372.344.camel@pasglop>  <Pine.LNX.4.64.0911021256330.32400@sister.anvils>
- <1257200367.7907.50.camel@pasglop>
+	Mon, 2 Nov 2009 18:48:31 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:50975 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754990AbZKBXsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 18:48:31 -0500
+Message-ID: <4AEF6FC4.6060208@cs.wisc.edu>
+Date: Mon, 02 Nov 2009 17:48:20 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rakesh Ranjan <rakesh@chelsio.com>
+CC: davem@davemloft.net, James Bottomley <James.Bottomley@suse.de>,
+       Karen Xie <kxie@chelsio.com>,
+       "open-iscsi@googlegroups.com" <open-iscsi@googlegroups.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [RFC-PATCH] dhcp provisioning support in cxgb3i
+References: <4AE995C4.4080909@chelsio.com> <4AEA04A4.1060800@cs.wisc.edu> <4AEA7870.4010804@chelsio.com>
+In-Reply-To: <4AEA7870.4010804@chelsio.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-11-02 at 13:27 +0000, Hugh Dickins wrote:
+Rakesh Ranjan wrote:
+> Mike Christie wrote:
+>> Rakesh Ranjan wrote:
+>>> Hi Mike,
+>>>
+>>> Herein attached patches for having dhcp provisioning support in 
+>>> cxgb3i. I have added one new iscsi netlink message 
+>>> ISCSI_UEVENT_REQ_IPCONF. 
+>>
+>> Is the idea to have iscsid/uip send down this msg?
+>>
+>> Was it not possible to hook in more like how bnx2i does dhcp?
 > 
-> > You're being a very good citizen to want to bring this so forcefully
-> > to the attention of any user of set_pte_at(); but given how few care,
-> > and the other such functions you'd want to change too, am I being
-> > disgracefully lazy to suggest that you simply change the occasional
-> > 
-> > 		update_mmu_cache(vma, address, pte);
-> > to
-> > 		/* powerpc's set_pte_at might have adjusted the pte */
-> > 		update_mmu_cache(vma, address, *ptep);
-> > 
-> > ?  Which would make no difference to those architectures whose
-> > update_mmu_cache() is an empty macro.  And fix the mm/hugetlb.c
-> > instance in a similar way?
+> yep, idea is to have iscsid send down ISCSI_UEVENT_REQ_IPCONF msg. bnx2i 
+> approach in our case for at least T3 is not feasible.
 > 
-> That would do fine. In fact, I've always been slightly annoyed by
-> set_pte_at() not taking the PTE pointer for other reasons such as on
-> 64-K pages, we have a "hidden" part of the PTE that is at PTE address +
-> 32K, or we may want to get to the PTE page for some reason (some arch
-> store things there) etc...
-> 
-> IE. update_mmu_cache() would be more generally useful if it took the
-> ptep instead of the pte. Of course, I'm sure some embedded archs are
-> going to cry for the added load here ... 
-> 
-> I like your idea. I'll look into doing a patch converting it and will
-> post it here.
 
-Well, I wasn't proposing
-
-		update_mmu_cache(vma, address, ptep);
-but
-		update_mmu_cache(vma, address, *ptep);
-
-which may not meet your future idea, but is much less churn for now
-i.e. no change to any of the arch's update_mmu_cache(),
-just a change to some of its callsites.
-
-Hugh
+I think adding DHCP in the kernel is getting a little crazy :) If we go 
+down this path, I agree with the other person that stated it should at 
+least be generic.
