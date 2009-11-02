@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbZKBV7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbZKBWAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368AbZKBV7g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 16:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbZKBV7g
+	id S932442AbZKBWAh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 17:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932266AbZKBWAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 16:59:36 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:57048 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756858AbZKBV7f (ORCPT
+	Mon, 2 Nov 2009 17:00:36 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:25687 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932256AbZKBWAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 16:59:35 -0500
-Subject: Re: pull request: wireless-2.6 2009-11-02
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20091102214022.GM14046@tuxdriver.com>
-References: <20091102214022.GM14046@tuxdriver.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-HLSWmaxz+GlkxFdFoju/"
-Date: Mon, 02 Nov 2009 22:59:26 +0100
-Message-ID: <1257199166.28469.2.camel@johannes.local>
+	Mon, 2 Nov 2009 17:00:36 -0500
+Date: Mon, 2 Nov 2009 13:59:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: akpm <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hugetlb: offload per node attribute registrations fix
+Message-Id: <20091102135935.d7bffe05.randy.dunlap@oracle.com>
+In-Reply-To: <1257198615.7401.212.camel@useless.americas.hpqcorp.net>
+References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
+	<4AEE56A1.6010100@oracle.com>
+	<1257198615.7401.212.camel@useless.americas.hpqcorp.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4AEF567D.0027:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 02 Nov 2009 16:50:15 -0500 Lee Schermerhorn wrote:
 
---=-HLSWmaxz+GlkxFdFoju/
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> 
+> Against:  2.6.32-rc5-mmotm-091101-1001
+> 
+> Fix build failure when MEMORY_HOTPLUG_SPARSE and !HUGETLBFS:
+> 
+> drivers/base/node.c:484: error: implicit declaration of function 'init_node_hugetlb_work'
+> drivers/base/node.c:582: error: 'node_memory_callback' undeclared (first use in this function)
+> 
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
 
-On Mon, 2009-11-02 at 16:40 -0500, John W. Linville wrote:
-
-> There are several from Johannes -- I'm sure there was sake involved...  :=
--)
-
-More likely there was sake involved when I did that patch adding that
-NULL-ptr deref!
-
-Thanks :)
-
-johannes
+Ack.  That works_for_me.  Thanks.
 
 
---=-HLSWmaxz+GlkxFdFoju/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+>  drivers/base/node.c |    6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.32-rc5-mmotm-091101-1001/drivers/base/node.c
+> ===================================================================
+> --- linux-2.6.32-rc5-mmotm-091101-1001.orig/drivers/base/node.c	2009-11-02 15:51:43.000000000 -0500
+> +++ linux-2.6.32-rc5-mmotm-091101-1001/drivers/base/node.c	2009-11-02 16:41:36.000000000 -0500
+> @@ -445,8 +445,12 @@ static int node_memory_callback(struct n
+>  }
+>  #endif	/* CONFIG_HUGETLBFS */
+>  #else	/* !CONFIG_MEMORY_HOTPLUG_SPARSE */
+> +
+>  static int link_mem_sections(int nid) { return 0; }
+> +#endif	/* CONFIG_MEMORY_HOTPLUG_SPARSE */
+>  
+> +#if !defined(CONFIG_MEMORY_HOTPLUG_SPARSE) || \
+> +    !defined(CONFIG_HUGETLBFS)
+>  static inline int node_memory_callback(struct notifier_block *self,
+>  				unsigned long action, void *arg)
+>  {
+> @@ -455,7 +459,7 @@ static inline int node_memory_callback(s
+>  
+>  static void init_node_hugetlb_work(int nid) { }
+>  
+> -#endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+> +#endif
+>  
+>  int register_one_node(int nid)
+>  {
+> 
+> 
 
------BEGIN PGP SIGNATURE-----
 
-iQIcBAABAgAGBQJK71Y6AAoJEODzc/N7+Qma1nQQAJh6bRilIfVOsdBpAPBIKtQj
-L6qANDIQbfJBSSr/RPSc+O0moWXccG8BZWB0CYFewnAllQyAQCwR3w2rU9viTq/q
-vrN6IjWi89vemnddmce7w855KuK29Ao8KH/0bLYsohG3WRDaNM+F0Unaq0MuK4/5
-tipQTsJr5O3yWXeLIH/A+4HucRBmtof9t6vwm0EGJO/+jQHpKFlXOozmC0ZqM+1l
-gwxMIGPRrorH2MshIW/LD0rkkG35x0IpktFd8QhJMipDl+Vlmu88QeyF7diXt1fh
-MpsEK4JEusoB5K2K3Ao7AyL/kAy6+HjMur3CczQ0Q5nPJ5iBcAifJ2C1ixcd9N/a
-r2Vo7lRcpiqvd8UYU/WU0CFmpv5HtgW7NBAfOkp+R1fgsgM++/zDL35vuvCxOLAn
-kyn/rLVLRMn4FP5FK1nmhiVr91XYhYNeK6dA9PXmo6E4fwQFWqBKdRsBrqqPIPle
-x7R1fE6P4cABX4qQr5PknnPeTfOV2w+3dg3hvOFuSCkSoLIRUNPp8A0dORrP2dkU
-9bKMLGXuaohSzC4vZQkX78fyqcBrpGZdEnNVB2o04TqKCAqkaIk8No5VXMdQFFUv
-rHitRD7dY+lAESlMP9rx5+IR/SUtPpKolhtflUpZPsxe9T6ftbUE24XQtd3sdOGi
-RL3iPHz92lz6F0F0PpMB
-=kuUR
------END PGP SIGNATURE-----
-
---=-HLSWmaxz+GlkxFdFoju/--
-
+---
+~Randy
