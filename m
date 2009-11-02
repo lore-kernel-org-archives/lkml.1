@@ -1,133 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932259AbZKBS7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZKBTDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932259AbZKBS7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:59:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbZKBS7u
+	id S1756736AbZKBTDx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 14:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbZKBTDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:59:50 -0500
-Received: from ix.technologeek.org ([213.41.157.215]:38948 "EHLO
-	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932220AbZKBS7u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:59:50 -0500
-From: Julien BLACHE <jb@jblache.org>
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	<1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
-	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
-	<alpine.OSX.1.10.0911012023020.55434@caridad.local>
-	<87zl75h2mh.fsf@sonic.technologeek.org>
-	<alpine.OSX.1.10.0911021258270.464@caridad.icculuslan>
-Date: Mon, 02 Nov 2009 19:59:53 +0100
-In-Reply-To: <alpine.OSX.1.10.0911021258270.464@caridad.icculuslan> (Ryan
-	C. Gordon's message of "Mon, 2 Nov 2009 13:18:41 -0500 (EST)")
-Message-ID: <87d4407nx2.fsf@sonic.technologeek.org>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) XEmacs/21.4.22 (linux)
+	Mon, 2 Nov 2009 14:03:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58411 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756689AbZKBTDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 14:03:51 -0500
+Message-ID: <4AEF2D0A.4070807@redhat.com>
+Date: Mon, 02 Nov 2009 14:03:38 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Gleb Natapov <gleb@redhat.com>, kvm@vger.kernel.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com> <20091102092214.GB8933@elte.hu>
+In-Reply-To: <20091102092214.GB8933@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Ryan C. Gordon" <icculus@icculus.org> wrote:
-
-Hi,
-
-> "A lot" is hard to quantify. We can certainly see thousands of forum
-> posts for help with software that hadn't been packaged yet.
-
-"A lot" certainly doesn't mean "all of it", sure, but that's already a
-clear improvement over the situation 10 years ago.
-
-> I can't imagine most people are interested in building repositories and 
-> telling their users how to add it to their package manager, period, but 
-> even less so when you have to build different repositories for different 
-> sets of users, and not know what to build for whatever is the next popular 
-> distribution. For things like Gentoo, which for years didn't have a way to 
-> extend portage, what was the solution?
-
-You need to decide if and how you want to distribute your software,
-define your target audience and work from there. Yes, it takes some
-effort. Yes, it's not something that's very valued by today's
-standards. So what?
-
-You can as well decide that your software is so good that packagers from
-everywhere will package it for you. Except sometimes your software
-actually isn't that good and nobody gives a damn.
-
-As it stands, it really looks like your main problem is that it's too
-hard to distribute software for Linux, but you're really making it a lot
-more difficult than it really is.
-
-Basically, these days, if you can ship a generic RPM and a clean .deb,
-you've got most of your users covered. Oh, that's per-architecture, so
-with i386 and amd64, that makes 4 packages. And the accompanying source
-packages, because that can't hurt.
-
-Anyone that can't use those packages either knows how to build stuff on
-her distro of choice or needs to upgrade.
-
-> I'm hearing a lot of "a lot" ... what actually happens today is that you 
-> depend on the kindness of strangers to package your software or you make a 
-> bunch of incompatible packages for different distributions.
-
-Err. Excuse me, but if you "depend on the kindness of strangers" it's
-because you made that choice in the first place. There is nothing that
-prevents you from producing packages yourself. You might even learn a
-thing or ten in the process!
-
-When software doesn't get packaged properly after some time, it's
-usually because nobody knows about it or because it's not that good and
-nobody bothered. As the author, you can fix both issues.
-
->> > closed-source software
->> 
->> Why do we even care?
+On 11/02/2009 04:22 AM, Ingo Molnar wrote:
 >
-> Maybe you don't care, but that doesn't mean no one cares.
+> * Gleb Natapov<gleb@redhat.com>  wrote:
+>
+>> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+>> index f4cee90..14707dc 100644
+>> --- a/arch/x86/mm/fault.c
+>> +++ b/arch/x86/mm/fault.c
+>> @@ -952,6 +952,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
+>>   	int write;
+>>   	int fault;
+>>
+>> +	if (arch_handle_page_fault(regs, error_code))
+>> +		return;
+>> +
+>
+> This patch is not acceptable unless it's done cleaner. Currently we
+> already have 3 callbacks in do_page_fault() (kmemcheck, mmiotrace,
+> notifier), and this adds a fourth one.
 
-The ones who care have the resources to produce proper packages. They
-just don't do it.
-
-> I am on Team Stallman. I'll take a crappy free software solution over a 
-> high quality closed-source one, and strive to improve the free software 
-
-I don't think FatELF improves anything at all in the Free Software
-world.
-
-[static builds distributed as tarballs]
-> I think we can do better than that when we're outside of the package 
-> managers, but it's a rant for another time.
-
-Actually, no, you can't, because too many people out there writing
-software don't have a clue about shared libraries. If you want things to
-work everywhere, static is the way to go.
-
-> Having read the multiarch wiki briefly, I'm pleased to see other people 
-> find the current system "unwieldy," but it seems like FatELF "kludge" 
-> solves several of the points in the "unresolved issues" section.
-
-Err, the unresolved issues are all packaging issues, to which the
-solutions have not been decided yet. I don't see what FatELF can fix
-here.
-
-Now, to put it in a nutshell, you are coming forward with a technical
-solution to a problem that *isn't*:
- - "my software, Zorglub++ isn't packaged anywhere!"
-   Did you package it? No? Why not? Besides, maybe nobody knows about
-   it, maybe nobody needs it, maybe it's just crap. Whatever. Find out
-   and act from there.
-
- - "proprietary Blahblah7 is not packaged!"
-   Yeah, well, WeDoProprietaryStuff, Inc. decided not to package it
-   for whatever reason. What about contacting them, finding out the
-   reason and then working from there?
-
-JB.
+There's another alternative - add our own exception vector
+for async page faults.  Not sure if that is warranted though,
+especially if we already have other callbacks in do_page_fault()
+and we can consolidate them.
 
 -- 
-Julien BLACHE                                   <http://www.jblache.org> 
-<jb@jblache.org>                                  GPG KeyID 0xF5D65169
+All rights reversed.
