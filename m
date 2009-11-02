@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZKBQcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZKBQhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbZKBQcO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbZKBQcO
+	id S1755639AbZKBQhY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbZKBQhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:32:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10799 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755603AbZKBQcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:32:13 -0500
-Date: Mon, 2 Nov 2009 18:31:48 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
-Message-ID: <20091102163148.GI27911@redhat.com>
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
- <1257076590-29559-3-git-send-email-gleb@redhat.com>
- <20091102092214.GB8933@elte.hu>
- <20091102160410.GF27911@redhat.com>
- <20091102161248.GB15423@elte.hu>
- <20091102162234.GH27911@redhat.com>
- <20091102162941.GC14544@elte.hu>
+	Mon, 2 Nov 2009 11:37:24 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:33673 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755295AbZKBQhX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 11:37:23 -0500
+Message-ID: <4AEF0A48.7050709@monstr.eu>
+Date: Mon, 02 Nov 2009 17:35:20 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102162941.GC14544@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, mingo@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
+       rostedt@goodmis.org, hpa@zytor.com, cebbert@redhat.com,
+       tony.luck@intel.com
+Subject: Re: [PATCH 13/16] percpu: remove per_cpu__ prefix.
+References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-14-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0910141026370.26476@gentwo.org> <4AD6EA57.6020105@kernel.org> <4AD80CD6.7030204@monstr.eu> <4ADA845E.4080109@kernel.org> <4ADC6C76.3040908@monstr.eu> <4AE97860.30205@kernel.org>
+In-Reply-To: <4AE97860.30205@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 05:29:41PM +0100, Ingo Molnar wrote:
+Tejun Heo wrote:
+> Hello, Michal.
 > 
-> * Gleb Natapov <gleb@redhat.com> wrote:
+> Michal Simek wrote:
+>> I compiled it there is no problem.
+>> I hope you will add these patches through linux-next which I test every day.
 > 
-> > On Mon, Nov 02, 2009 at 05:12:48PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Gleb Natapov <gleb@redhat.com> wrote:
-> > > 
-> > > > On Mon, Nov 02, 2009 at 10:22:14AM +0100, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Gleb Natapov <gleb@redhat.com> wrote:
-> > > > > 
-> > > > > > diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-> > > > > > index f4cee90..14707dc 100644
-> > > > > > --- a/arch/x86/mm/fault.c
-> > > > > > +++ b/arch/x86/mm/fault.c
-> > > > > > @@ -952,6 +952,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
-> > > > > >  	int write;
-> > > > > >  	int fault;
-> > > > > >  
-> > > > > > +	if (arch_handle_page_fault(regs, error_code))
-> > > > > > +		return;
-> > > > > > +
-> > > > > 
-> > > > > This patch is not acceptable unless it's done cleaner. Currently we 
-> > > > > already have 3 callbacks in do_page_fault() (kmemcheck, mmiotrace, 
-> > > > > notifier), and this adds a fourth one. Please consolidate them into a 
-> > > > > single callback site, this is a hotpath on x86.
-> > > > > 
-> > > > This call is patched out by paravirt patching mechanism so overhead 
-> > > > should be zero for non paravirt cases. [...]
-> > > 
-> > > arch_handle_page_fault() isnt upstream yet - precisely what is the 
-> > > instruction sequence injected into do_page_fault() in the patched-out 
-> > > case?
-> > 
-> > It is introduced by the same patch. The instruction inserted is:
-> >  xor %rax, %rax
-> 
-> ok.
-> 
-> My observations still stand:
-> 
-> > > > [...] What do you want to achieve by consolidate them into single 
-> > > > callback? [...]
-> > > 
-> > > Less bloat in a hotpath and a shared callback infrastructure.
-> > > 
-> > > > [...] I mean the code will still exist and will have to be executed on 
-> > > > every #PF. Is the goal to move them out of line?
-> > > 
-> > > The goal is to have a single callback site for all the users - which 
-> > > call-site is patched out ideally - on non-paravirt too if needed. Most 
-> > > of these callbacks/notifier-chains have are inactive most of the time.
-> > > 
-> > > I.e. a very low overhead 'conditional callback' facility, and a single 
-> > > one - not just lots of them sprinkled around the code.
-> 
-> looks like a golden opportunity to get this right.
-> 
-I'll look into it. Expect questions from me ;)
+> Yeap, I'm pushing it out soonish.  Sorry about the delay.  Have been
+> traveling.
 
---
-			Gleb.
+no worries about.
+
+Michal
+
+> 
+> Thanks.
+> 
+
