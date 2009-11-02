@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932217AbZKBSkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZKBSi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932217AbZKBSkI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbZKBSkH
+	id S1756402AbZKBSi6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932171AbZKBSi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:40:07 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52131 "EHLO mx2.suse.de"
+	Mon, 2 Nov 2009 13:38:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39247 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756328AbZKBSkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:40:06 -0500
-Date: Mon, 2 Nov 2009 19:40:10 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Thiago Farina <tfransosi@gmail.com>
-Cc: =?ISO-8859-15?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
-       linux list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] trivial: fix assorted typos all over the place
-In-Reply-To: <a4c8a6d00911021029n3b34c0b0w9acd3f82a07ae766@mail.gmail.com>
-Message-ID: <alpine.LSU.2.00.0911021937240.4203@wotan.suse.de>
-References: <b8bf37780911020949t4bed5cb6g92230b59efc7923b@mail.gmail.com> <a4c8a6d00911021029n3b34c0b0w9acd3f82a07ae766@mail.gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	id S1754190AbZKBSiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:38:55 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from 2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
+Date: Mon, 2 Nov 2009 19:40:25 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <200911021439.28266.rjw@sisk.pl> <20091102173843.GA662@comet.dominikbrodowski.net>
+In-Reply-To: <20091102173843.GA662@comet.dominikbrodowski.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911021940.25111.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009, Thiago Farina wrote:
+On Monday 02 November 2009, Dominik Brodowski wrote:
+> Hey,
+> 
+> just two minor nit-pick which we could handle post-2.6.32:
+> 
+> > +++ linux-2.6/drivers/pcmcia/cs.c
+> > @@ -98,10 +98,13 @@ EXPORT_SYMBOL(pcmcia_socket_list_rwsem);
+> >   * These functions check for the appropriate struct pcmcia_soket arrays,
+> >   * and pass them to the low-level functions pcmcia_{suspend,resume}_socket
+> 
+> ... some documentation of the new functions, especially whether other socket
+> drivers should be updated?
 
-> I thought that this kind of patches were not allowed.
+OK, I'll post a separate patch for that for .33.
 
-By whom?
+> > -static int socket_resume(struct pcmcia_socket *skt)
+> > +static void socket_start_resume(struct pcmcia_socket *skt)
+> >  {
+> > -	int ret;
+> > -
+> > -	if (!(skt->state & SOCKET_SUSPEND))
+> > -		return -EBUSY;
+> > -
+> >  	skt->socket = dead_socket;
+> >  	skt->ops->init(skt);
+> >  	skt->ops->set_socket(skt, &skt->socket);
+> > +	if (skt->state & SOCKET_PRESENT)
+> > +		skt->resume_status = socket_setup(skt, resume_delay);
+> > +}
+> >  
+> > +static int socket_early_resume(struct pcmcia_socket *skt)
+> > +{
+> > +	socket_start_resume(skt);
+> > +	return 0;
+> > +}
+> 
+> Why do we need to have two functions doing the same? Wouldn't
+> 
+> static int socket_early_resume(...)
+> 
+> suffice, with the only call to socket_start_resume() being replaced with
+> socket_early_resume()?
 
-> Don't you need to split this in individual patches, to make the work in 
-> reviewing this, more easier?
+Yes, it would.  I'll do that in the final version of the patch.
 
-I'd say -- just use common sense. Comment typo fixes aren't big deal, 
-really.
-
-If all the changes are just in the comments/help texts, then reviewing it 
-is really quite easy task which one can easily do while stuck/bored/too 
-tired to do other things which would actually require some thinking.
-
-That said, if the spelling fixes touch some real code (variables/macro 
-defines etc), then they'd of course better be separated.
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Thanks,
+Rafael
