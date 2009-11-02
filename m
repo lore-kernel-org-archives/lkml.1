@@ -1,3250 +1,1350 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932072AbZKBRLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbZKBRSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932072AbZKBRLz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbZKBRLw
+	id S1756215AbZKBRSL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbZKBRSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:11:52 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:49174 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755704AbZKBRLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:11:44 -0500
-Date: Mon, 2 Nov 2009 18:11:47 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: linux-fsdevel@vger.kernel.org
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: [PATCH 01/27] BKL: Push down BKL from do_new_mount() to the filesystems get_sb/fill_super operation
-Message-ID: <20091102171147.GG21750@bolzano.suse.de>
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-2-git-send-email-jblunck@suse.de>
+	Mon, 2 Nov 2009 12:18:10 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:24429 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752571AbZKBRSE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 12:18:04 -0500
+Date: Mon, 2 Nov 2009 09:13:39 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, lud <linux-usb@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for November 2 (usb/whci)
+Message-Id: <20091102091339.479a3ddb.randy.dunlap@oracle.com>
+In-Reply-To: <20091102173845.210d1c57.sfr@canb.auug.org.au>
+References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="ogUXNSQj4OI1q3LQ"
-Content-Disposition: inline
-In-Reply-To: <1257156307-24175-2-git-send-email-jblunck@suse.de>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Mon__2_Nov_2009_09_13_39_-0800_2DgutnyTjOC+sOFC"
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4AEF143B.0120:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
 
---ogUXNSQj4OI1q3LQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--Multipart=_Mon__2_Nov_2009_09_13_39_-0800_2DgutnyTjOC+sOFC
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 02, Jan Blunck wrote:
+On Mon, 2 Nov 2009 17:38:45 +1100 Stephen Rothwell wrote:
 
-> I've read through all the code formerly covered by the BKL inside
-> do_kern_mount() and have satisfied myself that it doesn't need the BKL
-> any more.
+> Hi all,
 > 
-> do_kern_mount() is already called without the BKL when mounting the rootfs
-> and in nfsctl. do_kern_mount() calls vfs_kern_mount(), which is called
-> from various places without BKL: simple_pin_fs(), nfs_do_clone_mount()
-> through nfs_follow_mountpoint(), afs_mntpt_do_automount() through
-> afs_mntpt_follow_link(). Both later functions are actually the filesystems
-> follow_link inode operation. vfs_kern_mount() is calling the specified
-> get_sb function and lets the filesystem do its job by calling the given
-> fill_super function.
-> 
-> Therefore I think it is safe to push down the BKL from the VFS to the
-> low-level filesystems get_sb/fill_super operation.
-> 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> Cc: Matthew Wilcox <matthew@wil.cx>
+> Changes since 20091030:
 
-Attached is a new version of the patch that includes the changes for
-filesystems outside of fs/ directory as well. Besides that I trimmed the CC
-list this time.
 
-Cheers,
-Jan
+whci build fails on i386 due to 64-bit multiply & divide:
 
---ogUXNSQj4OI1q3LQ
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="0001-BKL-Push-down-BKL-from-do_new_mount-to-the-filesyste.patch"
+ERROR: "__udivdi3" [drivers/usb/host/whci/whci-hcd.ko] undefined!
+ERROR: "__umoddi3" [drivers/usb/host/whci/whci-hcd.ko] undefined!
 
->From 211bc31463c06e125c084ca72aaa06c7e3ebb0a2 Mon Sep 17 00:00:00 2001
-From: Jan Blunck <jblunck@suse.de>
-Date: Mon, 2 Nov 2009 16:30:27 +0100
-Subject: [PATCH 01/28] BKL: Push down BKL from do_new_mount() to the filesystems get_sb/fill_super operation
 
-I've read through all the code formerly covered by the BKL inside
-do_kern_mount() and have satisfied myself that it doesn't need the BKL
-any more.
+config attached.
 
-do_kern_mount() is already called without the BKL when mounting the rootfs
-and in nfsctl. do_kern_mount() calls vfs_kern_mount(), which is called
-from various places without BKL: simple_pin_fs(), nfs_do_clone_mount()
-through nfs_follow_mountpoint(), afs_mntpt_do_automount() through
-afs_mntpt_follow_link(). Both later functions are actually the filesystems
-follow_link inode operation. vfs_kern_mount() is calling the specified
-get_sb function and lets the filesystem do its job by calling the given
-fill_super function.
-
-Therefore I think it is safe to push down the BKL from the VFS to the
-low-level filesystems get_sb/fill_super operation.
-
-Signed-off-by: Jan Blunck <jblunck@suse.de>
-Cc: Matthew Wilcox <matthew@wil.cx>
 ---
- arch/powerpc/platforms/cell/spufs/inode.c |    8 +++++++-
- arch/s390/hypfs/inode.c                   |    9 ++++++++-
- drivers/infiniband/hw/ipath/ipath_fs.c    |    8 ++++++--
- drivers/isdn/capi/capifs.c                |   10 ++++++++--
- drivers/misc/ibmasm/ibmasmfs.c            |    9 ++++++++-
- drivers/oprofile/oprofilefs.c             |    9 ++++++++-
- drivers/staging/pohmelfs/inode.c          |    5 +++++
- drivers/usb/core/inode.c                  |    5 +++++
- drivers/usb/gadget/inode.c                |   12 ++++++++++--
- drivers/xen/xenfs/super.c                 |    7 ++++++-
- fs/9p/vfs_super.c                         |    9 ++++++++-
- fs/adfs/super.c                           |    8 +++++++-
- fs/affs/super.c                           |    9 ++++++++-
- fs/afs/super.c                            |    5 +++++
- fs/autofs4/inode.c                        |    4 ++++
- fs/befs/linuxvfs.c                        |    4 ++++
- fs/bfs/inode.c                            |    9 ++++++++-
- fs/binfmt_misc.c                          |    7 ++++++-
- fs/btrfs/super.c                          |    8 +++++++-
- fs/cifs/cifsfs.c                          |   12 ++++++++++--
- fs/coda/inode.c                           |    8 +++++++-
- fs/configfs/mount.c                       |    5 +++++
- fs/cramfs/inode.c                         |    8 +++++++-
- fs/devpts/inode.c                         |   13 +++++++++++--
- fs/ecryptfs/main.c                        |    4 ++++
- fs/efs/super.c                            |   10 ++++++++--
- fs/exofs/super.c                          |    7 ++++++-
- fs/ext2/super.c                           |   10 ++++++++--
- fs/ext3/super.c                           |    9 ++++++++-
- fs/ext4/super.c                           |    9 ++++++---
- fs/fat/namei_msdos.c                      |    7 ++++++-
- fs/fat/namei_vfat.c                       |    7 ++++++-
- fs/freevxfs/vxfs_super.c                  |    7 ++++++-
- fs/fuse/control.c                         |    9 ++++++++-
- fs/fuse/inode.c                           |    5 +++++
- fs/gfs2/ops_fstype.c                      |   10 ++++++++++
- fs/hfs/super.c                            |    8 +++++++-
- fs/hfsplus/super.c                        |    8 +++++++-
- fs/hostfs/hostfs_kern.c                   |    4 ++++
- fs/hpfs/super.c                           |    8 +++++++-
- fs/hppfs/hppfs.c                          |    4 ++++
- fs/hugetlbfs/inode.c                      |   12 ++++++++++--
- fs/isofs/inode.c                          |    8 +++++++-
- fs/jffs2/super.c                          |   11 +++++++++--
- fs/jfs/super.c                            |   14 ++++++++++++--
- fs/libfs.c                                |   10 +++++++++-
- fs/minix/inode.c                          |    8 +++++++-
- fs/namespace.c                            |    2 --
- fs/ncpfs/inode.c                          |    8 +++++++-
- fs/nfs/super.c                            |   24 ++++++++++++++++++++++++
- fs/nfsd/nfsctl.c                          |    8 +++++++-
- fs/nilfs2/super.c                         |    9 ++++++++-
- fs/ntfs/super.c                           |    5 +++++
- fs/ocfs2/dlm/dlmfs.c                      |    9 ++++++++-
- fs/ocfs2/super.c                          |    5 +++++
- fs/omfs/inode.c                           |    7 ++++++-
- fs/openpromfs/inode.c                     |    4 ++++
- fs/proc/root.c                            |    9 ++++++++-
- fs/qnx4/inode.c                           |    8 +++++++-
- fs/ramfs/inode.c                          |    5 +++++
- fs/reiserfs/super.c                       |    4 ++++
- fs/romfs/super.c                          |    9 ++++++++-
- fs/smbfs/inode.c                          |    5 +++++
- fs/squashfs/super.c                       |    6 ++++++
- fs/sysfs/mount.c                          |    6 ++++++
- fs/sysv/super.c                           |   25 ++++++++++++++++++++-----
- fs/ubifs/super.c                          |    5 +++++
- fs/udf/super.c                            |    8 +++++++-
- fs/ufs/super.c                            |    5 +++++
- fs/xfs/linux-2.6/xfs_super.c              |    4 ++++
- ipc/mqueue.c                              |    4 ++++
- kernel/cgroup.c                           |    4 ++++
- kernel/cpuset.c                           |    4 ++++
- mm/shmem.c                                |    9 ++++++++-
- net/sunrpc/rpc_pipe.c                     |   10 +++++++++-
- security/inode.c                          |    7 ++++++-
- security/selinux/selinuxfs.c              |    5 +++++
- security/smack/smackfs.c                  |    4 ++++
- 78 files changed, 540 insertions(+), 67 deletions(-)
+~Randy
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index fc1b1c4..a68ea02 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -34,6 +34,7 @@
- #include <linux/poll.h>
- #include <linux/slab.h>
- #include <linux/parser.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- 
- #include <asm/prom.h>
- #include <asm/spu.h>
-@@ -781,6 +782,9 @@ spufs_fill_super(struct super_block *sb, void *data, int silent)
- 		.drop_inode = generic_delete_inode,
- 		.show_options = generic_show_options,
- 	};
-+	int res;
-+
-+	lock_kernel();
- 
- 	save_mount_options(sb, data);
- 
-@@ -795,7 +799,9 @@ spufs_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_op = &s_ops;
- 	sb->s_fs_info = info;
- 
--	return spufs_create_root(sb, data);
-+	res = spufs_create_root(sb, data);
-+	unlock_kernel();
-+	return res;
- }
- 
- static int
-diff --git a/arch/s390/hypfs/inode.c b/arch/s390/hypfs/inode.c
-index 341aff2..75538cd 100644
---- a/arch/s390/hypfs/inode.c
-+++ b/arch/s390/hypfs/inode.c
-@@ -22,6 +22,7 @@
- #include <linux/module.h>
- #include <linux/seq_file.h>
- #include <linux/mount.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- #include <asm/ebcdic.h>
- #include "hypfs.h"
- 
-@@ -277,9 +278,13 @@ static int hypfs_fill_super(struct super_block *sb, void *data, int silent)
- 	int rc = 0;
- 	struct hypfs_sb_info *sbi;
- 
-+	lock_kernel();
-+
- 	sbi = kzalloc(sizeof(struct hypfs_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	mutex_init(&sbi->lock);
- 	sbi->uid = current_uid();
- 	sbi->gid = current_gid();
-@@ -319,6 +324,7 @@ static int hypfs_fill_super(struct super_block *sb, void *data, int silent)
- 	hypfs_update_update(sb);
- 	sb->s_root = root_dentry;
- 	pr_info("Hypervisor filesystem mounted\n");
-+	unlock_kernel();
- 	return 0;
- 
- err_tree:
-@@ -327,6 +333,7 @@ err_tree:
- 	dput(root_dentry);
- err_alloc:
- 	kfree(sbi);
-+	unlock_kernel();
- 	return rc;
- }
- 
-diff --git a/drivers/infiniband/hw/ipath/ipath_fs.c b/drivers/infiniband/hw/ipath/ipath_fs.c
-index b368406..d5723c6 100644
---- a/drivers/infiniband/hw/ipath/ipath_fs.c
-+++ b/drivers/infiniband/hw/ipath/ipath_fs.c
-@@ -37,6 +37,7 @@
- #include <linux/pagemap.h>
- #include <linux/init.h>
- #include <linux/namei.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- 
- #include "ipath_kernel.h"
- 
-@@ -362,10 +363,13 @@ bail:
- static int ipathfs_get_sb(struct file_system_type *fs_type, int flags,
- 			const char *dev_name, void *data, struct vfsmount *mnt)
- {
--	int ret = get_sb_single(fs_type, flags, data,
--				    ipathfs_fill_super, mnt);
-+	int ret;
-+
-+	lock_kernel();
-+	ret = get_sb_single(fs_type, flags, data, ipathfs_fill_super, mnt);
- 	if (ret >= 0)
- 		ipath_super = mnt->mnt_sb;
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/drivers/isdn/capi/capifs.c b/drivers/isdn/capi/capifs.c
-index 9f8f67b..a408f72 100644
---- a/drivers/isdn/capi/capifs.c
-+++ b/drivers/isdn/capi/capifs.c
-@@ -16,6 +16,7 @@
- #include <linux/init.h>
- #include <linux/ctype.h>
- #include <linux/sched.h>	/* current */
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- 
- #include "capifs.h"
- 
-@@ -102,6 +103,8 @@ capifs_fill_super(struct super_block *s, void *data, int silent)
- {
- 	struct inode * inode;
- 
-+	lock_kernel();
-+
- 	s->s_blocksize = 1024;
- 	s->s_blocksize_bits = 10;
- 	s->s_magic = CAPIFS_SUPER_MAGIC;
-@@ -119,12 +122,15 @@ capifs_fill_super(struct super_block *s, void *data, int silent)
- 	inode->i_nlink = 2;
- 
- 	capifs_root = s->s_root = d_alloc_root(inode);
--	if (s->s_root)
-+	if (s->s_root) {
-+		unlock_kernel();
- 		return 0;
--	
-+	}
-+
- 	printk("capifs: get root dentry failed\n");
- 	iput(inode);
- fail:
-+	unlock_kernel();
- 	return -ENOMEM;
- }
- 
-diff --git a/drivers/misc/ibmasm/ibmasmfs.c b/drivers/misc/ibmasm/ibmasmfs.c
-index aecf40e..83ef0f7 100644
---- a/drivers/misc/ibmasm/ibmasmfs.c
-+++ b/drivers/misc/ibmasm/ibmasmfs.c
-@@ -75,6 +75,7 @@
- 
- #include <linux/fs.h>
- #include <linux/pagemap.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- #include <asm/uaccess.h>
- #include <asm/io.h>
- #include "ibmasm.h"
-@@ -116,6 +117,8 @@ static int ibmasmfs_fill_super (struct super_block *sb, void *data, int silent)
- 	struct inode *root;
- 	struct dentry *root_dentry;
- 
-+	lock_kernel();
-+
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = IBMASMFS_MAGIC;
-@@ -123,8 +126,10 @@ static int ibmasmfs_fill_super (struct super_block *sb, void *data, int silent)
- 	sb->s_time_gran = 1;
- 
- 	root = ibmasmfs_make_inode (sb, S_IFDIR | 0500);
--	if (!root)
-+	if (!root) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	root->i_op = &simple_dir_inode_operations;
- 	root->i_fop = ibmasmfs_dir_ops;
-@@ -132,11 +137,13 @@ static int ibmasmfs_fill_super (struct super_block *sb, void *data, int silent)
- 	root_dentry = d_alloc_root(root);
- 	if (!root_dentry) {
- 		iput(root);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	sb->s_root = root_dentry;
- 
- 	ibmasmfs_create_files(sb, root_dentry);
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/drivers/oprofile/oprofilefs.c b/drivers/oprofile/oprofilefs.c
-index 2766a6d..6d4df37 100644
---- a/drivers/oprofile/oprofilefs.c
-+++ b/drivers/oprofile/oprofilefs.c
-@@ -15,6 +15,7 @@
- #include <linux/oprofile.h>
- #include <linux/fs.h>
- #include <linux/pagemap.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- #include <asm/uaccess.h>
- 
- #include "oprof.h"
-@@ -243,6 +244,8 @@ static int oprofilefs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct inode *root_inode;
- 	struct dentry *root_dentry;
- 
-+	lock_kernel();
-+
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = OPROFILEFS_MAGIC;
-@@ -250,13 +253,16 @@ static int oprofilefs_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_time_gran = 1;
- 
- 	root_inode = oprofilefs_get_inode(sb, S_IFDIR | 0755);
--	if (!root_inode)
-+	if (!root_inode) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	root_inode->i_op = &simple_dir_inode_operations;
- 	root_inode->i_fop = &simple_dir_operations;
- 	root_dentry = d_alloc_root(root_inode);
- 	if (!root_dentry) {
- 		iput(root_inode);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -265,6 +271,7 @@ static int oprofilefs_fill_super(struct super_block *sb, void *data, int silent)
- 	oprofile_create_files(sb, root_dentry);
- 
- 	// FIXME: verify kill_litter_super removes our dentries
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
-index c94de31..20a63d8 100644
---- a/drivers/staging/pohmelfs/inode.c
-+++ b/drivers/staging/pohmelfs/inode.c
-@@ -30,6 +30,7 @@
- #include <linux/statfs.h>
- #include <linux/writeback.h>
- #include <linux/quotaops.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- 
- #include "netfs.h"
- 
-@@ -1821,6 +1822,8 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct pohmelfs_inode *npi;
- 	struct qstr str;
- 
-+	lock_kernel();
-+
- 	psb = kzalloc(sizeof(struct pohmelfs_sb), GFP_KERNEL);
- 	if (!psb)
- 		goto err_out_exit;
-@@ -1915,6 +1918,7 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
- 	INIT_DELAYED_WORK(&psb->dwork, pohmelfs_trans_scan);
- 	schedule_delayed_work(&psb->dwork, psb->trans_scan_timeout);
- 
-+	unlock_kernel();
- 	return 0;
- 
- err_out_put_root:
-@@ -1931,6 +1935,7 @@ err_out_free_sb:
- err_out_exit:
- 
- 	dprintk("%s: err: %d.\n", __func__, err);
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/drivers/usb/core/inode.c b/drivers/usb/core/inode.c
-index 97b40ce..5c5bf37 100644
---- a/drivers/usb/core/inode.c
-+++ b/drivers/usb/core/inode.c
-@@ -460,6 +460,8 @@ static int usbfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct inode *inode;
- 	struct dentry *root;
- 
-+	lock_kernel();
-+
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = USBDEVICE_SUPER_MAGIC;
-@@ -469,6 +471,7 @@ static int usbfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	if (!inode) {
- 		dbg("%s: could not get inode!",__func__);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -476,9 +479,11 @@ static int usbfs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!root) {
- 		dbg("%s: could not get root dentry!",__func__);
- 		iput(inode);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	sb->s_root = root;
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/drivers/usb/gadget/inode.c b/drivers/usb/gadget/inode.c
-index bf0f652..8762dad 100644
---- a/drivers/usb/gadget/inode.c
-+++ b/drivers/usb/gadget/inode.c
-@@ -2046,13 +2046,19 @@ gadgetfs_fill_super (struct super_block *sb, void *opts, int silent)
- 	struct dentry	*d;
- 	struct dev_data	*dev;
- 
--	if (the_device)
-+	lock_kernel();
-+
-+	if (the_device) {
-+		unlock_kernel();
- 		return -ESRCH;
-+	}
- 
- 	/* fake probe to determine $CHIP */
- 	(void) usb_gadget_register_driver (&probe_driver);
--	if (!CHIP)
-+	if (!CHIP) {
-+		unlock_kernel();
- 		return -ENODEV;
-+	}
- 
- 	/* superblock */
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
-@@ -2089,6 +2095,7 @@ gadgetfs_fill_super (struct super_block *sb, void *opts, int silent)
- 	 * from binding to a controller.
- 	 */
- 	the_device = dev;
-+	unlock_kernel();
- 	return 0;
- 
- enomem3:
-@@ -2098,6 +2105,7 @@ enomem2:
- enomem1:
- 	iput (inode);
- enomem0:
-+	unlock_kernel();
- 	return -ENOMEM;
- }
- 
-diff --git a/drivers/xen/xenfs/super.c b/drivers/xen/xenfs/super.c
-index 6559e0c..46d34ea 100644
---- a/drivers/xen/xenfs/super.c
-+++ b/drivers/xen/xenfs/super.c
-@@ -12,6 +12,7 @@
- #include <linux/module.h>
- #include <linux/fs.h>
- #include <linux/magic.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- 
- #include "xenfs.h"
- 
-@@ -43,8 +44,12 @@ static int xenfs_fill_super(struct super_block *sb, void *data, int silent)
- 		{ "capabilities", &capabilities_file_ops, S_IRUGO },
- 		{""},
- 	};
-+	int res;
- 
--	return simple_fill_super(sb, XENFS_SUPER_MAGIC, xenfs_files);
-+	lock_kernel();
-+	res = simple_fill_super(sb, XENFS_SUPER_MAGIC, xenfs_files);
-+	unlock_kernel();
-+	return res;
- }
- 
- static int xenfs_get_sb(struct file_system_type *fs_type,
-diff --git a/fs/9p/vfs_super.c b/fs/9p/vfs_super.c
-index 14a8644..4156a0c 100644
---- a/fs/9p/vfs_super.c
-+++ b/fs/9p/vfs_super.c
-@@ -106,11 +106,15 @@ static int v9fs_get_sb(struct file_system_type *fs_type, int flags,
- 	struct p9_fid *fid;
- 	int retval = 0;
- 
-+	lock_kernel();
-+
- 	P9_DPRINTK(P9_DEBUG_VFS, " \n");
- 
- 	v9ses = kzalloc(sizeof(struct v9fs_session_info), GFP_KERNEL);
--	if (!v9ses)
-+	if (!v9ses) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	fid = v9fs_session_init(v9ses, dev_name, data);
- 	if (IS_ERR(fid)) {
-@@ -155,6 +159,7 @@ static int v9fs_get_sb(struct file_system_type *fs_type, int flags,
- 
- P9_DPRINTK(P9_DEBUG_VFS, " simple set mount, return 0\n");
- 	simple_set_mnt(mnt, sb);
-+	unlock_kernel();
- 	return 0;
- 
- free_stat:
-@@ -167,12 +172,14 @@ clunk_fid:
- close_session:
- 	v9fs_session_close(v9ses);
- 	kfree(v9ses);
-+	unlock_kernel();
- 	return retval;
- 
- release_sb:
- 	p9stat_free(st);
- 	kfree(st);
- 	deactivate_locked_super(sb);
-+	unlock_kernel();
- 	return retval;
- }
- 
-diff --git a/fs/adfs/super.c b/fs/adfs/super.c
-index 6910a98..e94f111 100644
---- a/fs/adfs/super.c
-+++ b/fs/adfs/super.c
-@@ -351,11 +351,15 @@ static int adfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct adfs_sb_info *asb;
- 	struct inode *root;
- 
-+	lock_kernel();
-+
- 	sb->s_flags |= MS_NODIRATIME;
- 
- 	asb = kzalloc(sizeof(*asb), GFP_KERNEL);
--	if (!asb)
-+	if (!asb) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	sb->s_fs_info = asb;
- 
- 	/* set default options */
-@@ -473,6 +477,7 @@ static int adfs_fill_super(struct super_block *sb, void *data, int silent)
- 		goto error;
- 	} else
- 		sb->s_root->d_op = &adfs_dentry_operations;
-+	unlock_kernel();
- 	return 0;
- 
- error_free_bh:
-@@ -480,6 +485,7 @@ error_free_bh:
- error:
- 	sb->s_fs_info = NULL;
- 	kfree(asb);
-+	unlock_kernel();
- 	return -EINVAL;
- }
- 
-diff --git a/fs/affs/super.c b/fs/affs/super.c
-index 104fdcb..135f0d3 100644
---- a/fs/affs/super.c
-+++ b/fs/affs/super.c
-@@ -298,6 +298,8 @@ static int affs_fill_super(struct super_block *sb, void *data, int silent)
- 	u8			 sig[4];
- 	int			 ret = -EINVAL;
- 
-+	lock_kernel();
-+
- 	save_mount_options(sb, data);
- 
- 	pr_debug("AFFS: read_super(%s)\n",data ? (const char *)data : "no options");
-@@ -307,8 +309,10 @@ static int affs_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_flags |= MS_NODIRATIME;
- 
- 	sbi = kzalloc(sizeof(struct affs_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	sb->s_fs_info = sbi;
- 	mutex_init(&sbi->s_bmlock);
- 
-@@ -316,6 +320,7 @@ static int affs_fill_super(struct super_block *sb, void *data, int silent)
- 				&blocksize,&sbi->s_prefix,
- 				sbi->s_volume, &mount_flags)) {
- 		printk(KERN_ERR "AFFS: Error parsing options\n");
-+		unlock_kernel();
- 		return -EINVAL;
- 	}
- 	/* N.B. after this point s_prefix must be released */
-@@ -486,6 +491,7 @@ got_root:
- 	sb->s_root->d_op = &affs_dentry_operations;
- 
- 	pr_debug("AFFS: s_flags=%lX\n",sb->s_flags);
-+	unlock_kernel();
- 	return 0;
- 
- 	/*
-@@ -500,6 +506,7 @@ out_error_noinode:
- 	kfree(sbi->s_prefix);
- 	kfree(sbi);
- 	sb->s_fs_info = NULL;
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/afs/super.c b/fs/afs/super.c
-index e1ea1c2..108fb3e 100644
---- a/fs/afs/super.c
-+++ b/fs/afs/super.c
-@@ -294,12 +294,15 @@ static int afs_fill_super(struct super_block *sb, void *data)
- 	struct inode *inode = NULL;
- 	int ret;
- 
-+	lock_kernel();
-+
- 	_enter("");
- 
- 	/* allocate a superblock info record */
- 	as = kzalloc(sizeof(struct afs_super_info), GFP_KERNEL);
- 	if (!as) {
- 		_leave(" = -ENOMEM");
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -329,6 +332,7 @@ static int afs_fill_super(struct super_block *sb, void *data)
- 	sb->s_root = root;
- 
- 	_leave(" = 0");
-+	unlock_kernel();
- 	return 0;
- 
- error_inode:
-@@ -342,6 +346,7 @@ error:
- 	sb->s_fs_info = NULL;
- 
- 	_leave(" = %d", ret);
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-index 69c8142..3adaba9 100644
---- a/fs/autofs4/inode.c
-+++ b/fs/autofs4/inode.c
-@@ -323,6 +323,8 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
- 	struct autofs_sb_info *sbi;
- 	struct autofs_info *ino;
- 
-+	lock_kernel();
-+
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
- 		goto fail_unlock;
-@@ -418,6 +420,7 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
- 	 * Success! Install the root dentry now to indicate completion.
- 	 */
- 	s->s_root = root;
-+	unlock_kernel();
- 	return 0;
- 	
- 	/*
-@@ -439,6 +442,7 @@ fail_free:
- 	kfree(sbi);
- 	s->s_fs_info = NULL;
- fail_unlock:
-+	unlock_kernel();
- 	return -EINVAL;
- }
- 
-diff --git a/fs/befs/linuxvfs.c b/fs/befs/linuxvfs.c
-index 33baf27..f2aa193 100644
---- a/fs/befs/linuxvfs.c
-+++ b/fs/befs/linuxvfs.c
-@@ -759,6 +759,8 @@ befs_fill_super(struct super_block *sb, void *data, int silent)
- 	const unsigned long sb_block = 0;
- 	const off_t x86_sb_off = 512;
- 
-+	lock_kernel();
-+
- 	save_mount_options(sb, data);
- 
- 	sb->s_fs_info = kmalloc(sizeof (*befs_sb), GFP_KERNEL);
-@@ -867,6 +869,7 @@ befs_fill_super(struct super_block *sb, void *data, int silent)
- 		befs_sb->nls = load_nls_default();
- 	}
- 
-+	unlock_kernel();
- 	return 0;
- /*****************/
-       unacquire_bh:
-@@ -877,6 +880,7 @@ befs_fill_super(struct super_block *sb, void *data, int silent)
- 
-       unacquire_none:
- 	sb->s_fs_info = NULL;
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
-index 6f60336..4bff506 100644
---- a/fs/bfs/inode.c
-+++ b/fs/bfs/inode.c
-@@ -356,9 +356,13 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
- 	long ret = -EINVAL;
- 	unsigned long i_sblock, i_eblock, i_eoff, s_size;
- 
-+	lock_kernel();
-+
- 	info = kzalloc(sizeof(*info), GFP_KERNEL);
--	if (!info)
-+	if (!info) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	s->s_fs_info = info;
- 
- 	sb_set_blocksize(s, BFS_BSIZE);
-@@ -463,6 +467,7 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
- 			kfree(info->si_imap);
- 			kfree(info);
- 			s->s_fs_info = NULL;
-+			unlock_kernel();
- 			return -EIO;
- 		}
- 
-@@ -484,12 +489,14 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
- 	} 
- 	dump_imap("read_super", s);
- 	mutex_init(&info->bfs_lock);
-+	unlock_kernel();
- 	return 0;
- 
- out:
- 	brelse(bh);
- 	kfree(info);
- 	s->s_fs_info = NULL;
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/binfmt_misc.c b/fs/binfmt_misc.c
-index c4e8353..c8b4f45 100644
---- a/fs/binfmt_misc.c
-+++ b/fs/binfmt_misc.c
-@@ -28,6 +28,7 @@
- #include <linux/mount.h>
- #include <linux/syscalls.h>
- #include <linux/fs.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- 
- #include <asm/uaccess.h>
- 
-@@ -695,9 +696,13 @@ static int bm_fill_super(struct super_block * sb, void * data, int silent)
- 		[3] = {"register", &bm_register_operations, S_IWUSR},
- 		/* last one */ {""}
- 	};
--	int err = simple_fill_super(sb, 0x42494e4d, bm_files);
-+	int err;
-+
-+	lock_kernel();
-+	err = simple_fill_super(sb, 0x42494e4d, bm_files);
- 	if (!err)
- 		sb->s_op = &s_ops;
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index 752a546..e5cd2cf 100644
---- a/fs/btrfs/super.c
-+++ b/fs/btrfs/super.c
-@@ -480,13 +480,17 @@ static int btrfs_get_sb(struct file_system_type *fs_type, int flags,
- 	fmode_t mode = FMODE_READ;
- 	int error = 0;
- 
-+	lock_kernel();
-+
- 	if (!(flags & MS_RDONLY))
- 		mode |= FMODE_WRITE;
- 
- 	error = btrfs_parse_early_options(data, mode, fs_type,
- 					  &subvol_name, &fs_devices);
--	if (error)
-+	if (error) {
-+		unlock_kernel();
- 		return error;
-+	}
- 
- 	error = btrfs_scan_one_device(dev_name, mode, fs_type, &fs_devices);
- 	if (error)
-@@ -555,6 +559,7 @@ static int btrfs_get_sb(struct file_system_type *fs_type, int flags,
- 	mnt->mnt_root = root;
- 
- 	kfree(subvol_name);
-+	unlock_kernel();
- 	return 0;
- 
- error_s:
-@@ -563,6 +568,7 @@ error_close_devices:
- 	btrfs_close_devices(fs_devices);
- error_free_subvol_name:
- 	kfree(subvol_name);
-+	unlock_kernel();
- 	return error;
- }
- 
-diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
-index 9a5e4f5..09ccb9d 100644
---- a/fs/cifs/cifsfs.c
-+++ b/fs/cifs/cifsfs.c
-@@ -596,22 +596,30 @@ cifs_get_sb(struct file_system_type *fs_type,
- 	    int flags, const char *dev_name, void *data, struct vfsmount *mnt)
- {
- 	int rc;
--	struct super_block *sb = sget(fs_type, NULL, set_anon_super, NULL);
-+	struct super_block *sb;
-+
-+	lock_kernel();
-+
-+	sb = sget(fs_type, NULL, set_anon_super, NULL);
- 
- 	cFYI(1, ("Devname: %s flags: %d ", dev_name, flags));
- 
--	if (IS_ERR(sb))
-+	if (IS_ERR(sb)) {
-+		unlock_kernel();
- 		return PTR_ERR(sb);
-+	}
- 
- 	sb->s_flags = flags;
- 
- 	rc = cifs_read_super(sb, data, dev_name, flags & MS_SILENT ? 1 : 0);
- 	if (rc) {
- 		deactivate_locked_super(sb);
-+		unlock_kernel();
- 		return rc;
- 	}
- 	sb->s_flags |= MS_ACTIVE;
- 	simple_set_mnt(mnt, sb);
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/fs/coda/inode.c b/fs/coda/inode.c
-index 830f51a..d081fc5 100644
---- a/fs/coda/inode.c
-+++ b/fs/coda/inode.c
-@@ -147,6 +147,8 @@ static int coda_fill_super(struct super_block *sb, void *data, int silent)
- 	int error;
- 	int idx;
- 
-+	lock_kernel();
-+
- 	idx = get_device_index((struct coda_mount_data *) data);
- 
- 	/* Ignore errors in data, for backward compatibility */
-@@ -158,11 +160,13 @@ static int coda_fill_super(struct super_block *sb, void *data, int silent)
- 	vc = &coda_comms[idx];
- 	if (!vc->vc_inuse) {
- 		printk("coda_read_super: No pseudo device\n");
-+		unlock_kernel();
- 		return -EINVAL;
- 	}
- 
-         if ( vc->vc_sb ) {
- 		printk("coda_read_super: Device already mounted\n");
-+		unlock_kernel();
- 		return -EBUSY;
- 	}
- 
-@@ -196,7 +200,8 @@ static int coda_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_root = d_alloc_root(root);
- 	if (!sb->s_root)
- 		goto error;
--        return 0;
-+	unlock_kernel();
-+	return 0;
- 
-  error:
- 	if (root)
-@@ -204,6 +209,7 @@ static int coda_fill_super(struct super_block *sb, void *data, int silent)
- 	if (vc)
- 		vc->vc_sb = NULL;
- 
-+	unlock_kernel();
- 	return -EINVAL;
- }
- 
-diff --git a/fs/configfs/mount.c b/fs/configfs/mount.c
-index 8421cea..5b2e06e 100644
---- a/fs/configfs/mount.c
-+++ b/fs/configfs/mount.c
-@@ -71,6 +71,8 @@ static int configfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct inode *inode;
- 	struct dentry *root;
- 
-+	lock_kernel();
-+
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = CONFIGFS_MAGIC;
-@@ -87,6 +89,7 @@ static int configfs_fill_super(struct super_block *sb, void *data, int silent)
- 		inc_nlink(inode);
- 	} else {
- 		pr_debug("configfs: could not get root inode\n");
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -94,12 +97,14 @@ static int configfs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!root) {
- 		pr_debug("%s: could not get root dentry!\n",__func__);
- 		iput(inode);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	config_group_init(&configfs_root_group);
- 	configfs_root_group.cg_item.ci_dentry = root;
- 	root->d_fsdata = &configfs_root;
- 	sb->s_root = root;
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
-index dd3634e..13e696a 100644
---- a/fs/cramfs/inode.c
-+++ b/fs/cramfs/inode.c
-@@ -227,11 +227,15 @@ static int cramfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct cramfs_sb_info *sbi;
- 	struct inode *root;
- 
-+	lock_kernel();
-+
- 	sb->s_flags |= MS_RDONLY;
- 
- 	sbi = kzalloc(sizeof(struct cramfs_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	sb->s_fs_info = sbi;
- 
- 	/* Invalidate the read buffers on mount: think disk change.. */
-@@ -308,10 +312,12 @@ static int cramfs_fill_super(struct super_block *sb, void *data, int silent)
- 		iput(root);
- 		goto out;
- 	}
-+	unlock_kernel();
- 	return 0;
- out:
- 	kfree(sbi);
- 	sb->s_fs_info = NULL;
-+	unlock_kernel();
- 	return -EINVAL;
- }
- 
-diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
-index d5f8c96..e206eef 100644
---- a/fs/devpts/inode.c
-+++ b/fs/devpts/inode.c
-@@ -24,6 +24,7 @@
- #include <linux/parser.h>
- #include <linux/fsnotify.h>
- #include <linux/seq_file.h>
-+#include <linux/smp_lock.h> /* just for lock_kernel() */
- 
- #define DEVPTS_DEFAULT_MODE 0600
- /*
-@@ -363,17 +364,23 @@ static int devpts_get_sb(struct file_system_type *fs_type,
- 	struct pts_mount_opts opts;
- 	struct super_block *s;
- 
-+	lock_kernel();
-+
- 	error = parse_mount_options(data, PARSE_MOUNT, &opts);
--	if (error)
-+	if (error) {
-+		unlock_kernel();
- 		return error;
-+	}
- 
- 	if (opts.newinstance)
- 		s = sget(fs_type, NULL, set_anon_super, NULL);
- 	else
- 		s = sget(fs_type, compare_init_pts_sb, set_anon_super, NULL);
- 
--	if (IS_ERR(s))
-+	if (IS_ERR(s)) {
-+		unlock_kernel();
- 		return PTR_ERR(s);
-+	}
- 
- 	if (!s->s_root) {
- 		s->s_flags = flags;
-@@ -391,6 +398,7 @@ static int devpts_get_sb(struct file_system_type *fs_type,
- 	if (error)
- 		goto out_dput;
- 
-+	unlock_kernel();
- 	return 0;
- 
- out_dput:
-@@ -398,6 +406,7 @@ out_dput:
- 
- out_undo_sget:
- 	deactivate_locked_super(s);
-+	unlock_kernel();
- 	return error;
- }
- 
-diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-index c6ac85d..01c355e 100644
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -36,6 +36,7 @@
- #include <linux/parser.h>
- #include <linux/fs_stack.h>
- #include <linux/ima.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- #include "ecryptfs_kernel.h"
- 
- /**
-@@ -600,6 +601,8 @@ static int ecryptfs_get_sb(struct file_system_type *fs_type, int flags,
- 	int rc;
- 	struct super_block *sb;
- 
-+	lock_kernel();
-+
- 	rc = get_sb_nodev(fs_type, flags, raw_data, ecryptfs_fill_super, mnt);
- 	if (rc < 0) {
- 		printk(KERN_ERR "Getting sb failed; rc = [%d]\n", rc);
-@@ -621,6 +624,7 @@ out_abort:
- 	dput(sb->s_root); /* aka mnt->mnt_root, as set by get_sb_nodev() */
- 	deactivate_locked_super(sb);
- out:
-+	unlock_kernel();
- 	return rc;
- }
- 
-diff --git a/fs/efs/super.c b/fs/efs/super.c
-index f049428..0981141 100644
---- a/fs/efs/super.c
-+++ b/fs/efs/super.c
-@@ -249,9 +249,13 @@ static int efs_fill_super(struct super_block *s, void *d, int silent)
- 	struct inode *root;
- 	int ret = -EINVAL;
- 
-- 	sb = kzalloc(sizeof(struct efs_sb_info), GFP_KERNEL);
--	if (!sb)
-+	lock_kernel();
-+
-+	sb = kzalloc(sizeof(struct efs_sb_info), GFP_KERNEL);
-+	if (!sb) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	s->s_fs_info = sb;
-  
- 	s->s_magic		= EFS_SUPER_MAGIC;
-@@ -319,12 +323,14 @@ static int efs_fill_super(struct super_block *s, void *d, int silent)
- 		goto out_no_fs;
- 	}
- 
-+	unlock_kernel();
- 	return 0;
- 
- out_no_fs_ul:
- out_no_fs:
- 	s->s_fs_info = NULL;
- 	kfree(sb);
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/exofs/super.c b/fs/exofs/super.c
-index 9f500de..ea045b8 100644
---- a/fs/exofs/super.c
-+++ b/fs/exofs/super.c
-@@ -297,9 +297,13 @@ static int exofs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct osd_obj_id obj;
- 	int ret;
- 
-+	lock_kernel();
-+
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	sb->s_fs_info = sbi;
- 
- 	/* use mount options to fill superblock */
-@@ -399,6 +403,7 @@ static int exofs_fill_super(struct super_block *sb, void *data, int silent)
- out:
- 	if (or)
- 		osd_end_request(or);
-+	unlock_kernel();
- 	return ret;
- 
- free_sbi:
-diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index 1a9ffee..5af1775 100644
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -745,15 +745,18 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
- 	__le32 features;
- 	int err;
- 
-+	lock_kernel();
-+
-+	err = -ENOMEM;
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
--		return -ENOMEM;
-+		goto failed_unlock;
- 
- 	sbi->s_blockgroup_lock =
- 		kzalloc(sizeof(struct blockgroup_lock), GFP_KERNEL);
- 	if (!sbi->s_blockgroup_lock) {
- 		kfree(sbi);
--		return -ENOMEM;
-+		goto failed_unlock;
- 	}
- 	sb->s_fs_info = sbi;
- 	sbi->s_sb_block = sb_block;
-@@ -1063,6 +1066,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
- 		ext2_warning(sb, __func__,
- 			"mounting ext3 filesystem as ext2");
- 	ext2_setup_super (sb, es, sb->s_flags & MS_RDONLY);
-+	unlock_kernel();
- 	return 0;
- 
- cantfind_ext2:
-@@ -1086,6 +1090,8 @@ failed_sbi:
- 	sb->s_fs_info = NULL;
- 	kfree(sbi->s_blockgroup_lock);
- 	kfree(sbi);
-+failed_unlock:
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index 7a520a8..38261a5 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -1568,14 +1568,19 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
- 	__le32 features;
- 	int err;
- 
-+	lock_kernel();
-+
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sbi->s_blockgroup_lock =
- 		kzalloc(sizeof(struct blockgroup_lock), GFP_KERNEL);
- 	if (!sbi->s_blockgroup_lock) {
- 		kfree(sbi);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	sb->s_fs_info = sbi;
-@@ -1992,6 +1997,7 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
- 		"writeback");
- 
- 	lock_kernel();
-+	unlock_kernel();
- 	return 0;
- 
- cantfind_ext3:
-@@ -2022,6 +2028,7 @@ out_fail:
- 	kfree(sbi->s_blockgroup_lock);
- 	kfree(sbi);
- 	lock_kernel();
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 312211e..9db81d2 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -2328,14 +2328,19 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
- 	int err;
- 	unsigned int journal_ioprio = DEFAULT_JOURNAL_IOPRIO;
- 
-+	lock_kernel();
-+
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sbi->s_blockgroup_lock =
- 		kzalloc(sizeof(struct blockgroup_lock), GFP_KERNEL);
- 	if (!sbi->s_blockgroup_lock) {
- 		kfree(sbi);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	sb->s_fs_info = sbi;
-@@ -2913,7 +2918,6 @@ no_journal:
- 
- 	ext4_msg(sb, KERN_INFO, "mounted filesystem with%s", descr);
- 
--	lock_kernel();
- 	return 0;
- 
- cantfind_ext4:
-@@ -2959,7 +2963,6 @@ out_fail:
- 	sb->s_fs_info = NULL;
- 	kfree(sbi->s_blockgroup_lock);
- 	kfree(sbi);
--	lock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/fat/namei_msdos.c b/fs/fat/namei_msdos.c
-index bbc94ae..e2b0b97 100644
---- a/fs/fat/namei_msdos.c
-+++ b/fs/fat/namei_msdos.c
-@@ -9,6 +9,7 @@
- #include <linux/module.h>
- #include <linux/time.h>
- #include <linux/buffer_head.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- #include "fat.h"
- 
- /* Characters that are undesirable in an MS-DOS file name */
-@@ -662,12 +663,16 @@ static int msdos_fill_super(struct super_block *sb, void *data, int silent)
- {
- 	int res;
- 
-+	lock_kernel();
- 	res = fat_fill_super(sb, data, silent, &msdos_dir_inode_operations, 0);
--	if (res)
-+	if (res) {
-+		unlock_kernel();
- 		return res;
-+	}
- 
- 	sb->s_flags |= MS_NOATIME;
- 	sb->s_root->d_op = &msdos_dentry_operations;
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/fs/fat/namei_vfat.c b/fs/fat/namei_vfat.c
-index f565f24..365e2d5 100644
---- a/fs/fat/namei_vfat.c
-+++ b/fs/fat/namei_vfat.c
-@@ -21,6 +21,7 @@
- #include <linux/slab.h>
- #include <linux/buffer_head.h>
- #include <linux/namei.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- #include "fat.h"
- 
- /*
-@@ -1044,15 +1045,19 @@ static int vfat_fill_super(struct super_block *sb, void *data, int silent)
- {
- 	int res;
- 
-+	lock_kernel();
- 	res = fat_fill_super(sb, data, silent, &vfat_dir_inode_operations, 1);
--	if (res)
-+	if (res) {
-+		unlock_kernel();
- 		return res;
-+	}
- 
- 	if (MSDOS_SB(sb)->options.name_check != 's')
- 		sb->s_root->d_op = &vfat_ci_dentry_ops;
- 	else
- 		sb->s_root->d_op = &vfat_dentry_ops;
- 
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/fs/freevxfs/vxfs_super.c b/fs/freevxfs/vxfs_super.c
-index 1e8af93..b8b7821 100644
---- a/fs/freevxfs/vxfs_super.c
-+++ b/fs/freevxfs/vxfs_super.c
-@@ -148,7 +148,7 @@ static int vxfs_remount(struct super_block *sb, int *flags, char *data)
-  *   The superblock on success, else %NULL.
-  *
-  * Locking:
-- *   We are under the bkl and @sbp->s_lock.
-+ *   We are under @sbp->s_lock.
-  */
- static int vxfs_fill_super(struct super_block *sbp, void *dp, int silent)
- {
-@@ -159,11 +159,14 @@ static int vxfs_fill_super(struct super_block *sbp, void *dp, int silent)
- 	struct inode *root;
- 	int ret = -EINVAL;
- 
-+	lock_kernel();
-+
- 	sbp->s_flags |= MS_RDONLY;
- 
- 	infp = kzalloc(sizeof(*infp), GFP_KERNEL);
- 	if (!infp) {
- 		printk(KERN_WARNING "vxfs: unable to allocate incore superblock\n");
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -236,6 +239,7 @@ static int vxfs_fill_super(struct super_block *sbp, void *dp, int silent)
- 		goto out_free_ilist;
- 	}
- 
-+	unlock_kernel();
- 	return 0;
- 	
- out_free_ilist:
-@@ -245,6 +249,7 @@ out_free_ilist:
- out:
- 	brelse(bp);
- 	kfree(infp);
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/fuse/control.c b/fs/fuse/control.c
-index 3773fd6..8d769f7 100644
---- a/fs/fuse/control.c
-+++ b/fs/fuse/control.c
-@@ -10,6 +10,7 @@
- 
- #include <linux/init.h>
- #include <linux/module.h>
-+#include <linux/smp_lock.h> /* just for lock_kernel() */
- 
- #define FUSE_CTL_SUPER_MAGIC 0x65735543
- 
-@@ -297,9 +298,13 @@ static int fuse_ctl_fill_super(struct super_block *sb, void *data, int silent)
- 	struct fuse_conn *fc;
- 	int err;
- 
-+	lock_kernel();
-+
- 	err = simple_fill_super(sb, FUSE_CTL_SUPER_MAGIC, &empty_descr);
--	if (err)
-+	if (err) {
-+		unlock_kernel();
- 		return err;
-+	}
- 
- 	mutex_lock(&fuse_mutex);
- 	BUG_ON(fuse_control_sb);
-@@ -309,10 +314,12 @@ static int fuse_ctl_fill_super(struct super_block *sb, void *data, int silent)
- 		if (err) {
- 			fuse_control_sb = NULL;
- 			mutex_unlock(&fuse_mutex);
-+			unlock_kernel();
- 			return err;
- 		}
- 	}
- 	mutex_unlock(&fuse_mutex);
-+	unlock_kernel();
- 
- 	return 0;
- }
-diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-index 1a822ce..5690279 100644
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -20,6 +20,7 @@
- #include <linux/random.h>
- #include <linux/sched.h>
- #include <linux/exportfs.h>
-+#include <linux/smp_lock.h> /* Only for lock_kernel() */
- 
- MODULE_AUTHOR("Miklos Szeredi <miklos@szeredi.hu>");
- MODULE_DESCRIPTION("Filesystem in Userspace");
-@@ -919,6 +920,8 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
- 	int err;
- 	int is_bdev = sb->s_bdev != NULL;
- 
-+	lock_kernel();
-+
- 	err = -EINVAL;
- 	if (sb->s_flags & MS_MANDLOCK)
- 		goto err;
-@@ -1022,6 +1025,7 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	fuse_send_init(fc, init_req);
- 
-+	unlock_kernel();
- 	return 0;
- 
-  err_unlock:
-@@ -1036,6 +1040,7 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
-  err_fput:
- 	fput(file);
-  err:
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 52fb6c0..96c58ad 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -18,6 +18,7 @@
- #include <linux/mount.h>
- #include <linux/gfs2_ondisk.h>
- #include <linux/slow-work.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- 
- #include "gfs2.h"
- #include "incore.h"
-@@ -1120,9 +1121,12 @@ static int fill_super(struct super_block *sb, void *data, int silent)
- 	struct gfs2_holder mount_gh;
- 	int error;
- 
-+	lock_kernel();
-+
- 	sdp = init_sbd(sb);
- 	if (!sdp) {
- 		printk(KERN_WARNING "GFS2: can't alloc struct gfs2_sbd\n");
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -1211,6 +1215,7 @@ static int fill_super(struct super_block *sb, void *data, int silent)
- 
- 	gfs2_glock_dq_uninit(&mount_gh);
- 	gfs2_online_uevent(sdp);
-+	unlock_kernel();
- 	return 0;
- 
- fail_threads:
-@@ -1240,6 +1245,7 @@ fail:
- 	gfs2_delete_debugfs_file(sdp);
- 	kfree(sdp);
- 	sb->s_fs_info = NULL;
-+	unlock_kernel();
- 	return error;
- }
- 
-@@ -1268,10 +1274,12 @@ static int gfs2_get_sb_meta(struct file_system_type *fs_type, int flags,
- 	struct path path;
- 	int error;
- 
-+	lock_kernel();
- 	error = kern_path(dev_name, LOOKUP_FOLLOW, &path);
- 	if (error) {
- 		printk(KERN_WARNING "GFS2: path_lookup on %s returned error %d\n",
- 		       dev_name, error);
-+		unlock_kernel();
- 		return error;
- 	}
- 	s = sget(&gfs2_fs_type, test_meta_super, set_meta_super,
-@@ -1279,11 +1287,13 @@ static int gfs2_get_sb_meta(struct file_system_type *fs_type, int flags,
- 	path_put(&path);
- 	if (IS_ERR(s)) {
- 		printk(KERN_WARNING "GFS2: gfs2 mount does not exist\n");
-+		unlock_kernel();
- 		return PTR_ERR(s);
- 	}
- 	sdp = s->s_fs_info;
- 	mnt->mnt_sb = s;
- 	mnt->mnt_root = dget(sdp->sd_master_dir);
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/fs/hfs/super.c b/fs/hfs/super.c
-index f7fcbe4..a2e19ff 100644
---- a/fs/hfs/super.c
-+++ b/fs/hfs/super.c
-@@ -381,9 +381,13 @@ static int hfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct inode *root_inode;
- 	int res;
- 
-+	lock_kernel();
-+
- 	sbi = kzalloc(sizeof(struct hfs_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	sb->s_fs_info = sbi;
- 	INIT_HLIST_HEAD(&sbi->rsrc_inodes);
- 
-@@ -429,6 +433,7 @@ static int hfs_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_root->d_op = &hfs_dentry_operations;
- 
- 	/* everything's okay */
-+	unlock_kernel();
- 	return 0;
- 
- bail_iput:
-@@ -437,6 +442,7 @@ bail_no_root:
- 	printk(KERN_ERR "hfs: get root inode failed.\n");
- bail:
- 	hfs_mdb_put(sb);
-+	unlock_kernel();
- 	return res;
- }
- 
-diff --git a/fs/hfsplus/super.c b/fs/hfsplus/super.c
-index 43022f3..824f57a 100644
---- a/fs/hfsplus/super.c
-+++ b/fs/hfsplus/super.c
-@@ -312,9 +312,13 @@ static int hfsplus_fill_super(struct super_block *sb, void *data, int silent)
- 	struct nls_table *nls = NULL;
- 	int err = -EINVAL;
- 
-+	lock_kernel();
-+
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sb->s_fs_info = sbi;
- 	INIT_HLIST_HEAD(&sbi->rsrc_inodes);
-@@ -459,11 +463,13 @@ static int hfsplus_fill_super(struct super_block *sb, void *data, int silent)
- out:
- 	unload_nls(sbi->nls);
- 	sbi->nls = nls;
-+	unlock_kernel();
- 	return 0;
- 
- cleanup:
- 	hfsplus_put_super(sb);
- 	unload_nls(nls);
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/fs/hostfs/hostfs_kern.c b/fs/hostfs/hostfs_kern.c
-index 032604e..5eb2c26 100644
---- a/fs/hostfs/hostfs_kern.c
-+++ b/fs/hostfs/hostfs_kern.c
-@@ -968,6 +968,8 @@ static int hostfs_fill_sb_common(struct super_block *sb, void *d, int silent)
- 	char *host_root_path, *req_root = d;
- 	int err;
- 
-+	lock_kernel();
-+
- 	sb->s_blocksize = 1024;
- 	sb->s_blocksize_bits = 10;
- 	sb->s_magic = HOSTFS_SUPER_MAGIC;
-@@ -1016,6 +1018,7 @@ static int hostfs_fill_sb_common(struct super_block *sb, void *d, int silent)
- 		goto out;
- 	}
- 
-+	unlock_kernel();
- 	return 0;
- 
- out_put:
-@@ -1023,6 +1026,7 @@ out_put:
- out_free:
- 	kfree(host_root_path);
- out:
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/fs/hpfs/super.c b/fs/hpfs/super.c
-index f2feaa0..a7b348a 100644
---- a/fs/hpfs/super.c
-+++ b/fs/hpfs/super.c
-@@ -477,11 +477,15 @@ static int hpfs_fill_super(struct super_block *s, void *options, int silent)
- 
- 	int o;
- 
-+	lock_kernel();
-+
- 	save_mount_options(s, options);
- 
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	s->s_fs_info = sbi;
- 
- 	sbi->sb_bmp_dir = NULL;
-@@ -666,6 +670,7 @@ static int hpfs_fill_super(struct super_block *s, void *options, int silent)
- 			root->i_blocks = 5;
- 		hpfs_brelse4(&qbh);
- 	}
-+	unlock_kernel();
- 	return 0;
- 
- bail4:	brelse(bh2);
-@@ -677,6 +682,7 @@ bail0:
- 	kfree(sbi->sb_cp_table);
- 	s->s_fs_info = NULL;
- 	kfree(sbi);
-+	unlock_kernel();
- 	return -EINVAL;
- }
- 
-diff --git a/fs/hppfs/hppfs.c b/fs/hppfs/hppfs.c
-index a5089a6..6263973 100644
---- a/fs/hppfs/hppfs.c
-+++ b/fs/hppfs/hppfs.c
-@@ -712,6 +712,8 @@ static int hppfs_fill_super(struct super_block *sb, void *d, int silent)
- 	struct vfsmount *proc_mnt;
- 	int err = -ENOENT;
- 
-+	lock_kernel();
-+
- 	proc_mnt = do_kern_mount("proc", 0, "proc", NULL);
- 	if (IS_ERR(proc_mnt))
- 		goto out;
-@@ -731,6 +733,7 @@ static int hppfs_fill_super(struct super_block *sb, void *d, int silent)
- 	if (!sb->s_root)
- 		goto out_iput;
- 
-+	unlock_kernel();
- 	return 0;
- 
-  out_iput:
-@@ -738,6 +741,7 @@ static int hppfs_fill_super(struct super_block *sb, void *d, int silent)
-  out_mntput:
- 	mntput(proc_mnt);
-  out:
-+	unlock_kernel();
- 	return(err);
- }
- 
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 87a1258..53be2b9 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -32,6 +32,7 @@
- #include <linux/security.h>
- #include <linux/ima.h>
- #include <linux/magic.h>
-+#include <linux/smp_lock.h> /* Only for lock_kernel() */
- 
- #include <asm/uaccess.h>
- 
-@@ -824,6 +825,7 @@ hugetlbfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct hugetlbfs_config config;
- 	struct hugetlbfs_sb_info *sbinfo;
- 
-+	lock_kernel();
- 	save_mount_options(sb, data);
- 
- 	config.nr_blocks = -1; /* No limit on size by default */
-@@ -833,12 +835,16 @@ hugetlbfs_fill_super(struct super_block *sb, void *data, int silent)
- 	config.mode = 0755;
- 	config.hstate = &default_hstate;
- 	ret = hugetlbfs_parse_options(data, &config);
--	if (ret)
-+	if (ret) {
-+		unlock_kernel();
- 		return ret;
-+	}
- 
- 	sbinfo = kmalloc(sizeof(struct hugetlbfs_sb_info), GFP_KERNEL);
--	if (!sbinfo)
-+	if (!sbinfo) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	sb->s_fs_info = sbinfo;
- 	sbinfo->hstate = config.hstate;
- 	spin_lock_init(&sbinfo->stat_lock);
-@@ -863,9 +869,11 @@ hugetlbfs_fill_super(struct super_block *sb, void *data, int silent)
- 		goto out_free;
- 	}
- 	sb->s_root = root;
-+	unlock_kernel();
- 	return 0;
- out_free:
- 	kfree(sbinfo);
-+	unlock_kernel();
- 	return -ENOMEM;
- }
- 
-diff --git a/fs/isofs/inode.c b/fs/isofs/inode.c
-index 6b4dcd4..7c501d5 100644
---- a/fs/isofs/inode.c
-+++ b/fs/isofs/inode.c
-@@ -571,11 +571,15 @@ static int isofs_fill_super(struct super_block *s, void *data, int silent)
- 	int table, error = -EINVAL;
- 	unsigned int vol_desc_start;
- 
-+	lock_kernel();
-+
- 	save_mount_options(s, data);
- 
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	s->s_fs_info = sbi;
- 
- 	if (!parse_options((char *)data, &opt))
-@@ -895,6 +899,7 @@ root_found:
- 
- 	kfree(opt.iocharset);
- 
-+	unlock_kernel();
- 	return 0;
- 
- 	/*
-@@ -934,6 +939,7 @@ out_freesbi:
- 	kfree(opt.iocharset);
- 	kfree(sbi);
- 	s->s_fs_info = NULL;
-+	unlock_kernel();
- 	return error;
- }
- 
-diff --git a/fs/jffs2/super.c b/fs/jffs2/super.c
-index 9a80e8e..622bd51 100644
---- a/fs/jffs2/super.c
-+++ b/fs/jffs2/super.c
-@@ -148,14 +148,19 @@ static const struct super_operations jffs2_super_operations =
- static int jffs2_fill_super(struct super_block *sb, void *data, int silent)
- {
- 	struct jffs2_sb_info *c;
-+	int ret;
-+
-+	lock_kernel();
- 
- 	D1(printk(KERN_DEBUG "jffs2_get_sb_mtd():"
- 		  " New superblock for device %d (\"%s\")\n",
- 		  sb->s_mtd->index, sb->s_mtd->name));
- 
- 	c = kzalloc(sizeof(*c), GFP_KERNEL);
--	if (!c)
-+	if (!c) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	c->mtd = sb->s_mtd;
- 	c->os_priv = sb;
-@@ -177,7 +182,9 @@ static int jffs2_fill_super(struct super_block *sb, void *data, int silent)
- #ifdef CONFIG_JFFS2_FS_POSIX_ACL
- 	sb->s_flags |= MS_POSIXACL;
- #endif
--	return jffs2_do_fill_super(sb, data, silent);
-+	ret = jffs2_do_fill_super(sb, data, silent);
-+	unlock_kernel();
-+	return ret;
- }
- 
- static int jffs2_get_sb(struct file_system_type *fs_type,
-diff --git a/fs/jfs/super.c b/fs/jfs/super.c
-index 2234c73..329d7b6 100644
---- a/fs/jfs/super.c
-+++ b/fs/jfs/super.c
-@@ -425,14 +425,20 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 	s64 newLVSize = 0;
- 	int flag, ret = -EINVAL;
- 
-+	lock_kernel();
-+
- 	jfs_info("In jfs_read_super: s_flags=0x%lx", sb->s_flags);
- 
--	if (!new_valid_dev(sb->s_bdev->bd_dev))
-+	if (!new_valid_dev(sb->s_bdev->bd_dev)) {
-+		unlock_kernel();
- 		return -EOVERFLOW;
-+	}
- 
- 	sbi = kzalloc(sizeof (struct jfs_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	sb->s_fs_info = sbi;
- 	sbi->sb = sb;
- 	sbi->uid = sbi->gid = sbi->umask = -1;
-@@ -442,6 +448,7 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	if (!parse_options((char *) data, sb, &newLVSize, &flag)) {
- 		kfree(sbi);
-+		unlock_kernel();
- 		return -EINVAL;
- 	}
- 	sbi->flag = flag;
-@@ -452,6 +459,7 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	if (newLVSize) {
- 		printk(KERN_ERR "resize option for remount only\n");
-+		unlock_kernel();
- 		return -EINVAL;
- 	}
- 
-@@ -527,6 +535,7 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_maxbytes = min(((u64) PAGE_CACHE_SIZE << 32) - 1, sb->s_maxbytes);
- #endif
- 	sb->s_time_gran = 1;
-+	unlock_kernel();
- 	return 0;
- 
- out_no_root:
-@@ -548,6 +557,7 @@ out_kfree:
- 	if (sbi->nls_tab)
- 		unload_nls(sbi->nls_tab);
- 	kfree(sbi);
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/libfs.c b/fs/libfs.c
-index 219576c..3484040 100644
---- a/fs/libfs.c
-+++ b/fs/libfs.c
-@@ -11,6 +11,7 @@
- #include <linux/exportfs.h>
- #include <linux/writeback.h>
- #include <linux/buffer_head.h>
-+#include <linux/smp_lock.h> /* Only for lock_kernel() */
- 
- #include <asm/uaccess.h>
- 
-@@ -422,6 +423,8 @@ int simple_fill_super(struct super_block *s, int magic, struct tree_descr *files
- 	struct dentry *dentry;
- 	int i;
- 
-+	lock_kernel();
-+
- 	s->s_blocksize = PAGE_CACHE_SIZE;
- 	s->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	s->s_magic = magic;
-@@ -429,8 +432,10 @@ int simple_fill_super(struct super_block *s, int magic, struct tree_descr *files
- 	s->s_time_gran = 1;
- 
- 	inode = new_inode(s);
--	if (!inode)
-+	if (!inode) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	/*
- 	 * because the root inode is 1, the files array must not contain an
- 	 * entry at index 1
-@@ -444,6 +449,7 @@ int simple_fill_super(struct super_block *s, int magic, struct tree_descr *files
- 	root = d_alloc_root(inode);
- 	if (!root) {
- 		iput(inode);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	for (i = 0; !files->name || files->name[0]; i++, files++) {
-@@ -469,10 +475,12 @@ int simple_fill_super(struct super_block *s, int magic, struct tree_descr *files
- 		d_add(dentry, inode);
- 	}
- 	s->s_root = root;
-+	unlock_kernel();
- 	return 0;
- out:
- 	d_genocide(root);
- 	dput(root);
-+	unlock_kernel();
- 	return -ENOMEM;
- }
- 
-diff --git a/fs/minix/inode.c b/fs/minix/inode.c
-index 74ea82d..b8aa0a6 100644
---- a/fs/minix/inode.c
-+++ b/fs/minix/inode.c
-@@ -147,9 +147,13 @@ static int minix_fill_super(struct super_block *s, void *data, int silent)
- 	struct minix_sb_info *sbi;
- 	int ret = -EINVAL;
- 
-+	lock_kernel();
-+
- 	sbi = kzalloc(sizeof(struct minix_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	s->s_fs_info = sbi;
- 
- 	BUILD_BUG_ON(32 != sizeof (struct minix_inode));
-@@ -265,6 +269,7 @@ static int minix_fill_super(struct super_block *s, void *data, int silent)
-  	else if (sbi->s_mount_state & MINIX_ERROR_FS)
- 		printk("MINIX-fs: mounting file system with errors, "
- 			"running fsck is recommended\n");
-+	unlock_kernel();
- 	return 0;
- 
- out_iput:
-@@ -314,6 +319,7 @@ out_bad_sb:
- out:
- 	s->s_fs_info = NULL;
- 	kfree(sbi);
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/namespace.c b/fs/namespace.c
-index bdc3cb4..3f95497 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -1647,9 +1647,7 @@ static int do_new_mount(struct path *path, char *type, int flags,
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 
--	lock_kernel();
- 	mnt = do_kern_mount(type, flags, name, data);
--	unlock_kernel();
- 	if (IS_ERR(mnt))
- 		return PTR_ERR(mnt);
- 
-diff --git a/fs/ncpfs/inode.c b/fs/ncpfs/inode.c
-index cf98da1..a020d86 100644
---- a/fs/ncpfs/inode.c
-+++ b/fs/ncpfs/inode.c
-@@ -445,10 +445,14 @@ static int ncp_fill_super(struct super_block *sb, void *raw_data, int silent)
- #endif
- 	struct ncp_entry_info finfo;
- 
-+	lock_kernel();
-+
- 	data.wdog_pid = NULL;
- 	server = kzalloc(sizeof(struct ncp_server), GFP_KERNEL);
--	if (!server)
-+	if (!server) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	sb->s_fs_info = server;
- 
- 	error = -EFAULT;
-@@ -695,6 +699,7 @@ static int ncp_fill_super(struct super_block *sb, void *raw_data, int silent)
-         if (!sb->s_root)
- 		goto out_no_root;
- 	sb->s_root->d_op = &ncp_root_dentry_operations;
-+	unlock_kernel();
- 	return 0;
- 
- out_no_root:
-@@ -729,6 +734,7 @@ out:
- 	put_pid(data.wdog_pid);
- 	sb->s_fs_info = NULL;
- 	kfree(server);
-+	unlock_kernel();
- 	return error;
- }
- 
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 90be551..65812a9 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -2107,6 +2107,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
- 	};
- 	int error = -ENOMEM;
- 
-+	lock_kernel();
- 	data = nfs_alloc_parsed_mount_data(3);
- 	mntfh = kzalloc(sizeof(*mntfh), GFP_KERNEL);
- 	if (data == NULL || mntfh == NULL)
-@@ -2184,6 +2185,7 @@ out:
- out_free_fh:
- 	kfree(mntfh);
- 	kfree(data);
-+	unlock_kernel();
- 	return error;
- 
- out_err_nosb:
-@@ -2227,6 +2229,8 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 	};
- 	int error;
- 
-+	lock_kernel();
-+
- 	dprintk("--> nfs_xdev_get_sb()\n");
- 
- 	/* create a new volume representation */
-@@ -2281,17 +2285,20 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 	security_sb_clone_mnt_opts(data->sb, s);
- 
- 	dprintk("<-- nfs_xdev_get_sb() = 0\n");
-+	unlock_kernel();
- 	return 0;
- 
- out_err_nosb:
- 	nfs_free_server(server);
- out_err_noserver:
- 	dprintk("<-- nfs_xdev_get_sb() = %d [error]\n", error);
-+	unlock_kernel();
- 	return error;
- 
- error_splat_super:
- 	deactivate_locked_super(s);
- 	dprintk("<-- nfs_xdev_get_sb() = %d [splat]\n", error);
-+	unlock_kernel();
- 	return error;
- }
- 
-@@ -2475,6 +2482,7 @@ static int nfs4_remote_get_sb(struct file_system_type *fs_type,
- 	};
- 	int error = -ENOMEM;
- 
-+	lock_kernel();
- 	mntfh = kzalloc(sizeof(*mntfh), GFP_KERNEL);
- 	if (data == NULL || mntfh == NULL)
- 		goto out_free_fh;
-@@ -2534,6 +2542,7 @@ out:
- 	security_free_mnt_opts(&data->lsm_opts);
- out_free_fh:
- 	kfree(mntfh);
-+	unlock_kernel();
- 	return error;
- 
- out_free:
-@@ -2660,6 +2669,7 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
- 	struct nfs_parsed_mount_data *data;
- 	int error = -ENOMEM;
- 
-+	lock_kernel();
- 	data = nfs_alloc_parsed_mount_data(4);
- 	if (data == NULL)
- 		goto out_free_data;
-@@ -2680,6 +2690,7 @@ out_free_data:
- 	kfree(data);
- 	dprintk("<-- nfs4_get_sb() = %d%s\n", error,
- 			error != 0 ? " [error]" : "");
-+	unlock_kernel();
- 	return error;
- }
- 
-@@ -2712,6 +2723,8 @@ static int nfs4_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 	};
- 	int error;
- 
-+	lock_kernel();
-+
- 	dprintk("--> nfs4_xdev_get_sb()\n");
- 
- 	/* create a new volume representation */
-@@ -2765,17 +2778,20 @@ static int nfs4_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 	security_sb_clone_mnt_opts(data->sb, s);
- 
- 	dprintk("<-- nfs4_xdev_get_sb() = 0\n");
-+	unlock_kernel();
- 	return 0;
- 
- out_err_nosb:
- 	nfs_free_server(server);
- out_err_noserver:
- 	dprintk("<-- nfs4_xdev_get_sb() = %d [error]\n", error);
-+	unlock_kernel();
- 	return error;
- 
- error_splat_super:
- 	deactivate_locked_super(s);
- 	dprintk("<-- nfs4_xdev_get_sb() = %d [splat]\n", error);
-+	unlock_kernel();
- 	return error;
- }
- 
-@@ -2794,6 +2810,8 @@ static int nfs4_remote_referral_get_sb(struct file_system_type *fs_type,
- 	};
- 	int error;
- 
-+	lock_kernel();
-+
- 	dprintk("--> nfs4_referral_get_sb()\n");
- 
- 	/* create a new volume representation */
-@@ -2847,17 +2865,20 @@ static int nfs4_remote_referral_get_sb(struct file_system_type *fs_type,
- 	security_sb_clone_mnt_opts(data->sb, s);
- 
- 	dprintk("<-- nfs4_referral_get_sb() = 0\n");
-+	unlock_kernel();
- 	return 0;
- 
- out_err_nosb:
- 	nfs_free_server(server);
- out_err_noserver:
- 	dprintk("<-- nfs4_referral_get_sb() = %d [error]\n", error);
-+	unlock_kernel();
- 	return error;
- 
- error_splat_super:
- 	deactivate_locked_super(s);
- 	dprintk("<-- nfs4_referral_get_sb() = %d [splat]\n", error);
-+	unlock_kernel();
- 	return error;
- }
- 
-@@ -2873,6 +2894,8 @@ static int nfs4_referral_get_sb(struct file_system_type *fs_type,
- 	struct vfsmount *root_mnt;
- 	int error;
- 
-+	lock_kernel();
-+
- 	dprintk("--> nfs4_referral_get_sb()\n");
- 
- 	export_path = data->mnt_path;
-@@ -2890,6 +2913,7 @@ static int nfs4_referral_get_sb(struct file_system_type *fs_type,
- out:
- 	dprintk("<-- nfs4_referral_get_sb() = %d%s\n", error,
- 			error != 0 ? " [error]" : "");
-+	unlock_kernel();
- 	return error;
- }
- 
-diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
-index 5c01fc1..9c6917d 100644
---- a/fs/nfsd/nfsctl.c
-+++ b/fs/nfsd/nfsctl.c
-@@ -26,6 +26,7 @@
- #include <linux/inet.h>
- #include <linux/string.h>
- #include <linux/ctype.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- 
- #include <linux/nfs.h>
- #include <linux/nfsd_idmap.h>
-@@ -1347,7 +1348,12 @@ static int nfsd_fill_super(struct super_block * sb, void * data, int silent)
- #endif
- 		/* last one */ {""}
- 	};
--	return simple_fill_super(sb, 0x6e667364, nfsd_files);
-+	int ret;
-+
-+	lock_kernel();
-+	ret = simple_fill_super(sb, 0x6e667364, nfsd_files);
-+	unlock_kernel();
-+	return ret;
- }
- 
- static int nfsd_get_sb(struct file_system_type *fs_type,
-diff --git a/fs/nilfs2/super.c b/fs/nilfs2/super.c
-index 644e667..3448ec3 100644
---- a/fs/nilfs2/super.c
-+++ b/fs/nilfs2/super.c
-@@ -1059,9 +1059,13 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	struct the_nilfs *nilfs;
- 	int err, need_to_close = 1;
- 
-+	lock_kernel();
-+
- 	sd.bdev = open_bdev_exclusive(dev_name, flags, fs_type);
--	if (IS_ERR(sd.bdev))
-+	if (IS_ERR(sd.bdev)) {
-+		unlock_kernel();
- 		return PTR_ERR(sd.bdev);
-+	}
- 
- 	/*
- 	 * To get mount instance using sget() vfs-routine, NILFS needs
-@@ -1142,6 +1146,7 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	if (need_to_close)
- 		close_bdev_exclusive(sd.bdev, flags);
- 	simple_set_mnt(mnt, s);
-+	unlock_kernel();
- 	return 0;
- 
-  failed_unlock:
-@@ -1150,6 +1155,7 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
-  failed:
- 	close_bdev_exclusive(sd.bdev, flags);
- 
-+	unlock_kernel();
- 	return err;
- 
-  cancel_new:
-@@ -1163,6 +1169,7 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	 * We must finish all post-cleaning before this call;
- 	 * put_nilfs() needs the block device.
- 	 */
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
-index 80b0477..ab09c02 100644
---- a/fs/ntfs/super.c
-+++ b/fs/ntfs/super.c
-@@ -2723,6 +2723,8 @@ static int ntfs_fill_super(struct super_block *sb, void *opt, const int silent)
- 	struct inode *tmp_ino;
- 	int blocksize, result;
- 
-+	lock_kernel();
-+
- 	/*
- 	 * We do a pretty difficult piece of bootstrap by reading the
- 	 * MFT (and other metadata) from disk into memory. We'll only
-@@ -2746,6 +2748,7 @@ static int ntfs_fill_super(struct super_block *sb, void *opt, const int silent)
- 			ntfs_error(sb, "Allocation of NTFS volume structure "
- 					"failed. Aborting mount...");
- 		lockdep_on();
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	/* Initialize ntfs_volume structure. */
-@@ -2933,6 +2936,7 @@ static int ntfs_fill_super(struct super_block *sb, void *opt, const int silent)
- 		sb->s_export_op = &ntfs_export_ops;
- 		lock_kernel();
- 		lockdep_on();
-+		unlock_kernel();
- 		return 0;
- 	}
- 	ntfs_error(sb, "Failed to allocate root directory.");
-@@ -3053,6 +3057,7 @@ err_out_now:
- 	kfree(vol);
- 	ntfs_debug("Failed, returning -EINVAL.");
- 	lockdep_on();
-+	unlock_kernel();
- 	return -EINVAL;
- }
- 
-diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
-index 02bf178..670f0fd 100644
---- a/fs/ocfs2/dlm/dlmfs.c
-+++ b/fs/ocfs2/dlm/dlmfs.c
-@@ -43,6 +43,7 @@
- #include <linux/init.h>
- #include <linux/string.h>
- #include <linux/backing-dev.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- 
- #include <asm/uaccess.h>
- 
-@@ -528,21 +529,27 @@ static int dlmfs_fill_super(struct super_block * sb,
- 	struct inode * inode;
- 	struct dentry * root;
- 
-+	lock_kernel();
-+
- 	sb->s_maxbytes = MAX_LFS_FILESIZE;
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = DLMFS_MAGIC;
- 	sb->s_op = &dlmfs_ops;
- 	inode = dlmfs_get_root_inode(sb);
--	if (!inode)
-+	if (!inode) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	root = d_alloc_root(inode);
- 	if (!root) {
- 		iput(inode);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	sb->s_root = root;
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index c0e48ae..fab815f 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -986,6 +986,8 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
- 	char nodestr[8];
- 	struct ocfs2_blockcheck_stats stats;
- 
-+	lock_kernel();
-+
- 	mlog_entry("%p, %p, %i", sb, data, silent);
- 
- 	if (!ocfs2_parse_options(sb, data, &parsed_options, 0)) {
-@@ -1172,6 +1174,7 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
- 			atomic_set(&osb->vol_state, VOLUME_DISABLED);
- 			wake_up(&osb->osb_mount_event);
- 			mlog_exit(status);
-+			unlock_kernel();
- 			return status;
- 		}
- 	}
-@@ -1186,6 +1189,7 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
- 	ocfs2_orphan_scan_start(osb);
- 
- 	mlog_exit(status);
-+	unlock_kernel();
- 	return status;
- 
- read_super_error:
-@@ -1201,6 +1205,7 @@ read_super_error:
- 	}
- 
- 	mlog_exit(status);
-+	unlock_kernel();
- 	return status;
- }
- 
-diff --git a/fs/omfs/inode.c b/fs/omfs/inode.c
-index f3b7c15..ddfbb22 100644
---- a/fs/omfs/inode.c
-+++ b/fs/omfs/inode.c
-@@ -416,11 +416,15 @@ static int omfs_fill_super(struct super_block *sb, void *data, int silent)
- 	sector_t start;
- 	int ret = -EINVAL;
- 
-+	lock_kernel();
-+
- 	save_mount_options(sb, (char *) data);
- 
- 	sbi = kzalloc(sizeof(struct omfs_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sb->s_fs_info = sbi;
- 
-@@ -525,6 +529,7 @@ out_brelse_bh2:
- out_brelse_bh:
- 	brelse(bh);
- end:
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/openpromfs/inode.c b/fs/openpromfs/inode.c
-index ffcd04f..50dc4be 100644
---- a/fs/openpromfs/inode.c
-+++ b/fs/openpromfs/inode.c
-@@ -386,6 +386,8 @@ static int openprom_fill_super(struct super_block *s, void *data, int silent)
- 	struct op_inode_info *oi;
- 	int ret;
- 
-+	lock_kernel();
-+
- 	s->s_flags |= MS_NOATIME;
- 	s->s_blocksize = 1024;
- 	s->s_blocksize_bits = 10;
-@@ -405,6 +407,7 @@ static int openprom_fill_super(struct super_block *s, void *data, int silent)
- 	s->s_root = d_alloc_root(root_inode);
- 	if (!s->s_root)
- 		goto out_no_root_dentry;
-+	unlock_kernel();
- 	return 0;
- 
- out_no_root_dentry:
-@@ -412,6 +415,7 @@ out_no_root_dentry:
- 	ret = -ENOMEM;
- out_no_root:
- 	printk("openprom_fill_super: get root inode failed\n");
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/proc/root.c b/fs/proc/root.c
-index b080b79..6384680 100644
---- a/fs/proc/root.c
-+++ b/fs/proc/root.c
-@@ -18,6 +18,7 @@
- #include <linux/bitops.h>
- #include <linux/mount.h>
- #include <linux/pid_namespace.h>
-+#include <linux/smp_lock.h> /* For lock_kernel() only */
- 
- #include "internal.h"
- 
-@@ -43,6 +44,8 @@ static int proc_get_sb(struct file_system_type *fs_type,
- 	struct pid_namespace *ns;
- 	struct proc_inode *ei;
- 
-+	lock_kernel();
-+
- 	if (proc_mnt) {
- 		/* Seed the root directory with a pid so it doesn't need
- 		 * to be special in base.c.  I would do this earlier but
-@@ -60,14 +63,17 @@ static int proc_get_sb(struct file_system_type *fs_type,
- 		ns = current->nsproxy->pid_ns;
- 
- 	sb = sget(fs_type, proc_test_super, proc_set_super, ns);
--	if (IS_ERR(sb))
-+	if (IS_ERR(sb)) {
-+		unlock_kernel();
- 		return PTR_ERR(sb);
-+	}
- 
- 	if (!sb->s_root) {
- 		sb->s_flags = flags;
- 		err = proc_fill_super(sb);
- 		if (err) {
- 			deactivate_locked_super(sb);
-+			unlock_kernel();
- 			return err;
- 		}
- 
-@@ -83,6 +89,7 @@ static int proc_get_sb(struct file_system_type *fs_type,
- 	}
- 
- 	simple_set_mnt(mnt, sb);
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/fs/qnx4/inode.c b/fs/qnx4/inode.c
-index d2cd179..18640ce 100644
---- a/fs/qnx4/inode.c
-+++ b/fs/qnx4/inode.c
-@@ -253,9 +253,13 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
- 	struct qnx4_sb_info *qs;
- 	int ret = -EINVAL;
- 
-+	lock_kernel();
-+
- 	qs = kzalloc(sizeof(struct qnx4_sb_info), GFP_KERNEL);
--	if (!qs)
-+	if (!qs) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	s->s_fs_info = qs;
- 
- 	sb_set_blocksize(s, QNX4_BLOCK_SIZE);
-@@ -303,6 +307,7 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
- 
- 	brelse(bh);
- 
-+	unlock_kernel();
- 	return 0;
- 
-       outi:
-@@ -312,6 +317,7 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
-       outnobh:
- 	kfree(qs);
- 	s->s_fs_info = NULL;
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
-index a6090aa..9b3983f 100644
---- a/fs/ramfs/inode.c
-+++ b/fs/ramfs/inode.c
-@@ -35,6 +35,7 @@
- #include <linux/sched.h>
- #include <linux/parser.h>
- #include <linux/magic.h>
-+#include <linux/smp_lock.h> /* Only for lock_kernel() */
- #include <asm/uaccess.h>
- #include "internal.h"
- 
-@@ -220,6 +221,8 @@ static int ramfs_fill_super(struct super_block * sb, void * data, int silent)
- 	struct dentry *root;
- 	int err;
- 
-+	lock_kernel();
-+
- 	save_mount_options(sb, data);
- 
- 	fsi = kzalloc(sizeof(struct ramfs_fs_info), GFP_KERNEL);
-@@ -253,11 +256,13 @@ static int ramfs_fill_super(struct super_block * sb, void * data, int silent)
- 		goto fail;
- 	}
- 
-+	unlock_kernel();
- 	return 0;
- fail:
- 	kfree(fsi);
- 	sb->s_fs_info = NULL;
- 	iput(inode);
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index f0ad05f..f32bf62 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -1608,6 +1608,8 @@ static int reiserfs_fill_super(struct super_block *s, void *data, int silent)
- 	char *qf_names[MAXQUOTAS] = {};
- 	unsigned int qfmt = 0;
- 
-+	lock_kernel();
-+
- 	save_mount_options(s, data);
- 
- 	sbi = kzalloc(sizeof(struct reiserfs_sb_info), GFP_KERNEL);
-@@ -1852,6 +1854,7 @@ static int reiserfs_fill_super(struct super_block *s, void *data, int silent)
- 	init_waitqueue_head(&(sbi->s_wait));
- 	spin_lock_init(&sbi->bitmap_lock);
- 
-+	unlock_kernel();
- 	return (0);
- 
- error:
-@@ -1872,6 +1875,7 @@ error:
- 	kfree(sbi);
- 
- 	s->s_fs_info = NULL;
-+	unlock_kernel();
- 	return errval;
- }
- 
-diff --git a/fs/romfs/super.c b/fs/romfs/super.c
-index c117fa8..7342617 100644
---- a/fs/romfs/super.c
-+++ b/fs/romfs/super.c
-@@ -468,6 +468,8 @@ static int romfs_fill_super(struct super_block *sb, void *data, int silent)
- 	size_t len;
- 	int ret;
- 
-+	lock_kernel();
-+
- #ifdef CONFIG_BLOCK
- 	if (!sb->s_mtd) {
- 		sb_set_blocksize(sb, ROMBSIZE);
-@@ -484,8 +486,10 @@ static int romfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	/* read the image superblock and check it */
- 	rsb = kmalloc(512, GFP_KERNEL);
--	if (!rsb)
-+	if (!rsb) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sb->s_fs_info = (void *) 512;
- 	ret = romfs_dev_read(sb, 0, rsb, 512);
-@@ -535,15 +539,18 @@ static int romfs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!sb->s_root)
- 		goto error_i;
- 
-+	unlock_kernel();
- 	return 0;
- 
- error_i:
- 	iput(root);
- error:
-+	unlock_kernel();
- 	return -EINVAL;
- error_rsb_inval:
- 	ret = -EINVAL;
- error_rsb:
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/fs/smbfs/inode.c b/fs/smbfs/inode.c
-index 1c4c8f0..c3c9044 100644
---- a/fs/smbfs/inode.c
-+++ b/fs/smbfs/inode.c
-@@ -500,6 +500,8 @@ static int smb_fill_super(struct super_block *sb, void *raw_data, int silent)
- 	void *mem;
- 	static int warn_count;
- 
-+	lock_kernel();
-+
- 	if (warn_count < 5) {
- 		warn_count++;
- 		printk(KERN_EMERG "smbfs is deprecated and will be removed"
-@@ -615,6 +617,7 @@ static int smb_fill_super(struct super_block *sb, void *raw_data, int silent)
- 
- 	smb_new_dentry(sb->s_root);
- 
-+	unlock_kernel();
- 	return 0;
- 
- out_no_root:
-@@ -635,9 +638,11 @@ out_wrong_data:
- out_no_data:
- 	printk(KERN_ERR "smb_fill_super: missing data argument\n");
- out_fail:
-+	unlock_kernel();
- 	return -EINVAL;
- out_no_server:
- 	printk(KERN_ERR "smb_fill_super: cannot allocate struct smb_sb_info\n");
-+	unlock_kernel();
- 	return -ENOMEM;
- }
- 
-diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
-index 6c197ef..23cea83 100644
---- a/fs/squashfs/super.c
-+++ b/fs/squashfs/super.c
-@@ -78,11 +78,14 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
- 	u64 lookup_table_start;
- 	int err;
- 
-+	lock_kernel();
-+
- 	TRACE("Entered squashfs_fill_superblock\n");
- 
- 	sb->s_fs_info = kzalloc(sizeof(*msblk), GFP_KERNEL);
- 	if (sb->s_fs_info == NULL) {
- 		ERROR("Failed to allocate squashfs_sb_info\n");
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	msblk = sb->s_fs_info;
-@@ -286,6 +289,7 @@ allocate_root:
- 
- 	TRACE("Leaving squashfs_fill_super\n");
- 	kfree(sblk);
-+	unlock_kernel();
- 	return 0;
- 
- failed_mount:
-@@ -299,12 +303,14 @@ failed_mount:
- 	kfree(sb->s_fs_info);
- 	sb->s_fs_info = NULL;
- 	kfree(sblk);
-+	unlock_kernel();
- 	return err;
- 
- failure:
- 	kfree(msblk->stream.workspace);
- 	kfree(sb->s_fs_info);
- 	sb->s_fs_info = NULL;
-+	unlock_kernel();
- 	return -ENOMEM;
- }
- 
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 4974995..2e5a870 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -18,6 +18,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/magic.h>
-+#include <linux/smp_lock.h> /* Only for lock_kernel() */
- 
- #include "sysfs.h"
- 
-@@ -45,6 +46,8 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct inode *inode;
- 	struct dentry *root;
- 
-+	lock_kernel();
-+
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = SYSFS_MAGIC;
-@@ -58,6 +61,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
- 	mutex_unlock(&sysfs_mutex);
- 	if (!inode) {
- 		pr_debug("sysfs: could not get root inode\n");
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -66,10 +70,12 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!root) {
- 		pr_debug("%s: could not get root dentry!\n",__func__);
- 		iput(inode);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	root->d_fsdata = &sysfs_root;
- 	sb->s_root = root;
-+	unlock_kernel();
- 	return 0;
- }
- 
-diff --git a/fs/sysv/super.c b/fs/sysv/super.c
-index 5a903da..29cdd3f 100644
---- a/fs/sysv/super.c
-+++ b/fs/sysv/super.c
-@@ -24,6 +24,7 @@
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/buffer_head.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- #include "sysv.h"
- 
- /*
-@@ -357,7 +358,9 @@ static int sysv_fill_super(struct super_block *sb, void *data, int silent)
- 	struct sysv_sb_info *sbi;
- 	unsigned long blocknr;
- 	int size = 0, i;
--	
-+
-+	lock_kernel();
-+
- 	BUILD_BUG_ON(1024 != sizeof (struct xenix_super_block));
- 	BUILD_BUG_ON(512 != sizeof (struct sysv4_super_block));
- 	BUILD_BUG_ON(512 != sizeof (struct sysv2_super_block));
-@@ -365,8 +368,10 @@ static int sysv_fill_super(struct super_block *sb, void *data, int silent)
- 	BUILD_BUG_ON(64 != sizeof (struct sysv_inode));
- 
- 	sbi = kzalloc(sizeof(struct sysv_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sbi->s_sb = sb;
- 	sbi->s_block_base = 0;
-@@ -409,8 +414,10 @@ static int sysv_fill_super(struct super_block *sb, void *data, int silent)
- 	if (bh && bh1) {
- 		sbi->s_bh1 = bh1;
- 		sbi->s_bh2 = bh;
--		if (complete_read_super(sb, silent, size))
-+		if (complete_read_super(sb, silent, size)) {
-+			unlock_kernel();
- 			return 0;
-+		}
- 	}
- 
- 	brelse(bh1);
-@@ -419,6 +426,7 @@ static int sysv_fill_super(struct super_block *sb, void *data, int silent)
- 	printk("oldfs: cannot read superblock\n");
- failed:
- 	kfree(sbi);
-+	unlock_kernel();
- 	return -EINVAL;
- 
- Eunknown:
-@@ -442,14 +450,18 @@ static int v7_fill_super(struct super_block *sb, void *data, int silent)
- 	struct v7_super_block *v7sb;
- 	struct sysv_inode *v7i;
- 
-+	lock_kernel();
-+
- 	if (440 != sizeof (struct v7_super_block))
- 		panic("V7 FS: bad super-block size");
- 	if (64 != sizeof (struct sysv_inode))
- 		panic("sysv fs: bad i-node size");
- 
- 	sbi = kzalloc(sizeof(struct sysv_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sbi->s_sb = sb;
- 	sbi->s_block_base = 0;
-@@ -487,13 +499,16 @@ static int v7_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	sbi->s_bh1 = bh;
- 	sbi->s_bh2 = bh;
--	if (complete_read_super(sb, silent, 1))
-+	if (complete_read_super(sb, silent, 1)) {
-+		unlock_kernel();
- 		return 0;
-+	}
- 
- failed:
- 	brelse(bh2);
- 	brelse(bh);
- 	kfree(sbi);
-+	unlock_kernel();
- 	return -EINVAL;
- }
- 
-diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
-index 333e181..04a0fc9 100644
---- a/fs/ubifs/super.c
-+++ b/fs/ubifs/super.c
-@@ -2029,6 +2029,8 @@ static int ubifs_get_sb(struct file_system_type *fs_type, int flags,
- 	struct super_block *sb;
- 	int err;
- 
-+	lock_kernel();
-+
- 	dbg_gen("name %s, flags %#x", name, flags);
- 
- 	/*
-@@ -2040,6 +2042,7 @@ static int ubifs_get_sb(struct file_system_type *fs_type, int flags,
- 	if (IS_ERR(ubi)) {
- 		ubifs_err("cannot open \"%s\", error %d",
- 			  name, (int)PTR_ERR(ubi));
-+		unlock_kernel();
- 		return PTR_ERR(ubi);
- 	}
- 	ubi_get_volume_info(ubi, &vi);
-@@ -2077,12 +2080,14 @@ static int ubifs_get_sb(struct file_system_type *fs_type, int flags,
- 	ubi_close_volume(ubi);
- 
- 	simple_set_mnt(mnt, sb);
-+	unlock_kernel();
- 	return 0;
- 
- out_deact:
- 	deactivate_locked_super(sb);
- out_close:
- 	ubi_close_volume(ubi);
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index 9d1b8c2..fa6f8db 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -1866,6 +1866,8 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
- 	struct kernel_lb_addr rootdir, fileset;
- 	struct udf_sb_info *sbi;
- 
-+	lock_kernel();
-+
- 	uopt.flags = (1 << UDF_FLAG_USE_AD_IN_ICB) | (1 << UDF_FLAG_STRICT);
- 	uopt.uid = -1;
- 	uopt.gid = -1;
-@@ -1874,8 +1876,10 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
- 	uopt.dmode = UDF_INVALID_MODE;
- 
- 	sbi = kzalloc(sizeof(struct udf_sb_info), GFP_KERNEL);
--	if (!sbi)
-+	if (!sbi) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sb->s_fs_info = sbi;
- 
-@@ -2021,6 +2025,7 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
- 		goto error_out;
- 	}
- 	sb->s_maxbytes = MAX_LFS_FILESIZE;
-+	unlock_kernel();
- 	return 0;
- 
- error_out:
-@@ -2041,6 +2046,7 @@ error_out:
- 	kfree(sbi);
- 	sb->s_fs_info = NULL;
- 
-+	unlock_kernel();
- 	return -EINVAL;
- }
- 
-diff --git a/fs/ufs/super.c b/fs/ufs/super.c
-index 5faed79..31ad198 100644
---- a/fs/ufs/super.c
-+++ b/fs/ufs/super.c
-@@ -646,6 +646,8 @@ static int ufs_fill_super(struct super_block *sb, void *data, int silent)
- 	unsigned maxsymlen;
- 	int ret = -EINVAL;
- 
-+	lock_kernel();
-+
- 	uspi = NULL;
- 	ubh = NULL;
- 	flags = 0;
-@@ -1107,6 +1109,7 @@ magic_found:
- 			goto failed;
- 
- 	UFSD("EXIT\n");
-+	unlock_kernel();
- 	return 0;
- 
- dalloc_failed:
-@@ -1118,10 +1121,12 @@ failed:
- 	kfree(sbi);
- 	sb->s_fs_info = NULL;
- 	UFSD("EXIT (FAILED)\n");
-+	unlock_kernel();
- 	return ret;
- 
- failed_nomem:
- 	UFSD("EXIT (NOMEM)\n");
-+	unlock_kernel();
- 	return -ENOMEM;
- }
- 
-diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
-index 18a4b8e..7426166 100644
---- a/fs/xfs/linux-2.6/xfs_super.c
-+++ b/fs/xfs/linux-2.6/xfs_super.c
-@@ -1412,6 +1412,8 @@ xfs_fs_fill_super(
- 	int			flags = 0, error = ENOMEM;
- 	char			*mtpt = NULL;
- 
-+	lock_kernel();
-+
- 	mp = kzalloc(sizeof(struct xfs_mount), GFP_KERNEL);
- 	if (!mp)
- 		goto out;
-@@ -1506,6 +1508,7 @@ xfs_fs_fill_super(
- 	kfree(mtpt);
- 
- 	xfs_itrace_exit(XFS_I(sb->s_root->d_inode));
-+	unlock_kernel();
- 	return 0;
- 
-  out_filestream_unmount:
-@@ -1522,6 +1525,7 @@ xfs_fs_fill_super(
- 	kfree(mtpt);
- 	kfree(mp);
-  out:
-+	unlock_kernel();
- 	return -error;
- 
-  fail_vnrele:
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index ee9d697..fb9d70d 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -33,6 +33,7 @@
- #include <linux/pid.h>
- #include <linux/ipc_namespace.h>
- #include <linux/ima.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- 
- #include <net/sock.h>
- #include "util.h"
-@@ -190,6 +191,8 @@ static int mqueue_fill_super(struct super_block *sb, void *data, int silent)
- 	struct ipc_namespace *ns = data;
- 	int error = 0;
- 
-+	lock_kernel();
-+
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = MQUEUE_MAGIC;
-@@ -209,6 +212,7 @@ static int mqueue_fill_super(struct super_block *sb, void *data, int silent)
- 	}
- 
- out:
-+	unlock_kernel();
- 	return error;
- }
- 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index ca83b73..d3ee2ac 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1290,6 +1290,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
- 	struct super_block *sb;
- 	struct cgroupfs_root *new_root;
- 
-+	lock_kernel();
-+
- 	/* First find the desired set of subsystems */
- 	ret = parse_cgroupfs_options(data, &opts);
- 	if (ret)
-@@ -1410,6 +1412,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
- 	simple_set_mnt(mnt, sb);
- 	kfree(opts.release_agent);
- 	kfree(opts.name);
-+	unlock_kernel();
- 	return 0;
- 
-  drop_new_super:
-@@ -1417,6 +1420,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
-  out_err:
- 	kfree(opts.release_agent);
- 	kfree(opts.name);
-+	unlock_kernel();
- 
- 	return ret;
- }
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index b5cb469..f1f0599 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -53,6 +53,7 @@
- #include <linux/time.h>
- #include <linux/backing-dev.h>
- #include <linux/sort.h>
-+#include <linux/smp_lock.h>
- 
- #include <asm/uaccess.h>
- #include <asm/atomic.h>
-@@ -237,6 +238,8 @@ static int cpuset_get_sb(struct file_system_type *fs_type,
- {
- 	struct file_system_type *cgroup_fs = get_fs_type("cgroup");
- 	int ret = -ENODEV;
-+
-+	lock_kernel();
- 	if (cgroup_fs) {
- 		char mountopts[] =
- 			"cpuset,noprefix,"
-@@ -245,6 +248,7 @@ static int cpuset_get_sb(struct file_system_type *fs_type,
- 					   unused_dev_name, mountopts, mnt);
- 		put_filesystem(cgroup_fs);
- 	}
-+	unlock_kernel();
- 	return ret;
- }
- 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 356dd99..98f744b 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -30,6 +30,7 @@
- #include <linux/module.h>
- #include <linux/swap.h>
- #include <linux/ima.h>
-+#include <linux/smp_lock.h>     /* For lock_kernel() */
- 
- static struct vfsmount *shm_mnt;
- 
-@@ -2309,11 +2310,15 @@ int shmem_fill_super(struct super_block *sb, void *data, int silent)
- 	struct shmem_sb_info *sbinfo;
- 	int err = -ENOMEM;
- 
-+	lock_kernel();
-+
- 	/* Round up to L1_CACHE_BYTES to resist false sharing */
- 	sbinfo = kzalloc(max((int)sizeof(struct shmem_sb_info),
- 				L1_CACHE_BYTES), GFP_KERNEL);
--	if (!sbinfo)
-+	if (!sbinfo) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 
- 	sbinfo->mode = S_IRWXUGO | S_ISVTX;
- 	sbinfo->uid = current_fsuid();
-@@ -2363,12 +2368,14 @@ int shmem_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!root)
- 		goto failed_iput;
- 	sb->s_root = root;
-+	unlock_kernel();
- 	return 0;
- 
- failed_iput:
- 	iput(inode);
- failed:
- 	shmem_put_super(sb);
-+	unlock_kernel();
- 	return err;
- }
- 
-diff --git a/net/sunrpc/rpc_pipe.c b/net/sunrpc/rpc_pipe.c
-index 49278f8..1f0f730 100644
---- a/net/sunrpc/rpc_pipe.c
-+++ b/net/sunrpc/rpc_pipe.c
-@@ -16,6 +16,7 @@
- #include <linux/namei.h>
- #include <linux/fsnotify.h>
- #include <linux/kernel.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- 
- #include <asm/ioctls.h>
- #include <linux/fs.h>
-@@ -990,6 +991,8 @@ rpc_fill_super(struct super_block *sb, void *data, int silent)
- 	struct inode *inode;
- 	struct dentry *root;
- 
-+	lock_kernel();
-+
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = RPCAUTH_GSSMAGIC;
-@@ -997,20 +1000,25 @@ rpc_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_time_gran = 1;
- 
- 	inode = rpc_get_inode(sb, S_IFDIR | 0755);
--	if (!inode)
-+	if (!inode) {
-+		unlock_kernel();
- 		return -ENOMEM;
-+	}
- 	root = d_alloc_root(inode);
- 	if (!root) {
- 		iput(inode);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	if (rpc_populate(root, files, RPCAUTH_lockd, RPCAUTH_RootEOF, NULL))
- 		goto out;
- 	sb->s_root = root;
-+	unlock_kernel();
- 	return 0;
- out:
- 	d_genocide(root);
- 	dput(root);
-+	unlock_kernel();
- 	return -ENOMEM;
- }
- 
-diff --git a/security/inode.c b/security/inode.c
-index f7496c6..f2d02a5 100644
---- a/security/inode.c
-+++ b/security/inode.c
-@@ -21,6 +21,7 @@
- #include <linux/namei.h>
- #include <linux/security.h>
- #include <linux/magic.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- 
- static struct vfsmount *mount;
- static int mount_count;
-@@ -125,8 +126,12 @@ static inline int positive(struct dentry *dentry)
- static int fill_super(struct super_block *sb, void *data, int silent)
- {
- 	static struct tree_descr files[] = {{""}};
-+	int res;
- 
--	return simple_fill_super(sb, SECURITYFS_MAGIC, files);
-+	lock_kernel();
-+	res = simple_fill_super(sb, SECURITYFS_MAGIC, files);
-+	unlock_kernel();
-+	return res;
- }
- 
- static int get_sb(struct file_system_type *fs_type,
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index b4fc506..1c16ea6 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -28,6 +28,7 @@
- #include <linux/percpu.h>
- #include <linux/audit.h>
- #include <linux/uaccess.h>
-+#include <linux/smp_lock.h>
- 
- /* selinuxfs pseudo filesystem for exporting the security policy API.
-    Based on the proc code and the fs/nfsd/nfsctl.c code. */
-@@ -1598,6 +1599,9 @@ static int sel_fill_super(struct super_block *sb, void *data, int silent)
- 		[SEL_DENY_UNKNOWN] = {"deny_unknown", &sel_handle_unknown_ops, S_IRUGO},
- 		/* last one */ {""}
- 	};
-+
-+	lock_kernel();
-+
- 	ret = simple_fill_super(sb, SELINUX_MAGIC, selinux_files);
- 	if (ret)
- 		goto err;
-@@ -1690,6 +1694,7 @@ static int sel_fill_super(struct super_block *sb, void *data, int silent)
- 	policycap_dir = dentry;
- 
- out:
-+	unlock_kernel();
- 	return ret;
- err:
- 	printk(KERN_ERR "SELinux: %s:  failed while creating inodes\n",
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index aeead75..ceebf2a 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -26,6 +26,7 @@
- #include <linux/seq_file.h>
- #include <linux/ctype.h>
- #include <linux/audit.h>
-+#include <linux/smp_lock.h>	/* For lock_kernel() */
- #include "smack.h"
- 
- /*
-@@ -1290,16 +1291,19 @@ static int smk_fill_super(struct super_block *sb, void *data, int silent)
- 		/* last one */ {""}
- 	};
- 
-+	lock_kernel();
- 	rc = simple_fill_super(sb, SMACK_MAGIC, smack_files);
- 	if (rc != 0) {
- 		printk(KERN_ERR "%s failed %d while creating inodes\n",
- 			__func__, rc);
-+		unlock_kernel();
- 		return rc;
- 	}
- 
- 	root_inode = sb->s_root->d_inode;
- 	root_inode->i_security = new_inode_smack(smack_known_floor.smk_known);
- 
-+	unlock_kernel();
- 	return 0;
- }
- 
--- 
-1.6.4.2
+--Multipart=_Mon__2_Nov_2009_09_13_39_-0800_2DgutnyTjOC+sOFC
+Content-Type: application/octet-stream;
+ name="config-r3449"
+Content-Disposition: attachment;
+ filename="config-r3449"
+Content-Transfer-Encoding: base64
 
+IwojIEF1dG9tYXRpY2FsbHkgZ2VuZXJhdGVkIG1ha2UgY29uZmlnOiBkb24ndCBlZGl0CiMgTGlu
+dXgga2VybmVsIHZlcnNpb246IDIuNi4zMi1yYzUKIyBTdW4gTm92ICAxIDIzOjM1OjMxIDIwMDkK
+IwojIENPTkZJR182NEJJVCBpcyBub3Qgc2V0CkNPTkZJR19YODZfMzI9eQojIENPTkZJR19YODZf
+NjQgaXMgbm90IHNldApDT05GSUdfWDg2PXkKQ09ORklHX09VVFBVVF9GT1JNQVQ9ImVsZjMyLWkz
+ODYiCkNPTkZJR19BUkNIX0RFRkNPTkZJRz0iYXJjaC94ODYvY29uZmlncy9pMzg2X2RlZmNvbmZp
+ZyIKQ09ORklHX0dFTkVSSUNfVElNRT15CkNPTkZJR19HRU5FUklDX0NNT1NfVVBEQVRFPXkKQ09O
+RklHX0NMT0NLU09VUkNFX1dBVENIRE9HPXkKQ09ORklHX0dFTkVSSUNfQ0xPQ0tFVkVOVFM9eQpD
+T05GSUdfR0VORVJJQ19DTE9DS0VWRU5UU19CUk9BRENBU1Q9eQpDT05GSUdfTE9DS0RFUF9TVVBQ
+T1JUPXkKQ09ORklHX1NUQUNLVFJBQ0VfU1VQUE9SVD15CkNPTkZJR19IQVZFX0xBVEVOQ1lUT1Bf
+U1VQUE9SVD15CkNPTkZJR19NTVU9eQpDT05GSUdfWk9ORV9ETUE9eQpDT05GSUdfR0VORVJJQ19J
+U0FfRE1BPXkKQ09ORklHX0dFTkVSSUNfSU9NQVA9eQpDT05GSUdfR0VORVJJQ19CVUc9eQpDT05G
+SUdfR0VORVJJQ19IV0VJR0hUPXkKQ09ORklHX0dFTkVSSUNfR1BJTz15CkNPTkZJR19BUkNIX01B
+WV9IQVZFX1BDX0ZEQz15CiMgQ09ORklHX1JXU0VNX0dFTkVSSUNfU1BJTkxPQ0sgaXMgbm90IHNl
+dApDT05GSUdfUldTRU1fWENIR0FERF9BTEdPUklUSE09eQpDT05GSUdfQVJDSF9IQVNfQ1BVX0lE
+TEVfV0FJVD15CkNPTkZJR19HRU5FUklDX0NBTElCUkFURV9ERUxBWT15CiMgQ09ORklHX0dFTkVS
+SUNfVElNRV9WU1lTQ0FMTCBpcyBub3Qgc2V0CkNPTkZJR19BUkNIX0hBU19DUFVfUkVMQVg9eQpD
+T05GSUdfQVJDSF9IQVNfREVGQVVMVF9JRExFPXkKQ09ORklHX0FSQ0hfSEFTX0NBQ0hFX0xJTkVf
+U0laRT15CkNPTkZJR19IQVZFX1NFVFVQX1BFUl9DUFVfQVJFQT15CkNPTkZJR19ORUVEX1BFUl9D
+UFVfRU1CRURfRklSU1RfQ0hVTks9eQpDT05GSUdfTkVFRF9QRVJfQ1BVX1BBR0VfRklSU1RfQ0hV
+Tks9eQojIENPTkZJR19IQVZFX0NQVU1BU0tfT0ZfQ1BVX01BUCBpcyBub3Qgc2V0CkNPTkZJR19B
+UkNIX0hJQkVSTkFUSU9OX1BPU1NJQkxFPXkKQ09ORklHX0FSQ0hfU1VTUEVORF9QT1NTSUJMRT15
+CiMgQ09ORklHX1pPTkVfRE1BMzIgaXMgbm90IHNldApDT05GSUdfQVJDSF9QT1BVTEFURVNfTk9E
+RV9NQVA9eQojIENPTkZJR19BVURJVF9BUkNIIGlzIG5vdCBzZXQKQ09ORklHX0FSQ0hfU1VQUE9S
+VFNfT1BUSU1JWkVEX0lOTElOSU5HPXkKQ09ORklHX0FSQ0hfU1VQUE9SVFNfREVCVUdfUEFHRUFM
+TE9DPXkKQ09ORklHX0dFTkVSSUNfSEFSRElSUVM9eQpDT05GSUdfR0VORVJJQ19IQVJESVJRU19O
+T19fRE9fSVJRPXkKQ09ORklHX0dFTkVSSUNfSVJRX1BST0JFPXkKQ09ORklHX0dFTkVSSUNfUEVO
+RElOR19JUlE9eQpDT05GSUdfVVNFX0dFTkVSSUNfU01QX0hFTFBFUlM9eQpDT05GSUdfWDg2XzMy
+X1NNUD15CkNPTkZJR19YODZfSFQ9eQpDT05GSUdfWDg2X1RSQU1QT0xJTkU9eQpDT05GSUdfWDg2
+XzMyX0xBWllfR1M9eQpDT05GSUdfS1RJTUVfU0NBTEFSPXkKQ09ORklHX0RFRkNPTkZJR19MSVNU
+PSIvbGliL21vZHVsZXMvJFVOQU1FX1JFTEVBU0UvLmNvbmZpZyIKQ09ORklHX0NPTlNUUlVDVE9S
+Uz15CgojCiMgR2VuZXJhbCBzZXR1cAojCkNPTkZJR19FWFBFUklNRU5UQUw9eQpDT05GSUdfTE9D
+S19LRVJORUw9eQpDT05GSUdfSU5JVF9FTlZfQVJHX0xJTUlUPTMyCkNPTkZJR19MT0NBTFZFUlNJ
+T049IiIKQ09ORklHX0xPQ0FMVkVSU0lPTl9BVVRPPXkKQ09ORklHX0hBVkVfS0VSTkVMX0daSVA9
+eQpDT05GSUdfSEFWRV9LRVJORUxfQlpJUDI9eQpDT05GSUdfSEFWRV9LRVJORUxfTFpNQT15CiMg
+Q09ORklHX0tFUk5FTF9HWklQIGlzIG5vdCBzZXQKQ09ORklHX0tFUk5FTF9CWklQMj15CiMgQ09O
+RklHX0tFUk5FTF9MWk1BIGlzIG5vdCBzZXQKIyBDT05GSUdfU1dBUCBpcyBub3Qgc2V0CiMgQ09O
+RklHX1NZU1ZJUEMgaXMgbm90IHNldApDT05GSUdfUE9TSVhfTVFVRVVFPXkKQ09ORklHX1BPU0lY
+X01RVUVVRV9TWVNDVEw9eQojIENPTkZJR19CU0RfUFJPQ0VTU19BQ0NUIGlzIG5vdCBzZXQKQ09O
+RklHX1RBU0tTVEFUUz15CkNPTkZJR19UQVNLX0RFTEFZX0FDQ1Q9eQpDT05GSUdfVEFTS19YQUND
+VD15CkNPTkZJR19UQVNLX0lPX0FDQ09VTlRJTkc9eQpDT05GSUdfQVVESVQ9eQpDT05GSUdfQVVE
+SVRTWVNDQUxMPXkKQ09ORklHX0FVRElUX1dBVENIPXkKQ09ORklHX0FVRElUX1RSRUU9eQoKIwoj
+IFJDVSBTdWJzeXN0ZW0KIwpDT05GSUdfVFJFRV9SQ1U9eQojIENPTkZJR19UUkVFX1BSRUVNUFRf
+UkNVIGlzIG5vdCBzZXQKIyBDT05GSUdfVElOWV9SQ1UgaXMgbm90IHNldAojIENPTkZJR19SQ1Vf
+VFJBQ0UgaXMgbm90IHNldApDT05GSUdfUkNVX0ZBTk9VVD0zMgpDT05GSUdfUkNVX0ZBTk9VVF9F
+WEFDVD15CiMgQ09ORklHX1RSRUVfUkNVX1RSQUNFIGlzIG5vdCBzZXQKQ09ORklHX0lLQ09ORklH
+PW0KQ09ORklHX0xPR19CVUZfU0hJRlQ9MTcKQ09ORklHX0hBVkVfVU5TVEFCTEVfU0NIRURfQ0xP
+Q0s9eQojIENPTkZJR19HUk9VUF9TQ0hFRCBpcyBub3Qgc2V0CiMgQ09ORklHX0NHUk9VUFMgaXMg
+bm90IHNldAojIENPTkZJR19TWVNGU19ERVBSRUNBVEVEX1YyIGlzIG5vdCBzZXQKQ09ORklHX1JF
+TEFZPXkKIyBDT05GSUdfTkFNRVNQQUNFUyBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX0lOSVRS
+RD15CkNPTkZJR19JTklUUkFNRlNfU09VUkNFPSIiCkNPTkZJR19SRF9HWklQPXkKQ09ORklHX1JE
+X0JaSVAyPXkKIyBDT05GSUdfUkRfTFpNQSBpcyBub3Qgc2V0CkNPTkZJR19DQ19PUFRJTUlaRV9G
+T1JfU0laRT15CkNPTkZJR19TWVNDVEw9eQpDT05GSUdfQU5PTl9JTk9ERVM9eQpDT05GSUdfRU1C
+RURERUQ9eQpDT05GSUdfVUlEMTY9eQpDT05GSUdfU1lTQ1RMX1NZU0NBTEw9eQpDT05GSUdfS0FM
+TFNZTVM9eQpDT05GSUdfS0FMTFNZTVNfQUxMPXkKQ09ORklHX0tBTExTWU1TX0VYVFJBX1BBU1M9
+eQpDT05GSUdfSE9UUExVRz15CkNPTkZJR19QUklOVEs9eQpDT05GSUdfQlVHPXkKIyBDT05GSUdf
+RUxGX0NPUkUgaXMgbm90IHNldApDT05GSUdfUENTUEtSX1BMQVRGT1JNPXkKQ09ORklHX0JBU0Vf
+RlVMTD15CiMgQ09ORklHX0ZVVEVYIGlzIG5vdCBzZXQKQ09ORklHX0VQT0xMPXkKIyBDT05GSUdf
+U0lHTkFMRkQgaXMgbm90IHNldApDT05GSUdfVElNRVJGRD15CkNPTkZJR19FVkVOVEZEPXkKIyBD
+T05GSUdfU0hNRU0gaXMgbm90IHNldApDT05GSUdfQUlPPXkKQ09ORklHX0hBVkVfUEVSRl9FVkVO
+VFM9eQoKIwojIEtlcm5lbCBQZXJmb3JtYW5jZSBFdmVudHMgQW5kIENvdW50ZXJzCiMKQ09ORklH
+X1BFUkZfRVZFTlRTPXkKQ09ORklHX0VWRU5UX1BST0ZJTEU9eQojIENPTkZJR19QRVJGX0NPVU5U
+RVJTIGlzIG5vdCBzZXQKIyBDT05GSUdfREVCVUdfUEVSRl9VU0VfVk1BTExPQyBpcyBub3Qgc2V0
+CiMgQ09ORklHX1ZNX0VWRU5UX0NPVU5URVJTIGlzIG5vdCBzZXQKQ09ORklHX1BDSV9RVUlSS1M9
+eQpDT05GSUdfQ09NUEFUX0JSSz15CiMgQ09ORklHX1NMQUIgaXMgbm90IHNldAojIENPTkZJR19T
+TFVCIGlzIG5vdCBzZXQKQ09ORklHX1NMUUI9eQojIENPTkZJR19TTE9CIGlzIG5vdCBzZXQKQ09O
+RklHX1BST0ZJTElORz15CkNPTkZJR19UUkFDRVBPSU5UUz15CkNPTkZJR19PUFJPRklMRT1tCkNP
+TkZJR19PUFJPRklMRV9JQlM9eQpDT05GSUdfT1BST0ZJTEVfRVZFTlRfTVVMVElQTEVYPXkKQ09O
+RklHX0hBVkVfT1BST0ZJTEU9eQpDT05GSUdfS1BST0JFUz15CkNPTkZJR19IQVZFX0VGRklDSUVO
+VF9VTkFMSUdORURfQUNDRVNTPXkKQ09ORklHX0tSRVRQUk9CRVM9eQpDT05GSUdfVVNFUl9SRVRV
+Uk5fTk9USUZJRVI9eQpDT05GSUdfSEFWRV9JT1JFTUFQX1BST1Q9eQpDT05GSUdfSEFWRV9LUFJP
+QkVTPXkKQ09ORklHX0hBVkVfS1JFVFBST0JFUz15CkNPTkZJR19IQVZFX0FSQ0hfVFJBQ0VIT09L
+PXkKQ09ORklHX0hBVkVfRE1BX0FUVFJTPXkKQ09ORklHX0hBVkVfRE1BX0FQSV9ERUJVRz15CkNP
+TkZJR19IQVZFX1VTRVJfUkVUVVJOX05PVElGSUVSPXkKCiMKIyBHQ09WLWJhc2VkIGtlcm5lbCBw
+cm9maWxpbmcKIwpDT05GSUdfR0NPVl9LRVJORUw9eQpDT05GSUdfR0NPVl9QUk9GSUxFX0FMTD15
+CkNPTkZJR19TTE9XX1dPUks9eQpDT05GSUdfSEFWRV9HRU5FUklDX0RNQV9DT0hFUkVOVD15CkNP
+TkZJR19SVF9NVVRFWEVTPXkKQ09ORklHX0JBU0VfU01BTEw9MApDT05GSUdfTU9EVUxFUz15CkNP
+TkZJR19NT0RVTEVfRk9SQ0VfTE9BRD15CiMgQ09ORklHX01PRFVMRV9VTkxPQUQgaXMgbm90IHNl
+dApDT05GSUdfTU9EVkVSU0lPTlM9eQojIENPTkZJR19NT0RVTEVfU1JDVkVSU0lPTl9BTEwgaXMg
+bm90IHNldApDT05GSUdfU1RPUF9NQUNISU5FPXkKQ09ORklHX0JMT0NLPXkKQ09ORklHX0xCREFG
+PXkKIyBDT05GSUdfQkxLX0RFVl9CU0cgaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX0lOVEVH
+UklUWSBpcyBub3Qgc2V0CgojCiMgSU8gU2NoZWR1bGVycwojCkNPTkZJR19JT1NDSEVEX05PT1A9
+eQpDT05GSUdfSU9TQ0hFRF9ERUFETElORT15CkNPTkZJR19JT1NDSEVEX0NGUT1tCiMgQ09ORklH
+X0RFRkFVTFRfREVBRExJTkUgaXMgbm90IHNldAojIENPTkZJR19ERUZBVUxUX0NGUSBpcyBub3Qg
+c2V0CkNPTkZJR19ERUZBVUxUX05PT1A9eQpDT05GSUdfREVGQVVMVF9JT1NDSEVEPSJub29wIgpD
+T05GSUdfUFJFRU1QVF9OT1RJRklFUlM9eQpDT05GSUdfRlJFRVpFUj15CgojCiMgUHJvY2Vzc29y
+IHR5cGUgYW5kIGZlYXR1cmVzCiMKQ09ORklHX1RJQ0tfT05FU0hPVD15CiMgQ09ORklHX05PX0ha
+IGlzIG5vdCBzZXQKQ09ORklHX0hJR0hfUkVTX1RJTUVSUz15CkNPTkZJR19HRU5FUklDX0NMT0NL
+RVZFTlRTX0JVSUxEPXkKQ09ORklHX1NNUD15CkNPTkZJR19TUEFSU0VfSVJRPXkKQ09ORklHX05V
+TUFfSVJRX0RFU0M9eQpDT05GSUdfWDg2X01QUEFSU0U9eQpDT05GSUdfWDg2X0JJR1NNUD15CkNP
+TkZJR19YODZfRVhURU5ERURfUExBVEZPUk09eQpDT05GSUdfWDg2X0VMQU49eQojIENPTkZJR19Y
+ODZfTVJTVCBpcyBub3Qgc2V0CkNPTkZJR19YODZfUkRDMzIxWD15CkNPTkZJR19YODZfMzJfTk9O
+X1NUQU5EQVJEPXkKQ09ORklHX1g4Nl9OVU1BUT15CkNPTkZJR19YODZfU1VNTUlUPXkKQ09ORklH
+X1g4Nl9FUzcwMDA9eQojIENPTkZJR19TQ0hFRF9PTUlUX0ZSQU1FX1BPSU5URVIgaXMgbm90IHNl
+dAojIENPTkZJR19QQVJBVklSVF9HVUVTVCBpcyBub3Qgc2V0CkNPTkZJR19NRU1URVNUPXkKQ09O
+RklHX1g4Nl9TVU1NSVRfTlVNQT15CkNPTkZJR19YODZfQ1lDTE9ORV9USU1FUj15CkNPTkZJR19Y
+ODZfQ1BVPXkKQ09ORklHX1g4Nl9MMV9DQUNIRV9CWVRFUz02NApDT05GSUdfWDg2X0lOVEVSTk9E
+RV9DQUNIRV9CWVRFUz02NApDT05GSUdfWDg2X0NNUFhDSEc9eQpDT05GSUdfWDg2X0wxX0NBQ0hF
+X1NISUZUPTQKQ09ORklHX1g4Nl9YQUREPXkKQ09ORklHX1g4Nl9XUF9XT1JLU19PSz15CkNPTkZJ
+R19YODZfSU5WTFBHPXkKQ09ORklHX1g4Nl9CU1dBUD15CkNPTkZJR19YODZfUE9QQURfT0s9eQpD
+T05GSUdfWDg2X0FMSUdOTUVOVF8xNj15CkNPTkZJR19YODZfQ01QWENIRzY0PXkKQ09ORklHX1g4
+Nl9NSU5JTVVNX0NQVV9GQU1JTFk9NQpDT05GSUdfWDg2X0RFQlVHQ1RMTVNSPXkKQ09ORklHX1BS
+T0NFU1NPUl9TRUxFQ1Q9eQojIENPTkZJR19DUFVfU1VQX0lOVEVMIGlzIG5vdCBzZXQKQ09ORklH
+X0NQVV9TVVBfQ1lSSVhfMzI9eQpDT05GSUdfQ1BVX1NVUF9BTUQ9eQpDT05GSUdfQ1BVX1NVUF9D
+RU5UQVVSPXkKQ09ORklHX0NQVV9TVVBfVFJBTlNNRVRBXzMyPXkKQ09ORklHX0NQVV9TVVBfVU1D
+XzMyPXkKIyBDT05GSUdfWDg2X0RTIGlzIG5vdCBzZXQKQ09ORklHX0hQRVRfVElNRVI9eQpDT05G
+SUdfRE1JPXkKIyBDT05GSUdfSU9NTVVfSEVMUEVSIGlzIG5vdCBzZXQKIyBDT05GSUdfSU9NTVVf
+QVBJIGlzIG5vdCBzZXQKQ09ORklHX05SX0NQVVM9MzIKQ09ORklHX1NDSEVEX1NNVD15CiMgQ09O
+RklHX1NDSEVEX01DIGlzIG5vdCBzZXQKIyBDT05GSUdfUFJFRU1QVF9OT05FIGlzIG5vdCBzZXQK
+IyBDT05GSUdfUFJFRU1QVF9WT0xVTlRBUlkgaXMgbm90IHNldApDT05GSUdfUFJFRU1QVD15CkNP
+TkZJR19YODZfTE9DQUxfQVBJQz15CkNPTkZJR19YODZfSU9fQVBJQz15CkNPTkZJR19YODZfUkVS
+T1VURV9GT1JfQlJPS0VOX0JPT1RfSVJRUz15CkNPTkZJR19YODZfTUNFPXkKQ09ORklHX1g4Nl9N
+Q0VfSU5URUw9eQpDT05GSUdfWDg2X01DRV9BTUQ9eQojIENPTkZJR19YODZfQU5DSUVOVF9NQ0Ug
+aXMgbm90IHNldApDT05GSUdfWDg2X01DRV9USFJFU0hPTEQ9eQpDT05GSUdfWDg2X01DRV9JTkpF
+Q1Q9eQpDT05GSUdfWDg2X1RIRVJNQUxfVkVDVE9SPXkKIyBDT05GSUdfVk04NiBpcyBub3Qgc2V0
+CkNPTkZJR19UT1NISUJBPXkKQ09ORklHX0k4Sz15CkNPTkZJR19YODZfUkVCT09URklYVVBTPXkK
+Q09ORklHX01JQ1JPQ09ERT1tCkNPTkZJR19NSUNST0NPREVfSU5URUw9eQpDT05GSUdfTUlDUk9D
+T0RFX0FNRD15CkNPTkZJR19NSUNST0NPREVfT0xEX0lOVEVSRkFDRT15CiMgQ09ORklHX1g4Nl9N
+U1IgaXMgbm90IHNldApDT05GSUdfWDg2X0NQVUlEPXkKQ09ORklHX1g4Nl9DUFVfREVCVUc9bQoj
+IENPTkZJR19OT0hJR0hNRU0gaXMgbm90IHNldAojIENPTkZJR19ISUdITUVNNEcgaXMgbm90IHNl
+dApDT05GSUdfSElHSE1FTTY0Rz15CkNPTkZJR19WTVNQTElUXzNHPXkKIyBDT05GSUdfVk1TUExJ
+VF8zR19PUFQgaXMgbm90IHNldAojIENPTkZJR19WTVNQTElUXzJHIGlzIG5vdCBzZXQKIyBDT05G
+SUdfVk1TUExJVF8yR19PUFQgaXMgbm90IHNldAojIENPTkZJR19WTVNQTElUXzFHIGlzIG5vdCBz
+ZXQKQ09ORklHX1BBR0VfT0ZGU0VUPTB4QzAwMDAwMDAKQ09ORklHX0hJR0hNRU09eQpDT05GSUdf
+WDg2X1BBRT15CkNPTkZJR19BUkNIX1BIWVNfQUREUl9UXzY0QklUPXkKQ09ORklHX05VTUE9eQpD
+T05GSUdfTk9ERVNfU0hJRlQ9NApDT05GSUdfSEFWRV9BUkNIX0JPT1RNRU09eQpDT05GSUdfQVJD
+SF9IQVZFX01FTU9SWV9QUkVTRU5UPXkKQ09ORklHX05FRURfTk9ERV9NRU1NQVBfU0laRT15CkNP
+TkZJR19IQVZFX0FSQ0hfQUxMT0NfUkVNQVA9eQpDT05GSUdfQVJDSF9ESVNDT05USUdNRU1fRU5B
+QkxFPXkKQ09ORklHX0FSQ0hfRElTQ09OVElHTUVNX0RFRkFVTFQ9eQpDT05GSUdfQVJDSF9TUEFS
+U0VNRU1fRU5BQkxFPXkKQ09ORklHX0FSQ0hfU0VMRUNUX01FTU9SWV9NT0RFTD15CkNPTkZJR19J
+TExFR0FMX1BPSU5URVJfVkFMVUU9MApDT05GSUdfU0VMRUNUX01FTU9SWV9NT0RFTD15CiMgQ09O
+RklHX0ZMQVRNRU1fTUFOVUFMIGlzIG5vdCBzZXQKQ09ORklHX0RJU0NPTlRJR01FTV9NQU5VQUw9
+eQojIENPTkZJR19TUEFSU0VNRU1fTUFOVUFMIGlzIG5vdCBzZXQKQ09ORklHX0RJU0NPTlRJR01F
+TT15CkNPTkZJR19GTEFUX05PREVfTUVNX01BUD15CkNPTkZJR19ORUVEX01VTFRJUExFX05PREVT
+PXkKQ09ORklHX0hBVkVfTUVNT1JZX1BSRVNFTlQ9eQpDT05GSUdfU1BBUlNFTUVNX1NUQVRJQz15
+CkNPTkZJR19QQUdFRkxBR1NfRVhURU5ERUQ9eQpDT05GSUdfU1BMSVRfUFRMT0NLX0NQVVM9NApD
+T05GSUdfTUlHUkFUSU9OPXkKQ09ORklHX1BIWVNfQUREUl9UXzY0QklUPXkKQ09ORklHX1pPTkVf
+RE1BX0ZMQUc9MQpDT05GSUdfQk9VTkNFPXkKQ09ORklHX1ZJUlRfVE9fQlVTPXkKQ09ORklHX0hB
+VkVfTUxPQ0s9eQpDT05GSUdfSEFWRV9NTE9DS0VEX1BBR0VfQklUPXkKQ09ORklHX01NVV9OT1RJ
+RklFUj15CkNPTkZJR19LU009eQpDT05GSUdfREVGQVVMVF9NTUFQX01JTl9BRERSPTQwOTYKIyBD
+T05GSUdfSElHSFBURSBpcyBub3Qgc2V0CiMgQ09ORklHX1g4Nl9DSEVDS19CSU9TX0NPUlJVUFRJ
+T04gaXMgbm90IHNldAojIENPTkZJR19YODZfUkVTRVJWRV9MT1dfNjRLIGlzIG5vdCBzZXQKQ09O
+RklHX01BVEhfRU1VTEFUSU9OPXkKQ09ORklHX01UUlI9eQojIENPTkZJR19NVFJSX1NBTklUSVpF
+UiBpcyBub3Qgc2V0CkNPTkZJR19YODZfUEFUPXkKQ09ORklHX0FSQ0hfVVNFU19QR19VTkNBQ0hF
+RD15CiMgQ09ORklHX0VGSSBpcyBub3Qgc2V0CiMgQ09ORklHX1NFQ0NPTVAgaXMgbm90IHNldAoj
+IENPTkZJR19DQ19TVEFDS1BST1RFQ1RPUiBpcyBub3Qgc2V0CiMgQ09ORklHX0haXzEwMCBpcyBu
+b3Qgc2V0CkNPTkZJR19IWl8yNTA9eQojIENPTkZJR19IWl8zMDAgaXMgbm90IHNldAojIENPTkZJ
+R19IWl8xMDAwIGlzIG5vdCBzZXQKQ09ORklHX0haPTI1MApDT05GSUdfU0NIRURfSFJUSUNLPXkK
+Q09ORklHX0tFWEVDPXkKIyBDT05GSUdfQ1JBU0hfRFVNUCBpcyBub3Qgc2V0CkNPTkZJR19QSFlT
+SUNBTF9TVEFSVD0weDEwMDAwMDAKIyBDT05GSUdfUkVMT0NBVEFCTEUgaXMgbm90IHNldApDT05G
+SUdfUEhZU0lDQUxfQUxJR049MHgxMDAwMDAwCkNPTkZJR19IT1RQTFVHX0NQVT15CkNPTkZJR19D
+T01QQVRfVkRTTz15CiMgQ09ORklHX0NNRExJTkVfQk9PTCBpcyBub3Qgc2V0CkNPTkZJR19BUkNI
+X0VOQUJMRV9NRU1PUllfSE9UUExVRz15CiMgQ09ORklHX0hBVkVfQVJDSF9FQVJMWV9QRk5fVE9f
+TklEIGlzIG5vdCBzZXQKCiMKIyBQb3dlciBtYW5hZ2VtZW50IGFuZCBBQ1BJIG9wdGlvbnMKIwpD
+T05GSUdfUE09eQojIENPTkZJR19QTV9ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19QTV9TTEVFUF9T
+TVA9eQpDT05GSUdfUE1fU0xFRVA9eQpDT05GSUdfU1VTUEVORD15CkNPTkZJR19TVVNQRU5EX0ZS
+RUVaRVI9eQpDT05GSUdfUE1fUlVOVElNRT15CkNPTkZJR19BQ1BJPXkKQ09ORklHX0FDUElfU0xF
+RVA9eQpDT05GSUdfQUNQSV9QT1dFUl9NRVRFUj1tCkNPTkZJR19BQ1BJX1NZU0ZTX1BPV0VSPXkK
+Q09ORklHX0FDUElfQUM9bQojIENPTkZJR19BQ1BJX0JBVFRFUlkgaXMgbm90IHNldApDT05GSUdf
+QUNQSV9CVVRUT049bQpDT05GSUdfQUNQSV9WSURFTz1tCiMgQ09ORklHX0FDUElfRkFOIGlzIG5v
+dCBzZXQKQ09ORklHX0FDUElfRE9DSz15CkNPTkZJR19BQ1BJX1BST0NFU1NPUj1tCkNPTkZJR19B
+Q1BJX0hPVFBMVUdfQ1BVPXkKQ09ORklHX0FDUElfUFJPQ0VTU09SX0FHR1JFR0FUT1I9bQpDT05G
+SUdfQUNQSV9USEVSTUFMPW0KQ09ORklHX0FDUElfTlVNQT15CiMgQ09ORklHX0FDUElfQ1VTVE9N
+X0RTRFQgaXMgbm90IHNldApDT05GSUdfQUNQSV9CTEFDS0xJU1RfWUVBUj0wCkNPTkZJR19BQ1BJ
+X0RFQlVHPXkKQ09ORklHX0FDUElfREVCVUdfRlVOQ19UUkFDRT15CkNPTkZJR19BQ1BJX1BDSV9T
+TE9UPXkKQ09ORklHX1g4Nl9QTV9USU1FUj15CkNPTkZJR19BQ1BJX0NPTlRBSU5FUj1tCiMgQ09O
+RklHX0FDUElfU0JTIGlzIG5vdCBzZXQKQ09ORklHX1NGST15CkNPTkZJR19YODZfQVBNX0JPT1Q9
+eQpDT05GSUdfQVBNPXkKQ09ORklHX0FQTV9JR05PUkVfVVNFUl9TVVNQRU5EPXkKQ09ORklHX0FQ
+TV9ET19FTkFCTEU9eQojIENPTkZJR19BUE1fQ1BVX0lETEUgaXMgbm90IHNldAojIENPTkZJR19B
+UE1fRElTUExBWV9CTEFOSyBpcyBub3Qgc2V0CkNPTkZJR19BUE1fQUxMT1dfSU5UUz15CgojCiMg
+Q1BVIEZyZXF1ZW5jeSBzY2FsaW5nCiMKQ09ORklHX0NQVV9GUkVRPXkKQ09ORklHX0NQVV9GUkVR
+X1RBQkxFPXkKQ09ORklHX0NQVV9GUkVRX0RFQlVHPXkKQ09ORklHX0NQVV9GUkVRX1NUQVQ9eQpD
+T05GSUdfQ1BVX0ZSRVFfU1RBVF9ERVRBSUxTPXkKQ09ORklHX0NQVV9GUkVRX0RFRkFVTFRfR09W
+X1BFUkZPUk1BTkNFPXkKIyBDT05GSUdfQ1BVX0ZSRVFfREVGQVVMVF9HT1ZfUE9XRVJTQVZFIGlz
+IG5vdCBzZXQKIyBDT05GSUdfQ1BVX0ZSRVFfREVGQVVMVF9HT1ZfVVNFUlNQQUNFIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfQ1BVX0ZSRVFfREVGQVVMVF9HT1ZfT05ERU1BTkQgaXMgbm90IHNldAojIENP
+TkZJR19DUFVfRlJFUV9ERUZBVUxUX0dPVl9DT05TRVJWQVRJVkUgaXMgbm90IHNldApDT05GSUdf
+Q1BVX0ZSRVFfR09WX1BFUkZPUk1BTkNFPXkKQ09ORklHX0NQVV9GUkVRX0dPVl9QT1dFUlNBVkU9
+bQpDT05GSUdfQ1BVX0ZSRVFfR09WX1VTRVJTUEFDRT15CiMgQ09ORklHX0NQVV9GUkVRX0dPVl9P
+TkRFTUFORCBpcyBub3Qgc2V0CiMgQ09ORklHX0NQVV9GUkVRX0dPVl9DT05TRVJWQVRJVkUgaXMg
+bm90IHNldAoKIwojIENQVUZyZXEgcHJvY2Vzc29yIGRyaXZlcnMKIwojIENPTkZJR19YODZfQUNQ
+SV9DUFVGUkVRIGlzIG5vdCBzZXQKQ09ORklHX0VMQU5fQ1BVRlJFUT1tCkNPTkZJR19TQzUyMF9D
+UFVGUkVRPW0KQ09ORklHX1g4Nl9QT1dFUk5PV19LNj1tCiMgQ09ORklHX1g4Nl9QT1dFUk5PV19L
+NyBpcyBub3Qgc2V0CiMgQ09ORklHX1g4Nl9QT1dFUk5PV19LOCBpcyBub3Qgc2V0CiMgQ09ORklH
+X1g4Nl9HWF9TVVNQTU9EIGlzIG5vdCBzZXQKQ09ORklHX1g4Nl9TUEVFRFNURVBfQ0VOVFJJTk89
+eQpDT05GSUdfWDg2X1NQRUVEU1RFUF9DRU5UUklOT19UQUJMRT15CkNPTkZJR19YODZfU1BFRURT
+VEVQX0lDSD15CiMgQ09ORklHX1g4Nl9TUEVFRFNURVBfU01JIGlzIG5vdCBzZXQKQ09ORklHX1g4
+Nl9QNF9DTE9DS01PRD15CkNPTkZJR19YODZfQ1BVRlJFUV9ORk9SQ0UyPXkKQ09ORklHX1g4Nl9M
+T05HUlVOPXkKQ09ORklHX1g4Nl9MT05HSEFVTD1tCkNPTkZJR19YODZfRV9QT1dFUlNBVkVSPW0K
+CiMKIyBzaGFyZWQgb3B0aW9ucwojCkNPTkZJR19YODZfU1BFRURTVEVQX0xJQj15CkNPTkZJR19Y
+ODZfU1BFRURTVEVQX1JFTEFYRURfQ0FQX0NIRUNLPXkKQ09ORklHX0NQVV9JRExFPXkKQ09ORklH
+X0NQVV9JRExFX0dPVl9MQURERVI9eQoKIwojIEJ1cyBvcHRpb25zIChQQ0kgZXRjLikKIwpDT05G
+SUdfUENJPXkKQ09ORklHX1BDSV9HT0JJT1M9eQojIENPTkZJR19QQ0lfR09NTUNPTkZJRyBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1BDSV9HT0RJUkVDVCBpcyBub3Qgc2V0CiMgQ09ORklHX1BDSV9HT09M
+UEMgaXMgbm90IHNldAojIENPTkZJR19QQ0lfR09BTlkgaXMgbm90IHNldApDT05GSUdfUENJX0JJ
+T1M9eQpDT05GSUdfUENJX0RPTUFJTlM9eQpDT05GSUdfUENJRVBPUlRCVVM9eQpDT05GSUdfSE9U
+UExVR19QQ0lfUENJRT15CiMgQ09ORklHX1BDSUVBRVIgaXMgbm90IHNldApDT05GSUdfUENJRUFT
+UE09eQpDT05GSUdfUENJRUFTUE1fREVCVUc9eQpDT05GSUdfQVJDSF9TVVBQT1JUU19NU0k9eQoj
+IENPTkZJR19QQ0lfTVNJIGlzIG5vdCBzZXQKQ09ORklHX1BDSV9MRUdBQ1k9eQpDT05GSUdfUENJ
+X0RFQlVHPXkKQ09ORklHX1BDSV9TVFVCPW0KQ09ORklHX0hUX0lSUT15CkNPTkZJR19QQ0lfSU9W
+PXkKQ09ORklHX0lTQV9ETUFfQVBJPXkKQ09ORklHX0lTQT15CkNPTkZJR19FSVNBPXkKIyBDT05G
+SUdfRUlTQV9WTEJfUFJJTUlORyBpcyBub3Qgc2V0CkNPTkZJR19FSVNBX1BDSV9FSVNBPXkKQ09O
+RklHX0VJU0FfVklSVFVBTF9ST09UPXkKQ09ORklHX0VJU0FfTkFNRVM9eQpDT05GSUdfTUNBPXkK
+Q09ORklHX01DQV9MRUdBQ1k9eQpDT05GSUdfU0N4MjAwPXkKIyBDT05GSUdfU0N4MjAwSFJfVElN
+RVIgaXMgbm90IHNldAojIENPTkZJR19PTFBDIGlzIG5vdCBzZXQKQ09ORklHX1BDQ0FSRD15CkNP
+TkZJR19QQ01DSUFfREVCVUc9eQojIENPTkZJR19QQ01DSUEgaXMgbm90IHNldAojIENPTkZJR19D
+QVJEQlVTIGlzIG5vdCBzZXQKCiMKIyBQQy1jYXJkIGJyaWRnZXMKIwpDT05GSUdfWUVOVEE9eQpD
+T05GSUdfWUVOVEFfTzI9eQojIENPTkZJR19ZRU5UQV9SSUNPSCBpcyBub3Qgc2V0CkNPTkZJR19Z
+RU5UQV9UST15CiMgQ09ORklHX1lFTlRBX1RPU0hJQkEgaXMgbm90IHNldApDT05GSUdfUENNQ0lB
+X1BST0JFPXkKQ09ORklHX1BDQ0FSRF9OT05TVEFUSUM9eQpDT05GSUdfSE9UUExVR19QQ0k9eQpD
+T05GSUdfSE9UUExVR19QQ0lfRkFLRT15CkNPTkZJR19IT1RQTFVHX1BDSV9DT01QQVE9eQpDT05G
+SUdfSE9UUExVR19QQ0lfQ09NUEFRX05WUkFNPXkKIyBDT05GSUdfSE9UUExVR19QQ0lfSUJNIGlz
+IG5vdCBzZXQKIyBDT05GSUdfSE9UUExVR19QQ0lfQUNQSSBpcyBub3Qgc2V0CiMgQ09ORklHX0hP
+VFBMVUdfUENJX0NQQ0kgaXMgbm90IHNldAojIENPTkZJR19IT1RQTFVHX1BDSV9TSFBDIGlzIG5v
+dCBzZXQKQ09ORklHX1ZCVVNfUFJPWFk9eQpDT05GSUdfVkJVU19QQ0lCUklER0U9eQoKIwojIEV4
+ZWN1dGFibGUgZmlsZSBmb3JtYXRzIC8gRW11bGF0aW9ucwojCiMgQ09ORklHX0JJTkZNVF9FTEYg
+aXMgbm90IHNldApDT05GSUdfSEFWRV9BT1VUPXkKQ09ORklHX0JJTkZNVF9BT1VUPXkKQ09ORklH
+X0JJTkZNVF9NSVNDPW0KQ09ORklHX0hBVkVfQVRPTUlDX0lPTUFQPXkKQ09ORklHX05FVD15Cgoj
+CiMgTmV0d29ya2luZyBvcHRpb25zCiMKIyBDT05GSUdfUEFDS0VUIGlzIG5vdCBzZXQKIyBDT05G
+SUdfVU5JWCBpcyBub3Qgc2V0CiMgQ09ORklHX05FVF9LRVkgaXMgbm90IHNldAojIENPTkZJR19J
+TkVUIGlzIG5vdCBzZXQKQ09ORklHX05FVFdPUktfU0VDTUFSSz15CiMgQ09ORklHX05FVEZJTFRF
+UiBpcyBub3Qgc2V0CkNPTkZJR19BVE09eQpDT05GSUdfQVRNX0xBTkU9eQpDT05GSUdfU1RQPXkK
+Q09ORklHX0JSSURHRT15CiMgQ09ORklHX05FVF9EU0EgaXMgbm90IHNldApDT05GSUdfVkxBTl84
+MDIxUT1tCiMgQ09ORklHX1ZMQU5fODAyMVFfR1ZSUCBpcyBub3Qgc2V0CkNPTkZJR19ERUNORVQ9
+eQpDT05GSUdfREVDTkVUX1JPVVRFUj15CkNPTkZJR19MTEM9eQpDT05GSUdfTExDMj1tCkNPTkZJ
+R19JUFg9eQpDT05GSUdfSVBYX0lOVEVSTj15CkNPTkZJR19BVEFMSz1tCkNPTkZJR19ERVZfQVBQ
+TEVUQUxLPW0KIyBDT05GSUdfTFRQQyBpcyBub3Qgc2V0CiMgQ09ORklHX0NPUFMgaXMgbm90IHNl
+dApDT05GSUdfSVBERFA9bQpDT05GSUdfSVBERFBfRU5DQVA9eQpDT05GSUdfSVBERFBfREVDQVA9
+eQojIENPTkZJR19YMjUgaXMgbm90IHNldApDT05GSUdfTEFQQj1tCkNPTkZJR19XQU5fUk9VVEVS
+PW0KIyBDT05GSUdfUEhPTkVUIGlzIG5vdCBzZXQKQ09ORklHX0lFRUU4MDIxNTQ9bQojIENPTkZJ
+R19ORVRfU0NIRUQgaXMgbm90IHNldApDT05GSUdfRENCPXkKCiMKIyBOZXR3b3JrIHRlc3RpbmcK
+IwpDT05GSUdfSEFNUkFESU89eQoKIwojIFBhY2tldCBSYWRpbyBwcm90b2NvbHMKIwpDT05GSUdf
+QVgyNT15CkNPTkZJR19BWDI1X0RBTUFfU0xBVkU9eQpDT05GSUdfTkVUUk9NPXkKIyBDT05GSUdf
+Uk9TRSBpcyBub3Qgc2V0CgojCiMgQVguMjUgbmV0d29yayBkZXZpY2UgZHJpdmVycwojCkNPTkZJ
+R19NS0lTUz15CkNPTkZJR182UEFDSz15CkNPTkZJR19CUFFFVEhFUj1tCkNPTkZJR19TQ0M9eQpD
+T05GSUdfU0NDX0RFTEFZPXkKIyBDT05GSUdfU0NDX1RSWEVDSE8gaXMgbm90IHNldApDT05GSUdf
+QkFZQ09NX1NFUl9GRFg9eQojIENPTkZJR19CQVlDT01fU0VSX0hEWCBpcyBub3Qgc2V0CkNPTkZJ
+R19CQVlDT01fUEFSPXkKQ09ORklHX0JBWUNPTV9FUFA9bQpDT05GSUdfWUFNPW0KIyBDT05GSUdf
+Q0FOIGlzIG5vdCBzZXQKQ09ORklHX0lSREE9eQoKIwojIElyREEgcHJvdG9jb2xzCiMKQ09ORklH
+X0lSTEFOPW0KIyBDT05GSUdfSVJORVQgaXMgbm90IHNldAojIENPTkZJR19JUkNPTU0gaXMgbm90
+IHNldApDT05GSUdfSVJEQV9VTFRSQT15CgojCiMgSXJEQSBvcHRpb25zCiMKQ09ORklHX0lSREFf
+Q0FDSEVfTEFTVF9MU0FQPXkKQ09ORklHX0lSREFfRkFTVF9SUj15CkNPTkZJR19JUkRBX0RFQlVH
+PXkKCiMKIyBJbmZyYXJlZC1wb3J0IGRldmljZSBkcml2ZXJzCiMKCiMKIyBTSVIgZGV2aWNlIGRy
+aXZlcnMKIwpDT05GSUdfSVJUVFlfU0lSPW0KCiMKIyBEb25nbGUgc3VwcG9ydAojCkNPTkZJR19E
+T05HTEU9eQpDT05GSUdfRVNJX0RPTkdMRT1tCkNPTkZJR19BQ1RJU1lTX0RPTkdMRT1tCiMgQ09O
+RklHX1RFS1JBTV9ET05HTEUgaXMgbm90IHNldApDT05GSUdfVE9JTTMyMzJfRE9OR0xFPW0KIyBD
+T05GSUdfTElURUxJTktfRE9OR0xFIGlzIG5vdCBzZXQKIyBDT05GSUdfTUE2MDBfRE9OR0xFIGlz
+IG5vdCBzZXQKIyBDT05GSUdfR0lSQklMX0RPTkdMRSBpcyBub3Qgc2V0CkNPTkZJR19NQ1AyMTIw
+X0RPTkdMRT1tCiMgQ09ORklHX09MRF9CRUxLSU5fRE9OR0xFIGlzIG5vdCBzZXQKQ09ORklHX0FD
+VDIwMExfRE9OR0xFPW0KQ09ORklHX0tJTkdTVU5fRE9OR0xFPXkKIyBDT05GSUdfS1NEQVpaTEVf
+RE9OR0xFIGlzIG5vdCBzZXQKQ09ORklHX0tTOTU5X0RPTkdMRT15CgojCiMgRklSIGRldmljZSBk
+cml2ZXJzCiMKIyBDT05GSUdfVVNCX0lSREEgaXMgbm90IHNldAojIENPTkZJR19TSUdNQVRFTF9G
+SVIgaXMgbm90IHNldAojIENPTkZJR19OU0NfRklSIGlzIG5vdCBzZXQKIyBDT05GSUdfV0lOQk9O
+RF9GSVIgaXMgbm90IHNldApDT05GSUdfVE9TSElCQV9GSVI9bQpDT05GSUdfU01DX0lSQ0NfRklS
+PXkKQ09ORklHX0FMSV9GSVI9eQpDT05GSUdfVkxTSV9GSVI9bQpDT05GSUdfVklBX0ZJUj1tCiMg
+Q09ORklHX01DU19GSVIgaXMgbm90IHNldApDT05GSUdfQlQ9bQpDT05GSUdfQlRfTDJDQVA9bQpD
+T05GSUdfQlRfU0NPPW0KQ09ORklHX0JUX1JGQ09NTT1tCkNPTkZJR19CVF9SRkNPTU1fVFRZPXkK
+Q09ORklHX0JUX0JORVA9bQojIENPTkZJR19CVF9CTkVQX01DX0ZJTFRFUiBpcyBub3Qgc2V0CiMg
+Q09ORklHX0JUX0JORVBfUFJPVE9fRklMVEVSIGlzIG5vdCBzZXQKQ09ORklHX0JUX0NNVFA9bQoj
+IENPTkZJR19CVF9ISURQIGlzIG5vdCBzZXQKCiMKIyBCbHVldG9vdGggZGV2aWNlIGRyaXZlcnMK
+IwojIENPTkZJR19CVF9IQ0lCVFVTQiBpcyBub3Qgc2V0CkNPTkZJR19CVF9IQ0lCVFNESU89bQpD
+T05GSUdfQlRfSENJVUFSVD1tCkNPTkZJR19CVF9IQ0lVQVJUX0g0PXkKQ09ORklHX0JUX0hDSVVB
+UlRfQkNTUD15CkNPTkZJR19CVF9IQ0lVQVJUX0xMPXkKQ09ORklHX0JUX0hDSUJDTTIwM1g9bQoj
+IENPTkZJR19CVF9IQ0lCUEExMFggaXMgbm90IHNldAojIENPTkZJR19CVF9IQ0lCRlVTQiBpcyBu
+b3Qgc2V0CiMgQ09ORklHX0JUX0hDSVZIQ0kgaXMgbm90IHNldAojIENPTkZJR19CVF9NUlZMIGlz
+IG5vdCBzZXQKQ09ORklHX0ZJQl9SVUxFUz15CkNPTkZJR19XSVJFTEVTUz15CkNPTkZJR19XSVJF
+TEVTU19FWFQ9eQpDT05GSUdfV0VYVF9DT1JFPXkKQ09ORklHX1dFWFRfU1BZPXkKQ09ORklHX1dF
+WFRfUFJJVj15CkNPTkZJR19DRkc4MDIxMT1tCkNPTkZJR19OTDgwMjExX1RFU1RNT0RFPXkKQ09O
+RklHX0NGRzgwMjExX0RFVkVMT1BFUl9XQVJOSU5HUz15CiMgQ09ORklHX0NGRzgwMjExX1JFR19E
+RUJVRyBpcyBub3Qgc2V0CkNPTkZJR19DRkc4MDIxMV9ERUZBVUxUX1BTX1ZBTFVFPTEKQ09ORklH
+X0NGRzgwMjExX0RFRkFVTFRfUFM9eQpDT05GSUdfQ0ZHODAyMTFfREVCVUdGUz15CkNPTkZJR19X
+SVJFTEVTU19PTERfUkVHVUxBVE9SWT15CkNPTkZJR19DRkc4MDIxMV9XRVhUPXkKQ09ORklHX1dJ
+UkVMRVNTX0VYVF9TWVNGUz15CkNPTkZJR19MSUI4MDIxMT1tCkNPTkZJR19MSUI4MDIxMV9DUllQ
+VF9XRVA9bQpDT05GSUdfTElCODAyMTFfQ1JZUFRfQ0NNUD1tCkNPTkZJR19MSUI4MDIxMV9DUllQ
+VF9US0lQPW0KQ09ORklHX0xJQjgwMjExX0RFQlVHPXkKQ09ORklHX01BQzgwMjExPW0KQ09ORklH
+X01BQzgwMjExX1JDX1BJRD15CkNPTkZJR19NQUM4MDIxMV9SQ19NSU5TVFJFTD15CkNPTkZJR19N
+QUM4MDIxMV9SQ19ERUZBVUxUX1BJRD15CiMgQ09ORklHX01BQzgwMjExX1JDX0RFRkFVTFRfTUlO
+U1RSRUwgaXMgbm90IHNldApDT05GSUdfTUFDODAyMTFfUkNfREVGQVVMVD0icGlkIgojIENPTkZJ
+R19NQUM4MDIxMV9NRVNIIGlzIG5vdCBzZXQKIyBDT05GSUdfTUFDODAyMTFfTEVEUyBpcyBub3Qg
+c2V0CkNPTkZJR19NQUM4MDIxMV9ERUJVR0ZTPXkKQ09ORklHX01BQzgwMjExX0RFQlVHX01FTlU9
+eQojIENPTkZJR19NQUM4MDIxMV9ERUJVR19QQUNLRVRfQUxJR05NRU5UIGlzIG5vdCBzZXQKQ09O
+RklHX01BQzgwMjExX05PSU5MSU5FPXkKQ09ORklHX01BQzgwMjExX1ZFUkJPU0VfREVCVUc9eQpD
+T05GSUdfTUFDODAyMTFfSFRfREVCVUc9eQpDT05GSUdfTUFDODAyMTFfVEtJUF9ERUJVRz15CiMg
+Q09ORklHX01BQzgwMjExX0lCU1NfREVCVUcgaXMgbm90IHNldApDT05GSUdfTUFDODAyMTFfVkVS
+Qk9TRV9QU19ERUJVRz15CkNPTkZJR19NQUM4MDIxMV9ERUJVR19DT1VOVEVSUz15CkNPTkZJR19N
+QUM4MDIxMV9EUklWRVJfQVBJX1RSQUNFUj15CkNPTkZJR19XSU1BWD1tCkNPTkZJR19XSU1BWF9E
+RUJVR19MRVZFTD04CkNPTkZJR19SRktJTEw9bQpDT05GSUdfUkZLSUxMX0lOUFVUPXkKIyBDT05G
+SUdfTkVUXzlQIGlzIG5vdCBzZXQKCiMKIyBEZXZpY2UgRHJpdmVycwojCgojCiMgR2VuZXJpYyBE
+cml2ZXIgT3B0aW9ucwojCkNPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWci
+CkNPTkZJR19TVEFOREFMT05FPXkKQ09ORklHX1BSRVZFTlRfRklSTVdBUkVfQlVJTEQ9eQpDT05G
+SUdfRldfTE9BREVSPXkKQ09ORklHX0ZJUk1XQVJFX0lOX0tFUk5FTD15CkNPTkZJR19FWFRSQV9G
+SVJNV0FSRT0iIgojIENPTkZJR19ERUJVR19EUklWRVIgaXMgbm90IHNldApDT05GSUdfREVCVUdf
+REVWUkVTPXkKIyBDT05GSUdfU1lTX0hZUEVSVklTT1IgaXMgbm90IHNldAojIENPTkZJR19DT05O
+RUNUT1IgaXMgbm90IHNldAojIENPTkZJR19NVEQgaXMgbm90IHNldApDT05GSUdfUEFSUE9SVD15
+CkNPTkZJR19QQVJQT1JUX1BDPW0KQ09ORklHX1BBUlBPUlRfU0VSSUFMPW0KQ09ORklHX1BBUlBP
+UlRfUENfRklGTz15CiMgQ09ORklHX1BBUlBPUlRfUENfU1VQRVJJTyBpcyBub3Qgc2V0CiMgQ09O
+RklHX1BBUlBPUlRfR1NDIGlzIG5vdCBzZXQKQ09ORklHX1BBUlBPUlRfQVg4ODc5Nj1tCkNPTkZJ
+R19QQVJQT1JUXzEyODQ9eQpDT05GSUdfUEFSUE9SVF9OT1RfUEM9eQpDT05GSUdfUE5QPXkKQ09O
+RklHX1BOUF9ERUJVR19NRVNTQUdFUz15CgojCiMgUHJvdG9jb2xzCiMKQ09ORklHX0lTQVBOUD15
+CkNPTkZJR19QTlBCSU9TPXkKQ09ORklHX1BOUEFDUEk9eQojIENPTkZJR19CTEtfREVWIGlzIG5v
+dCBzZXQKQ09ORklHX01JU0NfREVWSUNFUz15CiMgQ09ORklHX0lCTV9BU00gaXMgbm90IHNldApD
+T05GSUdfSFdMQVRfREVURUNUT1I9bQpDT05GSUdfUEhBTlRPTT1tCkNPTkZJR19TR0lfSU9DND15
+CkNPTkZJR19USUZNX0NPUkU9eQpDT05GSUdfVElGTV83WFgxPW0KQ09ORklHX0lDUzkzMlM0MDE9
+eQpDT05GSUdfRU5DTE9TVVJFX1NFUlZJQ0VTPXkKIyBDT05GSUdfSFBfSUxPIGlzIG5vdCBzZXQK
+Q09ORklHX0lTTDI5MDAzPXkKIyBDT05GSUdfRFMxNjgyIGlzIG5vdCBzZXQKQ09ORklHX0MyUE9S
+VD1tCkNPTkZJR19DMlBPUlRfRFVSQU1BUl8yMTUwPW0KCiMKIyBFRVBST00gc3VwcG9ydAojCkNP
+TkZJR19FRVBST01fQVQyND15CkNPTkZJR19FRVBST01fQVQyNT15CkNPTkZJR19FRVBST01fTEVH
+QUNZPXkKQ09ORklHX0VFUFJPTV9NQVg2ODc1PXkKQ09ORklHX0VFUFJPTV85M0NYNj1tCkNPTkZJ
+R19DQjcxMF9DT1JFPW0KQ09ORklHX0NCNzEwX0RFQlVHPXkKQ09ORklHX0NCNzEwX0RFQlVHX0FT
+U1VNUFRJT05TPXkKQ09ORklHX0lXTUMzMjAwVE9QPW0KQ09ORklHX0lXTUMzMjAwVE9QX0RFQlVH
+PXkKQ09ORklHX0lXTUMzMjAwVE9QX0RFQlVHRlM9eQpDT05GSUdfSEFWRV9JREU9eQpDT05GSUdf
+SURFPW0KCiMKIyBQbGVhc2Ugc2VlIERvY3VtZW50YXRpb24vaWRlL2lkZS50eHQgZm9yIGhlbHAv
+aW5mbyBvbiBJREUgZHJpdmVzCiMKQ09ORklHX0lERV9YRkVSX01PREU9eQpDT05GSUdfSURFX1RJ
+TUlOR1M9eQpDT05GSUdfSURFX0FUQVBJPXkKQ09ORklHX0JMS19ERVZfSURFX1NBVEE9eQojIENP
+TkZJR19JREVfR0QgaXMgbm90IHNldApDT05GSUdfQkxLX0RFVl9JREVDRD1tCkNPTkZJR19CTEtf
+REVWX0lERUNEX1ZFUkJPU0VfRVJST1JTPXkKQ09ORklHX0JMS19ERVZfSURFVEFQRT1tCkNPTkZJ
+R19CTEtfREVWX0lERUFDUEk9eQojIENPTkZJR19JREVfVEFTS19JT0NUTCBpcyBub3Qgc2V0Cgoj
+CiMgSURFIGNoaXBzZXQgc3VwcG9ydC9idWdmaXhlcwojCiMgQ09ORklHX0lERV9HRU5FUklDIGlz
+IG5vdCBzZXQKQ09ORklHX0JMS19ERVZfUExBVEZPUk09bQojIENPTkZJR19CTEtfREVWX0NNRDY0
+MCBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX0lERVBOUD1tCkNPTkZJR19CTEtfREVWX0lERURN
+QV9TRkY9eQoKIwojIFBDSSBJREUgY2hpcHNldHMgc3VwcG9ydAojCkNPTkZJR19CTEtfREVWX0lE
+RVBDST15CkNPTkZJR19CTEtfREVWX09GRkJPQVJEPXkKIyBDT05GSUdfQkxLX0RFVl9HRU5FUklD
+IGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9PUFRJNjIxIGlzIG5vdCBzZXQKIyBDT05GSUdf
+QkxLX0RFVl9SWjEwMDAgaXMgbm90IHNldApDT05GSUdfQkxLX0RFVl9JREVETUFfUENJPXkKQ09O
+RklHX0JMS19ERVZfQUVDNjJYWD1tCkNPTkZJR19CTEtfREVWX0FMSTE1WDM9bQojIENPTkZJR19C
+TEtfREVWX0FNRDc0WFggaXMgbm90IHNldApDT05GSUdfQkxLX0RFVl9BVElJWFA9bQpDT05GSUdf
+QkxLX0RFVl9DTUQ2NFg9bQpDT05GSUdfQkxLX0RFVl9UUklGTEVYPW0KIyBDT05GSUdfQkxLX0RF
+Vl9DUzU1MjAgaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX0NTNTUzMCBpcyBub3Qgc2V0CkNP
+TkZJR19CTEtfREVWX0NTNTUzNT1tCkNPTkZJR19CTEtfREVWX0NTNTUzNj1tCiMgQ09ORklHX0JM
+S19ERVZfSFBUMzY2IGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9KTUlDUk9OIGlzIG5vdCBz
+ZXQKQ09ORklHX0JMS19ERVZfU0MxMjAwPW0KIyBDT05GSUdfQkxLX0RFVl9QSUlYIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfQkxLX0RFVl9JVDgxNzIgaXMgbm90IHNldApDT05GSUdfQkxLX0RFVl9JVDgy
+MTM9bQpDT05GSUdfQkxLX0RFVl9JVDgyMVg9bQpDT05GSUdfQkxLX0RFVl9OUzg3NDE1PW0KQ09O
+RklHX0JMS19ERVZfUERDMjAyWFhfT0xEPW0KQ09ORklHX0JMS19ERVZfUERDMjAyWFhfTkVXPW0K
+IyBDT05GSUdfQkxLX0RFVl9TVldLUyBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX1NJSU1BR0U9
+bQpDT05GSUdfQkxLX0RFVl9TSVM1NTEzPW0KQ09ORklHX0JMS19ERVZfU0xDOTBFNjY9bQpDT05G
+SUdfQkxLX0RFVl9UUk0yOTA9bQojIENPTkZJR19CTEtfREVWX1ZJQTgyQ1hYWCBpcyBub3Qgc2V0
+CkNPTkZJR19CTEtfREVWX1RDODZDMDAxPW0KCiMKIyBPdGhlciBJREUgY2hpcHNldHMgc3VwcG9y
+dAojCgojCiMgTm90ZTogbW9zdCBvZiB0aGVzZSBhbHNvIHJlcXVpcmUgc3BlY2lhbCBrZXJuZWwg
+Ym9vdCBwYXJhbWV0ZXJzCiMKQ09ORklHX0JMS19ERVZfNERSSVZFUz1tCiMgQ09ORklHX0JMS19E
+RVZfQUxJMTRYWCBpcyBub3Qgc2V0CiMgQ09ORklHX0JMS19ERVZfRFRDMjI3OCBpcyBub3Qgc2V0
+CiMgQ09ORklHX0JMS19ERVZfSFQ2NTYwQiBpcyBub3Qgc2V0CiMgQ09ORklHX0JMS19ERVZfUUQ2
+NVhYIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9VTUM4NjcyIGlzIG5vdCBzZXQKQ09ORklH
+X0JMS19ERVZfSURFRE1BPXkKCiMKIyBTQ1NJIGRldmljZSBzdXBwb3J0CiMKIyBDT05GSUdfUkFJ
+RF9BVFRSUyBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJPW0KQ09ORklHX1NDU0lfRE1BPXkKQ09ORklH
+X1NDU0lfVEdUPW0KQ09ORklHX1NDU0lfTkVUTElOSz15CgojCiMgU0NTSSBzdXBwb3J0IHR5cGUg
+KGRpc2ssIHRhcGUsIENELVJPTSkKIwojIENPTkZJR19CTEtfREVWX1NEIGlzIG5vdCBzZXQKQ09O
+RklHX0NIUl9ERVZfU1Q9bQpDT05GSUdfQ0hSX0RFVl9PU1NUPW0KQ09ORklHX0JMS19ERVZfU1I9
+bQpDT05GSUdfQkxLX0RFVl9TUl9WRU5ET1I9eQojIENPTkZJR19DSFJfREVWX1NHIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfQ0hSX0RFVl9TQ0ggaXMgbm90IHNldApDT05GSUdfU0NTSV9FTkNMT1NVUkU9
+bQpDT05GSUdfU0NTSV9NVUxUSV9MVU49eQojIENPTkZJR19TQ1NJX0NPTlNUQU5UUyBpcyBub3Qg
+c2V0CkNPTkZJR19TQ1NJX0xPR0dJTkc9eQojIENPTkZJR19TQ1NJX1NDQU5fQVNZTkMgaXMgbm90
+IHNldApDT05GSUdfU0NTSV9XQUlUX1NDQU49bQoKIwojIFNDU0kgVHJhbnNwb3J0cwojCkNPTkZJ
+R19TQ1NJX1NQSV9BVFRSUz1tCkNPTkZJR19TQ1NJX0ZDX0FUVFJTPW0KQ09ORklHX1NDU0lfRkNf
+VEdUX0FUVFJTPXkKQ09ORklHX1NDU0lfSVNDU0lfQVRUUlM9bQpDT05GSUdfU0NTSV9TQVNfQVRU
+UlM9bQpDT05GSUdfU0NTSV9TQVNfTElCU0FTPW0KQ09ORklHX1NDU0lfU0FTX0hPU1RfU01QPXkK
+Q09ORklHX1NDU0lfU0FTX0xJQlNBU19ERUJVRz15CkNPTkZJR19TQ1NJX1NSUF9BVFRSUz1tCkNP
+TkZJR19TQ1NJX1NSUF9UR1RfQVRUUlM9eQpDT05GSUdfU0NTSV9MT1dMRVZFTD15CkNPTkZJR19T
+Q1NJX0JOWDJfSVNDU0k9bQpDT05GSUdfQkUySVNDU0k9bQpDT05GSUdfQkxLX0RFVl8zV19YWFhY
+X1JBSUQ9bQojIENPTkZJR19TQ1NJXzNXXzlYWFggaXMgbm90IHNldApDT05GSUdfU0NTSV8zV19T
+QVM9bQpDT05GSUdfU0NTSV83MDAwRkFTU1Q9bQpDT05GSUdfU0NTSV9BQ0FSRD1tCiMgQ09ORklH
+X1NDU0lfQUhBMTUyWCBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJX0FIQTE1NDI9bQpDT05GSUdfU0NT
+SV9BSEExNzQwPW0KQ09ORklHX1NDU0lfQUFDUkFJRD1tCkNPTkZJR19TQ1NJX0FJQzdYWFg9bQpD
+T05GSUdfQUlDN1hYWF9DTURTX1BFUl9ERVZJQ0U9MzIKQ09ORklHX0FJQzdYWFhfUkVTRVRfREVM
+QVlfTVM9NTAwMApDT05GSUdfQUlDN1hYWF9ERUJVR19FTkFCTEU9eQpDT05GSUdfQUlDN1hYWF9E
+RUJVR19NQVNLPTAKQ09ORklHX0FJQzdYWFhfUkVHX1BSRVRUWV9QUklOVD15CiMgQ09ORklHX1ND
+U0lfQUlDN1hYWF9PTEQgaXMgbm90IHNldApDT05GSUdfU0NTSV9BSUM3OVhYPW0KQ09ORklHX0FJ
+Qzc5WFhfQ01EU19QRVJfREVWSUNFPTMyCkNPTkZJR19BSUM3OVhYX1JFU0VUX0RFTEFZX01TPTUw
+MDAKIyBDT05GSUdfQUlDNzlYWF9ERUJVR19FTkFCTEUgaXMgbm90IHNldApDT05GSUdfQUlDNzlY
+WF9ERUJVR19NQVNLPTAKQ09ORklHX0FJQzc5WFhfUkVHX1BSRVRUWV9QUklOVD15CiMgQ09ORklH
+X1NDU0lfQUlDOTRYWCBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJX01WU0FTPW0KIyBDT05GSUdfU0NT
+SV9NVlNBU19ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJX0RQVF9JMk89bQojIENPTkZJR19T
+Q1NJX0FEVkFOU1lTIGlzIG5vdCBzZXQKQ09ORklHX1NDU0lfSU4yMDAwPW0KQ09ORklHX1NDU0lf
+QVJDTVNSPW0KIyBDT05GSUdfTUVHQVJBSURfTkVXR0VOIGlzIG5vdCBzZXQKQ09ORklHX01FR0FS
+QUlEX0xFR0FDWT1tCkNPTkZJR19NRUdBUkFJRF9TQVM9bQpDT05GSUdfU0NTSV9NUFQyU0FTPW0K
+Q09ORklHX1NDU0lfTVBUMlNBU19NQVhfU0dFPTEyOApDT05GSUdfU0NTSV9NUFQyU0FTX0xPR0dJ
+Tkc9eQpDT05GSUdfU0NTSV9IUFRJT1A9bQpDT05GSUdfU0NTSV9CVVNMT0dJQz1tCiMgQ09ORklH
+X1NDU0lfRkxBU0hQT0lOVCBpcyBub3Qgc2V0CkNPTkZJR19WTVdBUkVfUFZTQ1NJPW0KQ09ORklH
+X0xJQkZDPW0KIyBDT05GSUdfTElCRkNPRSBpcyBub3Qgc2V0CiMgQ09ORklHX0ZDT0UgaXMgbm90
+IHNldApDT05GSUdfRkNPRV9GTklDPW0KIyBDT05GSUdfU0NTSV9ETVgzMTkxRCBpcyBub3Qgc2V0
+CkNPTkZJR19TQ1NJX0RUQzMyODA9bQojIENPTkZJR19TQ1NJX0VBVEEgaXMgbm90IHNldApDT05G
+SUdfU0NTSV9GVVRVUkVfRE9NQUlOPW0KIyBDT05GSUdfU0NTSV9GRF9NQ1MgaXMgbm90IHNldAoj
+IENPTkZJR19TQ1NJX0dEVEggaXMgbm90IHNldApDT05GSUdfU0NTSV9HRU5FUklDX05DUjUzODA9
+bQpDT05GSUdfU0NTSV9HRU5FUklDX05DUjUzODBfTU1JTz1tCkNPTkZJR19TQ1NJX0dFTkVSSUNf
+TkNSNTNDNDAwPXkKQ09ORklHX1NDU0lfSUJNTUNBPW0KQ09ORklHX0lCTU1DQV9TQ1NJX09SREVS
+X1NUQU5EQVJEPXkKQ09ORklHX0lCTU1DQV9TQ1NJX0RFVl9SRVNFVD15CkNPTkZJR19TQ1NJX0lQ
+Uz1tCkNPTkZJR19TQ1NJX0lOSVRJTz1tCkNPTkZJR19TQ1NJX0lOSUExMDA9bQojIENPTkZJR19T
+Q1NJX1BQQSBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJX0lNTT1tCkNPTkZJR19TQ1NJX0laSVBfRVBQ
+MTY9eQojIENPTkZJR19TQ1NJX0laSVBfU0xPV19DVFIgaXMgbm90IHNldApDT05GSUdfU0NTSV9O
+Q1I1M0M0MDZBPW0KQ09ORklHX1NDU0lfTkNSX0Q3MDA9bQojIENPTkZJR19TQ1NJX1NURVggaXMg
+bm90IHNldAojIENPTkZJR19TQ1NJX1NZTTUzQzhYWF8yIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NT
+SV9OQ1JfUTcyMCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfUEFTMTYgaXMgbm90IHNldAojIENP
+TkZJR19TQ1NJX1FMT0dJQ19GQVMgaXMgbm90IHNldApDT05GSUdfU0NTSV9RTE9HSUNfMTI4MD1t
+CkNPTkZJR19TQ1NJX1FMQV9GQz1tCkNPTkZJR19TQ1NJX1FMQV9JU0NTST1tCiMgQ09ORklHX1ND
+U0lfTFBGQyBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfU0lNNzEwIGlzIG5vdCBzZXQKQ09ORklH
+X1NDU0lfU1lNNTNDNDE2PW0KQ09ORklHX1NDU0lfREMzOTV4PW0KIyBDT05GSUdfU0NTSV9EQzM5
+MFQgaXMgbm90IHNldApDT05GSUdfU0NTSV9UMTI4PW0KQ09ORklHX1NDU0lfVTE0XzM0Rj1tCkNP
+TkZJR19TQ1NJX1UxNF8zNEZfVEFHR0VEX1FVRVVFPXkKIyBDT05GSUdfU0NTSV9VMTRfMzRGX0xJ
+TktFRF9DT01NQU5EUyBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJX1UxNF8zNEZfTUFYX1RBR1M9OAoj
+IENPTkZJR19TQ1NJX1VMVFJBU1RPUiBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJX05TUDMyPW0KIyBD
+T05GSUdfU0NTSV9ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJX1BNQ1JBSUQ9bQpDT05GSUdf
+U0NTSV9QTTgwMDE9bQpDT05GSUdfU0NTSV9TUlA9bQpDT05GSUdfU0NTSV9CRkFfRkM9bQojIENP
+TkZJR19TQ1NJX0RIIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9PU0RfSU5JVElBVE9SIGlzIG5v
+dCBzZXQKIyBDT05GSUdfQVRBIGlzIG5vdCBzZXQKIyBDT05GSUdfTUQgaXMgbm90IHNldAojIENP
+TkZJR19GVVNJT04gaXMgbm90IHNldAoKIwojIElFRUUgMTM5NCAoRmlyZVdpcmUpIHN1cHBvcnQK
+IwoKIwojIFlvdSBjYW4gZW5hYmxlIG9uZSBvciBib3RoIEZpcmVXaXJlIGRyaXZlciBzdGFja3Mu
+CiMKCiMKIyBTZWUgdGhlIGhlbHAgdGV4dHMgZm9yIG1vcmUgaW5mb3JtYXRpb24uCiMKIyBDT05G
+SUdfRklSRVdJUkUgaXMgbm90IHNldAojIENPTkZJR19JRUVFMTM5NCBpcyBub3Qgc2V0CiMgQ09O
+RklHX0kyTyBpcyBub3Qgc2V0CiMgQ09ORklHX01BQ0lOVE9TSF9EUklWRVJTIGlzIG5vdCBzZXQK
+Q09ORklHX05FVERFVklDRVM9eQpDT05GSUdfRFVNTVk9eQpDT05GSUdfTUFDVkxBTj15CkNPTkZJ
+R19FUVVBTElaRVI9eQojIENPTkZJR19UVU4gaXMgbm90IHNldApDT05GSUdfVkVUSD1tCkNPTkZJ
+R19ORVRfU0IxMDAwPW0KQ09ORklHX0FSQ05FVD15CiMgQ09ORklHX0FSQ05FVF8xMjAxIGlzIG5v
+dCBzZXQKQ09ORklHX0FSQ05FVF8xMDUxPXkKQ09ORklHX0FSQ05FVF9SQVc9bQojIENPTkZJR19B
+UkNORVRfQ0FQIGlzIG5vdCBzZXQKQ09ORklHX0FSQ05FVF9DT005MHh4PW0KQ09ORklHX0FSQ05F
+VF9DT005MHh4SU89eQpDT05GSUdfQVJDTkVUX1JJTV9JPXkKIyBDT05GSUdfQVJDTkVUX0NPTTIw
+MDIwIGlzIG5vdCBzZXQKQ09ORklHX1BIWUxJQj15CgojCiMgTUlJIFBIWSBkZXZpY2UgZHJpdmVy
+cwojCkNPTkZJR19NQVJWRUxMX1BIWT15CkNPTkZJR19EQVZJQ09NX1BIWT15CkNPTkZJR19RU0VN
+SV9QSFk9bQojIENPTkZJR19MWFRfUEhZIGlzIG5vdCBzZXQKQ09ORklHX0NJQ0FEQV9QSFk9eQoj
+IENPTkZJR19WSVRFU1NFX1BIWSBpcyBub3Qgc2V0CkNPTkZJR19TTVNDX1BIWT15CkNPTkZJR19C
+Uk9BRENPTV9QSFk9eQojIENPTkZJR19JQ1BMVVNfUEhZIGlzIG5vdCBzZXQKIyBDT05GSUdfUkVB
+TFRFS19QSFkgaXMgbm90IHNldApDT05GSUdfTkFUSU9OQUxfUEhZPXkKQ09ORklHX1NURTEwWFA9
+eQojIENPTkZJR19MU0lfRVQxMDExQ19QSFkgaXMgbm90IHNldAojIENPTkZJR19GSVhFRF9QSFkg
+aXMgbm90IHNldApDT05GSUdfTURJT19CSVRCQU5HPXkKIyBDT05GSUdfTURJT19HUElPIGlzIG5v
+dCBzZXQKQ09ORklHX05FVF9FVEhFUk5FVD15CkNPTkZJR19NSUk9eQojIENPTkZJR19IQVBQWU1F
+QUwgaXMgbm90IHNldApDT05GSUdfU1VOR0VNPW0KQ09ORklHX0NBU1NJTkk9eQojIENPTkZJR19O
+RVRfVkVORE9SXzNDT00gaXMgbm90IHNldAojIENPTkZJR19MQU5DRSBpcyBub3Qgc2V0CkNPTkZJ
+R19ORVRfVkVORE9SX1NNQz15CiMgQ09ORklHX1dEODB4MyBpcyBub3Qgc2V0CkNPTkZJR19VTFRS
+QU1DQT15CiMgQ09ORklHX1VMVFJBIGlzIG5vdCBzZXQKQ09ORklHX1VMVFJBMzI9eQpDT05GSUdf
+U01DOTE5ND1tCkNPTkZJR19FTkMyOEo2MD1tCiMgQ09ORklHX0VOQzI4SjYwX1dSSVRFVkVSSUZZ
+IGlzIG5vdCBzZXQKIyBDT05GSUdfRVRIT0MgaXMgbm90IHNldApDT05GSUdfTkVUX1ZFTkRPUl9S
+QUNBTD15CkNPTkZJR19OSTUyPW0KIyBDT05GSUdfTkk2NSBpcyBub3Qgc2V0CkNPTkZJR19ETkVU
+PW0KIyBDT05GSUdfTkVUX1RVTElQIGlzIG5vdCBzZXQKIyBDT05GSUdfQVQxNzAwIGlzIG5vdCBz
+ZXQKQ09ORklHX0RFUENBPXkKQ09ORklHX0hQMTAwPW0KIyBDT05GSUdfTkVUX0lTQSBpcyBub3Qg
+c2V0CiMgQ09ORklHX05FMl9NQ0EgaXMgbm90IHNldApDT05GSUdfSUJNTEFOQT1tCiMgQ09ORklH
+X0lCTV9ORVdfRU1BQ19aTUlJIGlzIG5vdCBzZXQKIyBDT05GSUdfSUJNX05FV19FTUFDX1JHTUlJ
+IGlzIG5vdCBzZXQKIyBDT05GSUdfSUJNX05FV19FTUFDX1RBSCBpcyBub3Qgc2V0CiMgQ09ORklH
+X0lCTV9ORVdfRU1BQ19FTUFDNCBpcyBub3Qgc2V0CiMgQ09ORklHX0lCTV9ORVdfRU1BQ19OT19G
+TE9XX0NUUkwgaXMgbm90IHNldAojIENPTkZJR19JQk1fTkVXX0VNQUNfTUFMX0NMUl9JQ0lOVFNU
+QVQgaXMgbm90IHNldAojIENPTkZJR19JQk1fTkVXX0VNQUNfTUFMX0NPTU1PTl9FUlIgaXMgbm90
+IHNldApDT05GSUdfTkVUX1BDST15CiMgQ09ORklHX1BDTkVUMzIgaXMgbm90IHNldApDT05GSUdf
+QU1EODExMV9FVEg9bQpDT05GSUdfQURBUFRFQ19TVEFSRklSRT1tCkNPTkZJR19BQzMyMDA9bQpD
+T05GSUdfQVBSSUNPVD15CkNPTkZJR19CNDQ9eQpDT05GSUdfQjQ0X1BDSV9BVVRPU0VMRUNUPXkK
+Q09ORklHX0I0NF9QQ0lDT1JFX0FVVE9TRUxFQ1Q9eQpDT05GSUdfQjQ0X1BDST15CkNPTkZJR19G
+T1JDRURFVEg9eQojIENPTkZJR19GT1JDRURFVEhfTkFQSSBpcyBub3Qgc2V0CkNPTkZJR19DUzg5
+eDA9bQpDT05GSUdfRTEwMD15CiMgQ09ORklHX0xORTM5MCBpcyBub3Qgc2V0CkNPTkZJR19GRUFM
+Tlg9bQpDT05GSUdfTkFUU0VNST15CiMgQ09ORklHX05FMktfUENJIGlzIG5vdCBzZXQKQ09ORklH
+X05FMzIxMD15CkNPTkZJR19FUzMyMTA9bQpDT05GSUdfODEzOUNQPXkKIyBDT05GSUdfODEzOVRP
+TyBpcyBub3Qgc2V0CkNPTkZJR19SNjA0MD1tCkNPTkZJR19TSVM5MDA9eQpDT05GSUdfRVBJQzEw
+MD15CkNPTkZJR19TTVNDOTQyMD15CkNPTkZJR19TVU5EQU5DRT1tCkNPTkZJR19TVU5EQU5DRV9N
+TUlPPXkKIyBDT05GSUdfVExBTiBpcyBub3Qgc2V0CkNPTkZJR19LUzg4NDI9eQojIENPTkZJR19L
+Uzg4NTEgaXMgbm90IHNldApDT05GSUdfS1M4ODUxX01MTD1tCkNPTkZJR19WSUFfUkhJTkU9eQpD
+T05GSUdfVklBX1JISU5FX01NSU89eQpDT05GSUdfU0M5MjAzMT15CkNPTkZJR19ORVRfUE9DS0VU
+PXkKIyBDT05GSUdfQVRQIGlzIG5vdCBzZXQKQ09ORklHX0RFNjAwPXkKQ09ORklHX0RFNjIwPXkK
+Q09ORklHX0FUTDI9bQpDT05GSUdfTkVUREVWXzEwMDA9eQpDT05GSUdfQUNFTklDPXkKIyBDT05G
+SUdfQUNFTklDX09NSVRfVElHT05fSSBpcyBub3Qgc2V0CkNPTkZJR19ETDJLPW0KIyBDT05GSUdf
+RTEwMDAgaXMgbm90IHNldAojIENPTkZJR19FMTAwMEUgaXMgbm90IHNldAojIENPTkZJR19JUDEw
+MDAgaXMgbm90IHNldApDT05GSUdfSUdCPW0KIyBDT05GSUdfSUdCVkYgaXMgbm90IHNldAojIENP
+TkZJR19OUzgzODIwIGlzIG5vdCBzZXQKIyBDT05GSUdfSEFNQUNISSBpcyBub3Qgc2V0CkNPTkZJ
+R19ZRUxMT1dGSU49bQpDT05GSUdfUjgxNjk9bQojIENPTkZJR19SODE2OV9WTEFOIGlzIG5vdCBz
+ZXQKQ09ORklHX1NJUzE5MD1tCkNPTkZJR19TS0dFPW0KIyBDT05GSUdfU0tHRV9ERUJVRyBpcyBu
+b3Qgc2V0CkNPTkZJR19TS1kyPW0KIyBDT05GSUdfU0tZMl9ERUJVRyBpcyBub3Qgc2V0CiMgQ09O
+RklHX1ZJQV9WRUxPQ0lUWSBpcyBub3Qgc2V0CkNPTkZJR19USUdPTjM9bQpDT05GSUdfQk5YMj1t
+CkNPTkZJR19DTklDPW0KQ09ORklHX1FMQTNYWFg9bQpDT05GSUdfQVRMMT15CiMgQ09ORklHX0FU
+TDFFIGlzIG5vdCBzZXQKQ09ORklHX0FUTDFDPXkKQ09ORklHX0pNRT1tCiMgQ09ORklHX05FVERF
+Vl8xMDAwMCBpcyBub3Qgc2V0CiMgQ09ORklHX1RSIGlzIG5vdCBzZXQKQ09ORklHX1dMQU49eQpD
+T05GSUdfTElCRVJUQVNfVEhJTkZJUk09bQojIENPTkZJR19MSUJFUlRBU19USElORklSTV9VU0Ig
+aXMgbm90IHNldApDT05GSUdfQUlSTz15CkNPTkZJR19BVE1FTD1tCkNPTkZJR19QQ0lfQVRNRUw9
+bQojIENPTkZJR19BVDc2QzUwWF9VU0IgaXMgbm90IHNldAojIENPTkZJR19QUklTTTU0IGlzIG5v
+dCBzZXQKIyBDT05GSUdfVVNCX1pEMTIwMSBpcyBub3Qgc2V0CkNPTkZJR19VU0JfTkVUX1JORElT
+X1dMQU49bQpDT05GSUdfUlRMODE4MD1tCiMgQ09ORklHX1JUTDgxODcgaXMgbm90IHNldAojIENP
+TkZJR19BRE04MjExIGlzIG5vdCBzZXQKIyBDT05GSUdfTUFDODAyMTFfSFdTSU0gaXMgbm90IHNl
+dApDT05GSUdfTVdMOEs9bQojIENPTkZJR19BVEhfQ09NTU9OIGlzIG5vdCBzZXQKQ09ORklHX0I0
+Mz1tCkNPTkZJR19CNDNfUENJX0FVVE9TRUxFQ1Q9eQpDT05GSUdfQjQzX1BDSUNPUkVfQVVUT1NF
+TEVDVD15CkNPTkZJR19CNDNfU0RJTz15CkNPTkZJR19CNDNfUElPPXkKQ09ORklHX0I0M19QSFlf
+TFA9eQpDT05GSUdfQjQzX0hXUk5HPXkKIyBDT05GSUdfQjQzX0RFQlVHIGlzIG5vdCBzZXQKQ09O
+RklHX0I0M0xFR0FDWT1tCkNPTkZJR19CNDNMRUdBQ1lfUENJX0FVVE9TRUxFQ1Q9eQpDT05GSUdf
+QjQzTEVHQUNZX1BDSUNPUkVfQVVUT1NFTEVDVD15CkNPTkZJR19CNDNMRUdBQ1lfSFdSTkc9eQpD
+T05GSUdfQjQzTEVHQUNZX0RFQlVHPXkKQ09ORklHX0I0M0xFR0FDWV9ETUE9eQojIENPTkZJR19C
+NDNMRUdBQ1lfRE1BX0FORF9QSU9fTU9ERSBpcyBub3Qgc2V0CkNPTkZJR19CNDNMRUdBQ1lfRE1B
+X01PREU9eQojIENPTkZJR19CNDNMRUdBQ1lfUElPX01PREUgaXMgbm90IHNldApDT05GSUdfSE9T
+VEFQPW0KQ09ORklHX0hPU1RBUF9GSVJNV0FSRT15CkNPTkZJR19IT1NUQVBfRklSTVdBUkVfTlZS
+QU09eQpDT05GSUdfSE9TVEFQX1BMWD1tCkNPTkZJR19IT1NUQVBfUENJPW0KIyBDT05GSUdfSVBX
+MjEwMCBpcyBub3Qgc2V0CkNPTkZJR19JUFcyMjAwPW0KQ09ORklHX0lQVzIyMDBfTU9OSVRPUj15
+CiMgQ09ORklHX0lQVzIyMDBfUkFESU9UQVAgaXMgbm90IHNldAojIENPTkZJR19JUFcyMjAwX1BS
+T01JU0NVT1VTIGlzIG5vdCBzZXQKQ09ORklHX0lQVzIyMDBfUU9TPXkKQ09ORklHX0lQVzIyMDBf
+REVCVUc9eQpDT05GSUdfTElCSVBXPW0KQ09ORklHX0xJQklQV19ERUJVRz15CiMgQ09ORklHX0lX
+TFdJRkkgaXMgbm90IHNldAojIENPTkZJR19JV00gaXMgbm90IHNldApDT05GSUdfTElCRVJUQVM9
+bQpDT05GSUdfTElCRVJUQVNfVVNCPW0KQ09ORklHX0xJQkVSVEFTX1NESU89bQpDT05GSUdfTElC
+RVJUQVNfU1BJPW0KQ09ORklHX0xJQkVSVEFTX0RFQlVHPXkKQ09ORklHX0hFUk1FUz1tCiMgQ09O
+RklHX0hFUk1FU19DQUNIRV9GV19PTl9JTklUIGlzIG5vdCBzZXQKQ09ORklHX1BMWF9IRVJNRVM9
+bQpDT05GSUdfVE1EX0hFUk1FUz1tCkNPTkZJR19OT1JURUxfSEVSTUVTPW0KQ09ORklHX1BDSV9I
+RVJNRVM9bQpDT05GSUdfUDU0X0NPTU1PTj1tCkNPTkZJR19QNTRfVVNCPW0KQ09ORklHX1A1NF9Q
+Q0k9bQojIENPTkZJR19QNTRfU1BJIGlzIG5vdCBzZXQKIyBDT05GSUdfUlQyWDAwIGlzIG5vdCBz
+ZXQKQ09ORklHX1dMMTJYWD1tCiMgQ09ORklHX1dMMTI1MSBpcyBub3Qgc2V0CiMgQ09ORklHX1dM
+MTI3MSBpcyBub3Qgc2V0CkNPTkZJR19aRDEyMTFSVz1tCiMgQ09ORklHX1pEMTIxMVJXX0RFQlVH
+IGlzIG5vdCBzZXQKCiMKIyBXaU1BWCBXaXJlbGVzcyBCcm9hZGJhbmQgZGV2aWNlcwojCkNPTkZJ
+R19XSU1BWF9JMjQwME09bQojIENPTkZJR19XSU1BWF9JMjQwME1fVVNCIGlzIG5vdCBzZXQKQ09O
+RklHX1dJTUFYX0kyNDAwTV9TRElPPW0KQ09ORklHX1dJTUFYX0lXTUMzMjAwX1NESU89eQpDT05G
+SUdfV0lNQVhfSTI0MDBNX0RFQlVHX0xFVkVMPTgKCiMKIyBVU0IgTmV0d29yayBBZGFwdGVycwoj
+CkNPTkZJR19VU0JfQ0FUQz1tCkNPTkZJR19VU0JfS0FXRVRIPW0KQ09ORklHX1VTQl9QRUdBU1VT
+PXkKIyBDT05GSUdfVVNCX1JUTDgxNTAgaXMgbm90IHNldApDT05GSUdfVVNCX1VTQk5FVD15CkNP
+TkZJR19VU0JfTkVUX0FYODgxN1g9eQpDT05GSUdfVVNCX05FVF9DRENFVEhFUj15CkNPTkZJR19V
+U0JfTkVUX0NEQ19FRU09bQojIENPTkZJR19VU0JfTkVUX0RNOTYwMSBpcyBub3Qgc2V0CiMgQ09O
+RklHX1VTQl9ORVRfU01TQzk1WFggaXMgbm90IHNldApDT05GSUdfVVNCX05FVF9HTDYyMEE9eQoj
+IENPTkZJR19VU0JfTkVUX05FVDEwODAgaXMgbm90IHNldApDT05GSUdfVVNCX05FVF9QTFVTQj1t
+CiMgQ09ORklHX1VTQl9ORVRfTUNTNzgzMCBpcyBub3Qgc2V0CkNPTkZJR19VU0JfTkVUX1JORElT
+X0hPU1Q9bQpDT05GSUdfVVNCX05FVF9DRENfU1VCU0VUPXkKQ09ORklHX1VTQl9BTElfTTU2MzI9
+eQpDT05GSUdfVVNCX0FOMjcyMD15CiMgQ09ORklHX1VTQl9CRUxLSU4gaXMgbm90IHNldApDT05G
+SUdfVVNCX0FSTUxJTlVYPXkKIyBDT05GSUdfVVNCX0VQU09OMjg4OCBpcyBub3Qgc2V0CkNPTkZJ
+R19VU0JfS0MyMTkwPXkKQ09ORklHX1VTQl9ORVRfWkFVUlVTPXkKQ09ORklHX1VTQl9IU089bQpD
+T05GSUdfVVNCX05FVF9JTlQ1MVgxPXkKQ09ORklHX1dBTj15CkNPTkZJR19DT1NBPW0KIyBDT05G
+SUdfTEFOTUVESUEgaXMgbm90IHNldApDT05GSUdfSERMQz15CkNPTkZJR19IRExDX1JBVz1tCkNP
+TkZJR19IRExDX1JBV19FVEg9bQpDT05GSUdfSERMQ19DSVNDTz15CiMgQ09ORklHX0hETENfRlIg
+aXMgbm90IHNldApDT05GSUdfSERMQ19QUFA9eQoKIwojIFguMjUvTEFQQiBzdXBwb3J0IGlzIGRp
+c2FibGVkCiMKQ09ORklHX1BDSTIwMFNZTj1tCiMgQ09ORklHX1dBTlhMIGlzIG5vdCBzZXQKQ09O
+RklHX1BDMzAwVE9PPXkKQ09ORklHX04yPW0KQ09ORklHX0MxMDE9bQojIENPTkZJR19GQVJTWU5D
+IGlzIG5vdCBzZXQKQ09ORklHX0RTQ0M0PW0KQ09ORklHX0RTQ0M0X1BDSVNZTkM9eQojIENPTkZJ
+R19EU0NDNF9QQ0lfUlNUIGlzIG5vdCBzZXQKIyBDT05GSUdfRExDSSBpcyBub3Qgc2V0CkNPTkZJ
+R19XQU5fUk9VVEVSX0RSSVZFUlM9bQpDT05GSUdfQ1lDTEFERVNfU1lOQz1tCiMgQ09ORklHX0NZ
+Q0xPTVhfWDI1IGlzIG5vdCBzZXQKQ09ORklHX1NCTkk9bQojIENPTkZJR19TQk5JX01VTFRJTElO
+RSBpcyBub3Qgc2V0CkNPTkZJR19BVE1fRFJJVkVSUz15CkNPTkZJR19BVE1fRFVNTVk9eQojIENP
+TkZJR19BVE1fTEFOQUkgaXMgbm90IHNldApDT05GSUdfQVRNX0VOST1tCiMgQ09ORklHX0FUTV9F
+TklfREVCVUcgaXMgbm90IHNldApDT05GSUdfQVRNX0VOSV9UVU5FX0JVUlNUPXkKQ09ORklHX0FU
+TV9FTklfQlVSU1RfVFhfMTZXPXkKQ09ORklHX0FUTV9FTklfQlVSU1RfVFhfOFc9eQpDT05GSUdf
+QVRNX0VOSV9CVVJTVF9UWF80Vz15CiMgQ09ORklHX0FUTV9FTklfQlVSU1RfVFhfMlcgaXMgbm90
+IHNldApDT05GSUdfQVRNX0VOSV9CVVJTVF9SWF8xNlc9eQpDT05GSUdfQVRNX0VOSV9CVVJTVF9S
+WF84Vz15CkNPTkZJR19BVE1fRU5JX0JVUlNUX1JYXzRXPXkKQ09ORklHX0FUTV9FTklfQlVSU1Rf
+UlhfMlc9eQpDT05GSUdfQVRNX0ZJUkVTVFJFQU09eQpDT05GSUdfQVRNX1pBVE09bQojIENPTkZJ
+R19BVE1fWkFUTV9ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19BVE1fTklDU1RBUj15CkNPTkZJR19B
+VE1fTklDU1RBUl9VU0VfU1VOST15CiMgQ09ORklHX0FUTV9OSUNTVEFSX1VTRV9JRFQ3NzEwNSBp
+cyBub3Qgc2V0CkNPTkZJR19BVE1fSURUNzcyNTI9eQojIENPTkZJR19BVE1fSURUNzcyNTJfREVC
+VUcgaXMgbm90IHNldAojIENPTkZJR19BVE1fSURUNzcyNTJfUkNWX0FMTCBpcyBub3Qgc2V0CkNP
+TkZJR19BVE1fSURUNzcyNTJfVVNFX1NVTkk9eQojIENPTkZJR19BVE1fQU1CQVNTQURPUiBpcyBu
+b3Qgc2V0CiMgQ09ORklHX0FUTV9IT1JJWk9OIGlzIG5vdCBzZXQKQ09ORklHX0FUTV9JQT1tCkNP
+TkZJR19BVE1fSUFfREVCVUc9eQpDT05GSUdfQVRNX0ZPUkUyMDBFPXkKQ09ORklHX0FUTV9GT1JF
+MjAwRV9VU0VfVEFTS0xFVD15CkNPTkZJR19BVE1fRk9SRTIwMEVfVFhfUkVUUlk9MTYKQ09ORklH
+X0FUTV9GT1JFMjAwRV9ERUJVRz0wCkNPTkZJR19BVE1fSEU9bQojIENPTkZJR19BVE1fSEVfVVNF
+X1NVTkkgaXMgbm90IHNldApDT05GSUdfQVRNX1NPTE9TPW0KQ09ORklHX0lFRUU4MDIxNTRfRFJJ
+VkVSUz1tCkNPTkZJR19JRUVFODAyMTU0X0ZBS0VIQVJEPW0KQ09ORklHX0ZEREk9bQpDT05GSUdf
+REVGWFg9bQojIENPTkZJR19ERUZYWF9NTUlPIGlzIG5vdCBzZXQKIyBDT05GSUdfU0tGUCBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1BMSVAgaXMgbm90IHNldApDT05GSUdfUFBQPXkKQ09ORklHX1BQUF9N
+VUxUSUxJTks9eQpDT05GSUdfUFBQX0ZJTFRFUj15CkNPTkZJR19QUFBfQVNZTkM9eQpDT05GSUdf
+UFBQX1NZTkNfVFRZPW0KIyBDT05GSUdfUFBQX0RFRkxBVEUgaXMgbm90IHNldApDT05GSUdfUFBQ
+X0JTRENPTVA9eQojIENPTkZJR19QUFBfTVBQRSBpcyBub3Qgc2V0CkNPTkZJR19QUFBPRT15CkNP
+TkZJR19QUFBPQVRNPW0KIyBDT05GSUdfU0xJUCBpcyBub3Qgc2V0CkNPTkZJR19TTEhDPXkKQ09O
+RklHX05FVF9GQz15CkNPTkZJR19ORVRDT05TT0xFPXkKQ09ORklHX05FVENPTlNPTEVfRFlOQU1J
+Qz15CkNPTkZJR19ORVRQT0xMPXkKQ09ORklHX05FVFBPTExfVFJBUD15CkNPTkZJR19ORVRfUE9M
+TF9DT05UUk9MTEVSPXkKQ09ORklHX1ZCVVNfRU5FVD1tCkNPTkZJR19WQlVTX0VORVRfREVCVUc9
+eQpDT05GSUdfSVNETj15CkNPTkZJR19JU0ROX0k0TD15CkNPTkZJR19NSVNETj15CiMgQ09ORklH
+X01JU0ROX0RTUCBpcyBub3Qgc2V0CkNPTkZJR19NSVNETl9MMU9JUD1tCgojCiMgbUlTRE4gaGFy
+ZHdhcmUgZHJpdmVycwojCiMgQ09ORklHX01JU0ROX0hGQ1BDSSBpcyBub3Qgc2V0CkNPTkZJR19N
+SVNETl9IRkNNVUxUST15CiMgQ09ORklHX01JU0ROX0hGQ1VTQiBpcyBub3Qgc2V0CkNPTkZJR19N
+SVNETl9BVk1GUklUWj15CkNPTkZJR19NSVNETl9TUEVFREZBWD1tCkNPTkZJR19NSVNETl9JTkZJ
+TkVPTj15CkNPTkZJR19NSVNETl9XNjY5Mj15CkNPTkZJR19NSVNETl9ORVRKRVQ9bQpDT05GSUdf
+TUlTRE5fSVBBQz15CkNPTkZJR19NSVNETl9JU0FSPW0KQ09ORklHX0lTRE5fQVVESU89eQpDT05G
+SUdfSVNETl9UVFlfRkFYPXkKCiMKIyBJU0ROIGZlYXR1cmUgc3VibW9kdWxlcwojCkNPTkZJR19J
+U0ROX0RJVkVSU0lPTj1tCgojCiMgSVNETjRMaW51eCBoYXJkd2FyZSBkcml2ZXJzCiMKCiMKIyBQ
+YXNzaXZlIGNhcmRzCiMKQ09ORklHX0lTRE5fRFJWX0hJU0FYPXkKCiMKIyBELWNoYW5uZWwgcHJv
+dG9jb2wgZmVhdHVyZXMKIwpDT05GSUdfSElTQVhfRVVSTz15CkNPTkZJR19ERV9BT0M9eQpDT05G
+SUdfSElTQVhfTk9fU0VORENPTVBMRVRFPXkKQ09ORklHX0hJU0FYX05PX0xMQz15CiMgQ09ORklH
+X0hJU0FYX05PX0tFWVBBRCBpcyBub3Qgc2V0CiMgQ09ORklHX0hJU0FYXzFUUjYgaXMgbm90IHNl
+dApDT05GSUdfSElTQVhfTkkxPXkKQ09ORklHX0hJU0FYX01BWF9DQVJEUz04CgojCiMgSGlTYXgg
+c3VwcG9ydGVkIGNhcmRzCiMKQ09ORklHX0hJU0FYXzE2XzA9eQpDT05GSUdfSElTQVhfMTZfMz15
+CkNPTkZJR19ISVNBWF9URUxFU1BDST15CkNPTkZJR19ISVNBWF9TMEJPWD15CkNPTkZJR19ISVNB
+WF9BVk1fQTE9eQpDT05GSUdfSElTQVhfRlJJVFpQQ0k9eQpDT05GSUdfSElTQVhfQVZNX0ExX1BD
+TUNJQT15CkNPTkZJR19ISVNBWF9FTFNBPXkKQ09ORklHX0hJU0FYX0lYMU1JQ1JPUjI9eQpDT05G
+SUdfSElTQVhfRElFSExESVZBPXkKQ09ORklHX0hJU0FYX0FTVVNDT009eQpDT05GSUdfSElTQVhf
+VEVMRUlOVD15CkNPTkZJR19ISVNBWF9IRkNTPXkKIyBDT05GSUdfSElTQVhfU0VETEJBVUVSIGlz
+IG5vdCBzZXQKQ09ORklHX0hJU0FYX1NQT1JUU1RFUj15CiMgQ09ORklHX0hJU0FYX01JQyBpcyBu
+b3Qgc2V0CkNPTkZJR19ISVNBWF9ORVRKRVQ9eQpDT05GSUdfSElTQVhfTkVUSkVUX1U9eQojIENP
+TkZJR19ISVNBWF9OSUNDWSBpcyBub3Qgc2V0CkNPTkZJR19ISVNBWF9JU1VSRj15CkNPTkZJR19I
+SVNBWF9IU1RTQVBISVI9eQpDT05GSUdfSElTQVhfQktNX0E0VD15CiMgQ09ORklHX0hJU0FYX1ND
+VF9RVUFEUk8gaXMgbm90IHNldApDT05GSUdfSElTQVhfR0FaRUw9eQojIENPTkZJR19ISVNBWF9I
+RkNfUENJIGlzIG5vdCBzZXQKIyBDT05GSUdfSElTQVhfVzY2OTIgaXMgbm90IHNldAojIENPTkZJ
+R19ISVNBWF9IRkNfU1ggaXMgbm90IHNldApDT05GSUdfSElTQVhfRU5URVJOT1dfUENJPXkKQ09O
+RklHX0hJU0FYX0RFQlVHPXkKCiMKIyBIaVNheCBQQ01DSUEgY2FyZCBzZXJ2aWNlIG1vZHVsZXMK
+IwoKIwojIEhpU2F4IHN1YiBkcml2ZXIgbW9kdWxlcwojCkNPTkZJR19ISVNBWF9TVDU0ODE9bQoj
+IENPTkZJR19ISVNBWF9IRkNVU0IgaXMgbm90IHNldApDT05GSUdfSElTQVhfSEZDNFM4Uz1tCkNP
+TkZJR19ISVNBWF9GUklUWl9QQ0lQTlA9bQoKIwojIEFjdGl2ZSBjYXJkcwojCkNPTkZJR19JU0RO
+X0RSVl9JQ049eQojIENPTkZJR19JU0ROX0RSVl9QQ0JJVCBpcyBub3Qgc2V0CkNPTkZJR19JU0RO
+X0RSVl9TQz15CiMgQ09ORklHX0lTRE5fRFJWX0FDVDIwMDAgaXMgbm90IHNldApDT05GSUdfSVNE
+Tl9IRExDPW0KQ09ORklHX0lTRE5fQ0FQST15CkNPTkZJR19JU0ROX0RSVl9BVk1CMV9WRVJCT1NF
+X1JFQVNPTj15CkNPTkZJR19DQVBJX1RSQUNFPXkKQ09ORklHX0lTRE5fQ0FQSV9NSURETEVXQVJF
+PXkKQ09ORklHX0lTRE5fQ0FQSV9DQVBJMjA9bQpDT05GSUdfSVNETl9DQVBJX0NBUElGU19CT09M
+PXkKQ09ORklHX0lTRE5fQ0FQSV9DQVBJRlM9bQojIENPTkZJR19JU0ROX0NBUElfQ0FQSURSViBp
+cyBub3Qgc2V0CgojCiMgQ0FQSSBoYXJkd2FyZSBkcml2ZXJzCiMKQ09ORklHX0NBUElfQVZNPXkK
+Q09ORklHX0lTRE5fRFJWX0FWTUIxX0IxSVNBPW0KQ09ORklHX0lTRE5fRFJWX0FWTUIxX0IxUENJ
+PW0KIyBDT05GSUdfSVNETl9EUlZfQVZNQjFfQjFQQ0lWNCBpcyBub3Qgc2V0CkNPTkZJR19JU0RO
+X0RSVl9BVk1CMV9UMUlTQT1tCkNPTkZJR19JU0ROX0RSVl9BVk1CMV9CMVBDTUNJQT15CkNPTkZJ
+R19JU0ROX0RSVl9BVk1CMV9UMVBDST15CiMgQ09ORklHX0lTRE5fRFJWX0FWTUIxX0M0IGlzIG5v
+dCBzZXQKQ09ORklHX0NBUElfRUlDT049eQpDT05GSUdfSVNETl9EUlZfR0lHQVNFVD1tCkNPTkZJ
+R19HSUdBU0VUX0NBUEk9eQojIENPTkZJR19HSUdBU0VUX0k0TCBpcyBub3Qgc2V0CiMgQ09ORklH
+X0dJR0FTRVRfRFVNTVlMTCBpcyBub3Qgc2V0CiMgQ09ORklHX0dJR0FTRVRfQkFTRSBpcyBub3Qg
+c2V0CiMgQ09ORklHX0dJR0FTRVRfTTEwNSBpcyBub3Qgc2V0CkNPTkZJR19HSUdBU0VUX00xMDE9
+bQpDT05GSUdfR0lHQVNFVF9ERUJVRz15CkNPTkZJR19QSE9ORT1tCkNPTkZJR19QSE9ORV9JWEo9
+bQoKIwojIElucHV0IGRldmljZSBzdXBwb3J0CiMKQ09ORklHX0lOUFVUPXkKQ09ORklHX0lOUFVU
+X0ZGX01FTUxFU1M9bQpDT05GSUdfSU5QVVRfUE9MTERFVj1tCgojCiMgVXNlcmxhbmQgaW50ZXJm
+YWNlcwojCiMgQ09ORklHX0lOUFVUX01PVVNFREVWIGlzIG5vdCBzZXQKQ09ORklHX0lOUFVUX0pP
+WURFVj1tCkNPTkZJR19JTlBVVF9FVkRFVj1tCkNPTkZJR19JTlBVVF9FVkJVRz1tCgojCiMgSW5w
+dXQgRGV2aWNlIERyaXZlcnMKIwpDT05GSUdfSU5QVVRfS0VZQk9BUkQ9eQpDT05GSUdfS0VZQk9B
+UkRfQURQNTUyMD1tCkNPTkZJR19LRVlCT0FSRF9BRFA1NTg4PXkKQ09ORklHX0tFWUJPQVJEX0FU
+S0JEPW0KQ09ORklHX1FUMjE2MD1tCkNPTkZJR19LRVlCT0FSRF9MS0tCRD15CiMgQ09ORklHX0tF
+WUJPQVJEX0dQSU8gaXMgbm90IHNldApDT05GSUdfS0VZQk9BUkRfTUFUUklYPW0KQ09ORklHX0tF
+WUJPQVJEX0xNODMyMz1tCkNPTkZJR19LRVlCT0FSRF9NQVg3MzU5PW0KIyBDT05GSUdfS0VZQk9B
+UkRfTkVXVE9OIGlzIG5vdCBzZXQKQ09ORklHX0tFWUJPQVJEX09QRU5DT1JFUz15CkNPTkZJR19L
+RVlCT0FSRF9TVE9XQVdBWT1tCkNPTkZJR19LRVlCT0FSRF9TVU5LQkQ9bQpDT05GSUdfS0VZQk9B
+UkRfWFRLQkQ9eQojIENPTkZJR19JTlBVVF9NT1VTRSBpcyBub3Qgc2V0CiMgQ09ORklHX0lOUFVU
+X0pPWVNUSUNLIGlzIG5vdCBzZXQKQ09ORklHX0lOUFVUX1RBQkxFVD15CkNPTkZJR19UQUJMRVRf
+VVNCX0FDRUNBRD15CkNPTkZJR19UQUJMRVRfVVNCX0FJUFRFSz15CkNPTkZJR19UQUJMRVRfVVNC
+X0dUQ089bQpDT05GSUdfVEFCTEVUX1VTQl9LQlRBQj1tCiMgQ09ORklHX1RBQkxFVF9VU0JfV0FD
+T00gaXMgbm90IHNldApDT05GSUdfSU5QVVRfVE9VQ0hTQ1JFRU49eQpDT05GSUdfVE9VQ0hTQ1JF
+RU5fQURTNzg0Nj1tCiMgQ09ORklHX1RPVUNIU0NSRUVOX0FENzg3NyBpcyBub3Qgc2V0CiMgQ09O
+RklHX1RPVUNIU0NSRUVOX0FENzg3OV9JMkMgaXMgbm90IHNldApDT05GSUdfVE9VQ0hTQ1JFRU5f
+QUQ3ODc5X1NQST1tCkNPTkZJR19UT1VDSFNDUkVFTl9BRDc4Nzk9bQpDT05GSUdfVE9VQ0hTQ1JF
+RU5fRFlOQVBSTz1tCiMgQ09ORklHX1RPVUNIU0NSRUVOX0VFVEkgaXMgbm90IHNldAojIENPTkZJ
+R19UT1VDSFNDUkVFTl9GVUpJVFNVIGlzIG5vdCBzZXQKQ09ORklHX1RPVUNIU0NSRUVOX0dVTlpF
+PXkKQ09ORklHX1RPVUNIU0NSRUVOX0VMTz1tCkNPTkZJR19UT1VDSFNDUkVFTl9XQUNPTV9XODAw
+MT15CkNPTkZJR19UT1VDSFNDUkVFTl9NQ1M1MDAwPW0KQ09ORklHX1RPVUNIU0NSRUVOX01UT1VD
+SD15CkNPTkZJR19UT1VDSFNDUkVFTl9JTkVYSU89eQpDT05GSUdfVE9VQ0hTQ1JFRU5fTUs3MTI9
+bQojIENPTkZJR19UT1VDSFNDUkVFTl9IVENQRU4gaXMgbm90IHNldApDT05GSUdfVE9VQ0hTQ1JF
+RU5fUEVOTU9VTlQ9eQpDT05GSUdfVE9VQ0hTQ1JFRU5fVE9VQ0hSSUdIVD15CkNPTkZJR19UT1VD
+SFNDUkVFTl9UT1VDSFdJTj15CkNPTkZJR19UT1VDSFNDUkVFTl9VQ0IxNDAwPW0KQ09ORklHX1RP
+VUNIU0NSRUVOX1dNOTdYWD1tCkNPTkZJR19UT1VDSFNDUkVFTl9XTTk3MDU9eQojIENPTkZJR19U
+T1VDSFNDUkVFTl9XTTk3MTIgaXMgbm90IHNldAojIENPTkZJR19UT1VDSFNDUkVFTl9XTTk3MTMg
+aXMgbm90IHNldApDT05GSUdfVE9VQ0hTQ1JFRU5fVVNCX0NPTVBPU0lURT1tCkNPTkZJR19UT1VD
+SFNDUkVFTl9VU0JfRUdBTEFYPXkKIyBDT05GSUdfVE9VQ0hTQ1JFRU5fVVNCX1BBTkpJVCBpcyBu
+b3Qgc2V0CkNPTkZJR19UT1VDSFNDUkVFTl9VU0JfM009eQpDT05GSUdfVE9VQ0hTQ1JFRU5fVVNC
+X0lUTT15CkNPTkZJR19UT1VDSFNDUkVFTl9VU0JfRVRVUkJPPXkKQ09ORklHX1RPVUNIU0NSRUVO
+X1VTQl9HVU5aRT15CkNPTkZJR19UT1VDSFNDUkVFTl9VU0JfRE1DX1RTQzEwPXkKIyBDT05GSUdf
+VE9VQ0hTQ1JFRU5fVVNCX0lSVE9VQ0ggaXMgbm90IHNldApDT05GSUdfVE9VQ0hTQ1JFRU5fVVNC
+X0lERUFMVEVLPXkKIyBDT05GSUdfVE9VQ0hTQ1JFRU5fVVNCX0dFTkVSQUxfVE9VQ0ggaXMgbm90
+IHNldApDT05GSUdfVE9VQ0hTQ1JFRU5fVVNCX0dPVE9QPXkKQ09ORklHX1RPVUNIU0NSRUVOX1VT
+Ql9KQVNURUM9eQpDT05GSUdfVE9VQ0hTQ1JFRU5fVVNCX0UyST15CkNPTkZJR19UT1VDSFNDUkVF
+Tl9UT1VDSElUMjEzPXkKQ09ORklHX1RPVUNIU0NSRUVOX1RTQzIwMDc9bQpDT05GSUdfVE9VQ0hT
+Q1JFRU5fUENBUD1tCkNPTkZJR19JTlBVVF9NSVNDPXkKQ09ORklHX0lOUFVUX1BDU1BLUj15CkNP
+TkZJR19JTlBVVF9BUEFORUw9bQojIENPTkZJR19JTlBVVF9XSVNUUk9OX0JUTlMgaXMgbm90IHNl
+dApDT05GSUdfSU5QVVRfQVRMQVNfQlROUz15CkNPTkZJR19JTlBVVF9BVElfUkVNT1RFPW0KQ09O
+RklHX0lOUFVUX0FUSV9SRU1PVEUyPXkKIyBDT05GSUdfSU5QVVRfS0VZU1BBTl9SRU1PVEUgaXMg
+bm90IHNldApDT05GSUdfSU5QVVRfUE9XRVJNQVRFPXkKQ09ORklHX0lOUFVUX1lFQUxJTks9eQpD
+T05GSUdfSU5QVVRfQ00xMDk9bQpDT05GSUdfSU5QVVRfVUlOUFVUPXkKIyBDT05GSUdfSU5QVVRf
+V0lOQk9ORF9DSVIgaXMgbm90IHNldAojIENPTkZJR19JTlBVVF9QQ0Y1MDYzM19QTVUgaXMgbm90
+IHNldApDT05GSUdfSU5QVVRfR1BJT19ST1RBUllfRU5DT0RFUj15CkNPTkZJR19JTlBVVF9XTTgz
+MVhfT049bQojIENPTkZJR19JTlBVVF9QQ0FQIGlzIG5vdCBzZXQKCiMKIyBIYXJkd2FyZSBJL08g
+cG9ydHMKIwpDT05GSUdfU0VSSU89eQpDT05GSUdfU0VSSU9fSTgwNDI9eQpDT05GSUdfU0VSSU9f
+U0VSUE9SVD15CkNPTkZJR19TRVJJT19DVDgyQzcxMD1tCiMgQ09ORklHX1NFUklPX1BBUktCRCBp
+cyBub3Qgc2V0CkNPTkZJR19TRVJJT19QQ0lQUzI9bQpDT05GSUdfU0VSSU9fTElCUFMyPW0KIyBD
+T05GSUdfU0VSSU9fUkFXIGlzIG5vdCBzZXQKQ09ORklHX1NFUklPX0FMVEVSQV9QUzI9eQojIENP
+TkZJR19HQU1FUE9SVCBpcyBub3Qgc2V0CgojCiMgQ2hhcmFjdGVyIGRldmljZXMKIwpDT05GSUdf
+VlQ9eQpDT05GSUdfQ09OU09MRV9UUkFOU0xBVElPTlM9eQpDT05GSUdfVlRfQ09OU09MRT15CkNP
+TkZJR19IV19DT05TT0xFPXkKQ09ORklHX1ZUX0hXX0NPTlNPTEVfQklORElORz15CkNPTkZJR19E
+RVZLTUVNPXkKIyBDT05GSUdfU0VSSUFMX05PTlNUQU5EQVJEIGlzIG5vdCBzZXQKQ09ORklHX05P
+Wk9NST1tCgojCiMgU2VyaWFsIGRyaXZlcnMKIwpDT05GSUdfU0VSSUFMXzgyNTA9eQojIENPTkZJ
+R19TRVJJQUxfODI1MF9DT05TT0xFIGlzIG5vdCBzZXQKQ09ORklHX0ZJWF9FQVJMWUNPTl9NRU09
+eQpDT05GSUdfU0VSSUFMXzgyNTBfUENJPXkKQ09ORklHX1NFUklBTF84MjUwX1BOUD1tCkNPTkZJ
+R19TRVJJQUxfODI1MF9OUl9VQVJUUz00CkNPTkZJR19TRVJJQUxfODI1MF9SVU5USU1FX1VBUlRT
+PTQKQ09ORklHX1NFUklBTF84MjUwX0VYVEVOREVEPXkKQ09ORklHX1NFUklBTF84MjUwX01BTllf
+UE9SVFM9eQpDT05GSUdfU0VSSUFMXzgyNTBfRk9VUlBPUlQ9bQojIENPTkZJR19TRVJJQUxfODI1
+MF9BQ0NFTlQgaXMgbm90IHNldAojIENPTkZJR19TRVJJQUxfODI1MF9CT0NBIGlzIG5vdCBzZXQK
+Q09ORklHX1NFUklBTF84MjUwX0VYQVJfU1QxNkM1NTQ9eQojIENPTkZJR19TRVJJQUxfODI1MF9I
+VUI2IGlzIG5vdCBzZXQKQ09ORklHX1NFUklBTF84MjUwX1NIQVJFX0lSUT15CkNPTkZJR19TRVJJ
+QUxfODI1MF9ERVRFQ1RfSVJRPXkKQ09ORklHX1NFUklBTF84MjUwX1JTQT15CiMgQ09ORklHX1NF
+UklBTF84MjUwX01DQSBpcyBub3Qgc2V0CgojCiMgTm9uLTgyNTAgc2VyaWFsIHBvcnQgc3VwcG9y
+dAojCiMgQ09ORklHX1NFUklBTF9NQVgzMTAwIGlzIG5vdCBzZXQKQ09ORklHX1NFUklBTF9DT1JF
+PXkKIyBDT05GSUdfU0VSSUFMX0pTTSBpcyBub3Qgc2V0CkNPTkZJR19VTklYOThfUFRZUz15CkNP
+TkZJR19ERVZQVFNfTVVMVElQTEVfSU5TVEFOQ0VTPXkKIyBDT05GSUdfTEVHQUNZX1BUWVMgaXMg
+bm90IHNldApDT05GSUdfUFJJTlRFUj15CkNPTkZJR19MUF9DT05TT0xFPXkKQ09ORklHX1BQREVW
+PW0KQ09ORklHX0lQTUlfSEFORExFUj15CiMgQ09ORklHX0lQTUlfUEFOSUNfRVZFTlQgaXMgbm90
+IHNldApDT05GSUdfSVBNSV9ERVZJQ0VfSU5URVJGQUNFPXkKQ09ORklHX0lQTUlfU0k9bQpDT05G
+SUdfSVBNSV9XQVRDSERPRz15CiMgQ09ORklHX0lQTUlfUE9XRVJPRkYgaXMgbm90IHNldApDT05G
+SUdfSFdfUkFORE9NPXkKQ09ORklHX0hXX1JBTkRPTV9USU1FUklPTUVNPW0KIyBDT05GSUdfSFdf
+UkFORE9NX0lOVEVMIGlzIG5vdCBzZXQKQ09ORklHX0hXX1JBTkRPTV9BTUQ9eQojIENPTkZJR19I
+V19SQU5ET01fR0VPREUgaXMgbm90IHNldApDT05GSUdfSFdfUkFORE9NX1ZJQT15CkNPTkZJR19O
+VlJBTT15CiMgQ09ORklHX0RUTEsgaXMgbm90IHNldApDT05GSUdfUjM5NjQ9eQpDT05GSUdfQVBQ
+TElDT009bQpDT05GSUdfU09OWVBJPXkKIyBDT05GSUdfTVdBVkUgaXMgbm90IHNldApDT05GSUdf
+U0N4MjAwX0dQSU89bQpDT05GSUdfUEM4NzM2eF9HUElPPW0KQ09ORklHX05TQ19HUElPPXkKQ09O
+RklHX0NTNTUzNV9HUElPPW0KIyBDT05GSUdfUkFXX0RSSVZFUiBpcyBub3Qgc2V0CkNPTkZJR19I
+UEVUPXkKIyBDT05GSUdfSFBFVF9NTUFQIGlzIG5vdCBzZXQKQ09ORklHX0hBTkdDSEVDS19USU1F
+Uj15CkNPTkZJR19UQ0dfVFBNPXkKQ09ORklHX1RDR19USVM9eQojIENPTkZJR19UQ0dfTlNDIGlz
+IG5vdCBzZXQKQ09ORklHX1RDR19BVE1FTD1tCiMgQ09ORklHX1RDR19JTkZJTkVPTiBpcyBub3Qg
+c2V0CiMgQ09ORklHX1RFTENMT0NLIGlzIG5vdCBzZXQKQ09ORklHX0RFVlBPUlQ9eQpDT05GSUdf
+STJDPXkKQ09ORklHX0kyQ19CT0FSRElORk89eQpDT05GSUdfSTJDX0NPTVBBVD15CkNPTkZJR19J
+MkNfQ0hBUkRFVj1tCiMgQ09ORklHX0kyQ19IRUxQRVJfQVVUTyBpcyBub3Qgc2V0CgojCiMgSTJD
+IEFsZ29yaXRobXMKIwpDT05GSUdfSTJDX0FMR09CSVQ9eQojIENPTkZJR19JMkNfQUxHT1BDRiBp
+cyBub3Qgc2V0CkNPTkZJR19JMkNfQUxHT1BDQT15CgojCiMgSTJDIEhhcmR3YXJlIEJ1cyBzdXBw
+b3J0CiMKCiMKIyBQQyBTTUJ1cyBob3N0IGNvbnRyb2xsZXIgZHJpdmVycwojCiMgQ09ORklHX0ky
+Q19BTEkxNTM1IGlzIG5vdCBzZXQKQ09ORklHX0kyQ19BTEkxNTYzPXkKQ09ORklHX0kyQ19BTEkx
+NVgzPXkKQ09ORklHX0kyQ19BTUQ3NTY9bQpDT05GSUdfSTJDX0FNRDc1Nl9TNDg4Mj1tCkNPTkZJ
+R19JMkNfQU1EODExMT1tCiMgQ09ORklHX0kyQ19JODAxIGlzIG5vdCBzZXQKQ09ORklHX0kyQ19J
+U0NIPW0KQ09ORklHX0kyQ19QSUlYND15CkNPTkZJR19JMkNfTkZPUkNFMj15CkNPTkZJR19JMkNf
+TkZPUkNFMl9TNDk4NT15CiMgQ09ORklHX0kyQ19TSVM1NTk1IGlzIG5vdCBzZXQKQ09ORklHX0ky
+Q19TSVM2MzA9eQpDT05GSUdfSTJDX1NJUzk2WD15CkNPTkZJR19JMkNfVklBPW0KQ09ORklHX0ky
+Q19WSUFQUk89eQoKIwojIEFDUEkgZHJpdmVycwojCiMgQ09ORklHX0kyQ19TQ01JIGlzIG5vdCBz
+ZXQKCiMKIyBJMkMgc3lzdGVtIGJ1cyBkcml2ZXJzIChtb3N0bHkgZW1iZWRkZWQgLyBzeXN0ZW0t
+b24tY2hpcCkKIwpDT05GSUdfSTJDX0dQSU89eQojIENPTkZJR19JMkNfT0NPUkVTIGlzIG5vdCBz
+ZXQKQ09ORklHX0kyQ19TSU1URUM9bQoKIwojIEV4dGVybmFsIEkyQy9TTUJ1cyBhZGFwdGVyIGRy
+aXZlcnMKIwojIENPTkZJR19JMkNfUEFSUE9SVCBpcyBub3Qgc2V0CkNPTkZJR19JMkNfUEFSUE9S
+VF9MSUdIVD1tCkNPTkZJR19JMkNfVEFPU19FVk09eQpDT05GSUdfSTJDX1RJTllfVVNCPXkKCiMK
+IyBPdGhlciBJMkMvU01CdXMgYnVzIGRyaXZlcnMKIwpDT05GSUdfSTJDX1BDQV9JU0E9eQojIENP
+TkZJR19JMkNfUENBX1BMQVRGT1JNIGlzIG5vdCBzZXQKIyBDT05GSUdfSTJDX1NUVUIgaXMgbm90
+IHNldAojIENPTkZJR19TQ3gyMDBfSTJDIGlzIG5vdCBzZXQKQ09ORklHX1NDeDIwMF9BQ0I9eQoK
+IwojIE1pc2NlbGxhbmVvdXMgSTJDIENoaXAgc3VwcG9ydAojCkNPTkZJR19TRU5TT1JTX1RTTDI1
+NTA9bQpDT05GSUdfSTJDX0RFQlVHX0NPUkU9eQojIENPTkZJR19JMkNfREVCVUdfQUxHTyBpcyBu
+b3Qgc2V0CkNPTkZJR19JMkNfREVCVUdfQlVTPXkKQ09ORklHX0kyQ19ERUJVR19DSElQPXkKQ09O
+RklHX1NQST15CkNPTkZJR19TUElfREVCVUc9eQpDT05GSUdfU1BJX01BU1RFUj15CgojCiMgU1BJ
+IE1hc3RlciBDb250cm9sbGVyIERyaXZlcnMKIwpDT05GSUdfU1BJX0JJVEJBTkc9eQpDT05GSUdf
+U1BJX0JVVFRFUkZMWT15CkNPTkZJR19TUElfR1BJTz1tCiMgQ09ORklHX1NQSV9MTTcwX0xMUCBp
+cyBub3Qgc2V0CgojCiMgU1BJIFByb3RvY29sIE1hc3RlcnMKIwpDT05GSUdfU1BJX1NQSURFVj1t
+CkNPTkZJR19TUElfVExFNjJYMD15CgojCiMgUFBTIHN1cHBvcnQKIwpDT05GSUdfUFBTPXkKQ09O
+RklHX1BQU19ERUJVRz15CkNPTkZJR19BUkNIX1dBTlRfT1BUSU9OQUxfR1BJT0xJQj15CkNPTkZJ
+R19HUElPTElCPXkKQ09ORklHX0RFQlVHX0dQSU89eQpDT05GSUdfR1BJT19TWVNGUz15CgojCiMg
+TWVtb3J5IG1hcHBlZCBHUElPIGV4cGFuZGVyczoKIwoKIwojIEkyQyBHUElPIGV4cGFuZGVyczoK
+IwpDT05GSUdfR1BJT19NQVg3MzJYPXkKQ09ORklHX0dQSU9fUENBOTUzWD1tCkNPTkZJR19HUElP
+X1BDRjg1N1g9eQpDT05GSUdfR1BJT19XTTgzMVg9bQojIENPTkZJR19HUElPX0FEUDU1MjAgaXMg
+bm90IHNldAoKIwojIFBDSSBHUElPIGV4cGFuZGVyczoKIwpDT05GSUdfR1BJT19CVDhYWD1tCkNP
+TkZJR19HUElPX0xBTkdXRUxMPXkKCiMKIyBTUEkgR1BJTyBleHBhbmRlcnM6CiMKQ09ORklHX0dQ
+SU9fTUFYNzMwMT1tCkNPTkZJR19HUElPX01DUDIzUzA4PXkKIyBDT05GSUdfR1BJT19NQzMzODgw
+IGlzIG5vdCBzZXQKCiMKIyBBQzk3IEdQSU8gZXhwYW5kZXJzOgojCkNPTkZJR19HUElPX1VDQjE0
+MDA9eQpDT05GSUdfVzE9eQoKIwojIDEtd2lyZSBCdXMgTWFzdGVycwojCkNPTkZJR19XMV9NQVNU
+RVJfTUFUUk9YPXkKQ09ORklHX1cxX01BU1RFUl9EUzI0OTA9bQpDT05GSUdfVzFfTUFTVEVSX0RT
+MjQ4Mj1tCkNPTkZJR19XMV9NQVNURVJfR1BJTz15CgojCiMgMS13aXJlIFNsYXZlcwojCkNPTkZJ
+R19XMV9TTEFWRV9USEVSTT15CiMgQ09ORklHX1cxX1NMQVZFX1NNRU0gaXMgbm90IHNldApDT05G
+SUdfVzFfU0xBVkVfRFMyNDMxPXkKQ09ORklHX1cxX1NMQVZFX0RTMjQzMz15CiMgQ09ORklHX1cx
+X1NMQVZFX0RTMjQzM19DUkMgaXMgbm90IHNldApDT05GSUdfVzFfU0xBVkVfRFMyNzYwPXkKQ09O
+RklHX1cxX1NMQVZFX0JRMjcwMDA9bQpDT05GSUdfUE9XRVJfU1VQUExZPXkKQ09ORklHX1BPV0VS
+X1NVUFBMWV9ERUJVRz15CkNPTkZJR19QREFfUE9XRVI9bQpDT05GSUdfV004MzFYX1BPV0VSPW0K
+Q09ORklHX1dNODM1MF9QT1dFUj15CiMgQ09ORklHX0JBVFRFUllfRFMyNzYwIGlzIG5vdCBzZXQK
+IyBDT05GSUdfQkFUVEVSWV9EUzI3ODIgaXMgbm90IHNldApDT05GSUdfQkFUVEVSWV9CUTI3eDAw
+PW0KQ09ORklHX0JBVFRFUllfTUFYMTcwNDA9bQpDT05GSUdfQ0hBUkdFUl9QQ0Y1MDYzMz1tCkNP
+TkZJR19IV01PTj1tCkNPTkZJR19IV01PTl9WSUQ9bQpDT05GSUdfSFdNT05fREVCVUdfQ0hJUD15
+CgojCiMgTmF0aXZlIGRyaXZlcnMKIwpDT05GSUdfU0VOU09SU19BQklUVUdVUlU9bQpDT05GSUdf
+U0VOU09SU19BQklUVUdVUlUzPW0KQ09ORklHX1NFTlNPUlNfQUQ3NDE0PW0KIyBDT05GSUdfU0VO
+U09SU19BRDc0MTggaXMgbm90IHNldApDT05GSUdfU0VOU09SU19BRENYWD1tCkNPTkZJR19TRU5T
+T1JTX0FETTEwMjE9bQpDT05GSUdfU0VOU09SU19BRE0xMDI1PW0KQ09ORklHX1NFTlNPUlNfQURN
+MTAyNj1tCiMgQ09ORklHX1NFTlNPUlNfQURNMTAyOSBpcyBub3Qgc2V0CkNPTkZJR19TRU5TT1JT
+X0FETTEwMzE9bQpDT05GSUdfU0VOU09SU19BRE05MjQwPW0KQ09ORklHX1NFTlNPUlNfQURUNzQ2
+Mj1tCkNPTkZJR19TRU5TT1JTX0FEVDc0NzA9bQojIENPTkZJR19TRU5TT1JTX0FEVDc0NzMgaXMg
+bm90IHNldApDT05GSUdfU0VOU09SU19BRFQ3NDc1PW0KIyBDT05GSUdfU0VOU09SU19LOFRFTVAg
+aXMgbm90IHNldApDT05GSUdfU0VOU09SU19BU0IxMDA9bQojIENPTkZJR19TRU5TT1JTX0FUWFAx
+IGlzIG5vdCBzZXQKQ09ORklHX1NFTlNPUlNfRFMxNjIxPW0KQ09ORklHX1NFTlNPUlNfSTVLX0FN
+Qj1tCiMgQ09ORklHX1NFTlNPUlNfRjcxODA1RiBpcyBub3Qgc2V0CkNPTkZJR19TRU5TT1JTX0Y3
+MTg4MkZHPW0KQ09ORklHX1NFTlNPUlNfRjc1Mzc1Uz1tCkNPTkZJR19TRU5TT1JTX0ZTQ0hNRD1t
+CkNPTkZJR19TRU5TT1JTX0c3NjBBPW0KIyBDT05GSUdfU0VOU09SU19HTDUxOFNNIGlzIG5vdCBz
+ZXQKQ09ORklHX1NFTlNPUlNfR0w1MjBTTT1tCkNPTkZJR19TRU5TT1JTX0NPUkVURU1QPW0KQ09O
+RklHX1NFTlNPUlNfSUJNQUVNPW0KQ09ORklHX1NFTlNPUlNfSUJNUEVYPW0KQ09ORklHX1NFTlNP
+UlNfSVQ4Nz1tCkNPTkZJR19TRU5TT1JTX0xNNjM9bQojIENPTkZJR19TRU5TT1JTX0xNNzAgaXMg
+bm90IHNldApDT05GSUdfU0VOU09SU19MTTczPW0KQ09ORklHX1NFTlNPUlNfTE03NT1tCkNPTkZJ
+R19TRU5TT1JTX0xNNzc9bQpDT05GSUdfU0VOU09SU19MTTc4PW0KQ09ORklHX1NFTlNPUlNfTE04
+MD1tCkNPTkZJR19TRU5TT1JTX0xNODM9bQpDT05GSUdfU0VOU09SU19MTTg1PW0KIyBDT05GSUdf
+U0VOU09SU19MTTg3IGlzIG5vdCBzZXQKQ09ORklHX1NFTlNPUlNfTE05MD1tCkNPTkZJR19TRU5T
+T1JTX0xNOTI9bQpDT05GSUdfU0VOU09SU19MTTkzPW0KIyBDT05GSUdfU0VOU09SU19MVEM0MjE1
+IGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19MVEM0MjQ1IGlzIG5vdCBzZXQKQ09ORklHX1NF
+TlNPUlNfTE05NTI0MT1tCiMgQ09ORklHX1NFTlNPUlNfTUFYMTExMSBpcyBub3Qgc2V0CkNPTkZJ
+R19TRU5TT1JTX01BWDE2MTk9bQpDT05GSUdfU0VOU09SU19NQVg2NjUwPW0KQ09ORklHX1NFTlNP
+UlNfUEM4NzM2MD1tCkNPTkZJR19TRU5TT1JTX1BDODc0Mjc9bQojIENPTkZJR19TRU5TT1JTX1BD
+Rjg1OTEgaXMgbm90IHNldAojIENPTkZJR19TRU5TT1JTX1NIVDE1IGlzIG5vdCBzZXQKIyBDT05G
+SUdfU0VOU09SU19TSVM1NTk1IGlzIG5vdCBzZXQKQ09ORklHX1NFTlNPUlNfRE1FMTczNz1tCkNP
+TkZJR19TRU5TT1JTX1NNU0M0N00xPW0KQ09ORklHX1NFTlNPUlNfU01TQzQ3TTE5Mj1tCiMgQ09O
+RklHX1NFTlNPUlNfU01TQzQ3QjM5NyBpcyBub3Qgc2V0CkNPTkZJR19TRU5TT1JTX0FEUzc4Mjg9
+bQojIENPTkZJR19TRU5TT1JTX1RITUM1MCBpcyBub3Qgc2V0CkNPTkZJR19TRU5TT1JTX1RNUDQw
+MT1tCkNPTkZJR19TRU5TT1JTX1RNUDQyMT1tCkNPTkZJR19TRU5TT1JTX1ZJQTY4NkE9bQpDT05G
+SUdfU0VOU09SU19WVDEyMTE9bQpDT05GSUdfU0VOU09SU19WVDgyMzE9bQojIENPTkZJR19TRU5T
+T1JTX1c4Mzc4MUQgaXMgbm90IHNldApDT05GSUdfU0VOU09SU19XODM3OTFEPW0KQ09ORklHX1NF
+TlNPUlNfVzgzNzkyRD1tCiMgQ09ORklHX1NFTlNPUlNfVzgzNzkzIGlzIG5vdCBzZXQKIyBDT05G
+SUdfU0VOU09SU19XODNMNzg1VFMgaXMgbm90IHNldApDT05GSUdfU0VOU09SU19XODNMNzg2Tkc9
+bQpDT05GSUdfU0VOU09SU19XODM2MjdIRj1tCkNPTkZJR19TRU5TT1JTX1c4MzYyN0VIRj1tCkNP
+TkZJR19TRU5TT1JTX1dNODMxWD1tCkNPTkZJR19TRU5TT1JTX1dNODM1MD1tCiMgQ09ORklHX1NF
+TlNPUlNfSERBUFMgaXMgbm90IHNldApDT05GSUdfU0VOU09SU19BUFBMRVNNQz1tCkNPTkZJR19T
+RU5TT1JTX01DMTM3ODNfQURDPW0KCiMKIyBBQ1BJIGRyaXZlcnMKIwpDT05GSUdfU0VOU09SU19B
+VEswMTEwPW0KIyBDT05GSUdfU0VOU09SU19MSVMzTFYwMkQgaXMgbm90IHNldApDT05GSUdfVEhF
+Uk1BTD1tCkNPTkZJR19USEVSTUFMX0hXTU9OPXkKIyBDT05GSUdfV0FUQ0hET0cgaXMgbm90IHNl
+dApDT05GSUdfU1NCX1BPU1NJQkxFPXkKCiMKIyBTb25pY3MgU2lsaWNvbiBCYWNrcGxhbmUKIwpD
+T05GSUdfU1NCPXkKQ09ORklHX1NTQl9TUFJPTT15CkNPTkZJR19TU0JfQkxPQ0tJTz15CkNPTkZJ
+R19TU0JfUENJSE9TVF9QT1NTSUJMRT15CkNPTkZJR19TU0JfUENJSE9TVD15CkNPTkZJR19TU0Jf
+QjQzX1BDSV9CUklER0U9eQpDT05GSUdfU1NCX1NESU9IT1NUX1BPU1NJQkxFPXkKQ09ORklHX1NT
+Ql9TRElPSE9TVD15CkNPTkZJR19TU0JfU0lMRU5UPXkKQ09ORklHX1NTQl9EUklWRVJfUENJQ09S
+RV9QT1NTSUJMRT15CkNPTkZJR19TU0JfRFJJVkVSX1BDSUNPUkU9eQoKIwojIE11bHRpZnVuY3Rp
+b24gZGV2aWNlIGRyaXZlcnMKIwpDT05GSUdfTUZEX0NPUkU9eQojIENPTkZJR19NRkRfU001MDEg
+aXMgbm90IHNldApDT05GSUdfSFRDX1BBU0lDMz1tCkNPTkZJR19VQ0IxNDAwX0NPUkU9bQpDT05G
+SUdfVFBTNjUwMTA9eQojIENPTkZJR19UV0w0MDMwX0NPUkUgaXMgbm90IHNldAojIENPTkZJR19N
+RkRfVE1JTyBpcyBub3Qgc2V0CiMgQ09ORklHX1BNSUNfREE5MDNYIGlzIG5vdCBzZXQKQ09ORklH
+X1BNSUNfQURQNTUyMD15CkNPTkZJR19NRkRfV004NDAwPXkKQ09ORklHX01GRF9XTTgzMVg9bQpD
+T05GSUdfTUZEX1dNODM1MD15CkNPTkZJR19NRkRfV004MzUwX0kyQz15CkNPTkZJR19NRkRfUENG
+NTA2MzM9bQpDT05GSUdfTUZEX01DMTM3ODM9bQpDT05GSUdfUENGNTA2MzNfQURDPW0KIyBDT05G
+SUdfUENGNTA2MzNfR1BJTyBpcyBub3Qgc2V0CiMgQ09ORklHX0FCMzEwMF9DT1JFIGlzIG5vdCBz
+ZXQKQ09ORklHX0VaWF9QQ0FQPXkKQ09ORklHX01GRF84OFBNODYwNz15CkNPTkZJR19BQjQ1MDBf
+Q09SRT1tCiMgQ09ORklHX1JFR1VMQVRPUiBpcyBub3Qgc2V0CiMgQ09ORklHX01FRElBX1NVUFBP
+UlQgaXMgbm90IHNldAoKIwojIEdyYXBoaWNzIHN1cHBvcnQKIwpDT05GSUdfQUdQPW0KQ09ORklH
+X0FHUF9BTEk9bQpDT05GSUdfQUdQX0FUST1tCiMgQ09ORklHX0FHUF9BTUQgaXMgbm90IHNldAoj
+IENPTkZJR19BR1BfQU1ENjQgaXMgbm90IHNldApDT05GSUdfQUdQX0lOVEVMPW0KIyBDT05GSUdf
+QUdQX05WSURJQSBpcyBub3Qgc2V0CkNPTkZJR19BR1BfU0lTPW0KQ09ORklHX0FHUF9TV09SS1M9
+bQpDT05GSUdfQUdQX1ZJQT1tCkNPTkZJR19BR1BfRUZGSUNFT049bQojIENPTkZJR19WR0FfQVJC
+IGlzIG5vdCBzZXQKQ09ORklHX0RSTT1tCkNPTkZJR19EUk1fS01TX0hFTFBFUj1tCkNPTkZJR19E
+Uk1fVFRNPW0KQ09ORklHX0RSTV9UREZYPW0KIyBDT05GSUdfRFJNX1IxMjggaXMgbm90IHNldApD
+T05GSUdfRFJNX1JBREVPTj1tCkNPTkZJR19EUk1fSTgxMD1tCiMgQ09ORklHX0RSTV9JODMwIGlz
+IG5vdCBzZXQKIyBDT05GSUdfRFJNX0k5MTUgaXMgbm90IHNldApDT05GSUdfRFJNX01HQT1tCiMg
+Q09ORklHX0RSTV9TSVMgaXMgbm90IHNldApDT05GSUdfRFJNX1ZJQT1tCiMgQ09ORklHX0RSTV9T
+QVZBR0UgaXMgbm90IHNldApDT05GSUdfVkdBU1RBVEU9bQpDT05GSUdfVklERU9fT1VUUFVUX0NP
+TlRST0w9bQpDT05GSUdfRkI9bQpDT05GSUdfRklSTVdBUkVfRURJRD15CkNPTkZJR19GQl9EREM9
+bQojIENPTkZJR19GQl9CT09UX1ZFU0FfU1VQUE9SVCBpcyBub3Qgc2V0CkNPTkZJR19GQl9DRkJf
+RklMTFJFQ1Q9bQpDT05GSUdfRkJfQ0ZCX0NPUFlBUkVBPW0KQ09ORklHX0ZCX0NGQl9JTUFHRUJM
+SVQ9bQojIENPTkZJR19GQl9DRkJfUkVWX1BJWEVMU19JTl9CWVRFIGlzIG5vdCBzZXQKQ09ORklH
+X0ZCX1NZU19GSUxMUkVDVD1tCkNPTkZJR19GQl9TWVNfQ09QWUFSRUE9bQpDT05GSUdfRkJfU1lT
+X0lNQUdFQkxJVD1tCiMgQ09ORklHX0ZCX0ZPUkVJR05fRU5ESUFOIGlzIG5vdCBzZXQKQ09ORklH
+X0ZCX1NZU19GT1BTPW0KQ09ORklHX0ZCX0RFRkVSUkVEX0lPPXkKQ09ORklHX0ZCX0hFQ1VCQT1t
+CkNPTkZJR19GQl9TVkdBTElCPW0KIyBDT05GSUdfRkJfTUFDTU9ERVMgaXMgbm90IHNldAojIENP
+TkZJR19GQl9CQUNLTElHSFQgaXMgbm90IHNldApDT05GSUdfRkJfTU9ERV9IRUxQRVJTPXkKQ09O
+RklHX0ZCX1RJTEVCTElUVElORz15CgojCiMgRnJhbWUgYnVmZmVyIGhhcmR3YXJlIGRyaXZlcnMK
+IwpDT05GSUdfRkJfQ0lSUlVTPW0KQ09ORklHX0ZCX1BNMj1tCkNPTkZJR19GQl9QTTJfRklGT19E
+SVNDT05ORUNUPXkKIyBDT05GSUdfRkJfQ1lCRVIyMDAwIGlzIG5vdCBzZXQKQ09ORklHX0ZCX0FS
+Qz1tCiMgQ09ORklHX0ZCX1ZHQTE2IGlzIG5vdCBzZXQKQ09ORklHX0ZCX040MTE9bQpDT05GSUdf
+RkJfSEdBPW0KIyBDT05GSUdfRkJfSEdBX0FDQ0VMIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfUzFE
+MTNYWFggaXMgbm90IHNldAojIENPTkZJR19GQl9OVklESUEgaXMgbm90IHNldAojIENPTkZJR19G
+Ql9SSVZBIGlzIG5vdCBzZXQKQ09ORklHX0ZCX0k4MTA9bQpDT05GSUdfRkJfSTgxMF9HVEY9eQpD
+T05GSUdfRkJfSTgxMF9JMkM9eQpDT05GSUdfRkJfTEU4MDU3OD1tCkNPTkZJR19GQl9DQVJJTExP
+X1JBTkNIPW0KQ09ORklHX0ZCX0lOVEVMPW0KQ09ORklHX0ZCX0lOVEVMX0RFQlVHPXkKQ09ORklH
+X0ZCX0lOVEVMX0kyQz15CiMgQ09ORklHX0ZCX01BVFJPWCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZC
+X1JBREVPTiBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX0FUWTEyOCBpcyBub3Qgc2V0CkNPTkZJR19G
+Ql9BVFk9bQpDT05GSUdfRkJfQVRZX0NUPXkKQ09ORklHX0ZCX0FUWV9HRU5FUklDX0xDRD15CkNP
+TkZJR19GQl9BVFlfR1g9eQojIENPTkZJR19GQl9BVFlfQkFDS0xJR0hUIGlzIG5vdCBzZXQKQ09O
+RklHX0ZCX1MzPW0KQ09ORklHX0ZCX1NBVkFHRT1tCkNPTkZJR19GQl9TQVZBR0VfSTJDPXkKIyBD
+T05GSUdfRkJfU0FWQUdFX0FDQ0VMIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfU0lTIGlzIG5vdCBz
+ZXQKQ09ORklHX0ZCX1ZJQT1tCkNPTkZJR19GQl9ORU9NQUdJQz1tCkNPTkZJR19GQl9LWVJPPW0K
+IyBDT05GSUdfRkJfM0RGWCBpcyBub3Qgc2V0CkNPTkZJR19GQl9WT09ET08xPW0KIyBDT05GSUdf
+RkJfVlQ4NjIzIGlzIG5vdCBzZXQKQ09ORklHX0ZCX1RSSURFTlQ9bQpDT05GSUdfRkJfQVJLPW0K
+Q09ORklHX0ZCX1BNMz1tCkNPTkZJR19GQl9DQVJNSU5FPW0KQ09ORklHX0ZCX0NBUk1JTkVfRFJB
+TV9FVkFMPXkKIyBDT05GSUdfQ0FSTUlORV9EUkFNX0NVU1RPTSBpcyBub3Qgc2V0CiMgQ09ORklH
+X0ZCX0dFT0RFIGlzIG5vdCBzZXQKQ09ORklHX0ZCX1RNSU89bQpDT05GSUdfRkJfVE1JT19BQ0NF
+TEw9eQpDT05GSUdfRkJfVklSVFVBTD1tCkNPTkZJR19GQl9NRVRST05PTUU9bQojIENPTkZJR19G
+Ql9NQjg2MlhYIGlzIG5vdCBzZXQKQ09ORklHX0ZCX0JST0FEU0hFRVQ9bQpDT05GSUdfQkFDS0xJ
+R0hUX0xDRF9TVVBQT1JUPXkKQ09ORklHX0xDRF9DTEFTU19ERVZJQ0U9bQpDT05GSUdfTENEX0xN
+UzI4M0dGMDU9bQojIENPTkZJR19MQ0RfTFRWMzUwUVYgaXMgbm90IHNldApDT05GSUdfTENEX0lM
+STkzMjA9bQojIENPTkZJR19MQ0RfVERPMjRNIGlzIG5vdCBzZXQKQ09ORklHX0xDRF9WR0cyNDMy
+QTQ9bQpDT05GSUdfTENEX1BMQVRGT1JNPW0KQ09ORklHX0JBQ0tMSUdIVF9DTEFTU19ERVZJQ0U9
+eQpDT05GSUdfQkFDS0xJR0hUX0dFTkVSSUM9bQpDT05GSUdfQkFDS0xJR0hUX1BST0dFQVI9eQpD
+T05GSUdfQkFDS0xJR0hUX0NBUklMTE9fUkFOQ0g9bQpDT05GSUdfQkFDS0xJR0hUX01CUF9OVklE
+SUE9eQpDT05GSUdfQkFDS0xJR0hUX1NBSEFSQT1tCkNPTkZJR19CQUNLTElHSFRfV004MzFYPW0K
+IyBDT05GSUdfQkFDS0xJR0hUX0FEUDU1MjAgaXMgbm90IHNldAoKIwojIERpc3BsYXkgZGV2aWNl
+IHN1cHBvcnQKIwojIENPTkZJR19ESVNQTEFZX1NVUFBPUlQgaXMgbm90IHNldAoKIwojIENvbnNv
+bGUgZGlzcGxheSBkcml2ZXIgc3VwcG9ydAojCkNPTkZJR19WR0FfQ09OU09MRT15CiMgQ09ORklH
+X1ZHQUNPTl9TT0ZUX1NDUk9MTEJBQ0sgaXMgbm90IHNldAojIENPTkZJR19NREFfQ09OU09MRSBp
+cyBub3Qgc2V0CkNPTkZJR19EVU1NWV9DT05TT0xFPXkKQ09ORklHX0ZSQU1FQlVGRkVSX0NPTlNP
+TEU9bQojIENPTkZJR19GUkFNRUJVRkZFUl9DT05TT0xFX0RFVEVDVF9QUklNQVJZIGlzIG5vdCBz
+ZXQKQ09ORklHX0ZSQU1FQlVGRkVSX0NPTlNPTEVfUk9UQVRJT049eQojIENPTkZJR19GT05UUyBp
+cyBub3Qgc2V0CkNPTkZJR19GT05UXzh4OD15CkNPTkZJR19GT05UXzh4MTY9eQpDT05GSUdfTE9H
+Tz15CiMgQ09ORklHX0xPR09fTElOVVhfTU9OTyBpcyBub3Qgc2V0CkNPTkZJR19MT0dPX0xJTlVY
+X1ZHQTE2PXkKQ09ORklHX0xPR09fTElOVVhfQ0xVVDIyND15CkNPTkZJR19TT1VORD15CkNPTkZJ
+R19TT1VORF9PU1NfQ09SRT15CkNPTkZJR19TT1VORF9PU1NfQ09SRV9QUkVDTEFJTT15CkNPTkZJ
+R19TTkQ9bQpDT05GSUdfU05EX1RJTUVSPW0KQ09ORklHX1NORF9QQ009bQpDT05GSUdfU05EX0hX
+REVQPW0KQ09ORklHX1NORF9SQVdNSURJPW0KQ09ORklHX1NORF9TRVFVRU5DRVI9bQpDT05GSUdf
+U05EX1NFUV9EVU1NWT1tCkNPTkZJR19TTkRfT1NTRU1VTD15CkNPTkZJR19TTkRfTUlYRVJfT1NT
+PW0KQ09ORklHX1NORF9QQ01fT1NTPW0KQ09ORklHX1NORF9QQ01fT1NTX1BMVUdJTlM9eQpDT05G
+SUdfU05EX1NFUVVFTkNFUl9PU1M9eQpDT05GSUdfU05EX0hSVElNRVI9bQpDT05GSUdfU05EX1NF
+UV9IUlRJTUVSX0RFRkFVTFQ9eQpDT05GSUdfU05EX0RZTkFNSUNfTUlOT1JTPXkKIyBDT05GSUdf
+U05EX1NVUFBPUlRfT0xEX0FQSSBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9WRVJCT1NFX1BSSU5U
+SyBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19TTkRfVk1B
+U1RFUj15CkNPTkZJR19TTkRfRE1BX1NHQlVGPXkKQ09ORklHX1NORF9SQVdNSURJX1NFUT1tCkNP
+TkZJR19TTkRfT1BMM19MSUJfU0VRPW0KIyBDT05GSUdfU05EX09QTDRfTElCX1NFUSBpcyBub3Qg
+c2V0CiMgQ09ORklHX1NORF9TQkFXRV9TRVEgaXMgbm90IHNldApDT05GSUdfU05EX0VNVTEwSzFf
+U0VRPW0KQ09ORklHX1NORF9NUFU0MDFfVUFSVD1tCkNPTkZJR19TTkRfT1BMM19MSUI9bQpDT05G
+SUdfU05EX1ZYX0xJQj1tCkNPTkZJR19TTkRfQUM5N19DT0RFQz1tCkNPTkZJR19TTkRfRFJJVkVS
+Uz15CkNPTkZJR19TTkRfUENTUD1tCiMgQ09ORklHX1NORF9EVU1NWSBpcyBub3Qgc2V0CkNPTkZJ
+R19TTkRfVklSTUlEST1tCkNPTkZJR19TTkRfTVRQQVY9bQpDT05GSUdfU05EX01UUzY0PW0KQ09O
+RklHX1NORF9TRVJJQUxfVTE2NTUwPW0KIyBDT05GSUdfU05EX01QVTQwMSBpcyBub3Qgc2V0CiMg
+Q09ORklHX1NORF9QT1JUTUFOMlg0IGlzIG5vdCBzZXQKQ09ORklHX1NORF9BQzk3X1BPV0VSX1NB
+VkU9eQpDT05GSUdfU05EX0FDOTdfUE9XRVJfU0FWRV9ERUZBVUxUPTAKQ09ORklHX1NORF9TQl9D
+T01NT049bQpDT05GSUdfU05EX1NCMTZfRFNQPW0KIyBDT05GSUdfU05EX0lTQSBpcyBub3Qgc2V0
+CkNPTkZJR19TTkRfUENJPXkKQ09ORklHX1NORF9BRDE4ODk9bQojIENPTkZJR19TTkRfQUxTMzAw
+IGlzIG5vdCBzZXQKQ09ORklHX1NORF9BTFM0MDAwPW0KIyBDT05GSUdfU05EX0FMSTU0NTEgaXMg
+bm90IHNldApDT05GSUdfU05EX0FUSUlYUD1tCkNPTkZJR19TTkRfQVRJSVhQX01PREVNPW0KQ09O
+RklHX1NORF9BVTg4MTA9bQojIENPTkZJR19TTkRfQVU4ODIwIGlzIG5vdCBzZXQKIyBDT05GSUdf
+U05EX0FVODgzMCBpcyBub3Qgc2V0CkNPTkZJR19TTkRfQVcyPW0KIyBDT05GSUdfU05EX0FaVDMz
+MjggaXMgbm90IHNldApDT05GSUdfU05EX0JUODdYPW0KQ09ORklHX1NORF9CVDg3WF9PVkVSQ0xP
+Q0s9eQojIENPTkZJR19TTkRfQ0EwMTA2IGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0NNSVBDSSBp
+cyBub3Qgc2V0CkNPTkZJR19TTkRfT1hZR0VOX0xJQj1tCkNPTkZJR19TTkRfT1hZR0VOPW0KQ09O
+RklHX1NORF9DUzQyODE9bQpDT05GSUdfU05EX0NTNDZYWD1tCkNPTkZJR19TTkRfQ1M0NlhYX05F
+V19EU1A9eQpDT05GSUdfU05EX0NTNTUzMD1tCkNPTkZJR19TTkRfQ1M1NTM1QVVESU89bQpDT05G
+SUdfU05EX0NUWEZJPW0KQ09ORklHX1NORF9EQVJMQTIwPW0KQ09ORklHX1NORF9HSU5BMjA9bQpD
+T05GSUdfU05EX0xBWUxBMjA9bQojIENPTkZJR19TTkRfREFSTEEyNCBpcyBub3Qgc2V0CiMgQ09O
+RklHX1NORF9HSU5BMjQgaXMgbm90IHNldApDT05GSUdfU05EX0xBWUxBMjQ9bQojIENPTkZJR19T
+TkRfTU9OQSBpcyBub3Qgc2V0CkNPTkZJR19TTkRfTUlBPW0KIyBDT05GSUdfU05EX0VDSE8zRyBp
+cyBub3Qgc2V0CkNPTkZJR19TTkRfSU5ESUdPPW0KQ09ORklHX1NORF9JTkRJR09JTz1tCiMgQ09O
+RklHX1NORF9JTkRJR09ESiBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9JTkRJR09JT1ggaXMgbm90
+IHNldAojIENPTkZJR19TTkRfSU5ESUdPREpYIGlzIG5vdCBzZXQKQ09ORklHX1NORF9FTVUxMEsx
+PW0KQ09ORklHX1NORF9FTVUxMEsxWD1tCkNPTkZJR19TTkRfRU5TMTM3MD1tCkNPTkZJR19TTkRf
+RU5TMTM3MT1tCiMgQ09ORklHX1NORF9FUzE5MzggaXMgbm90IHNldApDT05GSUdfU05EX0VTMTk2
+OD1tCkNPTkZJR19TTkRfRk04MDE9bQpDT05GSUdfU05EX0hEQV9JTlRFTD1tCkNPTkZJR19TTkRf
+SERBX0hXREVQPXkKQ09ORklHX1NORF9IREFfUkVDT05GSUc9eQojIENPTkZJR19TTkRfSERBX0lO
+UFVUX0JFRVAgaXMgbm90IHNldAojIENPTkZJR19TTkRfSERBX0lOUFVUX0pBQ0sgaXMgbm90IHNl
+dApDT05GSUdfU05EX0hEQV9QQVRDSF9MT0FERVI9eQpDT05GSUdfU05EX0hEQV9DT0RFQ19SRUFM
+VEVLPXkKQ09ORklHX1NORF9IREFfQ09ERUNfQU5BTE9HPXkKQ09ORklHX1NORF9IREFfQ09ERUNf
+U0lHTUFURUw9eQpDT05GSUdfU05EX0hEQV9DT0RFQ19WSUE9eQpDT05GSUdfU05EX0hEQV9DT0RF
+Q19BVElIRE1JPXkKQ09ORklHX1NORF9IREFfQ09ERUNfTlZIRE1JPXkKIyBDT05GSUdfU05EX0hE
+QV9DT0RFQ19JTlRFTEhETUkgaXMgbm90IHNldApDT05GSUdfU05EX0hEQV9DT0RFQ19DSVJSVVM9
+eQpDT05GSUdfU05EX0hEQV9DT0RFQ19DT05FWEFOVD15CiMgQ09ORklHX1NORF9IREFfQ09ERUNf
+Q0EwMTEwIGlzIG5vdCBzZXQKQ09ORklHX1NORF9IREFfQ09ERUNfQ01FRElBPXkKIyBDT05GSUdf
+U05EX0hEQV9DT0RFQ19TSTMwNTQgaXMgbm90IHNldAojIENPTkZJR19TTkRfSERBX0dFTkVSSUMg
+aXMgbm90IHNldApDT05GSUdfU05EX0hEQV9QT1dFUl9TQVZFPXkKQ09ORklHX1NORF9IREFfUE9X
+RVJfU0FWRV9ERUZBVUxUPTAKIyBDT05GSUdfU05EX0hEU1AgaXMgbm90IHNldApDT05GSUdfU05E
+X0hEU1BNPW0KQ09ORklHX1NORF9ISUZJRVI9bQpDT05GSUdfU05EX0lDRTE3MTI9bQpDT05GSUdf
+U05EX0lDRTE3MjQ9bQpDT05GSUdfU05EX0lOVEVMOFgwPW0KQ09ORklHX1NORF9JTlRFTDhYME09
+bQpDT05GSUdfU05EX0tPUkcxMjEyPW0KIyBDT05GSUdfU05EX0xYNjQ2NEVTIGlzIG5vdCBzZXQK
+Q09ORklHX1NORF9NQUVTVFJPMz1tCkNPTkZJR19TTkRfTUlYQVJUPW0KQ09ORklHX1NORF9OTTI1
+Nj1tCkNPTkZJR19TTkRfUENYSFI9bQpDT05GSUdfU05EX1JJUFRJREU9bQpDT05GSUdfU05EX1JN
+RTMyPW0KQ09ORklHX1NORF9STUU5Nj1tCkNPTkZJR19TTkRfUk1FOTY1Mj1tCkNPTkZJR19TTkRf
+U0lTNzAxOT1tCkNPTkZJR19TTkRfU09OSUNWSUJFUz1tCkNPTkZJR19TTkRfVFJJREVOVD1tCkNP
+TkZJR19TTkRfVklBODJYWD1tCiMgQ09ORklHX1NORF9WSUE4MlhYX01PREVNIGlzIG5vdCBzZXQK
+IyBDT05GSUdfU05EX1ZJUlRVT1NPIGlzIG5vdCBzZXQKQ09ORklHX1NORF9WWDIyMj1tCkNPTkZJ
+R19TTkRfWU1GUENJPW0KQ09ORklHX1NORF9TUEk9eQpDT05GSUdfU05EX1VTQj15CiMgQ09ORklH
+X1NORF9VU0JfQVVESU8gaXMgbm90IHNldApDT05GSUdfU05EX1VTQl9VU1gyWT1tCiMgQ09ORklH
+X1NORF9VU0JfQ0FJQVEgaXMgbm90IHNldApDT05GSUdfU05EX1VTQl9VUzEyMkw9bQojIENPTkZJ
+R19TTkRfU09DIGlzIG5vdCBzZXQKQ09ORklHX1NPVU5EX1BSSU1FPW0KQ09ORklHX1NPVU5EX01T
+TkRDTEFTPW0KQ09ORklHX01TTkRDTEFTX0lOSVRfRklMRT0iL2V0Yy9zb3VuZC9tc25kaW5pdC5i
+aW4iCkNPTkZJR19NU05EQ0xBU19QRVJNX0ZJTEU9Ii9ldGMvc291bmQvbXNuZHBlcm0uYmluIgpD
+T05GSUdfU09VTkRfTVNORFBJTj1tCkNPTkZJR19NU05EUElOX0lOSVRfRklMRT0iL2V0Yy9zb3Vu
+ZC9wbmRzcGluaS5iaW4iCkNPTkZJR19NU05EUElOX1BFUk1fRklMRT0iL2V0Yy9zb3VuZC9wbmRz
+cGVybS5iaW4iCiMgQ09ORklHX1NPVU5EX09TUyBpcyBub3Qgc2V0CkNPTkZJR19BQzk3X0JVUz1t
+CkNPTkZJR19ISURfU1VQUE9SVD15CkNPTkZJR19ISUQ9eQpDT05GSUdfSElEUkFXPXkKCiMKIyBV
+U0IgSW5wdXQgRGV2aWNlcwojCkNPTkZJR19VU0JfSElEPW0KQ09ORklHX0hJRF9QSUQ9eQpDT05G
+SUdfVVNCX0hJRERFVj15CgojCiMgVVNCIEhJRCBCb290IFByb3RvY29sIGRyaXZlcnMKIwpDT05G
+SUdfVVNCX0tCRD15CkNPTkZJR19VU0JfTU9VU0U9bQoKIwojIFNwZWNpYWwgSElEIGRyaXZlcnMK
+IwojIENPTkZJR19ISURfQTRURUNIIGlzIG5vdCBzZXQKQ09ORklHX0hJRF9BUFBMRT1tCkNPTkZJ
+R19ISURfQkVMS0lOPW0KQ09ORklHX0hJRF9DSEVSUlk9bQpDT05GSUdfSElEX0NISUNPTlk9bQpD
+T05GSUdfSElEX0NZUFJFU1M9bQojIENPTkZJR19ISURfRFJBR09OUklTRSBpcyBub3Qgc2V0CkNP
+TkZJR19ISURfRVpLRVk9bQpDT05GSUdfSElEX0tZRT1tCiMgQ09ORklHX0hJRF9HWVJBVElPTiBp
+cyBub3Qgc2V0CkNPTkZJR19ISURfVFdJTkhBTj1tCiMgQ09ORklHX0hJRF9LRU5TSU5HVE9OIGlz
+IG5vdCBzZXQKQ09ORklHX0hJRF9MT0dJVEVDSD1tCiMgQ09ORklHX0xPR0lURUNIX0ZGIGlzIG5v
+dCBzZXQKIyBDT05GSUdfTE9HSVJVTUJMRVBBRDJfRkYgaXMgbm90IHNldAojIENPTkZJR19ISURf
+TUlDUk9TT0ZUIGlzIG5vdCBzZXQKIyBDT05GSUdfSElEX01PTlRFUkVZIGlzIG5vdCBzZXQKQ09O
+RklHX0hJRF9OVFJJRz1tCiMgQ09ORklHX0hJRF9QQU5USEVSTE9SRCBpcyBub3Qgc2V0CkNPTkZJ
+R19ISURfUEVUQUxZTlg9bQpDT05GSUdfSElEX1NBTVNVTkc9bQpDT05GSUdfSElEX1NPTlk9bQpD
+T05GSUdfSElEX1NVTlBMVVM9bQojIENPTkZJR19ISURfR1JFRU5BU0lBIGlzIG5vdCBzZXQKQ09O
+RklHX0hJRF9TTUFSVEpPWVBMVVM9bQpDT05GSUdfU01BUlRKT1lQTFVTX0ZGPXkKQ09ORklHX0hJ
+RF9UT1BTRUVEPW0KIyBDT05GSUdfSElEX1RIUlVTVE1BU1RFUiBpcyBub3Qgc2V0CiMgQ09ORklH
+X0hJRF9aRVJPUExVUyBpcyBub3Qgc2V0CkNPTkZJR19VU0JfU1VQUE9SVD15CkNPTkZJR19VU0Jf
+QVJDSF9IQVNfSENEPXkKQ09ORklHX1VTQl9BUkNIX0hBU19PSENJPXkKQ09ORklHX1VTQl9BUkNI
+X0hBU19FSENJPXkKQ09ORklHX1VTQj15CkNPTkZJR19VU0JfREVCVUc9eQojIENPTkZJR19VU0Jf
+QU5OT1VOQ0VfTkVXX0RFVklDRVMgaXMgbm90IHNldAoKIwojIE1pc2NlbGxhbmVvdXMgVVNCIG9w
+dGlvbnMKIwpDT05GSUdfVVNCX0RFVklDRUZTPXkKIyBDT05GSUdfVVNCX0RFVklDRV9DTEFTUyBp
+cyBub3Qgc2V0CkNPTkZJR19VU0JfRFlOQU1JQ19NSU5PUlM9eQpDT05GSUdfVVNCX1NVU1BFTkQ9
+eQojIENPTkZJR19VU0JfT1RHIGlzIG5vdCBzZXQKIyBDT05GSUdfVVNCX09UR19XSElURUxJU1Qg
+aXMgbm90IHNldApDT05GSUdfVVNCX09UR19CTEFDS0xJU1RfSFVCPXkKQ09ORklHX1VTQl9NT049
+eQpDT05GSUdfVVNCX1dVU0I9bQojIENPTkZJR19VU0JfV1VTQl9DQkFGIGlzIG5vdCBzZXQKCiMK
+IyBVU0IgSG9zdCBDb250cm9sbGVyIERyaXZlcnMKIwpDT05GSUdfVVNCX0M2N1gwMF9IQ0Q9bQoj
+IENPTkZJR19VU0JfWEhDSV9IQ0QgaXMgbm90IHNldApDT05GSUdfVVNCX0VIQ0lfSENEPXkKQ09O
+RklHX1VTQl9FSENJX1JPT1RfSFVCX1RUPXkKQ09ORklHX1VTQl9FSENJX1RUX05FV1NDSEVEPXkK
+Q09ORklHX1VTQl9PWFUyMTBIUF9IQ0Q9eQojIENPTkZJR19VU0JfSVNQMTE2WF9IQ0QgaXMgbm90
+IHNldApDT05GSUdfVVNCX0lTUDE3NjBfSENEPXkKQ09ORklHX1VTQl9JU1AxMzYyX0hDRD15CkNP
+TkZJR19VU0JfT0hDSV9IQ0Q9bQpDT05GSUdfVVNCX09IQ0lfSENEX1NTQj15CiMgQ09ORklHX1VT
+Ql9PSENJX0JJR19FTkRJQU5fREVTQyBpcyBub3Qgc2V0CiMgQ09ORklHX1VTQl9PSENJX0JJR19F
+TkRJQU5fTU1JTyBpcyBub3Qgc2V0CkNPTkZJR19VU0JfT0hDSV9MSVRUTEVfRU5ESUFOPXkKQ09O
+RklHX1VTQl9VSENJX0hDRD15CkNPTkZJR19VU0JfVTEzMl9IQ0Q9bQpDT05GSUdfVVNCX1NMODEx
+X0hDRD15CiMgQ09ORklHX1VTQl9SOEE2NjU5N19IQ0QgaXMgbm90IHNldApDT05GSUdfVVNCX1dI
+Q0lfSENEPW0KQ09ORklHX1VTQl9IV0FfSENEPW0KIyBDT05GSUdfVVNCX0dBREdFVF9NVVNCX0hE
+UkMgaXMgbm90IHNldAoKIwojIFVTQiBEZXZpY2UgQ2xhc3MgZHJpdmVycwojCkNPTkZJR19VU0Jf
+QUNNPXkKQ09ORklHX1VTQl9QUklOVEVSPXkKQ09ORklHX1VTQl9XRE09eQpDT05GSUdfVVNCX1RN
+Qz15CgojCiMgTk9URTogVVNCX1NUT1JBR0UgZGVwZW5kcyBvbiBTQ1NJIGJ1dCBCTEtfREVWX1NE
+IG1heQojCgojCiMgYWxzbyBiZSBuZWVkZWQ7IHNlZSBVU0JfU1RPUkFHRSBIZWxwIGZvciBtb3Jl
+IGluZm8KIwpDT05GSUdfVVNCX1NUT1JBR0U9bQpDT05GSUdfVVNCX1NUT1JBR0VfREVCVUc9eQoj
+IENPTkZJR19VU0JfU1RPUkFHRV9EQVRBRkFCIGlzIG5vdCBzZXQKQ09ORklHX1VTQl9TVE9SQUdF
+X0ZSRUVDT009bQpDT05GSUdfVVNCX1NUT1JBR0VfSVNEMjAwPW0KQ09ORklHX1VTQl9TVE9SQUdF
+X1VTQkFUPW0KQ09ORklHX1VTQl9TVE9SQUdFX1NERFIwOT1tCiMgQ09ORklHX1VTQl9TVE9SQUdF
+X1NERFI1NSBpcyBub3Qgc2V0CiMgQ09ORklHX1VTQl9TVE9SQUdFX0pVTVBTSE9UIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfVVNCX1NUT1JBR0VfQUxBVURBIGlzIG5vdCBzZXQKIyBDT05GSUdfVVNCX1NU
+T1JBR0VfT05FVE9VQ0ggaXMgbm90IHNldApDT05GSUdfVVNCX1NUT1JBR0VfS0FSTUE9bQpDT05G
+SUdfVVNCX1NUT1JBR0VfQ1lQUkVTU19BVEFDQj1tCkNPTkZJR19VU0JfTElCVVNVQUw9eQoKIwoj
+IFVTQiBJbWFnaW5nIGRldmljZXMKIwpDT05GSUdfVVNCX01EQzgwMD15CiMgQ09ORklHX1VTQl9N
+SUNST1RFSyBpcyBub3Qgc2V0CgojCiMgVVNCIHBvcnQgZHJpdmVycwojCkNPTkZJR19VU0JfVVNT
+NzIwPXkKQ09ORklHX1VTQl9TRVJJQUw9bQpDT05GSUdfVVNCX0VaVVNCPXkKQ09ORklHX1VTQl9T
+RVJJQUxfR0VORVJJQz15CiMgQ09ORklHX1VTQl9TRVJJQUxfQUlSQ0FCTEUgaXMgbm90IHNldAoj
+IENPTkZJR19VU0JfU0VSSUFMX0FSSzMxMTYgaXMgbm90IHNldAojIENPTkZJR19VU0JfU0VSSUFM
+X0JFTEtJTiBpcyBub3Qgc2V0CkNPTkZJR19VU0JfU0VSSUFMX0NIMzQxPW0KQ09ORklHX1VTQl9T
+RVJJQUxfV0hJVEVIRUFUPW0KIyBDT05GSUdfVVNCX1NFUklBTF9ESUdJX0FDQ0VMRVBPUlQgaXMg
+bm90IHNldApDT05GSUdfVVNCX1NFUklBTF9DUDIxMFg9bQojIENPTkZJR19VU0JfU0VSSUFMX0NZ
+UFJFU1NfTTggaXMgbm90IHNldAojIENPTkZJR19VU0JfU0VSSUFMX0VNUEVHIGlzIG5vdCBzZXQK
+Q09ORklHX1VTQl9TRVJJQUxfRlRESV9TSU89bQpDT05GSUdfVVNCX1NFUklBTF9GVU5TT0ZUPW0K
+Q09ORklHX1VTQl9TRVJJQUxfVklTT1I9bQpDT05GSUdfVVNCX1NFUklBTF9JUEFRPW0KIyBDT05G
+SUdfVVNCX1NFUklBTF9JUiBpcyBub3Qgc2V0CkNPTkZJR19VU0JfU0VSSUFMX0VER0VQT1JUPW0K
+Q09ORklHX1VTQl9TRVJJQUxfRURHRVBPUlRfVEk9bQpDT05GSUdfVVNCX1NFUklBTF9HQVJNSU49
+bQojIENPTkZJR19VU0JfU0VSSUFMX0lQVyBpcyBub3Qgc2V0CkNPTkZJR19VU0JfU0VSSUFMX0lV
+VT1tCkNPTkZJR19VU0JfU0VSSUFMX0tFWVNQQU5fUERBPW0KIyBDT05GSUdfVVNCX1NFUklBTF9L
+RVlTUEFOIGlzIG5vdCBzZXQKIyBDT05GSUdfVVNCX1NFUklBTF9LTFNJIGlzIG5vdCBzZXQKIyBD
+T05GSUdfVVNCX1NFUklBTF9LT0JJTF9TQ1QgaXMgbm90IHNldApDT05GSUdfVVNCX1NFUklBTF9N
+Q1RfVTIzMj1tCkNPTkZJR19VU0JfU0VSSUFMX01PUzc3MjA9bQpDT05GSUdfVVNCX1NFUklBTF9N
+T1M3ODQwPW0KIyBDT05GSUdfVVNCX1NFUklBTF9NT1RPUk9MQSBpcyBub3Qgc2V0CkNPTkZJR19V
+U0JfU0VSSUFMX05BVk1BTj1tCiMgQ09ORklHX1VTQl9TRVJJQUxfUEwyMzAzIGlzIG5vdCBzZXQK
+IyBDT05GSUdfVVNCX1NFUklBTF9PVEk2ODU4IGlzIG5vdCBzZXQKQ09ORklHX1VTQl9TRVJJQUxf
+UVVBTENPTU09bQpDT05GSUdfVVNCX1NFUklBTF9TUENQOFg1PW0KIyBDT05GSUdfVVNCX1NFUklB
+TF9IUDRYIGlzIG5vdCBzZXQKQ09ORklHX1VTQl9TRVJJQUxfU0FGRT1tCkNPTkZJR19VU0JfU0VS
+SUFMX1NBRkVfUEFEREVEPXkKIyBDT05GSUdfVVNCX1NFUklBTF9TSUVNRU5TX01QSSBpcyBub3Qg
+c2V0CiMgQ09ORklHX1VTQl9TRVJJQUxfU0lFUlJBV0lSRUxFU1MgaXMgbm90IHNldApDT05GSUdf
+VVNCX1NFUklBTF9TWU1CT0w9bQpDT05GSUdfVVNCX1NFUklBTF9UST1tCiMgQ09ORklHX1VTQl9T
+RVJJQUxfQ1lCRVJKQUNLIGlzIG5vdCBzZXQKQ09ORklHX1VTQl9TRVJJQUxfWElSQ09NPW0KQ09O
+RklHX1VTQl9TRVJJQUxfT1BUSU9OPW0KQ09ORklHX1VTQl9TRVJJQUxfT01OSU5FVD1tCiMgQ09O
+RklHX1VTQl9TRVJJQUxfT1BUSUNPTiBpcyBub3Qgc2V0CkNPTkZJR19VU0JfU0VSSUFMX0RFQlVH
+PW0KCiMKIyBVU0IgTWlzY2VsbGFuZW91cyBkcml2ZXJzCiMKQ09ORklHX1VTQl9FTUk2Mj15CkNP
+TkZJR19VU0JfRU1JMjY9eQojIENPTkZJR19VU0JfQURVVFVYIGlzIG5vdCBzZXQKQ09ORklHX1VT
+Ql9TRVZTRUc9bQpDT05GSUdfVVNCX1JJTzUwMD1tCkNPTkZJR19VU0JfTEVHT1RPV0VSPW0KIyBD
+T05GSUdfVVNCX0xDRCBpcyBub3Qgc2V0CkNPTkZJR19VU0JfQkVSUllfQ0hBUkdFPW0KQ09ORklH
+X1VTQl9MRUQ9eQpDT05GSUdfVVNCX0NZUFJFU1NfQ1k3QzYzPW0KQ09ORklHX1VTQl9DWVRIRVJN
+PW0KQ09ORklHX1VTQl9JRE1PVVNFPW0KQ09ORklHX1VTQl9GVERJX0VMQU49bQojIENPTkZJR19V
+U0JfQVBQTEVESVNQTEFZIGlzIG5vdCBzZXQKQ09ORklHX1VTQl9TSVNVU0JWR0E9eQpDT05GSUdf
+VVNCX1NJU1VTQlZHQV9DT049eQpDT05GSUdfVVNCX0xEPW0KIyBDT05GSUdfVVNCX1RSQU5DRVZJ
+QlJBVE9SIGlzIG5vdCBzZXQKQ09ORklHX1VTQl9JT1dBUlJJT1I9bQpDT05GSUdfVVNCX1RFU1Q9
+bQojIENPTkZJR19VU0JfSVNJR0hURlcgaXMgbm90IHNldAojIENPTkZJR19VU0JfVlNUIGlzIG5v
+dCBzZXQKQ09ORklHX1VTQl9BVE09bQpDT05GSUdfVVNCX1NQRUVEVE9VQ0g9bQpDT05GSUdfVVNC
+X0NYQUNSVT1tCkNPTkZJR19VU0JfVUVBR0xFQVRNPW0KQ09ORklHX1VTQl9YVVNCQVRNPW0KQ09O
+RklHX1VTQl9HQURHRVQ9bQpDT05GSUdfVVNCX0dBREdFVF9ERUJVRz15CiMgQ09ORklHX1VTQl9H
+QURHRVRfREVCVUdfRlMgaXMgbm90IHNldApDT05GSUdfVVNCX0dBREdFVF9WQlVTX0RSQVc9MgpD
+T05GSUdfVVNCX0dBREdFVF9TRUxFQ1RFRD15CiMgQ09ORklHX1VTQl9HQURHRVRfQVQ5MSBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1VTQl9HQURHRVRfQVRNRUxfVVNCQSBpcyBub3Qgc2V0CiMgQ09ORklH
+X1VTQl9HQURHRVRfRlNMX1VTQjIgaXMgbm90IHNldAojIENPTkZJR19VU0JfR0FER0VUX0xIN0E0
+MFggaXMgbm90IHNldAojIENPTkZJR19VU0JfR0FER0VUX09NQVAgaXMgbm90IHNldAojIENPTkZJ
+R19VU0JfR0FER0VUX1BYQTI1WCBpcyBub3Qgc2V0CkNPTkZJR19VU0JfR0FER0VUX1I4QTY2NTk3
+PXkKQ09ORklHX1VTQl9SOEE2NjU5Nz1tCiMgQ09ORklHX1VTQl9HQURHRVRfUFhBMjdYIGlzIG5v
+dCBzZXQKIyBDT05GSUdfVVNCX0dBREdFVF9TM0NfSFNPVEcgaXMgbm90IHNldAojIENPTkZJR19V
+U0JfR0FER0VUX0lNWCBpcyBub3Qgc2V0CiMgQ09ORklHX1VTQl9HQURHRVRfUzNDMjQxMCBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1VTQl9HQURHRVRfTTY2NTkyIGlzIG5vdCBzZXQKIyBDT05GSUdfVVNC
+X0dBREdFVF9BTUQ1NTM2VURDIGlzIG5vdCBzZXQKIyBDT05GSUdfVVNCX0dBREdFVF9GU0xfUUUg
+aXMgbm90IHNldAojIENPTkZJR19VU0JfR0FER0VUX0NJMTNYWFggaXMgbm90IHNldAojIENPTkZJ
+R19VU0JfR0FER0VUX05FVDIyODAgaXMgbm90IHNldAojIENPTkZJR19VU0JfR0FER0VUX0dPS1Ug
+aXMgbm90IHNldAojIENPTkZJR19VU0JfR0FER0VUX0xBTkdXRUxMIGlzIG5vdCBzZXQKIyBDT05G
+SUdfVVNCX0dBREdFVF9EVU1NWV9IQ0QgaXMgbm90IHNldApDT05GSUdfVVNCX0dBREdFVF9EVUFM
+U1BFRUQ9eQojIENPTkZJR19VU0JfWkVSTyBpcyBub3Qgc2V0CkNPTkZJR19VU0JfQVVESU89bQpD
+T05GSUdfVVNCX0VUSD1tCiMgQ09ORklHX1VTQl9FVEhfUk5ESVMgaXMgbm90IHNldAojIENPTkZJ
+R19VU0JfRVRIX0VFTSBpcyBub3Qgc2V0CiMgQ09ORklHX1VTQl9HQURHRVRGUyBpcyBub3Qgc2V0
+CkNPTkZJR19VU0JfRklMRV9TVE9SQUdFPW0KQ09ORklHX1VTQl9GSUxFX1NUT1JBR0VfVEVTVD15
+CiMgQ09ORklHX1VTQl9HX1NFUklBTCBpcyBub3Qgc2V0CkNPTkZJR19VU0JfTUlESV9HQURHRVQ9
+bQpDT05GSUdfVVNCX0dfUFJJTlRFUj1tCiMgQ09ORklHX1VTQl9DRENfQ09NUE9TSVRFIGlzIG5v
+dCBzZXQKCiMKIyBPVEcgYW5kIHJlbGF0ZWQgaW5mcmFzdHJ1Y3R1cmUKIwpDT05GSUdfVVNCX09U
+R19VVElMUz15CkNPTkZJR19VU0JfR1BJT19WQlVTPW0KQ09ORklHX05PUF9VU0JfWENFSVY9eQpD
+T05GSUdfVVdCPXkKQ09ORklHX1VXQl9IV0E9bQpDT05GSUdfVVdCX1dIQ0k9bQpDT05GSUdfVVdC
+X1dMUD1tCkNPTkZJR19VV0JfSTE0ODBVPW0KQ09ORklHX1VXQl9JMTQ4MFVfV0xQPW0KQ09ORklH
+X01NQz15CiMgQ09ORklHX01NQ19ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19NTUNfVU5TQUZFX1JF
+U1VNRT15CgojCiMgTU1DL1NEL1NESU8gQ2FyZCBEcml2ZXJzCiMKQ09ORklHX01NQ19CTE9DSz15
+CkNPTkZJR19NTUNfQkxPQ0tfQk9VTkNFPXkKQ09ORklHX1NESU9fVUFSVD1tCkNPTkZJR19NTUNf
+VEVTVD15CgojCiMgTU1DL1NEL1NESU8gSG9zdCBDb250cm9sbGVyIERyaXZlcnMKIwpDT05GSUdf
+TU1DX1NESENJPXkKIyBDT05GSUdfTU1DX1NESENJX1BDSSBpcyBub3Qgc2V0CkNPTkZJR19NTUNf
+U0RIQ0lfUExURk09bQojIENPTkZJR19NTUNfV0JTRCBpcyBub3Qgc2V0CiMgQ09ORklHX01NQ19B
+VDkxIGlzIG5vdCBzZXQKIyBDT05GSUdfTU1DX0FUTUVMTUNJIGlzIG5vdCBzZXQKQ09ORklHX01N
+Q19USUZNX1NEPXkKIyBDT05GSUdfTU1DX0NCNzEwIGlzIG5vdCBzZXQKIyBDT05GSUdfTU1DX1ZJ
+QV9TRE1NQyBpcyBub3Qgc2V0CiMgQ09ORklHX01FTVNUSUNLIGlzIG5vdCBzZXQKQ09ORklHX05F
+V19MRURTPXkKQ09ORklHX0xFRFNfQ0xBU1M9bQoKIwojIExFRCBkcml2ZXJzCiMKQ09ORklHX0xF
+RFNfTkVUNDhYWD1tCiMgQ09ORklHX0xFRFNfV1JBUCBpcyBub3Qgc2V0CkNPTkZJR19MRURTX0FM
+SVgyPW0KIyBDT05GSUdfTEVEU19QQ0E5NTMyIGlzIG5vdCBzZXQKQ09ORklHX0xFRFNfR1BJTz1t
+CkNPTkZJR19MRURTX0dQSU9fUExBVEZPUk09eQojIENPTkZJR19MRURTX0xQMzk0NCBpcyBub3Qg
+c2V0CkNPTkZJR19MRURTX0NMRVZPX01BSUw9bQojIENPTkZJR19MRURTX1BDQTk1NVggaXMgbm90
+IHNldAojIENPTkZJR19MRURTX1dNODMxWF9TVEFUVVMgaXMgbm90IHNldAojIENPTkZJR19MRURT
+X1dNODM1MCBpcyBub3Qgc2V0CkNPTkZJR19MRURTX0RBQzEyNFMwODU9bQojIENPTkZJR19MRURT
+X0JEMjgwMiBpcyBub3Qgc2V0CiMgQ09ORklHX0xFRFNfSU5URUxfU1M0MjAwIGlzIG5vdCBzZXQK
+CiMKIyBMRUQgVHJpZ2dlcnMKIwojIENPTkZJR19MRURTX1RSSUdHRVJTIGlzIG5vdCBzZXQKQ09O
+RklHX0FDQ0VTU0lCSUxJVFk9eQojIENPTkZJR19JTkZJTklCQU5EIGlzIG5vdCBzZXQKQ09ORklH
+X0VEQUM9eQoKIwojIFJlcG9ydGluZyBzdWJzeXN0ZW1zCiMKQ09ORklHX0VEQUNfREVCVUc9eQoj
+IENPTkZJR19FREFDX0RFQlVHX1ZFUkJPU0UgaXMgbm90IHNldApDT05GSUdfRURBQ19ERUNPREVf
+TUNFPW0KIyBDT05GSUdfRURBQ19NTV9FREFDIGlzIG5vdCBzZXQKQ09ORklHX1JUQ19MSUI9eQpD
+T05GSUdfUlRDX0NMQVNTPXkKIyBDT05GSUdfUlRDX0hDVE9TWVMgaXMgbm90IHNldApDT05GSUdf
+UlRDX0RFQlVHPXkKCiMKIyBSVEMgaW50ZXJmYWNlcwojCkNPTkZJR19SVENfSU5URl9TWVNGUz15
+CiMgQ09ORklHX1JUQ19JTlRGX0RFViBpcyBub3Qgc2V0CkNPTkZJR19SVENfRFJWX1RFU1Q9eQoK
+IwojIEkyQyBSVEMgZHJpdmVycwojCiMgQ09ORklHX1JUQ19EUlZfRFMxMzA3IGlzIG5vdCBzZXQK
+Q09ORklHX1JUQ19EUlZfRFMxMzc0PW0KQ09ORklHX1JUQ19EUlZfRFMxNjcyPW0KIyBDT05GSUdf
+UlRDX0RSVl9NQVg2OTAwIGlzIG5vdCBzZXQKQ09ORklHX1JUQ19EUlZfUlM1QzM3Mj15CkNPTkZJ
+R19SVENfRFJWX0lTTDEyMDg9eQojIENPTkZJR19SVENfRFJWX1gxMjA1IGlzIG5vdCBzZXQKQ09O
+RklHX1JUQ19EUlZfUENGODU2Mz1tCiMgQ09ORklHX1JUQ19EUlZfUENGODU4MyBpcyBub3Qgc2V0
+CkNPTkZJR19SVENfRFJWX000MVQ4MD1tCkNPTkZJR19SVENfRFJWX000MVQ4MF9XRFQ9eQpDT05G
+SUdfUlRDX0RSVl9TMzUzOTBBPXkKQ09ORklHX1JUQ19EUlZfRk0zMTMwPW0KQ09ORklHX1JUQ19E
+UlZfUlg4NTgxPXkKQ09ORklHX1JUQ19EUlZfUlg4MDI1PXkKCiMKIyBTUEkgUlRDIGRyaXZlcnMK
+IwpDT05GSUdfUlRDX0RSVl9NNDFUOTQ9bQpDT05GSUdfUlRDX0RSVl9EUzEzMDU9bQpDT05GSUdf
+UlRDX0RSVl9EUzEzOTA9eQojIENPTkZJR19SVENfRFJWX01BWDY5MDIgaXMgbm90IHNldApDT05G
+SUdfUlRDX0RSVl9SOTcwMT15CkNPTkZJR19SVENfRFJWX1JTNUMzNDg9bQpDT05GSUdfUlRDX0RS
+Vl9EUzMyMzQ9bQojIENPTkZJR19SVENfRFJWX1BDRjIxMjMgaXMgbm90IHNldAoKIwojIFBsYXRm
+b3JtIFJUQyBkcml2ZXJzCiMKIyBDT05GSUdfUlRDX0RSVl9DTU9TIGlzIG5vdCBzZXQKQ09ORklH
+X1JUQ19EUlZfRFMxMjg2PW0KIyBDT05GSUdfUlRDX0RSVl9EUzE1MTEgaXMgbm90IHNldAojIENP
+TkZJR19SVENfRFJWX0RTMTU1MyBpcyBub3Qgc2V0CiMgQ09ORklHX1JUQ19EUlZfRFMxNzQyIGlz
+IG5vdCBzZXQKQ09ORklHX1JUQ19EUlZfU1RLMTdUQTg9bQpDT05GSUdfUlRDX0RSVl9NNDhUODY9
+bQojIENPTkZJR19SVENfRFJWX000OFQzNSBpcyBub3Qgc2V0CkNPTkZJR19SVENfRFJWX000OFQ1
+OT15CkNPTkZJR19SVENfRFJWX01TTTYyNDI9bQojIENPTkZJR19SVENfRFJWX0JRNDgwMiBpcyBu
+b3Qgc2V0CkNPTkZJR19SVENfRFJWX1JQNUMwMT1tCkNPTkZJR19SVENfRFJWX1YzMDIwPXkKIyBD
+T05GSUdfUlRDX0RSVl9XTTgzMVggaXMgbm90IHNldAojIENPTkZJR19SVENfRFJWX1dNODM1MCBp
+cyBub3Qgc2V0CkNPTkZJR19SVENfRFJWX1BDRjUwNjMzPW0KCiMKIyBvbi1DUFUgUlRDIGRyaXZl
+cnMKIwpDT05GSUdfUlRDX0RSVl9QQ0FQPXkKIyBDT05GSUdfRE1BREVWSUNFUyBpcyBub3Qgc2V0
+CkNPTkZJR19BVVhESVNQTEFZPXkKIyBDT05GSUdfS1MwMTA4IGlzIG5vdCBzZXQKQ09ORklHX1VJ
+Tz1tCkNPTkZJR19VSU9fQ0lGPW0KIyBDT05GSUdfVUlPX1BEUlYgaXMgbm90IHNldAojIENPTkZJ
+R19VSU9fUERSVl9HRU5JUlEgaXMgbm90IHNldApDT05GSUdfVUlPX1NNWD1tCiMgQ09ORklHX1VJ
+T19BRUMgaXMgbm90IHNldApDT05GSUdfVUlPX1NFUkNPUzM9bQpDT05GSUdfVUlPX1BDSV9HRU5F
+UklDPW0KCiMKIyBUSSBWTFlOUQojCiMgQ09ORklHX1NUQUdJTkcgaXMgbm90IHNldApDT05GSUdf
+WDg2X1BMQVRGT1JNX0RFVklDRVM9eQpDT05GSUdfQUNFUl9XTUk9bQpDT05GSUdfQUNFUkhERj1t
+CiMgQ09ORklHX0RFTExfV01JIGlzIG5vdCBzZXQKQ09ORklHX0ZVSklUU1VfTEFQVE9QPW0KQ09O
+RklHX0ZVSklUU1VfTEFQVE9QX0RFQlVHPXkKIyBDT05GSUdfVEMxMTAwX1dNSSBpcyBub3Qgc2V0
+CiMgQ09ORklHX0hQX1dNSSBpcyBub3Qgc2V0CiMgQ09ORklHX01TSV9MQVBUT1AgaXMgbm90IHNl
+dAojIENPTkZJR19QQU5BU09OSUNfTEFQVE9QIGlzIG5vdCBzZXQKIyBDT05GSUdfQ09NUEFMX0xB
+UFRPUCBpcyBub3Qgc2V0CiMgQ09ORklHX1NPTllfTEFQVE9QIGlzIG5vdCBzZXQKQ09ORklHX1RI
+SU5LUEFEX0FDUEk9bQpDT05GSUdfVEhJTktQQURfQUNQSV9ERUJVR0ZBQ0lMSVRJRVM9eQpDT05G
+SUdfVEhJTktQQURfQUNQSV9ERUJVRz15CkNPTkZJR19USElOS1BBRF9BQ1BJX1VOU0FGRV9MRURT
+PXkKIyBDT05GSUdfVEhJTktQQURfQUNQSV9WSURFTyBpcyBub3Qgc2V0CiMgQ09ORklHX1RISU5L
+UEFEX0FDUElfSE9US0VZX1BPTEwgaXMgbm90IHNldApDT05GSUdfSU5URUxfTUVOTE9XPW0KIyBD
+T05GSUdfRUVFUENfTEFQVE9QIGlzIG5vdCBzZXQKQ09ORklHX0FDUElfV01JPW0KQ09ORklHX0FD
+UElfQVNVUz15CkNPTkZJR19UT1BTVEFSX0xBUFRPUD15CkNPTkZJR19BQ1BJX1RPU0hJQkE9bQoK
+IwojIEZpcm13YXJlIERyaXZlcnMKIwpDT05GSUdfRUREPXkKIyBDT05GSUdfRUREX09GRiBpcyBu
+b3Qgc2V0CkNPTkZJR19GSVJNV0FSRV9NRU1NQVA9eQpDT05GSUdfREVMTF9SQlU9bQojIENPTkZJ
+R19EQ0RCQVMgaXMgbm90IHNldAojIENPTkZJR19ETUlJRCBpcyBub3Qgc2V0CkNPTkZJR19JU0NT
+SV9JQkZUX0ZJTkQ9eQojIENPTkZJR19JU0NTSV9JQkZUIGlzIG5vdCBzZXQKCiMKIyBGaWxlIHN5
+c3RlbXMKIwpDT05GSUdfRVhUMl9GUz15CkNPTkZJR19FWFQyX0ZTX1hBVFRSPXkKIyBDT05GSUdf
+RVhUMl9GU19QT1NJWF9BQ0wgaXMgbm90IHNldApDT05GSUdfRVhUMl9GU19TRUNVUklUWT15CiMg
+Q09ORklHX0VYVDJfRlNfWElQIGlzIG5vdCBzZXQKQ09ORklHX0VYVDNfRlM9bQpDT05GSUdfRVhU
+M19ERUZBVUxUU19UT19PUkRFUkVEPXkKIyBDT05GSUdfRVhUM19GU19YQVRUUiBpcyBub3Qgc2V0
+CkNPTkZJR19FWFQ0X0ZTPW0KQ09ORklHX0VYVDRfRlNfWEFUVFI9eQojIENPTkZJR19FWFQ0X0ZT
+X1BPU0lYX0FDTCBpcyBub3Qgc2V0CkNPTkZJR19FWFQ0X0ZTX1NFQ1VSSVRZPXkKIyBDT05GSUdf
+RVhUNF9ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19KQkQ9bQojIENPTkZJR19KQkRfREVCVUcgaXMg
+bm90IHNldApDT05GSUdfSkJEMj15CkNPTkZJR19KQkQyX0RFQlVHPXkKQ09ORklHX0ZTX01CQ0FD
+SEU9eQojIENPTkZJR19SRUlTRVJGU19GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0pGU19GUyBpcyBu
+b3Qgc2V0CkNPTkZJR19GU19QT1NJWF9BQ0w9eQojIENPTkZJR19YRlNfRlMgaXMgbm90IHNldAoj
+IENPTkZJR19HRlMyX0ZTIGlzIG5vdCBzZXQKQ09ORklHX09DRlMyX0ZTPXkKQ09ORklHX09DRlMy
+X0ZTX08yQ0I9bQpDT05GSUdfT0NGUzJfRlNfU1RBVFM9eQpDT05GSUdfT0NGUzJfREVCVUdfTUFT
+S0xPRz15CiMgQ09ORklHX09DRlMyX0RFQlVHX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfQlRSRlNf
+RlMgaXMgbm90IHNldAojIENPTkZJR19OSUxGUzJfRlMgaXMgbm90IHNldApDT05GSUdfRklMRV9M
+T0NLSU5HPXkKQ09ORklHX0ZTTk9USUZZPXkKIyBDT05GSUdfRE5PVElGWSBpcyBub3Qgc2V0CiMg
+Q09ORklHX0lOT1RJRlkgaXMgbm90IHNldApDT05GSUdfSU5PVElGWV9VU0VSPXkKQ09ORklHX1FV
+T1RBPXkKIyBDT05GSUdfUVVPVEFfTkVUTElOS19JTlRFUkZBQ0UgaXMgbm90IHNldApDT05GSUdf
+UFJJTlRfUVVPVEFfV0FSTklORz15CkNPTkZJR19RVU9UQV9UUkVFPXkKQ09ORklHX1FGTVRfVjE9
+eQojIENPTkZJR19RRk1UX1YyIGlzIG5vdCBzZXQKQ09ORklHX1FVT1RBQ1RMPXkKQ09ORklHX0FV
+VE9GU19GUz15CkNPTkZJR19BVVRPRlM0X0ZTPXkKQ09ORklHX0ZVU0VfRlM9bQpDT05GSUdfQ1VT
+RT1tCgojCiMgQ2FjaGVzCiMKQ09ORklHX0ZTQ0FDSEU9bQpDT05GSUdfRlNDQUNIRV9ERUJVRz15
+CkNPTkZJR19DQUNIRUZJTEVTPW0KIyBDT05GSUdfQ0FDSEVGSUxFU19ERUJVRyBpcyBub3Qgc2V0
+CgojCiMgQ0QtUk9NL0RWRCBGaWxlc3lzdGVtcwojCkNPTkZJR19JU085NjYwX0ZTPXkKIyBDT05G
+SUdfSk9MSUVUIGlzIG5vdCBzZXQKIyBDT05GSUdfWklTT0ZTIGlzIG5vdCBzZXQKQ09ORklHX1VE
+Rl9GUz15CkNPTkZJR19VREZfTkxTPXkKCiMKIyBET1MvRkFUL05UIEZpbGVzeXN0ZW1zCiMKQ09O
+RklHX0ZBVF9GUz1tCkNPTkZJR19NU0RPU19GUz1tCiMgQ09ORklHX1ZGQVRfRlMgaXMgbm90IHNl
+dApDT05GSUdfRkFUX0RFRkFVTFRfQ09ERVBBR0U9NDM3CkNPTkZJR19OVEZTX0ZTPW0KIyBDT05G
+SUdfTlRGU19ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19OVEZTX1JXPXkKCiMKIyBQc2V1ZG8gZmls
+ZXN5c3RlbXMKIwojIENPTkZJR19QUk9DX0ZTIGlzIG5vdCBzZXQKQ09ORklHX1NZU0ZTPXkKIyBD
+T05GSUdfSFVHRVRMQkZTIGlzIG5vdCBzZXQKIyBDT05GSUdfSFVHRVRMQl9QQUdFIGlzIG5vdCBz
+ZXQKQ09ORklHX0NPTkZJR0ZTX0ZTPXkKIyBDT05GSUdfTUlTQ19GSUxFU1lTVEVNUyBpcyBub3Qg
+c2V0CiMgQ09ORklHX05FVFdPUktfRklMRVNZU1RFTVMgaXMgbm90IHNldAoKIwojIFBhcnRpdGlv
+biBUeXBlcwojCkNPTkZJR19QQVJUSVRJT05fQURWQU5DRUQ9eQojIENPTkZJR19BQ09STl9QQVJU
+SVRJT04gaXMgbm90IHNldApDT05GSUdfT1NGX1BBUlRJVElPTj15CkNPTkZJR19BTUlHQV9QQVJU
+SVRJT049eQojIENPTkZJR19BVEFSSV9QQVJUSVRJT04gaXMgbm90IHNldAojIENPTkZJR19NQUNf
+UEFSVElUSU9OIGlzIG5vdCBzZXQKIyBDT05GSUdfTVNET1NfUEFSVElUSU9OIGlzIG5vdCBzZXQK
+Q09ORklHX0xETV9QQVJUSVRJT049eQojIENPTkZJR19MRE1fREVCVUcgaXMgbm90IHNldApDT05G
+SUdfU0dJX1BBUlRJVElPTj15CkNPTkZJR19VTFRSSVhfUEFSVElUSU9OPXkKQ09ORklHX1NVTl9Q
+QVJUSVRJT049eQpDT05GSUdfS0FSTUFfUEFSVElUSU9OPXkKQ09ORklHX0VGSV9QQVJUSVRJT049
+eQpDT05GSUdfU1lTVjY4X1BBUlRJVElPTj15CkNPTkZJR19OTFM9eQpDT05GSUdfTkxTX0RFRkFV
+TFQ9Imlzbzg4NTktMSIKQ09ORklHX05MU19DT0RFUEFHRV80Mzc9eQpDT05GSUdfTkxTX0NPREVQ
+QUdFXzczNz15CkNPTkZJR19OTFNfQ09ERVBBR0VfNzc1PW0KQ09ORklHX05MU19DT0RFUEFHRV84
+NTA9bQpDT05GSUdfTkxTX0NPREVQQUdFXzg1Mj15CkNPTkZJR19OTFNfQ09ERVBBR0VfODU1PW0K
+IyBDT05GSUdfTkxTX0NPREVQQUdFXzg1NyBpcyBub3Qgc2V0CiMgQ09ORklHX05MU19DT0RFUEFH
+RV84NjAgaXMgbm90IHNldAojIENPTkZJR19OTFNfQ09ERVBBR0VfODYxIGlzIG5vdCBzZXQKQ09O
+RklHX05MU19DT0RFUEFHRV84NjI9eQojIENPTkZJR19OTFNfQ09ERVBBR0VfODYzIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfTkxTX0NPREVQQUdFXzg2NCBpcyBub3Qgc2V0CkNPTkZJR19OTFNfQ09ERVBB
+R0VfODY1PXkKQ09ORklHX05MU19DT0RFUEFHRV84NjY9eQpDT05GSUdfTkxTX0NPREVQQUdFXzg2
+OT1tCiMgQ09ORklHX05MU19DT0RFUEFHRV85MzYgaXMgbm90IHNldApDT05GSUdfTkxTX0NPREVQ
+QUdFXzk1MD15CkNPTkZJR19OTFNfQ09ERVBBR0VfOTMyPXkKQ09ORklHX05MU19DT0RFUEFHRV85
+NDk9eQpDT05GSUdfTkxTX0NPREVQQUdFXzg3ND1tCiMgQ09ORklHX05MU19JU084ODU5XzggaXMg
+bm90IHNldApDT05GSUdfTkxTX0NPREVQQUdFXzEyNTA9eQpDT05GSUdfTkxTX0NPREVQQUdFXzEy
+NTE9eQpDT05GSUdfTkxTX0FTQ0lJPXkKIyBDT05GSUdfTkxTX0lTTzg4NTlfMSBpcyBub3Qgc2V0
+CiMgQ09ORklHX05MU19JU084ODU5XzIgaXMgbm90IHNldApDT05GSUdfTkxTX0lTTzg4NTlfMz1t
+CiMgQ09ORklHX05MU19JU084ODU5XzQgaXMgbm90IHNldApDT05GSUdfTkxTX0lTTzg4NTlfNT15
+CkNPTkZJR19OTFNfSVNPODg1OV82PW0KQ09ORklHX05MU19JU084ODU5Xzc9bQpDT05GSUdfTkxT
+X0lTTzg4NTlfOT15CkNPTkZJR19OTFNfSVNPODg1OV8xMz15CkNPTkZJR19OTFNfSVNPODg1OV8x
+ND1tCiMgQ09ORklHX05MU19JU084ODU5XzE1IGlzIG5vdCBzZXQKIyBDT05GSUdfTkxTX0tPSThf
+UiBpcyBub3Qgc2V0CkNPTkZJR19OTFNfS09JOF9VPXkKQ09ORklHX05MU19VVEY4PXkKCiMKIyBL
+ZXJuZWwgaGFja2luZwojCkNPTkZJR19UUkFDRV9JUlFGTEFHU19TVVBQT1JUPXkKQ09ORklHX1BS
+SU5US19USU1FPXkKIyBDT05GSUdfRU5BQkxFX1dBUk5fREVQUkVDQVRFRCBpcyBub3Qgc2V0CkNP
+TkZJR19FTkFCTEVfTVVTVF9DSEVDSz15CkNPTkZJR19GUkFNRV9XQVJOPTEwMjQKIyBDT05GSUdf
+TUFHSUNfU1lTUlEgaXMgbm90IHNldApDT05GSUdfU1RSSVBfQVNNX1NZTVM9eQpDT05GSUdfVU5V
+U0VEX1NZTUJPTFM9eQpDT05GSUdfREVCVUdfRlM9eQpDT05GSUdfSEVBREVSU19DSEVDSz15CkNP
+TkZJR19ERUJVR19LRVJORUw9eQpDT05GSUdfREVCVUdfU0hJUlE9eQpDT05GSUdfREVURUNUX1NP
+RlRMT0NLVVA9eQpDT05GSUdfQk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9eQpDT05GSUdfQk9P
+VFBBUkFNX1NPRlRMT0NLVVBfUEFOSUNfVkFMVUU9MQojIENPTkZJR19ERVRFQ1RfSFVOR19UQVNL
+IGlzIG5vdCBzZXQKQ09ORklHX1NDSEVEX0RFQlVHPXkKQ09ORklHX1NDSEVEU1RBVFM9eQpDT05G
+SUdfREVCVUdfT0JKRUNUUz15CkNPTkZJR19ERUJVR19PQkpFQ1RTX1NFTEZURVNUPXkKQ09ORklH
+X0RFQlVHX09CSkVDVFNfRlJFRT15CkNPTkZJR19ERUJVR19PQkpFQ1RTX1RJTUVSUz15CkNPTkZJ
+R19ERUJVR19PQkpFQ1RTX0VOQUJMRV9ERUZBVUxUPTEKIyBDT05GSUdfU0xRQl9ERUJVRyBpcyBu
+b3Qgc2V0CkNPTkZJR19TTFFCX1NZU0ZTPXkKQ09ORklHX1NMUUJfU1RBVFM9eQojIENPTkZJR19E
+RUJVR19LTUVNTEVBSyBpcyBub3Qgc2V0CkNPTkZJR19ERUJVR19QUkVFTVBUPXkKQ09ORklHX0RF
+QlVHX1JUX01VVEVYRVM9eQpDT05GSUdfREVCVUdfUElfTElTVD15CkNPTkZJR19SVF9NVVRFWF9U
+RVNURVI9eQpDT05GSUdfREVCVUdfU1BJTkxPQ0s9eQpDT05GSUdfREVCVUdfTVVURVhFUz15CkNP
+TkZJR19ERUJVR19MT0NLX0FMTE9DPXkKQ09ORklHX1BST1ZFX0xPQ0tJTkc9eQpDT05GSUdfTE9D
+S0RFUD15CkNPTkZJR19MT0NLX1NUQVQ9eQpDT05GSUdfREVCVUdfTE9DS0RFUD15CkNPTkZJR19U
+UkFDRV9JUlFGTEFHUz15CkNPTkZJR19ERUJVR19TUElOTE9DS19TTEVFUD15CkNPTkZJR19ERUJV
+R19MT0NLSU5HX0FQSV9TRUxGVEVTVFM9eQpDT05GSUdfU1RBQ0tUUkFDRT15CkNPTkZJR19ERUJV
+R19LT0JKRUNUPXkKQ09ORklHX0RFQlVHX0hJR0hNRU09eQojIENPTkZJR19ERUJVR19CVUdWRVJC
+T1NFIGlzIG5vdCBzZXQKIyBDT05GSUdfREVCVUdfSU5GTyBpcyBub3Qgc2V0CiMgQ09ORklHX0RF
+QlVHX1ZNIGlzIG5vdCBzZXQKQ09ORklHX0RFQlVHX1ZJUlRVQUw9eQpDT05GSUdfREVCVUdfV1JJ
+VEVDT1VOVD15CkNPTkZJR19ERUJVR19NRU1PUllfSU5JVD15CkNPTkZJR19ERUJVR19MSVNUPXkK
+IyBDT05GSUdfREVCVUdfU0cgaXMgbm90IHNldApDT05GSUdfREVCVUdfTk9USUZJRVJTPXkKIyBD
+T05GSUdfREVCVUdfQ1JFREVOVElBTFMgaXMgbm90IHNldApDT05GSUdfQVJDSF9XQU5UX0ZSQU1F
+X1BPSU5URVJTPXkKQ09ORklHX0ZSQU1FX1BPSU5URVI9eQpDT05GSUdfQk9PVF9QUklOVEtfREVM
+QVk9eQojIENPTkZJR19SQ1VfVE9SVFVSRV9URVNUIGlzIG5vdCBzZXQKIyBDT05GSUdfUkNVX0NQ
+VV9TVEFMTF9ERVRFQ1RPUiBpcyBub3Qgc2V0CkNPTkZJR19LUFJPQkVTX1NBTklUWV9URVNUPXkK
+Q09ORklHX0JBQ0tUUkFDRV9TRUxGX1RFU1Q9bQojIENPTkZJR19ERUJVR19CTE9DS19FWFRfREVW
+VCBpcyBub3Qgc2V0CkNPTkZJR19ERUJVR19GT1JDRV9XRUFLX1BFUl9DUFU9eQpDT05GSUdfTEtE
+VE09bQpDT05GSUdfRkFVTFRfSU5KRUNUSU9OPXkKQ09ORklHX0ZBSUxfUEFHRV9BTExPQz15CiMg
+Q09ORklHX0ZBSUxfTUFLRV9SRVFVRVNUIGlzIG5vdCBzZXQKQ09ORklHX0ZBSUxfSU9fVElNRU9V
+VD15CkNPTkZJR19GQVVMVF9JTkpFQ1RJT05fREVCVUdfRlM9eQpDT05GSUdfRkFVTFRfSU5KRUNU
+SU9OX1NUQUNLVFJBQ0VfRklMVEVSPXkKQ09ORklHX0xBVEVOQ1lUT1A9eQpDT05GSUdfU1lTQ1RM
+X1NZU0NBTExfQ0hFQ0s9eQojIENPTkZJR19ERUJVR19QQUdFQUxMT0MgaXMgbm90IHNldApDT05G
+SUdfVVNFUl9TVEFDS1RSQUNFX1NVUFBPUlQ9eQpDT05GSUdfTk9QX1RSQUNFUj15CkNPTkZJR19I
+QVZFX0ZVTkNUSU9OX1RSQUNFUj15CkNPTkZJR19IQVZFX0ZVTkNUSU9OX0dSQVBIX1RSQUNFUj15
+CkNPTkZJR19IQVZFX0ZVTkNUSU9OX0dSQVBIX0ZQX1RFU1Q9eQpDT05GSUdfSEFWRV9GVU5DVElP
+Tl9UUkFDRV9NQ09VTlRfVEVTVD15CkNPTkZJR19IQVZFX0RZTkFNSUNfRlRSQUNFPXkKQ09ORklH
+X0hBVkVfRlRSQUNFX01DT1VOVF9SRUNPUkQ9eQpDT05GSUdfSEFWRV9TWVNDQUxMX1RSQUNFUE9J
+TlRTPXkKQ09ORklHX1JJTkdfQlVGRkVSPXkKQ09ORklHX0VWRU5UX1RSQUNJTkc9eQpDT05GSUdf
+Q09OVEVYVF9TV0lUQ0hfVFJBQ0VSPXkKQ09ORklHX1JJTkdfQlVGRkVSX0FMTE9XX1NXQVA9eQpD
+T05GSUdfVFJBQ0lORz15CkNPTkZJR19UUkFDSU5HX1NVUFBPUlQ9eQojIENPTkZJR19GVFJBQ0Ug
+aXMgbm90IHNldApDT05GSUdfUFJPVklERV9PSENJMTM5NF9ETUFfSU5JVD15CkNPTkZJR19CVUlM
+RF9ET0NTUkM9eQojIENPTkZJR19EWU5BTUlDX0RFQlVHIGlzIG5vdCBzZXQKIyBDT05GSUdfRE1B
+X0FQSV9ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19TQU1QTEVTPXkKQ09ORklHX1NBTVBMRV9UUkFD
+RVBPSU5UUz1tCiMgQ09ORklHX1NBTVBMRV9UUkFDRV9FVkVOVFMgaXMgbm90IHNldApDT05GSUdf
+U0FNUExFX0tPQkpFQ1Q9bQojIENPTkZJR19TQU1QTEVfS1BST0JFUyBpcyBub3Qgc2V0CkNPTkZJ
+R19IQVZFX0FSQ0hfS0dEQj15CkNPTkZJR19LR0RCPXkKIyBDT05GSUdfS0dEQl9TRVJJQUxfQ09O
+U09MRSBpcyBub3Qgc2V0CkNPTkZJR19LR0RCX1RFU1RTPXkKQ09ORklHX0tHREJfVEVTVFNfT05f
+Qk9PVD15CkNPTkZJR19LR0RCX1RFU1RTX0JPT1RfU1RSSU5HPSJWMUYxMDAiCkNPTkZJR19IQVZF
+X0FSQ0hfS01FTUNIRUNLPXkKIyBDT05GSUdfU1RSSUNUX0RFVk1FTSBpcyBub3Qgc2V0CiMgQ09O
+RklHX1g4Nl9WRVJCT1NFX0JPT1RVUCBpcyBub3Qgc2V0CkNPTkZJR19FQVJMWV9QUklOVEs9eQpD
+T05GSUdfRUFSTFlfUFJJTlRLX0RCR1A9eQojIENPTkZJR19ERUJVR19TVEFDS09WRVJGTE9XIGlz
+IG5vdCBzZXQKIyBDT05GSUdfREVCVUdfU1RBQ0tfVVNBR0UgaXMgbm90IHNldApDT05GSUdfREVC
+VUdfUEVSX0NQVV9NQVBTPXkKQ09ORklHX1g4Nl9QVERVTVA9eQpDT05GSUdfREVCVUdfUk9EQVRB
+PXkKIyBDT05GSUdfREVCVUdfUk9EQVRBX1RFU1QgaXMgbm90IHNldApDT05GSUdfREVCVUdfTlhf
+VEVTVD1tCkNPTkZJR180S1NUQUNLUz15CkNPTkZJR19ET1VCTEVGQVVMVD15CkNPTkZJR19JT01N
+VV9TVFJFU1M9eQpDT05GSUdfSEFWRV9NTUlPVFJBQ0VfU1VQUE9SVD15CkNPTkZJR19YODZfREVD
+T0RFUl9TRUxGVEVTVD15CkNPTkZJR19JT19ERUxBWV9UWVBFXzBYODA9MApDT05GSUdfSU9fREVM
+QVlfVFlQRV8wWEVEPTEKQ09ORklHX0lPX0RFTEFZX1RZUEVfVURFTEFZPTIKQ09ORklHX0lPX0RF
+TEFZX1RZUEVfTk9ORT0zCiMgQ09ORklHX0lPX0RFTEFZXzBYODAgaXMgbm90IHNldAojIENPTkZJ
+R19JT19ERUxBWV8wWEVEIGlzIG5vdCBzZXQKQ09ORklHX0lPX0RFTEFZX1VERUxBWT15CiMgQ09O
+RklHX0lPX0RFTEFZX05PTkUgaXMgbm90IHNldApDT05GSUdfREVGQVVMVF9JT19ERUxBWV9UWVBF
+PTIKQ09ORklHX0RFQlVHX0JPT1RfUEFSQU1TPXkKQ09ORklHX0NQQV9ERUJVRz15CkNPTkZJR19P
+UFRJTUlaRV9JTkxJTklORz15CiMgQ09ORklHX0RFQlVHX1NUUklDVF9VU0VSX0NPUFlfQ0hFQ0tT
+IGlzIG5vdCBzZXQKCiMKIyBTZWN1cml0eSBvcHRpb25zCiMKQ09ORklHX0tFWVM9eQpDT05GSUdf
+S0VZU19ERUJVR19QUk9DX0tFWVM9eQpDT05GSUdfU0VDVVJJVFk9eQpDT05GSUdfU0VDVVJJVFlG
+Uz15CiMgQ09ORklHX1NFQ1VSSVRZX05FVFdPUksgaXMgbm90IHNldApDT05GSUdfU0VDVVJJVFlf
+UEFUSD15CkNPTkZJR19TRUNVUklUWV9GSUxFX0NBUEFCSUxJVElFUz15CkNPTkZJR19TRUNVUklU
+WV9UT01PWU89eQpDT05GSUdfSU1BPXkKQ09ORklHX0lNQV9NRUFTVVJFX1BDUl9JRFg9MTAKQ09O
+RklHX0lNQV9BVURJVD15CkNPTkZJR19DUllQVE89eQoKIwojIENyeXB0byBjb3JlIG9yIGhlbHBl
+cgojCiMgQ09ORklHX0NSWVBUT19GSVBTIGlzIG5vdCBzZXQKQ09ORklHX0NSWVBUT19BTEdBUEk9
+eQpDT05GSUdfQ1JZUFRPX0FMR0FQSTI9eQpDT05GSUdfQ1JZUFRPX0FFQUQ9bQpDT05GSUdfQ1JZ
+UFRPX0FFQUQyPXkKQ09ORklHX0NSWVBUT19CTEtDSVBIRVI9eQpDT05GSUdfQ1JZUFRPX0JMS0NJ
+UEhFUjI9eQpDT05GSUdfQ1JZUFRPX0hBU0g9eQpDT05GSUdfQ1JZUFRPX0hBU0gyPXkKQ09ORklH
+X0NSWVBUT19STkc9eQpDT05GSUdfQ1JZUFRPX1JORzI9eQpDT05GSUdfQ1JZUFRPX1BDT01QPXkK
+Q09ORklHX0NSWVBUT19NQU5BR0VSPXkKQ09ORklHX0NSWVBUT19NQU5BR0VSMj15CkNPTkZJR19D
+UllQVE9fR0YxMjhNVUw9eQpDT05GSUdfQ1JZUFRPX05VTEw9bQpDT05GSUdfQ1JZUFRPX1dPUktR
+VUVVRT15CkNPTkZJR19DUllQVE9fQ1JZUFREPXkKIyBDT05GSUdfQ1JZUFRPX0FVVEhFTkMgaXMg
+bm90IHNldApDT05GSUdfQ1JZUFRPX1RFU1Q9bQoKIwojIEF1dGhlbnRpY2F0ZWQgRW5jcnlwdGlv
+biB3aXRoIEFzc29jaWF0ZWQgRGF0YQojCkNPTkZJR19DUllQVE9fQ0NNPW0KQ09ORklHX0NSWVBU
+T19HQ009bQpDT05GSUdfQ1JZUFRPX1NFUUlWPW0KCiMKIyBCbG9jayBtb2RlcwojCkNPTkZJR19D
+UllQVE9fQ0JDPW0KQ09ORklHX0NSWVBUT19DVFI9bQpDT05GSUdfQ1JZUFRPX0NUUz1tCkNPTkZJ
+R19DUllQVE9fRUNCPW0KIyBDT05GSUdfQ1JZUFRPX0xSVyBpcyBub3Qgc2V0CkNPTkZJR19DUllQ
+VE9fUENCQz15CkNPTkZJR19DUllQVE9fWFRTPW0KCiMKIyBIYXNoIG1vZGVzCiMKQ09ORklHX0NS
+WVBUT19ITUFDPXkKIyBDT05GSUdfQ1JZUFRPX1hDQkMgaXMgbm90IHNldAojIENPTkZJR19DUllQ
+VE9fVk1BQyBpcyBub3Qgc2V0CgojCiMgRGlnZXN0CiMKIyBDT05GSUdfQ1JZUFRPX0NSQzMyQyBp
+cyBub3Qgc2V0CiMgQ09ORklHX0NSWVBUT19DUkMzMkNfSU5URUwgaXMgbm90IHNldApDT05GSUdf
+Q1JZUFRPX0dIQVNIPXkKIyBDT05GSUdfQ1JZUFRPX01ENCBpcyBub3Qgc2V0CkNPTkZJR19DUllQ
+VE9fTUQ1PXkKQ09ORklHX0NSWVBUT19NSUNIQUVMX01JQz15CiMgQ09ORklHX0NSWVBUT19STUQx
+MjggaXMgbm90IHNldAojIENPTkZJR19DUllQVE9fUk1EMTYwIGlzIG5vdCBzZXQKQ09ORklHX0NS
+WVBUT19STUQyNTY9bQojIENPTkZJR19DUllQVE9fUk1EMzIwIGlzIG5vdCBzZXQKQ09ORklHX0NS
+WVBUT19TSEExPXkKQ09ORklHX0NSWVBUT19TSEEyNTY9eQpDT05GSUdfQ1JZUFRPX1NIQTUxMj15
+CkNPTkZJR19DUllQVE9fVEdSMTkyPW0KQ09ORklHX0NSWVBUT19XUDUxMj1tCgojCiMgQ2lwaGVy
+cwojCkNPTkZJR19DUllQVE9fQUVTPXkKQ09ORklHX0NSWVBUT19BRVNfNTg2PXkKQ09ORklHX0NS
+WVBUT19BTlVCSVM9bQpDT05GSUdfQ1JZUFRPX0FSQzQ9bQpDT05GSUdfQ1JZUFRPX0JMT1dGSVNI
+PW0KQ09ORklHX0NSWVBUT19DQU1FTExJQT15CiMgQ09ORklHX0NSWVBUT19DQVNUNSBpcyBub3Qg
+c2V0CiMgQ09ORklHX0NSWVBUT19DQVNUNiBpcyBub3Qgc2V0CkNPTkZJR19DUllQVE9fREVTPXkK
+Q09ORklHX0NSWVBUT19GQ1JZUFQ9bQojIENPTkZJR19DUllQVE9fS0hBWkFEIGlzIG5vdCBzZXQK
+Q09ORklHX0NSWVBUT19TQUxTQTIwPXkKQ09ORklHX0NSWVBUT19TQUxTQTIwXzU4Nj1tCkNPTkZJ
+R19DUllQVE9fU0VFRD15CkNPTkZJR19DUllQVE9fU0VSUEVOVD15CiMgQ09ORklHX0NSWVBUT19U
+RUEgaXMgbm90IHNldAojIENPTkZJR19DUllQVE9fVFdPRklTSCBpcyBub3Qgc2V0CiMgQ09ORklH
+X0NSWVBUT19UV09GSVNIXzU4NiBpcyBub3Qgc2V0CgojCiMgQ29tcHJlc3Npb24KIwpDT05GSUdf
+Q1JZUFRPX0RFRkxBVEU9eQpDT05GSUdfQ1JZUFRPX1pMSUI9eQpDT05GSUdfQ1JZUFRPX0xaTz15
+CgojCiMgUmFuZG9tIE51bWJlciBHZW5lcmF0aW9uCiMKQ09ORklHX0NSWVBUT19BTlNJX0NQUk5H
+PXkKQ09ORklHX0NSWVBUT19IVz15CkNPTkZJR19DUllQVE9fREVWX1BBRExPQ0s9eQojIENPTkZJ
+R19DUllQVE9fREVWX1BBRExPQ0tfQUVTIGlzIG5vdCBzZXQKQ09ORklHX0NSWVBUT19ERVZfUEFE
+TE9DS19TSEE9eQpDT05GSUdfQ1JZUFRPX0RFVl9HRU9ERT1tCkNPTkZJR19DUllQVE9fREVWX0hJ
+Rk5fNzk1WD15CkNPTkZJR19DUllQVE9fREVWX0hJRk5fNzk1WF9STkc9eQpDT05GSUdfSEFWRV9L
+Vk09eQpDT05GSUdfSEFWRV9LVk1fSVJRQ0hJUD15CkNPTkZJR19IQVZFX0tWTV9FVkVOVEZEPXkK
+Q09ORklHX0tWTV9BUElDX0FSQ0hJVEVDVFVSRT15CkNPTkZJR19WSVJUVUFMSVpBVElPTj15CkNP
+TkZJR19LVk09bQpDT05GSUdfS1ZNX0lOVEVMPW0KQ09ORklHX0tWTV9BTUQ9bQojIENPTkZJR19M
+R1VFU1QgaXMgbm90IHNldAojIENPTkZJR19WSVJUSU9fUENJIGlzIG5vdCBzZXQKIyBDT05GSUdf
+VklSVElPX0JBTExPT04gaXMgbm90IHNldApDT05GSUdfQklOQVJZX1BSSU5URj15CgojCiMgTGli
+cmFyeSByb3V0aW5lcwojCkNPTkZJR19CSVRSRVZFUlNFPXkKQ09ORklHX0dFTkVSSUNfRklORF9G
+SVJTVF9CSVQ9eQpDT05GSUdfR0VORVJJQ19GSU5EX05FWFRfQklUPXkKQ09ORklHX0dFTkVSSUNf
+RklORF9MQVNUX0JJVD15CkNPTkZJR19DUkNfQ0NJVFQ9eQpDT05GSUdfQ1JDMTY9eQpDT05GSUdf
+Q1JDX1QxMERJRj1tCkNPTkZJR19DUkNfSVRVX1Q9eQpDT05GSUdfQ1JDMzI9eQpDT05GSUdfQ1JD
+Nz15CiMgQ09ORklHX0xJQkNSQzMyQyBpcyBub3Qgc2V0CkNPTkZJR19BVURJVF9HRU5FUklDPXkK
+Q09ORklHX1pMSUJfSU5GTEFURT15CkNPTkZJR19aTElCX0RFRkxBVEU9eQpDT05GSUdfTFpPX0NP
+TVBSRVNTPXkKQ09ORklHX0xaT19ERUNPTVBSRVNTPXkKQ09ORklHX0RFQ09NUFJFU1NfR1pJUD15
+CkNPTkZJR19ERUNPTVBSRVNTX0JaSVAyPXkKQ09ORklHX0hBU19JT01FTT15CkNPTkZJR19IQVNf
+SU9QT1JUPXkKQ09ORklHX0hBU19ETUE9eQpDT05GSUdfQ0hFQ0tfU0lHTkFUVVJFPXkKQ09ORklH
+X0NQVU1BU0tfT0ZGU1RBQ0s9eQpDT05GSUdfTkxBVFRSPXkKQ09ORklHX1NITV9TSUdOQUw9eQpD
+T05GSUdfSU9RPXkK
 
---ogUXNSQj4OI1q3LQ--
+--Multipart=_Mon__2_Nov_2009_09_13_39_-0800_2DgutnyTjOC+sOFC--
