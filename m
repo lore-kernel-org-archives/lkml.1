@@ -1,123 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbZKBQw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbZKBQwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbZKBQw3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 11:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbZKBQw2
+	id S1756126AbZKBQwq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:52:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbZKBQwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 11:52:28 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:48011 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755897AbZKBQw0 (ORCPT
+	Mon, 2 Nov 2009 11:52:45 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:65256 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756014AbZKBQwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 11:52:26 -0500
-Subject: tps60501: Allow configuration of VDCDC2
-Message-Id: <20091102165230.757607586@fluff.org.uk>
-User-Agent: quilt/0.46-1
-From: Ben Dooks <ben@simtec.co.uk>
-To: linux-kernel@vger.kernel.org, sameo@linux.intel.com,
-       dbrownell@users.sourceforge.net
-Cc: Simtec Linux Team <linux@simtec.co.uk>
-Content-Disposition: inline; filename=tps65010-add-vdcdc2.patch
-Date: Mon, 02 Nov 2009 16:52:30 +0000
+	Mon, 2 Nov 2009 11:52:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=V0nX5FN1ZTP/jQ/Y4gYxgvL0l2diSxlmT/JQljEGsUInveQWi7c7OMSTa8/XoTupZs
+         3gjUgiDqQP4U1kmbChq7eumiv1cdRH0hbaQ7pr1ZGaCDS5Dyp01vFo6VusbODMxeP5kS
+         0Sh4ziWHZqTAr9yv9KEn4nJlO8txPnwv5QtDc=
+MIME-Version: 1.0
+Date: Mon, 2 Nov 2009 16:52:47 +0000
+Message-ID: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com>
+Subject: Re: Fast LKM symbol resolution
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>
+Cc: Carmelo Amoroso <carmelo73@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add function to allow the configuation fo the VDCDC2 register by
-external users, to allow changing of the standard and low-power
-running modes.
+Here's my latest code using binary search for symbol resolution.  This
+version has benefited from a little more testing (heh), in particular
+running on a simulated ARM system.
 
-This is needed, for example, for the Simtec IM2440D20 where we need
-to use the low-power mode to shutdown the LDO/DCDC that are not needed
-during suspend (saving substantial power) and the runtime use of the
-low-power mode to change VCore.
+    web: <http://github.com/sourcejedi/linux-2.6/commits/module-V2-beta1>
 
-Signed-off-by: Ben Dooks <ben@simtec.co.uk>
-Signed-off-by: Simtec Linux Team <linux@simtec.co.uk>
+    git clone git://github.com/sourcejedi/linux-2.6.git module-V2-beta1
 
----
- drivers/mfd/tps65010.c       |   28 ++++++++++++++++++++++++++++
- include/linux/i2c/tps65010.h |   19 +++++++++++++++++++
- 2 files changed, 47 insertions(+)
+As before, it saves 0.3s boot time for a modular kernel on my netbook
+(630 Mhz Celeron M).  On that system it represents something like 90%
+of the maximum possible speedup.  It is claimed that slower systems
+would benefit from a further speedup (e.g. using hash tables instead),
+but we don't have any numbers to illustrate this yet.
 
-Index: b/drivers/mfd/tps65010.c
-===================================================================
---- a/drivers/mfd/tps65010.c	2009-11-02 15:55:43.000000000 +0000
-+++ b/drivers/mfd/tps65010.c	2009-11-02 16:40:04.000000000 +0000
-@@ -964,6 +964,34 @@ int tps65010_config_vregs1(unsigned valu
- }
- EXPORT_SYMBOL(tps65010_config_vregs1);
- 
-+int tps65010_config_vdcdc2(unsigned value)
-+{
-+	struct i2c_client *c;
-+	int	 status;
-+
-+	if (!the_tps)
-+		return -ENODEV;
-+
-+	c = the_tps->client;
-+	mutex_lock(&the_tps->lock);
-+
-+	pr_debug("%s: vdcdc2 0x%02x\n", DRIVER_NAME,
-+		 i2c_smbus_read_byte_data(c, TPS_VDCDC2));
-+
-+	status = i2c_smbus_write_byte_data(c, TPS_VDCDC2, value);
-+
-+	if (status != 0)
-+		printk(KERN_ERR "%s: Failed to write vdcdc2 register\n",
-+			DRIVER_NAME);
-+	else
-+		pr_debug("%s: vregs1 0x%02x\n", DRIVER_NAME,
-+			 i2c_smbus_read_byte_data(c, TPS_VDCDC2));
-+
-+	mutex_unlock(&the_tps->lock);
-+	return status;
-+}
-+EXPORT_SYMBOL(tps65010_config_vdcdc2);
-+
- /*-------------------------------------------------------------------------*/
- /* tps65013_set_low_pwr parameter:
-  * mode: ON or OFF
-Index: b/include/linux/i2c/tps65010.h
-===================================================================
---- a/include/linux/i2c/tps65010.h	2009-11-02 15:55:26.000000000 +0000
-+++ b/include/linux/i2c/tps65010.h	2009-11-02 15:55:43.000000000 +0000
-@@ -72,6 +72,21 @@
- #define	TPS_VDCDC1		0x0c
- #	define	TPS_ENABLE_LP		(1 << 3)
- #define	TPS_VDCDC2		0x0d
-+#	define	TPS_LP_COREOFF	(1 << 7)
-+#	define 	TPS_VCORE_1_8V	(7<<4)
-+#	define 	TPS_VCORE_1_5V	(6 << 4)
-+#	define 	TPS_VCORE_1_4V	(5 << 4)
-+#	define 	TPS_VCORE_1_3V	(4 << 4)
-+#	define 	TPS_VCORE_1_2V	(3 << 4)
-+#	define 	TPS_VCORE_1_1V	(2 << 4)
-+#	define 	TPS_VCORE_1_0V	(1 << 4)
-+#	define 	TPS_VCORE_0_85V	(0 << 4)
-+#	define	TPS_VCORE_LP_1_2V (3 << 2)
-+#	define	TPS_VCORE_LP_1_1V (2 << 2)
-+#	define	TPS_VCORE_LP_1_0V (1 << 2)
-+#	define	TPS_VCORE_LP_0_85V (0 << 2)
-+#	define	TPS_VIB		(1 << 1)
-+#	define	TPS_VCORE_DISCH	(1 << 0)
- #define	TPS_VREGS1		0x0e
- #	define	TPS_LDO2_ENABLE	(1 << 7)
- #	define	TPS_LDO2_OFF	(1 << 6)
-@@ -152,6 +167,10 @@ extern int tps65010_config_vregs1(unsign
-  */
- extern int tps65013_set_low_pwr(unsigned mode);
- 
-+/* tps65010_set_vdcdc2
-+ *  value to be written to VDCDC2
-+ */
-+extern int tps65010_config_vdcdc2(unsigned value);
- 
- struct i2c_client;
- 
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+Changes since the original patches were posted:
 
-  'a smiley only costs 4 bytes'
+1) The sorted version of the exports is now generated in
+arch-independent assembly language, as .tmp-exports-asm.S.  It uses
+similar pseudo-instructions to those in the current .tmp-kallsyms.S.
+
+Previously the sorted exports were generated in C, but the compiler
+outputted them in reverse order.  This was made to work by reversing
+the comparison used in binary search, but it was a brittle hack.
+
+This means mod_export.h now includes two implementations of
+EXPORT_SYMBOL; one for general use in C code, and one for use in
+.tmp-exports-asm.S.
+
+2) In vmlinux.lds.h, the unsorted exports are now discarded in the
+DISCARDS macro.
+
+Previouslly they were discarded before including the sections of
+sorted exports.  This broke the ARM build by discarding some unrelated
+symbols too early.  It appears that a) the position of /DISCARD/
+directives is signficant; b) all /DISCARD/ directives are merged
+together and applied at the point of the first /DISCARD/ directive.
+
+3) Now lightly tested on ARM (using qemu)
+
+To build on ARM it was necessary to remove EXPORT_ALIAS, used in
+armksyms.c for the sole purpose of allowing out of tree floating point
+emulation code to be loaded as a module.  I have posted this change on
+the ARM list and received no comments either way.
+
+4) Build-tested on blackfin (a MODULE_SYMBOL_PREFIX arch)
+
+This required that MODULE_SYMBOL_PREFIX be defined via a Kconfig
+option, CONFIG_HAVE_SYMBOL_PREFIX.  Up until now it has been defined
+in <asm/module.h> - but this also includes C declarations, which made
+it impossible to use in .tmp-exports-asm.S.
+
+Alan
