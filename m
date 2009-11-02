@@ -1,57 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbZKBJ5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbZKBKGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbZKBJ5x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 04:57:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZKBJ5w
+	id S1754325AbZKBKGO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 05:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZKBKGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 04:57:52 -0500
-Received: from ns.penguin.cz ([84.21.108.25]:48179 "EHLO ns.penguin.cz"
+	Mon, 2 Nov 2009 05:06:14 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58352 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754114AbZKBJ5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 04:57:52 -0500
-Subject: Re: Possible suspend/resume regression in .32-rc?
-From: Stanislav Brabec <utx@penguin.cz>
-To: Haojian Zhuang <haojian.zhuang@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, dsaxena@laptop.org, alan@linux.intel.com,
-       gregkh@suse.de, Daniel Mack <daniel@caiaq.de>,
-       linux-arm-kernel@lists.infradead.org, Eric <eric.y.miao@gmail.com>,
-       Haojian Zhuang <haojian.zhuang@marvell.com>, rpurdie@rpsys.net,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com, dbaryshkov@gmail.com, omegamoon@gmail.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <771cded00911020122o3bb5cc96q957c8be1ce7cae46@mail.gmail.com>
-References: <20091031013427.GL14091@buzzloop.caiaq.de>
-	 <20091101205449.GT14091@buzzloop.caiaq.de>
-	 <20091101213343.GA31345@elf.ucw.cz> <20091101220341.GA16698@elf.ucw.cz>
-	 <771cded00911020122o3bb5cc96q957c8be1ce7cae46@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 02 Nov 2009 10:57:53 +0100
-Message-Id: <1257155873.5642.14.camel@utx.utx.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	id S1754213AbZKBKGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 05:06:13 -0500
+From: Jan Blunck <jblunck@suse.de>
+To: linux-fsdevel@vger.kernel.org
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       Jan Blunck <jblunck@suse.de>, Chris Mason <chris.mason@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH 00/27] Push down BKL to the filesystems (v2)
+Date: Mon,  2 Nov 2009 11:04:40 +0100
+Message-Id: <1257156307-24175-1-git-send-email-jblunck@suse.de>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haojian Zhuang wrote:
+During the realtime preemption mini-summit we discussed the entire removal of
+the big kernel lock. I've started working on this for some filesystems. My plan
+is to push the BKL down to the implementations first and remove it from there
+later.
 
-> Commit b5b82df6, from May 2007, breaks no_console_suspend on the OLPC
-> XO laptop. Basically what happens is that upon returning from resume,
-> serial8250_resume_port() will reconfigure the port for high speed
-> mode and all console output will be garbled, making debug of the
-> resume path painful. This patch modifies uart_resume_port() to
-> reset the port to the state it was in before we suspended.
+This series is pushing the BKL from do_new_mount() down to the filesystems and
+removes it from ext series of filesystems and one other trivial use: if the BKL
+is only used in get_sb/fill_super due to the push-down, we just need to make
+sure that parallel calls to get_sb/fill_super would race against each other.
 
-See my patch waiting for approval in LKML thread
-"serial-core: resume serial hardware with no_console_suspend".
+I addressed the feedback from Matthew Wilcox and tried to be more verbose about
+why I think it is safe to remove the BKL. In most cases there is no shared
+resource accessed anyway so it is trivially safe to remove the lock.
 
-It attempts to fix it, but I was not yet able to test it due to spitz
-resume breakage.
+There are two filesystems where I'm not 100% sure if the proposed patch is
+enough, namely btrfs and xfs. Chris(+toph), could you help me here?
 
+I left out the patch to remove default_llseek() on purpose. This indeed needs
+some more lovin'.
 
-________________________________________________________________________
-Stanislav Brabec
-http://www.penguin.cz/~utx
+Comments?
+
+Jan
+
+Jan Blunck (27):
+  BKL: Push down BKL from do_new_mount() to the filesystems
+    get_sb/fill_super operation
+  BKL: Remove outdated comment and include
+  BKL: Remove BKL from simple_fill_super
+  ext2: Add ext2_sb_info mutex
+  BKL: Remove BKL from ext2 filesystem
+  BKL: Remove BKL from ext3 fill_super()
+  BKL: Remove BKL from ext3_put_super() and ext3_remount()
+  BKL: Remove BKL from ext4 filesystem
+  BKL: Remove BKL from 9p
+  BKL: Remove BKL from autofs4
+  BKL: Remove BKL from befs
+  BKL: Remove BKL from btrfs
+  BKL: Remove BKL from configfs
+  BKL: Remove BKL from cramfs
+  BKL: Remove BKL from devpts
+  BKL: Remove BKL from efs
+  BKL: Remove BKL from exofs
+  BKL: Remove BKL from hostfs
+  BKL: Remove BKL from hugetlbfs
+  BKL: Remove BKL from minix
+  BKL: Remove BKL from omfs
+  BKL: Remove BKL from openpromfs
+  BKL: Remove BKL from ramfs
+  BKL: Remove BKL from romfs
+  BKL: Remove BKL from sysfs
+  BKL: Remove BKL from ubifs
+  BKL: Remove BKL from xfs
+
+ fs/adfs/super.c            |    8 ++++++-
+ fs/affs/super.c            |    9 +++++++-
+ fs/afs/super.c             |    5 ++++
+ fs/bfs/inode.c             |    9 +++++++-
+ fs/binfmt_misc.c           |    6 ++++-
+ fs/cifs/cifsfs.c           |   12 +++++++++-
+ fs/coda/inode.c            |    8 ++++++-
+ fs/ecryptfs/main.c         |    3 ++
+ fs/exofs/super.c           |    2 +-
+ fs/ext2/inode.c            |    5 +--
+ fs/ext2/super.c            |   48 ++++++++++++++++++++++++++++---------------
+ fs/ext3/super.c            |   12 -----------
+ fs/ext4/super.c            |   11 ----------
+ fs/fat/namei_msdos.c       |    6 ++++-
+ fs/fat/namei_vfat.c        |    6 ++++-
+ fs/freevxfs/vxfs_super.c   |    7 +++++-
+ fs/fuse/control.c          |    9 +++++++-
+ fs/fuse/inode.c            |    5 ++++
+ fs/gfs2/ops_fstype.c       |    9 ++++++++
+ fs/hfs/super.c             |    8 ++++++-
+ fs/hfsplus/super.c         |    8 ++++++-
+ fs/hpfs/super.c            |    8 ++++++-
+ fs/hppfs/hppfs.c           |    4 +++
+ fs/isofs/inode.c           |    8 ++++++-
+ fs/jffs2/super.c           |   11 ++++++++-
+ fs/jfs/super.c             |   14 +++++++++++-
+ fs/libfs.c                 |    1 +
+ fs/namespace.c             |    2 -
+ fs/ncpfs/inode.c           |    8 ++++++-
+ fs/nfs/super.c             |   19 +++++++++++++++++
+ fs/nfsd/nfsctl.c           |    7 +++++-
+ fs/nilfs2/super.c          |    9 +++++++-
+ fs/ntfs/super.c            |    5 ++++
+ fs/ocfs2/dlm/dlmfs.c       |    8 ++++++-
+ fs/ocfs2/super.c           |    5 ++++
+ fs/proc/root.c             |    9 +++++++-
+ fs/qnx4/inode.c            |    8 ++++++-
+ fs/reiserfs/super.c        |    4 +++
+ fs/smbfs/inode.c           |    5 ++++
+ fs/squashfs/super.c        |    6 +++++
+ fs/super.c                 |    3 --
+ fs/sysfs/mount.c           |    2 +-
+ fs/sysv/super.c            |   24 +++++++++++++++++----
+ fs/udf/super.c             |    8 ++++++-
+ fs/ufs/super.c             |    5 ++++
+ include/linux/ext2_fs_sb.h |    2 +
+ 46 files changed, 300 insertions(+), 81 deletions(-)
 
