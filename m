@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbZKBWAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbZKBWCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932442AbZKBWAh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 17:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932266AbZKBWAg
+	id S932462AbZKBWCL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 17:02:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756859AbZKBWCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 17:00:36 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:25687 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932256AbZKBWAg (ORCPT
+	Mon, 2 Nov 2009 17:02:10 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:34638 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756858AbZKBWCJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 17:00:36 -0500
-Date: Mon, 2 Nov 2009 13:59:35 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: akpm <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hugetlb: offload per node attribute registrations fix
-Message-Id: <20091102135935.d7bffe05.randy.dunlap@oracle.com>
-In-Reply-To: <1257198615.7401.212.camel@useless.americas.hpqcorp.net>
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
-	<4AEE56A1.6010100@oracle.com>
-	<1257198615.7401.212.camel@useless.americas.hpqcorp.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4AEF567D.0027:SCFMA4539814,ss=1,fgs=0
+	Mon, 2 Nov 2009 17:02:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=D50WTDf97z3LauWLe36wmAX3akCoxy6ogcDPKc0o0uFmWRyGWhtfTDIr+e9bXnfHd+
+         fibha+9+hF0wyAvN5PJy4khS9RmumM23ZMLoc2lDwWeNECtO29/9Zb/w+yxk2hGrrYxm
+         4MmvOPmRQc/BxZWvIAvrKqO3s+sOHIia+GGOA=
+MIME-Version: 1.0
+In-Reply-To: <4AEF53F5.4020107@gmail.com>
+References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com>
+	 <4AEF53F5.4020107@gmail.com>
+Date: Mon, 2 Nov 2009 14:02:14 -0800
+Message-ID: <dd18b0c30911021402t6c8b9cd4p2e5d5dcad732d0ac@mail.gmail.com>
+Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
+From: Justin Mattock <justinmattock@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gcc@gcc.gnu.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Nov 2009 16:50:15 -0500 Lee Schermerhorn wrote:
+On Mon, Nov 2, 2009 at 1:49 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 11/02/2009 10:29 PM, Justin Mattock wrote:
+>> [  532.942324] cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
+>> [  532.942330] Pid: 16002, comm: cc1plus Tainted: P
+>> 2.6.32-rc5-00083-g04ea458 #2
+>> [  532.942333] Call Trace:
+>> [  532.942342]  [<ffffffff810bce11>] T.417+0x7c/0x245
+>> [  532.942347]  [<ffffffff810bd11c>] __out_of_memory+0x142/0x159
+>> [  532.942352]  [<ffffffff810bd1a1>] out_of_memory+0x6e/0x9d
+>> [  532.942357]  [<ffffffff810c0086>] __alloc_pages_nodemask+0x47e/0x5cc
+>> [  532.942363]  [<ffffffff810d2115>] handle_mm_fault+0x25d/0x68e
+>> [  532.942369]  [<ffffffff813dfc1d>] do_page_fault+0x2bb/0x2d3
+>> [  532.942373]  [<ffffffff813ddb25>] page_fault+0x25/0x30
+> ...
+>> [  532.957951] Out of memory: kill process 16001 (c++) score 543727 or a child
+>> [  532.957955] Killed process 16002 (cc1plus)
+>>
+>> I just compiled the latest gcc snapshot a few days
+>> ago.
+>
+> How many jobs did you run in parallel? Was there anything else memory
+> consuming running on that machine? Do you run the same jobs count every
+> time you compile such big c++ projects?
+>
 
-> 
-> Against:  2.6.32-rc5-mmotm-091101-1001
-> 
-> Fix build failure when MEMORY_HOTPLUG_SPARSE and !HUGETLBFS:
-> 
-> drivers/base/node.c:484: error: implicit declaration of function 'init_node_hugetlb_work'
-> drivers/base/node.c:582: error: 'node_memory_callback' undeclared (first use in this function)
-> 
-> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+This would be the only job running.
 
-Ack.  That works_for_me.  Thanks.
+as for other types of jobs under ps aux there's only
+udev,dbus,acpid,sshd,wicd running.
 
+Now with this oom-killer I'm
+hitting this on an imac9,1 with
+gcc (GCC) 4.5.0 20091029 (experimental)
+2.6.32-rc5-00083-g04ea458
 
->  drivers/base/node.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.32-rc5-mmotm-091101-1001/drivers/base/node.c
-> ===================================================================
-> --- linux-2.6.32-rc5-mmotm-091101-1001.orig/drivers/base/node.c	2009-11-02 15:51:43.000000000 -0500
-> +++ linux-2.6.32-rc5-mmotm-091101-1001/drivers/base/node.c	2009-11-02 16:41:36.000000000 -0500
-> @@ -445,8 +445,12 @@ static int node_memory_callback(struct n
->  }
->  #endif	/* CONFIG_HUGETLBFS */
->  #else	/* !CONFIG_MEMORY_HOTPLUG_SPARSE */
-> +
->  static int link_mem_sections(int nid) { return 0; }
-> +#endif	/* CONFIG_MEMORY_HOTPLUG_SPARSE */
->  
-> +#if !defined(CONFIG_MEMORY_HOTPLUG_SPARSE) || \
-> +    !defined(CONFIG_HUGETLBFS)
->  static inline int node_memory_callback(struct notifier_block *self,
->  				unsigned long action, void *arg)
->  {
-> @@ -455,7 +459,7 @@ static inline int node_memory_callback(s
->  
->  static void init_node_hugetlb_work(int nid) { }
->  
-> -#endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
-> +#endif
->  
->  int register_one_node(int nid)
->  {
-> 
-> 
+On my other machine macbook pro ati chipset
+(same system pure64)firefox seems to be going a lot farther
+than on the imac(doing this in the past I think this takes a good
+45min to compile).
+
+the macbook has:
+gcc (GCC) Cross-LFS 4.4.1.20090722) 4.4.1
+2.6.32-rc4-00039-ga3f6f2e
 
 
----
-~Randy
+
+-- 
+Justin P. Mattock
