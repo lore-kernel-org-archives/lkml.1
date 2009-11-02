@@ -1,113 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZKBRPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZKBRL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbZKBRPL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZKBRPK
+	id S1755523AbZKBRL3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbZKBRL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:15:10 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:41254 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbZKBRPI (ORCPT
+	Mon, 2 Nov 2009 12:11:28 -0500
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:59230 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750845AbZKBRL1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:15:08 -0500
-Date: Mon, 2 Nov 2009 12:01:15 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-Message-ID: <20091102170114.GE14046@tuxdriver.com>
-References: <1256886023.3555.5.camel@johannes.local> <20091030110616.GB6150@ff.dom.local> <20091030150223.GA2586@tuxdriver.com> <20091102091038.GA9044@elte.hu> <1257153807.3555.173.camel@johannes.local> <20091102100702.GA16963@elte.hu>
+	Mon, 2 Nov 2009 12:11:27 -0500
+Date: Mon, 2 Nov 2009 12:05:09 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       aarcange@redhat.com, akpm@linux-foundation.org, minchan.kim@gmail.com,
+       rientjes@google.com, vedran.furac@gmail.com,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: Re: [RFC][-mm][PATCH 1/6] oom-killer: updates for classification of
+ OOM
+In-Reply-To: <20091102162412.107ff8ac.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0911021159120.2028@V090114053VZO-1>
+References: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com> <20091102162412.107ff8ac.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102100702.GA16963@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 11:07:02AM +0100, Ingo Molnar wrote:
-> 
-> * Johannes Berg <johannes@sipsolutions.net> wrote:
-> 
-> > On Mon, 2009-11-02 at 10:10 +0100, Ingo Molnar wrote:
-> > 
-> > > So i have read the thread you and Bartlomiej referenced:
-> > > 
-> > >     http://lkml.org/lkml/2009/10/17/81
-> > > 
-> > > ... and my understanding of that discussion is very different from 
-> > > yours. Here is my annotated history of the beginnings of that 
-> > > discussion:
-> > 
-> > [snip]
-> > 
-> > You shouldn't ignore all previous interaction between Bart and us -- 
-> > which wasn't pretty: http://thread.gmane.org/gmane.linux.kernel/901892
-> 
-> I have seen that exchange too - here's the lkml.org link for those who 
-> like the lkml.org format:
-> 
->    http://lkml.org/lkml/2009/10/13/186
-> 
-> And i can see no supporting fact here either, for the (very serious) 
-> accusation launched by John Linville, that Bartlomiej is 'petty, 
-> whining, indignant'. In my reading he is the opposite of that, even in 
-> this second thread you point out.
+On Mon, 2 Nov 2009, KAMEZAWA Hiroyuki wrote:
 
-Again, you seem to be very generous to Bartlomiej and very critical of
-the rest of us in your readings.
+>  /*
+> - * Types of limitations to the nodes from which allocations may occur
+> + * Types of limitations to zones from which allocations may occur
+>   */
 
-> So, no matter how much you disagree about the code and its direction, 
-> please either back up your assertion with specific links to a pattern of 
-> misbehavior or apologize for the ad-hominen attacks against Bartlomiej.
+"Types of limitations that may cause OOMs"? MEMCG limitations are not zone
+based.
 
-His behavior is evident in the threads you cited.  How you do not
-see that is a mystery.
+>   */
+>
+> -unsigned long badness(struct task_struct *p, unsigned long uptime)
+> +static unsigned long __badness(struct task_struct *p,
+> +		      unsigned long uptime, enum oom_constraint constraint,
+> +		      struct mem_cgroup *mem)
+>  {
+>  	unsigned long points, cpu_time, run_time;
+>  	struct mm_struct *mm;
 
-> > Of course we were biased when he came around with that petty code 
-> > duplication argument, since it seemed to support only his agenda of 
-> > working only with the staging drivers.
-> 
-> Why do you think that disagreeing in the past gives you the right to get 
-> into ad-hominens? You should concentrate on the code and on the 
-> technical side, not on the person making the argument.
-> 
-> Also, why do you characterise a code duplication argument as 'petty'?
+Why rename this function? You are adding a global_badness anyways.
 
-Did you actually look at the thread?  Or did you simply here "code
-duplication" and run with it?
- 
-> Bloat and unnecessary technical forking is the #1 enemy of Linux. 
-> Integrating code and infrastructure is the #1 strength of Linux.
-> 
-> Upstream subsystems/drivers running away with their private 
-> implementations has its clear costs:
 
-...which has nothing to do with the case at hand.  Please do not
-perpetuate this myth.  If anything, your argument applies far more
-to the drivers in staging that Bartlomiej has focused his attention
-upon until recently.
+> +	/*
+> +	 * In numa environ, almost all allocation will be against NORMAL zone.
 
-<snip>
+The typical allocations will be against the policy_zone! SGI IA64 (and
+others) have policy_zone == GFP_DMA.
 
-> [ I dont know why drivers/staging/ is even an argument here - he argued
->   about the technical qualities of a new upstream driver, not about a
->   staging driver. Upstream drivers are to be held to higher standards,
->   _especially_ now that we can isolate not-clean-enough-yet drivers into
->   drivers/staging/, without hurting users. ]
+> +	 * But some small area, ex)GFP_DMA for ia64 or GFP_DMA32 for x86-64
+> +	 * can cause OOM. We can use policy_zone for checking lowmem.
+> +	 */
 
-If you had been keeping-up, you would realize that Bartlomiej is upset
-about our criticisms of the Ralink drivers in staging.  That would seem
-to be the reason he has made himself such an irritant in linux-wireless
-over the past few weeks.
+Simply say that we are checking if the zone constraint is below the policy
+zone?
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+> +	 * Now, only mempolicy specifies nodemask. But if nodemask
+> +	 * covers all nodes, this oom is global oom.
+> +	 */
+> +	if (nodemask && !nodes_equal(node_states[N_HIGH_MEMORY], *nodemask))
+> +		ret = CONSTRAINT_MEMORY_POLICY;
+
+Huh? A cpuset can also restrict the nodes?
+
+> +	/*
+> + 	 * If not __GFP_THISNODE, zonelist containes all nodes. And if
+
+Dont see any __GFP_THISNODE checks here.
+
+>  		panic("out of memory from page fault. panic_on_oom is selected.\n");
+>
+>  	read_lock(&tasklist_lock);
+> -	__out_of_memory(0, 0); /* unknown gfp_mask and order */
+> +	/*
+> +	 * Considering nature of pages required for page-fault,this must be
+> +	 * global OOM (if not cpuset...). Then, CONSTRAINT_NONE is correct.
+> +	 * zonelist, nodemasks are unknown...
+> +	 */
+> +	__out_of_memory(0, CONSTRAINT_NONE, 0, NULL);
+>  	read_unlock(&tasklist_lock);
+
+Page faults can occur on processes that have memory restrictions.
+
