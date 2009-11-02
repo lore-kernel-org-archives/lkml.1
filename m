@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZKBBWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbZKBBY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbZKBBWY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 20:22:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZKBBWY
+	id S1753412AbZKBBY3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 20:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZKBBY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 20:22:24 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36770 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752886AbZKBBWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 20:22:23 -0500
-Date: Mon, 2 Nov 2009 12:22:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
-       Mike Rapoport <mike@compulab.co.il>, Tony Lindgren <tony@atomide.com>,
-       <linux-omap@vger.kernel.org>
-Subject: linux-next: manual merge of the sound tree with the  tree
-Message-Id: <20091102122222.542dac88.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Nov 2009 20:24:28 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:33388 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752899AbZKBBY1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 20:24:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Dow9iWFiefiFwGbd6ZyrGiRrduvUqfUFzw6ebLBbmWEQKfzJs4JvCsGJG0SZEn2N4M
+         Bcne8S7d2ExQulM2Eg5rf2kYPJyAAELzvnEHNPx7Y8zrVi0ulhjLvH2kbm+653nQ3qKb
+         F+cIhIl7yODDdBs44UvxjyBgLvH2aLUUPW0Yg=
+Date: Mon, 2 Nov 2009 02:24:33 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Christoph Hellwig <hch@lst.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: perf trace errors
+Message-ID: <20091102012429.GG5263@nowhere>
+References: <20091011025441.GA18152@lst.de> <20091016083242.GA11174@elte.hu> <20091025071708.GA16936@lst.de> <c62985530910251643k6b3e59c0l6069b08741469b47@mail.gmail.com> <1256851489.26028.3247.camel@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256851489.26028.3247.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Takashi,
+On Thu, Oct 29, 2009 at 05:24:49PM -0400, Steven Rostedt wrote:
+> On Mon, 2009-10-26 at 00:43 +0100, Frederic Weisbecker wrote:
+> > 2009/10/25 Christoph Hellwig <hch@lst.de>:
+> > > On Fri, Oct 16, 2009 at 10:32:42AM +0200, Ingo Molnar wrote:
+> > >> FYI, these bugs are fixed in latest -tip, your testcase works for me:
+> > >
+> > >> Mind checking whether it works for you?
+> > >
+> > > Yes, it works on -tip, but not yet on mainline.  What still doesn't
+> > > work yet on -tip either is printing of dynamic strings in some events,
+> > > e.g.:
+> > >
+> > >       kjournald-1105  [000]   643.002702: block_rq_complete: 253,0 W () 2283224
+> > 
+> > 
+> > Ah, interesting, it means we support __string() but not well other
+> > dynamic arrays.
+> > I'll have a look at it.
+> 
+> Frederic,
+> 
+> Have you found anything with this yet? If not, I can take a look too.
+> 
 
-Today's linux-next merge of the sound tree got a conflict in
-arch/arm/mach-omap2/board-omap3evm.c between commit
-fa48a99192e3ee862f6d26c5248347c772b33b84 ("omap3: evm: initialize vmmc
-and vmmc_aux regulators") from the omap tree and commit
-f8d9aad96d0d7b57d0bf2e4de21fdda3a42f4449 ("OMAP: Platform support for
-twl4030_codec MFD") from the sound tree.
 
-Just overlapping additions.  I fixed it up (see below) and can carry the
-fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+I haven't yet checked actually, I was out of my box this week.
+But if you still have some time to check that too, then yeah,
+it would be nice :)
 
-diff --cc arch/arm/mach-omap2/board-omap3evm.c
-index 660ef8c,d9a6103..0000000
---- a/arch/arm/mach-omap2/board-omap3evm.c
-+++ b/arch/arm/mach-omap2/board-omap3evm.c
-@@@ -247,8 -211,7 +255,9 @@@ static struct twl4030_platform_data oma
-  	.madc		= &omap3evm_madc_data,
-  	.usb		= &omap3evm_usb_data,
-  	.gpio		= &omap3evm_gpio_data,
- +	.vmmc1		= &omap3evm_vmmc1,
- +	.vsim		= &omap3evm_vsim,
-+ 	.codec		= &omap3evm_codec_data,
-  };
-  
-  static struct i2c_board_info __initdata omap3evm_i2c_boardinfo[] = {
+Thanks.
+
