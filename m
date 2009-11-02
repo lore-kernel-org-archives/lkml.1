@@ -1,95 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbZKBUcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZKBUdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756802AbZKBUcI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 15:32:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbZKBUcH
+	id S1756797AbZKBUdS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 15:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZKBUdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 15:32:07 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:37452 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756730AbZKBUcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 15:32:06 -0500
-Message-ID: <4AEF41C5.6010503@sgi.com>
-Date: Mon, 02 Nov 2009 12:32:05 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 2 Nov 2009 15:33:18 -0500
+Received: from khc.piap.pl ([195.187.100.11]:54059 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756751AbZKBUdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 15:33:17 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: david@lang.hm
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Ryan C. Gordon" <icculus@icculus.org>,
+       =?utf-8?Q?M=C3=A5ns_Rullg=C3=A5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: FatELF patches...
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+	<1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
+	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
+	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
+	<alpine.OSX.1.10.0911012023020.55434@caridad.local>
+	<20091102091611.60dfeea1@lxorguk.ukuu.org.uk>
+	<alpine.DEB.2.00.0911020936500.12321@asgard.lang.hm>
+	<m3eioghf9n.fsf@intrepid.localdomain>
+	<alpine.DEB.2.00.0911021205540.12321@asgard.lang.hm>
+Date: Mon, 02 Nov 2009 21:33:20 +0100
+In-Reply-To: <alpine.DEB.2.00.0911021205540.12321@asgard.lang.hm>
+	(david@lang.hm's message of "Mon, 2 Nov 2009 12:11:39 -0800 (PST)")
+Message-ID: <m3aaz4hdkf.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <ak@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: Limit the number of processor bootup messages
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233746.128967000@alcatraz.americas.sgi.com> <87tyxmy6x6.fsf@basil.nowhere.org> <4AE5E48F.6020408@sgi.com> <20091026215544.GA3355@basil.fritz.box> <4AEB3D95.50300@sgi.com> <4AEEBE65.3070202@linux.intel.com> <4AEF3143.2030701@sgi.com> <20091102193445.GA9948@elte.hu>
-In-Reply-To: <20091102193445.GA9948@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+david@lang.hm writes:
 
+>> In terms on disk space on distro TFTP servers only. You'll need to
+>> transfer more, both from user's and distro's POV (obviously). This one
+>> simple fact alone is more than enough to forget the FatELF.
+>
+> it depends on if there is only one arch being downloaded ot not.
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->>
->> Andi Kleen wrote:
->>> Mike Travis wrote:
->>>> This set of patches limits the number of repetitious messages which  
->>>> contain
->>>> no additional information.  Much of this information is obtainable  
->>>> from the
->>>> /proc and /sysfs.   Most of the messages are also sent to the kernel log
->>>> buffer as KERN_DEBUG messages so it can be used to examine more  
->>>> closely any
->>>> details specific to a processor.
->>> What would be good is to put the information from the booting CPUs
->>> into some buffer and print it visibly if there's a timeout detected on  
->>> the BP.
->> What do you think of this idea....  Add a "mark kernel log buffer" 
->> function, and then if any KERN_NOTE or above happens, it sends the 
->> marked info from the kernel log buffer to the console before the 
->> current message.  Set the marker to '0' to clear.
-> 
-> That's _way_ too complex really, for little benefit. (If there's a boot 
-> hang people will re-try anyway (and this time with a serial console 
-> attached or so), and they can add various boot options to increase 
-> verbosity - depending in which phase the bootup hung.)
+Well, from user's POV it may get close if the user downloads maybe 5
+different archs out of all supported by the distro. Not very typical
+I guess.
 
-I'm ok with this, though generally speaking large server systems have
-serial consoles attached, and save the output into admin logs.  One
-problem with just setting the loglevel high enough to output debug
-messages, is you get literally 100's of thousands of lines of meaningless
-information.  We waited over 8 hours for a system with 2k cpus to boot
-in debug mode, and it never made it all the way up.
+> it could be considerably cheaper for mirroring bandwidth.
 
-My intention for the above was to attempt to print debug information
-that pertains to the failure, and not everything else.
+Maybe (though it can be solved with the existing techniques).
+What does now count - bandwidth consumed by users or by mirrors?
 
-> 
-> So please go with the simple solution i suggested days ago: print stuff 
-> on the boot CPU but after that only a single line per AP CPU.
-> 
-> 	Ingo
+> Even if Alan
+> is correct and distros have re-packaged everything so that the arch
+> independant stuff is really in seperate packages, most
+> mirroring/repository systems keep each distro release/arch in a
+> seperate directory tree, so each of these arch-independant things gets
+> copied multiple times.
 
-So you think printing 4096 lines provides meaningful additional
-information?  I would think at least compress it so you only print
-each new processor socket boots and not the 16 threads each of
-them have?
+If it was a (serious) problem (I think it's not), it could be easily
+solved. Think rsync, sha1|256-based mirroring stuff etc.
 
-I should have timing information soon for 512 cores/1024 threads and
-printing a single line for each of those will significantly increase
-the time it takes to boot.
+> you don't have to compile multiple arches anymore than you have to
+> provide any other support for that arch. FatELF is a way to bundle the
+> binaries that you were already creating, not something to force you to
+> support an arch you otherwise wouldn't (although if it did make it
+> easy enough for you to do so that you started to support additional
+> arches, that would be a good thing)
 
-Thanks,
-Mike
+Not sure - longer compile times, longer downloads, no testing.
+
+> if you have a 1M binary with 500M data, repeated for 5 arches it is
+> not a win vs a single 505M FatELF package in all cases.
+
+A real example of such binary maybe?
+-- 
+Krzysztof Halasa
