@@ -1,350 +1,297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbZKBRvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbZKBRwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756334AbZKBRvX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbZKBRvW
+	id S1756480AbZKBRwB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 12:52:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbZKBRwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:51:22 -0500
-Received: from ausxippc101.us.dell.com ([143.166.85.207]:59719 "EHLO
-	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755634AbZKBRvU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:51:20 -0500
-X-Loopcount0: from 10.9.160.253
-Date: Mon, 2 Nov 2009 11:51:24 -0600
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Zhang Yanmin <yanmin.zhang@intel.com>, linux-kernel@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Huong_Nguyen@dell.com
-Subject: Re: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
-Message-ID: <20091102175123.GA4028@mock.linuxdev.us.dell.com>
-Reply-To: Matt Domsch <Matt_Domsch@dell.com>
-References: <20091006173311.GA15751@auslistsprd01.us.dell.com> <4ACEE220.1020705@jp.fujitsu.com> <20091009182810.GB24889@mock.linuxdev.us.dell.com> <20091009183319.GC24889@mock.linuxdev.us.dell.com> <4AEA4C82.6010604@jp.fujitsu.com> <20091030025313.GA1042@mock.linuxdev.us.dell.com> <4AEA5C52.2030900@jp.fujitsu.com>
+	Mon, 2 Nov 2009 12:52:00 -0500
+Received: from icculus.org ([67.106.77.212]:41850 "EHLO icculus.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756137AbZKBRv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 12:51:59 -0500
+Date: Mon, 2 Nov 2009 12:52:00 -0500 (EST)
+From: "Ryan C. Gordon" <icculus@icculus.org>
+X-X-Sender: icculus@caridad.icculuslan
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: FatELF patches...
+In-Reply-To: <20091102000147.424f104b@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.OSX.1.10.0911021057450.464@caridad.icculuslan>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com> <alpine.OSX.1.10.0911011540400.53392@caridad.local> <20091102000147.424f104b@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AEA5C52.2030900@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 97ec121f91e5c76dc037f8d2abaea84c5476676e Mon Sep 17 00:00:00 2001
-From: Matt Domsch <Matt_Domsch@dell.com>
-Date: Thu, 8 Oct 2009 23:18:11 -0500
-Subject: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
 
-Feedback from Hidetoshi Seto and Kenji Kaneshige incorporated.  This
-correctly handles PCI-X bridges, PCIe root ports and endpoints, and
-prints debug messages when invalid/reserved types are found in the
-HEST.  PCI devices not in domain/segment 0 are not represented in
-HEST, thus will be ignored.
+(As requested by davem.)
 
-Today, the PCIe Advanced Error Reporting (AER) driver attaches itself
-to every PCIe root port for which BIOS reports it should, via ACPI
-_OSC.
+On Mon, 2 Nov 2009, Alan Cox wrote:
+> Lets go down the list of "benefits"
+> 
+> - Separate downloads
+> 	- Doesn't work. The network usage would increase dramatically
+> 	  pulling all sorts of unneeded crap.
 
-However, _OSC alone is insufficient for newer BIOSes.  Part of ACPI
-4.0 is the new APEI (ACPI Platform Error Interfaces) which is a way
-for OS and BIOS to handshake over which errors for which components
-each will handle.  One table in ACPI 4.0 is the Hardware Error Source
-Table (HEST), where BIOS can define that errors for certain PCIe
-devices (or all devices), should be handled by BIOS ("Firmware First
-mode"), rather than be handled by the OS.
+Sure, this doesn't work for everyone, but this list isn't meant to be a 
+massive pile of silver bullets. Some of the items are "that's a cool 
+trick" and some are "that would help solve an annoyance." I can see a 
+use-case for the one-iso-multiple-arch example, but it's not going to be 
+Ubuntu.
 
-Dell PowerEdge 11G server BIOS defines Firmware First mode in HEST, so
-that it may manage such errors, log them to the System Event Log, and
-possibly take other actions.  The aer driver should honor this, and
-not attach itself to devices noted as such.
+> 	- Already solved by having a packaging system (in fact FatELF is
+> 	  basically obsoleted by packaging tools)
 
-Furthermore, Kenji Kaneshige reminded us to disallow changing the AER
-registers when respecting Firmware First mode.  Platform firmware is
-expected to manage these, and if changes to them are allowed, it could
-break that firmware's behavior.
+I think I've probably talked this to death, and will again when I reply to 
+Julien, but: packaging tools are a different thing entirely. They solve 
+some of the same issues, they cause other issues. The fact that Debian is 
+now talking about "multiarch" shows that they've experienced some of these 
+problems, too, despite having a world-class package manager.
 
-The HEST parsing code may be replaced in the future by a more
-feature-rich implementation.  This patch provides the minimum needed
-to prevent breakage until that implementation is available.
+> - Separate lib, lib32, lib64
+> 	- So you have one file with 3 files in it rather than three files
+> 	  with one file in them. Directories were invented for a reason
 
-Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
----
- drivers/acpi/Makefile              |    1 +
- drivers/acpi/hest.c                |  135 ++++++++++++++++++++++++++++++++++++
- drivers/pci/pcie/aer/aerdrv_core.c |   24 ++++++-
- drivers/pci/probe.c                |    8 ++
- include/acpi/acpi_hest.h           |   12 +++
- include/linux/pci.h                |    1 +
- 6 files changed, 179 insertions(+), 2 deletions(-)
- create mode 100644 drivers/acpi/hest.c
- create mode 100644 include/acpi/acpi_hest.h
+We covered this when talking about shell scripts.
 
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index 7702118..c7b10b4 100644
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -19,6 +19,7 @@ obj-y				+= acpi.o \
+> 	- Makes updates bigger
+
+I'm sure, but I'm not sure the increase is a staggering amount. We're not 
+talking about making all packages into FatELF binaries.
+
+> 	- Stops users only having 32bit libs for some packages
+
+Is that a serious concern?
+
+> - Third party packagers no longer have to publish multiple rpm/deb etc
+> 	- By vastly increasing download size
+> 	- By making updates vastly bigger
+
+It's true that /bin/ls would double in size (although I'm sure at least 
+the download saves some of this in compression). But how much of, say, 
+Gnome or OpenOffice or Doom 3 is executable code? These things would be 
+nowhere near "vastly" bigger.
+
+> 	- Assumes data files are not dependant on binary (often not true)
+
+Turns out that /usr/sbin/hald's cache file was. That would need to be 
+fixed, which is trivial, but in my virtual machine test I had it delete 
+and regenerate the file on each boot as a fast workaround.
+
+The rest of the Ubuntu install boots and runs. This is millions of lines 
+of code that does not depend on the byte order, alignment, and word size 
+for its data files.
+
+I don't claim to be an expert on the inner workings of every package you 
+would find on a Linux system, but like you, I expected there would be a 
+lot of things to fix. It turns out that "often not true" just turned out 
+to actually _not_ be true at all.
+
+> 	- And is irrelevant really because 90% or more of the cost is
+> 	  testing
+
+Testing doesn't really change with what I'm describing. If you want to 
+ship a program for PowerPC and x86, you still need to test it on PowerPC 
+and x86, no matter how you distribute or launch it.
+
+> - You no longer need to use shell scripts and flakey logic to pick the
+>   right binary ...
+> 	- Since the 1990s we've used package managers to do that instead.
+> 	  I just type "yum install bzflag", the rest is done for me.
+
+Yes, that is true for software shipped via yum, which does not encompass 
+all the software you may want to run on your system. I'm not arguing 
+against package management.
+
+> - The ELF OSABI for your system changes someday?
+> 	- We already handle that
+
+Do we? I grepped for OSABI in the 2.6.31 sources, and can't find anywhere, 
+outside of my FatELF patches, where we check an ELF file's OSABI or OSABI 
+version at all.
+
+The kernel blindly loads ELF binaries without checking the ABI, and glibc 
+checks the ABI for shared libraries--and flatly rejects files that don't 
+match what it expects.
+
+Where do we handle an ABI change gracefully? Am I misunderstanding the 
+code?
+
+> - Ship a single shared library that provides bindings for a scripting
+>   language and not have to worry about whether the scripting language
+>   itself is built for the same architecture as your bindings. 
+> 	- Except if they don't overlap it won't run
+
+True. If I try to run a PowerPC binary on a Sparc, it fails in any 
+circumstance. I recognize the goal of this post was to shoot down every 
+single point, but you can't see a scenario where this adds a benefit? Even 
+in a world that's still running 32-bit web browsers on _every major 
+operating system_ because some crucial plugins aren't 64-bit yet?
+
+> - Ship web browser plugins that work out of the box with multiple
+>   platforms.
+> 	- yum install just works, and there is a search path in firefox
+> 	  etc
+
+So it's better to have a thousand little unique solutions to the same 
+problem? Everything has a search path (except things that don't), and all 
+of those search paths are set up in the same way (except things that 
+aren't). Do we really need to have every single program screwing around 
+with their own personal spiritual successor to the CLASSPATH environment 
+variable?
+
+> - Ship kernel drivers for multiple processors in one file.
+> 	- Not useful see separate downloads
+
+Pain in the butt see "which installer is right for me?"   :)
+
+I don't want to get into a holy war about out-of-tree kernel drivers, 
+because I'm totally on board with getting drivers into the mainline. But 
+it doesn't change the fact that I downloaded the wrong nvidia drivers the 
+other day because I accidentally grabbed the ia32 package instead of the 
+amd64 one. So much for saving bandwidth.
+
+I wasn't paying attention. But lots of people wouldn't know which to pick 
+even if they were. Nvidia, etc, could certainly put everything in one 
+shell script and choose for you, but now we're back at square one again.
+
+This discussion applies to applications, not just kernel modules. 
+The applications are more important here, in my opinion.
+
+> - Transition to a new architecture in incremental steps. 
+> 	- IFF the CPU supports both old and new
+
+A lateral move would be painful (although Apple just did this very thing 
+with a FatELF-style solution, albeit with the help of an emulator), but if 
+we're talking about the most common case at the moment, x86 to amd64, it's 
+not a serious concern.
+
+> 	- and we can already do that
+
+Not really. compat_binfmt_elf will run legacy binaries on new systems, but 
+not vice versa. The goal is having something that will let it work on both 
+without having to go through a package manager infrastructure.
+
+> - Support 64-bit and 32-bit compatibility binaries in one file. 
+> 	- Not useful as we've already seen
+
+Where did we see that? There are certainly tradeoffs, pros and cons, but 
+this is very dismissive despite several counter-examples.
+
+> - No more ia32 compatibility libraries! Even if your distro
+>   doesn't make a complete set of FatELF binaries available, they can
+>   still provide it for the handful of packages you need for 99% of 32-bit
+>   apps you want to run on a 64-bit system. 
+> 
+> 	- Argument against FatELF - why waste the disk space if its rare ?
+
+This is _not_ an argument against FatELF.
+
+Why install Gimp by default if I'm not an artist? Because disk space is 
+cheap in the configurations I'm talking about and it's better to have it 
+just in case, for the 1% of users that will want it. A desktop, laptop or 
+server can swallow a few megabytes to clean up some awkward design 
+decisions, like the /lib64 thing.
+
+A few more megabytes installed may cut down on the support load for 
+distributions when some old 32 bit program refuses to start at all.
+
+In a world where terrabyte hard drives are cheap consumer-level 
+commodities, the tradeoff seems like a complete no-brainer to me.
+
+> - Have a CPU that can handle different byte orders? Ship one binary that
+>   satisfies all configurations!
+> 
+> 	- Variant of the distribution "advantage" - same problem - its
+> 	  better to have two files, its all about testing anyway
+> 
+> - Ship one file that works across Linux and FreeBSD (without a platform
+>   compatibility layer on either of them). 
+> 
+> 	- Ditto
+
+And ditto from me, too: testing is still testing, no matter how you 
+package and ship it. It's just simply not related to FatELF. This problem 
+exists in shipping binaries via apt and yum, too.
+
+> - One hard drive partition can be booted on different machines with
+>   different CPU architectures, for development and experimentation. Same
+>   root file system, different kernel and CPU architecture. 
+> 
+> 	- Now we are getting desperate.
+
+It's not like this is unheard of. Apple is selling this very thing for 129 
+bucks a copy.
+
+> - Prepare your app on a USB stick for sneakernet, know it'll work on
+>   whatever Linux box you are likely to plug it into.
+> 
+> 	- No I don't because of the dependancies, architecture ordering
+> 	  of data files, lack of testing on each platform and the fact
+> 	  architecture isn't sufficient to define a platform
+
+Yes, it's not a silver bullet. Fedora will not be promising binaries that 
+run on every Unix box on the planet.
+
+But the guy with the USB stick? He probably knows the details of every 
+machine he wants to plug it into...
  
- # All the builtin files are in the "acpi." module_param namespace.
- acpi-y				+= osl.o utils.o reboot.o
-+acpi-y				+= hest.o
- 
- # sleep related files
- acpi-y				+= wakeup.o
-diff --git a/drivers/acpi/hest.c b/drivers/acpi/hest.c
-new file mode 100644
-index 0000000..4bb18c9
---- /dev/null
-+++ b/drivers/acpi/hest.c
-@@ -0,0 +1,135 @@
-+#include <linux/acpi.h>
-+#include <linux/pci.h>
-+
-+#define PREFIX "ACPI: "
-+
-+static inline unsigned long parse_acpi_hest_ia_machine_check(struct acpi_hest_ia_machine_check *p)
-+{
-+	return sizeof(*p) +
-+		(sizeof(struct acpi_hest_ia_error_bank) * p->num_hardware_banks);
-+}
-+
-+static inline unsigned long parse_acpi_hest_ia_corrected(struct acpi_hest_ia_corrected *p)
-+{
-+	return sizeof(*p) +
-+		(sizeof(struct acpi_hest_ia_error_bank) * p->num_hardware_banks);
-+}
-+
-+static inline unsigned long parse_acpi_hest_ia_nmi(struct acpi_hest_ia_nmi *p)
-+{
-+	return sizeof(*p);
-+}
-+
-+static inline unsigned long parse_acpi_hest_generic(struct acpi_hest_generic *p)
-+{
-+	return sizeof(*p);
-+}
-+
-+static inline unsigned int hest_match_pci(struct acpi_hest_aer_common *p, struct pci_dev *pci)
-+{
-+	return	(0           == pci_domain_nr(pci->bus) &&
-+		 p->bus      == pci->bus->number &&
-+		 p->device   == PCI_SLOT(pci->devfn) &&
-+		 p->function == PCI_FUNC(pci->devfn));
-+}
-+
-+static unsigned long parse_acpi_hest_aer(void *hdr, int type, struct pci_dev *pci, int *firmware_first)
-+{
-+	struct acpi_hest_aer_common *p = hdr + sizeof(struct acpi_hest_header);
-+	unsigned long rc=0;
-+	u8 pcie_type = 0;
-+	u8 bridge = 0;
-+	switch (type) {
-+	case ACPI_HEST_TYPE_AER_ROOT_PORT:
-+		rc = sizeof(struct acpi_hest_aer_root);
-+		pcie_type = PCI_EXP_TYPE_ROOT_PORT;
-+		break;
-+	case ACPI_HEST_TYPE_AER_ENDPOINT:
-+		rc = sizeof(struct acpi_hest_aer);
-+		pcie_type = PCI_EXP_TYPE_ENDPOINT;
-+		break;
-+	case ACPI_HEST_TYPE_AER_BRIDGE:
-+		rc = sizeof(struct acpi_hest_aer_bridge);
-+		if ((pci->class >> 16) == PCI_BASE_CLASS_BRIDGE)
-+			bridge = 1;
-+		break;
-+	}
-+
-+	if (p->flags & ACPI_HEST_GLOBAL) {
-+		if ((pci->is_pcie && (pci->pcie_type == pcie_type)) || bridge)
-+			*firmware_first = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
-+	}
-+	else
-+		if (hest_match_pci(p, pci))
-+			*firmware_first = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
-+	return rc;
-+}
-+
-+static int acpi_hest_firmware_first(struct acpi_table_header *stdheader, struct pci_dev *pci)
-+{
-+	struct acpi_table_hest *hest = (struct acpi_table_hest *)stdheader;
-+	void *p = (void *)hest + sizeof(*hest); /* defined by the ACPI 4.0 spec */
-+	struct acpi_hest_header *hdr = p;
-+
-+	int i;
-+	int firmware_first = 0;
-+	static unsigned char printed_unused = 0;
-+	static unsigned char printed_reserved = 0;
-+
-+	for (i=0, hdr=p; p < (((void *)hest) + hest->header.length) && i < hest->error_source_count; i++) {
-+		switch (hdr->type) {
-+		case ACPI_HEST_TYPE_IA32_CHECK:
-+			p += parse_acpi_hest_ia_machine_check(p);
-+			break;
-+		case ACPI_HEST_TYPE_IA32_CORRECTED_CHECK:
-+			p += parse_acpi_hest_ia_corrected(p);
-+			break;
-+		case ACPI_HEST_TYPE_IA32_NMI:
-+			p += parse_acpi_hest_ia_nmi(p);
-+			break;
-+		/* These three should never appear */
-+		case ACPI_HEST_TYPE_NOT_USED3:
-+		case ACPI_HEST_TYPE_NOT_USED4:
-+		case ACPI_HEST_TYPE_NOT_USED5:
-+			if (!printed_unused) {
-+				printk(KERN_DEBUG PREFIX
-+				       "HEST Error Source list contains an obsolete type (%d).\n", hdr->type);
-+				printed_unused = 1;
-+			}
-+			break;
-+		case ACPI_HEST_TYPE_AER_ROOT_PORT:
-+		case ACPI_HEST_TYPE_AER_ENDPOINT:
-+		case ACPI_HEST_TYPE_AER_BRIDGE:
-+			p += parse_acpi_hest_aer(p, hdr->type, pci, &firmware_first);
-+			break;
-+		case ACPI_HEST_TYPE_GENERIC_ERROR:
-+			p += parse_acpi_hest_generic(p);
-+			break;
-+		/* These should never appear either */
-+		case ACPI_HEST_TYPE_RESERVED:
-+		default:
-+			if (!printed_reserved) {
-+				printk(KERN_DEBUG PREFIX
-+				       "HEST Error Source list contains a reserved type (%d).\n", hdr->type);
-+				printed_reserved = 1;
-+			}
-+			break;
-+		}
-+	}
-+	return firmware_first;
-+}
-+
-+int acpi_hest_firmware_first_pci(struct pci_dev *pci)
-+{
-+	acpi_status status = AE_NOT_FOUND;
-+	struct acpi_table_header *hest = NULL;
-+	status = acpi_get_table(ACPI_SIG_HEST, 1, &hest);
-+
-+	if (ACPI_SUCCESS(status)) {
-+		if (acpi_hest_firmware_first(hest, pci)) {
-+			return 1;
-+		}
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(acpi_hest_firmware_first_pci);
-diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
-index 9f5ccbe..f4512fe 100644
---- a/drivers/pci/pcie/aer/aerdrv_core.c
-+++ b/drivers/pci/pcie/aer/aerdrv_core.c
-@@ -35,6 +35,9 @@ int pci_enable_pcie_error_reporting(struct pci_dev *dev)
- 	u16 reg16 = 0;
- 	int pos;
- 
-+	if (dev->aer_firmware_first)
-+		return -EIO;
-+
- 	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
- 	if (!pos)
- 		return -EIO;
-@@ -60,6 +63,9 @@ int pci_disable_pcie_error_reporting(struct pci_dev *dev)
- 	u16 reg16 = 0;
- 	int pos;
- 
-+	if (dev->aer_firmware_first)
-+		return -EIO;
-+
- 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
- 	if (!pos)
- 		return -EIO;
-@@ -874,8 +880,22 @@ void aer_delete_rootport(struct aer_rpc *rpc)
-  */
- int aer_init(struct pcie_device *dev)
- {
--	if (aer_osc_setup(dev) && !forceload)
--		return -ENXIO;
-+	if (dev->port->aer_firmware_first) {
-+		dev_printk(KERN_DEBUG, &dev->device,
-+			   "PCIe errors handled by platform firmware.\n");
-+		goto out;
-+	}
-+
-+	if (aer_osc_setup(dev))
-+		goto out;
- 
- 	return 0;
-+out:
-+	if (forceload) {
-+		dev_printk(KERN_DEBUG, &dev->device,
-+			   "aerdrv forceload requested.\n");
-+		dev->port->aer_firmware_first = 0;
-+		return 0;
-+	}
-+	return -ENXIO;
- }
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 8105e32..102995d 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -10,6 +10,7 @@
- #include <linux/module.h>
- #include <linux/cpumask.h>
- #include <linux/pci-aspm.h>
-+#include <acpi/acpi_hest.h>
- #include "pci.h"
- 
- #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
-@@ -714,6 +715,12 @@ static void set_pcie_hotplug_bridge(struct pci_dev *pdev)
- 		pdev->is_hotplug_bridge = 1;
- }
- 
-+static void set_pci_aer_firmware_first(struct pci_dev *pdev)
-+{
-+	if (acpi_hest_firmware_first_pci(pdev))
-+		pdev->aer_firmware_first = 1;
-+}
-+
- #define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
- 
- /**
-@@ -742,6 +749,7 @@ int pci_setup_device(struct pci_dev *dev)
- 	dev->multifunction = !!(hdr_type & 0x80);
- 	dev->error_state = pci_channel_io_normal;
- 	set_pcie_port_type(dev);
-+	set_pci_aer_firmware_first(dev);
- 
- 	list_for_each_entry(slot, &dev->bus->slots, list)
- 		if (PCI_SLOT(dev->devfn) == slot->number)
-diff --git a/include/acpi/acpi_hest.h b/include/acpi/acpi_hest.h
-new file mode 100644
-index 0000000..63194d0
---- /dev/null
-+++ b/include/acpi/acpi_hest.h
-@@ -0,0 +1,12 @@
-+#ifndef __ACPI_HEST_H
-+#define __ACPI_HEST_H
-+
-+#include <linux/pci.h>
-+
-+#ifdef CONFIG_ACPI
-+extern int acpi_hest_firmware_first_pci(struct pci_dev *pci);
-+#else
-+static inline int acpi_hest_firmware_first_pci(struct pci_dev *pci) { return 0; }
-+#endif
-+
-+#endif
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index da4128f..9d646e6 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -280,6 +280,7 @@ struct pci_dev {
- 	unsigned int	is_virtfn:1;
- 	unsigned int	reset_fn:1;
- 	unsigned int    is_hotplug_bridge:1;
-+	unsigned int    aer_firmware_first:1;
- 	pci_dev_flags_t dev_flags;
- 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
- 
--- 
-1.6.2.5
+> - Prepare your app on a network share, know it will work with all
+>   the workstations on your LAN. 
+
+...and so does the LAN's administrator.
+
+It's possible to ship binaries that don't depend on a specific 
+distribution, or preinstalled dependencies, beyond the existance of a 
+glibc that was built in the last five years or so. I do it every day. It's 
+not unreasonable, if you aren't part of the package management network, to 
+make something that will run, generically on "Linux."
+
+> 	- We have search paths, multiple mount points etc.
+
+I'm proposing a unified, clean, elegant way to solve the problem.
+
+> So why exactly do we want FatELF. It was obsoleted in the early 1990s
+> when architecture handling was introduced into package managers.
+
+I can't speak for anyone but myself, but I can see lots of places where it 
+would personally help me as a developer that isn't always inside the 
+packaging system.
+
+There are programs I support that I just simply won't bother moving to 
+amd64 because it just complicates things for the end user, for example.
+
+Goofy one-off example: a game that I ported named Lugaru ( 
+http://www.wolfire.com/lugaru ) is being updated for Intel Mac OS X. The 
+build on my hard drive will run natively as a PowerPC, x86, and amd64 
+process, and Mac OS X just does the right thing on whatever hardware tries 
+to launch it. On Linux...well, I'm not updating it. You can enjoy the x86 
+version. It's easier on me, I have other projects to work on, and too bad 
+for you. Granted, the x86_64 version _works_ on Linux, but shipping it is 
+a serious pain, so it just won't ship.
+
+That is anecdotal, and I apologize for that. But I'm not the only 
+developer that's not in an apt repository, and all of these rebuttals are 
+anecdotal: "I just use yum [...because I don't personally care about 
+Debian users]."
+
+The "third-party" is important. If your answer is "you should have 
+petitioned Fedora, Ubuntu, Gentoo, CentOS, Slackware and every other 
+distro to package it, or packaged it for all of those yourself, or open 
+sourced someone else's software on their behalf and let the community 
+figure it out" then I just don't think we're talking about the same 
+reality at all, and I can't resolve that issue for you.
+
+And, since I'm about to get a flood of "closed source is evil" emails: 
+this applies to Free Software too. Take something bleeding edge but open 
+source, like, say, Songbird, and you are going to find yourself working 
+outside of apt-get to get a modern build, or perhaps a build at all.
+
+In short: I'm glad yum works great for your users, but they aren't all the 
+users, and it sure doesn't work well for all developers.
+
+--ryan.
 
