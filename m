@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbZKBRLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbZKBQkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756115AbZKBRLf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 12:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbZKBRLe
+	id S1755711AbZKBQkl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 11:40:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbZKBQkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 12:11:34 -0500
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:58858 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755653AbZKBRLc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 12:11:32 -0500
-Date: Mon, 2 Nov 2009 11:38:50 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Rik van Riel <riel@redhat.com>
-cc: Pavel Machek <pavel@ucw.cz>, David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       stable@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       kernel-testers@vger.kernel.org
-Subject: Re: [PATCH 2/3] page allocator: Do not allow interrupts to use
- ALLOC_HARDER
-In-Reply-To: <4AED9EB4.5080601@redhat.com>
-Message-ID: <alpine.DEB.1.10.0911021138070.24535@V090114053VZO-1>
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <1256650833-15516-3-git-send-email-mel@csn.ul.ie> <20091027130924.fa903f5a.akpm@linux-foundation.org> <alpine.DEB.2.00.0910271411530.9183@chino.kir.corp.google.com> <20091031184054.GB1475@ucw.cz>
- <alpine.DEB.2.00.0910311248490.13829@chino.kir.corp.google.com> <20091031201158.GB29536@elf.ucw.cz> <alpine.DEB.2.00.0910311413160.25524@chino.kir.corp.google.com> <20091031222905.GA32720@elf.ucw.cz> <4AECC04B.9060808@redhat.com> <20091101073527.GB32720@elf.ucw.cz>
- <4AED9EB4.5080601@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 2 Nov 2009 11:40:40 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:5350 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755413AbZKBQkk convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;3:1>);
+	Mon, 2 Nov 2009 11:40:40 -0500
+Message-Id: <4AEEC5390200005A00057DA5@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Mon, 02 Nov 2009 09:40:41 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Thadeu Lima de Souza Cascardo" <cascardo@holoscopio.com>,
+       <trivial@kernel.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] trivial: fix a typo in SHM_SIGNAL config
+	 description
+References: <1256938012-8088-1-git-send-email-cascardo@holoscopio.com>
+In-Reply-To: <1256938012-8088-1-git-send-email-cascardo@holoscopio.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Nov 2009, Rik van Riel wrote:
+>>> On 10/30/2009 at  5:26 PM, in message
+<1256938012-8088-1-git-send-email-cascardo@holoscopio.com>, Thadeu Lima de
+Souza Cascardo <cascardo@holoscopio.com> wrote: 
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 
-> > So what? As soon as they do that, they lose any guarantees, anyway.
->
-> They might lose the absolute guarantee, but that's no reason
-> not to give it our best effort!
+Applied, thanks!
 
-Then its not realtime anymore. "Realtime" seems to be some wishy
-washy marketing term that flexes in a variety of ways.
+-Greg
+
+
 
