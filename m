@@ -1,144 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZKBDeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbZKBErT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753759AbZKBDeb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Nov 2009 22:34:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZKBDea
+	id S1753942AbZKBErT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Nov 2009 23:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZKBErS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Nov 2009 22:34:30 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36478 "EHLO mx1.suse.de"
+	Sun, 1 Nov 2009 23:47:18 -0500
+Received: from ozlabs.org ([203.10.76.45]:54925 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753647AbZKBDe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Nov 2009 22:34:29 -0500
-Date: Mon, 2 Nov 2009 04:34:29 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, WU Fengguang <wfg@mail.ustc.edu.cn>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       hch@infradead.org, chris.mason@oracle.com
-Subject: Re: [RFC] [PATCH] Avoid livelock for fsync
-Message-ID: <20091102033429.GB28207@wotan.suse.de>
-References: <20091026181314.GE7233@duck.suse.cz> <20091028144731.b46a3341.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	id S1753825AbZKBErR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Nov 2009 23:47:17 -0500
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091028144731.b46a3341.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+Message-ID: <19182.22063.788927.708332@cargo.ozlabs.ibm.com>
+Date: Mon, 2 Nov 2009 14:46:55 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jan Kiszka <jan.kiszka@siemens.com>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>, Jan Kiszka <jan.kiszka@web.de>
+Subject: [PATCH 1/6] perf/core: Provide a kernel-internal interface to get to performance counters
+In-Reply-To: <1257109753-6464-2-git-send-email-fweisbec@gmail.com>
+References: <4AE55B1B.2030006@web.de>
+	<1257109753-6464-2-git-send-email-fweisbec@gmail.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 02:47:31PM -0700, Andrew Morton wrote:
-> On Mon, 26 Oct 2009 19:13:14 +0100
-> Jan Kara <jack@suse.cz> wrote:
-> 
-> >   Hi,
-> > 
-> >   on my way back from Kernel Summit, I've coded the attached patch which
-> > implements livelock avoidance for write_cache_pages. We tag patches that
-> > should be written in the beginning of write_cache_pages and then write
-> > only tagged pages (see the patch for details). The patch is based on Nick's
-> > idea.
-> >   The next thing I've aimed at with this patch is a simplification of
-> > current writeback code. Basically, with this patch I think we can just rip
-> > out all the range_cyclic and nr_to_write (or other "fairness logic"). The
-> > rationalle is following:
-> >   What we want to achieve with fairness logic is that when a page is
-> > dirtied, it gets written to disk within some reasonable time (like 30s or
-> > so). We track dirty time on per-inode basis only because keeping it
-> > per-page is simply too expensive. So in this setting fairness between
-> > inodes really does not make any sence - why should be a page in a file
-> > penalized and written later only because there are lots of other dirty
-> > pages in the file? It is enough to make sure that we don't write one file
-> > indefinitely when there are new dirty pages continuously created - and my
-> > patch achieves that.
-> >   So with my patch we can make write_cache_pages always write from
-> > range_start (or 0) to range_end (or EOF) and write all tagged pages. Also
-> > after changing balance_dirty_pages() so that a throttled process does not
-> > directly submit the IO (Fengguang has the patches for this), we can
-> > completely remove the nr_to_write logic because nothing really uses it
-> > anymore. Thus also the requeue_io logic should go away etc...
-> >   Fengguang, do you have the series somewhere publicly available? You had
-> > there a plenty of changes and quite some of them are not needed when the
-> > above is done. So could you maybe separate out the balance_dirty_pages
-> > change and I'd base my patch and further simplifications on top of that?
-> > Thanks.
-> > 
-> 
-> I need to think about this.  Hard.
-> 
-> So I'll defer that and nitpick the implementation instead ;)
-> 
-> My MUA doesn't understand text/x-patch.  Please use text/plain if you
-> must use attachments?
-> 
-> 	
->  /**
-> > + * tag_pages_for_writeback - tag pages to be written by write_cache_pages
-> > + * @mapping: address space structure to write
-> > + * @start: starting page index
-> > + * @end: ending page index (inclusive)
-> > + *
-> > + * This function scans the page range from @start to @end and tags all pages
-> > + * that have DIRTY tag set with a special TOWRITE tag. The idea is that
-> > + * write_cache_pages (or whoever calls this function) will then use TOWRITE tag
-> > + * to identify pages eligible for writeback.  This mechanism is used to avoid
-> > + * livelocking of writeback by a process steadily creating new dirty pages in
-> > + * the file (thus it is important for this function to be damn quick so that it
-> > + * can tag pages faster than a dirtying process can create them).
-> > + */
-> > +void tag_pages_for_writeback(struct address_space *mapping,
-> > +			     pgoff_t start, pgoff_t end)
-> > +{
-> > +	struct pagevec pvec;
-> > +	int nr_pages, i;
-> > +	struct page *page;
-> > +
-> > +	pagevec_init(&pvec, 0);
-> > +	while (start <= end) {
-> > +		nr_pages = pagevec_lookup_tag(&pvec, mapping, &start,
-> > +			      PAGECACHE_TAG_DIRTY,
-> > +			      min(end - start, (pgoff_t)PAGEVEC_SIZE-1) + 1);
-> > +		if (!nr_pages)
-> > +			return;
-> > +
-> > +		spin_lock_irq(&mapping->tree_lock);
-> > +		for (i = 0; i < nr_pages; i++) {
-> > +			page = pvec.pages[i];
-> > +			/* Raced with someone freeing the page? */
-> > +			if (page->mapping != mapping)
-> > +				continue;
-> > +			if (page->index > end)
-> > +				break;
-> > +			radix_tree_tag_set(&mapping->page_tree,
-> > +				page_index(page), PAGECACHE_TAG_TOWRITE);
-> > +		}
-> > +		spin_unlock_irq(&mapping->tree_lock);
-> > +	}
-> > +}
-> > +EXPORT_SYMBOL(tag_pages_for_writeback);
-> 
-> This is really inefficient.  We do a full tree descent for each dirty
-> page.
-> 
-> It would be far more efficient to do a combined lookup and set
-> operation.  Bascially that's the same as pagevec_lookup_tag(), only we
-> set the PAGECACHE_TAG_TOWRITE on each page instead of taking a copy
-> into the pagevec.
+Frederic Weisbecker writes:
 
-I had a radix_tree_gang_set_if_tagged operation in my earlier
-patchset, which should basically do this.
+>  /*
+> + * perf_event_create_kernel_counter
+> + * MUST be called from a kernel thread.
 
- 
-> Which makes one wonder: would such an operation require ->tree_lock? 
-> pagevec_lookup_tag() just uses rcu_read_lock() - what do we need to do
-> to use lighter locking in the new
-> radix_tree_gang_lookup_tag_slot_then_set_a_flag()?  Convert tag_set()
-> and tag_clear() to atomic ops, perhaps?
+Why?  The reason for this requirement isn't obvious to me.  It would
+be good to have the reason documented in the comment for the sake of
+people modifying the code in future.
 
-Well that, but the hard part is propagating the tag back to the root
-in a coherent way (when other guys are setting and clearing tags in
-other nodes). Also, if we have more than a couple of atomic bitops,
-then the spinlock will win out in straight line performance (although
-scalability could still be better with an unlocked version... but I
-think the propagation is the hard part).
-
+Paul.
