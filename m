@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932159AbZKBSZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbZKBS1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932159AbZKBSZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 13:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932134AbZKBSZj
+	id S1756497AbZKBS1J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 13:27:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932105AbZKBS1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 13:25:39 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48516 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932128AbZKBSZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 13:25:39 -0500
-Date: Mon, 2 Nov 2009 19:25:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH] perf tools: Simplify the symbol priv area mechanism
-Message-ID: <20091102182525.GA673@elte.hu>
-References: <1256927305-4628-1-git-send-email-acme@infradead.org> <1256927305-4628-2-git-send-email-acme@infradead.org>
+	Mon, 2 Nov 2009 13:27:08 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:27023 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755091AbZKBS1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 13:27:07 -0500
+Date: Mon, 2 Nov 2009 11:27:07 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pci: remove pci_find_slot from PCI_LEGACY config
+	description
+Message-ID: <20091102182707.GD5525@ldl.fc.hp.com>
+References: <1256932009-5905-1-git-send-email-cascardo@holoscopio.com> <alpine.LSU.2.00.0911021648320.4203@wotan.suse.de> <20091102165608.GB20277@vespa.holoscopio.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1256927305-4628-2-git-send-email-acme@infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091102165608.GB20277@vespa.holoscopio.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>:
+> On Mon, Nov 02, 2009 at 04:49:01PM +0100, Jiri Kosina wrote:
+> > On Fri, 30 Oct 2009, Thadeu Lima de Souza Cascardo wrote:
+> > 
+> > > Commit 3b073eda has removed pci_find_slot, so there's no point in
+> > > mentioning it in the config description as one of the deprecated APIs
+> > > there are enabled by PCI_LEGACY and still used by some drivers.
+> > 
+> > While you are at it, how about removing the references in 
+> > Documentation/PCI/pci.txt as well?
+> 
+> I've hit them. But, on a first fast look, they seemed important
+> historically. I will take a closer look and point that if it's proper or
+> remove them entirely as you suggest.
 
-btw, on 64-bit i'm getting:
+I think you can safely remove the references to the APIs that are
+no longer in the kernel at all, such as pci_find_slot(), etc.
 
-util/map.c: In function ‘map__find_symbol’:
-util/map.c:97: error: field precision should have type ‘int’, but argument 3 has type ‘size_t’
+On the other hand, if an interface is still there but deprecated,
+you can leave it in Documentation/PCI/pci.txt.
 
-	Ingo
+Thanks,
+/ac
+
