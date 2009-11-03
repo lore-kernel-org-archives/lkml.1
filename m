@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZKCE1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbZKCE2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbZKCE1y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 23:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZKCE1x
+	id S1756051AbZKCE2E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 23:28:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbZKCE2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 23:27:53 -0500
-Received: from ozlabs.org ([203.10.76.45]:39468 "EHLO ozlabs.org"
+	Mon, 2 Nov 2009 23:28:03 -0500
+Received: from ozlabs.org ([203.10.76.45]:39478 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755898AbZKCE1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 23:27:52 -0500
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mark Langsdorf <mark.langsdorf@amd.com>, Dave Jones <davej@redhat.com>
-To: cpufreq@vger.kernel.org
-CC: Ingo Molnar <mingo@redhat.com>
+	id S1755853AbZKCE2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 23:28:02 -0500
+To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Message-Id: <200911031457.56452.rusty@rustcorp.com.au>
-Date: Tue, 3 Nov 2009 14:57:56 +1030
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 8/14] cpumask: don't put a cpumask on the stack in x86...cpufreq/powernow-k8.c
-Cc: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Dave Jones <davej@redhat.com>
+Message-Id: <200911031458.05663.rusty@rustcorp.com.au>
+Date: Tue, 3 Nov 2009 14:58:05 +1030
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       Robert Love <robert.w.love@intel.com>,
+       Chris Leech <christopher.leech@intel.com>, linux-scsi@vger.kernel.org
+Subject: [PATCH 9/14] cpumask: use modern cpumask style in drivers/scsi/fcoe/fcoe.c
+Cc: "James E.J. Bottomley" <James.Bottomley@suse.de>
+Cc: Robert Love <robert.w.love@intel.com>
+Cc: Chris Leech <christopher.leech@intel.com>
+Cc: linux-scsi@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
@@ -29,56 +30,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's still mugging the current process's cpumask, but as comment in
-1ff6e97f1d says, it's not a trivial fix.
-
-So, at least we can use a cpumask_var_t to do the Wrong Thing the Right Way :)
-
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: cpufreq@vger.kernel.org
-Cc: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Dave Jones <davej@redhat.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@suse.de>
+Cc: Robert Love <robert.w.love@intel.com>
+Cc: Chris Leech <christopher.leech@intel.com>
+Cc: linux-scsi@vger.kernel.org
 ---
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/scsi/fcoe/fcoe.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -1118,7 +1118,7 @@ static int transition_frequency_pstate(s
- static int powernowk8_target(struct cpufreq_policy *pol,
- 		unsigned targfreq, unsigned relation)
- {
--	cpumask_t oldmask;
-+	cpumask_var_t oldmask;
- 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
- 	u32 checkfid;
- 	u32 checkvid;
-@@ -1131,9 +1131,13 @@ static int powernowk8_target(struct cpuf
- 	checkfid = data->currfid;
- 	checkvid = data->currvid;
+diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
+--- a/drivers/scsi/fcoe/fcoe.c
++++ b/drivers/scsi/fcoe/fcoe.c
+@@ -1047,7 +1047,7 @@ int fcoe_rcv(struct sk_buff *skb, struct
+ 				"CPU.\n");
  
--	/* only run on specific CPU from here on */
--	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
-+	/* only run on specific CPU from here on. */
-+	/* This is poor form: use a workqueue or smp_call_function_single */
-+	if (!alloc_cpumask_var(&oldmask, GFP_KERNEL))
-+		return -ENOMEM;
-+
-+	cpumask_copy(oldmask, tsk_cpumask(current));
-+	set_cpus_allowed_ptr(current, cpumask_of(pol->cpu));
- 
- 	if (smp_processor_id() != pol->cpu) {
- 		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
-@@ -1193,7 +1197,8 @@ static int powernowk8_target(struct cpuf
- 	ret = 0;
- 
- err_out:
--	set_cpus_allowed_ptr(current, &oldmask);
-+	set_cpus_allowed_ptr(current, oldmask);
-+	free_cpumask_var(oldmask);
- 	return ret;
- }
- 
+ 		spin_unlock_bh(&fps->fcoe_rx_list.lock);
+-		cpu = first_cpu(cpu_online_map);
++		cpu = cpumask_first(cpu_online_mask);
+ 		fps = &per_cpu(fcoe_percpu, cpu);
+ 		spin_lock_bh(&fps->fcoe_rx_list.lock);
+ 		if (!fps->thread) {
 
