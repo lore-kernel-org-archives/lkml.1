@@ -1,103 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbZKCRcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZKCRcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbZKCRcR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 12:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZKCRcP
+	id S1754674AbZKCRcy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 12:32:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbZKCRcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 12:32:15 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:54421 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754648AbZKCRcJ (ORCPT
+	Tue, 3 Nov 2009 12:32:53 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48728 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753319AbZKCRcw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 12:32:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=V5xLl8zMGOLQDEXWt7ct0LKmOIF91iQrBeCunz7etG5GSgpS1X9Ja9/UfywtQR3fhd
-         UAIS4NqJT/vFdcKSWZRSbsfHh0qx3tjkqQou0xglsn8Cx5Um90cMQEMFgerxhxHo0jD/
-         ZCZUcDXNVIOeZtefjMsrT3OBVIeodcBXFxdls=
-Message-ID: <4AF06911.6040200@gmail.com>
-Date: Tue, 03 Nov 2009 12:32:01 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com
-Subject: Re: [PATCHv7 2/3] mm: export use_mm/unuse_mm to modules
-References: <cover.1257267892.git.mst@redhat.com> <20091103172411.GC5591@redhat.com>
-In-Reply-To: <20091103172411.GC5591@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig598D640FFD0D66019E041E55"
+	Tue, 3 Nov 2009 12:32:52 -0500
+Subject: Re: Ftrace for Microblaze - notrace
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: monstr@monstr.eu
+Cc: Steven Rostedt <srostedt@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org,
+       John Williams <john.williams@petalogix.com>
+In-Reply-To: <4AF05E0C.5090305@monstr.eu>
+References: <4AF030EE.7050609@monstr.eu>
+	 <1257266154.31359.14.camel@localhost.localdomain>
+	 <4AF05E0C.5090305@monstr.eu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 03 Nov 2009 12:32:55 -0500
+Message-Id: <1257269575.26028.3355.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig598D640FFD0D66019E041E55
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-11-03 at 17:45 +0100, Michal Simek wrote:
+> Steven Rostedt wrote:
 
-Michael S. Tsirkin wrote:
-> vhost net module wants to do copy to/from user from a kernel thread,
-> which needs use_mm. Export it to modules.
->=20
-> Acked-by: Andrea Arcangeli <aarcange@redhat.com>
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> >>
+> >> The next thing is about annotation notrace. I look at all arch. Is there 
+> >> any algorithm which function should use it? I think that this could be a 
+> >>   reason why I my kernel freeze when enable function tracer.
+> >>
+> >> I tested to add -pg flag for process.c file and after it kernel freeze 
+> >> too. Is it mean that problem could be there?
+> > 
+> > Probably.
+> 
+> Is there any manual or instruction which functions are dangerous and 
+> especially why?
 
-I need this too:
+No there's no manual. It varies from arch to arch. Hmm, maybe I'll
+update the current doc to have some of the issues that come with it.
+(more info farther down)
 
-Acked-by: Gregory Haskins <ghaskins@novell.com>
+> > 
+> > And that will keep the process.c from being compiled with it. There may
+> > be other files in the arch that should not have it. There's several in
+> > x86 and in PowerPC.
+> 
+> Do you know why they exclude it?
 
-> ---
->  mm/mmu_context.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->=20
-> diff --git a/mm/mmu_context.c b/mm/mmu_context.c
-> index ded9081..0777654 100644
-> --- a/mm/mmu_context.c
-> +++ b/mm/mmu_context.c
-> @@ -5,6 +5,7 @@
-> =20
->  #include <linux/mm.h>
->  #include <linux/mmu_context.h>
-> +#include <linux/module.h>
->  #include <linux/sched.h>
-> =20
->  #include <asm/mmu_context.h>
-> @@ -37,6 +38,7 @@ void use_mm(struct mm_struct *mm)
->  	if (active_mm !=3D mm)
->  		mmdrop(active_mm);
->  }
-> +EXPORT_SYMBOL_GPL(use_mm);
-> =20
->  /*
->   * unuse_mm
-> @@ -56,3 +58,4 @@ void unuse_mm(struct mm_struct *mm)
->  	enter_lazy_tlb(mm, tsk);
->  	task_unlock(tsk);
->  }
-> +EXPORT_SYMBOL_GPL(unuse_mm);
+I did the ports for x86 and PowerPC so I guess I'm the best to answer
+this ;-)
+
+In arch/x86 we have these removing -pg:
+
+tsc.o, rtc.o - Do not trace clock output. The tracer itself uses it.
+Even though it protects against recursion, it is a big overhead to trace
+something within the tracer.
+
+paravirt-spinlocks.o - paravirt does crazy things with locks and such,
+but overwriting text. Don't add mcount to them and overwrite the text
+with the ftrace facility.
+
+ftrace.o - well duh ;-)
+
+early_printk.o - This is mostly used for debugging, don't trace it.
+
+cpu/common.o - This is used in early stages of boot up of secordary
+CPUs. As well as used in hot plug. Simply using something like
+smp_processor_id() can crash the kernel here. The tracer code uses that,
+so don't trace it.
+
+Xen has a bunch that they added, and I think that's also because they do
+funny things too.
 
 
+For powerpc, we have:
 
---------------enig598D640FFD0D66019E041E55
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+cputable.o, prom_init.o, btext.o and prom.o that are all very sensitive
+with boot up code. Simply calling mcount here can crash the system. But
+this prevents boot up. It does not lock up the kernel when we enable
+function tracing.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+ftrace.o - again, this should be obvious.
 
-iEYEARECAAYFAkrwaRIACgkQP5K2CMvXmqGMiACeN0+/nU4v8+3SYnFHbPpWW7yY
-+YMAoIolyA+MA43fNvoJCMg/0hjy8eFS
-=oNu+
------END PGP SIGNATURE-----
+time.o - this is the same reason we don't trace tsc and rtc in x86.
 
---------------enig598D640FFD0D66019E041E55--
+> 
+> Can I use any special debug features? I mean I look at kernel.h and 
+> there are some trace_printk function - but they don't work for me. Is it 
+> possible to use them or not?
+
+Should work. That's not arch dependent. But you need to have some ftrace
+enabled. Enable CONFIG_CONTEXT_SWITCH_TRACER, and trace_printk should
+work. That writes to the ring buffer and you can see the output
+in /debug/tracing/trace.
+
+-- Steve
+
+
