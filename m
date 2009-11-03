@@ -1,45 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbZKCQKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbZKCP7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbZKCQKN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 11:10:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZKCQKM
+	id S1753942AbZKCP7z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 10:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZKCP7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 11:10:12 -0500
-Received: from kroah.org ([198.145.64.141]:36400 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbZKCQKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 11:10:11 -0500
-Date: Tue, 3 Nov 2009 07:58:24 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCH 0/10] module: Speed up symbol resolution during module
-	loading (using binary search)
-Message-ID: <20091103155824.GA23857@kroah.com>
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> <1257242782-10496-1-git-send-email-alan-jenkins@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257242782-10496-1-git-send-email-alan-jenkins@tuffmail.co.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 3 Nov 2009 10:59:55 -0500
+Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:60281 "EHLO
+	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752267AbZKCP7y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 10:59:54 -0500
+To: jblunck@suse.de
+Subject: [PATCH] BKL: Remove BKL from Squashfs
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, matthew@wil.cx, viro@zeniv.linux.org.uk
+Message-Id: <E1N5LnX-00006U-Qq@dylan.lougher.demon.co.uk>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Tue, 03 Nov 2009 15:59:55 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 10:06:12AM +0000, Alan Jenkins wrote:
-> GKH: Care to post actual patches?
-> 
-> Sure.
-> 
-> Changelog as per original post
-> <http://article.gmane.org/gmane.linux.kbuild.devel/3983>
+BKL is only used in fill_super/put_super.  It is safe to remove it.
 
-Nice stuff.  Becides the embedded people arguing among themselves, I see
-no reason why you shouldn't submit this for inclusion in -next now.
-Can you send this to Ingo for inclusion in the -tip tree?  Or should it
-go through someone else's tree instead?
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/super.c |   11 -----------
+ 1 files changed, 0 insertions(+), 11 deletions(-)
 
-thanks,
+diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
+index 23cea83..7c25056 100644
+--- a/fs/squashfs/super.c
++++ b/fs/squashfs/super.c
+@@ -30,7 +30,6 @@
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+ #include <linux/slab.h>
+-#include <linux/smp_lock.h>
+ #include <linux/mutex.h>
+ #include <linux/pagemap.h>
+ #include <linux/init.h>
+@@ -78,14 +77,11 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	u64 lookup_table_start;
+ 	int err;
+ 
+-	lock_kernel();
+-
+ 	TRACE("Entered squashfs_fill_superblock\n");
+ 
+ 	sb->s_fs_info = kzalloc(sizeof(*msblk), GFP_KERNEL);
+ 	if (sb->s_fs_info == NULL) {
+ 		ERROR("Failed to allocate squashfs_sb_info\n");
+-		unlock_kernel();
+ 		return -ENOMEM;
+ 	}
+ 	msblk = sb->s_fs_info;
+@@ -289,7 +285,6 @@ allocate_root:
+ 
+ 	TRACE("Leaving squashfs_fill_super\n");
+ 	kfree(sblk);
+-	unlock_kernel();
+ 	return 0;
+ 
+ failed_mount:
+@@ -303,14 +298,12 @@ failed_mount:
+ 	kfree(sb->s_fs_info);
+ 	sb->s_fs_info = NULL;
+ 	kfree(sblk);
+-	unlock_kernel();
+ 	return err;
+ 
+ failure:
+ 	kfree(msblk->stream.workspace);
+ 	kfree(sb->s_fs_info);
+ 	sb->s_fs_info = NULL;
+-	unlock_kernel();
+ 	return -ENOMEM;
+ }
+ 
+@@ -345,8 +338,6 @@ static int squashfs_remount(struct super_block *sb, int *flags, char *data)
+ 
+ static void squashfs_put_super(struct super_block *sb)
+ {
+-	lock_kernel();
+-
+ 	if (sb->s_fs_info) {
+ 		struct squashfs_sb_info *sbi = sb->s_fs_info;
+ 		squashfs_cache_delete(sbi->block_cache);
+@@ -359,8 +350,6 @@ static void squashfs_put_super(struct super_block *sb)
+ 		kfree(sb->s_fs_info);
+ 		sb->s_fs_info = NULL;
+ 	}
+-
+-	unlock_kernel();
+ }
+ 
+ 
+-- 
+1.5.2.5
 
-greg k-h
