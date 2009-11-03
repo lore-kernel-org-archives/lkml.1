@@ -1,74 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZKCNrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbZKCNsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbZKCNrJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 08:47:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbZKCNrI
+	id S1753989AbZKCNsn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 08:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZKCNsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 08:47:08 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:50131 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbZKCNrH (ORCPT
+	Tue, 3 Nov 2009 08:48:42 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:44466 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750751AbZKCNsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 08:47:07 -0500
-Date: Tue, 3 Nov 2009 22:46:52 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, greg@kroah.com,
-       linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCH 04/10] module: make MODULE_SYMBOL_PREFIX into a CONFIG option
-Message-ID: <20091103134652.GB12841@linux-sh.org>
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> <1257242782-10496-5-git-send-email-alan-jenkins@tuffmail.co.uk> <8bd0f97a0911030219y685a1dafy2a8e066d7132ac45@mail.gmail.com> <4AF01F18.8040807@tuffmail.co.uk> <8bd0f97a0911030430s3ecb2467hc52ebac658c39ccd@mail.gmail.com> <20091103132935.GA12841@linux-sh.org> <8bd0f97a0911030539s582598d6k2f78693bbfa559b0@mail.gmail.com>
+	Tue, 3 Nov 2009 08:48:41 -0500
+Date: Tue, 3 Nov 2009 07:48:23 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
+       Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 01/13] sysfs: Update sysfs_setxattr so it updates
+	secdata under the sysfs_mutex
+Message-ID: <20091103134823.GB31981@us.ibm.com>
+References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-1-git-send-email-ebiederm@xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0911030539s582598d6k2f78693bbfa559b0@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1257249429-12384-1-git-send-email-ebiederm@xmission.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 08:39:29AM -0500, Mike Frysinger wrote:
-> On Tue, Nov 3, 2009 at 08:29, Paul Mundt wrote:
-> > Having it in the Kconfig also makes it a nuisance for platforms that can
-> > use -elf and -linux toolchains for the same tree for different platforms.
-> > It would be nice to have this supported in such a way that we can just
-> > set a flag from the Makefile and have a compiler test that determines
-> > whether it is necessary or not.
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> From: Eric W. Biederman <ebiederm@aristanetworks.com>
 > 
-> what arch is this an issue for ?  the only symbol prefixed arches are
-> Blackfin and H8300, and they dont provide toolchains that omit the
-> prefix.
+> The sysfs_mutex is required to ensure updates are and will remain
+> atomic with respect to other inode iattr updates, that do not happen
+> through the filesystem.
 > 
-No, those are the only symbol prefixed platforms enabled in the kernel at
-present because neither one ships different toolchains.
-
-The symbol prefixing itself is more an artifact of a -elf target
-contrasted with a -linux one than anything "platform" specific. Thus, any
-nommu platform using a bare metal or -elf toolchain can easily be used
-for building the kernel if this can be supported in a clean way. As such,
-a config option is not useful.
-
-> trying to enable symbol prefix support dynamically based on the
-> toolchain is a bad idea and pretty fragile.  the arch-specific
-> assembly code would have to be all rewritten to wrap all C-visible
-> symbols with a macro like VMLINUX_SYMBOL().
+> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> ---
+>  fs/sysfs/inode.c |   41 +++++++++++++++++++++++++++++------------
+>  1 files changed, 29 insertions(+), 12 deletions(-)
 > 
-There is nothing fragile about it, symbols are either prefixed or they
-aren't. The common case for things like the syscall table obiously have
-to be wrapped, but so what? C_SYMBOL_PREFIX() used to be the norm back in
-the day, so it obiously worked well enough for the common case.
+> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+> index e28cecf..8a08250 100644
+> --- a/fs/sysfs/inode.c
+> +++ b/fs/sysfs/inode.c
+> @@ -122,23 +122,39 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+>  	return error;
+>  }
+> 
+> +static int sysfs_sd_setsecdata(struct sysfs_dirent *sd, void **secdata, u32 *secdata_len)
+> +{
+> +	struct sysfs_inode_attrs *iattrs;
+> +	void *old_secdata;
+> +	size_t old_secdata_len;
+> +
+> +	iattrs = sd->s_iattr;
+> +	if (!iattrs)
+> +		iattrs = sysfs_init_inode_attrs(sd);
+> +	if (!iattrs)
+> +		return -ENOMEM;
+> +
+> +	old_secdata = iattrs->ia_secdata;
+> +	old_secdata_len = iattrs->ia_secdata_len;
+> +
+> +	iattrs->ia_secdata = *secdata;
+> +	iattrs->ia_secdata_len = *secdata_len;
+> +
+> +	*secdata = old_secdata;
+> +	*secdata_len = old_secdata_len;
+> +	return 0;
+> +}
+> +
+>  int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+>  		size_t size, int flags)
+>  {
+>  	struct sysfs_dirent *sd = dentry->d_fsdata;
+> -	struct sysfs_inode_attrs *iattrs;
+>  	void *secdata;
+>  	int error;
+>  	u32 secdata_len = 0;
+> 
+>  	if (!sd)
+>  		return -EINVAL;
+> -	if (!sd->s_iattr)
+> -		sd->s_iattr = sysfs_init_inode_attrs(sd);
+> -	if (!sd->s_iattr)
+> -		return -ENOMEM;
+> -
+> -	iattrs = sd->s_iattr;
+> 
+>  	if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
+>  		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
+> @@ -150,12 +166,13 @@ int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+>  						&secdata, &secdata_len);
+>  		if (error)
+>  			goto out;
+> -		if (iattrs->ia_secdata)
+> -			security_release_secctx(iattrs->ia_secdata,
+> -						iattrs->ia_secdata_len);
+> -		iattrs->ia_secdata = secdata;
+> -		iattrs->ia_secdata_len = secdata_len;
+> 
+> +		mutex_lock(&sysfs_mutex);
+> +		error = sysfs_sd_setsecdata(sd, &secdata, &secdata_len);
 
-> i say let anyone who actually has such a system and wants to do such a
-> crazy ass thing put together a working arch first before we worry
-> about it.  the current code doesnt preclude dynamic hooking anyways
-> (manually adding -DCONFIG_xxx to CPPFLAGS).
+You're ignoring the potential -ENOMEM return value here?
 
-You talk about fragile bad ideas and then throw out defining Kconfig
-variables from Makefiles? This simply has no place in the Kconfig space,
-as it is now and always has been a toolchain property, not an
-architectural/platform one.
+Worse, if -ENOMEM, then secdata was never set, so you call
+security_release_secctx() on a random value left on the stack...
 
-The other thing you seem to have ignored is that pretty much everyone has
-such a system, it's only crippled platforms like blackfin and h8300 that
-don't support toolchains without the prefix.
+> +		mutex_unlock(&sysfs_mutex);
+> +
+> +		if (secdata)
+> +			security_release_secctx(secdata, secdata_len);
+>  	} else
+>  		return -EINVAL;
+>  out:
+> -- 
+> 1.6.5.2.143.g8cc62
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
