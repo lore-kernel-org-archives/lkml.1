@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZKCPgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbZKCPkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbZKCPgc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 10:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZKCPgc
+	id S1751635AbZKCPkJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 10:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZKCPkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 10:36:32 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:48023 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbZKCPgb (ORCPT
+	Tue, 3 Nov 2009 10:40:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43492 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750796AbZKCPkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 10:36:31 -0500
+	Tue, 3 Nov 2009 10:40:07 -0500
+Date: Tue, 3 Nov 2009 07:38:13 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: Johannes Berg <johannes@sipsolutions.net>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       David Miller <davem@davemloft.net>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
 Subject: Re: Please consider reverting
  7d930bc33653d5592dc386a76a38f39c2e962344
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
-References: <20091103053156.GA3212@core.coreip.homeip.net>
-	 <20091102.224957.32364226.davem@davemloft.net>
-	 <20091103065238.GE3212@core.coreip.homeip.net>
-	 <1257232587.3420.55.camel@localhost.localdomain>
-	 <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 04 Nov 2009 00:36:28 +0900
-Message-Id: <1257262588.3420.79.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1257262187.3420.73.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0911030732150.31845@localhost.localdomain>
+References: <20091103053156.GA3212@core.coreip.homeip.net>  <20091102.224957.32364226.davem@davemloft.net>  <20091103065238.GE3212@core.coreip.homeip.net>  <1257232587.3420.55.camel@localhost.localdomain>  <1257234299.28469.25.camel@johannes.local> 
+ <20091103082201.GG3212@core.coreip.homeip.net>  <1257237061.28469.43.camel@johannes.local>  <20091103084744.GH3212@core.coreip.homeip.net>  <1257238623.28469.47.camel@johannes.local> <1257262187.3420.73.camel@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-
-> > and can we please stop jumping the gun here and going past the subsystem
-> > maintainers. I think this happens a little bit too much lately.
-> 
-> NO!
-> 
-> Quite frankly, I'm very unhappy indeed with the maintainers when it comes 
-> to this bug:
-> 
->  - it was introduced after -rc5
-> 
->  - it's been bisected by multiple people 
-> 
->  - I've seen one of the encounters with a person who bisected it, and the 
->    author of the buggy commit just wanted "more information" after having 
->    been told that small commit causes lockups.
-> 
-> In other words - the LAST thing we should do is to pat the subsystem 
-> maintainers on the back and say "good job".
-> 
-> The fact is, when somebody reports a major bug that is fixed by a revert, 
-> then I shoudl probably revert _more_ eagerly rather than less!
-> 
-> And subsystem maintainers should jump on it, not wait several days.
-
-no questions that it needs fixed, I agree with you. However just blindly
-reverting something, because it fixes it for one or two people, might
-have side effects that causes more problems than the revert would
-actually fix. In this case, let at least give John or Johannes a chance
-to comment on it.
-
-I do love the fact that it gets bisected down to one particular commit.
-That is great and thanks to the people who did that, but let the
-subsystem maintainers know and then have them either provide a fix or
-revert it by them. Sometimes it might take more than one day. And lets
-be honest here, Johannes is one of the most responsive persons when it
-comes to wireless bugs.
-
-Regards
-
-Marcel
 
 
+On Wed, 4 Nov 2009, Marcel Holtmann wrote:
+> 
+> I have to agree here. It happens why too often lately. And this needs to
+> stop. Otherwise why bother with subsystem maintainers? Just send
+> everything to Linus directly and have him to review every line of code.
+
+You're full of sh*t.
+
+Bugs are bugs. They should be reverted, and the people who introduced them 
+should be SHAMED if the thing was introduced after the merge window.
+
+I don't need to review any line of code at all - a revert is a revert. 
+There's not a lot of review that needs, just a very obvious "that bug 
+causes more problems than it fixed".
+
+And yes, I'm upset, because in this case I saw one of the _earlier_ bisect 
+results too, and I did actually spend time debugging it and sending 
+Johannes the information, because he basically ignored the bisect result. 
+
+That makes me upset. The fact that somebody has bisected the problem means 
+that you should damn well thank them, not complain. And look at the -rc 
+number, look at the commit - and you should realize that "please revert" 
+is OBVIOUSLY the right thing to say to something that introduces problems 
+after -rc5.
+
+The fact is, maintainership does _not_ mean ownership. It means that you 
+should be _responsible_ for the code, and you get credit for it, but if 
+problems happen you do NOT "own" it. Not at all.
+
+If you don't understand that, you shouldn't be a maintainer.
+
+And if it's not obvious - I'm really upset that people are complaining 
+about "please revert" for this case. YOU were wrong. 
+
+		Linus
