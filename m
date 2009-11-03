@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbZKCTRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbZKCTUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752029AbZKCTRm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbZKCTRl
+	id S1752938AbZKCTUy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZKCTUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:17:41 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58639 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750889AbZKCTRl (ORCPT
+	Tue, 3 Nov 2009 14:20:53 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:39289 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbZKCTUx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:17:41 -0500
-Date: Tue, 3 Nov 2009 20:17:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.32-rc5: unexpected thermal shutdown?
-Message-ID: <20091103191734.GD3312@elf.ucw.cz>
-References: <20091103105717.GA2516@elf.ucw.cz>
- <200911031825.04169.elendil@planet.nl>
- <20091103183739.GA3312@elf.ucw.cz>
- <200911032012.53556.elendil@planet.nl>
+	Tue, 3 Nov 2009 14:20:53 -0500
+Date: Tue, 3 Nov 2009 20:20:25 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Valentin Longchamp <valentin.longchamp@epfl.ch>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
+Subject: Re: [PATCH] [RTC] Add Freescale MC13783 RTC driver
+Message-ID: <20091103192025.GA20260@pengutronix.de>
+References: <1256330323-13300-1-git-send-email-u.kleine-koenig@pengutronix.de> <1256373342-5294-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200911032012.53556.elendil@planet.nl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1256373342-5294-1-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-11-03 20:12:52, Frans Pop wrote:
-> On Tuesday 03 November 2009, you wrote:
-> > pavel@amd:~$ grep . /proc/acpi/thermal_zone/*/*
-> > /proc/acpi/thermal_zone/THM0/cooling_mode:<setting not supported>
-> > /proc/acpi/thermal_zone/THM0/polling_frequency:<polling disabled>
-> > /proc/acpi/thermal_zone/THM0/state:state:                   ok
-> > /proc/acpi/thermal_zone/THM0/temperature:temperature:           58 C
-> > /proc/acpi/thermal_zone/THM0/trip_points:critical (S5):         127 C
+Hello,
+
+On Sat, Oct 24, 2009 at 10:35:42AM +0200, Uwe Kleine-König wrote:
+> This driver provides support for the RTC part integrated into the
+> Freescale MC13783 PMIC and bases on patch created earlier by Sascha
+> Hauer.
 > 
-> Right, so this zone does not have a passive trip point. If it reaches 
-> critical temp before THM1, it would cause exactly what you saw.
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Signed-off-by: Uwe Kleine-König <u.kleine-könig@pengutronix.de>
+> Cc: Valentin Longchamp <valentin.longchamp@epfl.ch>
+> Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+> Cc: Alessandro Zummo <a.zummo@towertech.it>
+> Cc: rtc-linux@googlegroups.com
+> ---
+> Hello,
 > 
-> Try recreating the same situation while watching the temp for both thermal 
-> zones.
-
-Well, I'll try _not_ to recreate this situation :-). If it starts
-happening too often, I'll play with passive limits. But... thanks!
-
-> > 128C means "slightly fake" temperature sensor. It seems that it just
-> > produces 128 in THM0 when temperature exceeds some other limit.
+> this patch depends on
 > 
-> Hmm. If THM0 does not have *any* other values between 58 and 128 then the 
-> above will probably not work. If it makes a few jumps, you should
-> adjust
+> 	mfd/mc13783: near complete rewrite
+> 
+> sent earlier on lkml[1].  Compared to the earlier version of rtc support
+> on mc13783 as sent by Sascha, this driver got reset detection and
+> therefore depends on the patch above.
+> 
+> A tree runnable on Phytec's PCM038 is available in my git tree
+> 
+> 	git://git.pengutronix.de/git/ukl/linux-2.6.git mc13783
+> 
+> .  (Maybe I will rewrite these commits, so please expect it might change
+> in a non-fast-forward manner.)
+This happend now.  Based on feed-back for the mc13783-core driver I had
+to modify the rtc-driver to.  Only the signature of the irq handler
+function changed.
 
-It has some values between 58 and 128, but I'm not sure how many.
+I don't consider that change worth to repost, so if you're interested
+please check out my branch.
 
-									Pavel
+Best regards
+Uwe
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
