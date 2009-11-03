@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbZKDA1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbZKCSfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbZKDA1W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 19:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZKDA1V
+	id S1752788AbZKCSfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 13:35:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbZKCSfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 19:27:21 -0500
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:33295 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750838AbZKDA1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 19:27:20 -0500
-Date: Tue, 3 Nov 2009 13:34:32 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Ingo Molnar <mingo@elte.hu>
-cc: Ian Campbell <Ian.Campbell@citrix.com>, Tejun Heo <tj@kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Correct nr_processes() when CPUs have been unplugged
-In-Reply-To: <20091103160734.GA21362@elte.hu>
-Message-ID: <alpine.DEB.1.10.0911031324380.32136@V090114053VZO-1>
-References: <1257243074.23110.779.camel@zakaz.uk.xensource.com> <20091103160734.GA21362@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 3 Nov 2009 13:35:23 -0500
+Received: from [95.166.99.235] ([95.166.99.235]:44450 "EHLO kernel.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751116AbZKCSfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 13:35:23 -0500
+Date: Tue, 3 Nov 2009 19:35:27 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, jack@suse.cz,
+       chris.mason@oracle.com
+Subject: Re: writeback tracing
+Message-ID: <20091103183527.GE8742@kernel.dk>
+References: <20091029085501.GA10727@kernel.dk> <20091103141159.GA13442@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091103141159.GA13442@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009, Ingo Molnar wrote:
+On Tue, Nov 03 2009, Wu Fengguang wrote:
+> Hi Jens,
+> 
+> Thanks, it's a very good step. I'll take advantage of it for writeback
+> testing/debugging and watch how things work :)
 
-> Sidenote: percpu areas currently are kept allocated on x86.
+Yep, it's interesting :-)
 
-They must be kept allocated for all possible cpus. Arch code cannot decide
-to not allocate per cpu areas.
+> However you didn't plan to submit it soon?  Because tracepoints are
+> expected to be relatively stable, and you know that writeback is
+> somehow a hot topic now, hehe.
 
-Search for "for_each_possible_cpu" in the source tree if you want more
-detail.
+No, I don't have submission plans yet. Just wanted to throw this out
+there and see if we can agree on some decent trace points for a
+potential future submission. But so far I just wanted to play around and
+have others do the same.
 
-> That might change in the future though, especially with virtual systems
-> where the possible range of CPUs can be very high - without us
-> necessarily wanting to pay the percpu area allocation price for it. I.e.
-> dynamic deallocation of percpu areas is something that could happen in
-> the future.
+-- 
+Jens Axboe
 
-Could be good but would not be as easy as you may think since core code
-assumes that possible cpus have per cpu areas configured. There will be
-the need for additional notifiers and more complex locking if we want to
-have percpu areas for online cpus only. Per cpu areas are permanent at
-this point which is a good existence guarantee that avoids all sorts of
-complex scenarios.
-
-> Nice one. I'm wondering why it was not discovered for such a long time.
-
-Cpu hotplug is rarely used (what you listed are rare and unusual cases)
-and therefore online cpus == possible cpus == present cpus.
