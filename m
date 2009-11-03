@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbZKCRZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZKCR1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754166AbZKCRZB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 12:25:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZKCRZA
+	id S1754497AbZKCR1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 12:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZKCR1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 12:25:00 -0500
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:61601 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751864AbZKCRZA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 12:25:00 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.32-rc5: unexpected thermal shutdown?
-Date: Tue, 3 Nov 2009 18:25:03 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <20091103105717.GA2516@elf.ucw.cz>
-In-reply-To: <20091103105717.GA2516@elf.ucw.cz>
+	Tue, 3 Nov 2009 12:27:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36241 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754399AbZKCR1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 12:27:17 -0500
+Date: Tue, 3 Nov 2009 18:26:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric=5FWeisbecker?= <fweisbec@gmail.com>
+Subject: Re: [PATCH v2 2/7] Adding general performance benchmarking
+	subcommand to perf.
+Message-ID: <20091103172656.GB11535@elte.hu>
+References: <20091103.195457.597119739836563839.mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200911031825.04169.elendil@planet.nl>
-X-OriginalArrivalTime: 03 Nov 2009 17:25:04.0599 (UTC) FILETIME=[94E93E70:01CA5CAA]
+In-Reply-To: <20091103.195457.597119739836563839.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> I found this in the syslog afterwards.
+
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+
+> Adding general performance benchmarking subcommand to perf.
+> This patch adds bench/sched-messaging.c.
+> This benchmark measures performance of scheduler and IPC mechanisms,
+> and is based on hackbench by Rusty Russell.
 > 
-> Nov  3 09:59:14 amd kernel: Critical temperature reached (128 C),
-> shutting down.
-> Nov  3 09:59:14 amd shutdown[17819]: shutting down for system halt 
-> Nov  3 09:59:15 amd init: Switching to runlevel: 0
+> Example of use:
+> 
+> % perf bench sched messaging               # Use default options
+> 0.295					   # Result is time
+> % perf bench sched messaging -p -l 1000 -t
+> 2.265
 
-Looks like what happened to me earlier this year. See
-http://bugzilla.kernel.org/show_bug.cgi?id=13918.
- 
-> Now, machine was lying on the bed at that point, so...
+Would be nice to standardize the options too, and offer a help line:
 
-So probably both the fan intake and hot air outlet were blocked, 
-effectively preventing cooling.
+ perf bench sched --help
 
-What hardware is this?
-What's the output of 'grep . /proc/acpi/thermal_zone/TZ*/*'?
-Any thermal zones in there that don't have a "passive" trip point?
+perhaps 'perf bench sched' should list all available benchmark modules, 
+and print a oneliner summary about each of them?
 
-Cheers,
-FJP
+	Ingo
