@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZKCTXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbZKCTW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbZKCTXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZKCTXU
+	id S1753877AbZKCTW4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZKCTW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:23:20 -0500
-Received: from mail.deathmatch.net ([72.66.92.28]:4780 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbZKCTXT (ORCPT
+	Tue, 3 Nov 2009 14:22:56 -0500
+Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:59101 "EHLO
+	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752201AbZKCTWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:23:19 -0500
-Date: Tue, 3 Nov 2009 14:21:39 -0500
-From: Bob Copeland <me@bobcopeland.com>
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       David Howells <dhowells@redhat.com>,
-       linux-karma-devel@lists.sourceforge.net
-Subject: Re: [PATCH 21/27] BKL: Remove BKL from omfs
-Message-ID: <20091103192139.GA10464@hash.localnet>
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-22-git-send-email-jblunck@suse.de>
+	Tue, 3 Nov 2009 14:22:55 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Reg Clemens <reg@dwf.com>
+Subject: Re: Can build 2.6.31.5 on one P4 but not another.
+Date: Tue, 3 Nov 2009 20:22:58 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200911031815.nA3IFCe6017661@deneb.dwf.com>
+In-reply-To: <200911031815.nA3IFCe6017661@deneb.dwf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1257156307-24175-22-git-send-email-jblunck@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200911032022.59466.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Nov 2009 19:22:59.0412 (UTC) FILETIME=[0DD40940:01CA5CBB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 11:05:01AM +0100, Jan Blunck wrote:
-> BKL is only used in fill_super. It is safe to remove it.
+Reg Clemens wrote:
+> Can someone explain this to me.
+> I can build 2.6.31.5 on one of my Pentium 4's with no problems,
+> it boots and runs.
 > 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> ---
->  fs/omfs/inode.c |    7 +------
->  1 files changed, 1 insertions(+), 6 deletions(-)
+> On a second P4, the build fails (compile works, load fails) with
+> comments about undefined references to:
+> sleep_on_common
+> and  __up
+>
+> These appear in sched.c and  semaphore.c.
 
-This patch and omfs parts of 1:
-Acked-by: Bob Copeland <me@bobcopeland.com>
+Are you using identical configs for both machines or not?
 
--- 
-Bob Copeland %% www.bobcopeland.com
+Are you sure both machines really have the same kernel source?
 
+Have you tried if a 'make mrproper' makes a difference (normally it should 
+not)?
+
+Do both machines have the same build environment (gcc version, binutils, 
+etc)?
+
+If you need additional help, please post the exact error messages and the 
+kernel config for the failing machine.
+
+Cheers,
+FJP
+
+P.S. Why are you building the kernels on two machines instead of doing the 
+builds on one machine and then copying and installing a build for the 
+second? That could save a lot of build time, even if you don't use 
+identical configs.
