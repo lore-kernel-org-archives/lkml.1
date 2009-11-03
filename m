@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZKCVeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZKCWF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324AbZKCVeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbZKCVeQ
+	id S1755451AbZKCWF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 17:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbZKCWF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:34:16 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:60989 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbZKCVeP (ORCPT
+	Tue, 3 Nov 2009 17:05:57 -0500
+Received: from brmea-mail-4.Sun.COM ([192.18.98.36]:36674 "EHLO
+	brmea-mail-4.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755232AbZKCWF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 16:34:15 -0500
-Date: Tue, 3 Nov 2009 23:34:19 +0200 (EET)
-From: "=?ISO-8859-15?Q?Ilpo_J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@melkinkari.cs.Helsinki.FI
-To: Gilad Ben-Yossef <gilad@codefidence.com>
-cc: Valdis.Kletnieks@vt.edu, Eric Dumazet <eric.dumazet@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Ori Finkelman <ori@comsleep.com>
-Subject: Re: 2.6.32-rc5-mmotm1101 - kernel BUG at net/ipv4/tcp_input.c:3707!
-In-Reply-To: <4AF08292.7090102@codefidence.com>
-Message-ID: <Pine.LNX.4.64.0911032330090.3488@melkinkari.cs.Helsinki.FI>
-References: <5765.1257270611@turing-police.cc.vt.edu> <4AF07024.80103@gmail.com>
- <4AF08292.7090102@codefidence.com>
+	Tue, 3 Nov 2009 17:05:56 -0500
+X-Greylist: delayed 1208 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 17:05:56 EST
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696243445-11042555-1257283974=:3488"
-Content-ID: <Pine.LNX.4.64.0911032333060.3488@melkinkari.cs.Helsinki.FI>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19184.41676.262206.134000@gargle.gargle.HOWL>
+Date: Tue, 3 Nov 2009 16:38:20 -0500
+From: RDH <rdh@east.sun.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
+X-Mailer: VM 7.19 under Emacs 20.3.1
+Reply-To: rdh@east.sun.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696243445-11042555-1257283974=:3488
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0911032333061.3488@melkinkari.cs.Helsinki.FI>
+This patch avoids unnecessary PCIe link retraining sequences within
+the PCIe ASPM common clock setup code by issuing a link retrain
+command only if we are actually changing the PCIe clock configuration.
 
-On Tue, 3 Nov 2009, Gilad Ben-Yossef wrote:
-
-> Eric Dumazet wrote:
-> 
-> > Valdis.Kletnieks@vt.edu a écrit :
-> >   
-> > > Seen right after I started 'fetchmail'.  Reproducible - 3 out of 3.
-> > > I'll bisect this tonight if nobody jumps up and yells they know what it
-> > > is...
-> > >     
-> Bah... this is most probably my fault. Sorry about that.
-> 
-> Can you please try the patch in the next email?
-> 
-> But also, can you please send me the route table in effect when this happened
-> and the fetchmail command line/config (removing any passwords or account
-> details of course)? I want to understand better when this happens.
-
-According to the stacktrace, it came from ipv6 side which doesn't have any 
-null checking what so ever atm (you only handled ipv4 correctly). ...You 
-should be a bit more careful next time when adding any BUG_ONs...
-
--- 
- i.
----696243445-11042555-1257283974=:3488--
+Signed-off-by: Robert D. Houk <rdh@East.Sun.COM>
+---
+ aspm.c |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+--- a/drivers/pci/pcie/aspm.c	2009-10-15 20:41:50.000000000 -0400
++++ b/drivers/pci/pcie/aspm.c	2009-11-02 14:29:35.000000000 -0500
+@@ -183,6 +183,7 @@ static void pcie_aspm_configure_common_c
+ {
+ 	int ppos, cpos, same_clock = 1;
+ 	u16 reg16, parent_reg, child_reg[8];
++	u16 lnkctl_ccc_or, lnkctl_ccc_and;
+ 	unsigned long start_jiffies;
+ 	struct pci_dev *child, *parent = link->pdev;
+ 	struct pci_bus *linkbus = parent->subordinate;
+@@ -205,6 +206,25 @@ static void pcie_aspm_configure_common_c
+ 	if (!(reg16 & PCI_EXP_LNKSTA_SLC))
+ 		same_clock = 0;
+ 
++	/* Check upstream component for Common Clock Config */
++	pci_read_config_word(parent, ppos + PCI_EXP_LNKCTL, &reg16);
++	lnkctl_ccc_and = lnkctl_ccc_or = (reg16 & PCI_EXP_LNKCTL_CCC);
++
++	/* Scan downstream component for CCC, all functions */
++	list_for_each_entry(child, &linkbus->devices, bus_list) {
++		cpos = pci_find_capability(child, PCI_CAP_ID_EXP);
++		pci_read_config_word(child, cpos + PCI_EXP_LNKCTL, &reg16);
++		lnkctl_ccc_and &= (reg16 & PCI_EXP_LNKCTL_CCC);
++		lnkctl_ccc_or |= (reg16 & PCI_EXP_LNKCTL_CCC);
++	}
++
++	/* If we want Common Clock OFF and no device/function has it on */
++	/* or we want Common Clock ON and every device/function has it on */
++	/* then there is no need to retrain PCIe links */
++	if (((same_clock == 0) && (lnkctl_ccc_or == 0))
++            || ((same_clock == 1) && (lnkctl_ccc_and == PCI_EXP_LNKCTL_CCC)))
++		return;		/* Don't retrain link(s) */
++
+ 	/* Configure downstream component, all functions */
+ 	list_for_each_entry(child, &linkbus->devices, bus_list) {
+ 		cpos = pci_find_capability(child, PCI_CAP_ID_EXP);
