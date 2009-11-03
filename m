@@ -1,243 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbZKCF7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751363AbZKCGEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752973AbZKCF7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 00:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbZKCF7c
+	id S1751363AbZKCGEt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 01:04:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZKCGEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 00:59:32 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:63674 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbZKCF7b (ORCPT
+	Tue, 3 Nov 2009 01:04:48 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:50196 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbZKCGEr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 00:59:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CqCBaSqT2oBVr4zkjgGtjQCdDTIWHof1BQxXniBUbPt8r/ktoFm075sbvoY2UaP0PN
-         emJ1JtdI+OnrsiCDXm39FqVGPI2Tp4yuba3X7MiQlJf4lYWv8B101zlCGRf5O9lLuUTu
-         diX6q+0ngzPLh1+VHA6iWEYpznk5hyya7zisQ=
-Date: Mon, 2 Nov 2009 21:59:31 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Anssi Hannula <anssi.hannula@gmail.com>,
-       Jussi Kivilinna <jussi.kivilinna@mbnet.fi>, linux-input@vger.kernel.org
-Subject: Re: [PATCH] input: fix locking context in ml_ff_set_gain
-Message-ID: <20091103055931.GC3212@core.coreip.homeip.net>
-References: <20091031141925.149c9874@infradead.org> <20091102063818.GB3354@core.coreip.homeip.net> <20091103054446.GB3212@core.coreip.homeip.net> <20091102215358.5398c8c1@infradead.org>
+	Tue, 3 Nov 2009 01:04:47 -0500
+Message-ID: <4AEFC7CF.1020909@nokia.com>
+Date: Tue, 03 Nov 2009 08:03:59 +0200
+From: Luciano Coelho <luciano.coelho@nokia.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102215358.5398c8c1@infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "ext John W. Linville" <linville@tuxdriver.com>
+CC: "Valo Kalle (Nokia-D/Tampere)" <Kalle.Valo@nokia.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: linux-next: Tree for November 2 (wireless/wl1271)
+References: <20091102173845.210d1c57.sfr@canb.auug.org.au> <4AEF1E7F.50306@oracle.com> <20091102184449.GJ14046@tuxdriver.com> <20091102184843.GK14046@tuxdriver.com> <4AEF4ACB.5040302@nokia.com>
+In-Reply-To: <4AEF4ACB.5040302@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Nov 2009 06:04:21.0603 (UTC) FILETIME=[7C96A330:01CA5C4B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 09:53:58PM -0800, Arjan van de Ven wrote:
-> > 
-> > OK, it ended up being pretty simple. Anssi, any chance you could test
-> > it to make sure I did not screw up? Thanks!
-> > 
-> @@ -371,35 +370,34 @@ static void ml_effect_timer(unsigned long
-> timer_data) 
->  	debug("timer: updating effects");
->  
-> -	spin_lock(&ml->timer_lock);
-> +	spin_lock_irq(&dev->event_lock);
->  	ml_play_effects(ml);
-> -	spin_unlock(&ml->timer_lock);
-> +	spin_unlock_irq(&dev->event_lock);
->  }
+Coelho Luciano (Nokia-D/Helsinki) wrote:
+> ext John W. Linville wrote:
+>> Helps if I actually Cc: Luca...
 > 
-> this bit looks evil.
+> Yes, it does. :) I would see this at some point but CCing me speed things up 
+> quite a lot.
+
+
+BTW, I think we need this for wl1251 as well.  CC'ing Kalle too.
+
+
+>> On Mon, Nov 02, 2009 at 01:44:49PM -0500, John W. Linville wrote:
+>>> On Mon, Nov 02, 2009 at 10:01:35AM -0800, Randy Dunlap wrote:
+>>>> Stephen Rothwell wrote:
+>>>>> Hi all,
+>>>>>
+>>>>> Changes since 20091030:
+>>>> wl1271 build fails when CONFIG_INET=n.
+>>>> Should this driver depend on INET?
+>>>>
+>>>> Why does this driver, unlike all other wireless drivers,
+>>>> want to use register_inetaddr_notifier()?
+>>>>
+>>>> wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
+>>>> wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
+>>> Yeah, that driver is doing some filtering based on IPv4.
+>>>
+>>> Luca, is that necessary?  If so, then we need a patch like the one below...?
 > 
-> might be better off as irqsave...
+> Yes, this is necessary.  We are doing ARP filtering according to the IP address 
+> of the interface, as you have realized.  Our implementation is rather ugly at 
+> the moment, so the plan is to try to get rid of this dependency on INET, but we 
+> need it for now.
+> 
+> Thanks Randy for finding this and thanks John for fixing it.
+> 
+>>> From ba823accfad68151d80503ff5fb04c049c9eadc2 Mon Sep 17 00:00:00 2001
+>>> From: John W. Linville <linville@tuxdriver.com>
+>>> Date: Mon, 2 Nov 2009 13:43:32 -0500
+>>> Subject: [PATCH] wl1271: depend on INET
+>>>
+>>> wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
+>>> wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
+>>>
+>>> Driver is doing some filtering based on IP addresses...
+>>>
+>>> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+>>> ---
+>>>  drivers/net/wireless/wl12xx/Kconfig |    1 +
+>>>  1 files changed, 1 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/drivers/net/wireless/wl12xx/Kconfig b/drivers/net/wireless/wl12xx/Kconfig
+>>> index 33de7fa..785e024 100644
+>>> --- a/drivers/net/wireless/wl12xx/Kconfig
+>>> +++ b/drivers/net/wireless/wl12xx/Kconfig
+>>> @@ -42,6 +42,7 @@ config WL1251_SDIO
+>>>  config WL1271
+>>>  	tristate "TI wl1271 support"
+>>>  	depends on WL12XX && SPI_MASTER && GENERIC_HARDIRQS
+>>> +	depends on INET
+>>>  	select FW_LOADER
+>>>  	select CRC7
+>>>  	---help---
+>>> -- 
+>>> 1.6.2.5
+> 
+> Acked-by: Luciano Coelho <luciano.coelho@nokia.com>
 > 
 
-Yes, I think I better do that. _irq should work at the moment but who
-knows what happen in the future...
 
 -- 
-Dmitry
-
-Input: fix locking in memoryless force-feedback devices
-
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-Now that input core acquires dev->event_lock spinlock and disables
-interrupts when propagating input events, using spin_lock_bh() in
-ff-memless driver is not allowed. Actually, the timer_lock itself
-is not needed anymore, we should simply use dev->event_lock
-as well.
-
-Also do a small cleanup in force-feedback core.
-
-Reported-by: kerneloops.org
-Reported-by: http://www.kerneloops.org/searchweek.php?search=ml_ff_set_gain
-Reported-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/input/ff-core.c    |   20 +++++++++++---------
- drivers/input/ff-memless.c |   26 +++++++++++---------------
- include/linux/input.h      |    4 ++++
- 3 files changed, 26 insertions(+), 24 deletions(-)
-
-
-diff --git a/drivers/input/ff-core.c b/drivers/input/ff-core.c
-index 72c63e5..38df81f 100644
---- a/drivers/input/ff-core.c
-+++ b/drivers/input/ff-core.c
-@@ -337,16 +337,16 @@ int input_ff_create(struct input_dev *dev, int max_effects)
- 	dev->ff = ff;
- 	dev->flush = flush_effects;
- 	dev->event = input_ff_event;
--	set_bit(EV_FF, dev->evbit);
-+	__set_bit(EV_FF, dev->evbit);
- 
- 	/* Copy "true" bits into ff device bitmap */
- 	for (i = 0; i <= FF_MAX; i++)
- 		if (test_bit(i, dev->ffbit))
--			set_bit(i, ff->ffbit);
-+			__set_bit(i, ff->ffbit);
- 
- 	/* we can emulate RUMBLE with periodic effects */
- 	if (test_bit(FF_PERIODIC, ff->ffbit))
--		set_bit(FF_RUMBLE, dev->ffbit);
-+		__set_bit(FF_RUMBLE, dev->ffbit);
- 
- 	return 0;
- }
-@@ -362,12 +362,14 @@ EXPORT_SYMBOL_GPL(input_ff_create);
-  */
- void input_ff_destroy(struct input_dev *dev)
- {
--	clear_bit(EV_FF, dev->evbit);
--	if (dev->ff) {
--		if (dev->ff->destroy)
--			dev->ff->destroy(dev->ff);
--		kfree(dev->ff->private);
--		kfree(dev->ff);
-+	struct ff_device *ff = dev->ff;
-+
-+	__clear_bit(EV_FF, dev->evbit);
-+	if (ff) {
-+		if (ff->destroy)
-+			ff->destroy(ff);
-+		kfree(ff->private);
-+		kfree(ff);
- 		dev->ff = NULL;
- 	}
- }
-diff --git a/drivers/input/ff-memless.c b/drivers/input/ff-memless.c
-index 2d1415e..b483b29 100644
---- a/drivers/input/ff-memless.c
-+++ b/drivers/input/ff-memless.c
-@@ -61,7 +61,6 @@ struct ml_device {
- 	struct ml_effect_state states[FF_MEMLESS_EFFECTS];
- 	int gain;
- 	struct timer_list timer;
--	spinlock_t timer_lock;
- 	struct input_dev *dev;
- 
- 	int (*play_effect)(struct input_dev *dev, void *data,
-@@ -368,38 +367,38 @@ static void ml_effect_timer(unsigned long timer_data)
- {
- 	struct input_dev *dev = (struct input_dev *)timer_data;
- 	struct ml_device *ml = dev->ff->private;
-+	unsigned long flags;
- 
- 	debug("timer: updating effects");
- 
--	spin_lock(&ml->timer_lock);
-+	spin_lock_irqsave(&dev->event_lock, flags);
- 	ml_play_effects(ml);
--	spin_unlock(&ml->timer_lock);
-+	spin_unlock_irqrestore(&dev->event_lock, flags);
- }
- 
-+/*
-+ * Sets requested gain for FF effects. Called with dev->event_lock held.
-+ */
- static void ml_ff_set_gain(struct input_dev *dev, u16 gain)
- {
- 	struct ml_device *ml = dev->ff->private;
- 	int i;
- 
--	spin_lock_bh(&ml->timer_lock);
--
- 	ml->gain = gain;
- 
- 	for (i = 0; i < FF_MEMLESS_EFFECTS; i++)
- 		__clear_bit(FF_EFFECT_PLAYING, &ml->states[i].flags);
- 
- 	ml_play_effects(ml);
--
--	spin_unlock_bh(&ml->timer_lock);
- }
- 
-+/*
-+ * Start/stop specified FF effect. Called with dev->event_lock held.
-+ */
- static int ml_ff_playback(struct input_dev *dev, int effect_id, int value)
- {
- 	struct ml_device *ml = dev->ff->private;
- 	struct ml_effect_state *state = &ml->states[effect_id];
--	unsigned long flags;
--
--	spin_lock_irqsave(&ml->timer_lock, flags);
- 
- 	if (value > 0) {
- 		debug("initiated play");
-@@ -425,8 +424,6 @@ static int ml_ff_playback(struct input_dev *dev, int effect_id, int value)
- 		ml_play_effects(ml);
- 	}
- 
--	spin_unlock_irqrestore(&ml->timer_lock, flags);
--
- 	return 0;
- }
- 
-@@ -436,7 +433,7 @@ static int ml_ff_upload(struct input_dev *dev,
- 	struct ml_device *ml = dev->ff->private;
- 	struct ml_effect_state *state = &ml->states[effect->id];
- 
--	spin_lock_bh(&ml->timer_lock);
-+	spin_lock_irq(&dev->event_lock);
- 
- 	if (test_bit(FF_EFFECT_STARTED, &state->flags)) {
- 		__clear_bit(FF_EFFECT_PLAYING, &state->flags);
-@@ -448,7 +445,7 @@ static int ml_ff_upload(struct input_dev *dev,
- 		ml_schedule_timer(ml);
- 	}
- 
--	spin_unlock_bh(&ml->timer_lock);
-+	spin_unlock_irq(&dev->event_lock);
- 
- 	return 0;
- }
-@@ -482,7 +479,6 @@ int input_ff_create_memless(struct input_dev *dev, void *data,
- 	ml->private = data;
- 	ml->play_effect = play_effect;
- 	ml->gain = 0xffff;
--	spin_lock_init(&ml->timer_lock);
- 	setup_timer(&ml->timer, ml_effect_timer, (unsigned long)dev);
- 
- 	set_bit(FF_GAIN, dev->ffbit);
-diff --git a/include/linux/input.h b/include/linux/input.h
-index 0ccfc30..c2b1a7d 100644
---- a/include/linux/input.h
-+++ b/include/linux/input.h
-@@ -1377,6 +1377,10 @@ extern struct class input_class;
-  * methods; erase() is optional. set_gain() and set_autocenter() need
-  * only be implemented if driver sets up FF_GAIN and FF_AUTOCENTER
-  * bits.
-+ *
-+ * Note that playback(), set_gain() and set_autocenter() are called with
-+ * dev->event_lock spinlock held and interrupts off and thus may not
-+ * sleep.
-  */
- struct ff_device {
- 	int (*upload)(struct input_dev *dev, struct ff_effect *effect,
+Cheers,
+Luca.
