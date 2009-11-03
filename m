@@ -1,112 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZKCUC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbZKCT6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZKCUC5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 15:02:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZKCUC4
+	id S1754442AbZKCT6s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:58:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZKCT6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 15:02:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:14141 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbZKCUCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 15:02:55 -0500
-Date: Tue, 3 Nov 2009 21:58:41 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091103195841.GB6669@redhat.com>
-References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com> <4AF07199.2020601@gmail.com> <4AF072EE.9020202@gmail.com> <4AF07BB7.1020802@gmail.com>
+	Tue, 3 Nov 2009 14:58:48 -0500
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:43481 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbZKCT6r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 14:58:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=fBnZ5K3dEd3YEtp0T6BA2RjHiAXLnzisIjMyEQEnVTPu43F+Sg0BAT5SU9ScdLmnto
+         BBPdankxniSOMqMETC95f7GErrqpZpZpcKKzZpBobvzAYPdMeHjaUK3+2hFJ7AavRQ+o
+         IvdU8lFr+s/9zupz7RctAtIDoa3KHx3m4Jf84=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AF07BB7.1020802@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091103191233.0c3ba736@lxorguk.ukuu.org.uk>
+References: <1257273488.9427.27.camel@mulgrave.site>
+	 <20091103105921.160d5599.akpm@linux-foundation.org>
+	 <20091103191233.0c3ba736@lxorguk.ukuu.org.uk>
+Date: Wed, 4 Nov 2009 04:58:50 +0900
+X-Google-Sender-Auth: 84bd8392ade74290
+Message-ID: <2f11576a0911031158r7fabb96fx8073bb4e86f4981e@mail.gmail.com>
+Subject: Re: [PATCH] strstrip incorrectly marked __must_check
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@suse.de>, linux-scsi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=0015177404c6482da004777cec1b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 07:51:35PM +0100, Eric Dumazet wrote:
-> Gregory Haskins a écrit :
-> > Gregory Haskins wrote:
-> >> Eric Dumazet wrote:
-> >>> Michael S. Tsirkin a écrit :
-> >>>> +static void handle_tx(struct vhost_net *net)
-> >>>> +{
-> >>>> +	struct vhost_virtqueue *vq = &net->dev.vqs[VHOST_NET_VQ_TX];
-> >>>> +	unsigned head, out, in, s;
-> >>>> +	struct msghdr msg = {
-> >>>> +		.msg_name = NULL,
-> >>>> +		.msg_namelen = 0,
-> >>>> +		.msg_control = NULL,
-> >>>> +		.msg_controllen = 0,
-> >>>> +		.msg_iov = vq->iov,
-> >>>> +		.msg_flags = MSG_DONTWAIT,
-> >>>> +	};
-> >>>> +	size_t len, total_len = 0;
-> >>>> +	int err, wmem;
-> >>>> +	size_t hdr_size;
-> >>>> +	struct socket *sock = rcu_dereference(vq->private_data);
-> >>>> +	if (!sock)
-> >>>> +		return;
-> >>>> +
-> >>>> +	wmem = atomic_read(&sock->sk->sk_wmem_alloc);
-> >>>> +	if (wmem >= sock->sk->sk_sndbuf)
-> >>>> +		return;
-> >>>> +
-> >>>> +	use_mm(net->dev.mm);
-> >>>> +	mutex_lock(&vq->mutex);
-> >>>> +	vhost_no_notify(vq);
-> >>>> +
-> >>> using rcu_dereference() and mutex_lock() at the same time seems wrong, I suspect
-> >>> that your use of RCU is not correct.
-> >>>
-> >>> 1) rcu_dereference() should be done inside a read_rcu_lock() section, and
-> >>>    we are not allowed to sleep in such a section.
-> >>>    (Quoting Documentation/RCU/whatisRCU.txt :
-> >>>      It is illegal to block while in an RCU read-side critical section, )
-> >>>
-> >>> 2) mutex_lock() can sleep (ie block)
-> >>>
-> >>
-> >> Michael,
-> >>   I warned you that this needed better documentation ;)
-> >>
-> >> Eric,
-> >>   I think I flagged this once before, but Michael convinced me that it
-> >> was indeed "ok", if but perhaps a bit unconventional.  I will try to
-> >> find the thread.
-> >>
-> >> Kind Regards,
-> >> -Greg
-> >>
-> > 
-> > Here it is:
-> > 
-> > http://lkml.org/lkml/2009/8/12/173
-> > 
-> 
-> Yes, this doesnt convince me at all, and could be a precedent for a wrong RCU use.
-> People wanting to use RCU do a grep on kernel sources to find how to correctly
-> use RCU.
-> 
-> Michael, please use existing locking/barrier mechanisms, and not pretend to use RCU.
-> 
-> Some automatic tools might barf later.
-> 
-> For example, we could add a debugging facility to check that rcu_dereference() is used
-> in an appropriate context, ie conflict with existing mutex_lock() debugging facility.
+--0015177404c6482da004777cec1b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
+2009/11/4 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+>> static inline void strsrip_tail(char *str)
+>> {
+>> =A0 =A0 =A0 char *x __used;
+>> =A0 =A0 =A0 x =3D strstrip(str);
+>> }
+>
+> Bikeshed time but its cleaner to do
+>
+> static inline __must_check void strstrip(char *str)
+> {
+> =A0 =A0 =A0 =A0return strim(str);
+> }
+>
+> and make strim() the old strstrip function without the check requirement
 
-Paul, you acked this previously. Should I add you acked-by line so
-people calm down?  If you would rather I replace
-rcu_dereference/rcu_assign_pointer with rmb/wmb, I can do this.
-Or maybe patch Documentation to explain this RCU usage?
+Okey...
 
--- 
-MST
+[quick hack and compile check]
+
+done :)
+sorry for attached file. I'm under poor mail environment now.
+
+--0015177404c6482da004777cec1b
+Content-Type: application/octet-stream; 
+	name="0001-lib-Introduce-strim.patch"
+Content-Disposition: attachment; filename="0001-lib-Introduce-strim.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g1l2xg480
+
+RnJvbSA5NGE4NjQyNGE4ODJkNTJmY2QxMTAzOWQxMWZiZDAzNjNhMzE0NzJmIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBLT1NBS0kgTW90b2hpcm8gPGtvc2FraS5tb3RvaGlyb0BqcC5m
+dWppdHN1LmNvbT4KRGF0ZTogV2VkLCA0IE5vdiAyMDA5IDA0OjQ3OjIzICswOTAwClN1YmplY3Q6
+IFtQQVRDSF0gbGliOiBJbnRyb2R1Y2Ugc3RyaW0KClJlY2VudGx5LCBXZSBtYXJrZWQgc3Ryc3Ry
+aXAoKSBhcyBtdXN0X2NoZWNrLiBiZWNhdXNlIGl0IHdhcyBmcmVxdWVudGx5IG1pc3VzZWQgYW5k
+Cml0IHNob3VsZCBiZSBjaGVja2VkLiBob3dldmVyLCB3ZSBmb3VuZCBvbmUgZXhjZXB0aW9uLiBz
+Y3NpL2lwci5jIGludGVudGlvbmFsbHkgaWdub3JlCnJldHVybiB2YWx1ZSBvZiBzdHJzdHJpcC4g
+YmVjYXVzZSwgaXQgd2lzaCB0byBrZWVwIHRoZSB3aGl0ZXNwYWNlIGF0IHRoZSBiZWdpbm5pbmcu
+CgpUaHVzLCB3ZSBuZWVkIHRvIGtlZXAgd2l0aCBhbmQgd2l0aG91dCBjaGVja2VkIHdoaXRlc3Bh
+Y2UgdHJpbSBmdW5jdGlvbi4gVGhpcyBwYXRjaAptYWtlcyBzdHJpbSBuZXcgZnVuY3Rpb24gYW5k
+IGlwci5jIHVzZSBpdC4KClN1Z2dlc3RlZC1ieTogQWxhbiBDb3ggPGFsYW5AbHhvcmd1ay51a3V1
+Lm9yZy51az4KU2lnbmVkLW9mZi1ieTogS09TQUtJIE1vdG9oaXJvIDxrb3Nha2kubW90b2hpcm9A
+anAuZnVqaXRzdS5jb20+Ci0tLQogZHJpdmVycy9zY3NpL2lwci5jICAgICB8ICAgIDQgKystLQog
+aW5jbHVkZS9saW51eC9zdHJpbmcuaCB8ICAgIDkgKysrKysrKystCiBsaWIvc3RyaW5nLmMgICAg
+ICAgICAgIHwgICAgNiArKystLS0KIDMgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKSwg
+NiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL3Njc2kvaXByLmMgYi9kcml2ZXJz
+L3Njc2kvaXByLmMKaW5kZXggZDQwZDVjNy4uNjYwMmZjNCAxMDA2NDQKLS0tIGEvZHJpdmVycy9z
+Y3NpL2lwci5jCisrKyBiL2RyaXZlcnMvc2NzaS9pcHIuYwpAQCAtMTMzMyw3ICsxMzMzLDcgQEAg
+c3RhdGljIHZvaWQgaXByX2xvZ19lbmhhbmNlZF9kdWFsX2lvYV9lcnJvcihzdHJ1Y3QgaXByX2lv
+YV9jZmcgKmlvYV9jZmcsCiAKIAllcnJvciA9ICZob3N0cmNiLT5oY2FtLnUuZXJyb3IudS50eXBl
+XzE3X2Vycm9yOwogCWVycm9yLT5mYWlsdXJlX3JlYXNvbltzaXplb2YoZXJyb3ItPmZhaWx1cmVf
+cmVhc29uKSAtIDFdID0gJ1wwJzsKLQlzdHJzdHJpcChlcnJvci0+ZmFpbHVyZV9yZWFzb24pOwor
+CXN0cmltKGVycm9yLT5mYWlsdXJlX3JlYXNvbik7CiAKIAlpcHJfaGNhbV9lcnIoaG9zdHJjYiwg
+IiVzIFtQUkM6ICUwOFhdXG4iLCBlcnJvci0+ZmFpbHVyZV9yZWFzb24sCiAJCSAgICAgYmUzMl90
+b19jcHUoaG9zdHJjYi0+aGNhbS51LmVycm9yLnByYykpOwpAQCAtMTM1OSw3ICsxMzU5LDcgQEAg
+c3RhdGljIHZvaWQgaXByX2xvZ19kdWFsX2lvYV9lcnJvcihzdHJ1Y3QgaXByX2lvYV9jZmcgKmlv
+YV9jZmcsCiAKIAllcnJvciA9ICZob3N0cmNiLT5oY2FtLnUuZXJyb3IudS50eXBlXzA3X2Vycm9y
+OwogCWVycm9yLT5mYWlsdXJlX3JlYXNvbltzaXplb2YoZXJyb3ItPmZhaWx1cmVfcmVhc29uKSAt
+IDFdID0gJ1wwJzsKLQlzdHJzdHJpcChlcnJvci0+ZmFpbHVyZV9yZWFzb24pOworCXN0cmltKGVy
+cm9yLT5mYWlsdXJlX3JlYXNvbik7CiAKIAlpcHJfaGNhbV9lcnIoaG9zdHJjYiwgIiVzIFtQUkM6
+ICUwOFhdXG4iLCBlcnJvci0+ZmFpbHVyZV9yZWFzb24sCiAJCSAgICAgYmUzMl90b19jcHUoaG9z
+dHJjYi0+aGNhbS51LmVycm9yLnByYykpOwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9zdHJp
+bmcuaCBiL2luY2x1ZGUvbGludXgvc3RyaW5nLmgKaW5kZXggYjg1MDg4Ni4uMTdhMzc1ZSAxMDA2
+NDQKLS0tIGEvaW5jbHVkZS9saW51eC9zdHJpbmcuaAorKysgYi9pbmNsdWRlL2xpbnV4L3N0cmlu
+Zy5oCkBAIC02Miw3ICs2MiwxNCBAQCBleHRlcm4gY2hhciAqIHN0cm5jaHIoY29uc3QgY2hhciAq
+LCBzaXplX3QsIGludCk7CiAjaWZuZGVmIF9fSEFWRV9BUkNIX1NUUlJDSFIKIGV4dGVybiBjaGFy
+ICogc3RycmNocihjb25zdCBjaGFyICosaW50KTsKICNlbmRpZgotZXh0ZXJuIGNoYXIgKiBfX211
+c3RfY2hlY2sgc3Ryc3RyaXAoY2hhciAqKTsKKworZXh0ZXJuIGNoYXIgKiBzdHJpbShjaGFyICop
+OworCitzdGF0aWMgaW5saW5lIF9fbXVzdF9jaGVjayBjaGFyKiBzdHJzdHJpcChjaGFyICpzdHIp
+Cit7CisJcmV0dXJuIHN0cmltKHN0cik7Cit9CisKICNpZm5kZWYgX19IQVZFX0FSQ0hfU1RSU1RS
+CiBleHRlcm4gY2hhciAqIHN0cnN0cihjb25zdCBjaGFyICosY29uc3QgY2hhciAqKTsKICNlbmRp
+ZgpkaWZmIC0tZ2l0IGEvbGliL3N0cmluZy5jIGIvbGliL3N0cmluZy5jCmluZGV4IGIxOWI4N2Eu
+LjI4MjExYzYgMTAwNjQ0Ci0tLSBhL2xpYi9zdHJpbmcuYworKysgYi9saWIvc3RyaW5nLmMKQEAg
+LTMzMCwxNCArMzMwLDE0IEBAIEVYUE9SVF9TWU1CT0woc3RybmNocik7CiAjZW5kaWYKIAogLyoq
+Ci0gKiBzdHJzdHJpcCAtIFJlbW92ZXMgbGVhZGluZyBhbmQgdHJhaWxpbmcgd2hpdGVzcGFjZSBm
+cm9tIEBzLgorICogc3RyaW0gLSBSZW1vdmVzIGxlYWRpbmcgYW5kIHRyYWlsaW5nIHdoaXRlc3Bh
+Y2UgZnJvbSBAcy4KICAqIEBzOiBUaGUgc3RyaW5nIHRvIGJlIHN0cmlwcGVkLgogICoKICAqIE5v
+dGUgdGhhdCB0aGUgZmlyc3QgdHJhaWxpbmcgd2hpdGVzcGFjZSBpcyByZXBsYWNlZCB3aXRoIGEg
+JU5VTC10ZXJtaW5hdG9yCiAgKiBpbiB0aGUgZ2l2ZW4gc3RyaW5nIEBzLiBSZXR1cm5zIGEgcG9p
+bnRlciB0byB0aGUgZmlyc3Qgbm9uLXdoaXRlc3BhY2UKICAqIGNoYXJhY3RlciBpbiBAcy4KICAq
+LwotY2hhciAqc3Ryc3RyaXAoY2hhciAqcykKK2NoYXIgKnN0cmltKGNoYXIgKnMpCiB7CiAJc2l6
+ZV90IHNpemU7CiAJY2hhciAqZW5kOwpAQCAtMzU3LDcgKzM1Nyw3IEBAIGNoYXIgKnN0cnN0cmlw
+KGNoYXIgKnMpCiAKIAlyZXR1cm4gczsKIH0KLUVYUE9SVF9TWU1CT0woc3Ryc3RyaXApOworRVhQ
+T1JUX1NZTUJPTChzdHJpbSk7CiAKICNpZm5kZWYgX19IQVZFX0FSQ0hfU1RSTEVOCiAvKioKLS0g
+CjEuNi4yLjUKCg==
+--0015177404c6482da004777cec1b--
