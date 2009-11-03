@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbZKCT7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbZKCT6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755012AbZKCT7L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZKCT7K
+	id S1754361AbZKCT6H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:58:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZKCT6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:59:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40066 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754166AbZKCT7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:59:07 -0500
-Date: Tue, 3 Nov 2009 21:55:57 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
-       s.hetze@linux-ag.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091103195557.GA6669@redhat.com>
-References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AF0708B.4020406@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 3 Nov 2009 14:58:07 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:59071 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751326AbZKCT6G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 14:58:06 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 03 Nov 2009 14:58:10 -0500 (EST)
+From: Nicolas Pitre <nico@fluxnic.net>
+X-X-Sender: nico@xanadu.home
+To: Alan Cox <alan@linux.intel.com>
+Cc: linux-mmc@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/11] Sort out sdio_uart - stage two
+In-reply-to: <20091103141525.31032.45206.stgit@localhost.localdomain>
+Message-id: <alpine.LFD.2.00.0911031401170.13333@xanadu.home>
+References: <20091103141525.31032.45206.stgit@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 07:03:55PM +0100, Eric Dumazet wrote:
-> Michael S. Tsirkin a écrit :
-> > +static void handle_tx(struct vhost_net *net)
-> > +{
-> > +	struct vhost_virtqueue *vq = &net->dev.vqs[VHOST_NET_VQ_TX];
-> > +	unsigned head, out, in, s;
-> > +	struct msghdr msg = {
-> > +		.msg_name = NULL,
-> > +		.msg_namelen = 0,
-> > +		.msg_control = NULL,
-> > +		.msg_controllen = 0,
-> > +		.msg_iov = vq->iov,
-> > +		.msg_flags = MSG_DONTWAIT,
-> > +	};
-> > +	size_t len, total_len = 0;
-> > +	int err, wmem;
-> > +	size_t hdr_size;
-> > +	struct socket *sock = rcu_dereference(vq->private_data);
-> > +	if (!sock)
-> > +		return;
-> > +
-> > +	wmem = atomic_read(&sock->sk->sk_wmem_alloc);
-> > +	if (wmem >= sock->sk->sk_sndbuf)
-> > +		return;
-> > +
-> > +	use_mm(net->dev.mm);
-> > +	mutex_lock(&vq->mutex);
-> > +	vhost_no_notify(vq);
-> > +
-> 
-> using rcu_dereference() and mutex_lock() at the same time seems wrong, I suspect
-> that your use of RCU is not correct.
-> 
-> 1) rcu_dereference() should be done inside a read_rcu_lock() section, and
->    we are not allowed to sleep in such a section.
->    (Quoting Documentation/RCU/whatisRCU.txt :
->      It is illegal to block while in an RCU read-side critical section, )
-> 
-> 2) mutex_lock() can sleep (ie block)
+On Tue, 3 Nov 2009, Alan Cox wrote:
 
-This use is correct. See comment in vhost.h This use of RCU has been
-acked by Paul E. McKenney (paulmck@linux.vnet.ibm.com) as well.
-There are many ways to use RCU not all of which involve read_rcu_lock.
+> With the bugs Nicolas reported hopefully now nailed.
 
+Progress, but still not there yet.
+
+I'm still using the same "cat /dev/ttySDIO0" test with a GPS card.
+
+Yanking the card out does terminate the cat process properly.  Inserting 
+the card back in and restarting cat always fails with:
+
+	cat: /dev/ttySDIO0: Input/output error
+
+The same thing occurs if I terminate cat with ^C instead of pulling the 
+card out.
+
+>From what I can see, sdio_uart_open() and sdio_uart_activate() are 
+called on the first cat invocation, and then sdio_uart_close() and 
+sdio_uart_shutdown() when cat is stopped with ^C.  However neither 
+sdio_uart_open() nor sdio_uart_activate() is ever called anymore with 
+any subsequent cat invocations until a reboot.  Some upper layer must 
+have taken upon itself to return -EIO to user space.
+
+
+Nicolas
