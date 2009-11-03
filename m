@@ -1,164 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbZKCSNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZKCSOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbZKCSNZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 13:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZKCSNY
+	id S1753350AbZKCSOK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 13:14:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZKCSOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 13:13:24 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:52728 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbZKCSNX (ORCPT
+	Tue, 3 Nov 2009 13:14:10 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:59536 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbZKCSOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 13:13:23 -0500
-Message-ID: <4AF0725C.1050106@monstr.eu>
-Date: Tue, 03 Nov 2009 19:11:40 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Tue, 3 Nov 2009 13:14:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=BPSPznvxKzkR5YYBxoS82Pruhq1uHzPiCVR5YwEbRxCyrPcwUgtd76x8X8OWNUOMkO
+         xpO3fvToqrWNFwcxhNJqt64qdGxwtu8b00rhWBWXBCDGdLJnrlW2qgEWkbDgjmV61YuN
+         d4m867FDpYzfm6h7E/WSmZBxEOWvmTNu680vQ=
+Message-ID: <4AF072EE.9020202@gmail.com>
+Date: Tue, 03 Nov 2009 13:14:06 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Steven Rostedt <srostedt@redhat.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org,
-       John Williams <john.williams@petalogix.com>
-Subject: Re: Ftrace for Microblaze - notrace
-References: <4AF030EE.7050609@monstr.eu>	 <1257266154.31359.14.camel@localhost.localdomain>	 <4AF05E0C.5090305@monstr.eu> <1257269575.26028.3355.camel@gandalf.stny.rr.com>
-In-Reply-To: <1257269575.26028.3355.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com> <4AF07199.2020601@gmail.com>
+In-Reply-To: <4AF07199.2020601@gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE18A8C89AC1232EB011669F5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Tue, 2009-11-03 at 17:45 +0100, Michal Simek wrote:
->> Steven Rostedt wrote:
-> 
->>>> The next thing is about annotation notrace. I look at all arch. Is there 
->>>> any algorithm which function should use it? I think that this could be a 
->>>>   reason why I my kernel freeze when enable function tracer.
->>>>
->>>> I tested to add -pg flag for process.c file and after it kernel freeze 
->>>> too. Is it mean that problem could be there?
->>> Probably.
->> Is there any manual or instruction which functions are dangerous and 
->> especially why?
-> 
-> No there's no manual. It varies from arch to arch. Hmm, maybe I'll
-> update the current doc to have some of the issues that come with it.
-> (more info farther down)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE18A8C89AC1232EB011669F5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-yes, will be helpful - anyway I found missing references to 
-ftrace-implementation.txt
+Gregory Haskins wrote:
+> Eric Dumazet wrote:
+>> Michael S. Tsirkin a =E9crit :
+>>> +static void handle_tx(struct vhost_net *net)
+>>> +{
+>>> +	struct vhost_virtqueue *vq =3D &net->dev.vqs[VHOST_NET_VQ_TX];
+>>> +	unsigned head, out, in, s;
+>>> +	struct msghdr msg =3D {
+>>> +		.msg_name =3D NULL,
+>>> +		.msg_namelen =3D 0,
+>>> +		.msg_control =3D NULL,
+>>> +		.msg_controllen =3D 0,
+>>> +		.msg_iov =3D vq->iov,
+>>> +		.msg_flags =3D MSG_DONTWAIT,
+>>> +	};
+>>> +	size_t len, total_len =3D 0;
+>>> +	int err, wmem;
+>>> +	size_t hdr_size;
+>>> +	struct socket *sock =3D rcu_dereference(vq->private_data);
+>>> +	if (!sock)
+>>> +		return;
+>>> +
+>>> +	wmem =3D atomic_read(&sock->sk->sk_wmem_alloc);
+>>> +	if (wmem >=3D sock->sk->sk_sndbuf)
+>>> +		return;
+>>> +
+>>> +	use_mm(net->dev.mm);
+>>> +	mutex_lock(&vq->mutex);
+>>> +	vhost_no_notify(vq);
+>>> +
+>> using rcu_dereference() and mutex_lock() at the same time seems wrong,=
+ I suspect
+>> that your use of RCU is not correct.
+>>
+>> 1) rcu_dereference() should be done inside a read_rcu_lock() section, =
+and
+>>    we are not allowed to sleep in such a section.
+>>    (Quoting Documentation/RCU/whatisRCU.txt :
+>>      It is illegal to block while in an RCU read-side critical section=
+, )
+>>
+>> 2) mutex_lock() can sleep (ie block)
+>>
+>=20
+>=20
+> Michael,
+>   I warned you that this needed better documentation ;)
+>=20
+> Eric,
+>   I think I flagged this once before, but Michael convinced me that it
+> was indeed "ok", if but perhaps a bit unconventional.  I will try to
+> find the thread.
+>=20
+> Kind Regards,
+> -Greg
+>=20
 
-kernel/trace/Kconfig:15:          See 
-Documentation/trace/ftrace-implementation.txt
-kernel/trace/Kconfig:20:          See 
-Documentation/trace/ftrace-implementation.txt
-kernel/trace/Kconfig:25:          See 
-Documentation/trace/ftrace-implementation.txt
-kernel/trace/Kconfig:37:          See 
-Documentation/trace/ftrace-implementation.txt
-kernel/trace/Kconfig:42:          See 
-Documentation/trace/ftrace-implementation.txt
-kernel/trace/Kconfig:47:          See 
-Documentation/trace/ftrace-implementation.txt
-kernel/trace/Kconfig:55:          See 
-Documentation/trace/ftrace-implementation.txt
+Here it is:
 
-> 
->>> And that will keep the process.c from being compiled with it. There may
->>> be other files in the arch that should not have it. There's several in
->>> x86 and in PowerPC.
->> Do you know why they exclude it?
-> 
-> I did the ports for x86 and PowerPC so I guess I'm the best to answer
-> this ;-)
+http://lkml.org/lkml/2009/8/12/173
 
-I hope so.
-
-> 
-> In arch/x86 we have these removing -pg:
-> 
-> tsc.o, rtc.o - Do not trace clock output. The tracer itself uses it.
-> Even though it protects against recursion, it is a big overhead to trace
-> something within the tracer.
-> 
-> paravirt-spinlocks.o - paravirt does crazy things with locks and such,
-> but overwriting text. Don't add mcount to them and overwrite the text
-> with the ftrace facility.
-> 
-> ftrace.o - well duh ;-)
-> 
-> early_printk.o - This is mostly used for debugging, don't trace it.
-> 
-> cpu/common.o - This is used in early stages of boot up of secordary
-> CPUs. As well as used in hot plug. Simply using something like
-> smp_processor_id() can crash the kernel here. The tracer code uses that,
-> so don't trace it.
-> 
-> Xen has a bunch that they added, and I think that's also because they do
-> funny things too.
-> 
-> 
-> For powerpc, we have:
-> 
-> cputable.o, prom_init.o, btext.o and prom.o that are all very sensitive
-> with boot up code. Simply calling mcount here can crash the system. But
-> this prevents boot up. It does not lock up the kernel when we enable
-> function tracing.
-> 
-> ftrace.o - again, this should be obvious.
-> 
-> time.o - this is the same reason we don't trace tsc and rtc in x86.
-
-ok In general - all timing functions and function which are related with 
-startup code - called only once before turning on irqs - there are a lot 
-of functions. I understand that make no sense to trace that files. And 
-plus all debugging functions.  And function which uses locks.
-Anything else?
+Kind Regards,
+-Greg
 
 
-> 
->> Can I use any special debug features? I mean I look at kernel.h and 
->> there are some trace_printk function - but they don't work for me. Is it 
->> possible to use them or not?
-> 
-> Should work. That's not arch dependent. But you need to have some ftrace
-> enabled. Enable CONFIG_CONTEXT_SWITCH_TRACER, and trace_printk should
-> work. That writes to the ring buffer and you can see the output
-> in /debug/tracing/trace.
+--------------enigE18A8C89AC1232EB011669F5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-It could be nice features but in case that you have command line and you 
-can read that trace debug output. I mean any printk messages - which not 
-contain any trace facility - just pure printk to console. Are that 
-messages written to any place which could be read from debuger? Like log 
-buffer? Is there any place for them?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-The second things is that I haven't implemented save_stack_trace 
-function - it is just while(1) loop. My kernel not jumps to this 
-function that's why I am not interested to implement it. Am I right that 
-  ftrace code don't use it? Or the standard behavior is that ftrace code 
-use this function and really care about. Does your kernel use that function?
+iEYEARECAAYFAkrwcu4ACgkQP5K2CMvXmqH6LQCfYPH0ZOpy6lFQqLyJiRpczJJt
+1L4Anjn/hFabGiOof5cYTbyAv9fZr2fM
+=UyNc
+-----END PGP SIGNATURE-----
 
- From my test I don't understand MCOUNT_INSN_SIZE - and which function 
-doesn't care about. There is this line of pseudocode in your doc
-(unsigned long selfpc = <return address> - MCOUNT_INSN_SIZE;) but what 
-the reason is to do that. If I understand correct selfpc and frompc just 
-give addresses which functions called that mcount and has impact to log.
-I mean that if that address is not proper begin of function is found 
-(not sure if the code do it or not) function name (and function) which 
-contain that address. Or is there any special reason why to substract 
-that MCOUNT_INSN_SIZE - for timing or anything like that?
-
-I simple just not find any reason for it. And I believe that don't have 
-connection with my problem.
-
-Thanks,
-Michal
-
-
-> 
-> -- Steve
-> 
-> 
-
+--------------enigE18A8C89AC1232EB011669F5--
