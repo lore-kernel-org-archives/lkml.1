@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbZKCXvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZKCXym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753650AbZKCXvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZKCXvv
+	id S1753810AbZKCXym (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbZKCXyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:51:51 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53167 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752895AbZKCXvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:51:49 -0500
-Subject: Re: [PATCH] qlogicpti: add missing parentheses
-From: James Bottomley <James.Bottomley@suse.de>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AF0BF04.9030203@gmail.com>
-References: <4AF0BF04.9030203@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 03 Nov 2009 17:51:49 -0600
-Message-Id: <1257292309.2454.54.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Tue, 3 Nov 2009 18:54:41 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:49557 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751820AbZKCXyh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 18:54:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=CXxmwUAagb1/Ftiees+jvNuyssBgRr827f5uO7W+gGKgdO4ndM8u30n1r+mDXdYvS2
+         xxw9dVi5xZ+q5SVvGFth3nnZoq/HKAczMmOowO3J3f3cxF2y+PFq6kB+N0fR+MqtcA+E
+         qUxBdLsKW0hN7ml0QX/n9MwVkSy7B5HpVc9Bg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
+Date: Wed, 4 Nov 2009 00:52:28 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>
+References: <200911031951.05235.bzolnier@gmail.com> <200911032334.40547.bzolnier@gmail.com> <20091103234835.3042f7b5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091103234835.3042f7b5@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Message-Id: <200911040052.28323.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-04 at 00:38 +0100, Roel Kluin wrote:
-> `+' has a higher precedence than `?' so the condition always
-> evaluates to true and this is preprocessed to `7*((ql) - 1)'
+On Wednesday 04 November 2009 00:48:35 Alan Cox wrote:
+> > > Yeah I know that. But like I said, I still needed to get around to do that,
+> > > and I am very happy you were interested in fixing it.
+> > 
+> > Lets make one thing clear: YOU SHOULD BE THE ONE FIXING IT.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  drivers/scsi/qlogicpti.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> This one must be right, I think.
+> Really - you have a service and support contract with Ivo.. no i thought
+> not.
 
-It looks plausible ... but it will increase the mailbox segment length
-by 4 ... someone needs to verify that this increase will actually work
-and won't run off the end of the mailbox table.
+Just today I got PM from somebody complaining to me about non-working
+pata_pdc2026x_old (pdc202xx_old works fine for him) simply because
+I fixed some bug there some time ago....
 
-James
+Problems are publicly know -- do you want bz# from Debian, SuSE or Red Hat?
 
+Wait.. unfortunately I also don't have support contract with you..
 
+-- 
+Bartlomiej Zolnierkiewicz
