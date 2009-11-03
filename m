@@ -1,130 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZKCX6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZKCX5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbZKCX6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbZKCX6U
+	id S1753853AbZKCX5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZKCX5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:58:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41607 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752142AbZKCX6T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:58:19 -0500
-Date: Tue, 3 Nov 2009 15:57:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Alex Williamson <alex.williamson@hp.com>, iommu@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Miller, Mike (OS Dev)" <mike.miller@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] intel-iommu: Fix alloc_coherent for pass-through
- devices
-Message-Id: <20091103155734.b5ee1fed.akpm@linux-foundation.org>
-In-Reply-To: <1256226541.2990.87.camel@macbook.infradead.org>
-References: <1256182910.2842.36.camel@2710p.home>
-	<1256192928.2990.10.camel@macbook.infradead.org>
-	<1256214241.2842.50.camel@2710p.home>
-	<1256222867.2990.47.camel@macbook.infradead.org>
-	<1256223676.3615.68.camel@8530w.home>
-	<1256226541.2990.87.camel@macbook.infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 18:57:41 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:48390 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752831AbZKCX5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 18:57:40 -0500
+Date: Tue, 3 Nov 2009 15:57:44 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com
+Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
+Message-ID: <20091103235744.GF6726@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com> <4AF07199.2020601@gmail.com> <4AF072EE.9020202@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4AF072EE.9020202@gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Oct 2009 00:49:01 +0900
-David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Thu, 2009-10-22 at 09:01 -0600, Alex Williamson wrote:
-> > On Thu, 2009-10-22 at 23:47 +0900, David Woodhouse wrote:
-> > > On Thu, 2009-10-22 at 06:24 -0600, Alex Williamson wrote:
-> > > > The coherent_dma_mask is independent of the dma_mask and can be set
-> > > > separately by the device.  The default for any device that doesn't
-> > > > specify one is 32bits.  iommu_should_identity_map() only checks the
-> > > > dma_mask, not the coherent_dma_mask. 
-> > > 
-> > > Are you telling me that this particular device supports only a 32-bit
-> > > coherent DMA mask, but that it _does_ support a 64-bit DMA mask for
-> > > non-coherent DMA? On x86?
+On Tue, Nov 03, 2009 at 01:14:06PM -0500, Gregory Haskins wrote:
+> Gregory Haskins wrote:
+> > Eric Dumazet wrote:
+> >> Michael S. Tsirkin a écrit :
+> >>> +static void handle_tx(struct vhost_net *net)
+> >>> +{
+> >>> +	struct vhost_virtqueue *vq = &net->dev.vqs[VHOST_NET_VQ_TX];
+> >>> +	unsigned head, out, in, s;
+> >>> +	struct msghdr msg = {
+> >>> +		.msg_name = NULL,
+> >>> +		.msg_namelen = 0,
+> >>> +		.msg_control = NULL,
+> >>> +		.msg_controllen = 0,
+> >>> +		.msg_iov = vq->iov,
+> >>> +		.msg_flags = MSG_DONTWAIT,
+> >>> +	};
+> >>> +	size_t len, total_len = 0;
+> >>> +	int err, wmem;
+> >>> +	size_t hdr_size;
+> >>> +	struct socket *sock = rcu_dereference(vq->private_data);
+> >>> +	if (!sock)
+> >>> +		return;
+> >>> +
+> >>> +	wmem = atomic_read(&sock->sk->sk_wmem_alloc);
+> >>> +	if (wmem >= sock->sk->sk_sndbuf)
+> >>> +		return;
+> >>> +
+> >>> +	use_mm(net->dev.mm);
+> >>> +	mutex_lock(&vq->mutex);
+> >>> +	vhost_no_notify(vq);
+> >>> +
+> >> using rcu_dereference() and mutex_lock() at the same time seems wrong, I suspect
+> >> that your use of RCU is not correct.
+> >>
+> >> 1) rcu_dereference() should be done inside a read_rcu_lock() section, and
+> >>    we are not allowed to sleep in such a section.
+> >>    (Quoting Documentation/RCU/whatisRCU.txt :
+> >>      It is illegal to block while in an RCU read-side critical section, )
+> >>
+> >> 2) mutex_lock() can sleep (ie block)
+> >>
 > > 
-> > Yes, yes.  AFAIK, this is not that exceptional.
-> 
-> Tomonori-san's explanation makes that make a little more sense. :)
-> 
-> > > >  BTW, we skip RMRR setup when doing hardware pass-through, but I can't
-> > > > find where they get reloaded if we then end up removing the device
-> > > > from the si_domain.  Is this another issue?
-> > > 
-> > > Maybe, theoretically. In practice, the whole RMRR thing is just broken
-> > > by design anyway. We have to quiesce the offending devices before we
-> > > turn on the IOMMU, because BIOSes tend to leave things out of the RMRR
-> > > table... and then crash in SMM mode when their DMA goes AWOL. 
 > > 
-> > Hmm, we've had a lot of trouble getting our RMRRs to reflect shared
-> > memory regions correctly, so I'm reluctant to just drop them like that.
+> > Michael,
+> >   I warned you that this needed better documentation ;)
+> > 
+> > Eric,
+> >   I think I flagged this once before, but Michael convinced me that it
+> > was indeed "ok", if but perhaps a bit unconventional.  I will try to
+> > find the thread.
+> > 
+> > Kind Regards,
+> > -Greg
+> > 
 > 
-> For devices which are still doing DMA on behalf of the BIOS when the
-> kernel is _running_? And for which the Linux kernel has an active driver
-> of its own _too_?
+> Here it is:
 > 
-> Words cannot describe the horror of what you seem to be telling me...
-> 
-> It would be possible for us to rescan the RMRR tables when we take a
-> device out of the si_domain, if we _really_ have to. But I'm going to
-> want a strand of hair from the engineer responsible for that design, for
-> my voodoo doll.
-> 
-> > Another issue, iommu_should_identity_map() only dumps devices if their
-> > dma_mask is 32bit or less, but being greater than 32bits does not imply
-> > 64bit DMA support.  If the device exports a DMA mask that's less than
-> > the physical address width of the processor, you might be in trouble
-> > (for example, a 40bit dma_mask on a platform that supports 44bits for
-> > physical memory). 
-> 
-> That should be comparing against the maximum physical memory address
-> rather than against DMA_BIT_MASK(32). I thought I'd done that, actually
-> -- but it seems not.
-> 
-> That approach isn't perfect if memory above the threshold is later
-> hotplugged -- but I'm prepared to declare that if you deliberately
-> disable the IOMMU and then insert memory at a higher address than your
-> devices can cope with, you get to keep both pieces.
-> 
-> >  Maybe dropping swiotlb out of the picture isn't such
-> > a clean solution?  Thanks,
-> 
-> Well, there are _other_ reasons why we want to keep swiotlb around --
-> the case where a BIOS bug causes us to have to abort the VT-d setup and
-> fall back to swiotlb. Currently we fall back to nommu and die horribly.
-> 
-> You don't really need full swiotlb support for the case you're
-> describing, do you? Using dma_generic_alloc_coherent() ought to be
-> perfectly sufficient?
-> 
-> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-> index b1e97e6..773a662 100644
-> --- a/drivers/pci/intel-iommu.c
-> +++ b/drivers/pci/intel-iommu.c
-> @@ -2765,6 +2765,10 @@ static void *intel_alloc_coherent(struct device *hwdev, size_t size,
->  	void *vaddr;
->  	int order;
->  
-> +	if (iommu_no_mapping(hwdev))
-> +		return dma_generic_alloc_coherent(hwdev, size, dma_handle,
-> +						  flags);
-> +
->  	size = PAGE_ALIGN(size);
->  	order = get_order(size);
->  	flags &= ~(GFP_DMA | GFP_DMA32);
-> 
-> (That won't build on IA64)
-> 
+> http://lkml.org/lkml/2009/8/12/173
 
-This is a box-killing post-2.6.31 regression, yes?
+What was happening in that case was that the rcu_dereference()
+was being used in a workqueue item.  The role of rcu_read_lock()
+was taken on be the start of execution of the workqueue item, of
+rcu_read_unlock() by the end of execution of the workqueue item, and
+of synchronize_rcu() by flush_workqueue().  This does work, at least
+assuming that flush_workqueue() operates as advertised, which it appears
+to at first glance.
 
-Alex appears to have disappeared on us, making it rather hard to fix
-this up promptly.
+The above code looks somewhat different, however -- I don't see
+handle_tx() being executed in the context of a work queue.  Instead
+it appears to be in an interrupt handler.
 
+So what is the story?  Using synchronize_irq() or some such?
+
+							Thanx, Paul
