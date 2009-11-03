@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbZKCWpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbZKCWhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754318AbZKCWpG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 17:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZKCWpG
+	id S1755056AbZKCWhi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 17:37:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbZKCWhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 17:45:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58155 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751253AbZKCWpF (ORCPT
+	Tue, 3 Nov 2009 17:37:37 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:38607 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753164AbZKCWhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 17:45:05 -0500
-Date: Tue, 3 Nov 2009 14:44:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] gpiolib: fix device_create() result check
-Message-Id: <20091103144401.6fa4e130.akpm@linux-foundation.org>
-In-Reply-To: <200910202035.23981.sshtylyov@ru.mvista.com>
-References: <200910202035.23981.sshtylyov@ru.mvista.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Nov 2009 17:37:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=xNIbFJgtxrFUQAb0RcdiKzjw3fc37N1ces7HFbARQs2xLU15YH0zYstJy8F7aHEzU6
+         CcO/FWuOGzs6yfMWynN6Mu1AsHBQEx5svk9o9aEzAxfcDbbrQyQuayisEyFwlJ2P4ZbS
+         +8cgAvJBFUEjJpK8SS8n5lA38iIbChDQo5euU=
+Message-ID: <4AF0B35A.8080400@gmail.com>
+Date: Tue, 03 Nov 2009 23:48:58 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, zbr@ioremap.net
+Subject: [PATCH] dst: Fix parentheses
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Oct 2009 20:35:23 +0400
-Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+`|' has a higher precedence than `?' so since MSG_WAITALL is
+defined 0x100, MSG_MORE was always written to the msg_flag.
 
-> In case of failure, device_create() returns not NULL but the error code.
-> The current code checks for non-NULL though which causes kernel oops in
-> sysfs_create_group() when device_create() fails.  Check for error using
-> IS_ERR() and propagate the error value using PTR_ERR() instead of fixed
-> -ENODEV code returned now...
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/staging/dst/state.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Does anyone notice any missing information here?
-
-/**
- * device_create - creates a device and registers it with sysfs
- * @class: pointer to the struct class that this device should be registered to
- * @parent: pointer to the parent struct device of this new device, if any
- * @devt: the dev_t for the char device to be added
- * @drvdata: the data to be added to the device for callbacks
- * @fmt: string for the device's name
- *
- * This function can be used by char device classes.  A struct device
- * will be created in sysfs, registered to the specified class.
- *
- * A "dev" file will be created, showing the dev_t for the device, if
- * the dev_t is not 0,0.
- * If a pointer to a parent struct device is passed in, the newly created
- * struct device will be a child of that device in sysfs.
- * The pointer to the struct device will be returned from the call.
- * Any further sysfs files that might be required can be created using this
- * pointer.
- *
- * Note: the struct class passed to this function must have previously
- * been created with a call to class_create().
- */
-
-
-Why do we do this to ourselves?
+diff --git a/drivers/staging/dst/state.c b/drivers/staging/dst/state.c
+index d057e52..bccbd6d 100644
+--- a/drivers/staging/dst/state.c
++++ b/drivers/staging/dst/state.c
+@@ -121,7 +121,7 @@ int dst_data_send_header(struct socket *sock,
+ 	msg.msg_namelen = 0;
+ 	msg.msg_control = NULL;
+ 	msg.msg_controllen = 0;
+-	msg.msg_flags = MSG_WAITALL | (more)?MSG_MORE:0;
++	msg.msg_flags = MSG_WAITALL | (more ? MSG_MORE : 0);
+ 
+ 	err = kernel_sendmsg(sock, &msg, &iov, 1, iov.iov_len);
+ 	if (err != size) {
