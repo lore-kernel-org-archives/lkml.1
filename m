@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbZKCXtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbZKCXvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753313AbZKCXtb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbZKCXt3
+	id S1753650AbZKCXvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZKCXvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:49:29 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36616 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752322AbZKCXt2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:49:28 -0500
-Date: Tue, 3 Nov 2009 23:48:35 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project
- tree
-Message-ID: <20091103234835.3042f7b5@lxorguk.ukuu.org.uk>
-In-Reply-To: <200911032334.40547.bzolnier@gmail.com>
-References: <200911031951.05235.bzolnier@gmail.com>
-	<200911032244.11946.bzolnier@gmail.com>
-	<200911032301.32907.IvDoorn@gmail.com>
-	<200911032334.40547.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Tue, 3 Nov 2009 18:51:51 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53167 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752895AbZKCXvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 18:51:49 -0500
+Subject: Re: [PATCH] qlogicpti: add missing parentheses
+From: James Bottomley <James.Bottomley@suse.de>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AF0BF04.9030203@gmail.com>
+References: <4AF0BF04.9030203@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Nov 2009 17:51:49 -0600
+Message-Id: <1257292309.2454.54.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Yeah I know that. But like I said, I still needed to get around to do that,
-> > and I am very happy you were interested in fixing it.
+On Wed, 2009-11-04 at 00:38 +0100, Roel Kluin wrote:
+> `+' has a higher precedence than `?' so the condition always
+> evaluates to true and this is preprocessed to `7*((ql) - 1)'
 > 
-> Lets make one thing clear: YOU SHOULD BE THE ONE FIXING IT.
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  drivers/scsi/qlogicpti.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> This one must be right, I think.
 
-Really - you have a service and support contract with Ivo.. no i thought
-not.
+It looks plausible ... but it will increase the mailbox segment length
+by 4 ... someone needs to verify that this increase will actually work
+and won't run off the end of the mailbox table.
+
+James
+
 
