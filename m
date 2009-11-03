@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZKCGvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751521AbZKCGnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbZKCGvJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 01:51:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZKCGvI
+	id S1751521AbZKCGnu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 01:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZKCGnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 01:51:08 -0500
-Received: from gollum.grokthis.net ([206.251.38.24]:47151 "EHLO
-	gollum.grokthis.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752923AbZKCGvH (ORCPT
+	Tue, 3 Nov 2009 01:43:50 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:61381 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750861AbZKCGnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 01:51:07 -0500
-X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 01:51:07 EST
-X-Spam-Flag: NO
-X-Spam-Score: -0.738
-Subject: Re: FatELF patches...
-From: Eric Windisch <eric@grokthis.net>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 03 Nov 2009 01:43:39 -0500
-Message-Id: <1257230619.5063.42.camel@eric-desktop.grokthis.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 01:43:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=xNOlt9mNWsq0zg+w8Z4kyWFwFGhdjkNj1urL6ugmHy6B33bQjPVgavBcNQt94fzs+E
+         SdaPplWVfpGD2a0EKqRWiw+Zt+iQsqM7EMNOllPFFZB0jaBSv6kp5M7hrUXko7uxb90/
+         oCjj76yvj1NEZJNV3zh2igZlol7pAwXnFsMmA=
+Date: Tue, 3 Nov 2009 07:43:47 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>,
+       Borislav Petkov <borislav.petkov@amd.com>,
+       bluesmoke-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 5/14] cpumask: use modern cpumask style in
+ drivers/edac/amd64_edac.c
+Message-ID: <20091103064347.GA8082@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+	Doug Thompson <dougthompson@xmission.com>,
+	Borislav Petkov <borislav.petkov@amd.com>,
+	bluesmoke-devel@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <200911031456.35354.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200911031456.35354.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First, I apologize if this message gets top-posted or otherwise
-improperly threaded, as I'm not currently a subscriber to the list (I
-can no longer handle the daily traffic).  I politely ask that I be CC'ed
-on any replies.
+Hi,
 
-In response to Alan's request for a FatELF use-case, I'll submit two of
-my own.
+On Tue, Nov 03, 2009 at 02:56:35PM +1030, Rusty Russell wrote:
+> cpumask_t -> struct cpumask, and don't put one on the stack.  (Note: this
+> is actually on the stack unless CONFIG_CPUMASK_OFFSTACK=y).
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-I have customers which operate low-memory x86 virtual machine instances.
-Until recently, these ran with as little as 64MB of RAM.  Many customers
-have chosen 32-bit distributions for these systems, but would like the
-flexibility of scaling beyond 4GB of memory.  These customers would like
-the choice of migrating to 64-bit without having to reinstall their
-distribution.
+I've got a similar patch already queued up but it
+depends on the changes to rdmsr_on_cpus/wrmsr_on_cpus in
+b8a4754147d61f5359a765a3afd3eb03012aa052 which is in tip/x86/cpu and
+which does a bit more than your patch 4 so IMHO you could drop yours.
 
-Furthermore, I'm involved in several "cloud computing" initiatives,
-including interoperability efforts.  There has been discussion of
-assuring portability of virtual machine images across varying
-infrastructure services.  I could see how FatELF could be part of a
-solution to this problem, enabling a single image to function against
-host services running a variety of architectures.
-
-As for negatives: I'm running ZFS which now supports deduplication, so
-this might potentially eliminate my own concerns in regard to storage.
-Eventually, Btrfs will provide this capability under Linux directly. The
-networking isn't much of an issue either, as I have my own mirrors for
-the popular distributions.  While this isn't the typical end-user
-environment, it might be a typical environment for companies facing the
-unique problems FatELF solves.
-
-I concede that there are a number of ways that solutions to these
-problems might be implemented, and FatELF binaries might not be the
-optimal solution.  Regardless, I do feel that use cases do exist, even
-if there are questions and concerns about the implementation.
+Concerning the edac change, yours is better and I could pick it up and
+add it to my patch queue if nobody else has a problem with that?
 
 -- 
-Regards,
-Eric Windisch
-
+Regards/Gruss,
+    Boris.
