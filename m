@@ -1,33 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbZKCVSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZKCVWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbZKCVSO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:18:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbZKCVSN
+	id S1755193AbZKCVWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 16:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZKCVWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:18:13 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:53322 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752029AbZKCVSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 16:18:13 -0500
-Message-ID: <4AF09E19.2040405@sgi.com>
-Date: Tue, 03 Nov 2009 13:18:17 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: uv12/13
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 16:22:19 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:9712 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbZKCVWT convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;5:1>);
+	Tue, 3 Nov 2009 16:22:19 -0500
+Message-Id: <4AF058BC0200005A00057F94@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Tue, 03 Nov 2009 14:22:20 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: <rostedt@goodmis.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@redhat.com>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/14] cpumask: simplify sched_rt.c
+References: <200911031453.15350.rusty@rustcorp.com.au>
+ <1257266509.26028.3343.camel@gandalf.stny.rr.com>
+In-Reply-To: <1257266509.26028.3343.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> On 11/3/2009 at 11:41 AM, in message
+<1257266509.26028.3343.camel@gandalf.stny.rr.com>, Steven Rostedt
+<rostedt@goodmis.org> wrote: 
+> Greg,
+> 
+> I believe this was mostly your code. Can you review this change.
+> 
 
+Hi Steve,
+  FYI: Looking now.  The diff hunk layout is a little confusing, so I need to think about it a little longer.
 
-It looks like uv12/13 is overflowing it's kernel log buffer.  You might
-want to add something like "log_buf_len=16M" to your elilo.conf entry.
-I'll edit the one on uv13.
+Kind Regards,
+-Greg
 
-Cheers,
-Mike
 
