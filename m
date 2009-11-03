@@ -1,76 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbZKCHfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbZKCHkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbZKCHfS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 02:35:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbZKCHfR
+	id S1756498AbZKCHkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 02:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbZKCHkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 02:35:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43425 "EHLO mx3.mail.elte.hu"
+	Tue, 3 Nov 2009 02:40:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17676 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752960AbZKCHfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 02:35:16 -0500
-Date: Tue, 3 Nov 2009 08:34:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric=5FWeisbecker?= <fweisbec@gmail.com>
-Subject: Re: [RFC][PATCH 2/7] Adding general performance benchmarking
-	subsystem to perf.
-Message-ID: <20091103073453.GD19928@elte.hu>
-References: <20091103.133645.1116588942663460777.mitake@dcl.info.waseda.ac.jp>
+	id S1753160AbZKCHki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 02:40:38 -0500
+Message-ID: <4AEFDE78.5030507@redhat.com>
+Date: Tue, 03 Nov 2009 09:40:40 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091103.133645.1116588942663460777.mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Gleb Natapov <gleb@redhat.com>
+CC: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/11] Add shared memory hypercall to PV Linux guest.
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-2-git-send-email-gleb@redhat.com> <4AEECE2E.2050609@redhat.com> <20091102161809.GG27911@redhat.com> <4AEFBC5E.7020300@redhat.com> <20091103071638.GK27911@redhat.com>
+In-Reply-To: <20091103071638.GK27911@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/03/2009 09:16 AM, Gleb Natapov wrote:
+>>>
+>>> I have both! Do you want me to drop version?
+>>>        
+>> Yes.  Once a kernel is released you can't realistically change the version.
+>>
+>>      
+> Why not? If version doesn't match apf will not be used.
+>    
 
-* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+Then you cause a large performance regression (assuming apf is any 
+good).  So there will be a lot of pressure to modify things 
+incrementally via feature bits.
 
-> 
-> Adding general performance benchmarking subsystem to perf.
-> This patch add new file: bench-suite.h
-> 
-> bench-suite.h contains prototypes of benchmark suite functions.
-> 
-> Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Mike Galbraith <efault@gmx.de>
-> ---
->  tools/perf/bench-suite.h |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
->  create mode 100644 tools/perf/bench-suite.h
-> 
-> diff --git a/tools/perf/bench-suite.h b/tools/perf/bench-suite.h
-> new file mode 100644
-> index 0000000..65f6f55
-> --- /dev/null
-> +++ b/tools/perf/bench-suite.h
-> @@ -0,0 +1,7 @@
-> +#ifndef BENCH_SUITE_H
-> +#define BENCH_SUITE_H
-> +
-> +extern int bench_sched_messaging(int argc, const char **argv, const char *prefix);
-> +extern int bench_sched_pipe(int argc, const char **argv, const char *prefix);
-> +
-> +#endif
+>    
+>>>> Some documentation for this?
+>>>>
+>>>> Also, the name should reflect the pv pagefault use.  For other uses
+>>>> we can register other areas.
+>>>>
+>>>>          
+>>> I wanted it to be generic, but I am fine with making it apf specific.
+>>> It will allow to make it smaller too.
+>>>        
+>> Maybe we can squeeze it into the page-fault error code?
+>>
+>>      
+> apf has to pass two things into a guest kernel:
+>   - event type (page not present/wake up)
+>   - unique token
+> Error code has 32 bits and at least 1 of them should indicate that this
+> is apf another one should indicate event type so this leaves us 30 bits
+> for a token. 12 bits of a token is used to store vcpu id this leaves 18
+> bits for unique per vcpu id. Yes this may be enough. I don't think it is
+> realistic to have more then 200000 outstanding apfs per vcpu. Alternately
+> we can use CR2 to pass a token.
+>    
 
-Please put new headers into tools/*.h.
+Or a combination of pfec and cr2, yes.
 
-Also, could we name it bench.h? It's a bit shorter :)
+>>>> would solve this.  I prefer using put_user() though than a permanent
+>>>> get_user_pages().
+>>>>
+>>>>          
+>>> I want to prevent it from been swapped out.
+>>>        
+>> Since you don't prevent the page fault handler or code from being
+>> swapped out, you don't get anything out of it.
+>>
+>>      
+> Performance. Currently it is accessed on each page fault and to access
+> it gup+kmap should be done each and every time.
+>    
 
-	Ingo
+put_user() is just as fast as a kmap, and don't prevent page migration 
+or defragmentation.
+
+Note we still have to mark_page_dirty() unless we want to chase live 
+migration bugs.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
