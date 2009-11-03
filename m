@@ -1,94 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbZKCHqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZKCHrC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbZKCHqB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 02:46:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbZKCHqB
+	id S1756824AbZKCHrC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 02:47:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZKCHrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 02:46:01 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:36590 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756666AbZKCHqA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 02:46:00 -0500
-Subject: Re: Please consider reverting
- 7d930bc33653d5592dc386a76a38f39c2e962344
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <1257232587.3420.55.camel@localhost.localdomain>
-References: <20091103053156.GA3212@core.coreip.homeip.net>
-	 <20091102.224957.32364226.davem@davemloft.net>
-	 <20091103065238.GE3212@core.coreip.homeip.net>
-	 <1257232587.3420.55.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-TF7Xj/Q8kb7N9qAmaura"
-Date: Tue, 03 Nov 2009 08:44:59 +0100
-Message-ID: <1257234299.28469.25.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 3 Nov 2009 02:47:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42436 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756118AbZKCHrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 02:47:00 -0500
+Date: Tue, 3 Nov 2009 08:46:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric=5FWeisbecker?= <fweisbec@gmail.com>
+Subject: Re: [RFC][PATCH 7/7] Adding general performance benchmarking
+	subsystem to perf.
+Message-ID: <20091103074648.GG19928@elte.hu>
+References: <20091103.133927.580735811043340004.mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091103.133927.580735811043340004.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-TF7Xj/Q8kb7N9qAmaura
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
 
-On Tue, 2009-11-03 at 16:16 +0900, Marcel Holtmann wrote:
+> 
+> Adding general performance benchmarking subsystem to perf.
+> This patch adds builtin-bench-pipe.c
+> 
+> builtin-bench-pipe.c is a benchmark program
+> to measure performance of pipe() system call.
+> This benchmark is based on pipe-test-1m.c by Ingo Molnar.
+> http://people.redhat.com/mingo/cfs-scheduler/tools/pipe-test-1m.c
+> 
+> Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Mike Galbraith <efault@gmx.de>
+> ---
+>  tools/perf/builtin-bench-pipe.c |   89 +++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 89 insertions(+), 0 deletions(-)
+>  create mode 100644 tools/perf/builtin-bench-pipe.c
+> 
+> diff --git a/tools/perf/builtin-bench-pipe.c b/tools/perf/builtin-bench-pipe.c
+> new file mode 100644
+> index 0000000..081515e
+> --- /dev/null
+> +++ b/tools/perf/builtin-bench-pipe.c
+> @@ -0,0 +1,89 @@
+> +/*
+> + *
+> + * builtin-bench-pipe.c
+> + *
+> + * pipe: Benchmark for pipe()
+> + *
+> + * Based on pipe-test-1m.c by Ingo Molnar <mingo@redhat.com>
+> + *  http://people.redhat.com/mingo/cfs-scheduler/tools/pipe-test-1m.c
+> + * Ported to perf by Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> + *
+> + */
 
-> and can we please stop jumping the gun here and going past the subsystem
-> maintainers. I think this happens a little bit too much lately.
+Ok, i think there's going to be quite a few of these benchmarks, so i'd 
+suggest you start a new directory for the benchmark modules: 
+tools/perf/bench/ for example.
 
-I'll rant a bit too -- I've been very annoyed by this many times. Note
-this isn't really against you (Dmitry) in particular, just another
-case ... but it does tick me off that many times when somebody manages
-to blame a failure on a specific commit the first thing they do is ask
-somebody way "above" (in terms of patch flow into mainline) the person
-writing the patch (like Linus here) to revert it.
+We'll still have tools/perf/builtin-bench.c which represents the highest 
+level 'perf bench' tool - and new modules can be added by adding them to 
+bench/.
 
-It'd help communication and be so much more friendly if the subject was
-"found problem with commit ..." instead of "please consider
-reverting ..." (which was comparatively friendly already!). You can even
-leave the body almost identical, but I think it's presumptuous to
-effectively say "hey I know the solution for the problem already". I'll
-venture a guess and say that wasn't even the intent, but it certainly
-comes across like that if you write an email with this subject, and
-start the body with "Hi Linus," not even addressing the patch author,
-just adding them to CC out of courtesy.
+What do you think?
 
-Should I think this is accepted practice?
+All in one, i very much like the modular direction you are taking here. 
 
-</rant>
+There will be a handful of more details i'm sure but once there's a good 
+base we can commit it - would you / will you be interested in extending 
+it further and adding more benchmark modules as well?
 
-Before you get the wrong impression, yes, certainly this particular
-commit was bad, and it shouldn't have happened. I tested it, but clearly
-not every aspect of it. That's clearly my fault, I apologise for that.
+There's quite a few useful small benchmarks that people are using to 
+measure the kernel. Having a good collection of them in one place, with 
+standardized options and standardized output would be very useful.
 
-johannes
-
---=-TF7Xj/Q8kb7N9qAmaura
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJK7993AAoJEODzc/N7+QmaKdoP/0AM7H5kUttjAafmMRj324Az
-okHOq6o2uDpI5aou5yzhXwdSp8V5rxdbH3vonaPLNPT5cWpUb4tAWgMi4H9TphrS
-MMF9nHEI45B40zodygaV2JEBkOM/Bms1QhaQDhijEnLN8BV4++A5XYGjsyWIpCD9
-pAfUTdW1uKeijnA7cmV5naZ0ujtKKhIoxARtpSi5v4Utfpfzh3oKGpqdWLU1N8f9
-yF/j/QztqUZyxW6tjxZ4obBKxAsx1boYRZRhMZlwihncyE3sPe4AyDbV7eABawJI
-tgmH/G5qv6ajTQl+C617nRWl8LeqIFNhh/jJazPK9NqcgFm8zhbJKissocCc3i1t
-9QRsjKdGNXI14FzGaC+4D+DjajxKNtmdGc3lPHOD4ZEanz4zXyUd3nOniha5eipb
-5C3oNHfaV5+AgqQtZdrcVJN4xlLC7OEXcCr13n+a70WbPd2WpbGQzaRI3cpIWZEO
-aBXr5WCsShXtBAXsAfCefgOt1TrO2ewi+nkMzXjTuTvOPAZGw6/0emqsmqP7Y1rV
-XGcAzstjvSJaFetcDY9Db1frwvHfFFZXDRLeO/unOeGQFJN1T6Jraiet8zP9bnja
-BWpzcusiLmu+PU18yscGvwlH4ki6XucFFNE6I5TE6iZhVvHJCBn8iFefX4yAhaIy
-qTGDP4h3604+vk4Sirho
-=2BpU
------END PGP SIGNATURE-----
-
---=-TF7Xj/Q8kb7N9qAmaura--
-
+	Ingo
