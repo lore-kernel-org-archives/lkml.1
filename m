@@ -1,82 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZKCKTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZKCKXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbZKCKTf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 05:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZKCKTe
+	id S1755451AbZKCKXN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 05:23:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZKCKXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 05:19:34 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:60063 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751105AbZKCKTe convert rfc822-to-8bit (ORCPT
+	Tue, 3 Nov 2009 05:23:13 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:59489 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbZKCKXM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 05:19:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=cJi2hiZwmOPJpzCaMG9yIwsAfik3PwZMdIKX/vyHWMTGOU/PL4n4KZxcUgb4/Gqf3y
-         xjnDq5z9dpsPKiageDsDrqp+UUrLezY5kTF+k9VX5vCIhVZ3Hn2fCTUj+BGzOXI902U5
-         9u/sZ8J1ol5AlBrnfDSDOT63Qpb+/dw7yjqaM=
+	Tue, 3 Nov 2009 05:23:12 -0500
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: "David S. Miller" <davem@davemloft.net>, Greg KH <greg@kroah.com>,
+       Benjamin LaHaise <bcrl@lhnet.ca>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       Cosmin Ratiu <cratiu@ixiacom.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: reduce ram usage by 40 %
+References: <20091101163130.GA7911@kvack.org>
+	<20091103035058.GA19515@kroah.com> <4AEFCA49.4020305@gmail.com>
+	<4AEFD544.6040602@gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 03 Nov 2009 02:23:08 -0800
+In-Reply-To: <4AEFD544.6040602@gmail.com> (Eric Dumazet's message of "Tue\, 03 Nov 2009 08\:01\:24 +0100")
+Message-ID: <m1bpjjewkz.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <1257242782-10496-5-git-send-email-alan-jenkins@tuffmail.co.uk>
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> 
-	<1257242782-10496-5-git-send-email-alan-jenkins@tuffmail.co.uk>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 3 Nov 2009 05:19:19 -0500
-Message-ID: <8bd0f97a0911030219y685a1dafy2a8e066d7132ac45@mail.gmail.com>
-Subject: Re: [PATCH 04/10] module: make MODULE_SYMBOL_PREFIX into a CONFIG 
-	option
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: greg@kroah.com, linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 3, 2009 at 05:06, Alan Jenkins wrote:
-> The next commit will require the use of MODULE_SYMBOL_PREFIX in
-> .tmp_exports-asm.S.  Currently it is mixed in with C structure
-> definitions in "asm/module.h".  Move the definition of this arch option
-> into Kconfig, so it can be easily accessed by any code.
+Eric Dumazet <eric.dumazet@gmail.com> writes:
+
+> Eric Dumazet a écrit :
 >
-> This also lets modpost.c use the same definition.  Previously modpost
-> relied on a hardcoded list of architectures in mk_elfconfig.c.
+>> Its curious because in my tests the biggest problems come from
+>> kernel/sysctl.c (__register_sysctl_paths) consuming 80% of cpu
+>> in following attempt to create 20.000 devices
 
-this should also let us push VMLINUX_SYMBOL() out of
-arch/*/kernel/vmlinux.lds.S and into asm-generic/vmlinux.lds.h ...
+I bet that is Al's cute glue all the sysctl data structures together
+patch.  It improves readdir and lookup at a small cost at registration
+time.
 
-> A build test for blackfin, one of the two MODULE_SYMBOL_PREFIX archs,
-> showed the generated code was unchanged.  vmlinux was identical save
-> for build ids, and an apparently randomized suffix on a single "__key"
-> symbol in the kallsyms data).
+>> (disable hotplug before trying this, and ipv6 too !)
+>> modprobe dummy numdummies=20000
 
-when you get localized (static) namespace collisions, the linker
-automatically does that
 
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -1171,6 +1171,17 @@ config MODULE_SRCVERSION_ALL
+>> I believe we should address __register_sysctl_paths() scalability
+>> problems too.
+
+Agreed.
+
+>> I dont know what is the 'sentinel' we allocate after each struct ctl_table
+>> But I suspect we could reduce size requirement of the 'sentinel' to include
+>> only needed fields for the sentinel (and move them at start of ctl_table)
+
+The sentinel is just a NULL terminator.
+
+> Here is the patch to reduce ram usage of sysctl :
 >
->  endif # MODULES
+> [PATCH] sysctl: reduce ram usage by 40 %
 >
-> +config HAVE_SYMBOL_PREFIX
-> +       bool
-> +       help
-> +         Some arch toolchains use a `_' prefix for all user symbols.
-> +         This option will be taken into account when loading modules.
-> +
-> +config SYMBOL_PREFIX
-> +       string
-> +       default "_" if HAVE_SYMBOL_PREFIX
-> +       default ""
+> We currently reserve space for a so called sentinel, a full struct ctl_table
+> for each ctl_table. We can cheat a bit since only needed fields of a sentinel
+> are ctl_name and procname. Add a new structure (struct ctl_table_sentinel)
+> that includes a full ctl_table and only required part of a sentinel.
 
-in practice, the symbol prefix is an underscore.  but there is no
-technical limitation here -- the toolchain could use whatever prefix
-they wanted
+Before we address sysctl I would like to get out my patchset that
+makes sys_sysctl a wrapper around the ascii version of
+/proc/sys/net. Once that goes in it becomes much easier to do things
+and perform radical surgery on sysctl.  Little things like .ctl_name and
+.strategy go away.
 
-so if the Kconfig option was pushed to arch/*/Kconfig, we could drop
-HAVE_SYMBOL_PREFIX and let the arch declare the exact SYMBOL_PREFIX
-value itself
--mike
+Have you happened to look at the other cost of /proc proper?  Hmm.
+Except for /proc/net/dev_snmp6 it doesn't look like we keep per
+interface directories in proc so without ivp6 you won't see the proc
+generic code at all.
+
+The practical consequence is if /proc/net/dev_snmp6 is not painful during
+registration right now we can probably convert all of /proc/sys/net to proc
+generic after my other changes are in.
+
+Eric
