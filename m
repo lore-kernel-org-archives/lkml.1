@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbZKCKlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752425AbZKCKmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752012AbZKCKlj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 05:41:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZKCKli
+	id S1752425AbZKCKmj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 05:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZKCKmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 05:41:38 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:36884 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbZKCKlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 05:41:37 -0500
-To: Benjamin LaHaise <bcrl@lhnet.ca>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
-       Cosmin Ratiu <cratiu@ixiacom.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] sysfs directory scaling: rbtree for dirent name lookups
-References: <20091101163130.GA7911@kvack.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 03 Nov 2009 02:41:37 -0800
-In-Reply-To: <20091101163130.GA7911@kvack.org> (Benjamin LaHaise's message of "Sun\, 1 Nov 2009 11\:31\:30 -0500")
-Message-ID: <m1ocnjdh5q.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 3 Nov 2009 05:42:35 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50770 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752225AbZKCKmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 05:42:33 -0500
+From: "NeilBrown" <neilb@suse.de>
+To: "device-mapper development" <dm-devel@redhat.com>,
+       akpm@linux-foundation.org
+Date: Tue, 3 Nov 2009 21:42:30 +1100
+Message-ID: <d6aea4636eac5a7c065f8c1a83c0dbe2.squirrel@neil.brown.name>
+In-Reply-To: <20091103100645.GA13118@infradead.org>
+References: <20091013120955.6bd5844b@smartjog.com>
+    <20091102135554.b10ece3e.akpm@linux-foundation.org>
+    <20091103100645.GA13118@infradead.org>
+Subject: Re: [dm-devel] Re: Ext3 sequential read performance drop 2.6.29 -> 
+ 2.6.30,2.6.31,...
+Cc: linux-fsdevel@vger.kernel.org, linux-raid@vger.kernel.org,
+       "Laurent CORBES" <laurent.corbes@smartjog.com>,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin LaHaise <bcrl@lhnet.ca> writes:
-
-> Use an rbtree in sysfs_dirent to speed up file lookup times
+On Tue, November 3, 2009 9:06 pm, Christoph Hellwig wrote:
+> On Mon, Nov 02, 2009 at 01:55:54PM -0800, Andrew Morton wrote:
+>> On Tue, 13 Oct 2009 12:09:55 +0200
+>> Laurent CORBES <laurent.corbes@smartjog.com> wrote:
+>>
+>> > Hi all,
+>> >
+>> > While benchmarking some systems I discover a big sequential read
+>> performance
+>> > drop using ext3 on ~ big files. The drop seems to be introduced in
+>> 2.6.30. I'm
+>> > testing with 2.6.28.6 -> 2.6.29.6 -> 2.6.30.4 -> 2.6.31.3.
+>>
+>> Seems that large performance regressions aren't of interest to this
+>> list :(
 >
-> Systems with large numbers (tens of thousands and more) of network 
-> interfaces stress the sysfs code in ways that make the linear search for 
-> a name match take far too long.  Avoid this by using an rbtree.
+> No sure which list you mean, but dm-devel is for dm, not md.  We're also
+> seeing similarly massive performance drops with md and ext3/xfs as
+> already reported on the list.  Someone tracked it down to writeback
+> changes as usual, but there it got stuck.
 
-Please take a look at the cleanups_scaling branch at:
-kernel.org:/pub/scm/linux/kernel/git/ebiederm/linux-2.6.32-rc5-sysfs-enhancements
+I'm still looking - running some basic tests on 4 filesystems over
+half a dozen recent kernels to see what has been happening.
 
-I haven't spent a lot of time on it but it is possible to get everything
-except the rbtree without increasing the size of sysfs_dirent.  Also we
-don't need the both the rbtree and a linked list.
+I have a suspicion that there a multiple problems.
+In particular, XFS has a strange degradation which was papered over
+by commit c8a4051c3731b.
+I'm beginning to wonder if it was caused by commit 17bc6c30cf6bf
+but I haven't actually tested that yet.
 
-In particular see:
-commit 50623bbb82da3bd1d596b9173a91ed1b5aa168b8
-Author: Eric W. Biederman <ebiederm@maxwell.aristanetworks.com>
-Date:   Sat Oct 31 04:11:18 2009 -0700
+NeilBrown
 
-    sysfs: Sort sysfs directories by name hash.
-    
-    This is a step in preparation for introducing a more efficient
-    data structure than a linked list for sysfs entries.  By ordering
-    by name hash instead of by inode sysfs_lookup can be speeded
-    up as well as allowing restarting after seekdir.
-    
-    Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
-
-Meanwhile back to pushing the most important ones for real.
-
-Eric
