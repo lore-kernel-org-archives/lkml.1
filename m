@@ -1,78 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbZKCPOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbZKCPrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996AbZKCPOH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 10:14:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZKCPOG
+	id S1754117AbZKCPrH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 10:47:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZKCPrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 10:14:06 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:36428 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbZKCPOE (ORCPT
+	Tue, 3 Nov 2009 10:47:06 -0500
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:62731 "EHLO
+	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751573AbZKCPrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 10:14:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Asl92AKFOagwyr+jV4w6qkzTdcAiAK2vTrbBp3UfCHEwKS4JiiJokr552ciHS9O3Ni
-         w4+hXoSY2p7zA0ZG/nMERwffN0h9O3uQHzHyqBljgv1DOV4JdxH/NnHcXrmqBCokd47s
-         bOwLbOmpKJXlKleHidBEarcUP2t11jO97f9aQ=
-Message-ID: <4AF048D1.4090402@gmail.com>
-Date: Tue, 03 Nov 2009 16:14:25 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, hbabu@us.ibm.com,
-       kexec@lists.infradead.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: kdump fails to load and crashes [was: mmotm 2009-11-01-10-01
- uploaded]
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org> <4AEF673E.5030509@gmail.com> <20091103144450.GB4235@redhat.com>
-In-Reply-To: <20091103144450.GB4235@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 10:47:05 -0500
+X-Greylist: delayed 1911 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 10:47:05 EST
+To: jblunck@suse.de
+Subject: BKL: Remove BKL from Squashfs
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, matthew@wil.cx, viro@zeniv.linux.org.uk
+Message-Id: <E1N5L6K-0008LW-6y@dylan.lougher.demon.co.uk>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Tue, 03 Nov 2009 15:15:16 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/03/2009 03:44 PM, Vivek Goyal wrote:
-> On Tue, Nov 03, 2009 at 12:11:58AM +0100, Jiri Slaby wrote:
->> On 11/01/2009 07:07 PM, akpm@linux-foundation.org wrote:
->>> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
->>
->> Hi, kdump loading crashes:
->> BUG: unable to handle kernel paging request at ffff8800010a7000
->> IP: [<ffffffff8101cd8b>] machine_kexec_prepare+0x16b/0x13e0
->> PGD 1806063 PUD 180a063 PMD 10001e1
-...
->> ffff8800010a7000 should be OK, as crashkernel=64M@16M was passed to the
->> kernel.
->>
-> 
-> This is strange. As you said, ffff8800010a7000, should be a valid address
-> as you reserved memory from 16M.
 
-Hmm, PMD has not RW bit set and we do store (see below).
+BKL is only used in fill_super/put_super.  It is safe to remove it.
 
-> I took above -mm and for me kernel loads fine. I reserved memory 64M@32M
-> as by default kernel is loading at address 16M.
-> 
-> How does your /proc/iomem look like in first kernel?
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/super.c |   11 -----------
+ 1 files changed, 0 insertions(+), 11 deletions(-)
 
-I'm not any longer on that machine. init_pgtable() overwrites random
-memory, so possibly even host's page tables, hence the oops above, I
-suppose.
+diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
+index 23cea83..7c25056 100644
+--- a/fs/squashfs/super.c
++++ b/fs/squashfs/super.c
+@@ -30,7 +30,6 @@
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+ #include <linux/slab.h>
+-#include <linux/smp_lock.h>
+ #include <linux/mutex.h>
+ #include <linux/pagemap.h>
+ #include <linux/init.h>
+@@ -78,14 +77,11 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	u64 lookup_table_start;
+ 	int err;
+ 
+-	lock_kernel();
+-
+ 	TRACE("Entered squashfs_fill_superblock\n");
+ 
+ 	sb->s_fs_info = kzalloc(sizeof(*msblk), GFP_KERNEL);
+ 	if (sb->s_fs_info == NULL) {
+ 		ERROR("Failed to allocate squashfs_sb_info\n");
+-		unlock_kernel();
+ 		return -ENOMEM;
+ 	}
+ 	msblk = sb->s_fs_info;
+@@ -289,7 +285,6 @@ allocate_root:
+ 
+ 	TRACE("Leaving squashfs_fill_super\n");
+ 	kfree(sblk);
+-	unlock_kernel();
+ 	return 0;
+ 
+ failed_mount:
+@@ -303,14 +298,12 @@ failed_mount:
+ 	kfree(sb->s_fs_info);
+ 	sb->s_fs_info = NULL;
+ 	kfree(sblk);
+-	unlock_kernel();
+ 	return err;
+ 
+ failure:
+ 	kfree(msblk->stream.workspace);
+ 	kfree(sb->s_fs_info);
+ 	sb->s_fs_info = NULL;
+-	unlock_kernel();
+ 	return -ENOMEM;
+ }
+ 
+@@ -345,8 +338,6 @@ static int squashfs_remount(struct super_block *sb, int *flags, char *data)
+ 
+ static void squashfs_put_super(struct super_block *sb)
+ {
+-	lock_kernel();
+-
+ 	if (sb->s_fs_info) {
+ 		struct squashfs_sb_info *sbi = sb->s_fs_info;
+ 		squashfs_cache_delete(sbi->block_cache);
+@@ -359,8 +350,6 @@ static void squashfs_put_super(struct super_block *sb)
+ 		kfree(sb->s_fs_info);
+ 		sb->s_fs_info = NULL;
+ 	}
+-
+-	unlock_kernel();
+ }
+ 
+ 
+-- 
+1.5.2.5
 
-I'm currently chasing it down in the qemu virtual machine, since I
-already got a garbage into my ~/.viminfo (some overwritten page got
-flushed, I guess).
-
-There /proc/iomem looks like:
-00100000-12beffff : System RAM
-  01000000-04ffffff : Crash kernel
-    01000000-014680c2 : Kernel code
-    014680c3-016f39f7 : Kernel data
-    0175b000-017d97ab : Kernel bss
-
-I'll keep you informed.
