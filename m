@@ -1,82 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZKCRTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZKCR0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601AbZKCRTO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 12:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZKCRTN
+	id S1754134AbZKCR0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 12:26:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbZKCR0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 12:19:13 -0500
-Received: from casper.infradead.org ([85.118.1.10]:42986 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbZKCRTM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 12:19:12 -0500
-Date: Tue, 3 Nov 2009 17:19:05 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Clemens Ladisch <clemens@ladisch.de>
-cc: Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 3/3] drm/kms: allocate framebuffer cmap
-In-Reply-To: <4AF01FFD.50409@ladisch.de>
-Message-ID: <alpine.LFD.2.00.0911031718160.14442@casper.infradead.org>
-References: <4AEE8CDD.10600@ladisch.de> <4AEE8D6F.60209@ladisch.de> <alpine.LFD.2.00.0911021431360.30135@casper.infradead.org> <4AF01F72.2030605@ladisch.de> <4AF01FFD.50409@ladisch.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 3 Nov 2009 12:26:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49973 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752400AbZKCR0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 12:26:44 -0500
+Date: Tue, 3 Nov 2009 19:23:48 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com, Daniel Walker <dwalker@fifo99.com>
+Subject: [PATCHv7 0/3] vhost: a kernel-level virtio server
+Message-ID: <20091103172348.GA5591@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rusty, ok, I think I've addressed all comments so far here.  In
+particular I have added write logging for live migration, indirect
+buffers and virtio net header (enables gso).  I'd like this to go
+into linux-next, through your tree, and hopefully 2.6.33.
+What do you think?
 
-> Without an allocated colormap, FBIOGETCMAP fails.  This would make
-> programs restore an all-black colormap ("links -g") or fail to work
-> altogether ("mplayer -vo fbdev2").
-> 
-> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-> ---
-> v2: implemented suggestions by James Simmons
-> 
->  drivers/gpu/drm/drm_fb_helper.c |   4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> --- linux-2.6/drivers/gpu/drm/drm_fb_helper.c
-> +++ linux-2.6/drivers/gpu/drm/drm_fb_helper.c
-> @@ -905,6 +905,9 @@ int drm_fb_helper_single_fb_probe(struct
->  
->  	if (new_fb) {
->  		info->var.pixclock = 0;
-> +		ret = fb_alloc_cmap(&info->cmap, crtc->gamma_size, 0);
-> +		if (ret)
-> +			return ret;
+---
 
+This implements vhost: a kernel-level backend for virtio,
+The main motivation for this work is to reduce virtualization
+overhead for virtio by removing system calls on data path,
+without guest changes. For virtio-net, this removes up to
+4 system calls per packet: vm exit for kick, reentry for kick,
+iothread wakeup for packet, interrupt injection for packet.
 
->  		if (register_framebuffer(info) < 0) {
-			fb_dealloc_cmap(info->cmap);	
->  			return -EINVAL;
-		}
+This driver is pretty minimal, but it's fully functional (including
+migration support interfaces), and already shows performance (especially
+latency) improvement over userspace.
 
-Plug memory leak.
+Some more detailed description attached to the patch itself.
 
+The patches apply to both 2.6.32-rc5 and kvm.git.  I'd like them to go
+into linux-next if possible.  Please comment.
 
->  	} else {
-> @@ -936,6 +939,7 @@ void drm_fb_helper_free(struct drm_fb_he
->  		unregister_sysrq_key('v', &sysrq_drm_fb_helper_restore_op);
->  	}
->  	drm_fb_helper_crtc_free(helper);
-> +	fb_dealloc_cmap(&helper->fb->fbdev->cmap);
->  }
->  EXPORT_SYMBOL(drm_fb_helper_free);
->  
-> 
-> 
-> ------------------------------------------------------------------------------
-> Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-> is the only developer event you need to attend this year. Jumpstart your
-> developing skills, take BlackBerry mobile applications to market and stay 
-> ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-> http://p.sf.net/sfu/devconference
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
-> 
+Changelog from v6:
+- review comments by Daniel Walker addressed
+- checkpatch cleanup
+- fix build on 32 bit
+- maintainers entry corrected
+
+Changelog from v5:
+- tun support
+- backends with virtio net header support (enables GSO, checksum etc)
+- 32 bit compat fixed
+- support indirect buffers, tx exit mitigation,
+  tx interrupt mitigation
+- support write logging (allows migration without virtio ring code in userspace)
+
+Changelog from v4:
+- disable rx notification when have rx buffers
+- addressed all comments from Rusty's review
+- copy bugfixes from lguest commits:
+	ebf9a5a99c1a464afe0b4dfa64416fc8b273bc5c
+	e606490c440900e50ccf73a54f6fc6150ff40815
+
+Changelog from v3:
+- checkpatch fixes
+
+Changelog from v2:
+- Comments on RCU usage
+- Compat ioctl support
+- Make variable static
+- Copied more idiomatic english from Rusty
+
+Changes from v1:
+- Move use_mm/unuse_mm from fs/aio.c to mm instead of copying.
+- Reorder code to avoid need for forward declarations
+- Kill a couple of debugging printks
+
+Michael S. Tsirkin (3):
+  tun: export underlying socket
+  mm: export use_mm/unuse_mm to modules
+  vhost_net: a kernel-level virtio server
+
+ MAINTAINERS                |    9 +
+ arch/x86/kvm/Kconfig       |    1 +
+ drivers/Makefile           |    1 +
+ drivers/net/tun.c          |  101 ++++-
+ drivers/vhost/Kconfig      |   11 +
+ drivers/vhost/Makefile     |    2 +
+ drivers/vhost/net.c        |  633 +++++++++++++++++++++++++++++
+ drivers/vhost/vhost.c      |  970 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/vhost/vhost.h      |  158 +++++++
+ include/linux/Kbuild       |    1 +
+ include/linux/if_tun.h     |   14 +
+ include/linux/miscdevice.h |    1 +
+ include/linux/vhost.h      |  126 ++++++
+ mm/mmu_context.c           |    3 +
+ 14 files changed, 2012 insertions(+), 19 deletions(-)
+ create mode 100644 drivers/vhost/Kconfig
+ create mode 100644 drivers/vhost/Makefile
+ create mode 100644 drivers/vhost/net.c
+ create mode 100644 drivers/vhost/vhost.c
+ create mode 100644 drivers/vhost/vhost.h
+ create mode 100644 include/linux/vhost.h
