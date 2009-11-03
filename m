@@ -1,97 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbZKCK5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZKCLCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbZKCK5w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 05:57:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZKCK5w
+	id S1753175AbZKCLCP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 06:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZKCLCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 05:57:52 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:53786 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752815AbZKCK5v (ORCPT
+	Tue, 3 Nov 2009 06:02:15 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:33433 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbZKCLCN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 05:57:51 -0500
-Date: Tue, 3 Nov 2009 10:57:37 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>
-Subject: Re: dream: glue for mmc controller
-Message-ID: <20091103105737.GE20341@fluff.org.uk>
-References: <20091103105319.GA2492@elf.ucw.cz>
+	Tue, 3 Nov 2009 06:02:13 -0500
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: <linux-fsdevel@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Cc: sds@tycho.nsa.gov, jmorris@namei.org, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org
+Subject: [PATCH 01/42] sysfs: Don't leak secdata when a sysfs_dirent is freed.
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 03 Nov 2009 03:02:12 -0800
+Message-ID: <m13a4vdg7f.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091103105319.GA2492@elf.ucw.cz>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 11:53:20AM +0100, Pavel Machek wrote:
-> 
-> This is what I came up with (relative to the previous
-> patches). Unfortunately, it does not quite work: mmc controller is
-> detected, but it hangs trying to access the card.
-> 
-> Good news is that GPIO support seems to work, and I am able to flash
-> the keyboard backlight.
-> 
-> Does anyone have an idea what is wrong? Do I need some more
-> infrastructure to set up (DMA transfers or something?)?
-> 
-> I'm only setting up one mmc channel; I believe the other one is for
-> wifi, and it should work like this...?
-> 								Pavel
-> 
-> diff --git a/arch/arm/mach-msm/Makefile b/arch/arm/mach-msm/Makefile
-> index 91e6f5c..16c0faa 100644
-> --- a/arch/arm/mach-msm/Makefile
-> +++ b/arch/arm/mach-msm/Makefile
-> @@ -6,4 +6,4 @@ obj-y += clock.o clock-7x01a.o
->  
->  obj-$(CONFIG_MACH_HALIBUT) += board-halibut.o
->  
-> -obj-$(CONFIG_MACH_TROUT) += board-dream.o
-> +obj-$(CONFIG_MACH_TROUT) += board-dream.o board-dream-mmc.o board-dream-gpio.o generic_gpio.o
-> diff --git a/arch/arm/mach-msm/board-dream-gpio.c b/arch/arm/mach-msm/board-dream-gpio.c
-> new file mode 100644
-> index 0000000..7e86a99
-> --- /dev/null
-> +++ b/arch/arm/mach-msm/board-dream-gpio.c
-> @@ -0,0 +1,301 @@
-> +/* arch/arm/mach-msm/board-dream-gpio.c
-> + *
-> + * Copyright (C) 2008 Google, Inc.
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/errno.h>
-> +#include <linux/irq.h>
-> +#include <linux/pm.h>
-> +#include <linux/sysdev.h>
-> +
-> +#include <asm/io.h>
-> +#include <asm/gpio.h>
-linux/gpio.h
-linux/io.h
 
+While refreshing my sysfs patches I noticed a leak in the secdata
+implementation.  We don't free the secdata when we free the
+sysfs dirent. 
 
-and why can't use you use gpiolib?
+This is a bug in 2.6.32-rc5 that we really should close.
 
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+---
+ fs/sysfs/dir.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 5fad489..e020183 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -21,6 +21,7 @@
+ #include <linux/completion.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/security.h>
+ #include "sysfs.h"
+ 
+ DEFINE_MUTEX(sysfs_mutex);
+@@ -285,6 +286,9 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
+ 		sysfs_put(sd->s_symlink.target_sd);
+ 	if (sysfs_type(sd) & SYSFS_COPY_NAME)
+ 		kfree(sd->s_name);
++	if (sd->s_iattr && sd->s_iattr->ia_secdata)
++		security_release_secctx(sd->s_iattr->ia_secdata,
++					sd->s_iattr->ia_secdata_len);
+ 	kfree(sd->s_iattr);
+ 	sysfs_free_ino(sd->s_ino);
+ 	kmem_cache_free(sysfs_dir_cachep, sd);
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+1.6.5.2.143.g8cc62
 
-  'a smiley only costs 4 bytes'
