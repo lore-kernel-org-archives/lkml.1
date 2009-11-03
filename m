@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZKCHQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbZKCHQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZKCHQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 02:16:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbZKCHQ2
+	id S1756136AbZKCHQk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 02:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZKCHQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 02:16:28 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:56375 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755466AbZKCHQ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 02:16:28 -0500
-Subject: Re: Please consider reverting
- 7d930bc33653d5592dc386a76a38f39c2e962344
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       johannes@sipsolutions.net, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <20091103065238.GE3212@core.coreip.homeip.net>
-References: <20091103053156.GA3212@core.coreip.homeip.net>
-	 <20091102.224957.32364226.davem@davemloft.net>
-	 <20091103065238.GE3212@core.coreip.homeip.net>
-Content-Type: text/plain
-Date: Tue, 03 Nov 2009 16:16:27 +0900
-Message-Id: <1257232587.3420.55.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 02:16:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53739 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755778AbZKCHQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 02:16:36 -0500
+Date: Tue, 3 Nov 2009 09:16:38 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/11] Add shared memory hypercall to PV Linux guest.
+Message-ID: <20091103071638.GK27911@redhat.com>
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
+ <1257076590-29559-2-git-send-email-gleb@redhat.com>
+ <4AEECE2E.2050609@redhat.com>
+ <20091102161809.GG27911@redhat.com>
+ <4AEFBC5E.7020300@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AEFBC5E.7020300@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
-
-> > > It looks like
-> > > 
-> > > commit 7d930bc33653d5592dc386a76a38f39c2e962344
-> > > Author: Johannes Berg <johannes@sipsolutions.net>
-> > > Date:   Tue Oct 20 15:08:53 2009 +0900
-> >  ...
-> > > is causing oops on resume:
-> > 
-> > There is a fix for this in my tree and I'll push it to Linus
-> > tonight.
+On Tue, Nov 03, 2009 at 07:15:10AM +0200, Avi Kivity wrote:
+> On 11/02/2009 06:18 PM, Gleb Natapov wrote:
+> >>>+#define KVM_PV_SHM_VERSION 1
+> >>versions = bad, feature bits = good
+> >>
+> >I have both! Do you want me to drop version?
 > 
-> Ah, even better ;) Thanks David.
+> Yes.  Once a kernel is released you can't realistically change the version.
+> 
+Why not? If version doesn't match apf will not be used.
 
-and can we please stop jumping the gun here and going past the subsystem
-maintainers. I think this happens a little bit too much lately.
+> >>Some documentation for this?
+> >>
+> >>Also, the name should reflect the pv pagefault use.  For other uses
+> >>we can register other areas.
+> >>
+> >I wanted it to be generic, but I am fine with making it apf specific.
+> >It will allow to make it smaller too.
+> 
+> Maybe we can squeeze it into the page-fault error code?
+> 
+apf has to pass two things into a guest kernel:
+ - event type (page not present/wake up)
+ - unique token
+Error code has 32 bits and at least 1 of them should indicate that this
+is apf another one should indicate event type so this leaves us 30 bits
+for a token. 12 bits of a token is used to store vcpu id this leaves 18
+bits for unique per vcpu id. Yes this may be enough. I don't think it is
+realistic to have more then 200000 outstanding apfs per vcpu. Alternately
+we can use CR2 to pass a token.
+ 
+> >>would solve this.  I prefer using put_user() though than a permanent
+> >>get_user_pages().
+> >>
+> >I want to prevent it from been swapped out.
+> 
+> Since you don't prevent the page fault handler or code from being
+> swapped out, you don't get anything out of it.
+> 
+Performance. Currently it is accessed on each page fault and to access
+it gup+kmap should be done each and every time.
 
-Regards
-
-Marcel
-
-
+--
+			Gleb.
