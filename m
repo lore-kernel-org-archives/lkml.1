@@ -1,126 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbZKCUKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZKCUKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754399AbZKCUKM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 15:10:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZKCUKL
+	id S1754946AbZKCUKw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 15:10:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZKCUKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 15:10:11 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:42790 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbZKCUKK convert rfc822-to-8bit (ORCPT
+	Tue, 3 Nov 2009 15:10:51 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:63738 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbZKCUKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 15:10:10 -0500
-Date: Tue, 3 Nov 2009 15:09:54 -0500
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, David Airlie <airlied@linux.ie>,
-       dri-devel@lists.sourceforge.net
-Subject: [PATCH] drm: replace DRM_COPY macro w/ a function
-Message-ID: <20091103150954.68f4a285@mycelium.queued.net>
-In-Reply-To: <20091102234124.2655e61d.akpm@linux-foundation.org>
-References: <20091019013708.6ca3c7df@mycelium.queued.net>
-	<20091102234124.2655e61d.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 3 Nov 2009 15:10:50 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX186ykzbRp1uuO8ySiF6hWUc
+Date: Tue, 3 Nov 2009 12:10:48 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH v2] OMAP: DMA: Fix omapfb/lcdc on Amstrad Delta
+ broken when PM set
+Message-ID: <20091103201048.GP8981@atomide.com>
+References: <200911032024.47741.jkrzyszt@tis.icnet.pl>
+ <200911032104.33049.jkrzyszt@tis.icnet.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200911032104.33049.jkrzyszt@tis.icnet.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009 23:41:24 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Mon, 19 Oct 2009 01:37:08 -0400 Andres Salomon
-> <dilinger@collabora.co.uk> wrote:
+* Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091103 12:05]:
+> Tuesday 03 November 2009 20:24:38 Janusz Krzysztofik napisał(a):
+> > If there are still no comments, especially on the bug possible impact on
+> > other OMAP1510 boards (or even OMAP1610 with internal LCD controller), then
+> > Tony, please apply it as is. Until it is accepted, I am stuck with new
+> > ams_delta_defconfig.
 > 
-> > There are a few more macros in drmP.h that are unused;
-> > DRM_GET_PRIV_SAREA, DRM_ARRAY_SIZE, and DRM_WAITCOUNT can go away
-> > completely.
-> > 
-> > Unfortunately, DRM_COPY is still used in one place, but we can at
-> > least move it to where it's used.  It's an awful looking macro..
+> Tony,
+> Sorry, I've not checked for new mail before posting this one and missed your 
+> acceptance for my idea of fixing all omap1510, not only ams_delta. If there 
+> are no more comments, I'll submit v3 with cpu_is_omap1510() replacing 
+> machine_is_ams_delta().
+
+Sounds good to me.
+
+Tony
+ 
+> Thanks,
+> Janusz
 > 
-> It would have been nice to fix the (valid) checkpatch warnings while
-> you were there.
+> > --- linux-2.6.32-rc5/arch/arm/plat-omap/dma.c.orig	2009-10-16
+> > 02:41:50.000000000 +0200 +++
+> > linux-2.6.32-rc5/arch/arm/plat-omap/dma.c	2009-11-03 20:15:35.000000000
+> > +0100 @@ -30,6 +30,7 @@
+> >  #include <linux/irq.h>
+> >  #include <linux/io.h>
+> >
+> > +#include <asm/mach-types.h>
+> >  #include <asm/system.h>
+> >  #include <mach/hardware.h>
+> >  #include <mach/dma.h>
+> > @@ -1110,6 +1111,14 @@ int omap_dma_running(void)
+> >  {
+> >  	int lch;
+> >
+> > +	/*
+> > +	 * On Amstrad Delta, the OMAP internal LCD controller will start the
+> > +	 * transfer when it gets enabled, so assume DMA running if LCD enabled.
+> > +	 */
+> > +	if (machine_is_ams_delta())
+> > +		if (omap_readw(0xfffec000 + 0x00) & (1 << 0))
+> > +			return 1;
+> > +
+> >  	/* Check if LCD DMA is running */
+> >  	if (cpu_is_omap16xx())
+> >  		if (omap_readw(OMAP1610_DMA_LCD_CCR) & OMAP_DMA_CCR_EN)
 > 
-
-How about I do one better and replace the macro w/ a function?
-
-
-
->From 535091717408e4ec4974e8f309212f61aabd1880 Mon Sep 17 00:00:00 2001
-From: Andres Salomon <dilinger@collabora.co.uk>
-Date: Tue, 3 Nov 2009 15:03:52 -0500
-Subject: [PATCH] drm: replace DRM_COPY macro w/ a function
-
-Don't inline it; the compiler can figure it out.  Comments added that are
-based upon my interpretation of the code.  Hopefully they're correct. :)
-
-Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
----
- drivers/gpu/drm/drm_drv.c |   34 ++++++++++++++++++++++------------
- 1 files changed, 22 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/gpu/drm/drm_drv.c b/drivers/gpu/drm/drm_drv.c
-index 43297ca..ec0e3ae 100644
---- a/drivers/gpu/drm/drm_drv.c
-+++ b/drivers/gpu/drm/drm_drv.c
-@@ -368,14 +368,25 @@ module_exit(drm_core_exit);
- /**
-  * Copy and IOCTL return string to user space
-  */
--#define DRM_COPY(name, value)                                         \
--	len = strlen(value);                                          \
--	if (len > name##_len) len = name##_len;                       \
--	name##_len = strlen(value);                                   \
--	if (len && name) {                                            \
--		if (copy_to_user(name, value, len))                   \
--			return -EFAULT;                               \
--	}
-+static int drm_copy_field(char *buf, size_t *buf_len, const char *value)
-+{
-+	int len;
-+
-+	/* don't overflow userbuf */
-+	len = strlen(value);
-+	if (len > *buf_len)
-+		len = *buf_len;
-+
-+	/* let userspace know exact length of driver value (which could be
-+	 * larger than the userspace-supplied buffer) */
-+	*buf_len = strlen(value);
-+
-+	/* finally, try filling in the userbuf */
-+	if (len && buf)
-+		if (copy_to_user(buf, value, len))
-+			return -EFAULT;
-+	return 0;
-+}
- 
- /**
-  * Get version information
-@@ -392,14 +403,13 @@ static int drm_version(struct drm_device *dev, void *data,
- 		       struct drm_file *file_priv)
- {
- 	struct drm_version *version = data;
--	int len;
- 
- 	version->version_major = dev->driver->major;
- 	version->version_minor = dev->driver->minor;
- 	version->version_patchlevel = dev->driver->patchlevel;
--	DRM_COPY(version->name, dev->driver->name);
--	DRM_COPY(version->date, dev->driver->date);
--	DRM_COPY(version->desc, dev->driver->desc);
-+	drm_copy_field(version->name, &version->name_len, dev->driver->name);
-+	drm_copy_field(version->date, &version->date_len, dev->driver->date);
-+	drm_copy_field(version->desc, &version->desc_len, dev->driver->desc);
- 
- 	return 0;
- }
--- 
-1.5.6.5
-
-
-
-
+> 
