@@ -1,41 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZKCVAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZKCVBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbZKCVAd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbZKCVAc
+	id S1754762AbZKCVBU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 16:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbZKCVBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:00:32 -0500
-Received: from lucidpixels.com ([75.144.35.66]:41465 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754450AbZKCVA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 16:00:28 -0500
-Date: Tue, 3 Nov 2009 16:00:32 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Is this needed to enable turbo mode/boost on i7 processors?
-In-Reply-To: <alpine.DEB.2.00.0911031340110.12341@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0911031600130.6593@p34.internal.lan>
-References: <alpine.DEB.2.00.0911031340110.12341@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Nov 2009 16:01:19 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:63591 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166AbZKCVBS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 16:01:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=t/LpDeclX+1B5L+EgFFi8C0JEAHybuTcsYa0YvOJlULDUSQOpN7ztivx7wrhskY+yx
+         oNCwxJFVjClgkI53UAeRXfiAYE1z1LcUzT8dqnomrLxaz1LemTfEU34UjtxmL0p9KBTn
+         b+ctFybQ1Zyr56ZnGT4gaqDVFKRnvrr26PJ8I=
+Message-ID: <4AF09A15.3060504@gmail.com>
+Date: Tue, 03 Nov 2009 22:01:09 +0100
+From: Gertjan van Wingerde <gwingerde@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090926 Lightning/1.0pre Shredder/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
+References: <200911031951.05235.bzolnier@gmail.com>
+In-Reply-To: <200911031951.05235.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I realize the BIOS is supposed to take care of it, but it would be nice if 
-there was an easy way to verify it is working.
+Hi,
 
-On Tue, 3 Nov 2009, Justin Piszcz wrote:
+On 11/03/09 19:51, Bartlomiej Zolnierkiewicz wrote:
+> 
+> Hi,
+> 
+> The following patch series (against wireless-next) addresses issues raised
+> during code review and subsequently rejected by rt2x00/wireless/networking
+> maintainers.
+> 
 
-> Hello,
->
-> Per: http://kolbusa.livejournal.com/71066.html
->
-> Is it necessary to do this--?
->
-> Is there a way to verify whether turbo boost is being enabled when one core 
-> is at 100% cpu?
->
-> Justin.
->
+This seems to be a misrepresentation of the situation. The issues raised by
+you were acknowledged as being valid, however they were not deemed important
+enough to stop inclusion in wireless-next and net-next.
+
+However, it is good to see that you have put effort in providing a patch series
+for these issues.
+
+Now, since I believe that it is better to work with people, rather than against
+them, would it be possible to post this patch series somewhere as a set of 
+separate patches, so that they can be reviewed as such?
+
+---
+Gertjan
+rt2x00 project developer
+
+
+> 
+> Namely, it:
+> 
+> - Adds abstraction of chipset register access for chipsets connected to
+>   different buses by using new structure (struct rt2800_ops) which contains
+>   all needed register access methods.
+> 
+>   [ It is a prerequisite for fixing code duplication between rt2800usb.c
+>     and rt2800pci.c drivers. ]
+> 
+> - Fixes code duplication in rt2800usb.h and rt2800pci.h header files by
+>   using new shared rt2800.h header (almost 1800 LOC gone).
+> 
+>   Updated debugging scripts are located here:
+> 
+>       http://www.kernel.org/pub/linux/kernel/people/bart/rt2800/scripts/
+> 
+>   (they also work fine with older drivers)
+> 
+> - Adds rt2800 library containing common code for PCI and USB versions
+>   of rt2800 chipsets.  This removes over 1300 LOC and allows us to save
+>   a lot of maintenance burden in the future. 
+> 
+> 
+> It also fixes two real bugs (one in rt2800pci and one in rt2800usb) found
+> as a direct result of the code de-duplication:
+> 
+> - Fix rt2800usb driver to write the rfcsr read request into RF_CSR_CFG
+>   register and not BBP_CSR_CFG one in rt2800usb_rfcsr_read().
+> 
+> - Use the correct encryption key index for TX frames in rt2800pci (this is
+>   based on rt2800usb patch from Benoit PAPILLAULT already in Linus' tree,
+>   unfortunately the fix was not ported over to rt2800pci).
+> 
+>   [ There are also some minor code rt2x00 infrastructure fixes and improvements
+>      here and there... ]
+> 
+> 
+> All in all over 3100 LOC are gone and rt2800pci specific code is:
+> 
+>  1685 drivers/net/wireless/rt2x00/rt2800pci.c
+>   180 drivers/net/wireless/rt2x00/rt2800pci.h
+>  1865 total
+> 
+> instead of:
+> 
+>   3323 drivers/net/wireless/rt2x00/rt2800pci.c
+>   1960 drivers/net/wireless/rt2x00/rt2800pci.h
+>   5283 total
+> 
+>   (wireless-next and net-next trees)
+> 
+> which means decrease of the code needed for rt2800pci by 65% (this in turn
+> translates to 31% decrease for rt2800 specific code and 9% for whole rt2x00
+> infrastructure).
+> 
+> The rewrite was quite conservative and there is still a room for improvement
+> but it should serve as a good starting base for all future work on rt2800
+> drivers, and there is a lot to do there (both drivers are still practically
+> non-functional).
+> 
+> Comments and patches are welcomed.
+> 
+> 
+> The following changes since commit fa867e7355a1bdcd9bf7d55ebe9296f5b9c4028a:
+>   Juuso Oikarinen (1):
+>         wl1271: Generalize command response reading
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git rt2800
+> 
+> Bartlomiej Zolnierkiewicz (40):
+>       rt2800usb: fix rt2800usb_rfcsr_read()
+>       rt2800pci: fix crypto in TX frame
+>       rt2800pci: fix comment about register access
+>       rt2800pci: fix comment about IV/EIV fields
+>       rt2x00: fix rt2x00usb_register_read() comment
+>       rt2800usb: use rt2x00usb_register_multiwrite() to set key entries
+>       rt2800usb: add rt2800_register_[read,write]() wrappers
+>       rt2800pci: add rt2800_register_[read,write]() wrappers
+>       rt2800usb: add rt2800_register_multi[read,write]() wrappers
+>       rt2800pci: add rt2800_register_multi[read,write]() wrappers
+>       rt2800usb: add rt2800_regbusy_read() wrapper
+>       rt2800pci: add rt2800_regbusy_read() wrapper
+>       rt2800usb: add rt2800_bbp_[read,write]() wrappers
+>       rt2800pci: add rt2800_bbp_[read,write]() wrappers
+>       rt2800usb: add rt2800_rfcsr_[read,write]() wrappers
+>       rt2800pci: add rt2800_rfcsr_[read,write]() wrappers
+>       rt2800usb: add rt2800_rf_[read,write]() wrappers
+>       rt2800pci: add rt2800_rf_[read,write]() wrappers
+>       rt2800usb: add rt2800_mcu_request() wrapper
+>       rt2800pci: add rt2800_mcu_request() wrapper
+>       rt2x00: add driver private field to struct rt2x00_dev
+>       rt2800usb: convert to use struct rt2800_ops methods
+>       rt2800pci: convert to use struct rt2800_ops methods
+>       rt2x00: fix rt2x00usb_register_multiwrite() arguments
+>       rt2x00: fix rt2x00usb_regbusy_read() arguments
+>       rt2x00: fix rt2x00pci_register_multi[read,write]() arguments
+>       rt2800: add rt2800lib.h
+>       rt2800usb: fix comments in rt2800usb.h
+>       rt2800usb: add RXINFO_DESC_SIZE definition
+>       rt2800: fix duplication in header files
+>       rt2800: fix comments in rt2800.h
+>       rt2x00: add support for different chipset interfaces
+>       rt2800: prepare for rt2800lib addition
+>       rt2800: add rt2800lib (part one)
+>       rt2x00: remove needless ifdefs from rt2x00leds.h
+>       rt2800: add rt2800lib (part two)
+>       rt2x00: move REGISTER_BUSY_* definitions to rt2x00.h
+>       rt2800: add rt2800lib (part three)
+>       rt2800: add rt2800lib (part four)
+>       MAINTAINERS: add rt2800 entry
+> 
+>  MAINTAINERS                              |    7 +
+>  drivers/net/wireless/rt2x00/Kconfig      |    5 +
+>  drivers/net/wireless/rt2x00/Makefile     |    1 +
+>  drivers/net/wireless/rt2x00/rt2800.h     | 1816 ++++++++++++++++++++++++++++
+>  drivers/net/wireless/rt2x00/rt2800lib.c  | 1817 ++++++++++++++++++++++++++++
+>  drivers/net/wireless/rt2x00/rt2800lib.h  |  134 +++
+>  drivers/net/wireless/rt2x00/rt2800pci.c  | 1908 +++---------------------------
+>  drivers/net/wireless/rt2x00/rt2800pci.h  | 1780 ----------------------------
+>  drivers/net/wireless/rt2x00/rt2800usb.c  | 1828 ++---------------------------
+>  drivers/net/wireless/rt2x00/rt2800usb.h  | 1818 +----------------------------
+>  drivers/net/wireless/rt2x00/rt2x00.h     |   33 +
+>  drivers/net/wireless/rt2x00/rt2x00leds.h |    4 -
+>  drivers/net/wireless/rt2x00/rt2x00pci.h  |   24 +-
+>  drivers/net/wireless/rt2x00/rt2x00usb.c  |    2 +-
+>  drivers/net/wireless/rt2x00/rt2x00usb.h  |   17 +-
+>  15 files changed, 4036 insertions(+), 7158 deletions(-)
+>  create mode 100644 drivers/net/wireless/rt2x00/rt2800.h
+>  create mode 100644 drivers/net/wireless/rt2x00/rt2800lib.c
+>  create mode 100644 drivers/net/wireless/rt2x00/rt2800lib.h
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
