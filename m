@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbZKCMfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbZKCMl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbZKCMfl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 07:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZKCMfl
+	id S1752964AbZKCMl5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 07:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZKCMl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 07:35:41 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36820 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482AbZKCMfk (ORCPT
+	Tue, 3 Nov 2009 07:41:56 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:65402 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbZKCMlz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 07:35:40 -0500
-Date: Tue, 3 Nov 2009 10:35:18 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Roland McGrath <roland@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Using build-ids in perf tools was Re: [PATCH -tip perf/probes
-	00/10] x86 insn decoder bugfixes
-Message-ID: <20091103123518.GA3009@ghostprotocols.net>
-References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu> <20091029191801.CADC3538@magilla.sf.frob.com> <20091103072439.GA19928@elte.hu>
+	Tue, 3 Nov 2009 07:41:55 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCHv6 1/3] tun: export underlying socket
+Date: Tue, 3 Nov 2009 13:41:31 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com
+References: <cover.1257193660.git.mst@redhat.com> <200911031312.33580.arnd@arndb.de> <20091103123112.GA4961@redhat.com>
+In-Reply-To: <20091103123112.GA4961@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091103072439.GA19928@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911031341.31622.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19gMTJNVdl4C3An8H/tWhK/yopNrRJvLwvZXUn
+ 15RA3pIvpNKvO0YKh/yDTDoRSUScPzIdnQMTVTDEPlY3ZWGK3u
+ ztTPqL/vAqh45m9oYw5og==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, Nov 03, 2009 at 08:24:39AM +0100, Ingo Molnar escreveu:
-> * Roland McGrath <roland@redhat.com> wrote:
-> > As Frank mentioned, the kernel's and modules' allocated ELF notes (and 
-> > thus build IDs) are already exposed in /sys.  Tools like "eu-unstrip 
-> > -nk" use this information today.
+On Tuesday 03 November 2009, Michael S. Tsirkin wrote:
+> > What was your reason for changing?
 > 
-> Ah, i didnt realize we link with --build-id already, unconditonally, 
-> since v2.6.23 (if ld supports it):
-> 
->  | From 18991197b4b588255ccabf472ebc84db7b66a19c Mon Sep 17 00:00:00 2001
->  | Subject: [PATCH] Use --build-id ld option
-> 
-> So we have an SHA1 build-id already on the vmlinux and on modules, and 
-> it's exposed in /sys/*/*/notes. Just have to make use of it in 
-> tools/perf too.
+> It turns out socket structure is really bound to specific a file, so we
+> can not have 2 files referencing the same socket.  Instead, as I say
+> above, it's possible to make sendmsg/recvmsg work on tap file directly.
 
-I wasn't aware this was done upstream, ass-umed that it was only on
-kernel specfiles, will cook up a patch for consideration.
+Ah, I see.
 
-- Arnaldo
+> I have implemented this (patch below), but decided to go with the simple
+> thing first.  Since no userspace-visible changes are involved, let's do
+> this by small steps: it will be easier to figure out when vhost
+> is upstream.
+
+This may even make it easier for me to do the same with macvtap
+if I resume work on that.
+
+> @@ -416,8 +422,8 @@ int sock_map_fd(struct socket *sock, int flags)
+>  
+>  static struct socket *sock_from_file(struct file *file, int *err)
+>  {
+> -       if (file->f_op == &socket_file_ops)
+> -               return file->private_data;      /* set in sock_map_fd */
+> +       if (file->f_op->get_socket)
+> +               return file->f_op->get_socket(file);
+>  
+>         *err = -ENOTSOCK;
+
+Or maybe do both (socket_file_ops and get_socket), to avoid an indirect
+function call.
+
+	Arnd <><
