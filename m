@@ -1,204 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbZKCLzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752899AbZKCL5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752419AbZKCLzM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 06:55:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZKCLzL
+	id S1752899AbZKCL5S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 06:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZKCL5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 06:55:11 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:52633 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbZKCLzJ (ORCPT
+	Tue, 3 Nov 2009 06:57:16 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:40715 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752094AbZKCL5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 06:55:09 -0500
-Date: Tue, 3 Nov 2009 13:54:44 +0200
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-To: ext Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Jens Axboe <axboe@kernel.dk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Disk hot removal causing oopses and fixes
-Message-ID: <20091103115444.GA8507@angel.research.nokia.com>
-Reply-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-References: <20091021161201.GA16968@angel.research.nokia.com>
- <4ADF752D.7010206@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="azLHFNyN32YCQGCU"
-Content-Disposition: inline
-In-Reply-To: <4ADF752D.7010206@s5r6.in-berlin.de>
-X-Operating-System: GNU/Linux angel.research.nokia.com
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 03 Nov 2009 11:54:45.0874 (UTC) FILETIME=[7007CD20:01CA5C7C]
-X-Nokia-AV: Clean
+	Tue, 3 Nov 2009 06:57:15 -0500
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: [PATCH 01/13] sysfs: Update sysfs_setxattr so it updates secdata under the sysfs_mutex
+Date: Tue,  3 Nov 2009 03:56:57 -0800
+Message-Id: <1257249429-12384-1-git-send-email-ebiederm@xmission.com>
+X-Mailer: git-send-email 1.6.5.2.143.g8cc62
+In-Reply-To: <m13a4vbz8r.fsf@fess.ebiederm.org>
+References: <m13a4vbz8r.fsf@fess.ebiederm.org>
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Eric W. Biederman <ebiederm@aristanetworks.com>
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The sysfs_mutex is required to ensure updates are and will remain
+atomic with respect to other inode iattr updates, that do not happen
+through the filesystem.
 
-Hi Steven
-
-Sorry for late reply.
-
-> It has to reference-count its objects so that they are not freed as long
-> as they are used by upper layers,
-
-The block layer and device removal seems to be designed from
-top-down approach.  Althouh disc is referenced from
-__blkdev_get(), disc's request queue is not.  Also
-blk_cleanup_queue() calls elevator_exit() without caring if
-anyone still uses the elevator.
-
-A remedy would be to take reference of the request queue in
-__blkdev_get() and move elevator_exit() from blk_cleanup_queue()
-to blk_release_queue().
-
-I've tried this and it works fine. I am unable to cause oops within
-the elevator or anywhere else with hot card removal.  This is how
-it should be, since first the queue is marked dead and no new
-requests are added into queue and old requests are flushed with
-elevator_exit before releasing it and the dead status takes care
-they don't even reach to requst issue function.
-
-The caveat is ihat when request queue is initialzed with
-blk_init_queue(), caller provides a pointer to spinlock.  When
-blk_cleanup_queue() is called, drivers release the lock before
-elevator_exit() is finished.  In mmc driver the struct containing
-queue_lock is released immediately after returning blk_cleanup_queue().
-Then later when request queue is released, elevator_exit() tries to
-use the released spinlock.
-
-Kind of hack workaround is to reset the queue_lock pointer to
-request queue's internal lock in blk_cleanup_queue().
-
-Jarkko Lavvinen
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 ---
->From 8ccee6132f376d78bb6e355016ecc06c9ca47b9f Mon Sep 17 00:00:00 2001
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Date: Tue, 3 Nov 2009 09:48:00 +0200
-Subject: [PATCH] block: Move elevator exit from blk_cleanup_queue() to blk_release_queue()
+ fs/sysfs/inode.c |   41 +++++++++++++++++++++++++++++------------
+ 1 files changed, 29 insertions(+), 12 deletions(-)
 
-If block_cleanup_queue() should not remove elevator if it is still
-in use. Better call the elevator exit in blk_release_queue() when
-all the reference to queue are gone.  Since drivers could use queue
-locks which are freed after returning from blk_cleanup_queue(),
-switch the queue lock to internal one.
-
-Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
----
- block/blk-core.c  |    8 ++++++--
- block/blk-sysfs.c |    3 +++
- 2 files changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 9daf621..8d7d5aa 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -449,6 +449,8 @@ void blk_put_queue(struct request_queue *q)
- 
- void blk_cleanup_queue(struct request_queue *q)
- {
-+	spinlock_t *oldlock;
-+
- 	/*
- 	 * We know we have process context here, so we can be a little
- 	 * cautious and ensure that pending block actions on this device
-@@ -461,8 +463,10 @@ void blk_cleanup_queue(struct request_queue *q)
- 	queue_flag_set_unlocked(QUEUE_FLAG_DEAD, q);
- 	mutex_unlock(&q->sysfs_lock);
- 
--	if (q->elevator)
--		elevator_exit(q->elevator);
-+	oldlock = q->queue_lock;
-+	spin_lock_irq(oldlock);
-+	q->queue_lock = &q->__queue_lock;
-+	spin_unlock_irq(oldlock);
- 
- 	blk_put_queue(q);
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index e28cecf..8a08250 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -122,23 +122,39 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+ 	return error;
  }
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index 21e275d..8ac3e5b 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -304,6 +304,9 @@ static void blk_release_queue(struct kobject *kobj)
- 		container_of(kobj, struct request_queue, kobj);
- 	struct request_list *rl = &q->rq;
  
-+	if (q->elevator)
-+		elevator_exit(q->elevator);
++static int sysfs_sd_setsecdata(struct sysfs_dirent *sd, void **secdata, u32 *secdata_len)
++{
++	struct sysfs_inode_attrs *iattrs;
++	void *old_secdata;
++	size_t old_secdata_len;
 +
- 	blk_sync_queue(q);
- 
- 	if (rl->rq_pool)
--- 
-1.6.5
-
-
---azLHFNyN32YCQGCU
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0002-block-Move-elevator-exit-from-blk_cleanup_queue-to-b.patch"
-
->From 8ccee6132f376d78bb6e355016ecc06c9ca47b9f Mon Sep 17 00:00:00 2001
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Date: Tue, 3 Nov 2009 09:48:00 +0200
-Subject: [PATCH] block: Move elevator exit from blk_cleanup_queue() to blk_release_queue()
-
-If block_cleanup_queue() should not remove elevator if it is still
-in use. Better call the elevator exit in blk_release_queue() when
-all the reference to queue are gone.  Since drivers could use queue
-locks which are freed after returning from blk_cleanup_queue(),
-switch the queue lock to internal one.
-
-Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
----
- block/blk-core.c  |    8 ++++++--
- block/blk-sysfs.c |    3 +++
- 2 files changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 9daf621..8d7d5aa 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -449,6 +449,8 @@ void blk_put_queue(struct request_queue *q)
- 
- void blk_cleanup_queue(struct request_queue *q)
++	iattrs = sd->s_iattr;
++	if (!iattrs)
++		iattrs = sysfs_init_inode_attrs(sd);
++	if (!iattrs)
++		return -ENOMEM;
++
++	old_secdata = iattrs->ia_secdata;
++	old_secdata_len = iattrs->ia_secdata_len;
++
++	iattrs->ia_secdata = *secdata;
++	iattrs->ia_secdata_len = *secdata_len;
++
++	*secdata = old_secdata;
++	*secdata_len = old_secdata_len;
++	return 0;
++}
++
+ int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+ 		size_t size, int flags)
  {
-+	spinlock_t *oldlock;
+ 	struct sysfs_dirent *sd = dentry->d_fsdata;
+-	struct sysfs_inode_attrs *iattrs;
+ 	void *secdata;
+ 	int error;
+ 	u32 secdata_len = 0;
+ 
+ 	if (!sd)
+ 		return -EINVAL;
+-	if (!sd->s_iattr)
+-		sd->s_iattr = sysfs_init_inode_attrs(sd);
+-	if (!sd->s_iattr)
+-		return -ENOMEM;
+-
+-	iattrs = sd->s_iattr;
+ 
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
+ 		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
+@@ -150,12 +166,13 @@ int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+ 						&secdata, &secdata_len);
+ 		if (error)
+ 			goto out;
+-		if (iattrs->ia_secdata)
+-			security_release_secctx(iattrs->ia_secdata,
+-						iattrs->ia_secdata_len);
+-		iattrs->ia_secdata = secdata;
+-		iattrs->ia_secdata_len = secdata_len;
+ 
++		mutex_lock(&sysfs_mutex);
++		error = sysfs_sd_setsecdata(sd, &secdata, &secdata_len);
++		mutex_unlock(&sysfs_mutex);
 +
- 	/*
- 	 * We know we have process context here, so we can be a little
- 	 * cautious and ensure that pending block actions on this device
-@@ -461,8 +463,10 @@ void blk_cleanup_queue(struct request_queue *q)
- 	queue_flag_set_unlocked(QUEUE_FLAG_DEAD, q);
- 	mutex_unlock(&q->sysfs_lock);
- 
--	if (q->elevator)
--		elevator_exit(q->elevator);
-+	oldlock = q->queue_lock;
-+	spin_lock_irq(oldlock);
-+	q->queue_lock = &q->__queue_lock;
-+	spin_unlock_irq(oldlock);
- 
- 	blk_put_queue(q);
- }
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index 21e275d..8ac3e5b 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -304,6 +304,9 @@ static void blk_release_queue(struct kobject *kobj)
- 		container_of(kobj, struct request_queue, kobj);
- 	struct request_list *rl = &q->rq;
- 
-+	if (q->elevator)
-+		elevator_exit(q->elevator);
-+
- 	blk_sync_queue(q);
- 
- 	if (rl->rq_pool)
++		if (secdata)
++			security_release_secctx(secdata, secdata_len);
+ 	} else
+ 		return -EINVAL;
+ out:
 -- 
-1.6.5
+1.6.5.2.143.g8cc62
 
-
---azLHFNyN32YCQGCU--
