@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZKCGRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbZKCGgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbZKCGRz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 01:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZKCGRz
+	id S1755378AbZKCGgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 01:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZKCGgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 01:17:55 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:61344 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750998AbZKCGRy (ORCPT
+	Tue, 3 Nov 2009 01:36:40 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:47380 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753580AbZKCGgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 01:17:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlgFAJ9W70pGGN1W/2dsb2JhbACBUNsIgjuCAgQ
-Date: Tue, 3 Nov 2009 01:17:53 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: ltt-dev@lists.casi.polymtl.ca
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: LTTng 0.165 for 2.6.31.5 : refactoring/cleanup
-Message-ID: <20091103061753.GA5815@Krystal>
+	Tue, 3 Nov 2009 01:36:40 -0500
+Subject: Re: [PATCH] mtd: m25p80: make command buffer DMA-safe
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Johannes Stezenbach <js@sig21.net>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20091028132137.GA17813@sig21.net>
+References: <20091028132137.GA17813@sig21.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Nov 2009 08:36:05 +0200
+Message-Id: <1257230165.21596.33.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 01:01:42 up 76 days, 16:51,  4 users,  load average: 1.58, 0.66,
-	0.41
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Nov 2009 06:36:07.0835 (UTC) FILETIME=[ECCA8EB0:01CA5C4F]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2009-10-28 at 14:21 +0100, Johannes Stezenbach wrote:
+> spi_write() requires the buffer to be DMA-safe, kmalloc()
+> it seperately to ensure this.
+> 
+> Signed-off-by: Johannes Stezenbach <js@sig21.net>
+> 
+> 
+> diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+> index 4c19269..21dd4d9 100644
+> --- a/drivers/mtd/devices/m25p80.c
+> +++ b/drivers/mtd/devices/m25p80.c
+> @@ -79,7 +79,7 @@ struct m25p {
+>  	struct mtd_info		mtd;
+>  	unsigned		partitioned:1;
+>  	u8			erase_opcode;
+> -	u8			command[CMD_SIZE + FAST_READ_DUMMY_BYTE];
+> +	u8			*command;
+>  };
+>  
+>  static inline struct m25p *mtd_to_m25p(struct mtd_info *mtd)
+> @@ -770,6 +770,11 @@ static int __devinit m25p_probe(struct spi_device *spi)
+>  	flash = kzalloc(sizeof *flash, GFP_KERNEL);
+>  	if (!flash)
+>  		return -ENOMEM;
+> +	flash->command = kmalloc(CMD_SIZE + FAST_READ_DUMMY_BYTE, GFP_KERNEL);
+> +	if (!flash->command) {
+> +		kfree(flash);
+> +		return -ENOMEM;
+> +	}
 
-I just finished testing the LTTng refactoring. It consists of:
+Even though it is just 4 or 5 bytes it can do DMA? Does not sound too
+sane to use DMA in that case. Does this patch fix a real error?
 
-- Change design to inheritance for channels and buffers.
-  - Eliminate structure duplication for locking/allocation level of buffer and
-    channel.
-  - Remove now unnecessary krefs.
-- Fix cpu hotplug for timers.
-- Cleanups.
-
-Impact:
-- Cleaner code.
-- Simpler structures for channel/buffers.
-- Smaller d-cache footprint.
-
-It also permits to change the license of all LTTng modules needed both
-for kernel and user-space tracing to dual LGPL/GPL license.
-
-Due to the size of this change, review and testing would be very
-welcome. I decided to do it in a separate patch on top of the tree
-rather than rebasing. Considering the size of this modification, going
-over the modified code on a file by file basis rather than looking at
-the patch itself is probably easier.
-
-I decided to mark the "locked" and "irqoff" locking schemes as "BROKEN"
-for now and focus on the lockless scheme. We could re-create them if
-needed by deriving from the lockless code-base.
-
-Thanks,
-
-Mathieu
+I do not know much about SPI, but for me it sounds like there should be
+a method to ask SPI to avoid using DMA, and you should use that method.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
+
