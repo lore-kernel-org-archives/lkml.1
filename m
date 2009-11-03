@@ -1,52 +1,438 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751573AbZKCOII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZKCOME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751573AbZKCOII (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 09:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbZKCOIH
+	id S1752593AbZKCOME (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 09:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZKCOMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 09:08:07 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49837 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbZKCOIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 09:08:06 -0500
-Date: Tue, 3 Nov 2009 23:07:50 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, greg@kroah.com,
-       linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCH 04/10] module: make MODULE_SYMBOL_PREFIX into a CONFIG option
-Message-ID: <20091103140750.GC12841@linux-sh.org>
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> <1257242782-10496-5-git-send-email-alan-jenkins@tuffmail.co.uk> <8bd0f97a0911030219y685a1dafy2a8e066d7132ac45@mail.gmail.com> <4AF01F18.8040807@tuffmail.co.uk> <8bd0f97a0911030430s3ecb2467hc52ebac658c39ccd@mail.gmail.com> <20091103132935.GA12841@linux-sh.org> <8bd0f97a0911030539s582598d6k2f78693bbfa559b0@mail.gmail.com> <20091103134652.GB12841@linux-sh.org> <8bd0f97a0911030558h58725a95m31bb2f73c0772547@mail.gmail.com>
+	Tue, 3 Nov 2009 09:12:03 -0500
+Received: from mga03.intel.com ([143.182.124.21]:25026 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751382AbZKCOMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 09:12:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,674,1249282800"; 
+   d="scan'208";a="206979664"
+Date: Tue, 3 Nov 2009 22:11:59 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, jack@suse.cz,
+       chris.mason@oracle.com
+Subject: Re: writeback tracing
+Message-ID: <20091103141159.GA13442@localhost>
+References: <20091029085501.GA10727@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0911030558h58725a95m31bb2f73c0772547@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20091029085501.GA10727@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 08:58:49AM -0500, Mike Frysinger wrote:
-> On Tue, Nov 3, 2009 at 08:46, Paul Mundt wrote:
-> > The other thing you seem to have ignored is that pretty much everyone has
-> > such a system, it's only crippled platforms like blackfin and h8300 that
-> > don't support toolchains without the prefix.
+Hi Jens,
+
+Thanks, it's a very good step. I'll take advantage of it for writeback
+testing/debugging and watch how things work :)
+
+However you didn't plan to submit it soon?  Because tracepoints are
+expected to be relatively stable, and you know that writeback is
+somehow a hot topic now, hehe.
+
+Thanks,
+Fengguang
+
+
+On Thu, Oct 29, 2009 at 09:55:01AM +0100, Jens Axboe wrote:
+> Hi,
 > 
-> "cripple" is exactly the right word.  why in the world do you want to
-> cripple people that dont need it ?  attempting to support busted
-> toolchains by forcing even more symbol prefix crap throughout an arch
-> makes no sense at all.  use the -fno-leading-underscore gcc option if
-> you want to re-use a non-standard symbol prefixed elf compiler to
-> build an arch.
-
-My main consideration is for some SH-2 compilers where only bare metal
-targets exist which could theoretically be used for the kernel, too. I've
-avoided tying them in precisely because there wasn't a very clean way to
-support the prefixed and non-prefixed case dynamically.
-
-On the other hand, in those cases I don't think anyone actually cares
-about the ABI, so having gcc not emit the prefix in the first place could
-be a valid alternative, I'll give that a try, as that would simplify
-things a fair bit.
+> This is a first stab at providing some general writeback tracing
+> infrastructure. I'd like some input on whatever trace points you think
+> would be interesting. The goal would be to ensure that we never again
+> have to do debug printk() patches to trace this stuff.
+> 
+> Patch is against latest -git.
+> 
+> commit 607eadcebf9f137ec445cb9883312c821b37a3a7
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Thu Oct 29 10:54:00 2009 +0100
+> 
+>     writeback: initial tracing support
+>     
+>     Trace queue/sched/exec parts of the writeback loop.
+>     
+>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 9d5360c..056dd07 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -25,7 +25,9 @@
+>  #include <linux/blkdev.h>
+>  #include <linux/backing-dev.h>
+>  #include <linux/buffer_head.h>
+> +#include <linux/ftrace.h>
+>  #include "internal.h"
+> +#include <trace/events/writeback.h>
+>  
+>  #define inode_to_bdi(inode)	((inode)->i_mapping->backing_dev_info)
+>  
+> @@ -34,33 +36,6 @@
+>   */
+>  int nr_pdflush_threads;
+>  
+> -/*
+> - * Passed into wb_writeback(), essentially a subset of writeback_control
+> - */
+> -struct wb_writeback_args {
+> -	long nr_pages;
+> -	struct super_block *sb;
+> -	enum writeback_sync_modes sync_mode;
+> -	int for_kupdate:1;
+> -	int range_cyclic:1;
+> -	int for_background:1;
+> -};
+> -
+> -/*
+> - * Work items for the bdi_writeback threads
+> - */
+> -struct bdi_work {
+> -	struct list_head list;		/* pending work list */
+> -	struct rcu_head rcu_head;	/* for RCU free/clear of work */
+> -
+> -	unsigned long seen;		/* threads that have seen this work */
+> -	atomic_t pending;		/* number of threads still to do work */
+> -
+> -	struct wb_writeback_args args;	/* writeback arguments */
+> -
+> -	unsigned long state;		/* flag bits, see WS_* */
+> -};
+> -
+>  enum {
+>  	WS_USED_B = 0,
+>  	WS_ONSTACK_B,
+> @@ -135,6 +110,8 @@ static void wb_work_complete(struct bdi_work *work)
+>  
+>  static void wb_clear_pending(struct bdi_writeback *wb, struct bdi_work *work)
+>  {
+> +	trace_writeback_clear(work);
+> +
+>  	/*
+>  	 * The caller has retrieved the work arguments from this work,
+>  	 * drop our reference. If this is the last ref, delete and free it
+> @@ -170,12 +147,16 @@ static void bdi_queue_work(struct backing_dev_info *bdi, struct bdi_work *work)
+>  	 * If the default thread isn't there, make sure we add it. When
+>  	 * it gets created and wakes up, we'll run this work.
+>  	 */
+> -	if (unlikely(list_empty_careful(&bdi->wb_list)))
+> +	if (unlikely(list_empty_careful(&bdi->wb_list))) {
+> +		trace_writeback_sched(bdi, work, "default");
+>  		wake_up_process(default_backing_dev_info.wb.task);
+> -	else {
+> +	} else {
+>  		struct bdi_writeback *wb = &bdi->wb;
+> +		struct task_struct *task = wb->task;
+>  
+> -		if (wb->task)
+> +		trace_writeback_sched(bdi, work, task ? "task" : "notask");
+> +
+> +		if (task)
+>  			wake_up_process(wb->task);
+>  	}
+>  }
+> @@ -202,6 +183,7 @@ static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+>  	work = kmalloc(sizeof(*work), GFP_ATOMIC);
+>  	if (work) {
+>  		bdi_work_init(work, args);
+> +		trace_writeback_queue(bdi, args);
+>  		bdi_queue_work(bdi, work);
+>  	} else {
+>  		struct bdi_writeback *wb = &bdi->wb;
+> @@ -235,6 +217,7 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
+>  	bdi_work_init(&work, &args);
+>  	work.state |= WS_ONSTACK;
+>  
+> +	trace_writeback_queue(bdi, &args);
+>  	bdi_queue_work(bdi, &work);
+>  	bdi_wait_on_work_clear(&work);
+>  }
+> @@ -901,6 +884,8 @@ long wb_do_writeback(struct bdi_writeback *wb, int force_wait)
+>  		if (force_wait)
+>  			work->args.sync_mode = args.sync_mode = WB_SYNC_ALL;
+>  
+> +		trace_writeback_exec(work);
+> +
+>  		/*
+>  		 * If this isn't a data integrity operation, just notify
+>  		 * that we have seen this work and we are now starting it.
+> @@ -936,9 +921,13 @@ int bdi_writeback_task(struct bdi_writeback *wb)
+>  	unsigned long wait_jiffies = -1UL;
+>  	long pages_written;
+>  
+> +	trace_writeback_thread_start(1);
+> +
+>  	while (!kthread_should_stop()) {
+>  		pages_written = wb_do_writeback(wb, 0);
+>  
+> +		trace_writeback_pages_written(pages_written);
+> +
+>  		if (pages_written)
+>  			last_active = jiffies;
+>  		else if (wait_jiffies != -1UL) {
+> @@ -959,6 +948,8 @@ int bdi_writeback_task(struct bdi_writeback *wb)
+>  		try_to_freeze();
+>  	}
+>  
+> +	trace_writeback_thread_start(0);
+> +
+>  	return 0;
+>  }
+>  
+> diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+> index 66ebddc..b12a077 100644
+> --- a/include/linux/writeback.h
+> +++ b/include/linux/writeback.h
+> @@ -22,6 +22,33 @@ enum writeback_sync_modes {
+>  };
+>  
+>  /*
+> + * Passed into wb_writeback(), essentially a subset of writeback_control
+> + */
+> +struct wb_writeback_args {
+> +	long nr_pages;
+> +	struct super_block *sb;
+> +	enum writeback_sync_modes sync_mode;
+> +	int for_kupdate:1;
+> +	int range_cyclic:1;
+> +	int for_background:1;
+> +};
+> +
+> +/*
+> + * Work items for the bdi_writeback threads
+> + */
+> +struct bdi_work {
+> +	struct list_head list;		/* pending work list */
+> +	struct rcu_head rcu_head;	/* for RCU free/clear of work */
+> +
+> +	unsigned long seen;		/* threads that have seen this work */
+> +	atomic_t pending;		/* number of threads still to do work */
+> +
+> +	struct wb_writeback_args args;	/* writeback arguments */
+> +
+> +	unsigned long state;		/* flag bits, see WS_* */
+> +};
+> +
+> +/*
+>   * A control structure which tells the writeback code what to do.  These are
+>   * always on the stack, and hence need no locking.  They are always initialised
+>   * in a manner such that unspecified fields are set to zero.
+> diff --git a/include/trace/events/writeback.h b/include/trace/events/writeback.h
+> new file mode 100644
+> index 0000000..d58c75b
+> --- /dev/null
+> +++ b/include/trace/events/writeback.h
+> @@ -0,0 +1,172 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM writeback
+> +
+> +#if !defined(_TRACE_WRITEBACK_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_WRITEBACK_H
+> +
+> +#include <linux/backing-dev.h>
+> +#include <linux/writeback.h>
+> +
+> +TRACE_EVENT(writeback_queue,
+> +
+> +	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_args *args),
+> +
+> +	TP_ARGS(bdi, args),
+> +
+> +	TP_STRUCT__entry(
+> +		__array(char,		name,		16)
+> +		__field(long,		nr_pages)
+> +		__field(int,		sb)
+> +		__field(int,		sync_mode)
+> +		__field(int,		for_kupdate)
+> +		__field(int,		range_cyclic)
+> +		__field(int,		for_background)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		strncpy(__entry->name, dev_name(bdi->dev), 16);
+> +		__entry->nr_pages	= args->nr_pages;
+> +		__entry->sb		= !!args->sb;
+> +		__entry->for_kupdate	= args->for_kupdate;
+> +		__entry->range_cyclic	= args->range_cyclic;
+> +		__entry->for_background	= args->for_background;
+> +	),
+> +
+> +	TP_printk("%s: pages=%ld, sb=%d, kupdate=%d, range_cyclic=%d "
+> +		  "for_background=%d", __entry->name, __entry->nr_pages,
+> +			__entry->sb, __entry->for_kupdate,
+> +			__entry->range_cyclic, __entry->for_background)
+> +);
+> +
+> +TRACE_EVENT(writeback_sched,
+> +
+> +	TP_PROTO(struct backing_dev_info *bdi, struct bdi_work *work,
+> +		 const char *msg),
+> +
+> +	TP_ARGS(bdi, work, msg),
+> +
+> +	TP_STRUCT__entry(
+> +		__array(char,			name,		16)
+> +		__field(unsigned int,		work)
+> +		__array(char,			task,		8)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		strncpy(__entry->name, dev_name(bdi->dev), 16);
+> +		__entry->work = (unsigned long) work & 0xffff;
+> +		snprintf(__entry->task, 8, "%s", msg);
+> +	),
+> +
+> +	TP_printk("work=%x, task=%s", __entry->work, __entry->task)
+> +);
+> +
+> +TRACE_EVENT(writeback_exec,
+> +
+> +	TP_PROTO(struct bdi_work *work),
+> +
+> +	TP_ARGS(work),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(unsigned int,	work)
+> +		__field(long,		nr_pages)
+> +		__field(int,		sb)
+> +		__field(int,		sync_mode)
+> +		__field(int,		for_kupdate)
+> +		__field(int,		range_cyclic)
+> +		__field(int,		for_background)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->work		= (unsigned long) work & 0xffff;
+> +		__entry->nr_pages	= work->args.nr_pages;
+> +		__entry->sb		= !!work->args.sb;
+> +		__entry->for_kupdate	= work->args.for_kupdate;
+> +		__entry->range_cyclic	= work->args.range_cyclic;
+> +		__entry->for_background	= work->args.for_background;
+> +
+> +	),
+> +
+> +	TP_printk("work=%x pages=%ld, sb=%d, kupdate=%d, range_cyclic=%d"
+> +		  " for_background=%d", __entry->work,
+> +			__entry->nr_pages, __entry->sb, __entry->for_kupdate,
+> +			__entry->range_cyclic, __entry->for_background)
+> +);
+> +
+> +TRACE_EVENT(writeback_clear,
+> +
+> +	TP_PROTO(struct bdi_work *work),
+> +
+> +	TP_ARGS(work),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(struct bdi_work *,	work)
+> +		__field(int,			refs)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->work		= work;
+> +		__entry->refs		= atomic_read(&work->pending);
+> +	),
+> +
+> +	TP_printk("work=%p, refs=%d", __entry->work, __entry->refs)
+> +);
+> +
+> +TRACE_EVENT(writeback_pages_written,
+> +
+> +	TP_PROTO(long pages_written),
+> +
+> +	TP_ARGS(pages_written),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(long,		pages)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->pages		= pages_written;
+> +	),
+> +
+> +	TP_printk("%ld", __entry->pages)
+> +);
+> +
+> +
+> +TRACE_EVENT(writeback_thread_start,
+> +
+> +	TP_PROTO(int start),
+> +
+> +	TP_ARGS(start),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(int,	start)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->start = start;
+> +	),
+> +
+> +	TP_printk("%s", __entry->start ? "started" : "exited")
+> +);
+> +
+> +TRACE_EVENT(writeback_bdi_register,
+> +
+> +	TP_PROTO(const char *name, int start),
+> +
+> +	TP_ARGS(name, start),
+> +
+> +	TP_STRUCT__entry(
+> +		__array(char,	name,		16)
+> +		__field(int,	start)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		strncpy(__entry->name, name, 16);
+> +		__entry->start = start;
+> +	),
+> +
+> +	TP_printk("%s: %s", __entry->name,
+> +			__entry->start ? "registered" : "unregistered")
+> +);
+> +
+> +#endif /* _TRACE_WRITEBACK_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+> index 5a37e20..4f53a6d 100644
+> --- a/mm/backing-dev.c
+> +++ b/mm/backing-dev.c
+> @@ -11,6 +11,9 @@
+>  #include <linux/writeback.h>
+>  #include <linux/device.h>
+>  
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/writeback.h>
+> +
+>  void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+>  {
+>  }
+> @@ -570,6 +573,7 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+>  
+>  	bdi_debug_register(bdi, dev_name(dev));
+>  	set_bit(BDI_registered, &bdi->state);
+> +	trace_writeback_bdi_register(dev_name(dev), 1);
+>  exit:
+>  	return ret;
+>  }
+> @@ -613,6 +617,7 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
+>  void bdi_unregister(struct backing_dev_info *bdi)
+>  {
+>  	if (bdi->dev) {
+> +		trace_writeback_bdi_register(dev_name(bdi->dev), 0);
+>  		if (!bdi_cap_flush_forker(bdi))
+>  			bdi_wb_shutdown(bdi);
+>  		bdi_debug_unregister(bdi);
+> 
+> -- 
+> Jens Axboe
