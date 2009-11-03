@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZKCIYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbZKCI0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbZKCIYN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 03:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbZKCIYM
+	id S1755580AbZKCI0J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 03:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZKCI0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 03:24:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59141 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752176AbZKCIYM (ORCPT
+	Tue, 3 Nov 2009 03:26:09 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:31264 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752363AbZKCI0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 03:24:12 -0500
-Date: Tue, 3 Nov 2009 00:23:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jim Paris <jim@jtan.com>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block/ps3: Fix slow VRAM IO
-Message-Id: <20091103002322.1f04adbe.akpm@linux-foundation.org>
-In-Reply-To: <4ADCC4E3.8060104@am.sony.com>
-References: <4ADCC4E3.8060104@am.sony.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 03:26:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AdVl4qfmMCeXU3apckktsUe04/lYcVCXTDrNi1w+zXpXrM3qcJ9chm5PwC3fxLHvhg
+         mvmUBd5CwuN+76Y1ImyOLXQPLSL9DLokH2/z9fRrMQxTf2QUNRbIFzZVYQG8OWhJ/yLg
+         0Q04+xe+dEONINuvCN5YN1ggI6vKXCqTcIQ0Q=
+Date: Tue, 3 Nov 2009 09:26:13 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Jiri Olsa <jolsa@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] ftrace: Fix unmatching locking in
+	ftrace_regex_write()
+Message-ID: <20091103082610.GB4815@nowhere>
+References: <4AEF7F8A.3080300@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AEF7F8A.3080300@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Oct 2009 12:58:27 -0700 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
-
+On Tue, Nov 03, 2009 at 08:55:38AM +0800, Li Zefan wrote:
+>  # echo 'do_open : foo' > set_ftrace_filter
+>  (still holding ftrace_regex_lock when returning to user space!)
 > 
-> From: Hideyuki Sasaki <Hideyuki_Sasaki@hq.scei.sony.co.jp>
-> 
-> The current PS3 VRAM driver uses msleep() to wait for completion
-> of RSX DMA transfers between system memory and VRAM.  Depending
-> on the system timing, the processing delay and overhead of this
-> msleep() call can significantly impact VRAM driver IO.
-> 
-> To avoid the condition, add a short duration (200 usec max)
-> udelay() polling loop before entering the msleep() polling
-> loop.
-> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-When raising a performance-based patch, please always try to include
-before-and-after performance measurements in the changelog.  People
-want to know the magnitude of the improvement.
 
-> 
->  drivers/block/ps3vram.c |   10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> --- a/drivers/block/ps3vram.c
-> +++ b/drivers/block/ps3vram.c
-> @@ -123,7 +123,15 @@ static int ps3vram_notifier_wait(struct 
->  {
->  	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
->  	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
-> -	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
-> +	unsigned long timeout;
-> +
-> +	for (timeout = 20; timeout; timeout--) {
-
-	for (timeout = 0; timeout < 20; timeout++) {
-
-would be simpler.
-
-> +		if (!notify[3])
-> +			return 0;
-> +		udelay(10);
-> +	}
-
-You might as well do a udelay(1) here.  The additional cost will be
-negligible, and it will reduce latency.
-
-> +	timeout = jiffies + msecs_to_jiffies(timeout_ms);
-
-The maximum latency is now timout_ms + 200usec.
-
-That's OK with the current constants, but if someone later changes a
-constant, the error could become significant.
-
-Perhaps that isn't worth bothering about though.
-
->  	do {
->  		if (!notify[3])
-
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
