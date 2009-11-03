@@ -1,84 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZKCUKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZKCUPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbZKCUKw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 15:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZKCUKv
+	id S1754660AbZKCUPF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 15:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZKCUPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 15:10:51 -0500
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:63738 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbZKCUKu (ORCPT
+	Tue, 3 Nov 2009 15:15:04 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:55599 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752586AbZKCUPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 15:10:50 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX186ykzbRp1uuO8ySiF6hWUc
-Date: Tue, 3 Nov 2009 12:10:48 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH v2] OMAP: DMA: Fix omapfb/lcdc on Amstrad Delta
- broken when PM set
-Message-ID: <20091103201048.GP8981@atomide.com>
-References: <200911032024.47741.jkrzyszt@tis.icnet.pl>
- <200911032104.33049.jkrzyszt@tis.icnet.pl>
+	Tue, 3 Nov 2009 15:15:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Fzlh6lKa7ARCamdgWNK/k2U1h5L5aEvh+Z8oWVJ0GpVfAMl3yH9EwbRvYQb6CIOeqV
+         AWDTTwBO7of6f+HNiJRHzz0xoMpudYuCP+MaA7NqGxX4GnD+PKy9Efa1E2yViH1zrTST
+         8Tf6VTIaZKpS14Ik4IuKeSQGCxT9AAcksHwgM=
+Date: Tue, 3 Nov 2009 21:15:06 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
+	on top of perf events
+Message-ID: <20091103201503.GA4962@nowhere>
+References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com> <4AF08B7C.8040903@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200911032104.33049.jkrzyszt@tis.icnet.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4AF08B7C.8040903@web.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091103 12:05]:
-> Tuesday 03 November 2009 20:24:38 Janusz Krzysztofik napisał(a):
-> > If there are still no comments, especially on the bug possible impact on
-> > other OMAP1510 boards (or even OMAP1610 with internal LCD controller), then
-> > Tony, please apply it as is. Until it is accepted, I am stuck with new
-> > ams_delta_defconfig.
-> 
-> Tony,
-> Sorry, I've not checked for new mail before posting this one and missed your 
-> acceptance for my idea of fixing all omap1510, not only ams_delta. If there 
-> are no more comments, I'll submit v3 with cpu_is_omap1510() replacing 
-> machine_is_ams_delta().
-
-Sounds good to me.
-
-Tony
- 
-> Thanks,
-> Janusz
-> 
-> > --- linux-2.6.32-rc5/arch/arm/plat-omap/dma.c.orig	2009-10-16
-> > 02:41:50.000000000 +0200 +++
-> > linux-2.6.32-rc5/arch/arm/plat-omap/dma.c	2009-11-03 20:15:35.000000000
-> > +0100 @@ -30,6 +30,7 @@
-> >  #include <linux/irq.h>
-> >  #include <linux/io.h>
-> >
-> > +#include <asm/mach-types.h>
-> >  #include <asm/system.h>
-> >  #include <mach/hardware.h>
-> >  #include <mach/dma.h>
-> > @@ -1110,6 +1111,14 @@ int omap_dma_running(void)
-> >  {
-> >  	int lch;
-> >
+On Tue, Nov 03, 2009 at 08:58:52PM +0100, Jan Kiszka wrote:
+> Frederic Weisbecker wrote:
+> > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> > index fc2974a..6560129 100644
+> > --- a/arch/x86/kvm/x86.c
+> > +++ b/arch/x86/kvm/x86.c
+> > @@ -42,6 +42,7 @@
+> >  #define CREATE_TRACE_POINTS
+> >  #include "trace.h"
+> >  
+> > +#include <asm/debugreg.h>
+> >  #include <asm/uaccess.h>
+> >  #include <asm/msr.h>
+> >  #include <asm/desc.h>
+> > @@ -3643,14 +3644,12 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+> >  	trace_kvm_entry(vcpu->vcpu_id);
+> >  	kvm_x86_ops->run(vcpu, kvm_run);
+> >  
+> > -	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG))) {
+> > -		set_debugreg(current->thread.debugreg[0], 0);
+> > -		set_debugreg(current->thread.debugreg[1], 1);
+> > -		set_debugreg(current->thread.debugreg[2], 2);
+> > -		set_debugreg(current->thread.debugreg[3], 3);
+> > -		set_debugreg(current->thread.debugreg6, 6);
+> > -		set_debugreg(current->thread.debugreg7, 7);
+> > -	}
 > > +	/*
-> > +	 * On Amstrad Delta, the OMAP internal LCD controller will start the
-> > +	 * transfer when it gets enabled, so assume DMA running if LCD enabled.
+> > +	 * CHECKME: is vcpu->arch.switch_db_regs sufficient to check
+> > +	 * if the guest is using breakpoints? If so we may want to do
+> > +	 * this check before.
 > > +	 */
-> > +	if (machine_is_ams_delta())
-> > +		if (omap_readw(0xfffec000 + 0x00) & (1 << 0))
-> > +			return 1;
-> > +
-> >  	/* Check if LCD DMA is running */
-> >  	if (cpu_is_omap16xx())
-> >  		if (omap_readw(OMAP1610_DMA_LCD_CCR) & OMAP_DMA_CCR_EN)
+> > +	hw_breakpoint_restore();
 > 
+> Obviously, this variant will make KVM users very unhappy. But trying to
+> reduce this performance regression via vcpu->arch.switch_db_regs will
+> make hw-breakpoint users unhappy: KVM leaves at least dr7 clobbered
+> behind, even if the guest does not use breakpoints.
+
+
+Yeah, that's why I've made unconditionally. At least it works in every
+cases, but this is temporary.
+
+ 
+> We really need a replacement for TIF_DEBUG (but we only need this [1]).
 > 
+> Jan
+> 
+> [1]http://thread.gmane.org/gmane.comp.emulators.kvm.devel/39784/focus=39827
+> 
+
+
+Thinking about it, this check should cover every cases:
+
+if (vcpu->arch.switch_db_regs || __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK)
+
+If we have __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK, it means there is an
+active breakpoint and then we should restore the current state.
+
