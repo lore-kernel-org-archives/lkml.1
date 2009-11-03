@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbZKCPce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbZKCPe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754024AbZKCPce (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 10:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZKCPcd
+	id S1753851AbZKCPe5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 10:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZKCPe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 10:32:33 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:33424 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753846AbZKCPcb (ORCPT
+	Tue, 3 Nov 2009 10:34:57 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:44532 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753002AbZKCPez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 10:32:31 -0500
-Date: Tue, 3 Nov 2009 10:32:33 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: padlock-aes: Use the correct mask when
-	checking whether copying is required
-Message-ID: <20091103153233.GB9186@gondor.apana.org.au>
-References: <200910272325.n9RNPYfr002918@int-mx08.intmail.prod.int.phx2.redhat.com> <20091028072559.GA15131@gondor.apana.org.au> <20091102172650.6af2d177@katamari.usersys.redhat.com>
+	Tue, 3 Nov 2009 10:34:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=wzunwDC5sV6EzTmoLBpmzDbUO7G+GcNGLsLL4L3r49mVhWS71XRCgQK0LdzuPA1/Ln
+         Cj+CJzxCVIQUgVzSLRKJ4N+MQpJTJgAwQY39xBdfczYbZE31YLzm6sozjRDJ1UtOZBq2
+         0ogj3xHAG0CICuOmqXaLVkNQTbmxsze7Z7II4=
+Message-ID: <4AF04D9C.1050600@tuffmail.co.uk>
+Date: Tue, 03 Nov 2009 15:34:52 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102172650.6af2d177@katamari.usersys.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Thiago Farina <tfransosi@gmail.com>
+CC: Tim Abbott <tabbott@ksplice.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org, linux-modules@vger.kernel.org
+Subject: Re: [PATCH 1/2] lib: Add generic binary search function to the kernel.
+References: <1253626718-18887-5-git-send-email-alan-jenkins@tuffmail.co.uk>	 <1253726926-5504-2-git-send-email-tabbott@ksplice.com>	 <200909240941.41479.rusty@rustcorp.com.au>	 <alpine.DEB.1.10.0909271303580.14151@dr-wily.mit.edu> <a4c8a6d00911030714w2e885066g9af086818a968b7b@mail.gmail.com>
+In-Reply-To: <a4c8a6d00911030714w2e885066g9af086818a968b7b@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 05:26:50PM -0500, Chuck Ebbert wrote:
-> crypto: padlock-aes: Use the correct mask when checking whether copying is required
-> 
-> Masking with PAGE_SIZE is just wrong...
-> 
-> Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+Thiago Farina wrote:
+> Hi, this patch was landed? It seems not to be in the tree
+> (git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6).
+>   
 
-Applied to crypto-2.6.  Thanks Chuck!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+I guess I'm sitting on it at the moment, having folded it into a patch 
+series which I have yet to submit.
+
+There are apparently already a number of implementations scattered 
+around the kernel tree.  Perhaps you can add another copy of this 
+implementation, wherever it is you need it :-).
+
+Alan
