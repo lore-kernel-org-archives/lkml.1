@@ -1,52 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbZKCJX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZKCJYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755081AbZKCJX5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 04:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZKCJX4
+	id S1755566AbZKCJYj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 04:24:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZKCJYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 04:23:56 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:33405 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751311AbZKCJXz (ORCPT
+	Tue, 3 Nov 2009 04:24:38 -0500
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:44887 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754074AbZKCJYh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 04:23:55 -0500
-Subject: Re: Kmemleak for mips
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: subscriptions@stroomer.com, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "John W. Linville" <linville@tuxdriver.com>,
+	Tue, 3 Nov 2009 04:24:37 -0500
+Message-ID: <4AEFF6D7.9080509@free.fr>
+Date: Tue, 03 Nov 2009 10:24:39 +0100
+From: Cedric Le Goater <legoater@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, andrea@cpushare.com,
+       Linux Containers <containers@lists.osdl.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Emelianov <xemul@openvz.org>, Alexey Dobriyan <adobriyan@mail.ru>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <43e72e890911020907m7cfc48edpd300243de7af36ed@mail.gmail.com>
-References: <43e72e890911020907m7cfc48edpd300243de7af36ed@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 03 Nov 2009 09:23:47 +0000
-Message-Id: <1257240227.22183.3.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Subject: Re: pidns memory leak
+References: <20091006040526.GA22923@us.ibm.com> <4ACAFD6A.3060008@fr.ibm.com>	<20091008030828.GA18973@us.ibm.com> <4ACD9ECC.90508@fr.ibm.com>	<20091009032928.GA2031@us.ibm.com> <4ACF381F.9050808@fr.ibm.com>	<20091010013235.GA11904@us.ibm.com> <4AD2EBC7.2020109@fr.ibm.com>	<20091014061533.GA23569@us.ibm.com>	<20091102133326.e3dc51fb.akpm@linux-foundation.org>	<20091102223818.GA15628@us.ibm.com>	<20091102144752.71fd4a31.akpm@linux-foundation.org>	<4AEFDAAE.500@free.fr> <m1ljiogfun.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ljiogfun.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Nov 2009 09:23:48.0546 (UTC) FILETIME=[59713A20:01CA5C67]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-02 at 09:07 -0800, Luis R. Rodriguez wrote:
-> Curious what the limitations are on restricting kmemleak to non-mips
-> archs. I have a user and situation [1] where this could be helpful [1]
-> in debugging an issue. The user reports he cannot enable it on mips.
+On 11/03/2009 09:41 AM, Eric W. Biederman wrote:
+> Cedric Le Goater <legoater@free.fr> writes:
+> 
+>> On 11/02/2009 11:47 PM, Andrew Morton wrote:
+>>> On Mon, 2 Nov 2009 16:38:18 -0600
+>>> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+>>>
+>>>>> This bug hasn't been fixed yet, has it?
+>>>>
+>>>> Well Suka did trace the bug to commit 7766755a2f249e7, and posted a patch
+>>>> to revert that, acked by Eric on Oct 20.  Suka, were you going to repost
+>>>> that patch?
+>>>
+>>> Ah.  OK.  Thanks.  Found it in the backlog pile.
+>>
+>> We've added the patch to our patchset and we confirm that the pid_* leaks have 
+>> been reduced to 'nearly' nothing but we still have a lot of inodes and dentries
+>> leaks. I hope to find some time to investigate and reproduce with a small 
+>> scenario, we are running a LTP like testsuite in a container environment.
+> 
+> Does forcing a cache flush help with the other leaks?
 
-It may just work but cannot be enabled because I cannot test kmemleak on
-such hardware. In general you need to make sure that the _sdata/_edata
-and __bss_start/__bss_stop symbols are defined. If there are other ways
-of allocating memory than the standard API, it would need additional
-hooks. Some false-positives specific to MIPS may need to be annotated
-(usually with kmemleak_not_leak).
+yes, it frees a few more dentries, but not enough.
 
-(btw, you could also merge the kmemleak.git tree on git.kernel.org as it
-has improvements on the rate of false positives; the patches will be
-pushed in 2.6.33-rc1)
+I did:
 
--- 
-Catalin
+	$ echo 2 > /proc/sys/vm/drop_caches
 
+before :
+
+	size-64           193243 198088     88   44    1 
+	dentry            110584 111202    280   14    1 
+	inode_cache       107543 107543   4096    1    1 
+	size-128           56341  63450    152   25    1 
+	size-4096          21107  21107   4096    1    1 
+	vm_area_struct     11838  11960    192   20    1 
+	size-256           11406  11424    280   14    1 
+	size-32             9408   9916     56   67    1 
+	size-512            7710   7710   4096    1    1 
+	sysfs_dir_cache     5288   5328    104   37    1 
+	pid_2                302    336    136   28    1 
+	pid_namespace          1      1   4096    1    1 
+	nsproxy                1     53     72   53    1 
+
+after: 
+
+	size-64           193150 198044     88   44    1 
+	dentry            110509 111202    280   14    1 
+	inode_cache       107543 107543   4096    1    1 
+	size-128           56326  63450    152   25    1 
+	size-4096          21107  21107   4096    1    1 
+	vm_area_struct     11857  11960    192   20    1 
+	size-256           11405  11424    280   14    1 
+	size-32             9408   9916     56   67    1 
+	size-512            7710   7710   4096    1    1 
+	sysfs_dir_cache     5288   5328    104   37    1 
+	pid_2                302    336    136   28    1 
+	pid_namespace          1      1   4096    1    1 
+	nsproxy                1     53     72   53    1 
+
+
+I'll come back to you (daniel or me) when we've nailed this one with a simpler
+program. it shows up when stressing the system with lxc containers.
+
+Cheers,
+
+C.
