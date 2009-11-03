@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbZKCToG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZKCTXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754250AbZKCToG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:44:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZKCToF
+	id S1754338AbZKCTXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZKCTXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:44:05 -0500
-Received: from xenbox.codefidence.com ([92.48.73.16]:41258 "EHLO
-	xenbox.codefidence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753103AbZKCToE (ORCPT
+	Tue, 3 Nov 2009 14:23:20 -0500
+Received: from mail.deathmatch.net ([72.66.92.28]:4780 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754206AbZKCTXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:44:04 -0500
-X-Greylist: delayed 1378 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 14:44:04 EST
-From: Gilad Ben-Yossef <gilad@codefidence.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: netdev@vger.kernel.org, ori@comsleep.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/1] Use defaults when no route options are available
-Date: Tue,  3 Nov 2009 21:21:25 +0200
-Message-Id: <1257276085-13681-1-git-send-email-gilad@codefidence.com>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <4AF07024.80103@gmail.com>
-References: <4AF07024.80103@gmail.com>
+	Tue, 3 Nov 2009 14:23:19 -0500
+Date: Tue, 3 Nov 2009 14:21:39 -0500
+From: Bob Copeland <me@bobcopeland.com>
+To: Jan Blunck <jblunck@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       David Howells <dhowells@redhat.com>,
+       linux-karma-devel@lists.sourceforge.net
+Subject: Re: [PATCH 21/27] BKL: Remove BKL from omfs
+Message-ID: <20091103192139.GA10464@hash.localnet>
+References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-22-git-send-email-jblunck@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257156307-24175-22-git-send-email-jblunck@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to parse the option of a SYN packet that we have
-no route entry for should just use global wide defaults
-for route entry options.
+On Mon, Nov 02, 2009 at 11:05:01AM +0100, Jan Blunck wrote:
+> BKL is only used in fill_super. It is safe to remove it.
+> 
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> ---
+>  fs/omfs/inode.c |    7 +------
+>  1 files changed, 1 insertions(+), 6 deletions(-)
 
-Signed-off-by: Gilad Ben-Yossef <gilad@codefidence.com>
----
- include/net/dst.h    |    2 +-
- net/ipv4/tcp_input.c |    2 --
- 2 files changed, 1 insertions(+), 3 deletions(-)
+This patch and omfs parts of 1:
+Acked-by: Bob Copeland <me@bobcopeland.com>
 
-diff --git a/include/net/dst.h b/include/net/dst.h
-index b562be3..0654c27 100644
---- a/include/net/dst.h
-+++ b/include/net/dst.h
-@@ -114,7 +114,7 @@ dst_metric(const struct dst_entry *dst, int metric)
- static inline u32
- dst_feature(const struct dst_entry *dst, u32 feature)
- {
--	return dst_metric(dst, RTAX_FEATURES) & feature;
-+	return (dst ? dst_metric(dst, RTAX_FEATURES) & feature : 0);
- }
- 
- static inline u32 dst_mtu(const struct dst_entry *dst)
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 4262da5..57e99e1 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -3704,8 +3704,6 @@ void tcp_parse_options(struct sk_buff *skb, struct tcp_options_received *opt_rx,
- 	struct tcphdr *th = tcp_hdr(skb);
- 	int length = (th->doff * 4) - sizeof(struct tcphdr);
- 
--	BUG_ON(!estab && !dst);
--
- 	ptr = (unsigned char *)(th + 1);
- 	opt_rx->saw_tstamp = 0;
- 
 -- 
-1.5.6.3
+Bob Copeland %% www.bobcopeland.com
 
