@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbZKCQIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbZKCQIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754280AbZKCQIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 11:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbZKCQIS
+	id S1754178AbZKCQIJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 11:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbZKCQII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 11:08:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59025 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754250AbZKCQIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 11:08:16 -0500
-Date: Tue, 3 Nov 2009 17:07:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ian Campbell <Ian.Campbell@citrix.com>, Tejun Heo <tj@kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Correct nr_processes() when CPUs have been unplugged
-Message-ID: <20091103160734.GA21362@elte.hu>
-References: <1257243074.23110.779.camel@zakaz.uk.xensource.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257243074.23110.779.camel@zakaz.uk.xensource.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Tue, 3 Nov 2009 11:08:08 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:40192 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752898AbZKCQIG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 11:08:06 -0500
+Subject: Re: Please consider reverting
+ 7d930bc33653d5592dc386a76a38f39c2e962344
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.01.0911030738260.31845@localhost.localdomain>
+References: <20091103053156.GA3212@core.coreip.homeip.net>
+	 <20091102.224957.32364226.davem@davemloft.net>
+	 <20091103065238.GE3212@core.coreip.homeip.net>
+	 <1257232587.3420.55.camel@localhost.localdomain>
+	 <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
+	 <1257262588.3420.79.camel@localhost.localdomain>
+	 <alpine.LFD.2.01.0911030738260.31845@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 04 Nov 2009 01:08:05 +0900
+Message-Id: <1257264485.3420.87.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-* Ian Campbell <Ian.Campbell@citrix.com> wrote:
+> > no questions that it needs fixed, I agree with you. However just blindly
+> > reverting something, because it fixes it for one or two people, might
+> > have side effects that causes more problems than the revert would
+> > actually fix.
+> 
+> Stop whining. Really.
+> 
+> Everybody understands that it should be fixed.  That's not the question.
+> 
+> But it should be fixed _quickly_. In this case, I have a bisection report 
+> FROM TWO DAYS AGO. And I'm still kicking myself for not just reverting 
+> that piece-of-shit commit then, because I spent the time to look at the 
+> oops and the commit, and could tell that it was crap.
+> 
+> Instead, I _did_ wait for the subsystem maintainer to get around to it. As 
+> a result of waiting, I've now wasted time for a lot of other people.
 
-> I'm not 100% convinced that the per_cpu regions remain valid for 
-> offline CPUs, although my testing suggests that they do. If not then I 
-> think the correct solution would be to aggregate the process_count for 
-> a given CPU into a global base value in cpu_down().
+I do have a patch in my inbox from Johannes from 4 days ago that fixes
+this issue.
 
-Sidenote: percpu areas currently are kept allocated on x86.
+	http://marc.info/?l=linux-wireless&m=125697124819563&w=2
 
-That might change in the future though, especially with virtual systems 
-where the possible range of CPUs can be very high - without us 
-necessarily wanting to pay the percpu area allocation price for it. I.e. 
-dynamic deallocation of percpu areas is something that could happen in 
-the future.
+So what is the take away from this now? Do you wanna have Johannes step
+over John and Dave and send such a patch directly to you?
 
-> This bug appears to pre-date the transition to git and it looks like 
-> it may even have been present in linux-2.6.0-test7-bk3 since it looks 
-> like the code Rusty patched in http://lwn.net/Articles/64773/ was 
-> already wrong.
+Regards
 
-Nice one. I'm wondering why it was not discovered for such a long time. 
-That count can go out of sync easily, and we frequently offline cpus 
-during suspend/resume, and /proc lookup failures will be noticed in 
-general. How come nobody ran into this? And i'm wondering how you have 
-run into this - running cpu hotplug stress-tests with Xen guests - or 
-via pure code review?
+Marcel
 
-	Ingo
+
