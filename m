@@ -1,108 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751363AbZKCGEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbZKCGGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751363AbZKCGEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 01:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZKCGEs
+	id S1753402AbZKCGGh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 01:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZKCGGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 01:04:48 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:50196 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbZKCGEr (ORCPT
+	Tue, 3 Nov 2009 01:06:34 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:48873 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbZKCGGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 01:04:47 -0500
-Message-ID: <4AEFC7CF.1020909@nokia.com>
-Date: Tue, 03 Nov 2009 08:03:59 +0200
-From: Luciano Coelho <luciano.coelho@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 3 Nov 2009 01:06:33 -0500
+Date: Mon, 2 Nov 2009 22:06:36 -0800 (PST)
+From: Sage Weil <sage@newdream.net>
+To: linux-btrfs@vger.kernel.org
+cc: Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: ext3/jbd oops in journal_start
+In-Reply-To: <87bpjorn6g.fsf@openvz.org>
+Message-ID: <Pine.LNX.4.64.0911022157360.26157@cobra.newdream.net>
+References: <Pine.LNX.4.64.0910302253100.1867@cobra.newdream.net>
+ <87bpjorn6g.fsf@openvz.org>
 MIME-Version: 1.0
-To: "ext John W. Linville" <linville@tuxdriver.com>
-CC: "Valo Kalle (Nokia-D/Tampere)" <Kalle.Valo@nokia.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: linux-next: Tree for November 2 (wireless/wl1271)
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au> <4AEF1E7F.50306@oracle.com> <20091102184449.GJ14046@tuxdriver.com> <20091102184843.GK14046@tuxdriver.com> <4AEF4ACB.5040302@nokia.com>
-In-Reply-To: <4AEF4ACB.5040302@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Nov 2009 06:04:21.0603 (UTC) FILETIME=[7C96A330:01CA5C4B]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Coelho Luciano (Nokia-D/Helsinki) wrote:
-> ext John W. Linville wrote:
->> Helps if I actually Cc: Luca...
-> 
-> Yes, it does. :) I would see this at some point but CCing me speed things up 
-> quite a lot.
+On Sat, 31 Oct 2009, Dmitry Monakhov wrote:
 
-
-BTW, I think we need this for wl1251 as well.  CC'ing Kalle too.
-
-
->> On Mon, Nov 02, 2009 at 01:44:49PM -0500, John W. Linville wrote:
->>> On Mon, Nov 02, 2009 at 10:01:35AM -0800, Randy Dunlap wrote:
->>>> Stephen Rothwell wrote:
->>>>> Hi all,
->>>>>
->>>>> Changes since 20091030:
->>>> wl1271 build fails when CONFIG_INET=n.
->>>> Should this driver depend on INET?
->>>>
->>>> Why does this driver, unlike all other wireless drivers,
->>>> want to use register_inetaddr_notifier()?
->>>>
->>>> wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
->>>> wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
->>> Yeah, that driver is doing some filtering based on IPv4.
->>>
->>> Luca, is that necessary?  If so, then we need a patch like the one below...?
+> Sage Weil <sage@newdream.net> writes:
 > 
-> Yes, this is necessary.  We are doing ARP filtering according to the IP address 
-> of the interface, as you have realized.  Our implementation is rather ugly at 
-> the moment, so the plan is to try to get rid of this dependency on INET, but we 
-> need it for now.
+> > Hi,
+> >
+> > I'm consistently seeing ext3 oops on a fresh ~60 GB fs on 2.6.32-rc3 (and 
+> > 2.6.31).  data=writeback or data=ordered.  It's not the hardware or 
+> > drive... I have 8 boxes (each with slightly different hardware) that crash 
+> > identically.
+> Strange, 2.6.31 with ext3 is quite popular configuration...
+> Can you please post exact test-case.
+> >
+> > The oops is at fs/jbd/transaction.c, journal_start():
+> >
+> > 		J_ASSERT(handle->h_transaction->t_journal == journal);
+> *handle = journal_current_handle()
 > 
-> Thanks Randy for finding this and thanks John for fixing it.
+> IMHO it's looks like you have entered here with current->journal_info != NULL
 > 
->>> From ba823accfad68151d80503ff5fb04c049c9eadc2 Mon Sep 17 00:00:00 2001
->>> From: John W. Linville <linville@tuxdriver.com>
->>> Date: Mon, 2 Nov 2009 13:43:32 -0500
->>> Subject: [PATCH] wl1271: depend on INET
->>>
->>> wl1271_main.c:(.text+0x271052): undefined reference to `unregister_inetaddr_notifier'
->>> wl1271_main.c:(.text+0x2714d7): undefined reference to `register_inetaddr_notifier'
->>>
->>> Driver is doing some filtering based on IP addresses...
->>>
->>> Signed-off-by: John W. Linville <linville@tuxdriver.com>
->>> ---
->>>  drivers/net/wireless/wl12xx/Kconfig |    1 +
->>>  1 files changed, 1 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/drivers/net/wireless/wl12xx/Kconfig b/drivers/net/wireless/wl12xx/Kconfig
->>> index 33de7fa..785e024 100644
->>> --- a/drivers/net/wireless/wl12xx/Kconfig
->>> +++ b/drivers/net/wireless/wl12xx/Kconfig
->>> @@ -42,6 +42,7 @@ config WL1251_SDIO
->>>  config WL1271
->>>  	tristate "TI wl1271 support"
->>>  	depends on WL12XX && SPI_MASTER && GENERIC_HARDIRQS
->>> +	depends on INET
->>>  	select FW_LOADER
->>>  	select CRC7
->>>  	---help---
->>> -- 
->>> 1.6.2.5
-> 
-> Acked-by: Luciano Coelho <luciano.coelho@nokia.com>
-> 
+> , but journal_info contains unexpected data
+> This may happens in two cases:
+> 1) calling jbd code from other filesystem.
+> 2) Some fs forget to zero current->journal_info on exit from vfs
+> According to call trace we have got second case. Do you use some 
+> unusual/experimental fs?
 
+Yep, it was #2.  It turns out btrfs s setting current->journal_info 
+(for no reason that I can see?), and with the transaction ioctl a 
+transaction can span multiple calls.
 
+Chris, is it ok to just remove the journal_info bits?  Nothing in fs/btrfs 
+even looks at it.  I'm not sure what the point of only conditionally 
+setting/clearly journal_info would be either, unless it's for debugging or 
+something?
+
+Thanks-
+sage
+
+---
+From: Sage Weil <sage@newdream.net>
+Date: Mon, 2 Nov 2009 14:21:29 -0800
+Subject: [PATCH] Btrfs: don't set current->journal_info
+
+Btrfs doesn't use current->journal_info for anything, so don't set it.  
+We currently cause a NULL dereference in jbd if a process starts a btrfs 
+user transaction and then touches another mounted fs that uses jbd, since 
+current->journal_info is only supposed to be set for the duration of a 
+single call into the fs.
+
+Signed-off-by: Sage Weil <sage@newdream.net>
+---
+ fs/btrfs/transaction.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
+
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index bca82a4..c6dbbb8 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -186,9 +186,6 @@ static struct btrfs_trans_handle *start_transaction(struct btrfs_root *root,
+ 	h->alloc_exclude_start = 0;
+ 	h->delayed_ref_updates = 0;
+ 
+-	if (!current->journal_info)
+-		current->journal_info = h;
+-
+ 	root->fs_info->running_transaction->use_count++;
+ 	record_root_in_trans(h, root);
+ 	mutex_unlock(&root->fs_info->trans_mutex);
+@@ -321,8 +318,6 @@ static int __btrfs_end_transaction(struct btrfs_trans_handle *trans,
+ 	put_transaction(cur_trans);
+ 	mutex_unlock(&info->trans_mutex);
+ 
+-	if (current->journal_info == trans)
+-		current->journal_info = NULL;
+ 	memset(trans, 0, sizeof(*trans));
+ 	kmem_cache_free(btrfs_trans_handle_cachep, trans);
+ 
+@@ -1105,9 +1100,6 @@ int btrfs_commit_transaction(struct btrfs_trans_handle *trans,
+ 
+ 	mutex_unlock(&root->fs_info->trans_mutex);
+ 
+-	if (current->journal_info == trans)
+-		current->journal_info = NULL;
+-
+ 	kmem_cache_free(btrfs_trans_handle_cachep, trans);
+ 	return ret;
+ }
 -- 
-Cheers,
-Luca.
+1.5.6.5
+
