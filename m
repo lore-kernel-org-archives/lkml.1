@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZKCGjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZKCGk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbZKCGjR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 01:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZKCGjQ
+	id S1754511AbZKCGk4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 01:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZKCGkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 01:39:16 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56882 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751426AbZKCGjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 01:39:16 -0500
-Date: Tue, 3 Nov 2009 17:39:15 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: No Tree for November 3
-Message-Id: <20091103173915.ebc02289.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__3_Nov_2009_17_39_15_+1100_8tpfBj_pfBitNE5K"
+	Tue, 3 Nov 2009 01:40:55 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:60291 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752960AbZKCGky (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 01:40:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        b=pziBRA1vydzFiKm27Dqm0H8gDCRghMWhZqTc0nIfvcFHKFQyFrHQNbrcLPWTd+IGCA
+         Abo29bqog0ZaBnJTA3uCtGCaFKXipF0xrEa0tsnrAGDGcnATUdTteFUovMI7Sgd7ByWs
+         KO9KalLSEpoueKsxd7QbJw8EYfLuKDK+6EC5k=
+Date: Mon, 2 Nov 2009 22:40:54 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.32-rc5
+Message-ID: <20091103064054.GD3212@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__3_Nov_2009_17_39_15_+1100_8tpfBj_pfBitNE5K
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Linus,
 
-Hi all,
+Please pull from:
 
-Thee is no tree today due to a public holiday (that has nothing to do
-with a horse race in Melbourne :-)).
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+to receive updates for the input subsystem.
 
---Signature=_Tue__3_Nov_2009_17_39_15_+1100_8tpfBj_pfBitNE5K
-Content-Type: application/pgp-signature
+Changelog:
+---------
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+David Härdeman (1):
+      Input: winbond-cir - select LEDS_TRIGGERS
 
-iEYEARECAAYFAkrv0BMACgkQjjKRsyhoI8yEXQCgrRwYl0wP/OLkA73dl2XH4sEH
-3HcAoJc0H7K4GDUH5Hjr5S9Su7bPBrc4
-=5J5P
------END PGP SIGNATURE-----
+Dmitry Eremin-Solenikov (1):
+      Input: gpio-keys - use IRQF_SHARED
 
---Signature=_Tue__3_Nov_2009_17_39_15_+1100_8tpfBj_pfBitNE5K--
+Dmitry Torokhov (1):
+      Input: i8042 - try to get stable CTR value when initializing
+
+Jamie Lentin (1):
+      Input: atkbd - add a quirk for OQO 01+ multimedia keys
+
+
+Diffstat:
+--------
+
+ drivers/input/keyboard/atkbd.c     |   36 ++++++++++++++++++++++++++++++++++++
+ drivers/input/keyboard/gpio_keys.c |    1 +
+ drivers/input/misc/Kconfig         |    1 +
+ drivers/input/serio/i8042.c        |   35 ++++++++++++++++++++++++++++-------
+ 4 files changed, 66 insertions(+), 7 deletions(-)
+
+-- 
+Dmitry
+
