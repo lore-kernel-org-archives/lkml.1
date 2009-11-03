@@ -1,75 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZKCJu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbZKCJyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZKCJu2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 04:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZKCJu2
+	id S1755856AbZKCJyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 04:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbZKCJyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 04:50:28 -0500
-Received: from ns.penguin.cz ([84.21.108.25]:58355 "EHLO ns.penguin.cz"
+	Tue, 3 Nov 2009 04:54:18 -0500
+Received: from smtp.ispras.ru ([83.149.198.201]:38286 "EHLO smtp.ispras.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755838AbZKCJu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 04:50:27 -0500
-Subject: Re: Possible suspend/resume regression in .32-rc?
-From: Stanislav Brabec <utx@penguin.cz>
-To: Haojian Zhuang <haojian.zhuang@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, dsaxena@laptop.org, alan@linux.intel.com,
-       gregkh@suse.de, Daniel Mack <daniel@caiaq.de>,
-       linux-arm-kernel@lists.infradead.org, Eric <eric.y.miao@gmail.com>,
-       Haojian Zhuang <haojian.zhuang@marvell.com>, rpurdie@rpsys.net,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com, dbaryshkov@gmail.com, omegamoon@gmail.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <771cded00911021931x41cfa51bh2959d3748db5ac0@mail.gmail.com>
-References: <20091031013427.GL14091@buzzloop.caiaq.de>
-	 <20091101205449.GT14091@buzzloop.caiaq.de>
-	 <20091101213343.GA31345@elf.ucw.cz> <20091101220341.GA16698@elf.ucw.cz>
-	 <771cded00911020122o3bb5cc96q957c8be1ce7cae46@mail.gmail.com>
-	 <1257155873.5642.14.camel@utx.utx.cz>
-	 <771cded00911021931x41cfa51bh2959d3748db5ac0@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 03 Nov 2009 10:50:21 +0100
-Message-Id: <1257241821.4269.5.camel@utx.utx.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	id S1751240AbZKCJyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 04:54:17 -0500
+From: Vadim Mutilin <mutilin@ispras.ru>
+To: Greg Kroah-Hartman <gregkh@suse.de>, Bill Pemberton <wfp5p@virginia.edu>,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Cc: Vadim Mutilin <mutilin@ispras.ru>
+Subject: [PATCH] STAGING: comedi: cb_das16_cs: fixing coding style errors
+Date: Tue,  3 Nov 2009 12:54:18 +0300
+Message-Id: <1257242058-12047-1-git-send-email-mutilin@ispras.ru>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haojian Zhuang wrote:
-> On Mon, Nov 2, 2009 at 5:57 AM, Stanislav Brabec <utx@penguin.cz> wrote:
-> > Haojian Zhuang wrote:
-> >
-> >> Commit b5b82df6, from May 2007, breaks no_console_suspend on the OLPC
-> >> XO laptop. Basically what happens is that upon returning from resume,
-> >> serial8250_resume_port() will reconfigure the port for high speed
-> >> mode and all console output will be garbled, making debug of the
-> >> resume path painful. This patch modifies uart_resume_port() to
-> >> reset the port to the state it was in before we suspended.
-> >
-> > See my patch waiting for approval in LKML thread
-> > "serial-core: resume serial hardware with no_console_suspend".
-> >
-> > It attempts to fix it, but I was not yet able to test it due to spitz
-> > resume breakage.
-> >
-> 
-> Hi Stanislav,
-> 
-> At first, your patch can't be applied into my latest codebase. I have
-> to update the patch. But the console resume is still blocked after
-> applied your patch. It works only after I merge some old code back. My
-> modified patch is in below.
+---
+ drivers/staging/comedi/drivers/cb_das16_cs.c |   25 ++++++++++++-------------
+ 1 files changed, 12 insertions(+), 13 deletions(-)
 
-Yes, code changed there a bit. I sent rebased patch later in the thread.
-Did you try this one? (Well I did not test it yet - in time of sending
-resume did not work at all on my Zaurus.)
-
-Your patch is a bit different. I'll test both as soon as possible.
-
-
-________________________________________________________________________
-Stanislav Brabec
-http://www.penguin.cz/~utx
+diff --git a/drivers/staging/comedi/drivers/cb_das16_cs.c b/drivers/staging/comedi/drivers/cb_das16_cs.c
+index 80c0df8..1af8650 100644
+--- a/drivers/staging/comedi/drivers/cb_das16_cs.c
++++ b/drivers/staging/comedi/drivers/cb_das16_cs.c
+@@ -100,7 +100,7 @@ static struct comedi_driver driver_das16cs = {
+ 	.detach = das16cs_detach,
+ };
+ 
+-static struct pcmcia_device *cur_dev = NULL;
++static struct pcmcia_device *cur_dev;
+ 
+ static const struct comedi_lrange das16cs_ai_range = { 4, {
+ 							   RANGE(-10, 10),
+@@ -169,9 +169,8 @@ static const struct das16cs_board *das16cs_probe(struct comedi_device *dev,
+ 	id = get_prodid(dev, link);
+ 
+ 	for (i = 0; i < n_boards; i++) {
+-		if (das16cs_boards[i].device_id == id) {
++		if (das16cs_boards[i].device_id == id)
+ 			return das16cs_boards + i;
+-		}
+ 	}
+ 
+ 	printk("unknown board!\n");
+@@ -197,16 +196,14 @@ static int das16cs_attach(struct comedi_device *dev,
+ 	printk("I/O base=0x%04lx ", dev->iobase);
+ 
+ 	printk("fingerprint:\n");
+-	for (i = 0; i < 48; i += 2) {
++	for (i = 0; i < 48; i += 2)
+ 		printk("%04x ", inw(dev->iobase + i));
+-	}
+ 	printk("\n");
+ 
+ 	ret = request_irq(link->irq.AssignedIRQ, das16cs_interrupt,
+ 			  IRQF_SHARED, "cb_das16_cs", dev);
+-	if (ret < 0) {
++	if (ret < 0)
+ 		return ret;
+-	}
+ 	dev->irq = link->irq.AssignedIRQ;
+ 	printk("irq=%u ", dev->irq);
+ 
+@@ -284,9 +281,8 @@ static int das16cs_detach(struct comedi_device *dev)
+ {
+ 	printk("comedi%d: das16cs: remove\n", dev->minor);
+ 
+-	if (dev->irq) {
++	if (dev->irq)
+ 		free_irq(dev->irq, dev);
+-	}
+ 
+ 	return 0;
+ }
+@@ -393,7 +389,8 @@ static int das16cs_ai_cmdtest(struct comedi_device *dev,
+ 	if (err)
+ 		return 1;
+ 
+-	/* step 2: make sure trigger sources are unique and mutually compatible */
++	/* step 2: make sure trigger sources are unique
++	 * and mutually compatible */
+ 
+ 	/* note that mutual compatiblity is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_TIMER &&
+@@ -672,9 +669,10 @@ static int das16cs_timer_insn_config(struct comedi_device *dev,
+ #ifdef PCMCIA_DEBUG
+ static int pc_debug = PCMCIA_DEBUG;
+ module_param(pc_debug, int, 0644);
+-#define DEBUG(n, args...) if (pc_debug>(n)) printk(KERN_DEBUG args)
++#define DEBUG(n, args...) if (pc_debug > (n)) printk(KERN_DEBUG args)
+ static char *version =
+-    "cb_das16_cs.c pcmcia code (David Schleef), modified from dummy_cs.c 1.31 2001/08/24 12:13:13 (David Hinds)";
++	"cb_das16_cs.c pcmcia code (David Schleef),"\
++	" modified from dummy_cs.c 1.31 2001/08/24 12:13:13 (David Hinds)";
+ #else
+ #define DEBUG(n, args...)
+ #endif
+@@ -869,7 +867,8 @@ static void das16cs_pcmcia_config(struct pcmcia_device *link)
+ 				link->io.BasePort2 = io->win[1].base;
+ 				link->io.NumPorts2 = io->win[1].len;
+ 			}
+-			/* This reserves IO space but doesn't actually enable it */
++			/* This reserves IO space
++			 * but doesn't actually enable it */
+ 			if (pcmcia_request_io(link, &link->io))
+ 				goto next_entry;
+ 		}
+-- 
+1.6.0.4
 
