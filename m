@@ -1,113 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZKCVyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZKCWIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbZKCVyN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:54:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZKCVyM
+	id S1755460AbZKCWIJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 17:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZKCWII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:54:12 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:57803 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755216AbZKCVyL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 16:54:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=jhmBvtEo3iAKRviIpZFhTsyiFK6Bxc7KN8L8EvsT2wtvqz0bAKMJWZao7tHL0k4Lpz
-         Abz5YbmBiIVy317Efvl5if5alJ42cuFyMpGLmRGiytr/QfM/Zk/lCQsAsKtQPshg5+Ld
-         deRUgdKtvdUwly30wNO5VPTZKhvNq2OCfupfg=
-Message-ID: <4AF0A92C.6050400@gmail.com>
-Date: Tue, 03 Nov 2009 23:05:32 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 3 Nov 2009 17:08:08 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:56958 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755063AbZKCWIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 17:08:07 -0500
+Date: Tue, 3 Nov 2009 22:08:09 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Frans Pop <elendil@planet.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 3/3] vmscan: Force kswapd to take notice faster when
+	high-order watermarks are being hit
+Message-ID: <20091103220808.GF22046@csn.ul.ie>
+References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <200911021832.59035.elendil@planet.nl> <20091102173837.GB22046@csn.ul.ie> <200911032301.59662.elendil@planet.nl>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Karl Hiramoto <karl@hiramoto.org>, Imre Kaloz <kaloz@openwrt.org>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] IXP4xx: Ensure index is positive
-References: <4AF08014.4000704@gmail.com> <4AF0922B.3030701@hiramoto.org> <m3eiofl2v8.fsf@intrepid.localdomain>
-In-Reply-To: <m3eiofl2v8.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200911032301.59662.elendil@planet.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The indexes were signed, so negatives were possible.
-
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Op 03-11-09 22:23, Krzysztof Halasa schreef:
-> Karl Hiramoto <karl@hiramoto.org> writes:
-
->> changing npe_request() to unsigned would probably be better
-
-> Right. Both files in fact.
+On Tue, Nov 03, 2009 at 11:01:50PM +0100, Frans Pop wrote:
+> On Monday 02 November 2009, Mel Gorman wrote:
+> > On Mon, Nov 02, 2009 at 06:32:54PM +0100, Frans Pop wrote:
+> > > On Monday 02 November 2009, Mel Gorman wrote:
+> > > > vmscan: Help debug kswapd issues by counting number of rewakeups and
+> > > > premature sleeps
+> > > >
+> > > > There is a growing amount of anedotal evidence that high-order
+> > > > atomic allocation failures have been increasing since 2.6.31-rc1.
+> > > > The two strongest possibilities are a marked increase in the number
+> > > > of GFP_ATOMIC allocations and alterations in timing. Debugging
+> > > > printk patches have shown for example that kswapd is sleeping for
+> > > > shorter intervals and going to sleep when watermarks are still not
+> > > > being met.
+> > > >
+> > > > This patch adds two kswapd counters to help identify if timing is an
+> > > > issue. The first counter kswapd_highorder_rewakeup counts the number
+> > > > of times that kswapd stops reclaiming at one order and restarts at a
+> > > > higher order. The second counter kswapd_slept_prematurely counts the
+> > > > number of times kswapd went to sleep when the high watermark was not
+> > > > met.
+> > >
+> > > What testing would you like done with this patch?
+> >
+> > Same reproduction as before except post what the contents of
+> > /proc/vmstat were after the problem was triggered.
 > 
-> Even the id < NPE_COUNT test is probably not needed but I can imagine
-> someone lowering NPE_COUNT. Negative values are unreasonable (though
-> unsigned type make this unrelevant, of course).
+> With a representative test I get 0 for kswapd_slept_prematurely.
+> Tested with .32-rc6 + patches 1-3 + this patch.
+> 
 
- arch/arm/mach-ixp4xx/common.c            |    2 +-
- arch/arm/mach-ixp4xx/include/mach/gpio.h |    2 +-
- arch/arm/mach-ixp4xx/include/mach/npe.h  |    2 +-
- arch/arm/mach-ixp4xx/ixp4xx_npe.c        |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+Assuming the problem actually reproduced, can you still retest with the
+patch I posted as a follow-up and see if fast or slow premature sleeps
+are happening and if the problem still occurs please? It's still
+possible with the patch as-is could be timing related. After I posted
+this patch, I continued testing and found I could get counts fairly
+reliably if kswapd was calling printk() before making the premature
+check so the window appears to be very small.
 
-Is this ok?
-
-diff --git a/arch/arm/mach-ixp4xx/common.c b/arch/arm/mach-ixp4xx/common.c
-index cfd52fb..3bbf40f 100644
---- a/arch/arm/mach-ixp4xx/common.c
-+++ b/arch/arm/mach-ixp4xx/common.c
-@@ -117,7 +117,7 @@ int gpio_to_irq(int gpio)
- }
- EXPORT_SYMBOL(gpio_to_irq);
- 
--int irq_to_gpio(int irq)
-+int irq_to_gpio(unsigned int irq)
- {
- 	int gpio = (irq < 32) ? irq2gpio[irq] : -EINVAL;
- 
-diff --git a/arch/arm/mach-ixp4xx/include/mach/gpio.h b/arch/arm/mach-ixp4xx/include/mach/gpio.h
-index cd5aec2..a5f87de 100644
---- a/arch/arm/mach-ixp4xx/include/mach/gpio.h
-+++ b/arch/arm/mach-ixp4xx/include/mach/gpio.h
-@@ -70,7 +70,7 @@ static inline void gpio_set_value(unsigned gpio, int value)
- #include <asm-generic/gpio.h>			/* cansleep wrappers */
- 
- extern int gpio_to_irq(int gpio);
--extern int irq_to_gpio(int gpio);
-+extern int irq_to_gpio(unsigned int irq);
- 
- #endif
- 
-diff --git a/arch/arm/mach-ixp4xx/include/mach/npe.h b/arch/arm/mach-ixp4xx/include/mach/npe.h
-index 37d0511..e320db2 100644
---- a/arch/arm/mach-ixp4xx/include/mach/npe.h
-+++ b/arch/arm/mach-ixp4xx/include/mach/npe.h
-@@ -33,7 +33,7 @@ int npe_send_message(struct npe *npe, const void *msg, const char *what);
- int npe_recv_message(struct npe *npe, void *msg, const char *what);
- int npe_send_recv_message(struct npe *npe, void *msg, const char *what);
- int npe_load_firmware(struct npe *npe, const char *name, struct device *dev);
--struct npe *npe_request(int id);
-+struct npe *npe_request(unsigned id);
- void npe_release(struct npe *npe);
- 
- #endif /* __IXP4XX_NPE_H */
-diff --git a/arch/arm/mach-ixp4xx/ixp4xx_npe.c b/arch/arm/mach-ixp4xx/ixp4xx_npe.c
-index 47ac69c..e8bb257 100644
---- a/arch/arm/mach-ixp4xx/ixp4xx_npe.c
-+++ b/arch/arm/mach-ixp4xx/ixp4xx_npe.c
-@@ -665,7 +665,7 @@ err:
- }
- 
- 
--struct npe *npe_request(int id)
-+struct npe *npe_request(unsigned id)
- {
- 	if (id < NPE_COUNT)
- 		if (npe_tab[id].valid)
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
