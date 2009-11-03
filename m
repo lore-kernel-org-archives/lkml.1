@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbZKCTFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662AbZKCSa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754452AbZKCTFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZKCTFp
+	id S1751662AbZKCSa3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 13:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZKCSa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:05:45 -0500
-Received: from n5-vm0.bullet.mail.gq1.yahoo.com ([67.195.8.62]:23284 "HELO
-	n5-vm0.bullet.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754125AbZKCTFo convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:05:44 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 991848.26499.bm@omp132.mail.gq1.yahoo.com
-Message-ID: <768317.72882.qm@web1203.biz.mail.gq1.yahoo.com>
-X-YMail-OSG: XvRBq6UVM1nNBgcIJ7JGs7sQv1m8hnbKnSqp4gpTjoLDUycfWbD5fNnbz1xhuXAN_29pWIonGzu3FitGvkOOo0t24_DpOEkwWeqAhW7XZLAf5ZHiV7JuGGVg3q5tOd2wxLUdXo.k7WFTQnro9.lCu8kAtDi3_s0Swt8zvwQlqgOsY0g8eXELIYabEFj9NSenyew4XZHGYRJtQXPhdmDaAoAshYGV9cfACoda4VFB3wFDQ8av0IgepXhq29MNoP7xagNv0NRCgYTkOZlq.XhU3QxVmr4HssRt0YQnBLv9BrmpxJE3IQxVwEu4GM6mzmGC_Txndv4Y8I_p2rp2A.I2pGvra8oDxrWNAKV6AhYmBIiZnePsgavt7P6NB.1h1CPHPxHy9wEGflC1anJD2suxxwk2wWbuR.J.
-X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.7.347.3
-Date: Tue, 3 Nov 2009 10:29:54 -0800 (PST)
-From: Dr Kevin Brown <technd@okcox.com>
-Subject: Dr Kevin Brown
-To: undisclosed recipients:;
+	Tue, 3 Nov 2009 13:30:28 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:46147 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZKCSa2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 13:30:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=bTw6FwOW81QTpGqy6Pvp1qn3sY6UcHitHKLeFW2bXluqJrpzKH5Napyo96++3wsCSb
+         zo+9mD0aPDlMM6D07ye03mXy2r8TJW+0ckoVUddAQzUO8xFaSWd84UZT278NayPf0Ok+
+         nNk1+IUZg0ZTaQiWpP0woLuOk6sGw3fTv/MAw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <151663.1257260057@turing-police.cc.vt.edu>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> 
+	<1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com> 
+	<alpine.OSX.1.10.0911011540400.53392@caridad.local> <yw1xhbte0wx0.fsf@unicorn.mansr.com> 
+	<alpine.OSX.1.10.0911011623070.55174@caridad.local> <63587.1257137919@turing-police.cc.vt.edu> 
+	<alpine.OSX.1.10.0911020012500.56087@caridad.local> <151663.1257260057@turing-police.cc.vt.edu>
+From: Matt Thrailkill <matt.thrailkill@gmail.com>
+Date: Tue, 3 Nov 2009 10:30:13 -0800
+Message-ID: <a91053ef0911031030g46e908c9u1bb1e3235f148480@mail.gmail.com>
+Subject: Re: FatELF patches...
+To: Valdis.Kletnieks@vt.edu
+Cc: "Ryan C. Gordon" <icculus@icculus.org>,
+       =?ISO-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Drogi Przyjacielu, 
-  
-How are you today i swojej rodziny? Mam nadzieję, że dobrze, jestem Dr Kevin Brown. Od Haledon, North West London, tutaj w Anglii. Pracuję dla Natwest Bank Corporation w Londynie. Piszę do was z mojego biura, które będzie bardzo korzystne dla nas obu. W moim departamencie, jako asystent (Greater London Regional Office, odkryłem opuszczonej sumę 12,5 milionów dolarów USA dolary (dwanaście million pięć hundred thousand nas dolarów) na koncie należącym do jednego z naszych zagranicznych klientów Late Pan Thompson Morrison amerykańskiego obywatela, który niestety stracił życie w katastrofie samolotu Alaska Airlines Flight 261, który rozbił się 31 stycznia 2000, w tym jego żona i córka tylko. 
-  
-  Wybór skontaktować się budzi z charakter geograficzny, gdzie mieszkasz, szczególnie ze względu na wrażliwość transakcji i poufność w niniejszym dokumencie. Teraz nasz bank został czeka na którykolwiek z krewnymi, aby kto się w roszczenia, ale nikt nie zrobił. Ja osobiście nie zostały uwzględnione w odnalezieniu krewnych do 2 lat teraz szukam Twojej zgody, aby zaprezentować Państwu jak najbliższych krewnych / Czy beneficjent zmarłego tak, że wpływy z tego konta wyceniono na 12,5 mln dolarów może być wypłacona do Ciebie. 
-  
-To będzie wypłacana lub wspólne w tych procentów, 60% dla mnie i 40% dla Ciebie. Mam zapewnione wszelkie niezbędne dokumenty prawne, które mogą być wykorzystane do kopii zapasowej tego twierdzenia czynimy. All I need zrobić, to wypełnić swoje nazwiska do dokumentów i zalegalizować go w sądzie, by udowodnić Ci za prawowitego beneficjenta. All I wymagają teraz jest uczciwy współpracy, poufności i zaufania w celu umożliwienia nas widzi tej transakcji poprzez. Gwarantuję, że będzie to realizowane na podstawie uzasadnionego rozwiązania, które chronią od wszelkich przypadków naruszenia prawa. Proszę dostarczyć mi następujące: jak mamy 7 dni, aby go uruchomić poprzez. To jest bardzo pilne PLEASE. 
-  
-1. Pełny: Imię i nazwisko: 
-2. Twoje: Numer telefonu: 
-3. Twój Adres do korespondencji: 
-4. Wiek: 
-5.Core Praca / Zawód: 
-6.sex: 
-  
-Po przejściu przez metodyczne wyszukiwania, postanowiłem skontaktować się z Tobą w nadziei, że znajdą Państwo to interesujący projekt. Prosimy o potwierdzenie tej wiadomości ze wskazaniem, które cię interesują, będę przedstawić Państwu więcej informacji. Starają się dać mi znać swojej decyzji zamiast trzymać mnie czeka. 
-  
-Z pozdrowieniami, 
-Dr Kevin Brown
+On Tue, Nov 3, 2009 at 6:54 AM,  <Valdis.Kletnieks@vt.edu> wrote:
+> On Mon, 02 Nov 2009 10:14:15 EST, "Ryan C. Gordon" said:
+>
+>> I probably wasn't clear when I said "distribution-wide policy" followed by
+>> a "then again." I meant there would be backlash if the distribution glued
+>> the whole system together, instead of just binaries that made sense to do
+>> it to.
+>
+> OK.. I'll bite - which binaries does it make sense to do so? �Remember in
+> your answer to address the very valid point that any binaries you *don't*
+> do this for will still need equivalent hand-holding by the package manager.
+> So if you're not doing all of them, you need to address the additional
+> maintenance overhead of "which way is this package supposed to be built?"
+> and all the derivative headaches.
+>
+> It might be instructive to not do a merge of *everything* in Ubuntu as you
+> did, but only select a random 20% or so of the packages and convert them
+> to FatELF, and see what breaks. (If our experience with 'make randconfig'
+> in the kernel is any indication, you'll hit a *lot* of corner cases and
+> pre-reqs you didn't know about...)
 
+I think he is thinking of only having FatELF binaries for binaries and
+libraries
+that overlap between 32- and 64-bit in a distro install.  Perhaps everything
+that is sitting in /lib32 for example could instead be in a FatELF
+binaries in /lib,
+alongside the 64-bit binary.
+
+A thought I had, that I don't think has come up in this thread:
+could it be practical or worthwhile for distros to use FatElf to ship multiple
+executables with different compiler optimizations?  i586, i686, etc.
