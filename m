@@ -1,186 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbZKCAhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZKCAnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbZKCAhd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 19:37:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbZKCAhc
+	id S1757471AbZKCAnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 19:43:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbZKCAnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 19:37:32 -0500
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:43711 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757379AbZKCAhc (ORCPT
+	Mon, 2 Nov 2009 19:43:53 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:34866 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757285AbZKCAnv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 19:37:32 -0500
-Date: Mon, 2 Nov 2009 17:37:36 -0700
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       srajiv@linux.vnet.ibm.com
-Subject: [RESEND PATCH] TPM: Make tpm_tis always create a platform driver
-Message-ID: <20091103003736.GM7768@obsidianresearch.com>
-References: <20090915171816.GJ25981@obsidianresearch.com>
+	Mon, 2 Nov 2009 19:43:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RSYPTX+st6NJrP2Rum8R9J6Nndfmn63RtmfT/ft33ZG6ztx71jKc3wNubUvq/p6UTC
+         H2wXE6HvLVORxKILUwmxzezmmQqbwfnPa25XULBBDitaKlCOg6oBdfWcX/4TgFpKM1Ng
+         7/TyI8wOIusp2nPAtV++XAEUYYy+1Hgw4ZVYM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090915171816.GJ25981@obsidianresearch.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
+In-Reply-To: <e9c3a7c20910291546r2603e191g87a23023c32f1b1b@mail.gmail.com>
+References: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
+	 <1255588866-4133-2-git-send-email-Vishnu@freescale.com>
+	 <e9c3a7c20910291546r2603e191g87a23023c32f1b1b@mail.gmail.com>
+Date: Tue, 3 Nov 2009 08:43:54 +0800
+Message-ID: <389deec70911021643t6897f21fv52cc660e5f5d67e5@mail.gmail.com>
+Subject: Re: [PATCH v0 2/2] Crypto: Talitos: Support for Async_tx XOR offload
+From: hank peng <pengxihan@gmail.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Vishnu Suresh <Vishnu@freescale.com>, linuxppc-dev@ozlabs.org,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, herbert@gondor.apana.org.au,
+       Kim Phillips <kim.phillips@freescale.com>,
+       Dipen Dudhat <Dipen.Dudhat@freescale.com>,
+       Maneesh Gupta <Maneesh.Gupta@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any chance of getting some interest in this? :)
+I have tested this patch on my MPC8548 machine box, kernel version is
+2.6.30. There is a problem.
+#mdadm -C /dev/md0 -l5 -n3 /dev/sd{a,b,c}
+Recovery can be done successfully, interrupts looks normal.
+# cat /proc/interrupts
+           CPU0
+ 16:   16091057   OpenPIC   Level     mvSata
+ 17:          0   OpenPIC   Level     mvSata
+ 18:          4   OpenPIC   Level     phy_interrupt, phy_interrupt
+ 20:         39   OpenPIC   Level     fsldma-channel
+ 21:          0   OpenPIC   Level     fsldma-channel
+ 22:          0   OpenPIC   Level     fsldma-channel
+ 23:          0   OpenPIC   Level     fsldma-channel
+ 29:        241   OpenPIC   Level     eth0_tx
+ 30:    1004692   OpenPIC   Level     eth0_rx
+ 34:          0   OpenPIC   Level     eth0_er
+ 35:          0   OpenPIC   Level     eth1_tx
+ 36:          0   OpenPIC   Level     eth1_rx
+ 40:          0   OpenPIC   Level     eth1_er
+ 42:      73060   OpenPIC   Level     serial
+ 43:       9854   OpenPIC   Level     i2c-mpc, i2c-mpc
+ 45:   61264188   OpenPIC   Level     talitos
+BAD:          0
 
-Thanks,
-Jason
+Then, I plan to create a VG, but problem occured.
+#pvcreate /dev/md0
 
-On Tue, Sep 15, 2009 at 11:18:16AM -0600, Jason Gunthorpe wrote:
-> This lets systems that don't use PNP to create a platform device and have the
-> tpm_tis driver bind to it. For embedded users.
-> 
-> Rework the force option to just create a platform device with the proper
-> resource information and use the usual binding mechanism to set it up.
-> 
-> Slightly rework the way interrupt auto detection happens to provide a -1 'do
-> not ever autodetect' input and use it to force off autodetection if PNP or
-> platform devices have no IRQ line.
-> 
-> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
->  drivers/char/tpm/tpm_tis.c |   73 +++++++++++++++++++++++++++++---------------
->  1 files changed, 48 insertions(+), 25 deletions(-)
-> 
-> Unfortunately I can only test the platform device path here, I don't
-> have a PC system that uses this driver to test the force option.
-> 
-> diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-> index 626dd4c..80db599 100644
-> +++ b/drivers/char/tpm/tpm_tis.c
-> @@ -435,7 +435,7 @@ module_param(interrupts, bool, 0444);
->  MODULE_PARM_DESC(interrupts, "Enable interrupts");
->  
->  static int tpm_tis_init(struct device *dev, u32 start,
-> -			u32 len, unsigned int irq)
-> +			u32 len, int irq)
->  {
->  	u32 vendor, intfcaps, intmask;
->  	int rc, i;
-> @@ -507,9 +507,11 @@ static int tpm_tis_init(struct device *dev, u32 start,
->  	iowrite32(intmask,
->  		  chip->vendor.iobase +
->  		  TPM_INT_ENABLE(chip->vendor.locality));
-> -	if (interrupts)
-> +	if (!interrupts)
-> +		irq = -1;
-> +	if (irq != -1)
->  		chip->vendor.irq = irq;
-> -	if (interrupts && !chip->vendor.irq) {
-> +	if (irq == 0) {
->  		chip->vendor.irq =
->  		    ioread8(chip->vendor.iobase +
->  			    TPM_INT_VECTOR(chip->vendor.locality));
-> @@ -594,15 +596,13 @@ static int __devinit tpm_tis_pnp_init(struct pnp_dev *pnp_dev,
->  				      const struct pnp_device_id *pnp_id)
->  {
->  	u32 start, len;
-> -	unsigned int irq = 0;
-> +	int irq = -1;
->  
->  	start = pnp_mem_start(pnp_dev, 0);
->  	len = pnp_mem_len(pnp_dev, 0);
->  
->  	if (pnp_irq_valid(pnp_dev, 0))
->  		irq = pnp_irq(pnp_dev, 0);
-> -	else
-> -		interrupts = 0;
->  
->  	return tpm_tis_init(&pnp_dev->dev, start, len, irq);
->  }
-> @@ -654,6 +654,30 @@ module_param_string(hid, tpm_pnp_tbl[TIS_HID_USR_IDX].id,
->  		    sizeof(tpm_pnp_tbl[TIS_HID_USR_IDX].id), 0444);
->  MODULE_PARM_DESC(hid, "Set additional specific HID for this driver to probe");
->  
-> +static int force;
-> +module_param(force, bool, 0444);
-> +MODULE_PARM_DESC(force, "Force device probe rather than using ACPI entry");
-> +static struct platform_device *forced_pdev;
-> +static int __devinit tpm_tis_probe(struct platform_device *pdev)
-> +{
-> +	struct resource *mem;
-> +	struct resource *irqr;
-> +	int irq = -1;
-> +
-> +	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!mem)
-> +		return -EINVAL;
-> +
-> +	irqr = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-> +	if (irqr)
-> +		irq = irqr->start;
-> +	else if (pdev == forced_pdev)
-> +		irq = 0;    /* Auto-detect interrupts. */
-> +
-> +	return tpm_tis_init(&pdev->dev, mem->start, (mem->end - mem->start+1),
-> +			    irq);
-> +}
-> +
->  static int tpm_tis_suspend(struct platform_device *dev, pm_message_t msg)
->  {
->  	return tpm_pm_suspend(&dev->dev, msg);
-> @@ -668,30 +692,29 @@ static struct platform_driver tis_drv = {
->  		.name = "tpm_tis",
->  		.owner		= THIS_MODULE,
->  	},
-> +	.probe = tpm_tis_probe,
->  	.suspend = tpm_tis_suspend,
->  	.resume = tpm_tis_resume,
->  };
->  
-> -static struct platform_device *pdev;
-> -
-> -static int force;
-> -module_param(force, bool, 0444);
-> -MODULE_PARM_DESC(force, "Force device probe rather than using ACPI entry");
->  static int __init init_tis(void)
->  {
->  	int rc;
->  
-> -	if (force) {
-> -		rc = platform_driver_register(&tis_drv);
-> -		if (rc < 0)
-> -			return rc;
-> -		if (IS_ERR(pdev=platform_device_register_simple("tpm_tis", -1, NULL, 0)))
-> -			return PTR_ERR(pdev);
-> -		if((rc=tpm_tis_init(&pdev->dev, TIS_MEM_BASE, TIS_MEM_LEN, 0)) != 0) {
-> -			platform_device_unregister(pdev);
-> -			platform_driver_unregister(&tis_drv);
-> -		}
-> +	rc = platform_driver_register(&tis_drv);
-> +	if (rc < 0)
->  		return rc;
-> +
-> +	if (force) {
-> +		struct resource res[1] = {
-> +			{.start = TIS_MEM_BASE,
-> +			 .end = TIS_MEM_BASE + TIS_MEM_LEN - 1,
-> +			 .flags = IORESOURCE_MEM} };
-> +		forced_pdev = platform_device_register_simple("tpm_tis", -1,
-> +							      res, 1);
-> +		if (IS_ERR(forced_pdev))
-> +			return PTR_ERR(forced_pdev);
-> +		return 0;
->  	}
->  
->  	return pnp_register_driver(&tis_pnp_driver);
-> @@ -719,10 +742,10 @@ static void __exit cleanup_tis(void)
->  	}
->  	spin_unlock(&tis_lock);
->  
-> -	if (force) {
-> -		platform_device_unregister(pdev);
-> -		platform_driver_unregister(&tis_drv);
-> -	} else
-> +	if (forced_pdev)
-> +		platform_device_unregister(forced_pdev);
-> +	platform_driver_unregister(&tis_drv);
-> +	if (!force)
->  		pnp_unregister_driver(&tis_pnp_driver);
->  }
->  
+After I input this command, system hangs there without any messages.
+
+BTW, all is OK before using this patch.
+
+
+2009/10/30 Dan Williams <dan.j.williams@intel.com>:
+> On Wed, Oct 14, 2009 at 11:41 PM, Vishnu Suresh <Vishnu@freescale.com> wrote:
+> [..]
+>> diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+>> index b08403d..343e578 100644
+>> --- a/drivers/crypto/Kconfig
+>> +++ b/drivers/crypto/Kconfig
+>> @@ -192,6 +192,8 @@ config CRYPTO_DEV_TALITOS
+>>        select CRYPTO_ALGAPI
+>>        select CRYPTO_AUTHENC
+>>        select HW_RANDOM
+>> +       select DMA_ENGINE
+>> +       select ASYNC_XOR
+>
+> You need only select DMA_ENGINE.  ASYNC_XOR is selected by its users.
+>
+>>        depends on FSL_SOC
+>>        help
+>>          Say 'Y' here to use the Freescale Security Engine (SEC)
+>> diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+>> index c47ffe8..84819d4 100644
+>> --- a/drivers/crypto/talitos.c
+>> +++ b/drivers/crypto/talitos.c
+> [..]
+>> +static void talitos_process_pending(struct talitos_xor_chan *xor_chan)
+>> +{
+>> +       struct talitos_xor_desc *desc, *_desc;
+>> +       unsigned long flags;
+>> +       int status;
+>> +
+>> +       spin_lock_irqsave(&xor_chan->desc_lock, flags);
+>> +
+>> +       list_for_each_entry_safe(desc, _desc, &xor_chan->pending_q, node) {
+>> +               status = talitos_submit(xor_chan->dev, &desc->hwdesc,
+>> +                                       talitos_release_xor, desc);
+>> +               if (status != -EINPROGRESS)
+>> +                       break;
+>> +
+>> +               list_del(&desc->node);
+>> +               list_add_tail(&desc->node, &xor_chan->in_progress_q);
+>> +       }
+>> +
+>> +       spin_unlock_irqrestore(&xor_chan->desc_lock, flags);
+>> +}
+>
+> The driver uses spin_lock_bh everywhere else which is either a bug, or
+> this code is being overly protective.  In any event lockdep will
+> rightly complain about this.  The API and its users do not submit
+> operations in hard-irq context.
+>
+>> +
+>> +static void talitos_release_xor(struct device *dev, struct talitos_desc *hwdesc,
+>> +                               void *context, int error)
+>> +{
+>> +       struct talitos_xor_desc *desc = context;
+>> +       struct talitos_xor_chan *xor_chan;
+>> +       dma_async_tx_callback callback;
+>> +       void *callback_param;
+>> +
+>> +       if (unlikely(error)) {
+>> +               dev_err(dev, "xor operation: talitos error %d\n", error);
+>> +               BUG();
+>> +       }
+>> +
+>> +       xor_chan = container_of(desc->async_tx.chan, struct talitos_xor_chan,
+>> +                               common);
+>> +       spin_lock_bh(&xor_chan->desc_lock);
+>> +       if (xor_chan->completed_cookie < desc->async_tx.cookie)
+>> +               xor_chan->completed_cookie = desc->async_tx.cookie;
+>> +
+>> +       callback = desc->async_tx.callback;
+>> +       callback_param = desc->async_tx.callback_param;
+>> +
+>> +       if (callback) {
+>> +               spin_unlock_bh(&xor_chan->desc_lock);
+>> +               callback(callback_param);
+>> +               spin_lock_bh(&xor_chan->desc_lock);
+>> +       }
+>
+> You do not need to unlock to call the callback.  Users of the API
+> assume that they are called in bh context and that they are not
+> allowed to submit new operations directly from the callback (this
+> simplifies the descriptor cleanup routines in other drivers).
+>
+>> +
+>> +       list_del(&desc->node);
+>> +       list_add_tail(&desc->node, &xor_chan->free_desc);
+>> +       spin_unlock_bh(&xor_chan->desc_lock);
+>> +       if (!list_empty(&xor_chan->pending_q))
+>> +               talitos_process_pending(xor_chan);
+>> +}
+>
+> It appears this routine is missing a call to dma_run_dependencies()?
+> This is needed if another channel is handling memory copy offload.  I
+> assume this is the case due to your other patch to fsldma.  See
+> iop_adma_run_tx_complete_actions().  If this xor resource can also
+> handle copy operations that would be more efficient as it eliminates
+> channel switching.  See the ioatdma driver and its use of
+> ASYNC_TX_DISABLE_CHANNEL_SWITCH.
+>
+>> +static struct dma_async_tx_descriptor * talitos_prep_dma_xor(
+>> +                       struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
+>> +                       unsigned int src_cnt, size_t len, unsigned long flags)
+>> +{
+>> +       struct talitos_xor_chan *xor_chan;
+>> +       struct talitos_xor_desc *new;
+>> +       struct talitos_desc *desc;
+>> +       int i, j;
+>> +
+>> +       BUG_ON(unlikely(len > TALITOS_MAX_DATA_LEN));
+>> +
+>> +       xor_chan = container_of(chan, struct talitos_xor_chan, common);
+>> +
+>> +       spin_lock_bh(&xor_chan->desc_lock);
+>> +       if (!list_empty(&xor_chan->free_desc)) {
+>> +               new = container_of(xor_chan->free_desc.next,
+>> +                                  struct talitos_xor_desc, node);
+>> +               list_del(&new->node);
+>> +       } else {
+>> +               new = talitos_xor_alloc_descriptor(xor_chan, GFP_KERNEL);
+>> +       }
+>> +       spin_unlock_bh(&xor_chan->desc_lock);
+>> +
+>> +       if (!new) {
+>> +               dev_err(xor_chan->common.device->dev,
+>> +                       "No free memory for XOR DMA descriptor\n");
+>> +               return NULL;
+>> +       }
+>> +       dma_async_tx_descriptor_init(&new->async_tx, &xor_chan->common);
+>> +
+>> +       INIT_LIST_HEAD(&new->node);
+>> +       INIT_LIST_HEAD(&new->tx_list);
+>
+> You can save some overhead in the fast path by moving this
+> initialization to talitos_xor_alloc_descriptor.
+>
+>> +
+>> +       desc = &new->hwdesc;
+>> +       /* Set destination: Last pointer pair */
+>> +       to_talitos_ptr(&desc->ptr[6], dest);
+>> +       desc->ptr[6].len = cpu_to_be16(len);
+>> +       desc->ptr[6].j_extent = 0;
+>> +
+>> +       /* Set Sources: End loading from second-last pointer pair */
+>> +       for (i = 5, j = 0; (j < src_cnt) && (i > 0); i--, j++) {
+>> +               to_talitos_ptr(&desc->ptr[i], src[j]);
+>> +               desc->ptr[i].len = cpu_to_be16(len);
+>> +               desc->ptr[i].j_extent = 0;
+>> +       }
+>> +
+>> +       /*
+>> +        * documentation states first 0 ptr/len combo marks end of sources
+>> +        * yet device produces scatter boundary error unless all subsequent
+>> +        * sources are zeroed out
+>> +        */
+>> +       for (; i >= 0; i--) {
+>> +               to_talitos_ptr(&desc->ptr[i], 0);
+>> +               desc->ptr[i].len = 0;
+>> +               desc->ptr[i].j_extent = 0;
+>> +       }
+>> +
+>> +       desc->hdr = DESC_HDR_SEL0_AESU | DESC_HDR_MODE0_AESU_XOR
+>> +                   | DESC_HDR_TYPE_RAID_XOR;
+>> +
+>> +       new->async_tx.parent = NULL;
+>> +       new->async_tx.next = NULL;
+>
+> These fields are managed by the async_tx channel switch code.  No need
+> to manage it here.
+>
+>> +       new->async_tx.cookie = 0;
+>
+> This is set below to -EBUSY, it's redundant to touch it here.
+>
+>> +       async_tx_ack(&new->async_tx);
+>
+> This makes it impossible to attach a dependency to this operation.
+> Not sure this is what you want.
+>
+> --
+> Dan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
+
+
+-- 
+The simplest is not all best but the best is surely the simplest!
