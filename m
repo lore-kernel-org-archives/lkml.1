@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbZKCTvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZKCTze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755316AbZKCTvd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbZKCTvc
+	id S1754507AbZKCTze (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:55:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZKCTzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:51:32 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:46817 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752351AbZKCTvb (ORCPT
+	Tue, 3 Nov 2009 14:55:33 -0500
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:64829 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750845AbZKCTzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:51:31 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4AF089C1.4010806@s5r6.in-berlin.de>
-Date: Tue, 03 Nov 2009 20:51:29 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
+	Tue, 3 Nov 2009 14:55:32 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] um: minor Makefile simplification through use of cc-ifversion
+Date: Tue, 3 Nov 2009 20:55:34 +0100
+User-Agent: KMail/1.9.9
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200907232057.51827.elendil@planet.nl>
+In-Reply-To: <200907232057.51827.elendil@planet.nl>
 MIME-Version: 1.0
-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-CC: Jens Axboe <axboe@kernel.dk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Disk hot removal causing oopses and fixes
-References: <20091021161201.GA16968@angel.research.nokia.com> <4ADF752D.7010206@s5r6.in-berlin.de> <20091103115444.GA8507@angel.research.nokia.com>
-In-Reply-To: <20091103115444.GA8507@angel.research.nokia.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911032055.36504.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Nov 2009 19:55:36.0355 (UTC) FILETIME=[9C41D730:01CA5CBF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarkko Lavinen wrote:
-> Hi Steven
-> 
-> Sorry for late reply.
-> 
->> It has to reference-count its objects so that they are not freed as long
->> as they are used by upper layers,
-> 
-> The block layer and device removal seems to be designed from
-> top-down approach.  Althouh disc is referenced from
-> __blkdev_get(), disc's request queue is not.  Also
-> blk_cleanup_queue() calls elevator_exit() without caring if
-> anyone still uses the elevator.
-[...]
+Hi Sam,
 
-I still don't understand how there can be a problem here.  Shouldn't the
-sequence be:
+You planned to take any of these patches not picked up by arch maintainers 
+in kbuild.git. This looks to be the only one not yet included in mainline.
 
- 1. low-level determines that a device went away
- 2. low-level takes note that from now on no new requests must be
-    enqueued anymore
- 3. low-level calls blk_cleanup_queue
- 4. blk_cleanup_queue waits until remaining requests are done
-    (it calls blk_sync_queue)
- 5. blk_cleanup_queue cleans up block layer data
- 6. low-level can now clean up/ free its own data
+Cheers,
+FJP
 
-Does the MMC layer miss step 2?  Because without this, step 4 would be
-in vain.
--- 
-Stefan Richter
--=====-==--= =-== ---==
-http://arcgraph.de/sr/
+On Thursday 23 July 2009, Frans Pop wrote:
+> Signed-off-by: Frans Pop <elendil@planet.nl>
+> ---
+>
+> Change was suggested by Sam Ravnborg; see
+> http://lkml.org/lkml/2009/7/18/15. Untested, but a similar patch for x86
+> was tested to work.
+>
+> diff --git a/arch/um/Makefile-i386 b/arch/um/Makefile-i386
+> index 302cbe5..2c3e658 100644
+> --- a/arch/um/Makefile-i386
+> +++ b/arch/um/Makefile-i386
+> @@ -35,8 +35,9 @@ cflags-y += -ffreestanding
+>  # Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc
+> use # a lot more stack due to the lack of sharing of stacklots.  Also,
+> gcc # 4.3.0 needs -funit-at-a-time for extern inline functions.
+> -KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
+> -			echo $(call cc-option,-fno-unit-at-a-time); \
+> -			else echo $(call cc-option,-funit-at-a-time); fi ;)
+> +KBUILD_CFLAGS += $(call cc-ifversion, -lt, 0400, \
+> +			$(call cc-option,-fno-unit-at-a-time))
+> +KBUILD_CFLAGS += $(call cc-ifversion, -ge, 0400, \
+> +			$(call cc-option,-funit-at-a-time))
+>
+>  KBUILD_CFLAGS += $(cflags-y)
+
