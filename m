@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZKCVCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZKCVHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbZKCVCO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbZKCVCO
+	id S1755032AbZKCVHO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 16:07:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZKCVHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:02:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46035 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754278AbZKCVCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 16:02:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Dasgupta, Romit" <romit@ti.com>
-Subject: Re: [PATCH 1/1] PM: Making bdi threads non-freezable
-Date: Tue, 3 Nov 2009 22:03:57 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE1EBC66@dbde02.ent.ti.com> <200911021943.49943.rjw@sisk.pl> <B85A65D85D7EB246BE421B3FB0FBB59301DE1EC179@dbde02.ent.ti.com>
-In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB59301DE1EC179@dbde02.ent.ti.com>
+	Tue, 3 Nov 2009 16:07:13 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:65403 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754419AbZKCVHM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 16:07:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=FzfcHeUC81dBnKKmT//seUYQDsZ48Mzb7c+geCpWQ6xzDByADhJhWhuoBCj4/Wcmat
+         GMbspmiE14M/Nw/nN2x9Zmnu6C89hASjPKqxSl+j5aTfTkfPgFVX6yzIW6yqOOqDz6VF
+         0CDPaVXDJ7HUnQ07Mae5ihyRV+ngv6szmWVkw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Date: Tue, 3 Nov 2009 22:04:51 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1256886023.3555.5.camel@johannes.local> <200911032059.23409.bzolnier@gmail.com> <200911032132.31533.IvDoorn@gmail.com>
+In-Reply-To: <200911032132.31533.IvDoorn@gmail.com>
 MIME-Version: 1.0
+Message-Id: <200911032204.51085.bzolnier@gmail.com>
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911032203.57757.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 November 2009, Dasgupta, Romit wrote:
+On Tuesday 03 November 2009 21:32:30 Ivo van Doorn wrote:
+
+> > rt2800pci patch itself has been getting dust in your tree since at least
+> > April (it hasn't received any bigger updates since then)..
 > 
-> > Subject: Re: [PATCH 1/1] PM: Making bdi threads non-freezable
-> > 
-> > On Monday 02 November 2009, Dasgupta, Romit wrote:
-> > > Fixes the case when bdi threads are in the refrigerator but file system sync
-> > > can happen after this. This is possible in MMC when
-> > CONFIG_MMC_UNSAFE_RESUME is
-> > > not set.
-> > 
-> > What's going to happen if we attemt to suspend the underlying block device(s)
-> > when the bdi thread are doing their job?  Is there any synchronisation
-> > mechanism for that?
-> > 
-> There is no explicit synchronization AFAICT. However, it looks like the call
-> to 'del_gendisk' would invoke 'sync_filesystem' down the line.
-> 'sync_filesystem' would end with synchronous writes of inodes followed by a
-> call to '__sync_blockddev'.
+> And how many times do I have to repeat the reason?
+> I think that after dozens of mails, the message should have been clear, especially
+> to somebody who apparently has been monitoring and worrying about the development
+> process for the last 2 years....
 
-However, that runs concurrently with respect to the suspend thread, AFAICS, so
-I wonder if there's anything to make the suspend thread wait for these
-operations to complete.  If there's nothing like that, we can't really allow
-the bdi threads to run in parallel with the suspend thread.
+Just for the record:
 
-Thanks,
-Rafael
+I got only interested in rt2x00 support around April this year (while I was
+doing major staging cleanups everywhere) and I was hearing back then that
+rt2800pci will be merged "really soon" and that the project is making "great
+progress"..
+
+-- 
+Bartlomiej Zolnierkiewicz
