@@ -1,66 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZKCWA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZKCWCD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbZKCWA1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 17:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZKCWA0
+	id S1755416AbZKCWCD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 17:02:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273AbZKCWCC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 17:00:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30579 "EHLO mx1.redhat.com"
+	Tue, 3 Nov 2009 17:02:02 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37911 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753885AbZKCWA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 17:00:26 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Fwd: [PATCH 0/5] cfq-iosched: improve latency for no-idle queues (v3)
-References: <x49zl7c268s.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b0910271124r2cf9f9c0l83fdc59b50619202@mail.gmail.com>
-	<x493a4wsn5c.fsf@segfault.boston.devel.redhat.com>
-	<x49fx8wbqd0.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b0911030042q5963718aj5875c542e6f6cc40@mail.gmail.com>
-	<x49ocnju35d.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b0911030719m425c208cg311f44a91fad8342@mail.gmail.com>
-	<4e5e476b0911031035l7caffcb7n36b6eddd399864e7@mail.gmail.com>
-	<20091103201802.GL8742@kernel.dk>
-	<x49ocnjqrs5.fsf@segfault.boston.devel.redhat.com>
-	<20091103202836.GM8742@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 03 Nov 2009 17:00:24 -0500
-In-Reply-To: <20091103202836.GM8742@kernel.dk> (Jens Axboe's message of "Tue,
-	3 Nov 2009 21:28:36 +0100")
-Message-ID: <x49aaz3i807.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754782AbZKCWCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 17:02:00 -0500
+Date: Tue, 3 Nov 2009 16:00:53 -0600
+From: Clark Williams <williams@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jon Masters <jcm@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?B?RnLpZOlyaWM=?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/3] perf latency builtin command
+Message-ID: <20091103160053.0f0dd357@torg>
+In-Reply-To: <20091103192839.GB21023@elte.hu>
+References: <20091101155500.7dd22f19@torg>
+	<20091101155809.191a7ed6@torg>
+	<20091103192839.GB21023@elte.hu>
+Organization: Red Hat, Inc
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_//jyRgEkrBrzmaXoLVIWCyBK"; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+--Sig_//jyRgEkrBrzmaXoLVIWCyBK
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, Nov 03 2009, Jeff Moyer wrote:
->> Jens Axboe <jens.axboe@oracle.com> writes:
->> 
->> > Since for-linus contains conflicting changes, can you and Jeff please
->> > double check that everything is still in order? The interesting bit here
->> > is the merge with for-2.6.33 and the coop limit from Shaohua Li. I did
->> > the straight forward merge, but we likely just need to drop that logic
->> > since the coop concept is radically different given that we merge and
->> > break queues in for-2.6.33.
->> 
->> Yeah, since I changed the meaning of the cfqq_coop flag, a lot of those
->> tests are just plain wrong.  Let me play with it and I'll send you an
->> incremental patch in a bit.
->
-> Thanks, here's what I have. It's basically a revert of the commit in
-> question.
+On Tue, 3 Nov 2009 20:28:39 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Your patch looks like a straight-forward revert.  I still think we need
-some guards in place, though.  For now, I think we can go with what you
-have, and I'll come up with some other mechanism to deal with this case.
+>=20
+> Clark, John,
+>=20
+> I'm wondering whether we could do something perf event based that makes=20
+> 'perf latency' self-sufficient and eliminates the debugfs interface.
+>=20
+> ( We could still merge the first two patches in their current form as=20
+>   they are clear improvements in terms of debugfs access within perf -=20
+>   so no work is lost and progress is possible. )
 
-Cheers,
-Jeff
+Yeah, I figured that the first two patches were improvements. I may
+poke around a little more to see if we can factor out some more
+duplicate routines.=20
+
+>=20
+> Basically hwlat_detector is using stop_machine_run() plus a tight rdtsc=20
+> based loop to sample what is happening in the system. Much of=20
+> hwlat_detector.c deals with getting that information (and parameters)=20
+> back and forth between user space and kernel space.
+>=20
+> Couldnt we move that functionality a bit closer to perf by creating=20
+> special events in a tight loop that generate a stream of perf events,=20
+> and let the rest of perf events take over the details, and do the=20
+> analysis in the user-space builtin-latency.c code?
+> =20
+> Also, do we need stop_machine_run() - couldnt we do the measurement on a=
+=20
+> specific CPU with irqs (and NMIs) disabled [but other CPUs still=20
+> running]?
+>=20
+
+So what would the source of the event's be and how confident would we
+be that they're accurate? Jon used stop_machine() so that *nothing*
+under the control of Linux is going to happen during the test; no
+C-state changes, no interrupts, nada. The intent is that if there's a
+gap seen in the TSC values, it's because something happened that's out
+of our control.
+
+> This would all still be possible in the .33 timeframe i suspect, as what=
+=20
+> we need is really just a special event (via TRACE_EVENT() perhaps), and=20
+> a way to trigger it via a 'run this many times' parameter. (i.e. event=20
+> injection - we want to have that kind of support in perf events anyway)
+>=20
+
+Hmmm, seems like what you're saying is that we'd poll a free running
+perf counter (or some equivalent, still learning about the guts of perf
+event system), detect a gap at the low level and just send an event
+with that info up to user-space? That would work...
+
+What counter(s) would we use for detecting a gap in time?
+
+> This would simplify and standardize hw-latency detection, without losing=
+=20
+> any utility - and we wouldnt have to go via some special debugfs=20
+> interface to access the hwlat_detect module.
+>=20
+> Thoughts?
+
+As long as we feel confident that we can detect temporal gaps with a
+performance counter, I'd be ok with it.=20
+
+Clark
+
+
+
+--Sig_//jyRgEkrBrzmaXoLVIWCyBK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iEYEARECAAYFAkrwqBkACgkQHyuj/+TTEp2Y5wCg2Ss1YFfIBIZEGZhjmLA9It0S
+5rMAoOMb/XTxtMA/ONnJBgFeXMULBE/V
+=quvD
+-----END PGP SIGNATURE-----
+
+--Sig_//jyRgEkrBrzmaXoLVIWCyBK--
