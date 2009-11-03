@@ -1,129 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbZKCNsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZKCNu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbZKCNsn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 08:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZKCNsm
+	id S1754043AbZKCNu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 08:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZKCNu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 08:48:42 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:44466 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbZKCNsl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 08:48:41 -0500
-Date: Tue, 3 Nov 2009 07:48:23 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 01/13] sysfs: Update sysfs_setxattr so it updates
-	secdata under the sysfs_mutex
-Message-ID: <20091103134823.GB31981@us.ibm.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-1-git-send-email-ebiederm@xmission.com>
+	Tue, 3 Nov 2009 08:50:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63504 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751332AbZKCNu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 08:50:27 -0500
+Date: Tue, 3 Nov 2009 14:50:22 +0100 (CET)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: linux-kernel@vger.kernel.org, Jon Masters <jcm@redhat.com>,
+       linux-rt-users@vger.kernel.org, Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH -rt]
+ Updates-from-Jon-Masters-for-hwlat_detector.c.patch
+In-Reply-To: <alpine.LFD.2.00.0911031413230.12138@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0911031444090.6542@localhost.localdomain>
+References: <alpine.LFD.2.00.0910230007030.3737@localhost.localdomain>  <alpine.LFD.2.00.0911021620580.12138@localhost.localdomain> <520f0cf10911021146i136af7bfg370a217185b5154c@mail.gmail.com> <alpine.LFD.2.00.0911031413230.12138@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257249429-12384-1-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> From: Eric W. Biederman <ebiederm@aristanetworks.com>
-> 
-> The sysfs_mutex is required to ensure updates are and will remain
-> atomic with respect to other inode iattr updates, that do not happen
-> through the filesystem.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
-> ---
->  fs/sysfs/inode.c |   41 +++++++++++++++++++++++++++++------------
->  1 files changed, 29 insertions(+), 12 deletions(-)
-> 
-> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-> index e28cecf..8a08250 100644
-> --- a/fs/sysfs/inode.c
-> +++ b/fs/sysfs/inode.c
-> @@ -122,23 +122,39 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
->  	return error;
->  }
-> 
-> +static int sysfs_sd_setsecdata(struct sysfs_dirent *sd, void **secdata, u32 *secdata_len)
-> +{
-> +	struct sysfs_inode_attrs *iattrs;
-> +	void *old_secdata;
-> +	size_t old_secdata_len;
-> +
-> +	iattrs = sd->s_iattr;
-> +	if (!iattrs)
-> +		iattrs = sysfs_init_inode_attrs(sd);
-> +	if (!iattrs)
-> +		return -ENOMEM;
-> +
-> +	old_secdata = iattrs->ia_secdata;
-> +	old_secdata_len = iattrs->ia_secdata_len;
-> +
-> +	iattrs->ia_secdata = *secdata;
-> +	iattrs->ia_secdata_len = *secdata_len;
-> +
-> +	*secdata = old_secdata;
-> +	*secdata_len = old_secdata_len;
-> +	return 0;
-> +}
-> +
->  int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
->  		size_t size, int flags)
->  {
->  	struct sysfs_dirent *sd = dentry->d_fsdata;
-> -	struct sysfs_inode_attrs *iattrs;
->  	void *secdata;
->  	int error;
->  	u32 secdata_len = 0;
-> 
->  	if (!sd)
->  		return -EINVAL;
-> -	if (!sd->s_iattr)
-> -		sd->s_iattr = sysfs_init_inode_attrs(sd);
-> -	if (!sd->s_iattr)
-> -		return -ENOMEM;
-> -
-> -	iattrs = sd->s_iattr;
-> 
->  	if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
->  		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
-> @@ -150,12 +166,13 @@ int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
->  						&secdata, &secdata_len);
->  		if (error)
->  			goto out;
-> -		if (iattrs->ia_secdata)
-> -			security_release_secctx(iattrs->ia_secdata,
-> -						iattrs->ia_secdata_len);
-> -		iattrs->ia_secdata = secdata;
-> -		iattrs->ia_secdata_len = secdata_len;
-> 
-> +		mutex_lock(&sysfs_mutex);
-> +		error = sysfs_sd_setsecdata(sd, &secdata, &secdata_len);
 
-You're ignoring the potential -ENOMEM return value here?
 
-Worse, if -ENOMEM, then secdata was never set, so you call
-security_release_secctx() on a random value left on the stack...
+On Tue, 3 Nov 2009, Thomas Gleixner wrote:
 
-> +		mutex_unlock(&sysfs_mutex);
-> +
-> +		if (secdata)
-> +			security_release_secctx(secdata, secdata_len);
->  	} else
->  		return -EINVAL;
->  out:
-> -- 
-> 1.6.5.2.143.g8cc62
+> On Mon, 2 Nov 2009, John Kacur wrote:
+> > Updated patch just adds the error checking from Jon Masters then,
+> > patched against -rt.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Can you please inline patches ?
+> 
+> @@ -607,7 +607,11 @@ static ssize_t  debug_enable_fwrite(stru
+>  		if (!enabled)
+>  			goto unlock;
+>  		enabled = 0;
+> -		stop_kthread();
+> +		err = stop_kthread();
+> +		if (0 != err) {
+> 
+> 	Eeew !	
+
+Yeah, I saw that too and thought it a bit ugly. However, my goal was only 
+to make sure that the latest version of Jon's hwlat patch got into -rt, so 
+I didn't think it was my place to "fix" his style.
+
+Note - even the much hated checkpatch program doesn't balk at that. 
+However that is hardly an authority.
+
+If you read the introduction to "Expert C Programming - Deep C Secrets", 
+they mention that some programmers write
+if (3==i)
+instead of
+if (i==3)
+
+because if you mistakenly only type one '=', then the compiler can 
+complain about it, instead of silently assigning 3 to i.
+
+I can only guess that is the sort of idea / habit that Jon got that style 
+from.
+
+John
