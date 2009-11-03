@@ -1,272 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZKCJqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbZKCJrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZKCJqm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 04:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbZKCJql
+	id S1755775AbZKCJrd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 04:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbZKCJrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 04:46:41 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:18207 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754178AbZKCJqj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 04:46:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PcZSzRqCQv7NckjflSxw9VGW8Efa2qyAvm85pnzzjKiiuWKgNeFP22F5qBJC1yJs1e
-         mkBAGtPgJ5pbVTrykJdAbuApgILjvGq86xuYJddJXAU/UlnJ7xADX+dEfhzeAraovjwO
-         Pl4B9OAGp+5zGOFwAzztBia1viXuwC5PYOkVs=
-Date: Tue, 3 Nov 2009 17:47:03 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Timo Sirainen <tss@iki.fi>, Bryan Donlan <bdonlan@gmail.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org
-Subject: Re: [PATCH v4] Added PR_SET_PROCTITLE_AREA option for prctl()
-Message-ID: <20091103094703.GB11134@hack.redhat.com>
-References: <20091101211321.F3FC.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091101211321.F3FC.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 3 Nov 2009 04:47:33 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33401 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755435AbZKCJrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 04:47:31 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/ERhsJwt7EhrX8dmi+hwQGu96UljCvrMzNRgcFKy
+	2024OV2jsWTQ+4
+Subject: Re: [Bug 12309] Large I/O operations result in slow performance
+ and high iowait times
+From: Mike Galbraith <efault@gmx.de>
+To: Thomas Pilarski <thomas.pi@arcor.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1257193609.2378.28.camel@localhost>
+References: <20091101134207.b97e4f5f.akpm@linux-foundation.org>
+	 <1257177364.10173.23.camel@marge.simson.net>
+	 <1257193609.2378.28.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 03 Nov 2009 10:47:32 +0100
+Message-Id: <1257241652.13856.79.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 01, 2009 at 09:16:27PM +0900, KOSAKI Motohiro wrote:
->
->ChangeLog
->  v3 -> v4
->    - Use mutex instead seq_lock as akpm requested.
->
->========================================
->
->From: Timo Sirainen <tss@iki.fi>
+On Mon, 2009-11-02 at 21:26 +0100, Thomas Pilarski wrote:
+> Hi Mike,
+
+Hi,
 
 
-Please see my comments below.
-
->
->Currently glibc2 doesn't have setproctitle(3), so several userland
->daemons attempt to emulate it by doing some brutal stack modifications.
->This works most of the time, but it has problems. For example:
->
-> % ps -ef |grep avahi-daemon
-> avahi     1679     1  0 09:20 ?        00:00:00 avahi-daemon: running [kosadesk.local]
->
-> # cat /proc/1679/cmdline
-> avahi-daemon: running [kosadesk.local]
->
->This looks good, but the process has also overwritten its environment
->area and made the environ file useless:
->
-> # cat /proc/1679/environ
-> adesk.local]
->
->Another problem is that the process title length is limited by the size of
->the environment. Security conscious people try to avoid potential information
->leaks by clearing most of the environment before running a daemon:
->
-> # env - MINIMUM_NEEDED_VAR=foo /path/to/daemon
->
->The resulting environment size may be too small to fit the wanted process
->titles.
->
->This patch makes it possible for userspace to implement setproctitle()
->cleanly. It adds a new PR_SET_PROCTITLE_AREA option for prctl(), which
->updates task's mm_struct->arg_start and arg_end to the given area.
->
-> test_setproctitle.c
-> ================================================
-> #include <string.h>
-> #include <stdlib.h>
-> #include <unistd.h>
-> #include <stdio.h>
-> #include <sys/prctl.h>
->
-> #define ERR(str) (perror(str), exit(1))
->
-> void settitle(char* title){
->         int err;
->
->         err = prctl(34, title, strlen(title)+1);
->         if (err < 0)
->                 ERR("prctl ");
-> }
->
-> void main(void){
->         long i;
->         char buf[1024];
->
->         for (i = 0; i < 10000000000LL; i++){
->                 sprintf(buf, "loooooooooooooooooooooooong string %d",i);
->                 settitle(buf);
->         }
-> }
-> ==================================================
->
->Cc: Bryan Donlan <bdonlan@gmail.com>
->Cc: Ulrich Drepper <drepper@redhat.com>
->Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->Signed-off-by: Timo Sirainen <tss@iki.fi>
->---
-> fs/proc/base.c           |   31 ++++++++++++++++++++++---------
-> include/linux/mm_types.h |    2 ++
-> include/linux/prctl.h    |    3 +++
-> kernel/fork.c            |    1 +
-> kernel/sys.c             |   22 ++++++++++++++++++++++
-> 5 files changed, 50 insertions(+), 9 deletions(-)
->
->diff --git a/fs/proc/base.c b/fs/proc/base.c
->index 837469a..ac800b4 100644
->--- a/fs/proc/base.c
->+++ b/fs/proc/base.c
->@@ -255,32 +255,45 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
-> 	int res = 0;
-> 	unsigned int len;
-> 	struct mm_struct *mm = get_task_mm(task);
->+
-> 	if (!mm)
-> 		goto out;
->+
->+	/* The process was not constructed yet? */
-> 	if (!mm->arg_end)
-> 		goto out_mm;	/* Shh! No looking before we're done */
+> Am Montag, den 02.11.2009, 16:56 +0100 schrieb Mike Galbraith: 
+> > > --- Comment #412 from Thomas Pilarski <thomas.pi@arcor.de>  2009-11-01 21:28:24 ---
+> > > Created an attachment (id=23618)
+> > >  --> (http://bugzilla.kernel.org/attachment.cgi?id=23618)
+> > > Simple sleeper test case
+> > > 
+> > > [...]
+> > 
+> > Can you please try the latest -rc?  I spent the day trying to coax a
+> > latency spike out of -tip, including thumping disk with dd, mysql+oltp
+> > rw test et al, and failed.
 > 
->- 	len = mm->arg_end - mm->arg_start;
->- 
->+	mutex_lock(&mm->arg_lock);
->+	len = mm->arg_end - mm->arg_start;
-> 	if (len > PAGE_SIZE)
-> 		len = PAGE_SIZE;
->- 
->+
-> 	res = access_process_vm(task, mm->arg_start, buffer, len, 0);
->+	if (mm->arg_end != mm->env_start)
->+		/* prctl(PR_SET_PROCTITLE_AREA) used */
->+		goto out_unlock;
+> I have just tries the rc5 and the spikes are still there, but much
+> shorter. The test case does not show latencies <15ms. For these tests, I
+> have reduced the minimum printout time to 3ms. The notebook with the
+> first generation ssd in not available for testing, till next weekend.
+
+Thanks for taking it for a spin.
+
+Latencies < 15ms aren't a problem.  It's the large ones, way past our
+latency target I'm concerned about.
+
+> The freezes still exists with the kernel 32, but the freezes are more
+> seldom and shorter. But I am not sure, as the X-Server is unusable on my
+> machine in vesa mode with the rc5 kernel.
+
+That's block layer work I'm sure.  Jens Axboe's work reduced read vs
+write latency by roughly a truckload.  If an important bit of your GUI
+has been evicted from ram though, you still have to go get it back, and
+any latency above nearly zero is going to be felt in a very big way.
+
+> Here are the results with the rc5 kernel and the fedora kernel
+> vmlinuz-2.6.31.5-96.fc12.x86_64. I have changed my system yesterday.
 > 
->-	// If the nul at the end of args has been overwritten, then
->-	// assume application is using setproctitle(3).
->+	/*
->+	 * If the nul at the end of args has been overwritten, then assume
->+	 * application is using sendmail's SPT_REUSEARGV style argv override.
->+	 */
-> 	if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
-> 		len = strnlen(buffer, res);
->-		if (len < res) {
->-		    res = len;
->-		} else {
->+		if (len < res)
->+			res = len;
->+		else {
-> 			len = mm->env_end - mm->env_start;
-> 			if (len > PAGE_SIZE - res)
-> 				len = PAGE_SIZE - res;
->-			res += access_process_vm(task, mm->env_start, buffer+res, len, 0);
->+			res += access_process_vm(task, mm->env_start,
->+						 buffer+res, len, 0);
-> 			res = strnlen(buffer, res);
-> 		}
-> 	}
->+
->+out_unlock:
->+	mutex_unlock(&mm->arg_lock);
->+
-> out_mm:
-> 	mmput(mm);
-> out:
->diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
->index 84a524a..3e2a346 100644
->--- a/include/linux/mm_types.h
->+++ b/include/linux/mm_types.h
->@@ -12,6 +12,7 @@
-> #include <linux/completion.h>
-> #include <linux/cpumask.h>
-> #include <linux/page-debug-flags.h>
->+#include <linux/mutex.h>
-> #include <asm/page.h>
-> #include <asm/mmu.h>
+> This test was made during a kernel build.
 > 
->@@ -236,6 +237,7 @@ struct mm_struct {
-> 	unsigned long stack_vm, reserved_vm, def_flags, nr_ptes;
-> 	unsigned long start_code, end_code, start_data, end_data;
-> 	unsigned long start_brk, brk, start_stack;
->+	struct mutex arg_lock;
-> 	unsigned long arg_start, arg_end, env_start, env_end;
+> Kernel 32:
+> Timediff     220114:    3.01ms Total:   9.44ms
+> Timediff     222460:    3.58ms Total:  10.82ms
+> Timediff     234968:    3.23ms Total:   9.99ms
+> Timediff     235916:    3.19ms Total:  11.50ms
+> Timediff     236448:    3.55ms Total:  12.71ms
+> Timediff     236485:    3.56ms Total:  16.14ms
+> Timediff     236793:    3.49ms Total:  10.54ms
+> Timediff     237076:    3.58ms Total:  11.29ms
+> Timediff     237417:    3.88ms Total:  12.05ms
+> Timediff     237694:    4.03ms Total:  15.36ms
+> Timediff     238039:    3.55ms Total:  11.64ms
+> Timediff     238347:    3.57ms Total:  10.23ms
+> Timediff     278945:    4.82ms Total:  11.25ms
+> Timediff     306303:    3.14ms Total:  10.22ms
+> Timediff     310378:    3.00ms Total:   9.49ms
+> Timediff     312685:    3.08ms Total:   9.53ms
+> Timediff     323824:    3.93ms Total:  10.37ms
+> Timediff     324150:    3.25ms Total:   9.90ms
 > 
-> 	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
->diff --git a/include/linux/prctl.h b/include/linux/prctl.h
->index 9311505..da47542 100644
->--- a/include/linux/prctl.h
->+++ b/include/linux/prctl.h
->@@ -90,4 +90,7 @@
+> With the kernel 31 the latencies are ~3-5ms with about 10 spikes every
+> 10 seconds >15ms.
+
+You'll always see spikes, that's the only way sleepers can get their
+fair share to be able to perform well.  Important is the magnitude.
+
+> This test was made with eight concurrent writing operations. With kernel
+> 32, the system freezes for up to 5 seconds. With the 31 kernel the
+> system is unusable and freezes for more than 15 seconds.
 > 
-> #define PR_MCE_KILL	33
-> 
->+/* Set process title memory area for setproctitle() */
->+#define PR_SET_PROCTITLE_AREA 34
->+
-> #endif /* _LINUX_PRCTL_H */
->diff --git a/kernel/fork.c b/kernel/fork.c
->index 4c20fff..881a6b4 100644
->--- a/kernel/fork.c
->+++ b/kernel/fork.c
->@@ -459,6 +459,7 @@ static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
-> 	mm->cached_hole_size = ~0UL;
-> 	mm_init_aio(mm);
-> 	mm_init_owner(mm, p);
->+	mutex_init(&mm->arg_lock);
-> 
-> 	if (likely(!mm_alloc_pgd(mm))) {
-> 		mm->def_flags = 0;
->diff --git a/kernel/sys.c b/kernel/sys.c
->index 255475d..434ea13 100644
->--- a/kernel/sys.c
->+++ b/kernel/sys.c
->@@ -1564,6 +1564,28 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
-> 			error = 0;
-> 			break;
-> 
->+		case PR_SET_PROCTITLE_AREA: {
->+			struct mm_struct *mm = current->mm;
->+			unsigned long addr = arg2;
->+			unsigned long len = arg3;
->+			unsigned long end = arg2 + arg3;
->+
->+			if (len > PAGE_SIZE)
->+				return -EINVAL;
->+
->+			if (addr >= end)
->+				return -EINVAL;
->+
->+			if (!access_ok(VERIFY_READ, addr, len))
->+				return -EFAULT;
->+
->+			mutex_lock(&mm->arg_lock);
->+			mm->arg_start = addr;
+> Kernel 32:
+> Timediff     562105:   47.17ms Total:  54.12ms
+> Timediff     562108:    4.72ms Total:  62.26ms
+..
 
-Is this safe? You're assigning a user-space pointer to kernel space...
-Don't we need copy_from_user()?
+> Timediff     607985:   36.17ms Total:  43.24ms
+> Timediff     607988:    6.44ms Total:  51.55ms
+> Timediff     607991:    3.96ms Total:  57.71ms
 
->+			mm->arg_end = addr + len;
+These look a bit too high, depending on the number of runnable tasks at
+any instant.  I have a patch pending which will cut these way down if
+they're not legitimate.
 
+> Kernel 31:
+> Timediff    3064913:  209.00ms Total: 215.89ms
+> Timediff    3147899:  195.24ms Total: 202.19ms
+> Timediff    3221487:  155.74ms Total: 162.68ms
 
-Since you already have 'end', no need to caculate this again. :)
+These OTOH are unacceptable, and have been squashed (knocks wood).
 
+<snip>
 
->+			mutex_unlock(&mm->arg_lock);
->+
->+			return 0;
->+		}
-> 		default:
-> 			error = -EINVAL;
-> 			break;
+> As you can see, the spikes are still there, but much more seldom and
+> shorter. Perhaps the opposite way, a delay or something equal in the
+> block-layer or scheduler to maximize this problem, can help to locate
+> the culprit.
 
+I think your GUI etc stalls are just things being evicted by the vm, at
+which time you pay heavily getting it back.  The large wakeup latencies
+were indeed scheduler, but not the stalls, that's I/O.
 
--- 
-Live like a child, think like the god.
- 
+	-Mike
+
