@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZKCE0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZKCE05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbZKCE0d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 23:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbZKCE0c
+	id S1755831AbZKCE05 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 23:26:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZKCE04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 23:26:32 -0500
-Received: from ozlabs.org ([203.10.76.45]:39389 "EHLO ozlabs.org"
+	Mon, 2 Nov 2009 23:26:56 -0500
+Received: from ozlabs.org ([203.10.76.45]:39419 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754685AbZKCE0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 23:26:31 -0500
-To: linux-kernel@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       bluesmoke-devel@lists.sourceforge.net
+	id S1755395AbZKCE04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 23:26:56 -0500
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 From: Rusty Russell <rusty@rustcorp.com.au>
-Message-Id: <200911031456.35354.rusty@rustcorp.com.au>
-Date: Tue, 3 Nov 2009 14:56:35 +1030
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 5/14] cpumask: use modern cpumask style in drivers/edac/amd64_edac.c
+Message-Id: <200911031456.59923.rusty@rustcorp.com.au>
+Date: Tue, 3 Nov 2009 14:56:59 +1030
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 6/14] cpumask: use cpu_online in kernel/perf_event.c
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
@@ -25,87 +24,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpumask_t -> struct cpumask, and don't put one on the stack.  (Note: this
-is actually on the stack unless CONFIG_CPUMASK_OFFSTACK=y).
+
+Also, we want to check against nr_cpu_ids, not num_possible_cpus().
+The latter works, but the correct bounds check is < nr_cpu_ids.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+To: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/edac/amd64_edac.c |   24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ kernel/perf_event.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2625,7 +2625,7 @@ static int amd64_init_csrows(struct mem_
- static void amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
- {
- 	struct amd64_pvt *pvt = mci->pvt_info;
--	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
-+	const struct cpumask *cpumask = cpumask_of_node(pvt->mc_node_id);
- 	int cpu, idx = 0, err = 0;
- 	struct msr msrs[cpumask_weight(cpumask)];
- 	u32 value;
-@@ -2701,7 +2701,7 @@ static void amd64_enable_ecc_error_repor
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -1596,7 +1596,7 @@ static struct perf_event_context *find_g
+ 		if (perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
+ 			return ERR_PTR(-EACCES);
  
- static void amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
- {
--	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
-+	const struct cpumask *cpumask = cpumask_of_node(pvt->mc_node_id);
- 	int cpu, idx = 0, err = 0;
- 	struct msr msrs[cpumask_weight(cpumask)];
- 	u32 value;
-@@ -2734,7 +2734,7 @@ static void amd64_restore_ecc_error_repo
- }
+-		if (cpu < 0 || cpu > num_possible_cpus())
++		if (cpu < 0 || cpu >= nr_cpu_ids)
+ 			return ERR_PTR(-EINVAL);
  
- /* get all cores on this DCT */
--static void get_cpus_on_this_dct_cpumask(cpumask_t *mask, int nid)
-+static void get_cpus_on_this_dct_cpumask(struct cpumask *mask, int nid)
- {
- 	int cpu;
+ 		/*
+@@ -1604,7 +1604,7 @@ static struct perf_event_context *find_g
+ 		 * offline CPU and activate it when the CPU comes up, but
+ 		 * that's for later.
+ 		 */
+-		if (!cpu_isset(cpu, cpu_online_map))
++		if (!cpu_online(cpu))
+ 			return ERR_PTR(-ENODEV);
  
-@@ -2746,25 +2746,30 @@ static void get_cpus_on_this_dct_cpumask
- /* check MCG_CTL on all the cpus on this node */
- static bool amd64_nb_mce_bank_enabled_on_node(int nid)
- {
--	cpumask_t mask;
-+	cpumask_var_t mask;
- 	struct msr *msrs;
- 	int cpu, nbe, idx = 0;
- 	bool ret = false;
- 
--	cpumask_clear(&mask);
-+	if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
-+		amd64_printk(KERN_WARNING, "%s: error allocating mask\n",
-+			     __func__);
-+		return false;
-+	}
- 
--	get_cpus_on_this_dct_cpumask(&mask, nid);
-+	get_cpus_on_this_dct_cpumask(mask, nid);
- 
--	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(&mask), GFP_KERNEL);
-+	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(mask), GFP_KERNEL);
- 	if (!msrs) {
- 		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
- 			      __func__);
-+		free_cpumask_var(mask);
- 		 return false;
- 	}
- 
--	rdmsr_on_cpus(&mask, MSR_IA32_MCG_CTL, msrs);
-+	rdmsr_on_cpus(mask, MSR_IA32_MCG_CTL, msrs);
- 
--	for_each_cpu(cpu, &mask) {
-+	for_each_cpu(cpu, mask) {
- 		nbe = msrs[idx].l & K8_MSR_MCGCTL_NBE;
- 
- 		debugf0("core: %u, MCG_CTL: 0x%llx, NB MSR is %s\n",
-@@ -2780,6 +2785,7 @@ static bool amd64_nb_mce_bank_enabled_on
- 
- out:
- 	kfree(msrs);
-+	free_cpumask_var(mask);
- 	return ret;
- }
- 
+ 		cpuctx = &per_cpu(perf_cpu_context, cpu);
 
