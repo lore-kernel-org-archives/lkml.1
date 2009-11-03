@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZKCKXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbZKCKZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZKCKXN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 05:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZKCKXN
+	id S1753402AbZKCKZI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 05:25:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZKCKZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 05:23:13 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:59489 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbZKCKXM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 05:23:12 -0500
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>, Greg KH <greg@kroah.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
-       Cosmin Ratiu <cratiu@ixiacom.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: reduce ram usage by 40 %
-References: <20091101163130.GA7911@kvack.org>
-	<20091103035058.GA19515@kroah.com> <4AEFCA49.4020305@gmail.com>
-	<4AEFD544.6040602@gmail.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 03 Nov 2009 02:23:08 -0800
-In-Reply-To: <4AEFD544.6040602@gmail.com> (Eric Dumazet's message of "Tue\, 03 Nov 2009 08\:01\:24 +0100")
-Message-ID: <m1bpjjewkz.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+	Tue, 3 Nov 2009 05:25:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50092 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973AbZKCKZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 05:25:07 -0500
+Date: Tue, 3 Nov 2009 11:25:09 +0100
+From: Jan Blunck <jblunck@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [PATCH 01/27] BKL: Push down BKL from do_new_mount() to the filesystems get_sb/fill_super operation
+Message-ID: <20091103102509.GL21750@bolzano.suse.de>
+References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-2-git-send-email-jblunck@suse.de> <20091102171147.GG21750@bolzano.suse.de> <20091103101212.GA20314@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091103101212.GA20314@infradead.org>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet <eric.dumazet@gmail.com> writes:
+On Tue, Nov 03, Christoph Hellwig wrote:
 
-> Eric Dumazet a écrit :
->
->> Its curious because in my tests the biggest problems come from
->> kernel/sysctl.c (__register_sysctl_paths) consuming 80% of cpu
->> in following attempt to create 20.000 devices
+> On Mon, Nov 02, 2009 at 06:11:47PM +0100, Jan Blunck wrote:
+> > Attached is a new version of the patch that includes the changes for
+> > filesystems outside of fs/ directory as well. Besides that I trimmed the CC
+> > list this time.
+> 
+> For the next spin please don't push it down to filesystems that
+> obviously don't need it at all and just mention them in the patch
+> description.  For filesystems like xfs and btrfs that never used the BKL
+> at all that should make life a bit simpler.
 
-I bet that is Al's cute glue all the sysctl data structures together
-patch.  It improves readdir and lookup at a small cost at registration
-time.
+My plan was to remove the BKL in the obvious cases in the followup patches
+that are also included in the series. So should I just merge the obvious stuff
+into one patch? Christian Borntraeger was actually requesting the opposite. He
+wants to be able to bisect it to the patch that is removing the BKL. That
+would be much simple with many small patches I think.
 
->> (disable hotplug before trying this, and ipv6 too !)
->> modprobe dummy numdummies=20000
+Regards,
+	Jan
 
-
->> I believe we should address __register_sysctl_paths() scalability
->> problems too.
-
-Agreed.
-
->> I dont know what is the 'sentinel' we allocate after each struct ctl_table
->> But I suspect we could reduce size requirement of the 'sentinel' to include
->> only needed fields for the sentinel (and move them at start of ctl_table)
-
-The sentinel is just a NULL terminator.
-
-> Here is the patch to reduce ram usage of sysctl :
->
-> [PATCH] sysctl: reduce ram usage by 40 %
->
-> We currently reserve space for a so called sentinel, a full struct ctl_table
-> for each ctl_table. We can cheat a bit since only needed fields of a sentinel
-> are ctl_name and procname. Add a new structure (struct ctl_table_sentinel)
-> that includes a full ctl_table and only required part of a sentinel.
-
-Before we address sysctl I would like to get out my patchset that
-makes sys_sysctl a wrapper around the ascii version of
-/proc/sys/net. Once that goes in it becomes much easier to do things
-and perform radical surgery on sysctl.  Little things like .ctl_name and
-.strategy go away.
-
-Have you happened to look at the other cost of /proc proper?  Hmm.
-Except for /proc/net/dev_snmp6 it doesn't look like we keep per
-interface directories in proc so without ivp6 you won't see the proc
-generic code at all.
-
-The practical consequence is if /proc/net/dev_snmp6 is not painful during
-registration right now we can probably convert all of /proc/sys/net to proc
-generic after my other changes are in.
-
-Eric
+-- 
+Jan Blunck <jblunck@suse.de>
