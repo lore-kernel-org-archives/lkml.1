@@ -1,127 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZKCSOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZKCSOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbZKCSOK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 13:14:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZKCSOK
+	id S1754483AbZKCSOu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 13:14:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZKCSOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 13:14:10 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:59536 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbZKCSOI (ORCPT
+	Tue, 3 Nov 2009 13:14:49 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:50053 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751946AbZKCSOt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 13:14:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=BPSPznvxKzkR5YYBxoS82Pruhq1uHzPiCVR5YwEbRxCyrPcwUgtd76x8X8OWNUOMkO
-         xpO3fvToqrWNFwcxhNJqt64qdGxwtu8b00rhWBWXBCDGdLJnrlW2qgEWkbDgjmV61YuN
-         d4m867FDpYzfm6h7E/WSmZBxEOWvmTNu680vQ=
-Message-ID: <4AF072EE.9020202@gmail.com>
-Date: Tue, 03 Nov 2009 13:14:06 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com> <4AF07199.2020601@gmail.com>
-In-Reply-To: <4AF07199.2020601@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE18A8C89AC1232EB011669F5"
+	Tue, 3 Nov 2009 13:14:49 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Hal Finney <hal.finney@gmail.com>
+Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       srajiv@linux.vnet.ibm.com
+Subject: Re: [tpmdd-devel] [PATCH] TPM: Let the tpm char device be openable multiple times
+In-Reply-To: Your message of "Tue, 03 Nov 2009 09:31:55 PST."
+             <da7b3ce30911030931u1ccbff69ted4206606475c83@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20091103003511.GL7768@obsidianresearch.com>
+            <da7b3ce30911030931u1ccbff69ted4206606475c83@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1257272068_4220P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 03 Nov 2009 13:14:28 -0500
+Message-ID: <6926.1257272068@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020203.4AF07304.03C0,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-07-29 21:33:33,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE18A8C89AC1232EB011669F5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+--==_Exmh_1257272068_4220P
+Content-Type: text/plain; charset=us-ascii
 
-Gregory Haskins wrote:
-> Eric Dumazet wrote:
->> Michael S. Tsirkin a =E9crit :
->>> +static void handle_tx(struct vhost_net *net)
->>> +{
->>> +	struct vhost_virtqueue *vq =3D &net->dev.vqs[VHOST_NET_VQ_TX];
->>> +	unsigned head, out, in, s;
->>> +	struct msghdr msg =3D {
->>> +		.msg_name =3D NULL,
->>> +		.msg_namelen =3D 0,
->>> +		.msg_control =3D NULL,
->>> +		.msg_controllen =3D 0,
->>> +		.msg_iov =3D vq->iov,
->>> +		.msg_flags =3D MSG_DONTWAIT,
->>> +	};
->>> +	size_t len, total_len =3D 0;
->>> +	int err, wmem;
->>> +	size_t hdr_size;
->>> +	struct socket *sock =3D rcu_dereference(vq->private_data);
->>> +	if (!sock)
->>> +		return;
->>> +
->>> +	wmem =3D atomic_read(&sock->sk->sk_wmem_alloc);
->>> +	if (wmem >=3D sock->sk->sk_sndbuf)
->>> +		return;
->>> +
->>> +	use_mm(net->dev.mm);
->>> +	mutex_lock(&vq->mutex);
->>> +	vhost_no_notify(vq);
->>> +
->> using rcu_dereference() and mutex_lock() at the same time seems wrong,=
- I suspect
->> that your use of RCU is not correct.
->>
->> 1) rcu_dereference() should be done inside a read_rcu_lock() section, =
-and
->>    we are not allowed to sleep in such a section.
->>    (Quoting Documentation/RCU/whatisRCU.txt :
->>      It is illegal to block while in an RCU read-side critical section=
-, )
->>
->> 2) mutex_lock() can sleep (ie block)
->>
->=20
->=20
-> Michael,
->   I warned you that this needed better documentation ;)
->=20
-> Eric,
->   I think I flagged this once before, but Michael convinced me that it
-> was indeed "ok", if but perhaps a bit unconventional.  I will try to
-> find the thread.
->=20
-> Kind Regards,
-> -Greg
->=20
+On Tue, 03 Nov 2009 09:31:55 PST, Hal Finney said:
+> What if you don't want it accessible by user mode apps, you only want
+> your middleware (ie tcs daemon, tcsd) to open it? Will this still
+> allow that to be enforced, so nobody can interfere with tcsd's
+> exclusive access to the device?
 
-Here it is:
+Couldn't tcsd just open the device with O_EXCL? Or am I missing something
+subtle here?
 
-http://lkml.org/lkml/2009/8/12/173
-
-Kind Regards,
--Greg
-
-
---------------enigE18A8C89AC1232EB011669F5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--==_Exmh_1257272068_4220P
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-iEYEARECAAYFAkrwcu4ACgkQP5K2CMvXmqH6LQCfYPH0ZOpy6lFQqLyJiRpczJJt
-1L4Anjn/hFabGiOof5cYTbyAv9fZr2fM
-=UyNc
+iD8DBQFK8HMEcC3lWbTT17ARAj8TAKCs7iFlkj7TEu3W4MhcdPUbpxrxrQCdEb6i
+H6Ao5QXdAGzy0NG/kDbwlww=
+=7qVT
 -----END PGP SIGNATURE-----
 
---------------enigE18A8C89AC1232EB011669F5--
+--==_Exmh_1257272068_4220P--
+
