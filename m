@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbZKCLZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223AbZKCLbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751600AbZKCLZb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 06:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZKCLZa
+	id S1752223AbZKCLbe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 06:31:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZKCLbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 06:25:30 -0500
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:29869
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750879AbZKCLZa (ORCPT
+	Tue, 3 Nov 2009 06:31:33 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:52131 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZKCLbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 06:25:30 -0500
-X-SpamScore: -12
-X-BigFish: VPS-12(z21eWzzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KSJ6EA-03-8ZV-02
-X-M-MSG: 
-Date: Tue, 3 Nov 2009 12:25:21 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] IOMMU updates for 2.6.32-rc5
-Message-ID: <20091103112520.GI14009@amd.com>
+	Tue, 3 Nov 2009 06:31:32 -0500
+Date: Tue, 3 Nov 2009 13:29:49 +0200 (EET)
+From: Ilkka Koskinen <ikoskine@nokia.com>
+X-X-Sender: ikoskine@tumpelo.ntc.nokia.com
+To: Samuel Ortiz <sameo@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH v2] TWL4030: Initial support for TWL5031
+In-Reply-To: <1255702360-2143-1-git-send-email-ilkka.koskinen@nokia.com>
+Message-ID: <alpine.DEB.2.00.0911031243210.14058@tumpelo.ntc.nokia.com>
+References: <1255702360-2143-1-git-send-email-ilkka.koskinen@nokia.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 03 Nov 2009 11:25:21.0502 (UTC) FILETIME=[5461FFE0:01CA5C78]
-X-Reverse-DNS: unknown
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-OriginalArrivalTime: 03 Nov 2009 11:31:24.0519 (UTC) FILETIME=[2CC1FF70:01CA5C79]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
 
-The following changes since commit 012abeea669ea49636cf952d13298bb68654146a:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc5
+Hi Samuel,
 
-are available in the git repository at:
+On Fri, 16 Oct 2009, Koskinen Ilkka (Nokia-D/Tampere) wrote:
+> TWL5031 introduces two new interrupts in PIH. Moreover, BCI
+> has changed remarkably and, thus, it's disabled when TWL5031
+> is in use.
+>
+> Signed-off-by: Ilkka Koskinen <ilkka.koskinen@nokia.com>
+> ---
+> drivers/mfd/twl4030-core.c  |   12 ++++-
+> drivers/mfd/twl4030-irq.c   |  127 +++++++++++++++++++++++++++++++++++++++++--
+> include/linux/i2c/twl4030.h |   47 ++++++++++++++--
+> 3 files changed, 173 insertions(+), 13 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu/fixes
+Sorry to bothering you again, but I'd like to know the status
+of this patch. Does it need more work or could you apply it
+to your tree at some point?
 
-Joerg Roedel (4):
-      x86/amd-iommu: Workaround for erratum 63
-      x86/amd-iommu: Un__init function required on shutdown
-      dma-debug: Fix compile warning with PAE enabled
-      Merge branches 'amd-iommu/fixes' and 'dma-debug/fixes' into iommu/fixes
-
- arch/x86/include/asm/amd_iommu.h |    1 +
- arch/x86/kernel/amd_iommu.c      |    2 ++
- arch/x86/kernel/amd_iommu_init.c |   24 +++++++++++++++++++++++-
- lib/dma-debug.c                  |    6 ++++--
- 4 files changed, 30 insertions(+), 3 deletions(-)
-
-The patches contain two important fixes for the AMD IOMMU driver (one
-erratum workaround and a section mismatch that only shows when the
-compiler does not inline the iommu_feature_disable function).
-Also included in this pull request is da dma-debug fix for a compilation
-warning on 32bit with PAE enabled. Please pull.
-
-	Joerg
-
-
+Cheers, Ilkka
