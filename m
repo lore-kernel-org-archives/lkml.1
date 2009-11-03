@@ -1,133 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZKCJBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbZKCJDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZKCJBl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 04:01:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZKCJBl
+	id S1756172AbZKCJDc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 04:03:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbZKCJDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 04:01:41 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:43596 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751875AbZKCJBk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 04:01:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=PfFExRSk6T3O8CK9DDMNbqykMoaX00ekRBOTJLajPXNzm6G7yzlGN60/cMaFUI1nGi
-         ZsouMDbBSOxfwep/qZa/y5ZqgXg/iU1Me+lhy4f06XrvHGACpRpyN3QFg1uOhDb8Q9Lt
-         TDYkY9BdCN/5esokbu0n0+R5rEL49XI5nghAY=
+	Tue, 3 Nov 2009 04:03:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60631 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754731AbZKCJD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 04:03:29 -0500
+Date: Tue, 3 Nov 2009 10:03:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       Daniel Walker <dwalker@fifo99.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH -v4] crypto: Add PCLMULQDQ accelerated GHASH
+	implementation
+Message-ID: <20091103090322.GA11988@elte.hu>
+References: <1253064946.15717.372.camel@yhuang-dev.sh.intel.com> <20091019025332.GA26624@gondor.apana.org.au> <20091031173015.69e8e9f8.akpm@linux-foundation.org> <20091101175043.GA25257@gondor.apana.org.au> <20091102075039.GA15942@elte.hu> <20091102142824.GA31981@gondor.apana.org.au> <20091102143258.GA23776@elte.hu> <1257227236.30470.1192.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <1256940813-11610-1-git-send-email-gregkh@suse.de>
-References: <20091030220949.GD11297@kroah.com>
-	 <1256940813-11610-1-git-send-email-gregkh@suse.de>
-Date: Tue, 3 Nov 2009 10:01:42 +0100
-X-Google-Sender-Auth: 8e30d61b83b940d2
-Message-ID: <10f740e80911030101ka895b11ie3e02a39762f5e97@mail.gmail.com>
-Subject: Re: [PATCH 1/1] tty: Mark generic_serial users as BROKEN
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, stable <stable@kernel.org>,
-       linux-m68k <linux-m68k@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257227236.30470.1192.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 23:13, Greg Kroah-Hartman <gregkh@suse.de> wrote:
-> From: Alan Cox <alan@linux.intel.com>
->
-> There isn't much else I can do with these. I can find no hardware for any
-> of them and no users. The code is broken.
 
-Can you please also mention in the changelog what exactly is broken?
+* Huang Ying <ying.huang@intel.com> wrote:
 
-BTW, in response to your patch I received (private) email from people
-who actually
-have m68k MVME boards in active use. So marking it broken may be
-called a regression...
+> On Mon, 2009-11-02 at 22:32 +0800, Ingo Molnar wrote: 
+> > * Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> > 
+> > > On Mon, Nov 02, 2009 at 08:50:39AM +0100, Ingo Molnar wrote:
+> > > > 
+> > > > A cleanup request: mind creating two macros for this PSHUFB MMX/SSE 
+> > > > instruction in arch/x86/include/asm/i387.h, instead of open-coding the 
+> > > > .byte sequences in ~6 places?
+> > > 
+> > > I had a go at doing that, but it seems that i387.h isn't really meant 
+> > > to be included in an asm file at this point :)
+> > 
+> > Please use the standard construct and put an #ifndef __ASSEMBLY__ around 
+> > it.
+> > 
+> > > > ( After the .33 merge window we'll collect such instruction format 
+> > > >   knowledge in arch/x86/include/asm/inst.h. That file is not upstream 
+> > > >   yet so i387.h will do for now for FPU/SSE instructions. )
+> > > 
+> > > I'm happy to revisit this once inst.h exists.
+> > 
+> > No reason to not do most of the change first though, the way i suggested 
+> > it.
+> 
+> How about something as below? But it seems not appropriate to put these
+> bits into i387.h, that is, to combine C and gas syntax.
+> 
+> Best Regards,
+> Huang Ying
+> 
+> .macro xmm_num opd xmm
+> .ifc \xmm,%xmm0
+> \opd = 0
+> .endif
+> .ifc \xmm,%xmm1
+> \opd = 1
+> .endif
+> .ifc \xmm,%xmm2
+> \opd = 2
+> .endif
+> .ifc \xmm,%xmm3
+> \opd = 3
+> .endif
+> .ifc \xmm,%xmm4
+> \opd = 4
+> .endif
+> .ifc \xmm,%xmm5
+> \opd = 5
+> .endif
+> .ifc \xmm,%xmm6
+> \opd = 6
+> .endif
+> .ifc \xmm,%xmm7
+> \opd = 7
+> .endif
+> .ifc \xmm,%xmm8
+> \opd = 8
+> .endif
+> .ifc \xmm,%xmm9
+> \opd = 9
+> .endif
+> .ifc \xmm,%xmm10
+> \opd = 10
+> .endif
+> .ifc \xmm,%xmm11
+> \opd = 11
+> .endif
+> .ifc \xmm,%xmm12
+> \opd = 12
+> .endif
+> .ifc \xmm,%xmm13
+> \opd = 13
+> .endif
+> .ifc \xmm,%xmm14
+> \opd = 14
+> .endif
+> .ifc \xmm,%xmm15
+> \opd = 15
+> .endif
+> .endm
+> 
+> .macro PSHUFB_XMM xmm1 xmm2
+> xmm_num pshufb_opd1 \xmm1
+> xmm_num pshufb_opd2 \xmm2
+> .if (pshufb_opd1 < 8) && (pshufb_opd2 < 8)
+> .byte 0x66, 0x0f, 0x38, 0x00, 0xc0 | pshufb_opd1 | (pshufb_opd2<<3)
+> .elseif (pshufb_opd1 >= 8) && (pshufb_opd2 < 8)
+> .byte 0x66, 0x41, 0x0f, 0x38, 0x00, 0xc0 | (pshufb_opd1-8) | (pshufb_opd2<<3)
+> .elseif (pshufb_opd1 < 8) && (pshufb_opd2 >= 8)
+> .byte 0x66, 0x44, 0x0f, 0x38, 0x00, 0xc0 | pshufb_opd1 | ((pshufb_opd2-8)<<3)
+> .else
+> .byte 0x66, 0x45, 0x0f, 0x38, 0x00, 0xc0 | (pshufb_opd1-8) | ((pshufb_opd2-8)<<3)
+> .endif
+> .endm
 
-Thanks!
+Looks far too clever, i like it :-) We have quite a few assembly macros 
+in arch/x86/include/asm/. The above one could be put into calling.h for 
+example.
 
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
-> Cc: stable <stable@kernel.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  arch/m68k/Kconfig    |    6 +++---
->  drivers/char/Kconfig |    6 +++---
->  2 files changed, 6 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-> index 29dd848..ecdc19a 100644
-> --- a/arch/m68k/Kconfig
-> +++ b/arch/m68k/Kconfig
-> @@ -561,7 +561,7 @@ config HPAPCI
->
->  config MVME147_SCC
->        bool "SCC support for MVME147 serial ports"
-> -       depends on MVME147
-> +       depends on MVME147 && BROKEN
->        help
->          This is the driver for the serial ports on the Motorola MVME147
->          boards.  Everyone using one of these boards should say Y here.
-> @@ -576,14 +576,14 @@ config SERIAL167
->
->  config MVME162_SCC
->        bool "SCC support for MVME162 serial ports"
-> -       depends on MVME16x
-> +       depends on MVME16x && BROKEN
->        help
->          This is the driver for the serial ports on the Motorola MVME162 and
->          172 boards.  Everyone using one of these boards should say Y here.
->
->  config BVME6000_SCC
->        bool "SCC support for BVME6000 serial ports"
-> -       depends on BVME6000
-> +       depends on BVME6000 && BROKEN
->        help
->          This is the driver for the serial ports on the BVME4000 and BVME6000
->          boards from BVM Ltd.  Everyone using one of these boards should say
-> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-> index 08a6f50..6aad99e 100644
-> --- a/drivers/char/Kconfig
-> +++ b/drivers/char/Kconfig
-> @@ -323,7 +323,7 @@ config SPECIALIX
->
->  config SX
->        tristate "Specialix SX (and SI) card support"
-> -       depends on SERIAL_NONSTANDARD && (PCI || EISA || ISA)
-> +       depends on SERIAL_NONSTANDARD && (PCI || EISA || ISA) && BROKEN
->        help
->          This is a driver for the SX and SI multiport serial cards.
->          Please read the file <file:Documentation/serial/sx.txt> for details.
-> @@ -334,7 +334,7 @@ config SX
->
->  config RIO
->        tristate "Specialix RIO system support"
-> -       depends on SERIAL_NONSTANDARD
-> +       depends on SERIAL_NONSTANDARD && BROKEN
->        help
->          This is a driver for the Specialix RIO, a smart serial card which
->          drives an outboard box that can support up to 128 ports.  Product
-> @@ -395,7 +395,7 @@ config NOZOMI
->
->  config A2232
->        tristate "Commodore A2232 serial support (EXPERIMENTAL)"
-> -       depends on EXPERIMENTAL && ZORRO && BROKEN_ON_SMP
-> +       depends on EXPERIMENTAL && ZORRO && BROKEN
->        ---help---
->          This option supports the 2232 7-port serial card shipped with the
->          Amiga 2000 and other Zorro-bus machines, dating from 1989.  At
+But the simpler .byte solution in i387.h would be fine too.
 
-Gr{oetje,eeting}s,
+If you guys want to put helper define into arch/x86/include/asm/ into 
+the crypto tree, feel free:
 
-						Geert
+  Acked-by: Ingo Molnar <mingo@elte.hu>
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+it would be clumsy to keep it separately in the x86 tree. Just dont 
+spread raw .byte sequences in .S files please ...
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
