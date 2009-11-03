@@ -1,121 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZKCWCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbZKCWC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZKCWCD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 17:02:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273AbZKCWCC
+	id S1755466AbZKCWC0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 17:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZKCWCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 17:02:02 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37911 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754782AbZKCWCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 17:02:00 -0500
-Date: Tue, 3 Nov 2009 16:00:53 -0600
-From: Clark Williams <williams@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jon Masters <jcm@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?B?RnLpZOlyaWM=?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/3] perf latency builtin command
-Message-ID: <20091103160053.0f0dd357@torg>
-In-Reply-To: <20091103192839.GB21023@elte.hu>
-References: <20091101155500.7dd22f19@torg>
-	<20091101155809.191a7ed6@torg>
-	<20091103192839.GB21023@elte.hu>
-Organization: Red Hat, Inc
+	Tue, 3 Nov 2009 17:02:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58293 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755243AbZKCWCV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 17:02:21 -0500
+Date: Tue, 3 Nov 2009 14:01:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: svalentine@concentris-systems.com
+Cc: rtc-linux@googlegroups.com, a.zummo@towertech.it, raph@8d.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RTC: v3020 driver bugfix
+Message-Id: <20091103140116.5e03df08.akpm@linux-foundation.org>
+In-Reply-To: <36176.167.216.14.194.1256001083.squirrel@www.concentris-systems.com>
+References: <36176.167.216.14.194.1256001083.squirrel@www.concentris-systems.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_//jyRgEkrBrzmaXoLVIWCyBK"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_//jyRgEkrBrzmaXoLVIWCyBK
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Mon, 19 Oct 2009 15:11:23 -1000 (HST)
+"Scott Valentine" <svalentine@concentris-systems.com> wrote:
 
-On Tue, 3 Nov 2009 20:28:39 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+> v3020 read_bit always returns 0 when left_shift > 7
+> 
+> The v3020 read_bit function's return type is (unsigned char). The code
+> returns a value masked by (1 << left_shift) that is casted to the return
+> type. If left_shift is larger than 7, the cast will always result in a 0
+> return value. The problem was discovered with left_shift = 16, and the
+> included patch corrects the problem.
+> 
+> The bug was introduced in the last (Apr 3 2009) commit of the file, kernel
+> versions 2.6.30 and later.
+> 
+> diff -uNr a/drivers/rtc/rtc-v3020.c b/drivers/rtc/rtc-v3020.c
+> --- a/drivers/rtc/rtc-v3020.c   2009-10-15 14:41:50.000000000 -1000
+> +++ b/drivers/rtc/rtc-v3020.c   2009-10-19 14:06:27.000000000 -1000
+> @@ -96,7 +96,7 @@
+> 
+>  static unsigned char v3020_mmio_read_bit(struct v3020 *chip)
+>  {
+> -       return readl(chip->ioaddress) & (1 << chip->leftshift);
+> +       return ((readl(chip->ioaddress) & (1 << chip->leftshift)) != 0);
+>  }
+> 
+>  static struct v3020_chip_ops v3020_mmio_ops = {
 
->=20
-> Clark, John,
->=20
-> I'm wondering whether we could do something perf event based that makes=20
-> 'perf latency' self-sufficient and eliminates the debugfs interface.
->=20
-> ( We could still merge the first two patches in their current form as=20
->   they are clear improvements in terms of debugfs access within perf -=20
->   so no work is lost and progress is possible. )
+OK.
 
-Yeah, I figured that the first two patches were improvements. I may
-poke around a little more to see if we can factor out some more
-duplicate routines.=20
+It's strange that the function returns `unsigned char' instead of say
+int or bool.
 
->=20
-> Basically hwlat_detector is using stop_machine_run() plus a tight rdtsc=20
-> based loop to sample what is happening in the system. Much of=20
-> hwlat_detector.c deals with getting that information (and parameters)=20
-> back and forth between user space and kernel space.
->=20
-> Couldnt we move that functionality a bit closer to perf by creating=20
-> special events in a tight loop that generate a stream of perf events,=20
-> and let the rest of perf events take over the details, and do the=20
-> analysis in the user-space builtin-latency.c code?
-> =20
-> Also, do we need stop_machine_run() - couldnt we do the measurement on a=
-=20
-> specific CPU with irqs (and NMIs) disabled [but other CPUs still=20
-> running]?
->=20
+We may as well do this in the same way as v3020_gpio_read_bit():
 
-So what would the source of the event's be and how confident would we
-be that they're accurate? Jon used stop_machine() so that *nothing*
-under the control of Linux is going to happen during the test; no
-C-state changes, no interrupts, nada. The intent is that if there's a
-gap seen in the TSC values, it's because something happened that's out
-of our control.
-
-> This would all still be possible in the .33 timeframe i suspect, as what=
-=20
-> we need is really just a special event (via TRACE_EVENT() perhaps), and=20
-> a way to trigger it via a 'run this many times' parameter. (i.e. event=20
-> injection - we want to have that kind of support in perf events anyway)
->=20
-
-Hmmm, seems like what you're saying is that we'd poll a free running
-perf counter (or some equivalent, still learning about the guts of perf
-event system), detect a gap at the low level and just send an event
-with that info up to user-space? That would work...
-
-What counter(s) would we use for detecting a gap in time?
-
-> This would simplify and standardize hw-latency detection, without losing=
-=20
-> any utility - and we wouldnt have to go via some special debugfs=20
-> interface to access the hwlat_detect module.
->=20
-> Thoughts?
-
-As long as we feel confident that we can detect temporal gaps with a
-performance counter, I'd be ok with it.=20
-
-Clark
+--- a/drivers/rtc/rtc-v3020.c~rtc-v3020-fix-v3020_mmio_read_bit
++++ a/drivers/rtc/rtc-v3020.c
+@@ -96,7 +96,7 @@ static void v3020_mmio_write_bit(struct 
+ 
+ static unsigned char v3020_mmio_read_bit(struct v3020 *chip)
+ {
+-	return readl(chip->ioaddress) & (1 << chip->leftshift);
++	return !!(readl(chip->ioaddress) & (1 << chip->leftshift));
+ }
+ 
+ static struct v3020_chip_ops v3020_mmio_ops = {
+_
 
 
-
---Sig_//jyRgEkrBrzmaXoLVIWCyBK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-
-iEYEARECAAYFAkrwqBkACgkQHyuj/+TTEp2Y5wCg2Ss1YFfIBIZEGZhjmLA9It0S
-5rMAoOMb/XTxtMA/ONnJBgFeXMULBE/V
-=quvD
------END PGP SIGNATURE-----
-
---Sig_//jyRgEkrBrzmaXoLVIWCyBK--
+You didn't include a Signed-off-by: for this patch.
