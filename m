@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbZKCNeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbZKCNiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752865AbZKCNeM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 08:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbZKCNeL
+	id S1753621AbZKCNiN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 08:38:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZKCNiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 08:34:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:8270 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbZKCNeK (ORCPT
+	Tue, 3 Nov 2009 08:38:13 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:62551 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbZKCNiM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 08:34:10 -0500
-Message-ID: <4AF030EE.7050609@monstr.eu>
-Date: Tue, 03 Nov 2009 14:32:30 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Tue, 3 Nov 2009 08:38:12 -0500
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 3/5] MFD: twl4030-codec: APLL_INFREQ handling in the MFD driver
+Date: Tue, 3 Nov 2009 15:37:50 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo; KDE/4.3.2; i686; ; )
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "sameo@linux.intel.com" <sameo@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tony@atomide.com" <tony@atomide.com>
+References: <1257165295-9352-1-git-send-email-peter.ujfalusi@nokia.com> <1257165295-9352-4-git-send-email-peter.ujfalusi@nokia.com> <20091102173035.GC8546@rakim.wolfsonmicro.main>
+In-Reply-To: <20091102173035.GC8546@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-To: mingo@elte.hu, srostedt@redhat.com
-CC: linux-kernel@vger.kernel.org, John Williams <john.williams@petalogix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Ftrace for Microblaze - notrace
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200911031537.50430.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 03 Nov 2009 13:37:56.0012 (UTC) FILETIME=[D9A3E6C0:01CA5C8A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas, Ingo, Steven and others
+On Monday 02 November 2009 19:30:35 ext Mark Brown wrote:
+> On Mon, Nov 02, 2009 at 02:34:53PM +0200, Peter Ujfalusi wrote:
+> > Move the APLL_CTL register configuration to the twl4030-codec
+> > MFD driver.
+> > Provide also a function for childs to query the audio_mclk
+> > frequency.
+> 
+> This all looks good to me, some nitpicks below.
+> 
+> > +unsigned int twl4030_codec_get_mclk(void)
+> > +{
+> > +	struct twl4030_codec *codec = platform_get_drvdata(twl4030_codec_dev);
+> > +
+> > +	return codec->audio_mclk;
+> > +}
+> > +EXPORT_SYMBOL_GPL(twl4030_codec_get_mclk);
+> 
+> As I said in my followup to patch 5 this feels like it should have a
+> parameter to specify the twl4030 though in practical systems it won't
+> matter.
 
-I am working on ftrace support for Microblaze. I have done basic ftrace
-support - initcall, kmemtrace and other.
-Currently I am working on function trace support.  I did asm code as is
-written in Documentation/trace/ftrace-design.txt.
+I agree that this does not look quite nice, but as you already mentioned, it is 
+highly unlikely that one system would have more than one twl series of PM chip 
+on board. Another reason is that we have other part of the twl, which needs 
+resources from the codec part, but it is not loaded through the codec MFD, so 
+providing the needed information is kind of tricky with that setup.
 
-I have two poins/questions.
+> 
+> > +	if (!(pdata->audio_mclk == 19200000 ||
+> > +	      pdata->audio_mclk == 26000000 ||
+> > +	      pdata->audio_mclk == 38400000)) {
+> > +		dev_err(&pdev->dev, "Invalid audio_mclk\n");
+> > +		return -EINVAL;
+> > +	}
+> 
+> Might flow more naturally with a switch statement?
 
-I desided to use HAVE_FUNCTION_TRACE_MCOUNT_TEST - just test 
-function_trace_stop in asm code - that shouldn't be a problem.
+Yes, true. This looks weird, I'll change it.
 
-I disable -pg in main Makefile because not work for me (more info below) 
-and I enable it just for two file in arch/microblaze (irq.c and intc.c) 
-- recompile kernel and test. Log is below and you can see that I am able 
-to see output for function. That's why I think that my mcount function 
-should be correct. Am I right?
+> 
 
-uclinux login: root
-Password:
-# cd ; mkdir /debug; mount -t debugfs none /debug; cat 
-/debug/tracing/available_
-tracers; echo function > /debug/tracing/current_tracer;echo 1 > 
-/debug/tracing/t
-racing_enabled;cat /debug/tracing/trace | head -n 10
-wakeup_rt wakeup function sched_switch nop
-# tracer: function
-#
-#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-#              | |       |          |         |
-               sh-52    [000]   184.940000: irq_call <-do_IRQ
-               sh-52    [000]   184.940000: do_IRQ <-get_irq
-               sh-52    [000]   184.940000: handle_level_irq <-intc_mask_ack
-               sh-52    [000]   184.950000: handle_level_irq 
-<-intc_enable_or_unmask
-               sh-52    [000]   184.950000: do_IRQ <-get_irq
-               sh-52    [000]   184.950000: handle_level_irq <-intc_mask_ack
-#
-
-
-When is used -pg flag kernel stops when I enable function tracer.
-Interesting is that freeze than I setup function tracing (echo function 
- > .../current/tracer). Is it correct behavior? I think that trace 
-should start after (echo 1>  .../tracing_enabled).
-
-
-The next thing is about annotation notrace. I look at all arch. Is there 
-any algorithm which function should use it? I think that this could be a 
-  reason why I my kernel freeze when enable function tracer.
-
-I tested to add -pg flag for process.c file and after it kernel freeze 
-too. Is it mean that problem could be there?
-
-Any other suggestion?
-
-
-Thanks for your help,
-Michal
-
-
+-- 
+Péter
