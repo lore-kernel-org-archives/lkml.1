@@ -1,73 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZKCWF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbZKCVkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZKCWF5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 17:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbZKCWF5
+	id S1755348AbZKCVkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 16:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbZKCVkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 17:05:57 -0500
-Received: from brmea-mail-4.Sun.COM ([192.18.98.36]:36674 "EHLO
-	brmea-mail-4.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755232AbZKCWF4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 17:05:56 -0500
-X-Greylist: delayed 1208 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 17:05:56 EST
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19184.41676.262206.134000@gargle.gargle.HOWL>
-Date: Tue, 3 Nov 2009 16:38:20 -0500
-From: RDH <rdh@east.sun.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
-X-Mailer: VM 7.19 under Emacs 20.3.1
-Reply-To: rdh@east.sun.com
+	Tue, 3 Nov 2009 16:40:55 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:10554 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755277AbZKCVky convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;5:1>);
+	Tue, 3 Nov 2009 16:40:54 -0500
+Message-Id: <4AF05D150200005A00057FA3@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Tue, 03 Nov 2009 14:40:53 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: <rostedt@goodmis.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@redhat.com>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/14] cpumask: simplify sched_rt.c
+References: <200911031453.15350.rusty@rustcorp.com.au>
+ <1257266509.26028.3343.camel@gandalf.stny.rr.com>
+In-Reply-To: <1257266509.26028.3343.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> On 11/3/2009 at 11:41 AM, in message
+<1257266509.26028.3343.camel@gandalf.stny.rr.com>, Steven Rostedt
+<rostedt@goodmis.org> wrote: 
+> Greg,
+> 
+> I believe this was mostly your code. Can you review this change.
+> 
+> Thanks,
+> 
+> -- Steve
+> 
+> 
+> On Tue, 2009-11-03 at 14:53 +1030, Rusty Russell wrote:
+>> find_lowest_rq() wants to call pick_optimal_cpu() on the intersection
+>> of sched_domain_span(sd) and lowest_mask.  Rather than doing a cpus_and
+>> into a temporary, we can open-code it.
+>> 
+>> This actually makes the code slightly clearer, IMHO.
+>> 
+>> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>> To: Steven Rostedt <rostedt@goodmis.org>
+>> Cc: Ingo Molnar <mingo@redhat.com>
 
-This patch avoids unnecessary PCIe link retraining sequences within
-the PCIe ASPM common clock setup code by issuing a link retrain
-command only if we are actually changing the PCIe clock configuration.
+I am not sure that I agree that its "clearer", but I do like the fact that the potentially nasty dynamic mask allocation is removed from the fast path.
 
-Signed-off-by: Robert D. Houk <rdh@East.Sun.COM>
----
- aspm.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
---- a/drivers/pci/pcie/aspm.c	2009-10-15 20:41:50.000000000 -0400
-+++ b/drivers/pci/pcie/aspm.c	2009-11-02 14:29:35.000000000 -0500
-@@ -183,6 +183,7 @@ static void pcie_aspm_configure_common_c
- {
- 	int ppos, cpos, same_clock = 1;
- 	u16 reg16, parent_reg, child_reg[8];
-+	u16 lnkctl_ccc_or, lnkctl_ccc_and;
- 	unsigned long start_jiffies;
- 	struct pci_dev *child, *parent = link->pdev;
- 	struct pci_bus *linkbus = parent->subordinate;
-@@ -205,6 +206,25 @@ static void pcie_aspm_configure_common_c
- 	if (!(reg16 & PCI_EXP_LNKSTA_SLC))
- 		same_clock = 0;
- 
-+	/* Check upstream component for Common Clock Config */
-+	pci_read_config_word(parent, ppos + PCI_EXP_LNKCTL, &reg16);
-+	lnkctl_ccc_and = lnkctl_ccc_or = (reg16 & PCI_EXP_LNKCTL_CCC);
-+
-+	/* Scan downstream component for CCC, all functions */
-+	list_for_each_entry(child, &linkbus->devices, bus_list) {
-+		cpos = pci_find_capability(child, PCI_CAP_ID_EXP);
-+		pci_read_config_word(child, cpos + PCI_EXP_LNKCTL, &reg16);
-+		lnkctl_ccc_and &= (reg16 & PCI_EXP_LNKCTL_CCC);
-+		lnkctl_ccc_or |= (reg16 & PCI_EXP_LNKCTL_CCC);
-+	}
-+
-+	/* If we want Common Clock OFF and no device/function has it on */
-+	/* or we want Common Clock ON and every device/function has it on */
-+	/* then there is no need to retrain PCIe links */
-+	if (((same_clock == 0) && (lnkctl_ccc_or == 0))
-+            || ((same_clock == 1) && (lnkctl_ccc_and == PCI_EXP_LNKCTL_CCC)))
-+		return;		/* Don't retrain link(s) */
-+
- 	/* Configure downstream component, all functions */
- 	list_for_each_entry(child, &linkbus->devices, bus_list) {
- 		cpos = pci_find_capability(child, PCI_CAP_ID_EXP);
+I checked the logic, and it does appear to be functionally equivalent to the original.
+
+Acked-by: Gregory Haskins <ghaskins@novell.com>
+
+>> ---
+>>  kernel/sched_rt.c |   59 +++++++++++++++++++++---------------------------------
+>>  1 file changed, 23 insertions(+), 36 deletions(-)
+>> 
+>> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+>> --- a/kernel/sched_rt.c
+>> +++ b/kernel/sched_rt.c
+>> @@ -1115,29 +1115,12 @@ static struct task_struct *pick_next_hig
+>>  
+>>  static DEFINE_PER_CPU(cpumask_var_t, local_cpu_mask);
+>>  
+>> -static inline int pick_optimal_cpu(int this_cpu,
+>> -				   const struct cpumask *mask)
+>> -{
+>> -	int first;
+>> -
+>> -	/* "this_cpu" is cheaper to preempt than a remote processor */
+>> -	if ((this_cpu != -1) && cpumask_test_cpu(this_cpu, mask))
+>> -		return this_cpu;
+>> -
+>> -	first = cpumask_first(mask);
+>> -	if (first < nr_cpu_ids)
+>> -		return first;
+>> -
+>> -	return -1;
+>> -}
+>> -
+>>  static int find_lowest_rq(struct task_struct *task)
+>>  {
+>>  	struct sched_domain *sd;
+>>  	struct cpumask *lowest_mask = __get_cpu_var(local_cpu_mask);
+>>  	int this_cpu = smp_processor_id();
+>>  	int cpu      = task_cpu(task);
+>> -	cpumask_var_t domain_mask;
+>>  
+>>  	if (task->rt.nr_cpus_allowed == 1)
+>>  		return -1; /* No other targets possible */
+>> @@ -1167,28 +1150,26 @@ static int find_lowest_rq(struct task_st
+>>  	 * Otherwise, we consult the sched_domains span maps to figure
+>>  	 * out which cpu is logically closest to our hot cache data.
+>>  	 */
+>> -	if (this_cpu == cpu)
+>> -		this_cpu = -1; /* Skip this_cpu opt if the same */
+>> +	if (!cpumask_test_cpu(this_cpu, lowest_mask))
+>> +		this_cpu = -1; /* Skip this_cpu opt if not among lowest */
+>>  
+>> -	if (alloc_cpumask_var(&domain_mask, GFP_ATOMIC)) {
+>> -		for_each_domain(cpu, sd) {
+>> -			if (sd->flags & SD_WAKE_AFFINE) {
+>> -				int best_cpu;
+>> +	for_each_domain(cpu, sd) {
+>> +		if (sd->flags & SD_WAKE_AFFINE) {
+>> +			int best_cpu;
+>>  
+>> -				cpumask_and(domain_mask,
+>> -					    sched_domain_span(sd),
+>> -					    lowest_mask);
+>> +			/*
+>> +			 * "this_cpu" is cheaper to preempt than a
+>> +			 * remote processor.
+>> +			 */
+>> +			if (this_cpu != -1 &&
+>> +			    cpumask_test_cpu(this_cpu, sched_domain_span(sd)))
+>> +				return this_cpu;
+>>  
+>> -				best_cpu = pick_optimal_cpu(this_cpu,
+>> -							    domain_mask);
+>> -
+>> -				if (best_cpu != -1) {
+>> -					free_cpumask_var(domain_mask);
+>> -					return best_cpu;
+>> -				}
+>> -			}
+>> +			best_cpu = cpumask_first_and(lowest_mask,
+>> +						     sched_domain_span(sd));
+>> +			if (best_cpu < nr_cpu_ids)
+>> +				return best_cpu;
+>>  		}
+>> -		free_cpumask_var(domain_mask);
+>>  	}
+>>  
+>>  	/*
+>> @@ -1196,7 +1177,13 @@ static int find_lowest_rq(struct task_st
+>>  	 * just give the caller *something* to work with from the compatible
+>>  	 * locations.
+>>  	 */
+>> -	return pick_optimal_cpu(this_cpu, lowest_mask);
+>> +	if (this_cpu != -1)
+>> +		return this_cpu;
+>> +
+>> +	cpu = cpumask_any(lowest_mask);
+>> +	if (cpu < nr_cpu_ids)
+>> +		return cpu;
+>> +	return -1;
+>>  }
+>>  
+>>  /* Will lock the rq it finds */
+>> 
+
+
