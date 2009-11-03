@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbZKCV6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZKCWA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091AbZKCV6k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:58:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZKCV6j
+	id S1754954AbZKCWA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 17:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZKCWA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:58:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46242 "EHLO ogre.sisk.pl"
+	Tue, 3 Nov 2009 17:00:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30579 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753164AbZKCV6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 16:58:39 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCHv2 2/5] vmscan: Kill hibernation specific reclaim logic and unify it
-Date: Tue, 3 Nov 2009 23:00:14 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
-       "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20091102000855.F404.A69D9226@jp.fujitsu.com> <200911031230.20344.rjw@sisk.pl> <4AF09CB2.9030500@crca.org.au>
-In-Reply-To: <4AF09CB2.9030500@crca.org.au>
+	id S1753885AbZKCWA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 17:00:26 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: [PATCH 0/5] cfq-iosched: improve latency for no-idle queues (v3)
+References: <x49zl7c268s.fsf@segfault.boston.devel.redhat.com>
+	<4e5e476b0910271124r2cf9f9c0l83fdc59b50619202@mail.gmail.com>
+	<x493a4wsn5c.fsf@segfault.boston.devel.redhat.com>
+	<x49fx8wbqd0.fsf@segfault.boston.devel.redhat.com>
+	<4e5e476b0911030042q5963718aj5875c542e6f6cc40@mail.gmail.com>
+	<x49ocnju35d.fsf@segfault.boston.devel.redhat.com>
+	<4e5e476b0911030719m425c208cg311f44a91fad8342@mail.gmail.com>
+	<4e5e476b0911031035l7caffcb7n36b6eddd399864e7@mail.gmail.com>
+	<20091103201802.GL8742@kernel.dk>
+	<x49ocnjqrs5.fsf@segfault.boston.devel.redhat.com>
+	<20091103202836.GM8742@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 03 Nov 2009 17:00:24 -0500
+In-Reply-To: <20091103202836.GM8742@kernel.dk> (Jens Axboe's message of "Tue,
+	3 Nov 2009 21:28:36 +0100")
+Message-ID: <x49aaz3i807.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911032300.14790.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 November 2009, Nigel Cunningham wrote:
-> Hi Rafael.
-> 
-> Rafael J. Wysocki wrote:
-> > On Monday 02 November 2009, Nigel Cunningham wrote:
-> >> Hi.
-> > 
-> > Hi,
-> > 
-> >> KOSAKI Motohiro wrote:
-> >>>> I haven't given much thought to numa awareness in hibernate code, but I
-> >>>> can say that the shrink_all_memory interface is woefully inadequate as
-> >>>> far as zone awareness goes. Since lowmem needs to be atomically restored
-> >>>> before we can restore highmem, we really need to be able to ask for a
-> >>>> particular number of pages of a particular zone type to be freed.
-> >>> Honestly, I am not suspend/hibernation expert. Can I ask why caller need to know
-> >>> per-zone number of freed pages information? if hibernation don't need highmem.
-> >>> following incremental patch prevent highmem reclaim perfectly. Is it enough?
-> >> (Disclaimer: I don't think about highmem a lot any more, and might have
-> >> forgotten some of the details, or swsusp's algorithms might have
-> >> changed. Rafael might need to correct some of this...)
-> >>
-> >> Imagine that you have a system with 1000 pages of lowmem and 5000 pages
-> >> of highmem. Of these, 950 lowmem pages are in use and 500 highmem pages
-> >> are in use.
-> >>
-> >> In order to to be able to save an image, we need to be able to do an
-> >> atomic copy of those lowmem pages.
-> >>
-> >> You might think that we could just copy everything into the spare
-> >> highmem pages, but we can't because mapping and unmapping the highmem
-> >> pages as we copy the data will leave us with an inconsistent copy.
-> > 
-> > This isn't the case any more for the mainline hibernate code.  We use highmem
-> > for storing image data as well as lowmem.
-> 
-> Highmem for storing copies of lowmem pages?
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-It is possible in theory, but I don't think it happens in practice given the
-way in which the memory is freed.  Still copy_data_page() takes this
-possibility into account.
+> On Tue, Nov 03 2009, Jeff Moyer wrote:
+>> Jens Axboe <jens.axboe@oracle.com> writes:
+>> 
+>> > Since for-linus contains conflicting changes, can you and Jeff please
+>> > double check that everything is still in order? The interesting bit here
+>> > is the merge with for-2.6.33 and the coop limit from Shaohua Li. I did
+>> > the straight forward merge, but we likely just need to drop that logic
+>> > since the coop concept is radically different given that we merge and
+>> > break queues in for-2.6.33.
+>> 
+>> Yeah, since I changed the meaning of the cfqq_coop flag, a lot of those
+>> tests are just plain wrong.  Let me play with it and I'll send you an
+>> incremental patch in a bit.
+>
+> Thanks, here's what I have. It's basically a revert of the commit in
+> question.
 
-Thanks,
-Rafael
+Your patch looks like a straight-forward revert.  I still think we need
+some guards in place, though.  For now, I think we can go with what you
+have, and I'll come up with some other mechanism to deal with this case.
+
+Cheers,
+Jeff
