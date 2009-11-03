@@ -1,105 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbZKCU2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZKCU3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbZKCU2d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 15:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZKCU2c
+	id S1755044AbZKCU3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 15:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZKCU3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 15:28:32 -0500
-Received: from [95.166.99.235] ([95.166.99.235]:53483 "EHLO kernel.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754129AbZKCU2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 15:28:32 -0500
-Date: Tue, 3 Nov 2009 21:28:36 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Fwd: [PATCH 0/5] cfq-iosched: improve latency for no-idle
-	queues (v3)
-Message-ID: <20091103202836.GM8742@kernel.dk>
-References: <x49zl7c268s.fsf@segfault.boston.devel.redhat.com> <4e5e476b0910271124r2cf9f9c0l83fdc59b50619202@mail.gmail.com> <x493a4wsn5c.fsf@segfault.boston.devel.redhat.com> <x49fx8wbqd0.fsf@segfault.boston.devel.redhat.com> <4e5e476b0911030042q5963718aj5875c542e6f6cc40@mail.gmail.com> <x49ocnju35d.fsf@segfault.boston.devel.redhat.com> <4e5e476b0911030719m425c208cg311f44a91fad8342@mail.gmail.com> <4e5e476b0911031035l7caffcb7n36b6eddd399864e7@mail.gmail.com> <20091103201802.GL8742@kernel.dk> <x49ocnjqrs5.fsf@segfault.boston.devel.redhat.com>
+	Tue, 3 Nov 2009 15:29:20 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:52566 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752351AbZKCU3T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 15:29:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=k0sLHRC6G+zrTw1z9fAm2+c7lgtY9yGVgzlsywShbNxKYXv3z2x16sCGs7a8F3WHRm
+         35+EGsCJbXl72L6Sy1alvXx8NjH+bStptu8NPlrgE5YRNGFDhAkY4/TVO7LMpukXVf+h
+         9g/oNxejgG3HWbTgWd6cG0bqxlu1nWF8RAslc=
+Date: Tue, 3 Nov 2009 21:29:24 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
+	on top of perf events
+Message-ID: <20091103202923.GB4962@nowhere>
+References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com> <4AF08B7C.8040903@web.de> <20091103201503.GA4962@nowhere> <4AF090EC.5010105@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <x49ocnjqrs5.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <4AF090EC.5010105@web.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03 2009, Jeff Moyer wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
+On Tue, Nov 03, 2009 at 09:22:04PM +0100, Jan Kiszka wrote:
+> > Thinking about it, this check should cover every cases:
+> > 
+> > if (vcpu->arch.switch_db_regs || __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK)
+> > 
+> > If we have __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK, it means there is an
+> > active breakpoint and then we should restore the current state.
+> > 
 > 
-> > Since for-linus contains conflicting changes, can you and Jeff please
-> > double check that everything is still in order? The interesting bit here
-> > is the merge with for-2.6.33 and the coop limit from Shaohua Li. I did
-> > the straight forward merge, but we likely just need to drop that logic
-> > since the coop concept is radically different given that we merge and
-> > break queues in for-2.6.33.
+> And what about (__get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK) only? Would
+> you be able to live with unsync'ed hardware and software states?
 > 
-> Yeah, since I changed the meaning of the cfqq_coop flag, a lot of those
-> tests are just plain wrong.  Let me play with it and I'll send you an
-> incremental patch in a bit.
+> Jan
+> 
 
-Thanks, here's what I have. It's basically a revert of the commit in
-question.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index b700f41..4ab240c 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -253,7 +253,6 @@ enum cfqq_state_flags {
- 	CFQ_CFQQ_FLAG_slice_new,	/* no requests dispatched in slice */
- 	CFQ_CFQQ_FLAG_sync,		/* synchronous queue */
- 	CFQ_CFQQ_FLAG_coop,		/* cfqq is shared */
--	CFQ_CFQQ_FLAG_coop_preempt,	/* coop preempt */
- };
- 
- #define CFQ_CFQQ_FNS(name)						\
-@@ -280,7 +279,6 @@ CFQ_CFQQ_FNS(prio_changed);
- CFQ_CFQQ_FNS(slice_new);
- CFQ_CFQQ_FNS(sync);
- CFQ_CFQQ_FNS(coop);
--CFQ_CFQQ_FNS(coop_preempt);
- #undef CFQ_CFQQ_FNS
- 
- #define cfq_log_cfqq(cfqd, cfqq, fmt, args...)	\
-@@ -1070,16 +1068,9 @@ static struct cfq_queue *cfq_get_next_queue(struct cfq_data *cfqd)
- static struct cfq_queue *cfq_set_active_queue(struct cfq_data *cfqd,
- 					      struct cfq_queue *cfqq)
- {
--	if (!cfqq) {
-+	if (!cfqq)
- 		cfqq = cfq_get_next_queue(cfqd);
- 
--		if (cfqq && !cfq_cfqq_coop_preempt(cfqq))
--			cfq_clear_cfqq_coop(cfqq);
--	}
--
--	if (cfqq)
--		cfq_clear_cfqq_coop_preempt(cfqq);
--
- 	__cfq_set_active_queue(cfqd, cfqq);
- 	return cfqq;
- }
-@@ -2433,16 +2424,8 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
- 	 * if this request is as-good as one we would expect from the
- 	 * current cfqq, let it preempt
- 	 */
--	if (cfq_rq_close(cfqd, cfqq, rq) && (!cfq_cfqq_coop(new_cfqq) ||
--	    cfqd->busy_queues == 1)) {
--		/*
--		 * Mark new queue coop_preempt, so its coop flag will not be
--		 * cleared when new queue gets scheduled at the very first time
--		 */
--		cfq_mark_cfqq_coop_preempt(new_cfqq);
--		cfq_mark_cfqq_coop(new_cfqq);
-+	if (cfq_rq_close(cfqd, cfqq, rq))
- 		return true;
--	}
- 
- 	return false;
- }
-
--- 
-Jens Axboe
+But if the guest has breakpoints activated, the host will inherit
+them, which is really not something we want, assuming vcpu->arch.switch_db_regs
+already protects us about that.
 
