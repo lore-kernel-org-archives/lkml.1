@@ -1,109 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751703AbZKCQgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbZKCQjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751703AbZKCQgD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 11:36:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZKCQgD
+	id S1752188AbZKCQjE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 11:39:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZKCQjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 11:36:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33615 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbZKCQgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 11:36:02 -0500
-Subject: Re: Ftrace for Microblaze - notrace
-From: Steven Rostedt <srostedt@redhat.com>
-To: monstr@monstr.eu
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       John Williams <john.williams@petalogix.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <4AF030EE.7050609@monstr.eu>
-References: <4AF030EE.7050609@monstr.eu>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Tue, 03 Nov 2009 11:35:54 -0500
-Message-Id: <1257266154.31359.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 11:39:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45230 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750972AbZKCQjB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 11:39:01 -0500
+Date: Tue, 3 Nov 2009 08:37:07 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: Please consider reverting
+ 7d930bc33653d5592dc386a76a38f39c2e962344
+In-Reply-To: <alpine.LFD.2.01.0911030815180.31845@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0911030827040.31845@localhost.localdomain>
+References: <20091103053156.GA3212@core.coreip.homeip.net>  <20091102.224957.32364226.davem@davemloft.net>  <20091103065238.GE3212@core.coreip.homeip.net>  <1257232587.3420.55.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
+  <1257262588.3420.79.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030738260.31845@localhost.localdomain> <1257264485.3420.87.camel@localhost.localdomain> <alpine.LFD.2.01.0911030815180.31845@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-03 at 14:32 +0100, Michal Simek wrote:
-> Hi Thomas, Ingo, Steven and others
+
+
+On Tue, 3 Nov 2009, Linus Torvalds wrote:
 > 
-> I am working on ftrace support for Microblaze. I have done basic ftrace
-> support - initcall, kmemtrace and other.
-> Currently I am working on function trace support.  I did asm code as is
-> written in Documentation/trace/ftrace-design.txt.
-> 
-> I have two poins/questions.
-> 
-> I desided to use HAVE_FUNCTION_TRACE_MCOUNT_TEST - just test 
-> function_trace_stop in asm code - that shouldn't be a problem.
+> And yes, "dealing with it" very much means by-passing maintainers if 
+> necessary. It can mean sending patches directly to me, but it _also_ means 
+> asking me to just revert a commit that turns out to be buggy and was 
+> merged late.
 
-Yeah, and if you don't have that, it is taken care of in the generic
-code too.
+By the way, the "if necessary" part obviously means that I'll be very 
+happy if it all happens through maintainers. I'm absolutely _not_ arguing 
+for sending patches directly to me if there is a better way of doing 
+things. 
 
-> 
-> I disable -pg in main Makefile because not work for me (more info below) 
-> and I enable it just for two file in arch/microblaze (irq.c and intc.c) 
-> - recompile kernel and test. Log is below and you can see that I am able 
-> to see output for function. That's why I think that my mcount function 
-> should be correct. Am I right?
-> 
-> uclinux login: root
-> Password:
-> # cd ; mkdir /debug; mount -t debugfs none /debug; cat 
-> /debug/tracing/available_
-> tracers; echo function > /debug/tracing/current_tracer;echo 1 > 
-> /debug/tracing/t
-> racing_enabled;cat /debug/tracing/trace | head -n 10
-> wakeup_rt wakeup function sched_switch nop
-> # tracer: function
-> #
-> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> #              | |       |          |         |
->                sh-52    [000]   184.940000: irq_call <-do_IRQ
->                sh-52    [000]   184.940000: do_IRQ <-get_irq
->                sh-52    [000]   184.940000: handle_level_irq <-intc_mask_ack
->                sh-52    [000]   184.950000: handle_level_irq 
-> <-intc_enable_or_unmask
->                sh-52    [000]   184.950000: do_IRQ <-get_irq
->                sh-52    [000]   184.950000: handle_level_irq <-intc_mask_ack
-> #
-> 
-> 
-> When is used -pg flag kernel stops when I enable function tracer.
-> Interesting is that freeze than I setup function tracing (echo function 
->  > .../current/tracer). Is it correct behavior? I think that trace 
-> should start after (echo 1>  .../tracing_enabled).
+But I do think that especially as a user who finds a problem, an email 
+saying "please revert" is a great thing to send to me when you've 
+identified a problem - especially late in the -rc series.
 
-No, tracing_enabled is default on and should not be used (may go away).
-Tracing starts as soon as you echo function into current_tracer.
+Of course, you should always Cc: all the people in the patch (author _and_ 
+the sign-off-chain), to give them the opportunity to ask the reporter to 
+try another patch or to ask me to pull a fix.
 
-> 
-> 
-> The next thing is about annotation notrace. I look at all arch. Is there 
-> any algorithm which function should use it? I think that this could be a 
->   reason why I my kernel freeze when enable function tracer.
->
-> I tested to add -pg flag for process.c file and after it kernel freeze 
-> too. Is it mean that problem could be there?
+Especially as nobody reads email 24/7 and we're all on slightly different 
+clocks (even within the same timezone we have different schedules: I start 
+readin mail at 7:30AM, which is probably _not_ what most techies do), so 
+the optimal situation is that by the time I see the revert request, I 
+_also_ have another email in my mailbox saying "oh, apply this patch 
+instead".
 
-Probably.
+So the different schedules _can_ be an advantage, and it's why email is 
+such a great communication medium for being "immediate, but asynchronous". 
+We can have overlapping work, and be very efficient when things work well.
 
-> 
-> Any other suggestion?
+The pessimal solution, on the other hand, is to have a very rigid 
+"channel" so that we end up waiting for several people in a long chain, 
+all of which are on different schedules, and so each step takes a day or 
+so to percolate.
 
-Just remember that -pg is very intrusive. I don't know your arch, nor
-have I seen the code you did to update it. You can disable the -pg from
-process.c by adding in the Makefile:
+Which is what I think happened now. 
 
-CFLAGS_REMOVE_process.o = -pg
-
-And that will keep the process.c from being compiled with it. There may
-be other files in the arch that should not have it. There's several in
-x86 and in PowerPC.
-
--- Steve
-
-
+			Linus
