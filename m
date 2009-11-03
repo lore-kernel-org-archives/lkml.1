@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZKCWOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZKCWOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbZKCWOD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 17:14:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZKCWOC
+	id S1755444AbZKCWOd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 17:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZKCWOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 17:14:02 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:45633 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755234AbZKCWOB (ORCPT
+	Tue, 3 Nov 2009 17:14:33 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:41105 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754747AbZKCWOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 17:14:01 -0500
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 01/13] sysfs: Update sysfs_setxattr so it updates secdata under the sysfs_mutex
-References: <m13a4vbz8r.fsf@fess.ebiederm.org>
-	<1257249429-12384-1-git-send-email-ebiederm@xmission.com>
-	<20091103134823.GB31981@us.ibm.com> <m1ocnj9uz5.fsf@fess.ebiederm.org>
-	<20091103213129.GA13555@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 03 Nov 2009 14:13:52 -0800
-In-Reply-To: <20091103213129.GA13555@us.ibm.com> (Serge E. Hallyn's message of "Tue\, 3 Nov 2009 15\:31\:29 -0600")
-Message-ID: <m1hbtb6yu7.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 3 Nov 2009 17:14:32 -0500
+Date: Tue, 3 Nov 2009 23:15:41 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: John Kacur <jkacur@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH cleanup] Re: +
+	mips-vpe-remove-leftover-unlock_kernel.patch added to -mm tree
+Message-ID: <20091103221541.GA25401@linux-mips.org>
+References: <200911030701.nA371cAP019835@imap1.linux-foundation.org> <20091103140953.GA23611@linux-mips.org> <20091103085613.373634ab.akpm@linux-foundation.org> <alpine.LFD.2.00.0911032243530.6542@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911032243530.6542@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
->
-> Gah, sorry.
+On Tue, Nov 03, 2009 at 10:52:41PM +0100, John Kacur wrote:
 
-No prob.
+> > > I already have an equivalent patch in the MIPS kernel - Linus only needs
+> > > to finally pull ...
+> > > 
+> > 
+> > I didn't see such a patch in yesterday's linux-next..
 
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
->
-> (as an aside, I can't see any reason to not just return if strncmp(name,
-> XATTR_SECURITY_PREFIX,) above to avoid a level of indent and needless gotos)
+I only have stuff to be pulled for 2.6.33 on my -next tree.  Anything for
+2.6.32 was in another tree.
 
-Sounds like it is worth a patch.  For now I'm concentrating on getting
-this patchset merged, and extraneous cleanups have a way of dragging
-the process out beyond what time I have to give.
+> Linus picked-up Ralf's version of the patch for 2.6.32-rc6
+> a22d621c80fb08f668ae3bfe62aeaae64b0b2b89
+> 
+> That has the important part that removes the stray unlock_kernel, but
+> unfortunately doesn't remove the smp_lock.h header.
+> 
+> So, the last patch is just a clean-up. (no urgency).
+> 
+> >From ae20d9169893112daaad1dc3af9f8559003a2bfb Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Tue, 3 Nov 2009 22:15:55 +0100
+> Subject: [PATCH] Remove BKL header.
+> 
+> Now that the bkl has been removed, also remove the smp_lock.h include
 
-Eric
+In fact every single use of <linux/smp_lock.h> in arch/mips/ is unnecessary;
+see patch for 2.6.33 in
+
+http://www.linux-mips.org/git?p=upstream-sfr.git;a=commit;h=defde8dd822ddbab4ea1f8d2f5831e693bc75ad4
+
+  Ralf
