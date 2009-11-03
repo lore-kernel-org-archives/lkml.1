@@ -1,50 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZKCR4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbZKCR6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398AbZKCR4y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 12:56:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZKCR4y
+	id S1754344AbZKCR6R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 12:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbZKCR6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 12:56:54 -0500
-Received: from kroah.org ([198.145.64.141]:59116 "EHLO coco.kroah.org"
+	Tue, 3 Nov 2009 12:58:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47231 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbZKCR4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 12:56:53 -0500
-Date: Tue, 3 Nov 2009 09:56:54 -0800
-From: Greg KH <greg@kroah.com>
-To: Benjamin LaHaise <bcrl@lhnet.ca>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
-       Cosmin Ratiu <cratiu@ixiacom.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] sysfs directory scaling: rbtree for dirent name
-	lookups
-Message-ID: <20091103175654.GA27222@kroah.com>
-References: <20091101163130.GA7911@kvack.org> <20091103035058.GA19515@kroah.com> <4AEFCA49.4020305@gmail.com> <20091103160715.GD23857@kroah.com> <20091103164550.GM8227@kvack.org>
+	id S1752772AbZKCR6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 12:58:15 -0500
+Date: Tue, 3 Nov 2009 17:57:34 GMT
+From: tip-bot for Thiago Farina <tfransosi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tfransosi@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tfransosi@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1257254925-5423-1-git-send-email-tfransosi@gmail.com>
+References: <1257254925-5423-1-git-send-email-tfransosi@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf: Clean up trivial style issues in builtin-help.c
+Message-ID: <tip-c1e530178540df26eb39f10a972d06f96302ceb4@git.kernel.org>
+Git-Commit-ID: c1e530178540df26eb39f10a972d06f96302ceb4
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091103164550.GM8227@kvack.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 11:45:50AM -0500, Benjamin LaHaise wrote:
-> On Tue, Nov 03, 2009 at 08:07:15AM -0800, Greg KH wrote:
-> > But registering 20000 devices is a far different problem from using
-> > those 20000 devices :)
-> 
-> Registering 20,000 devices *is* a real world problem (I'm actually aiming 
-> for 100,000, as that's what roughly fits in a single 10Gbps link -- something 
-> that a mid range system can now route).  When an edge router comes up from 
-> reboot, or after a link has been down, the rate at which customers connect 
-> is important -- too slow, and you get a pile of support calls from customers 
-> complaining that their connection is down.  Because of the data structures 
-> used, there isn't even any improvement from an SMP system, so this needs 
-> to be addressed directly.
+Commit-ID:  c1e530178540df26eb39f10a972d06f96302ceb4
+Gitweb:     http://git.kernel.org/tip/c1e530178540df26eb39f10a972d06f96302ceb4
+Author:     Thiago Farina <tfransosi@gmail.com>
+AuthorDate: Tue, 3 Nov 2009 08:28:45 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 3 Nov 2009 18:37:29 +0100
 
-Ok, how long are we talking about here?
+perf: Clean up trivial style issues in builtin-help.c
 
-thanks,
+Pointed out by checkpatch.
 
-greg k-h
+Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+Cc: a.p.zijlstra@chello.nl
+Cc: paulus@samba.org
+Cc: Valdis.Kletnieks@vt.edu
+LKML-Reference: <1257254925-5423-1-git-send-email-tfransosi@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/builtin-help.c |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/tools/perf/builtin-help.c b/tools/perf/builtin-help.c
+index 4fb8734..768f9c8 100644
+--- a/tools/perf/builtin-help.c
++++ b/tools/perf/builtin-help.c
+@@ -61,8 +61,7 @@ static const char *get_man_viewer_info(const char *name)
+ {
+ 	struct man_viewer_info_list *viewer;
+ 
+-	for (viewer = man_viewer_info_list; viewer; viewer = viewer->next)
+-	{
++	for (viewer = man_viewer_info_list; viewer; viewer = viewer->next) {
+ 		if (!strcasecmp(name, viewer->name))
+ 			return viewer->info;
+ 	}
+@@ -115,7 +114,7 @@ static int check_emacsclient_version(void)
+ 	return 0;
+ }
+ 
+-static void exec_woman_emacs(const char* path, const char *page)
++static void exec_woman_emacs(const char *path, const char *page)
+ {
+ 	if (!check_emacsclient_version()) {
+ 		/* This works only with emacsclient version >= 22. */
+@@ -129,7 +128,7 @@ static void exec_woman_emacs(const char* path, const char *page)
+ 	}
+ }
+ 
+-static void exec_man_konqueror(const char* path, const char *page)
++static void exec_man_konqueror(const char *path, const char *page)
+ {
+ 	const char *display = getenv("DISPLAY");
+ 	if (display && *display) {
+@@ -157,7 +156,7 @@ static void exec_man_konqueror(const char* path, const char *page)
+ 	}
+ }
+ 
+-static void exec_man_man(const char* path, const char *page)
++static void exec_man_man(const char *path, const char *page)
+ {
+ 	if (!path)
+ 		path = "man";
+@@ -364,9 +363,8 @@ static void show_man_page(const char *perf_cmd)
+ 
+ 	setup_man_path();
+ 	for (viewer = man_viewer_list; viewer; viewer = viewer->next)
+-	{
+ 		exec_viewer(viewer->name, page); /* will return when unable */
+-	}
++
+ 	if (fallback)
+ 		exec_viewer(fallback, page);
+ 	exec_viewer("man", page);
