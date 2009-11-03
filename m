@@ -1,105 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbZKCQS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZKCQXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752810AbZKCQS5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 11:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZKCQS4
+	id S1753319AbZKCQXJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 11:23:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZKCQXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 11:18:56 -0500
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:44132 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750751AbZKCQS4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 11:18:56 -0500
-To: jblunck@suse.de
-Subject: Re: [PATCH 01/27] BKL: Push down BKL from do_new_mount() to the filesystems get_sb/fill_super operation
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       matthew@wil.cx
-Message-Id: <E1N5M62-00007S-PZ@dylan.lougher.demon.co.uk>
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Tue, 03 Nov 2009 16:19:02 +0000
+	Tue, 3 Nov 2009 11:23:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54838 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751261AbZKCQXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 11:23:06 -0500
+Subject: Re: [-next regression] lockdep? tracing? BUG: unable to handle
+ kernel paging request at
+From: Eric Paris <eparis@redhat.com>
+To: rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, mingo@elte.hu,
+       zhaolei@cn.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lizf@cn.fujitsu.com
+In-Reply-To: <1257264170.26028.3340.camel@gandalf.stny.rr.com>
+References: <1257263296.2891.97.camel@dhcp231-106.rdu.redhat.com>
+	 <1257264170.26028.3340.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Nov 2009 11:22:30 -0500
+Message-Id: <1257265350.2891.102.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-11-03 at 11:02 -0500, Steven Rostedt wrote:
+> [ Added Peter Zijlstra ]
+> 
+> On Tue, 2009-11-03 at 10:48 -0500, Eric Paris wrote:
+> > Linux-next from Oct 30 did not have this problem.  Linux next from
+> > yesterday (and today) I always hit this on boot.
+> 
+> Could you also give the SHA1 of Linux-next, as well as the config you
+> used.
 
-Jan Blunck wrote:
-> Attached is a new version of the patch that includes the changes for
-> filesystems outside of fs/ directory as well. Besides that I trimmed the CC
-> list this time.
+cb9267934a27b149416762308a36e8a61f04ecb2
 
-Your patch fails to compile for configfs/btrfs/cramfs/befs and efs due
-to a missing <linux/smp_lock.h> (at least with my .config).  The following
-should fix this.
+> > 
+> > [    7.989630] BUG: unable to handle kernel paging request at 00000000000160de
+> > [    7.990538] IP: [<ffffffff8123cdbf>] strcmp+0xf/0x30
+> > [    7.990538] PGD 77f7e067 PUD 77ff1067 PMD 0 
+> > [    7.990538] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> > [    7.990538] last sysfs file: /sys/devices/platform/i8042/serio0/input/input2/event2/uevent
+> > [    7.990538] CPU 0 
+> > [    7.990538] Modules linked in: ata_piix(+)
+> > [    7.990538] Pid: 1024, comm: modprobe Not tainted 2.6.32-rc5-fanotify-next-20091102 #150 
+> 
+> Just curious, what module were you loading?
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
----
- fs/befs/linuxvfs.c  |    1 +
- fs/btrfs/super.c    |    1 +
- fs/configfs/mount.c |    1 +
- fs/cramfs/inode.c   |    1 +
- fs/efs/super.c      |    1 +
- 5 files changed, 5 insertions(+), 0 deletions(-)
+Looking at strace of the modprobe command it shows at the bottom I
+believe it was ata_generic.  But I don't really know.
 
-diff --git a/fs/befs/linuxvfs.c b/fs/befs/linuxvfs.c
-index f2aa193..ca48bc7 100644
---- a/fs/befs/linuxvfs.c
-+++ b/fs/befs/linuxvfs.c
-@@ -15,6 +15,7 @@
- #include <linux/vfs.h>
- #include <linux/parser.h>
- #include <linux/namei.h>
-+#include <linux/smp_lock.h>
- 
- #include "befs.h"
- #include "btree.h"
-diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index e5cd2cf..87a0185 100644
---- a/fs/btrfs/super.c
-+++ b/fs/btrfs/super.c
-@@ -38,6 +38,7 @@
- #include <linux/namei.h>
- #include <linux/miscdevice.h>
- #include <linux/magic.h>
-+#include <linux/smp_lock.h>
- #include "compat.h"
- #include "ctree.h"
- #include "disk-io.h"
-diff --git a/fs/configfs/mount.c b/fs/configfs/mount.c
-index 5b2e06e..3d0e614 100644
---- a/fs/configfs/mount.c
-+++ b/fs/configfs/mount.c
-@@ -29,6 +29,7 @@
- #include <linux/mount.h>
- #include <linux/pagemap.h>
- #include <linux/init.h>
-+#include <linux/smp_lock.h>
- 
- #include <linux/configfs.h>
- #include "configfs_internal.h"
-diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
-index 13e696a..77aa05b 100644
---- a/fs/cramfs/inode.c
-+++ b/fs/cramfs/inode.c
-@@ -23,6 +23,7 @@
- #include <linux/buffer_head.h>
- #include <linux/vfs.h>
- #include <linux/mutex.h>
-+#include <linux/smp_lock.h>
- 
- #include <asm/uaccess.h>
- 
-diff --git a/fs/efs/super.c b/fs/efs/super.c
-index 0981141..6a7d0fe 100644
---- a/fs/efs/super.c
-+++ b/fs/efs/super.c
-@@ -12,6 +12,7 @@
- #include <linux/slab.h>
- #include <linux/buffer_head.h>
- #include <linux/vfs.h>
-+#include <linux/smp_lock.h>
- 
- #include "efs.h"
- #include <linux/efs_vh.h>
--- 
-1.5.2.5
+> Hmm, event_mutex is defined with
+> 
+> DEFINE_MUTEX(event_mutex);
+> 
+> in trace_events.c (well, in my kernel, I'm not looking at linux-next
+> right now). This should set up lockdep without any issues.
+
+It's a DEFINE_MUTEX in linux-next as well.
+
+> Would be better to get more info (as asked above). You can send
+> the .config privately to me, as not to spam LKML with it.
+
+Incoming along will full dmesg.
 
