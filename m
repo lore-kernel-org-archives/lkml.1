@@ -1,154 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbZKCXqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZKCXyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbZKCXqY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZKCXqV
+	id S1753359AbZKCXyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZKCXyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:46:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:32850 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752722AbZKCXqS (ORCPT
+	Tue, 3 Nov 2009 18:54:39 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:49986 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751712AbZKCXyh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:46:18 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
-Subject: [PATCH 1/1] perf symbols: Factor out buildid reading routine
-Date: Tue,  3 Nov 2009 21:46:10 -0200
-Message-Id: <1257291970-8208-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 3 Nov 2009 18:54:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=Une0WvbGNYXk3mGk5IvMnIUYB4FY/SUBy/QUNFT0bP4Ywf2crg2+OGz+BLgVZjPKfD
+         FQXWcII9B79t9ubVW12s/y37iR/RbqOtjAr0d1qyIanUkpLY7bYmPYunQw3tglp1cMlb
+         ayTnPFX9jrTBlSiiftZFpwxm/dbZs+vAHmmog=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Gertjan van Wingerde <gwingerde@gmail.com>
+Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
+Date: Wed, 4 Nov 2009 00:46:54 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>
+References: <200911031951.05235.bzolnier@gmail.com> <200911032334.40547.bzolnier@gmail.com> <14add3d10911031509l328e7674kb625b70250ff30fb@mail.gmail.com>
+In-Reply-To: <14add3d10911031509l328e7674kb625b70250ff30fb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911040046.54247.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Wednesday 04 November 2009 00:09:02 Gertjan van Wingerde wrote:
+> On Tue, Nov 3, 2009 at 11:34 PM, Bartlomiej Zolnierkiewicz
+> <bzolnier@gmail.com> wrote:
+> > On Tuesday 03 November 2009 23:01:32 Ivo van Doorn wrote:
+> >> > > > The following patch series (against wireless-next) addresses issues raised
+> >> > > > during code review and subsequently rejected by rt2x00/wireless/networking
+> >> > > > maintainers.
+> >> > >
+> >> > > Really stop reading only the half of emails, try reading it entirely (or at least don't
+> >> > > stop at the second word in a sentence). It really starts the bug me to repeat
+> >> > > myself over and over again because you refuse to read.
+> >> > >
+> >> > > Your comments during code review were ACCEPTED with the only remark that
+> >> > > it shouldn't be done right here and now.
+> >> >
+> >> > Please stop this bullshit.  We have some standards for the upstream code
+> >> > and by being maintainer you have to live up to this standards and make sure
+> >> > that they are respected instead of watering them down yourself..
+> >> >
+> >> > You were not interested even in fixing the headers duplication (it turned
+> >> > out debugging scripts needed only 25 lines of code to be able to work with
+> >> > fixed headers -- 25 LOC in bash scripts used only for debugging instead
+> >> > of 1800 LOC of kernel code).
+> >>
+> >> Yeah I know that. But like I said, I still needed to get around to do that,
+> >> and I am very happy you were interested in fixing it.
+> >
+> > Lets make one thing clear: YOU SHOULD BE THE ONE FIXING IT.
+> >
+> > I'm not in slightest interested in wasting my time on such
+> > things and educating some maintainers about basics.
+> >
+> > [ Code duplication is bad, mmm'okay?  Just say no, mmm'okay? ]
+> >
+> 
+> Bart,
+> 
+> Are you really interested in working with us (the rt2x00 project) in
+> getting the rt2800{pci,usb}
+> drivers in a better shape, or do you just want to continue your
+> ramblings on how bad you
+> think the rt2x00 maintainers, wireless maintainer, and networking
+> maintainer are in your view?
+> 
+> Just continuing these discussions doesn't help a bit as Ivo, John, and
+> David said they disagreed
+> with you on this topic.
 
-So that we can run it without having a DSO instance.
+I tried explain many times that it is not about what is in MAINTAINERS
+file or what somebody says.
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/symbol.c |   51 ++++++++++++++++++++++++++++++---------------
- tools/perf/util/symbol.h |    2 +
- 2 files changed, 36 insertions(+), 17 deletions(-)
+> If you just want to continue with a hostile take-over of the rt2800
+> maintainership, then please
+> let us know that, so that we stop spending time on useless
 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index ac94d7b..e7c7cdb 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -825,27 +825,27 @@ out_close:
- 	return err;
- }
- 
--#define BUILD_ID_SIZE 128
-+#define BUILD_ID_SIZE 20
- 
--static char *dso__read_build_id(struct dso *self)
-+int filename__read_build_id(const char *filename, void *bf, size_t size)
- {
--	int i;
-+	int fd, err = -1;
- 	GElf_Ehdr ehdr;
- 	GElf_Shdr shdr;
- 	Elf_Data *build_id_data;
- 	Elf_Scn *sec;
--	char *build_id = NULL, *bid;
--	unsigned char *raw;
- 	Elf *elf;
--	int fd = open(self->long_name, O_RDONLY);
- 
-+	if (size < BUILD_ID_SIZE)
-+		goto out;
-+
-+	fd = open(filename, O_RDONLY);
- 	if (fd < 0)
- 		goto out;
- 
- 	elf = elf_begin(fd, PERF_ELF_C_READ_MMAP, NULL);
- 	if (elf == NULL) {
--		pr_err("%s: cannot read %s ELF file.\n", __func__,
--		       self->long_name);
-+		pr_err("%s: cannot read %s ELF file.\n", __func__, filename);
- 		goto out_close;
- 	}
- 
-@@ -854,29 +854,46 @@ static char *dso__read_build_id(struct dso *self)
- 		goto out_elf_end;
- 	}
- 
--	sec = elf_section_by_name(elf, &ehdr, &shdr, ".note.gnu.build-id", NULL);
-+	sec = elf_section_by_name(elf, &ehdr, &shdr,
-+				  ".note.gnu.build-id", NULL);
- 	if (sec == NULL)
- 		goto out_elf_end;
- 
- 	build_id_data = elf_getdata(sec, NULL);
- 	if (build_id_data == NULL)
- 		goto out_elf_end;
--	build_id = malloc(BUILD_ID_SIZE);
-+	memcpy(bf, build_id_data->d_buf + 16, BUILD_ID_SIZE);
-+	err = BUILD_ID_SIZE;
-+out_elf_end:
-+	elf_end(elf);
-+out_close:
-+	close(fd);
-+out:
-+	return err;
-+}
-+
-+static char *dso__read_build_id(struct dso *self)
-+{
-+	int i, len;
-+	char *build_id = NULL, *bid;
-+	unsigned char rawbf[BUILD_ID_SIZE], *raw;
-+
-+	len = filename__read_build_id(self->long_name, rawbf, sizeof(rawbf));
-+	if (len < 0)
-+		goto out;
-+
-+	build_id = malloc(len * 2 + 1);
- 	if (build_id == NULL)
--		goto out_elf_end;
--	raw = build_id_data->d_buf + 16;
-+		goto out;
- 	bid = build_id;
- 
--	for (i = 0; i < 20; ++i) {
-+	raw = rawbf;
-+	for (i = 0; i < len; ++i) {
- 		sprintf(bid, "%02x", *raw);
- 		++raw;
- 		bid += 2;
- 	}
- 	pr_debug2("%s(%s): %s\n", __func__, self->long_name, build_id);
--out_elf_end:
--	elf_end(elf);
--out_close:
--	close(fd);
- out:
- 	return build_id;
- }
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 0884330..e0d4a58 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -82,6 +82,8 @@ void dsos__fprintf(FILE *fp);
- size_t dso__fprintf(struct dso *self, FILE *fp);
- char dso__symtab_origin(const struct dso *self);
- 
-+int filename__read_build_id(const char *filename, void *bf, size_t size);
-+
- int load_kernel(symbol_filter_t filter);
- 
- void symbol__init(unsigned int priv_size);
+I fail to see why you see it as a hostile takeover.
+
+I just did what should have been done in the first place (+ I'm going
+to push drivers further in this direction in my tree) and I was always
+pretty clear that once staging drivers become sufficiently cleaned up
+I would start re-basing my efforts on in kernel drivers.
+
+I will be glad to cooperate with you or anyone else from rt2x00 project.
+However I will not spin in some stupid bureaucracy when I see that things
+can be done more effectively.
+
+> discussions, and let John Linville
+> decide how he wants to handle this situation. It would be a shame of
+> the good patches and work
+> you did, but if that's the case, than that's it.
+
+John can just pull my tree in right now since it is based on his tree
+and it would be an immediate improvement over what its in his tree.
+
+It is up to him, or Ivo can also pull my patches into his tree.
+
+You can also decide to throw up my patches completely or re-do them
+for some silly reasons.  I won't be making much noise about it since
+I'll be already on some next patches..
+
+> Otherwise, please focus on the technical contents of the patches and
+> work with us to get
+> these drivers in a better shape.
+
+This is what I'm focused on, if you have any technical arguments w.r.t.
+my patches I'm willing to listen and address them in sensible time
+(if they are valid).  I would also be happy to work with people with any
+patches that they are working on currently.
+
+Thanks.
 -- 
-1.6.2.5
-
+Bartlomiej Zolnierkiewicz
