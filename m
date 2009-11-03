@@ -1,65 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbZKCXtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZKCXsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752973AbZKCXtP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:49:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZKCXtP
+	id S1753247AbZKCXsg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:48:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZKCXsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:49:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36553 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752062AbZKCXtO (ORCPT
+	Tue, 3 Nov 2009 18:48:35 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:52914 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752417AbZKCXsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:49:14 -0500
-Date: Tue, 3 Nov 2009 15:48:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: John Kacur <jkacur@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, Jonathan Corbet <corbet@lwn.net>,
-       Christoph Hellwig <hch@infradead.org>,
-       Arnd Bergmann <arndbergmann@googlemail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Subject: [PATCH] rtc: Explicitly set llseek to no_llseek
-Message-Id: <20091103154800.f7f6ef5f.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0910212312270.3526@localhost.localdomain>
-References: <20091010153314.827301943@linutronix.de>
-	<20091010153350.046644063@linutronix.de>
-	<alpine.LFD.2.00.0910212312270.3526@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 18:48:32 -0500
+From: John Johansen <john.johansen@canonical.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org
+Subject: [Patch 0/12] AppArmor security module
+Date: Tue,  3 Nov 2009 15:48:07 -0800
+Message-Id: <1257292099-15802-1-git-send-email-john.johansen@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Oct 2009 23:13:26 +0200 (CEST)
-John Kacur <jkacur@redhat.com> wrote:
+This is the newest version of the AppArmor security module it has been
+rewritten to use the security_path hooks instead of the previous vfs
+approach.  The current implementation is aimed at being as semantically
+close to previous versions of AppArmor as possible while using the
+existing LSM infrastructure.
 
-> >From e1b7175258b33da3b0564ef04a0b1956f04f0cc7 Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Wed, 21 Oct 2009 23:10:30 +0200
-> Subject: [PATCH] rtc: Explicitly set llseek to no_llseek
-> 
-> Now that we've removed the BKL here, lets explicitly set llseek to no_llseek
-> since the default llseek is not used here.
-> 
+AppArmor is a wip and is roughly equivalent to previous versions with better
+control of exec transitions.  Development is on going and improvements to
+file, capability, network, resource usage and ipc mediation are planned.
 
-I don't understand.
 
-> 
-> diff --git a/drivers/char/efirtc.c b/drivers/char/efirtc.c
-> index 26a47dc..53c524e 100644
-> --- a/drivers/char/efirtc.c
-> +++ b/drivers/char/efirtc.c
-> @@ -285,6 +285,7 @@ static const struct file_operations efi_rtc_fops = {
->  	.unlocked_ioctl	= efi_rtc_ioctl,
->  	.open		= efi_rtc_open,
->  	.release	= efi_rtc_close,
-> +	.llseek		= no_llseek,
->  };
->  
->  static struct miscdevice efi_rtc_dev= {
+In brief AppArmor is a security module that uses a white list to determine
+permissions.  It currently provides rules for file, capability, resource
+and basic network mediation.  With its file mediation using path name based
+pattern matching.
 
-What has this change to do with the BKL?
+Though it is possible to confine an entire system, AppArmor by design allows
+for application based mediation where only a subset of a running system is
+confined.  Any process that is not confined by AppArmor is only restricted
+by the standard unix DAC permission model.
+
+
+_Issues Addressed Since Last Time AppArmor was Posted (LSM only)_
+* all issues raised have been address except for return an error out
+  of the accept hook which is not a bug but could removed under the 
+  current simple network mediation model.  It was decided instead that
+  any development time on addressing this should go towards the new
+  network controls instead.
+* The code has seen further cleanups, and has been run through lindent
+  and checkpatch again (its been awhile).
+* several bugs have been addressed
+  - change_hat auditing
+  - quieting of file auditing
+  - policy load failures
+  - mediation of creation failure under some filesystems
+
+
+
+A brief summary of AppArmor is below
+
+AppArmor documentation can currently be found at
+  http://developer.novell.com/wiki/index.php/Apparmor
+
+The unflattened AppArmor git tree can be found at
+  git://kernel.ubuntu.com/jj/apparmor-mainline.git
+
+
+The AppArmor project is currently in transition and will be moving
+away from Novell forge.  The current upstream for the AppArmor tools
+can be found at
+  https://launchpad.net/apparmor
+
+The final location of the documentation and mailing lists have
+not been determined and will be updated when known.
+
+Profiles
+
+AppArmor's base unit of confinement is a profile, which defines the
+access permissions for tasks it is attached to.  Profiles are grouped in
+to profile namespaces, and must have a unique name within the namespace.
+
+Profile names provide context for when a profile should be used and
+may determine the attachment of a profile to an application.  If a profile
+name begins with a / character its name is considered to be a path name
+and it may be matched against executable names to determine attachment.
+Profile names that do not begin with a / character are not considered
+during automatic profile attachment.
+
+Profile names that begin with / characters can contain AppArmor pattern
+matching and may match against multiple executables.  If multiple
+profiles match an executable then the profile with the longest left
+exact match wins.  If the winner can not be determined execution of the
+task will fail.
+
+Profile names that begin with / characters are consider for attachment
+when an unconfined application calls exec, or when a confined application
+uses a exec rules specifying that such a match should be done (px, cx).
+They may also be attached using the change_profile, or change_hat directives.
+
+Profile's names that don't begin with a / character are only attached
+when they are specified by a profile exec transition, or through using
+that change_profile, change_hat directives.
+
+A partial sample profile
+
+/usr/sbin/ntpd {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  capability ipc_lock,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+  capability sys_resource,
+  capability sys_time,
+
+  /drift/ntp.drift rwl,
+  /drift/ntp.drift.TEMP rwl,
+  /etc/ntp.conf r,
+  /etc/ntp/drift* rwl,
+  /etc/ntp/keys r,
+
+  ...
+}
+
+
+AppArmor allows for rules that black list permissions by prepending the deny
+keyword, these rules are used to annotate known items that will be encountered
+and should be rejected.
+
+eg.
+   deny /etc/shadow w,
+
+
+please refer to the documentation link for further information
+
+
