@@ -1,109 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbZKCXJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751939AbZKCXJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751813AbZKCXJA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:09:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZKCXI7
+	id S1751939AbZKCXJL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:09:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbZKCXJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:08:59 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:58405 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751655AbZKCXI6 convert rfc822-to-8bit (ORCPT
+	Tue, 3 Nov 2009 18:09:09 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58003 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbZKCXJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:08:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vzrxQJihWes2I/rgb+cZJo9XTovnrSJqbwdCGWdufle6BUMjbzNrAXINHTa8/XpQOD
-         DxvjXkE25DEhWqTkVT69xoVscJ1CH7IWmD57215uavxeCOrBhyjS3uARQuCeczTVODzM
-         WYhxSPWZRiBBuWz2aGC1uZmGK3YT9CfAA16PY=
+	Tue, 3 Nov 2009 18:09:07 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: vedran.furac@gmail.com
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+Cc: kosaki.motohiro@jp.fujitsu.com, David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Arcangeli <aarcange@redhat.com>
+In-Reply-To: <4AEF394A.4050102@gmail.com>
+References: <2f11576a0911020435n103538d0p9d2afed4d39b4726@mail.gmail.com> <4AEF394A.4050102@gmail.com>
+Message-Id: <20091104002903.0B4D.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <200911032334.40547.bzolnier@gmail.com>
-References: <200911031951.05235.bzolnier@gmail.com>
-	 <200911032244.11946.bzolnier@gmail.com>
-	 <200911032301.32907.IvDoorn@gmail.com>
-	 <200911032334.40547.bzolnier@gmail.com>
-Date: Wed, 4 Nov 2009 00:09:02 +0100
-Message-ID: <14add3d10911031509l328e7674kb625b70250ff30fb@mail.gmail.com>
-Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  4 Nov 2009 08:09:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 3, 2009 at 11:34 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
-> On Tuesday 03 November 2009 23:01:32 Ivo van Doorn wrote:
->> > > > The following patch series (against wireless-next) addresses issues raised
->> > > > during code review and subsequently rejected by rt2x00/wireless/networking
->> > > > maintainers.
->> > >
->> > > Really stop reading only the half of emails, try reading it entirely (or at least don't
->> > > stop at the second word in a sentence). It really starts the bug me to repeat
->> > > myself over and over again because you refuse to read.
->> > >
->> > > Your comments during code review were ACCEPTED with the only remark that
->> > > it shouldn't be done right here and now.
->> >
->> > Please stop this bullshit.  We have some standards for the upstream code
->> > and by being maintainer you have to live up to this standards and make sure
->> > that they are respected instead of watering them down yourself..
->> >
->> > You were not interested even in fixing the headers duplication (it turned
->> > out debugging scripts needed only 25 lines of code to be able to work with
->> > fixed headers -- 25 LOC in bash scripts used only for debugging instead
->> > of 1800 LOC of kernel code).
->>
->> Yeah I know that. But like I said, I still needed to get around to do that,
->> and I am very happy you were interested in fixing it.
->
-> Lets make one thing clear: YOU SHOULD BE THE ONE FIXING IT.
->
-> I'm not in slightest interested in wasting my time on such
-> things and educating some maintainers about basics.
->
-> [ Code duplication is bad, mmm'okay?  Just say no, mmm'okay? ]
->
+> KOSAKI Motohiro wrote:
+> 
+> > Oh, I'm sorry. I mesured with rss patch.
+> > Then, I haven't understand what makes Xorg bad score.
+> > 
+> > Hmm...
+> > Vedran,  Can you please post following command result?
+> > 
+> > # cat /proc/`pidof Xorg`/smaps
+> > 
+> > I hope to undestand the issue clearly before modify any code.
+> 
+> No problem:
+> 
+> http://pastebin.com/d66972025 (long)
+> 
+> Xorg is from debian unstable.
 
-Bart,
+Hmm...
 
-Are you really interested in working with us (the rt2x00 project) in
-getting the rt2800{pci,usb}
-drivers in a better shape, or do you just want to continue your
-ramblings on how bad you
-think the rt2x00 maintainers, wireless maintainer, and networking
-maintainer are in your view?
+Your Xorg have pretty large heap. I'm not sure why it happen.
+(ATI video card issue?)
+Unfortunatelly, It is showed as normal large heap from kernel. then,
+I doubt kernel can distinguish X from other process. Probably
+oom-adj is most reasonable option....
 
-Just continuing these discussions doesn't help a bit as Ivo, John, and
-David said they disagreed
-with you on this topic.
-
-If you just want to continue with a hostile take-over of the rt2800
-maintainership, then please
-let us know that, so that we stop spending time on useless
-discussions, and let John Linville
-decide how he wants to handle this situation. It would be a shame of
-the good patches and work
-you did, but if that's the case, than that's it.
-
-Otherwise, please focus on the technical contents of the patches and
-work with us to get
-these drivers in a better shape.
-
----
-Gertjan.
+-------------------------------------------------
+[heap]
+Size:             433812 kB
+Rss:              433304 kB
+Pss:              433304 kB
+Shared_Clean:          0 kB
+Shared_Dirty:          0 kB
+Private_Clean:       280 kB
+Private_Dirty:    433024 kB
+Referenced:       415656 kB
+Swap:                  0 kB
+KernelPageSize:        4 kB
+MMUPageSize:           4 kB
 
 
-,
+
+
