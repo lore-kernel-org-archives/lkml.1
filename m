@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZKCLnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZKCLyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbZKCLnV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 06:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZKCLnV
+	id S1752516AbZKCLyH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 06:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbZKCLyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 06:43:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49213 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751783AbZKCLnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 06:43:20 -0500
-Message-ID: <4AF01735.9060409@cn.fujitsu.com>
-Date: Tue, 03 Nov 2009 19:42:45 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 3 Nov 2009 06:54:07 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:59281 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbZKCLyG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 06:54:06 -0500
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>
+Subject: [PATCH 0/13] sysfs lazification.
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 03 Nov 2009 03:53:56 -0800
+Message-ID: <m13a4vbz8r.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ringbuffer: synchronize for resizing
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-We got a sudden panic when we reduced the size of the
-ringbuffer.
+The sysfs code updates the vfs caches immediately when the sysfs data
+structures change causing a lot of unnecessary complications.  The
+following patchset untangles that beast.  Allowing for simpler
+more straight forward code, the removal of a hack from the vfs
+to support sysfs, and human comprehensible locking on sysfs.
 
-We can reproduce the panic by the following steps:
+Most of these patches have already been reviewed and acked from the
+last time I had time to work on sysfs.
 
-echo 1 > events/sched/enable
-cat trace_pipe > /dev/null &
+In net the patches look like:
 
-while ((1))
-do
-echo 12000 > buffer_size_kb
-echo 512 > buffer_size_kb
-done
+ fs/namei.c            |   22 ---
+ fs/sysfs/dir.c        |  388 ++++++++++++++++---------------------------------
+ fs/sysfs/file.c       |   41 +----
+ fs/sysfs/inode.c      |  178 ++++++++++++++---------
+ fs/sysfs/symlink.c    |   11 +-
+ fs/sysfs/sysfs.h      |    9 +-
+ include/linux/namei.h |    1 -
+ 7 files changed, 256 insertions(+), 394 deletions(-)
 
-(not more than 5 seconds, panic ...)
-
-Reported-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 63446f1..db223fe 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -1196,6 +1196,7 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
- 	atomic_inc(&cpu_buffer->record_disabled);
- 	synchronize_sched();
- 
-+	spin_lock_irq(&cpu_buffer->reader_lock);
- 	rb_head_page_deactivate(cpu_buffer);
- 
- 	for (i = 0; i < nr_pages; i++) {
-@@ -1210,6 +1211,7 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
- 		return;
- 
- 	rb_reset_cpu(cpu_buffer);
-+	spin_unlock_irq(&cpu_buffer->reader_lock);
- 
- 	rb_check_pages(cpu_buffer);
- 
-
-
-
+Eric
