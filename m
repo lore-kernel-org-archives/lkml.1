@@ -1,119 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZKCSI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZKCSK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbZKCSI3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 13:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZKCSI2
+	id S1754373AbZKCSK6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 13:10:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZKCSK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 13:08:28 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:33565 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbZKCSI1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 13:08:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=pRv3bqR1C8rlnuv9oz7LQz+01P+lqigO5J72g8sveSJh2XqbVEoYu0TKY21a5d03oD
-         fF06SxVr0AKHkfwhFk2reElkXR6XoMF95Rsj6RZiEJ52gLgUKfJkjdREWXb2Gxjymwel
-         QevPLogx2KlXGEzqyJqd8ln0nTDT2FwiPbwko=
-Message-ID: <4AF07199.2020601@gmail.com>
-Date: Tue, 03 Nov 2009 13:08:25 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 3 Nov 2009 13:10:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59924 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750979AbZKCSK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 13:10:56 -0500
+Date: Tue, 3 Nov 2009 19:10:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Brian Gerst <brgerst@gmail.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86, 64-bit: Move K8 B step iret fixup to fault entry
+	asm (v2)
+Message-ID: <20091103181014.GA19715@elte.hu>
+References: <1257270936-5496-1-git-send-email-brgerst@gmail.com>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com>
-In-Reply-To: <4AF0708B.4020406@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig77CFE234DE15F23B398FB30F"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257270936-5496-1-git-send-email-brgerst@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig77CFE234DE15F23B398FB30F
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Eric Dumazet wrote:
-> Michael S. Tsirkin a =E9crit :
->> +static void handle_tx(struct vhost_net *net)
->> +{
->> +	struct vhost_virtqueue *vq =3D &net->dev.vqs[VHOST_NET_VQ_TX];
->> +	unsigned head, out, in, s;
->> +	struct msghdr msg =3D {
->> +		.msg_name =3D NULL,
->> +		.msg_namelen =3D 0,
->> +		.msg_control =3D NULL,
->> +		.msg_controllen =3D 0,
->> +		.msg_iov =3D vq->iov,
->> +		.msg_flags =3D MSG_DONTWAIT,
->> +	};
->> +	size_t len, total_len =3D 0;
->> +	int err, wmem;
->> +	size_t hdr_size;
->> +	struct socket *sock =3D rcu_dereference(vq->private_data);
->> +	if (!sock)
->> +		return;
->> +
->> +	wmem =3D atomic_read(&sock->sk->sk_wmem_alloc);
->> +	if (wmem >=3D sock->sk->sk_sndbuf)
->> +		return;
->> +
->> +	use_mm(net->dev.mm);
->> +	mutex_lock(&vq->mutex);
->> +	vhost_no_notify(vq);
->> +
->=20
-> using rcu_dereference() and mutex_lock() at the same time seems wrong, =
-I suspect
-> that your use of RCU is not correct.
->=20
-> 1) rcu_dereference() should be done inside a read_rcu_lock() section, a=
-nd
->    we are not allowed to sleep in such a section.
->    (Quoting Documentation/RCU/whatisRCU.txt :
->      It is illegal to block while in an RCU read-side critical section,=
- )
->=20
-> 2) mutex_lock() can sleep (ie block)
->=20
+* Brian Gerst <brgerst@gmail.com> wrote:
 
+> Move the handling of truncated %rip from an iret fault to the fault
+> entry path.
+> 
+> This allows x86-64 to use the standard search_extable() function.
+> 
+> v2: Fixed jump to error_swapgs to be unconditional.
 
-Michael,
-  I warned you that this needed better documentation ;)
+v1 is already in the tip:x86/asm topic tree. Mind sending a delta fix 
+against:
 
-Eric,
-  I think I flagged this once before, but Michael convinced me that it
-was indeed "ok", if but perhaps a bit unconventional.  I will try to
-find the thread.
+  http://people.redhat.com/mingo/tip.git/README
 
-Kind Regards,
--Greg
+?
 
+Also, i'm having second thoughts about the change:
 
---------------enig77CFE234DE15F23B398FB30F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> Signed-off-by: Brian Gerst <brgerst@gmail.com>
+> ---
+>  arch/x86/include/asm/uaccess.h |    1 -
+>  arch/x86/kernel/entry_64.S     |   11 ++++++++---
+>  arch/x86/mm/extable.c          |   31 -------------------------------
+>  3 files changed, 8 insertions(+), 35 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+> index d2c6c93..abd3e0e 100644
+> --- a/arch/x86/include/asm/uaccess.h
+> +++ b/arch/x86/include/asm/uaccess.h
+> @@ -570,7 +570,6 @@ extern struct movsl_mask {
+>  #ifdef CONFIG_X86_32
+>  # include "uaccess_32.h"
+>  #else
+> -# define ARCH_HAS_SEARCH_EXTABLE
+>  # include "uaccess_64.h"
+>  #endif
+>  
+> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> index b5c061f..1579a6c 100644
+> --- a/arch/x86/kernel/entry_64.S
+> +++ b/arch/x86/kernel/entry_64.S
+> @@ -1491,12 +1491,17 @@ error_kernelspace:
+>  	leaq irq_return(%rip),%rcx
+>  	cmpq %rcx,RIP+8(%rsp)
+>  	je error_swapgs
+> -	movl %ecx,%ecx	/* zero extend */
+> -	cmpq %rcx,RIP+8(%rsp)
+> -	je error_swapgs
+> +	movl %ecx,%eax	/* zero extend */
+> +	cmpq %rax,RIP+8(%rsp)
+> +	je bstep_iret
+>  	cmpq $gs_change,RIP+8(%rsp)
+>  	je error_swapgs
+>  	jmp error_sti
+> +
+> +bstep_iret:
+> +	/* Fix truncated RIP */
+> +	movq %rcx,RIP+8(%rsp)
+> +	jmp error_swapgs
+>  END(error_entry)
+>  
+>  
+> diff --git a/arch/x86/mm/extable.c b/arch/x86/mm/extable.c
+> index 61b41ca..d0474ad 100644
+> --- a/arch/x86/mm/extable.c
+> +++ b/arch/x86/mm/extable.c
+> @@ -35,34 +35,3 @@ int fixup_exception(struct pt_regs *regs)
+>  
+>  	return 0;
+>  }
+> -
+> -#ifdef CONFIG_X86_64
+> -/*
+> - * Need to defined our own search_extable on X86_64 to work around
+> - * a B stepping K8 bug.
+> - */
+> -const struct exception_table_entry *
+> -search_extable(const struct exception_table_entry *first,
+> -	       const struct exception_table_entry *last,
+> -	       unsigned long value)
+> -{
+> -	/* B stepping K8 bug */
+> -	if ((value >> 32) == 0)
+> -		value |= 0xffffffffUL << 32;
+> -
+> -	while (first <= last) {
+> -		const struct exception_table_entry *mid;
+> -		long diff;
+> -
+> -		mid = (last - first) / 2 + first;
+> -		diff = mid->insn - value;
+> -		if (diff == 0)
+> -			return mid;
+> -		else if (diff < 0)
+> -			first = mid+1;
+> -		else
+> -			last = mid-1;
+> -	}
+> -	return NULL;
+> -}
+> -#endif
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+is this the only way how we can end up having a truncated 64-bit RIP 
+passed in to search_exception_tables()/search_extable()? Before your 
+commit we basically had a last-ditch safety net in 64-bit kernels that 
+zero-extended truncated RIPs - no matter how they got there (via known 
+or unknown erratums).
 
-iEYEARECAAYFAkrwcZkACgkQP5K2CMvXmqGhOACePT9ytdQxnqeObfA1h+nnRfJY
-vNwAn2y4p+io84eG19OyEly9IqSi8EDf
-=XPsn
------END PGP SIGNATURE-----
+Thanks,
 
---------------enig77CFE234DE15F23B398FB30F--
+	Ingo
