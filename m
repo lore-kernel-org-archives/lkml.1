@@ -1,91 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbZKCUR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZKCUSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbZKCUR6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 15:17:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbZKCUR6
+	id S1754847AbZKCUSu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 15:18:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbZKCUSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 15:17:58 -0500
-Received: from [95.166.99.235] ([95.166.99.235]:41001 "EHLO kernel.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754249AbZKCUR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 15:17:57 -0500
-Date: Tue, 3 Nov 2009 21:18:02 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: Fwd: [PATCH 0/5] cfq-iosched: improve latency for no-idle
-	queues (v3)
-Message-ID: <20091103201802.GL8742@kernel.dk>
-References: <200910262243.41327.czoccolo@gmail.com> <x49zl7c268s.fsf@segfault.boston.devel.redhat.com> <4e5e476b0910271124r2cf9f9c0l83fdc59b50619202@mail.gmail.com> <x493a4wsn5c.fsf@segfault.boston.devel.redhat.com> <x49fx8wbqd0.fsf@segfault.boston.devel.redhat.com> <4e5e476b0911030042q5963718aj5875c542e6f6cc40@mail.gmail.com> <x49ocnju35d.fsf@segfault.boston.devel.redhat.com> <4e5e476b0911030719m425c208cg311f44a91fad8342@mail.gmail.com> <4e5e476b0911031035l7caffcb7n36b6eddd399864e7@mail.gmail.com>
+	Tue, 3 Nov 2009 15:18:49 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:44489 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754206AbZKCUSs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 15:18:48 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=dauaxD8zowuNIUeEXF7G4MH/7FXHHvZ9OnnWWwy3F3WBVeFEb0lKS0fXHFOt19RrA
+	zuFcVT/wHkptcfdlu/NGA==
+Date: Tue, 3 Nov 2009 12:18:40 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, minchan.kim@gmail.com,
+       vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [RFC][-mm][PATCH 1/6] oom-killer: updates for classification of
+ OOM
+In-Reply-To: <20091102162412.107ff8ac.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0911031150500.11821@chino.kir.corp.google.com>
+References: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com> <20091102162412.107ff8ac.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b0911031035l7caffcb7n36b6eddd399864e7@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03 2009, Corrado Zoccolo wrote:
-> Hi Jens,
-> Jeff did some testing of this patchset on his NCQ-enabled SSD (the
-> 30GB OCZ Vertex).
-> The test suite contained various multiple competing workloads
-> scenarios, and was run on for-2.6.33 and cfq-2.6.33 branches.
-> 
-> Max latencies were reduced in most cases, and we had also improvements
-> on bandwidth side in some scenarios, especially
-> for multiple random readers, either alone or competing with writes.
-> 2 random readers aggregate bw increased from 48356 to 74205
-> and 4 random readers vs 1 seq writer:
-> * aggregate reader bw increased from 35242 to 56400
-> * writer bandwidth increased from 33269 to 55127
-> * maximum latency on read decreased from 535 to 324
-> * maximum latency on writes decreased from 22243 to 1153
-> It's a win on all measures.
-> The effect increasing the number of readers to 32 (latency_test_2.fio)
-> is even more visible (max read latency reduced from 3305 to 268,
-> aggregated read BW increased from 32894 to 164571).
-> 
-> The only case where I see an increased max latency is for 2 random
-> readers vs 1 seq reader:
-> 
-> for-2.6.33:
-> randomread.0: read_bw = 15,418K
-> randomread.1: read_bw = 15,399K
-> seqread: read_bw = 409K
-> 0: read_bw = 31226
-> 0: read_lat_max = 11.589
-> 0: read_lat_avg = 3.22366666666667
-> 
-> cfq-2.6.33:
-> randomread.0: read_bw = 10,065K
-> randomread.1: read_bw = 10,067K
-> seqread: read_bw = 101M
-> 0: read_bw = 121132
-> 0: read_lat_max = 303
-> 0: read_lat_avg = 0.282333333333333
-> 
-> but here the increased latency is paid back by a large increase in
-> sequential read BW (the max latency is, btw, experienced by the seq
-> reader, so I think it is a fair behaviour).
-> 
-> Jeff observed that the for-2.6.33 numbers were worse than his baseline
-> runs, probably due to changed hw_tag detection.
-> My patchset is much less sensible to hw_tag on SSDs (since there are
-> much less situations in which it would idle), so my numbers are
-> unaffected.
+On Mon, 2 Nov 2009, KAMEZAWA Hiroyuki wrote:
 
-Thanks a lot for your testing. My testing on cfq-2.6.33 looks good too,
-so I pulled it into for-2.6.33 today.
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Rewrite oom constarint to be up to date.
+> 
+> (1). Now, at badness calculation, oom_constraint and other information
+>    (which is available easily) are ignore. Pass them.
+> 
+> (2)Adds more classes of oom constraint as _MEMCG and _LOWMEM.
+>    This is just a change for interface and doesn't add new logic, at this stage.
+> 
+> (3) Pass nodemask to oom_kill. Now alloc_pages() are totally rewritten and
+>   it uses nodemask as its argument. By this, mempolicy doesn't have its own
+>   private zonelist. So, Passing nodemask to out_of_memory() is necessary.
+>   But, pagefault_out_of_memory() doesn't have enough information. We should
+>   visit this again, later.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  drivers/char/sysrq.c |    2 -
+>  fs/proc/base.c       |    4 +-
+>  include/linux/oom.h  |    8 +++-
+>  mm/oom_kill.c        |  101 +++++++++++++++++++++++++++++++++++++++------------
+>  mm/page_alloc.c      |    2 -
+>  5 files changed, 88 insertions(+), 29 deletions(-)
+> 
+> Index: mmotm-2.6.32-Nov2/include/linux/oom.h
+> ===================================================================
+> --- mmotm-2.6.32-Nov2.orig/include/linux/oom.h
+> +++ mmotm-2.6.32-Nov2/include/linux/oom.h
+> @@ -10,23 +10,27 @@
+>  #ifdef __KERNEL__
+>  
+>  #include <linux/types.h>
+> +#include <linux/nodemask.h>
+>  
+>  struct zonelist;
+>  struct notifier_block;
+>  
+>  /*
+> - * Types of limitations to the nodes from which allocations may occur
+> + * Types of limitations to zones from which allocations may occur
+>   */
+>  enum oom_constraint {
+>  	CONSTRAINT_NONE,
+> +	CONSTRAINT_LOWMEM,
+>  	CONSTRAINT_CPUSET,
+>  	CONSTRAINT_MEMORY_POLICY,
+> +	CONSTRAINT_MEMCG
+>  };
+>  
+>  extern int try_set_zone_oom(struct zonelist *zonelist, gfp_t gfp_flags);
+>  extern void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_flags);
+>  
+> -extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order);
+> +extern void out_of_memory(struct zonelist *zonelist,
+> +		gfp_t gfp_mask, int order, nodemask_t *mask);
+>  extern int register_oom_notifier(struct notifier_block *nb);
+>  extern int unregister_oom_notifier(struct notifier_block *nb);
+>  
+> Index: mmotm-2.6.32-Nov2/mm/oom_kill.c
+> ===================================================================
+> --- mmotm-2.6.32-Nov2.orig/mm/oom_kill.c
+> +++ mmotm-2.6.32-Nov2/mm/oom_kill.c
+> @@ -27,6 +27,7 @@
+>  #include <linux/notifier.h>
+>  #include <linux/memcontrol.h>
+>  #include <linux/security.h>
+> +#include <linux/mempolicy.h>
+>  
+>  int sysctl_panic_on_oom;
+>  int sysctl_oom_kill_allocating_task;
+> @@ -55,6 +56,8 @@ static int has_intersects_mems_allowed(s
+>   * badness - calculate a numeric value for how bad this task has been
+>   * @p: task struct of which task we should calculate
+>   * @uptime: current uptime in seconds
+> + * @constraint: type of oom_kill region
+> + * @mem: set if called by memory cgroup
+>   *
+>   * The formula used is relatively simple and documented inline in the
+>   * function. The main rationale is that we want to select a good task
+> @@ -70,7 +73,9 @@ static int has_intersects_mems_allowed(s
+>   *    of least surprise ... (be careful when you change it)
+>   */
+>  
+> -unsigned long badness(struct task_struct *p, unsigned long uptime)
+> +static unsigned long __badness(struct task_struct *p,
+> +		      unsigned long uptime, enum oom_constraint constraint,
+> +		      struct mem_cgroup *mem)
+>  {
+>  	unsigned long points, cpu_time, run_time;
+>  	struct mm_struct *mm;
+> @@ -193,30 +198,68 @@ unsigned long badness(struct task_struct
+>  	return points;
+>  }
+>  
+> +/* for /proc */
+> +unsigned long global_badness(struct task_struct *p, unsigned long uptime)
+> +{
+> +	return __badness(p, uptime, CONSTRAINT_NONE, NULL);
+> +}
 
-Since for-linus contains conflicting changes, can you and Jeff please
-double check that everything is still in order? The interesting bit here
-is the merge with for-2.6.33 and the coop limit from Shaohua Li. I did
-the straight forward merge, but we likely just need to drop that logic
-since the coop concept is radically different given that we merge and
-break queues in for-2.6.33.
+I don't understand why this is necessary, CONSTRAINT_NONE should be 
+available to proc_oom_score() via linux/oom.h.  It would probably be 
+better to not rename badness() and use it directly.
 
--- 
-Jens Axboe
+> +
+> +
+>  /*
+>   * Determine the type of allocation constraint.
+>   */
+> -static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+> -						    gfp_t gfp_mask)
+> -{
+> +
+>  #ifdef CONFIG_NUMA
+> +static inline enum oom_constraint guess_oom_context(struct zonelist *zonelist,
+> +		gfp_t gfp_mask, nodemask_t *nodemask)
 
+Why is this renamed from constrained_alloc()?  If the new code is really a 
+guess, we probably shouldn't be altering the oom killing behavior to kill 
+innocent tasks if it's wrong.
+
+> +{
+>  	struct zone *zone;
+>  	struct zoneref *z;
+>  	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+> -	nodemask_t nodes = node_states[N_HIGH_MEMORY];
+> +	enum oom_constraint ret = CONSTRAINT_NONE;
+>  
+> -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+> -		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
+> -			node_clear(zone_to_nid(zone), nodes);
+> -		else
+> +	/*
+> +	 * In numa environ, almost all allocation will be against NORMAL zone.
+> +	 * But some small area, ex)GFP_DMA for ia64 or GFP_DMA32 for x86-64
+> +	 * can cause OOM. We can use policy_zone for checking lowmem.
+> +	 */
+> +	if (high_zoneidx < policy_zone)
+> +		return CONSTRAINT_LOWMEM;
+> +	/*
+> +	 * Now, only mempolicy specifies nodemask. But if nodemask
+> +	 * covers all nodes, this oom is global oom.
+> +	 */
+> +	if (nodemask && !nodes_equal(node_states[N_HIGH_MEMORY], *nodemask))
+> +		ret = CONSTRAINT_MEMORY_POLICY;
+> +	/*
+> + 	 * If not __GFP_THISNODE, zonelist containes all nodes. And if
+> + 	 * zonelist contains a zone which isn't allowed under cpuset, we assume
+> + 	 * this allocation failure is caused by cpuset's constraint.
+> + 	 * Note: all nodes are scanned if nodemask=NULL.
+> + 	 */
+> +	for_each_zone_zonelist_nodemask(zone,
+> +			z, zonelist, high_zoneidx, nodemask) {
+> +		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
+>  			return CONSTRAINT_CPUSET;
+> +	}
+
+This could probably be written as
+
+	int nid;
+	if (nodemask)
+		for_each_node_mask(nid, *nodemask)
+			if (!__cpuset_node_allowed_softwall(nid, gfp_mask))
+				return CONSTRAINT_CPUSET;
+
+and then you don't need the struct zoneref or struct zone.
