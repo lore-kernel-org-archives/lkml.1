@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZKCWOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZKCWSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755444AbZKCWOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 17:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZKCWOd
+	id S1755224AbZKCWSx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 17:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbZKCWSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 17:14:33 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:41105 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754747AbZKCWOc (ORCPT
+	Tue, 3 Nov 2009 17:18:53 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:59301 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754930AbZKCWSw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 17:14:32 -0500
-Date: Tue, 3 Nov 2009 23:15:41 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: John Kacur <jkacur@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH cleanup] Re: +
-	mips-vpe-remove-leftover-unlock_kernel.patch added to -mm tree
-Message-ID: <20091103221541.GA25401@linux-mips.org>
-References: <200911030701.nA371cAP019835@imap1.linux-foundation.org> <20091103140953.GA23611@linux-mips.org> <20091103085613.373634ab.akpm@linux-foundation.org> <alpine.LFD.2.00.0911032243530.6542@localhost.localdomain>
+	Tue, 3 Nov 2009 17:18:52 -0500
+To: Benjamin LaHaise <bcrl@lhnet.ca>
+Cc: Greg KH <greg@kroah.com>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       Cosmin Ratiu <cratiu@ixiacom.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] sysfs directory scaling: rbtree for dirent name lookups
+References: <20091101163130.GA7911@kvack.org>
+	<20091103035058.GA19515@kroah.com> <20091103200155.GQ8227@kvack.org>
+	<m1my338fbi.fsf@fess.ebiederm.org> <20091103215251.GS8227@kvack.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 03 Nov 2009 14:18:53 -0800
+In-Reply-To: <20091103215251.GS8227@kvack.org> (Benjamin LaHaise's message of "Tue\, 3 Nov 2009 16\:52\:51 -0500")
+Message-ID: <m1zl735k1e.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0911032243530.6542@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 10:52:41PM +0100, John Kacur wrote:
+Benjamin LaHaise <bcrl@lhnet.ca> writes:
 
-> > > I already have an equivalent patch in the MIPS kernel - Linus only needs
-> > > to finally pull ...
-> > > 
-> > 
-> > I didn't see such a patch in yesterday's linux-next..
+> On Tue, Nov 03, 2009 at 01:32:33PM -0800, Eric W. Biederman wrote:
+>> Are your numbers from your application and are they real world?
+>> In which case they are interesting, but it would be good if
+>> we could also have microbenchmark numbers that just measure
+>> the sysfs costs.   If nothing else I am seeing a big startup
+>> overhead that isn't being subtracted out that makes it hard
+>> to see the real costs here.
+>
+> They're application based, so there's a bunch of other overhead included 
+> that won't show up on a microbenchmark.  Each interface requires a round 
+> trip between 2 L2TP daemons, so there are lots of syscalls and other cache 
+> polluting effects that won't show up on a microbenchmark.  One of the L2TP 
+> daemons is configured not to instantiate any kernel state -- running in 
+> this mode, it has very little overhead.
+>
+> The other thing to note is that the costs posted are how long it takes to 
+> add an additional 5,000 interfaces in the given range, not the total time 
+> to add say 35,000 interfaces (I didn't feel like waiting that long).
 
-I only have stuff to be pulled for 2.6.33 on my -next tree.  Anything for
-2.6.32 was in another tree.
+Ok.  That makes a lot more sense.  The times you posted ideally would be flat
+but they go up from 12s to 60s.
 
-> Linus picked-up Ralf's version of the patch for 2.6.32-rc6
-> a22d621c80fb08f668ae3bfe62aeaae64b0b2b89
-> 
-> That has the important part that removes the stray unlock_kernel, but
-> unfortunately doesn't remove the smp_lock.h header.
-> 
-> So, the last patch is just a clean-up. (no urgency).
-> 
-> >From ae20d9169893112daaad1dc3af9f8559003a2bfb Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Tue, 3 Nov 2009 22:15:55 +0100
-> Subject: [PATCH] Remove BKL header.
-> 
-> Now that the bkl has been removed, also remove the smp_lock.h include
-
-In fact every single use of <linux/smp_lock.h> in arch/mips/ is unnecessary;
-see patch for 2.6.33 in
-
-http://www.linux-mips.org/git?p=upstream-sfr.git;a=commit;h=defde8dd822ddbab4ea1f8d2f5831e693bc75ad4
-
-  Ralf
+Eric
