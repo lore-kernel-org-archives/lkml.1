@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbZKCCpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbZKCCzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757661AbZKCCpo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 21:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbZKCCpn
+	id S1757706AbZKCCzb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 21:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbZKCCza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 21:45:43 -0500
-Received: from mga09.intel.com ([134.134.136.24]:12746 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756568AbZKCCpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 21:45:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,671,1249282800"; 
-   d="scan'208";a="463794691"
-Subject: [BUGFIX for crypto-dev] crypto, Fix irq_fpu_usable usage in
- clmulni-intel
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+	Mon, 2 Nov 2009 21:55:30 -0500
+Received: from outbound.icp-qv1-irony-out5.iinet.net.au ([203.59.1.105]:57306
+	"EHLO outbound.icp-qv1-irony-out5.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756308AbZKCCza (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 21:55:30 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkoBAFIq70p8qNN0/2dsb2JhbAAI3AqEPQQ
+X-IronPort-AV: E=Sophos;i="4.44,671,1249228800"; 
+   d="scan'208";a="54038436"
+Subject: Re: [PATCH 3/3 v2] at91/atmel-mci: inclusion of sd/mmc driver in
+ at91sam9g45 chip and board
+From: Ben Nizette <bn@niasdigital.com>
+To: Ryan Mallon <ryan@bluewatersys.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Andrew Victor <avictor.za@gmail.com>,
+       linux-arm-kernel@lists.infradead.org, linux-mmc@vger.kernel.org,
+       "\"\\\"Thiago A.\\\"" =?ISO-8859-1?Q?Corr=EAa=22?= 
+	<thiago.correa@gmail.com>,
+       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, David Brownell <david-b@pacbell.net>,
+       David Brownell <dbrownell@users.sourceforge.net>
+In-Reply-To: <4AEF95E0.7040602@bluewatersys.com>
+References: <acfa557032a93e2d3186981b16f7048a5a31028a.1256314995.git.nicolas.ferre@atmel.com>
+	 <20090930155557.7dae503b@hskinnemoen-d830>
+	 <a3b1332815576dc4d496937b8a5ab69d36818d00.1256314995.git.nicolas.ferre@atmel.com>
+	 <cd73a99e0910271243x744c956bl598fef9fd4144840@mail.gmail.com>
+	 <20091028083548.38f1d80c@hskinnemoen-d830>
+	 <d6cda7730910271753o54acfa04t1225de460083325f@mail.gmail.com>
+	 <cd73a99e0910281253x1bb72b74p47cb5110efb0871f@mail.gmail.com>
+	 <1256763057.4362.36.camel@ben-desktop> <4AEF12B7.3040704@atmel.com>
+	 <4AEF95E0.7040602@bluewatersys.com>
 Content-Type: text/plain
-Date: Tue, 03 Nov 2009 10:45:46 +0800
-Message-Id: <1257216346.30470.1188.camel@yhuang-dev.sh.intel.com>
+Date: Tue, 03 Nov 2009 13:55:43 +1100
+Message-Id: <1257216943.4358.66.camel@ben-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When renaming kernel_fpu_using to irq_fpu_usable, the semantics of the
-function is changed too, from mesuring whether kernel is using FPU,
-that is, the FPU is NOT available, to measuring whether FPU is usable,
-that is, the FPU is available.
+On Tue, 2009-11-03 at 15:30 +1300, Ryan Mallon wrote:
+> > 
+> IIRC, we can't mark static inline functions as weak, and we don't want
+> to turn gpio_is_valid into an actual function call. We could do some
+> preprocessor magic, but that gets a bit messy.
 
-But the usage of irq_fpu_usable in ghash-clmulni-intel_glue.c is not
-changed accordingly. This patch fixes this.
+Messy but generally accepted.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
----
- arch/x86/crypto/ghash-clmulni-intel_glue.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Have a grep for, eg, __HAVE_ARCH_<string functions> and
+HAVE_ARCH_BUG{_ON}
 
---- a/arch/x86/crypto/ghash-clmulni-intel_glue.c
-+++ b/arch/x86/crypto/ghash-clmulni-intel_glue.c
-@@ -159,7 +159,7 @@ static int ghash_async_init(struct ahash
- 	struct ahash_request *cryptd_req = ahash_request_ctx(req);
- 	struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
- 
--	if (irq_fpu_usable()) {
-+	if (!irq_fpu_usable()) {
- 		memcpy(cryptd_req, req, sizeof(*req));
- 		ahash_request_set_tfm(cryptd_req, &cryptd_tfm->base);
- 		return crypto_ahash_init(cryptd_req);
-@@ -177,7 +177,7 @@ static int ghash_async_update(struct aha
- {
- 	struct ahash_request *cryptd_req = ahash_request_ctx(req);
- 
--	if (irq_fpu_usable()) {
-+	if (!irq_fpu_usable()) {
- 		struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
- 		struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
- 		struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
-@@ -195,7 +195,7 @@ static int ghash_async_final(struct ahas
- {
- 	struct ahash_request *cryptd_req = ahash_request_ctx(req);
- 
--	if (irq_fpu_usable()) {
-+	if (!irq_fpu_usable()) {
- 		struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
- 		struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
- 		struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
-@@ -216,7 +216,7 @@ static int ghash_async_digest(struct aha
- 	struct ahash_request *cryptd_req = ahash_request_ctx(req);
- 	struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
- 
--	if (irq_fpu_usable()) {
-+	if (!irq_fpu_usable()) {
- 		memcpy(cryptd_req, req, sizeof(*req));
- 		ahash_request_set_tfm(cryptd_req, &cryptd_tfm->base);
- 		return crypto_ahash_digest(cryptd_req);
-
+	--Ben.
 
