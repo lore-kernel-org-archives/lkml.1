@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbZKCCm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbZKCCpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757655AbZKCCm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 21:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757606AbZKCCm5
+	id S1757661AbZKCCpo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 21:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbZKCCpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 21:42:57 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50157 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756445AbZKCCm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 21:42:57 -0500
-Message-ID: <4AEF987A.5090308@cn.fujitsu.com>
-Date: Tue, 03 Nov 2009 10:42:02 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: bblum@andrew.cmu.edu, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 0/3] cgroups: support for module-loadable subsystems
-References: <20091102212825.GA13692@andrew.cmu.edu>	 <4AEF8F7E.1000007@cn.fujitsu.com> <6599ad830911021811n7ccf7a70y6939ac581381c22f@mail.gmail.com>
-In-Reply-To: <6599ad830911021811n7ccf7a70y6939ac581381c22f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 2 Nov 2009 21:45:43 -0500
+Received: from mga09.intel.com ([134.134.136.24]:12746 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756568AbZKCCpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 21:45:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,671,1249282800"; 
+   d="scan'208";a="463794691"
+Subject: [BUGFIX for crypto-dev] crypto, Fix irq_fpu_usable usage in
+ clmulni-intel
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 03 Nov 2009 10:45:46 +0800
+Message-Id: <1257216346.30470.1188.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Mon, Nov 2, 2009 at 6:03 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->> I doubt the value of module-loadable subsystems. A cgroup subsystem
->> is usually a kernel resource controller, and normally it needs to
->> add some hooks in some in-kernel structures and functions, which
->> makes it impossible to be a module.
-> 
-> Not true - as the classifier example shows, if there's already a
-> framework that supports hooking loadable modules into some kernel
-> system, a resource controller can be a module.
-> 
+When renaming kernel_fpu_using to irq_fpu_usable, the semantics of the
+function is changed too, from mesuring whether kernel is using FPU,
+that is, the FPU is NOT available, to measuring whether FPU is usable,
+that is, the FPU is available.
 
-True. Just reminds me a pure cfq-based io controller can be a
-module too, though the io controller discussed in the mini summit
-won't be a pure cfq-based one.
+But the usage of irq_fpu_usable in ghash-clmulni-intel_glue.c is not
+changed accordingly. This patch fixes this.
 
->> In fact, net_cls is the only subsystem that can be a module, and
->> make it a module doesn't seem to have real benefit?
-> 
-> Wouldn't it be just as useful as any other module-loadable classifier,
-> of which there are quite a few?
-> 
-> It's true that net_cls is currently the only subsystem that makes
-> sense to use as a module, but its existence shows that the concept
-> isn't too outlandish.
-> 
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ arch/x86/crypto/ghash-clmulni-intel_glue.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Yes, sounds reasonable. 
+--- a/arch/x86/crypto/ghash-clmulni-intel_glue.c
++++ b/arch/x86/crypto/ghash-clmulni-intel_glue.c
+@@ -159,7 +159,7 @@ static int ghash_async_init(struct ahash
+ 	struct ahash_request *cryptd_req = ahash_request_ctx(req);
+ 	struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
+ 
+-	if (irq_fpu_usable()) {
++	if (!irq_fpu_usable()) {
+ 		memcpy(cryptd_req, req, sizeof(*req));
+ 		ahash_request_set_tfm(cryptd_req, &cryptd_tfm->base);
+ 		return crypto_ahash_init(cryptd_req);
+@@ -177,7 +177,7 @@ static int ghash_async_update(struct aha
+ {
+ 	struct ahash_request *cryptd_req = ahash_request_ctx(req);
+ 
+-	if (irq_fpu_usable()) {
++	if (!irq_fpu_usable()) {
+ 		struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
+ 		struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
+ 		struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
+@@ -195,7 +195,7 @@ static int ghash_async_final(struct ahas
+ {
+ 	struct ahash_request *cryptd_req = ahash_request_ctx(req);
+ 
+-	if (irq_fpu_usable()) {
++	if (!irq_fpu_usable()) {
+ 		struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
+ 		struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
+ 		struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
+@@ -216,7 +216,7 @@ static int ghash_async_digest(struct aha
+ 	struct ahash_request *cryptd_req = ahash_request_ctx(req);
+ 	struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
+ 
+-	if (irq_fpu_usable()) {
++	if (!irq_fpu_usable()) {
+ 		memcpy(cryptd_req, req, sizeof(*req));
+ 		ahash_request_set_tfm(cryptd_req, &cryptd_tfm->base);
+ 		return crypto_ahash_digest(cryptd_req);
+
+
