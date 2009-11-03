@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZKCU3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbZKCU3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbZKCU3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 15:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZKCU3U
+	id S1755251AbZKCU3n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 15:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZKCU3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 15:29:20 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:52566 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752351AbZKCU3T (ORCPT
+	Tue, 3 Nov 2009 15:29:42 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:46426 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754134AbZKCU3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 15:29:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=k0sLHRC6G+zrTw1z9fAm2+c7lgtY9yGVgzlsywShbNxKYXv3z2x16sCGs7a8F3WHRm
-         35+EGsCJbXl72L6Sy1alvXx8NjH+bStptu8NPlrgE5YRNGFDhAkY4/TVO7LMpukXVf+h
-         9g/oNxejgG3HWbTgWd6cG0bqxlu1nWF8RAslc=
-Date: Tue, 3 Nov 2009 21:29:24 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jan Kiszka <jan.kiszka@web.de>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
-	on top of perf events
-Message-ID: <20091103202923.GB4962@nowhere>
-References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com> <4AF08B7C.8040903@web.de> <20091103201503.GA4962@nowhere> <4AF090EC.5010105@web.de>
+	Tue, 3 Nov 2009 15:29:41 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=DQzAJ/sH0xdlT5MjbHIWrrnmnWvzLyb86/OoJIngRHC5PVcyG6RhEJOfYh8A4JsKM
+	ev7m+U6lirbWW6CcM3WOg==
+Date: Tue, 3 Nov 2009 12:29:39 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, minchan.kim@gmail.com,
+       vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [RFC][-mm][PATCH 5/6] oom-killer: check last total_vm
+ expansion
+In-Reply-To: <20091102162837.405783f3.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0911031224270.25890@chino.kir.corp.google.com>
+References: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com> <20091102162837.405783f3.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF090EC.5010105@web.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 09:22:04PM +0100, Jan Kiszka wrote:
-> > Thinking about it, this check should cover every cases:
-> > 
-> > if (vcpu->arch.switch_db_regs || __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK)
-> > 
-> > If we have __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK, it means there is an
-> > active breakpoint and then we should restore the current state.
-> > 
+On Mon, 2 Nov 2009, KAMEZAWA Hiroyuki wrote:
+
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
-> And what about (__get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK) only? Would
-> you be able to live with unsync'ed hardware and software states?
-> 
-> Jan
+> At considering oom-kill algorithm, we can't avoid to take runtime
+> into account. But this can adds too big bonus to slow-memory-leaker.
+> For adding penalty to slow-memory-leaker, we record jiffies of
+> the last mm->hiwater_vm expansion. That catches processes which leak
+> memory periodically.
 > 
 
-
-But if the guest has breakpoints activated, the host will inherit
-them, which is really not something we want, assuming vcpu->arch.switch_db_regs
-already protects us about that.
-
+No, it doesn't, it simply measures the last time the hiwater mark was 
+increased.  That could have increased by a single page in the last tick 
+with no increase in memory consumption over the past year and then its 
+unfairly biased against for quiet_time in the new oom kill heuristic 
+(patch 6).  Using this as part of the badness scoring is ill conceived 
+because it doesn't necessarily indicate a memory leaking task, just one 
+that has recently allocated memory.
