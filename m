@@ -1,264 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZKCAnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbZKCAoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbZKCAnz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 19:43:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbZKCAnx
+	id S1757485AbZKCAoq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 19:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbZKCAop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 19:43:53 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:34866 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757285AbZKCAnv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 19:43:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RSYPTX+st6NJrP2Rum8R9J6Nndfmn63RtmfT/ft33ZG6ztx71jKc3wNubUvq/p6UTC
-         H2wXE6HvLVORxKILUwmxzezmmQqbwfnPa25XULBBDitaKlCOg6oBdfWcX/4TgFpKM1Ng
-         7/TyI8wOIusp2nPAtV++XAEUYYy+1Hgw4ZVYM=
-MIME-Version: 1.0
-In-Reply-To: <e9c3a7c20910291546r2603e191g87a23023c32f1b1b@mail.gmail.com>
-References: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
-	 <1255588866-4133-2-git-send-email-Vishnu@freescale.com>
-	 <e9c3a7c20910291546r2603e191g87a23023c32f1b1b@mail.gmail.com>
-Date: Tue, 3 Nov 2009 08:43:54 +0800
-Message-ID: <389deec70911021643t6897f21fv52cc660e5f5d67e5@mail.gmail.com>
-Subject: Re: [PATCH v0 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-From: hank peng <pengxihan@gmail.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Vishnu Suresh <Vishnu@freescale.com>, linuxppc-dev@ozlabs.org,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, herbert@gondor.apana.org.au,
-       Kim Phillips <kim.phillips@freescale.com>,
-       Dipen Dudhat <Dipen.Dudhat@freescale.com>,
-       Maneesh Gupta <Maneesh.Gupta@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 2 Nov 2009 19:44:45 -0500
+Received: from mga09.intel.com ([134.134.136.24]:55313 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757398AbZKCAop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 19:44:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,670,1249282800"; 
+   d="scan'208";a="463770318"
+Subject: Re: [RFC 2/2] Use unified UUID/GUID definition in gfs2
+From: Huang Ying <ying.huang@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, Steven Whitehouse <swhiteho@redhat.com>,
+       Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091102150221.948d8427.akpm@linux-foundation.org>
+References: <1255501807.6047.1193.camel@yhuang-dev.sh.intel.com>
+	 <20091101093545.a7a4693a.akpm@linux-foundation.org>
+	 <1257123583.30470.1161.camel@yhuang-dev.sh.intel.com>
+	 <20091102150221.948d8427.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 03 Nov 2009 08:44:48 +0800
+Message-Id: <1257209088.30470.1171.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have tested this patch on my MPC8548 machine box, kernel version is
-2.6.30. There is a problem.
-#mdadm -C /dev/md0 -l5 -n3 /dev/sd{a,b,c}
-Recovery can be done successfully, interrupts looks normal.
-# cat /proc/interrupts
-           CPU0
- 16:   16091057   OpenPIC   Level     mvSata
- 17:          0   OpenPIC   Level     mvSata
- 18:          4   OpenPIC   Level     phy_interrupt, phy_interrupt
- 20:         39   OpenPIC   Level     fsldma-channel
- 21:          0   OpenPIC   Level     fsldma-channel
- 22:          0   OpenPIC   Level     fsldma-channel
- 23:          0   OpenPIC   Level     fsldma-channel
- 29:        241   OpenPIC   Level     eth0_tx
- 30:    1004692   OpenPIC   Level     eth0_rx
- 34:          0   OpenPIC   Level     eth0_er
- 35:          0   OpenPIC   Level     eth1_tx
- 36:          0   OpenPIC   Level     eth1_rx
- 40:          0   OpenPIC   Level     eth1_er
- 42:      73060   OpenPIC   Level     serial
- 43:       9854   OpenPIC   Level     i2c-mpc, i2c-mpc
- 45:   61264188   OpenPIC   Level     talitos
-BAD:          0
+On Tue, 2009-11-03 at 07:02 +0800, Andrew Morton wrote: 
+> On Mon, 02 Nov 2009 08:59:43 +0800
+> Huang Ying <ying.huang@intel.com> wrote:
+> 
+> > On Mon, 2009-11-02 at 01:35 +0800, Andrew Morton wrote: 
+> > > On Wed, 14 Oct 2009 14:30:07 +0800 Huang Ying <ying.huang@intel.com> wrote:
+> > > 
+> > > > Replace u8[16] UUID definition in gfs2.
+> > > > 
+> > > > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > > > ---
+> > > >  fs/gfs2/incore.h            |    3 ++-
+> > > >  fs/gfs2/ops_fstype.c        |    2 +-
+> > > >  fs/gfs2/sys.c               |   14 ++++----------
+> > > >  include/linux/gfs2_ondisk.h |    3 ++-
+> > > >  4 files changed, 9 insertions(+), 13 deletions(-)
+> > > > 
+> > > > --- a/fs/gfs2/incore.h
+> > > > +++ b/fs/gfs2/incore.h
+> > > > @@ -15,6 +15,7 @@
+> > > >  #include <linux/slow-work.h>
+> > > >  #include <linux/dlm.h>
+> > > >  #include <linux/buffer_head.h>
+> > > > +#include <linux/uuid.h>
+> > > >  
+> > > >  #define DIO_WAIT	0x00000010
+> > > >  #define DIO_METADATA	0x00000020
+> > > > @@ -483,7 +484,7 @@ struct gfs2_sb_host {
+> > > >  
+> > > >  	char sb_lockproto[GFS2_LOCKNAME_LEN];
+> > > >  	char sb_locktable[GFS2_LOCKNAME_LEN];
+> > > > -	u8 sb_uuid[16];
+> > > > +	uuid_be sb_uuid;
+> > > >  };
+> > > >  
+> > > 
+> > > Breaks `make headers_check':
+> > > 
+> > > include/linux/gfs2_ondisk.h:14: included file 'linux/uuid.h' is not exported
+> > > 
+> > > I don't think we want to export linux/uuid.h to userspace.  But
+> > > fs/gfs2/incore.h _is_ shared with userspace, and needs linux/uuid.h.
+> > 
+> > When writing uuid.h, I think it should be exported to userspace. Why
+> > should we not export it to user space?
+> 
+> It contains a pile of stuff which is of no use to userspace - functions
+> definitions, function declarations, macros, additional linux includes.
+> 
+> If we're going to do this then we need a separate header file which
+> contains the userspace-needed things.  And we'd need to check that it's
+> desirable to use __u8 in userspace headers.
 
-Then, I plan to create a VG, but problem occured.
-#pvcreate /dev/md0
+For stuff of no use to user space, I think it can be enclosed into
 
-After I input this command, system hangs there without any messages.
+#ifdef __KERNEL__
+#endif
 
-BTW, all is OK before using this patch.
+It seems that <linux/types.h> and <linux/string.h> are both safe to be
+included in a file exported to user space, because there is appropriate
+__KERNEL__ in these files.
 
+In include/asm-generic/int-ll64.h, it is said __xx is intended to be
+used to be exported to user space.
 
-2009/10/30 Dan Williams <dan.j.williams@intel.com>:
-> On Wed, Oct 14, 2009 at 11:41 PM, Vishnu Suresh <Vishnu@freescale.com> wrote:
-> [..]
->> diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
->> index b08403d..343e578 100644
->> --- a/drivers/crypto/Kconfig
->> +++ b/drivers/crypto/Kconfig
->> @@ -192,6 +192,8 @@ config CRYPTO_DEV_TALITOS
->>        select CRYPTO_ALGAPI
->>        select CRYPTO_AUTHENC
->>        select HW_RANDOM
->> +       select DMA_ENGINE
->> +       select ASYNC_XOR
->
-> You need only select DMA_ENGINE.  ASYNC_XOR is selected by its users.
->
->>        depends on FSL_SOC
->>        help
->>          Say 'Y' here to use the Freescale Security Engine (SEC)
->> diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
->> index c47ffe8..84819d4 100644
->> --- a/drivers/crypto/talitos.c
->> +++ b/drivers/crypto/talitos.c
-> [..]
->> +static void talitos_process_pending(struct talitos_xor_chan *xor_chan)
->> +{
->> +       struct talitos_xor_desc *desc, *_desc;
->> +       unsigned long flags;
->> +       int status;
->> +
->> +       spin_lock_irqsave(&xor_chan->desc_lock, flags);
->> +
->> +       list_for_each_entry_safe(desc, _desc, &xor_chan->pending_q, node) {
->> +               status = talitos_submit(xor_chan->dev, &desc->hwdesc,
->> +                                       talitos_release_xor, desc);
->> +               if (status != -EINPROGRESS)
->> +                       break;
->> +
->> +               list_del(&desc->node);
->> +               list_add_tail(&desc->node, &xor_chan->in_progress_q);
->> +       }
->> +
->> +       spin_unlock_irqrestore(&xor_chan->desc_lock, flags);
->> +}
->
-> The driver uses spin_lock_bh everywhere else which is either a bug, or
-> this code is being overly protective.  In any event lockdep will
-> rightly complain about this.  The API and its users do not submit
-> operations in hard-irq context.
->
->> +
->> +static void talitos_release_xor(struct device *dev, struct talitos_desc *hwdesc,
->> +                               void *context, int error)
->> +{
->> +       struct talitos_xor_desc *desc = context;
->> +       struct talitos_xor_chan *xor_chan;
->> +       dma_async_tx_callback callback;
->> +       void *callback_param;
->> +
->> +       if (unlikely(error)) {
->> +               dev_err(dev, "xor operation: talitos error %d\n", error);
->> +               BUG();
->> +       }
->> +
->> +       xor_chan = container_of(desc->async_tx.chan, struct talitos_xor_chan,
->> +                               common);
->> +       spin_lock_bh(&xor_chan->desc_lock);
->> +       if (xor_chan->completed_cookie < desc->async_tx.cookie)
->> +               xor_chan->completed_cookie = desc->async_tx.cookie;
->> +
->> +       callback = desc->async_tx.callback;
->> +       callback_param = desc->async_tx.callback_param;
->> +
->> +       if (callback) {
->> +               spin_unlock_bh(&xor_chan->desc_lock);
->> +               callback(callback_param);
->> +               spin_lock_bh(&xor_chan->desc_lock);
->> +       }
->
-> You do not need to unlock to call the callback.  Users of the API
-> assume that they are called in bh context and that they are not
-> allowed to submit new operations directly from the callback (this
-> simplifies the descriptor cleanup routines in other drivers).
->
->> +
->> +       list_del(&desc->node);
->> +       list_add_tail(&desc->node, &xor_chan->free_desc);
->> +       spin_unlock_bh(&xor_chan->desc_lock);
->> +       if (!list_empty(&xor_chan->pending_q))
->> +               talitos_process_pending(xor_chan);
->> +}
->
-> It appears this routine is missing a call to dma_run_dependencies()?
-> This is needed if another channel is handling memory copy offload.  I
-> assume this is the case due to your other patch to fsldma.  See
-> iop_adma_run_tx_complete_actions().  If this xor resource can also
-> handle copy operations that would be more efficient as it eliminates
-> channel switching.  See the ioatdma driver and its use of
-> ASYNC_TX_DISABLE_CHANNEL_SWITCH.
->
->> +static struct dma_async_tx_descriptor * talitos_prep_dma_xor(
->> +                       struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
->> +                       unsigned int src_cnt, size_t len, unsigned long flags)
->> +{
->> +       struct talitos_xor_chan *xor_chan;
->> +       struct talitos_xor_desc *new;
->> +       struct talitos_desc *desc;
->> +       int i, j;
->> +
->> +       BUG_ON(unlikely(len > TALITOS_MAX_DATA_LEN));
->> +
->> +       xor_chan = container_of(chan, struct talitos_xor_chan, common);
->> +
->> +       spin_lock_bh(&xor_chan->desc_lock);
->> +       if (!list_empty(&xor_chan->free_desc)) {
->> +               new = container_of(xor_chan->free_desc.next,
->> +                                  struct talitos_xor_desc, node);
->> +               list_del(&new->node);
->> +       } else {
->> +               new = talitos_xor_alloc_descriptor(xor_chan, GFP_KERNEL);
->> +       }
->> +       spin_unlock_bh(&xor_chan->desc_lock);
->> +
->> +       if (!new) {
->> +               dev_err(xor_chan->common.device->dev,
->> +                       "No free memory for XOR DMA descriptor\n");
->> +               return NULL;
->> +       }
->> +       dma_async_tx_descriptor_init(&new->async_tx, &xor_chan->common);
->> +
->> +       INIT_LIST_HEAD(&new->node);
->> +       INIT_LIST_HEAD(&new->tx_list);
->
-> You can save some overhead in the fast path by moving this
-> initialization to talitos_xor_alloc_descriptor.
->
->> +
->> +       desc = &new->hwdesc;
->> +       /* Set destination: Last pointer pair */
->> +       to_talitos_ptr(&desc->ptr[6], dest);
->> +       desc->ptr[6].len = cpu_to_be16(len);
->> +       desc->ptr[6].j_extent = 0;
->> +
->> +       /* Set Sources: End loading from second-last pointer pair */
->> +       for (i = 5, j = 0; (j < src_cnt) && (i > 0); i--, j++) {
->> +               to_talitos_ptr(&desc->ptr[i], src[j]);
->> +               desc->ptr[i].len = cpu_to_be16(len);
->> +               desc->ptr[i].j_extent = 0;
->> +       }
->> +
->> +       /*
->> +        * documentation states first 0 ptr/len combo marks end of sources
->> +        * yet device produces scatter boundary error unless all subsequent
->> +        * sources are zeroed out
->> +        */
->> +       for (; i >= 0; i--) {
->> +               to_talitos_ptr(&desc->ptr[i], 0);
->> +               desc->ptr[i].len = 0;
->> +               desc->ptr[i].j_extent = 0;
->> +       }
->> +
->> +       desc->hdr = DESC_HDR_SEL0_AESU | DESC_HDR_MODE0_AESU_XOR
->> +                   | DESC_HDR_TYPE_RAID_XOR;
->> +
->> +       new->async_tx.parent = NULL;
->> +       new->async_tx.next = NULL;
->
-> These fields are managed by the async_tx channel switch code.  No need
-> to manage it here.
->
->> +       new->async_tx.cookie = 0;
->
-> This is set below to -EBUSY, it's redundant to touch it here.
->
->> +       async_tx_ack(&new->async_tx);
->
-> This makes it impossible to attach a dependency to this operation.
-> Not sure this is what you want.
->
-> --
-> Dan
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Best Regards,
+Huang Ying
 
-
-
--- 
-The simplest is not all best but the best is surely the simplest!
