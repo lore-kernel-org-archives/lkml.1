@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbZKCBWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZKCBXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569AbZKCBWj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 20:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbZKCBWi
+	id S1757589AbZKCBXd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 20:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757512AbZKCBXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 20:22:38 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37290 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757463AbZKCBWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 20:22:38 -0500
-Subject: Re: Filtering bits in set_pte_at()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <Pine.LNX.4.64.0911022342070.30581@sister.anvils>
-References: <1256957081.6372.344.camel@pasglop>
-	 <Pine.LNX.4.64.0911021256330.32400@sister.anvils>
-	 <1257200367.7907.50.camel@pasglop>
-	 <Pine.LNX.4.64.0911022342070.30581@sister.anvils>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 03 Nov 2009 12:22:26 +1100
-Message-ID: <1257211346.7907.60.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Nov 2009 20:23:33 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:9389 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757507AbZKCBXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 20:23:32 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=Bn/de4UDr6A7yFgxrDSqtL6xDsWUkhqPnWS/da+n77DE4vgmUKdapQfDkLaq9CdKk
+	bn1pWyhFg7r3C6+J85PIw==
+MIME-Version: 1.0
+In-Reply-To: <b741c2440911021721o610ee4f1la123146e6e503d2d@mail.gmail.com>
+References: <b741c2440911012346k7213befcida229606f10c0399@mail.gmail.com>
+	 <4AEF81E2.3060403@cn.fujitsu.com>
+	 <b741c2440911021721o610ee4f1la123146e6e503d2d@mail.gmail.com>
+Date: Mon, 2 Nov 2009 17:23:31 -0800
+Message-ID: <6599ad830911021723t77583792q1a22c345d3b0d3c1@mail.gmail.com>
+Subject: Re: [PATCH 2/3] Fix the 'current css_set' problem in debug subsystem
+From: Paul Menage <menage@google.com>
+To: Liu Aleaxander <aleaxander@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-02 at 23:45 +0000, Hugh Dickins wrote:
-> > IE. update_mmu_cache() would be more generally useful if it took the
-> > ptep instead of the pte. Of course, I'm sure some embedded archs are
-> > going to cry for the added load here ... 
-> > 
-> > I like your idea. I'll look into doing a patch converting it and
-> will
-> > post it here.
-> 
-> Well, I wasn't proposing
-> 
->                 update_mmu_cache(vma, address, ptep);
-> but
->                 update_mmu_cache(vma, address, *ptep);
-> 
-> which may not meet your future idea, but is much less churn for now
-> i.e. no change to any of the arch's update_mmu_cache(),
-> just a change to some of its callsites. 
+On Mon, Nov 2, 2009 at 5:21 PM, Liu Aleaxander <aleaxander@gmail.com> wrote:
+> Yes, I know it means 'current task', but is this useful to print the
+> same things with two more files in all the cgroups?
+>
 
-I see... but if we go that way, I think we may as well do the whole
-churn... I'll have a look at how bad it is.
+We could just export those files in the root cgroup in the debug hierarchy.
 
-Cheers,
-Ben.
-
-
+Paul
