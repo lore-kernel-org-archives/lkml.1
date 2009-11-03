@@ -1,27 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbZKCXrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbZKCXtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbZKCXrw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:47:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZKCXrg
+	id S1752973AbZKCXtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZKCXtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:47:36 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53296 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753071AbZKCXrd (ORCPT
+	Tue, 3 Nov 2009 18:49:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36553 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752062AbZKCXtO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:47:33 -0500
-Date: Tue, 3 Nov 2009 23:47:47 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       david-b@pacbell.net, Greg KH <greg@kroah.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] gpiolib: fix device_create() result check
-Message-ID: <20091103234747.59c0e2ca@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091103144401.6fa4e130.akpm@linux-foundation.org>
-References: <200910202035.23981.sshtylyov@ru.mvista.com>
-	<20091103144401.6fa4e130.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Tue, 3 Nov 2009 18:49:14 -0500
+Date: Tue, 3 Nov 2009 15:48:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: John Kacur <jkacur@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, Jonathan Corbet <corbet@lwn.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       Arnd Bergmann <arndbergmann@googlemail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Subject: [PATCH] rtc: Explicitly set llseek to no_llseek
+Message-Id: <20091103154800.f7f6ef5f.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0910212312270.3526@localhost.localdomain>
+References: <20091010153314.827301943@linutronix.de>
+	<20091010153350.046644063@linutronix.de>
+	<alpine.LFD.2.00.0910212312270.3526@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,21 +34,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009 14:44:01 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Wed, 21 Oct 2009 23:13:26 +0200 (CEST)
+John Kacur <jkacur@redhat.com> wrote:
 
-> On Tue, 20 Oct 2009 20:35:23 +0400
-> Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+> >From e1b7175258b33da3b0564ef04a0b1956f04f0cc7 Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Wed, 21 Oct 2009 23:10:30 +0200
+> Subject: [PATCH] rtc: Explicitly set llseek to no_llseek
 > 
-> > In case of failure, device_create() returns not NULL but the error code.
-> > The current code checks for non-NULL though which causes kernel oops in
-> > sysfs_create_group() when device_create() fails.  Check for error using
-> > IS_ERR() and propagate the error value using PTR_ERR() instead of fixed
-> > -ENODEV code returned now...
+> Now that we've removed the BKL here, lets explicitly set llseek to no_llseek
+> since the default llseek is not used here.
 > 
-> Does anyone notice any missing information here?
 
-its what you get for cheap hacks instead of having a ptr_err_t which is a
-union so you have to get it right ;)
+I don't understand.
 
-Alan
+> 
+> diff --git a/drivers/char/efirtc.c b/drivers/char/efirtc.c
+> index 26a47dc..53c524e 100644
+> --- a/drivers/char/efirtc.c
+> +++ b/drivers/char/efirtc.c
+> @@ -285,6 +285,7 @@ static const struct file_operations efi_rtc_fops = {
+>  	.unlocked_ioctl	= efi_rtc_ioctl,
+>  	.open		= efi_rtc_open,
+>  	.release	= efi_rtc_close,
+> +	.llseek		= no_llseek,
+>  };
+>  
+>  static struct miscdevice efi_rtc_dev= {
+
+What has this change to do with the BKL?
