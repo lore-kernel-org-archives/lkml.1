@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZKCQXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZKCQYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbZKCQXJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 11:23:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZKCQXI
+	id S1753435AbZKCQYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 11:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZKCQYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 11:23:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54838 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751261AbZKCQXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 11:23:06 -0500
-Subject: Re: [-next regression] lockdep? tracing? BUG: unable to handle
- kernel paging request at
-From: Eric Paris <eparis@redhat.com>
-To: rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, mingo@elte.hu,
-       zhaolei@cn.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lizf@cn.fujitsu.com
-In-Reply-To: <1257264170.26028.3340.camel@gandalf.stny.rr.com>
-References: <1257263296.2891.97.camel@dhcp231-106.rdu.redhat.com>
-	 <1257264170.26028.3340.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 03 Nov 2009 11:22:30 -0500
-Message-Id: <1257265350.2891.102.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 11:24:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48151 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751336AbZKCQYt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 11:24:49 -0500
+Date: Tue, 3 Nov 2009 08:23:38 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: Please consider reverting
+ 7d930bc33653d5592dc386a76a38f39c2e962344
+In-Reply-To: <1257264485.3420.87.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0911030815180.31845@localhost.localdomain>
+References: <20091103053156.GA3212@core.coreip.homeip.net>  <20091102.224957.32364226.davem@davemloft.net>  <20091103065238.GE3212@core.coreip.homeip.net>  <1257232587.3420.55.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
+  <1257262588.3420.79.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030738260.31845@localhost.localdomain> <1257264485.3420.87.camel@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-03 at 11:02 -0500, Steven Rostedt wrote:
-> [ Added Peter Zijlstra ]
+
+
+On Wed, 4 Nov 2009, Marcel Holtmann wrote:
+>
+> I do have a patch in my inbox from Johannes from 4 days ago that fixes
+> this issue.
 > 
-> On Tue, 2009-11-03 at 10:48 -0500, Eric Paris wrote:
-> > Linux-next from Oct 30 did not have this problem.  Linux next from
-> > yesterday (and today) I always hit this on boot.
+> 	http://marc.info/?l=linux-wireless&m=125697124819563&w=2
 > 
-> Could you also give the SHA1 of Linux-next, as well as the config you
-> used.
+> So what is the take away from this now? Do you wanna have Johannes step
+> over John and Dave and send such a patch directly to you?
 
-cb9267934a27b149416762308a36e8a61f04ecb2
+Hell yes. If it causes lockups for people, and the original commit is 
+_known_ to be buggy, these kinds of things should be expedited.
 
-> > 
-> > [    7.989630] BUG: unable to handle kernel paging request at 00000000000160de
-> > [    7.990538] IP: [<ffffffff8123cdbf>] strcmp+0xf/0x30
-> > [    7.990538] PGD 77f7e067 PUD 77ff1067 PMD 0 
-> > [    7.990538] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> > [    7.990538] last sysfs file: /sys/devices/platform/i8042/serio0/input/input2/event2/uevent
-> > [    7.990538] CPU 0 
-> > [    7.990538] Modules linked in: ata_piix(+)
-> > [    7.990538] Pid: 1024, comm: modprobe Not tainted 2.6.32-rc5-fanotify-next-20091102 #150 
-> 
-> Just curious, what module were you loading?
+How much users time and effort do we want to waste?
 
-Looking at strace of the modprobe command it shows at the bottom I
-believe it was ata_generic.  But I don't really know.
+And there's a secondary issue too - how comfortable do we want people to 
+be to test late-in-the-game -git trees? I should hope that they should be 
+considered pretty stable. And ask yourself: would it have been better to 
+have had this bug in my -git tree for just one day, or for five days?
 
-> Hmm, event_mutex is defined with
-> 
-> DEFINE_MUTEX(event_mutex);
-> 
-> in trace_events.c (well, in my kernel, I'm not looking at linux-next
-> right now). This should set up lockdep without any issues.
+Of course, the optimal situation would have been that such a buggy commit 
+wouldn't have been ever merged in the first place - at least not after 
+-rc5. But notice how I'm not really complaining about that part: I'm a 
+firm believer in the "bugs happen" reality, and while we should try to be 
+careful, things like this _will_ slip through. 
 
-It's a DEFINE_MUTEX in linux-next as well.
+So I'm not unhappy about the bug happening in the first place. It would 
+have been better had it not, but hey, mistakes happen. We should just 
+"Deal with it". 
 
-> Would be better to get more info (as asked above). You can send
-> the .config privately to me, as not to spam LKML with it.
+And yes, "dealing with it" very much means by-passing maintainers if 
+necessary. It can mean sending patches directly to me, but it _also_ means 
+asking me to just revert a commit that turns out to be buggy and was 
+merged late.
 
-Incoming along will full dmesg.
+And that's what I'm really arguing for here - I don't like how you and 
+Johannes were arguing against "dealing with it". As it was, we clearly had 
+users wasting their time on this.
 
+		Linus
