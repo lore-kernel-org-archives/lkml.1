@@ -1,148 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbZKCEj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbZKCE5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756752AbZKCEj2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 23:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbZKCEj1
+	id S1755788AbZKCE5X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 23:57:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZKCE5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 23:39:27 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:60312 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756263AbZKCEj0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 23:39:26 -0500
-Date: Tue, 03 Nov 2009 13:39:27 +0900 (JST)
-Message-Id: <20091103.133927.580735811043340004.mitake@dcl.info.waseda.ac.jp>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric=5FWeisbecker?= <fweisbec@gmail.com>
-Subject: [RFC][PATCH 7/7] Adding general performance benchmarking subsystem
- to perf.
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Nov 2009 23:57:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30662 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755460AbZKCE5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 23:57:22 -0500
+Message-ID: <4AEFB823.4040607@redhat.com>
+Date: Tue, 03 Nov 2009 06:57:07 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Gleb Natapov <gleb@redhat.com>,
+       kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com> <20091102092214.GB8933@elte.hu> <4AEF2D0A.4070807@redhat.com> <4AEF3419.1050200@redhat.com> <4AEF6CC3.4000508@redhat.com>
+In-Reply-To: <4AEF6CC3.4000508@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/03/2009 01:35 AM, Rik van Riel wrote:
+>> We can't add an exception vector since all the existing ones are either
+>> taken or reserved.
+>
+>
+> I believe some are reserved for operating system use.
 
-Adding general performance benchmarking subsystem to perf.
-This patch adds builtin-bench-pipe.c
+Table 6-1 says:
 
-builtin-bench-pipe.c is a benchmark program
-to measure performance of pipe() system call.
-This benchmark is based on pipe-test-1m.c by Ingo Molnar.
-http://people.redhat.com/mingo/cfs-scheduler/tools/pipe-test-1m.c
+   9 |  | Coprocessor Segment Overrun (reserved)  |  Fault |  No  | 
+Floating-point instruction.2
+   15 |  — |  (Intel reserved. Do not use.) |   | No |
+   20-31 |  — | Intel reserved. Do not use.  |
+   32-255 |  —  | User Defined (Non-reserved) Interrupts |  Interrupt  
+|   | External interrupt or INT n instruction.
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
----
- tools/perf/builtin-bench-pipe.c |   89 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 89 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/builtin-bench-pipe.c
+So we can only use 32-255, but these are not fault-like exceptions that 
+can be delivered with interrupts disabled.
 
-diff --git a/tools/perf/builtin-bench-pipe.c b/tools/perf/builtin-bench-pipe.c
-new file mode 100644
-index 0000000..081515e
---- /dev/null
-+++ b/tools/perf/builtin-bench-pipe.c
-@@ -0,0 +1,89 @@
-+/*
-+ *
-+ * builtin-bench-pipe.c
-+ *
-+ * pipe: Benchmark for pipe()
-+ *
-+ * Based on pipe-test-1m.c by Ingo Molnar <mingo@redhat.com>
-+ *  http://people.redhat.com/mingo/cfs-scheduler/tools/pipe-test-1m.c
-+ * Ported to perf by Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-+ *
-+ */
-+
-+#include "perf.h"
-+#include "util/util.h"
-+#include "util/parse-options.h"
-+#include "builtin.h"
-+#include "bench-suite.h"
-+
-+#include <unistd.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <signal.h>
-+#include <sys/wait.h>
-+#include <linux/unistd.h>
-+#include <string.h>
-+#include <errno.h>
-+#include <assert.h>
-+#include <sys/time.h>
-+
-+#define LOOPS_DEFAULT 1000000
-+static int loops = LOOPS_DEFAULT;
-+
-+static const struct option options[] = {
-+	OPT_INTEGER('l', "loop", &loops,
-+		    "Specify number of loops"),
-+	OPT_END()
-+};
-+
-+static const char * const bench_sched_pipe_usage[] = {
-+	"perf bench sched pipe <options>",
-+	NULL
-+};
-+
-+int bench_sched_pipe(int argc, const char **argv,
-+		     const char *prefix __used)
-+{
-+	int pipe_1[2], pipe_2[2];
-+	int m = 0, i;
-+	struct timeval start, stop, diff;
-+
-+	/*
-+	 * why does "ret" exists?
-+	 * discarding returned value of read(), write()
-+	 * causes error in building environment for perf
-+	 */
-+	int ret;
-+	pid_t pid;
-+
-+	argc = parse_options(argc, argv, options,
-+			     bench_sched_pipe_usage, 0);
-+
-+	assert(!pipe(pipe_1));
-+	assert(!pipe(pipe_2));
-+
-+	pid = fork();
-+	assert(pid >= 0);
-+
-+	gettimeofday(&start, NULL);
-+
-+	if (!pid) {
-+		for (i = 0; i < loops; i++) {
-+			ret = read(pipe_1[0], &m, sizeof(int));
-+			ret = write(pipe_2[1], &m, sizeof(int));
-+		}
-+	} else if (pid > 0) {
-+		for (i = 0; i < loops; i++) {
-+			ret = write(pipe_1[1], &m, sizeof(int));
-+			ret = read(pipe_2[0], &m, sizeof(int));
-+		}
-+	}
-+
-+	gettimeofday(&stop, NULL);
-+	timersub(&stop, &start, &diff);
-+	if (!pid)
-+		printf("%lu.%03lu\n",
-+		       diff.tv_sec, diff.tv_usec/1000);
-+
-+	return 0;
-+}
 -- 
-1.5.6.5
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
