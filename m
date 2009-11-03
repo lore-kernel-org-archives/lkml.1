@@ -1,208 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZKCUSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZKCUXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbZKCUSu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 15:18:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbZKCUSt
+	id S1754424AbZKCUXU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 15:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZKCUXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 15:18:49 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44489 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbZKCUSs (ORCPT
+	Tue, 3 Nov 2009 15:23:20 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:44435 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753248AbZKCUXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 15:18:48 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=dauaxD8zowuNIUeEXF7G4MH/7FXHHvZ9OnnWWwy3F3WBVeFEb0lKS0fXHFOt19RrA
-	zuFcVT/wHkptcfdlu/NGA==
-Date: Tue, 3 Nov 2009 12:18:40 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, minchan.kim@gmail.com,
-       vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [RFC][-mm][PATCH 1/6] oom-killer: updates for classification of
- OOM
-In-Reply-To: <20091102162412.107ff8ac.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0911031150500.11821@chino.kir.corp.google.com>
-References: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com> <20091102162412.107ff8ac.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Nov 2009 15:23:19 -0500
+Message-ID: <4AF090EC.5010105@web.de>
+Date: Tue, 03 Nov 2009 21:22:04 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
+ on top of perf events
+References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com> <4AF08B7C.8040903@web.de> <20091103201503.GA4962@nowhere>
+In-Reply-To: <20091103201503.GA4962@nowhere>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig7CBC127E8E39F76832582730"
+X-Provags-ID: V01U2FsdGVkX19cV3K+wkSxK1SMhaqmDurS7OpHGQVu0rqMV0YM
+	bFujP04Ij+MGBg1tKzHw3CxZJXcBidrLaoaVC1EsQJbmbGZ5/V
+	iKgEZ2boc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009, KAMEZAWA Hiroyuki wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig7CBC127E8E39F76832582730
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Rewrite oom constarint to be up to date.
-> 
-> (1). Now, at badness calculation, oom_constraint and other information
->    (which is available easily) are ignore. Pass them.
-> 
-> (2)Adds more classes of oom constraint as _MEMCG and _LOWMEM.
->    This is just a change for interface and doesn't add new logic, at this stage.
-> 
-> (3) Pass nodemask to oom_kill. Now alloc_pages() are totally rewritten and
->   it uses nodemask as its argument. By this, mempolicy doesn't have its own
->   private zonelist. So, Passing nodemask to out_of_memory() is necessary.
->   But, pagefault_out_of_memory() doesn't have enough information. We should
->   visit this again, later.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  drivers/char/sysrq.c |    2 -
->  fs/proc/base.c       |    4 +-
->  include/linux/oom.h  |    8 +++-
->  mm/oom_kill.c        |  101 +++++++++++++++++++++++++++++++++++++++------------
->  mm/page_alloc.c      |    2 -
->  5 files changed, 88 insertions(+), 29 deletions(-)
-> 
-> Index: mmotm-2.6.32-Nov2/include/linux/oom.h
-> ===================================================================
-> --- mmotm-2.6.32-Nov2.orig/include/linux/oom.h
-> +++ mmotm-2.6.32-Nov2/include/linux/oom.h
-> @@ -10,23 +10,27 @@
->  #ifdef __KERNEL__
->  
->  #include <linux/types.h>
-> +#include <linux/nodemask.h>
->  
->  struct zonelist;
->  struct notifier_block;
->  
->  /*
-> - * Types of limitations to the nodes from which allocations may occur
-> + * Types of limitations to zones from which allocations may occur
->   */
->  enum oom_constraint {
->  	CONSTRAINT_NONE,
-> +	CONSTRAINT_LOWMEM,
->  	CONSTRAINT_CPUSET,
->  	CONSTRAINT_MEMORY_POLICY,
-> +	CONSTRAINT_MEMCG
->  };
->  
->  extern int try_set_zone_oom(struct zonelist *zonelist, gfp_t gfp_flags);
->  extern void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_flags);
->  
-> -extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order);
-> +extern void out_of_memory(struct zonelist *zonelist,
-> +		gfp_t gfp_mask, int order, nodemask_t *mask);
->  extern int register_oom_notifier(struct notifier_block *nb);
->  extern int unregister_oom_notifier(struct notifier_block *nb);
->  
-> Index: mmotm-2.6.32-Nov2/mm/oom_kill.c
-> ===================================================================
-> --- mmotm-2.6.32-Nov2.orig/mm/oom_kill.c
-> +++ mmotm-2.6.32-Nov2/mm/oom_kill.c
-> @@ -27,6 +27,7 @@
->  #include <linux/notifier.h>
->  #include <linux/memcontrol.h>
->  #include <linux/security.h>
-> +#include <linux/mempolicy.h>
->  
->  int sysctl_panic_on_oom;
->  int sysctl_oom_kill_allocating_task;
-> @@ -55,6 +56,8 @@ static int has_intersects_mems_allowed(s
->   * badness - calculate a numeric value for how bad this task has been
->   * @p: task struct of which task we should calculate
->   * @uptime: current uptime in seconds
-> + * @constraint: type of oom_kill region
-> + * @mem: set if called by memory cgroup
->   *
->   * The formula used is relatively simple and documented inline in the
->   * function. The main rationale is that we want to select a good task
-> @@ -70,7 +73,9 @@ static int has_intersects_mems_allowed(s
->   *    of least surprise ... (be careful when you change it)
->   */
->  
-> -unsigned long badness(struct task_struct *p, unsigned long uptime)
-> +static unsigned long __badness(struct task_struct *p,
-> +		      unsigned long uptime, enum oom_constraint constraint,
-> +		      struct mem_cgroup *mem)
->  {
->  	unsigned long points, cpu_time, run_time;
->  	struct mm_struct *mm;
-> @@ -193,30 +198,68 @@ unsigned long badness(struct task_struct
->  	return points;
->  }
->  
-> +/* for /proc */
-> +unsigned long global_badness(struct task_struct *p, unsigned long uptime)
-> +{
-> +	return __badness(p, uptime, CONSTRAINT_NONE, NULL);
-> +}
+Frederic Weisbecker wrote:
+> On Tue, Nov 03, 2009 at 08:58:52PM +0100, Jan Kiszka wrote:
+>> Frederic Weisbecker wrote:
+>>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>>> index fc2974a..6560129 100644
+>>> --- a/arch/x86/kvm/x86.c
+>>> +++ b/arch/x86/kvm/x86.c
+>>> @@ -42,6 +42,7 @@
+>>>  #define CREATE_TRACE_POINTS
+>>>  #include "trace.h"
+>>> =20
+>>> +#include <asm/debugreg.h>
+>>>  #include <asm/uaccess.h>
+>>>  #include <asm/msr.h>
+>>>  #include <asm/desc.h>
+>>> @@ -3643,14 +3644,12 @@ static int vcpu_enter_guest(struct kvm_vcpu *=
+vcpu, struct kvm_run *kvm_run)
+>>>  	trace_kvm_entry(vcpu->vcpu_id);
+>>>  	kvm_x86_ops->run(vcpu, kvm_run);
+>>> =20
+>>> -	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBU=
+G))) {
+>>> -		set_debugreg(current->thread.debugreg[0], 0);
+>>> -		set_debugreg(current->thread.debugreg[1], 1);
+>>> -		set_debugreg(current->thread.debugreg[2], 2);
+>>> -		set_debugreg(current->thread.debugreg[3], 3);
+>>> -		set_debugreg(current->thread.debugreg6, 6);
+>>> -		set_debugreg(current->thread.debugreg7, 7);
+>>> -	}
+>>> +	/*
+>>> +	 * CHECKME: is vcpu->arch.switch_db_regs sufficient to check
+>>> +	 * if the guest is using breakpoints? If so we may want to do
+>>> +	 * this check before.
+>>> +	 */
+>>> +	hw_breakpoint_restore();
+>> Obviously, this variant will make KVM users very unhappy. But trying t=
+o
+>> reduce this performance regression via vcpu->arch.switch_db_regs will
+>> make hw-breakpoint users unhappy: KVM leaves at least dr7 clobbered
+>> behind, even if the guest does not use breakpoints.
+>=20
+>=20
+> Yeah, that's why I've made unconditionally. At least it works in every
+> cases, but this is temporary.
+>=20
+> =20
+>> We really need a replacement for TIF_DEBUG (but we only need this [1])=
+=2E
+>>
+>> Jan
+>>
+>> [1]http://thread.gmane.org/gmane.comp.emulators.kvm.devel/39784/focus=3D=
+39827
+>>
+>=20
+>=20
+> Thinking about it, this check should cover every cases:
+>=20
+> if (vcpu->arch.switch_db_regs || __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_=
+MASK)
+>=20
+> If we have __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK, it means there i=
+s an
+> active breakpoint and then we should restore the current state.
+>=20
 
-I don't understand why this is necessary, CONSTRAINT_NONE should be 
-available to proc_oom_score() via linux/oom.h.  It would probably be 
-better to not rename badness() and use it directly.
+And what about (__get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK) only? Would
+you be able to live with unsync'ed hardware and software states?
 
-> +
-> +
->  /*
->   * Determine the type of allocation constraint.
->   */
-> -static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-> -						    gfp_t gfp_mask)
-> -{
-> +
->  #ifdef CONFIG_NUMA
-> +static inline enum oom_constraint guess_oom_context(struct zonelist *zonelist,
-> +		gfp_t gfp_mask, nodemask_t *nodemask)
+Jan
 
-Why is this renamed from constrained_alloc()?  If the new code is really a 
-guess, we probably shouldn't be altering the oom killing behavior to kill 
-innocent tasks if it's wrong.
 
-> +{
->  	struct zone *zone;
->  	struct zoneref *z;
->  	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
-> -	nodemask_t nodes = node_states[N_HIGH_MEMORY];
-> +	enum oom_constraint ret = CONSTRAINT_NONE;
->  
-> -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-> -		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
-> -			node_clear(zone_to_nid(zone), nodes);
-> -		else
-> +	/*
-> +	 * In numa environ, almost all allocation will be against NORMAL zone.
-> +	 * But some small area, ex)GFP_DMA for ia64 or GFP_DMA32 for x86-64
-> +	 * can cause OOM. We can use policy_zone for checking lowmem.
-> +	 */
-> +	if (high_zoneidx < policy_zone)
-> +		return CONSTRAINT_LOWMEM;
-> +	/*
-> +	 * Now, only mempolicy specifies nodemask. But if nodemask
-> +	 * covers all nodes, this oom is global oom.
-> +	 */
-> +	if (nodemask && !nodes_equal(node_states[N_HIGH_MEMORY], *nodemask))
-> +		ret = CONSTRAINT_MEMORY_POLICY;
-> +	/*
-> + 	 * If not __GFP_THISNODE, zonelist containes all nodes. And if
-> + 	 * zonelist contains a zone which isn't allowed under cpuset, we assume
-> + 	 * this allocation failure is caused by cpuset's constraint.
-> + 	 * Note: all nodes are scanned if nodemask=NULL.
-> + 	 */
-> +	for_each_zone_zonelist_nodemask(zone,
-> +			z, zonelist, high_zoneidx, nodemask) {
-> +		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
->  			return CONSTRAINT_CPUSET;
-> +	}
+--------------enig7CBC127E8E39F76832582730
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-This could probably be written as
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-	int nid;
-	if (nodemask)
-		for_each_node_mask(nid, *nodemask)
-			if (!__cpuset_node_allowed_softwall(nid, gfp_mask))
-				return CONSTRAINT_CPUSET;
+iEYEARECAAYFAkrwkPAACgkQitSsb3rl5xRYzwCfc41iKAv1mSa+GoYLNzuGIykg
+yuEAnjodR7rUg0f29RL2iddOWX6hffih
+=IV6H
+-----END PGP SIGNATURE-----
 
-and then you don't need the struct zoneref or struct zone.
+--------------enig7CBC127E8E39F76832582730--
