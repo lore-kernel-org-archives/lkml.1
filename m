@@ -1,138 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZKCVpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbZKCVqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbZKCVpb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZKCVpa
+	id S1755360AbZKCVqO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 16:46:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZKCVqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:45:30 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:57089 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753877AbZKCVp3 (ORCPT
+	Tue, 3 Nov 2009 16:46:13 -0500
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:58337 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752572AbZKCVqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 16:45:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=ubaJ1YivJAdHadtaPc5jUyTxXMt0vnxI/PkShIJQJGLhywbHoc8LNSEX8vmZE0yMIO
-         0twgFto1fkfItmTQvanTBF8knHSfa/npGw7VnMJeJ//2wwYPBN0+/ztuKAziA0oEK5xT
-         9yVcPB5d4YR9LqnblkLWHXIijvSDDpL06I6KE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
-Date: Tue, 3 Nov 2009 22:44:11 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>
-References: <200911031951.05235.bzolnier@gmail.com> <200911032200.04516.IvDoorn@gmail.com>
-In-Reply-To: <200911032200.04516.IvDoorn@gmail.com>
+	Tue, 3 Nov 2009 16:46:12 -0500
+Date: Wed, 4 Nov 2009 03:15:44 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: sched: Add USER_SCHED to feature removal list
+Message-ID: <20091103214544.GI5495@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Message-Id: <200911032244.11946.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 November 2009 22:00:03 Ivo van Doorn wrote:
-> On Tuesday 03 November 2009, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Hi,
-> > 
-> > The following patch series (against wireless-next) addresses issues raised
-> > during code review and subsequently rejected by rt2x00/wireless/networking
-> > maintainers.
-> 
-> Really stop reading only the half of emails, try reading it entirely (or at least don't
-> stop at the second word in a sentence). It really starts the bug me to repeat
-> myself over and over again because you refuse to read.
-> 
-> Your comments during code review were ACCEPTED with the only remark that
-> it shouldn't be done right here and now.
 
-Please stop this bullshit.  We have some standards for the upstream code
-and by being maintainer you have to live up to this standards and make sure
-that they are respected instead of watering them down yourself..
+sched: Add USER_SCHED to feature removal list
 
-You were not interested even in fixing the headers duplication (it turned
-out debugging scripts needed only 25 lines of code to be able to work with
-fixed headers -- 25 LOC in bash scripts used only for debugging instead
-of 1800 LOC of kernel code).
+Peter Zijlstra suggested that we remove USER_SCHED at
+http://lkml.org/lkml/2009/3/21/67 . Removing USER_SCHED removes a
+lot of code from the scheduler and simplifies the code.
 
-Also: I've mostly heard that I can fix the code myself.  Which I did.
+We already have the ability to do user based classification which
+is tightened using PAM in userspace.
 
-> > The rewrite was quite conservative and there is still a room for improvement
-> > but it should serve as a good starting base for all future work on rt2800
-> > drivers, and there is a lot to do there (both drivers are still practically
-> > non-functional).
-> 
-> Hence the reason I can use my rt2800usb device as long as I don't connect to
-> a 11n AP. But since everybody in the world has 11n devices, the rt2800usb device
-> is not capable of doing anything...
+Schedule USER_SCHED for removal in 2.6.34
 
-I use 11bg AP but mine rt2800usb device is RT3070 (which is quite popular
-nowadays) and it simply doesn't even work with rt2800usb currently.
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+---
+ Documentation/feature-removal-schedule.txt |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-> > Comments and patches are welcomed.
-> > 
-> > 
-> > The following changes since commit fa867e7355a1bdcd9bf7d55ebe9296f5b9c4028a:
-> >   Juuso Oikarinen (1):
-> >         wl1271: Generalize command response reading
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git rt2800
-> > 
-> > Bartlomiej Zolnierkiewicz (40):
-> >       rt2800usb: fix rt2800usb_rfcsr_read()
-> >       rt2800pci: fix crypto in TX frame
-> >       rt2800pci: fix comment about register access
-> >       rt2800pci: fix comment about IV/EIV fields
-> >       rt2x00: fix rt2x00usb_register_read() comment
-> >       rt2800usb: use rt2x00usb_register_multiwrite() to set key entries
-> [.. snip..]
-> >       rt2800usb: fix comments in rt2800usb.h
-> >       rt2800usb: add RXINFO_DESC_SIZE definition
-> [..snip..]
-> >       rt2800: fix comments in rt2800.h
-> [..snip..]
-> >       rt2x00: remove needless ifdefs from rt2x00leds.h
-> 
-> These 10 patches look sane enough. Please send them as patch series
-> to linux-wireless.
-
-I'll re-post later whole patch series to linux-wireless to ease the review.
-
-> >       rt2x00: add support for different chipset interfaces
-> 
-> Not needed, you can determine exactly what chipset you have
-> by looking at the other fields. So extending the structure to
-> repeat the same information isn't needed.
-
-It is a better to have a single field always indicating this since:
-- combining information from other fields is complex and error-prone
-- the situation may change in the future
-
-However I would love to be proven wrong with the patch.
-
-> >       MAINTAINERS: add rt2800 entry
-> 
-> I see you decided to take over the maintainership?
-
-This is my kernel tree after all. :)
-
-> Doesn't that need the current maintainer to move away, or was this part
-> of the "going over other peoples head" plan?
-
-I just do what is the best to get working drivers in the foreseeable future.
-
+Index: linux-2.6/Documentation/feature-removal-schedule.txt
+===================================================================
+--- linux-2.6.orig/Documentation/feature-removal-schedule.txt
++++ linux-2.6/Documentation/feature-removal-schedule.txt
+@@ -6,6 +6,21 @@ be removed from this file.
+ 
+ ---------------------------
+ 
++What:	USER_SCHED
++When:	2.6.34
++
++Why:	USER_SCHED was implemented as a proof of concept for group scheduling.
++	The effect of USER_SCHED can already be achieved from userspace with
++	the help of libcgroup. The removal of USER_SCHED will also simplify
++	the scheduler code with the removal of one major ifdef. There are also
++	issues USER_SCHED has with USER_NS. A decision was taken not to fix
++	those and instead remove USER_SCHED. Also new group scheduling
++	features will not be implemented for USER_SCHED.
++
++Who:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
++
++---------------------------
++
+ What:	PRISM54
+ When:	2.6.34
+ 
 -- 
-Bartlomiej Zolnierkiewicz
+regards,
+Dhaval
