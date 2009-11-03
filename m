@@ -1,128 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbZKCT6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZKCT64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754442AbZKCT6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:58:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZKCT6s
+	id S1754814AbZKCT64 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:58:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZKCT6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:58:48 -0500
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:43481 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751766AbZKCT6r (ORCPT
+	Tue, 3 Nov 2009 14:58:55 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:47046 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754613AbZKCT6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:58:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=fBnZ5K3dEd3YEtp0T6BA2RjHiAXLnzisIjMyEQEnVTPu43F+Sg0BAT5SU9ScdLmnto
-         BBPdankxniSOMqMETC95f7GErrqpZpZpcKKzZpBobvzAYPdMeHjaUK3+2hFJ7AavRQ+o
-         IvdU8lFr+s/9zupz7RctAtIDoa3KHx3m4Jf84=
+	Tue, 3 Nov 2009 14:58:53 -0500
+Message-ID: <4AF08B7C.8040903@web.de>
+Date: Tue, 03 Nov 2009 20:58:52 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-In-Reply-To: <20091103191233.0c3ba736@lxorguk.ukuu.org.uk>
-References: <1257273488.9427.27.camel@mulgrave.site>
-	 <20091103105921.160d5599.akpm@linux-foundation.org>
-	 <20091103191233.0c3ba736@lxorguk.ukuu.org.uk>
-Date: Wed, 4 Nov 2009 04:58:50 +0900
-X-Google-Sender-Auth: 84bd8392ade74290
-Message-ID: <2f11576a0911031158r7fabb96fx8073bb4e86f4981e@mail.gmail.com>
-Subject: Re: [PATCH] strstrip incorrectly marked __must_check
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@suse.de>, linux-scsi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary=0015177404c6482da004777cec1b
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
+ on top of perf events
+References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1257275474-5285-5-git-send-email-fweisbec@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig60BFFEA74E3A3D9E20D11C4D"
+X-Provags-ID: V01U2FsdGVkX184B1IRrKnjA4PF/BtOizD43h/nteqpBvjjxh4v
+	o8PxntY07apKvhZyJwJY+CRiEVBtr4gW34RT52bgzlBkrj5eV9
+	IQybRhm64=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0015177404c6482da004777cec1b
-Content-Type: text/plain; charset=ISO-8859-1
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig60BFFEA74E3A3D9E20D11C4D
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: quoted-printable
 
-2009/11/4 Alan Cox <alan@lxorguk.ukuu.org.uk>:
->> static inline void strsrip_tail(char *str)
->> {
->> =A0 =A0 =A0 char *x __used;
->> =A0 =A0 =A0 x =3D strstrip(str);
->> }
->
-> Bikeshed time but its cleaner to do
->
-> static inline __must_check void strstrip(char *str)
-> {
-> =A0 =A0 =A0 =A0return strim(str);
-> }
->
-> and make strim() the old strstrip function without the check requirement
+Frederic Weisbecker wrote:
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index fc2974a..6560129 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -42,6 +42,7 @@
+>  #define CREATE_TRACE_POINTS
+>  #include "trace.h"
+> =20
+> +#include <asm/debugreg.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/msr.h>
+>  #include <asm/desc.h>
+> @@ -3643,14 +3644,12 @@ static int vcpu_enter_guest(struct kvm_vcpu *vc=
+pu, struct kvm_run *kvm_run)
+>  	trace_kvm_entry(vcpu->vcpu_id);
+>  	kvm_x86_ops->run(vcpu, kvm_run);
+> =20
+> -	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG)=
+)) {
+> -		set_debugreg(current->thread.debugreg[0], 0);
+> -		set_debugreg(current->thread.debugreg[1], 1);
+> -		set_debugreg(current->thread.debugreg[2], 2);
+> -		set_debugreg(current->thread.debugreg[3], 3);
+> -		set_debugreg(current->thread.debugreg6, 6);
+> -		set_debugreg(current->thread.debugreg7, 7);
+> -	}
+> +	/*
+> +	 * CHECKME: is vcpu->arch.switch_db_regs sufficient to check
+> +	 * if the guest is using breakpoints? If so we may want to do
+> +	 * this check before.
+> +	 */
+> +	hw_breakpoint_restore();
 
-Okey...
+Obviously, this variant will make KVM users very unhappy. But trying to
+reduce this performance regression via vcpu->arch.switch_db_regs will
+make hw-breakpoint users unhappy: KVM leaves at least dr7 clobbered
+behind, even if the guest does not use breakpoints.
 
-[quick hack and compile check]
+We really need a replacement for TIF_DEBUG (but we only need this [1]).
 
-done :)
-sorry for attached file. I'm under poor mail environment now.
+Jan
 
---0015177404c6482da004777cec1b
-Content-Type: application/octet-stream; 
-	name="0001-lib-Introduce-strim.patch"
-Content-Disposition: attachment; filename="0001-lib-Introduce-strim.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g1l2xg480
+[1]http://thread.gmane.org/gmane.comp.emulators.kvm.devel/39784/focus=3D3=
+9827
 
-RnJvbSA5NGE4NjQyNGE4ODJkNTJmY2QxMTAzOWQxMWZiZDAzNjNhMzE0NzJmIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBLT1NBS0kgTW90b2hpcm8gPGtvc2FraS5tb3RvaGlyb0BqcC5m
-dWppdHN1LmNvbT4KRGF0ZTogV2VkLCA0IE5vdiAyMDA5IDA0OjQ3OjIzICswOTAwClN1YmplY3Q6
-IFtQQVRDSF0gbGliOiBJbnRyb2R1Y2Ugc3RyaW0KClJlY2VudGx5LCBXZSBtYXJrZWQgc3Ryc3Ry
-aXAoKSBhcyBtdXN0X2NoZWNrLiBiZWNhdXNlIGl0IHdhcyBmcmVxdWVudGx5IG1pc3VzZWQgYW5k
-Cml0IHNob3VsZCBiZSBjaGVja2VkLiBob3dldmVyLCB3ZSBmb3VuZCBvbmUgZXhjZXB0aW9uLiBz
-Y3NpL2lwci5jIGludGVudGlvbmFsbHkgaWdub3JlCnJldHVybiB2YWx1ZSBvZiBzdHJzdHJpcC4g
-YmVjYXVzZSwgaXQgd2lzaCB0byBrZWVwIHRoZSB3aGl0ZXNwYWNlIGF0IHRoZSBiZWdpbm5pbmcu
-CgpUaHVzLCB3ZSBuZWVkIHRvIGtlZXAgd2l0aCBhbmQgd2l0aG91dCBjaGVja2VkIHdoaXRlc3Bh
-Y2UgdHJpbSBmdW5jdGlvbi4gVGhpcyBwYXRjaAptYWtlcyBzdHJpbSBuZXcgZnVuY3Rpb24gYW5k
-IGlwci5jIHVzZSBpdC4KClN1Z2dlc3RlZC1ieTogQWxhbiBDb3ggPGFsYW5AbHhvcmd1ay51a3V1
-Lm9yZy51az4KU2lnbmVkLW9mZi1ieTogS09TQUtJIE1vdG9oaXJvIDxrb3Nha2kubW90b2hpcm9A
-anAuZnVqaXRzdS5jb20+Ci0tLQogZHJpdmVycy9zY3NpL2lwci5jICAgICB8ICAgIDQgKystLQog
-aW5jbHVkZS9saW51eC9zdHJpbmcuaCB8ICAgIDkgKysrKysrKystCiBsaWIvc3RyaW5nLmMgICAg
-ICAgICAgIHwgICAgNiArKystLS0KIDMgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKSwg
-NiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL3Njc2kvaXByLmMgYi9kcml2ZXJz
-L3Njc2kvaXByLmMKaW5kZXggZDQwZDVjNy4uNjYwMmZjNCAxMDA2NDQKLS0tIGEvZHJpdmVycy9z
-Y3NpL2lwci5jCisrKyBiL2RyaXZlcnMvc2NzaS9pcHIuYwpAQCAtMTMzMyw3ICsxMzMzLDcgQEAg
-c3RhdGljIHZvaWQgaXByX2xvZ19lbmhhbmNlZF9kdWFsX2lvYV9lcnJvcihzdHJ1Y3QgaXByX2lv
-YV9jZmcgKmlvYV9jZmcsCiAKIAllcnJvciA9ICZob3N0cmNiLT5oY2FtLnUuZXJyb3IudS50eXBl
-XzE3X2Vycm9yOwogCWVycm9yLT5mYWlsdXJlX3JlYXNvbltzaXplb2YoZXJyb3ItPmZhaWx1cmVf
-cmVhc29uKSAtIDFdID0gJ1wwJzsKLQlzdHJzdHJpcChlcnJvci0+ZmFpbHVyZV9yZWFzb24pOwor
-CXN0cmltKGVycm9yLT5mYWlsdXJlX3JlYXNvbik7CiAKIAlpcHJfaGNhbV9lcnIoaG9zdHJjYiwg
-IiVzIFtQUkM6ICUwOFhdXG4iLCBlcnJvci0+ZmFpbHVyZV9yZWFzb24sCiAJCSAgICAgYmUzMl90
-b19jcHUoaG9zdHJjYi0+aGNhbS51LmVycm9yLnByYykpOwpAQCAtMTM1OSw3ICsxMzU5LDcgQEAg
-c3RhdGljIHZvaWQgaXByX2xvZ19kdWFsX2lvYV9lcnJvcihzdHJ1Y3QgaXByX2lvYV9jZmcgKmlv
-YV9jZmcsCiAKIAllcnJvciA9ICZob3N0cmNiLT5oY2FtLnUuZXJyb3IudS50eXBlXzA3X2Vycm9y
-OwogCWVycm9yLT5mYWlsdXJlX3JlYXNvbltzaXplb2YoZXJyb3ItPmZhaWx1cmVfcmVhc29uKSAt
-IDFdID0gJ1wwJzsKLQlzdHJzdHJpcChlcnJvci0+ZmFpbHVyZV9yZWFzb24pOworCXN0cmltKGVy
-cm9yLT5mYWlsdXJlX3JlYXNvbik7CiAKIAlpcHJfaGNhbV9lcnIoaG9zdHJjYiwgIiVzIFtQUkM6
-ICUwOFhdXG4iLCBlcnJvci0+ZmFpbHVyZV9yZWFzb24sCiAJCSAgICAgYmUzMl90b19jcHUoaG9z
-dHJjYi0+aGNhbS51LmVycm9yLnByYykpOwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9zdHJp
-bmcuaCBiL2luY2x1ZGUvbGludXgvc3RyaW5nLmgKaW5kZXggYjg1MDg4Ni4uMTdhMzc1ZSAxMDA2
-NDQKLS0tIGEvaW5jbHVkZS9saW51eC9zdHJpbmcuaAorKysgYi9pbmNsdWRlL2xpbnV4L3N0cmlu
-Zy5oCkBAIC02Miw3ICs2MiwxNCBAQCBleHRlcm4gY2hhciAqIHN0cm5jaHIoY29uc3QgY2hhciAq
-LCBzaXplX3QsIGludCk7CiAjaWZuZGVmIF9fSEFWRV9BUkNIX1NUUlJDSFIKIGV4dGVybiBjaGFy
-ICogc3RycmNocihjb25zdCBjaGFyICosaW50KTsKICNlbmRpZgotZXh0ZXJuIGNoYXIgKiBfX211
-c3RfY2hlY2sgc3Ryc3RyaXAoY2hhciAqKTsKKworZXh0ZXJuIGNoYXIgKiBzdHJpbShjaGFyICop
-OworCitzdGF0aWMgaW5saW5lIF9fbXVzdF9jaGVjayBjaGFyKiBzdHJzdHJpcChjaGFyICpzdHIp
-Cit7CisJcmV0dXJuIHN0cmltKHN0cik7Cit9CisKICNpZm5kZWYgX19IQVZFX0FSQ0hfU1RSU1RS
-CiBleHRlcm4gY2hhciAqIHN0cnN0cihjb25zdCBjaGFyICosY29uc3QgY2hhciAqKTsKICNlbmRp
-ZgpkaWZmIC0tZ2l0IGEvbGliL3N0cmluZy5jIGIvbGliL3N0cmluZy5jCmluZGV4IGIxOWI4N2Eu
-LjI4MjExYzYgMTAwNjQ0Ci0tLSBhL2xpYi9zdHJpbmcuYworKysgYi9saWIvc3RyaW5nLmMKQEAg
-LTMzMCwxNCArMzMwLDE0IEBAIEVYUE9SVF9TWU1CT0woc3RybmNocik7CiAjZW5kaWYKIAogLyoq
-Ci0gKiBzdHJzdHJpcCAtIFJlbW92ZXMgbGVhZGluZyBhbmQgdHJhaWxpbmcgd2hpdGVzcGFjZSBm
-cm9tIEBzLgorICogc3RyaW0gLSBSZW1vdmVzIGxlYWRpbmcgYW5kIHRyYWlsaW5nIHdoaXRlc3Bh
-Y2UgZnJvbSBAcy4KICAqIEBzOiBUaGUgc3RyaW5nIHRvIGJlIHN0cmlwcGVkLgogICoKICAqIE5v
-dGUgdGhhdCB0aGUgZmlyc3QgdHJhaWxpbmcgd2hpdGVzcGFjZSBpcyByZXBsYWNlZCB3aXRoIGEg
-JU5VTC10ZXJtaW5hdG9yCiAgKiBpbiB0aGUgZ2l2ZW4gc3RyaW5nIEBzLiBSZXR1cm5zIGEgcG9p
-bnRlciB0byB0aGUgZmlyc3Qgbm9uLXdoaXRlc3BhY2UKICAqIGNoYXJhY3RlciBpbiBAcy4KICAq
-LwotY2hhciAqc3Ryc3RyaXAoY2hhciAqcykKK2NoYXIgKnN0cmltKGNoYXIgKnMpCiB7CiAJc2l6
-ZV90IHNpemU7CiAJY2hhciAqZW5kOwpAQCAtMzU3LDcgKzM1Nyw3IEBAIGNoYXIgKnN0cnN0cmlw
-KGNoYXIgKnMpCiAKIAlyZXR1cm4gczsKIH0KLUVYUE9SVF9TWU1CT0woc3Ryc3RyaXApOworRVhQ
-T1JUX1NZTUJPTChzdHJpbSk7CiAKICNpZm5kZWYgX19IQVZFX0FSQ0hfU1RSTEVOCiAvKioKLS0g
-CjEuNi4yLjUKCg==
---0015177404c6482da004777cec1b--
+
+--------------enig60BFFEA74E3A3D9E20D11C4D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkrwi4AACgkQitSsb3rl5xTS0QCgt+lm9Y6F5IRSbUkC1WByIlwI
+o60AoKFdwdAMDKQ/pXolRWR2AUVEi5OU
+=imtP
+-----END PGP SIGNATURE-----
+
+--------------enig60BFFEA74E3A3D9E20D11C4D--
