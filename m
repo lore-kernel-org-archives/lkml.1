@@ -1,59 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZKCGwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744AbZKCHB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbZKCGwj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 01:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZKCGwi
+	id S1755744AbZKCHB3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 02:01:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZKCHB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 01:52:38 -0500
-Received: from mail-px0-f179.google.com ([209.85.216.179]:35950 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264AbZKCGwh (ORCPT
+	Tue, 3 Nov 2009 02:01:28 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:36074 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbZKCHB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 01:52:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qj6DmGtxlyUnt7RJgxDw7BoD2UHeKWca/GrTrc2zS3OzAur/tWc1TWqpYN6+94eKt5
-         75Lr+uuq6sdPfbDSKls/CbgBZ9PoSVPxLBtMHIqy7/1XRXxkFcN4Q4pIe+eQ1x7TIE4Y
-         90AkFl4l/0FwIJi6RmTEj78O2fN13t8TUOmoo=
-Date: Mon, 2 Nov 2009 22:52:38 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, johannes@sipsolutions.net,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: Please consider reverting
-	7d930bc33653d5592dc386a76a38f39c2e962344
-Message-ID: <20091103065238.GE3212@core.coreip.homeip.net>
-References: <20091103053156.GA3212@core.coreip.homeip.net> <20091102.224957.32364226.davem@davemloft.net>
+	Tue, 3 Nov 2009 02:01:27 -0500
+Message-ID: <4AEFD544.6040602@gmail.com>
+Date: Tue, 03 Nov 2009 08:01:24 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102.224957.32364226.davem@davemloft.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "David S. Miller" <davem@davemloft.net>, Greg KH <greg@kroah.com>
+CC: Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       Cosmin Ratiu <cratiu@ixiacom.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] sysctl: reduce ram usage by 40 %
+References: <20091101163130.GA7911@kvack.org> <20091103035058.GA19515@kroah.com> <4AEFCA49.4020305@gmail.com>
+In-Reply-To: <4AEFCA49.4020305@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 03 Nov 2009 08:01:26 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 10:49:57PM -0800, David Miller wrote:
-> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Date: Mon, 2 Nov 2009 21:31:56 -0800
-> 
-> > Hi Linus,
-> > 
-> > It looks like
-> > 
-> > commit 7d930bc33653d5592dc386a76a38f39c2e962344
-> > Author: Johannes Berg <johannes@sipsolutions.net>
-> > Date:   Tue Oct 20 15:08:53 2009 +0900
->  ...
-> > is causing oops on resume:
-> 
-> There is a fix for this in my tree and I'll push it to Linus
-> tonight.
+Eric Dumazet a écrit :
 
-Ah, even better ;) Thanks David.
+> Its curious because in my tests the biggest problems come from
+> kernel/sysctl.c (__register_sysctl_paths) consuming 80% of cpu
+> in following attempt to create 20.000 devices
+> 
+> (disable hotplug before trying this, and ipv6 too !)
+> modprobe dummy numdummies=20000
+> 
+> I believe we should address __register_sysctl_paths() scalability
+> problems too.
+> 
+> I dont know what is the 'sentinel' we allocate after each struct ctl_table
+> But I suspect we could reduce size requirement of the 'sentinel' to include
+> only needed fields for the sentinel (and move them at start of ctl_table)
+> 
 
--- 
-Dmitry
+Here is the patch to reduce ram usage of sysctl :
+
+[PATCH] sysctl: reduce ram usage by 40 %
+
+We currently reserve space for a so called sentinel, a full struct ctl_table
+for each ctl_table. We can cheat a bit since only needed fields of a sentinel
+are ctl_name and procname. Add a new structure (struct ctl_table_sentinel)
+that includes a full ctl_table and only required part of a sentinel.
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+ include/linux/sysctl.h |   13 ++++++++++++-
+ kernel/sysctl.c        |   19 ++++++++++---------
+ 2 files changed, 22 insertions(+), 10 deletions(-)
+
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index 1e4743e..6a1b1d5 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -1050,8 +1050,10 @@ extern ctl_handler sysctl_ms_jiffies;
+ /* A sysctl table is an array of struct ctl_table: */
+ struct ctl_table 
+ {
+-	int ctl_name;			/* Binary ID */
++	/* ctl_name and procname must be first fields (check sentinel) */
++	int	   ctl_name;		/* Binary ID */
+ 	const char *procname;		/* Text ID for /proc/sys, or zero */
++
+ 	void *data;
+ 	int maxlen;
+ 	mode_t mode;
+@@ -1063,6 +1065,15 @@ struct ctl_table
+ 	void *extra2;
+ };
+ 
++/* ctl_table_sentinel : a ctl_table followed by a sentinel
++ * (null ctl & procname)
++ */
++struct ctl_table_sentinel {
++	struct ctl_table table;
++	int		 ctl_name;
++	const char	 *procname;
++};
++
+ struct ctl_table_root {
+ 	struct list_head root_list;
+ 	struct ctl_table_set default_set;
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 0d949c5..5d29dd8 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -2063,7 +2063,8 @@ struct ctl_table_header *__register_sysctl_paths(
+ 	const struct ctl_path *path, struct ctl_table *table)
+ {
+ 	struct ctl_table_header *header;
+-	struct ctl_table *new, **prevp;
++	struct ctl_table_sentinel *new;
++	struct ctl_table **prevp;
+ 	unsigned int n, npath;
+ 	struct ctl_table_set *set;
+ 
+@@ -2080,24 +2081,24 @@ struct ctl_table_header *__register_sysctl_paths(
+ 	 * worry about freeing additional memory in unregister_sysctl_table.
+ 	 */
+ 	header = kzalloc(sizeof(struct ctl_table_header) +
+-			 (2 * npath * sizeof(struct ctl_table)), GFP_KERNEL);
++			 (npath * sizeof(struct ctl_table_sentinel)), GFP_KERNEL);
+ 	if (!header)
+ 		return NULL;
+ 
+-	new = (struct ctl_table *) (header + 1);
++	new = (struct ctl_table_sentinel *) (header + 1);
+ 
+ 	/* Now connect the dots */
+ 	prevp = &header->ctl_table;
+ 	for (n = 0; n < npath; ++n, ++path) {
+ 		/* Copy the procname */
+-		new->procname = path->procname;
+-		new->ctl_name = path->ctl_name;
+-		new->mode     = 0555;
++		new->table.procname = path->procname;
++		new->table.ctl_name = path->ctl_name;
++		new->table.mode     = 0555;
+ 
+-		*prevp = new;
+-		prevp = &new->child;
++		*prevp = &new->table;
++		prevp = &new->table.child;
+ 
+-		new += 2;
++		new++;
+ 	}
+ 	*prevp = table;
+ 	header->ctl_table_arg = table;
