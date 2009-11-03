@@ -1,111 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZKCRcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZKCRiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbZKCRcy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 12:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbZKCRcx
+	id S1752590AbZKCRiM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 12:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbZKCRiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 12:32:53 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48728 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbZKCRcw (ORCPT
+	Tue, 3 Nov 2009 12:38:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55443 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751006AbZKCRiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 12:32:52 -0500
-Subject: Re: Ftrace for Microblaze - notrace
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: monstr@monstr.eu
-Cc: Steven Rostedt <srostedt@redhat.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org,
-       John Williams <john.williams@petalogix.com>
-In-Reply-To: <4AF05E0C.5090305@monstr.eu>
-References: <4AF030EE.7050609@monstr.eu>
-	 <1257266154.31359.14.camel@localhost.localdomain>
-	 <4AF05E0C.5090305@monstr.eu>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 03 Nov 2009 12:32:55 -0500
-Message-Id: <1257269575.26028.3355.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 12:38:11 -0500
+Date: Tue, 3 Nov 2009 09:37:00 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Marcel Holtmann <marcel@holtmann.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: Please consider reverting
+ 7d930bc33653d5592dc386a76a38f39c2e962344
+In-Reply-To: <43e72e890911030924n26550ee4j619a41ec016281ea@mail.gmail.com>
+Message-ID: <alpine.LFD.2.01.0911030930130.31845@localhost.localdomain>
+References: <20091103053156.GA3212@core.coreip.homeip.net>  <20091102.224957.32364226.davem@davemloft.net> <20091103065238.GE3212@core.coreip.homeip.net>  <1257232587.3420.55.camel@localhost.localdomain> <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
+  <1257262588.3420.79.camel@localhost.localdomain> <alpine.LFD.2.01.0911030738260.31845@localhost.localdomain>  <1257264485.3420.87.camel@localhost.localdomain> <20091103162955.GA4836@elte.hu> <43e72e890911030924n26550ee4j619a41ec016281ea@mail.gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-03 at 17:45 +0100, Michal Simek wrote:
-> Steven Rostedt wrote:
 
-> >>
-> >> The next thing is about annotation notrace. I look at all arch. Is there 
-> >> any algorithm which function should use it? I think that this could be a 
-> >>   reason why I my kernel freeze when enable function tracer.
-> >>
-> >> I tested to add -pg flag for process.c file and after it kernel freeze 
-> >> too. Is it mean that problem could be there?
-> > 
-> > Probably.
+
+On Tue, 3 Nov 2009, Luis R. Rodriguez wrote:
 > 
-> Is there any manual or instruction which functions are dangerous and 
-> especially why?
+> How this sort of issue is dealt with is subjective and it is up to
+> maintainers to deal with.
 
-No there's no manual. It varies from arch to arch. Hmm, maybe I'll
-update the current doc to have some of the issues that come with it.
-(more info farther down)
+Not when they then complain when others hit the same issue several days 
+later.
 
-> > 
-> > And that will keep the process.c from being compiled with it. There may
-> > be other files in the arch that should not have it. There's several in
-> > x86 and in PowerPC.
-> 
-> Do you know why they exclude it?
+> Having more information on the patch and better communication about
+> the issue it solved, and the issues that reverting it would have
+> caused would certainly have helped maintainers make a better call at a
+> regression caused by it but knowing Johannes he'd probably cook up a
+> followup fix ASAP and that is exactly what he did.
 
-I did the ports for x86 and PowerPC so I guess I'm the best to answer
-this ;-)
+He may have cooked it up, but he didn't send it to me, and he didn't even 
+bother to post it as a response to people who complained about the same 
+commit.
 
-In arch/x86 we have these removing -pg:
+The fact that people on the wireless mailing lists may have known about 
+this just makes things _worse_, I think. It shows that we really _need_ to 
+go around maintainers, when not going around them seems to result in days 
+of delays and total waste of time for everybody.
 
-tsc.o, rtc.o - Do not trace clock output. The tracer itself uses it.
-Even though it protects against recursion, it is a big overhead to trace
-something within the tracer.
+Btw, the reason it's likely not getting a lot of reports is not because 
+people aren't hitting it, but that the symptom when you _do_ hit it tends 
+to be a dead machine. If you were running X, you have no idea what 
+happened. This is why "I have one NULL pointer dereference report" should 
+mean "The fix needs to go upstream _now_".
 
-paravirt-spinlocks.o - paravirt does crazy things with locks and such,
-but overwriting text. Don't add mcount to them and overwrite the text
-with the ftrace facility.
+(And no, as far as I can tell, it needs no suspend/resume cycle at all. I 
+don't know the code very well, but as far as I can tell it just needs a 
+wireless deauthentication, which easily happens if you're running 
+something like NetworkManager and your wireless network may be noisy or 
+weak).
 
-ftrace.o - well duh ;-)
-
-early_printk.o - This is mostly used for debugging, don't trace it.
-
-cpu/common.o - This is used in early stages of boot up of secordary
-CPUs. As well as used in hot plug. Simply using something like
-smp_processor_id() can crash the kernel here. The tracer code uses that,
-so don't trace it.
-
-Xen has a bunch that they added, and I think that's also because they do
-funny things too.
-
-
-For powerpc, we have:
-
-cputable.o, prom_init.o, btext.o and prom.o that are all very sensitive
-with boot up code. Simply calling mcount here can crash the system. But
-this prevents boot up. It does not lock up the kernel when we enable
-function tracing.
-
-ftrace.o - again, this should be obvious.
-
-time.o - this is the same reason we don't trace tsc and rtc in x86.
-
-> 
-> Can I use any special debug features? I mean I look at kernel.h and 
-> there are some trace_printk function - but they don't work for me. Is it 
-> possible to use them or not?
-
-Should work. That's not arch dependent. But you need to have some ftrace
-enabled. Enable CONFIG_CONTEXT_SWITCH_TRACER, and trace_printk should
-work. That writes to the ring buffer and you can see the output
-in /debug/tracing/trace.
-
--- Steve
-
-
+				Linus
