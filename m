@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZKCE05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbZKCE1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbZKCE05 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 23:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZKCE04
+	id S1755877AbZKCE1h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 23:27:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZKCE1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 23:26:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:39419 "EHLO ozlabs.org"
+	Mon, 2 Nov 2009 23:27:36 -0500
+Received: from ozlabs.org ([203.10.76.45]:39452 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755395AbZKCE04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 23:26:56 -0500
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	id S1755740AbZKCE1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 23:27:35 -0500
+To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Message-Id: <200911031456.59923.rusty@rustcorp.com.au>
-Date: Tue, 3 Nov 2009 14:56:59 +1030
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 6/14] cpumask: use cpu_online in kernel/perf_event.c
+Message-Id: <200911031457.39368.rusty@rustcorp.com.au>
+Date: Tue, 3 Nov 2009 14:57:39 +1030
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org
+Subject: [PATCH 7/14] cpumask: avoid deprecated function in mm/slab.c
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
@@ -25,34 +24,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Also, we want to check against nr_cpu_ids, not num_possible_cpus().
-The latter works, but the correct bounds check is < nr_cpu_ids.
+These days we use cpumask_empty() which takes a pointer.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: Thomas Gleixner <tglx@linutronix.de>
 ---
- kernel/perf_event.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ mm/slab.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -1596,7 +1596,7 @@ static struct perf_event_context *find_g
- 		if (perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
- 			return ERR_PTR(-EACCES);
+diff --git a/mm/slab.c b/mm/slab.c
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -1120,7 +1120,7 @@ static void __cpuinit cpuup_canceled(lon
+ 		if (nc)
+ 			free_block(cachep, nc->entry, nc->avail, node);
  
--		if (cpu < 0 || cpu > num_possible_cpus())
-+		if (cpu < 0 || cpu >= nr_cpu_ids)
- 			return ERR_PTR(-EINVAL);
- 
- 		/*
-@@ -1604,7 +1604,7 @@ static struct perf_event_context *find_g
- 		 * offline CPU and activate it when the CPU comes up, but
- 		 * that's for later.
- 		 */
--		if (!cpu_isset(cpu, cpu_online_map))
-+		if (!cpu_online(cpu))
- 			return ERR_PTR(-ENODEV);
- 
- 		cpuctx = &per_cpu(perf_cpu_context, cpu);
+-		if (!cpus_empty(*mask)) {
++		if (!cpumask_empty(mask)) {
+ 			spin_unlock_irq(&l3->list_lock);
+ 			goto free_array_cache;
+ 		}
 
