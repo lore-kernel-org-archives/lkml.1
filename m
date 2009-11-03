@@ -1,94 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZKCCeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbZKCCjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757518AbZKCCeR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 21:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbZKCCeQ
+	id S1757585AbZKCCjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 21:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbZKCCjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 21:34:16 -0500
-Received: from mail.bluewatersys.com ([202.124.120.130]:54829 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755958AbZKCCeP (ORCPT
+	Mon, 2 Nov 2009 21:39:20 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:43871 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756162AbZKCCjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 21:34:15 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Nov 2009 21:34:15 EST
-Message-ID: <4AEF95E0.7040602@bluewatersys.com>
-Date: Tue, 03 Nov 2009 15:30:56 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 2 Nov 2009 21:39:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=cciExpk88+q7k9pdJFp1XajybiTcMvNMpt1dUiXsk4jQwmIQ+g7QpCHh+YQ2QGYbKp
+         pzxoWb10e3bD4MwkXrTWm6FhuXYH6G1Io63A0of+Ov8xV2K7jlsLNpyTxJvzd1fujjKb
+         oifVowFmmu9PCsZKfasUSQsLzNOzs9eNiDidM=
+Date: Tue, 3 Nov 2009 10:39:41 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH] x86: Make sure we also print a Code: line for
+	show_regs()
+Message-ID: <20091103023941.GA2460@hack.redhat.com>
+References: <20091102165915.4a980fc0@infradead.org>
 MIME-Version: 1.0
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-CC: Ben Nizette <bn@niasdigital.com>, Andrew Victor <avictor.za@gmail.com>,
-       linux-arm-kernel@lists.infradead.org, linux-mmc@vger.kernel.org,
-       =?ISO-8859-1?Q?=22=5C=22Thiago_A=2E=5C=22_Corr=EAa=22?= 
-	<thiago.correa@gmail.com>,
-       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, David Brownell <david-b@pacbell.net>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH 3/3 v2] at91/atmel-mci: inclusion of sd/mmc driver in
- at91sam9g45 chip and board
-References: <acfa557032a93e2d3186981b16f7048a5a31028a.1256314995.git.nicolas.ferre@atmel.com>		<20090930155557.7dae503b@hskinnemoen-d830>		<a3b1332815576dc4d496937b8a5ab69d36818d00.1256314995.git.nicolas.ferre@atmel.com>		<cd73a99e0910271243x744c956bl598fef9fd4144840@mail.gmail.com>		<20091028083548.38f1d80c@hskinnemoen-d830>		<d6cda7730910271753o54acfa04t1225de460083325f@mail.gmail.com>		<cd73a99e0910281253x1bb72b74p47cb5110efb0871f@mail.gmail.com>	<1256763057.4362.36.camel@ben-desktop> <4AEF12B7.3040704@atmel.com>
-In-Reply-To: <4AEF12B7.3040704@atmel.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102165915.4a980fc0@infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Ferre wrote:
-> Ben Nizette :
->   
->> On Wed, 2009-10-28 at 21:53 +0200, Andrew Victor wrote:
->>     
->>> hi,
->>>
->>>       
->>>> Then I think it would be best to use GPIO_PIN_NONE. Makes it clear
->>>> what is expected and avoids confusion on what should be the proper
->>>> value.
->>>> I hope I'm not saying non-sense, but even if I am, I guess you can see
->>>> that I'm advocating against the magic numbers :)
->>>>         
->>> What magic numbers ?
->>>       
->> I think Thiago was referring to the "-1" in the original patch as the
->> magic number.
->>
->> Leaving the field blank to be initialised to 0 is certainly the
->> cleanest, I agree, but it doesn't actually /work/.  On many archs 0 is a
->> valid gpio number; the gpio_is_valid check used throughout the kernel
->> (including atmel-mci.c) looks like
->>
->> static inline int gpio_is_valid(int number)
->> {
->> 	/* only some non-negative numbers are valid */
->> 	return ((unsigned)number) < ARCH_NR_GPIOS;
->> }
->>     
+On Mon, Nov 02, 2009 at 04:59:15PM -0800, Arjan van de Ven wrote:
+>From c560acdd03d28d3dc55ed9c19d42d4567caab1d8 Mon Sep 17 00:00:00 2001
+>From: Arjan van de Ven <arjan@linux.intel.com>
+>Date: Mon, 2 Nov 2009 16:50:04 -0800
+>Subject: [PATCH] x86: Make sure we also print a Code: line for show_regs()
 >
-> I understand that the better way to solve this issue is to:
-> - keep the AT91 way of specifying not connected pins (= 0)
-> - code the gpio_is_valid() function for at91 that tests this way of
-> handling not connected gpio
->   
-It doesn't appear that the gpio_is_valid function can be overridden by a
-platform specific version. However, as you point out, on AT91 it appears
-broken since anything less than AT91_PIN_PA0 (32) is not a valid gpio.
+>show_regs() is called as a mini BUG() equivalent in some places,
+>specifically for the "scheduling while atomic" case.
+>
+>Unfortunately right now it does not print a Code: like unlike
+>a real bug/oops.
+>
+>This patch changes the x86 implementation of show_regs() so that
+>it calls the same function as oopses do to print the registers
+>as well as the Code: line.
+>
+>Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-IIRC, we can't mark static inline functions as weak, and we don't want
-to turn gpio_is_valid into an actual function call. We could do some
-preprocessor magic, but that gets a bit messy.
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-CC'ed David Brownell, who does most of the gpiolib stuff. Any ideas?
-
-~Ryan
+>---
+> arch/x86/kernel/process_32.c |    2 +-
+> arch/x86/kernel/process_64.c |    3 +--
+> 2 files changed, 2 insertions(+), 3 deletions(-)
+>
+>diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+>index f2cb086..b124f2f 100644
+>--- a/arch/x86/kernel/process_32.c
+>+++ b/arch/x86/kernel/process_32.c
+>@@ -189,7 +189,7 @@ void __show_regs(struct pt_regs *regs, int all)
+> 
+> void show_regs(struct pt_regs *regs)
+> {
+>-	__show_regs(regs, 1);
+>+	show_registers(regs);
+> 	show_trace(NULL, regs, &regs->sp, regs->bp);
+> }
+> 
+>diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+>index 959b062..e53e66f 100644
+>--- a/arch/x86/kernel/process_64.c
+>+++ b/arch/x86/kernel/process_64.c
+>@@ -228,8 +228,7 @@ void __show_regs(struct pt_regs *regs, int all)
+> 
+> void show_regs(struct pt_regs *regs)
+> {
+>-	printk(KERN_INFO "CPU %d:", smp_processor_id());
+>-	__show_regs(regs, 1);
+>+	show_registers(regs);
+> 	show_trace(NULL, regs, (void *)(regs + 1), regs->bp);
+> }
+> 
+>-- 
+>1.6.0.6
+>
+>
+>
+>-- 
+>Arjan van de Ven 	Intel Open Source Technology Centre
+>For development, discussion and tips for power savings, 
+>visit http://www.lesswatts.org
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
-
-Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
-ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
-http://www.bluewatersys.com	New Zealand
-Phone: +64 3 3779127		Freecall: Australia 1800 148 751 
-Fax:   +64 3 3779135			  USA 1800 261 2934
-
+Live like a child, think like the god.
+ 
