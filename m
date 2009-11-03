@@ -1,121 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbZKCA1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbZKCAaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbZKCA1N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 19:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZKCA1N
+	id S1757419AbZKCAaa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 19:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbZKCAa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 19:27:13 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:40233 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757363AbZKCA1M (ORCPT
+	Mon, 2 Nov 2009 19:30:29 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:14861 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757373AbZKCAa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 19:27:12 -0500
-Message-ID: <4AEF78E4.2020103@linux.vnet.ibm.com>
-Date: Mon, 02 Nov 2009 16:27:16 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, paulus@au1.ibm.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: perf_events: zero time running and enabled, but non-zero count
-References: <4AE20102.8010002@linux.vnet.ibm.com> <20091023193246.GA3139@elte.hu> <4AE21655.6040403@linux.vnet.ibm.com> <20091023205711.GB8356@elte.hu> <4AE50B55.4070706@linux.vnet.ibm.com> <20091102212033.GG4880@nowhere>
-In-Reply-To: <20091102212033.GG4880@nowhere>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 2 Nov 2009 19:30:29 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 02 Nov 2009 19:30:33 -0500 (EST)
+From: Nicolas Pitre <nico@fluxnic.net>
+X-X-Sender: nico@xanadu.home
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Alan Cox <alan@linux.intel.com>, linux-mmc@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, dhowells@redhat.com
+Subject: Re: [PATCH 0/6] Clean up the sdio_uart driver and fix the tty code
+In-reply-to: <alpine.LFD.2.00.0911021542520.13333@xanadu.home>
+Message-id: <alpine.LFD.2.00.0911021731260.13333@xanadu.home>
+References: <20091102164039.11877.88825.stgit@localhost.localdomain>
+ <alpine.LFD.2.00.0911021243040.13333@xanadu.home>
+ <20091102191604.010acbc9@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.00.0911021542520.13333@xanadu.home>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Sun, Oct 25, 2009 at 07:37:09PM -0700, Corey Ashford wrote:
->>  I'm getting this error on a Power5 box:
->>
->> ../../lib/find_next_bit.c: In function ‘ext2_swabp’:
->> ../../lib/find_next_bit.c:168: warning: passing argument 1 of  
->> ‘__swab64p’ from incompatible pointer type
->> make: *** [util/find_next_bit.o] Error 1
->>
->> I looked at the code and it looks ok to me.  There's a cast from an  
->> "unsigned long *" to a "unsigned long long *", but those types should be  
->> of the same size (in -m64 mode), so I don't know why this is failing.
-> 
-> 
-> Yeah, it's ok because we have the BITS_PER_LONG check. But gcc is not
-> aware of that and just consider the cast as breaking the strict aliasing
-> rules.
-> 
-> Can you tell me if the following patch works for you? (only for
-> this build error).
+On Mon, 2 Nov 2009, Nicolas Pitre wrote:
 
-Thanks for looking into the build problem, Frederic.  With your patch, I'm still 
-seeing the error:
+> With this folded in, the card does work with the full series applied.  
+> However the kernel is now crashing when the card is pulled out while 
+> some process is reading from the device.  This used to behave well 
+> before. I don't have time to investigate that one right now though.
 
-% patch -p1 < ~/patch
-patching file tools/perf/Makefile
-Hunk #1 succeeded at 845 (offset -1 lines).
-% cd tools/perf
-~/linux.trees.git/tools/perf
-% make
-Makefile:472: No libdwarf.h found or old libdwarf.h found, disables dwarf 
-support. Please install libdwarf-dev/libdwarf-devel >= 20081231
-     CC util/find_next_bit.o
-cc1: warnings being treated as errors
-../../lib/find_next_bit.c: In function 'ext2_swabp':
-../../lib/find_next_bit.c:168: warning: passing argument 1 of '__swab64p' from 
-incompatible pointer type
-make: *** [util/find_next_bit.o] Error 1
-elm3c4.beaverton.ibm.com:corey-13% cat ~/patch
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 800783d..167bc04 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -846,8 +846,9 @@ util/bitmap.o: ../../lib/bitmap.c PERF-CFLAGS
-  util/hweight.o: ../../lib/hweight.c PERF-CFLAGS
-         $(QUIET_CC)$(CC) -o util/hweight.o -c $(ALL_CFLAGS) 
--DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
+OK, here more data points:
 
-+KFNB_FLAGS = `echo $(ALL_CFLAGS) | sed s/-Wstrict-aliasing=3//`
-  util/find_next_bit.o: ../../lib/find_next_bit.c PERF-CFLAGS
--       $(QUIET_CC)$(CC) -o util/find_next_bit.o -c $(ALL_CFLAGS) 
--DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
-+       $(QUIET_CC)$(CC) -o util/find_next_bit.o -c $(KFNB_FLAGS) 
--DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
+My test is to insert GPS card and do a 'cat /dev/ttySDIO0' and watch 
+NMEA data scrolling by.
 
-  perf-%$X: %.o $(PERFLIBS)
-         $(QUIET_LINK)$(CC) $(ALL_CFLAGS) -o $@ $(ALL_LDFLAGS) $(filter %.o,$^) 
-$(LIBS)
+With "sdio_uart: Move the open lock" applied, I can pull the card out 
+and the cat process terminates.  However inserting the card back and 
+repeating the test again always gives me:
+
+	cat: /dev/ttySDIO0: Input/output error
+
+until I reboot.  Same thing happens if I terminates cat with ^C and 
+start it again.
+
+With "sdio_uart: Switch to the open/close helpers" applied, things got 
+even worse.  Interrupting cat with ^C still gives the same result as 
+above.  But yanking the card out when cat is still running doesn't 
+terminate cat unless I ^C it at which point the kernel crashes with a 
+BUG().  The backtrace is:
+
+[<c0029c88>] (__bug+0x18/0x24) from [<c02665d0>] (sdio_writeb+0x1c/0x4c)
+[<c02665d0>] (sdio_writeb+0x1c/0x4c) from [<c01b4098>] (tty_port_lower_dtr_rts+0x1c/0x20)
+[<c01b4098>] (tty_port_lower_dtr_rts+0x1c/0x20) from [<c01b412c>] (tty_port_close_end+0x2c/0x130)
+[<c01b412c>] (tty_port_close_end+0x2c/0x130) from [<c01b49a8>] (tty_port_close+0x2c/0x3c)
+[<c01b49a8>] (tty_port_close+0x2c/0x3c) from [<c01ae0c4>] (tty_release_dev+0x17c/0x478)
+[<c01ae0c4>] (tty_release_dev+0x17c/0x478) from [<c01ae3e8>] (tty_release+0x28/0x4c)
+[<c01ae3e8>] (tty_release+0x28/0x4c) from [<c00b5bf0>] (__fput+0x118/0x210)
+[<c00b5bf0>] (__fput+0x118/0x210) from [<c00b28b4>] (filp_close+0x70/0x7c)
+[<c00b28b4>] (filp_close+0x70/0x7c) from [<c003d0e0>] (put_files_struct+0x80/0xd4)
+[<c003d0e0>] (put_files_struct+0x80/0xd4) from [<c003eac0>] (do_exit+0x220/0x714)
+[<c003eac0>] (do_exit+0x220/0x714) from [<c003f074>] (do_group_exit+0xc0/0xf4)
+[<c003f074>] (do_group_exit+0xc0/0xf4) from [<c004d8d0>] (get_signal_to_deliver+0x3c8/0x428)
+[...] (impressive nesting culled)
+
+Only after backing out those 2 patches as wellas "sdio_uart: refcount 
+the tty objects" is the correct behavior restored.
+
+
+Nicolas
+
+
+
+[<c004d8d0>] (get_signal_to_deliver+0x3c8/0x428) from [<c0028b34>] (do_notify_resume+0x5c/0x5d0)
+[<c0028b34>] (do_notify_resume+0x5c/0x5d0) from [<c0026a88>] (work_pending+0x1c/0x20)
+
+
+
+
 
 > 
 > 
-> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-> index 800783d..167bc04 100644
-> --- a/tools/perf/Makefile
-> +++ b/tools/perf/Makefile
-> @@ -846,8 +846,9 @@ util/bitmap.o: ../../lib/bitmap.c PERF-CFLAGS
->  util/hweight.o: ../../lib/hweight.c PERF-CFLAGS
->  	$(QUIET_CC)$(CC) -o util/hweight.o -c $(ALL_CFLAGS) -DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
+> Nicolas
 > 
-> +KFNB_FLAGS = `echo $(ALL_CFLAGS) | sed s/-Wstrict-aliasing=3//`
->  util/find_next_bit.o: ../../lib/find_next_bit.c PERF-CFLAGS
-> -	$(QUIET_CC)$(CC) -o util/find_next_bit.o -c $(ALL_CFLAGS) -DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
-> +	$(QUIET_CC)$(CC) -o util/find_next_bit.o -c $(KFNB_FLAGS) -DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
-> 
->  perf-%$X: %.o $(PERFLIBS)
->  	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) -o $@ $(ALL_LDFLAGS) $(filter %.o,$^) $(LIBS)
-> 
-> 
-
--- 
-Regards,
-
-- Corey
-
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
-
