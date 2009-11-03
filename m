@@ -1,122 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751683AbZKCOpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZKCOqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751683AbZKCOpd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 09:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZKCOpd
+	id S1752593AbZKCOqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 09:46:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZKCOqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 09:45:33 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50635 "EHLO mx1.redhat.com"
+	Tue, 3 Nov 2009 09:46:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22406 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009AbZKCOpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 09:45:32 -0500
-Date: Tue, 3 Nov 2009 09:44:50 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, hbabu@us.ibm.com,
-       kexec@lists.infradead.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: kdump fails to load and crashes [was: mmotm 2009-11-01-10-01
-	uploaded]
-Message-ID: <20091103144450.GB4235@redhat.com>
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org> <4AEF673E.5030509@gmail.com>
+	id S1751105AbZKCOqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 09:46:53 -0500
+Date: Tue, 3 Nov 2009 12:46:38 -0200
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Nikola Ciprich <extmaillist@linuxbox.cz>
+Cc: Linux kernel list <linux-kernel@vger.kernel.org>,
+       nikola.ciprich@linuxbox.cz, KVM list <kvm@vger.kernel.org>
+Subject: Re: 2.6.31.4 panic: CRED: put_cred_rcu() sees ffff880204e58c00
+	with usage 82150912
+Message-ID: <20091103144638.GE10084@amt.cnet>
+References: <20091030110632.GC6416@develbox.linuxbox.cz> <20091030111534.GD6416@develbox.linuxbox.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AEF673E.5030509@gmail.com>
+In-Reply-To: <20091030111534.GD6416@develbox.linuxbox.cz>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 12:11:58AM +0100, Jiri Slaby wrote:
-> On 11/01/2009 07:07 PM, akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
+On Fri, Oct 30, 2009 at 12:15:34PM +0100, Nikola Ciprich wrote:
+> Ouch, typo in subject, it's 2.6.31.1 of course. sorry about that.
+> also CCing kvm.
+> n.
 > 
-> Hi, kdump loading crashes:
-> BUG: unable to handle kernel paging request at ffff8800010a7000
-> IP: [<ffffffff8101cd8b>] machine_kexec_prepare+0x16b/0x13e0
-> PGD 1806063 PUD 180a063 PMD 10001e1
-> Oops: 0003 [#1] SMP
-> last sysfs file: /sys/firmware/memmap/10/type
-> CPU 1
-> Modules linked in: fuse ath5k ath
-> Pid: 3250, comm: kexec Tainted: G        W  2.6.32-rc5-mm1_64 #869 To Be
-> Filled By O.E.M.
-> RIP: 0010:[<ffffffff8101cd8b>]  [<ffffffff8101cd8b>]
-> machine_kexec_prepare+0x16b/0x13e0
-> RSP: 0018:ffff8801c95d1e88  EFLAGS: 00010206
-> RAX: 00000000000001e3 RBX: ffff8801ca2aac00 RCX: 0000000040000000
-> RDX: 0000000000200000 RSI: ffff8800010a7000 RDI: ffff8800010a7000
-> RBP: ffff8801c95d1ee8 R08: 00000000000010a7 R09: 00000000010a7fff
-> R10: 0000000000000fff R11: 0000000004ffffff R12: 0000000000000000
-> R13: ffff8800010a6000 R14: 0000008000000000 R15: ffff880000000000
-> FS:  00007f4f97b4c6f0(0000) GS:ffff880028280000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> CR2: ffff8800010a7000 CR3: 00000001c8cf2000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process kexec (pid: 3250, threadinfo ffff8801c95d0000, task
-> ffff8801ca116700)
-> Stack:
-> ffff8801c95d1ee8 ffff8800010a6000 ffff8800010a4000 ffff8800010a4000
-> <0> 0000000000000000 00000001cc000000 ffff8801c95d1ee8 0000000000000006
-> <0> ffff8801ca2aac00 0000000000000000 0000000000000000 000000000146eae0
-> Call Trace:
-> [<ffffffff8106d32c>] sys_kexec_load+0xec/0x5e0
-> [<ffffffff814365b5>] ? do_page_fault+0x185/0x350
-> [<ffffffff81002e6b>] system_call_fastpath+0x16/0x1b
-> Code: 00 40 48 c1 e6 0c 4c 01 fe 48 39 ca 73 21 48 89 f7 0f 1f 80 00 00
-> 00 00 48 89 d0 48 81 c2 00 00 20 00 48 0d e3 01 00 00 48 39 d1 <48> ab
-> 77 e9 48 89 f7 49 81 c4 00 00 00 40 e8 e2 93 00 00 4c 89
-> RIP  [<ffffffff8101cd8b>] machine_kexec_prepare+0x16b/0x13e0
-> RSP <ffff8801c95d1e88>
-> CR2: ffff8800010a7000
-> ---[ end trace 4eaa2a86a8e2da24 ]---
-> 
-> ffff8800010a7000 should be OK, as crashkernel=64M@16M was passed to the
-> kernel.
-> 
+> On Fri, Oct 30, 2009 at 12:06:32PM +0100, Nikola Ciprich wrote:
+> > Hi,
+> > some time ago, I updated my KVM hosting machine to 2.6.31.1 and it just died horribly:
 
-This is strange. As you said, ffff8800010a7000, should be a valid address
-as you reserved memory from 16M.
+Nikola,
 
-I took above -mm and for me kernel loads fine. I reserved memory 64M@32M
-as by default kernel is loading at address 16M.
+Upgraded from what? Did you see experience the crash again?
 
-How does your /proc/iomem look like in first kernel?
+> > Oct 30 10:45:17 vbox [706369.133516] Kernel panic - not syncing: CRED: put_cred_rcu() sees ffff880204e58c00 with usage 82150912
+> > Oct 30 10:45:17 vbox [706369.133519]
+> > Oct 30 10:45:17 vbox [706369.144990] Pid: 19, comm: ksoftirqd/5 Not tainted 2.6.31lb.02 #1
+> > Oct 30 10:45:17 vbox [706369.151554] Call Trace:
+> > Oct 30 10:45:17 vbox [706369.154332]  <IRQ>
+> > Oct 30 10:45:17 vbox [<ffffffff8104c1fa>] panic+0xaa/0x180
+> > Oct 30 10:45:17 vbox [706369.160280]  [<ffffffff81322b90>] ? _spin_unlock+0x30/0x60
+> > Oct 30 10:45:17 vbox [706369.166256]  [<ffffffff810f5671>] ? add_partial+0x21/0x90
+> > Oct 30 10:45:17 vbox [706369.172155]  [<ffffffff810f6a92>] ? __slab_free+0x92/0x3c0
+> > Oct 30 10:45:17 vbox [706369.178127]  [<ffffffff81102317>] ? file_free_rcu+0x37/0x50
+> > Oct 30 10:45:17 vbox [706369.184198]  [<ffffffff8106c655>] put_cred_rcu+0x75/0x80
+> > Oct 30 10:45:17 vbox [706369.190008]  [<ffffffff810a2525>] __rcu_process_callbacks+0x125/0x250
+> > Oct 30 10:45:17 vbox [706369.197020]  [<ffffffff810a2689>] rcu_process_callbacks+0x39/0x60
+> > Oct 30 10:45:17 vbox [706369.203624]  [<ffffffff81052a61>] __do_softirq+0xc1/0x250
+> > Oct 30 10:45:17 vbox [706369.209506]  [<ffffffff81053860>] ? ksoftirqd+0x0/0x1a0
+> > Oct 30 10:45:17 vbox [706369.215182]  [<ffffffff8100c4dc>] call_softirq+0x1c/0x30
+> > Oct 30 10:45:17 vbox [706369.220986]  [<ffffffff8100e46d>] do_softirq+0x3d/0x80
+> > Oct 30 10:45:17 vbox [706369.227317]  [<ffffffff81053860>] ? ksoftirqd+0x0/0x1a0
+> > Oct 30 10:45:17 vbox [706369.233020]  [<ffffffff810538e4>] ksoftirqd+0x84/0x1a0
+> > Oct 30 10:45:17 vbox [706369.238622]  [<ffffffff81066686>] kthread+0xa6/0xb0
+> > Oct 30 10:45:17 vbox [706369.243956]  [<ffffffff8100c3da>] child_rip+0xa/0x20
+> > Oct 30 10:45:17 vbox [706369.249390]  [<ffffffff810665e0>] ? kthread+0x0/0xb0
+> > Oct 30 10:45:17 vbox [706369.254806]  [<ffffffff8100c3d0>] ? child_rip+0x0/0x20
+> > Oct 30 10:45:17 vbox [706369.260454] Rebooting in 10 seconds..
+> > (trace is obtained from netconsole, so hopefully it's not mangled).
+> > The machine was running ~30 KVM guests, it's 8CPU 16GB x86_64, when it crashed, it was only
+> > moderately loaded. Never had this (or any other) kind of crash on it before.
+> > I know there's 2.6.31.5 already out, but I'm not sure if some related problem has been
+> > reported/fixed and I'm obviously not able to quicky test/reproduce it with latest kernel,
+> > so I'm rather reporting.
+> > Should more information/testing/etc be required, I'll be glad to help
+> > regards
+> > nik
 
-Thanks
-Vivek
-
-> It's here:
-> static void init_level2_page(pmd_t *level2p, unsigned long addr)
-> {
->         unsigned long end_addr;
-> 
->         addr &= PAGE_MASK;
->         end_addr = addr + PUD_SIZE;
->         while (addr < end_addr) {
-> here ->         set_pmd(level2p++, __pmd(addr | __PAGE_KERNEL_LARGE_EXEC));
->                 addr += PMD_SIZE;
->         }
-> }
-> 
-> Corresponding -fverbose-asm with -g:
->         .loc 1 65 0
->         addq    $2097152, %rdx  #, addr
-> .LVL31:
-> .LBB416:
->         .loc 5 77 0
->         orq     $483, %rax      #, tmp140
-> .LBE416:
->         .loc 1 63 0
->         cmpq    %rdx, %rcx      # addr, end_addr
-> .LBB417:
->         .loc 5 77 0
->         stosq
-> .LVL32:
-> .LBE417:
->         .loc 1 63 0
->         ja      .L26    #,
-> 
-> 
