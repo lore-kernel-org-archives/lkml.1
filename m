@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbZKCTrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZKCTiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755125AbZKCTrc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:47:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbZKCTrb
+	id S1754807AbZKCTiA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZKCTiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:47:31 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:39333 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755054AbZKCTra (ORCPT
+	Tue, 3 Nov 2009 14:38:00 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:38461 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650AbZKCTh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:47:30 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=UyGw+R1RoqM8WBpGHHcqRaGq7lA8pbYn1LDtmTO7UFp/CtielMVQPrjHHAIaRvxxT
-	tSnEnVC3NWoFyCn2JDQsw==
-Date: Tue, 3 Nov 2009 11:47:23 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, minchan.kim@gmail.com,
-       vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [RFC][-mm][PATCH 2/6] oom-killer: count swap usage per
- process.
-In-Reply-To: <20091102162526.c985c5a8.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0911031144390.11821@chino.kir.corp.google.com>
-References: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com> <20091102162526.c985c5a8.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Nov 2009 14:37:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=UaEyeCmb/KICXteFFUGvquQq642eeRgnEPGqnRMgERai6JwD1B0CUZ4yc+YqorUldG
+         WIEjnUE7jj1Q3LFXyHcufJiCcXunQ+EWg1Nd88qvtsMZIdZT2rQp+Ro8uwh7rPW9EoM4
+         /u6X+ySj6e9Pytrwnp5soE3PPw/QTq+OA+eP0=
+Message-ID: <4AF0893E.8040101@gmail.com>
+Date: Tue, 03 Nov 2009 20:49:18 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] UBI: Ensure index is positive
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009, KAMEZAWA Hiroyuki wrote:
+The index is signed, make sure it is not negative
+when we read the array element.
 
-> Now, anon_rss and file_rss is counted as RSS and exported via /proc.
-> RSS usage is important information but one more information which
-> is often asked by users is "usage of swap".(user support team said.)
-> 
-> This patch counts swap entry usage per process and show it via
-> /proc/<pid>/status. I think status file is robust against new entry.
-> Then, it is the first candidate..
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/mtd/mtdcore.c      |    2 +-
+ drivers/mtd/nand/fsl_upm.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Acked-by; David Rientjes <rientjes@google.com>
-
-Thanks!  I think this should be added to -mm now while the remainder of 
-your patchset is developed and reviewed, it's helpful as an independent 
-change.
-
-> Index: mmotm-2.6.32-Nov2/fs/proc/task_mmu.c
-> ===================================================================
-> --- mmotm-2.6.32-Nov2.orig/fs/proc/task_mmu.c
-> +++ mmotm-2.6.32-Nov2/fs/proc/task_mmu.c
-> @@ -17,7 +17,7 @@
->  void task_mem(struct seq_file *m, struct mm_struct *mm)
->  {
->  	unsigned long data, text, lib;
-> -	unsigned long hiwater_vm, total_vm, hiwater_rss, total_rss;
-> +	unsigned long hiwater_vm, total_vm, hiwater_rss, total_rss, swap;
->  
->  	/*
->  	 * Note: to minimize their overhead, mm maintains hiwater_vm and
-> @@ -36,6 +36,8 @@ void task_mem(struct seq_file *m, struct
->  	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
->  	text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
->  	lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
-> +
-> +	swap = get_mm_counter(mm, swap_usage);
->  	seq_printf(m,
->  		"VmPeak:\t%8lu kB\n"
->  		"VmSize:\t%8lu kB\n"
-
-Not sure about this newline though.
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index 467a4f1..c356c0a 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -447,7 +447,7 @@ struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num)
+ 		for (i=0; i< MAX_MTD_DEVICES; i++)
+ 			if (mtd_table[i] == mtd)
+ 				ret = mtd_table[i];
+-	} else if (num < MAX_MTD_DEVICES) {
++	} else if (num >= 0 && num < MAX_MTD_DEVICES) {
+ 		ret = mtd_table[num];
+ 		if (mtd && mtd != ret)
+ 			ret = NULL;
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index d120cd8..071a60c 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -112,7 +112,7 @@ static void fun_select_chip(struct mtd_info *mtd, int mchip_nr)
+ 
+ 	if (mchip_nr == -1) {
+ 		chip->cmd_ctrl(mtd, NAND_CMD_NONE, 0 | NAND_CTRL_CHANGE);
+-	} else if (mchip_nr >= 0) {
++	} else if (mchip_nr >= 0 && mchip_nr < NAND_MAX_CHIPS) {
+ 		fun->mchip_number = mchip_nr;
+ 		chip->IO_ADDR_R = fun->io_base + fun->mchip_offsets[mchip_nr];
+ 		chip->IO_ADDR_W = chip->IO_ADDR_R;
