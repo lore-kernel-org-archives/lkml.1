@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbZKCToI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZKCT0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754931AbZKCToI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:44:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZKCToH
+	id S1754524AbZKCT0p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 14:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZKCT0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:44:07 -0500
-Received: from xenbox.codefidence.com ([92.48.73.16]:41259 "EHLO
-	xenbox.codefidence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753248AbZKCToE (ORCPT
+	Tue, 3 Nov 2009 14:26:44 -0500
+Received: from qmta11.westchester.pa.mail.comcast.net ([76.96.59.211]:45330
+	"EHLO QMTA11.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752566AbZKCT0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:44:04 -0500
-Message-ID: <4AF08292.7090102@codefidence.com>
-Date: Tue, 03 Nov 2009 21:20:50 +0200
-From: Gilad Ben-Yossef <gilad@codefidence.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
+	Tue, 3 Nov 2009 14:26:44 -0500
+X-Greylist: delayed 349 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 14:26:43 EST
+Message-Id: <200911031920.nA3JKtDK019183@deneb.dwf.com>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
 To: Valdis.Kletnieks@vt.edu
-CC: Eric Dumazet <eric.dumazet@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Ori Finkelman <ori@comsleep.com>
-Subject: Re: 2.6.32-rc5-mmotm1101 - kernel BUG at net/ipv4/tcp_input.c:3707!
-References: <5765.1257270611@turing-police.cc.vt.edu> <4AF07024.80103@gmail.com>
-In-Reply-To: <4AF07024.80103@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+cc: Reg Clemens <reg@dwf.com>, linux-kernel@vger.kernel.org, reg@fw.dwf.com
+Subject: Re: Can build 2.6.31.5 on one P4 but not another. 
+In-reply-to: <8575.1257273906@turing-police.cc.vt.edu> 
+References: <200911031815.nA3IFCe6017661@deneb.dwf.com> 
+ <8575.1257273906@turing-police.cc.vt.edu>
+Comments: In-reply-to Valdis.Kletnieks@vt.edu
+   message dated "Tue, 03 Nov 2009 13:45:06 -0500."
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 03 Nov 2009 12:20:55 -0700
+From: Reg Clemens <reg@dwf.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
+> On Tue, 03 Nov 2009 11:15:12 MST, Reg Clemens said:
+> > Can someone explain this to me.
+> 
+> > I dont understand how this can build on one P4 and not another.
+> 
+> Different .configs?  gcc?  binutils?  Those are the first 3 that come to mind...
 
-> Valdis.Kletnieks@vt.edu a écrit :
->   
->> Seen right after I started 'fetchmail'.  Reproducible - 3 out of 3.
->> I'll bisect this tonight if nobody jumps up and yells they know what it is...
->>     
-Bah... this is most probably my fault. Sorry about that.
-
-Can you please try the patch in the next email?
-
-But also, can you please send me the route table in effect when this 
-happened and the fetchmail command line/config (removing any passwords 
-or account details of course)? I want to understand better when this 
-happens.
-
-Thanks!
-Gilad
-
+Same config files (I should have mentioned this)
+Different gcc's
+And I would assume that the loader is the only binutil involved
 
 -- 
-Gilad Ben-Yossef
-Chief Coffee Drinker & CTO
-Codefidence Ltd.
+                                        Reg.Clemens
+                                        reg@dwf.com
 
-Web:   http://codefidence.com
-Cell:  +972-52-8260388
-Skype: gilad_codefidence
-Tel:   +972-8-9316883 ext. 201
-Fax:   +972-8-9316884
-Email: gilad@codefidence.com
-
-Check out our Open Source technology and training blog - http://tuxology.net
-
-	"The biggest risk you can take it is to take no risk."
-		-- Mark Zuckerberg and probably others
 
