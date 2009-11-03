@@ -1,123 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZKCPZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751703AbZKCQgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbZKCPZb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 10:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZKCPZ3
+	id S1751703AbZKCQgD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 11:36:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZKCQgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 10:25:29 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:60185 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751051AbZKCPZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 10:25:26 -0500
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: haavard.skinnemoen@atmel.com, linux-arm-kernel@lists.infradead.org,
-       avictor.za@gmail.com
-Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org,
-       Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH 3/3] atmel_lcdfb Kconfig: remove long dependency line
-Date: Tue,  3 Nov 2009 17:30:56 +0100
-Message-Id: <29424085870c8c8cc3fe9d6e1f382a24f8a9ca2b.1257263893.git.nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1256049173-17373-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1256049173-17373-1-git-send-email-nicolas.ferre@atmel.com>
-In-Reply-To: <08f444c605fb38ee8b82821f28746b21ed06d9f7.1257263893.git.nicolas.ferre@atmel.com>
-References: <08f444c605fb38ee8b82821f28746b21ed06d9f7.1257263893.git.nicolas.ferre@atmel.com>
+	Tue, 3 Nov 2009 11:36:03 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33615 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750979AbZKCQgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 11:36:02 -0500
+Subject: Re: Ftrace for Microblaze - notrace
+From: Steven Rostedt <srostedt@redhat.com>
+To: monstr@monstr.eu
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       John Williams <john.williams@petalogix.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <4AF030EE.7050609@monstr.eu>
+References: <4AF030EE.7050609@monstr.eu>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Tue, 03 Nov 2009 11:35:54 -0500
+Message-Id: <1257266154.31359.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Many Atmel SOC are embedding a LCD controller. This patch removes the long
-dependency line for this Atmel LCD framebuffer driver configuration entry.
-The HAVE_FB_ATMEL configuration option is located in the video Kconfig file
-as it may be setup by ARM/AT91 and AVR32 chips.
+On Tue, 2009-11-03 at 14:32 +0100, Michal Simek wrote:
+> Hi Thomas, Ingo, Steven and others
+> 
+> I am working on ftrace support for Microblaze. I have done basic ftrace
+> support - initcall, kmemtrace and other.
+> Currently I am working on function trace support.  I did asm code as is
+> written in Documentation/trace/ftrace-design.txt.
+> 
+> I have two poins/questions.
+> 
+> I desided to use HAVE_FUNCTION_TRACE_MCOUNT_TEST - just test 
+> function_trace_stop in asm code - that shouldn't be a problem.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- arch/arm/mach-at91/Kconfig |    6 ++++++
- arch/avr32/Kconfig         |    1 +
- drivers/video/Kconfig      |    6 +++++-
- 3 files changed, 12 insertions(+), 1 deletions(-)
+Yeah, and if you don't have that, it is taken care of in the generic
+code too.
 
-diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
-index bb4cd27..3df124e 100644
---- a/arch/arm/mach-at91/Kconfig
-+++ b/arch/arm/mach-at91/Kconfig
-@@ -41,18 +41,21 @@ config ARCH_AT91SAM9261
- 	select CPU_ARM926T
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91SAM9G10
- 	bool "AT91SAM9G10"
- 	select CPU_ARM926T
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91SAM9263
- 	bool "AT91SAM9263"
- 	select CPU_ARM926T
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91SAM9RL
- 	bool "AT91SAM9RL"
-@@ -60,6 +63,7 @@ config ARCH_AT91SAM9RL
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91SAM9G20
- 	bool "AT91SAM9G20"
-@@ -76,12 +80,14 @@ config ARCH_AT91SAM9G45
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91CAP9
- 	bool "AT91CAP9"
- 	select CPU_ARM926T
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91X40
- 	bool "AT91x40"
-diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
-index 35e3bd9..d856354 100644
---- a/arch/avr32/Kconfig
-+++ b/arch/avr32/Kconfig
-@@ -92,6 +92,7 @@ config PLATFORM_AT32AP
- 	select PERFORMANCE_COUNTERS
- 	select ARCH_REQUIRE_GPIOLIB
- 	select GENERIC_ALLOCATOR
-+	select HAVE_FB_ATMEL
- 
- #
- # CPU types
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 9bbb285..253083a 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -935,9 +935,13 @@ config FB_S1D13XXX
- 	  working with S1D13806). Product specs at
- 	  <http://www.erd.epson.com/vdc/html/legacy_13xxx.htm>
- 
-+config HAVE_FB_ATMEL
-+	depends on FB
-+	bool
-+
- config FB_ATMEL
- 	tristate "AT91/AT32 LCD Controller support"
--	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9G10 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT91CAP9 || AVR32)
-+	depends on FB && HAVE_FB_ATMEL
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
--- 
-1.5.6.5
+> 
+> I disable -pg in main Makefile because not work for me (more info below) 
+> and I enable it just for two file in arch/microblaze (irq.c and intc.c) 
+> - recompile kernel and test. Log is below and you can see that I am able 
+> to see output for function. That's why I think that my mcount function 
+> should be correct. Am I right?
+> 
+> uclinux login: root
+> Password:
+> # cd ; mkdir /debug; mount -t debugfs none /debug; cat 
+> /debug/tracing/available_
+> tracers; echo function > /debug/tracing/current_tracer;echo 1 > 
+> /debug/tracing/t
+> racing_enabled;cat /debug/tracing/trace | head -n 10
+> wakeup_rt wakeup function sched_switch nop
+> # tracer: function
+> #
+> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> #              | |       |          |         |
+>                sh-52    [000]   184.940000: irq_call <-do_IRQ
+>                sh-52    [000]   184.940000: do_IRQ <-get_irq
+>                sh-52    [000]   184.940000: handle_level_irq <-intc_mask_ack
+>                sh-52    [000]   184.950000: handle_level_irq 
+> <-intc_enable_or_unmask
+>                sh-52    [000]   184.950000: do_IRQ <-get_irq
+>                sh-52    [000]   184.950000: handle_level_irq <-intc_mask_ack
+> #
+> 
+> 
+> When is used -pg flag kernel stops when I enable function tracer.
+> Interesting is that freeze than I setup function tracing (echo function 
+>  > .../current/tracer). Is it correct behavior? I think that trace 
+> should start after (echo 1>  .../tracing_enabled).
+
+No, tracing_enabled is default on and should not be used (may go away).
+Tracing starts as soon as you echo function into current_tracer.
+
+> 
+> 
+> The next thing is about annotation notrace. I look at all arch. Is there 
+> any algorithm which function should use it? I think that this could be a 
+>   reason why I my kernel freeze when enable function tracer.
+>
+> I tested to add -pg flag for process.c file and after it kernel freeze 
+> too. Is it mean that problem could be there?
+
+Probably.
+
+> 
+> Any other suggestion?
+
+Just remember that -pg is very intrusive. I don't know your arch, nor
+have I seen the code you did to update it. You can disable the -pg from
+process.c by adding in the Makefile:
+
+CFLAGS_REMOVE_process.o = -pg
+
+And that will keep the process.c from being compiled with it. There may
+be other files in the arch that should not have it. There's several in
+x86 and in PowerPC.
+
+-- Steve
+
 
