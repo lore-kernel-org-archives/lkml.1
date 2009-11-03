@@ -1,102 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZKCJYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbZKCJwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbZKCJYj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 04:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZKCJYi
+	id S1755883AbZKCJwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 04:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZKCJwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 04:24:38 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:44887 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754074AbZKCJYh (ORCPT
+	Tue, 3 Nov 2009 04:52:36 -0500
+Received: from relay.parallels.com ([195.214.232.42]:34147 "EHLO
+	relay.parallels.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754153AbZKCJwe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 04:24:37 -0500
-Message-ID: <4AEFF6D7.9080509@free.fr>
-Date: Tue, 03 Nov 2009 10:24:39 +0100
-From: Cedric Le Goater <legoater@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 3 Nov 2009 04:52:34 -0500
+X-Greylist: delayed 941 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 04:52:34 EST
+From: "Denis V. Lunev" <den@openvz.org>
+To: <akpm@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       "Denis V. Lunev" <den@openvz.org>
+Subject: [PATCH 1/2] Crash in linux kernel when disconnecting usb storage
+Date: Tue, 3 Nov 2009 12:36:35 +0300
+Message-ID: <1257240996-23118-1-git-send-email-den@openvz.org>
+X-Mailer: git-send-email 1.6.4.4
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, andrea@cpushare.com,
-       Linux Containers <containers@lists.osdl.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Emelianov <xemul@openvz.org>, Alexey Dobriyan <adobriyan@mail.ru>,
-       linux-kernel@vger.kernel.org
-Subject: Re: pidns memory leak
-References: <20091006040526.GA22923@us.ibm.com> <4ACAFD6A.3060008@fr.ibm.com>	<20091008030828.GA18973@us.ibm.com> <4ACD9ECC.90508@fr.ibm.com>	<20091009032928.GA2031@us.ibm.com> <4ACF381F.9050808@fr.ibm.com>	<20091010013235.GA11904@us.ibm.com> <4AD2EBC7.2020109@fr.ibm.com>	<20091014061533.GA23569@us.ibm.com>	<20091102133326.e3dc51fb.akpm@linux-foundation.org>	<20091102223818.GA15628@us.ibm.com>	<20091102144752.71fd4a31.akpm@linux-foundation.org>	<4AEFDAAE.500@free.fr> <m1ljiogfun.fsf@fess.ebiederm.org>
-In-Reply-To: <m1ljiogfun.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/03/2009 09:41 AM, Eric W. Biederman wrote:
-> Cedric Le Goater <legoater@free.fr> writes:
-> 
->> On 11/02/2009 11:47 PM, Andrew Morton wrote:
->>> On Mon, 2 Nov 2009 16:38:18 -0600
->>> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
->>>
->>>>> This bug hasn't been fixed yet, has it?
->>>>
->>>> Well Suka did trace the bug to commit 7766755a2f249e7, and posted a patch
->>>> to revert that, acked by Eric on Oct 20.  Suka, were you going to repost
->>>> that patch?
->>>
->>> Ah.  OK.  Thanks.  Found it in the backlog pile.
->>
->> We've added the patch to our patchset and we confirm that the pid_* leaks have 
->> been reduced to 'nearly' nothing but we still have a lot of inodes and dentries
->> leaks. I hope to find some time to investigate and reproduce with a small 
->> scenario, we are running a LTP like testsuite in a container environment.
-> 
-> Does forcing a cache flush help with the other leaks?
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
 
-yes, it frees a few more dentries, but not enough.
+__scsi_remove_device() in scsi_forget_host() is executed out of scan_mutex
+and races with scsi_destroy_sdev() <- scsi_sysfs_add_devices()
+<- scsi_finish_async_scan(). The result is use after free and/or
+double free, oops.
 
-I did:
+The fix is simple, move scsi_forget_host() under scan_mutex.
 
-	$ echo 2 > /proc/sys/vm/drop_caches
+scsi_forget_host() is just sequence of __scsi_remove_device().
+All another calls of __scsi_remove_device() are made under scan_mutex.
+So that it is safe.
 
-before :
+Signed-off-by: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+CC: James E.J. Bottomley <James.Bottomley@suse.de>
+Signed-off-by: Denis V. Lunev <den@openvz.org>
+---
+ drivers/scsi/hosts.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	size-64           193243 198088     88   44    1 
-	dentry            110584 111202    280   14    1 
-	inode_cache       107543 107543   4096    1    1 
-	size-128           56341  63450    152   25    1 
-	size-4096          21107  21107   4096    1    1 
-	vm_area_struct     11838  11960    192   20    1 
-	size-256           11406  11424    280   14    1 
-	size-32             9408   9916     56   67    1 
-	size-512            7710   7710   4096    1    1 
-	sysfs_dir_cache     5288   5328    104   37    1 
-	pid_2                302    336    136   28    1 
-	pid_namespace          1      1   4096    1    1 
-	nsproxy                1     53     72   53    1 
+diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+index 5fd2da4..c968cc3 100644
+--- a/drivers/scsi/hosts.c
++++ b/drivers/scsi/hosts.c
+@@ -164,8 +164,8 @@ void scsi_remove_host(struct Scsi_Host *shost)
+ 			return;
+ 		}
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
+-	mutex_unlock(&shost->scan_mutex);
+ 	scsi_forget_host(shost);
++	mutex_unlock(&shost->scan_mutex);
+ 	scsi_proc_host_rm(shost);
+ 
+ 	spin_lock_irqsave(shost->host_lock, flags);
+-- 
+1.6.4.4
 
-after: 
-
-	size-64           193150 198044     88   44    1 
-	dentry            110509 111202    280   14    1 
-	inode_cache       107543 107543   4096    1    1 
-	size-128           56326  63450    152   25    1 
-	size-4096          21107  21107   4096    1    1 
-	vm_area_struct     11857  11960    192   20    1 
-	size-256           11405  11424    280   14    1 
-	size-32             9408   9916     56   67    1 
-	size-512            7710   7710   4096    1    1 
-	sysfs_dir_cache     5288   5328    104   37    1 
-	pid_2                302    336    136   28    1 
-	pid_namespace          1      1   4096    1    1 
-	nsproxy                1     53     72   53    1 
-
-
-I'll come back to you (daniel or me) when we've nailed this one with a simpler
-program. it shows up when stressing the system with lxc containers.
-
-Cheers,
-
-C.
