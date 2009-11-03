@@ -1,161 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbZKCVkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbZKCVno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbZKCVkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:40:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbZKCVkz
+	id S1755091AbZKCVno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 16:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbZKCVnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:40:55 -0500
-Received: from sinclair.provo.novell.com ([137.65.248.137]:10554 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755277AbZKCVky convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-ghaskins@novell.com;5:1>);
-	Tue, 3 Nov 2009 16:40:54 -0500
-Message-Id: <4AF05D150200005A00057FA3@sinclair.provo.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Tue, 03 Nov 2009 14:40:53 -0700
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <rostedt@goodmis.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@redhat.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/14] cpumask: simplify sched_rt.c
-References: <200911031453.15350.rusty@rustcorp.com.au>
- <1257266509.26028.3343.camel@gandalf.stny.rr.com>
-In-Reply-To: <1257266509.26028.3343.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Tue, 3 Nov 2009 16:43:43 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:51757 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754324AbZKCVnm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 16:43:42 -0500
+To: Benjamin LaHaise <bcrl@lhnet.ca>
+Cc: Greg KH <greg@kroah.com>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       Cosmin Ratiu <cratiu@ixiacom.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] sysfs directory scaling: rbtree for dirent name lookups
+References: <20091101163130.GA7911@kvack.org>
+	<20091103035058.GA19515@kroah.com> <20091103200155.GQ8227@kvack.org>
+	<m1my338fbi.fsf@fess.ebiederm.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 03 Nov 2009 13:43:43 -0800
+In-Reply-To: <m1my338fbi.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Tue\, 03 Nov 2009 13\:32\:33 -0800")
+Message-ID: <m1y6mn708g.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On 11/3/2009 at 11:41 AM, in message
-<1257266509.26028.3343.camel@gandalf.stny.rr.com>, Steven Rostedt
-<rostedt@goodmis.org> wrote: 
-> Greg,
-> 
-> I believe this was mostly your code. Can you review this change.
-> 
-> Thanks,
-> 
-> -- Steve
-> 
-> 
-> On Tue, 2009-11-03 at 14:53 +1030, Rusty Russell wrote:
->> find_lowest_rq() wants to call pick_optimal_cpu() on the intersection
->> of sched_domain_span(sd) and lowest_mask.  Rather than doing a cpus_and
->> into a temporary, we can open-code it.
->> 
->> This actually makes the code slightly clearer, IMHO.
->> 
->> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->> To: Steven Rostedt <rostedt@goodmis.org>
->> Cc: Ingo Molnar <mingo@redhat.com>
+ebiederm@xmission.com (Eric W. Biederman) writes:
 
-I am not sure that I agree that its "clearer", but I do like the fact that the potentially nasty dynamic mask allocation is removed from the fast path.
+> Benjamin LaHaise <bcrl@lhnet.ca> writes:
+>
+>> On Mon, Nov 02, 2009 at 07:50:58PM -0800, Greg KH wrote:
+>>> On Sun, Nov 01, 2009 at 11:31:30AM -0500, Benjamin LaHaise wrote:
+>>> > Use an rbtree in sysfs_dirent to speed up file lookup times
+>>> > 
+>>> > Systems with large numbers (tens of thousands and more) of network 
+>>> > interfaces stress the sysfs code in ways that make the linear search for 
+>>> > a name match take far too long.  Avoid this by using an rbtree.
+>>> 
+>>> What kind of speedups are you seeing here?  And do these changes cause a
+>>> memory increase due to the structure changes which outweigh the
+>>> speedups?
+>>
+>> Depends on the number of interfaces being created.  Without the patch, 
+>> interface creation time tends to double or worse for every 5,000-10,000 
+>> additional network interfaces.
+>>
+>>> What kind of test are you doing to reproduce this?
+>>
+>> I'm creating 30,000+ network interfaces, with the goal being 100,000.  
+>> With other hacks in the tree to get around the sysctl and procfs scaling 
+>> issues, as well as disabling things like NetworkManager, the results look 
+>> as follows:
+>>
+>> 	Interfaces	no-rb	rbtree	rbtree+list
+>> 	0-5,000		13.8s	14.0s	13.0s
+>> 	5,000-10,000	20.0s	17.4s	14.4s
+>> 	10,000-15,000	27.3s	24.1s	16.9s
+>> 	15,000-20,000	36.3s	32.2s	19.7s
+>> 	20,000-25,000	45.2s	40.0s	22.9s
+>> 	25,000-30,000	54.2s	48.2s	26.6s
+>> 	30,000-35,000	63.9s	54.9s	30.7s
+>>
+>> Thoughts?
+>
+> Something is very weird.  I just took your no-rb numbers
+> and divided by the number of interfaces to see how well we are
+> scaling.  I got:
+>
+>  	Interfaces	per-interface cost
+>  	5,000		0.002760s
+>  	10,000		0.002000s
+>  	15,000		0.001820s
+>  	20,000		0.001815s
+>  	25,000		0.001808s
+>  	30,000		0.001807s
+>  	35,000		0.001826s
+>
+> I ran a variant of this test a long time ago and at that the
+> cost per interface grew with additional interfaces added.  This
+> jives with the fact that the fundamental cost of adding N
+> network interfaces to sysfs is O(N^2).
+>
+> Are your numbers from your application and are they real world?
+> In which case they are interesting, but it would be good if
+> we could also have microbenchmark numbers that just measure
+> the sysfs costs.   If nothing else I am seeing a big startup
+> overhead that isn't being subtracted out that makes it hard
+> to see the real costs here.
 
-I checked the logic, and it does appear to be functionally equivalent to the original.
+I guess in particular what I would expect is that if we can do 35000
+interfaces in 63s with an O(N^2) algorithm.  Then we should be able to
+do 35000 interfaces with an O(NlogN) algorithm in under a second.
+Which for your application should make the time essentially flat in
+the number of interfaces.
 
-Acked-by: Gregory Haskins <ghaskins@novell.com>
+Until we get close to that I figure we need to do more digging.
 
->> ---
->>  kernel/sched_rt.c |   59 +++++++++++++++++++++---------------------------------
->>  1 file changed, 23 insertions(+), 36 deletions(-)
->> 
->> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
->> --- a/kernel/sched_rt.c
->> +++ b/kernel/sched_rt.c
->> @@ -1115,29 +1115,12 @@ static struct task_struct *pick_next_hig
->>  
->>  static DEFINE_PER_CPU(cpumask_var_t, local_cpu_mask);
->>  
->> -static inline int pick_optimal_cpu(int this_cpu,
->> -				   const struct cpumask *mask)
->> -{
->> -	int first;
->> -
->> -	/* "this_cpu" is cheaper to preempt than a remote processor */
->> -	if ((this_cpu != -1) && cpumask_test_cpu(this_cpu, mask))
->> -		return this_cpu;
->> -
->> -	first = cpumask_first(mask);
->> -	if (first < nr_cpu_ids)
->> -		return first;
->> -
->> -	return -1;
->> -}
->> -
->>  static int find_lowest_rq(struct task_struct *task)
->>  {
->>  	struct sched_domain *sd;
->>  	struct cpumask *lowest_mask = __get_cpu_var(local_cpu_mask);
->>  	int this_cpu = smp_processor_id();
->>  	int cpu      = task_cpu(task);
->> -	cpumask_var_t domain_mask;
->>  
->>  	if (task->rt.nr_cpus_allowed == 1)
->>  		return -1; /* No other targets possible */
->> @@ -1167,28 +1150,26 @@ static int find_lowest_rq(struct task_st
->>  	 * Otherwise, we consult the sched_domains span maps to figure
->>  	 * out which cpu is logically closest to our hot cache data.
->>  	 */
->> -	if (this_cpu == cpu)
->> -		this_cpu = -1; /* Skip this_cpu opt if the same */
->> +	if (!cpumask_test_cpu(this_cpu, lowest_mask))
->> +		this_cpu = -1; /* Skip this_cpu opt if not among lowest */
->>  
->> -	if (alloc_cpumask_var(&domain_mask, GFP_ATOMIC)) {
->> -		for_each_domain(cpu, sd) {
->> -			if (sd->flags & SD_WAKE_AFFINE) {
->> -				int best_cpu;
->> +	for_each_domain(cpu, sd) {
->> +		if (sd->flags & SD_WAKE_AFFINE) {
->> +			int best_cpu;
->>  
->> -				cpumask_and(domain_mask,
->> -					    sched_domain_span(sd),
->> -					    lowest_mask);
->> +			/*
->> +			 * "this_cpu" is cheaper to preempt than a
->> +			 * remote processor.
->> +			 */
->> +			if (this_cpu != -1 &&
->> +			    cpumask_test_cpu(this_cpu, sched_domain_span(sd)))
->> +				return this_cpu;
->>  
->> -				best_cpu = pick_optimal_cpu(this_cpu,
->> -							    domain_mask);
->> -
->> -				if (best_cpu != -1) {
->> -					free_cpumask_var(domain_mask);
->> -					return best_cpu;
->> -				}
->> -			}
->> +			best_cpu = cpumask_first_and(lowest_mask,
->> +						     sched_domain_span(sd));
->> +			if (best_cpu < nr_cpu_ids)
->> +				return best_cpu;
->>  		}
->> -		free_cpumask_var(domain_mask);
->>  	}
->>  
->>  	/*
->> @@ -1196,7 +1177,13 @@ static int find_lowest_rq(struct task_st
->>  	 * just give the caller *something* to work with from the compatible
->>  	 * locations.
->>  	 */
->> -	return pick_optimal_cpu(this_cpu, lowest_mask);
->> +	if (this_cpu != -1)
->> +		return this_cpu;
->> +
->> +	cpu = cpumask_any(lowest_mask);
->> +	if (cpu < nr_cpu_ids)
->> +		return cpu;
->> +	return -1;
->>  }
->>  
->>  /* Will lock the rq it finds */
->> 
-
-
+Eric
