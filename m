@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753758AbZKCRBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZKCRAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753758AbZKCRBX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 12:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbZKCRBW
+	id S1752898AbZKCRAb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 12:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZKCRAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 12:01:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49847 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752525AbZKCRBV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 12:01:21 -0500
-Date: Tue, 3 Nov 2009 08:59:36 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: Please consider reverting
- 7d930bc33653d5592dc386a76a38f39c2e962344
-In-Reply-To: <1257266647.3420.105.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0911030851440.31845@localhost.localdomain>
-References: <20091103053156.GA3212@core.coreip.homeip.net>  <20091102.224957.32364226.davem@davemloft.net>  <20091103065238.GE3212@core.coreip.homeip.net>  <1257232587.3420.55.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
-  <1257262588.3420.79.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030738260.31845@localhost.localdomain>  <1257264485.3420.87.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030815180.31845@localhost.localdomain>
- <1257266647.3420.105.camel@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Nov 2009 12:00:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45906 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752413AbZKCRA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 12:00:29 -0500
+Subject: Re: [-next regression] lockdep? tracing? BUG: unable to handle
+ kernel paging request at
+From: Eric Paris <eparis@redhat.com>
+To: rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       zhaolei@cn.fujitsu.com, mingo@elte.hu, lizf@cn.fujitsu.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1257264170.26028.3340.camel@gandalf.stny.rr.com>
+References: <1257263296.2891.97.camel@dhcp231-106.rdu.redhat.com>
+	 <1257264170.26028.3340.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Nov 2009 12:00:17 -0500
+Message-Id: <1257267617.2891.107.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 4 Nov 2009, Marcel Holtmann wrote:
+On Tue, 2009-11-03 at 11:02 -0500, Steven Rostedt wrote:
+> [ Added Peter Zijlstra ]
 > 
-> However to be fair here, this one didn't hit everybody. I for myself
-> haven't seen it at all and actually I have been running this "faulty"
-> kernel for a while now and suspending happily multiple times a day. As
-> much as you hate that the patch for this bug took longer than needed to
-> find its way into your tree, the immediate need and the wide problem was
-> not clear.
+> On Tue, 2009-11-03 at 10:48 -0500, Eric Paris wrote:
+> > Linux-next from Oct 30 did not have this problem.  Linux next from
+> > yesterday (and today) I always hit this on boot.
+> 
+> Could you also give the SHA1 of Linux-next, as well as the config you
+> used.
 
-I do not agree.
+False alarm, apparently this is due to a patch that I added.  Odd part
+is, I don't touch anything even remotely close to this section of code.
+I'm at a bit of a lose, but apply my patch, boom, revert, works.
 
-A _single_ NULL pointer report should have made it clear. As mentioned, I 
-was involved in one of the "please revert" threads, and I looked at the 
-code, and it was obviously bogus. I could (and did) point to the exact 
-memcpy() that caused the problem.
+I'll figure it out eventually I guess.
 
-There really was no excuse. That 7d930bc33 commit had a NULL pointer 
-dereference, and people hit it. End of story.
+-Eric
 
-The fact that not _all_ people hit it explains how it got pulled into my 
-tree in the first place, but that's it.
-
-			Linus
