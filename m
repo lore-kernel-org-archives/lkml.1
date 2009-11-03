@@ -1,109 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751264AbZKCO4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751716AbZKCO6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751264AbZKCO4z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 09:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZKCO4y
+	id S1751716AbZKCO6u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 09:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZKCO6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 09:56:54 -0500
-Received: from cantor.suse.de ([195.135.220.2]:51267 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750751AbZKCO4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 09:56:53 -0500
-Date: Tue, 3 Nov 2009 15:56:54 +0100
-From: Jan Kara <jack@suse.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, npiggin@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       hch@infradead.org, chris.mason@oracle.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] [PATCH] Avoid livelock for fsync
-Message-ID: <20091103145654.GC29873@duck.suse.cz>
-References: <20091026181314.GE7233@duck.suse.cz> <20091103131434.GA9648@localhost>
+	Tue, 3 Nov 2009 09:58:50 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:51115 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbZKCO6t convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 09:58:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=j3AR2ERWJVzYmMw9CdBV4BqLR2T2Go1GHheXW7NeC+Wjh5vFARw2hZ6rj9zrgJFo/1
+         bvuQhZ9NteiQpZLwjIKPWeg9nOOEa56Lr5CJEjXd2d2VoMe4CsGwldz7w8ao8xBQdehi
+         iECjk5oj3qVgH5ZPZnKT63KJN5rytiwJ8tOnM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091103131434.GA9648@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20091103134342.24414.82986.sendpatchset@prarit.bos.redhat.com>
+References: <20091103134342.24414.82986.sendpatchset@prarit.bos.redhat.com>
+Date: Tue, 3 Nov 2009 22:58:54 +0800
+Message-ID: <2674af740911030658m76b702cfxb67723984286c4bb@mail.gmail.com>
+Subject: Re: [PATCH]: use spin_lock_irqsave in try_one_irq()
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi Fengguang,
+> This happens because the &desc->lock is taken with spin_lock_irqsave and
+> just a spin_lock.  In the try_one_irq(), this lock really should be a
+> spin_lock_irqsave().
+>
 
-On Tue 03-11-09 21:14:34, Wu Fengguang wrote:
-> Sorry for being late! - for some reason I was just able to see your email.
-  No problem :).
+Cc'ed Ingo and Thomas.
 
-> On Mon, Oct 26, 2009 at 07:13:14PM +0100, Jan Kara wrote:
-> >   Hi,
-> > 
-> >   on my way back from Kernel Summit, I've coded the attached patch which
-> > implements livelock avoidance for write_cache_pages. We tag patches that
-> > should be written in the beginning of write_cache_pages and then write
-> > only tagged pages (see the patch for details). The patch is based on Nick's
-> > idea.
-> 
-> Yes, tagging is a very fine grained way for livelock avoidance.
-> However I doubt this patch can achieve the simplification goals
-> listed below..
-> 
-> >   The next thing I've aimed at with this patch is a simplification of
-> > current writeback code. Basically, with this patch I think we can just rip
-> > out all the range_cyclic and nr_to_write (or other "fairness logic"). The
-> > rationalle is following:
-> >   What we want to achieve with fairness logic is that when a page is
-> > dirtied, it gets written to disk within some reasonable time (like 30s or
-> 
-> Right.
-> 
-> > so). We track dirty time on per-inode basis only because keeping it
-> > per-page is simply too expensive. So in this setting fairness between
-> 
-> Right.
-> 
-> > inodes really does not make any sence - why should be a page in a file
-> > penalized and written later only because there are lots of other dirty
-> > pages in the file? It is enough to make sure that we don't write one file
-> > indefinitely when there are new dirty pages continuously created - and my
-> > patch achieves that.
-> 
-> This is a big policy change. Imagine dirty files A=4GB, B=C=D=1MB.
-> With current policy, it could be
-> 
->         sync 4MB of A
->         sync B
->         sync C
->         sync D
->         sync 4MB of A
->         sync 4MB of A
->         ...
-> 
-> And you want to change to
-> 
->         sync A (all 4GB)
->         sync B
->         sync C
->         sync D
-> 
-> This means the writeback of B,C,D won't be able to start at 30s, but
-> delayed to 80s because of A. This is not entirely fair. IMHO writeback
-> of big files shall not delay small files too much. 
-  Yes, I'm aware of this change. It's just that I'm not sure we really
-care. There are few reasons to this: What advantage does it bring that we
-are "fair among files"? User can only tell the difference if after a crash,
-files he wrote long time ago are still not on disk. But we shouldn't
-accumulate too many dirty data (like minutes of writeback) in caches
-anyway... So the difference should not be too big. Also how is the case
-"one big and a few small files" different from the case "many small files"
-where to be fair among files does not bring anything? 
-  It's just that see some substantial code complexity and also performance
-impact (because of smaller chunks of sequential IO) in trying to be fair
-among files and I don't really see adequate advantages of that approach.
-That's why I'm suggesting we should revisit the decision and possibly go in
-a different direction.
+The reason is that try_one_irq() is called both from hardirq context and softirq
+context. And by default the timer handler poll_all_shared_irqs() is
+called with irq enabled.
+Then the two usage will cause inconsistent.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+So I think the following patch is also workable to you.
+
+diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
+index 114e704..11affbc 100644
+--- a/kernel/irq/spurious.c
++++ b/kernel/irq/spurious.c
+@@ -111,6 +111,7 @@ static void poll_all_shared_irqs(void)
+
+ 	for_each_irq_desc(i, desc) {
+ 		unsigned int status;
++		unsigned long flags;
+
+ 		if (!i)
+ 			 continue;
+@@ -121,7 +122,9 @@ static void poll_all_shared_irqs(void)
+ 		if (!(status & IRQ_SPURIOUS_DISABLED))
+ 			continue;
+
++		local_irq_save(flags);
+ 		try_one_irq(i, desc);
++		local_irq_restore(flags);
+ 	}
+ }
+
+> I have not yet narrowed down the reason for the spurious interrupt (although
+> I suspect it maybe to do with the radeon driver).
+>
+> Successfully tested by me.
+>
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>
+> --- linux-2.6.31.x86_64.orig/kernel/irq/spurious.c      2009-09-09 18:13:59.000000000 -0400
+> +++ linux-2.6.31.x86_64/kernel/irq/spurious.c   2009-10-26 10:55:56.709845786 -0400
+> @@ -27,8 +27,9 @@ static int try_one_irq(int irq, struct i
+>  {
+>        struct irqaction *action;
+>        int ok = 0, work = 0;
+> +       unsigned long flags;
+>
+> -       spin_lock(&desc->lock);
+> +       spin_lock_irqsave(&desc->lock, flags);
+>        /* Already running on another processor */
+>        if (desc->status & IRQ_INPROGRESS) {
+>                /*
+> @@ -37,13 +38,13 @@ static int try_one_irq(int irq, struct i
+>                 */
+>                if (desc->action && (desc->action->flags & IRQF_SHARED))
+>                        desc->status |= IRQ_PENDING;
+> -               spin_unlock(&desc->lock);
+> +               spin_unlock_irqrestore(&desc->lock, flags);
+>                return ok;
+>        }
+>        /* Honour the normal IRQ locking */
+>        desc->status |= IRQ_INPROGRESS;
+>        action = desc->action;
+> -       spin_unlock(&desc->lock);
+> +       spin_unlock_irqrestore(&desc->lock, flags);
+>
+>        while (action) {
+>                /* Only shared IRQ handlers are safe to call */
+> @@ -56,7 +57,7 @@ static int try_one_irq(int irq, struct i
+>        }
+>        local_irq_disable();
+>        /* Now clean up the flags */
+> -       spin_lock(&desc->lock);
+> +       spin_lock_irqsave(&desc->lock, flags);
+>        action = desc->action;
+>
+>        /*
+> @@ -68,9 +69,9 @@ static int try_one_irq(int irq, struct i
+>                 * Perform real IRQ processing for the IRQ we deferred
+>                 */
+>                work = 1;
+> -               spin_unlock(&desc->lock);
+> +               spin_unlock_irqrestore(&desc->lock, flags);
+>                handle_IRQ_event(irq, action);
+> -               spin_lock(&desc->lock);
+> +               spin_lock_irqsave(&desc->lock, flags);
+>                desc->status &= ~IRQ_PENDING;
+>        }
+>        desc->status &= ~IRQ_INPROGRESS;
+> @@ -80,7 +81,7 @@ static int try_one_irq(int irq, struct i
+>         */
+>        if (work && desc->chip && desc->chip->end)
+>                desc->chip->end(irq);
+> -       spin_unlock(&desc->lock);
+> +       spin_unlock_irqrestore(&desc->lock, flags);
+>
+>        return ok;
+>  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
