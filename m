@@ -1,43 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZKCEUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZKCEXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbZKCEUf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 23:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZKCEUe
+	id S1755503AbZKCEXM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 23:23:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbZKCEXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 23:20:34 -0500
-Received: from ozlabs.org ([203.10.76.45]:48014 "EHLO ozlabs.org"
+	Mon, 2 Nov 2009 23:23:12 -0500
+Received: from ozlabs.org ([203.10.76.45]:48081 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753624AbZKCEUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 23:20:34 -0500
+	id S1754003AbZKCEXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 23:23:11 -0500
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Andy Henroid <andrew.d.henroid@intel.com>,
-       Chris Leech <christopher.leech@intel.com>, cpufreq@vger.kernel.org,
-       x86@kernel.org, Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Mark Langsdorf <mark.langsdorf@amd.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 0/14] Final cpumask conversion for x86
-Date: Tue, 3 Nov 2009 14:50:33 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Message-Id: <200911031453.15350.rusty@rustcorp.com.au>
+Date: Tue, 3 Nov 2009 14:53:15 +1030
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/14] cpumask: simplify sched_rt.c
+Cc: Ingo Molnar <mingo@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
+Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911031450.34491.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After these patches, I can build allmodconfig on 32 and 64 bit x86 with
-the obsolete cpumask function definitions and names configured out.  After
-3 more patches, we can finally allocate offstack cpumasks with less than
-NR_CPUS bits.
 
-I'd appreciate it if the various maintainers picked these up (most are
-simple); Andrew, you seem best poised to annoy the others, do you want to
-take these?
+find_lowest_rq() wants to call pick_optimal_cpu() on the intersection
+of sched_domain_span(sd) and lowest_mask.  Rather than doing a cpus_and
+into a temporary, we can open-code it.
 
-Thanks!
-Rusty.
+This actually makes the code slightly clearer, IMHO.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+---
+ kernel/sched_rt.c |   59 +++++++++++++++++++++---------------------------------
+ 1 file changed, 23 insertions(+), 36 deletions(-)
+
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1115,29 +1115,12 @@ static struct task_struct *pick_next_hig
+ 
+ static DEFINE_PER_CPU(cpumask_var_t, local_cpu_mask);
+ 
+-static inline int pick_optimal_cpu(int this_cpu,
+-				   const struct cpumask *mask)
+-{
+-	int first;
+-
+-	/* "this_cpu" is cheaper to preempt than a remote processor */
+-	if ((this_cpu != -1) && cpumask_test_cpu(this_cpu, mask))
+-		return this_cpu;
+-
+-	first = cpumask_first(mask);
+-	if (first < nr_cpu_ids)
+-		return first;
+-
+-	return -1;
+-}
+-
+ static int find_lowest_rq(struct task_struct *task)
+ {
+ 	struct sched_domain *sd;
+ 	struct cpumask *lowest_mask = __get_cpu_var(local_cpu_mask);
+ 	int this_cpu = smp_processor_id();
+ 	int cpu      = task_cpu(task);
+-	cpumask_var_t domain_mask;
+ 
+ 	if (task->rt.nr_cpus_allowed == 1)
+ 		return -1; /* No other targets possible */
+@@ -1167,28 +1150,26 @@ static int find_lowest_rq(struct task_st
+ 	 * Otherwise, we consult the sched_domains span maps to figure
+ 	 * out which cpu is logically closest to our hot cache data.
+ 	 */
+-	if (this_cpu == cpu)
+-		this_cpu = -1; /* Skip this_cpu opt if the same */
++	if (!cpumask_test_cpu(this_cpu, lowest_mask))
++		this_cpu = -1; /* Skip this_cpu opt if not among lowest */
+ 
+-	if (alloc_cpumask_var(&domain_mask, GFP_ATOMIC)) {
+-		for_each_domain(cpu, sd) {
+-			if (sd->flags & SD_WAKE_AFFINE) {
+-				int best_cpu;
++	for_each_domain(cpu, sd) {
++		if (sd->flags & SD_WAKE_AFFINE) {
++			int best_cpu;
+ 
+-				cpumask_and(domain_mask,
+-					    sched_domain_span(sd),
+-					    lowest_mask);
++			/*
++			 * "this_cpu" is cheaper to preempt than a
++			 * remote processor.
++			 */
++			if (this_cpu != -1 &&
++			    cpumask_test_cpu(this_cpu, sched_domain_span(sd)))
++				return this_cpu;
+ 
+-				best_cpu = pick_optimal_cpu(this_cpu,
+-							    domain_mask);
+-
+-				if (best_cpu != -1) {
+-					free_cpumask_var(domain_mask);
+-					return best_cpu;
+-				}
+-			}
++			best_cpu = cpumask_first_and(lowest_mask,
++						     sched_domain_span(sd));
++			if (best_cpu < nr_cpu_ids)
++				return best_cpu;
+ 		}
+-		free_cpumask_var(domain_mask);
+ 	}
+ 
+ 	/*
+@@ -1196,7 +1177,13 @@ static int find_lowest_rq(struct task_st
+ 	 * just give the caller *something* to work with from the compatible
+ 	 * locations.
+ 	 */
+-	return pick_optimal_cpu(this_cpu, lowest_mask);
++	if (this_cpu != -1)
++		return this_cpu;
++
++	cpu = cpumask_any(lowest_mask);
++	if (cpu < nr_cpu_ids)
++		return cpu;
++	return -1;
+ }
+ 
+ /* Will lock the rq it finds */
+
