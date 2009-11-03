@@ -1,110 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZKCT64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZKCUBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbZKCT64 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 14:58:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZKCT6z
+	id S1755326AbZKCUBy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 15:01:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbZKCUBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 14:58:55 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:47046 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754613AbZKCT6x (ORCPT
+	Tue, 3 Nov 2009 15:01:51 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:65078 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754330AbZKCUBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 14:58:53 -0500
-Message-ID: <4AF08B7C.8040903@web.de>
-Date: Tue, 03 Nov 2009 20:58:52 +0100
-From: Jan Kiszka <jan.kiszka@web.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+	Tue, 3 Nov 2009 15:01:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=W91GFsXjEdijIWaDvQfiPFgl+H/e7VSe6Q1psxCpHXr3yhx6a0iUcEpN/d+8dpWNIV
+         VZoTIquUSEEy4nylaISBBehPu25VNGhOAfpO34vF/8iTgYXUU3ATP0GcdKdE9+srv+Ol
+         /krswGmpwItu6QVwsCBuC7rWuSe4sEtx0AyII=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Date: Tue, 3 Nov 2009 20:59:23 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1256886023.3555.5.camel@johannes.local> <4AEF1894.2010809@xenotime.net> <200911021943.12069.IvDoorn@gmail.com>
+In-Reply-To: <200911021943.12069.IvDoorn@gmail.com>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
- on top of perf events
-References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com>
-In-Reply-To: <1257275474-5285-5-git-send-email-fweisbec@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig60BFFEA74E3A3D9E20D11C4D"
-X-Provags-ID: V01U2FsdGVkX184B1IRrKnjA4PF/BtOizD43h/nteqpBvjjxh4v
-	o8PxntY07apKvhZyJwJY+CRiEVBtr4gW34RT52bgzlBkrj5eV9
-	IQybRhm64=
+Message-Id: <200911032059.23409.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig60BFFEA74E3A3D9E20D11C4D
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Monday 02 November 2009 19:43:10 Ivo van Doorn wrote:
+> Well and then another rt2x00 developer discovered this nice little
+> fight about rt2x00 on the mailinglists...
+> 
+> First for the record, because at the start people where talking about the
+> maintainership of rt2x00, one thing needs to be straight:
+> 
+> As mentioned in the MAINTAINERS file, the rt2x00 project is listed as maintainer
+> for the rt2x00 drivers. The rt2x00 drivers include _all_ drivers in the
+> drivers/net/wireless/rt2x00 folder.
+> 
+> At this time I am hold the position within the rt2x00 team which is making the
+> decisions about the rt2x00 code and design.
 
-Frederic Weisbecker wrote:
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index fc2974a..6560129 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -42,6 +42,7 @@
->  #define CREATE_TRACE_POINTS
->  #include "trace.h"
-> =20
-> +#include <asm/debugreg.h>
->  #include <asm/uaccess.h>
->  #include <asm/msr.h>
->  #include <asm/desc.h>
-> @@ -3643,14 +3644,12 @@ static int vcpu_enter_guest(struct kvm_vcpu *vc=
-pu, struct kvm_run *kvm_run)
->  	trace_kvm_entry(vcpu->vcpu_id);
->  	kvm_x86_ops->run(vcpu, kvm_run);
-> =20
-> -	if (unlikely(vcpu->arch.switch_db_regs || test_thread_flag(TIF_DEBUG)=
-)) {
-> -		set_debugreg(current->thread.debugreg[0], 0);
-> -		set_debugreg(current->thread.debugreg[1], 1);
-> -		set_debugreg(current->thread.debugreg[2], 2);
-> -		set_debugreg(current->thread.debugreg[3], 3);
-> -		set_debugreg(current->thread.debugreg6, 6);
-> -		set_debugreg(current->thread.debugreg7, 7);
-> -	}
-> +	/*
-> +	 * CHECKME: is vcpu->arch.switch_db_regs sufficient to check
-> +	 * if the guest is using breakpoints? If so we may want to do
-> +	 * this check before.
-> +	 */
-> +	hw_breakpoint_restore();
+rt2x00 doesn't "own" Linux Ralink support, ditto for rt2800 drivers.
 
-Obviously, this variant will make KVM users very unhappy. But trying to
-reduce this performance regression via vcpu->arch.switch_db_regs will
-make hw-breakpoint users unhappy: KVM leaves at least dr7 clobbered
-behind, even if the guest does not use breakpoints.
+This is not how things work here, sorry.
 
-We really need a replacement for TIF_DEBUG (but we only need this [1]).
+> I am also the one that is (N)Acks the patches from others when they are send
+> to the rt2x00-users or linux-wireless mailinglist.
 
-Jan
+If you are not willing to stand behind your own patches, how do you expect
+others to trust your judgment?
 
-[1]http://thread.gmane.org/gmane.comp.emulators.kvm.devel/39784/focus=3D3=
-9827
+> As for my behavior in discussions:
+> 
+> I am doing my best to listen to all complains regarding the rt2x00 code and design and
+> improve it if the complainer has a valid point. However, obviously I can disagree with
+> the complainer and in that case I will explain to that person _why_ I disagree. It is up
+> to the complainer to convince me that he is right, agree with my response, or whine.
+> 
+> Now as for more specific responses:
+> 
+> On Thursday 29 October 2009, Bartlomiej Zolnierkiewicz wrote:
+> > rt2800 drivers have their maintainers and I would like to know what they
+> > are doing besides complaining about users and staging tree..
+> 
+> Working for Avanade, Zarafa and as freelancer for Linux Magazine.
+> But I guess you mean rt2x00 specific work?
+> Well that list consists of:
+>  - Listening to people complain
+>  - Responding to those people, because otherwise they complain that they are being ignored.
+>  - Following bug reports, and request testing or additional information if required
+>  - Bugfixing
+>  - Reviewing patches from contributors
+>  - Applying patches from contributors
+>  - Discussing improvements over patches from contributors
+> 
+> Well nothing of this list should be new to you, but apparently you needed some confirmation.
 
+I meant rt2800 support specifically, sorry if this was not clear.
 
---------------enig60BFFEA74E3A3D9E20D11C4D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+The work on rt2800 drivers was started in the beginning of 2008 and after
+few months you were already behind deadlines that you had set yourself:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+	http://markmail.org/message/a753dws6tqytb3a4
 
-iEYEARECAAYFAkrwi4AACgkQitSsb3rl5xTS0QCgt+lm9Y6F5IRSbUkC1WByIlwI
-o60AoKFdwdAMDKQ/pXolRWR2AUVEi5OU
-=imtP
------END PGP SIGNATURE-----
+During almost two years rt2x00 project didn't manage to produce working
+support for rt2800..  in the meantime the world has moved on and we have
+another chipset generation (rt30x0) to worry about, and also rt33xx one
+on the horizon..
 
---------------enig60BFFEA74E3A3D9E20D11C4D--
+> On Thursday 29 October 2009, Johannes Berg wrote:
+> > On Thu, 2009-10-29 at 07:20 -0700, David Miller wrote:
+> > 
+> > > In case you're concerned, I actually agree with John and others
+> > > on this issue, and disagree with your position.
+> > 
+> > In this particular case, I think it makes more sense to duplicate the
+> > code _especially_ because it's not working yet. That frees people
+> > hacking on it of having to worry about breaking other devices.
+> 
+> Thank you Johannes, that is exactly what I was trying to tell Bartlomiej
+> in the previous discussion.
+
+Nope, it just adds needles development/maintenance burden since it will
+make people lose fixes already applied to the working code, please see my
+other mail.
+
+> On Wednesday 28 October 2009, Bartlomiej Zolnierkiewicz wrote:
+> > I find it rather disappointing that all my review comments regarding
+> > rt2800pci support were just completely ignored and then the initial
+> > patch was merged just as it was..
+> 
+> Your code review comments were commented upon with my reasons
+> why this code duplication exists. I even admitted that when the time is
+> ready I will remove the code duplication.
+
+The right time was two years ago when you were starting working on those
+drivers.  IOW It shouldn't have happened in the first place.
+
+I also have serious questions about transparency of the process and cannot
+understand why it takes so long for the code to be pushed upstream.
+
+commit 1761631 -- obvious bugfix and I'm pretty sure I've seen it in rt2x00
+tree back in September (you're re-basing rt2x00 tree at random moments so it
+is impossible to track the status of patches that you are handling).
+
+rt2800pci patch itself has been getting dust in your tree since at least
+April (it hasn't received any bigger updates since then)..
+
+> On Thursday 29 October 2009, Bartlomiej Zolnierkiewicz wrote:
+> > Quite the contrary, I'm pretty confident that addressing my review concerns
+> > would result in better RT28x00 / RT30x0 support in the very near future.
+> 
+> The review concerns regarding the duplicate code would only reduce the
+> amount of code. It would not magically fix bugs (at least the chance of that
+> would be quite small).
+
+Please see my other mail.
+
+> So far rt2800usb performs better then rt2800pci, and the difference gets
+> only bigger when I use the exact same register initialization from rt2800usb
+> in rt2800pci.
+> 
+> But Bartjmoiej knows that the register initialization can be exactly the same,
+> from his experience with the staging drivers.
+> So far hasn't been interested in sharing the knowledge in what must be
+> changed in rt2800pci/usb to make them both work with the same register
+> initialization.
+
+The knowledge is all in your local copy of linux-next (I don't memorize
+things like chipset initialization sequences) and in the review comments
+that you have happily dismissed.
+
+-- 
+Bartlomiej Zolnierkiewicz
