@@ -1,51 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbZKCKGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbZKCKU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756366AbZKCKGq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 05:06:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbZKCKGo
+	id S1754440AbZKCKU4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 05:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZKCKU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 05:06:44 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39549 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756303AbZKCKGn (ORCPT
+	Tue, 3 Nov 2009 05:20:56 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:28172 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbZKCKUz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 05:06:43 -0500
-Date: Tue, 3 Nov 2009 05:06:45 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: device-mapper development <dm-devel@redhat.com>
-Cc: Laurent CORBES <laurent.corbes@smartjog.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: [dm-devel] Re: Ext3 sequential read performance drop 2.6.29 ->
-	2.6.30,2.6.31,...
-Message-ID: <20091103100645.GA13118@infradead.org>
-References: <20091013120955.6bd5844b@smartjog.com> <20091102135554.b10ece3e.akpm@linux-foundation.org>
+	Tue, 3 Nov 2009 05:20:55 -0500
+X-Greylist: delayed 583 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 05:20:55 EST
+X-IronPort-AV: E=Sophos;i="4.44,673,1249272000"; 
+   d="scan'208";a="71258634"
+Subject: [PATCH] Correct nr_processes() when CPUs have been unplugged
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Tue, 3 Nov 2009 10:11:14 +0000
+Message-ID: <1257243074.23110.779.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102135554.b10ece3e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 01:55:54PM -0800, Andrew Morton wrote:
-> On Tue, 13 Oct 2009 12:09:55 +0200
-> Laurent CORBES <laurent.corbes@smartjog.com> wrote:
-> 
-> > Hi all,
-> > 
-> > While benchmarking some systems I discover a big sequential read performance
-> > drop using ext3 on ~ big files. The drop seems to be introduced in 2.6.30. I'm
-> > testing with 2.6.28.6 -> 2.6.29.6 -> 2.6.30.4 -> 2.6.31.3.
-> 
-> Seems that large performance regressions aren't of interest to this
-> list :(
+nr_processes() returns the sum of the per cpu counter process_counts for
+all online CPUs. This counter is incremented for the current CPU on
+fork() and decremented for the current CPU on exit(). Since a process
+does not necessarily fork and exit on the same CPU the process_count for
+an individual CPU can be either positive or negative and effectively has
+no meaning in isolation.
 
-No sure which list you mean, but dm-devel is for dm, not md.  We're also
-seeing similarly massive performance drops with md and ext3/xfs as
-already reported on the list.  Someone tracked it down to writeback
-changes as usual, but there it got stuck.
+Therefore calculating the sum of process_counts over only the online
+CPUs omits the processes which were started or stopped on any CPU which
+has since been unplugged. Only the sum of process_counts across all
+possible CPUs has meaning.
+
+The only caller of nr_processes() is proc_root_getattr() which
+calculates the number of links to /proc as
+        stat->nlink = proc_root.nlink + nr_processes();
+
+You don't have to be all that unlucky for the nr_processes() to return a
+negative value leading to a negative number of links (or rather, an
+apparently enormous number of links). If this happens then you can get
+failures where things like "ls /proc" start to fail because they got an
+-EOVERFLOW from some stat() call.
+
+Example with some debugging inserted to show what goes on:
+        # ps haux|wc -l
+        nr_processes: CPU0:     90
+        nr_processes: CPU1:     1030
+        nr_processes: CPU2:     -900
+        nr_processes: CPU3:     -136
+        nr_processes: TOTAL:    84
+        proc_root_getattr. nlink 12 + nr_processes() 84 = 96
+        84
+        # echo 0 >/sys/devices/system/cpu/cpu1/online
+        # ps haux|wc -l
+        nr_processes: CPU0:     85
+        nr_processes: CPU2:     -901
+        nr_processes: CPU3:     -137
+        nr_processes: TOTAL:    -953
+        proc_root_getattr. nlink 12 + nr_processes() -953 = -941
+        75
+        # stat /proc/
+        nr_processes: CPU0:     84
+        nr_processes: CPU2:     -901
+        nr_processes: CPU3:     -137
+        nr_processes: TOTAL:    -954
+        proc_root_getattr. nlink 12 + nr_processes() -954 = -942
+          File: `/proc/'
+          Size: 0               Blocks: 0          IO Block: 1024   directory
+        Device: 3h/3d   Inode: 1           Links: 4294966354
+        Access: (0555/dr-xr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+        Access: 2009-11-03 09:06:55.000000000 +0000
+        Modify: 2009-11-03 09:06:55.000000000 +0000
+        Change: 2009-11-03 09:06:55.000000000 +0000
+
+I'm not 100% convinced that the per_cpu regions remain valid for offline
+CPUs, although my testing suggests that they do. If not then I think the
+correct solution would be to aggregate the process_count for a given CPU
+into a global base value in cpu_down().
+
+This bug appears to pre-date the transition to git and it looks like it
+may even have been present in linux-2.6.0-test7-bk3 since it looks like
+the code Rusty patched in http://lwn.net/Articles/64773/ was already
+wrong.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 4b36858..7af7217 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -89,7 +89,7 @@ int nr_processes(void)
+ 	int cpu;
+ 	int total = 0;
+ 
+-	for_each_online_cpu(cpu)
++	for_each_possible_cpu(cpu)
+ 		total += per_cpu(process_counts, cpu);
+ 
+ 	return total;
+
 
