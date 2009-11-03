@@ -1,21 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbZKCE2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZKCE2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbZKCE2R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 23:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZKCE2O
+	id S1756198AbZKCE2b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 23:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbZKCE22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 23:28:14 -0500
-Received: from ozlabs.org ([203.10.76.45]:39487 "EHLO ozlabs.org"
+	Mon, 2 Nov 2009 23:28:28 -0500
+Received: from ozlabs.org ([203.10.76.45]:39494 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755845AbZKCE2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 23:28:13 -0500
-To: Andy Henroid <andrew.d.henroid@intel.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	id S1755941AbZKCE21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 23:28:27 -0500
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       x86@kernel.org, Andi Kleen <ak@linux.intel.com>,
+       Huang Ying <ying.huang@intel.com>
+To: Ingo Molnar <mingo@redhat.com>
 From: Rusty Russell <rusty@rustcorp.com.au>
-Message-Id: <200911031458.17003.rusty@rustcorp.com.au>
-Date: Tue, 3 Nov 2009 14:58:16 +1030
+Message-Id: <200911031458.30987.rusty@rustcorp.com.au>
+Date: Tue, 3 Nov 2009 14:58:30 +1030
 CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 10/14] cpumask: convert drivers/idle/i7300_idle.c to cpumask_var_t
+Subject: [PATCH 11/14] cpumask: use modern cpumask style in arch/x86/kernel/cpu/mcheck/mce-inject.c
+Cc: x86@kernel.org
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Huang Ying <ying.huang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
@@ -25,78 +30,78 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Fairly simple transformation:
-1) cpumask_t -> cpumask_var_t and alloc_cpumask_var/free_cpumask_var
-   (which are a NOOP unless CONFIG_CPUMASK_OFFSTACK=y).
-2) cpu_set -> cpumask_set_cpu
-3) cpus_weight -> cpumask_weight
-4) cpu_clear -> cpumask_clear_cpu
+Note that there's no freeing the cpu var, since this module has no
+unload function.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: Andy Henroid <andrew.d.henroid@intel.com>
+Cc: x86@kernel.org
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Huang Ying <ying.huang@intel.com>
 ---
- drivers/idle/i7300_idle.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce-inject.c |   22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
---- a/drivers/idle/i7300_idle.c
-+++ b/drivers/idle/i7300_idle.c
-@@ -77,7 +77,7 @@ static u8 i7300_idle_thrtlow_saved;
- static u8 i7300_idle_thrtlow_saved;
- static u32 i7300_idle_mc_saved;
+diff --git a/arch/x86/kernel/cpu/mcheck/mce-inject.c b/arch/x86/kernel/cpu/mcheck/mce-inject.c
+--- a/arch/x86/kernel/cpu/mcheck/mce-inject.c
++++ b/arch/x86/kernel/cpu/mcheck/mce-inject.c
+@@ -74,7 +74,7 @@ static void raise_exception(struct mce *
+ 	m->finished = 0;
+ }
  
--static cpumask_t idle_cpumask;
-+static cpumask_var_t idle_cpumask;
- static ktime_t start_ktime;
- static unsigned long avg_idle_us;
+-static cpumask_t mce_inject_cpumask;
++static cpumask_var_t mce_inject_cpumask;
  
-@@ -455,9 +455,9 @@ static int i7300_idle_notifier(struct no
- 	spin_lock_irqsave(&i7300_idle_lock, flags);
- 	if (val == IDLE_START) {
+ static int mce_raise_notify(struct notifier_block *self,
+ 			    unsigned long val, void *data)
+@@ -82,9 +82,9 @@ static int mce_raise_notify(struct notif
+ 	struct die_args *args = (struct die_args *)data;
+ 	int cpu = smp_processor_id();
+ 	struct mce *m = &__get_cpu_var(injectm);
+-	if (val != DIE_NMI_IPI || !cpu_isset(cpu, mce_inject_cpumask))
++	if (val != DIE_NMI_IPI || !cpumask_test_cpu(cpu, mce_inject_cpumask))
+ 		return NOTIFY_DONE;
+-	cpu_clear(cpu, mce_inject_cpumask);
++	cpumask_clear_cpu(cpu, mce_inject_cpumask);
+ 	if (m->inject_flags & MCJ_EXCEPTION)
+ 		raise_exception(m, args->regs);
+ 	else if (m->status)
+@@ -148,22 +148,22 @@ static void raise_mce(struct mce *m)
+ 		unsigned long start;
+ 		int cpu;
+ 		get_online_cpus();
+-		mce_inject_cpumask = cpu_online_map;
+-		cpu_clear(get_cpu(), mce_inject_cpumask);
++		cpumask_copy(mce_inject_cpumask, cpu_online_mask);
++		cpumask_clear_cpu(get_cpu(), mce_inject_cpumask);
+ 		for_each_online_cpu(cpu) {
+ 			struct mce *mcpu = &per_cpu(injectm, cpu);
+ 			if (!mcpu->finished ||
+ 			    MCJ_CTX(mcpu->inject_flags) != MCJ_CTX_RANDOM)
+-				cpu_clear(cpu, mce_inject_cpumask);
++				cpumask_clear_cpu(cpu, mce_inject_cpumask);
+ 		}
+-		if (!cpus_empty(mce_inject_cpumask))
+-			apic->send_IPI_mask(&mce_inject_cpumask, NMI_VECTOR);
++		if (!cpumask_empty(mce_inject_cpumask))
++			apic->send_IPI_mask(mce_inject_cpumask, NMI_VECTOR);
+ 		start = jiffies;
+-		while (!cpus_empty(mce_inject_cpumask)) {
++		while (!cpumask_empty(mce_inject_cpumask)) {
+ 			if (!time_before(jiffies, start + 2*HZ)) {
+ 				printk(KERN_ERR
+ 				"Timeout waiting for mce inject NMI %lx\n",
+-					*cpus_addr(mce_inject_cpumask));
++					*cpumask_bits(mce_inject_cpumask));
+ 				break;
+ 			}
+ 			cpu_relax();
+@@ -210,6 +210,8 @@ static ssize_t mce_write(struct file *fi
  
--		cpu_set(smp_processor_id(), idle_cpumask);
-+		cpumask_set_cpu(smp_processor_id(), idle_cpumask);
- 
--		if (cpus_weight(idle_cpumask) != num_online_cpus())
-+		if (cpumask_weight(idle_cpumask) != num_online_cpus())
- 			goto end;
- 
- 		now_ktime = ktime_get();
-@@ -474,8 +474,8 @@ static int i7300_idle_notifier(struct no
- 		i7300_idle_ioat_start();
- 
- 	} else if (val == IDLE_END) {
--		cpu_clear(smp_processor_id(), idle_cpumask);
--		if (cpus_weight(idle_cpumask) == (num_online_cpus() - 1)) {
-+		cpumask_clear_cpu(smp_processor_id(), idle_cpumask);
-+		if (cpumask_weight(idle_cpumask) == (num_online_cpus() - 1)) {
- 			/* First CPU coming out of idle */
- 			u64 idle_duration_us;
- 
-@@ -549,7 +549,6 @@ static int __init i7300_idle_init(void)
- static int __init i7300_idle_init(void)
+ static int inject_init(void)
  {
- 	spin_lock_init(&i7300_idle_lock);
--	cpus_clear(idle_cpumask);
- 	total_us = 0;
- 
- 	if (i7300_idle_platform_probe(&fbd_dev, &ioat_dev))
-@@ -560,6 +559,9 @@ static int __init i7300_idle_init(void)
- 
- 	if (i7300_idle_ioat_init())
- 		return -ENODEV;
-+
-+	if (!zalloc_cpumask_var(&idle_cpumask, GFP_KERNEL))
++	if (!alloc_cpumask_var(&mce_inject_cpumask, GFP_KERNEL))
 +		return -ENOMEM;
- 
- 	debugfs_dir = debugfs_create_dir("i7300_idle", NULL);
- 	if (debugfs_dir) {
-@@ -585,6 +587,7 @@ static void __exit i7300_idle_exit(void)
- static void __exit i7300_idle_exit(void)
- {
- 	idle_notifier_unregister(&i7300_idle_nb);
-+	free_cpumask_var(idle_cpumask);
- 
- 	if (debugfs_dir) {
- 		int i = 0;
+ 	printk(KERN_INFO "Machine check injector initialized\n");
+ 	mce_chrdev_ops.write = mce_write;
+ 	register_die_notifier(&mce_raise_nb);
 
