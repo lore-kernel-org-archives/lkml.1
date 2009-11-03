@@ -1,292 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbZKCP1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbZKCP1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751875AbZKCP1Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 10:27:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZKCP1P
+	id S1753633AbZKCP1s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 10:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZKCP1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 10:27:15 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58194 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbZKCP1O (ORCPT
+	Tue, 3 Nov 2009 10:27:47 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:43688 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbZKCP1o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 10:27:14 -0500
-Date: Wed, 4 Nov 2009 00:26:44 +0900 (JST)
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH v5] Added PR_SET_PROCTITLE_AREA option for prctl()
-Cc: kosaki.motohiro@jp.fujitsu.com, Americo Wang <xiyou.wangcong@gmail.com>,
-       Timo Sirainen <tss@iki.fi>, Bryan Donlan <bdonlan@gmail.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org
-In-Reply-To: <20091103230548.0B45.A69D9226@jp.fujitsu.com>
-References: <20091103094703.GB11134@hack.redhat.com> <20091103230548.0B45.A69D9226@jp.fujitsu.com>
-Message-Id: <20091104002544.0B4A.A69D9226@jp.fujitsu.com>
+	Tue, 3 Nov 2009 10:27:44 -0500
+Date: Tue, 3 Nov 2009 10:26:51 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Sage Weil <sage@newdream.net>
+Cc: linux-btrfs@vger.kernel.org, Dmitry Monakhov <dmonakhov@openvz.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: ext3/jbd oops in journal_start
+Message-ID: <20091103152651.GA14967@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Sage Weil <sage@newdream.net>, linux-btrfs@vger.kernel.org,
+	Dmitry Monakhov <dmonakhov@openvz.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <Pine.LNX.4.64.0910302253100.1867@cobra.newdream.net>
+ <87bpjorn6g.fsf@openvz.org>
+ <Pine.LNX.4.64.0911022157360.26157@cobra.newdream.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0911022157360.26157@cobra.newdream.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AF04BEF.00C2:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > >+		case PR_SET_PROCTITLE_AREA: {
-> > >+			struct mm_struct *mm = current->mm;
-> > >+			unsigned long addr = arg2;
-> > >+			unsigned long len = arg3;
-> > >+			unsigned long end = arg2 + arg3;
-> > >+
-> > >+			if (len > PAGE_SIZE)
-> > >+				return -EINVAL;
-> > >+
-> > >+			if (addr >= end)
-> > >+				return -EINVAL;
-> > >+
-> > >+			if (!access_ok(VERIFY_READ, addr, len))
-> > >+				return -EFAULT;
-> > >+
-> > >+			mutex_lock(&mm->arg_lock);
-> > >+			mm->arg_start = addr;
+On Mon, Nov 02, 2009 at 10:06:36PM -0800, Sage Weil wrote:
+> On Sat, 31 Oct 2009, Dmitry Monakhov wrote:
+> 
+> > Sage Weil <sage@newdream.net> writes:
 > > 
-> > Is this safe? You're assigning a user-space pointer to kernel space...
-> > Don't we need copy_from_user()?
-> 
-> mm->arg_start, arg_end are defined so.
-> Please see current implementation. 
-> 
-> 
-> > >+			mm->arg_end = addr + len;
+> > > Hi,
+> > >
+> > > I'm consistently seeing ext3 oops on a fresh ~60 GB fs on 2.6.32-rc3 (and 
+> > > 2.6.31).  data=writeback or data=ordered.  It's not the hardware or 
+> > > drive... I have 8 boxes (each with slightly different hardware) that crash 
+> > > identically.
+> > Strange, 2.6.31 with ext3 is quite popular configuration...
+> > Can you please post exact test-case.
+> > >
+> > > The oops is at fs/jbd/transaction.c, journal_start():
+> > >
+> > > 		J_ASSERT(handle->h_transaction->t_journal == journal);
+> > *handle = journal_current_handle()
 > > 
-> > Since you already have 'end', no need to caculate this again. :)
+> > IMHO it's looks like you have entered here with current->journal_info != NULL
+> > 
+> > , but journal_info contains unexpected data
+> > This may happens in two cases:
+> > 1) calling jbd code from other filesystem.
+> > 2) Some fs forget to zero current->journal_info on exit from vfs
+> > According to call trace we have got second case. Do you use some 
+> > unusual/experimental fs?
 > 
-> Good catch :)
+> Yep, it was #2.  It turns out btrfs s setting current->journal_info 
+> (for no reason that I can see?), and with the transaction ioctl a 
+> transaction can span multiple calls.
 > 
-> 
+> Chris, is it ok to just remove the journal_info bits?  Nothing in fs/btrfs 
+> even looks at it.  I'm not sure what the point of only conditionally 
+> setting/clearly journal_info would be either, unless it's for debugging or 
+> something?
 
-Fixed.
+Josef has plans to use it later on, but he sent along patches that will
+avoid setting journal_info for userland trans.  I'll get these
+integrated and pushed out.
 
-
-ChangeLog
-  v4 -> v5
-    - nit: kill duplicate calculation in prctl()
-  v3 -> v4
-    - Use mutex instead seq_lock.
-
-========================================
-
-Subject: [PATCH v5] Added PR_SET_PROCTITLE_AREA option for prctl()
-From: Timo Sirainen <tss@iki.fi>
-
-Currently glibc2 doesn't have setproctitle(3), so several userland
-daemons attempt to emulate it by doing some brutal stack modifications.
-This works most of the time, but it has problems. For example:
-
- % ps -ef |grep avahi-daemon
- avahi     1679     1  0 09:20 ?        00:00:00 avahi-daemon: running [kosadesk.local]
-
- # cat /proc/1679/cmdline
- avahi-daemon: running [kosadesk.local]
-
-This looks good, but the process has also overwritten its environment
-area and made the environ file useless:
-
- # cat /proc/1679/environ
- adesk.local]
-
-Another problem is that the process title length is limited by the size of
-the environment. Security conscious people try to avoid potential information
-leaks by clearing most of the environment before running a daemon:
-
- # env - MINIMUM_NEEDED_VAR=foo /path/to/daemon
-
-The resulting environment size may be too small to fit the wanted process
-titles.
-
-This patch makes it possible for userspace to implement setproctitle()
-cleanly. It adds a new PR_SET_PROCTITLE_AREA option for prctl(), which
-updates task's mm_struct->arg_start and arg_end to the given area.
-
- test_setproctitle.c
- ================================================
- #include <string.h>
- #include <stdlib.h>
- #include <unistd.h>
- #include <stdio.h>
- #include <sys/prctl.h>
-
- #define ERR(str) (perror(str), exit(1))
-
- void settitle(char* title){
-         int err;
-
-         err = prctl(34, title, strlen(title)+1);
-         if (err < 0)
-                 ERR("prctl ");
- }
-
- void main(void){
-         long i;
-         char buf[1024];
-
-         for (i = 0; i < 10000000000LL; i++){
-                 sprintf(buf, "loooooooooooooooooooooooong string %d",i);
-                 settitle(buf);
-         }
- }
- ==================================================
-
-Cc: Bryan Donlan <bdonlan@gmail.com>
-Cc: Ulrich Drepper <drepper@redhat.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Timo Sirainen <tss@iki.fi>
----
- fs/proc/base.c           |   31 ++++++++++++++++++++++---------
- include/linux/mm_types.h |    2 ++
- include/linux/prctl.h    |    3 +++
- kernel/fork.c            |    1 +
- kernel/sys.c             |   22 ++++++++++++++++++++++
- 5 files changed, 50 insertions(+), 9 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 837469a..ac800b4 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -255,32 +255,45 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
- 	int res = 0;
- 	unsigned int len;
- 	struct mm_struct *mm = get_task_mm(task);
-+
- 	if (!mm)
- 		goto out;
-+
-+	/* The process was not constructed yet? */
- 	if (!mm->arg_end)
- 		goto out_mm;	/* Shh! No looking before we're done */
- 
-- 	len = mm->arg_end - mm->arg_start;
-- 
-+	mutex_lock(&mm->arg_lock);
-+	len = mm->arg_end - mm->arg_start;
- 	if (len > PAGE_SIZE)
- 		len = PAGE_SIZE;
-- 
-+
- 	res = access_process_vm(task, mm->arg_start, buffer, len, 0);
-+	if (mm->arg_end != mm->env_start)
-+		/* prctl(PR_SET_PROCTITLE_AREA) used */
-+		goto out_unlock;
- 
--	// If the nul at the end of args has been overwritten, then
--	// assume application is using setproctitle(3).
-+	/*
-+	 * If the nul at the end of args has been overwritten, then assume
-+	 * application is using sendmail's SPT_REUSEARGV style argv override.
-+	 */
- 	if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
- 		len = strnlen(buffer, res);
--		if (len < res) {
--		    res = len;
--		} else {
-+		if (len < res)
-+			res = len;
-+		else {
- 			len = mm->env_end - mm->env_start;
- 			if (len > PAGE_SIZE - res)
- 				len = PAGE_SIZE - res;
--			res += access_process_vm(task, mm->env_start, buffer+res, len, 0);
-+			res += access_process_vm(task, mm->env_start,
-+						 buffer+res, len, 0);
- 			res = strnlen(buffer, res);
- 		}
- 	}
-+
-+out_unlock:
-+	mutex_unlock(&mm->arg_lock);
-+
- out_mm:
- 	mmput(mm);
- out:
-diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 84a524a..3e2a346 100644
---- a/include/linux/mm_types.h
-+++ b/include/linux/mm_types.h
-@@ -12,6 +12,7 @@
- #include <linux/completion.h>
- #include <linux/cpumask.h>
- #include <linux/page-debug-flags.h>
-+#include <linux/mutex.h>
- #include <asm/page.h>
- #include <asm/mmu.h>
- 
-@@ -236,6 +237,7 @@ struct mm_struct {
- 	unsigned long stack_vm, reserved_vm, def_flags, nr_ptes;
- 	unsigned long start_code, end_code, start_data, end_data;
- 	unsigned long start_brk, brk, start_stack;
-+	struct mutex arg_lock;
- 	unsigned long arg_start, arg_end, env_start, env_end;
- 
- 	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
-diff --git a/include/linux/prctl.h b/include/linux/prctl.h
-index 9311505..da47542 100644
---- a/include/linux/prctl.h
-+++ b/include/linux/prctl.h
-@@ -90,4 +90,7 @@
- 
- #define PR_MCE_KILL	33
- 
-+/* Set process title memory area for setproctitle() */
-+#define PR_SET_PROCTITLE_AREA 34
-+
- #endif /* _LINUX_PRCTL_H */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 4c20fff..881a6b4 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -459,6 +459,7 @@ static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
- 	mm->cached_hole_size = ~0UL;
- 	mm_init_aio(mm);
- 	mm_init_owner(mm, p);
-+	mutex_init(&mm->arg_lock);
- 
- 	if (likely(!mm_alloc_pgd(mm))) {
- 		mm->def_flags = 0;
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 255475d..bde6957 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1564,6 +1564,28 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
- 			error = 0;
- 			break;
- 
-+		case PR_SET_PROCTITLE_AREA: {
-+			struct mm_struct *mm = current->mm;
-+			unsigned long addr = arg2;
-+			unsigned long len = arg3;
-+			unsigned long end = arg2 + arg3;
-+
-+			if (len > PAGE_SIZE)
-+				return -EINVAL;
-+
-+			if (addr >= end)
-+				return -EINVAL;
-+
-+			if (!access_ok(VERIFY_READ, addr, len))
-+				return -EFAULT;
-+
-+			mutex_lock(&mm->arg_lock);
-+			mm->arg_start = addr;
-+			mm->arg_end = end;
-+			mutex_unlock(&mm->arg_lock);
-+
-+			return 0;
-+		}
- 		default:
- 			error = -EINVAL;
- 			break;
--- 
-1.6.2.5
-
-
-
+-chris
 
