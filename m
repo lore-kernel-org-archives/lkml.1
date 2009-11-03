@@ -1,40 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZKCHlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbZKCHma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbZKCHlr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 02:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbZKCHlq
+	id S1756608AbZKCHma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 02:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbZKCHma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 02:41:46 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60026 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754990AbZKCHlq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 02:41:46 -0500
-Date: Mon, 2 Nov 2009 23:41:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: linux-kernel@vger.kernel.org, David Airlie <airlied@linux.ie>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [PATCH] drm: kill more unused DRM macros
-Message-Id: <20091102234124.2655e61d.akpm@linux-foundation.org>
-In-Reply-To: <20091019013708.6ca3c7df@mycelium.queued.net>
-References: <20091019013708.6ca3c7df@mycelium.queued.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 02:42:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38170 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755486AbZKCHm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 02:42:29 -0500
+Date: Tue, 3 Nov 2009 08:42:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric=5FWeisbecker?= <fweisbec@gmail.com>
+Subject: Re: [RFC][PATCH 6/7] Adding general performance benchmarking
+	subsystem to perf.
+Message-ID: <20091103074218.GF19928@elte.hu>
+References: <20091103.133849.430771458054376230.mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091103.133849.430771458054376230.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Oct 2009 01:37:08 -0400 Andres Salomon <dilinger@collabora.co.uk> wrote:
 
-> There are a few more macros in drmP.h that are unused; DRM_GET_PRIV_SAREA,
-> DRM_ARRAY_SIZE, and DRM_WAITCOUNT can go away completely.
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+
+> Adding general performance benchmarking subsystem to perf.
+> This patch adds new builtin-bench-messaging.c
 > 
-> Unfortunately, DRM_COPY is still used in one place, but we can at least
-> move it to where it's used.  It's an awful looking macro..
+> builtin-bench-messaging.c is a benchmark program
+> to measure performance of scheduler and IPC mechanisms.
+> This benchmark is based on hackbench by Rusty Russell.
 
-It would have been nice to fix the (valid) checkpatch warnings while
-you were there.
+a small suggestion: would you mind to include sample output in the 
+commit log that adds a new suite component? That way people can get a 
+'ok, this is the new feature i'm getting!' first impression during 
+review - without having to try out the patch itself.
 
+Thanks,
+
+	Ingo
