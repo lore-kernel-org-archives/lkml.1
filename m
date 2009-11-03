@@ -1,157 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751476AbZKCNpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZKCNrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751476AbZKCNpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 08:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbZKCNp3
+	id S1753810AbZKCNrJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 08:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbZKCNrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 08:45:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:51303 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbZKCNp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 08:45:28 -0500
-Date: Tue, 3 Nov 2009 08:45:32 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       akpm@linux-foundation.org
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20091103134342.24414.82986.sendpatchset@prarit.bos.redhat.com>
-Subject: [PATCH]: use spin_lock_irqsave in try_one_irq()
+	Tue, 3 Nov 2009 08:47:08 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:50131 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbZKCNrH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 08:47:07 -0500
+Date: Tue, 3 Nov 2009 22:46:52 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, greg@kroah.com,
+       linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCH 04/10] module: make MODULE_SYMBOL_PREFIX into a CONFIG option
+Message-ID: <20091103134652.GB12841@linux-sh.org>
+References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> <1257242782-10496-5-git-send-email-alan-jenkins@tuffmail.co.uk> <8bd0f97a0911030219y685a1dafy2a8e066d7132ac45@mail.gmail.com> <4AF01F18.8040807@tuffmail.co.uk> <8bd0f97a0911030430s3ecb2467hc52ebac658c39ccd@mail.gmail.com> <20091103132935.GA12841@linux-sh.org> <8bd0f97a0911030539s582598d6k2f78693bbfa559b0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0911030539s582598d6k2f78693bbfa559b0@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Prarit: Second try at this one, not sure if this made it to LKML or not.
- Sending to a wider audience this time)
+On Tue, Nov 03, 2009 at 08:39:29AM -0500, Mike Frysinger wrote:
+> On Tue, Nov 3, 2009 at 08:29, Paul Mundt wrote:
+> > Having it in the Kconfig also makes it a nuisance for platforms that can
+> > use -elf and -linux toolchains for the same tree for different platforms.
+> > It would be nice to have this supported in such a way that we can just
+> > set a flag from the Makefile and have a compiler test that determines
+> > whether it is necessary or not.
+> 
+> what arch is this an issue for ?  the only symbol prefixed arches are
+> Blackfin and H8300, and they dont provide toolchains that omit the
+> prefix.
+> 
+No, those are the only symbol prefixed platforms enabled in the kernel at
+present because neither one ships different toolchains.
 
-Booting 2.6.32-rc5 on some IBM systems results in
+The symbol prefixing itself is more an artifact of a -elf target
+contrasted with a -linux one than anything "platform" specific. Thus, any
+nommu platform using a bare metal or -elf toolchain can easily be used
+for building the kernel if this can be supported in a clean way. As such,
+a config option is not useful.
 
-Disabling IRQ #19
+> trying to enable symbol prefix support dynamically based on the
+> toolchain is a bad idea and pretty fragile.  the arch-specific
+> assembly code would have to be all rewritten to wrap all C-visible
+> symbols with a macro like VMLINUX_SYMBOL().
+> 
+There is nothing fragile about it, symbols are either prefixed or they
+aren't. The common case for things like the syscall table obiously have
+to be wrapped, but so what? C_SYMBOL_PREFIX() used to be the norm back in
+the day, so it obiously worked well enough for the common case.
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.32-rc5 #1
----------------------------------
-inconsistent {IN-HARDIRQ-W} -> {HARDIRQ-ON-W} usage.
-swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
- (&irq_desc_lock_class){?.-...}, at: [<ffffffff810c264e>] try_one_irq+0x32/0x138
-{IN-HARDIRQ-W} state was registered at:
-  [<ffffffff81095160>] __lock_acquire+0x2fc/0xd5d
-  [<ffffffff81095cb4>] lock_acquire+0xf3/0x12d
-  [<ffffffff814cdadd>] _spin_lock+0x40/0x89
-  [<ffffffff810c3389>] handle_level_irq+0x30/0x105
-  [<ffffffff81014e0e>] handle_irq+0x95/0xb7
-  [<ffffffff810141bd>] do_IRQ+0x6a/0xe0
-  [<ffffffff81012813>] ret_from_intr+0x0/0x16
-irq event stamp: 195096
-hardirqs last  enabled at (195096): [<ffffffff814cd7f7>] _spin_unlock_irq+0x3a/0x5c
-hardirqs last disabled at (195095): [<ffffffff814cdbdd>] _spin_lock_irq+0x29/0x95
-softirqs last  enabled at (195088): [<ffffffff81068c92>] __do_softirq+0x1c1/0x1ef
-softirqs last disabled at (195093): [<ffffffff8101304c>] call_softirq+0x1c/0x30
- 
-other info that might help us debug this:
-1 lock held by swapper/0:
- #0:  (kernel/irq/spurious.c:21){+.-...}, at: [<ffffffff81070cf2>] run_timer_softirq+0x1a9/0x315
+> i say let anyone who actually has such a system and wants to do such a
+> crazy ass thing put together a working arch first before we worry
+> about it.  the current code doesnt preclude dynamic hooking anyways
+> (manually adding -DCONFIG_xxx to CPPFLAGS).
 
-stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.32-rc5 #1
-Call Trace:
- <IRQ>  [<ffffffff81093e94>] valid_state+0x187/0x1ae
- [<ffffffff81096c7b>] ? check_usage_backwards+0x0/0xa3
- [<ffffffff81093fe4>] mark_lock+0x129/0x253
- [<ffffffff810951d4>] __lock_acquire+0x370/0xd5d
- [<ffffffff810c264e>] ? try_one_irq+0x32/0x138
- [<ffffffff8109329d>] ? save_trace+0x4e/0xcd
- [<ffffffff81095cb4>] lock_acquire+0xf3/0x12d
- [<ffffffff810c264e>] ? try_one_irq+0x32/0x138
- [<ffffffff81070cf2>] ? run_timer_softirq+0x1a9/0x315
- [<ffffffff810c264e>] ? try_one_irq+0x32/0x138
- [<ffffffff814cdadd>] _spin_lock+0x40/0x89
- [<ffffffff810c264e>] ? try_one_irq+0x32/0x138
- [<ffffffff810c264e>] try_one_irq+0x32/0x138
- [<ffffffff810c2795>] poll_all_shared_irqs+0x41/0x6d
- [<ffffffff810c27dd>] poll_spurious_irqs+0x1c/0x49
- [<ffffffff81070d82>] run_timer_softirq+0x239/0x315
- [<ffffffff81070cf2>] ? run_timer_softirq+0x1a9/0x315
- [<ffffffff810c27c1>] ? poll_spurious_irqs+0x0/0x49
- [<ffffffff81068bd3>] __do_softirq+0x102/0x1ef
- [<ffffffff8108eccf>] ? tick_dev_program_event+0x46/0xcc
- [<ffffffff8101304c>] call_softirq+0x1c/0x30
- [<ffffffff81014b65>] do_softirq+0x59/0xca
- [<ffffffff810686ad>] irq_exit+0x58/0xae
- [<ffffffff81029b84>] smp_apic_timer_interrupt+0x94/0xba
- [<ffffffff81012a33>] apic_timer_interrupt+0x13/0x20
- <EOI>  [<ffffffff8101a7b5>] ? mwait_idle+0x8c/0xb5
- [<ffffffff8101a7ac>] ? mwait_idle+0x83/0xb5
- [<ffffffff81010e55>] ? cpu_idle+0xbe/0x100
- [<ffffffff814c4270>] ? start_secondary+0x219/0x270
+You talk about fragile bad ideas and then throw out defining Kconfig
+variables from Makefiles? This simply has no place in the Kconfig space,
+as it is now and always has been a toolchain property, not an
+architectural/platform one.
 
-This happens because the &desc->lock is taken with spin_lock_irqsave and
-just a spin_lock.  In the try_one_irq(), this lock really should be a
-spin_lock_irqsave().
-
-I have not yet narrowed down the reason for the spurious interrupt (although
-I suspect it maybe to do with the radeon driver).
-
-Successfully tested by me.
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-
---- linux-2.6.31.x86_64.orig/kernel/irq/spurious.c	2009-09-09 18:13:59.000000000 -0400
-+++ linux-2.6.31.x86_64/kernel/irq/spurious.c	2009-10-26 10:55:56.709845786 -0400
-@@ -27,8 +27,9 @@ static int try_one_irq(int irq, struct i
- {
- 	struct irqaction *action;
- 	int ok = 0, work = 0;
-+	unsigned long flags;
- 
--	spin_lock(&desc->lock);
-+	spin_lock_irqsave(&desc->lock, flags);
- 	/* Already running on another processor */
- 	if (desc->status & IRQ_INPROGRESS) {
- 		/*
-@@ -37,13 +38,13 @@ static int try_one_irq(int irq, struct i
- 		 */
- 		if (desc->action && (desc->action->flags & IRQF_SHARED))
- 			desc->status |= IRQ_PENDING;
--		spin_unlock(&desc->lock);
-+		spin_unlock_irqrestore(&desc->lock, flags);
- 		return ok;
- 	}
- 	/* Honour the normal IRQ locking */
- 	desc->status |= IRQ_INPROGRESS;
- 	action = desc->action;
--	spin_unlock(&desc->lock);
-+	spin_unlock_irqrestore(&desc->lock, flags);
- 
- 	while (action) {
- 		/* Only shared IRQ handlers are safe to call */
-@@ -56,7 +57,7 @@ static int try_one_irq(int irq, struct i
- 	}
- 	local_irq_disable();
- 	/* Now clean up the flags */
--	spin_lock(&desc->lock);
-+	spin_lock_irqsave(&desc->lock, flags);
- 	action = desc->action;
- 
- 	/*
-@@ -68,9 +69,9 @@ static int try_one_irq(int irq, struct i
- 		 * Perform real IRQ processing for the IRQ we deferred
- 		 */
- 		work = 1;
--		spin_unlock(&desc->lock);
-+		spin_unlock_irqrestore(&desc->lock, flags);
- 		handle_IRQ_event(irq, action);
--		spin_lock(&desc->lock);
-+		spin_lock_irqsave(&desc->lock, flags);
- 		desc->status &= ~IRQ_PENDING;
- 	}
- 	desc->status &= ~IRQ_INPROGRESS;
-@@ -80,7 +81,7 @@ static int try_one_irq(int irq, struct i
- 	 */
- 	if (work && desc->chip && desc->chip->end)
- 		desc->chip->end(irq);
--	spin_unlock(&desc->lock);
-+	spin_unlock_irqrestore(&desc->lock, flags);
- 
- 	return ok;
- }
+The other thing you seem to have ignored is that pretty much everyone has
+such a system, it's only crippled platforms like blackfin and h8300 that
+don't support toolchains without the prefix.
