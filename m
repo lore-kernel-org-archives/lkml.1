@@ -1,149 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbZKCQlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZKCQoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbZKCQlt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 11:41:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZKCQls
+	id S1753811AbZKCQoM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 11:44:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZKCQoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 11:41:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40022 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbZKCQlq (ORCPT
+	Tue, 3 Nov 2009 11:44:12 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:52255 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbZKCQoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 11:41:46 -0500
-Subject: Re: [PATCH 1/14] cpumask: simplify sched_rt.c
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <200911031453.15350.rusty@rustcorp.com.au>
-References: <200911031453.15350.rusty@rustcorp.com.au>
+	Tue, 3 Nov 2009 11:44:11 -0500
+Subject: Re: Please consider reverting
+ 7d930bc33653d5592dc386a76a38f39c2e962344
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.01.0911030815180.31845@localhost.localdomain>
+References: <20091103053156.GA3212@core.coreip.homeip.net>
+	 <20091102.224957.32364226.davem@davemloft.net>
+	 <20091103065238.GE3212@core.coreip.homeip.net>
+	 <1257232587.3420.55.camel@localhost.localdomain>
+	 <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
+	 <1257262588.3420.79.camel@localhost.localdomain>
+	 <alpine.LFD.2.01.0911030738260.31845@localhost.localdomain>
+	 <1257264485.3420.87.camel@localhost.localdomain>
+	 <alpine.LFD.2.01.0911030815180.31845@localhost.localdomain>
 Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 03 Nov 2009 11:41:49 -0500
-Message-Id: <1257266509.26028.3343.camel@gandalf.stny.rr.com>
+Date: Wed, 04 Nov 2009 01:44:07 +0900
+Message-Id: <1257266647.3420.105.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
+Hi Linus,
 
-I believe this was mostly your code. Can you review this change.
-
-Thanks,
-
--- Steve
-
-
-On Tue, 2009-11-03 at 14:53 +1030, Rusty Russell wrote:
-> find_lowest_rq() wants to call pick_optimal_cpu() on the intersection
-> of sched_domain_span(sd) and lowest_mask.  Rather than doing a cpus_and
-> into a temporary, we can open-code it.
+> > I do have a patch in my inbox from Johannes from 4 days ago that fixes
+> > this issue.
+> > 
+> > 	http://marc.info/?l=linux-wireless&m=125697124819563&w=2
+> > 
+> > So what is the take away from this now? Do you wanna have Johannes step
+> > over John and Dave and send such a patch directly to you?
 > 
-> This actually makes the code slightly clearer, IMHO.
+> Hell yes. If it causes lockups for people, and the original commit is 
+> _known_ to be buggy, these kinds of things should be expedited.
 > 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> To: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> ---
->  kernel/sched_rt.c |   59 +++++++++++++++++++++---------------------------------
->  1 file changed, 23 insertions(+), 36 deletions(-)
+> How much users time and effort do we want to waste?
 > 
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -1115,29 +1115,12 @@ static struct task_struct *pick_next_hig
->  
->  static DEFINE_PER_CPU(cpumask_var_t, local_cpu_mask);
->  
-> -static inline int pick_optimal_cpu(int this_cpu,
-> -				   const struct cpumask *mask)
-> -{
-> -	int first;
-> -
-> -	/* "this_cpu" is cheaper to preempt than a remote processor */
-> -	if ((this_cpu != -1) && cpumask_test_cpu(this_cpu, mask))
-> -		return this_cpu;
-> -
-> -	first = cpumask_first(mask);
-> -	if (first < nr_cpu_ids)
-> -		return first;
-> -
-> -	return -1;
-> -}
-> -
->  static int find_lowest_rq(struct task_struct *task)
->  {
->  	struct sched_domain *sd;
->  	struct cpumask *lowest_mask = __get_cpu_var(local_cpu_mask);
->  	int this_cpu = smp_processor_id();
->  	int cpu      = task_cpu(task);
-> -	cpumask_var_t domain_mask;
->  
->  	if (task->rt.nr_cpus_allowed == 1)
->  		return -1; /* No other targets possible */
-> @@ -1167,28 +1150,26 @@ static int find_lowest_rq(struct task_st
->  	 * Otherwise, we consult the sched_domains span maps to figure
->  	 * out which cpu is logically closest to our hot cache data.
->  	 */
-> -	if (this_cpu == cpu)
-> -		this_cpu = -1; /* Skip this_cpu opt if the same */
-> +	if (!cpumask_test_cpu(this_cpu, lowest_mask))
-> +		this_cpu = -1; /* Skip this_cpu opt if not among lowest */
->  
-> -	if (alloc_cpumask_var(&domain_mask, GFP_ATOMIC)) {
-> -		for_each_domain(cpu, sd) {
-> -			if (sd->flags & SD_WAKE_AFFINE) {
-> -				int best_cpu;
-> +	for_each_domain(cpu, sd) {
-> +		if (sd->flags & SD_WAKE_AFFINE) {
-> +			int best_cpu;
->  
-> -				cpumask_and(domain_mask,
-> -					    sched_domain_span(sd),
-> -					    lowest_mask);
-> +			/*
-> +			 * "this_cpu" is cheaper to preempt than a
-> +			 * remote processor.
-> +			 */
-> +			if (this_cpu != -1 &&
-> +			    cpumask_test_cpu(this_cpu, sched_domain_span(sd)))
-> +				return this_cpu;
->  
-> -				best_cpu = pick_optimal_cpu(this_cpu,
-> -							    domain_mask);
-> -
-> -				if (best_cpu != -1) {
-> -					free_cpumask_var(domain_mask);
-> -					return best_cpu;
-> -				}
-> -			}
-> +			best_cpu = cpumask_first_and(lowest_mask,
-> +						     sched_domain_span(sd));
-> +			if (best_cpu < nr_cpu_ids)
-> +				return best_cpu;
->  		}
-> -		free_cpumask_var(domain_mask);
->  	}
->  
->  	/*
-> @@ -1196,7 +1177,13 @@ static int find_lowest_rq(struct task_st
->  	 * just give the caller *something* to work with from the compatible
->  	 * locations.
->  	 */
-> -	return pick_optimal_cpu(this_cpu, lowest_mask);
-> +	if (this_cpu != -1)
-> +		return this_cpu;
-> +
-> +	cpu = cpumask_any(lowest_mask);
-> +	if (cpu < nr_cpu_ids)
-> +		return cpu;
-> +	return -1;
->  }
->  
->  /* Will lock the rq it finds */
+> And there's a secondary issue too - how comfortable do we want people to 
+> be to test late-in-the-game -git trees? I should hope that they should be 
+> considered pretty stable. And ask yourself: would it have been better to 
+> have had this bug in my -git tree for just one day, or for five days?
 > 
+> Of course, the optimal situation would have been that such a buggy commit 
+> wouldn't have been ever merged in the first place - at least not after 
+> -rc5. But notice how I'm not really complaining about that part: I'm a 
+> firm believer in the "bugs happen" reality, and while we should try to be 
+> careful, things like this _will_ slip through. 
+> 
+> So I'm not unhappy about the bug happening in the first place. It would 
+> have been better had it not, but hey, mistakes happen. We should just 
+> "Deal with it". 
+> 
+> And yes, "dealing with it" very much means by-passing maintainers if 
+> necessary. It can mean sending patches directly to me, but it _also_ means 
+> asking me to just revert a commit that turns out to be buggy and was 
+> merged late.
+> 
+> And that's what I'm really arguing for here - I don't like how you and 
+> Johannes were arguing against "dealing with it". As it was, we clearly had 
+> users wasting their time on this.
+
+that is a clear statement and I am perfectly fine with this.
+
+However to be fair here, this one didn't hit everybody. I for myself
+haven't seen it at all and actually I have been running this "faulty"
+kernel for a while now and suspending happily multiple times a day. As
+much as you hate that the patch for this bug took longer than needed to
+find its way into your tree, the immediate need and the wide problem was
+not clear. So there will be always cases where at the time of writing
+the patch, the sensible thing to do is following the normal merge path
+and the patch will end up in your tree multiple days later. It is not
+optimal, but it happens.
+
+And for the record, I think that a quick bug report to linux-wireless
+would have been as effective and a request for a revert. But that is my
+pure personal opinion here.
+
+Regards
+
+Marcel
+
 
