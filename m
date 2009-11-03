@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZKCOmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbZKCOm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbZKCOmE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 09:42:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbZKCOmE
+	id S1753842AbZKCOm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 09:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZKCOm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 09:42:04 -0500
-Received: from mga09.intel.com ([134.134.136.24]:31194 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbZKCOmD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 09:42:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,674,1249282800"; 
-   d="scan'208";a="566081108"
-From: "Shi, Alex" <alex.shi@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 3 Nov 2009 22:42:03 +0800
-Subject: kernel building regression on 32-rc5 kernel 
-Thread-Topic: kernel building regression on 32-rc5 kernel 
-Thread-Index: Acpck88uviHr1QQwRnK4Dz5qxJJPCQ==
-Message-ID: <F7C8A4D3A9905B45A80E4C194793FA651553C00D40@PDSMSX501.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 3 Nov 2009 09:42:27 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:38300 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751475AbZKCOm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 09:42:26 -0500
+Message-ID: <4AF04148.8070103@atmel.com>
+Date: Tue, 03 Nov 2009 15:42:16 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>, plagnioj@jcrosoft.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       avictor.za@gmail.com
+Subject: Re: [RFC PATCH] atmel_lcdfb Kconfig: remove long dependency line
+References: <4A40D695.5000302@atmel.com> <1245767456-6434-1-git-send-email-nicolas.ferre@atmel.com> <20090623153556.0e574899@hskinnemoen-d830> <4A40E2E6.9060904@atmel.com> <20090625084631.GA7985@n2100.arm.linux.org.uk>
+In-Reply-To: <20090625084631.GA7985@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I found the kernel building will have about 20%~ 30% regressions on our NHM machines. My kernel build do the following things 15 times: 
-make mrproper; echo \"3\">/proc/sys/vm/drop_caches; make defconfig; make -j${2timescpunumbers}
-Bisect found it is due to the commitment: 
-commit a6151c3a5c8e1ff5a28450bc8d6a99a2a0add0a7
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Wed Oct 7 20:02:57 2009 +0200
- 
-    cfq-iosched: apply bool value where we return 0/1
+I come back on this patch as I have a Kconfig cleanup patch series coming.
 
-It quite makes me confused, but after reverting this patch the performance recovered. I analyzed the vmstat and "perf record" results, But did not find something strange. Just the "perf stat" shows something different.  
- 
+Russell King - ARM Linux :
+> On Tue, Jun 23, 2009 at 04:12:54PM +0200, Nicolas Ferre wrote:
+>> Haavard Skinnemoen :
+>>> Nicolas Ferre wrote:
+>>>> +config ARCH_ATMEL_HAS_FB
+>>>> +	bool
+>>>> +	depends on FB
+>>>> +	default n
+>>> What happens when we unconditionally select something which depends on
+>>> something else?
+>> :-P
+>>
+>> Experience shows that this configuration is selected.
+>>
+>> The dependency allows to have a good hierarchy in the configuration tree...
+>> Better proposition welcome.
+> 
+> 1st - no need for 'default n' - you're specifying something that's already
+> the default.
 
-Perf stat output of Rc5 kernel: 
+Ok.
 
-  850121.335684  task-clock-msecs         #      1.035 CPUs
-         867280  context-switches         #      0.001 M/sec
-         266319  CPU-migrations           #      0.000 M/sec
-       76663435  page-faults              #      0.090 M/sec
-  2697372004020  cycles                   #   3172.926 M/sec  (scaled from 100.00%)
-  2779762582367  instructions             #      1.031 IPC    (scaled from 100.00%)
-    14230675659  cache-references         #     16.740 M/sec  (scaled from 100.00%)
-     3048368747  cache-misses             #      3.586 M/sec  (scaled from 100.00%)
- 
-821.432570507  seconds time elapsed
+> 2nd - don't make this symbol depend on anything, and don't use the symbol
+> for anything except providing a dependency for FB_ATMEL.  Instead, let
+> FB_ATMEL deal with the dependency on FB and ARCH_ATMEL_HAS_FB.
 
- Perf stat output of rc5 without the commit kernel:
-  900054.808787  task-clock-msecs         #      1.237 CPUs
-         845152  context-switches         #      0.001 M/sec
-         252689  CPU-migrations           #      0.000 M/sec
-       77495232  page-faults              #      0.086 M/sec
-  2470286471361  cycles                   #   2744.596 M/sec
-  2684134677043  instructions             #      1.087 IPC
-    14685367142  cache-references         #     16.316 M/sec
-     2869381827  cache-misses             #      3.188 M/sec
- 
-  727.415980216  seconds time elapsed
+The problem is that if I do not setup the dependency here the menu entry
+will not be available at the proper level. In fact I will see the Atmel
+LCD entry here:
+"Graphics support"
+ <*> Support for frame buffer devices  --->
+ <*> AT91/AT32 LCD Controller support
 
-BRG
-Alex
+instead of here:
+"Graphics support"
+ ---> "Support for frame buffer devices"
+      [..]
+      <*> "AT91/AT32 LCD Controller support"
+      [..]
+
+So I keep the depend.
+
+> 3rd - ISTR we have a convention for these - 'HAVE_foo' for a configuration
+> option named 'foo'.  So it should probably be HAVE_FB_ATMEL.
+
+Ok, changed to HAVE_FB_ATMEL indeed.
+
+Thanks. Best regards,
+-- 
+Nicolas Ferre
+
