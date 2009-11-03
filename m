@@ -1,104 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895AbZKCQ6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753758AbZKCRBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752895AbZKCQ6Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 11:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZKCQ6P
+	id S1753758AbZKCRBX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 12:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbZKCRBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 11:58:15 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:64997 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752728AbZKCQ6O (ORCPT
+	Tue, 3 Nov 2009 12:01:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49847 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752525AbZKCRBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 11:58:14 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap0EAILq70pGGN1W/2dsb2JhbACBUN1shD0E
-Date: Tue, 3 Nov 2009 11:53:14 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Josh Triplett <josh@joshtriplett.org>, Jon Bernard <jbernard@debian.org>,
-       Jan Blunck <jblunck@suse.de>, Pierre Habouzit <madcoder@debian.org>,
-       Steven Munroe <munroesj@linux.vnet.ibm.com>,
-       Bert Wesarg <bert.wesarg@googlemail.com>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>,
-       ltt-dev@lists.casi.polymtl.ca, rp@svcs.cs.pdx.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RELEASE] Userspace RCU 0.3.0
-Message-ID: <20091103165314.GD27775@Krystal>
-References: <20091103150234.GA20060@Krystal> <20091103155028.GC6726@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091103155028.GC6726@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 11:38:36 up 77 days,  3:28,  3 users,  load average: 0.89, 0.40,
-	0.33
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Nov 2009 12:01:21 -0500
+Date: Tue, 3 Nov 2009 08:59:36 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: Please consider reverting
+ 7d930bc33653d5592dc386a76a38f39c2e962344
+In-Reply-To: <1257266647.3420.105.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0911030851440.31845@localhost.localdomain>
+References: <20091103053156.GA3212@core.coreip.homeip.net>  <20091102.224957.32364226.davem@davemloft.net>  <20091103065238.GE3212@core.coreip.homeip.net>  <1257232587.3420.55.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030719430.31845@localhost.localdomain>
+  <1257262588.3420.79.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030738260.31845@localhost.localdomain>  <1257264485.3420.87.camel@localhost.localdomain>  <alpine.LFD.2.01.0911030815180.31845@localhost.localdomain>
+ <1257266647.3420.105.camel@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Tue, Nov 03, 2009 at 10:02:34AM -0500, Mathieu Desnoyers wrote:
-> > Hi everyone,
-> > 
-> > I released userspace RCU 0.3.0, which includes a small API change for
-> > the "deferred work" interface. After discussion with Paul, I decided to
-> > drop the support for call_rcu() and only provide defer_rcu(), to make
-> > sure I don't provide an API with the same name as the kernel RCU but
-> > with different arguments and semantic. It will generate the following
-> > linker error if used:
-> > 
-> > file.c:240: undefined reference to 
-> >    `__error_call_rcu_not_implemented_please_use_defer_rcu'
-> > 
-> > Note that defer_rcu() should *not* be used in RCU read-side C.S.,
-> > because it calls synchronize_rcu() if the queue is full. This is a major
-> > distinction from call_rcu(). (note to self: eventually we should add
-> > some self-check code to detect defer_rcu() nested within RCU read-side
-> > C.S.).
-> > 
-> > I plan to eventually implement a proper call_rcu() within the userspace
-> > RCU library. It's not, however, a short-term need for me at the moment.
+
+
+On Wed, 4 Nov 2009, Marcel Holtmann wrote:
 > 
-> I can tell that we need to get you going on some real-time work.  ;-)
-> 
+> However to be fair here, this one didn't hit everybody. I for myself
+> haven't seen it at all and actually I have been running this "faulty"
+> kernel for a while now and suspending happily multiple times a day. As
+> much as you hate that the patch for this bug took longer than needed to
+> find its way into your tree, the immediate need and the wide problem was
+> not clear.
 
-:-)
+I do not agree.
 
-> (Sorry, but I really couldn't resist!)
-> 
+A _single_ NULL pointer report should have made it clear. As mentioned, I 
+was involved in one of the "please revert" threads, and I looked at the 
+code, and it was obviously bogus. I could (and did) point to the exact 
+memcpy() that caused the problem.
 
-It's true that it becomes important when real-time behavior is required
-at the call_rcu() execution site. However, even typical use of
-call_rcu() has some limitations in this area: in a scenario where the
-struct rcu_head passed to call_rcu() is allocated dynamically, kmalloc
-and friends do not offer any kind of wait-free/lock-free guarantees. So
-the way call_rcu() works is to push the burden of RT impact on the
-original struct rcu_head allocation. But I agree that it makes
-out-of-memory/queue full error handling much easier, because all the
-allocation is done at the same site.
+There really was no excuse. That 7d930bc33 commit had a NULL pointer 
+dereference, and people hit it. End of story.
 
-The main disadvantage of the call_rcu() approach though is that I cannot
-see any clean way to perform call_rcu() rate-limitation on a per-cpu
-basis. This would basically imply that we have to stop providing RT
-call_rcu() at some point to ensure we do not go over a certain
-threshold.
+The fact that not _all_ people hit it explains how it got pulled into my 
+tree in the first place, but that's it.
 
-A possible solution would be to make call_rcu() return an error when it
-goes over some threshold. The caller would have to deal with the error,
-possibly by rejecting the whole operation (so maybe another CPU/cloud
-node could take over the work). This seems cleaner than delaying
-execution of the call_rcu() site. The caller could actually decide to
-either reject the whole operation or to delay its execution.
-
-Mathieu
-
-
-> 							Thanx, Paul
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+			Linus
