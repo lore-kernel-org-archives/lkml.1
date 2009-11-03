@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbZKCHY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbZKCHZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbZKCHY4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 02:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbZKCHYz
+	id S1756247AbZKCHZS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 02:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbZKCHZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 02:24:55 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:62987 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753842AbZKCHYz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 02:24:55 -0500
-Message-ID: <4AEFDAAE.500@free.fr>
-Date: Tue, 03 Nov 2009 08:24:30 +0100
-From: Cedric Le Goater <legoater@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 3 Nov 2009 02:25:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39922 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751382AbZKCHZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 02:25:16 -0500
+Date: Tue, 3 Nov 2009 08:24:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
+Message-ID: <20091103072439.GA19928@elte.hu>
+References: <20091027204156.30545.96425.stgit@harusame> <20091029085348.GD26970@elte.hu> <20091029191801.CADC3538@magilla.sf.frob.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, andrea@cpushare.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Emelianov <xemul@openvz.org>, Alexey Dobriyan <adobriyan@mail.ru>,
-       linux-kernel@vger.kernel.org
-Subject: Re: pidns memory leak
-References: <20091006040526.GA22923@us.ibm.com> <4ACAFD6A.3060008@fr.ibm.com>	<20091008030828.GA18973@us.ibm.com> <4ACD9ECC.90508@fr.ibm.com>	<20091009032928.GA2031@us.ibm.com> <4ACF381F.9050808@fr.ibm.com>	<20091010013235.GA11904@us.ibm.com> <4AD2EBC7.2020109@fr.ibm.com>	<20091014061533.GA23569@us.ibm.com>	<20091102133326.e3dc51fb.akpm@linux-foundation.org>	<20091102223818.GA15628@us.ibm.com> <20091102144752.71fd4a31.akpm@linux-foundation.org>
-In-Reply-To: <20091102144752.71fd4a31.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091029191801.CADC3538@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/02/2009 11:47 PM, Andrew Morton wrote:
-> On Mon, 2 Nov 2009 16:38:18 -0600
-> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+
+* Roland McGrath <roland@redhat.com> wrote:
+
+> > Thirdly, i think we should expose the build-id of the kernel and the 
+> > path to the vmlinux (and modules) via /proc/build-id or so. That way 
+> > tooling can find the vmlinux file and can validate that it matches 
+> > the kernel's signature. (maybe include a file date as well - that's 
+> > a faster check than a full build-id checksum, especially for large 
+> > kernels)
 > 
->>> This bug hasn't been fixed yet, has it?
->>
->> Well Suka did trace the bug to commit 7766755a2f249e7, and posted a patch
->> to revert that, acked by Eric on Oct 20.  Suka, were you going to repost
->> that patch?
+> You seem to be confused about what build IDs are.  There is no 
+> "checksum validation".  Once the bits are stored there is no 
+> calculation ever done again, only exact comparison with an expected 
+> build ID bitstring.  The size of an object file is immaterial.
 > 
-> Ah.  OK.  Thanks.  Found it in the backlog pile.
+> As Frank mentioned, the kernel's and modules' allocated ELF notes (and 
+> thus build IDs) are already exposed in /sys.  Tools like "eu-unstrip 
+> -nk" use this information today.
 
-We've added the patch to our patchset and we confirm that the pid_* leaks have 
-been reduced to 'nearly' nothing but we still have a lot of inodes and dentries
-leaks. I hope to find some time to investigate and reproduce with a small 
-scenario, we are running a LTP like testsuite in a container environment.
+Ah, i didnt realize we link with --build-id already, unconditonally, 
+since v2.6.23 (if ld supports it):
 
-Also, Alexey had questions about it.
+ |
+ | From 18991197b4b588255ccabf472ebc84db7b66a19c Mon Sep 17 00:00:00 2001
+ | From: Roland McGrath <roland@redhat.com>
+ | Date: Thu, 19 Jul 2007 01:48:40 -0700
+ | Subject: [PATCH] Use --build-id ld option
+ |
+ | This change passes the --build-id when linking the kernel and when 
+ | linking modules, if ld supports it.  This is a new GNU ld option that 
+ | synthesizes an ELF note section inside the read-only data.  The note in 
+ | this section contains unique identifying bits called the "build ID", 
+ | which are generated so as to be different for any two linked ELF files 
+ | that aren't identical.
+ |
 
-C.
+So we have an SHA1 build-id already on the vmlinux and on modules, and 
+it's exposed in /sys/*/*/notes. Just have to make use of it in 
+tools/perf too.
+
+The other useful addition i mentioned isnt implemented yet: to emit an 
+ELF note of the absolute path of the output directory the kernel was 
+built in as well. This information is not available right now, and it 
+would be a place to look in to search for the vmlinux and the modules.
+
+What do you think? Also, if we do this, is there a standard way to name 
+it , or should i just pick a suitably new, Linux-specific name for that?
+
+Thanks,
+
+	Ingo
