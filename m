@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbZKCE3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbZKCEcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756610AbZKCE3N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 23:29:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbZKCE3L
+	id S1755762AbZKCEcV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 23:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbZKCEcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 23:29:11 -0500
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:55806 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756539AbZKCE3I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 23:29:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=CzwFKBImSyx5ilYchFKeNjeejdLH1Hw4yig0Ui8l+ndtrJ7dK9tuH/rZslDt/R+FlO
-         4y6i5RREArWlwPKK4lGzbm/pMFrYyYWqzwIiBsx+3hpehCMI2RE9wLJ8A3XiiGBJHjNC
-         8eiUg540reLpQLjNCYlxXHt4tijhr+r6DJiag=
-MIME-Version: 1.0
-Date: Tue, 3 Nov 2009 10:29:12 +0600
-Message-ID: <b9df5fa10911022029q197a0c5dkbbda609f4e41287@mail.gmail.com>
-Subject: [PATCH -mm] char, moxa: Make isabrds variable global.
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jirislaby@gmail.com, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 2 Nov 2009 23:32:21 -0500
+Received: from mga09.intel.com ([134.134.136.24]:64231 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755399AbZKCEcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 23:32:20 -0500
+X-ExtLoop1: 1
+Subject: Re: UDP-U stream performance regression on 32-rc1 kernel
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: alex.shi@intel.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+In-Reply-To: <1257220036.3819.193.camel@alexs-hp.sh.intel.com>
+References: <1257220036.3819.193.camel@alexs-hp.sh.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 03 Nov 2009 12:33:10 +0800
+Message-Id: <1257222791.16282.46.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- When CONFIG_MODULE=n and CONFIG_PCI=n, then variable
-isabrds becomes unused variable. So place it outside
-moxa_init solves this problem.
+On Tue, 2009-11-03 at 11:47 +0800, Alex Shi wrote:
+> We found the UDP-U 1k/4k stream of netperf benchmark have some
+> performance regression from 10% to 20% on our Tulsa and some NHM
+> machines. 
+﻿
+perf events shows function find_busiest_group consumes about 4.5% cpu time
+with the patch while it only consumes 0.5% cpu time without the patch.
 
- We were warned by the following warning:
+The communication between netperf client and netserver is very fast.
+When netserver receives a message and there is no new message available,
+it goes to sleep and scheduler calls idle_balance => load_balance_newidle.
+load_balance_newidle spends too much time and a new message arrives quickly
+before load_balance_newidle ends.
 
-drivers/char/moxa.c: In function `moxa_init':
-drivers/char/moxa.c:1012: warning: unused variable `isabrds'
+As the comments in the patch say hackbench benefits from it, I tested hackbench
+on Nehalem and core2 machines. hackbench does benefit from it, about 6% on
+nehalem machines, but doesn't benefit on core2 machines.
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-----
+Yanmin
 
---- linus/drivers/char/moxa.c	2009-09-11 20:39:02.000000000 +0600
-+++ rakib/drivers/char/moxa.c	2009-11-03 10:57:44.000000000 +0600
-@@ -1007,9 +1007,10 @@ static struct pci_driver moxa_pci_driver
- };
- #endif /* CONFIG_PCI */
+> Bisecting found it is due to the following commitment.  
+> 
+> commit 840a0653100dbde599ae8ddf83fa214dfa5fd1aa
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Fri Sep 4 11:32:54 2009 +0200
 
-+static unsigned int __initdata isabrds;
-+
- static int __init moxa_init(void)
- {
--	unsigned int isabrds = 0;
- 	int retval = 0;
 
- 	printk(KERN_INFO "MOXA Intellio family driver version %s\n",
