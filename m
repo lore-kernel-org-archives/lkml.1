@@ -1,61 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZKCE0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZKCE0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbZKCE0O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 23:26:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZKCE0O
+	id S1755657AbZKCE0d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 23:26:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbZKCE0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 23:26:14 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:60112 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754685AbZKCE0N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 23:26:13 -0500
-Date: Tue, 03 Nov 2009 13:26:14 +0900 (JST)
-Message-Id: <20091103.132614.547730224103939412.mitake@dcl.info.waseda.ac.jp>
-To: efault@gmx.de
-Cc: mingo@elte.hu, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl, acme@redhat.com,
-       fweisbec@gmail.com
-Subject: Re: [PATCH][RFC] Adding benchmark subsystem to perf
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <1257171969.8623.11.camel@marge.simson.net>
-References: <200911022357.36541.rusty@rustcorp.com.au>
-	<20091102.225129.149607581235026541.mitake@dcl.info.waseda.ac.jp>
-	<1257171969.8623.11.camel@marge.simson.net>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 2 Nov 2009 23:26:32 -0500
+Received: from ozlabs.org ([203.10.76.45]:39389 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754685AbZKCE0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 23:26:31 -0500
+To: linux-kernel@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>,
+       Borislav Petkov <borislav.petkov@amd.com>,
+       bluesmoke-devel@lists.sourceforge.net
+From: Rusty Russell <rusty@rustcorp.com.au>
+Message-Id: <200911031456.35354.rusty@rustcorp.com.au>
+Date: Tue, 3 Nov 2009 14:56:35 +1030
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 5/14] cpumask: use modern cpumask style in drivers/edac/amd64_edac.c
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH][RFC] Adding benchmark subsystem to perf
-Date: Mon, 02 Nov 2009 15:26:09 +0100
+cpumask_t -> struct cpumask, and don't put one on the stack.  (Note: this
+is actually on the stack unless CONFIG_CPUMASK_OFFSTACK=y).
 
-> Hi,
-> 
-> On Mon, 2009-11-02 at 22:51 +0900, Hitoshi Mitake wrote:
-> 
-> > Example of usage:
-> > % perf bench sched -t -l 1000
-> > 2.863
-> 
-> I think this should allow other benchmarks to be added is a logical
-> manner.  Perhaps perf bench -t hackbench -t -l 1000, ie bench should
-> process args to allow the user to select a benchmark from a suite, and
-> pass args to it as well, but with a default set built in so people can
-> just type perf bench -t foo, to run any benchmark with it's defaults.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/edac/amd64_edac.c |   24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
 
-Thanks for your comment, Mike.
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2625,7 +2625,7 @@ static int amd64_init_csrows(struct mem_
+ static void amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
+ {
+ 	struct amd64_pvt *pvt = mci->pvt_info;
+-	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
++	const struct cpumask *cpumask = cpumask_of_node(pvt->mc_node_id);
+ 	int cpu, idx = 0, err = 0;
+ 	struct msr msrs[cpumask_weight(cpumask)];
+ 	u32 value;
+@@ -2701,7 +2701,7 @@ static void amd64_enable_ecc_error_repor
+ 
+ static void amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
+ {
+-	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
++	const struct cpumask *cpumask = cpumask_of_node(pvt->mc_node_id);
+ 	int cpu, idx = 0, err = 0;
+ 	struct msr msrs[cpumask_weight(cpumask)];
+ 	u32 value;
+@@ -2734,7 +2734,7 @@ static void amd64_restore_ecc_error_repo
+ }
+ 
+ /* get all cores on this DCT */
+-static void get_cpus_on_this_dct_cpumask(cpumask_t *mask, int nid)
++static void get_cpus_on_this_dct_cpumask(struct cpumask *mask, int nid)
+ {
+ 	int cpu;
+ 
+@@ -2746,25 +2746,30 @@ static void get_cpus_on_this_dct_cpumask
+ /* check MCG_CTL on all the cpus on this node */
+ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
+ {
+-	cpumask_t mask;
++	cpumask_var_t mask;
+ 	struct msr *msrs;
+ 	int cpu, nbe, idx = 0;
+ 	bool ret = false;
+ 
+-	cpumask_clear(&mask);
++	if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
++		amd64_printk(KERN_WARNING, "%s: error allocating mask\n",
++			     __func__);
++		return false;
++	}
+ 
+-	get_cpus_on_this_dct_cpumask(&mask, nid);
++	get_cpus_on_this_dct_cpumask(mask, nid);
+ 
+-	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(&mask), GFP_KERNEL);
++	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(mask), GFP_KERNEL);
+ 	if (!msrs) {
+ 		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+ 			      __func__);
++		free_cpumask_var(mask);
+ 		 return false;
+ 	}
+ 
+-	rdmsr_on_cpus(&mask, MSR_IA32_MCG_CTL, msrs);
++	rdmsr_on_cpus(mask, MSR_IA32_MCG_CTL, msrs);
+ 
+-	for_each_cpu(cpu, &mask) {
++	for_each_cpu(cpu, mask) {
+ 		nbe = msrs[idx].l & K8_MSR_MCGCTL_NBE;
+ 
+ 		debugf0("core: %u, MCG_CTL: 0x%llx, NB MSR is %s\n",
+@@ -2780,6 +2785,7 @@ static bool amd64_nb_mce_bank_enabled_on
+ 
+ out:
+ 	kfree(msrs);
++	free_cpumask_var(mask);
+ 	return ret;
+ }
+ 
 
-I forgot to do that. So I prepared new patch series
-to implement your suggestion.
-
-The new patch series containts new benchmark program,
-based on Ingo's pipe-test-1m.c
-http://people.redhat.com/mingo/cfs-scheduler/tools/pipe-test-1m.c
-
-And the series became too big to pack into one mail.
-So I'll send it in new thread. Please wait a minute.
