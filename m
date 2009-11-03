@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbZKCXwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbZKCXtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbZKCXwo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:52:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZKCXtm
+	id S1753412AbZKCXtv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:49:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZKCXts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:49:42 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:41030 "EHLO
+	Tue, 3 Nov 2009 18:49:48 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:41046 "EHLO
 	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbZKCXtj (ORCPT
+	with ESMTP id S1752437AbZKCXtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:49:39 -0500
+	Tue, 3 Nov 2009 18:49:43 -0500
 From: John Johansen <john.johansen@canonical.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org,
        John Johansen <john.johansen@canonical.com>
-Subject: [PATCH 02/12] AppArmor: basic auditing infrastructure.
-Date: Tue,  3 Nov 2009 15:48:09 -0800
-Message-Id: <1257292099-15802-3-git-send-email-john.johansen@canonical.com>
+Subject: [PATCH 03/12] AppArmor: contexts used in attaching policy to system objects
+Date: Tue,  3 Nov 2009 15:48:10 -0800
+Message-Id: <1257292099-15802-4-git-send-email-john.johansen@canonical.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1257292099-15802-1-git-send-email-john.johansen@canonical.com>
 References: <1257292099-15802-1-git-send-email-john.johansen@canonical.com>
@@ -24,60 +24,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update kenel audit range comments to show AppArmor's registered range of
-1500-1599.  This range used to be reserved for LSPP but LSPP uses the
-SELinux range and the range was given to AppArmor.
-Patch is not in mainline -- pending AppArmor code submission to lkml
-
-Add the core routine for AppArmor auditing.
+AppArmor contexts attach profiles and state to tasks, files, etc. when
+a direct profile reference is not sufficient.
 
 Signed-off-by: John Johansen <john.johansen@canonical.com>
 ---
- include/linux/audit.h             |   10 ++-
- security/apparmor/audit.c         |  160 +++++++++++++++++++++++++++++++++++++
- security/apparmor/include/audit.h |   57 +++++++++++++
- 3 files changed, 226 insertions(+), 1 deletions(-)
- create mode 100644 security/apparmor/audit.c
- create mode 100644 security/apparmor/include/audit.h
+ security/apparmor/context.c         |  224 +++++++++++++++++++++++++++++++++++
+ security/apparmor/include/context.h |  146 +++++++++++++++++++++++
+ 2 files changed, 370 insertions(+), 0 deletions(-)
+ create mode 100644 security/apparmor/context.c
+ create mode 100644 security/apparmor/include/context.h
 
-diff --git a/include/linux/audit.h b/include/linux/audit.h
-index 3c7a358..a1db25b 100644
---- a/include/linux/audit.h
-+++ b/include/linux/audit.h
-@@ -33,7 +33,7 @@
-  * 1200 - 1299 messages internal to the audit daemon
-  * 1300 - 1399 audit event messages
-  * 1400 - 1499 SE Linux use
-- * 1500 - 1599 kernel LSPP events
-+ * 1500 - 1599 AppArmor use
-  * 1600 - 1699 kernel crypto events
-  * 1700 - 1799 kernel anomaly records
-  * 1800 - 1899 kernel integrity events
-@@ -122,6 +122,14 @@
- #define AUDIT_MAC_UNLBL_STCADD	1416	/* NetLabel: add a static label */
- #define AUDIT_MAC_UNLBL_STCDEL	1417	/* NetLabel: del a static label */
- 
-+#define AUDIT_APPARMOR_AUDIT	1501	/* AppArmor audited grants */
-+#define AUDIT_APPARMOR_ALLOWED	1502	/* Allowed Access for learning */
-+#define AUDIT_APPARMOR_DENIED	1503
-+#define AUDIT_APPARMOR_HINT	1504	/* Process Tracking information */
-+#define AUDIT_APPARMOR_STATUS	1505	/* Changes in config */
-+#define AUDIT_APPARMOR_ERROR	1506	/* Internal AppArmor Errors */
-+#define AUDIT_APPARMOR_KILL	1507	/* AppArmor killing processes */
-+
- #define AUDIT_FIRST_KERN_ANOM_MSG   1700
- #define AUDIT_LAST_KERN_ANOM_MSG    1799
- #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
-diff --git a/security/apparmor/audit.c b/security/apparmor/audit.c
+diff --git a/security/apparmor/context.c b/security/apparmor/context.c
 new file mode 100644
-index 0000000..8169d8a
+index 0000000..81cc089
 --- /dev/null
-+++ b/security/apparmor/audit.c
-@@ -0,0 +1,160 @@
++++ b/security/apparmor/context.c
+@@ -0,0 +1,224 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor auditing functions
++ * This file contains AppArmor functions used to manipulate object security
++ * contexts.
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009 Canonical Ltd.
@@ -88,162 +56,225 @@ index 0000000..8169d8a
 + * License.
 + */
 +
-+#include <linux/audit.h>
-+#include <linux/socket.h>
-+
-+#include "include/apparmor.h"
-+#include "include/audit.h"
++#include "include/context.h"
 +#include "include/policy.h"
 +
-+const char *audit_mode_names[] = {
-+	"normal",
-+	"quiet_denied",
-+	"quiet",
-+	"noquiet",
-+	"all"
-+};
++struct aa_task_context *aa_alloc_task_context(gfp_t flags)
++{
++	return kzalloc(sizeof(struct aa_task_context), flags);
++}
 +
-+static char *aa_audit_type[] = {
-+	"APPARMOR_AUDIT",
-+	"APPARMOR_ALLOWED",
-+	"APPARMOR_DENIED",
-+	"APPARMOR_HINT",
-+	"APPARMOR_STATUS",
-+	"APPARMOR_ERROR",
-+	"APPARMOR_KILLED"
-+};
++void aa_free_task_context(struct aa_task_context *cxt)
++{
++	if (cxt) {
++		aa_put_profile(cxt->sys.profile);
++		aa_put_profile(cxt->sys.previous);
++		aa_put_profile(cxt->sys.onexec);
++
++		kzfree(cxt);
++	}
++}
 +
 +/*
-+ * Currently AppArmor auditing is fed straight into the audit framework.
++ * duplicate a task context, incrementing reference counts
++ */
++struct aa_task_context *aa_dup_task_context(struct aa_task_context *old_cxt,
++					    gfp_t gfp)
++{
++	struct aa_task_context *cxt;
++
++	cxt = kmemdup(old_cxt, sizeof(*cxt), gfp);
++	if (!cxt)
++		return NULL;
++
++	aa_get_profile(cxt->sys.profile);
++	aa_get_profile(cxt->sys.previous);
++	aa_get_profile(cxt->sys.onexec);
++
++	return cxt;
++}
++
++/**
++ * aa_cred_policy - obtain cred's profiles
++ * @cred: cred to obtain profiles from
++ * @sys: return system profile
++ * does NOT increment reference count
++ */
++void aa_cred_policy(const struct cred *cred, struct aa_profile **sys)
++{
++	struct aa_task_context *cxt = cred->security;
++	BUG_ON(!cxt);
++	*sys = aa_filtered_profile(aa_profile_newest(cxt->sys.profile));
++}
++
++/**
++ * aa_get_task_policy - get the cred with the task policy, and current profiles
++ * @task: task to get policy of
++ * @sys: return - pointer to system profile
 + *
-+ * TODO:
-+ * netlink interface for complain mode
-+ * user auditing, - send user auditing to netlink interface
-+ * system control of whether user audit messages go to system log
++ * Only gets the cred ref count which has ref counts on the profiles returned
 + */
-+
-+static int aa_audit_base(int type, struct aa_profile *profile,
-+			 struct aa_audit *sa, struct audit_context *audit_cxt,
-+			 void (*cb) (struct audit_buffer *, void *))
++struct cred *aa_get_task_policy(const struct task_struct *task,
++				struct aa_profile **sys)
 +{
-+	struct audit_buffer *ab = NULL;
++	struct cred *cred = get_task_cred(task);
++	aa_cred_policy(cred, sys);
++	return cred;
++}
 +
-+	if (profile && PROFILE_KILL(profile) && type == AUDIT_APPARMOR_DENIED)
-+		type = AUDIT_APPARMOR_KILL;
++void aa_put_task_policy(struct cred *cred)
++{
++	put_cred(cred);
++}
 +
-+	ab = audit_log_start(audit_cxt, sa->gfp_mask, type);
++static void replace_group(struct aa_task_cxt_group *cgrp,
++			  struct aa_profile *profile)
++{
++	if (cgrp->profile == profile)
++		return;
 +
-+	if (!ab) {
-+		AA_ERROR("(%d) Unable to log event of type (%d)\n",
-+			 -ENOMEM, type);
-+		/* don't fail operations in complain mode even if logging
-+		 * fails */
-+		return type == AUDIT_APPARMOR_ALLOWED ? 0 : -ENOMEM;
++	if (!profile || (profile->flags & PFLAG_UNCONFINED) ||
++	    (cgrp->profile && cgrp->profile->ns != profile->ns)) {
++		aa_put_profile(cgrp->previous);
++		aa_put_profile(cgrp->onexec);
++		cgrp->previous = NULL;
++		cgrp->onexec = NULL;
++		cgrp->token = 0;
 +	}
-+
-+	if (aa_g_audit_header)
-+		audit_log_format(ab, "type=%s ",
-+				 aa_audit_type[type - AUDIT_APPARMOR_AUDIT]);
-+
-+	if (sa->operation)
-+		audit_log_format(ab, "operation=\"%s\"", sa->operation);
-+
-+	if (sa->info) {
-+		audit_log_format(ab, " info=\"%s\"", sa->info);
-+		if (sa->error)
-+			audit_log_format(ab, " error=%d", sa->error);
-+	}
-+
-+	audit_log_format(ab, " pid=%d",
-+			 sa->task ? sa->task->pid : current->pid);
-+
-+	if (profile) {
-+		pid_t pid = sa->task ? sa->task->real_parent->pid :
-+				       current->real_parent->pid;
-+		audit_log_format(ab, " parent=%d", pid);
-+		audit_log_format(ab, " profile=");
-+		audit_log_untrustedstring(ab, profile->fqname);
-+
-+		if (profile->ns != default_namespace) {
-+			audit_log_format(ab, " namespace=");
-+			audit_log_untrustedstring(ab, profile->ns->base.name);
-+		}
-+	}
-+
-+	if (cb)
-+		cb(ab, sa);
-+
-+	audit_log_end(ab);
-+
-+	if (type == AUDIT_APPARMOR_KILL)
-+		(void)send_sig_info(SIGKILL, NULL,
-+				    sa->task ? sa->task : current);
-+
-+	return type == AUDIT_APPARMOR_ALLOWED ? 0 : sa->error;
++	aa_put_profile(cgrp->profile);
++	cgrp->profile = aa_get_profile(profile);
 +}
 +
 +/**
-+ * aa_audit - Log an audit event to the audit subsystem
-+ * @type: audit type for the message
-+ * @profile: profile to check against
-+ * @sa: audit event
-+ * @cb: optional callback fn for type specific fields
++ * aa_replace_current_profiles - replace the current tasks profiles
++ * @sys: new system profile
++ *
++ * Returns: error on failure
 + */
-+int aa_audit(int type, struct aa_profile *profile, struct aa_audit *sa,
-+	     void (*cb) (struct audit_buffer *, void *))
++int aa_replace_current_profiles(struct aa_profile *sys)
 +{
-+	struct audit_context *audit_cxt;
-+	audit_cxt = aa_g_logsyscall ? current->audit_context : NULL;
++	struct aa_task_context *cxt;
++	struct cred *new = prepare_creds();
++	if (!new)
++		return -ENOMEM;
 +
-+	if (type == AUDIT_APPARMOR_AUTO) {
-+		if (likely(!sa->error)) {
-+			if (PROFILE_AUDIT_MODE(profile) != AUDIT_ALL)
-+				return 0;
-+			type = AUDIT_APPARMOR_AUDIT;
-+		} else if (PROFILE_COMPLAIN(profile))
-+			type = AUDIT_APPARMOR_ALLOWED;
-+		else
-+			type = AUDIT_APPARMOR_DENIED;
-+	}
-+	if (PROFILE_AUDIT_MODE(profile) == AUDIT_QUIET ||
-+	    (type == AUDIT_APPARMOR_DENIED &&
-+	     PROFILE_AUDIT_MODE(profile) == AUDIT_QUIET))
-+		return sa->error;
++	cxt = new->security;
++	replace_group(&cxt->sys, sys);
 +
-+	return aa_audit_base(type, profile, sa, audit_cxt, cb);
++	commit_creds(new);
++	return 0;
 +}
 +
 +/**
-+ * aa_audit_syscallreject - Log a syscall rejection to the audit subsystem
-+ * @profile: profile to check against
-+ * @gfp: memory allocation flags
-+ * @msg: string describing syscall being rejected
-+ * @cb:  optional callback fn for type specific fields
++ * aa_set_current_onexec - set the tasks change_profile to happen onexec
++ * @sys: system profile to set at exec
++ *
++ * Returns: error on failure
 + */
-+int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp,
-+			   const char *msg,
-+			   void (*cb) (struct audit_buffer *, void *))
++int aa_set_current_onexec(struct aa_profile *sys)
 +{
-+	struct aa_audit sa = {
-+		.operation = "syscall",
-+		.info = msg,
-+		.gfp_mask = gfp,
-+		.error = -EACCES,
-+	};
++	struct aa_task_context *cxt;
++	struct cred *new = prepare_creds();
++	if (!new)
++		return -ENOMEM;
 +
-+	return aa_audit_base(AUDIT_APPARMOR_DENIED, profile, &sa,
-+			     current->audit_context, NULL);
++	cxt = new->security;
++	aa_put_profile(cxt->sys.onexec);
++	cxt->sys.onexec = aa_get_profile(sys);
++
++	commit_creds(new);
++	return 0;
 +}
-diff --git a/security/apparmor/include/audit.h b/security/apparmor/include/audit.h
++
++/**
++ * aa_set_current_hat - set the current tasks hat
++ * @profile: profile to set as the current hat
++ * @token: token value that must be specified to change from the hat
++ *
++ * Do switch of tasks hat.  If the task is currently in a hat
++ * validate the token to match.
++ *
++ * Returns: error on failure
++ */
++int aa_set_current_hat(struct aa_profile *profile, u64 token)
++{
++	struct aa_task_context *cxt;
++	struct cred *new = prepare_creds();
++	if (!new)
++		return -ENOMEM;
++
++	cxt = new->security;
++	if (!cxt->sys.previous) {
++		cxt->sys.previous = cxt->sys.profile;
++		cxt->sys.token = token;
++	} else if (cxt->sys.token == token) {
++		aa_put_profile(cxt->sys.profile);
++	} else {
++		/* previous_profile && cxt->token != token */
++		abort_creds(new);
++		return -EACCES;
++	}
++	cxt->sys.profile = aa_get_profile(profile);
++	/* clear exec on switching context */
++	aa_put_profile(cxt->sys.onexec);
++	cxt->sys.onexec = NULL;
++
++	commit_creds(new);
++	return 0;
++}
++
++/**
++ * aa_restore_previous_profile - exit from hat context restoring the profile
++ * @token: the token that must be matched to exit hat context
++ *
++ * Attempt to return out of a hat to the previous profile.  The token
++ * must match the stored token value.
++ *
++ * Returns: error of failure
++ */
++int aa_restore_previous_profile(u64 token)
++{
++	struct aa_task_context *cxt;
++	struct cred *new = prepare_creds();
++	if (!new)
++		return -ENOMEM;
++
++	cxt = new->security;
++	if (cxt->sys.token != token) {
++		abort_creds(new);
++		return -EACCES;
++	}
++	/* ignore restores when there is no saved profile */
++	if (!cxt->sys.previous) {
++		abort_creds(new);
++		return 0;
++	}
++
++	aa_put_profile(cxt->sys.profile);
++	cxt->sys.profile = aa_profile_newest(cxt->sys.previous);
++	if (unlikely(cxt->sys.profile != cxt->sys.previous)) {
++		aa_get_profile(cxt->sys.profile);
++		aa_put_profile(cxt->sys.previous);
++	}
++	/* clear exec && prev information when restoring to previous context */
++	cxt->sys.previous = NULL;
++	cxt->sys.token = 0;
++	aa_put_profile(cxt->sys.onexec);
++	cxt->sys.onexec = NULL;
++
++	commit_creds(new);
++	return 0;
++}
+diff --git a/security/apparmor/include/context.h b/security/apparmor/include/context.h
 new file mode 100644
-index 0000000..618527f
+index 0000000..5f30f31
 --- /dev/null
-+++ b/security/apparmor/include/audit.h
-@@ -0,0 +1,57 @@
++++ b/security/apparmor/include/context.h
+@@ -0,0 +1,146 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor auditing function definitions.
++ * This file contains AppArmor contexts used to associate "labels" to objects.
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009 Canonical Ltd.
@@ -254,49 +285,138 @@ index 0000000..618527f
 + * License.
 + */
 +
-+#ifndef __AA_AUDIT_H
-+#define __AA_AUDIT_H
++#ifndef __AA_CONTEXT_H
++#define __AA_CONTEXT_H
 +
-+#include <linux/audit.h>
-+#include <linux/fs.h>
-+#include <linux/sched.h>
++#include <linux/cred.h>
 +#include <linux/slab.h>
++#include <linux/sched.h>
 +
-+struct aa_profile;
++#include "policy.h"
 +
-+extern const char *audit_mode_names[];
-+#define AUDIT_MAX_INDEX 5
-+
-+#define AUDIT_APPARMOR_AUTO 0	/* auto choose audit message type */
-+
-+enum audit_mode {
-+	AUDIT_NORMAL,		/* follow normal auditing of accesses */
-+	AUDIT_QUIET_DENIED,	/* quiet all denied access messages */
-+	AUDIT_QUIET,		/* quiet all messages */
-+	AUDIT_NOQUIET,		/* do not quiet audit messages */
-+	AUDIT_ALL		/* audit all accesses */
-+};
-+
-+/*
-+ * aa_audit - AppArmor auditing structure
-+ * Structure is populated by access control code and passed to aa_audit which
-+ * provides for a single point of logging.
++/* struct aa_file_cxt - the AppArmor context the file was opened in
++ * @profile: the profile the file was opened under
++ * @perms: the permission the file was opened with
 + */
-+struct aa_audit {
-+	struct task_struct *task;
-+	gfp_t gfp_mask;
-+	int error;
-+	const char *operation;
-+	const char *info;
++struct aa_file_cxt {
++	struct aa_profile *profile;
++	u16 allowed;
 +};
 +
-+int aa_audit(int type, struct aa_profile *profile, struct aa_audit *sa,
-+	     void (*cb) (struct audit_buffer *, void *));
++static inline struct aa_file_cxt *aa_alloc_file_context(gfp_t gfp)
++{
++	return kzalloc(sizeof(struct aa_file_cxt), gfp);
++}
 +
-+int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp, const char *,
-+			   void (*cb) (struct audit_buffer *, void *));
++static inline void aa_free_file_context(struct aa_file_cxt *cxt)
++{
++	aa_put_profile(cxt->profile);
++	memset(cxt, 0, sizeof(struct aa_file_cxt));
++	kfree(cxt);
++}
 +
-+#endif /* __AA_AUDIT_H */
++/* struct aa_task_cxt_group - a grouping label data for confined tasks
++ * @profile: the current profile
++ * @exec: profile to transition to on next exec
++ * @previous: profile the task may return to
++ * @token: magic value the task must know for returning to @previous_profile
++ *
++ * Contains the task's current profile (which could change due to
++ * change_hat).  Plus the hat_magic needed during change_hat.
++ */
++struct aa_task_cxt_group {
++	struct aa_profile *profile;
++	struct aa_profile *onexec;
++	struct aa_profile *previous;
++	u64 token;
++};
++
++/**
++ * struct aa_task_context - primary label for confined tasks
++ * @sys: the system labeling for the task
++ *
++ * A task is confined by the intersection of its system and user profiles
++ */
++struct aa_task_context {
++	struct aa_task_cxt_group sys;
++};
++
++struct aa_task_context *aa_alloc_task_context(gfp_t flags);
++void aa_free_task_context(struct aa_task_context *cxt);
++struct aa_task_context *aa_dup_task_context(struct aa_task_context *old_cxt,
++					    gfp_t gfp);
++void aa_cred_policy(const struct cred *cred, struct aa_profile **sys);
++struct cred *aa_get_task_policy(const struct task_struct *task,
++				struct aa_profile **sys);
++int aa_replace_current_profiles(struct aa_profile *sys);
++void aa_put_task_policy(struct cred *cred);
++int aa_set_current_onexec(struct aa_profile *sys);
++int aa_set_current_hat(struct aa_profile *profile, u64 token);
++int aa_restore_previous_profile(u64 cookie);
++
++static inline struct aa_task_context *__aa_task_cxt(struct task_struct *task)
++{
++	return __task_cred(task)->security;
++}
++
++/**
++ * __aa_task_is_confined - determine if @task has any confinement
++ * @task: task to check confinement of
++ *
++ * If @task != current needs to be in RCU safe critical section
++ */
++static inline int __aa_task_is_confined(struct task_struct *task)
++{
++	struct aa_task_context *cxt;
++	int rc = 1;
++
++	cxt = __aa_task_cxt(task);
++	if (!cxt || (cxt->sys.profile->flags & PFLAG_UNCONFINED))
++		rc = 0;
++
++	return rc;
++}
++
++static inline const struct cred *aa_current_policy(struct aa_profile **sys)
++{
++	const struct cred *cred = current_cred();
++	struct aa_task_context *cxt = cred->security;
++	BUG_ON(!cxt);
++	*sys = aa_filtered_profile(aa_profile_newest(cxt->sys.profile));
++
++	return cred;
++}
++
++static inline const struct cred *aa_current_policy_wupd(struct aa_profile **sys)
++{
++	const struct cred *cred = current_cred();
++	struct aa_task_context *cxt = cred->security;
++	BUG_ON(!cxt);
++
++	*sys = aa_profile_newest(cxt->sys.profile);
++	if (unlikely((cxt->sys.profile != *sys)))
++		aa_replace_current_profiles(*sys);
++	*sys = aa_filtered_profile(*sys);
++
++	return cred;
++}
++
++static inline struct aa_profile *aa_current_profile(void)
++{
++	const struct cred *cred = current_cred();
++	struct aa_task_context *cxt = cred->security;
++	BUG_ON(!cxt);
++	return aa_filtered_profile(aa_profile_newest(cxt->sys.profile));
++}
++
++static inline struct aa_profile *aa_current_profile_wupd(void)
++{
++	struct aa_profile *p;
++	aa_current_policy_wupd(&p);
++	return p;
++}
++
++#endif /* __AA_CONTEXT_H */
 -- 
 1.6.3.3
 
