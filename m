@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZKCRFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbZKCRIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbZKCRFl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 12:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZKCRFl
+	id S1754442AbZKCRIi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 12:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZKCRIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 12:05:41 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:56791 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753938AbZKCRFk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 12:05:40 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19LoRub+Q4GiscArAHWCo4B
-Date: Tue, 3 Nov 2009 09:05:40 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] OMAP: Should cs be positive in gpmc_cs_free()?
-Message-ID: <20091103170540.GH8981@atomide.com>
-References: <4AED8A98.6040205@gmail.com>
+	Tue, 3 Nov 2009 12:08:37 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58689 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752707AbZKCRIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 12:08:37 -0500
+Date: Tue, 3 Nov 2009 18:08:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Paris <eparis@redhat.com>
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, zhaolei@cn.fujitsu.com, lizf@cn.fujitsu.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [-next regression] lockdep? tracing? BUG: unable to handle
+	kernel paging request at
+Message-ID: <20091103170831.GB3074@elte.hu>
+References: <1257263296.2891.97.camel@dhcp231-106.rdu.redhat.com> <1257264170.26028.3340.camel@gandalf.stny.rr.com> <1257267617.2891.107.camel@dhcp231-106.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AED8A98.6040205@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1257267617.2891.107.camel@dhcp231-106.rdu.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Roel Kluin <roel.kluin@gmail.com> [091101 05:07]:
-> The index `cs' is signed, test whether it is negative before
-> we release gpmc_cs_mem[cs].
+
+* Eric Paris <eparis@redhat.com> wrote:
+
+> On Tue, 2009-11-03 at 11:02 -0500, Steven Rostedt wrote:
+> > [ Added Peter Zijlstra ]
+> > 
+> > On Tue, 2009-11-03 at 10:48 -0500, Eric Paris wrote:
+> > > Linux-next from Oct 30 did not have this problem.  Linux next from
+> > > yesterday (and today) I always hit this on boot.
+> > 
+> > Could you also give the SHA1 of Linux-next, as well as the config you
+> > used.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> Found by code analysis, is it required?
-
-Looks like a valid check to me.
-
-Acked-by: Tony Lindgren <tony@atomide.com>
-
+> False alarm, apparently this is due to a patch that I added.  Odd part 
+> is, I don't touch anything even remotely close to this section of 
+> code. I'm at a bit of a lose, but apply my patch, boom, revert, works.
 > 
-> diff --git a/arch/arm/mach-omap2/gpmc.c b/arch/arm/mach-omap2/gpmc.c
-> index 1587682..c892a54 100644
-> --- a/arch/arm/mach-omap2/gpmc.c
-> +++ b/arch/arm/mach-omap2/gpmc.c
-> @@ -378,7 +378,7 @@ EXPORT_SYMBOL(gpmc_cs_request);
->  void gpmc_cs_free(int cs)
->  {
->  	spin_lock(&gpmc_mem_lock);
-> -	if (cs >= GPMC_CS_NUM || !gpmc_cs_reserved(cs)) {
-> +	if (cs >= GPMC_CS_NUM || cs < 0 || !gpmc_cs_reserved(cs)) {
->  		printk(KERN_ERR "Trying to free non-reserved GPMC CS%d\n", cs);
->  		BUG();
->  		spin_unlock(&gpmc_mem_lock);
+> I'll figure it out eventually I guess.
+
+When i saw your crash earlier today my first guess was memory 
+corruption: lockdep is one of the first things to blow up on kernel data 
+structure memory corruption. It tracks all locks and affects everything 
+so gets hit first.
+
+( Nevertheless we do have fresh changes in the tracing tree so some
+  genuine lockdep/tracing crash was not implausible either. )
+
+	Ingo
