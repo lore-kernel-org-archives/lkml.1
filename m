@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZKCOOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751073AbZKCOae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150AbZKCOOc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 09:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbZKCOOc
+	id S1751073AbZKCOae (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 09:30:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZKCOae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 09:14:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22515 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751206AbZKCOOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 09:14:31 -0500
-Date: Tue, 3 Nov 2009 12:14:23 -0200
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/11] Handle asynchronous page fault in a PV guest.
-Message-ID: <20091103141423.GC10084@amt.cnet>
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-4-git-send-email-gleb@redhat.com>
+	Tue, 3 Nov 2009 09:30:34 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55390 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750741AbZKCOad (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 09:30:33 -0500
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH 00/11] Sort out sdio_uart - stage two
+To: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, nico@cam.org
+Date: Tue, 03 Nov 2009 14:17:08 +0000
+Message-ID: <20091103141525.31032.45206.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257076590-29559-4-git-send-email-gleb@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 01, 2009 at 01:56:22PM +0200, Gleb Natapov wrote:
-> Asynchronous page fault notifies vcpu that page it is trying to access
-> is swapped out by a host. In response guest puts a task that caused the
-> fault to sleep until page is swapped in again. When missing page is
-> brought back into the memory guest is notified and task resumes execution.
+With the bugs Nicolas reported hopefully now nailed.
+---
 
-Can't you apply this to non-paravirt guests, and continue to deliver
-interrupts while waiting for the swapin? 
+Alan Cox (10):
+      sdio_uart: add modem functionality
+      sdio_uart: Fix the locking on "func" for new code
+      sdio_uart: Style fixes
+      sdio_uart: Use kfifo instead of the messy circ stuff
+      sdio_uart: Fix termios handling
+      sdio_uart: Switch to the open/close helpers
+      sdio_uart: Move the open lock
+      sdio_uart: refcount the tty objects
+      sdio_uart: use tty_port
+      tty_port: Move hupcl handling
 
-It should allow the guest to schedule a different task.
+Nicolas Pitre (1):
+      sdio_uart: Fix oops caused by the previous changeset
+
+
+ drivers/char/tty_port.c      |   13 +
+ drivers/mmc/card/sdio_uart.c |  392 ++++++++++++++++++++++++------------------
+ 2 files changed, 233 insertions(+), 172 deletions(-)
+
+-- 
+"The IETF already has more than enough RFCs that codify the obvious, make
+stupidity illegal, support truth, justice, and the IETF way, and generally
+demonstrate the author is a brilliant and valuable Contributor to The
+Standards Process." -- Vernon Schryver
 
