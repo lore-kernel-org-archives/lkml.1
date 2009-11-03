@@ -1,33 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZKCSlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZKCSpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753001AbZKCSlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 13:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbZKCSlO
+	id S1753518AbZKCSpM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 13:45:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZKCSpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 13:41:14 -0500
-Received: from lucidpixels.com ([75.144.35.66]:42313 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751471AbZKCSlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 13:41:14 -0500
-Date: Tue, 3 Nov 2009 13:41:19 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Is this needed to enable turbo mode/boost on i7 processors?
-Message-ID: <alpine.DEB.2.00.0911031340110.12341@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Tue, 3 Nov 2009 13:45:11 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:52726 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbZKCSpK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 13:45:10 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Reg Clemens <reg@dwf.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Can build 2.6.31.5 on one P4 but not another.
+In-Reply-To: Your message of "Tue, 03 Nov 2009 11:15:12 MST."
+             <200911031815.nA3IFCe6017661@deneb.dwf.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200911031815.nA3IFCe6017661@deneb.dwf.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1257273906_4220P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 03 Nov 2009 13:45:06 -0500
+Message-ID: <8575.1257273906@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020204.4AF07A34.012A,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-07-29 21:33:33,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--==_Exmh_1257273906_4220P
+Content-Type: text/plain; charset=us-ascii
 
-Per: http://kolbusa.livejournal.com/71066.html
+On Tue, 03 Nov 2009 11:15:12 MST, Reg Clemens said:
+> Can someone explain this to me.
 
-Is it necessary to do this--?
+> I dont understand how this can build on one P4 and not another.
 
-Is there a way to verify whether turbo boost is being enabled when one 
-core is at 100% cpu?
+Different .configs?  gcc?  binutils?  Those are the first 3 that come to mind...
 
-Justin.
+--==_Exmh_1257273906_4220P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFK8HoycC3lWbTT17ARAimrAKDhV7fYoR9ugFL3DjcEODt5uSIPuQCfaPAc
+c2HUBAUUs97nmQ4n2Nv8szQ=
+=vM81
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1257273906_4220P--
+
