@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbZKCHQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZKCHV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756136AbZKCHQk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 02:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZKCHQi
+	id S1756014AbZKCHV5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 02:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbZKCHV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 02:16:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53739 "EHLO mx1.redhat.com"
+	Tue, 3 Nov 2009 02:21:56 -0500
+Received: from mga03.intel.com ([143.182.124.21]:6231 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755778AbZKCHQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 02:16:36 -0500
-Date: Tue, 3 Nov 2009 09:16:38 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/11] Add shared memory hypercall to PV Linux guest.
-Message-ID: <20091103071638.GK27911@redhat.com>
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
- <1257076590-29559-2-git-send-email-gleb@redhat.com>
- <4AEECE2E.2050609@redhat.com>
- <20091102161809.GG27911@redhat.com>
- <4AEFBC5E.7020300@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AEFBC5E.7020300@redhat.com>
+	id S1753778AbZKCHV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 02:21:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,673,1249282800"; 
+   d="scan'208";a="206859800"
+Subject: Re: [RFC 2/2] Use unified UUID/GUID definition in gfs2
+From: Huang Ying <ying.huang@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, Steven Whitehouse <swhiteho@redhat.com>,
+       Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091102170249.d1bf0aea.akpm@linux-foundation.org>
+References: <1255501807.6047.1193.camel@yhuang-dev.sh.intel.com>
+	 <20091101093545.a7a4693a.akpm@linux-foundation.org>
+	 <1257123583.30470.1161.camel@yhuang-dev.sh.intel.com>
+	 <20091102150221.948d8427.akpm@linux-foundation.org>
+	 <1257209088.30470.1171.camel@yhuang-dev.sh.intel.com>
+	 <20091102170249.d1bf0aea.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 03 Nov 2009 15:21:59 +0800
+Message-Id: <1257232919.22519.40.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 07:15:10AM +0200, Avi Kivity wrote:
-> On 11/02/2009 06:18 PM, Gleb Natapov wrote:
-> >>>+#define KVM_PV_SHM_VERSION 1
-> >>versions = bad, feature bits = good
-> >>
-> >I have both! Do you want me to drop version?
+On Tue, 2009-11-03 at 09:02 +0800, Andrew Morton wrote: 
+> On Tue, 03 Nov 2009 08:44:48 +0800
+> Huang Ying <ying.huang@intel.com> wrote:
 > 
-> Yes.  Once a kernel is released you can't realistically change the version.
+> > For stuff of no use to user space, I think it can be enclosed into
+> > 
+> > #ifdef __KERNEL__
+> > #endif
 > 
-Why not? If version doesn't match apf will not be used.
+> It can, but that's ugly.  Clearly separating the inclusions into uuid-kernel.h
+> and uuid-user-h is nicer, no?
 
-> >>Some documentation for this?
-> >>
-> >>Also, the name should reflect the pv pagefault use.  For other uses
-> >>we can register other areas.
-> >>
-> >I wanted it to be generic, but I am fine with making it apf specific.
-> >It will allow to make it smaller too.
-> 
-> Maybe we can squeeze it into the page-fault error code?
-> 
-apf has to pass two things into a guest kernel:
- - event type (page not present/wake up)
- - unique token
-Error code has 32 bits and at least 1 of them should indicate that this
-is apf another one should indicate event type so this leaves us 30 bits
-for a token. 12 bits of a token is used to store vcpu id this leaves 18
-bits for unique per vcpu id. Yes this may be enough. I don't think it is
-realistic to have more then 200000 outstanding apfs per vcpu. Alternately
-we can use CR2 to pass a token.
- 
-> >>would solve this.  I prefer using put_user() though than a permanent
-> >>get_user_pages().
-> >>
-> >I want to prevent it from been swapped out.
-> 
-> Since you don't prevent the page fault handler or code from being
-> swapped out, you don't get anything out of it.
-> 
-Performance. Currently it is accessed on each page fault and to access
-it gup+kmap should be done each and every time.
+But it seems that __KERNEL__ is common used method now. There are about
+370 out of 3085 files under linux/include use __KERNEL__. The data are
+gotten via:
 
---
-			Gleb.
+# cd linux/include
+# find . -type f | wc -l
+# grep __KERNEL__ -lr * | wc -l
+
+Best Regards,
+Huang Ying
+
+
