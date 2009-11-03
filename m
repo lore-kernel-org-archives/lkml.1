@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbZKCLcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbZKCLeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbZKCLcZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 06:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZKCLcY
+	id S1752792AbZKCLeS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 06:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZKCLeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 06:32:24 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:61156 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751601AbZKCLcY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 06:32:24 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH] fs: add missing compat_ptr handling for FS_IOC_RESVSP ioctl
-Date: Tue, 3 Nov 2009 12:32:12 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ankit Jain <me@ankitjain.org>, Christoph Hellwig <hch@lst.de>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Arnd Bergmann <arndbergmann@googlemail.com>,
-       "David S. Miller" <davem@davemloft.net>
-References: <20091103104532.GA19670@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20091103104532.GA19670@osiris.boeblingen.de.ibm.com>
+	Tue, 3 Nov 2009 06:34:18 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43112 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752711AbZKCLeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 06:34:17 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] PM fixes for 2.6.32
+Date: Tue, 3 Nov 2009 12:36:12 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
+       "Stephen J. Gowdy" <gowdy@cern.ch>, Jose Marino <braket@hotmail.com>,
+       Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Romit Dasgupta <romit@ti.com>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911031232.12245.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+9eZ46yqjMtPluiBucaKi68b4d/Dat+21HHmu
- FyRz9VPd2h970lAW8sTSJReby8IOt+ehP8IWWh9OeAtP8hwaPx
- KCII8h8WAYIDIEUKpi/HQ==
+Message-Id: <200911031236.12094.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 November 2009, Heiko Carstens wrote:
-> 
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> For FS_IOC_RESVSP and FS_IOC_RESVSP64 compat_sys_ioctl() uses its
-> arg argument as a pointer to userspace. However it is missing a
-> a call to compat_ptr() which will do a proper pointer conversion.
-> 
-> This was introduced with 3e63cbb1 "fs: Add new pre-allocation ioctls
-> to vfs for compatibility with legacy xfs ioctls".
-> 
-> Cc: Ankit Jain <me@ankitjain.org>
-> Cc: Christoph Hellwig <hch@lst.de>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Cc: Arnd Bergmann <arndbergmann@googlemail.com>
-> Acked-by: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Hi Linus,
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Please pull power management fixes for 2.6.32 from:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
+
+This includes the following changes:
+
+* The fix for http://bugzilla.kernel.org/show_bug.cgi?id=14334 (yenta resume
+  regression from 2.6.31).
+
+* Hibernation fixes from Jiri Slaby.  Two of these patches fix long standing
+  bugs, but in my opinion they are simple enough to go into 2.6.32.  The third
+  one is a two-liner complementing one of the fixes.
+
+* PM core error code path fix from Romit Dasgupta.
+
+* Removal of some run-time PM debug messages creating too much noise from
+  Pavel (the run-time PM framework is a new feature in 2.6.32 and this is
+  just a refinement of it).
+
+
+ drivers/base/power/main.c     |    1 +
+ drivers/base/power/runtime.c  |    4 --
+ drivers/pcmcia/cs.c           |   69 +++++++++++++++++++++++++---------------
+ drivers/pcmcia/yenta_socket.c |   12 ++++++-
+ include/pcmcia/ss.h           |    4 ++
+ kernel/power/hibernate.c      |   11 +++++--
+ kernel/power/swap.c           |   43 +++++++++++++------------
+ 7 files changed, 89 insertions(+), 55 deletions(-)
+
+---------------
+
+Jiri Slaby (3):
+      PM / Hibernate: Fix blkdev refleaks
+      PM / Hibernate: Fix error handling in save_image()
+      PM / Hibernate: Add newline to load_image() fail path
+
+Pavel Machek (1):
+      PM: Remove some debug messages producing too much noise
+
+Rafael J. Wysocki (1):
+      PM / yenta: Split resume into early and late parts (rev. 4)
+
+Romit Dasgupta (1):
+      PM: Fix warning on suspend errors
+
