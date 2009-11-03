@@ -1,141 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZKCHFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZKCHLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbZKCHFV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 02:05:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZKCHFU
+	id S1755986AbZKCHLy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 02:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbZKCHLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 02:05:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39478 "EHLO hera.kernel.org"
+	Tue, 3 Nov 2009 02:11:53 -0500
+Received: from mga11.intel.com ([192.55.52.93]:24181 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZKCHFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 02:05:18 -0500
-Date: Tue, 3 Nov 2009 07:04:00 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, eparis@redhat.com, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eparis@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1256813310.7574.3.camel@marge.simson.net>
-References: <1256813310.7574.3.camel@marge.simson.net>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Fix kthread_bind() by moving the body of kthread_bind() to sched.c
-Message-ID: <tip-b84ff7d6f1b7f8a43414e74d972ec4c8f3361db4@git.kernel.org>
-Git-Commit-ID: b84ff7d6f1b7f8a43414e74d972ec4c8f3361db4
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	id S1753606AbZKCHLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 02:11:52 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,672,1249282800"; 
+   d="scan'208";a="510164249"
+Subject: Re: [PATCH 11/14] cpumask: use modern cpumask style in
+ arch/x86/kernel/cpu/mcheck/mce-inject.c
+From: Huang Ying <ying.huang@intel.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "x86@kernel.org" <x86@kernel.org>, Andi Kleen <ak@linux.intel.com>
+In-Reply-To: <200911031458.30987.rusty@rustcorp.com.au>
+References: <200911031458.30987.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Tue, 03 Nov 2009 15:11:56 +0800
+Message-Id: <1257232316.22519.32.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b84ff7d6f1b7f8a43414e74d972ec4c8f3361db4
-Gitweb:     http://git.kernel.org/tip/b84ff7d6f1b7f8a43414e74d972ec4c8f3361db4
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Thu, 29 Oct 2009 11:48:30 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 3 Nov 2009 07:25:00 +0100
+On Tue, 2009-11-03 at 12:28 +0800, Rusty Russell wrote: 
+> Note that there's no freeing the cpu var, since this module has no
+> unload function.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: x86@kernel.org
+> Cc: Andi Kleen <ak@linux.intel.com>
+> Cc: Huang Ying <ying.huang@intel.com>
 
-sched: Fix kthread_bind() by moving the body of kthread_bind() to sched.c
+Acked-by: Huang Ying <ying.huang@intel.com>
 
-Eric Paris reported that commit
-f685ceacab07d3f6c236f04803e2f2f0dbcc5afb causes boot time
-PREEMPT_DEBUG complaints.
+Best Regards,
+Huang Ying
 
- [    4.590699] BUG: using smp_processor_id() in preemptible [00000000] code: rmmod/1314
- [    4.593043] caller is task_hot+0x86/0xd0
 
-Since kthread_bind() messes with scheduler internals, move the
-body to sched.c, and lock the runqueue.
-
-Reported-by: Eric Paris <eparis@redhat.com>
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Tested-by: Eric Paris <eparis@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1256813310.7574.3.camel@marge.simson.net>
-[ v2: fix !SMP build and clean up ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/kthread.c |   23 -----------------------
- kernel/sched.c   |   32 ++++++++++++++++++++++++++++++++
- 2 files changed, 32 insertions(+), 23 deletions(-)
-
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 5fe7099..ab7ae57 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -150,29 +150,6 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
- EXPORT_SYMBOL(kthread_create);
- 
- /**
-- * kthread_bind - bind a just-created kthread to a cpu.
-- * @k: thread created by kthread_create().
-- * @cpu: cpu (might not be online, must be possible) for @k to run on.
-- *
-- * Description: This function is equivalent to set_cpus_allowed(),
-- * except that @cpu doesn't need to be online, and the thread must be
-- * stopped (i.e., just returned from kthread_create()).
-- */
--void kthread_bind(struct task_struct *k, unsigned int cpu)
--{
--	/* Must have done schedule() in kthread() before we set_task_cpu */
--	if (!wait_task_inactive(k, TASK_UNINTERRUPTIBLE)) {
--		WARN_ON(1);
--		return;
--	}
--	set_task_cpu(k, cpu);
--	k->cpus_allowed = cpumask_of_cpu(cpu);
--	k->rt.nr_cpus_allowed = 1;
--	k->flags |= PF_THREAD_BOUND;
--}
--EXPORT_SYMBOL(kthread_bind);
--
--/**
-  * kthread_stop - stop a thread created by kthread_create().
-  * @k: thread created by kthread_create().
-  *
-diff --git a/kernel/sched.c b/kernel/sched.c
-index bf21adb..5cb7d63 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1996,6 +1996,38 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
- 		p->sched_class->prio_changed(rq, p, oldprio, running);
- }
- 
-+/**
-+ * kthread_bind - bind a just-created kthread to a cpu.
-+ * @k: thread created by kthread_create().
-+ * @cpu: cpu (might not be online, must be possible) for @k to run on.
-+ *
-+ * Description: This function is equivalent to set_cpus_allowed(),
-+ * except that @cpu doesn't need to be online, and the thread must be
-+ * stopped (i.e., just returned from kthread_create()).
-+ *
-+ * Function lives here instead of kthread.c because it messes with
-+ * scheduler internals which require locking.
-+ */
-+void kthread_bind(struct task_struct *p, unsigned int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long flags;
-+
-+	/* Must have done schedule() in kthread() before we set_task_cpu */
-+	if (!wait_task_inactive(p, TASK_UNINTERRUPTIBLE)) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	set_task_cpu(p, cpu);
-+	p->cpus_allowed = cpumask_of_cpu(cpu);
-+	p->rt.nr_cpus_allowed = 1;
-+	p->flags |= PF_THREAD_BOUND;
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+}
-+EXPORT_SYMBOL(kthread_bind);
-+
- #ifdef CONFIG_SMP
- /*
-  * Is this task likely cache-hot:
