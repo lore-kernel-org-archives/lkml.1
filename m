@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbZKCMl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZKCNIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752964AbZKCMl5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 07:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZKCMl4
+	id S1753001AbZKCNIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 08:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZKCNIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 07:41:56 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:65402 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbZKCMlz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 07:41:55 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCHv6 1/3] tun: export underlying socket
-Date: Tue, 3 Nov 2009 13:41:31 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
-       s.hetze@linux-ag.com
-References: <cover.1257193660.git.mst@redhat.com> <200911031312.33580.arnd@arndb.de> <20091103123112.GA4961@redhat.com>
-In-Reply-To: <20091103123112.GA4961@redhat.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 3 Nov 2009 08:08:50 -0500
+Received: from mail.ebim.net ([212.108.130.11]:2261 "EHLO ebim.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752713AbZKCNIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 08:08:49 -0500
+Subject: Re: Faulty MTRR setups in Toshiba laptops crash video drivers
+From: Mehmet Giritli <mehmet@giritli.eu>
+Reply-To: mehmet@giritli.eu
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4AEF7402.1010901@gmail.com>
+References: <1257179328.13327.34.camel@frodo.giritli.eu>
+	 <4AEF7402.1010901@gmail.com>
+Content-Type: text/plain
+Date: Tue, 03 Nov 2009 15:08:33 +0200
+Message-Id: <1257253713.6277.7.camel@frodo.giritli.eu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911031341.31622.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19gMTJNVdl4C3An8H/tWhK/yopNrRJvLwvZXUn
- 15RA3pIvpNKvO0YKh/yDTDoRSUScPzIdnQMTVTDEPlY3ZWGK3u
- ztTPqL/vAqh45m9oYw5og==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 November 2009, Michael S. Tsirkin wrote:
-> > What was your reason for changing?
+On Mon, 2009-11-02 at 18:06 -0600, Robert Hancock wrote:
+> On 11/02/2009 10:28 AM, Mehmet Giritli wrote:
+> > Hello all,
+> >
+> > On some laptops using ATI 3650HD radeon chipsets and 4GB ram (and may be
+> > others as well), it is impossible to start any xserver due to (faulty?)
+> > mtrr setups on the machine. The computer locks up or just gives an
+> > unresponsive black screen. There are various drivers for radeon cards
+> > and the crash occurs in all of these drivers in the very same way!
+> >
+> > This bug seems to occur mostly on Toshiba laptops with ATI graphic
+> > cards. For some people, CONFIG_MTRR_SANITIZER seemed to cure the issue
+> > but made no difference for many others like me.
+> >
+> > RadeonHD people seem to have problems in understanding the nature of
+> > this bug. Please have a look at the threads:
+> >
+> > http://lists.opensuse.org/radeonhd/2009-05/msg00040.html
+> >
+> > and,
+> >
+> > http://bugs.freedesktop.org/show_bug.cgi?id=20645
+> >
+> > for problem reports and dev responses. RadeonHD devs suggest that some
+> > laptops have weird mtrr setups and this must be fixed in the kernel code
+> > and not the driver code.
 > 
-> It turns out socket structure is really bound to specific a file, so we
-> can not have 2 files referencing the same socket.  Instead, as I say
-> above, it's possible to make sendmsg/recvmsg work on tap file directly.
+> Unfortunately I don't see enough details to be able to tell what lead 
+> them to this conclusion. Can you post the output of:
+> 
+> lspci -vv
+> cat /proc/mtrr
 
-Ah, I see.
+lspci -vv
+http://bugzilla.kernel.org/attachment.cgi?id=23634
 
-> I have implemented this (patch below), but decided to go with the simple
-> thing first.  Since no userspace-visible changes are involved, let's do
-> this by small steps: it will be easier to figure out when vhost
-> is upstream.
+/proc/mtrr when 4GB installed
+http://bugzilla.kernel.org/attachment.cgi?id=23632
 
-This may even make it easier for me to do the same with macvtap
-if I resume work on that.
+/proc/mtrr when 2GB installed
+http://bugzilla.kernel.org/attachment.cgi?id=23633
 
-> @@ -416,8 +422,8 @@ int sock_map_fd(struct socket *sock, int flags)
->  
->  static struct socket *sock_from_file(struct file *file, int *err)
->  {
-> -       if (file->f_op == &socket_file_ops)
-> -               return file->private_data;      /* set in sock_map_fd */
-> +       if (file->f_op->get_socket)
-> +               return file->f_op->get_socket(file);
->  
->         *err = -ENOTSOCK;
+There is also a bug report that I opened a while back here:
+http://bugzilla.kernel.org/show_bug.cgi?id=14054
 
-Or maybe do both (socket_file_ops and get_socket), to avoid an indirect
-function call.
 
-	Arnd <><
+
+> 
+> >
+> > Currently, the only way that could make the driver work is to reduce the
+> > 4GB ram to 2GB.
+> >
+> > dmesg from my affected machine when it has 4GB ram installed can be
+> > found here:
+> >
+> > http://bugzilla.kernel.org/attachment.cgi?id=22856
+> >
+> > Also, look at the report here:
+> >
+> > https://bugs.launchpad.net/ubuntu/+source/linux/+bug/341681
+> >
+> > in order to see how many people are being affected by this bug!
+> >
+> > Kind Regards,
+> > M. Giritli
+> >
+> >
+> 
+
+
