@@ -1,106 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbZKCCjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZKCCkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585AbZKCCjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Nov 2009 21:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbZKCCjU
+	id S1757631AbZKCCkS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Nov 2009 21:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756401AbZKCCkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 21:39:20 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:43871 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756162AbZKCCjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 21:39:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cciExpk88+q7k9pdJFp1XajybiTcMvNMpt1dUiXsk4jQwmIQ+g7QpCHh+YQ2QGYbKp
-         pzxoWb10e3bD4MwkXrTWm6FhuXYH6G1Io63A0of+Ov8xV2K7jlsLNpyTxJvzd1fujjKb
-         oifVowFmmu9PCsZKfasUSQsLzNOzs9eNiDidM=
-Date: Tue, 3 Nov 2009 10:39:41 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH] x86: Make sure we also print a Code: line for
-	show_regs()
-Message-ID: <20091103023941.GA2460@hack.redhat.com>
-References: <20091102165915.4a980fc0@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102165915.4a980fc0@infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 2 Nov 2009 21:40:16 -0500
+Received: from mga11.intel.com ([192.55.52.93]:9157 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756168AbZKCCkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Nov 2009 21:40:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,671,1249282800"; 
+   d="scan'208";a="510104515"
+Subject: [BUGFIX for .32] crypto, gcm, fix another complete call in
+ complete fuction
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 03 Nov 2009 10:40:17 +0800
+Message-Id: <1257216017.30470.1183.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 04:59:15PM -0800, Arjan van de Ven wrote:
->From c560acdd03d28d3dc55ed9c19d42d4567caab1d8 Mon Sep 17 00:00:00 2001
->From: Arjan van de Ven <arjan@linux.intel.com>
->Date: Mon, 2 Nov 2009 16:50:04 -0800
->Subject: [PATCH] x86: Make sure we also print a Code: line for show_regs()
->
->show_regs() is called as a mini BUG() equivalent in some places,
->specifically for the "scheduling while atomic" case.
->
->Unfortunately right now it does not print a Code: like unlike
->a real bug/oops.
->
->This patch changes the x86 implementation of show_regs() so that
->it calls the same function as oopses do to print the registers
->as well as the Code: line.
->
->Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+The flow of the complete function (xxx_done) in gcm.c is as follow:
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+void complete(struct crypto_async_request *areq, int err)
+{
+	if (!err) {
+		err = async_next_step();
+		if (err == -EINPROGRESS || err == -EBUSY)
+			return;
+	}
 
->---
-> arch/x86/kernel/process_32.c |    2 +-
-> arch/x86/kernel/process_64.c |    3 +--
-> 2 files changed, 2 insertions(+), 3 deletions(-)
->
->diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
->index f2cb086..b124f2f 100644
->--- a/arch/x86/kernel/process_32.c
->+++ b/arch/x86/kernel/process_32.c
->@@ -189,7 +189,7 @@ void __show_regs(struct pt_regs *regs, int all)
-> 
-> void show_regs(struct pt_regs *regs)
-> {
->-	__show_regs(regs, 1);
->+	show_registers(regs);
-> 	show_trace(NULL, regs, &regs->sp, regs->bp);
-> }
-> 
->diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
->index 959b062..e53e66f 100644
->--- a/arch/x86/kernel/process_64.c
->+++ b/arch/x86/kernel/process_64.c
->@@ -228,8 +228,7 @@ void __show_regs(struct pt_regs *regs, int all)
-> 
-> void show_regs(struct pt_regs *regs)
-> {
->-	printk(KERN_INFO "CPU %d:", smp_processor_id());
->-	__show_regs(regs, 1);
->+	show_registers(regs);
-> 	show_trace(NULL, regs, (void *)(regs + 1), regs->bp);
-> }
-> 
->-- 
->1.6.0.6
->
->
->
->-- 
->Arjan van de Ven 	Intel Open Source Technology Centre
->For development, discussion and tips for power savings, 
->visit http://www.lesswatts.org
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+	complete_for_next_step(areq, err);
+}
 
--- 
-Live like a child, think like the god.
+But *areq may be destroyed in async_next_step(), this makes
+complete_for_next_step() can not work properly. To fix this, one of
+following methods is used for each complete function.
+
+- Setup areq for complete_for_next_step if async_next_step() is called.
+
+- Expand complete_for_next_step().
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ crypto/gcm.c |   43 ++++++++++++++++++++++++++++---------------
+ 1 file changed, 28 insertions(+), 15 deletions(-)
+
+--- a/crypto/gcm.c
++++ b/crypto/gcm.c
+@@ -267,8 +267,7 @@ static int gcm_hash_final(struct aead_re
+ 	return crypto_ahash_final(ahreq);
+ }
  
+-static void gcm_hash_final_done(struct crypto_async_request *areq,
+-				int err)
++static void gcm_hash_final_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -280,8 +279,7 @@ static void gcm_hash_final_done(struct c
+ 	gctx->complete(areq, err);
+ }
+ 
+-static void gcm_hash_len_done(struct crypto_async_request *areq,
+-			      int err)
++static void gcm_hash_len_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -290,6 +288,8 @@ static void gcm_hash_len_done(struct cry
+ 		err = gcm_hash_final(req, pctx);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		areq = &pctx->u.ahreq.base;
++		areq->data = req;
+ 	}
+ 
+ 	gcm_hash_final_done(areq, err);
+@@ -305,13 +305,14 @@ static void gcm_hash_crypt_remain_done(s
+ 		err = gcm_hash_len(req, pctx);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		areq = &pctx->u.ahreq.base;
++		areq->data = req;
+ 	}
+ 
+ 	gcm_hash_len_done(areq, err);
+ }
+ 
+-static void gcm_hash_crypt_done(struct crypto_async_request *areq,
+-				int err)
++static void gcm_hash_crypt_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -325,13 +326,15 @@ static void gcm_hash_crypt_done(struct c
+ 				      gcm_hash_crypt_remain_done);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		areq = &pctx->u.ahreq.base;
++		areq->data = req;
+ 	}
+ 
+ 	gcm_hash_crypt_remain_done(areq, err);
+ }
+ 
+ static void gcm_hash_assoc_remain_done(struct crypto_async_request *areq,
+-					   int err)
++				       int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -347,6 +350,8 @@ static void gcm_hash_assoc_remain_done(s
+ 				      gctx->src, gctx->cryptlen);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		areq = &pctx->u.ahreq.base;
++		areq->data = req;
+ 	}
+ 
+ 	if (remain)
+@@ -355,8 +360,7 @@ static void gcm_hash_assoc_remain_done(s
+ 		gcm_hash_crypt_remain_done(areq, err);
+ }
+ 
+-static void gcm_hash_assoc_done(struct crypto_async_request *areq,
+-				int err)
++static void gcm_hash_assoc_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -369,13 +373,14 @@ static void gcm_hash_assoc_done(struct c
+ 				      gcm_hash_assoc_remain_done);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		areq = &pctx->u.ahreq.base;
++		areq->data = req;
+ 	}
+ 
+ 	gcm_hash_assoc_remain_done(areq, err);
+ }
+ 
+-static void gcm_hash_init_done(struct crypto_async_request *areq,
+-			       int err)
++static void gcm_hash_init_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -390,6 +395,8 @@ static void gcm_hash_init_done(struct cr
+ 				      req->assoc, req->assoclen);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		areq = &pctx->u.ahreq.base;
++		areq->data = req;
+ 	}
+ 
+ 	if (remain)
+@@ -458,7 +465,7 @@ static void gcm_enc_copy_hash(struct aea
+ }
+ 
+ static void gcm_enc_hash_done(struct crypto_async_request *areq,
+-				     int err)
++			      int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -470,7 +477,7 @@ static void gcm_enc_hash_done(struct cry
+ }
+ 
+ static void gcm_encrypt_done(struct crypto_async_request *areq,
+-				     int err)
++			     int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -479,9 +486,13 @@ static void gcm_encrypt_done(struct cryp
+ 		err = gcm_hash(req, pctx);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		else if (!err) {
++			crypto_xor(pctx->auth_tag, pctx->iauth_tag, 16);
++			gcm_enc_copy_hash(req, pctx);
++		}
+ 	}
+ 
+-	gcm_enc_hash_done(areq, err);
++	aead_request_complete(req, err);
+ }
+ 
+ static int crypto_gcm_encrypt(struct aead_request *req)
+@@ -552,9 +563,11 @@ static void gcm_dec_hash_done(struct cry
+ 		err = crypto_ablkcipher_decrypt(abreq);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		else if (!err)
++			err = crypto_gcm_verify(req, pctx);
+ 	}
+ 
+-	gcm_decrypt_done(areq, err);
++	aead_request_complete(req, err);
+ }
+ 
+ static int crypto_gcm_decrypt(struct aead_request *req)
+
+
