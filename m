@@ -1,115 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbZKCI3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZKCIcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbZKCI3D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 03:29:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZKCI3D
+	id S1755831AbZKCIcB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 03:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZKCIcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 03:29:03 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48234 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752926AbZKCI3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 03:29:01 -0500
-Date: Tue, 3 Nov 2009 09:28:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Americo Wang <xiyou.wangcong@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] update fix X86_64 procfs provide stack information for
-	threads
-Message-ID: <20091103082843.GA27676@elte.hu>
-References: <1257233486.22553.6.camel@wall-e>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257233486.22553.6.camel@wall-e>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Tue, 3 Nov 2009 03:32:01 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:57317 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbZKCIcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 03:32:00 -0500
+Subject: Re: Please consider reverting
+ 7d930bc33653d5592dc386a76a38f39c2e962344
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>, David Miller <davem@davemloft.net>,
+       torvalds@linux-foundation.org, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <20091103082201.GG3212@core.coreip.homeip.net>
+References: <20091103053156.GA3212@core.coreip.homeip.net>
+	 <20091102.224957.32364226.davem@davemloft.net>
+	 <20091103065238.GE3212@core.coreip.homeip.net>
+	 <1257232587.3420.55.camel@localhost.localdomain>
+	 <1257234299.28469.25.camel@johannes.local>
+	 <20091103082201.GG3212@core.coreip.homeip.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-CB/G62bNgs40g0cTiXAB"
+Date: Tue, 03 Nov 2009 09:31:01 +0100
+Message-ID: <1257237061.28469.43.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Stefani Seibold <stefani@seibold.net> wrote:
+--=-CB/G62bNgs40g0cTiXAB
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> This patch fix two issues in the procfs stack information on X86_64
-> linux. 
-> 
-> The 32 bit loader compat_do_execve did not store stack start (this was
-> figured out by alexey).
-> 
-> The stack information on a X64_64 kernel always show 0 kbyte stack
-> usage, because of a miss implemented KSTK_ESP macro which always return
-> -1. The new implementation returns now the right value. 
-> 
-> The patch is against 2.6.32-rc5-git5.
-> 
-> Andrew would you so kind to apply this patch?
-> 
-> Greetings,
-> Stefani
-> 
-> Signed-off-by: Stefani Seibold <stefani@seibold.net>
-> ---
->  arch/x86/include/asm/processor.h |    8 +++++++-
->  arch/x86/kernel/process_64.c     |    8 ++++++++
->  fs/compat.c                      |    2 ++
->  3 files changed, 17 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.32-rc5/fs/compat.c	2009-10-16 02:41:50.000000000 +0200
-> +++ linux-2.6.32-rc5.new/fs/compat.c	2009-11-02 09:00:52.871909633 +0100
-> @@ -1532,6 +1532,8 @@
->  	if (retval < 0)
->  		goto out;
->  
-> +	current->stack_start = current->mm->start_stack;
-> +
->  	/* execve succeeded */
->  	current->fs->in_exec = 0;
->  	current->in_execve = 0;
-> --- linux-2.6.32-rc5/arch/x86/include/asm/processor.h	2009-10-16 02:41:50.000000000 +0200
-> +++ linux-2.6.32-rc5.new/arch/x86/include/asm/processor.h	2009-11-02 10:39:47.177909657 +0100
-> @@ -1000,7 +1001,13 @@
->  #define thread_saved_pc(t)	(*(unsigned long *)((t)->thread.sp - 8))
->  
->  #define task_pt_regs(tsk)	((struct pt_regs *)(tsk)->thread.sp0 - 1)
-> -#define KSTK_ESP(tsk)		-1 /* sorry. doesn't work for syscall. */
-> +
-> +#ifdef CONFIG_IA32_EMULATION
-> +extern unsigned long KSTK_ESP(struct task_struct *task);
-> +#else
-> +#define KSTK_ESP(task)		((task)->thread.usersp)
-> +#endif
-> +
->  #endif /* CONFIG_X86_64 */
->  
->  extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
-> --- linux-2.6.32-rc5/arch/x86/kernel/process_64.c	2009-10-16 02:41:50.000000000 +0200
-> +++ linux-2.6.32-rc5.new/arch/x86/kernel/process_64.c	2009-11-02 10:48:23.614936810 +0100
-> @@ -664,3 +669,11 @@
->  	return do_arch_prctl(current, code, addr);
->  }
->  
-> +#ifdef CONFIG_IA32_EMULATION
-> +unsigned long KSTK_ESP(struct task_struct *task)
-> +{
-> +	return (test_tsk_thread_flag(task, TIF_IA32)) ? \
-> +			(task_pt_regs(task)->sp) : \
-> +			((task)->thread.usersp);
-> +}
-> +#endif
+On Tue, 2009-11-03 at 00:22 -0800, Dmitry Torokhov wrote:
 
-That's quite ugly. The KSTK_ESP() function should be unconditional and 
-the #ifdef should be eliminated. If CONFIG_IA32_EMULATION is turned off 
-(whichis rare) then TIF_IA32 wont be set so the function should work 
-fine.
+> I do not understand what the fuss is about. We are pretty far in release
+> process (rc6 is about to be cut I'd expect) and we have an issue that
+> for all practical purposes kills the box on resume. Yes, I want action
+> to be swift in this case and (unless author or maintainer - who were
+> CCed on the email - have otehr solutiuon) the offending commit to be
+> reverted. If it was rc1 or rc2 or 3 I'd feel differently.
 
-Thanks,
+Oh, I don't disagree that swift action is good.
 
-	Ingo
+I just think that it's a matter of courtesy that should be independent
+from the release cycle to ask the author/maintainer by default, not as a
+second thought ("unless [...] have other solution"). You can always CC
+Linus and ask him to revert if you don't get a response.
+
+What's wrong with that? It doesn't actually delay the action, but it
+makes the discussion much more friendly and cooperative instead of
+giving the author and maintainer the feeling that their opinion only
+matters as a second thought.
+
+johannes
+
+--=-CB/G62bNgs40g0cTiXAB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJK7+pBAAoJEODzc/N7+QmaleEQALrJx+RBh+PaAX6bDz6T6s0S
+x1RsLBe/yeYwR0hUa/T+LSDCWdIY/W5YhPeSYSCCO4eF5WCMAq6Bj19XhjMmlADj
+ucVCJPuGgHshRVGRGaCjlGdxKW+PeuKbuRcTqjiPfXQKFy51jgh00VKWYkTxjQ3x
+L/nnB9qwH0ig32oVbC4Q5KmZ7I2/hUci9KE1SMIErWOBnPTq+6YzghNSQdbNz1S9
+alr30zWvZzFkUfGzNlew8emyhr9If/l1jFrY9laf7GHo2ZRmHzvXgFxBnmIh1Xiz
+dNxYOb2Tz5ai318EM6G0H5uqZXMc8ZXe85garcAu4RYlWCLrgF2j09+CyiPgGnmi
+HPFn1yrP8nkMiiZADwh4mh7fhObc8iRgSyOkhua1DPEJ+QVCgjcgXsZ3OrhlBLoO
+FDlvcYqnM3sH33CVq1CUVNZFx0WBwFdGHQ6yJT7DAQH0cHqlwE0JRcDDCOYY0e13
+NgycI/UJ3DUGapKbVMmjmifa5QHUSHAHCfONLqmvyGrFnwgSJjAjPN9qk4MvMRfP
+x1AXhFiTyqRN5FP9jzLa4yg/1LGdYYW8QyK2jp8pyqqXJzbSmCscfZV2zeSZgoP+
+PX0NZGQC0NBCIFOvoq2FpqSvH4HdKsNZt2Dt0daAL8kwBayLpRzYEGDajGn+otCN
+BL6fnpXhpxgy71pgHRj7
+=GiP9
+-----END PGP SIGNATURE-----
+
+--=-CB/G62bNgs40g0cTiXAB--
+
