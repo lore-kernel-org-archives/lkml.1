@@ -1,97 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbZKCXsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbZKCXqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbZKCXsP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 18:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZKCXsN
+	id S1752992AbZKCXqY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 18:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZKCXqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 18:48:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57150 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752371AbZKCXoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 18:44:21 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
-       riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: [PATCH 20/20] blkio: Drop the reference to queue once the task changes cgroup
-Date: Tue,  3 Nov 2009 18:43:57 -0500
-Message-Id: <1257291837-6246-21-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
+	Tue, 3 Nov 2009 18:46:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:32850 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752722AbZKCXqS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 18:46:18 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 1/1] perf symbols: Factor out buildid reading routine
+Date: Tue,  3 Nov 2009 21:46:10 -0200
+Message-Id: <1257291970-8208-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o If a task changes cgroup, drop reference to the cfqq associated with io
-  context so that upon next request arrival we will allocate a  new queue in
-  new group.
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+So that we can run it without having a DSO instance.
+
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- block/cfq-iosched.c |   39 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 39 insertions(+), 0 deletions(-)
+ tools/perf/util/symbol.c |   51 ++++++++++++++++++++++++++++++---------------
+ tools/perf/util/symbol.h |    2 +
+ 2 files changed, 36 insertions(+), 17 deletions(-)
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index d609a10..f23d713 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -2330,6 +2330,41 @@ static void cfq_link_cfqq_cfqg(struct cfq_queue *cfqq, struct cfq_group *cfqg)
- 	cfq_get_cfqg_ref(cfqg);
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index ac94d7b..e7c7cdb 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -825,27 +825,27 @@ out_close:
+ 	return err;
  }
  
-+#ifdef CONFIG_CFQ_GROUP_IOSCHED
-+static void changed_cgroup(struct io_context *ioc, struct cfq_io_context *cic)
-+{
-+	struct cfq_queue *sync_cfqq = cic_to_cfqq(cic, 1);
-+	struct cfq_data *cfqd = cic->key;
-+	unsigned long flags;
-+	struct request_queue *q;
-+
-+	if (unlikely(!cfqd))
-+		return;
-+
-+	q = cfqd->queue;
-+
-+	spin_lock_irqsave(q->queue_lock, flags);
-+
-+	if (sync_cfqq) {
-+		/*
-+		 * Drop reference to sync queue. A new sync queue will be
-+		 * assigned in new group upon arrival of a fresh request.
-+		 */
-+		cfq_log_cfqq(cfqd, sync_cfqq, "changed cgroup");
-+		cic_set_cfqq(cic, NULL, 1);
-+		cfq_put_queue(sync_cfqq);
-+	}
-+
-+	spin_unlock_irqrestore(q->queue_lock, flags);
-+}
-+
-+static void cfq_ioc_set_cgroup(struct io_context *ioc)
-+{
-+	call_for_each_cic(ioc, changed_cgroup);
-+	ioc->cgroup_changed = 0;
-+}
-+#endif  /* CONFIG_CFQ_GROUP_IOSCHED */
-+
- static struct cfq_queue *
- cfq_find_alloc_queue(struct cfq_data *cfqd, bool is_sync,
- 		     struct io_context *ioc, gfp_t gfp_mask)
-@@ -2562,6 +2597,10 @@ out:
- 	if (unlikely(ioc->ioprio_changed))
- 		cfq_ioc_set_ioprio(ioc);
+-#define BUILD_ID_SIZE 128
++#define BUILD_ID_SIZE 20
  
-+#ifdef CONFIG_CFQ_GROUP_IOSCHED
-+	if (unlikely(ioc->cgroup_changed))
-+		cfq_ioc_set_cgroup(ioc);
-+#endif
- 	return cic;
- err_free:
- 	cfq_cic_free(cic);
+-static char *dso__read_build_id(struct dso *self)
++int filename__read_build_id(const char *filename, void *bf, size_t size)
+ {
+-	int i;
++	int fd, err = -1;
+ 	GElf_Ehdr ehdr;
+ 	GElf_Shdr shdr;
+ 	Elf_Data *build_id_data;
+ 	Elf_Scn *sec;
+-	char *build_id = NULL, *bid;
+-	unsigned char *raw;
+ 	Elf *elf;
+-	int fd = open(self->long_name, O_RDONLY);
+ 
++	if (size < BUILD_ID_SIZE)
++		goto out;
++
++	fd = open(filename, O_RDONLY);
+ 	if (fd < 0)
+ 		goto out;
+ 
+ 	elf = elf_begin(fd, PERF_ELF_C_READ_MMAP, NULL);
+ 	if (elf == NULL) {
+-		pr_err("%s: cannot read %s ELF file.\n", __func__,
+-		       self->long_name);
++		pr_err("%s: cannot read %s ELF file.\n", __func__, filename);
+ 		goto out_close;
+ 	}
+ 
+@@ -854,29 +854,46 @@ static char *dso__read_build_id(struct dso *self)
+ 		goto out_elf_end;
+ 	}
+ 
+-	sec = elf_section_by_name(elf, &ehdr, &shdr, ".note.gnu.build-id", NULL);
++	sec = elf_section_by_name(elf, &ehdr, &shdr,
++				  ".note.gnu.build-id", NULL);
+ 	if (sec == NULL)
+ 		goto out_elf_end;
+ 
+ 	build_id_data = elf_getdata(sec, NULL);
+ 	if (build_id_data == NULL)
+ 		goto out_elf_end;
+-	build_id = malloc(BUILD_ID_SIZE);
++	memcpy(bf, build_id_data->d_buf + 16, BUILD_ID_SIZE);
++	err = BUILD_ID_SIZE;
++out_elf_end:
++	elf_end(elf);
++out_close:
++	close(fd);
++out:
++	return err;
++}
++
++static char *dso__read_build_id(struct dso *self)
++{
++	int i, len;
++	char *build_id = NULL, *bid;
++	unsigned char rawbf[BUILD_ID_SIZE], *raw;
++
++	len = filename__read_build_id(self->long_name, rawbf, sizeof(rawbf));
++	if (len < 0)
++		goto out;
++
++	build_id = malloc(len * 2 + 1);
+ 	if (build_id == NULL)
+-		goto out_elf_end;
+-	raw = build_id_data->d_buf + 16;
++		goto out;
+ 	bid = build_id;
+ 
+-	for (i = 0; i < 20; ++i) {
++	raw = rawbf;
++	for (i = 0; i < len; ++i) {
+ 		sprintf(bid, "%02x", *raw);
+ 		++raw;
+ 		bid += 2;
+ 	}
+ 	pr_debug2("%s(%s): %s\n", __func__, self->long_name, build_id);
+-out_elf_end:
+-	elf_end(elf);
+-out_close:
+-	close(fd);
+ out:
+ 	return build_id;
+ }
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 0884330..e0d4a58 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -82,6 +82,8 @@ void dsos__fprintf(FILE *fp);
+ size_t dso__fprintf(struct dso *self, FILE *fp);
+ char dso__symtab_origin(const struct dso *self);
+ 
++int filename__read_build_id(const char *filename, void *bf, size_t size);
++
+ int load_kernel(symbol_filter_t filter);
+ 
+ void symbol__init(unsigned int priv_size);
 -- 
 1.6.2.5
 
