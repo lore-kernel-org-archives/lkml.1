@@ -1,131 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbZKCVbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbZKCVce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbZKCVbj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 16:31:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZKCVbi
+	id S1755306AbZKCVce (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 16:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZKCVcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 16:31:38 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:42916 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754725AbZKCVbh (ORCPT
+	Tue, 3 Nov 2009 16:32:33 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:36502 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754725AbZKCVcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 16:31:37 -0500
-Date: Tue, 3 Nov 2009 15:31:29 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 01/13] sysfs: Update sysfs_setxattr so it updates
-	secdata under the sysfs_mutex
-Message-ID: <20091103213129.GA13555@us.ibm.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-1-git-send-email-ebiederm@xmission.com> <20091103134823.GB31981@us.ibm.com> <m1ocnj9uz5.fsf@fess.ebiederm.org>
+	Tue, 3 Nov 2009 16:32:32 -0500
+To: Benjamin LaHaise <bcrl@lhnet.ca>
+Cc: Greg KH <greg@kroah.com>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       Cosmin Ratiu <cratiu@ixiacom.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] sysfs directory scaling: rbtree for dirent name lookups
+References: <20091101163130.GA7911@kvack.org>
+	<20091103035058.GA19515@kroah.com> <20091103200155.GQ8227@kvack.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 03 Nov 2009 13:32:33 -0800
+In-Reply-To: <20091103200155.GQ8227@kvack.org> (Benjamin LaHaise's message of "Tue\, 3 Nov 2009 15\:01\:56 -0500")
+Message-ID: <m1my338fbi.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1ocnj9uz5.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> 
-> > Quoting Eric W. Biederman (ebiederm@xmission.com):
-> >> From: Eric W. Biederman <ebiederm@aristanetworks.com>
-> >> 
-> >> The sysfs_mutex is required to ensure updates are and will remain
-> >> atomic with respect to other inode iattr updates, that do not happen
-> >> through the filesystem.
-> >> 
-> >> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
-> >> ---
-> >>  fs/sysfs/inode.c |   41 +++++++++++++++++++++++++++++------------
-> >>  1 files changed, 29 insertions(+), 12 deletions(-)
-> >> 
-> >> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-> >> index e28cecf..8a08250 100644
-> >> --- a/fs/sysfs/inode.c
-> >> +++ b/fs/sysfs/inode.c
-> >> @@ -122,23 +122,39 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
-> >>  	return error;
-> >>  }
-> >> 
-> >> +static int sysfs_sd_setsecdata(struct sysfs_dirent *sd, void **secdata, u32 *secdata_len)
-> >> +{
-> >> +	struct sysfs_inode_attrs *iattrs;
-> >> +	void *old_secdata;
-> >> +	size_t old_secdata_len;
-> >> +
-> >> +	iattrs = sd->s_iattr;
-> >> +	if (!iattrs)
-> >> +		iattrs = sysfs_init_inode_attrs(sd);
-> >> +	if (!iattrs)
-> >> +		return -ENOMEM;
-> >> +
-> >> +	old_secdata = iattrs->ia_secdata;
-> >> +	old_secdata_len = iattrs->ia_secdata_len;
-> >> +
-> >> +	iattrs->ia_secdata = *secdata;
-> >> +	iattrs->ia_secdata_len = *secdata_len;
-> >> +
-> >> +	*secdata = old_secdata;
-> >> +	*secdata_len = old_secdata_len;
-> >> +	return 0;
-> >> +}
-> >> +
-> >>  int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
-> >>  		size_t size, int flags)
-> >>  {
-> >>  	struct sysfs_dirent *sd = dentry->d_fsdata;
-> >> -	struct sysfs_inode_attrs *iattrs;
-> >>  	void *secdata;
-> >>  	int error;
-> >>  	u32 secdata_len = 0;
-> >> 
-> >>  	if (!sd)
-> >>  		return -EINVAL;
-> >> -	if (!sd->s_iattr)
-> >> -		sd->s_iattr = sysfs_init_inode_attrs(sd);
-> >> -	if (!sd->s_iattr)
-> >> -		return -ENOMEM;
-> >> -
-> >> -	iattrs = sd->s_iattr;
-> >> 
-> >>  	if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
-> >>  		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
-> >> @@ -150,12 +166,13 @@ int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
-> >>  						&secdata, &secdata_len);
-> >>  		if (error)
-> >>  			goto out;
-> >> -		if (iattrs->ia_secdata)
-> >> -			security_release_secctx(iattrs->ia_secdata,
-> >> -						iattrs->ia_secdata_len);
-> >> -		iattrs->ia_secdata = secdata;
-> >> -		iattrs->ia_secdata_len = secdata_len;
-> >> 
-> >> +		mutex_lock(&sysfs_mutex);
-> >> +		error = sysfs_sd_setsecdata(sd, &secdata, &secdata_len);
-> >
-> > You're ignoring the potential -ENOMEM return value here?
-> >
-> > Worse, if -ENOMEM, then secdata was never set, so you call
-> > security_release_secctx() on a random value left on the stack...
-> 
-> No.  It is more elegant than that.
-> If sysfs_sd_setsecdata fails secdata holds the freshly allocated secdata value.
-> If sysfs_sd_setsecdata succeeds secdata holds the old value of secdata.
+Benjamin LaHaise <bcrl@lhnet.ca> writes:
 
-Gah, sorry.
+> On Mon, Nov 02, 2009 at 07:50:58PM -0800, Greg KH wrote:
+>> On Sun, Nov 01, 2009 at 11:31:30AM -0500, Benjamin LaHaise wrote:
+>> > Use an rbtree in sysfs_dirent to speed up file lookup times
+>> > 
+>> > Systems with large numbers (tens of thousands and more) of network 
+>> > interfaces stress the sysfs code in ways that make the linear search for 
+>> > a name match take far too long.  Avoid this by using an rbtree.
+>> 
+>> What kind of speedups are you seeing here?  And do these changes cause a
+>> memory increase due to the structure changes which outweigh the
+>> speedups?
+>
+> Depends on the number of interfaces being created.  Without the patch, 
+> interface creation time tends to double or worse for every 5,000-10,000 
+> additional network interfaces.
+>
+>> What kind of test are you doing to reproduce this?
+>
+> I'm creating 30,000+ network interfaces, with the goal being 100,000.  
+> With other hacks in the tree to get around the sysctl and procfs scaling 
+> issues, as well as disabling things like NetworkManager, the results look 
+> as follows:
+>
+> 	Interfaces	no-rb	rbtree	rbtree+list
+> 	0-5,000		13.8s	14.0s	13.0s
+> 	5,000-10,000	20.0s	17.4s	14.4s
+> 	10,000-15,000	27.3s	24.1s	16.9s
+> 	15,000-20,000	36.3s	32.2s	19.7s
+> 	20,000-25,000	45.2s	40.0s	22.9s
+> 	25,000-30,000	54.2s	48.2s	26.6s
+> 	30,000-35,000	63.9s	54.9s	30.7s
+>
+> Thoughts?
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Something is very weird.  I just took your no-rb numbers
+and divided by the number of interfaces to see how well we are
+scaling.  I got:
 
-(as an aside, I can't see any reason to not just return if strncmp(name,
-XATTR_SECURITY_PREFIX,) above to avoid a level of indent and needless gotos)
+ 	Interfaces	per-interface cost
+ 	5,000		0.002760s
+ 	10,000		0.002000s
+ 	15,000		0.001820s
+ 	20,000		0.001815s
+ 	25,000		0.001808s
+ 	30,000		0.001807s
+ 	35,000		0.001826s
 
-thanks,
--serge
+I ran a variant of this test a long time ago and at that the
+cost per interface grew with additional interfaces added.  This
+jives with the fact that the fundamental cost of adding N
+network interfaces to sysfs is O(N^2).
+
+Are your numbers from your application and are they real world?
+In which case they are interesting, but it would be good if
+we could also have microbenchmark numbers that just measure
+the sysfs costs.   If nothing else I am seeing a big startup
+overhead that isn't being subtracted out that makes it hard
+to see the real costs here.
+
+Eric
