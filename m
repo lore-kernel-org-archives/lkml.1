@@ -1,83 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbZKCOm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751683AbZKCOpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbZKCOm1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 09:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZKCOm1
+	id S1751683AbZKCOpd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 09:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZKCOpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 09:42:27 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:38300 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751475AbZKCOm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 09:42:26 -0500
-Message-ID: <4AF04148.8070103@atmel.com>
-Date: Tue, 03 Nov 2009 15:42:16 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 3 Nov 2009 09:45:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50635 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009AbZKCOpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 09:45:32 -0500
+Date: Tue, 3 Nov 2009 09:44:50 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, hbabu@us.ibm.com,
+       kexec@lists.infradead.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: kdump fails to load and crashes [was: mmotm 2009-11-01-10-01
+	uploaded]
+Message-ID: <20091103144450.GB4235@redhat.com>
+References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org> <4AEF673E.5030509@gmail.com>
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>, plagnioj@jcrosoft.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       avictor.za@gmail.com
-Subject: Re: [RFC PATCH] atmel_lcdfb Kconfig: remove long dependency line
-References: <4A40D695.5000302@atmel.com> <1245767456-6434-1-git-send-email-nicolas.ferre@atmel.com> <20090623153556.0e574899@hskinnemoen-d830> <4A40E2E6.9060904@atmel.com> <20090625084631.GA7985@n2100.arm.linux.org.uk>
-In-Reply-To: <20090625084631.GA7985@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AEF673E.5030509@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I come back on this patch as I have a Kconfig cleanup patch series coming.
-
-Russell King - ARM Linux :
-> On Tue, Jun 23, 2009 at 04:12:54PM +0200, Nicolas Ferre wrote:
->> Haavard Skinnemoen :
->>> Nicolas Ferre wrote:
->>>> +config ARCH_ATMEL_HAS_FB
->>>> +	bool
->>>> +	depends on FB
->>>> +	default n
->>> What happens when we unconditionally select something which depends on
->>> something else?
->> :-P
->>
->> Experience shows that this configuration is selected.
->>
->> The dependency allows to have a good hierarchy in the configuration tree...
->> Better proposition welcome.
+On Tue, Nov 03, 2009 at 12:11:58AM +0100, Jiri Slaby wrote:
+> On 11/01/2009 07:07 PM, akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
 > 
-> 1st - no need for 'default n' - you're specifying something that's already
-> the default.
+> Hi, kdump loading crashes:
+> BUG: unable to handle kernel paging request at ffff8800010a7000
+> IP: [<ffffffff8101cd8b>] machine_kexec_prepare+0x16b/0x13e0
+> PGD 1806063 PUD 180a063 PMD 10001e1
+> Oops: 0003 [#1] SMP
+> last sysfs file: /sys/firmware/memmap/10/type
+> CPU 1
+> Modules linked in: fuse ath5k ath
+> Pid: 3250, comm: kexec Tainted: G        W  2.6.32-rc5-mm1_64 #869 To Be
+> Filled By O.E.M.
+> RIP: 0010:[<ffffffff8101cd8b>]  [<ffffffff8101cd8b>]
+> machine_kexec_prepare+0x16b/0x13e0
+> RSP: 0018:ffff8801c95d1e88  EFLAGS: 00010206
+> RAX: 00000000000001e3 RBX: ffff8801ca2aac00 RCX: 0000000040000000
+> RDX: 0000000000200000 RSI: ffff8800010a7000 RDI: ffff8800010a7000
+> RBP: ffff8801c95d1ee8 R08: 00000000000010a7 R09: 00000000010a7fff
+> R10: 0000000000000fff R11: 0000000004ffffff R12: 0000000000000000
+> R13: ffff8800010a6000 R14: 0000008000000000 R15: ffff880000000000
+> FS:  00007f4f97b4c6f0(0000) GS:ffff880028280000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> CR2: ffff8800010a7000 CR3: 00000001c8cf2000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process kexec (pid: 3250, threadinfo ffff8801c95d0000, task
+> ffff8801ca116700)
+> Stack:
+> ffff8801c95d1ee8 ffff8800010a6000 ffff8800010a4000 ffff8800010a4000
+> <0> 0000000000000000 00000001cc000000 ffff8801c95d1ee8 0000000000000006
+> <0> ffff8801ca2aac00 0000000000000000 0000000000000000 000000000146eae0
+> Call Trace:
+> [<ffffffff8106d32c>] sys_kexec_load+0xec/0x5e0
+> [<ffffffff814365b5>] ? do_page_fault+0x185/0x350
+> [<ffffffff81002e6b>] system_call_fastpath+0x16/0x1b
+> Code: 00 40 48 c1 e6 0c 4c 01 fe 48 39 ca 73 21 48 89 f7 0f 1f 80 00 00
+> 00 00 48 89 d0 48 81 c2 00 00 20 00 48 0d e3 01 00 00 48 39 d1 <48> ab
+> 77 e9 48 89 f7 49 81 c4 00 00 00 40 e8 e2 93 00 00 4c 89
+> RIP  [<ffffffff8101cd8b>] machine_kexec_prepare+0x16b/0x13e0
+> RSP <ffff8801c95d1e88>
+> CR2: ffff8800010a7000
+> ---[ end trace 4eaa2a86a8e2da24 ]---
+> 
+> ffff8800010a7000 should be OK, as crashkernel=64M@16M was passed to the
+> kernel.
+> 
 
-Ok.
+This is strange. As you said, ffff8800010a7000, should be a valid address
+as you reserved memory from 16M.
 
-> 2nd - don't make this symbol depend on anything, and don't use the symbol
-> for anything except providing a dependency for FB_ATMEL.  Instead, let
-> FB_ATMEL deal with the dependency on FB and ARCH_ATMEL_HAS_FB.
+I took above -mm and for me kernel loads fine. I reserved memory 64M@32M
+as by default kernel is loading at address 16M.
 
-The problem is that if I do not setup the dependency here the menu entry
-will not be available at the proper level. In fact I will see the Atmel
-LCD entry here:
-"Graphics support"
- <*> Support for frame buffer devices  --->
- <*> AT91/AT32 LCD Controller support
+How does your /proc/iomem look like in first kernel?
 
-instead of here:
-"Graphics support"
- ---> "Support for frame buffer devices"
-      [..]
-      <*> "AT91/AT32 LCD Controller support"
-      [..]
+Thanks
+Vivek
 
-So I keep the depend.
-
-> 3rd - ISTR we have a convention for these - 'HAVE_foo' for a configuration
-> option named 'foo'.  So it should probably be HAVE_FB_ATMEL.
-
-Ok, changed to HAVE_FB_ATMEL indeed.
-
-Thanks. Best regards,
--- 
-Nicolas Ferre
-
+> It's here:
+> static void init_level2_page(pmd_t *level2p, unsigned long addr)
+> {
+>         unsigned long end_addr;
+> 
+>         addr &= PAGE_MASK;
+>         end_addr = addr + PUD_SIZE;
+>         while (addr < end_addr) {
+> here ->         set_pmd(level2p++, __pmd(addr | __PAGE_KERNEL_LARGE_EXEC));
+>                 addr += PMD_SIZE;
+>         }
+> }
+> 
+> Corresponding -fverbose-asm with -g:
+>         .loc 1 65 0
+>         addq    $2097152, %rdx  #, addr
+> .LVL31:
+> .LBB416:
+>         .loc 5 77 0
+>         orq     $483, %rax      #, tmp140
+> .LBE416:
+>         .loc 1 63 0
+>         cmpq    %rdx, %rcx      # addr, end_addr
+> .LBB417:
+>         .loc 5 77 0
+>         stosq
+> .LVL32:
+> .LBE417:
+>         .loc 1 63 0
+>         ja      .L26    #,
+> 
+> 
