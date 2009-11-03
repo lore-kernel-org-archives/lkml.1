@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbZKCLeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZKCLnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbZKCLeS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 06:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZKCLeS
+	id S1752746AbZKCLnV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 06:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZKCLnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 06:34:18 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43112 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752711AbZKCLeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 06:34:17 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] PM fixes for 2.6.32
-Date: Tue, 3 Nov 2009 12:36:12 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
-       "Stephen J. Gowdy" <gowdy@cern.ch>, Jose Marino <braket@hotmail.com>,
-       Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Romit Dasgupta <romit@ti.com>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
+	Tue, 3 Nov 2009 06:43:21 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49213 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751783AbZKCLnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 06:43:20 -0500
+Message-ID: <4AF01735.9060409@cn.fujitsu.com>
+Date: Tue, 03 Nov 2009 19:42:45 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ringbuffer: synchronize for resizing
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911031236.12094.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Please pull power management fixes for 2.6.32 from:
+We got a sudden panic when we reduced the size of the
+ringbuffer.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
+We can reproduce the panic by the following steps:
 
-This includes the following changes:
+echo 1 > events/sched/enable
+cat trace_pipe > /dev/null &
 
-* The fix for http://bugzilla.kernel.org/show_bug.cgi?id=14334 (yenta resume
-  regression from 2.6.31).
+while ((1))
+do
+echo 12000 > buffer_size_kb
+echo 512 > buffer_size_kb
+done
 
-* Hibernation fixes from Jiri Slaby.  Two of these patches fix long standing
-  bugs, but in my opinion they are simple enough to go into 2.6.32.  The third
-  one is a two-liner complementing one of the fixes.
+(not more than 5 seconds, panic ...)
 
-* PM core error code path fix from Romit Dasgupta.
+Reported-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 63446f1..db223fe 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1196,6 +1196,7 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
+ 	atomic_inc(&cpu_buffer->record_disabled);
+ 	synchronize_sched();
+ 
++	spin_lock_irq(&cpu_buffer->reader_lock);
+ 	rb_head_page_deactivate(cpu_buffer);
+ 
+ 	for (i = 0; i < nr_pages; i++) {
+@@ -1210,6 +1211,7 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
+ 		return;
+ 
+ 	rb_reset_cpu(cpu_buffer);
++	spin_unlock_irq(&cpu_buffer->reader_lock);
+ 
+ 	rb_check_pages(cpu_buffer);
+ 
 
-* Removal of some run-time PM debug messages creating too much noise from
-  Pavel (the run-time PM framework is a new feature in 2.6.32 and this is
-  just a refinement of it).
 
-
- drivers/base/power/main.c     |    1 +
- drivers/base/power/runtime.c  |    4 --
- drivers/pcmcia/cs.c           |   69 +++++++++++++++++++++++++---------------
- drivers/pcmcia/yenta_socket.c |   12 ++++++-
- include/pcmcia/ss.h           |    4 ++
- kernel/power/hibernate.c      |   11 +++++--
- kernel/power/swap.c           |   43 +++++++++++++------------
- 7 files changed, 89 insertions(+), 55 deletions(-)
-
----------------
-
-Jiri Slaby (3):
-      PM / Hibernate: Fix blkdev refleaks
-      PM / Hibernate: Fix error handling in save_image()
-      PM / Hibernate: Add newline to load_image() fail path
-
-Pavel Machek (1):
-      PM: Remove some debug messages producing too much noise
-
-Rafael J. Wysocki (1):
-      PM / yenta: Split resume into early and late parts (rev. 4)
-
-Romit Dasgupta (1):
-      PM: Fix warning on suspend errors
 
