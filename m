@@ -1,42 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbZKCPOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbZKCPOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753427AbZKCPOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 10:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZKCPOS
+	id S1752996AbZKCPOH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 10:14:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZKCPOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 10:14:18 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:50422 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753145AbZKCPOO (ORCPT
+	Tue, 3 Nov 2009 10:14:06 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:36428 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751220AbZKCPOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 10:14:14 -0500
+	Tue, 3 Nov 2009 10:14:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=T6BDZGEkEpVnPwtVTsAISIqzD1vzWwuxPzRQfZp2YCxP/G0y1SPc4FXIgJ3u3mdexq
-         85GLCq8/0HPFqqBVEzCdGdxAOnMerJbjiF10nu/pUTpSQYS7iO6MDYWot2fTWSOAIaqo
-         LdGykNWOQxDj7enykBuUw7M15d1pQ7tx1cXV4=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Asl92AKFOagwyr+jV4w6qkzTdcAiAK2vTrbBp3UfCHEwKS4JiiJokr552ciHS9O3Ni
+         w4+hXoSY2p7zA0ZG/nMERwffN0h9O3uQHzHyqBljgv1DOV4JdxH/NnHcXrmqBCokd47s
+         bOwLbOmpKJXlKleHidBEarcUP2t11jO97f9aQ=
+Message-ID: <4AF048D1.4090402@gmail.com>
+Date: Tue, 03 Nov 2009 16:14:25 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0909271303580.14151@dr-wily.mit.edu>
-References: <1253626718-18887-5-git-send-email-alan-jenkins@tuffmail.co.uk>
-	 <1253726926-5504-2-git-send-email-tabbott@ksplice.com>
-	 <200909240941.41479.rusty@rustcorp.com.au>
-	 <alpine.DEB.1.10.0909271303580.14151@dr-wily.mit.edu>
-Date: Tue, 3 Nov 2009 13:14:18 -0200
-Message-ID: <a4c8a6d00911030714w2e885066g9af086818a968b7b@mail.gmail.com>
-Subject: Re: [PATCH 1/2] lib: Add generic binary search function to the 
-	kernel.
-From: Thiago Farina <tfransosi@gmail.com>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org, linux-modules@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, hbabu@us.ibm.com,
+       kexec@lists.infradead.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: kdump fails to load and crashes [was: mmotm 2009-11-01-10-01
+ uploaded]
+References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org> <4AEF673E.5030509@gmail.com> <20091103144450.GB4235@redhat.com>
+In-Reply-To: <20091103144450.GB4235@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, this patch was landed? It seems not to be in the tree
-(git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6).
+On 11/03/2009 03:44 PM, Vivek Goyal wrote:
+> On Tue, Nov 03, 2009 at 12:11:58AM +0100, Jiri Slaby wrote:
+>> On 11/01/2009 07:07 PM, akpm@linux-foundation.org wrote:
+>>> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
+>>
+>> Hi, kdump loading crashes:
+>> BUG: unable to handle kernel paging request at ffff8800010a7000
+>> IP: [<ffffffff8101cd8b>] machine_kexec_prepare+0x16b/0x13e0
+>> PGD 1806063 PUD 180a063 PMD 10001e1
+...
+>> ffff8800010a7000 should be OK, as crashkernel=64M@16M was passed to the
+>> kernel.
+>>
+> 
+> This is strange. As you said, ffff8800010a7000, should be a valid address
+> as you reserved memory from 16M.
+
+Hmm, PMD has not RW bit set and we do store (see below).
+
+> I took above -mm and for me kernel loads fine. I reserved memory 64M@32M
+> as by default kernel is loading at address 16M.
+> 
+> How does your /proc/iomem look like in first kernel?
+
+I'm not any longer on that machine. init_pgtable() overwrites random
+memory, so possibly even host's page tables, hence the oops above, I
+suppose.
+
+I'm currently chasing it down in the qemu virtual machine, since I
+already got a garbage into my ~/.viminfo (some overwritten page got
+flushed, I guess).
+
+There /proc/iomem looks like:
+00100000-12beffff : System RAM
+  01000000-04ffffff : Crash kernel
+    01000000-014680c2 : Kernel code
+    014680c3-016f39f7 : Kernel data
+    0175b000-017d97ab : Kernel bss
+
+I'll keep you informed.
