@@ -1,85 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbZKDT2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbZKDTQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbZKDT2Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbZKDT2N
+	id S1757931AbZKDTQa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbZKDTQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:28:13 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:46206 "EHLO
-	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757594AbZKDT2K (ORCPT
+	Wed, 4 Nov 2009 14:16:28 -0500
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:42961 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757876AbZKDTQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:28:10 -0500
-X-Greylist: delayed 769 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Nov 2009 14:28:10 EST
+	Wed, 4 Nov 2009 14:16:27 -0500
+Date: Wed, 4 Nov 2009 14:15:40 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       akpm@linux-foundation.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] show per-process swap usage via procfs
+In-Reply-To: <20091104152426.eacc894f.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0911041414560.7409@V090114053VZO-1>
+References: <20091104152426.eacc894f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19185.53965.58452.36569@stoffel.org>
-Date: Wed, 4 Nov 2009 14:15:25 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: linux-kernel@vger.kernel.org
-CC: linux-scsi@vger.kernel.org
-Subject: 2.6.31 -  INFO: task mt:14828 blocked for more than 120 seconds
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 4 Nov 2009, KAMEZAWA Hiroyuki wrote:
 
-Hi all,
+> Now, anon_rss and file_rss is counted as RSS and exported via /proc.
+> RSS usage is important information but one more information which
+> is often asked by users is "usage of swap".(user support team said.)
 
-I'm running 2.6.31 on a dual PIII Xeon 550Mhz box running Debian
-unstable, very much upto date.  I've got two IDE disks, two SATA
-disks, two SCSI boot disks, two DLT7k tape drives and a tape library.
-All on seperate controllers.  
+Hmmm... Could we do some rework of the counters first so that they are per
+cpu?
 
-I'm trying to erase a DLT7000 tape, but I can't interrupt the 'mt -f
-/dev/dlt7k-right erase' command.  I see in dmesg the following:
-
-   [1464778.472497] INFO: task mt:14828 blocked for more than 120
-   seconds.
-   [1464778.472599] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-   disables this message.
-   [1464778.472700] mt            D 00000001     0 14828  14392
-   0x00000000
-   [1464778.472843]  f3871d20 00000086 f706fc58 00000001 f29804d0
-   f3871cb8 c12f9d78 f449b000
-   [1464778.473197]  78895eac 00053309 f695ef00 f69baea0 00000020
-   f69b91c0 c175f864 f2863d08
-   [1464778.473563]  f35c44d0 f35c474c c281a740 00000000 f3871cd8
-   788ac870 00053309 00000000
-   [1464778.473910] Call Trace:
-   [1464778.473989]  [<c12f9d78>] ? sym_put_start_queue+0xc8/0x120
-   [1464778.474062]  [<c12fa419>] ? sym_queue_scsiio+0x179/0x270
-   [1464778.474134]  [<c14bf535>] schedule_timeout+0x175/0x1b0
-   [1464778.474217]  [<c121fff0>] ? kobject_put+0x20/0x50
-   [1464778.474288]  [<c120e047>] ? blk_peek_request+0x107/0x180
-   [1464778.474368]  [<c1214f2c>] ? blk_add_timer+0x6c/0xc0
-   [1464778.474452]  [<c12bc0ff>] ? put_device+0xf/0x20
-   [1464778.474529]  [<c12d88f2>] ? scsi_request_fn+0xc2/0x500
-   [1464778.474614]  [<c14bf2bd>] wait_for_common+0xed/0x110
-   [1464778.474690]  [<c102fa30>] ? default_wake_function+0x0/0x10
-   [1464778.474759]  [<c14bf372>] wait_for_completion+0x12/0x20
-   [1464778.474830]  [<c12ffbb0>] st_do_scsi+0x230/0x350
-   [1464778.474897]  [<c12ff3e0>] ? st_scsi_execute_end+0x0/0x50
-   [1464778.474967]  [<c13006db>] st_int_ioctl+0x1eb/0xd10
-   [1464778.475041]  [<c1302a8a>] st_ioctl+0x6ea/0x1290
-   [1464778.475126]  [<c10a332d>] ? chrdev_open+0xcd/0x160
-   [1464778.475224]  [<c10793c5>] ? filemap_fault+0xd5/0x3a0
-   [1464778.475307]  [<c10a3260>] ? chrdev_open+0x0/0x160
-   [1464778.475408]  [<c1078de8>] ? unlock_page+0x48/0x50
-   [1464778.475511]  [<c108c280>] ? __do_fault+0x2f0/0x3d0
-   [1464778.475598]  [<c13023a0>] ? st_ioctl+0x0/0x1290
-   [1464778.475684]  [<c10ad358>] vfs_ioctl+0x28/0x80
-   [1464778.475769]  [<c10ad4ea>] do_vfs_ioctl+0x6a/0x5c0
-   [1464778.475857]  [<c108db4d>] ? handle_mm_fault+0xed/0x540
-   [1464778.475946]  [<c10ada79>] sys_ioctl+0x39/0x70
-   [1464778.476032]  [<c1002e28>] sysenter_do_call+0x12/0x26
-
-
-Is there anyway I can kill this process?  Or see if it's actually
-making any progress?  The library doesn't happen to have a window, so
-it's hard to see the drive lights without opening it up.
-
-Thanks,
-John
