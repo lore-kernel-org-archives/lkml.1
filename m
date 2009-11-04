@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbZKDVZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbZKDV3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbZKDVZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 16:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbZKDVZs
+	id S1758217AbZKDV3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 16:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbZKDV3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 16:25:48 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:7771 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758176AbZKDVZr (ORCPT
+	Wed, 4 Nov 2009 16:29:35 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:33892 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756838AbZKDV3f convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 16:25:47 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=u3DAjfEhq06+iHwxUKa/oEiEKv2C5NNuKa4cI++kMKnSlruPggjTDkiBzxuDwNgzX
-	zkjiKslMP7IfyMtBVR8tg==
+	Wed, 4 Nov 2009 16:29:35 -0500
 MIME-Version: 1.0
-In-Reply-To: <20091104173517.GA3668@count0.beaverton.ibm.com>
-References: <20091104063005.GC3560@balbir.in.ibm.com>
-	 <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20091104173517.GA3668@count0.beaverton.ibm.com>
-Date: Wed, 4 Nov 2009 13:25:46 -0800
-Message-ID: <6599ad830911041325i9b309a7y4d912d6be7ddbdd9@mail.gmail.com>
-Subject: Re: [RFC] Mount point suggestions for cgroup
-From: Paul Menage <menage@google.com>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       balbir@linux.vnet.ibm.com, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jan@smtp1.linux-foundation.org, Bharata B Rao <bharata.rao@in.ibm.com>,
-       libcg-devel <libcg-devel@lists.sourceforge.net>,
-       Safranek <jsafrane@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
+Message-ID: <5419f8c1-218e-42d2-991f-e52fc20e5ee4@default>
+Date: Wed, 4 Nov 2009 13:28:14 -0800 (PST)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: john stultz <johnstul@us.ibm.com>, Avi Kivity <avi@redhat.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Glauber Costa <glommer@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
+       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
+Subject: RE: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
+  implementation
+In-Reply-To: <1f1b08da0911041319l3687fb58te0a3e1debf185d6c@mail.gmail.com>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4AF1F208.0046:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 4, 2009 at 9:35 AM, Matt Helsley <matthltc@us.ibm.com> wrote:
->
-> If anything, "standardizing" the mount point(s) will likely provide a false
-> sense of uniformity and we'll get some bad userspace scripts/tools that
-> break when "nonstandard" usage appears. Leaving the mount point undefined
-> forces anyone writing scripts or tools to consider whether they want to be
-> portable and, if so, the proper way to find the cgroup hierarchies they need
-> to manipulate.
+> From: john stultz [mailto:johnstul@us.ibm.com]
+> On Thu, Oct 29, 2009 at 7:07 AM, Avi Kivity <avi@redhat.com> wrote:
+> >
+> > Out of interest, do you know (and can you relate) why those 
+> apps need
+> > 100k/sec monotonically increasing timestamps?
+> 
+> This is sort of tangential, but depending on the need, this might be
+> of interest:  Recently I've added a new clock_id,
+> CLOCK_MONOTONIC_COARSE (as well as CLOCK_REALTIME_COARSE), which
+> return a HZ granular timestamp (same granularity as filesystem
+> timestamps). Its very fast to access, since there's no hardware to
+> touch, and is accessible via vsyscall.
+> 
+> The idea being, if your hitting clock_gettime 100k/sec but you really
+> don't have the need for nsec granular timestamps, it might provide a
+> really nice performance boost.
+> 
+> Here's the commit:
 
-Scanning /proc/mounts to find the relevant mount locations is pretty
-simple, for code that's just wanting to use existing cgroup mounts.
-But for the code that sets up mounts in the first place, its probably
-helpful to have recommendations of suitable locations.
+Hi John --
 
-Paul
+Yes, possibly of interest.  But does it work with CONFIG_NO_HZ?
+(I'm expecting that over time NO_HZ will become widespread
+for VM OS's, though interested in if you agree.)
+
+Also very interested in your thoughts about a variation
+that returns something similar to a TSC_AUX to notify
+caller that the underlying reference clock has/may have
+changed.
+
+Dan
