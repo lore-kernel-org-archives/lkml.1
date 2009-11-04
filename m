@@ -1,165 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZKDLLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbZKDLMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbZKDLLl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 06:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbZKDLLk
+	id S1755446AbZKDLMm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 06:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZKDLMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 06:11:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39801 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755389AbZKDLLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 06:11:39 -0500
-Date: Wed, 4 Nov 2009 11:10:54 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1257291970-8208-1-git-send-email-acme@infradead.org>
-References: <1257291970-8208-1-git-send-email-acme@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf symbols: Factor out buildid reading routine
-Message-ID: <tip-2643ce11457a99a85c5bed8dd631e35968e6ca5a@git.kernel.org>
-Git-Commit-ID: 2643ce11457a99a85c5bed8dd631e35968e6ca5a
-X-Mailer: tip-git-log-daemon
+	Wed, 4 Nov 2009 06:12:41 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:52033 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755306AbZKDLMk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 06:12:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=l1oX5y19gSKRdghF6SRJcR5pd65rr+rGs1KfsxO4iUCbtvYD7FbYsdS8ikHbGes+xn
+         mw9Uq/xQqZmJhnMo6gW7CtiCSyrSqUvIMSlxQL/+frfJID6VdH/o8IkjAehhR4d9FWGg
+         +PIKBRnJCgFHgEYwsDaSt2MRZqAgIJTDgUv58=
 MIME-Version: 1.0
+In-Reply-To: <4AF150D2.6000207@tuffmail.co.uk>
+References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> 
+	<1257242782-10496-6-git-send-email-alan-jenkins@tuffmail.co.uk> 
+	<200911041849.43311.rusty@rustcorp.com.au> <4AF150D2.6000207@tuffmail.co.uk>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 4 Nov 2009 06:12:24 -0500
+Message-ID: <8bd0f97a0911040312s3e5212cdx70117f0ebf3b8d7a@mail.gmail.com>
+Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the 
+	kernel (__ksymtab)
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, greg@kroah.com,
+       linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2643ce11457a99a85c5bed8dd631e35968e6ca5a
-Gitweb:     http://git.kernel.org/tip/2643ce11457a99a85c5bed8dd631e35968e6ca5a
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Tue, 3 Nov 2009 21:46:10 -0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 4 Nov 2009 12:03:32 +0100
+On Wed, Nov 4, 2009 at 05:00, Alan Jenkins wrote:
+> Rusty Russell wrote:
+>> On Tue, 3 Nov 2009 08:36:17 pm Alan Jenkins wrote:
+>>> +/*
+>>> + * We use CPP macros since they are more familiar than assembly macros.
+>>> + * Note that CPP macros eat newlines, so each statement must be
+>>> terminated
+>>> + * by a semicolon.
+>>> + */
+>>> +
+>>> +#ifdef CONFIG_HAVE_SYMBOL_PREFIX
+>>> +#define __SYM(sym) _##sym
+>>> +#else
+>>> +#define __SYM(sym) sym
+>>> +#endif
+>>>
+>>
+>> Ideally, you would used MODULE_SYMBOL_PREFIX here, but of course it's a
+>> string.  I don't think Kconfig can do arbitrary identifiers, so we can't
+>> make CONFIG_SYMBOL_PREFIX empty or _.
+>>
+>> Perhaps clarify it to a bool CONFIG_HAVE_MODULE_UNDERSCORE_PREFIX then,
+>> since that's what you're assuming here?
+>>
+>> Thanks,
+>> Rusty.
+>
+> I made the same assumption in patch 4.  The arch defines
+> CONFIG_HAVE_SYMBOL_PREFIX, which then causes init/Kconfig to define
+> CONFIG_SYMBOL_PREFIX="_".
+>
+> Mike suggested that I hack kbuild instead, to do something like
+>
+> unquote = ...
+> AFLAGS_.tmp_export-asm.o += -DSYMBOL_PREFIX=$(unquote CONFIG_SYMBOL_PREFIX)
+>
+> I'm experimenting with the idea, but I haven't managed to get it working
+> yet.
 
-perf symbols: Factor out buildid reading routine
+presumably you're having trouble with the preprocessor using the
+define name literally instead of expanding it.  you can address this
+two ways:
+ - force gcc to expand it wit a few more levels
+ - define the macro on the command line
 
-So that we can run it without having a DSO instance.
+here is the first way:
+$ cat test.c
+#include <stdio.h>
+foo() { puts("foo"); }
+_foo() { puts("_foo"); }
+__foo() { puts("__foo"); }
+#define __SYM(x) ___SYM(PFX, x) /* queue PFX */
+#define ___SYM(pfx,x) ____SYM(pfx, x) /* expand PFX */
+#define ____SYM(pfx,x) pfx##x /* paste them together */
+main() { __SYM(foo)(); }
+$ gcc test.c -DPFX=_ && ./a.out
+_foo
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <1257291970-8208-1-git-send-email-acme@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/util/symbol.c |   51 ++++++++++++++++++++++++++++++---------------
- tools/perf/util/symbol.h |    2 +
- 2 files changed, 36 insertions(+), 17 deletions(-)
+and here is the second:
+$ cat test.c
+#include <stdio.h>
+foo() { puts("foo"); }
+_foo() { puts("_foo"); }
+__foo() { puts("__foo"); }
+main() { __SYM(foo)(); }
+$ gcc test.c -D'__SYM(x)=_##x' && ./a.out
+_foo
 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index ac94d7b..e7c7cdb 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -825,27 +825,27 @@ out_close:
- 	return err;
- }
- 
--#define BUILD_ID_SIZE 128
-+#define BUILD_ID_SIZE 20
- 
--static char *dso__read_build_id(struct dso *self)
-+int filename__read_build_id(const char *filename, void *bf, size_t size)
- {
--	int i;
-+	int fd, err = -1;
- 	GElf_Ehdr ehdr;
- 	GElf_Shdr shdr;
- 	Elf_Data *build_id_data;
- 	Elf_Scn *sec;
--	char *build_id = NULL, *bid;
--	unsigned char *raw;
- 	Elf *elf;
--	int fd = open(self->long_name, O_RDONLY);
- 
-+	if (size < BUILD_ID_SIZE)
-+		goto out;
-+
-+	fd = open(filename, O_RDONLY);
- 	if (fd < 0)
- 		goto out;
- 
- 	elf = elf_begin(fd, PERF_ELF_C_READ_MMAP, NULL);
- 	if (elf == NULL) {
--		pr_err("%s: cannot read %s ELF file.\n", __func__,
--		       self->long_name);
-+		pr_err("%s: cannot read %s ELF file.\n", __func__, filename);
- 		goto out_close;
- 	}
- 
-@@ -854,29 +854,46 @@ static char *dso__read_build_id(struct dso *self)
- 		goto out_elf_end;
- 	}
- 
--	sec = elf_section_by_name(elf, &ehdr, &shdr, ".note.gnu.build-id", NULL);
-+	sec = elf_section_by_name(elf, &ehdr, &shdr,
-+				  ".note.gnu.build-id", NULL);
- 	if (sec == NULL)
- 		goto out_elf_end;
- 
- 	build_id_data = elf_getdata(sec, NULL);
- 	if (build_id_data == NULL)
- 		goto out_elf_end;
--	build_id = malloc(BUILD_ID_SIZE);
-+	memcpy(bf, build_id_data->d_buf + 16, BUILD_ID_SIZE);
-+	err = BUILD_ID_SIZE;
-+out_elf_end:
-+	elf_end(elf);
-+out_close:
-+	close(fd);
-+out:
-+	return err;
-+}
-+
-+static char *dso__read_build_id(struct dso *self)
-+{
-+	int i, len;
-+	char *build_id = NULL, *bid;
-+	unsigned char rawbf[BUILD_ID_SIZE], *raw;
-+
-+	len = filename__read_build_id(self->long_name, rawbf, sizeof(rawbf));
-+	if (len < 0)
-+		goto out;
-+
-+	build_id = malloc(len * 2 + 1);
- 	if (build_id == NULL)
--		goto out_elf_end;
--	raw = build_id_data->d_buf + 16;
-+		goto out;
- 	bid = build_id;
- 
--	for (i = 0; i < 20; ++i) {
-+	raw = rawbf;
-+	for (i = 0; i < len; ++i) {
- 		sprintf(bid, "%02x", *raw);
- 		++raw;
- 		bid += 2;
- 	}
- 	pr_debug2("%s(%s): %s\n", __func__, self->long_name, build_id);
--out_elf_end:
--	elf_end(elf);
--out_close:
--	close(fd);
- out:
- 	return build_id;
- }
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 0884330..e0d4a58 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -82,6 +82,8 @@ void dsos__fprintf(FILE *fp);
- size_t dso__fprintf(struct dso *self, FILE *fp);
- char dso__symtab_origin(const struct dso *self);
- 
-+int filename__read_build_id(const char *filename, void *bf, size_t size);
-+
- int load_kernel(symbol_filter_t filter);
- 
- void symbol__init(unsigned int priv_size);
+HTH
+-mike
