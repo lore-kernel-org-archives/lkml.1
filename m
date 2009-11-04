@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZKDPID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZKDPQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbZKDPID (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:08:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZKDPIC
+	id S1756292AbZKDPQu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:16:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZKDPQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:08:02 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:54164 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755423AbZKDPIB (ORCPT
+	Wed, 4 Nov 2009 10:16:49 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:17283 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755892AbZKDPQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:08:01 -0500
+	Wed, 4 Nov 2009 10:16:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=hn1QeQRXp9/RmZhfpb705V6D7t5s8M4kGIN+gEZ7l2uLS4gtfgnbT5tCDM49sgZx9j
-         +fl4lD7JtCZ1Kl2GnOhhXHBHG+HU3qpnU1aay3E7clUYOX5RLH8SsO/U4zXSQ+3Cdlfw
-         LXxiAyQiPScmwsuAEzxodZbCJk1vLT0rZ39GI=
-Message-ID: <4AF198E1.9010303@gmail.com>
-Date: Wed, 04 Nov 2009 07:08:17 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
-MIME-Version: 1.0
-To: Dave Korn <dave.korn.cygwin@googlemail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gcc@gcc.gnu.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@cs.washington.edu>
-Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0,  oom_adj=0
-References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com> <20091103222432.4a94bd8f.akpm@linux-foundation.org> <4AF17DED.7080808@gmail.com>
-In-Reply-To: <4AF17DED.7080808@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=X65MgGcuFV1iA73nwyA2+dtzzpK7nUAiIg5lN9+v+1vB2v2OSZalswDGiZLVS0cRhM
+         /kQRX3F+UL9zgRk76/ABBUabfLull1NjKyTebpIna5RLxCVA2lFGqqacfxd9h1QTnCmZ
+         m6faFwaf8r0w6gfM5Gtg45wskpcjWqoIor7Rs=
+Subject: Re: [PATCH -queue v0 5/6] [loongson] rtc: enable legacy RTC driver
+ on fuloong2f
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Arnaud Patard <apatard@mandriva.com>, linux-mips@linux-mips.org,
+       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
+       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       liujl@lemote.com
+In-Reply-To: <20091104141545.GA18408@linux-mips.org>
+References: <cover.1257325319.git.wuzhangjin@gmail.com>
+	 <e13ed33a99dbf14f223360d414aa2b2c5caa9b1f.1257325319.git.wuzhangjin@gmail.com>
+	 <m3eioetvx5.fsf@anduin.mandriva.com>
+	 <1257333527.8716.20.camel@falcon.domain.org>
+	 <20091104141545.GA18408@linux-mips.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Wed, 04 Nov 2009 23:12:59 +0800
+Message-ID: <1257347585.16033.0.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Korn wrote:
-> Andrew Morton wrote:
->    
->> On Mon, 2 Nov 2009 13:29:29 -0800 Justin Mattock<justinmattock@gmail.com>  wrote:
->>
->>      
->>> Hello,
->>> I'm not sure how to handle this,
->>> while compiling firefox-3.6b1.source
->>> I get this with the default compiling options,
->>> as well as custom:
->>>
->>> ...
->>>
->>> active_anon:2360492kB inactive_anon:590196kB active_file:84kB
->>>        
->> 2.8GB of anonymous memory
->>
->>      
->>> [  532.942508] Free swap  = 0kB
->>> [  532.942510] Total swap = 431632kB
->>>        
->> 430MB of swap, all used up.
->>
->> That's a genuine OOM.  Something (presumably cc1plus) has consumed
->> waaaay too much memory, quite possibly leaked it.
->>
->> It would help if the oom-killer were to print some information about
->> the oom-killed process's memory footprint.
->>      
->
->    I would think that the quickest way to proceed would be to re-run the
-> failing compile command under gdb at the command-line and see what it's doing
-> when the oom killer signals it, wouldn't it?  Or turn up the swap until it
-> doesn't get killed and see what info can be gleaned from the cc1(plus?)
-> -fmem-report output.
->
->      cheers,
->        DaveK
->
->
->    
-I can try, only issue I have is I don't
-use a distro, so building anything requires me
-to hand compile it(hopefully not difficult for gdb).
+On Wed, 2009-11-04 at 15:15 +0100, Ralf Baechle wrote:
+> On Wed, Nov 04, 2009 at 07:18:47PM +0800, Wu Zhangjin wrote:
+> 
+> > In reality, fuloong2e, fuloong2f and yeeloong2f work fine with RTC_LIB,
+> > but relative patches need to append to drivers/rtc/rtc-cmos.c and also
+> > need a RTC platform device. If what I remembered is right, Gdium also
+> > need corresponding patches to make it work with RTC_LIB.
+> > 
+> > Herein, I just let the basic support for those machines work, and then,
+> > the RTC_LIB support will be sent out later.
+> > 
+> > and a small question: if legacy RTC driver works well on these machines,
+> > why should we forbid people to use it? I think it's better to remove the
+> > "select RTC_LIB" line for MIPS, and then, the people will be free to
+> > choose what they want, and even for the users whose platform not support
+> > RTC_LIB.
+> 
+> RTC_LIB is the way to go; the non-RTC_LIB drivers are there only for
+> backward compatbility.  A grep through the defcconfig files for all
+> platforms on all architectures finds that by now all have set
+> CONFIG_RTC_LIB and the remaining users of CONFIG_RTC, CONFIG_JS_RTC,
+> CONFIG_GEN_RTC, CONFIG_EFI_RTC, CONFIG_DS1302 (which all depend on !RTC_LIB)
+> are all defconfig files which seem to be slowly bitrotting.
+> 
+> Time to axe !RTC_LIB?  I'm tempted.
+> 
 
-So give me some time on this and I'll see if I can get this up
-and running, and add that patch to kernel then go from there.
+Okay, later, I will send the patches for RTC_LIB support asap, I'm
+testing it currently ;)
 
-Justin P. Mattock
+Regards,
+	Wu Zhangjin
+
