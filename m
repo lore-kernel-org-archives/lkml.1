@@ -1,41 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZKDIle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbZKDIms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbZKDIle (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 03:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZKDIld
+	id S1754718AbZKDIms (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 03:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZKDImr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 03:41:33 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59711
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751039AbZKDIlc (ORCPT
+	Wed, 4 Nov 2009 03:42:47 -0500
+Received: from smtprelay01.ispgateway.de ([80.67.31.35]:55296 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752065AbZKDImr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 03:41:32 -0500
-Date: Wed, 04 Nov 2009 00:41:57 -0800 (PST)
-Message-Id: <20091104.004157.86565200.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: johannes@sipsolutions.net, marcel@holtmann.org, dmitry.torokhov@gmail.com,
-       torvalds@linux-foundation.org, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: Please consider reverting
- 7d930bc33653d5592dc386a76a38f39c2e962344
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091103223433.23765578.akpm@linux-foundation.org>
-References: <1257232587.3420.55.camel@localhost.localdomain>
-	<1257234299.28469.25.camel@johannes.local>
-	<20091103223433.23765578.akpm@linux-foundation.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 4 Nov 2009 03:42:47 -0500
+Message-ID: <4AF13E8C.4010104@ladisch.de>
+Date: Wed, 04 Nov 2009 09:42:52 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: James Simmons <jsimmons@infradead.org>, Dave Airlie <airlied@redhat.com>
+CC: dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/3] drm/fb: fix FBIOGET/PUT_VSCREENINFO pixel clock handling
+References: <4AEE8CDD.10600@ladisch.de> <4AEE8D6F.60209@ladisch.de> <alpine.LFD.2.00.0911021431360.30135@casper.infradead.org> <4AF01F72.2030605@ladisch.de> <4AF01FFD.50409@ladisch.de> <alpine.LFD.2.00.0911031718160.14442@casper.infradead.org> <4AF13E04.8000005@ladisch.de>
+In-Reply-To: <4AF13E04.8000005@ladisch.de>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 3 Nov 2009 22:34:33 -0800
+When the framebuffer driver does not publish detailed timing information
+for the current video mode, the correct value for the pixclock field is
+zero, not -1.
 
-> Problem is, subsystem maintainers are very unreliable.
+Since pixclock is actually unsigned, the value -1 would be interpreted
+as 4294967295 picoseconds (i.e., about 4 milliseconds) by
+register_framebuffer() and userspace programs.
 
-This is common, but not universal Andrew.
+This patch allows X.org's fbdev driver to work.
 
-Or, if it is, what patches from you have I been sitting on? :-)
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+---
+No changes from v1.
+
+ drivers/gpu/drm/drm_fb_helper.c |   6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- linux-2.6/drivers/gpu/drm/drm_fb_helper.c
++++ linux-2.6/drivers/gpu/drm/drm_fb_helper.c
+@@ -599,7 +599,7 @@ int drm_fb_helper_check_var(struct fb_va
+ 	struct drm_framebuffer *fb = fb_helper->fb;
+ 	int depth;
+ 
+-	if (var->pixclock == -1 || !var->pixclock)
++	if (var->pixclock != 0)
+ 		return -EINVAL;
+ 
+ 	/* Need to resize the fb object !!! */
+@@ -691,7 +691,7 @@ int drm_fb_helper_set_par(struct fb_info
+ 	int ret;
+ 	int i;
+ 
+-	if (var->pixclock != -1) {
++	if (var->pixclock != 0) {
+ 		DRM_ERROR("PIXEL CLCOK SET\n");
+ 		return -EINVAL;
+ 	}
+@@ -904,7 +904,7 @@ int drm_fb_helper_single_fb_probe(struct
+ 	fb_helper->fb = fb;
+ 
+ 	if (new_fb) {
+-		info->var.pixclock = -1;
++		info->var.pixclock = 0;
+ 		if (register_framebuffer(info) < 0)
+ 			return -EINVAL;
+ 	} else {
+
