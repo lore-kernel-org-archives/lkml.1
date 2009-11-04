@@ -1,110 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZKDEXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZKDE1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZKDEXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 23:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbZKDEXn
+	id S1754682AbZKDE1Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 23:27:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbZKDE1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 23:23:43 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:34861 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753964AbZKDEXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 23:23:42 -0500
-Date: Tue, 3 Nov 2009 22:23:45 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 10/13] sysfs: In sysfs_chmod_file lazily propagate the
-	mode change.
-Message-ID: <20091104042345.GF27639@us.ibm.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-10-git-send-email-ebiederm@xmission.com>
+	Tue, 3 Nov 2009 23:27:15 -0500
+Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:35922 "EHLO
+	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754626AbZKDE1P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 23:27:15 -0500
+Date: Tue, 3 Nov 2009 21:27:17 -0700
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Hal Finney <hal.finney@gmail.com>, tpmdd-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, srajiv@linux.vnet.ibm.com
+Subject: Re: [tpmdd-devel] [PATCH] TPM: Let the tpm char device be openable multiple times
+Message-ID: <20091104042717.GS1966@obsidianresearch.com>
+References: <20091103003511.GL7768@obsidianresearch.com> <da7b3ce30911030931u1ccbff69ted4206606475c83@mail.gmail.com> <6926.1257272068@turing-police.cc.vt.edu> <20091103224157.GA20963@obsidianresearch.com> <13189.1257305069@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257249429-12384-10-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <13189.1257305069@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> Now that sysfs_getattr and sysfs_permission refresh the vfs
-> inode there is no need to immediatly push the mode change
-> into the vfs cache.  Reducing the amount of work needed and
-> simplifying the locking.
-> 
-> Acked-by: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+On Tue, Nov 03, 2009 at 10:24:29PM -0500, Valdis.Kletnieks@vt.edu wrote:
 
-Nice.
+> A number of other things under drivers/ implement "only one open" semantics,
+> but those are hard-coded into the driver. But for the TPM, it's unclear if
+> exclusive or non-exclusive is the right model. 
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+The underlying hardware already supports multiplexing multiple clients
+in the same command stream - I'm not sure why this shouldn't be
+exported to user space as-is. The kernel already accesses the TPM
+without going through the middleware for in kernel features..
 
-> ---
->  fs/sysfs/file.c |   31 ++++++++-----------------------
->  1 files changed, 8 insertions(+), 23 deletions(-)
-> 
-> diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-> index faa1a80..dc30d9e 100644
-> --- a/fs/sysfs/file.c
-> +++ b/fs/sysfs/file.c
-> @@ -579,38 +579,23 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_group);
->   */
->  int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
->  {
-> -	struct sysfs_dirent *victim_sd = NULL;
-> -	struct dentry *victim = NULL;
-> -	struct inode * inode;
-> +	struct sysfs_dirent *sd;
->  	struct iattr newattrs;
->  	int rc;
-> 
-> -	rc = -ENOENT;
-> -	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
-> -	if (!victim_sd)
-> -		goto out;
-> +	mutex_lock(&sysfs_mutex);
-> 
-> -	mutex_lock(&sysfs_rename_mutex);
-> -	victim = sysfs_get_dentry(victim_sd);
-> -	mutex_unlock(&sysfs_rename_mutex);
-> -	if (IS_ERR(victim)) {
-> -		rc = PTR_ERR(victim);
-> -		victim = NULL;
-> +	rc = -ENOENT;
-> +	sd = sysfs_find_dirent(kobj->sd, attr->name);
-> +	if (!sd)
->  		goto out;
-> -	}
-> -
-> -	inode = victim->d_inode;
-> 
-> -	mutex_lock(&inode->i_mutex);
-> -
-> -	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-> +	newattrs.ia_mode = (mode & S_IALLUGO) | (sd->s_mode & ~S_IALLUGO);
->  	newattrs.ia_valid = ATTR_MODE;
-> -	rc = sysfs_setattr(victim, &newattrs);
-> +	rc = sysfs_sd_setattr(sd, &newattrs);
-> 
-> -	mutex_unlock(&inode->i_mutex);
->   out:
-> -	dput(victim);
-> -	sysfs_put(victim_sd);
-> +	mutex_unlock(&sysfs_mutex);
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(sysfs_chmod_file);
-> -- 
-> 1.6.5.2.143.g8cc62
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Maybe the right answer is to default to multiple opens, but have an
+> ioctl() that turns on exclusive mode.  If you have a 'tcsd' daemon,
+> it will need to get launched early enough to do the open/ioctl
+
+Why is this an issue? /dev/tpm is root only accessible. There are a lot
+of things that can go horribly wrong if root does improper things, and
+you can create quite reasonable multi-process tpm using applications
+without the middleware.
+
+Even if another root process does open /dev/tpm - what is the worst it
+can do?
+
+Jason
