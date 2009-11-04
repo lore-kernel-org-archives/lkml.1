@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZKDHqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbZKDHvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbZKDHqJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 02:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZKDHqI
+	id S1751892AbZKDHvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 02:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZKDHvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 02:46:08 -0500
-Received: from ozlabs.org ([203.10.76.45]:33648 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbZKDHqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 02:46:07 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] MM: slqb, fix per_cpu access
-Date: Wed, 4 Nov 2009 18:15:52 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: npiggin@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@linux-foundation.org>
-References: <1257113578-1584-1-git-send-email-jirislaby@gmail.com> <200911022353.30524.rusty@rustcorp.com.au> <4AEEFB5D.9080009@gmail.com>
-In-Reply-To: <4AEEFB5D.9080009@gmail.com>
+	Wed, 4 Nov 2009 02:51:48 -0500
+Received: from [95.166.99.235] ([95.166.99.235]:39138 "EHLO kernel.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751039AbZKDHvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 02:51:47 -0500
+Date: Wed, 4 Nov 2009 08:51:52 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: [PATCH 0/5] cfq-iosched: improve latency for no-idle
+	queues (v3)
+Message-ID: <20091104075152.GX8742@kernel.dk>
+References: <x493a4wsn5c.fsf@segfault.boston.devel.redhat.com> <x49fx8wbqd0.fsf@segfault.boston.devel.redhat.com> <4e5e476b0911030042q5963718aj5875c542e6f6cc40@mail.gmail.com> <x49ocnju35d.fsf@segfault.boston.devel.redhat.com> <4e5e476b0911030719m425c208cg311f44a91fad8342@mail.gmail.com> <4e5e476b0911031035l7caffcb7n36b6eddd399864e7@mail.gmail.com> <20091103201802.GL8742@kernel.dk> <x49ocnjqrs5.fsf@segfault.boston.devel.redhat.com> <20091103202836.GM8742@kernel.dk> <x49aaz3i807.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911041815.53431.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49aaz3i807.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009 02:01:41 am Jiri Slaby wrote:
-> >> -	struct delayed_work *cache_trim_work = &per_cpu(cache_trim_work, cpu);
-> >> +	struct delayed_work *_cache_trim_work = &per_cpu(cache_trim_work, cpu);
-> >>  
-> >>  	/*
-> >>  	 * When this gets called from do_initcalls via cpucache_init(),
-> >>  	 * init_workqueues() has already run, so keventd will be setup
-> >>  	 * at that time.
-> >>  	 */
-> >> -	if (keventd_up() && cache_trim_work->work.func == NULL) {
-> >> -		INIT_DELAYED_WORK(cache_trim_work, cache_trim_worker);
-> >> -		schedule_delayed_work_on(cpu, cache_trim_work,
-> >> +	if (keventd_up() && _cache_trim_work->work.func == NULL) {
-> >> +		INIT_DELAYED_WORK(_cache_trim_work, cache_trim_worker);
-> >> +		schedule_delayed_work_on(cpu, _cache_trim_work,
-> >>  					__round_jiffies_relative(HZ, cpu));
-> > 
-> > How about calling the local var "trim"?
-> > 
-> > This actually makes the code more readable, IMHO.
+On Tue, Nov 03 2009, Jeff Moyer wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
 > 
-> Please ignore this version of the patch. After this I sent a new one
-> which changes the global var name.
+> > On Tue, Nov 03 2009, Jeff Moyer wrote:
+> >> Jens Axboe <jens.axboe@oracle.com> writes:
+> >> 
+> >> > Since for-linus contains conflicting changes, can you and Jeff please
+> >> > double check that everything is still in order? The interesting bit here
+> >> > is the merge with for-2.6.33 and the coop limit from Shaohua Li. I did
+> >> > the straight forward merge, but we likely just need to drop that logic
+> >> > since the coop concept is radically different given that we merge and
+> >> > break queues in for-2.6.33.
+> >> 
+> >> Yeah, since I changed the meaning of the cfqq_coop flag, a lot of those
+> >> tests are just plain wrong.  Let me play with it and I'll send you an
+> >> incremental patch in a bit.
+> >
+> > Thanks, here's what I have. It's basically a revert of the commit in
+> > question.
+> 
+> Your patch looks like a straight-forward revert.  I still think we need
+> some guards in place, though.  For now, I think we can go with what you
+> have, and I'll come up with some other mechanism to deal with this case.
 
-OK, sure.  It's not worth changing unless you were doing a rename anyway.
+Thanks Jeff, I'll merge it up and we can get things straightened out in
+due time.
 
-> So the local variable is untouched there. If you want me to perform the
-> cleanup, let me know. In any case I'd make it trim_work instead of trim
-> which makes more sense to me.
+-- 
+Jens Axboe
 
-This is getting pedantic and marginal, but the word "work" already appears
-everywhere this var is used.  Either "XXX->work", or "INIT_DELAYED_WORK(XXX"
-or "scheduled_delayed_work_on(cpu, XXX".
-
-That's why I think the word "work" in unnecessary.
-
-Hope that clarifies why I preferred "trim".
-Rusty.
