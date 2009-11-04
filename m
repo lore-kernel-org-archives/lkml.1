@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbZKDWtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbZKDWz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932973AbZKDWtl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 17:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbZKDWtl
+	id S1758364AbZKDWz4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 17:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758244AbZKDWz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 17:49:41 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:11966 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755374AbZKDWtk (ORCPT
+	Wed, 4 Nov 2009 17:55:56 -0500
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:47920 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758236AbZKDWzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 17:49:40 -0500
+	Wed, 4 Nov 2009 17:55:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=oOH3YfYcEqmYYujE/LpvVdG6ilU5cE97acOOdblmH8WNn/nxWkEsrvYB3o8sHuknVt
-         Ybp6DpCt4osd9DVWFYF4EEYhPBwUD0jdqYQfrPpGWcyjE6uceNmqPCRAtdVhuYlGKBEU
-         /MzyZWPB60mvkrg5FGMI65tEhZ2ZawNf/qHuc=
-Message-ID: <4AF20516.1060704@gmail.com>
-Date: Wed, 04 Nov 2009 14:49:58 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=UenUC7SHDjLLiq/fsBtribG8W4FwCqcMpRgzKdznOGpcNC4UaCZA+bBFklx7DNXODu
+         4nEiTNSFuxOUwn3juRfcqr83mI0E9wa3CpKOxr23TVL+ZBo0jguxVotcTKui6YZG9tMo
+         /0+0nGkI1bSJd9mKNdOgCsNvcorQ/2iO/iRZw=
 MIME-Version: 1.0
-To: Michael Gilbert <michael.s.gilbert@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: CVE-2009-2584
-References: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com>	<4AF1FB69.4000101@gmail.com> <20091104172107.d78e08f1.michael.s.gilbert@gmail.com>
-In-Reply-To: <20091104172107.d78e08f1.michael.s.gilbert@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <14add3d10911041219j6ab25282re4f98d14029b1f68@mail.gmail.com>
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> 
+	<14add3d10911041219j6ab25282re4f98d14029b1f68@mail.gmail.com>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Thu, 5 Nov 2009 09:55:39 +1100
+Message-ID: <646765f40911041455m7a6f55b8ka3ce95de7dd6ac6c@mail.gmail.com>
+Subject: Re: [PATCH 00/41] rewritten rt2800 drivers
+To: Gertjan van Wingerde <gwingerde@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Gilbert wrote:
-> On Wed, 04 Nov 2009 14:08:41 -0800, Justin P. Mattock wrote:
->    
->> just read something today which might
->> be similar/same as what you might
->> be referring too.
->> http://www.theregister.co.uk/2009/11/03/linux_kernel_vulnerability/
->>      
->
-> Hi,
->
-> Thank you very much for the quick response, but that link refers to
-> CVE-2009-3547 (not CVE-2009-2584), which is a different issue
-> altogether.
->
-> Best wishes,
-> Mike
->
->    
-alright..
-wasn't sure or not.
-hopefully somebody gives some info
-on this(I don't like seeing these things).
+Bart,
 
-Justin P. Mattock
+FWIW, this all looks good to me, except for these comments:
+
+1. When you introduce struct rt2800_ops, it may telegraph your
+intentions more clearly if you introduce rt2800lib.h at the same time
+- this also means that we don't have (if only for a single patch)
+duplicate versions of this structure and it's associated code.
+
+2. Patches #26-28 should arguably come before the conversions to use
+the struct rt2800_ops methods.
+
+3. I don't get the reasoning behind patch #37 (remove useless ifdefs
+from rt2x00leds.h) but I'm going to assume that it's all right.
+
+4. Patch #39 should arguably come earlier in the patch set as it's a
+general cleanup.
+
+Other than that, good work!
+
+Thanks,
+
+-- 
+
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+.Plan: http://sites.google.com/site/juliancalaby/
