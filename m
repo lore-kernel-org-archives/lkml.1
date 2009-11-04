@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbZKDRni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbZKDRzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbZKDRni (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757580AbZKDRnf
+	id S932135AbZKDRzT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 12:55:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbZKDRzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:43:35 -0500
-Received: from outbound-mail-146.bluehost.com ([67.222.38.36]:40591 "HELO
-	outbound-mail-146.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757579AbZKDRnc (ORCPT
+	Wed, 4 Nov 2009 12:55:18 -0500
+Received: from mail1-hoer.fullrate.dk ([90.185.1.42]:57403 "EHLO
+	smtp.fullrate.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757455AbZKDRzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:43:32 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=PHJ/W+8mpaTEWXlj7Tt0y+4c+9SQSVgDVIwJqUG2gq/zf+RxXtQ+IaRJHrBZSXlcJhPsjP9ANIuLZxqXYV6OHpbo2FbTJIfWD0Y0osxB5kcbX9QA2dz6UgR6Rq6M5iFZ;
-Date: Wed, 4 Nov 2009 09:43:35 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Joe Perches <joe@perches.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] vsprintf: use %pR, %pr instead of %pRt, %pRf
-Message-ID: <20091104094335.31247fe2@jbarnes-piketon>
-In-Reply-To: <20091027192647.12712.36043.stgit@bob.kio>
-References: <20091027192647.12712.36043.stgit@bob.kio>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Nov 2009 12:55:17 -0500
+X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Nov 2009 12:55:16 EST
+From: Martin Nybo Andersen <tweek@tweek.dk>
+To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Subject: Re: package managers [was: FatELF patches...]
+Date: Wed, 4 Nov 2009 18:48:48 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.31.5; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Ryan C. Gordon" <icculus@icculus.org>,
+       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <20091104165407.1481bc29@lxorguk.ukuu.org.uk> <Pine.LNX.4.64.0911041758420.9986@artax.karlin.mff.cuni.cz>
+In-Reply-To: <Pine.LNX.4.64.0911041758420.9986@artax.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Message-Id: <200911041848.48721.tweek@tweek.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009 13:26:47 -0600
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-
-> Jesse accidentally applied v1 [1] of the patchset instead of v2 [2].
-> This is the diff between v1 and v2.
+On Wednesday 04 November 2009 18:25:07 Mikulas Patocka wrote:
+> On Wed, 4 Nov 2009, Alan Cox wrote:
+> > > - With Linux package managers, the user is stuck with the software and
+> > >   version shipped by the distribution. If he wants to install anything
+> > >   newer or older, it turns into black magic and the typical desktop
+> > > user (non-hacker) can't do it.
+> >
+> > In the rpm/yumworld that would be "yum downgrade" and "yum upgrade" for
+> > packages or whatever button on whatever gui wrapper you happen to have.
 > 
-> The changes in this patch are:
->     - tidied vsprintf stack buffer to shrink and compute size more
->       accurately
->     - use %pR for decoding and %pr for "raw" (with type and flags)
-> instead of adding %pRt and %pRf
+> And what if there isn't a package? Upgrade option doesn't solve the need
+> for [ distributions X software ] matrix of packages.
 > 
-> [1] http://lkml.org/lkml/2009/10/6/491
-> [2] http://lkml.org/lkml/2009/10/13/441
+> > And of course yum supports third party repositories so you can also deal
+> > with the updating problem which Windows tends not to do well for third
+> > party software.
 > 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> A practical example --- when I wanted to get Wine on RHEL 5, all I found
+> was a package for 1.0.1. Nothing newer.
+> 
+> I managed to compile the current version of Wine (it wasn't straghtforward
+> and took few days to solve all the problems) and it ran the program I
+> wanted. But I can imagine that a typical business user or home gamer will
+> just say "that Linux sux".
+> 
+> You can say that I should delete RHEL-5 and install Fedora, but that is
+> just that "upgrade one program" => "upgrade all programs" problem.
 
-Applied, thanks.
+Have you ever tried upgrading Windows because some program is incompatible 
+with the current installation? ... That is indeed an 'upgrade all' procedure 
+... _If_ you're lucky enough to be able to reinstall your software.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Being able to upgrade at least Debian -- and others as well -- without the 
+need to attend the computer is IMHO one of Linux' biggest wins.
+
+BTW: Wine has, like many others, the newest version of their software 
+prepackaged for RHEL 4 & 5 among others at their site: 
+http://www.winehq.org/download/
+
+If all else fail the developers could go for statically compiled binaries in 
+an executable tarball, which then handles the installation to /usr/local
+
+-Martin
+
