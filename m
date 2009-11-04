@@ -1,58 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZKDNeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbZKDNfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbZKDNeh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 08:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZKDNeg
+	id S1756257AbZKDNfm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 08:35:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbZKDNfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 08:34:36 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43825 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755055AbZKDNef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 08:34:35 -0500
-Date: Wed, 4 Nov 2009 14:34:35 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric=5FWeisbecker?= <fweisbec@gmail.com>
-Subject: Re: [PATCH v3 0/7] Adding general performance benchmarking subcommand
- to perf.
-In-Reply-To: <1257339987-22953-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Message-ID: <alpine.LRH.2.00.0911041434040.31913@twin.jikos.cz>
-References: <1257339987-22953-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 4 Nov 2009 08:35:41 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:17593 "EHLO
+	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755073AbZKDNfk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 08:35:40 -0500
+X-SpamScore: -12
+X-BigFish: VPS-12(z21eWzzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KSL72Z-04-CG9-02
+X-M-MSG: 
+Date: Wed, 4 Nov 2009 14:35:37 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: x86 <x86@kernel.org>, Doug Thompson <norsk5@yahoo.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] AMD64 EDAC fixes for 2.6.32-rc7
+Message-ID: <20091104133536.GB16373@aftab>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 04 Nov 2009 13:35:22.0701 (UTC) FILETIME=[A8AC3FD0:01CA5D53]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Nov 2009, Hitoshi Mitake wrote:
+Hi Linus,
 
-> This patch series add general benchmark subcommand to perf.
-> 
-> The subcommand will unify the benchmarking programs
-> and provide these in standardized way.
-> 
-> Hitoshi Mitake (7):
->   Adding general performance benchmarking subcommand to perf.
->   Adding general performance benchmarking subcommand to perf.
->   Adding general performance benchmarking subcommand to perf.
->   Adding general performance benchmarking subcommand to perf.
->   Adding general performance benchmarking subcommand to perf.
->   Adding general performance benchmarking subcommand to perf.
->   Adding general performance benchmarking subcommand to perf.
+please pull the following two oneliners.
 
-Could you please give some more appropriate description to individual 
-patches in series?
+The first one is a regression which I introduced in .31 merge window
+(and I'm crawling ashamed back in my corner) and the second one is
+rather theoretical in the sense that it hasn't happened on a real
+workload but was caught by code staring instead (yeah, people do stare
+at edac code :)).
 
-Thanks,
+Thanks.
+
+The following changes since commit 51bb296b09a83ee1aae025778db38f9d2cc7bb1a:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
+
+Borislav Petkov (1):
+      amd64_edac: fix CECCs reporting
+
+Li Hong (1):
+      amd64_edac: fix a wrong goto clause in amd64_edac.c
+
+ drivers/edac/amd64_edac.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+
+
+-------
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index d4560d9..a38831c 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2254,7 +2254,7 @@ static inline void __amd64_decode_bus_error(struct mem_ctl_info *mci,
+ {
+ 	u32 ec  = ERROR_CODE(info->nbsl);
+ 	u32 xec = EXT_ERROR_CODE(info->nbsl);
+-	int ecc_type = info->nbsh & (0x3 << 13);
++	int ecc_type = (info->nbsh >> 13) & 0x3;
+ 
+ 	/* Bail early out if this was an 'observed' error */
+ 	if (PP(ec) == K8_NBSL_PP_OBS)
+@@ -3163,7 +3163,7 @@ static int __init amd64_edac_init(void)
+ 	opstate_init();
+ 
+ 	if (cache_k8_northbridges() < 0)
+-		goto err_exit;
++		return err;
+ 
+ 	err = pci_register_driver(&amd64_pci_driver);
+ 	if (err)
+@@ -3189,8 +3189,6 @@ static int __init amd64_edac_init(void)
+ 
+ err_2nd_stage:
+ 	debugf0("2nd stage failed\n");
+-
+-err_exit:
+ 	pci_unregister_driver(&amd64_pci_driver);
+ 
+ 	return err;
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
 
