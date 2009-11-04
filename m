@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZKDQgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZKDQZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbZKDQgY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 11:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbZKDQgX
+	id S1757040AbZKDQZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 11:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZKDQZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 11:36:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9066 "EHLO mx1.redhat.com"
+	Wed, 4 Nov 2009 11:25:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36681 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756929AbZKDQgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 11:36:23 -0500
-Date: Wed, 4 Nov 2009 18:23:39 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       Daniel Walker <dwalker@fifo99.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCHv8 0/3] vhost: a kernel-level virtio server
-Message-ID: <20091104162339.GA311@redhat.com>
-References: <20091104155234.GA32673@redhat.com> <4AF1A587.8000509@gmail.com>
+	id S1752275AbZKDQZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 11:25:25 -0500
+Message-ID: <4AF1AACE.6060705@redhat.com>
+Date: Wed, 04 Nov 2009 17:24:46 +0100
+From: Jan Safranek <jsafrane@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF1A587.8000509@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>, balbir@linux.vnet.ibm.com,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata.rao@in.ibm.com>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [RFC] Mount point suggestions for cgroup
+References: <20091104063005.GC3560@balbir.in.ibm.com> <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com> <20091104081618.GD3560@balbir.in.ibm.com> <1257348117.31972.4360.camel@nimitz> <20091104161142.GA8825@us.ibm.com>
+In-Reply-To: <20091104161142.GA8825@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 11:02:15AM -0500, Gregory Haskins wrote:
-> Michael S. Tsirkin wrote:
-> > Ok, I think I've addressed all comments so far here.
-> > Rusty, I'd like this to go into linux-next, through your tree, and
-> > hopefully 2.6.33.  What do you think?
-> 
-> I think the benchmark data is a prerequisite for merge consideration, IMO.
+On 11/04/2009 05:11 PM, Serge E. Hallyn wrote:
+> Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+>> On Wed, 2009-11-04 at 13:46 +0530, Balbir Singh wrote:
+>>> The reason I liked /dev/cgroup was because cpusets could be
+>>> mounted at /dev/cpuset or /dev/cgroup/cpuset. My concern with /cgroup
+>>> is that a ls "/" now becomes larger in size. But I'll take your vote
+>>> for it as +1 for /cgroup.
+>>
+>> /dev/pts is a decent precedent for doing it under /dev, although it does
+>> deal with actual devices.  cgroups do not.
+>
+> Hmm, on whose behalf are you making this decision?
+>
+> LSB people will want to avoid using /cgroup,
 
-Shirley Ma was kind enough to send me some measurement results showing
-how kernel level acceleration helps speed up you can find them here:
-http://www.linux-kvm.org/page/VhostNet
+LSB (and FHS) IMHO does not specify any place for such stuff:
 
-Generally, I think that merging should happen *before* agressive
-benchmarking/performance tuning: otherwise there is very substancial
-risk that what is an optimization in one setup hurts performance in
-another one. When code is upstream, people can bisect to debug
-regressions. Another good reason is that I can stop spending time
-rebasing and start profiling.
+/dev - for devices only, cgroups are not devices
+/mnt - for admin temporary mounts and "should not affect the manner in 
+which any program is run"
+/var - for "any unsorted variable data", cgroups are not "unsorted 
+variable data", it's interface to kernel
 
-> Do you have anything for us to look at?
+FHS does not specify either /sys and /selinux and it seems to me nobody 
+complains about them.
 
-For guest to host, compared to latest qemu with userspace virtio
-backend, latency drops by a factor of 6, bandwidth doubles, cpu
-utilization drops slightly :)
+/sys/cgroup would be the best, if sysfs supported mkdir(). But it does 
+not :(. Our kernel guys told me it's relatively easy to create new empty 
+directory /sys/cgroup (or /sys/kernel/cgroup), but it must be compiled 
+into kernel or a module. Then I could mount some tmpfs to it, create 
+/sys/cgroup/cpu, /sys/cgroup/memory etc. and mount the control group 
+hierarchies there... but as you can see, it's really really ugly thing 
+to do.
 
-> I think comparison that show the following are of interest:
-> 
-> throughput (e.g. netperf::TCP_STREAM): guest->host, guest->host->guest,
-> guest->host->remote, host->remote, remote->host->guest
-> 
-> latency (e.g. netperf::UDP_RR): same conditions as throughput
-> 
-> cpu-utilization
-> 
-> others?
-> 
-> Ideally, this should be at least between upstream virtio and vhost.
-> Bonus points if you include venet as well.
-
-And vmxnet3 :)
-
-> Kind regards,
-> -Greg
-> 
--- 
-MST
+Jan
