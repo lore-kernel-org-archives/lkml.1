@@ -1,77 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZKDMFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbZKDMHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbZKDMFJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 07:05:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZKDMFI
+	id S1753668AbZKDMHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 07:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZKDMHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 07:05:08 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:37159 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332AbZKDMFH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 07:05:07 -0500
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: [PATCH 15/13] sysfs: Protect sysfs_refresh_inode with inode mutex.
-References: <m13a4vbz8r.fsf@fess.ebiederm.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 04 Nov 2009 04:05:08 -0800
-In-Reply-To: <m13a4vbz8r.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Tue\, 03 Nov 2009 03\:53\:56 -0800")
-Message-ID: <m1hbta1onf.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+	Wed, 4 Nov 2009 07:07:40 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46008 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753368AbZKDMHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 07:07:39 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX189/PwERZo97D35FmbEXLdHkwQxeVS/5iHSREdRl4
+	A6N6WriL6CT787
+Subject: Re: UDP-U stream performance regression on 32-rc1 kernel
+From: Mike Galbraith <efault@gmx.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, alex.shi@intel.com,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1257299745.16282.49.camel@ymzhang>
+References: <1257220036.3819.193.camel@alexs-hp.sh.intel.com>
+	 <1257222791.16282.46.camel@ymzhang>  <20091103174531.GA14747@elte.hu>
+	 <1257299745.16282.49.camel@ymzhang>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 04 Nov 2009 13:07:41 +0100
+Message-Id: <1257336461.16163.18.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-11-04 at 09:55 +0800, Zhang, Yanmin wrote:
+> On Tue, 2009-11-03 at 18:45 +0100, Ingo Molnar wrote:
+> > * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> > 
+> > > On Tue, 2009-11-03 at 11:47 +0800, Alex Shi wrote:
+> > > > We found the UDP-U 1k/4k stream of netperf benchmark have some
+> > > > performance regression from 10% to 20% on our Tulsa and some NHM
+> > > > machines. 
+> > > ﻿ perf events shows function find_busiest_group consumes about 4.5% cpu 
+> > > time with the patch while it only consumes 0.5% cpu time without the 
+> > > patch.
+> > > 
+> > > The communication between netperf client and netserver is very fast. 
+> > > When netserver receives a message and there is no new message 
+> > > available, it goes to sleep and scheduler calls idle_balance => 
+> > > load_balance_newidle. load_balance_newidle spends too much time and a 
+> > > new message arrives quickly before load_balance_newidle ends.
+> > > 
+> > > As the comments in the patch say hackbench benefits from it, I tested 
+> > > hackbench on Nehalem and core2 machines. hackbench does benefit from 
+> > > it, about 6% on nehalem machines, but doesn't benefit on core2 
+> > > machines.
+> > 
+> > Can you confirm that -tip:
+> > 
+> >   http://people.redhat.com/mingo/tip.git/README
+> > 
+> > has it fixed (or at least improved)?
+> The latest tips improves netperf loopback result, but doesn't fix it
+> thoroughly. For example, on a Nehalem machine, netperf UDP-U-1k has
+> about 25% regression, but with the tips kernel, the regression becomes
+> less than 10%.
 
-In general everything that writes to vfs inodes holds the
-inode mutex, so hold the inode mutex over sysfs_refresh_inode.
-The sysfs data structures don't need this but it looks like the
-vfs might.
+Can you try the below, and send me your UDP-U-1k args so I can try it?  
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+The below shows promise for stopping newidle from harming cache, though
+it needs to be more clever than a holdoff.  The fact that it only harms
+the _very_ sensitive to idle time x264 testcase by 5% shows some
+promise.
+
+tip v2.6.32-rc6-1731-gc5bb4b1
+tbench 8                                1044.66 MB/sec 8 procs
+x264 8                                  366.58 frames/sec -start_debit 392.24 fps -newidle 215.34 fps
+
+tip+ v2.6.32-rc6-1731-gc5bb4b1
+tbench 8                                1040.08 MB/sec 8 procs .995
+x264 8                                  350.23 frames/sec -start_debit 371.76
+                                          .955                           .947
+
+mysql+oltp
+clients             1          2          4          8         16         32         64        128        256
+tip          10447.14   19734.58   36038.18   35776.85   34662.76   33682.30   32256.22   28770.99   25323.23
+             10462.61   19580.14   36050.48   35942.63   35054.84   33988.40   32423.89   29259.65   25892.24
+             10501.02   19231.27   36007.03   35985.32   35060.79   33945.47   32400.42   29140.84   25716.16
+tip avg      10470.25   19515.33   36031.89   35901.60   34926.13   33872.05   32360.17   29057.16   25643.87
+
+tip+         10594.32   19912.01   36320.45   35904.71   35100.37   34003.38   32453.04   28413.57   23871.22
+             10667.96   20000.17   36533.72   36472.19   35371.35   34208.85   32617.80   28893.55   24499.34
+             10463.25   19915.69   36657.20   36419.08   35403.15   34041.80   32612.94   28835.82   24323.52
+tip+ avg     10575.17   19942.62   36503.79   36265.32   35291.62   34084.67   32561.26   28714.31   24231.36
+                1.010      1.021      1.013      1.010      1.010      1.006      1.006       .988       .944
+
+
 ---
- fs/sysfs/inode.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ kernel/sched.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index e2595a7..ad549f5 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -240,9 +240,11 @@ int sysfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *sta
- 	struct sysfs_dirent *sd = dentry->d_fsdata;
- 	struct inode *inode = dentry->d_inode;
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -590,6 +590,7 @@ struct rq {
  
-+	mutex_lock(&inode->i_mutex);
- 	mutex_lock(&sysfs_mutex);
- 	sysfs_refresh_inode(sd, inode);
- 	mutex_unlock(&sysfs_mutex);
-+	mutex_unlock(&inode->i_mutex);
+ 	u64 rt_avg;
+ 	u64 age_stamp;
++	u64 newidle_ratelimit;
+ #endif
  
- 	generic_fillattr(inode, stat);
- 	return 0;
-@@ -353,9 +355,11 @@ int sysfs_permission(struct inode *inode, int mask)
- {
- 	struct sysfs_dirent *sd = inode->i_private;
+ 	/* calc_load related fields */
+@@ -2383,6 +2384,8 @@ static int try_to_wake_up(struct task_st
+ 	if (rq != orig_rq)
+ 		update_rq_clock(rq);
  
-+	mutex_lock(&inode->i_mutex);
- 	mutex_lock(&sysfs_mutex);
- 	sysfs_refresh_inode(sd, inode);
- 	mutex_unlock(&sysfs_mutex);
-+	mutex_unlock(&inode->i_mutex);
++	rq->newidle_ratelimit = rq->clock;
++
+ 	WARN_ON(p->state != TASK_WAKING);
+ 	cpu = task_cpu(p);
  
- 	return generic_permission(inode, mask, NULL);
- }
--- 
-1.6.5.2.143.g8cc62
+@@ -4427,6 +4430,12 @@ static void idle_balance(int this_cpu, s
+ 	struct sched_domain *sd;
+ 	int pulled_task = 0;
+ 	unsigned long next_balance = jiffies + HZ;
++	u64 delta = this_rq->clock - this_rq->newidle_ratelimit;
++
++	if (delta < sysctl_sched_migration_cost)
++		return;
++
++	this_rq->newidle_ratelimit = this_rq->clock;
+ 
+ 	for_each_domain(this_cpu, sd) {
+ 		unsigned long interval;
+
+
+
 
