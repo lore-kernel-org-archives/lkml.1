@@ -1,116 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932495AbZKDUbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbZKDUbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932495AbZKDUbe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 15:31:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932384AbZKDUbd
+	id S932546AbZKDUbn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 15:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932512AbZKDUbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 15:31:33 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:18596 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932301AbZKDUbc convert rfc822-to-8bit (ORCPT
+	Wed, 4 Nov 2009 15:31:42 -0500
+Received: from RELAY-01.ANDREW.CMU.EDU ([128.2.10.212]:45934 "EHLO
+	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932511AbZKDUbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 15:31:32 -0500
+	Wed, 4 Nov 2009 15:31:41 -0500
+Date: Wed, 4 Nov 2009 15:30:25 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       lizf@cn.fujistu.com, akpm@linux-foundation.org, menage@google.com,
+       bblum@andrew.cmu.edu
+Subject: Re: [RFC][PATCH 2/3] cgroups: subsystem module interface
+Message-ID: <20091104203024.GA14471@andrew.cmu.edu>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	containers@lists.linux-foundation.org, lizf@cn.fujistu.com,
+	akpm@linux-foundation.org, menage@google.com
+References: <20091102212825.GA13692@andrew.cmu.edu> <20091102213022.GC13692@andrew.cmu.edu>
 MIME-Version: 1.0
-Message-ID: <284e5d6c-7b31-4284-bd2d-c1d2ded1bc72@default>
-Date: Wed, 4 Nov 2009 12:30:11 -0800 (PST)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Glauber Costa <glommer@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
-       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
-Subject: RE: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
-	implementation
-In-Reply-To: <4AEFBBA2.4040907@redhat.com>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
- 9.0.0.6627]
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4AF1E46B.015B:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102213022.GC13692@andrew.cmu.edu>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Avi Kivity [mailto:avi@redhat.com]
-> Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
-> implementation
+On Mon, Nov 02, 2009 at 04:30:22PM -0500, Ben Blum wrote:
+> Add interface between cgroups subsystem management and module loading
 > 
-> On 11/02/2009 05:46 PM, Dan Magenheimer wrote:
-> >>> I don't have any public data available for this DB usage,
-> >>>        
-> >> Sorry, that doesn't explain anything.
-> >>      
-> > Well for now just consider the DB usage as another use
-> > of profiling.  But one can easily draw scenarios where
-> > a monotonic timestamp is also used to guarantee transaction
-> > ordering.
-> >    
+> From: Ben Blum <bblum@andrew.cmu.edu>
 > 
-> In this case we should provide a facility for this.  
-> Providing a global 
-> monotonic counter may be easier than providing a monotonic 
-> clock.  Hence 
-> my question.
-
-Maybe I'm misunderstanding something, but enterprise
-apps can do this entirely on their own without any
-kernel help, correct?  Or are you trying to provide
-it across guests, e.g. for clusters or something?
-
-> >> For profiling work fast timestamping is of course great, but surely
-> >> there is no monotonicity requirement?
-> >>      
-> > Yes and no.  Monotonicity is a poor substitute for a more
-> > generic mechanism that might provide an indication that a
-> > discontinuity has occurred (forward or backward); if an app
-> > could get both the timestamp AND some kind of "continuity
-> > generation counter" (basically a much more sophisticated
-> > form of TSC_AUX that changes whenever the timestamp is
-> > coming from a different source), perhaps all problems could 
-> be solved.   
+> This patch implements rudimentary module-loading support for cgroups - namely,
+> a cgroup_load_subsys (similar to cgroup_init_subsys) for use as a module
+> initcall, and a struct module pointer in struct cgroup_subsys. Support for
+> subsystem unloading not here, yet to be done (requires more advanced reference
+> counting, for one thing).
 > 
-> I doubt it.  A discontinuity has occured, but what do we know 
-> about it? nothing.
-
-Actually, I think for many/most profiling applications,
-just knowing a discontinuity occurred between two
-timestamps is very useful as that one specific measurement
-can be discarded.  If a discontinuity is invisible,
-one clearly knows that a negative interval is bad,
-but if an interval is very small or very large,
-one never knows if it is due to a discontinuity or
-due to some other reason.
-
-This would argue for a syscall/vsyscall that can
-"return" two values: the "time" and a second
-"continuity generation" counter.
-
-> >> I don't think we'll be able to provide monotonicity with 
-> vsyscall on
-> >> tsc-broken hosts, so we'll be limited to correcting the 
-> tsc frequency
-> >> after migration for good-tsc hosts.
-> >>      
-> > True, though clock_gettime(CLOCK_MONOTONIC) can provide
-> > the monotonicity where it is required. 
+> I tested compiling a subsystem outside of the kernel source tree, and it was
+> apparent that I wanted the EXPORT_SYMBOL for several functions, but I'm not
+> sure what else it might be good to put them on. Suggestions welcome.
 > 
-> We have that already.  The question is how to implement it in 
-> a vsyscall.
+> Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
+> ---
+> 
+>  include/linux/cgroup.h |    4 ++
+>  kernel/cgroup.c        |   92 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 96 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index d7f1545..c8474c4 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -38,6 +38,7 @@ extern void cgroup_fork_failed(struct task_struct *p, int run_callbacks,
+>  			       unsigned long clone_flags);
+>  extern int cgroupstats_build(struct cgroupstats *stats,
+>  				struct dentry *dentry);
+> +extern int cgroup_load_subsys(struct cgroup_subsys *ss);
+>  
+>  extern struct file_operations proc_cgroup_operations;
+>  
+> @@ -477,6 +478,9 @@ struct cgroup_subsys {
+>  	/* used when use_id == true */
+>  	struct idr idr;
+>  	spinlock_t id_lock;
+> +
+> +	/* should be defined only by modular subsystems */
+> +	struct module *module;
+>  };
+>  
+>  #define SUBSYS(_x) extern struct cgroup_subsys _x ## _subsys;
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 9966dfe..8eba8a5 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -2491,6 +2491,7 @@ int cgroup_add_file(struct cgroup *cgrp,
+>  		error = PTR_ERR(dentry);
+>  	return error;
+>  }
+> +EXPORT_SYMBOL_GPL(cgroup_add_file);
+>  
+>  int cgroup_add_files(struct cgroup *cgrp,
+>  			struct cgroup_subsys *subsys,
+> @@ -2505,6 +2506,7 @@ int cgroup_add_files(struct cgroup *cgrp,
+>  	}
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL_GPL(cgroup_add_files);
+>  
+>  /**
+>   * cgroup_task_count - count the number of tasks in a cgroup.
+> @@ -3650,7 +3652,97 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss)
+>  	mutex_init(&ss->hierarchy_mutex);
+>  	lockdep_set_class(&ss->hierarchy_mutex, &ss->subsys_key);
+>  	ss->active = 1;
+> +
+> +	/* this function shouldn't be used with modular subsystems, since they
+> +	 * need to register a subsys_id, among other things */
+> +	BUG_ON(ss->module);
+> +}
+> +
+> +/**
+> + * cgroup_load_subsys: load and register a modular subsystem at runtime
+> + * @ss: the subsystem to load
+> + *
+> + * This function should be called in a modular subsystem's initcall. If the
+> + * subsytem is built as a module, it will be assigned a new subsys_id and set
+> + * up for use. If the subsystem is built-in anyway, work is delegated to the
+> + * simpler cgroup_init_subsys.
+> + */
+> +int __init_or_module cgroup_load_subsys(struct cgroup_subsys *ss)
+> +{
+> +	int i;
+> +	struct cgroup_subsys_state *css;
+> +
+> +	/* check name validity */
+> +	if (ss->name == NULL || strlen(ss->name) > MAX_CGROUP_TYPE_NAMELEN)
+> +		return -EINVAL;
+> +
+> +	/* we don't support callbacks in modular subsystems. this check is
+> +	 * before the ss->module check for consistency - a module that *could*
+> +	 * be a module should still have no callbacks for consistency. */
+> +	if (ss->fork || ss->exit)
+> +		return -EINVAL;
+> +
+> +	/* an optionally modular subsystem is built-in: we want to do nothing,
+> +	 * since cgroup_init_subsys will take care of it. */
+> +	if (ss->module == NULL) {
+> +		/* sanity: ss->module NULL only if the subsys is built-in and
+> +		 * appears in subsys[] already. */
+> +		BUG_ON(ss->subsys_id >= CGROUP_BUILTIN_SUBSYS_COUNT);
+> +		BUG_ON(subsys[ss->subsys_id] != ss);
+> +		return 0;
+> +	}
+> +
+> +	/* need to register a subsys id before anything else - for example,
+> +	 * init_cgroup_css needs it. also, subsys_mutex needs to nest outside
+> +	 * cgroup_mutex. */
+> +	down_write(&subsys_mutex);
+> +	/* find the first empty slot in the array */
+> +	for (i = CGROUP_BUILTIN_SUBSYS_COUNT; i < CGROUP_SUBSYS_COUNT; i++) {
+> +		if (subsys[i] == NULL)
+> +			break;
+> +	}
+> +	if (i == CGROUP_SUBSYS_COUNT) {
+> +		/* maximum number of subsystems already registered! */
+> +		up_write(&subsys_mutex);
+> +		return -EBUSY;
+> +	}
+> +	/* assign ourselves the subsys_id */
+> +	ss->subsys_id = i;
+> +	subsys[i] = ss;
+> +
+> +	mutex_lock(&cgroup_mutex);
+> +	/* no ss->create seems to need anything important in the ss struct, so
+> +	 * this can happen first (i.e. before the rootnode attachment). */
+> +	css = ss->create(ss, dummytop);
+> +	if (IS_ERR(css)) {
+> +		/* failure case - need to deassign the subsys[] slot. */
+> +		mutex_unlock(&cgroup_mutex);
+> +		subsys[i] = NULL;
+> +		up_write(&subsys_mutex);
+> +		return PTR_ERR(css);
+> +	}
+> +
+> +	list_add(&ss->sibling, &rootnode.subsys_list);
+> +	ss->root = &rootnode;
+> +
+> +	init_cgroup_css(css, ss, dummytop);
+> +	init_css_set.subsys[ss->subsys_id] = dummytop->subsys[ss->subsys_id];
 
-Oh, I see.  I missed that very crucial point.
+There is a problem here; namely, the init_css_set is supposed to be
+immutable after boot. Putting a new subsystem state in it seems like it
+will be impossible to get right, since a hierarchy might be mounted and
+already using the init_css_set. Perhaps it would be better to use
+find_css_set for this?
 
-So, just to verify/clarify... There is NO WAY for
-a vsyscall to ensure monotonicity (presumably because
-the previous reading can't be safely stored?).  So
-speed and "correctness" are mutually exclusive?
-
-If true, yes, that's a potentially significant problem\
-though an intelligent app can layer monotonicity
-on top of the call I suppose.
+> +
+> +	mutex_init(&ss->hierarchy_mutex);
+> +	lockdep_set_class(&ss->hierarchy_mutex, &ss->subsys_key);
+> +	ss->active = 1;
+> +
+> +	/* pin the subsystem's module so it doesn't go away. this shouldn't
+> +	 * fail, since the module's initcall calls us.
+> +	 * TODO: with module unloading, move this elsewhere */
+> +	BUG_ON(!try_module_get(ss->module));
+> +
+> +	/* success! */
+> +	mutex_unlock(&cgroup_mutex);
+> +	up_write(&subsys_mutex);
+> +	return 0;
+>  }
+> +EXPORT_SYMBOL_GPL(cgroup_load_subsys);
+>  
+>  /**
+>   * cgroup_init_early - cgroup initialization at system boot
+> 
