@@ -1,142 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZKDMpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbZKDMWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbZKDMpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 07:45:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbZKDMpp
+	id S1755713AbZKDMWv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 07:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbZKDMWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 07:45:45 -0500
-Received: from mga14.intel.com ([143.182.124.37]:23973 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753787AbZKDMpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 07:45:45 -0500
-X-ExtLoop1: 1
-Date: Wed, 4 Nov 2009 20:18:32 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Alex Chiang <achiang@hp.com>, akpm@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: Andi Kleen <andi@firstfloor.org>, "Li, Haicheng" <haicheng.li@intel.com>
-Subject: Re: [PATCH] page-types: decode flags directly from command line
-Message-ID: <20091104121832.GB26504@localhost>
-References: <20091103225441.GB4087@grease>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091103225441.GB4087@grease>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Nov 2009 07:22:51 -0500
+Received: from www84.your-server.de ([213.133.104.84]:56678 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752968AbZKDMWu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 07:22:50 -0500
+Subject: Re: [PATCH] update fix X86_64 procfs provide stack information for
+ threads
+From: Stefani Seibold <stefani@seibold.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Americo Wang <xiyou.wangcong@gmail.com>
+In-Reply-To: <20091104120019.GK31511@one.firstfloor.org>
+References: <1257233486.22553.6.camel@wall-e>
+	 <874opaa68v.fsf@basil.nowhere.org> <1257335404.2123.29.camel@wall-e>
+	 <20091104120019.GK31511@one.firstfloor.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Wed, 04 Nov 2009 13:22:49 +0100
+Message-ID: <1257337369.5594.15.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
-
-On Wed, Nov 04, 2009 at 06:54:41AM +0800, Alex Chiang wrote:
-> Teach page-types to decode page flags directly from the command
-> line.
-
-This is good feature to have - I considered adding it, too ;)
-
+Am Mittwoch, den 04.11.2009, 13:00 +0100 schrieb Andi Kleen:
+> > This is true, but i think it is better to get an outdated value than a
+> > complete wrong value like -1.
 > 
-> Why is this useful? For instance, if you're using memory hotplug
-> and see this in /var/log/messages:
-> 
-> 	kernel: removing from LRU failed 3836dd0/1/1e00000000000400
-> 
-> It would be nice to decode those page flags without staring at
-> the source.
-
-In fact it's more than decode - encoding is also possible with the
-_same_ code! So maybe "-d" and help message will not be all that
-appropriate.
-
-> Example usage and output:
-> 
-> linux-2.6/Documentation/vm$ ./page-types -d 0x1e00000000000400
->              flags	page-count       MB  symbolic-flags			long-symbolic-flags
-> 0x1e00000000000400	         1        0  __________B_______________________buddy
->              total	         1        0
-
-The output is a bit redundant - so does the code. Could you simplify
-them a bit?
-
-Thanks,
-Fengguang
-
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
->  page-types.c |   26 ++++++++++++++++++++++++--
->  1 file changed, 24 insertions(+), 2 deletions(-)
-> ---
-> diff --git a/Documentation/vm/page-types.c b/Documentation/vm/page-types.c
-> index 3ec4f2a..a55c624 100644
-> --- a/Documentation/vm/page-types.c
-> +++ b/Documentation/vm/page-types.c
-> @@ -674,6 +674,7 @@ static void usage(void)
->  	printf(
->  "page-types [options]\n"
->  "            -r|--raw                  Raw mode, for kernel developers\n"
-> +"            -d|--decode  flags        Decode a single page's flags\n"
->  "            -a|--addr    addr-spec    Walk a range of pages\n"
->  "            -b|--bits    bits-spec    Walk pages with specified bits\n"
->  "            -p|--pid     pid          Walk process address space\n"
-> @@ -682,10 +683,12 @@ static void usage(void)
->  #endif
->  "            -l|--list                 Show page details in ranges\n"
->  "            -L|--list-each            Show page details one by one\n"
-> -"            -N|--no-summary           Don't show summay info\n"
-> +"            -N|--no-summary           Don't show summary info\n"
->  "            -X|--hwpoison             hwpoison pages\n"
->  "            -x|--unpoison             unpoison pages\n"
->  "            -h|--help                 Show this usage message\n"
-> +"flags:\n"
-> +"            0x0000000000000400        A single page's flags, e.g.\n"
->  "addr-spec:\n"
->  "            N                         one page at offset N (unit: pages)\n"
->  "            N+M                       pages range from N to N+M-1\n"
-> @@ -884,12 +887,28 @@ static void parse_bits_mask(const char *optarg)
->  	add_bits_filter(mask, bits);
->  }
+> -1 means "I don't know".  I don't think "completely wrong" 
+> is the correct term to describe that.
 >  
-> +static void decode_flags_and_exit(const char *optarg)
-> +{
-> +	uint64_t flags;
-> +
-> +	flags = parse_number(optarg);
-> +
-> +	opt_list = 0;
-> +	opt_hwpoison = 0;
-> +	opt_unpoison = 0;
-> +
-> +	add_page(0, 0, flags);
-> +	show_summary();
-> +
-> +	exit(0);
-> +}
->  
->  static struct option opts[] = {
->  	{ "raw"       , 0, NULL, 'r' },
->  	{ "pid"       , 1, NULL, 'p' },
->  	{ "file"      , 1, NULL, 'f' },
->  	{ "addr"      , 1, NULL, 'a' },
-> +	{ "decode"    , 1, NULL, 'd' },
->  	{ "bits"      , 1, NULL, 'b' },
->  	{ "list"      , 0, NULL, 'l' },
->  	{ "list-each" , 0, NULL, 'L' },
-> @@ -907,7 +926,7 @@ int main(int argc, char *argv[])
->  	page_size = getpagesize();
->  
->  	while ((c = getopt_long(argc, argv,
-> -				"rp:f:a:b:lLNXxh", opts, NULL)) != -1) {
-> +				"rp:f:a:b:d:lLNXxh", opts, NULL)) != -1) {
->  		switch (c) {
->  		case 'r':
->  			opt_raw = 1;
-> @@ -924,6 +943,9 @@ int main(int argc, char *argv[])
->  		case 'b':
->  			parse_bits_mask(optarg);
->  			break;
-> +		case 'd':
-> +			decode_flags_and_exit(optarg);
-> +			break;
->  		case 'l':
->  			opt_list = 1;
->  			break;
+> > The truth is that KSTK_ESP always return an outdated value on a multi
+> > core system if the process never do a system call.
+> 
+> I think not supporting updates on interrupts at least is very poor.
+> Unfortunately there's no good way fast path way to detect this I know of
+> (that is why I originally added -1 here)
+> 
+
+I am sorry, i did not know that was your code. But anyway.
+
+> 
+> > Question: is task_pt_regs(task)->sp set in 64 bit mode when the process
+> > is blocked in an interrupt? If true, we can add two additional assembly
+> > instruction to the system call handler and store the stack pointer into
+> > this. Than KSTK_ESP wil be again a simple macro like
+> 
+> You want to add instructions to one of the hottest kernel paths
+> for this hyper-obscure application?  Bad idea.
+> 
+
+You complain that the the value is outdated and i told you how you can
+get a more accuracy value. I agree that this is bad idea.
+ 
+
+> My recommendation would be to just deprecate this proc field
+> and if anyone really wants that information they can use
+> a trivial ptrace() based user program.
+> 
+
+I spend a lot of time doing this, it would be nice to give it a change a
+fix the KSTK_ESP macro. It will be not only used by my code. It would be
+great if we can do this together. 
+
+You have the knowledge, so i will ask my question again:
+Is task_pt_regs(task)->sp set in 64 bit mode when the process is block
+in an interrupt? 
+Is there a way to detected if a process is blocked by an interrupt?
+
+If you answer both with true than i can fix KSTK_ESP without performance
+penalty for the rest of the system.
+
+Stefani
+
+
