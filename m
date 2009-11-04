@@ -1,129 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbZKDJcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbZKDJgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753935AbZKDJcQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 04:32:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZKDJcP
+	id S1754853AbZKDJgn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 04:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZKDJgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 04:32:15 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57239 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbZKDJcO (ORCPT
+	Wed, 4 Nov 2009 04:36:43 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:15493 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbZKDJgl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 04:32:14 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
-Cc: kosaki.motohiro@jp.fujitsu.com, Justin Mattock <justinmattock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gcc@gcc.gnu.org, David Rientjes <rientjes@cs.washington.edu>
-In-Reply-To: <20091103222432.4a94bd8f.akpm@linux-foundation.org>
-References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com> <20091103222432.4a94bd8f.akpm@linux-foundation.org>
-Message-Id: <20091104182238.54CB.A69D9226@jp.fujitsu.com>
+	Wed, 4 Nov 2009 04:36:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=UxMV0XgwlUR7tBsESE9BaaBefobfrwkmYeQNPjAXVaCijWY9Ci1ZuDsprs29DL+KnV
+         ltbUXRtX7NFAA8EgedTE+BTwNAfFzEgcLvDIT1NOpOutoroL9eYd/5hibZvDdLNI9XAy
+         IMFbGJLYihLjyM+takIT7lnPIN5MsbS6w0Cqc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  4 Nov 2009 18:32:16 +0900 (JST)
+In-Reply-To: <6278d2220911010447v5889b9bbt33f685ef7669cc45@mail.gmail.com>
+References: <6278d2220910251631j40caec00lf2dee6159947d983@mail.gmail.com>
+	 <1256563190.3742.4.camel@heimdal.trondhjem.org>
+	 <6278d2220911010447v5889b9bbt33f685ef7669cc45@mail.gmail.com>
+Date: Wed, 4 Nov 2009 09:36:45 +0000
+Message-ID: <6278d2220911040136m4cadc0f5sb71b8306bf02fc5b@mail.gmail.com>
+Subject: Re: regression, bisected: getcwd() ENOENT on NFS4...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 2 Nov 2009 13:29:29 -0800 Justin Mattock <justinmattock@gmail.com> wrote:
-> 
-> > Hello,
-> > I'm not sure how to handle this,
-> > while compiling firefox-3.6b1.source
-> > I get this with the default compiling options,
-> > as well as custom:
-> > 
-> > ...
-> >
-> > active_anon:2360492kB inactive_anon:590196kB active_file:84kB
-> 
-> 2.8GB of anonymous memory
-> 
-> > [  532.942508] Free swap  = 0kB
-> > [  532.942510] Total swap = 431632kB
-> 
-> 430MB of swap, all used up.
-> 
-> That's a genuine OOM.  Something (presumably cc1plus) has consumed
-> waaaay too much memory, quite possibly leaked it.
-> 
-> It would help if the oom-killer were to print some information about
-> the oom-killed process's memory footprint.
-> 
+On Sun, Nov 1, 2009 at 12:47 PM, Daniel J Blueman
+<daniel.blueman@gmail.com> wrote:
+> Hi Trond,
+>
+> On Mon, Oct 26, 2009 at 1:19 PM, Trond Myklebust
+> <Trond.Myklebust@netapp.com> wrote:
+>> On Sun, 2009-10-25 at 23:31 +0000, Daniel J Blueman wrote:
+>>> Since 2.6.30-rc, I've been experiencing various issues relating to
+>>> getcwd() returning ENOENT on NFS4 clients. I used an over-complicated
+>>> but reliable reproducer [1] (on Karmic RC against a 2.6.32-rc5 NFS4
+>>> server) to bisect [2].
+>>>
+>>> The impact of this regression is moderate (side-effects range from
+>>> benign to failure), so we should get a fix into 2.6.32 if at all
+>>> possible and strongly consider a 2.6.31 stable update.
+>>>
+>>> Thanks,
+>>>   Daniel
+>>>
+>>> --- [1]
+>>>
+>>> $ apt-get source apt
+>>> $ cd apt-*
+>>> $ ./configure && make
+>>> [snip]
+>>> sh: getcwd() failed: No such file or directory
+>>>
+>>> --- [2]
+>>>
+>>> a65318bf3afc93ce49227e849d213799b072c5fd is first bad commit
+>>> commit a65318bf3afc93ce49227e849d213799b072c5fd
+>>> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+>>> Date:   Wed Mar 11 14:10:28 2009 -0400
+>>>
+>>>     NFSv4: Simplify some cache consistency post-op GETATTRs
+>>
+>> I'm having a lot of trouble seeing how this patch could result in
+>> ENOENT. All it should be doing is reducing the frequency with which we
+>> update some of the inode metadata.
+>>
+>> Have you ever been able to capture one of these errors using strace?
+>
+> Backing this patch out by hand against stock 2.6.32-rc5 (w/ 2.6.32-rc5
+> on server) corrects the behaviour. It's readily reproducible [1];
+> using 2.6.30, the issue is not seen, thus is a regression.
+>
+> To observe the change to user-level behaviour (after the reproducer commands):
+> # make clean
+> # strace -ffe getcwd make -n >list
+> [pid  3829] getcwd(0x7fffa269a380, 4096) = -1 ENOENT (No such file or directory)
+> make: getcwd: No such file or directory
+>
+> Would this help for me to log this via a bugzilla.kernel.org ticket?
+>
+> Thanks,
+>  Daniel
+>
+> --- [1]
+>
+> booting eg:
+> http://mira.sunsite.utk.edu/ubuntu-releases/karmic/ubuntu-9.10-desktop-amd64.iso
+>
+> $ sudo bash
+> # apt-get install build-essential
+> # apt-get build-dep apt
+> # mount server:/ /mnt -tnfs4 && cd /mnt
+> # apt-get source apt
+> # cd apt-0.7.23.1ubuntu2
+> # ./configure && make
+>  -> "getcwd: No such file or directory" messages observed with cited
+> patch and not without
 
+For continuity with the mailing list thread, I've created a bug report
+of this at:
 
-How about this?
-
-========
-Subject: [PATCH] oom: show vsz and rss information of the killed process
-
-In typical oom anylysis scenario, we frequently want to know the killed
-process has memory leak or not at first step.
-This patch add vsz and rss information to oom log for helping its
-analysis. It save much times of debugging guys.
-
-example:
-===================================================================
-rsyslogd invoked oom-killer: gfp_mask=0x201da, order=0, oom_adj=0
-Pid: 1308, comm: rsyslogd Not tainted 2.6.32-rc6 #24
-Call Trace:
-[<ffffffff8132e35b>] ?_spin_unlock+0x2b/0x40
-[<ffffffff810f186e>] oom_kill_process+0xbe/0x2b0
-
-(snip)
-
-492283 pages non-shared
-Out of memory: kill process 2341 (memhog) score 527276 or a child
-Killed process 2341 (memhog) vsz:1054552kB, anon-rss:970588kB, file-rss:4kB
-===========================================================================
-                             ^
-                             |
-                            here
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/oom_kill.c |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index ea2147d..498e6f6 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -337,6 +337,8 @@ static void dump_tasks(const struct mem_cgroup *mem)
- 	} while_each_thread(g, p);
- }
- 
-+#define K(x) ((x) << (PAGE_SHIFT-10))
-+
- /*
-  * Send SIGKILL to the selected  process irrespective of  CAP_SYS_RAW_IO
-  * flag though it's unlikely that  we select a process with CAP_SYS_RAW_IO
-@@ -356,9 +358,16 @@ static void __oom_kill_task(struct task_struct *p, int verbose)
- 		return;
- 	}
- 
--	if (verbose)
--		printk(KERN_ERR "Killed process %d (%s)\n",
--				task_pid_nr(p), p->comm);
-+	if (verbose) {
-+		task_lock(p);
-+		printk(KERN_ERR "Killed process %d (%s) "
-+		       "vsz:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
-+		       task_pid_nr(p), p->comm,
-+		       K(p->mm->total_vm),
-+		       K(get_mm_counter(p->mm, anon_rss)),
-+		       K(get_mm_counter(p->mm, file_rss)));
-+		task_unlock(p);
-+	}
- 
- 	/*
- 	 * We give our sacrificial lamb high priority and access to
+http://bugzilla.kernel.org/show_bug.cgi?id=14541
 -- 
-1.6.2.5
-
-
-
+Daniel J Blueman
