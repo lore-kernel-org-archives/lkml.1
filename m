@@ -1,130 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbZKDTeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbZKDTeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbZKDTeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbZKDTeR
+	id S1758012AbZKDTeq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbZKDTeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:34:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60239 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbZKDTeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:34:16 -0500
-Date: Wed, 4 Nov 2009 19:33:48 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Rate-limit newidle
-Message-ID: <tip-1b9508f6831e10d53256825de8904caa22d1ca2c@git.kernel.org>
-Git-Commit-ID: 1b9508f6831e10d53256825de8904caa22d1ca2c
-X-Mailer: tip-git-log-daemon
+	Wed, 4 Nov 2009 14:34:46 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:40565 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756031AbZKDTep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:34:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=h+BaOoxvBbimywQPsudRTTF1Tq/iIEx2+xVMqGD3MMgFIkHF3fJjFsYt22iB83FH73
+         8MX98VoS3G4qtdoCahS4sR85lehtTgxK0eB/4V/wnSkwKbGbYij7JrdNUWSyIm4/FR5d
+         WCLId3WxeKVRryaIaqzPVBte3WKyI70m2yG74=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+In-Reply-To: <20091104173404.28463.65125.sendpatchset@localhost.localdomain>
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
+	 <20091104173404.28463.65125.sendpatchset@localhost.localdomain>
+Date: Wed, 4 Nov 2009 20:34:49 +0100
+Message-ID: <14add3d10911041134m3c4b3e9es9a86a26114610a8d@mail.gmail.com>
+Subject: Re: [PATCH 17/41] rt2800usb: add rt2800_rfcsr_[read,write]() wrappers
+From: Gertjan van Wingerde <gwingerde@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1b9508f6831e10d53256825de8904caa22d1ca2c
-Gitweb:     http://git.kernel.org/tip/1b9508f6831e10d53256825de8904caa22d1ca2c
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Wed, 4 Nov 2009 17:53:50 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 4 Nov 2009 19:13:48 +0100
+On Wed, Nov 4, 2009 at 6:34 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] rt2800usb: add rt2800_rfcsr_[read,write]() wrappers
+>
+> Part of preparations for later code unification.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
 
-sched: Rate-limit newidle
+For what it is worth:
 
-Rate limit newidle to migration_cost. It's a win for all
-stages of sysbench oltp tests.
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c       |   22 +++++++++++++++++++++-
- kernel/sched_debug.c |    4 ++++
- 2 files changed, 25 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ae026aa..f849212 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -589,6 +589,8 @@ struct rq {
- 
- 	u64 rt_avg;
- 	u64 age_stamp;
-+	u64 idle_stamp;
-+	u64 avg_idle;
- #endif
- 
- 	/* calc_load related fields */
-@@ -2353,6 +2355,17 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 	if (rq != orig_rq)
- 		update_rq_clock(rq);
- 
-+	if (rq->idle_stamp) {
-+		u64 delta = rq->clock - rq->idle_stamp;
-+		u64 max = 2*sysctl_sched_migration_cost;
-+
-+		if (delta > max)
-+			rq->avg_idle = max;
-+		else
-+			update_avg(&rq->avg_idle, delta);
-+		rq->idle_stamp = 0;
-+	}
-+
- 	WARN_ON(p->state != TASK_WAKING);
- 	cpu = task_cpu(p);
- 
-@@ -4389,6 +4402,11 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
- 	int pulled_task = 0;
- 	unsigned long next_balance = jiffies + HZ;
- 
-+	this_rq->idle_stamp = this_rq->clock;
-+
-+	if (this_rq->avg_idle < sysctl_sched_migration_cost)
-+		return;
-+
- 	for_each_domain(this_cpu, sd) {
- 		unsigned long interval;
- 
-@@ -4403,8 +4421,10 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
- 		interval = msecs_to_jiffies(sd->balance_interval);
- 		if (time_after(next_balance, sd->last_balance + interval))
- 			next_balance = sd->last_balance + interval;
--		if (pulled_task)
-+		if (pulled_task) {
-+			this_rq->idle_stamp = 0;
- 			break;
-+		}
- 	}
- 	if (pulled_task || time_after(jiffies, this_rq->next_balance)) {
- 		/*
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index efb8440..6988cf0 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -285,12 +285,16 @@ static void print_cpu(struct seq_file *m, int cpu)
- 
- #ifdef CONFIG_SCHEDSTATS
- #define P(n) SEQ_printf(m, "  .%-30s: %d\n", #n, rq->n);
-+#define P64(n) SEQ_printf(m, "  .%-30s: %Ld\n", #n, rq->n);
- 
- 	P(yld_count);
- 
- 	P(sched_switch);
- 	P(sched_count);
- 	P(sched_goidle);
-+#ifdef CONFIG_SMP
-+	P64(avg_idle);
-+#endif
- 
- 	P(ttwu_count);
- 	P(ttwu_local);
+Acked-by: Gertjan van Wingerde <gwingerde@gmail.com>
