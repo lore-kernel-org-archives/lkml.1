@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZKDKlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbZKDKmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbZKDKlL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 05:41:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZKDKlL
+	id S1755245AbZKDKmb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 05:42:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbZKDKmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 05:41:11 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:59633 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755054AbZKDKlK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 05:41:10 -0500
-Date: Wed, 04 Nov 2009 19:41:08 +0900 (JST)
-Message-Id: <20091104.194108.635980116686317754.mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       a.p.zijlstra@chello.nl, efault@gmx.de, acme@redhat.com,
-       fweisbec@gmail.com
-Subject: Re: [PATCH v2 3/7] Adding general performance benchmarking
- subcommand to perf.
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <20091103172926.GC11535@elte.hu>
-References: <20091103.195535.789626513029853730.mitake@dcl.info.waseda.ac.jp>
-	<20091103172926.GC11535@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 05:42:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58440 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbZKDKma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 05:42:30 -0500
+Date: Wed, 4 Nov 2009 11:42:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Ian Campbell <Ian.Campbell@citrix.com>, Tejun Heo <tj@kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Correct nr_processes() when CPUs have been unplugged
+Message-ID: <20091104104204.GA13194@elte.hu>
+References: <1257243074.23110.779.camel@zakaz.uk.xensource.com> <20091103160734.GA21362@elte.hu> <alpine.DEB.1.10.0911031324380.32136@V090114053VZO-1>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0911031324380.32136@V090114053VZO-1>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v2 3/7] Adding general performance benchmarking subcommand to perf.
-Date: Tue, 3 Nov 2009 18:29:26 +0100
 
-> 
-> * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-> 
-> > 
-> > Adding general performance benchmarking subcommand to perf.
-> > This patch adds bench/sched-pipe.c.
-> > 
-> > bench/sched-pipe.c is a benchmark program
-> > to measure performance of pipe() system call.
-> > This benchmark is based on pipe-test-1m.c by Ingo Molnar.
-> > http://people.redhat.com/mingo/cfs-scheduler/tools/pipe-test-1m.c
-> > 
-> > Example of use:
-> > % perf bench sched pipe               # Use default options
-> > 4.575  	     	   		      # Result is time
-> > % perf bench sched pipe -l 2000	      # This option means "loop 2000 counts"
-> > 0.024
-> 
-> ok, -l makes sense.
-> 
-> Shouldnt we output the unit of measurement, i.e. '4.575 usecs'? Also, we 
-> should perhaps print something like:
-> 
->   % perf bench sched pipe
-> 
->   (executing 1000000 pipe operations between two tasks)
-> 
->      4.575 usecs per op
->     218579 ops/sec   
-> 
-> ?
+* Christoph Lameter <cl@linux-foundation.org> wrote:
 
-I have to admit that single float value output is too simple.
-So I'll fix the default output.
+> On Tue, 3 Nov 2009, Ingo Molnar wrote:
+> 
+> > Sidenote: percpu areas currently are kept allocated on x86.
+> 
+> They must be kept allocated for all possible cpus. Arch code cannot 
+> decide to not allocate per cpu areas.
+> 
+> Search for "for_each_possible_cpu" in the source tree if you want more 
+> detail.
 
-But, I believe that simple form makes sense for
-processing by scripts or graph tools like gnuplot.
-I'll add the option (may be --simple) to switch
-friendliness of outputs.
+This has come up in the past. On-demand deallocation of percpu areas is 
+a future possibility that might be useful - see previous percpu 
+discussions on lkml for details.
 
-Tools like automatic graph generator
-will be helpful for us. I'll write it after
-completion of current work.
+All in one, the conclusion is that we dont want it yet (on-demand 
+allocation of them is perfectly fine for now) - i just wanted to mention 
+that this is a _current_ situation and an implementational choice, which 
+judgement could change in the future.
 
-I'll send new patch series including help improvement
-you told in previous mail later.
+The more 'virtual' our abstraction of CPUs becomes, the less the notion 
+of permanent allocation will be acceptable as time goes on.
+
+Dynamic allocation concepts are natural and the new, generic percpu 
+allocator makes it more feasible to eventually deallocate percpu areas. 
+(Of course various for_each_possible_cpu() assumptions will have to be 
+fixed in that case.)
+
+	Ingo
