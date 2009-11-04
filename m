@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbZKDKpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbZKDKqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755275AbZKDKpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 05:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZKDKpm
+	id S1755234AbZKDKqw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 05:46:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZKDKqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 05:45:42 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:59124 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755193AbZKDKpm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 05:45:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=kBpZp0+EazkMNYmDiOJ7rtuCnGsuf3mq4rogYzKxaD3Wc90MOa9djShnGtzRzTWfcB
-         3T7RxFXu7Brrps2OsnxvpX6bRaSh5DyDXSFHoJSuIitGrlr4vhyPGxfMviui9peSRk9O
-         g1JmflZPxWlh8KtRNQZWy6ZE+I2bBzGOJVjZc=
+	Wed, 4 Nov 2009 05:46:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47062 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754995AbZKDKqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 05:46:51 -0500
+Date: Wed, 4 Nov 2009 11:46:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/2] [GIT PULL][for v2.6.32] tracing: urgent fixes
+Message-ID: <20091104104644.GB13194@elte.hu>
+References: <20091104064825.546743711@goodmis.org>
 MIME-Version: 1.0
-In-Reply-To: <a4c8a6d00911021029n3b34c0b0w9acd3f82a07ae766@mail.gmail.com>
-References: <b8bf37780911020949t4bed5cb6g92230b59efc7923b@mail.gmail.com> 
-	<a4c8a6d00911021029n3b34c0b0w9acd3f82a07ae766@mail.gmail.com>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Wed, 4 Nov 2009 08:45:27 -0200
-Message-ID: <b8bf37780911040245j6852ecbx81681992c322e64f@mail.gmail.com>
-Subject: Re: [PATCH] trivial: fix assorted typos all over the place
-To: Thiago Farina <tfransosi@gmail.com>
-Cc: trivial@kernel.org, linux list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104064825.546743711@goodmis.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Thiago!
 
-On Mon, Nov 2, 2009 at 4:29 PM, Thiago Farina <tfransosi@gmail.com> wrote:
-> I thought that this kind of patches were not allowed.
->
-> Don't you need to split this in individual patches, to make the work
-> in reviewing this, more easier?
->
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-I have made it that way before sending the big consolidated patch.
-Please see:
-    http://marc.info/?l=linux-kernel&m=125717767417323&w=2
+> Ingo,
+> 
+> Please pull the latest tip/tracing/urgent tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/urgent
+> 
+> 
+> Lai Jiangshan (1):
+>       ring-buffer: Synchronize resizing buffer with reader lock
+> 
+> Li Zefan (1):
+>       ftrace: Fix unmatched locking in ftrace_regex_write()
+> 
+> ----
+>  kernel/trace/ftrace.c      |    6 +++---
+>  kernel/trace/ring_buffer.c |    2 ++
+>  2 files changed, 5 insertions(+), 3 deletions(-)
 
-Thanks,
-André
+Pulled, thanks a lot Steve!
+
+	Ingo
