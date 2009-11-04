@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZKDC73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbZKDDKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbZKDC73 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 21:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZKDC72
+	id S1754310AbZKDDKi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 22:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbZKDDKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 21:59:28 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55389 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754276AbZKDC72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 21:59:28 -0500
-Message-ID: <4AF0EDDA.7080704@cn.fujitsu.com>
-Date: Wed, 04 Nov 2009 10:58:34 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 3 Nov 2009 22:10:38 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:34431 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbZKDDKh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 22:10:37 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=P/5sRFtiE2lKPJMO7cpg4gGJdAqmmQi6N91wiBza+gXtmfzO380HjCgy1WL9W4L7+
+	8aMse14jnMQf6RC7qDrbw==
+Date: Tue, 3 Nov 2009 19:10:34 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+In-Reply-To: <20091104111703.b46ae72b.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0911031905390.11790@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <20091028135519.805c4789.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910272205200.7507@chino.kir.corp.google.com> <20091028150536.674abe68.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0910272311001.15462@chino.kir.corp.google.com> <20091028152015.3d383cd6.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910290136000.11476@chino.kir.corp.google.com> <4AE97861.1070902@gmail.com> <alpine.DEB.2.00.0910291248480.2276@chino.kir.corp.google.com>
+ <20091030084836.5428e085.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910300200170.18076@chino.kir.corp.google.com> <20091030183638.1125c987.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911031240470.29695@chino.kir.corp.google.com>
+ <20091104095021.5532e913.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911031752180.1187@chino.kir.corp.google.com> <20091104111703.b46ae72b.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] ftrace: Return EINVAL when writing invalid val to
- set_ftrace_filter
-References: <4AEF7F8A.3080300@cn.fujitsu.com> <4AEF7FBC.2050802@cn.fujitsu.com> <20091104014435.GB5092@nowhere>
-In-Reply-To: <20091104014435.GB5092@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Nov 03, 2009 at 08:56:28AM +0800, Li Zefan wrote:
->> Currently it doesn't warn user on invald value:
->>
->>  # echo nonexist_symbol > set_ftrace_filter
->>
->> Better make it return failure.
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
+On Wed, 4 Nov 2009, KAMEZAWA Hiroyuki wrote:
+
+> My point and your point are differnt.
 > 
+>   1. All my concern is "baseline for heuristics"
+>   2. All your concern is "baseline for knob, as oom_adj"
 > 
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ok ? For selecting victim by the kernel, dynamic value is much more useful.
+> Current behavior of "Random kill" and "Kill multiple processes" are too bad.
+> Considering oom-killer is for what, I think "1" is more important.
 > 
-> But shouldn't we have the same kind of check from
-> ftrace_match_module_records() if we haven't matched
-> anything with the regex?
+> But I know what you want, so, I offers new knob which is not affected by RSS
+> as I wrote in previous mail.
+> 
+> Off-topic:
+> As memcg is growing better, using OOM-Killer for resource control should be
+> ended, I think. Maybe Fake-NUMA+cpuset is working well for google system, 
+> but plz consider to use memcg. 
 > 
 
-Right, I overlooked it.
+I understand what you're trying to do, and I agree with it for most 
+desktop systems.  However, I think that admins should have a very strong 
+influence in what tasks the oom killer kills.  It doesn't really matter if 
+it's via oom_adj or not, and its debatable whether an adjustment on a 
+static heuristic score is in our best interest in the first place.  But we 
+must have an alternative so that our control over oom killing isn't lost.
 
+I'd also like to open another topic for discussion if you're proposing 
+such sweeping changes: at what point do we allow ~__GFP_NOFAIL allocations 
+to fail even if order < PAGE_ALLOC_COSTLY_ORDER and defer killing 
+anything?  We both agreed that it's not always in the best interest to 
+kill a task so that an allocation can succeed, so we need to define some 
+criteria to simply fail the allocation instead.
+
+> Old processes are important, younger are not. But as I wrote, I'll drop
+> most of patch "6". So, plz forget about this part.
+> 
+> I'm interested in fork-bomb killer rather than crazy badness calculation, now.
+> 
+
+Ok, great.  Thanks.
