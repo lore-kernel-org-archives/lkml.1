@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbZKDBXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbZKDAxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753464AbZKDBXY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 20:23:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZKDBXX
+	id S1753298AbZKDAxA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 19:53:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZKDAxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 20:23:23 -0500
-Received: from mail1.ugh.no ([80.239.42.168]:45066 "EHLO mail1.ugh.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751039AbZKDBXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 20:23:22 -0500
-Message-ID: <4AF0CFE1.8050407@tomt.net>
-Date: Wed, 04 Nov 2009 01:50:41 +0100
-From: Andre Tomt <andre@tomt.net>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 3 Nov 2009 19:53:00 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:49159 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753128AbZKDAw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 19:52:58 -0500
+Date: Wed, 4 Nov 2009 00:53:02 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       garyhade@us.ibm.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Subject: Re: [tip:x86/apic] x86: Use EOI register in io-apic on intel
+ platforms
+In-Reply-To: <tip-b3ec0a37a7907813bb4fb85a2d94102c152470b7@git.kernel.org>
+Message-ID: <alpine.LFD.2.00.0911040038460.9725@eddie.linux-mips.org>
+References: <20091026230001.947855317@sbs-t61.sc.intel.com> <tip-b3ec0a37a7907813bb4fb85a2d94102c152470b7@git.kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: tfjellstrom@shaw.ca, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
-References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca> <4AA7F965.6020408@garzik.org>
-In-Reply-To: <4AA7F965.6020408@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> On 09/09/2009 12:30 PM, Thomas Fjellstrom wrote:
->> No errors on that disk. Other than the one above, and its more of a 
->> warning.
->> However, I just rebooted to add some extra drives, thinking everything 
->> was
->> working a little better now that I've updated to 2.6.31-rc9, I'm 
->> treated to
->> the following two messages right after boot (and a system lockup to 
->> boot):
+On Mon, 2 Nov 2009, tip-bot for Suresh Siddha wrote:
 
-Jeff & Co,
+> Commit-ID:  b3ec0a37a7907813bb4fb85a2d94102c152470b7
+> Gitweb:     http://git.kernel.org/tip/b3ec0a37a7907813bb4fb85a2d94102c152470b7
+> Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+> AuthorDate: Mon, 26 Oct 2009 14:24:35 -0800
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Mon, 2 Nov 2009 15:56:36 +0100
+> 
+> x86: Use EOI register in io-apic on intel platforms
+> 
+> IO-APIC's in intel chipsets support EOI register starting from
+> IO-APIC version 2. Use that when ever we need to clear the
+> IO-APIC RTE's RemoteIRR bit explicitly.
+> 
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Acked-by: Gary Hade <garyhade@us.ibm.com>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> LKML-Reference: <20091026230001.947855317@sbs-t61.sc.intel.com>
+> [ Marked use_eio_reg as __read_mostly, fixed small details ]
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+[...]
+> +static int ioapic_supports_eoi(void)
+> +{
+> +	struct pci_dev *root;
+> +
+> +	root = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
+> +	if (root && root->vendor == PCI_VENDOR_ID_INTEL &&
+> +	    mp_ioapics[0].apicver >= 0x2) {
+> +		use_eoi_reg = 1;
+> +		printk(KERN_INFO "IO-APIC supports EOI register\n");
+> +	} else
+> +		printk(KERN_INFO "IO-APIC doesn't support EOI\n");
+> +
+> +	return 0;
+> +}
 
-Just chiming in with a "me too" comment.
+ This is wrong -- the 82093AA I/O APIC has its version set to 0x11 and it 
+does not support the EOI register.  Similarly I/O APICs integrated into 
+the 82379AB south bridge and the 82374EB/SB EISA component.
 
-Identical issues with the AOC-SASLP-MV8 card with 8 Seagate Barracuda 
-7200.11 1.5TB drives using the mvsas driver. Creating a md raid array 
-seems to trigger it nearly instantly, however other loads do not trigger 
-it as fast (if at all, only tested briefly with paralell dd).
+ Overall values below 0x10 are reserved for the 82489DX -- are you sure 
+you didn't mean 0x12 or 0x20?
 
-Not sure if its related in any way, but I also noticed that with 
-parallell dd read on all ports, the card/driver tops out at 600MB/s even 
-though the card is in a northbridge connected slot running in x4 mode. 
-Only the first 4-5 ports run at nearly full speed, while the rest barely 
-gets to read any data at all. To illustrate, it looks sort of like this 
-in iostat -m:
-sda 122
-sdb 122
-sbc 120
-sdd 121
-sde 100
-sdf 10
-sdg 5
-sdh 5
-
-Starting to think this driver has some issues with concurrency.. The 
-other controllers have no issues saturating all their ports, even if 
-they are on a south bridge connected slot.
-
-Same disks/setup works just fine on AHCI and sata_mv controllers on the 
-same computer, easily pushes 8-900MB/s with md software raid5/6 (Yipes!)
+  Maciej
