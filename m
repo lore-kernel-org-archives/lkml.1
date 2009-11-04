@@ -1,104 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZKDPmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbZKDPmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbZKDPmr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:42:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbZKDPmq
+	id S1756804AbZKDPmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbZKDPmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:42:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:64600 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756179AbZKDPmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:42:45 -0500
-Date: Wed, 4 Nov 2009 10:41:35 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 03/20] blkio: Introduce the notion of weights
-Message-ID: <20091104154135.GA2870@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-4-git-send-email-vgoyal@redhat.com> <x498wemuy6v.fsf@segfault.boston.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x498wemuy6v.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 4 Nov 2009 10:42:15 -0500
+Received: from www84.your-server.de ([213.133.104.84]:48991 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756717AbZKDPmO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:42:14 -0500
+Subject: Re: [PATCH] update fix X86_64 procfs provide stack information for
+ threads
+From: Stefani Seibold <stefani@seibold.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Americo Wang <xiyou.wangcong@gmail.com>
+In-Reply-To: <20091104120019.GK31511@one.firstfloor.org>
+References: <1257233486.22553.6.camel@wall-e>
+	 <874opaa68v.fsf@basil.nowhere.org> <1257335404.2123.29.camel@wall-e>
+	 <20091104120019.GK31511@one.firstfloor.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Wed, 04 Nov 2009 16:42:11 +0100
+Message-ID: <1257349331.12786.5.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 10:06:16AM -0500, Jeff Moyer wrote:
-> Vivek Goyal <vgoyal@redhat.com> writes:
+Am Mittwoch, den 04.11.2009, 13:00 +0100 schrieb Andi Kleen:
+> > This is true, but i think it is better to get an outdated value than a
+> > complete wrong value like -1.
 > 
-> > o Introduce the notion of weights. Priorities are mapped to weights internally.
-> >   These weights will be useful once IO groups are introduced and group's share
-> >   will be decided by the group weight.
+> -1 means "I don't know".  I don't think "completely wrong" 
+> is the correct term to describe that.
 > 
-> I'm sorry, but I need more background to review this patch.  Where do
-> the min and max come from?  Why do you scale 7-0 from 200-900?  How does
-> this map to what was there before (exactly, approximately)?
+> > The truth is that KSTK_ESP always return an outdated value on a multi
+> > core system if the process never do a system call.
 > 
+> I think not supporting updates on interrupts at least is very poor.
+> Unfortunately there's no good way fast path way to detect this I know of
+> (that is why I originally added -1 here)
 
-Well, So far we only have the notion of iopriority for the process and
-based on that we determine time slice length.
+This is a first draft for supporting interrupts:
 
-Soon we will throw cfq groups also in the mix. Because cpu IO controller
-is weight driven, people have shown preference that group's share should
-be decided based on its weight and not introduce the notion of ioprio for
-groups.
+unsigned int __irq_entry do_IRQ(struct pt_regs *regs)
+{
+	struct pt_regs *old_regs = set_irq_regs(regs);
 
-So now core scheduling algorithm only recognizes weights for entities (be it
-cfq queues or cfq groups), and it is required that we convert the ioprio
-of cfqq into weight.
+	/* high bit used in ret_from_ code  */
+	unsigned vector = ~regs->orig_ax;
+	unsigned irq;
 
-Now it is a matter of coming up with what weight range do we support and
-how ioprio should be mapped onto these weights. We can always change the
-mappings but to being with, I have followed following.
+	exit_idle();
+	irq_enter();
 
-Allow a weight range from 100 to 1000. Allowing too small a weights like
-"1", can lead to very interesting corner cases and I wanted to avoid that
-in first implementation. For example, if some group with weight "1" gets
-a time slice of 100ms, its vtime will be really high and after that it
-will not get scheduled in for a very long time.
+/* >>>>>>>> update usersp */  
+	current->thread.usersp = regs->sp;
 
-Seconly allowing too small a weights can make vtime of the tree move very
-fast with faster wrap around of min_vdistime. (especially on SSD where idling
-might not be enabled, and for every queue expiry we will attribute minimum of
-1ms of slice. If weight of the group is "1" it will higher vtime and
-min_vdisktime will move very fast). We don't want too fast a wrap around
-of min_vdisktime (especially in case of idle tree. That infrastructure is
-not part of current patches).
+	irq = __get_cpu_var(vector_irq)[vector];
 
-Hence, to begin with I wanted to limit the range of weights allowed because
-wider range opens up lot of interesting corner cases. That's why limited
-minimum weight to 100. So at max user can expect the 1000/100=10 times service
-differentiation between highest and lower weight groups. If folks need more
-than that, we can look into it once things stablize.
+	if (!handle_irq(irq, regs)) {
+		ack_APIC_irq();
 
-Priority and weights follow reverse order. Higher priority means low
-weight and vice-versa.
+		if (printk_ratelimit())
+			pr_emerg("%s: %d.%d No irq handler for vector (irq %d)\n",
+				__func__, smp_processor_id(), vector, irq);
+	}
 
-Currently we support 8 priority levels and prio "4" is the middle point.
-Anything higher than prio 4 gets 20% less slice as compared to prio 4 and
-priorities lower than 4, get 20% higher slice of prio 4 (20% higher/lower
-for each priority level).
+	irq_exit();
 
-For weight range 100 - 1000, 500 can be considered as mid point. Now this
-is how priority mapping looks like.
+	set_irq_regs(old_regs);
+	return 1;
+}
 
-	100 200 300 400 500 600 700 800 900 1000  (Weights) 
-	     7   6   5   4   3   2  1   0         (io prio).
+This works in my environment, but i have not the oversight if it work
+under all circumstances. And we need a similar line in the timer
+interrupt.
 
-Once priorities are converted to weights, we are able to retain the notion
-of 20% difference between prio levels by choosing 500 as the mid point and
-mapping prio 0-7 to weights 900-200, hence this mapping. 
+Greetings,
+Stefani
 
-I am all ears if you have any suggestions on how this ca be handled
-better.
 
-Thanks
-Vivek
