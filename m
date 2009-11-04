@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbZKDJ4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZKDKAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754886AbZKDJ4z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 04:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZKDJ4y
+	id S1755044AbZKDKAj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 05:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZKDKAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 04:56:54 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56740 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751012AbZKDJ4x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 04:56:53 -0500
-Date: Wed, 4 Nov 2009 09:58:14 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Valdis.Kletnieks@vt.edu
-Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       Hal Finney <hal.finney@gmail.com>, tpmdd-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, srajiv@linux.vnet.ibm.com
-Subject: Re: [tpmdd-devel] [PATCH] TPM: Let the tpm char device be openable
- multiple times
-Message-ID: <20091104095814.13435621@lxorguk.ukuu.org.uk>
-In-Reply-To: <13189.1257305069@turing-police.cc.vt.edu>
-References: <20091103003511.GL7768@obsidianresearch.com>
-	<da7b3ce30911030931u1ccbff69ted4206606475c83@mail.gmail.com>
-	<6926.1257272068@turing-police.cc.vt.edu>
-	<20091103224157.GA20963@obsidianresearch.com>
-	<13189.1257305069@turing-police.cc.vt.edu>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Nov 2009 05:00:39 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:53059 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754775AbZKDKAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 05:00:38 -0500
+Message-ID: <4AF150BB.3020309@atmel.com>
+Date: Wed, 04 Nov 2009 11:00:27 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Matthew Palmer <mpalmer@hezmatt.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: kernel <kernel@avr32linux.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "'linux-arm-kernel@lists.infradead.org'" 
+	<linux-arm-kernel@lists.infradead.org>
+Subject: Re: [GIT PULL] AT91/AVR32 some common macros
+References: <4AF07242.3070803@atmel.com> <alpine.LFD.2.01.0911031014340.31845@localhost.localdomain> <20091103185635.GE8322@hezmatt.org>
+In-Reply-To: <20091103185635.GE8322@hezmatt.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> but those are hard-coded into the driver. But for the TPM, it's unclear if
-> exclusive or non-exclusive is the right model. Maybe the right answer is to
-> default to multiple opens, but have an ioctl() that turns on exclusive mode.
-> If you have a 'tcsd' daemon, it will need to get launched early enough
-> to do the open/ioctl before somebody else gets running anyhow, so it's
-> not adding to any raciness.  Yeah, it's a hack. And there's still a small
-> DoS issue - if the system is supposed to allow multiple opens, an abusive
-> process can ioctl() it and break it.
+Matthew Palmer :
+> On Tue, Nov 03, 2009 at 10:15:38AM -0800, Linus Torvalds wrote:
+>> On Tue, 3 Nov 2009, Nicolas Ferre wrote:
+>>> If it not bother you too much to pull such a tiny and 
+>>> trivial piece of code, can you please pull:
+>>>
+>>>   git://github.com/at91linux/linux-2.6-at91.git for-linus
+>> 	"fatal: The remote end hung up unexpectedly"
+> 
+> Something was hinky with the repository; I don't know why, but it was
+> missind the git-daemon-export-ok flag file.  It's working now.
 
-What's wrong with "chmod" ?
+Linus, I have seen the merge. Thank you.
 
-BTW some drivers do also implement O_EXCL = one open semantics. It's not
-exactly what POSIX expects but these are drivers and its a fairly logical
-extension thereto.
+Matthew, thanks for handling the repository error.
 
-Alan
+Sorry for the false start...
+
+Best regards,
+-- 
+Nicolas Ferre
+
