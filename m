@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756487AbZKDOYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZKDOZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756487AbZKDOYZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 09:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbZKDOYY
+	id S1756518AbZKDOZY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 09:25:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbZKDOZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 09:24:24 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:39016 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756406AbZKDOYX (ORCPT
+	Wed, 4 Nov 2009 09:25:24 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:50391 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756491AbZKDOZV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 09:24:23 -0500
-Date: Wed, 4 Nov 2009 08:24:18 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 09/13] sysfs: Implement sysfs_getattr & sysfs_permission
-Message-ID: <20091104142418.GB4355@us.ibm.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-9-git-send-email-ebiederm@xmission.com> <20091104042038.GE27639@us.ibm.com> <m1pr7ybzzb.fsf@fess.ebiederm.org>
+	Wed, 4 Nov 2009 09:25:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=lrJCR/pNMxAPC1+f251dfQcnO04IbhOQys4i0xap7GH//9FxuXoL0sUaoO7bv0f+kM
+         IfR7eDTdaSP//wmN9s6g4IjhR6tjbJHcotK9YDwyajVQvFMUPTz8CSV9pZ/iIo9Y7c7p
+         8g20uD2eza0xRb9+VbHyE8a3jE04D+VhRjld8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1pr7ybzzb.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091102192706.GA30939@elte.hu>
+References: <b8bf37780911020926p77ca30d1maa4384f21323adb@mail.gmail.com> 
+	<20091102192706.GA30939@elte.hu>
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Date: Wed, 4 Nov 2009 12:25:05 -0200
+Message-ID: <b8bf37780911040625r3fe0d18dx4f74c7be54f5dc3@mail.gmail.com>
+Subject: Re: [PATCH v2 7/7] vsprintf: factor out skip_space code in a separate 
+	function
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, laijs@cn.fujitsu.com,
+       davem@davemloft.net, akpm@linux-foundation.org,
+       harvey.harrison@gmail.com, linux list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> 
-> > So the inode->i_mutex is not needed?
-> 
-> Good question.  Nothing in sysfs needs it.  The VFS does not grab the
-> inode mutex on this path, but the vfs does grab the inode mutex when
-> writing to the inode.
+Hi, Ingo!
 
-All callers of fs/attr.c:notify_change() do seem to take the i_mutex,
-though.  And Documentation/filesystem/Locking claims that ->setattr()
-does need i_mutex.  So I assume that setting of inode->i_ctime etc,
-which is what you're doing here, needs to be protected by the i_mutex.
+On Mon, Nov 2, 2009 at 5:27 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * André Goddard Rosa <andre.goddard@gmail.com> wrote:
+>
+>> >From 584d9bfc7c1d41b76a05655b4562b98fcbef6ee4 Mon Sep 17 00:00:00 2001
+>> From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
+>> Date: Sun, 1 Nov 2009 14:09:06 -0200
+>> Subject: [PATCH v2 7/7] vsprintf: factor out skip_space code in a
+>> separate function
+>> MIME-Version: 1.0
+>> Content-Type: text/plain; charset=UTF-8
+>> Content-Transfer-Encoding: 8bit
+>
+> btw., for reviewability's sake, could you please fix your patch
+> submission method to not include such garbled headers in the mail body?
+>
+> (Also, it would be nice to reply-thread the 7 patches on the 0/7 mail,
+> as git-send-email does.)
+>
 
-> Since the VFs isn't grabbing the inode_mutex there is probably a race in
-> here somewhere if someone looks at things just right.
-> 
-> I am too tired tonight to be that person.
+I had some discussion about these headers on git mailing list (
+http://marc.info/?t=125726599400002&r=1&w=2 ).
 
-The readers take no lock of any sort (i.e. generic_fillattr and its
-callers) so IIUC they could get inconsistent data...
+So, I'd like to know if it's preferred to remove all these headers
+altogether or leave them by just removing the
+commit # line and fixing the "From: " line.
 
--serge
+What do you think?
+
+p.s.: I'll probably use git-send-email in a second moment -- have to
+fix my environment first
+https://bugzilla.novell.com/show_bug.cgi?id=525780
+
+Thanks,
+André
