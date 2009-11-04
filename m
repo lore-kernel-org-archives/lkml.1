@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZKDPYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZKDPXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbZKDPYL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbZKDPYK
+	id S1756586AbZKDPXp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:23:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZKDPXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:24:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48443 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756447AbZKDPYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:24:08 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 06/20] blkio: Introduce cgroup interface
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
-	<1257291837-6246-7-git-send-email-vgoyal@redhat.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 04 Nov 2009 10:23:16 -0500
-In-Reply-To: <1257291837-6246-7-git-send-email-vgoyal@redhat.com> (Vivek
-	Goyal's message of "Tue, 3 Nov 2009 18:43:43 -0500")
-Message-ID: <x494opauxej.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 4 Nov 2009 10:23:44 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:42796 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756040AbZKDPXn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:23:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=NqOSNuxSMdZbf2gusNnmuDT0GMnoyrNV3EvMWchzzwJdLpicGVP18r5H0/CIbp8eJU
+         scwY6fTaqoiQag+jEsk4IzqkcrR+eku0zOyarcz3viY9GWg0IEIP25pa5DfcHJf8/qGD
+         NmTD3kc4TNdf/XFFgV9+OfEl4UrrFSaJ5aviA=
+Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Arnaud Patard <apatard@mandriva.com>, linux-mips@linux-mips.org,
+       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
+       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       liujl@lemote.com
+In-Reply-To: <20091104111957.GA13549@linux-mips.org>
+References: <cover.1257325319.git.wuzhangjin@gmail.com>
+	 <a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com>
+	 <m3iqdqtwgk.fsf@anduin.mandriva.com>
+	 <1257332652.8716.5.camel@falcon.domain.org>
+	 <20091104111957.GA13549@linux-mips.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Wed, 04 Nov 2009 23:23:46 +0800
+Message-ID: <1257348226.16033.4.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@redhat.com> writes:
+Hi,
 
-> +void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-> +				struct blkio_group *blkg, void *key)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&blkcg->lock, flags);
-> +	rcu_assign_pointer(blkg->key, key);
-> +	hlist_add_head_rcu(&blkg->blkcg_node, &blkcg->blkg_list);
-> +	spin_unlock_irqrestore(&blkcg->lock, flags);
-> +}
+On Wed, 2009-11-04 at 12:19 +0100, Ralf Baechle wrote:
+> On Wed, Nov 04, 2009 at 07:04:12PM +0800, Wu Zhangjin wrote:
+> 
+> > > Small question : Why don't you restrict to 64bit kernels only ? From
+> > > what I remember from some discussions with ST, trying to use a 32-bit
+> > > kernel on 2f is a nice way to get troubles. It would be better imho to
+> > > forbid such a configuration. As a side effect, this will remove all
+> > > 'defined(CONFIG_64BIT)' parts of your #ifdef tests. 
+> > > 
+> > 
+> > It's hard to make such a decision ;) Perhaps some guys want to play with
+> > the 32bit version.
+> 
+> We have other systems where 32-bit kernel support is just remarkably ugly.
+> We've dropped 32-bit support for the SGI IP32 aka O2 - nobody seems to even
+> have really noticed that.  The Sibyte systems would be good candidates to do
+> the same as accesses to outside the 32-bit address space are needed very
+> frequently.
+> 
 
-I took a look at the rcu stuff, and it seems to be in order.
+So, we really remove the 32bit support?
 
-> +/*
-> + * We cannot support shared io contexts, as we have no mean to support
-> + * two tasks with the same ioc in two different groups without major rework
-> + * of the main cic data structures.  For now we allow a task to change
-> + * its cgroup only if it's the only owner of its ioc.
-> + */
+1312 config CPU_LOONGSON2
+1313         bool
+1314         select CPU_SUPPORTS_32BIT_KERNEL  --> remove it?
+1315         select CPU_SUPPORTS_64BIT_KERNEL
+1316         select CPU_SUPPORTS_HIGHMEM
 
-Interesting.  So is there no way at all to set the cgroup for a set of
-processes that are cloned using CLONE_IO?
+If you all agree, I will send a new patch to remove the above line and
+resend the corresponding patches without 32bit support, and removed the
+relative CONFIG_64BIT lines in the patches too.
 
-> +static int blkiocg_can_attach(struct cgroup_subsys *subsys,
-> +				struct cgroup *cgroup, struct task_struct *tsk,
-> +				bool threadgroup)
-> +{
-> +	struct io_context *ioc;
-> +	int ret = 0;
-> +
-> +	/* task_lock() is needed to avoid races with exit_io_context() */
-> +	task_lock(tsk);
-> +	ioc = tsk->io_context;
-> +	if (ioc && atomic_read(&ioc->nr_tasks) > 1)
-> +		ret = -EINVAL;
-> +	task_unlock(tsk);
-> +
-> +	return ret;
-> +}
+Regards,
+	Wu Zhangjin
 
-This function's name implies that it returns a boolean.
-
-Cheers,
-Jeff
