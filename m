@@ -1,89 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZKDJ2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbZKDJcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754759AbZKDJ2n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 04:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZKDJ2m
+	id S1753935AbZKDJcQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 04:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZKDJcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 04:28:42 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:50554 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753259AbZKDJ2k (ORCPT
+	Wed, 4 Nov 2009 04:32:15 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57239 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbZKDJcO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 04:28:40 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH] asm-generic: Fix typo in asm-generic/unistd.h.
-Date: Wed, 4 Nov 2009 10:28:11 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       liqin.gnu@gmail.com, Greg KH <greg@kroah.com>
-References: <OFC90831A4.A99EC411-ON48257664.00080761-48257664.0009EC42@sunplusct.com>
-In-Reply-To: <OFC90831A4.A99EC411-ON48257664.00080761-48257664.0009EC42@sunplusct.com>
+	Wed, 4 Nov 2009 04:32:14 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
+Cc: kosaki.motohiro@jp.fujitsu.com, Justin Mattock <justinmattock@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gcc@gcc.gnu.org, David Rientjes <rientjes@cs.washington.edu>
+In-Reply-To: <20091103222432.4a94bd8f.akpm@linux-foundation.org>
+References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com> <20091103222432.4a94bd8f.akpm@linux-foundation.org>
+Message-Id: <20091104182238.54CB.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="gb2312"
-Content-Transfer-Encoding: 8bit
-Message-Id: <200911041028.12098.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/cNp8DfBgtJg0blh7lbi1O+gamMEYCdV7/+si
- Yc8Z2Z5OKJma4EdqvV0bogpT9z6+B6ptf29DlKic4qXuDvIsgW
- 9LFslMygCdtHpeynqovzA==
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  4 Nov 2009 18:32:16 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 November 2009, liqin.chen@sunplusct.com wrote:
-> Arnd Bergmann <arnd@arndb.de> Ð´ÓÚ 2009-11-03 16:52:17:
+> On Mon, 2 Nov 2009 13:29:29 -0800 Justin Mattock <justinmattock@gmail.com> wrote:
 > 
-> > Is there any reason to use glibc-2.5 though? The current release
-> > is 2.10.1, and the version you used is over three years old.
+> > Hello,
+> > I'm not sure how to handle this,
+> > while compiling firefox-3.6b1.source
+> > I get this with the default compiling options,
+> > as well as custom:
+> > 
+> > ...
+> >
+> > active_anon:2360492kB inactive_anon:590196kB active_file:84kB
 > 
-> We found many stable toolchain use glibc-2.5. so we select it.
-> In fact, what we think first is to could used it in product¡£
-
-It is unfortunately a common misunderstanding that older releases
-that are currently used by others are more stable. The reason
-you find glibc-2.5 in products today is that it was the current
-version at the time when the development cycle for the product
-was started.
-
-In general, when you upgrade to a more recent version, the
-best idea is to take the latest stable release, and stabilizing
-on that for a given embedded product. By always using the latest
-version, you can greatly reduce the amount of work needed for
-each upgrade, and you get all improvements and bug fixes
-automatically without having to backport them.
-
-> Even linux kernel, in company we still use kernel-2.6.27 version.
-
-Yes, that is good and expected, if that version has proven to be
-stable for you.
-
-Obviously you will have to do an update at some point and then
-you can easily move to the latest kernel version since it is now
-upstream.
-
-I also expect that you have device driver code that is not yet
-upstream. Getting that in should be a lot easier than the initial
-architecture code and Greg KH can help you with his drivers/staging
-infrastructure if you are interested.
-  
-> > Do you have plans to merge your port into eglibc when it's done?
+> 2.8GB of anonymous memory
 > 
-> We have not this plan now.
+> > [  532.942508] Free swap  = 0kB
+> > [  532.942510] Total swap = 431632kB
+> 
+> 430MB of swap, all used up.
+> 
+> That's a genuine OOM.  Something (presumably cc1plus) has consumed
+> waaaay too much memory, quite possibly leaked it.
+> 
+> It would help if the oom-killer were to print some information about
+> the oom-killed process's memory footprint.
+> 
 
-I would recommend to look into this at some point in the future.
-Unlike the main glibc project, eglibc[1] is specifically there for
-supporting embedded architectures and already hosts ports for
-other platforms that are not in glibc itself, while it closely
-follows the main glibc development. Contributing there unfortunately
-requires some paperwork for copyright assignment, but it's probably
-worth it in the end.
 
-You've done the right thing by merging your kernel code into the
-official Linux tree, porting your glibc code to the lastest 
-snapshot and submitting it into eglibc is the next big step.
+How about this?
 
-	Arnd <><
+========
+Subject: [PATCH] oom: show vsz and rss information of the killed process
 
---
-[1] http://www.eglibc.org/
+In typical oom anylysis scenario, we frequently want to know the killed
+process has memory leak or not at first step.
+This patch add vsz and rss information to oom log for helping its
+analysis. It save much times of debugging guys.
+
+example:
+===================================================================
+rsyslogd invoked oom-killer: gfp_mask=0x201da, order=0, oom_adj=0
+Pid: 1308, comm: rsyslogd Not tainted 2.6.32-rc6 #24
+Call Trace:
+[<ffffffff8132e35b>] ?_spin_unlock+0x2b/0x40
+[<ffffffff810f186e>] oom_kill_process+0xbe/0x2b0
+
+(snip)
+
+492283 pages non-shared
+Out of memory: kill process 2341 (memhog) score 527276 or a child
+Killed process 2341 (memhog) vsz:1054552kB, anon-rss:970588kB, file-rss:4kB
+===========================================================================
+                             ^
+                             |
+                            here
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/oom_kill.c |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index ea2147d..498e6f6 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -337,6 +337,8 @@ static void dump_tasks(const struct mem_cgroup *mem)
+ 	} while_each_thread(g, p);
+ }
+ 
++#define K(x) ((x) << (PAGE_SHIFT-10))
++
+ /*
+  * Send SIGKILL to the selected  process irrespective of  CAP_SYS_RAW_IO
+  * flag though it's unlikely that  we select a process with CAP_SYS_RAW_IO
+@@ -356,9 +358,16 @@ static void __oom_kill_task(struct task_struct *p, int verbose)
+ 		return;
+ 	}
+ 
+-	if (verbose)
+-		printk(KERN_ERR "Killed process %d (%s)\n",
+-				task_pid_nr(p), p->comm);
++	if (verbose) {
++		task_lock(p);
++		printk(KERN_ERR "Killed process %d (%s) "
++		       "vsz:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
++		       task_pid_nr(p), p->comm,
++		       K(p->mm->total_vm),
++		       K(get_mm_counter(p->mm, anon_rss)),
++		       K(get_mm_counter(p->mm, file_rss)));
++		task_unlock(p);
++	}
+ 
+ 	/*
+ 	 * We give our sacrificial lamb high priority and access to
+-- 
+1.6.2.5
+
+
+
