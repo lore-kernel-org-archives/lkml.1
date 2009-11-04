@@ -1,124 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbZKDBBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbZKDBFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033AbZKDBBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 20:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZKDBBR
+	id S1753100AbZKDBFH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 20:05:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZKDBFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 20:01:17 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:57425 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbZKDBBQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 20:01:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YX2kIWnkxdVT95MBwFTrtxyHOEyznAughdVgDtANtge8bn2pS62yz/MLuwPJF642tQ
-         G+ZmjwVaO/XEtJGZ0IofyB9Smghx91UmZm+4Pf0n2zjWiFAaInwihiJvrpV9zmemFPyZ
-         yb0L5Vlrn1g3gAyI9b6dopkTFENBqgtREKw2s=
+	Tue, 3 Nov 2009 20:05:06 -0500
+Received: from mail1.ugh.no ([80.239.42.168]:51606 "EHLO mail1.ugh.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752147AbZKDBFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 20:05:05 -0500
+X-Greylist: delayed 867 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 20:05:05 EST
+Message-ID: <4AF0D342.3090904@tomt.net>
+Date: Wed, 04 Nov 2009 02:05:06 +0100
+From: Andre Tomt <andre@tomt.net>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <20091030061635.GB28648@elf.ucw.cz>
-References: <20091030061635.GB28648@elf.ucw.cz>
-Date: Wed, 4 Nov 2009 09:01:20 +0800
-Message-ID: <a8e1da0911031701q4328604ayef5ee7eb939a9d50@mail.gmail.com>
-Subject: Re: 2.6.32-rc5: bluetooth still broken
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org, marcel@holtmann.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Jeff Garzik <jeff@garzik.org>
+CC: tfjellstrom@shaw.ca, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
+References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca> <4AA7F965.6020408@garzik.org> <4AF0CFE1.8050407@tomt.net>
+In-Reply-To: <4AF0CFE1.8050407@tomt.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 2:16 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
-> Today I got this... IIRC I was told it was fixed already...?
+Andre Tomt wrote:
+> Jeff Garzik wrote:
+>> On 09/09/2009 12:30 PM, Thomas Fjellstrom wrote:
+>>> No errors on that disk. Other than the one above, and its more of a 
+>>> warning.
+>>> However, I just rebooted to add some extra drives, thinking 
+>>> everything was
+>>> working a little better now that I've updated to 2.6.31-rc9, I'm 
+>>> treated to
+>>> the following two messages right after boot (and a system lockup to 
+>>> boot):
+> 
+> Jeff & Co,
+> 
+> Just chiming in with a "me too" comment.
+> 
+> Identical issues with the AOC-SASLP-MV8 card with 8 Seagate Barracuda 
+> 7200.11 1.5TB drives using the mvsas driver. Creating a md raid array 
+> seems to trigger it nearly instantly, however other loads do not trigger 
+> it as fast (if at all, only tested briefly with paralell dd).
+> 
+> Not sure if its related in any way, but I also noticed that with 
+> parallell dd read on all ports, the card/driver tops out at 600MB/s even 
+> though the card is in a northbridge connected slot running in x4 mode. 
+> Only the first 4-5 ports run at nearly full speed, while the rest barely 
+> gets to read any data at all. To illustrate, it looks sort of like this 
+> in iostat -m:
+> sda 122
+> sdb 122
+> sbc 120
+> sdd 121
+> sde 100
+> sdf 10
+> sdg 5
+> sdh 5
+> 
+> Starting to think this driver has some issues with concurrency.. The 
+> other controllers have no issues saturating all their ports, even if 
+> they are on a south bridge connected slot.
 
-Hi, this looks like another case.  Can you tell the way to reproduce?
+Err, saturating all the disks. I'm not expecting 300MB/s*8, even though 
+it would be very cool 8)
 
->
->                                                                        Pavel
->
-> ehci_hcd 0000:00:1d.7: suspend root hub
-> EXT3 FS on sda4, internal journal
-> kjournald starting.  Commit interval 5 seconds
-> EXT3 FS on sda2, internal journal
-> EXT3-fs: mounted filesystem with ordered data mode.
-> iwl3945 0000:03:00.0: firmware: requesting iwlwifi-3945-2.ucode
-> iwl3945 0000:03:00.0: iwlwifi-3945-2.ucode firmware file req failed: -2
-> iwl3945 0000:03:00.0: firmware: requesting iwlwifi-3945-1.ucode
-> iwl3945 0000:03:00.0: Loaded firmware iwlwifi-3945-1.ucode, which is deprecated.  Please use API v2 instead.
-> iwl3945 0000:03:00.0: Firmware has old API version. Expected 2, got 1. New firmware can be obtained from http://www.intellinuxwireless.org.
-> iwl3945 0000:03:00.0: loaded firmware version 15.28.1.8
-> Registered led device: iwl-phy0::radio
-> Registered led device: iwl-phy0::assoc
-> Registered led device: iwl-phy0::RX
-> Registered led device: iwl-phy0::TX
-> coda_read_super: Bad mount data
-> coda_read_super: device index: 0
-> coda_read_super: rootfid is (01234567.ffffffff.08051b10.00000000)
-> coda: Unexpected interruption.
-> Failure of coda_cnode_make for root: error -4
-> CE: hpet increasing min_delta_ns to 15000 nsec
-> CE: hpet increasing min_delta_ns to 22500 nsec
-> uhci_hcd 0000:00:1d.3: reserve dev 2 ep81-INT, period 1, phase 0, 23 us
-> INFO: trying to register non-static key.
-> the code is fine but needs lockdep annotation.
-> turning off the locking correctness validator.
-> Pid: 30385, comm: ps Not tainted 2.6.32-rc5-00154-gfbad3ad-dirty #83
-> Call Trace:
->  [<c0791da9>] ? printk+0x18/0x1a
->  [<c0255492>] __lock_acquire+0x4a2/0xad0
->  [<c0255b28>] lock_acquire+0x68/0x90
->  [<c06733bd>] ? skb_dequeue+0x1d/0x70
->  [<c0794e0b>] _spin_lock_irqsave+0x3b/0x50
->  [<c06733bd>] ? skb_dequeue+0x1d/0x70
->  [<c06733bd>] skb_dequeue+0x1d/0x70
->  [<c0674034>] skb_queue_purge+0x14/0x20
->  [<c07139a7>] l2cap_recv_frame+0x5d7/0x3270
->  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
->  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
->  [<c06732c9>] ? skb_queue_tail+0x39/0x50
->  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
->  [<c050cd50>] ? usb_submit_urb+0x140/0x360
->  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
->  [<c07167d2>] l2cap_recv_acldata+0x192/0x3d0
->  [<c07079b8>] ? hci_rx_task+0x268/0x440
->  [<c0716640>] ? l2cap_recv_acldata+0x0/0x3d0
->  [<c07079e5>] hci_rx_task+0x295/0x440
->  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
->  [<c0235b30>] tasklet_action+0x50/0xb0
->  [<c0236275>] __do_softirq+0x85/0x110
->  [<c023632d>] do_softirq+0x2d/0x40
->  [<c0236495>] irq_exit+0x65/0x80
->  [<c0204bbf>] do_IRQ+0x4f/0xc0
->  [<c02034a9>] common_interrupt+0x29/0x30
->  [<c0794a2f>] ? _write_unlock_irq+0x1f/0x30
->  [<c023474f>] do_exit+0x3df/0x650
->  [<c021bdc2>] ? do_page_fault+0x152/0x240
->  [<c02349f3>] do_group_exit+0x33/0x90
->  [<c0234a63>] sys_exit_group+0x13/0x20
->  [<c0202e50>] sysenter_do_call+0x12/0x31
-> e1000e: eth0 NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
-> 0000:02:00.0: eth0: 10/100 speed: disabling TSO
-> hci_acl_tx_to: hci0 ACL tx timeout
-> hci_acl_tx_to: hci0 killing stalled ACL connection 80:09:6E:BA:21:00
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-bluetooth" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
-
--- 
-Regards
-dave
+> 
+> Same disks/setup works just fine on AHCI and sata_mv controllers on the 
+> same computer, easily pushes 8-900MB/s with md software raid5/6 (Yipes!)
+> 
