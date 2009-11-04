@@ -1,68 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbZKDSJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbZKDSUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757618AbZKDSJM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 13:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbZKDSJL
+	id S1757681AbZKDSUN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 13:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZKDSUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 13:09:11 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:58381 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbZKDSJK (ORCPT
+	Wed, 4 Nov 2009 13:20:13 -0500
+Received: from smtp6.netcologne.de ([194.8.194.26]:41609 "EHLO
+	smtp6.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757581AbZKDSUM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 13:09:10 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [PATCHv6 1/3] tun: export underlying socket
-Date: Wed, 4 Nov 2009 19:09:05 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
-       s.hetze@linux-ag.com
-References: <cover.1257193660.git.mst@redhat.com> <20091102222612.GB15184@redhat.com> <200911031312.33580.arnd@arndb.de>
-In-Reply-To: <200911031312.33580.arnd@arndb.de>
+	Wed, 4 Nov 2009 13:20:12 -0500
+X-Greylist: delayed 466 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Nov 2009 13:20:12 EST
+Date: Wed, 04 Nov 2009 19:12:21 +0100
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: Fwd: [PATCH] arch/powerpc: Improve _memcpy
+To: Chris Friesen <cfriesen@nortel.com>,
+       Grant Likely <grant.likely@secretlab.ca>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Dirk Eibach <eibach@gdsys.de>
+In-Reply-To: <4AF084C6.3020602@nortel.com> (from cfriesen@nortel.com on Tue
+	Nov  3 20:30:14 2009)
+X-Mailer: Balsa 2.4.1
+Message-Id: <1257358349.2489.0@antares>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911041909.06054.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18DCdzuXdL2vqnnzAm9II9OrjKyCnZiQDWJz/Y
- kPC9xcJVenQn4SnpExDFrBEgW5Gt51fy4+wwrYdyblva2P0yyx
- IH3sUHin6zejNXj4GmuEw==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-oJok7Z4CP/8vAK7zhpA/"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 November 2009, Arnd Bergmann wrote:
-> > index 3f5fd52..404abe0 100644
-> > --- a/include/linux/if_tun.h
-> > +++ b/include/linux/if_tun.h
-> > @@ -86,4 +86,18 @@ struct tun_filter {
-> >         __u8   addr[0][ETH_ALEN];
-> >  };
-> >  
-> > +#ifdef __KERNEL__
-> > +#if defined(CONFIG_TUN) || defined(CONFIG_TUN_MODULE)
-> > +struct socket *tun_get_socket(struct file *);
-> > +#else
-> > +#include <linux/err.h>
-> > +#include <linux/errno.h>
-> > +struct file;
-> > +struct socket;
-> > +static inline struct socket *tun_get_socket(struct file *f)
-> > +{
-> > +       return ERR_PTR(-EINVAL);
-> > +}
-> > +#endif /* CONFIG_TUN */
-> > +#endif /* __KERNEL__ */
-> >  #endif /* __IF_TUN_H */
-> 
-> Is this a leftover from testing? Exporting the function for !__KERNEL__
-> seems pointless.
-> 
+--=-oJok7Z4CP/8vAK7zhpA/
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Michael, you didn't reply on this comment and the code is still there in v8.
-Do you actually need this? What for?
+See <http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-May/072582.html>. =
+ =20
+Any chance to get this one into the tree?  Grant?
 
-	Arnd <><
+Cheers, Albrecht.
+
+Am 03.11.09 20:30 schrieb(en) Chris Friesen:
+>=20
+> Forwarding to the ppc mailing list.
+>=20
+> Chris
+>=20
+>=20
+> -------- Original Message --------
+> Subject: [PATCH] arch/powerpc: Improve _memcpy
+> Date: Tue,  3 Nov 2009 15:20:56 +0100
+> From: Dirk Eibach <eibach@gdsys.de>
+> To: linux-kernel@vger.kernel.org
+> CC: Dirk Eibach <eibach@gdsys.de>
+>=20
+> The implementation of _memcpy_fromio and _memcpy_toio seems to be
+> suboptimal for size 4.
+>=20
+> Signed-off-by: Dirk Eibach <eibach@gdsys.de>
+> ---
+>  arch/powerpc/kernel/io.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/io.c b/arch/powerpc/kernel/io.c
+> index 1882bf4..8dc7547 100644
+> --- a/arch/powerpc/kernel/io.c
+> +++ b/arch/powerpc/kernel/io.c
+> @@ -161,7 +161,7 @@ void _memcpy_fromio(void *dest, const volatile void
+> __iomem *src,
+>  		dest++;
+>  		n--;
+>  	}
+> -	while(n > 4) {
+> +	while(n >=3D 4) {
+>  		*((u32 *)dest) =3D *((volatile u32 *)vsrc);
+>  		eieio();
+>  		vsrc +=3D 4;
+> @@ -190,7 +190,7 @@ void _memcpy_toio(volatile void __iomem *dest, const
+> void *src, unsigned long n)
+>  		vdest++;
+>  		n--;
+>  	}
+> -	while(n > 4) {
+> +	while(n >=3D 4) {
+>  		*((volatile u32 *)vdest) =3D *((volatile u32 *)src);
+>  		src +=3D 4;
+>  		vdest +=3D 4;
+> --
+> 1.5.6.5
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>=20
+>=20
+
+
+--=-oJok7Z4CP/8vAK7zhpA/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iD8DBQBK8cQNn/9unNAn/9ERAhoJAKCMYURtoUiTBFh9FJDvVAPafU/S3wCfSPf3
+C1aooTfXAkeU66JsXf0+fSU=
+=sxSi
+-----END PGP SIGNATURE-----
+
+--=-oJok7Z4CP/8vAK7zhpA/--
