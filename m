@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932622AbZKDVHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbZKDVLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932622AbZKDVHr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 16:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbZKDVHq
+	id S932611AbZKDVLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 16:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932384AbZKDVLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 16:07:46 -0500
-Received: from outbound-mail-21.bluehost.com ([69.89.21.16]:60660 "HELO
-	outbound-mail-21.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932578AbZKDVHq (ORCPT
+	Wed, 4 Nov 2009 16:11:43 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:36200 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932330AbZKDVLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 16:07:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=WWhvYI23UsgKGHUJlLqvldemPtvKWEANOS8JRQzlwRmYU0dTgoa/fd+l+zZ0qYUeH/OtUXXMvMeeclbS9nbdrE30fB2sAfpdZyJJ66xVBd8bTvrkGg8A/qR80d0cVdva;
-Date: Wed, 4 Nov 2009 13:07:49 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Matt Domsch <Matt_Domsch@dell.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Zhang Yanmin <yanmin.zhang@intel.com>, linux-kernel@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Huong_Nguyen@dell.com
-Subject: Re: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
-Message-ID: <20091104130749.0686210d@jbarnes-piketon>
-In-Reply-To: <20091104130515.6ffb0e2b@jbarnes-piketon>
-References: <20091006173311.GA15751@auslistsprd01.us.dell.com>
-	<4ACEE220.1020705@jp.fujitsu.com>
-	<20091009182810.GB24889@mock.linuxdev.us.dell.com>
-	<20091009183319.GC24889@mock.linuxdev.us.dell.com>
-	<4AEA4C82.6010604@jp.fujitsu.com>
-	<20091030025313.GA1042@mock.linuxdev.us.dell.com>
-	<4AEA5C52.2030900@jp.fujitsu.com>
-	<20091102175123.GA4028@mock.linuxdev.us.dell.com>
-	<20091104091106.32489ad7@jbarnes-piketon>
-	<86802c440911041255i59024efckf496dfa966da8560@mail.gmail.com>
-	<20091104130515.6ffb0e2b@jbarnes-piketon>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 4 Nov 2009 16:11:42 -0500
+Date: Wed, 4 Nov 2009 22:11:47 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Valdis.Kletnieks@vt.edu
+cc: Martin Nybo Andersen <tweek@tweek.dk>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Ryan C. Gordon" <icculus@icculus.org>,
+       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: package managers [was: FatELF patches...]
+In-Reply-To: <23950.1257367315@turing-police.cc.vt.edu>
+Message-ID: <Pine.LNX.4.64.0911042144200.17832@artax.karlin.mff.cuni.cz>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+ <20091104165407.1481bc29@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0911041758420.9986@artax.karlin.mff.cuni.cz>
+ <200911041848.48721.tweek@tweek.dk> <Pine.LNX.4.64.0911041901090.26209@artax.karlin.mff.cuni.cz>
+ <22108.1257364949@turing-police.cc.vt.edu>           
+ <Pine.LNX.4.64.0911042104260.8785@artax.karlin.mff.cuni.cz>
+ <23950.1257367315@turing-police.cc.vt.edu>
+X-Personality-Disorder: Schizoid
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Nov 2009 13:05:15 -0800
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > can not find acpi_hest.c and acpi_hest.h
+> > > No, all they need to do is bump the .so version number.
 > > 
-> > maybe need to wait acpi hest code is there?
+> > That's what Debian did. Obviously, I can extract the old library from the 
+> > old package. But non-technical desktop user can't.
 > 
-> Arg, when I fixed up a conflict in the patch I forgot to add those
-> files to the commit.  They were in my tree so I didn't see a build
-> error... Fixing now.
+> But the non-technical user probably wouldn't have hand-compiled vim and links
+> either, so how would they get into that situation?
 
-Should be all fixed now, thanks for catching it Yinghai.
+Non-technical users won't hand-compile but they want third party software 
+that doesn't come from the distribution. And package management system 
+hates it. Truly. It is written with the assumption that everything 
+installed is registered in the package database.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Another example: I needed new binutils because it had some bugs fixed over 
+standard Debian binutils. So I downloaded .tar.gz from ftp.gnu.org, 
+compiled it, then issued a command to remove the old package, passed it a 
+flag to ignore broken dependencies and then typed make install to install 
+new binaries. --- guess what --- on any further invocation of dselect it 
+complained that there are broken dependencies (the compiler needs 
+binutils) and tried to install the old binutils package!
+
+Why is the package management so stupid? Why can't it check $PATH for "ld" 
+and if there is one, don't try to install it again?
+
+After few hours, I resolved the issue by creating an empty "binutils" 
+package and stuffing it into the database.
+
+Now, if I were not a programmer ... if I were an artist who needs the 
+latest version of graphics software, if I were a musican who needs the 
+latest version of audio software, if I were a gamer who needs the latest 
+version of wine ... I'd be f'cked up. That's why I think that package 
+management is an evil feature hurts desktop users. As a technical user, I 
+somehow solve these quirks and install what I want, as a non-technical 
+user, I wouldn't have a chance.
+
+Mikulas
