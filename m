@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZKDPT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbZKDPWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473AbZKDPT2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbZKDPT2
+	id S1756555AbZKDPWa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbZKDPWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:19:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45281 "EHLO mx1.redhat.com"
+	Wed, 4 Nov 2009 10:22:30 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:44795 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753147AbZKDPT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:19:27 -0500
-Date: Wed, 4 Nov 2009 10:19:29 -0500
-From: Aristeu Rozanski <aris@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] x86: introduce NMI_AUTO as nmi_watchdog option
-Message-ID: <20091104151929.GH18613@redhat.com>
-References: <20091103171054.GB25437@redhat.com> <20091104114630.GA16993@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091104114630.GA16993@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1756225AbZKDPW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:22:29 -0500
+Subject: Re: [RFC] Mount point suggestions for cgroup
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: balbir@linux.vnet.ibm.com
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata.rao@in.ibm.com>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>,
+       "menage@google.com" <menage@google.com>,
+       Jan Safranek <jsafrane@redhat.com>
+In-Reply-To: <20091104081618.GD3560@balbir.in.ibm.com>
+References: <20091104063005.GC3560@balbir.in.ibm.com>
+	 <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091104081618.GD3560@balbir.in.ibm.com>
+Content-Type: text/plain
+Date: Wed, 04 Nov 2009 07:21:57 -0800
+Message-Id: <1257348117.31972.4360.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > NMI_AUTO is a new nmi_watchdog option that makes LAPIC be tried first 
-> > and if the CPU isn't supported, IOAPIC will be used. It's useful in 
-> > cases where NMI watchdog is enabled by default in a kernel built for 
-> > different machines. It can be configured by default or selected with 
-> > nmi_watchdog=3 or nmi_watchdog=auto parameters.
-> 
-> What i'd like to see for the NMI watchdog is much more ambitious than 
-> this: the use of perf events to run a periodic NMI callback.
-> 
-> The NMI watchdog would cause the creation of a per-cpu perf_event 
-> structure (in-kernel). All x86 CPUs that have perf event support (the 
-> majority of them) will thus be able to have an NMI watchdog using a 
-> nice, generic piece of code and we'd be able to phase out the open-coded 
-> NMI watchdog code.
-> 
-> The user would not notice much from this: we'd still have the 
-> /proc/sys/kernel/nmi_watchdog toggle to turn it on/off, and we'd still 
-> have the nmi_watchog= boot parameter as well. But the underlying 
-> implementation would be far more generic and far more usable than the 
-> current code.
-> 
-> Would you be interested in moving the NMI watchdog code in this 
-> direction? Most of the perf events changes (callbacks, helpers for 
-> in-kernel event allocations, etc.) are in latest -tip already, so you 
-> could use that as a base.
-but that would work only for LAPIC. You're suggesting killing IOAPIC mode too?
+On Wed, 2009-11-04 at 13:46 +0530, Balbir Singh wrote:
+> The reason I liked /dev/cgroup was because cpusets could be
+> mounted at /dev/cpuset or /dev/cgroup/cpuset. My concern with /cgroup
+> is that a ls "/" now becomes larger in size. But I'll take your vote
+> for it as +1 for /cgroup.
 
--- 
-Aristeu
+/dev/pts is a decent precedent for doing it under /dev, although it does
+deal with actual devices.  cgroups do not.
+
+-- Dave
 
