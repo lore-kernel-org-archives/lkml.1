@@ -1,163 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbZKDRVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbZKDRWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757492AbZKDRVE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbZKDRVD
+	id S1757504AbZKDRWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 12:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZKDRWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:21:03 -0500
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:40248 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757326AbZKDRVC (ORCPT
+	Wed, 4 Nov 2009 12:22:17 -0500
+Received: from outbound-mail-146.bluehost.com ([67.222.38.36]:36160 "HELO
+	outbound-mail-146.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757293AbZKDRWQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:21:02 -0500
-Date: Wed, 4 Nov 2009 22:51:00 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 01/20] blkio: Documentation
-Message-ID: <20091104172100.GL3560@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
- <1257291837-6246-2-git-send-email-vgoyal@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1257291837-6246-2-git-send-email-vgoyal@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 4 Nov 2009 12:22:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=oqueTmX8Wxr4+2oPmmJHJQnSnQpIcRPqQYdc+CL4faQ6pfu5MvP9/H5LgNPYr61M52owpebGLo/XflyWxxrJKvWwS6PPG4Cx5uV1qxZP04oUA+4GKZJiv83VxOZoBxaJ;
+Date: Wed, 4 Nov 2009 09:22:19 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Brad Spengler <spender@grsecurity.net>, Matthew Wilcox <matthew@wil.cx>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: Re: [PATCH] ia64: Don't call SAL < 3.2 for extended config space
+Message-ID: <20091104092219.228a5186@jbarnes-piketon>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E36222B3@orsmsx505.amr.corp.intel.com>
+References: <20091011074531.GA12357@grsecurity.net>
+	<4AD1AE0D.1030007@kernel.org>
+	<4AD24766.7050205@kernel.org>
+	<20091011213245.GC18513@grsecurity.net>
+	<20091011231039.GB7545@parisc-linux.org>
+	<20091012135628.GA310@grsecurity.net>
+	<20091012142430.GE7545@parisc-linux.org>
+	<20091013045808.GB9782@grsecurity.net>
+	<20091104091608.7b813549@jbarnes-piketon>
+	<57C9024A16AD2D4C97DC78E552063EA3E36222B3@orsmsx505.amr.corp.intel.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@redhat.com> [2009-11-03 18:43:38]:
+On Wed, 4 Nov 2009 09:20:13 -0800
+"Luck, Tony" <tony.luck@intel.com> wrote:
 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
->  Documentation/cgroups/blkio-controller.txt |  106 ++++++++++++++++++++++++++++
->  1 files changed, 106 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/cgroups/blkio-controller.txt
+> > I've dropped the ball on this one though; maybe Tony already picked
+> > it up?  Tony?
 > 
-> diff --git a/Documentation/cgroups/blkio-controller.txt b/Documentation/cgroups/blkio-controller.txt
-> new file mode 100644
-> index 0000000..dc8fb1a
-> --- /dev/null
-> +++ b/Documentation/cgroups/blkio-controller.txt
-> @@ -0,0 +1,106 @@
-> +				Block IO Controller
-> +				===================
-> +Overview
-> +========
-> +cgroup subsys "blkio" implements the block io controller. There seems to be
-> +a need of various kind of IO control policies (like proportional BW, max BW)
-> +both at leaf nodes as well as at intermediate nodes in storage hierarchy. Plan
-> +is to use same cgroup based management interface for blkio controller and
-> +based on user options switch IO policies in the background.
-> +
-> +In the first phase, this patchset implements proportional weight time based
-> +division of disk policy. It is implemented in CFQ. Hence this policy takes
-> +effect only on leaf nodes when CFQ is being used.
-> +
-> +HOWTO
-> +=====
-> +You can do a very simple testing of running two dd threads in two different
-> +cgroups. Here is what you can do.
-> +
-> +- Enable group scheduling in CFQ
-> +	CONFIG_CFQ_GROUP_IOSCHED=y
-> +
-> +- Compile and boot into kernel and mount IO controller (blkio).
-> +
-> +	mount -t cgroup -o blkio none /cgroup
-> +
-> +- Create two cgroups
-> +	mkdir -p /cgroup/test1/ /cgroup/test2
-> +
-> +- Set weights of group test1 and test2
-> +	echo 1000 > /cgroup/test1/blkio.weight
-> +	echo 500 > /cgroup/test2/blkio.weight
-> +
-> +- Create two same size files (say 512MB each) on same disk (file1, file2) and
-> +  launch two dd threads in different cgroup to read those files.
-> +
-> +	sync
-> +	echo 3 > /proc/sys/vm/drop_caches
-> +
-> +	dd if=/mnt/sdb/zerofile1 of=/dev/null &
-> +	echo $! > /cgroup/test1/tasks
-> +	cat /cgroup/test1/tasks
-> +
-> +	dd if=/mnt/sdb/zerofile2 of=/dev/null &
-> +	echo $! > /cgroup/test2/tasks
-> +	cat /cgroup/test2/tasks
-> +
-> +- At macro level, first dd should finish first. To get more precise data, keep
-> +  on looking at (with the help of script), at blkio.disk_time and
-> +  blkio.disk_sectors files of both test1 and test2 groups. This will tell how
-> +  much disk time (in milli seconds), each group got and how many secotors each
-> +  group dispatched to the disk. We provide fairness in terms of disk time, so
-> +  ideally io.disk_time of cgroups should be in proportion to the weight.
-> +
-> +Various user visible config options
-> +===================================
-> +CONFIG_CFQ_GROUP_IOSCHED
-> +	- Enables group scheduling in CFQ. Currently only 1 level of group
-> +	  creation is allowed.
-> +
-> +CONFIG_DEBUG_CFQ_IOSCHED
-> +	- Enables some debugging messages in blktrace. Also creates extra
-> +	  cgroup file blkio.dequeue.
-> +
-> +Config options selected automatically
-> +=====================================
-> +These config options are not user visible and are selected/deselected
-> +automatically based on IO scheduler configuration.
-> +
-> +CONFIG_BLK_CGROUP
-> +	- Block IO controller. Selected by CONFIG_CFQ_GROUP_IOSCHED.
-> +
-> +CONFIG_DEBUG_BLK_CGROUP
-> +	- Debug help. Selected by CONFIG_DEBUG_CFQ_IOSCHED.
-> +
-> +Details of cgroup files
-> +=======================
-> +- blkio.ioprio_class
-> +	- Specifies class of the cgroup (RT, BE, IDLE). This is default io
-> +	  class of the group on all the devices.
-> +
-> +	  1 = RT; 2 = BE, 3 = IDLE
-> +
-> +- blkio.weight
-> +	- Specifies per cgroup weight.
-> +
-> +	  Currently allowed range of weights is from 100 to 1000.
-> +
-> +- blkio.time
-> +	- disk time allocated to cgroup per device in milliseconds. First
-> +	  two fields specify the major and minor number of the device and
-> +	  third field specifies the disk time allocated to group in
-> +	  milliseconds.
-> +
-> +- blkio.sectors
-> +	- number of sectors transferred to/from disk by the group. First
-> +	  two fields specify the major and minor number of the device and
-> +	  third field specifies the number of sectors transferred by the
-> +	  group to/from the device.
-> +
-> +- blkio.dequeue
-> +	- Debugging aid only enabled if CONFIG_DEBUG_CFQ_IOSCHED=y. This
-> +	  gives the statistics about how many a times a group was dequeued
-> +	  from service tree of the device. First two fields specify the major
-> +	  and minor number of the device and third field specifies the number
-> +	  of times a group was dequeued from a particular device.
+> Yes.  It went in to Linus' tree with the git pull I sent on Monday
+> (just prior to -rc6).
+> 
+> Commit: adcd74034 ...
 
-Hi, Vivek,
-
-Are the parameters inter-related? What if you have conflicts w.r.t.
-time, sectors, etc?
+Great, thanks for confirming.
 
 -- 
-	Balbir
+Jesse Barnes, Intel Open Source Technology Center
