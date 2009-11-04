@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbZKDBkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbZKDBkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483AbZKDBkG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 20:40:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbZKDBkF
+	id S1753678AbZKDBkg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 20:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbZKDBkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 20:40:05 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:52498 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332AbZKDBkE (ORCPT
+	Tue, 3 Nov 2009 20:40:35 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:63756 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbZKDBke (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 20:40:04 -0500
+	Tue, 3 Nov 2009 20:40:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ZpG8Vpu39Lh4AosH1Zy7J8k/KZWs7jTUvyQKJVeMD07nAnGCwKzN22UmgtI3bbt3NI
-         KycDzxYCoerSAKpphlay3q5ghbF+aDc8OFWQoOjH7jBOPAN7hAycSEpF/baiYPx7P9/b
-         qYBwCjm6x2xmGYTNgA2SeP/4u7YnM7YhftxJw=
-Message-ID: <4AF0DB84.8050006@gmail.com>
-Date: Tue, 03 Nov 2009 17:40:20 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=fbRYLniTBtk/rAwkGagczylarAwUazjypRgwJajOXmesXxPqkcQ0YhOcz0KgXJHOCa
+         BHM1zp4VNwJOLnLi05M1g6acPHrnglrYGA0uPAcy70uRaifx/pudNLVwr1R8qZXXhssN
+         prwSnuSmyK/fGQUPda6OWJqZFEX/CdK8aXK/0=
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gcc@gcc.gnu.org
-Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
-References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com> <20091104101410.D43E.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091104101410.D43E.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Wed, 4 Nov 2009 09:40:40 +0800
+Message-ID: <b741c2440911031740m52f8c11dt6e57b549cc6ce465@mail.gmail.com>
+Subject: [PATCH] cgroup: Fixes the un-paired cgroup lock problem
+From: Liu Aleaxander <aleaxander@gmail.com>
+To: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
->> Hello,
->> I'm not sure how to handle this,
->> while compiling firefox-3.6b1.source
->> I get this with the default compiling options,
->> as well as custom:
->>
->>
->> [  532.942324] cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
->> [  532.942330] Pid: 16002, comm: cc1plus Tainted: P
->> 2.6.32-rc5-00083-g04ea458 #2
->> [  532.942333] Call Trace:
->> [  532.942342]  [<ffffffff810bce11>] T.417+0x7c/0x245
->> [  532.942347]  [<ffffffff810bd11c>] __out_of_memory+0x142/0x159
->> [  532.942352]  [<ffffffff810bd1a1>] out_of_memory+0x6e/0x9d
->> [  532.942357]  [<ffffffff810c0086>] __alloc_pages_nodemask+0x47e/0x5cc
->> [  532.942363]  [<ffffffff810d2115>] handle_mm_fault+0x25d/0x68e
->> [  532.942369]  [<ffffffff813dfc1d>] do_page_fault+0x2bb/0x2d3
->> [  532.942373]  [<ffffffff813ddb25>] page_fault+0x25/0x30
->> [  532.942376] Mem-Info:
->> [  532.942378] DMA per-cpu:
->> [  532.942380] CPU    0: hi:    0, btch:   1 usd:   0
->> [  532.942383] CPU    1: hi:    0, btch:   1 usd:   0
->> [  532.942385] DMA32 per-cpu:
->> [  532.942388] CPU    0: hi:  186, btch:  31 usd:  94
->> [  532.942391] CPU    1: hi:  186, btch:  31 usd:  23
->> [  532.942393] Normal per-cpu:
->> [  532.942395] CPU    0: hi:  186, btch:  31 usd: 150
->> [  532.942398] CPU    1: hi:  186, btch:  31 usd: 155
->> [  532.942404] active_anon:707575 inactive_anon:264673 isolated_anon:0
->> [  532.942406]  active_file:58 inactive_file:33 isolated_file:0
->>      
->
-> file cache (active_file + inactive_file) was very little. It indicate anyone waste too much memory.
-> I doubt you use buggy compiler.
->
->
->
->    
-hmm... then this is something with firefox then..
-In that case I'll continue to build my system with
-this compiler.
-Although a bit concerned building everything
-for the system with a compiler that shows some
-memory issue,but if you say its not the compiler,
-then I'll carry on with what I'm doing.
-(and use an older compiler for firefox).
+From: Liu Aleaxander <Aleaxander@gmail.com>
+Date: Wed, 4 Nov 2009 09:27:06 +0800
+Subject: [PATCH] Fixes the un-paired cgroup lock problem
 
-Justin P. Mattock
+In cgroup_lock_live_group, it locks the cgroup by mutex_lock, while in the
+cgroup_tasks_write, it unlock it by cgroup_unlock. Even though they are
+equal, but I do think we should make it pair.
+
+BTW, should we replace others with cgroup_lock and cgroup_unlock?
+Since we already have a wrapper one and it's meaningful.
+
+Signed-off-by: Liu Aleaxander <Aleaxander@gmail.com>
+---
+ kernel/cgroup.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 0249f4b..ee2274e 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1660,9 +1660,9 @@ static int cgroup_tasks_write(struct cgroup
+*cgrp, struct cftype *cft, u64 pid)
+  */
+ bool cgroup_lock_live_group(struct cgroup *cgrp)
+ {
+-	mutex_lock(&cgroup_mutex);
++	cgroup_lock();
+ 	if (cgroup_is_removed(cgrp)) {
+-		mutex_unlock(&cgroup_mutex);
++		cgroup_unlock();
+ 		return false;
+ 	}
+ 	return true;
+-- 
+1.6.2.5
+
+-- 
+regards
+Liu Aleaxander
