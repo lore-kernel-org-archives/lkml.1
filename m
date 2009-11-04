@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbZKDM1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZKDM3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755764AbZKDM1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 07:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbZKDM1Z
+	id S1755811AbZKDM3A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 07:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZKDM3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 07:27:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58061 "EHLO mx3.mail.elte.hu"
+	Wed, 4 Nov 2009 07:29:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47433 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755559AbZKDM1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 07:27:24 -0500
-Date: Wed, 4 Nov 2009 13:27:16 +0100
+	id S1755559AbZKDM27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 07:28:59 -0500
+Date: Wed, 4 Nov 2009 13:28:27 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: dimm <dmitry.adamushko@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Mike Travis <travis@sgi.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [ RFC, PATCH - 1/2, v2 ] x86-microcode: refactor microcode
-	output messages
-Message-ID: <20091104122716.GA11968@elte.hu>
-References: <1257192496.5941.8.camel@dimm>
+To: Tejun Heo <tj@kernel.org>, Joerg Roedel <joerg.roedel@amd.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       athena@fftw.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix iommu=nodac parameter handling
+Message-ID: <20091104122827.GB11968@elte.hu>
+References: <4AE5B52A.4050408@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257192496.5941.8.camel@dimm>
+In-Reply-To: <4AE5B52A.4050408@kernel.org>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -38,51 +38,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* dimm <dmitry.adamushko@gmail.com> wrote:
+* Tejun Heo <tj@kernel.org> wrote:
 
-> [ resending ]
+> nodac should forbid dac instead of enabling it.  Fix it.
 > 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Matteo Frigo <athena@fftw.org>
+> Cc: stable@kernel.org
+> ---
+> This was posted several months ago in a two patch series.  The second
+> one was rejected by Alan and with that the first one got lost too
+> although it's an apparent bug fix.  Matteo hit this bug recently and
+> reminded me about this patch.  So, regenerated and reposting.
 > 
-> Hi,
+> Thanks.
 > 
+>  arch/x86/kernel/pci-dma.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> this is in response to Mike's patch "Limit the number of microcode
-> messages".
-> 
-> What's about the following (yet preliminary and not thoroughly tested)
-> approach?
-> 
-> patch-1:
-> 
-> simplify 'struct ucode_cpu_info' and related functional logic.
-> 
-> 
-> patch-2: 
-> 
-> reduce a number of similar 'microcode version' messages by printing a
-> single message for all cpus with equal microcode version, like:
-> 
-> (1)
-> [   96.589437] microcode: original microcode versions...
-> [   96.589451] microcode: CPU0-1: sig=0x6f2, pf=0x20, revision=0x57
-> 
-> (2)
-> [   96.603176] microcode: microcode versions after update...
-> [   96.603193] microcode: CPU0-1: sig=0x6f2, pf=0x20, revision=0x57
-> 
-> 
-> The new approach is used in microcode_init() [ i.e. when loading a
-> module ] and microcode_write(), that's when we update all the cpus at
-> once.
-> 
-> reload_for_cpu() and update-all-cpus-upon-resuming() use the old
-> approach - a new microcode version is being reported upon applying it.
-> 
-> The latter might employ the similar 'report-for-all' approach as above
-> but that would somewhat complicate the logic. Anyways, there are plenty
-> of per-cpu messages upon system resuming so having some more
-> update-microcode related ones won't harm that muc, I guess :-)
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index d20009b..8cf3996 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -216,7 +216,7 @@ static __init int iommu_setup(char *p)
+>  		if (!strncmp(p, "allowdac", 8))
+>  			forbid_dac = 0;
+>  		if (!strncmp(p, "nodac", 5))
+> -			forbid_dac = -1;
+> +			forbid_dac = 1;
+>  		if (!strncmp(p, "usedac", 6)) {
+>  			forbid_dac = -1;
+>  			return 1;
 
-Seems sensible to me.
+(Cc:-ed more interested parties.)
 
 	Ingo
