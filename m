@@ -1,369 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZKDAp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbZKDAt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbZKDAp4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 19:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZKDApz
+	id S1752408AbZKDAt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 19:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZKDAt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 19:45:55 -0500
-Received: from emulex.emulex.com ([138.239.112.1]:37350 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbZKDApx (ORCPT
+	Tue, 3 Nov 2009 19:49:26 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:56418 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbZKDAtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 19:45:53 -0500
-Subject: [PATCH] scsi_lib_dma.c :  fix bug with dma maps on nested scsi
- objects - (2nd try)
-From: James Smart <James.Smart@Emulex.Com>
-Reply-To: James.Smart@Emulex.Com
-To: <linux-scsi@vger.kernel.org>, <linux-next@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <james.bottomley@suse.de>
-CC: <andrew.vasquez@qlogic.com>, <sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Tue, 3 Nov 2009 19:45:26 -0500
-Message-ID: <1257295546.5965.7.camel@wookie>
+	Tue, 3 Nov 2009 19:49:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=M6nq48/zZ42Kn/NUHF0Uc+DGIR07heJ0ZVqKh9OkZp7o4q8jzQECM4813TcjauDxsv
+         FyTUv1UKkdAlEg+NHfmL1/+Y2zIGcK8RX6jK8LvIJ3OdeclRH2/VMuY4441t9komJXf8
+         atI7lk4y0JJt+CfnjVQvkuJWoV7Q+8AfoMiQY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
+Date: Wed, 4 Nov 2009 01:48:08 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>
+References: <200911031951.05235.bzolnier@gmail.com> <200911040052.28323.bzolnier@gmail.com> <20091104004015.23c4c1a3@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091104004015.23c4c1a3@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+Message-Id: <200911040148.08787.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Nov 2009 00:45:50.0694 (UTC) FILETIME=[28031860:01CA5CE8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I had reminded James B of a patch for an issue with the scsi subsystem
-not properly finding the parent device for dma operations when we had
-nested scsi_hosts..
-http://marc.info/?l=linux-scsi&m=125372757108048&w=2
+On Wednesday 04 November 2009 01:40:15 Alan Cox wrote:
+> On Wed, 4 Nov 2009 00:52:28 +0100
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> 
+> > On Wednesday 04 November 2009 00:48:35 Alan Cox wrote:
+> > > > > Yeah I know that. But like I said, I still needed to get around to do that,
+> > > > > and I am very happy you were interested in fixing it.
+> > > > 
+> > > > Lets make one thing clear: YOU SHOULD BE THE ONE FIXING IT.
+> > > 
+> > > Really - you have a service and support contract with Ivo.. no i thought
+> > > not.
+> > 
+> > Just today I got PM from somebody complaining to me about non-working
+> > pata_pdc2026x_old (pdc202xx_old works fine for him) simply because
+> > I fixed some bug there some time ago....
+> 
+> And didn't bother committing a patch to both sets of code bec
 
-The patch was picked up, and integrated into linux-next, which started
-to see issues, and which James B cut an additional patch to deal with
-traversing too much of the tree (stopping when dev->parent == NULL)..
-The http://marc.info/?l=linux-scsi&m=125414973520985&w=2
+You misread my mail.
 
-The real issue was the traversal of a node that had "dev->type == NULL".
-Turns out standard PCI endpoint and bridge/domain objects have NULL types
-too - so every traversal went all the way to the root of the tree.
+Because I also fixed bug in the PATA code though I was IDE Maintainer.
 
-The attached patch, cut against scsi-misc-2.6 - replaces both of the
-patches above. Rather than making any assumptions about dev->type values,
-it now explicitly matches dev->type structures to known scsi or transport
-objects, and only traverses them if they are recognized. To get around
-symbol dependencies, and to allow transports as modules to come and go,
-a registration interface was put in place to register transport objects
-with the routine that does the matching.  The FC transport was converted
-to use a device_type structure for its objects (note: perhaps other
-transports should consider the same ?)
+Also:
 
-Please apply this patch as soon as possible.  At the current time,
-NPIV vport dma operation is severely broken.
+Did you have a service & support contract with me when you were complaining
+about IDE to me?  [ and I would strongly suggest you not to go there.. ]
 
-Thanks
+Or reversing the initial question:
 
--- james s
+Does Ivo have a contract with me to contribute to rt2x00 project?
 
+So please stop idiotic arguments.
 
-
-
- Signed-off-by: James Smart <james.smart@emulex.com>
-
- ---
-
- drivers/scsi/hosts.c             |   72 +++++++++++++++++++++++++++++++++++++++
- drivers/scsi/scsi_lib.c          |    2 -
- drivers/scsi/scsi_lib_dma.c      |    7 ++-
- drivers/scsi/scsi_priv.h         |    2 +
- drivers/scsi/scsi_transport_fc.c |   48 +++++++++++++++++++++++---
- include/scsi/scsi_host.h         |   17 +++++++++
- 6 files changed, 141 insertions(+), 7 deletions(-)
-
-
-diff -upNr a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
---- a/drivers/scsi/hosts.c	2009-10-26 12:58:17.000000000 -0400
-+++ b/drivers/scsi/hosts.c	2009-11-02 17:44:44.000000000 -0500
-@@ -40,6 +40,9 @@
- #include "scsi_logging.h"
- 
- 
-+static DEFINE_SPINLOCK(transport_devs_lock);
-+static struct list_head transport_devs;
-+
- static atomic_t scsi_host_next_hn;	/* host_no for next new host */
- 
- 
-@@ -504,6 +507,7 @@ EXPORT_SYMBOL(scsi_host_put);
- 
- int scsi_init_hosts(void)
- {
-+	INIT_LIST_HEAD(&transport_devs);
- 	return class_register(&shost_class);
- }
- 
-@@ -560,3 +564,71 @@ void scsi_flush_work(struct Scsi_Host *s
- 	flush_workqueue(shost->work_q);
- }
- EXPORT_SYMBOL_GPL(scsi_flush_work);
-+
-+
-+struct scsi_transport_dev {
-+	struct list_head devs_list;
-+	struct device_type *type;
-+};
-+
-+/**
-+ * scsi_reg_transport_dev_type - Register transport object device type that is
-+ *                        to be ignored when searching for the first
-+ *                        non-scsi object in the object tree.
-+ * @dev_type:	Pointer to a "struct device_type" structure
-+ */
-+int scsi_reg_transport_dev_type(struct device_type *dev_type)
-+{
-+	struct scsi_transport_dev *dtype;
-+	unsigned long flags;
-+
-+	dtype = kzalloc(sizeof(struct scsi_transport_dev), GFP_KERNEL);
-+	if (!dtype)
-+		return 1;
-+	dtype->type = dev_type;
-+	spin_lock_irqsave(&transport_devs_lock, flags);
-+	list_add_tail(&dtype->devs_list, &transport_devs);
-+	spin_unlock_irqrestore(&transport_devs_lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(scsi_reg_transport_dev_type);
-+
-+/**
-+ * scsi_unreg_transport_dev_type - De-register a transport object device type
-+ * @dev_type:	Pointer to a "struct device_type" structure
-+ */
-+void scsi_unreg_transport_dev_type(struct device_type *dev_type)
-+{
-+	struct scsi_transport_dev *dtype;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&transport_devs_lock, flags);
-+	list_for_each_entry(dtype, &transport_devs, devs_list) {
-+		if (dtype->type == dev_type) {
-+			list_del(&dtype->devs_list);
-+			kfree(dtype);
-+			break;
-+		}
-+	}
-+	spin_unlock_irqrestore(&transport_devs_lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(scsi_unreg_transport_dev_type);
-+
-+int scsi_is_transport_device(const struct device *dev)
-+{
-+	struct scsi_transport_dev *dtype;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&transport_devs_lock, flags);
-+	list_for_each_entry(dtype, &transport_devs, devs_list) {
-+		if (dtype->type == dev->type) {
-+			spin_unlock_irqrestore(&transport_devs_lock, flags);
-+			return 1;
-+		}
-+	}
-+	spin_unlock_irqrestore(&transport_devs_lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL(scsi_is_transport_device);
-+
-+
-diff -upNr a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
---- a/drivers/scsi/scsi_lib.c	2009-10-26 12:58:17.000000000 -0400
-+++ b/drivers/scsi/scsi_lib.c	2009-11-01 09:21:46.000000000 -0500
-@@ -1611,7 +1611,7 @@ struct request_queue *__scsi_alloc_queue
- 					 request_fn_proc *request_fn)
- {
- 	struct request_queue *q;
--	struct device *dev = shost->shost_gendev.parent;
-+	struct device *dev = dev_to_nonscsi_dev(shost->shost_gendev.parent);
- 
- 	q = blk_init_queue(request_fn, NULL);
- 	if (!q)
-diff -upNr a/drivers/scsi/scsi_lib_dma.c b/drivers/scsi/scsi_lib_dma.c
---- a/drivers/scsi/scsi_lib_dma.c	2009-10-26 12:58:17.000000000 -0400
-+++ b/drivers/scsi/scsi_lib_dma.c	2009-11-01 09:21:46.000000000 -0500
-@@ -23,7 +23,8 @@ int scsi_dma_map(struct scsi_cmnd *cmd)
- 	int nseg = 0;
- 
- 	if (scsi_sg_count(cmd)) {
--		struct device *dev = cmd->device->host->shost_gendev.parent;
-+		struct device *dev = dev_to_nonscsi_dev(
-+					cmd->device->host->shost_gendev.parent);
- 
- 		nseg = dma_map_sg(dev, scsi_sglist(cmd), scsi_sg_count(cmd),
- 				  cmd->sc_data_direction);
-@@ -41,10 +42,12 @@ EXPORT_SYMBOL(scsi_dma_map);
- void scsi_dma_unmap(struct scsi_cmnd *cmd)
- {
- 	if (scsi_sg_count(cmd)) {
--		struct device *dev = cmd->device->host->shost_gendev.parent;
-+		struct device *dev = dev_to_nonscsi_dev(
-+					cmd->device->host->shost_gendev.parent);
- 
- 		dma_unmap_sg(dev, scsi_sglist(cmd), scsi_sg_count(cmd),
- 			     cmd->sc_data_direction);
- 	}
- }
- EXPORT_SYMBOL(scsi_dma_unmap);
-+
-diff -upNr a/drivers/scsi/scsi_priv.h b/drivers/scsi/scsi_priv.h
---- a/drivers/scsi/scsi_priv.h	2009-10-26 12:58:17.000000000 -0400
-+++ b/drivers/scsi/scsi_priv.h	2009-11-01 10:23:08.000000000 -0500
-@@ -23,6 +23,8 @@ struct scsi_nl_hdr;
- /* hosts.c */
- extern int scsi_init_hosts(void);
- extern void scsi_exit_hosts(void);
-+extern int scsi_reg_transport_dev_type(struct device_type *dev_type);
-+extern void scsi_unreg_transport_dev_type(struct device_type *dev_type);
- 
- /* scsi.c */
- extern int scsi_dispatch_cmd(struct scsi_cmnd *cmd);
-diff -upNr a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
---- a/drivers/scsi/scsi_transport_fc.c	2009-10-26 12:58:17.000000000 -0400
-+++ b/drivers/scsi/scsi_transport_fc.c	2009-11-01 10:58:35.000000000 -0500
-@@ -48,6 +48,8 @@ static int fc_bsg_hostadd(struct Scsi_Ho
- static int fc_bsg_rportadd(struct Scsi_Host *, struct fc_rport *);
- static void fc_bsg_remove(struct request_queue *);
- static void fc_bsg_goose_queue(struct fc_rport *);
-+static int fc_transport_reg_devtypes(void);
-+static void fc_transport_unreg_devtypes(void);
- 
- /*
-  * Redefine so that we can have same named attributes in the
-@@ -643,6 +645,9 @@ static __init int fc_transport_init(void
- 
- 	atomic_set(&fc_event_seq, 0);
- 
-+	error = fc_transport_reg_devtypes();
-+	if (error)
-+		return error;
- 	error = transport_class_register(&fc_host_class);
- 	if (error)
- 		return error;
-@@ -661,6 +666,7 @@ static void __exit fc_transport_exit(voi
- 	transport_class_unregister(&fc_rport_class);
- 	transport_class_unregister(&fc_host_class);
- 	transport_class_unregister(&fc_vport_class);
-+	fc_transport_unreg_devtypes();
- }
- 
- /*
-@@ -1854,9 +1860,14 @@ static void fc_rport_dev_release(struct 
- 	kfree(rport);
- }
- 
-+static struct device_type fc_rport_dev_type = {
-+	.name =		"fc_rport",
-+	.release =	fc_rport_dev_release,
-+};
-+
- int scsi_is_fc_rport(const struct device *dev)
- {
--	return dev->release == fc_rport_dev_release;
-+	return dev->type == &fc_rport_dev_type;
- }
- EXPORT_SYMBOL(scsi_is_fc_rport);
- 
-@@ -1887,9 +1898,14 @@ static void fc_vport_dev_release(struct 
- 	kfree(vport);
- }
- 
-+static struct device_type fc_vport_dev_type = {
-+	.name =		"fc_vport",
-+	.release =	fc_vport_dev_release,
-+};
-+
- int scsi_is_fc_vport(const struct device *dev)
- {
--	return dev->release == fc_vport_dev_release;
-+	return dev->type == &fc_vport_dev_type;
- }
- EXPORT_SYMBOL(scsi_is_fc_vport);
- 
-@@ -1915,6 +1931,30 @@ static int fc_vport_match(struct attribu
- 
- 
- /**
-+ * fc_transport_reg_devtypes - Registers topology device types that need
-+ *                             to be skipped when traversing the topology
-+ *                             tree to find the first non-scsi object which
-+ *                             is then used for DMA masks, etc.
-+ */
-+static int fc_transport_reg_devtypes(void)
-+{
-+	if (scsi_reg_transport_dev_type(&fc_vport_dev_type))
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+/**
-+ * fc_transport_unreg_devtypes - De-registers topology device types that need
-+ *                             to be skipped when traversing the topology
-+ *                             tree.
-+ */
-+static void fc_transport_unreg_devtypes(void)
-+{
-+	scsi_unreg_transport_dev_type(&fc_vport_dev_type);
-+}
-+
-+
-+/**
-  * fc_timed_out - FC Transport I/O timeout intercept handler
-  * @scmd:	The SCSI command which timed out
-  *
-@@ -2510,7 +2550,7 @@ fc_rport_create(struct Scsi_Host *shost,
- 	dev = &rport->dev;
- 	device_initialize(dev);			/* takes self reference */
- 	dev->parent = get_device(&shost->shost_gendev); /* parent reference */
--	dev->release = fc_rport_dev_release;
-+	dev->type = &fc_rport_dev_type;
- 	dev_set_name(dev, "rport-%d:%d-%d",
- 		     shost->host_no, channel, rport->number);
- 	transport_setup_device(dev);
-@@ -3214,7 +3254,7 @@ fc_vport_setup(struct Scsi_Host *shost, 
- 	dev = &vport->dev;
- 	device_initialize(dev);			/* takes self reference */
- 	dev->parent = get_device(pdev);		/* takes parent reference */
--	dev->release = fc_vport_dev_release;
-+	dev->type = &fc_vport_dev_type;
- 	dev_set_name(dev, "vport-%d:%d-%d",
- 		     shost->host_no, channel, vport->number);
- 	transport_setup_device(dev);
-diff -upNr a/include/scsi/scsi_host.h b/include/scsi/scsi_host.h
---- a/include/scsi/scsi_host.h	2009-10-30 10:31:52.000000000 -0400
-+++ b/include/scsi/scsi_host.h	2009-11-01 09:36:25.000000000 -0500
-@@ -703,7 +703,12 @@ static inline void *shost_priv(struct Sc
- }
- 
- int scsi_is_host_device(const struct device *);
-+int scsi_is_transport_device(const struct device *);
- 
-+/*
-+ * walks object list backward, to find the first shost object.
-+ * Skips over transport objects that may not be stargets, etc
-+ */
- static inline struct Scsi_Host *dev_to_shost(struct device *dev)
- {
- 	while (!scsi_is_host_device(dev)) {
-@@ -714,6 +719,18 @@ static inline struct Scsi_Host *dev_to_s
- 	return container_of(dev, struct Scsi_Host, shost_gendev);
- }
- 
-+/*
-+ * walks object list backward, to find the first non-scsi object
-+ * Skips over transport objects that may be vports, shosts under vports, etc 
-+ */
-+static inline struct device *dev_to_nonscsi_dev(struct device *dev)
-+{
-+	while (dev->parent &&
-+		(scsi_is_host_device(dev) || scsi_is_transport_device(dev)))
-+		dev = dev->parent;
-+	return dev;
-+}
-+
- static inline int scsi_host_in_recovery(struct Scsi_Host *shost)
- {
- 	return shost->shost_state == SHOST_RECOVERY ||
-
-
+-- 
+Bartlomiej Zolnierkiewicz
