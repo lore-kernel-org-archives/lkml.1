@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbZKDTai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZKDTak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbZKDTai (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:30:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbZKDTah
+	id S1757977AbZKDTak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757941AbZKDTaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 4 Nov 2009 14:30:39 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:48444 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756008AbZKDTah (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Nov 2009 14:30:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48920 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755988AbZKDTah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:30:37 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 15/20] blkio: Take care of preemptions across groups
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
-	<1257291837-6246-16-git-send-email-vgoyal@redhat.com>
-	<x49d43yt8ry.fsf@segfault.boston.devel.redhat.com>
-	<20091104192725.GM2870@redhat.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 04 Nov 2009 14:30:13 -0500
-In-Reply-To: <20091104192725.GM2870@redhat.com> (Vivek Goyal's message of
-	"Wed, 4 Nov 2009 14:27:25 -0500")
-Message-ID: <x49fx8ursu2.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Eru9ly/3jKtqG7FAyddwrC6WLfTyuDppiAlNx0bxWTYsNAK03C4lHUXKCNDqFmjWFX
+         R66LbQQR6z393Jd2KGPgDvAJEBdX1hJh+QZg5z04BUunG4b1f8jx3aDvefPHVXfKAGga
+         9nSWDk8cVOTuazmKIAhRWrHdMqUSv+ZJsq5A4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091104173350.28463.25405.sendpatchset@localhost.localdomain>
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
+	 <20091104173350.28463.25405.sendpatchset@localhost.localdomain>
+Date: Wed, 4 Nov 2009 20:30:42 +0100
+Message-ID: <14add3d10911041130n318604e4kb6fabb4f8ce58266@mail.gmail.com>
+Subject: Re: [PATCH 15/41] rt2800usb: add rt2800_bbp_[read,write]() wrappers
+From: Gertjan van Wingerde <gwingerde@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@redhat.com> writes:
+On Wed, Nov 4, 2009 at 6:33 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] rt2800usb: add rt2800_bbp_[read,write]() wrappers
+>
+> Part of preparations for later code unification.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
 
-> It will not as we traverse up the hierarchy and look for the ioprio class
-> of the group entity.
->
-> So if you got following configuration where G1 and G2 are two groups. G1
-> is prio class RT and G2 is prio class BE, then any queue in G1 will
-> preempt any queue in G2 as at highest level, G1 and G2 are different class
-> altogether.
->
-> 			root
-> 			/  \
-> 		       G1  G2
->
-> Normal cfqq preemption checks will not catch this. So if G2 has some BE
-> cfqq running, and some BE queue gets backlogged in G1, this new queue wil
-> not preempt the queue in G2 and it should have.
->
-> That's why preemption checks at group level.
->
-> Secondly if G1 and G2 are of ioprioclass BE and all the jobs in G1 are of
-> RT nature, they will not preempt the queues in G2, hence providing
-> isolation.
+For what it is worth:
 
-Thanks for the explanation, Vivek.  I somehow missed that we were
-checking the class of the group entity and not the cfqq's entity.
-
-Cheers,
-Jeff
+Acked-by: Gertjan van Wingerde <gwingerde@gmail.com>
