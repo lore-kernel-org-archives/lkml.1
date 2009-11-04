@@ -1,31 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZKDPZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZKDPZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbZKDPZZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbZKDPZY
+	id S1756726AbZKDPZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZKDPZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:25:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57277 "EHLO hera.kernel.org"
+	Wed, 4 Nov 2009 10:25:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57278 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755991AbZKDPZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:25:23 -0500
-Date: Wed, 4 Nov 2009 15:24:34 GMT
-From: tip-bot for Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com,
-       balbir@in.ibm.com, bharata@linux.vnet.ibm.com, serue@us.ibm.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, vatsa@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, balbir@in.ibm.com,
-       bharata@linux.vnet.ibm.com, serue@us.ibm.com, tglx@linutronix.de,
+	id S1755996AbZKDPZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:25:24 -0500
+Date: Wed, 4 Nov 2009 15:24:48 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+Cc: mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, jbaron@redhat.com, tglx@linutronix.de,
+       mhiramat@redhat.com, hpa@zytor.com, fche@redhat.com,
+       linux-kernel@vger.kernel.org, jkenisto@us.ibm.com, hch@infradead.org,
+       ananth@in.ibm.com, srikar@linux.vnet.ibm.com, prasad@linux.vnet.ibm.com,
        mingo@elte.hu
-In-Reply-To: <20091103214544.GI5495@linux.vnet.ibm.com>
-References: <20091103214544.GI5495@linux.vnet.ibm.com>
+Reply-To: mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, jbaron@redhat.com, tglx@linutronix.de,
+       mhiramat@redhat.com, hpa@zytor.com, fche@redhat.com,
+       linux-kernel@vger.kernel.org, jkenisto@us.ibm.com, hch@infradead.org,
+       ananth@in.ibm.com, srikar@linux.vnet.ibm.com, prasad@linux.vnet.ibm.com,
+       mingo@elte.hu
+In-Reply-To: <20091104001212.3454.19415.stgit@harusame>
+References: <20091104001212.3454.19415.stgit@harusame>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Add USER_SCHED to feature removal list
-Message-ID: <tip-45a5c8bad827ebb9c9798becc15bce2e804d49e0@git.kernel.org>
-Git-Commit-ID: 45a5c8bad827ebb9c9798becc15bce2e804d49e0
+Subject: [tip:perf/probes] perf/probes: Update Documentation/perf-probe.txt
+Message-ID: <tip-c43f9d1e61e265c6bfafdd65c7f07c8d71a7efc3@git.kernel.org>
+Git-Commit-ID: c43f9d1e61e265c6bfafdd65c7f07c8d71a7efc3
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -34,62 +37,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  45a5c8bad827ebb9c9798becc15bce2e804d49e0
-Gitweb:     http://git.kernel.org/tip/45a5c8bad827ebb9c9798becc15bce2e804d49e0
-Author:     Dhaval Giani <dhaval@linux.vnet.ibm.com>
-AuthorDate: Wed, 4 Nov 2009 03:15:44 +0530
+Commit-ID:  c43f9d1e61e265c6bfafdd65c7f07c8d71a7efc3
+Gitweb:     http://git.kernel.org/tip/c43f9d1e61e265c6bfafdd65c7f07c8d71a7efc3
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Tue, 3 Nov 2009 19:12:13 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 4 Nov 2009 12:40:26 +0100
+CommitDate: Wed, 4 Nov 2009 13:02:46 +0100
 
-sched: Add USER_SCHED to feature removal list
+perf/probes: Update Documentation/perf-probe.txt
 
-Peter Zijlstra suggested that we remove USER_SCHED at:
+Update Documentation/perf-probe.txt accoding to recent
+syntax changes.
 
-   http://lkml.org/lkml/2009/3/21/67
-
-Removing USER_SCHED removes a lot of code from the scheduler
-and simplifies the code.
-
-We already have the ability to do user based classification
-which is tightened using PAM in userspace.
-
-Schedule USER_SCHED for removal in 2.6.34
-
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Balbir Singh <balbir@in.ibm.com>
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Serge E. Hallyn <serue@us.ibm.com>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-LKML-Reference: <20091103214544.GI5495@linux.vnet.ibm.com>
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Frank Ch. Eigler <fche@redhat.com>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+LKML-Reference: <20091104001212.3454.19415.stgit@harusame>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- Documentation/feature-removal-schedule.txt |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ tools/perf/Documentation/perf-probe.txt |   17 +++++++++--------
+ 1 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index bc693ff..f613df8 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -6,6 +6,21 @@ be removed from this file.
+diff --git a/tools/perf/Documentation/perf-probe.txt b/tools/perf/Documentation/perf-probe.txt
+index 6b6c6ae..9270594 100644
+--- a/tools/perf/Documentation/perf-probe.txt
++++ b/tools/perf/Documentation/perf-probe.txt
+@@ -8,7 +8,9 @@ perf-probe - Define new dynamic tracepoints
+ SYNOPSIS
+ --------
+ [verse]
+-'perf probe' [-k <file>] -P 'PROBE' [-P 'PROBE' ...]
++'perf probe' [options] --add 'PROBE' [--add 'PROBE' ...]
++or
++'perf probe' [options] 'PROBE' ['PROBE' ...]
  
- ---------------------------
  
-+What:	USER_SCHED
-+When:	2.6.34
-+
-+Why:	USER_SCHED was implemented as a proof of concept for group scheduling.
-+	The effect of USER_SCHED can already be achieved from userspace with
-+	the help of libcgroup. The removal of USER_SCHED will also simplify
-+	the scheduler code with the removal of one major ifdef. There are also
-+	issues USER_SCHED has with USER_NS. A decision was taken not to fix
-+	those and instead remove USER_SCHED. Also new group scheduling
-+	features will not be implemented for USER_SCHED.
-+
-+Who:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
-+
-+---------------------------
-+
- What:	PRISM54
- When:	2.6.34
+ DESCRIPTION
+@@ -21,26 +23,25 @@ and C local variables) with debuginfo.
+ OPTIONS
+ -------
+ -k::
+---vmlinux::
++--vmlinux=PATH::
+ 	Specify vmlinux path which has debuginfo (Dwarf binary).
  
+ -v::
+ --verbose::
+         Be more verbose (show parsed arguments, etc).
+ 
+--P::
+---probe::
++-a::
++--add::
+ 	Define a probe point (see PROBE SYNTAX for detail)
+ 
+ PROBE SYNTAX
+ ------------
+ Probe points are defined by following syntax.
+ 
+- "TYPE:[GRP/]NAME FUNC[+OFFS][@SRC]|@SRC:LINE [ARG ...]"
++ "FUNC[+OFFS|:RLN|%return][@SRC]|SRC:ALN [ARG ...]"
+ 
+-'TYPE' specifies the type of probe point, you can use either "p" (kprobe) or "r" (kretprobe) for 'TYPE'. 'GRP' specifies the group name of this probe, and 'NAME' specifies the event name. If 'GRP' is omitted, "kprobes" is used for its group name.
+-'FUNC' and 'OFFS' specifies function and offset (in byte) where probe will be put. In addition, 'SRC' specifies a source file which has that function (this is mainly for inline functions).
+-You can specify a probe point by the source line number by using '@SRC:LINE' syntax, where 'SRC' is the source file path and 'LINE' is the line number.
++'FUNC' specifies a probed function name, and it may have one of the following options; '+OFFS' is the offset from function entry address in bytes, 'RLN' is the relative-line number from function entry line, and '%return' means that it probes function return. In addition, 'SRC' specifies a source file which has that function.
++It is also possible to specify a probe point by the source line number by using 'SRC:ALN' syntax, where 'SRC' is the source file path and 'ALN' is the line number.
+ 'ARG' specifies the arguments of this probe point. You can use the name of local variable, or kprobe-tracer argument format (e.g. $retval, %ax, etc).
+ 
+ SEE ALSO
