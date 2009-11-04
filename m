@@ -1,39 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbZKDAjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbZKDAh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752229AbZKDAjc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 19:39:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZKDAjc
+	id S1752471AbZKDAh7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 19:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZKDAh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 19:39:32 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37435 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbZKDAjb (ORCPT
+	Tue, 3 Nov 2009 19:37:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55875 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751920AbZKDAh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 19:39:31 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 4 Nov 2009 09:36:59 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       linux-mm@kvack.org, Marcelo Tosatti <mtosatti@redhat.com>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       Izik Eidus <ieidus@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: Transparent Hugepage support
-Message-Id: <20091104093659.5de0e49d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091103105543.GH11981@random.random>
-References: <20091026185130.GC4868@random.random>
-	<87ljiwk8el.fsf@basil.nowhere.org>
-	<20091027193007.GA6043@random.random>
-	<20091028042805.GJ7744@basil.fritz.box>
-	<20091029094344.GA1068@elte.hu>
-	<20091029103658.GJ9640@random.random>
-	<20091030094037.9e0118d8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091103105543.GH11981@random.random>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 3 Nov 2009 19:37:57 -0500
+Date: Tue, 3 Nov 2009 16:37:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: phorton@bitbox.co.uk (Peter Horton)
+Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] prevent AoE causing cache aliases
+Message-Id: <20091103163755.57d3530c.akpm@linux-foundation.org>
+In-Reply-To: <20091022142228.GA18986@bitbox.co.uk>
+References: <20091022142228.GA18986@bitbox.co.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -41,36 +26,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009 11:55:43 +0100
-Andrea Arcangeli <aarcange@redhat.com> wrote:
+On Thu, 22 Oct 2009 15:22:28 +0100
+phorton@bitbox.co.uk (Peter Horton) wrote:
 
-> On Fri, Oct 30, 2009 at 09:40:37AM +0900, KAMEZAWA Hiroyuki wrote:
-> > Ah, please keep CONFIG_TRANSPARENT_HUGEPAGE for a while.
-> > Now, memcg don't handle hugetlbfs because it's special and cannot be freed by
-> > the kernel, only users can free it. But this new transparent-hugepage seems to
-> > be designed as that the kernel can free it for memory reclaiming.
-> > So, I'd like to handle this in memcg transparently.
-> > 
-> > But it seems I need several changes to support this new rule.
-> > I'm glad if this new huge page depends on !CONFIG_CGROUP_MEM_RES_CTRL for a
-> > while.
+> To: ecashin@coraid.com
+
+Have you heard back from Ed on this?
+
+> Cc: linux-kernel@vger.kernel.org
+> Subject: [PATCH] prevent AoE causing cache aliases
+> Date: 	Thu, 22 Oct 2009 15:22:28 +0100
+> Sender: linux-kernel-owner@vger.kernel.org
+> User-Agent: Mutt/1.5.9i
 > 
-> Yeah the accounting (not just memcg) should be checked.. I didn't pay
-> too much attention to stats at this point.
+> This patch prevents the AoE block driver from creating cache aliases of
+> page cache pages on machines with virtually indexed caches.
 > 
-> But we want to fix it fast instead of making the two options mutually
-> exclusive.. Where are the pages de-accounted when they are freed?
+> Building kernels on an AT91SAM9G20 board without this patch fails with
+> segmentation faults after a couple of passes.
+> 
+> 
+> Index: linux-2.6.31/drivers/block/aoe/aoecmd.c
+> ===================================================================
+> --- linux-2.6.31.orig/drivers/block/aoe/aoecmd.c	2009-09-09 23:13:59.000000000 +0100
+> +++ linux-2.6.31/drivers/block/aoe/aoecmd.c	2009-10-22 10:24:50.000000000 +0100
+> @@ -735,6 +735,21 @@
+>  	part_stat_unlock();
+>  }
+>  
+> +/*
+> + * Ensure we don't create aliases in VI caches
+> + */
+> +static inline void
+> +killalias(struct bio *bio)
+> +{
+> +	struct bio_vec *bv;
+> +	int i;
+> +
+> +	if (bio_data_dir(bio) == READ)
+> +		__bio_for_each_segment(bv, bio, i, 0) {
+> +			flush_dcache_page(bv->bv_page);
+> +		}
+> +}
+> +
+>  void
+>  aoecmd_ata_rsp(struct sk_buff *skb)
+>  {
+> @@ -853,8 +868,12 @@
+>  
+>  	if (buf && --buf->nframesout == 0 && buf->resid == 0) {
+>  		diskstats(d->gd, buf->bio, jiffies - buf->stime, buf->sector);
+> -		n = (buf->flags & BUFFL_FAIL) ? -EIO : 0;
+> -		bio_endio(buf->bio, n);
+> +		if (buf->flags & BUFFL_FAIL)
+> +			bio_endio(buf->bio, -EIO);
+> +		else {
+> +			killalias(buf->bio);
+> +			bio_endio(buf->bio, 0);
+> +		}
+>  		mempool_free(buf, d->bufpool);
+>  	}
 
-It's de-accounted at page_remove_rmap() in typical case of Anon.
-But swap-cache/bacthed-uncarhge related part is complicated, maybe.
-...because of me ;(
+Looks OK.
 
-Okay, I don't request !CONFIG_CGROUP_MEM_RES_CTRL, I'm glad if you CC me.
+This bugfix will cause a pointless __bio_for_each_segment() busywait
+loop to be executed on architectures for which flush_dcache_page() is a
+no-op.
 
-> Accounting seems to require just two one liners
-> calling mem_cgroup_newpage_charge.
-Yes, maybe so.
-
-Thanks,
--Kame
-
+We don't have infrastructure to fix that.
