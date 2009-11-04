@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZKDJSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZKDJ2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbZKDJSs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 04:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZKDJSr
+	id S1754759AbZKDJ2n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 04:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZKDJ2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 04:18:47 -0500
-Received: from www.tglx.de ([62.245.132.106]:47391 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbZKDJSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 04:18:46 -0500
-Date: Wed, 4 Nov 2009 10:18:22 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Yong Zhang <yong.zhang0@gmail.com>
-cc: Prarit Bhargava <prarit@redhat.com>, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH]: use spin_lock_irqsave in try_one_irq()
-In-Reply-To: <2674af740911030658m76b702cfxb67723984286c4bb@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0911041016070.12138@localhost.localdomain>
-References: <20091103134342.24414.82986.sendpatchset@prarit.bos.redhat.com> <2674af740911030658m76b702cfxb67723984286c4bb@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 4 Nov 2009 04:28:42 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:50554 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753259AbZKDJ2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 04:28:40 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com
+Subject: Re: [PATCH] asm-generic: Fix typo in asm-generic/unistd.h.
+Date: Wed, 4 Nov 2009 10:28:11 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       liqin.gnu@gmail.com, Greg KH <greg@kroah.com>
+References: <OFC90831A4.A99EC411-ON48257664.00080761-48257664.0009EC42@sunplusct.com>
+In-Reply-To: <OFC90831A4.A99EC411-ON48257664.00080761-48257664.0009EC42@sunplusct.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-15680974-1257326304=:12138"
+Content-Type: Text/Plain;
+  charset="gb2312"
+Content-Transfer-Encoding: 8bit
+Message-Id: <200911041028.12098.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/cNp8DfBgtJg0blh7lbi1O+gamMEYCdV7/+si
+ Yc8Z2Z5OKJma4EdqvV0bogpT9z6+B6ptf29DlKic4qXuDvIsgW
+ 9LFslMygCdtHpeynqovzA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323328-15680974-1257326304=:12138
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Tue, 3 Nov 2009, Yong Zhang wrote:
-
-> > This happens because the &desc->lock is taken with spin_lock_irqsave and
-> > just a spin_lock. Â In the try_one_irq(), this lock really should be a
-> > spin_lock_irqsave().
-> >
+On Wednesday 04 November 2009, liqin.chen@sunplusct.com wrote:
+> Arnd Bergmann <arnd@arndb.de> Ð´ÓÚ 2009-11-03 16:52:17:
 > 
-> Cc'ed Ingo and Thomas.
+> > Is there any reason to use glibc-2.5 though? The current release
+> > is 2.10.1, and the version you used is over three years old.
 > 
-> The reason is that try_one_irq() is called both from hardirq context and softirq
-> context. And by default the timer handler poll_all_shared_irqs() is
-> called with irq enabled.
-> Then the two usage will cause inconsistent.
-> 
-> So I think the following patch is also workable to you.
+> We found many stable toolchain use glibc-2.5. so we select it.
+> In fact, what we think first is to could used it in product¡£
 
-Yes, that's sufficient.
- 
-> diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-> index 114e704..11affbc 100644
-> --- a/kernel/irq/spurious.c
-> +++ b/kernel/irq/spurious.c
-> @@ -111,6 +111,7 @@ static void poll_all_shared_irqs(void)
-> 
->  	for_each_irq_desc(i, desc) {
->  		unsigned int status;
-> +		unsigned long flags;
-> 
->  		if (!i)
->  			 continue;
-> @@ -121,7 +122,9 @@ static void poll_all_shared_irqs(void)
->  		if (!(status & IRQ_SPURIOUS_DISABLED))
->  			continue;
-> 
-> +		local_irq_save(flags);
->  		try_one_irq(i, desc);
-> +		local_irq_restore(flags);
+It is unfortunately a common misunderstanding that older releases
+that are currently used by others are more stable. The reason
+you find glibc-2.5 in products today is that it was the current
+version at the time when the development cycle for the product
+was started.
 
-  You can even use local_irq_en/disable() here.
+In general, when you upgrade to a more recent version, the
+best idea is to take the latest stable release, and stabilizing
+on that for a given embedded product. By always using the latest
+version, you can greatly reduce the amount of work needed for
+each upgrade, and you get all improvements and bug fixes
+automatically without having to backport them.
 
-Thanks,
+> Even linux kernel, in company we still use kernel-2.6.27 version.
 
-	tglx
---8323328-15680974-1257326304=:12138--
+Yes, that is good and expected, if that version has proven to be
+stable for you.
+
+Obviously you will have to do an update at some point and then
+you can easily move to the latest kernel version since it is now
+upstream.
+
+I also expect that you have device driver code that is not yet
+upstream. Getting that in should be a lot easier than the initial
+architecture code and Greg KH can help you with his drivers/staging
+infrastructure if you are interested.
+  
+> > Do you have plans to merge your port into eglibc when it's done?
+> 
+> We have not this plan now.
+
+I would recommend to look into this at some point in the future.
+Unlike the main glibc project, eglibc[1] is specifically there for
+supporting embedded architectures and already hosts ports for
+other platforms that are not in glibc itself, while it closely
+follows the main glibc development. Contributing there unfortunately
+requires some paperwork for copyright assignment, but it's probably
+worth it in the end.
+
+You've done the right thing by merging your kernel code into the
+official Linux tree, porting your glibc code to the lastest 
+snapshot and submitting it into eglibc is the next big step.
+
+	Arnd <><
+
+--
+[1] http://www.eglibc.org/
