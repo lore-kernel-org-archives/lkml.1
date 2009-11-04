@@ -1,16 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZKDCnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZKDC5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbZKDCnd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 21:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZKDCnd
+	id S1754201AbZKDC5R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 21:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZKDC5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 21:43:33 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:52917 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754284AbZKDCnb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 21:43:31 -0500
-Date: Tue, 3 Nov 2009 20:43:32 -0600
+	Tue, 3 Nov 2009 21:57:16 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:52828 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752332AbZKDC5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 21:57:15 -0500
+Date: Tue, 3 Nov 2009 20:57:18 -0600
 From: "Serge E. Hallyn" <serue@us.ibm.com>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
@@ -19,13 +18,13 @@ Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
        linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
        Benjamin LaHaise <bcrl@lhnet.ca>,
        "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 04/13] sysfs: Simplify sysfs_chmod_file semantics
-Message-ID: <20091104024332.GA27639@us.ibm.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-4-git-send-email-ebiederm@xmission.com>
+Subject: Re: [PATCH 05/13] sysfs: Simplify iattr time assignments
+Message-ID: <20091104025718.GB27639@us.ibm.com>
+References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-5-git-send-email-ebiederm@xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257249429-12384-4-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <1257249429-12384-5-git-send-email-ebiederm@xmission.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -34,54 +33,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Quoting Eric W. Biederman (ebiederm@xmission.com):
 > From: Eric W. Biederman <ebiederm@xmission.com>
 > 
-> Currently every caller of sysfs_chmod_file happens at either
-> file creation time to set a non-default mode or in response
-> to a specific user requested space change in policy.  Making
-> timestamps of when the chmod happens and notification of
-> a file changing mode uninteresting.
-
-But these changes can occur by togging values in sysfs files
-(i.e. f71805f.c), right?  Is this (specifically not doing inotify)
-definately uncontroversial?
-
-I can't exactly picture an admin sitting there watching
-nautilus for a sysfs file to become writeable, but could
-imagine some site's automation getting hung...  Or am I way
-off base?
-
-> Remove the unnecessary time stamp and filesystem change
-> notification, and removes the last of the explicit inotify
-> and donitfy support from sysfs.
+> The granularity of sysfs time when we keep it is 1 ns.  Which
+> when passed to timestamp_trunc results in a nop.  So remove
+> the unnecessary function call making sysfs_setattr slightly
+> easier to read.
 > 
 > Acked-by: Tejun Heo <tj@kernel.org>
 > Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
 > ---
->  fs/sysfs/file.c |   10 +---------
->  1 files changed, 1 insertions(+), 9 deletions(-)
+>  fs/sysfs/inode.c |    9 +++------
+>  1 files changed, 3 insertions(+), 6 deletions(-)
 > 
-> diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-> index f5ea468..faa1a80 100644
-> --- a/fs/sysfs/file.c
-> +++ b/fs/sysfs/file.c
-> @@ -604,17 +604,9 @@ int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
->  	mutex_lock(&inode->i_mutex);
+> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+> index 8a08250..fed7a74 100644
+> --- a/fs/sysfs/inode.c
+> +++ b/fs/sysfs/inode.c
+> @@ -103,14 +103,11 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+>  		if (ia_valid & ATTR_GID)
+>  			iattrs->ia_gid = iattr->ia_gid;
+>  		if (ia_valid & ATTR_ATIME)
+> -			iattrs->ia_atime = timespec_trunc(iattr->ia_atime,
+> -					inode->i_sb->s_time_gran);
+> +			iattrs->ia_atime = iattr->ia_atime;
+>  		if (ia_valid & ATTR_MTIME)
+> -			iattrs->ia_mtime = timespec_trunc(iattr->ia_mtime,
+> -					inode->i_sb->s_time_gran);
+> +			iattrs->ia_mtime = iattr->ia_mtime;
+>  		if (ia_valid & ATTR_CTIME)
+> -			iattrs->ia_ctime = timespec_trunc(iattr->ia_ctime,
+> -					inode->i_sb->s_time_gran);
+> +			iattrs->ia_ctime = iattr->ia_ctime;
+>  		if (ia_valid & ATTR_MODE) {
+>  			umode_t mode = iattr->ia_mode;
 > 
->  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-> -	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-> -	newattrs.ia_ctime = current_fs_time(inode->i_sb);
-> +	newattrs.ia_valid = ATTR_MODE;
->  	rc = sysfs_setattr(victim, &newattrs);
-> 
-> -	if (rc == 0) {
-> -		fsnotify_change(victim, newattrs.ia_valid);
-> -		mutex_lock(&sysfs_mutex);
-> -		victim_sd->s_mode = newattrs.ia_mode;
-> -		mutex_unlock(&sysfs_mutex);
-> -	}
-> -
->  	mutex_unlock(&inode->i_mutex);
->   out:
->  	dput(victim);
 > -- 
 > 1.6.5.2.143.g8cc62
 > 
