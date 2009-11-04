@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbZKDNH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZKDNGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbZKDNH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 08:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbZKDNHZ
+	id S1756034AbZKDNGx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 08:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbZKDNGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 08:07:25 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:61189 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756076AbZKDNHV (ORCPT
+	Wed, 4 Nov 2009 08:06:52 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57187
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755992AbZKDNGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 08:07:21 -0500
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?UTF-8?q?Fr=C3=A9d=C3=A9ric=5FWeisbecker?= <fweisbec@gmail.com>
-Subject: [PATCH v3 7/7] Adding general performance benchmarking subcommand to perf.
-Date: Wed,  4 Nov 2009 22:06:27 +0900
-Message-Id: <1257339987-22953-8-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1257339987-22953-7-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1257339987-22953-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257339987-22953-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257339987-22953-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257339987-22953-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257339987-22953-5-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257339987-22953-6-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257339987-22953-7-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	Wed, 4 Nov 2009 08:06:52 -0500
+Date: Wed, 04 Nov 2009 05:07:16 -0800 (PST)
+Message-Id: <20091104.050716.188290519.davem@davemloft.net>
+To: mchan@broadcom.com
+Cc: roel.kluin@gmail.com, netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cnic: ensure ulp_type is not negative
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1257184619.31958.3.camel@HP1>
+References: <4AEF0E98.5050304@gmail.com>
+	<1257184619.31958.3.camel@HP1>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series is version 3. But still (and always) comments are welcome.
-This patch modifies Makefile for new files related to 'bench' subcommand.
+From: "Michael Chan" <mchan@broadcom.com>
+Date: Mon, 2 Nov 2009 09:56:59 -0800
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
+> 
+> On Mon, 2009-11-02 at 08:53 -0800, Roel Kluin wrote:
+>> `ulp_type' is signed, make sure it is not negative
+>> when we read the array element.
+>> 
+>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> 
+> Looks good to me.  Thanks.
+> Acked-by: Michael Chan <mchan@broadcom.com>
 
----
- tools/perf/Makefile |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 7e190d5..40cd847 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -391,6 +391,11 @@ BUILTIN_OBJS += builtin-stat.o
- BUILTIN_OBJS += builtin-timechart.o
- BUILTIN_OBJS += builtin-top.o
- BUILTIN_OBJS += builtin-trace.o
-+BUILTIN_OBJS += builtin-bench.o
-+
-+# Benchmark modules
-+BUILTIN_OBJS += bench/sched-messaging.o
-+BUILTIN_OBJS += bench/sched-pipe.o
- 
- PERFLIBS = $(LIB_FILE)
- 
--- 
-1.5.6.5
-
+Applied to net-next-2.6
