@@ -1,132 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbZKDSyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbZKDTBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbZKDSyu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 13:54:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZKDSyt
+	id S1755148AbZKDTBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZKDTBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 13:54:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57548 "EHLO mx1.redhat.com"
+	Wed, 4 Nov 2009 14:01:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27739 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750848AbZKDSys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 13:54:48 -0500
-Date: Wed, 4 Nov 2009 13:54:02 -0500
+	id S1751667AbZKDTBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:01:19 -0500
+Date: Wed, 4 Nov 2009 14:00:33 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
+To: Divyesh Shah <dpshah@google.com>
 Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jens.axboe@oracle.com, nauman@google.com, lizf@cn.fujitsu.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
        balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
        m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
        kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 02/20] blkio: Change CFQ to use CFS like queue time
-	stamps
-Message-ID: <20091104185402.GF2870@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-3-git-send-email-vgoyal@redhat.com> <x49d43yuzud.fsf@segfault.boston.devel.redhat.com> <20091104163752.GB2870@redhat.com> <4e5e476b0911040959t122df6aaqee1039f265cbd18a@mail.gmail.com>
+Subject: Re: [PATCH 03/20] blkio: Introduce the notion of weights
+Message-ID: <20091104190033.GG2870@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-4-git-send-email-vgoyal@redhat.com> <x498wemuy6v.fsf@segfault.boston.devel.redhat.com> <20091104154135.GA2870@redhat.com> <af41c7c40911040907y11103944ief0654f84ffdf5ed@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0911040959t122df6aaqee1039f265cbd18a@mail.gmail.com>
+In-Reply-To: <af41c7c40911040907y11103944ief0654f84ffdf5ed@mail.gmail.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 06:59:45PM +0100, Corrado Zoccolo wrote:
-> On Wed, Nov 4, 2009 at 5:37 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Wed, Nov 04, 2009 at 09:30:34AM -0500, Jeff Moyer wrote:
-> >> Vivek Goyal <vgoyal@redhat.com> writes:
-> >>
+On Wed, Nov 04, 2009 at 09:07:41AM -0800, Divyesh Shah wrote:
+> On Wed, Nov 4, 2009 at 7:41 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
 > >
-> > Thanks for the review Jeff.
+> > On Wed, Nov 04, 2009 at 10:06:16AM -0500, Jeff Moyer wrote:
+> > > Vivek Goyal <vgoyal@redhat.com> writes:
+> > >
+> > > > o Introduce the notion of weights. Priorities are mapped to weights internally.
+> > > >   These weights will be useful once IO groups are introduced and group's share
+> > > >   will be decided by the group weight.
+> > >
+> > > I'm sorry, but I need more background to review this patch.  Where do
+> > > the min and max come from?  Why do you scale 7-0 from 200-900?  How does
+> > > this map to what was there before (exactly, approximately)?
+> > >
 > >
-> >> > o Currently CFQ provides priority scaled time slices to processes. If a process
-> >> >   does not use the time slice, either because process did not have sufficient
-> >> >   IO to do or because think time of process is large and CFQ decided to disable
-> >> >   idling, then processes looses it time slice share.
-> >>                            ^^^^^^
-> >> loses
-> >>
-> should be 'process loses'
+> > Well, So far we only have the notion of iopriority for the process and
+> > based on that we determine time slice length.
+> >
+> > Soon we will throw cfq groups also in the mix. Because cpu IO controller
+> > is weight driven, people have shown preference that group's share should
+> > be decided based on its weight and not introduce the notion of ioprio for
+> > groups.
+> >
+> > So now core scheduling algorithm only recognizes weights for entities (be it
+> > cfq queues or cfq groups), and it is required that we convert the ioprio
+> > of cfqq into weight.
+> >
+> > Now it is a matter of coming up with what weight range do we support and
+> > how ioprio should be mapped onto these weights. We can always change the
+> > mappings but to being with, I have followed following.
+> >
+> > Allow a weight range from 100 to 1000. Allowing too small a weights like
+> > "1", can lead to very interesting corner cases and I wanted to avoid that
+> > in first implementation. For example, if some group with weight "1" gets
+> > a time slice of 100ms, its vtime will be really high and after that it
+> > will not get scheduled in for a very long time.
+> >
+> > Seconly allowing too small a weights can make vtime of the tree move very
+> > fast with faster wrap around of min_vdistime. (especially on SSD where idling
+> > might not be enabled, and for every queue expiry we will attribute minimum of
+> > 1ms of slice. If weight of the group is "1" it will higher vtime and
+> > min_vdisktime will move very fast). We don't want too fast a wrap around
+> > of min_vdisktime (especially in case of idle tree. That infrastructure is
+> > not part of current patches).
+> >
+> > Hence, to begin with I wanted to limit the range of weights allowed because
+> > wider range opens up lot of interesting corner cases. That's why limited
+> > minimum weight to 100. So at max user can expect the 1000/100=10 times service
+> > differentiation between highest and lower weight groups. If folks need more
+> > than that, we can look into it once things stablize.
 > 
+> We definitely need the 1:100 differentiation. I'm ok with adding that
+> later after the core set of patches stabilize but just letting you
+> know that it is important to us.
 
-Will fix it.
+Good to know. I will begin with max service difference of 10 times and
+once things stablize, will go enable wider range of weights.
 
-> >> > +static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
-> >> > +{
-> >> > +   s64 delta = (s64)(vdisktime - min_vdisktime);
-> >> > +   if (delta > 0)
-> >> > +           min_vdisktime = vdisktime;
-> >> > +
-> >> > +   return min_vdisktime;
-> >> > +}
-> >> > +
-> >> > +static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
-> >> > +{
-> >> > +   s64 delta = (s64)(vdisktime - min_vdisktime);
-> >> > +   if (delta < 0)
-> >> > +           min_vdisktime = vdisktime;
-> >> > +
-> >> > +   return min_vdisktime;
-> >> > +}
-> >>
-> >> Is there a reason you've reimplemented min and max?
-> >
-> > I think you are referring to min_t and max_t. Will these macros take care
-> > of wrapping too?
-> >
-> > For example, if I used min_t(u64, A, B), then unsigned comparision will
-> > not work right wrapping has just taken place for any of the A or B. So if
-> > A=-1 and B=2, then min_t() would return B as minimum. This is not right
-> > in our case.
-> >
-> > If we do signed comparison (min_t(s64, A, B)), that also seems to be
-> > broken in another case where a value of variable moves from 63bits to 64bits,
-> > (A=0x7fffffffffffffff, B=0x8000000000000000). Above will return B as minimum but
-> > in our scanario, vdisktime will progress from 0x7fffffffffffffff to
-> > 0x8000000000000000 and A should be returned as minimum (unsigned
-> > comparison).
-> >
-> > Hence I took these difnitions from CFS.
-> If those are times (measured in jiffies), why are you using u64? You
-> could use unsigned long and time_before/time_after, that perform the
-> proper wrap checking.
-> 
+> Also curious why you chose a higher
+> range 100-1000 instead of 10-100? For smaller vtime leaps?
 
-This is virtual time and not exactly the jiffies. This can run faster than
-real time. In current patchset there are two reasons for that.
+Good question. Initially we had thought that range of 1-1000 should be 
+good enough. Later decided to cap minimum weight to 100. But same can be
+achieved by smaller range of 1-100 and capping minimum weight at 10. This
+will make vtime leap forward slower also.
 
-- We assign minimum time slice used by queue as 1ms and queue if we expire
-  the queue immediately after dispatching a request. So if we have really
-  fast hardware and we decide not to idle, we will be doing queue switch
-  very fast assigning each queue 1ms as slice used and vtime will be
-  progressing much faster than real time.
+Later if somebody needs ratio higher than 1:100, we can think of
+supporting even wider weight range.
 
-- We shift real time by CFQ_SERVICE_SHIFT so that theoritically one can
-  see service difference between weights x and x+1 for all values in the
-  weight range of 1 to 1000. and not loose small difference in the division
-  part.
-
-  vtime calculation is as follows.
-
-  vtime = (slice_used << CFQ_SERVICE_SHIFT )* DEFAUTL_WEIGHT/cfqe->weight
-
-  minimum value of slice_used is 1 jiffy. DEFAULT WEIGHT is 500. So if one
-  wants to get different vtime values for queue weights of 998 and 999, we
-  need to shift slice used by atleast 12 bits. 
-
-We are giving 12 bits shift to the real time, we are left with 20 bits on 32
-bit hardware. So even if vtime does not run faster, in 1M jiffies (~ 1000
-seconds) we will wrap around. I did some 4K sized direct IO on one of the
-SSD and it achieve 7K io per second. In the worst case if these IO were
-coming from two queues and we were interleaving the requests between these
-then we will do 7 queue switch in 1ms. That means vtime travelling 7 times
-faster and wrap around will take place in 1000/7 ~= 130 seconds. 
-
-I thought that on 32bit hardware we are really close to pushing the
-limits, hence I thought of continuing to use 64bit vdisktime/key instead
-of a unsigned long one.
+Thanks Divyesh for the idea. I think I will change weight range to 10-100
+and map ioprio 0-7 on weights 20 to 90.
 
 Thanks
 Vivek
+
+> 
+> >
+> > Priority and weights follow reverse order. Higher priority means low
+> > weight and vice-versa.
+> >
+> > Currently we support 8 priority levels and prio "4" is the middle point.
+> > Anything higher than prio 4 gets 20% less slice as compared to prio 4 and
+> > priorities lower than 4, get 20% higher slice of prio 4 (20% higher/lower
+> > for each priority level).
+> >
+> > For weight range 100 - 1000, 500 can be considered as mid point. Now this
+> > is how priority mapping looks like.
+> >
+> >        100 200 300 400 500 600 700 800 900 1000  (Weights)
+> >             7   6   5   4   3   2  1   0         (io prio).
+> >
+> > Once priorities are converted to weights, we are able to retain the notion
+> > of 20% difference between prio levels by choosing 500 as the mid point and
+> > mapping prio 0-7 to weights 900-200, hence this mapping.
+> >
+> > I am all ears if you have any suggestions on how this ca be handled
+> > better.
+> >
+> > Thanks
+> > Vivek
