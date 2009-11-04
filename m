@@ -1,49 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750860AbZKDFME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750952AbZKDFP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750860AbZKDFME (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 00:12:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZKDFME
+	id S1750952AbZKDFP6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 00:15:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZKDFP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 00:12:04 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50880 "EHLO song.cn.fujitsu.com"
+	Wed, 4 Nov 2009 00:15:57 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49193 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbZKDFMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 00:12:03 -0500
-Message-ID: <4AF10CEE.5020807@cn.fujitsu.com>
-Date: Wed, 04 Nov 2009 13:11:10 +0800
+	id S1750793AbZKDFP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 00:15:57 -0500
+Message-ID: <4AF10DD9.4020902@cn.fujitsu.com>
+Date: Wed, 04 Nov 2009 13:15:05 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Liu Aleaxander <aleaxander@gmail.com>
-CC: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [PATCH] cgroup: Fixes the un-paired cgroup lock problem
-References: <b741c2440911031740m52f8c11dt6e57b549cc6ce465@mail.gmail.com>
-In-Reply-To: <b741c2440911031740m52f8c11dt6e57b549cc6ce465@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] ftrace: Return EINVAL when writing invalid val to set_ftrace_filter
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Liu Aleaxander wrote:
-> From: Liu Aleaxander <Aleaxander@gmail.com>
-> Date: Wed, 4 Nov 2009 09:27:06 +0800
-> Subject: [PATCH] Fixes the un-paired cgroup lock problem
-> 
-> In cgroup_lock_live_group, it locks the cgroup by mutex_lock, while in the
-> cgroup_tasks_write, it unlock it by cgroup_unlock. Even though they are
-> equal, but I do think we should make it pair.
-> 
-> BTW, should we replace others with cgroup_lock and cgroup_unlock?
-> Since we already have a wrapper one and it's meaningful.
-> 
+Currently it doesn't warn user on invald value:
 
-Before I read the email body, I thought there is a bug where
-there is a lock without unlock or vise versa.
+ # echo nonexist_symbol > set_ftrace_filter
+or:
+ # echo 'nonexist_symbol:mod:fuse' > set_ftrace_filter
 
-I agree the case here can be called "unpaired", but I'm not
-convinced this patch is needed. The code is not buggy or
-confusing. So the patch neither fixes a bug nor make the code
-more readable.
+Better make it return failure.
+
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/ftrace.c |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 7cb6f19..c7fe869 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1724,7 +1724,7 @@ ftrace_match_record(struct dyn_ftrace *rec, char *regex, int len, int type)
+ 	return ftrace_match(str, regex, len, type);
+ }
+ 
+-static void ftrace_match_records(char *buff, int len, int enable)
++static int ftrace_match_records(char *buff, int len, int enable)
+ {
+ 	unsigned int search_len;
+ 	struct ftrace_page *pg;
+@@ -1733,6 +1733,7 @@ static void ftrace_match_records(char *buff, int len, int enable)
+ 	char *search;
+ 	int type;
+ 	int not;
++	int found = 0;
+ 
+ 	flag = enable ? FTRACE_FL_FILTER : FTRACE_FL_NOTRACE;
+ 	type = filter_parse_regex(buff, len, &search, &not);
+@@ -1750,6 +1751,7 @@ static void ftrace_match_records(char *buff, int len, int enable)
+ 				rec->flags &= ~flag;
+ 			else
+ 				rec->flags |= flag;
++			found = 1;
+ 		}
+ 		/*
+ 		 * Only enable filtering if we have a function that
+@@ -1759,6 +1761,8 @@ static void ftrace_match_records(char *buff, int len, int enable)
+ 			ftrace_filtered = 1;
+ 	} while_for_each_ftrace_rec();
+ 	mutex_unlock(&ftrace_lock);
++
++	return found;
+ }
+ 
+ static int
+@@ -1780,7 +1784,7 @@ ftrace_match_module_record(struct dyn_ftrace *rec, char *mod,
+ 		return 1;
+ }
+ 
+-static void ftrace_match_module_records(char *buff, char *mod, int enable)
++static int ftrace_match_module_records(char *buff, char *mod, int enable)
+ {
+ 	unsigned search_len = 0;
+ 	struct ftrace_page *pg;
+@@ -1789,6 +1793,7 @@ static void ftrace_match_module_records(char *buff, char *mod, int enable)
+ 	char *search = buff;
+ 	unsigned long flag;
+ 	int not = 0;
++	int found = 0;
+ 
+ 	flag = enable ? FTRACE_FL_FILTER : FTRACE_FL_NOTRACE;
+ 
+@@ -1819,12 +1824,15 @@ static void ftrace_match_module_records(char *buff, char *mod, int enable)
+ 				rec->flags &= ~flag;
+ 			else
+ 				rec->flags |= flag;
++			found = 1;
+ 		}
+ 		if (enable && (rec->flags & FTRACE_FL_FILTER))
+ 			ftrace_filtered = 1;
+ 
+ 	} while_for_each_ftrace_rec();
+ 	mutex_unlock(&ftrace_lock);
++
++	return found;
+ }
+ 
+ /*
+@@ -1853,8 +1861,9 @@ ftrace_mod_callback(char *func, char *cmd, char *param, int enable)
+ 	if (!strlen(mod))
+ 		return -EINVAL;
+ 
+-	ftrace_match_module_records(func, mod, enable);
+-	return 0;
++	if (ftrace_match_module_records(func, mod, enable))
++		return 0;
++	return -EINVAL;
+ }
+ 
+ static struct ftrace_func_command ftrace_mod_cmd = {
+@@ -2151,8 +2160,9 @@ static int ftrace_process_regex(char *buff, int len, int enable)
+ 	func = strsep(&next, ":");
+ 
+ 	if (!next) {
+-		ftrace_match_records(func, len, enable);
+-		return 0;
++		if (ftrace_match_records(func, len, enable))
++			return 0;
++		return ret;
+ 	}
+ 
+ 	/* command found */
+-- 
+1.6.3
 
