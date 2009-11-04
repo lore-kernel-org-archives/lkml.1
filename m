@@ -1,30 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbZKDA2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbZKDAjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753473AbZKDA2I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 19:28:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbZKDA2H
+	id S1752229AbZKDAjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 19:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZKDAjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 19:28:07 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39133 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbZKDA2G (ORCPT
+	Tue, 3 Nov 2009 19:39:32 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37435 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751039AbZKDAjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 19:28:06 -0500
+	Tue, 3 Nov 2009 19:39:31 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 4 Nov 2009 09:25:34 +0900
+Date: Wed, 4 Nov 2009 09:36:59 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, minchan.kim@gmail.com,
-       vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [RFC][-mm][PATCH 5/6] oom-killer: check last total_vm expansion
-Message-Id: <20091104092534.626a2352.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0911031224270.25890@chino.kir.corp.google.com>
-References: <20091102162244.9425e49b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091102162837.405783f3.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0911031224270.25890@chino.kir.corp.google.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       linux-mm@kvack.org, Marcelo Tosatti <mtosatti@redhat.com>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       Izik Eidus <ieidus@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: Transparent Hugepage support
+Message-Id: <20091104093659.5de0e49d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091103105543.GH11981@random.random>
+References: <20091026185130.GC4868@random.random>
+	<87ljiwk8el.fsf@basil.nowhere.org>
+	<20091027193007.GA6043@random.random>
+	<20091028042805.GJ7744@basil.fritz.box>
+	<20091029094344.GA1068@elte.hu>
+	<20091029103658.GJ9640@random.random>
+	<20091030094037.9e0118d8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091103105543.GH11981@random.random>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -34,32 +41,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009 12:29:39 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+On Tue, 3 Nov 2009 11:55:43 +0100
+Andrea Arcangeli <aarcange@redhat.com> wrote:
 
-> On Mon, 2 Nov 2009, KAMEZAWA Hiroyuki wrote:
-> 
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> On Fri, Oct 30, 2009 at 09:40:37AM +0900, KAMEZAWA Hiroyuki wrote:
+> > Ah, please keep CONFIG_TRANSPARENT_HUGEPAGE for a while.
+> > Now, memcg don't handle hugetlbfs because it's special and cannot be freed by
+> > the kernel, only users can free it. But this new transparent-hugepage seems to
+> > be designed as that the kernel can free it for memory reclaiming.
+> > So, I'd like to handle this in memcg transparently.
 > > 
-> > At considering oom-kill algorithm, we can't avoid to take runtime
-> > into account. But this can adds too big bonus to slow-memory-leaker.
-> > For adding penalty to slow-memory-leaker, we record jiffies of
-> > the last mm->hiwater_vm expansion. That catches processes which leak
-> > memory periodically.
-> > 
+> > But it seems I need several changes to support this new rule.
+> > I'm glad if this new huge page depends on !CONFIG_CGROUP_MEM_RES_CTRL for a
+> > while.
 > 
-> No, it doesn't, it simply measures the last time the hiwater mark was 
-> increased.  That could have increased by a single page in the last tick 
-> with no increase in memory consumption over the past year and then its 
-> unfairly biased against for quiet_time in the new oom kill heuristic 
-> (patch 6).  Using this as part of the badness scoring is ill conceived 
-> because it doesn't necessarily indicate a memory leaking task, just one 
-> that has recently allocated memory.
+> Yeah the accounting (not just memcg) should be checked.. I didn't pay
+> too much attention to stats at this point.
+> 
+> But we want to fix it fast instead of making the two options mutually
+> exclusive.. Where are the pages de-accounted when they are freed?
 
-Hmm. Maybe I can rewrite this as "periodic expansion have done or not" code.
-Okay, this patch itself will be dropped.
+It's de-accounted at page_remove_rmap() in typical case of Anon.
+But swap-cache/bacthed-uncarhge related part is complicated, maybe.
+...because of me ;(
 
-If you find better algorithm, let me know.
+Okay, I don't request !CONFIG_CGROUP_MEM_RES_CTRL, I'm glad if you CC me.
+
+> Accounting seems to require just two one liners
+> calling mem_cgroup_newpage_charge.
+Yes, maybe so.
 
 Thanks,
 -Kame
