@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZKDLe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZKDLgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbZKDLe2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 06:34:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZKDLe1
+	id S1755566AbZKDLgI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 06:36:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbZKDLgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 06:34:27 -0500
-Received: from mx1.moondrake.net ([212.85.150.166]:33843 "EHLO
+	Wed, 4 Nov 2009 06:36:07 -0500
+Received: from mx1.moondrake.net ([212.85.150.166]:33897 "EHLO
 	mx1.mandriva.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755387AbZKDLe1 (ORCPT
+	with ESMTP id S1755528AbZKDLgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 06:34:27 -0500
+	Wed, 4 Nov 2009 06:36:06 -0500
 X-Spam-Virus: No
 From: Arnaud Patard <apatard@mandriva.com>
 To: wuzhangjin@gmail.com
@@ -18,15 +18,15 @@ Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
        Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
        Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
        liujl@lemote.com
-Subject: Re: [PATCH -queue v0 5/6] [loongson] rtc: enable legacy RTC driver on fuloong2f
+Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
 References: <cover.1257325319.git.wuzhangjin@gmail.com>
-	<e13ed33a99dbf14f223360d414aa2b2c5caa9b1f.1257325319.git.wuzhangjin@gmail.com>
-	<m3eioetvx5.fsf@anduin.mandriva.com>
-	<1257333527.8716.20.camel@falcon.domain.org>
+	<a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com>
+	<m3iqdqtwgk.fsf@anduin.mandriva.com>
+	<1257332652.8716.5.camel@falcon.domain.org>
 Organization: Mandriva
-Date: Wed, 04 Nov 2009 12:34:44 +0100
-In-Reply-To: <1257333527.8716.20.camel@falcon.domain.org> (Wu Zhangjin's message of "Wed, 04 Nov 2009 19:18:47 +0800")
-Message-ID: <m3aaz2ttez.fsf@anduin.mandriva.com>
+Date: Wed, 04 Nov 2009 12:36:23 +0100
+In-Reply-To: <1257332652.8716.5.camel@falcon.domain.org> (Wu Zhangjin's message of "Wed, 04 Nov 2009 19:04:12 +0800")
+Message-ID: <m3639qttc8.fsf@anduin.mandriva.com>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,46 +38,34 @@ Wu Zhangjin <wuzhangjin@gmail.com> writes:
 
 > Hi,
 >
-> On Wed, 2009-11-04 at 11:40 +0100, Arnaud Patard wrote:
->> Wu Zhangjin <wuzhangjin@gmail.com> writes:
+> On Wed, 2009-11-04 at 11:28 +0100, Arnaud Patard wrote:
+> [...]
+>> > +
+>> > +config CPU_LOONGSON2F
+>> > +	bool "Loongson 2F"
+>> > +	depends on SYS_HAS_CPU_LOONGSON2F
+>> > +	select CPU_LOONGSON2
+>> > +	help
+>> > +	  The Loongson 2F processor implements the MIPS III instruction set
+>> > +	  with many extensions.
+>> > +
+>> > +	  Loongson2F have built-in DDR2 and PCIX controller. The PCIX controller
+>> > +	  have a similar programming interface with FPGA northbridge used in
+>> > +	  Loongson2E.
+>> > +
 >> 
->> Hi,
+>> Small question : Why don't you restrict to 64bit kernels only ? From
+>> what I remember from some discussions with ST, trying to use a 32-bit
+>> kernel on 2f is a nice way to get troubles. It would be better imho to
+>> forbid such a configuration. As a side effect, this will remove all
+>> 'defined(CONFIG_64BIT)' parts of your #ifdef tests. 
 >> 
->> > RTC_LIB is selected by MIPS by default, and therefore, the legacy RTC driver is
->> > disabled. but unfortunately, RTC_LIB not works on fulong, so, enabling the legcy
->> > RTC driver is needed, otherwise, the tools like hwclock will not work.
->> >
->> > because loongson family machines, including fuloong2e, fuloong2f and
->> > yeeloong2f need to enable legacy RTC driver, so we use MACH_LOONGSON
->> > here.
->> 
->> There are loongson machines which are working fine with RTC_LIB (for
->> instance the gdium which is using a m41t83 on i2c) so would be better to
->> be more restrictive imho.
 >
-> In reality, fuloong2e, fuloong2f and yeeloong2f work fine with RTC_LIB,
-> but relative patches need to append to drivers/rtc/rtc-cmos.c and also
-> need a RTC platform device. If what I remembered is right, Gdium also
-> need corresponding patches to make it work with RTC_LIB.
+> It's hard to make such a decision ;) Perhaps some guys want to play with
+> the 32bit version.
 
-As I said, Gdium is using an i2c chip and the bus is made with the sm501
-gpio. So except the patch for gpiolib support for ls2f, there's nothing
-special for RTC_LIB. It's just working out of the box (as long as you
-declare the platform devices but that's not what I call a problem).
-
->
-> Herein, I just let the basic support for those machines work, and then,
-> the RTC_LIB support will be sent out later.
->
-> and a small question: if legacy RTC driver works well on these machines,
-> why should we forbid people to use it? I think it's better to remove the
-> "select RTC_LIB" line for MIPS, and then, the people will be free to
-> choose what they want, and even for the users whose platform not support
-> RTC_LIB.
-
-Well, I though about this. If you go that way and remove the "select
-RTC_LIB", please check and enable it for all platforms which needs it or
-warn people about. Would be nice to avoid regression due to that.
-
+It's a matter of taste : using 32 bit and getting an more or less broken
+machine or using 64bit and getting a working machine. I don't think a
+lot of people will choose the first option :)
 
 Arnaud
