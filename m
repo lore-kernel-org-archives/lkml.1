@@ -1,406 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZKDQGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbZKDQIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbZKDQGo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 11:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZKDQGn
+	id S1757027AbZKDQIe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 11:08:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbZKDQId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 11:06:43 -0500
-Received: from mga12.intel.com ([143.182.124.36]:61137 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756538AbZKDQGm (ORCPT
+	Wed, 4 Nov 2009 11:08:33 -0500
+Received: from server1.wserver.cz ([82.113.45.157]:54661 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756758AbZKDQId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 11:06:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,680,1249282800"; 
-   d="scan'208";a="207511836"
-Date: Wed, 4 Nov 2009 17:08:33 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Ilkka Koskinen <ilkka.koskinen@nokia.com>
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       felipe.balbi@nokia.com
-Subject: Re: [PATCH v2] TWL4030: Initial support for TWL5031
-Message-ID: <20091104160832.GD3607@sortiz.org>
-References: <1255702360-2143-1-git-send-email-ilkka.koskinen@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255702360-2143-1-git-send-email-ilkka.koskinen@nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 4 Nov 2009 11:08:33 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: airlied@linux.ie
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH -repost 1/1] AGP: amd64, fix pci reference leaks
+Date: Wed,  4 Nov 2009 17:08:37 +0100
+Message-Id: <1257350917-4297-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ilkka,
+Stanse found pci reference leaks in uli_agp_init and
+nforce3_agp_init initialization functions.
 
-Some comments below:
+The PCI devices are bridges, so it's not critical, but still
+worth fixing.
 
-On Fri, Oct 16, 2009 at 05:12:40PM +0300, Ilkka Koskinen wrote:
-> TWL5031 introduces two new interrupts in PIH. Moreover, BCI
-> has changed remarkably and, thus, it's disabled when TWL5031
-> is in use.
-> 
-> Signed-off-by: Ilkka Koskinen <ilkka.koskinen@nokia.com>
-> ---
->  drivers/mfd/twl4030-core.c  |   12 ++++-
->  drivers/mfd/twl4030-irq.c   |  127 +++++++++++++++++++++++++++++++++++++++++--
->  include/linux/i2c/twl4030.h |   47 ++++++++++++++--
->  3 files changed, 173 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-> index 5596bb4..5dc5062 100644
-> --- a/drivers/mfd/twl4030-core.c
-> +++ b/drivers/mfd/twl4030-core.c
-> @@ -152,6 +152,9 @@
->  #define TWL4030_BASEADD_PWMB		0x00F1
->  #define TWL4030_BASEADD_KEYPAD		0x00D2
->  
-> +#define TWL5031_BASEADD_ACCESSORY	0x0074 /* Replaces Main Charge */
-> +#define TWL5031_BASEADD_INTERRUPTS	0x00B9 /* Different to TWL4030's one */
-Should be "Different than..."
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: David Airlie <airlied@linux.ie>
+---
+ drivers/char/agp/amd64-agp.c |   28 ++++++++++++++++++----------
+ 1 files changed, 18 insertions(+), 10 deletions(-)
 
-
-> +
->  /* subchip/slave 3 - POWER ID */
->  #define TWL4030_BASEADD_BACKUP		0x0014
->  #define TWL4030_BASEADD_INT		0x002E
-> @@ -183,6 +186,7 @@
->  /* chip-specific feature flags, for i2c_device_id.driver_data */
->  #define TWL4030_VAUX2		BIT(0)	/* pre-5030 voltage ranges */
->  #define TPS_SUBSET		BIT(1)	/* tps659[23]0 have fewer LDOs */
-> +#define TWL5031			BIT(2)  /* twl5031 has different registers */
->  
->  /*----------------------------------------------------------------------*/
->  
-> @@ -235,6 +239,8 @@ static struct twl4030mapping twl4030_map[TWL4030_MODULE_LAST + 1] = {
->  	{ 2, TWL4030_BASEADD_PWM1 },
->  	{ 2, TWL4030_BASEADD_PWMA },
->  	{ 2, TWL4030_BASEADD_PWMB },
-> +	{ 2, TWL5031_BASEADD_ACCESSORY },
-> +	{ 2, TWL5031_BASEADD_INTERRUPTS },
->  
->  	{ 3, TWL4030_BASEADD_BACKUP },
->  	{ 3, TWL4030_BASEADD_INT },
-> @@ -483,7 +489,8 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
->  	struct device	*child;
->  	struct device	*usb_transceiver = NULL;
->  
-> -	if (twl_has_bci() && pdata->bci && !(features & TPS_SUBSET)) {
-> +	if (twl_has_bci() && pdata->bci &&
-> +	    !((features & TPS_SUBSET) || (features & TWL5031))) {
-could be simpler: !((features & (TPS_SUBSET | TWL5031))
-
-
->  		child = add_child(3, "twl4030_bci",
->  				pdata->bci, sizeof(*pdata->bci),
->  				false,
-> @@ -743,6 +750,7 @@ static void clocks_init(struct device *dev,
->  
->  int twl_init_irq(int irq_num, unsigned irq_base, unsigned irq_end);
->  int twl_exit_irq(void);
-> +int twl_init_chip_irq(const char *chip);
->  
->  static int twl4030_remove(struct i2c_client *client)
->  {
-> @@ -820,6 +828,7 @@ twl4030_probe(struct i2c_client *client, const struct i2c_device_id *id)
->  	if (client->irq
->  			&& pdata->irq_base
->  			&& pdata->irq_end > pdata->irq_base) {
-> +		twl_init_chip_irq(id->name);
->  		status = twl_init_irq(client->irq, pdata->irq_base, pdata->irq_end);
->  		if (status < 0)
->  			goto fail;
-> @@ -835,6 +844,7 @@ fail:
->  static const struct i2c_device_id twl4030_ids[] = {
->  	{ "twl4030", TWL4030_VAUX2 },	/* "Triton 2" */
->  	{ "twl5030", 0 },		/* T2 updated */
-> +	{ "twl5031", TWL5031 },		/* TWL5030 updated */
->  	{ "tps65950", 0 },		/* catalog version of twl5030 */
->  	{ "tps65930", TPS_SUBSET },	/* fewer LDOs and DACs; no charger */
->  	{ "tps65920", TPS_SUBSET },	/* fewer LDOs; no codec or charger */
-> diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
-> index fb194fe..a64994e 100644
-> --- a/drivers/mfd/twl4030-irq.c
-> +++ b/drivers/mfd/twl4030-irq.c
-> @@ -61,6 +61,7 @@
->  
->  /* Linux could (eventually) use either IRQ line */
->  static int irq_line;
-> +static int chip_is_twl5031;
->  
->  struct sih {
->  	char	name[8];
-> @@ -82,6 +83,9 @@ struct sih {
->  	/* + 2 bytes padding */
->  };
->  
-> +static const struct sih *sih_modules;
-> +static int nr_sih_modules;
-> +
->  #define SIH_INITIALIZER(modname, nbits) \
->  	.module		= TWL4030_MODULE_ ## modname, \
->  	.control_offset = TWL4030_ ## modname ## _SIH_CTRL, \
-> @@ -107,7 +111,8 @@ struct sih {
->  /* Order in this table matches order in PIH_ISR.  That is,
->   * BIT(n) in PIH_ISR is sih_modules[n].
->   */
-> -static const struct sih sih_modules[6] = {
-> +/* sih_modules_twl4030 is used for twl4030 and twl5030 */
-> +static const struct sih sih_modules_twl4030[6] = {
->  	[0] = {
->  		.name		= "gpio",
->  		.module		= TWL4030_MODULE_GPIO,
-> @@ -164,6 +169,84 @@ static const struct sih sih_modules[6] = {
->  		/* there are no SIH modules #6 or #7 ... */
->  };
->  
-> +static const struct sih sih_modules_twl5031[8] = {
-> +	[0] = {
-> +		.name		= "gpio",
-> +		.module		= TWL4030_MODULE_GPIO,
-> +		.control_offset	= REG_GPIO_SIH_CTRL,
-> +		.set_cor	= true,
-> +		.bits		= TWL4030_GPIO_MAX,
-> +		.bytes_ixr	= 3,
-> +		/* Note: *all* of these IRQs default to no-trigger */
-> +		.edr_offset	= REG_GPIO_EDR1,
-> +		.bytes_edr	= 5,
-> +		.mask = { {
-> +			.isr_offset	= REG_GPIO_ISR1A,
-> +			.imr_offset	= REG_GPIO_IMR1A,
-> +		}, {
-> +			.isr_offset	= REG_GPIO_ISR1B,
-> +			.imr_offset	= REG_GPIO_IMR1B,
-> +		}, },
-> +	},
-> +	[1] = {
-> +		.name		= "keypad",
-> +		.set_cor	= true,
-> +		SIH_INITIALIZER(KEYPAD_KEYP, 4)
-> +	},
-> +	[2] = {
-> +		.name		= "bci",
-> +		.module		= TWL5031_MODULE_INTERRUPTS,
-> +		.control_offset	= TWL5031_INTERRUPTS_BCISIHCTRL,
-> +		.bits		= 7,
-> +		.bytes_ixr	= 1,
-> +		.edr_offset	= TWL5031_INTERRUPTS_BCIEDR1,
-> +		/* Note: most of these IRQs default to no-trigger */
-> +		.bytes_edr	= 2,
-> +		.mask = { {
-> +			.isr_offset	= TWL5031_INTERRUPTS_BCIISR1,
-> +			.imr_offset	= TWL5031_INTERRUPTS_BCIIMR1,
-> +		}, {
-> +			.isr_offset	= TWL5031_INTERRUPTS_BCIISR2,
-> +			.imr_offset	= TWL5031_INTERRUPTS_BCIIMR2,
-> +		}, },
-> +	},
-> +	[3] = {
-> +		.name		= "madc",
-> +		SIH_INITIALIZER(MADC, 4)
-> +	},
-> +	[4] = {
-> +		/* USB doesn't use the same SIH organization */
-> +		.name		= "usb",
-> +	},
-> +	[5] = {
-> +		.name		= "power",
-> +		.set_cor	= true,
-> +		SIH_INITIALIZER(INT_PWR, 8)
-> +	},
-> +	[6] = {
-> +		/* ACI doesn't use the same SIH organization */
-> +		.name		= "aci",
-> +	},
-> +	[7] = {
-> +		/* Accessory */
-> +		.name		= "acc",
-> +		.module		= TWL5031_MODULE_ACCESSORY,
-> +		.control_offset	= TWL5031_ACCSIHCTRL,
-> +		.bits		= 2,
-> +		.bytes_ixr	= 1,
-> +		.edr_offset	= TWL5031_ACCEDR1,
-> +		/* Note: most of these IRQs default to no-trigger */
-> +		.bytes_edr	= 1,
-> +		.mask = { {
-> +			.isr_offset	= TWL5031_ACCISR1,
-> +			.imr_offset	= TWL5031_ACCIMR1,
-> +		}, {
-> +			.isr_offset	= TWL5031_ACCISR2,
-> +			.imr_offset	= TWL5031_ACCIMR2,
-> +		}, },
-> +	},
-> +};
-> +
->  #undef TWL4030_MODULE_KEYPAD_KEYP
->  #undef TWL4030_MODULE_INT_PWR
->  #undef TWL4030_INT_PWR_EDR
-> @@ -284,11 +367,20 @@ static int twl4030_init_sih_modules(unsigned line)
->  	/* disable all interrupts on our line */
->  	memset(buf, 0xff, sizeof buf);
->  	sih = sih_modules;
-> -	for (i = 0; i < ARRAY_SIZE(sih_modules); i++, sih++) {
-> +	for (i = 0; i < nr_sih_modules; i++, sih++) {
->  
->  		/* skip USB -- it's funky */
-> -		if (!sih->bytes_ixr)
-> +		/* But don't skip TWL5031's ACI */
-> +		if (!sih->bytes_ixr) {
-> +			if (chip_is_twl5031 && !strcmp(sih->name, "aci")) {
-> +				twl4030_i2c_write(TWL5031_MODULE_ACCESSORY,
-> +						  buf, TWL5031_ACIIMR_LSB, 1);
-> +				twl4030_i2c_write(TWL5031_MODULE_ACCESSORY,
-> +						  buf, TWL5031_ACIIMR_MSB, 1);
-> +			}
-> +
-A few comments on this:
-- Why do we have to do that for the accessory ? Some comments would be
-appropriate.
-- You could use twl4030_i2c_write_u8(), couldnt you ?
-- I'd like it to be more generic: TWL5031_MODULE_ACCESSORY should be replaced
-by sih->module, and the TWL5031_ACII* register should be somehow integrated in
-the sih struct. The idea is to get rid of this chip_is_twl5031. 
-
-
->  			continue;
-> +		}
->  
->  		status = twl4030_i2c_write(sih->module, buf,
->  				sih->mask[line].imr_offset, sih->bytes_ixr);
-> @@ -314,13 +406,22 @@ static int twl4030_init_sih_modules(unsigned line)
->  	}
->  
->  	sih = sih_modules;
-> -	for (i = 0; i < ARRAY_SIZE(sih_modules); i++, sih++) {
-> +	for (i = 0; i < nr_sih_modules; i++, sih++) {
->  		u8 rxbuf[4];
->  		int j;
->  
->  		/* skip USB */
-> -		if (!sih->bytes_ixr)
-> +		/* But don't skip TWL5031's ACI */
-> +		if (!sih->bytes_ixr) {
-> +			if (chip_is_twl5031 && !strcmp(sih->name, "aci")) {
-> +				twl4030_i2c_write(TWL5031_MODULE_ACCESSORY,
-> +						  buf, TWL5031_ACIIDR_LSB, 1);
-> +				twl4030_i2c_write(TWL5031_MODULE_ACCESSORY,
-> +						  buf, TWL5031_ACIIDR_MSB, 1);
-> +			}
-> +
->  			continue;
-> +		}
->  
->  		/* Clear pending interrupt status.  Either the read was
->  		 * enough, or we need to write those bits.  Repeat, in
-> @@ -611,7 +712,7 @@ int twl4030_sih_setup(int module)
->  
->  	/* only support modules with standard clear-on-read for now */
->  	for (sih_mod = 0, sih = sih_modules;
-> -			sih_mod < ARRAY_SIZE(sih_modules);
-> +			sih_mod < nr_sih_modules;
->  			sih_mod++, sih++) {
->  		if (sih->module == module && sih->set_cor) {
->  			if (!WARN((irq_base + sih->bits) > NR_IRQS,
-> @@ -756,3 +857,17 @@ int twl_exit_irq(void)
->  	}
->  	return 0;
->  }
-> +
-> +int twl_init_chip_irq(const char *chip)
-> +{
-> +	if (!strcmp(chip, "twl5031")) {
-> +		chip_is_twl5031 = 1;
-> +		sih_modules = sih_modules_twl5031;
-> +		nr_sih_modules = ARRAY_SIZE(sih_modules_twl5031);
-I dont think you need nr_sih_modules at all. sih_modules is pointing to the
-right array, and then you can keep the ARRAY_SIZE(sih_modules) call instead of
-defining yet another static variable.
-
-Talking about static variables and such, I really think the twl driver needs
-some cleanup. It should really be allocating a private device structure at
-probe time containing all those static crap. As this driver is growing and
-supporting more and more HW, it starts to be messy.
-
-Cheers,
-Samuel.
-
-
-> +	} else {
-> +		sih_modules = sih_modules_twl4030;
-> +		nr_sih_modules = ARRAY_SIZE(sih_modules_twl4030);
-> +	}
-> +
-> +	return 0;
-> +}
-> diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
-> index c8d5078..3fd5791 100644
-> --- a/include/linux/i2c/twl4030.h
-> +++ b/include/linux/i2c/twl4030.h
-> @@ -61,13 +61,16 @@
->  #define TWL4030_MODULE_PWMA		0x0E
->  #define TWL4030_MODULE_PWMB		0x0F
->  
-> +#define TWL5031_MODULE_ACCESSORY	0x10
-> +#define TWL5031_MODULE_INTERRUPTS	0x11
-> +
->  /* Slave 3 (i2c address 0x4b) */
-> -#define TWL4030_MODULE_BACKUP		0x10
-> -#define TWL4030_MODULE_INT		0x11
-> -#define TWL4030_MODULE_PM_MASTER	0x12
-> -#define TWL4030_MODULE_PM_RECEIVER	0x13
-> -#define TWL4030_MODULE_RTC		0x14
-> -#define TWL4030_MODULE_SECURED_REG	0x15
-> +#define TWL4030_MODULE_BACKUP		0x12
-> +#define TWL4030_MODULE_INT		0x13
-> +#define TWL4030_MODULE_PM_MASTER	0x14
-> +#define TWL4030_MODULE_PM_RECEIVER	0x15
-> +#define TWL4030_MODULE_RTC		0x16
-> +#define TWL4030_MODULE_SECURED_REG	0x17
->  
->  /*
->   * Read and write single 8-bit registers
-> @@ -221,6 +224,38 @@ int twl4030_i2c_read(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes);
->  
->  /*----------------------------------------------------------------------*/
->  
-> +/*
-> + * Accessory Interrupts
-> + */
-> +#define TWL5031_ACIIMR_LSB		0x05
-> +#define TWL5031_ACIIMR_MSB		0x06
-> +#define TWL5031_ACIIDR_LSB		0x07
-> +#define TWL5031_ACIIDR_MSB		0x08
-> +#define TWL5031_ACCISR1			0x0F
-> +#define TWL5031_ACCIMR1			0x10
-> +#define TWL5031_ACCISR2			0x11
-> +#define TWL5031_ACCIMR2			0x12
-> +#define TWL5031_ACCSIR			0x13
-> +#define TWL5031_ACCEDR1			0x14
-> +#define TWL5031_ACCSIHCTRL		0x15
-> +
-> +/*----------------------------------------------------------------------*/
-> +
-> +/*
-> + * Battery Charger Controller
-> + */
-> +
-> +#define TWL5031_INTERRUPTS_BCIISR1	0x0
-> +#define TWL5031_INTERRUPTS_BCIIMR1	0x1
-> +#define TWL5031_INTERRUPTS_BCIISR2	0x2
-> +#define TWL5031_INTERRUPTS_BCIIMR2	0x3
-> +#define TWL5031_INTERRUPTS_BCISIR	0x4
-> +#define TWL5031_INTERRUPTS_BCIEDR1	0x5
-> +#define TWL5031_INTERRUPTS_BCIEDR2	0x6
-> +#define TWL5031_INTERRUPTS_BCISIHCTRL	0x7
-> +
-> +/*----------------------------------------------------------------------*/
-> +
->  /* Power bus message definitions */
->  
->  /* The TWL4030/5030 splits its power-management resources (the various
-> -- 
-> 1.6.0.4
-> 
-
+diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
+index 2fb2e6c..258c712 100644
+--- a/drivers/char/agp/amd64-agp.c
++++ b/drivers/char/agp/amd64-agp.c
+@@ -383,7 +383,7 @@ static int __devinit uli_agp_init(struct pci_dev *pdev)
+ {
+ 	u32 httfea,baseaddr,enuscr;
+ 	struct pci_dev *dev1;
+-	int i;
++	int i, ret;
+ 	unsigned size = amd64_fetch_size();
+ 
+ 	dev_info(&pdev->dev, "setting up ULi AGP\n");
+@@ -399,15 +399,18 @@ static int __devinit uli_agp_init(struct pci_dev *pdev)
+ 
+ 	if (i == ARRAY_SIZE(uli_sizes)) {
+ 		dev_info(&pdev->dev, "no ULi size found for %d\n", size);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto put;
+ 	}
+ 
+ 	/* shadow x86-64 registers into ULi registers */
+ 	pci_read_config_dword (k8_northbridges[0], AMD64_GARTAPERTUREBASE, &httfea);
+ 
+ 	/* if x86-64 aperture base is beyond 4G, exit here */
+-	if ((httfea & 0x7fff) >> (32 - 25))
+-		return -ENODEV;
++	if ((httfea & 0x7fff) >> (32 - 25)) {
++		ret = -ENODEV;
++		goto put;
++	}
+ 
+ 	httfea = (httfea& 0x7fff) << 25;
+ 
+@@ -419,9 +422,10 @@ static int __devinit uli_agp_init(struct pci_dev *pdev)
+ 	enuscr= httfea+ (size * 1024 * 1024) - 1;
+ 	pci_write_config_dword(dev1, ULI_X86_64_HTT_FEA_REG, httfea);
+ 	pci_write_config_dword(dev1, ULI_X86_64_ENU_SCR_REG, enuscr);
+-
++	ret = 0;
++put:
+ 	pci_dev_put(dev1);
+-	return 0;
++	return ret;
+ }
+ 
+ 
+@@ -440,7 +444,7 @@ static int nforce3_agp_init(struct pci_dev *pdev)
+ {
+ 	u32 tmp, apbase, apbar, aplimit;
+ 	struct pci_dev *dev1;
+-	int i;
++	int i, ret;
+ 	unsigned size = amd64_fetch_size();
+ 
+ 	dev_info(&pdev->dev, "setting up Nforce3 AGP\n");
+@@ -457,7 +461,8 @@ static int nforce3_agp_init(struct pci_dev *pdev)
+ 
+ 	if (i == ARRAY_SIZE(nforce3_sizes)) {
+ 		dev_info(&pdev->dev, "no NForce3 size found for %d\n", size);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto put;
+ 	}
+ 
+ 	pci_read_config_dword(dev1, NVIDIA_X86_64_1_APSIZE, &tmp);
+@@ -471,7 +476,8 @@ static int nforce3_agp_init(struct pci_dev *pdev)
+ 	/* if x86-64 aperture base is beyond 4G, exit here */
+ 	if ( (apbase & 0x7fff) >> (32 - 25) ) {
+ 		dev_info(&pdev->dev, "aperture base > 4G\n");
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto put;
+ 	}
+ 
+ 	apbase = (apbase & 0x7fff) << 25;
+@@ -487,9 +493,11 @@ static int nforce3_agp_init(struct pci_dev *pdev)
+ 	pci_write_config_dword(dev1, NVIDIA_X86_64_1_APBASE2, apbase);
+ 	pci_write_config_dword(dev1, NVIDIA_X86_64_1_APLIMIT2, aplimit);
+ 
++	ret = 0;
++put:
+ 	pci_dev_put(dev1);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int __devinit agp_amd64_probe(struct pci_dev *pdev,
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+1.6.4.2
+
