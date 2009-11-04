@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbZKDUMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbZKDUOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbZKDUMS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 15:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbZKDUMQ
+	id S1758165AbZKDUOJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 15:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbZKDUOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 15:12:16 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:45481 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758155AbZKDUMO (ORCPT
+	Wed, 4 Nov 2009 15:14:08 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:37554 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758132AbZKDUOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 15:12:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=HNtqF0KH181Cmbj9hgU0BNj4VdNnj+cxQCM3nNWS9njd1+DFQ2xJYi1h7ydfyhAmBJ
-         4iaJc2n3p+NQLkTIBx9dKFXMVYPmdOXVwqnXlpK+KJZjV33q5IC22HTX1qPmqANr5Ldj
-         Rm5GsSAcXUaz9iyDUBLHOSolUQPk5SdkoUscA=
+	Wed, 4 Nov 2009 15:14:07 -0500
+Date: Wed, 4 Nov 2009 21:15:20 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Arnaud Patard <apatard@mandriva.com>, linux-mips@linux-mips.org,
+       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
+       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       liujl@lemote.com
+Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
+Message-ID: <20091104201520.GA26504@linux-mips.org>
+References: <cover.1257325319.git.wuzhangjin@gmail.com> <a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com> <m3iqdqtwgk.fsf@anduin.mandriva.com> <1257332652.8716.5.camel@falcon.domain.org> <20091104111957.GA13549@linux-mips.org> <1257348226.16033.4.camel@falcon.domain.org>
 MIME-Version: 1.0
-In-Reply-To: <20091104200714.GA24699@sucs.org>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-	 <6dRYo8ss7vL.A.xRH.vre5KB@chimera>
-	 <b637ec0b0910261315u43033948ge041cf70292bfa58@mail.gmail.com>
-	 <87aazddvft.fsf@basilikum.skogtun.org>
-	 <20091104200714.GA24699@sucs.org>
-Date: Wed, 4 Nov 2009 21:12:18 +0100
-Message-ID: <b637ec0b0911041212w227884d9w64ae3894eabb82a2@mail.gmail.com>
-Subject: Re: [Bug #14372] ath5k wireless not working after rfkill [BISECTED]
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Harald Arnesen <harald@skogtun.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257348226.16033.4.camel@falcon.domain.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for reporting. I guess I'll wait for -rc7 then.
+On Wed, Nov 04, 2009 at 11:23:46PM +0800, Wu Zhangjin wrote:
 
-On Wed, Nov 4, 2009 at 9:07 PM, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> On Tue, Oct 27, 2009 at 10:42:46AM +0100, Harald Arnesen wrote:
->> Fabio Comolli <fabio.comolli@gmail.com> writes:
->>
->> > Still present in -rc5
->
-> Help. I've just bisected this down to the same commit
-> b56ab33d68638e6aafdbfc694025e8354a628f49 (that will teach me for not
-> reading the whole thread) as I have the same problem on my EeePC 900.
->
-> Still present in -rc6 and the latest git.
->
-> --
-> Sitsofe | http://sucs.org/~sits/
->
+> > We have other systems where 32-bit kernel support is just remarkably ugly.
+> > We've dropped 32-bit support for the SGI IP32 aka O2 - nobody seems to even
+> > have really noticed that.  The Sibyte systems would be good candidates to do
+> > the same as accesses to outside the 32-bit address space are needed very
+> > frequently.
+> > 
+> 
+> So, we really remove the 32bit support?
+> 
+> 1312 config CPU_LOONGSON2
+> 1313         bool
+> 1314         select CPU_SUPPORTS_32BIT_KERNEL  --> remove it?
+> 1315         select CPU_SUPPORTS_64BIT_KERNEL
+> 1316         select CPU_SUPPORTS_HIGHMEM
+> 
+> If you all agree, I will send a new patch to remove the above line and
+> resend the corresponding patches without 32bit support, and removed the
+> relative CONFIG_64BIT lines in the patches too.
+
+If you need highmem with 32-bit (and with Loongson systems I assume that
+virtually all systems will have enough RAM to require that) then you're
+almost certainly better off going 64-bit.  Highmem takes a performance toll
+which for some workloads can be very significant.  And while highmem won't
+go away any time soon it's nothing kernel performance is being tuned for,
+so it's only going to get worse into the future so I'd not waste time on
+highmem unless I have to.
+
+  Ralf
