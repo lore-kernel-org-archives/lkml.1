@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932777AbZKDWIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbZKDWPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932777AbZKDWIb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 17:08:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbZKDWIa
+	id S1758287AbZKDWPJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 17:15:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758261AbZKDWPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 17:08:30 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:11747 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757608AbZKDWIa (ORCPT
+	Wed, 4 Nov 2009 17:15:08 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:34516 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757663AbZKDWPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 17:08:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=AeARtjV9qF+usynoAEZpplqFsA+ChtAKNjGdX3zZhxNa5laD9rYscDo9ey6voH/8N3
-         hXjeDKjpNzgBqyTQwLCuLmGjtgAD5yCZHhwd3poMv6pUZRzvFy7J9LDnujZiT3QYzwSp
-         BRUDIcIXPdPO809EQf6yT41B9mi+TUggMSFvQ=
-Message-ID: <4AF1FB69.4000101@gmail.com>
-Date: Wed, 04 Nov 2009 14:08:41 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+	Wed, 4 Nov 2009 17:15:07 -0500
+Date: Wed, 4 Nov 2009 17:09:16 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Luis Correia <luis.f.correia@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Message-ID: <20091104220916.GI10786@tuxdriver.com>
+References: <1256886023.3555.5.camel@johannes.local> <20091102211629.GA1322@ucw.cz> <alpine.LRH.2.00.0911041403480.31913@twin.jikos.cz> <200911042217.49144.IvDoorn@gmail.com> <20091104220024.GC27325@elf.ucw.cz>
 MIME-Version: 1.0
-To: Michael Gilbert <michael.s.gilbert@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: CVE-2009-2584
-References: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com>
-In-Reply-To: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104220024.GC27325@elf.ucw.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Gilbert wrote:
-> Hi,
->
-> CVE-2009-2584 [0],[1] has been disclosed for quite a while now (with
-> existing exploit code by Brad Spengler [2]).  A patch has also been
-> available for the same amount of time [3], but as of 2.6.32-rc6 it is
-> still not applied.  Did this slip through the cracks?  Thanks upfront
-> for any info on the matter.
->
-> Best wishes,
-> Mike
->
-> [0] http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2009-2584
-> [1] http://xorl.wordpress.com/2009/07/21/linux-kernel-sgi-gru-driver-off-by-one-overwrite/
-> [2] http://grsecurity.net/~spender/exploit_demo.c
-> [3] http://lkml.org/lkml/2009/7/20/348
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->    
-just read something today which might
-be similar/same as what you might
-be referring too.
-http://www.theregister.co.uk/2009/11/03/linux_kernel_vulnerability/
+On Wed, Nov 04, 2009 at 11:00:25PM +0100, Pavel Machek wrote:
+> > > But yes, he got flamed for this for some odd reason. I got the impression 
+> > > that the community around rt2x00 doesn't like (or understand) the way how 
+> > > opensource development happens.
+> > 
+> > Well you mean the open source development where non-contributors
+> > complain that the contributors work too slowly? 
+> 
+> This was the case when non-contributor complained that patch adds
+> 2KLoC of unneccessary code.
+> 
+> > Perhaps
+> > that is the policy in some companies which try to import it into the
+> > Open Source world...
+> 
+> Do you really have to attack everyone around?
 
-Justin P. Mattock
+Really, this is enough.
 
+It seems clear that neither side of this debate sees or appreciates
+the injuries that the other side claims.  In any case, there seems
+little good can come from continuing this bickering.
 
+Now that Bart is posting patches and the rt2x00 team is actively
+reviewing (and mostly Acking) them, I hope everyone can just BACK
+THE HELL OFF and let the process work itself out.
+
+Please let this discussion end.
+
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
