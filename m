@@ -1,119 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZKDH7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752256AbZKDH6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbZKDH7A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 02:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZKDH67
+	id S1752256AbZKDH6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 02:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZKDH6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 02:58:59 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:46778 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbZKDH6l (ORCPT
+	Wed, 4 Nov 2009 02:58:36 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:43235 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbZKDH6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 02:58:41 -0500
+	Wed, 4 Nov 2009 02:58:36 -0500
 From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
 To: alsa-devel@alsa-project.org, linux-omap@vger.kernel.org,
        sameo@linux.intel.com
 Cc: linux-kernel@vger.kernel.org, tony@atomide.com,
        broonie@opensource.wolfsonmicro.com
-Subject: [PATCH 2/4 v2] OMAP: Configure audio_mclk for twl4030-codec MFD
-Date: Wed,  4 Nov 2009 09:58:18 +0200
-Message-Id: <1257321500-27049-3-git-send-email-peter.ujfalusi@nokia.com>
+Subject: [PATCH 3/4 v2] MFD: twl4030-codec: APLL_INFREQ handling in the MFD driver
+Date: Wed,  4 Nov 2009 09:58:19 +0200
+Message-Id: <1257321500-27049-4-git-send-email-peter.ujfalusi@nokia.com>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1257321500-27049-2-git-send-email-peter.ujfalusi@nokia.com>
+In-Reply-To: <1257321500-27049-3-git-send-email-peter.ujfalusi@nokia.com>
 References: <1257321500-27049-1-git-send-email-peter.ujfalusi@nokia.com>
  <1257321500-27049-2-git-send-email-peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 04 Nov 2009 07:58:30.0643 (UTC) FILETIME=[9958F430:01CA5D24]
+ <1257321500-27049-3-git-send-email-peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 04 Nov 2009 07:58:32.0792 (UTC) FILETIME=[9AA0DD80:01CA5D24]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-audio_mclk value is going to be handled by the
-twl4030-codec MFD driver, configure the correct
-value for boards, which is using the twl4030 audio.
+Configure the APLL_INFREQ field in the APLL_CTL register
+based on the platform data.
+Provide also a function for childs to query the audio_mclk
+frequency.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
 ---
- arch/arm/mach-omap2/board-3430sdp.c      |    1 +
- arch/arm/mach-omap2/board-omap3beagle.c  |    1 +
- arch/arm/mach-omap2/board-omap3evm.c     |    1 +
- arch/arm/mach-omap2/board-omap3pandora.c |    1 +
- arch/arm/mach-omap2/board-overo.c        |    1 +
- arch/arm/mach-omap2/board-zoom2.c        |    1 +
- 6 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/mfd/twl4030-codec.c       |   35 +++++++++++++++++++++++++++++++++++
+ include/linux/mfd/twl4030-codec.h |    1 +
+ 2 files changed, 36 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
-index 4f91f7a..9afd957 100644
---- a/arch/arm/mach-omap2/board-3430sdp.c
-+++ b/arch/arm/mach-omap2/board-3430sdp.c
-@@ -415,6 +415,7 @@ static struct twl4030_codec_audio_data sdp3430_audio = {
+diff --git a/drivers/mfd/twl4030-codec.c b/drivers/mfd/twl4030-codec.c
+index 9710307..77b9149 100644
+--- a/drivers/mfd/twl4030-codec.c
++++ b/drivers/mfd/twl4030-codec.c
+@@ -41,6 +41,7 @@ struct twl4030_codec_resource {
  };
 
- static struct twl4030_codec_data sdp3430_codec = {
-+	.audio_mclk = 26000000,
- 	.audio = &sdp3430_audio,
- };
+ struct twl4030_codec {
++	unsigned int audio_mclk;
+ 	struct mutex mutex;
+ 	struct twl4030_codec_resource resource[TWL4030_CODEC_RES_MAX];
+ 	struct mfd_cell cells[TWL4030_CODEC_CELLS];
+@@ -145,12 +146,45 @@ int twl4030_codec_disable_resource(unsigned id)
+ }
+ EXPORT_SYMBOL_GPL(twl4030_codec_disable_resource);
 
-diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 2161d85..8f0c106 100644
---- a/arch/arm/mach-omap2/board-omap3beagle.c
-+++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -259,6 +259,7 @@ static struct twl4030_codec_audio_data beagle_audio_data = {
- };
++unsigned int twl4030_codec_get_mclk(void)
++{
++	struct twl4030_codec *codec = platform_get_drvdata(twl4030_codec_dev);
++
++	return codec->audio_mclk;
++}
++EXPORT_SYMBOL_GPL(twl4030_codec_get_mclk);
++
+ static int __devinit twl4030_codec_probe(struct platform_device *pdev)
+ {
+ 	struct twl4030_codec *codec;
+ 	struct twl4030_codec_data *pdata = pdev->dev.platform_data;
+ 	struct mfd_cell *cell = NULL;
+ 	int ret, childs = 0;
++	u8 val;
++
++	if (!pdata) {
++		dev_err(&pdev->dev, "Platform data is missing\n");
++		return -EINVAL;
++	}
++
++	/* Configure APLL_INFREQ and disable APLL if enabled */
++	val = 0;
++	switch (pdata->audio_mclk) {
++	case 19200000:
++		val |= TWL4030_APLL_INFREQ_19200KHZ;
++		break;
++	case 26000000:
++		val |= TWL4030_APLL_INFREQ_26000KHZ;
++		break;
++	case 38400000:
++		val |= TWL4030_APLL_INFREQ_38400KHZ;
++		break;
++	default:
++		dev_err(&pdev->dev, "Invalid audio_mclk\n");
++		return -EINVAL;
++	}
++	twl4030_i2c_write_u8(TWL4030_MODULE_AUDIO_VOICE,
++					val, TWL4030_REG_APLL_CTL);
 
- static struct twl4030_codec_data beagle_codec_data = {
-+	.audio_mclk = 26000000,
- 	.audio = &beagle_audio_data,
- };
+ 	codec = kzalloc(sizeof(struct twl4030_codec), GFP_KERNEL);
+ 	if (!codec)
+@@ -160,6 +194,7 @@ static int __devinit twl4030_codec_probe(struct platform_device *pdev)
 
-diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
-index d9a6103..5bb30cb 100644
---- a/arch/arm/mach-omap2/board-omap3evm.c
-+++ b/arch/arm/mach-omap2/board-omap3evm.c
-@@ -199,6 +199,7 @@ static struct twl4030_codec_audio_data omap3evm_audio_data = {
- };
+ 	twl4030_codec_dev = pdev;
+ 	mutex_init(&codec->mutex);
++	codec->audio_mclk = pdata->audio_mclk;
 
- static struct twl4030_codec_data omap3evm_codec_data = {
-+	.audio_mclk = 26000000,
- 	.audio = &omap3evm_audio_data,
- };
+ 	/* Codec power */
+ 	codec->resource[TWL4030_CODEC_RES_POWER].reg = TWL4030_REG_CODEC_MODE;
+diff --git a/include/linux/mfd/twl4030-codec.h b/include/linux/mfd/twl4030-codec.h
+index ef0a304..2ec317c 100644
+--- a/include/linux/mfd/twl4030-codec.h
++++ b/include/linux/mfd/twl4030-codec.h
+@@ -267,5 +267,6 @@ enum twl4030_codec_res {
 
-diff --git a/arch/arm/mach-omap2/board-omap3pandora.c b/arch/arm/mach-omap2/board-omap3pandora.c
-index 5036b56..77790ee 100644
---- a/arch/arm/mach-omap2/board-omap3pandora.c
-+++ b/arch/arm/mach-omap2/board-omap3pandora.c
-@@ -286,6 +286,7 @@ static struct twl4030_codec_audio_data omap3pandora_audio_data = {
- };
+ int twl4030_codec_disable_resource(enum twl4030_codec_res id);
+ int twl4030_codec_enable_resource(enum twl4030_codec_res id);
++unsigned int twl4030_codec_get_mclk(void);
 
- static struct twl4030_codec_data omap3pandora_codec_data = {
-+	.audio_mclk = 26000000,
- 	.audio = &omap3pandora_audio_data,
- };
-
-diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
-index dc55008..e1fb504 100644
---- a/arch/arm/mach-omap2/board-overo.c
-+++ b/arch/arm/mach-omap2/board-overo.c
-@@ -334,6 +334,7 @@ static struct twl4030_codec_audio_data overo_audio_data = {
- };
-
- static struct twl4030_codec_data overo_codec_data = {
-+	.audio_mclk = 26000000,
- 	.audio = &overo_audio_data,
- };
-
-diff --git a/arch/arm/mach-omap2/board-zoom2.c b/arch/arm/mach-omap2/board-zoom2.c
-index f1b4e7c..de3a38d 100644
---- a/arch/arm/mach-omap2/board-zoom2.c
-+++ b/arch/arm/mach-omap2/board-zoom2.c
-@@ -234,6 +234,7 @@ static struct twl4030_codec_audio_data zoom2_audio_data = {
- };
-
- static struct twl4030_codec_data zoom2_codec_data = {
-+	.audio_mclk = 26000000,
- 	.audio = &zoom2_audio_data,
- };
-
+ #endif	/* End of __TWL4030_CODEC_H__ */
 --
 1.6.5.2
 
