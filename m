@@ -1,123 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZKDPf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZKDPfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbZKDPf2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbZKDPf1
+	id S1756798AbZKDPfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbZKDPfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:35:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50030 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752860AbZKDPf1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:35:27 -0500
-Date: Wed, 4 Nov 2009 07:34:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Horton <phorton@bitbox.co.uk>
-Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] prevent AoE causing cache aliases
-Message-Id: <20091104073438.7d2fa27a.akpm@linux-foundation.org>
-In-Reply-To: <4AF15D6A.5020403@bitbox.co.uk>
-References: <20091022142228.GA18986@bitbox.co.uk>
-	<20091103163755.57d3530c.akpm@linux-foundation.org>
-	<4AF15D6A.5020403@bitbox.co.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 10:35:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37506 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756516AbZKDPfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:35:34 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 07/20] blkio: Provide capablity to enqueue/dequeue group entities
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
+	<1257291837-6246-8-git-send-email-vgoyal@redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 04 Nov 2009 10:34:57 -0500
+In-Reply-To: <1257291837-6246-8-git-send-email-vgoyal@redhat.com> (Vivek
+	Goyal's message of "Tue, 3 Nov 2009 18:43:44 -0500")
+Message-ID: <x49zl72tiam.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Nov 2009 10:54:34 +0000 Peter Horton <phorton@bitbox.co.uk> wrote:
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-> Andrew Morton wrote:
-> > On Thu, 22 Oct 2009 15:22:28 +0100
-> > phorton@bitbox.co.uk (Peter Horton) wrote:
-> > 
-> >> To: ecashin@coraid.com
-> > 
-> > Have you heard back from Ed on this?
-> >
-> 
-> No.
-> 
-> >> Cc: linux-kernel@vger.kernel.org
-> >> Subject: [PATCH] prevent AoE causing cache aliases
-> >> Date: 	Thu, 22 Oct 2009 15:22:28 +0100
-> >> Sender: linux-kernel-owner@vger.kernel.org
-> >> User-Agent: Mutt/1.5.9i
-> >>
-> >> This patch prevents the AoE block driver from creating cache aliases of
-> >> page cache pages on machines with virtually indexed caches.
-> >>
-> >> Building kernels on an AT91SAM9G20 board without this patch fails with
-> >> segmentation faults after a couple of passes.
-> >>
-> >>
-> >> Index: linux-2.6.31/drivers/block/aoe/aoecmd.c
-> >> ===================================================================
-> >> --- linux-2.6.31.orig/drivers/block/aoe/aoecmd.c	2009-09-09 23:13:59.000000000 +0100
-> >> +++ linux-2.6.31/drivers/block/aoe/aoecmd.c	2009-10-22 10:24:50.000000000 +0100
-> >> @@ -735,6 +735,21 @@
-> >>  	part_stat_unlock();
-> >>  }
-> >>  
-> >> +/*
-> >> + * Ensure we don't create aliases in VI caches
-> >> + */
-> >> +static inline void
-> >> +killalias(struct bio *bio)
-> >> +{
-> >> +	struct bio_vec *bv;
-> >> +	int i;
-> >> +
-> >> +	if (bio_data_dir(bio) == READ)
-> >> +		__bio_for_each_segment(bv, bio, i, 0) {
-> >> +			flush_dcache_page(bv->bv_page);
-> >> +		}
-> >> +}
-> >> +
-> >>  void
-> >>  aoecmd_ata_rsp(struct sk_buff *skb)
-> >>  {
-> >> @@ -853,8 +868,12 @@
-> >>  
-> >>  	if (buf && --buf->nframesout == 0 && buf->resid == 0) {
-> >>  		diskstats(d->gd, buf->bio, jiffies - buf->stime, buf->sector);
-> >> -		n = (buf->flags & BUFFL_FAIL) ? -EIO : 0;
-> >> -		bio_endio(buf->bio, n);
-> >> +		if (buf->flags & BUFFL_FAIL)
-> >> +			bio_endio(buf->bio, -EIO);
-> >> +		else {
-> >> +			killalias(buf->bio);
-> >> +			bio_endio(buf->bio, 0);
-> >> +		}
-> >>  		mempool_free(buf, d->bufpool);
-> >>  	}
-> > 
-> > Looks OK.
-> > 
-> > This bugfix will cause a pointless __bio_for_each_segment() busywait
-> > loop to be executed on architectures for which flush_dcache_page() is a
-> > no-op.
-> > 
-> > We don't have infrastructure to fix that.
-> 
-> Couldn't we add a flag to the bio that users could set to indicate that 
-> they are not house trained with respect to the D-cache (i.e non-DMA 
-> drivers). Architectures that needed to could then flush the relevant 
-> pages in the bio_endio() path somewhere. At the moment all the non-DMA 
-> block drivers need to be aware of the cache aliasing issue which means 
-> this problem keeps arising ...
-> 
+> o This patch embeds cfq_entity object in cfq_group and provides helper routines
+>   so that group entities can be scheduled.
+>
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/cfq-iosched.c |  110 +++++++++++++++++++++++++++++++++++++++++++--------
+>  1 files changed, 93 insertions(+), 17 deletions(-)
+>
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index bc99163..8ec8a82 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -79,6 +79,7 @@ struct cfq_service_tree {
+>  #define CFQ_RB_ROOT	(struct cfq_service_tree) { RB_ROOT, NULL, 0, NULL}
+>  
+>  struct cfq_sched_data {
+> +	unsigned int nr_active;
+>  	struct cfq_service_tree service_tree[IO_IOPRIO_CLASSES];
+>  };
+>  
+> @@ -89,6 +90,10 @@ struct cfq_entity {
+>  	struct cfq_service_tree *st;
+>  	unsigned short ioprio_class;
+>  	bool ioprio_class_changed;
+> +	struct cfq_entity *parent;
+> +	bool on_st;
+> +	/* Points to the sched_data of group entity. Null for cfqq */
+> +	struct cfq_sched_data *my_sd;
 
-Could.  We'll need to change each arch _somehow_.  Even if it's a
-matter of adding `#define i_am_not_house_trained' to the troublesome
-ones or something, then ifdeffing existing code.
+Why my_sd?  None of the other members required a my.  ;-)
 
-I was thinking that a general bio_flush_dcache_pages() in block core
-(or in each arch) would be a suitable way to handle this but I was
-unable to find other drivers which needed it after a brief search.
+> +static inline struct cfq_entity *parent_entity(struct cfq_entity *cfqe)
+> +{
+> +	return cfqe->parent;
+> +}
 
+Wow, is this really necessary for a pointer dereference?
 
+> +#ifdef CONFIG_CFQ_GROUP_IOSCHED
+> +/* check for entity->parent so that loop is not executed for root entity. */
+> +#define for_each_entity(entity)	\
+> +	for (; entity && entity->parent; entity = entity->parent)
+
+See, you don't use it here!
+
+> @@ -660,7 +723,13 @@ static void enqueue_cfqe(struct cfq_entity *cfqe)
+>  
+>  static void enqueue_cfqq(struct cfq_queue *cfqq)
+>  {
+> -	enqueue_cfqe(&cfqq->entity);
+> +	struct cfq_entity *cfqe = &cfqq->entity;
+> +
+> +	for_each_entity(cfqe) {
+> +		if (cfqe->on_st)
+> +			break;
+> +		enqueue_cfqe(cfqe);
+> +	}
+>  }
+
+Maybe I'm slow, but I would have benefitted from a comment above that
+function stating that we have to walk up the tree to make sure that the
+parent is also scheduled.
+
+Cheers,
+Jeff
