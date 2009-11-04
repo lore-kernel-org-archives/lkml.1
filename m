@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932586AbZKDUzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbZKDUH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932586AbZKDUzD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 15:55:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932347AbZKDUzC
+	id S1758112AbZKDUH5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 15:07:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbZKDUH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 15:55:02 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:38510 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932299AbZKDUzB (ORCPT
+	Wed, 4 Nov 2009 15:07:56 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:51369 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756978AbZKDUH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 15:55:01 -0500
-X-Greylist: delayed 2858 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Nov 2009 15:55:01 EST
-Date: Wed, 4 Nov 2009 20:07:14 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Harald Arnesen <harald@skogtun.org>
-Cc: Fabio Comolli <fabio.comolli@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14372] ath5k wireless not working after rfkill [BISECTED]
-Message-ID: <20091104200714.GA24699@sucs.org>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.xRH.vre5KB@chimera> <b637ec0b0910261315u43033948ge041cf70292bfa58@mail.gmail.com> <87aazddvft.fsf@basilikum.skogtun.org>
+	Wed, 4 Nov 2009 15:07:56 -0500
+Date: Wed, 4 Nov 2009 21:08:01 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Valdis.Kletnieks@vt.edu
+cc: Martin Nybo Andersen <tweek@tweek.dk>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Ryan C. Gordon" <icculus@icculus.org>,
+       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: package managers [was: FatELF patches...]
+In-Reply-To: <22108.1257364949@turing-police.cc.vt.edu>
+Message-ID: <Pine.LNX.4.64.0911042104260.8785@artax.karlin.mff.cuni.cz>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+ <20091104165407.1481bc29@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0911041758420.9986@artax.karlin.mff.cuni.cz>
+ <200911041848.48721.tweek@tweek.dk>           
+ <Pine.LNX.4.64.0911041901090.26209@artax.karlin.mff.cuni.cz>
+ <22108.1257364949@turing-police.cc.vt.edu>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87aazddvft.fsf@basilikum.skogtun.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 10:42:46AM +0100, Harald Arnesen wrote:
-> Fabio Comolli <fabio.comolli@gmail.com> writes:
+On Wed, 4 Nov 2009, Valdis.Kletnieks@vt.edu wrote:
+
+> On Wed, 04 Nov 2009 19:46:44 +0100, Mikulas Patocka said:
 > 
-> > Still present in -rc5
+> > When I did it (from Etch to Lenny), two programs that I have compiled 
+> > manually ("vim" and "links") stopped working because Etch and Lenny have 
+> > binary-incompatible libgpm.
+> > 
+> > If some library cannot keep binary compatibility, it should be linked 
+> > staticaly, dynamic version shouldn't even exists on the system --- so that 
+> > no one can create incompatible binaries.
+> 
+> No, all they need to do is bump the .so version number.
 
-Help. I've just bisected this down to the same commit
-b56ab33d68638e6aafdbfc694025e8354a628f49 (that will teach me for not
-reading the whole thread) as I have the same problem on my EeePC 900.
+That's what Debian did. Obviously, I can extract the old library from the 
+old package. But non-technical desktop user can't.
 
-Still present in -rc6 and the latest git.
-
--- 
-Sitsofe | http://sucs.org/~sits/
+Mikulas
