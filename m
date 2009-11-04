@@ -1,106 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbZKDReu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932285AbZKDRe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932260AbZKDReu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:34:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932244AbZKDRer
+	id S932285AbZKDRe6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 12:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932272AbZKDRez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:34:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:41096 "EHLO
+	Wed, 4 Nov 2009 12:34:55 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:5665 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932163AbZKDReo (ORCPT
+	with ESMTP id S932244AbZKDRev (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:34:44 -0500
+	Wed, 4 Nov 2009 12:34:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Xqb0o/ZNQoP6fbU0iEsJA09/mixO6KLnRX+Cx7duZbGkuv7j83xmEEZY1N7HESUwXX
-         x2z93/aETaL6pzXqTaUCsarV9SJZ7gEXadN1pram1QzMrdrKrJA1aHvgByJ4UGyMCkiP
-         D43jeOZy7Dwz1xtBI/+pnHDyZuJQVDriCPGEM=
+        b=rA3UyKQDWk8m08bpghC+DA0Cu+jSws9oTyvQcfzPtBLtsrXu3nKJ1i/LwmpPumB1qg
+         oS2+RS2Ah8q1uM6yJRUJvxUXoiBxmhJH2aIKYZX1qmVLC2KV/DNrmrXRGJFiCRYYfO0d
+         KChE9duH0QgN7q+u8yMQyvfdTWmq+bN7EInmY=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-wireless@vger.kernel.org
-Cc: Gertjan van Wingerde <gwingerde@gmail.com>,
+Cc: Ivo van Doorn <ivdoorn@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
+       Gertjan van Wingerde <gwingerde@gmail.com>,
+       linux-kernel@vger.kernel.org,
        "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 04 Nov 2009 18:34:25 +0100
-Message-Id: <20091104173425.28463.74288.sendpatchset@localhost.localdomain>
+Date: Wed, 04 Nov 2009 18:34:32 +0100
+Message-Id: <20091104173432.28463.51210.sendpatchset@localhost.localdomain>
 In-Reply-To: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
 References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
-Subject: [PATCH 20/41] rt2800pci: add rt2800_rf_[read,write]() wrappers
+Subject: [PATCH 21/41] rt2800usb: add rt2800_mcu_request() wrapper
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] rt2800pci: add rt2800_rf_[read,write]() wrappers
+Subject: [PATCH] rt2800usb: add rt2800_mcu_request() wrapper
 
 Part of preparations for later code unification.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/net/wireless/rt2x00/rt2800pci.c |   32 +++++++++++++++++++-------------
- 1 file changed, 19 insertions(+), 13 deletions(-)
+ drivers/net/wireless/rt2x00/rt2800usb.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
-Index: b/drivers/net/wireless/rt2x00/rt2800pci.c
+Index: b/drivers/net/wireless/rt2x00/rt2800usb.c
 ===================================================================
---- a/drivers/net/wireless/rt2x00/rt2800pci.c
-+++ b/drivers/net/wireless/rt2x00/rt2800pci.c
-@@ -236,6 +236,12 @@ static void rt2800pci_rf_write(struct rt
+--- a/drivers/net/wireless/rt2x00/rt2800usb.c
++++ b/drivers/net/wireless/rt2x00/rt2800usb.c
+@@ -259,6 +259,13 @@ static void rt2800usb_mcu_request(struct
  	mutex_unlock(&rt2x00dev->csr_mutex);
  }
  
-+static inline void rt2800_rf_write(struct rt2x00_dev *rt2x00dev,
-+				   const unsigned int word, const u32 value)
++static inline void rt2800_mcu_request(struct rt2x00_dev *rt2x00dev,
++				      const u8 command, const u8 token,
++				      const u8 arg0, const u8 arg1)
 +{
-+	rt2800pci_rf_write(rt2x00dev, word, value);
++	rt2800usb_mcu_request(rt2x00dev, command, token, arg0, arg1);
 +}
 +
- static void rt2800pci_mcu_request(struct rt2x00_dev *rt2x00dev,
- 				  const u8 command, const u8 token,
- 				  const u8 arg0, const u8 arg1)
-@@ -428,7 +434,7 @@ static const struct rt2x00debug rt2800pc
- 	},
- 	.rf	= {
- 		.read		= rt2x00_rf_read,
--		.write		= rt2800pci_rf_write,
-+		.write		= rt2800_rf_write,
- 		.word_base	= RF_BASE,
- 		.word_size	= sizeof(u32),
- 		.word_count	= RF_SIZE / sizeof(u32),
-@@ -897,24 +903,24 @@ static void rt2800pci_config_channel_rt2
+ #ifdef CONFIG_RT2X00_LIB_DEBUGFS
+ static const struct rt2x00debug rt2800usb_rt2x00debug = {
+ 	.owner	= THIS_MODULE,
+@@ -319,10 +326,10 @@ static void rt2800usb_brightness_set(str
+ 				   EEPROM_FREQ_LED_MODE);
  
- 	rt2x00_set_field32(&rf->rf4, RF4_HT40, conf_is_ht40(conf));
+ 	if (led->type == LED_TYPE_RADIO) {
+-		rt2800usb_mcu_request(led->rt2x00dev, MCU_LED, 0xff, ledmode,
++		rt2800_mcu_request(led->rt2x00dev, MCU_LED, 0xff, ledmode,
+ 				      enabled ? 0x20 : 0);
+ 	} else if (led->type == LED_TYPE_ASSOC) {
+-		rt2800usb_mcu_request(led->rt2x00dev, MCU_LED, 0xff, ledmode,
++		rt2800_mcu_request(led->rt2x00dev, MCU_LED, 0xff, ledmode,
+ 				      enabled ? (bg_mode ? 0x60 : 0xa0) : 0x20);
+ 	} else if (led->type == LED_TYPE_QUALITY) {
+ 		/*
+@@ -333,7 +340,7 @@ static void rt2800usb_brightness_set(str
+ 		 * work with bitshifting:
+ 		 *	(1 << level) - 1
+ 		 */
+-		rt2800usb_mcu_request(led->rt2x00dev, MCU_LED_STRENGTH, 0xff,
++		rt2800_mcu_request(led->rt2x00dev, MCU_LED_STRENGTH, 0xff,
+ 				      (1 << brightness / (LED_FULL / 6)) - 1,
+ 				      polarity);
+ 	}
+@@ -1243,13 +1250,13 @@ static int rt2800usb_load_firmware(struc
+ 	/*
+ 	 * Send signal to firmware during boot time.
+ 	 */
+-	rt2800usb_mcu_request(rt2x00dev, MCU_BOOT_SIGNAL, 0xff, 0, 0);
++	rt2800_mcu_request(rt2x00dev, MCU_BOOT_SIGNAL, 0xff, 0, 0);
  
--	rt2800pci_rf_write(rt2x00dev, 1, rf->rf1);
--	rt2800pci_rf_write(rt2x00dev, 2, rf->rf2);
--	rt2800pci_rf_write(rt2x00dev, 3, rf->rf3 & ~0x00000004);
--	rt2800pci_rf_write(rt2x00dev, 4, rf->rf4);
-+	rt2800_rf_write(rt2x00dev, 1, rf->rf1);
-+	rt2800_rf_write(rt2x00dev, 2, rf->rf2);
-+	rt2800_rf_write(rt2x00dev, 3, rf->rf3 & ~0x00000004);
-+	rt2800_rf_write(rt2x00dev, 4, rf->rf4);
+ 	if ((chipset == 0x3070) ||
+ 	    (chipset == 0x3071) ||
+ 	    (chipset == 0x3572)) {
+ 		udelay(200);
+-		rt2800usb_mcu_request(rt2x00dev, MCU_CURRENT, 0, 0, 0);
++		rt2800_mcu_request(rt2x00dev, MCU_CURRENT, 0, 0, 0);
+ 		udelay(10);
+ 	}
  
- 	udelay(200);
+@@ -1885,15 +1892,15 @@ static int rt2800usb_enable_radio(struct
+ 	 * Initialize LED control
+ 	 */
+ 	rt2x00_eeprom_read(rt2x00dev, EEPROM_LED1, &word);
+-	rt2800usb_mcu_request(rt2x00dev, MCU_LED_1, 0xff,
++	rt2800_mcu_request(rt2x00dev, MCU_LED_1, 0xff,
+ 			      word & 0xff, (word >> 8) & 0xff);
  
--	rt2800pci_rf_write(rt2x00dev, 1, rf->rf1);
--	rt2800pci_rf_write(rt2x00dev, 2, rf->rf2);
--	rt2800pci_rf_write(rt2x00dev, 3, rf->rf3 | 0x00000004);
--	rt2800pci_rf_write(rt2x00dev, 4, rf->rf4);
-+	rt2800_rf_write(rt2x00dev, 1, rf->rf1);
-+	rt2800_rf_write(rt2x00dev, 2, rf->rf2);
-+	rt2800_rf_write(rt2x00dev, 3, rf->rf3 | 0x00000004);
-+	rt2800_rf_write(rt2x00dev, 4, rf->rf4);
+ 	rt2x00_eeprom_read(rt2x00dev, EEPROM_LED2, &word);
+-	rt2800usb_mcu_request(rt2x00dev, MCU_LED_2, 0xff,
++	rt2800_mcu_request(rt2x00dev, MCU_LED_2, 0xff,
+ 			      word & 0xff, (word >> 8) & 0xff);
  
- 	udelay(200);
+ 	rt2x00_eeprom_read(rt2x00dev, EEPROM_LED3, &word);
+-	rt2800usb_mcu_request(rt2x00dev, MCU_LED_3, 0xff,
++	rt2800_mcu_request(rt2x00dev, MCU_LED_3, 0xff,
+ 			      word & 0xff, (word >> 8) & 0xff);
  
--	rt2800pci_rf_write(rt2x00dev, 1, rf->rf1);
--	rt2800pci_rf_write(rt2x00dev, 2, rf->rf2);
--	rt2800pci_rf_write(rt2x00dev, 3, rf->rf3 & ~0x00000004);
--	rt2800pci_rf_write(rt2x00dev, 4, rf->rf4);
-+	rt2800_rf_write(rt2x00dev, 1, rf->rf1);
-+	rt2800_rf_write(rt2x00dev, 2, rf->rf2);
-+	rt2800_rf_write(rt2x00dev, 3, rf->rf3 & ~0x00000004);
-+	rt2800_rf_write(rt2x00dev, 4, rf->rf4);
+ 	return 0;
+@@ -1922,9 +1929,9 @@ static int rt2800usb_set_state(struct rt
+ 			       enum dev_state state)
+ {
+ 	if (state == STATE_AWAKE)
+-		rt2800usb_mcu_request(rt2x00dev, MCU_WAKEUP, 0xff, 0, 0);
++		rt2800_mcu_request(rt2x00dev, MCU_WAKEUP, 0xff, 0, 0);
+ 	else
+-		rt2800usb_mcu_request(rt2x00dev, MCU_SLEEP, 0xff, 0, 2);
++		rt2800_mcu_request(rt2x00dev, MCU_SLEEP, 0xff, 0, 2);
+ 
+ 	return 0;
  }
- 
- static void rt2800pci_config_channel_rt3x(struct rt2x00_dev *rt2x00dev,
