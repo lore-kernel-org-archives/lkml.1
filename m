@@ -1,74 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbZKDCDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZKDCDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbZKDCDE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 21:03:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZKDCDD
+	id S1754025AbZKDCDK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 21:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZKDCDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 21:03:03 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:37004 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbZKDCDB (ORCPT
+	Tue, 3 Nov 2009 21:03:09 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56215 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753955AbZKDCDF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 21:03:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DLVGk9V8v3WZaIuXHLTP22RWqb1bgZpxcTiwbMKDmxLgWMHOLqURUOTsKGFEuXzZyw
-         eiAKih812pvf/aEQe4ng55ekmCNsRmxcB7IvCuSeCCKZAWYIP6diP9fzlD7fjxmr8rhi
-         2zCAsvKi88MC2WYNNa34XcqwGJ5ajFBFM7Bo0=
-Date: Wed, 4 Nov 2009 03:03:01 +0100
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
-	failures V2
-Message-ID: <20091104020301.GA7037@bizet.domek.prywatny>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091023165810.GA4588@bizet.domek.prywatny> <20091023211239.GA6185@bizet.domek.prywatny> <9ec2d7290910240646p75b93c68v6ea1648d628a9660@mail.gmail.com> <20091028114208.GA14476@bizet.domek.prywatny> <20091028115926.GW8900@csn.ul.ie> <20091030142350.GA9343@bizet.domek.prywatny> <20091102203034.GC22046@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102203034.GC22046@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Nov 2009 21:03:05 -0500
+Subject: Re: Ftrace for Microblaze - notrace
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: monstr@monstr.eu
+Cc: Steven Rostedt <srostedt@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org,
+       John Williams <john.williams@petalogix.com>
+In-Reply-To: <4AF0725C.1050106@monstr.eu>
+References: <4AF030EE.7050609@monstr.eu>
+	 <1257266154.31359.14.camel@localhost.localdomain>
+	 <4AF05E0C.5090305@monstr.eu>
+	 <1257269575.26028.3355.camel@gandalf.stny.rr.com>
+	 <4AF0725C.1050106@monstr.eu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 03 Nov 2009 21:03:06 -0500
+Message-Id: <1257300186.26028.3817.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 08:30:34PM +0000, Mel Gorman wrote:
-> Does applying the following on top make any difference?
+On Tue, 2009-11-03 at 19:11 +0100, Michal Simek wrote:
+
+> > cputable.o, prom_init.o, btext.o and prom.o that are all very sensitive
+> > with boot up code. Simply calling mcount here can crash the system. But
+> > this prevents boot up. It does not lock up the kernel when we enable
+> > function tracing.
+> > 
+> > ftrace.o - again, this should be obvious.
+> > 
+> > time.o - this is the same reason we don't trace tsc and rtc in x86.
 > 
-> ==== CUT HERE ====
-> PM: Shrink memory before suspend
+> ok In general - all timing functions and function which are related with 
+> startup code - called only once before turning on irqs - there are a lot 
+> of functions. I understand that make no sense to trace that files. And 
+> plus all debugging functions.  And function which uses locks.
+> Anything else?
 
-No, this patch didn't change anything either.
+Actually, you only need to "notrace" the start up code that can crash
+the box if they are traced. The powerpc code was so fragile there that
+just calling mcount caused a panic.
 
-IIRC I get failures while free(1) shows as much as 20MB free RAM
-(ie. without buffers/caches).  Additionaly nr_free_pages (from
-/proc/vmstat) stays at about 800-1000 under heavy memory pressure
-(gitk on full linux repository).
+> 
+> 
+> > 
+> >> Can I use any special debug features? I mean I look at kernel.h and 
+> >> there are some trace_printk function - but they don't work for me. Is it 
+> >> possible to use them or not?
+> > 
+> > Should work. That's not arch dependent. But you need to have some ftrace
+> > enabled. Enable CONFIG_CONTEXT_SWITCH_TRACER, and trace_printk should
+> > work. That writes to the ring buffer and you can see the output
+> > in /debug/tracing/trace.
+> 
+> It could be nice features but in case that you have command line and you 
+> can read that trace debug output. I mean any printk messages - which not 
+> contain any trace facility - just pure printk to console. Are that 
+> messages written to any place which could be read from debuger? Like log 
+> buffer? Is there any place for them?
+
+The are only written to the ring buffer. You may be able to read that
+too, but it will take a bit of work.
+
+> 
+> The second things is that I haven't implemented save_stack_trace 
+> function - it is just while(1) loop. My kernel not jumps to this 
+> function that's why I am not interested to implement it. Am I right that 
+>   ftrace code don't use it? Or the standard behavior is that ftrace code 
+> use this function and really care about. Does your kernel use that function?
+
+We use it for saving stack traces. The ftrace stack tracer also uses it.
+But if it is a nop, the other parts of ftrace should still work.
+
+> 
+>  From my test I don't understand MCOUNT_INSN_SIZE - and which function 
+> doesn't care about. There is this line of pseudocode in your doc
+> (unsigned long selfpc = <return address> - MCOUNT_INSN_SIZE;) but what 
+> the reason is to do that. If I understand correct selfpc and frompc just 
+> give addresses which functions called that mcount and has impact to log.
+> I mean that if that address is not proper begin of function is found 
+> (not sure if the code do it or not) function name (and function) which 
+> contain that address. Or is there any special reason why to substract 
+> that MCOUNT_INSN_SIZE - for timing or anything like that?
+
+The passed in address to mcount is really the return address and not the
+caller to mcount. We want the actual address to the mcount caller. To
+get that we must subtract size of the call to mcount from the address
+passed in.
 
 
---- babbling follows ---
+> 
+> I simple just not find any reason for it. And I believe that don't have 
+> connection with my problem.
 
-Hmm, I wonder if it's really timing issue then wouldn't be the case
-that lowering swappiness sysctl would make problem more visible?
-I've vm.swappiness=15, would testing with higher value make any sense?
+The code must account for it. If you have implemented dynamic ftrace,
+then you need to do that. Otherwise we are updating the wrong places in
+text.
 
-Thanks.
+-- Steve
+
+
