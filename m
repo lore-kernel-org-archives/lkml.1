@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbZKDMCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbZKDMEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbZKDMCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 07:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbZKDMCg
+	id S1755695AbZKDMEL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 07:04:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbZKDMEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 07:02:36 -0500
-Received: from cantor.suse.de ([195.135.220.2]:39490 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755557AbZKDMCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 07:02:36 -0500
-Date: Wed, 4 Nov 2009 13:02:40 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: =?ISO-8859-15?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Cc: linux list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] trivial: fix assorted typos all over the place
-In-Reply-To: <b8bf37780911020949t4bed5cb6g92230b59efc7923b@mail.gmail.com>
-Message-ID: <alpine.LSU.2.00.0911041300360.9988@wotan.suse.de>
-References: <b8bf37780911020949t4bed5cb6g92230b59efc7923b@mail.gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Wed, 4 Nov 2009 07:04:10 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:37104 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755615AbZKDMEI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 07:04:08 -0500
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: [PATCH 14/13] sysfs: sysfs_setattr remove unnecessary permission check.
+References: <m13a4vbz8r.fsf@fess.ebiederm.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 04 Nov 2009 04:04:02 -0800
+In-Reply-To: <m13a4vbz8r.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Tue\, 03 Nov 2009 03\:53\:56 -0800")
+Message-ID: <m1ljim1op9.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-7152138-1257336160=:9988"
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---168427776-7152138-1257336160=:9988
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+inode_change_ok already clears the SGID bit when necessary so there is
+no reason for sysfs_setattr to carry code to do the same, and it is
+good to kill the extra copy because when I moved the code, I goofed
+and in certain corner cases the code will look at the wrong gid.
 
-On Mon, 2 Nov 2009, André Goddard Rosa wrote:
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+---
+ fs/sysfs/inode.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-> This patch fixes assorted typos all over the place.
-> 
-> That is "success", "unknown", "through", "performance", "[re|un]mapping"
-> , "access", "default", "reasonable", "[con]currently", "temperature"
-> , "channel", "[un]used", "application", "example","hierarchy" and others.
-
-One more request though (I think I'll explicitly mention this in 
-SubmittingPatches so that it's there for future submitters) -- could you 
-please separate the drivers/staging bits out of it, and send them 
-separately to Greg?
-
-Staging drivers are area where a lot of things happen every day, so it's 
-easy to get a conflict there, and therefore it's better to handle these 
-kinds of changes directly in Greg's tree.
-
-Thanks,
-
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 72e2e99..e2595a7 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -120,10 +120,6 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+ 		return error;
+ 
+ 	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
+-	if (iattr->ia_valid & ATTR_MODE) {
+-		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
+-			iattr->ia_mode &= ~S_ISGID;
+-	}
+ 
+ 	error = inode_setattr(inode, iattr);
+ 	if (error)
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
---168427776-7152138-1257336160=:9988--
+1.6.5.2.143.g8cc62
+
