@@ -1,82 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932475AbZKDRgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932490AbZKDRgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932475AbZKDRgw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:36:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932376AbZKDRgo
+	id S932490AbZKDRgy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 12:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932470AbZKDRgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:36:44 -0500
+	Wed, 4 Nov 2009 12:36:52 -0500
 Received: from fg-out-1718.google.com ([72.14.220.156]:57630 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932432AbZKDRgg (ORCPT
+	with ESMTP id S932399AbZKDRgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:36:36 -0500
+	Wed, 4 Nov 2009 12:36:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=M0fX0WLCR9J3I/UEGkwwSi8JRybE4AxVPr1bEC5JwD40ylsV6cC4jz4Gb0HWcNYwPB
-         EFdYWLyqq7I/aUaA002OfUt7geIV7m//Wmaq4mtic4AAZD9qN856oU70vGWn7CDSq/od
-         NgtmQBZSwbVgortpVWXfyjYtc7i5ZXo87Cw2I=
+        b=KqOlYNmHEzziZiJo/CGbndznHGuLFrxSg2kTk05cJqpFVvMgbCuzKebd/x8mNfZ4Jx
+         0M1qRlEl2AisWts3LPLNjs1LU94wHH2u1Iz1HTFvv96+2o7P7Lh2MM0x9SWkp5ZuWQia
+         1hkVEw/vjXMOv/wTU4qz5L4Z9Vsuihnfzhc28=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-wireless@vger.kernel.org
-Cc: Ivo van Doorn <ivdoorn@gmail.com>,
+Cc: Gertjan van Wingerde <gwingerde@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Gertjan van Wingerde <gwingerde@gmail.com>,
-       linux-kernel@vger.kernel.org,
+       Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
        "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 04 Nov 2009 18:36:17 +0100
-Message-Id: <20091104173617.28463.6733.sendpatchset@localhost.localdomain>
+Date: Wed, 04 Nov 2009 18:36:24 +0100
+Message-Id: <20091104173624.28463.78147.sendpatchset@localhost.localdomain>
 In-Reply-To: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
 References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
-Subject: [PATCH 35/41] rt2800: prepare for rt2800lib addition
+Subject: [PATCH 36/41] rt2800: add rt2800lib (part one)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] rt2800: prepare for rt2800lib addition
+Subject: [PATCH] rt2800: add rt2800lib (part one)
 
-Part of preparations for later code unification.
+Code unification.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/net/wireless/rt2x00/rt2800pci.c |  103 +++++++++++++-----------
- drivers/net/wireless/rt2x00/rt2800usb.c |  134 +++++++++++++++++---------------
- 2 files changed, 133 insertions(+), 104 deletions(-)
+ drivers/net/wireless/rt2x00/Kconfig     |    5 
+ drivers/net/wireless/rt2x00/Makefile    |    1 
+ drivers/net/wireless/rt2x00/rt2800lib.c |  244 ++++++++++++++++++++++++++++++++
+ drivers/net/wireless/rt2x00/rt2800lib.h |   14 +
+ drivers/net/wireless/rt2x00/rt2800pci.c |  236 ------------------------------
+ drivers/net/wireless/rt2x00/rt2800usb.c |  223 -----------------------------
+ 6 files changed, 264 insertions(+), 459 deletions(-)
 
-Index: b/drivers/net/wireless/rt2x00/rt2800pci.c
+Index: b/drivers/net/wireless/rt2x00/Kconfig
 ===================================================================
---- a/drivers/net/wireless/rt2x00/rt2800pci.c
-+++ b/drivers/net/wireless/rt2x00/rt2800pci.c
-@@ -97,7 +97,8 @@ static void rt2800pci_bbp_write(struct r
- 		rt2x00_set_field32(&reg, BBP_CSR_CFG_REGNUM, word);
- 		rt2x00_set_field32(&reg, BBP_CSR_CFG_BUSY, 1);
- 		rt2x00_set_field32(&reg, BBP_CSR_CFG_READ_CONTROL, 0);
--		rt2x00_set_field32(&reg, BBP_CSR_CFG_BBP_RW_MODE, 1);
+--- a/drivers/net/wireless/rt2x00/Kconfig
++++ b/drivers/net/wireless/rt2x00/Kconfig
+@@ -66,6 +66,7 @@ config RT2800PCI_SOC
+ config RT2800PCI
+ 	tristate "Ralink rt2800 (PCI/PCMCIA) support (VERY EXPERIMENTAL)"
+ 	depends on (RT2800PCI_PCI || RT2800PCI_SOC) && EXPERIMENTAL
++	select RT2800_LIB
+ 	select RT2X00_LIB_PCI if RT2800PCI_PCI
+ 	select RT2X00_LIB_SOC if RT2800PCI_SOC
+ 	select RT2X00_LIB_HT
+@@ -109,6 +110,7 @@ config RT73USB
+ config RT2800USB
+ 	tristate "Ralink rt2800 (USB) support (EXPERIMENTAL)"
+ 	depends on USB && EXPERIMENTAL
++	select RT2800_LIB
+ 	select RT2X00_LIB_USB
+ 	select RT2X00_LIB_HT
+ 	select RT2X00_LIB_FIRMWARE
+@@ -124,6 +126,9 @@ config RT2800USB
+ 
+ 	  When compiled as a module, this driver will be called "rt2800usb.ko".
+ 
++config RT2800_LIB
++	tristate
++
+ config RT2X00_LIB_PCI
+ 	tristate
+ 	select RT2X00_LIB
+Index: b/drivers/net/wireless/rt2x00/Makefile
+===================================================================
+--- a/drivers/net/wireless/rt2x00/Makefile
++++ b/drivers/net/wireless/rt2x00/Makefile
+@@ -13,6 +13,7 @@ obj-$(CONFIG_RT2X00_LIB)		+= rt2x00lib.o
+ obj-$(CONFIG_RT2X00_LIB_PCI)		+= rt2x00pci.o
+ obj-$(CONFIG_RT2X00_LIB_SOC)		+= rt2x00soc.o
+ obj-$(CONFIG_RT2X00_LIB_USB)		+= rt2x00usb.o
++obj-$(CONFIG_RT2800_LIB)		+= rt2800lib.o
+ obj-$(CONFIG_RT2400PCI)			+= rt2400pci.o
+ obj-$(CONFIG_RT2500PCI)			+= rt2500pci.o
+ obj-$(CONFIG_RT61PCI)			+= rt61pci.o
+Index: b/drivers/net/wireless/rt2x00/rt2800lib.c
+===================================================================
+--- /dev/null
++++ b/drivers/net/wireless/rt2x00/rt2800lib.c
+@@ -0,0 +1,244 @@
++/*
++	Copyright (C) 2009 Bartlomiej Zolnierkiewicz
++
++	Based on the original rt2800pci.c and rt2800usb.c:
++
++	  Copyright (C) 2004 - 2009 rt2x00 SourceForge Project
++	  <http://rt2x00.serialmonkey.com>
++
++	This program is free software; you can redistribute it and/or modify
++	it under the terms of the GNU General Public License as published by
++	the Free Software Foundation; either version 2 of the License, or
++	(at your option) any later version.
++
++	This program is distributed in the hope that it will be useful,
++	but WITHOUT ANY WARRANTY; without even the implied warranty of
++	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++	GNU General Public License for more details.
++
++	You should have received a copy of the GNU General Public License
++	along with this program; if not, write to the
++	Free Software Foundation, Inc.,
++	59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++	Module: rt2800lib
++	Abstract: rt2800 generic device routines.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++
++#include "rt2x00.h"
++#include "rt2800lib.h"
++#include "rt2800.h"
++
++MODULE_AUTHOR("Bartlomiej Zolnierkiewicz");
++MODULE_DESCRIPTION("rt2800 library");
++MODULE_LICENSE("GPL");
++
++/*
++ * Register access.
++ * All access to the CSR registers will go through the methods
++ * rt2800_register_read and rt2800_register_write.
++ * BBP and RF register require indirect register access,
++ * and use the CSR registers BBPCSR and RFCSR to achieve this.
++ * These indirect registers work with busy bits,
++ * and we will try maximal REGISTER_BUSY_COUNT times to access
++ * the register while taking a REGISTER_BUSY_DELAY us delay
++ * between each attampt. When the busy bit is still set at that time,
++ * the access attempt is considered to have failed,
++ * and we will print an error.
++ * The _lock versions must be used if you already hold the csr_mutex
++ */
++#define WAIT_FOR_BBP(__dev, __reg) \
++	rt2800_regbusy_read((__dev), BBP_CSR_CFG, BBP_CSR_CFG_BUSY, (__reg))
++#define WAIT_FOR_RFCSR(__dev, __reg) \
++	rt2800_regbusy_read((__dev), RF_CSR_CFG, RF_CSR_CFG_BUSY, (__reg))
++#define WAIT_FOR_RF(__dev, __reg) \
++	rt2800_regbusy_read((__dev), RF_CSR_CFG0, RF_CSR_CFG0_BUSY, (__reg))
++#define WAIT_FOR_MCU(__dev, __reg) \
++	rt2800_regbusy_read((__dev), H2M_MAILBOX_CSR, \
++			    H2M_MAILBOX_CSR_OWNER, (__reg))
++
++void rt2800_bbp_write(struct rt2x00_dev *rt2x00dev,
++		      const unsigned int word, const u8 value)
++{
++	u32 reg;
++
++	mutex_lock(&rt2x00dev->csr_mutex);
++
++	/*
++	 * Wait until the BBP becomes available, afterwards we
++	 * can safely write the new data into the register.
++	 */
++	if (WAIT_FOR_BBP(rt2x00dev, &reg)) {
++		reg = 0;
++		rt2x00_set_field32(&reg, BBP_CSR_CFG_VALUE, value);
++		rt2x00_set_field32(&reg, BBP_CSR_CFG_REGNUM, word);
++		rt2x00_set_field32(&reg, BBP_CSR_CFG_BUSY, 1);
++		rt2x00_set_field32(&reg, BBP_CSR_CFG_READ_CONTROL, 0);
 +		if (rt2x00_intf_is_pci(rt2x00dev))
 +			rt2x00_set_field32(&reg, BBP_CSR_CFG_BBP_RW_MODE, 1);
- 
- 		rt2800_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
- 	}
-@@ -125,7 +126,8 @@ static void rt2800pci_bbp_read(struct rt
- 		rt2x00_set_field32(&reg, BBP_CSR_CFG_REGNUM, word);
- 		rt2x00_set_field32(&reg, BBP_CSR_CFG_BUSY, 1);
- 		rt2x00_set_field32(&reg, BBP_CSR_CFG_READ_CONTROL, 1);
--		rt2x00_set_field32(&reg, BBP_CSR_CFG_BBP_RW_MODE, 1);
++
++		rt2800_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
++	}
++
++	mutex_unlock(&rt2x00dev->csr_mutex);
++}
++EXPORT_SYMBOL_GPL(rt2800_bbp_write);
++
++void rt2800_bbp_read(struct rt2x00_dev *rt2x00dev,
++		     const unsigned int word, u8 *value)
++{
++	u32 reg;
++
++	mutex_lock(&rt2x00dev->csr_mutex);
++
++	/*
++	 * Wait until the BBP becomes available, afterwards we
++	 * can safely write the read request into the register.
++	 * After the data has been written, we wait until hardware
++	 * returns the correct value, if at any time the register
++	 * doesn't become available in time, reg will be 0xffffffff
++	 * which means we return 0xff to the caller.
++	 */
++	if (WAIT_FOR_BBP(rt2x00dev, &reg)) {
++		reg = 0;
++		rt2x00_set_field32(&reg, BBP_CSR_CFG_REGNUM, word);
++		rt2x00_set_field32(&reg, BBP_CSR_CFG_BUSY, 1);
++		rt2x00_set_field32(&reg, BBP_CSR_CFG_READ_CONTROL, 1);
 +		if (rt2x00_intf_is_pci(rt2x00dev))
 +			rt2x00_set_field32(&reg, BBP_CSR_CFG_BBP_RW_MODE, 1);
- 
- 		rt2800_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
- 
-@@ -253,12 +255,14 @@ static void rt2800pci_mcu_request(struct
- {
- 	u32 reg;
- 
--	/*
--	 * RT2880 and RT3052 don't support MCU requests.
--	 */
--	if (rt2x00_rt(&rt2x00dev->chip, RT2880) ||
--	    rt2x00_rt(&rt2x00dev->chip, RT3052))
--		return;
++
++		rt2800_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
++
++		WAIT_FOR_BBP(rt2x00dev, &reg);
++	}
++
++	*value = rt2x00_get_field32(reg, BBP_CSR_CFG_VALUE);
++
++	mutex_unlock(&rt2x00dev->csr_mutex);
++}
++EXPORT_SYMBOL_GPL(rt2800_bbp_read);
++
++void rt2800_rfcsr_write(struct rt2x00_dev *rt2x00dev,
++			const unsigned int word, const u8 value)
++{
++	u32 reg;
++
++	mutex_lock(&rt2x00dev->csr_mutex);
++
++	/*
++	 * Wait until the RFCSR becomes available, afterwards we
++	 * can safely write the new data into the register.
++	 */
++	if (WAIT_FOR_RFCSR(rt2x00dev, &reg)) {
++		reg = 0;
++		rt2x00_set_field32(&reg, RF_CSR_CFG_DATA, value);
++		rt2x00_set_field32(&reg, RF_CSR_CFG_REGNUM, word);
++		rt2x00_set_field32(&reg, RF_CSR_CFG_WRITE, 1);
++		rt2x00_set_field32(&reg, RF_CSR_CFG_BUSY, 1);
++
++		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG, reg);
++	}
++
++	mutex_unlock(&rt2x00dev->csr_mutex);
++}
++EXPORT_SYMBOL_GPL(rt2800_rfcsr_write);
++
++void rt2800_rfcsr_read(struct rt2x00_dev *rt2x00dev,
++		       const unsigned int word, u8 *value)
++{
++	u32 reg;
++
++	mutex_lock(&rt2x00dev->csr_mutex);
++
++	/*
++	 * Wait until the RFCSR becomes available, afterwards we
++	 * can safely write the read request into the register.
++	 * After the data has been written, we wait until hardware
++	 * returns the correct value, if at any time the register
++	 * doesn't become available in time, reg will be 0xffffffff
++	 * which means we return 0xff to the caller.
++	 */
++	if (WAIT_FOR_RFCSR(rt2x00dev, &reg)) {
++		reg = 0;
++		rt2x00_set_field32(&reg, RF_CSR_CFG_REGNUM, word);
++		rt2x00_set_field32(&reg, RF_CSR_CFG_WRITE, 0);
++		rt2x00_set_field32(&reg, RF_CSR_CFG_BUSY, 1);
++
++		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG, reg);
++
++		WAIT_FOR_RFCSR(rt2x00dev, &reg);
++	}
++
++	*value = rt2x00_get_field32(reg, RF_CSR_CFG_DATA);
++
++	mutex_unlock(&rt2x00dev->csr_mutex);
++}
++EXPORT_SYMBOL_GPL(rt2800_rfcsr_read);
++
++void rt2800_rf_write(struct rt2x00_dev *rt2x00dev,
++		     const unsigned int word, const u32 value)
++{
++	u32 reg;
++
++	mutex_lock(&rt2x00dev->csr_mutex);
++
++	/*
++	 * Wait until the RF becomes available, afterwards we
++	 * can safely write the new data into the register.
++	 */
++	if (WAIT_FOR_RF(rt2x00dev, &reg)) {
++		reg = 0;
++		rt2x00_set_field32(&reg, RF_CSR_CFG0_REG_VALUE_BW, value);
++		rt2x00_set_field32(&reg, RF_CSR_CFG0_STANDBYMODE, 0);
++		rt2x00_set_field32(&reg, RF_CSR_CFG0_SEL, 0);
++		rt2x00_set_field32(&reg, RF_CSR_CFG0_BUSY, 1);
++
++		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG0, reg);
++		rt2x00_rf_write(rt2x00dev, word, value);
++	}
++
++	mutex_unlock(&rt2x00dev->csr_mutex);
++}
++EXPORT_SYMBOL_GPL(rt2800_rf_write);
++
++void rt2800_mcu_request(struct rt2x00_dev *rt2x00dev,
++			const u8 command, const u8 token,
++			const u8 arg0, const u8 arg1)
++{
++	u32 reg;
++
 +	if (rt2x00_intf_is_pci(rt2x00dev)) {
 +		/*
 +		* RT2880 and RT3052 don't support MCU requests.
@@ -85,344 +315,529 @@ Index: b/drivers/net/wireless/rt2x00/rt2800pci.c
 +		    rt2x00_rt(&rt2x00dev->chip, RT3052))
 +			return;
 +	}
- 
- 	mutex_lock(&rt2x00dev->csr_mutex);
- 
-@@ -814,7 +818,8 @@ static void rt2800pci_config_ant(struct 
- 	switch ((int)ant->tx) {
- 	case 1:
- 		rt2x00_set_field8(&r1, BBP1_TX_ANTENNA, 0);
--		rt2x00_set_field8(&r3, BBP3_RX_ANTENNA, 0);
-+		if (rt2x00_intf_is_pci(rt2x00dev))
-+			rt2x00_set_field8(&r3, BBP3_RX_ANTENNA, 0);
- 		break;
- 	case 2:
- 		rt2x00_set_field8(&r1, BBP1_TX_ANTENNA, 2);
-@@ -1480,7 +1485,8 @@ static int rt2800pci_init_registers(stru
- 	u32 reg;
- 	unsigned int i;
- 
--	rt2800_register_write(rt2x00dev, PWR_PIN_CFG, 0x00000003);
-+	if (rt2x00_intf_is_pci(rt2x00dev))
-+		rt2800_register_write(rt2x00dev, PWR_PIN_CFG, 0x00000003);
- 
- 	rt2800_register_read(rt2x00dev, MAC_SYS_CTRL, &reg);
- 	rt2x00_set_field32(&reg, MAC_SYS_CTRL_RESET_CSR, 1);
-@@ -1803,7 +1809,8 @@ static int rt2800pci_init_bbp(struct rt2
- 	if (rt2x00_rev(&rt2x00dev->chip) > RT2860D_VERSION)
- 		rt2800_bbp_write(rt2x00dev, 84, 0x19);
- 
--	if (rt2x00_rt(&rt2x00dev->chip, RT3052)) {
-+	if (rt2x00_intf_is_pci(rt2x00dev) &&
-+	    rt2x00_rt(&rt2x00dev->chip, RT3052)) {
- 		rt2800_bbp_write(rt2x00dev, 31, 0x08);
- 		rt2800_bbp_write(rt2x00dev, 78, 0x0e);
- 		rt2800_bbp_write(rt2x00dev, 80, 0x08);
-@@ -1887,10 +1894,12 @@ static int rt2800pci_init_rfcsr(struct r
- 	u8 rfcsr;
- 	u8 bbp;
- 
--	if (!rt2x00_rf(&rt2x00dev->chip, RF3020) &&
--	    !rt2x00_rf(&rt2x00dev->chip, RF3021) &&
--	    !rt2x00_rf(&rt2x00dev->chip, RF3022))
--		return 0;
-+	if (rt2x00_intf_is_pci(rt2x00dev)) {
-+		if (!rt2x00_rf(&rt2x00dev->chip, RF3020) &&
-+		    !rt2x00_rf(&rt2x00dev->chip, RF3021) &&
-+		    !rt2x00_rf(&rt2x00dev->chip, RF3022))
-+			return 0;
-+	}
- 
- 	/*
- 	 * Init RF calibration.
-@@ -1902,36 +1911,38 @@ static int rt2800pci_init_rfcsr(struct r
- 	rt2x00_set_field8(&rfcsr, RFCSR30_RF_CALIBRATION, 0);
- 	rt2800_rfcsr_write(rt2x00dev, 30, rfcsr);
- 
--	rt2800_rfcsr_write(rt2x00dev, 0, 0x50);
--	rt2800_rfcsr_write(rt2x00dev, 1, 0x01);
--	rt2800_rfcsr_write(rt2x00dev, 2, 0xf7);
--	rt2800_rfcsr_write(rt2x00dev, 3, 0x75);
--	rt2800_rfcsr_write(rt2x00dev, 4, 0x40);
--	rt2800_rfcsr_write(rt2x00dev, 5, 0x03);
--	rt2800_rfcsr_write(rt2x00dev, 6, 0x02);
--	rt2800_rfcsr_write(rt2x00dev, 7, 0x50);
--	rt2800_rfcsr_write(rt2x00dev, 8, 0x39);
--	rt2800_rfcsr_write(rt2x00dev, 9, 0x0f);
--	rt2800_rfcsr_write(rt2x00dev, 10, 0x60);
--	rt2800_rfcsr_write(rt2x00dev, 11, 0x21);
--	rt2800_rfcsr_write(rt2x00dev, 12, 0x75);
--	rt2800_rfcsr_write(rt2x00dev, 13, 0x75);
--	rt2800_rfcsr_write(rt2x00dev, 14, 0x90);
--	rt2800_rfcsr_write(rt2x00dev, 15, 0x58);
--	rt2800_rfcsr_write(rt2x00dev, 16, 0xb3);
--	rt2800_rfcsr_write(rt2x00dev, 17, 0x92);
--	rt2800_rfcsr_write(rt2x00dev, 18, 0x2c);
--	rt2800_rfcsr_write(rt2x00dev, 19, 0x02);
--	rt2800_rfcsr_write(rt2x00dev, 20, 0xba);
--	rt2800_rfcsr_write(rt2x00dev, 21, 0xdb);
--	rt2800_rfcsr_write(rt2x00dev, 22, 0x00);
--	rt2800_rfcsr_write(rt2x00dev, 23, 0x31);
--	rt2800_rfcsr_write(rt2x00dev, 24, 0x08);
--	rt2800_rfcsr_write(rt2x00dev, 25, 0x01);
--	rt2800_rfcsr_write(rt2x00dev, 26, 0x25);
--	rt2800_rfcsr_write(rt2x00dev, 27, 0x23);
--	rt2800_rfcsr_write(rt2x00dev, 28, 0x13);
--	rt2800_rfcsr_write(rt2x00dev, 29, 0x83);
-+	if (rt2x00_intf_is_pci(rt2x00dev)) {
-+		rt2800_rfcsr_write(rt2x00dev, 0, 0x50);
-+		rt2800_rfcsr_write(rt2x00dev, 1, 0x01);
-+		rt2800_rfcsr_write(rt2x00dev, 2, 0xf7);
-+		rt2800_rfcsr_write(rt2x00dev, 3, 0x75);
-+		rt2800_rfcsr_write(rt2x00dev, 4, 0x40);
-+		rt2800_rfcsr_write(rt2x00dev, 5, 0x03);
-+		rt2800_rfcsr_write(rt2x00dev, 6, 0x02);
-+		rt2800_rfcsr_write(rt2x00dev, 7, 0x50);
-+		rt2800_rfcsr_write(rt2x00dev, 8, 0x39);
-+		rt2800_rfcsr_write(rt2x00dev, 9, 0x0f);
-+		rt2800_rfcsr_write(rt2x00dev, 10, 0x60);
-+		rt2800_rfcsr_write(rt2x00dev, 11, 0x21);
-+		rt2800_rfcsr_write(rt2x00dev, 12, 0x75);
-+		rt2800_rfcsr_write(rt2x00dev, 13, 0x75);
-+		rt2800_rfcsr_write(rt2x00dev, 14, 0x90);
-+		rt2800_rfcsr_write(rt2x00dev, 15, 0x58);
-+		rt2800_rfcsr_write(rt2x00dev, 16, 0xb3);
-+		rt2800_rfcsr_write(rt2x00dev, 17, 0x92);
-+		rt2800_rfcsr_write(rt2x00dev, 18, 0x2c);
-+		rt2800_rfcsr_write(rt2x00dev, 19, 0x02);
-+		rt2800_rfcsr_write(rt2x00dev, 20, 0xba);
-+		rt2800_rfcsr_write(rt2x00dev, 21, 0xdb);
-+		rt2800_rfcsr_write(rt2x00dev, 22, 0x00);
-+		rt2800_rfcsr_write(rt2x00dev, 23, 0x31);
-+		rt2800_rfcsr_write(rt2x00dev, 24, 0x08);
-+		rt2800_rfcsr_write(rt2x00dev, 25, 0x01);
-+		rt2800_rfcsr_write(rt2x00dev, 26, 0x25);
-+		rt2800_rfcsr_write(rt2x00dev, 27, 0x23);
-+		rt2800_rfcsr_write(rt2x00dev, 28, 0x13);
-+		rt2800_rfcsr_write(rt2x00dev, 29, 0x83);
-+	}
- 
- 	/*
- 	 * Set RX Filter calibration for 20MHz and 40MHz
-@@ -3005,6 +3016,8 @@ static int rt2800pci_probe_hw(struct rt2
- {
- 	int retval;
- 
-+	rt2x00_set_chip_intf(rt2x00dev, RT2X00_CHIP_INTF_PCI);
 +
- 	rt2x00dev->priv = (void *)&rt2800pci_rt2800_ops;
++	mutex_lock(&rt2x00dev->csr_mutex);
++
++	/*
++	 * Wait until the MCU becomes available, afterwards we
++	 * can safely write the new data into the register.
++	 */
++	if (WAIT_FOR_MCU(rt2x00dev, &reg)) {
++		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_OWNER, 1);
++		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_CMD_TOKEN, token);
++		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_ARG0, arg0);
++		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_ARG1, arg1);
++		rt2800_register_write_lock(rt2x00dev, H2M_MAILBOX_CSR, reg);
++
++		reg = 0;
++		rt2x00_set_field32(&reg, HOST_CMD_CSR_HOST_COMMAND, command);
++		rt2800_register_write_lock(rt2x00dev, HOST_CMD_CSR, reg);
++	}
++
++	mutex_unlock(&rt2x00dev->csr_mutex);
++}
++EXPORT_SYMBOL_GPL(rt2800_mcu_request);
+Index: b/drivers/net/wireless/rt2x00/rt2800lib.h
+===================================================================
+--- a/drivers/net/wireless/rt2x00/rt2800lib.h
++++ b/drivers/net/wireless/rt2x00/rt2800lib.h
+@@ -96,4 +96,18 @@ static inline int rt2800_regbusy_read(st
+ 	return rt2800ops->regbusy_read(rt2x00dev, offset, field, reg);
+ }
  
- 	/*
++void rt2800_bbp_write(struct rt2x00_dev *rt2x00dev,
++		      const unsigned int word, const u8 value);
++void rt2800_bbp_read(struct rt2x00_dev *rt2x00dev,
++		     const unsigned int word, u8 *value);
++void rt2800_rfcsr_write(struct rt2x00_dev *rt2x00dev,
++			const unsigned int word, const u8 value);
++void rt2800_rfcsr_read(struct rt2x00_dev *rt2x00dev,
++		       const unsigned int word, u8 *value);
++void rt2800_rf_write(struct rt2x00_dev *rt2x00dev,
++		     const unsigned int word, const u32 value);
++void rt2800_mcu_request(struct rt2x00_dev *rt2x00dev,
++			const u8 command, const u8 token,
++			const u8 arg0, const u8 arg1);
++
+ #endif /* RT2800LIB_H */
+Index: b/drivers/net/wireless/rt2x00/rt2800pci.c
+===================================================================
+--- a/drivers/net/wireless/rt2x00/rt2800pci.c
++++ b/drivers/net/wireless/rt2x00/rt2800pci.c
+@@ -56,242 +56,6 @@ static int modparam_nohwcrypt = 1;
+ module_param_named(nohwcrypt, modparam_nohwcrypt, bool, S_IRUGO);
+ MODULE_PARM_DESC(nohwcrypt, "Disable hardware encryption.");
+ 
+-/*
+- * Register access.
+- * All access to the CSR registers will go through the methods
+- * rt2800_register_read and rt2800_register_write.
+- * BBP and RF register require indirect register access,
+- * and use the CSR registers BBPCSR and RFCSR to achieve this.
+- * These indirect registers work with busy bits,
+- * and we will try maximal REGISTER_BUSY_COUNT times to access
+- * the register while taking a REGISTER_BUSY_DELAY us delay
+- * between each attampt. When the busy bit is still set at that time,
+- * the access attempt is considered to have failed,
+- * and we will print an error.
+- * The _lock versions must be used if you already hold the csr_mutex
+- */
+-#define WAIT_FOR_BBP(__dev, __reg) \
+-	rt2800_regbusy_read((__dev), BBP_CSR_CFG, BBP_CSR_CFG_BUSY, (__reg))
+-#define WAIT_FOR_RFCSR(__dev, __reg) \
+-	rt2800_regbusy_read((__dev), RF_CSR_CFG, RF_CSR_CFG_BUSY, (__reg))
+-#define WAIT_FOR_RF(__dev, __reg) \
+-	rt2800_regbusy_read((__dev), RF_CSR_CFG0, RF_CSR_CFG0_BUSY, (__reg))
+-#define WAIT_FOR_MCU(__dev, __reg) \
+-	rt2800_regbusy_read((__dev), H2M_MAILBOX_CSR, \
+-			    H2M_MAILBOX_CSR_OWNER, (__reg))
+-
+-static void rt2800pci_bbp_write(struct rt2x00_dev *rt2x00dev,
+-				const unsigned int word, const u8 value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the BBP becomes available, afterwards we
+-	 * can safely write the new data into the register.
+-	 */
+-	if (WAIT_FOR_BBP(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_VALUE, value);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_REGNUM, word);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_BUSY, 1);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_READ_CONTROL, 0);
+-		if (rt2x00_intf_is_pci(rt2x00dev))
+-			rt2x00_set_field32(&reg, BBP_CSR_CFG_BBP_RW_MODE, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
+-	}
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static void rt2800pci_bbp_read(struct rt2x00_dev *rt2x00dev,
+-			       const unsigned int word, u8 *value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the BBP becomes available, afterwards we
+-	 * can safely write the read request into the register.
+-	 * After the data has been written, we wait until hardware
+-	 * returns the correct value, if at any time the register
+-	 * doesn't become available in time, reg will be 0xffffffff
+-	 * which means we return 0xff to the caller.
+-	 */
+-	if (WAIT_FOR_BBP(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_REGNUM, word);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_BUSY, 1);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_READ_CONTROL, 1);
+-		if (rt2x00_intf_is_pci(rt2x00dev))
+-			rt2x00_set_field32(&reg, BBP_CSR_CFG_BBP_RW_MODE, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
+-
+-		WAIT_FOR_BBP(rt2x00dev, &reg);
+-	}
+-
+-	*value = rt2x00_get_field32(reg, BBP_CSR_CFG_VALUE);
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static inline void rt2800_bbp_write(struct rt2x00_dev *rt2x00dev,
+-				    const unsigned int word, const u8 value)
+-{
+-	rt2800pci_bbp_write(rt2x00dev, word, value);
+-}
+-
+-static inline void rt2800_bbp_read(struct rt2x00_dev *rt2x00dev,
+-				   const unsigned int word, u8 *value)
+-{
+-	rt2800pci_bbp_read(rt2x00dev, word, value);
+-}
+-
+-static void rt2800pci_rfcsr_write(struct rt2x00_dev *rt2x00dev,
+-				  const unsigned int word, const u8 value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the RFCSR becomes available, afterwards we
+-	 * can safely write the new data into the register.
+-	 */
+-	if (WAIT_FOR_RFCSR(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_DATA, value);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_REGNUM, word);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_WRITE, 1);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_BUSY, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG, reg);
+-	}
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static void rt2800pci_rfcsr_read(struct rt2x00_dev *rt2x00dev,
+-				 const unsigned int word, u8 *value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the RFCSR becomes available, afterwards we
+-	 * can safely write the read request into the register.
+-	 * After the data has been written, we wait until hardware
+-	 * returns the correct value, if at any time the register
+-	 * doesn't become available in time, reg will be 0xffffffff
+-	 * which means we return 0xff to the caller.
+-	 */
+-	if (WAIT_FOR_RFCSR(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_REGNUM, word);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_WRITE, 0);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_BUSY, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG, reg);
+-
+-		WAIT_FOR_RFCSR(rt2x00dev, &reg);
+-	}
+-
+-	*value = rt2x00_get_field32(reg, RF_CSR_CFG_DATA);
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static inline void rt2800_rfcsr_write(struct rt2x00_dev *rt2x00dev,
+-				      const unsigned int word, const u8 value)
+-{
+-	rt2800pci_rfcsr_write(rt2x00dev, word, value);
+-}
+-
+-static inline void rt2800_rfcsr_read(struct rt2x00_dev *rt2x00dev,
+-				     const unsigned int word, u8 *value)
+-{
+-	rt2800pci_rfcsr_read(rt2x00dev, word, value);
+-}
+-
+-static void rt2800pci_rf_write(struct rt2x00_dev *rt2x00dev,
+-			       const unsigned int word, const u32 value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the RF becomes available, afterwards we
+-	 * can safely write the new data into the register.
+-	 */
+-	if (WAIT_FOR_RF(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, RF_CSR_CFG0_REG_VALUE_BW, value);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG0_STANDBYMODE, 0);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG0_SEL, 0);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG0_BUSY, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG0, reg);
+-		rt2x00_rf_write(rt2x00dev, word, value);
+-	}
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static inline void rt2800_rf_write(struct rt2x00_dev *rt2x00dev,
+-				   const unsigned int word, const u32 value)
+-{
+-	rt2800pci_rf_write(rt2x00dev, word, value);
+-}
+-
+-static void rt2800pci_mcu_request(struct rt2x00_dev *rt2x00dev,
+-				  const u8 command, const u8 token,
+-				  const u8 arg0, const u8 arg1)
+-{
+-	u32 reg;
+-
+-	if (rt2x00_intf_is_pci(rt2x00dev)) {
+-		/*
+-		* RT2880 and RT3052 don't support MCU requests.
+-		*/
+-		if (rt2x00_rt(&rt2x00dev->chip, RT2880) ||
+-		    rt2x00_rt(&rt2x00dev->chip, RT3052))
+-			return;
+-	}
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the MCU becomes available, afterwards we
+-	 * can safely write the new data into the register.
+-	 */
+-	if (WAIT_FOR_MCU(rt2x00dev, &reg)) {
+-		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_OWNER, 1);
+-		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_CMD_TOKEN, token);
+-		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_ARG0, arg0);
+-		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_ARG1, arg1);
+-		rt2800_register_write_lock(rt2x00dev, H2M_MAILBOX_CSR, reg);
+-
+-		reg = 0;
+-		rt2x00_set_field32(&reg, HOST_CMD_CSR_HOST_COMMAND, command);
+-		rt2800_register_write_lock(rt2x00dev, HOST_CMD_CSR, reg);
+-	}
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static inline void rt2800_mcu_request(struct rt2x00_dev *rt2x00dev,
+-				      const u8 command, const u8 token,
+-				      const u8 arg0, const u8 arg1)
+-{
+-	rt2800pci_mcu_request(rt2x00dev, command, token, arg0, arg1);
+-}
+-
+ static void rt2800pci_mcu_status(struct rt2x00_dev *rt2x00dev, const u8 token)
+ {
+ 	unsigned int i;
 Index: b/drivers/net/wireless/rt2x00/rt2800usb.c
 ===================================================================
 --- a/drivers/net/wireless/rt2x00/rt2800usb.c
 +++ b/drivers/net/wireless/rt2x00/rt2800usb.c
-@@ -1050,7 +1050,8 @@ static void rt2800usb_link_stats(struct 
- static u8 rt2800usb_get_default_vgc(struct rt2x00_dev *rt2x00dev)
- {
- 	if (rt2x00dev->curr_band == IEEE80211_BAND_2GHZ) {
--		if (rt2x00_rev(&rt2x00dev->chip) == RT3070_VERSION)
-+		if (rt2x00_intf_is_usb(rt2x00dev) &&
-+		    rt2x00_rev(&rt2x00dev->chip) == RT3070_VERSION)
- 			return 0x1c + (2 * rt2x00dev->lna_gain);
- 		else
- 			return 0x2e + rt2x00dev->lna_gain;
-@@ -1285,33 +1286,38 @@ static int rt2800usb_init_registers(stru
- 	u32 reg;
- 	unsigned int i;
+@@ -45,229 +45,6 @@ static int modparam_nohwcrypt = 1;
+ module_param_named(nohwcrypt, modparam_nohwcrypt, bool, S_IRUGO);
+ MODULE_PARM_DESC(nohwcrypt, "Disable hardware encryption.");
  
+-/*
+- * Register access.
+- * All access to the CSR registers will go through the methods
+- * rt2800_register_read and rt2800_register_write.
+- * BBP and RF register require indirect register access,
+- * and use the CSR registers BBPCSR and RFCSR to achieve this.
+- * These indirect registers work with busy bits,
+- * and we will try maximal REGISTER_BUSY_COUNT times to access
+- * the register while taking a REGISTER_BUSY_DELAY us delay
+- * between each attampt. When the busy bit is still set at that time,
+- * the access attempt is considered to have failed,
+- * and we will print an error.
+- * The _lock versions must be used if you already hold the csr_mutex
+- */
+-#define WAIT_FOR_BBP(__dev, __reg) \
+-	rt2800_regbusy_read((__dev), BBP_CSR_CFG, BBP_CSR_CFG_BUSY, (__reg))
+-#define WAIT_FOR_RFCSR(__dev, __reg) \
+-	rt2800_regbusy_read((__dev), RF_CSR_CFG, RF_CSR_CFG_BUSY, (__reg))
+-#define WAIT_FOR_RF(__dev, __reg) \
+-	rt2800_regbusy_read((__dev), RF_CSR_CFG0, RF_CSR_CFG0_BUSY, (__reg))
+-#define WAIT_FOR_MCU(__dev, __reg) \
+-	rt2800_regbusy_read((__dev), H2M_MAILBOX_CSR, \
+-			    H2M_MAILBOX_CSR_OWNER, (__reg))
+-
+-static void rt2800usb_bbp_write(struct rt2x00_dev *rt2x00dev,
+-				const unsigned int word, const u8 value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
 -	/*
--	 * Wait untill BBP and RF are ready.
+-	 * Wait until the BBP becomes available, afterwards we
+-	 * can safely write the new data into the register.
 -	 */
--	for (i = 0; i < REGISTER_BUSY_COUNT; i++) {
--		rt2800_register_read(rt2x00dev, MAC_CSR0, &reg);
--		if (reg && reg != ~0)
--			break;
--		msleep(1);
+-	if (WAIT_FOR_BBP(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_VALUE, value);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_REGNUM, word);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_BUSY, 1);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_READ_CONTROL, 0);
+-
+-		rt2800_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
 -	}
-+	if (rt2x00_intf_is_usb(rt2x00dev)) {
-+		/*
-+		 * Wait untill BBP and RF are ready.
-+		 */
-+		for (i = 0; i < REGISTER_BUSY_COUNT; i++) {
-+			rt2800_register_read(rt2x00dev, MAC_CSR0, &reg);
-+			if (reg && reg != ~0)
-+				break;
-+			msleep(1);
-+		}
- 
--	if (i == REGISTER_BUSY_COUNT) {
--		ERROR(rt2x00dev, "Unstable hardware.\n");
--		return -EBUSY;
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static void rt2800usb_bbp_read(struct rt2x00_dev *rt2x00dev,
+-			       const unsigned int word, u8 *value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the BBP becomes available, afterwards we
+-	 * can safely write the read request into the register.
+-	 * After the data has been written, we wait until hardware
+-	 * returns the correct value, if at any time the register
+-	 * doesn't become available in time, reg will be 0xffffffff
+-	 * which means we return 0xff to the caller.
+-	 */
+-	if (WAIT_FOR_BBP(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_REGNUM, word);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_BUSY, 1);
+-		rt2x00_set_field32(&reg, BBP_CSR_CFG_READ_CONTROL, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
+-
+-		WAIT_FOR_BBP(rt2x00dev, &reg);
 -	}
-+		if (i == REGISTER_BUSY_COUNT) {
-+			ERROR(rt2x00dev, "Unstable hardware.\n");
-+			return -EBUSY;
-+		}
- 
--	rt2800_register_read(rt2x00dev, PBF_SYS_CTRL, &reg);
--	rt2800_register_write(rt2x00dev, PBF_SYS_CTRL, reg & ~0x00002000);
-+		rt2800_register_read(rt2x00dev, PBF_SYS_CTRL, &reg);
-+		rt2800_register_write(rt2x00dev, PBF_SYS_CTRL,
-+				      reg & ~0x00002000);
-+	}
- 
- 	rt2800_register_read(rt2x00dev, MAC_SYS_CTRL, &reg);
- 	rt2x00_set_field32(&reg, MAC_SYS_CTRL_RESET_CSR, 1);
- 	rt2x00_set_field32(&reg, MAC_SYS_CTRL_RESET_BBP, 1);
- 	rt2800_register_write(rt2x00dev, MAC_SYS_CTRL, reg);
- 
--	rt2800_register_write(rt2x00dev, USB_DMA_CFG, 0x00000000);
-+	if (rt2x00_intf_is_usb(rt2x00dev)) {
-+		rt2800_register_write(rt2x00dev, USB_DMA_CFG, 0x00000000);
- 
--	rt2x00usb_vendor_request_sw(rt2x00dev, USB_DEVICE_MODE, 0,
--				    USB_MODE_RESET, REGISTER_TIMEOUT);
-+		rt2x00usb_vendor_request_sw(rt2x00dev, USB_DEVICE_MODE, 0,
-+					    USB_MODE_RESET, REGISTER_TIMEOUT);
-+	}
- 
- 	rt2800_register_write(rt2x00dev, MAC_SYS_CTRL, 0x00000000);
- 
-@@ -1343,7 +1349,8 @@ static int rt2800usb_init_registers(stru
- 	rt2x00_set_field32(&reg, BCN_TIME_CFG_TX_TIME_COMPENSATE, 0);
- 	rt2800_register_write(rt2x00dev, BCN_TIME_CFG, reg);
- 
--	if (rt2x00_rev(&rt2x00dev->chip) == RT3070_VERSION) {
-+	if (rt2x00_intf_is_usb(rt2x00dev) &&
-+	    rt2x00_rev(&rt2x00dev->chip) == RT3070_VERSION) {
- 		rt2800_register_write(rt2x00dev, TX_SW_CFG0, 0x00000400);
- 		rt2800_register_write(rt2x00dev, TX_SW_CFG1, 0x00000000);
- 		rt2800_register_write(rt2x00dev, TX_SW_CFG2, 0x00000000);
-@@ -1461,19 +1468,21 @@ static int rt2800usb_init_registers(stru
- 	rt2x00_set_field32(&reg, GF40_PROT_CFG_TX_OP_ALLOW_GF40, 1);
- 	rt2800_register_write(rt2x00dev, GF40_PROT_CFG, reg);
- 
--	rt2800_register_write(rt2x00dev, PBF_CFG, 0xf40006);
-+	if (rt2x00_intf_is_usb(rt2x00dev)) {
-+		rt2800_register_write(rt2x00dev, PBF_CFG, 0xf40006);
- 
--	rt2800_register_read(rt2x00dev, WPDMA_GLO_CFG, &reg);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_ENABLE_TX_DMA, 0);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_TX_DMA_BUSY, 0);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_ENABLE_RX_DMA, 0);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_RX_DMA_BUSY, 0);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_WP_DMA_BURST_SIZE, 3);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_TX_WRITEBACK_DONE, 0);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_BIG_ENDIAN, 0);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_RX_HDR_SCATTER, 0);
--	rt2x00_set_field32(&reg, WPDMA_GLO_CFG_HDR_SEG_LEN, 0);
--	rt2800_register_write(rt2x00dev, WPDMA_GLO_CFG, reg);
-+		rt2800_register_read(rt2x00dev, WPDMA_GLO_CFG, &reg);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_ENABLE_TX_DMA, 0);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_TX_DMA_BUSY, 0);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_ENABLE_RX_DMA, 0);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_RX_DMA_BUSY, 0);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_WP_DMA_BURST_SIZE, 3);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_TX_WRITEBACK_DONE, 0);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_BIG_ENDIAN, 0);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_RX_HDR_SCATTER, 0);
-+		rt2x00_set_field32(&reg, WPDMA_GLO_CFG_HDR_SEG_LEN, 0);
-+		rt2800_register_write(rt2x00dev, WPDMA_GLO_CFG, reg);
-+	}
- 
- 	rt2800_register_write(rt2x00dev, TXOP_CTRL_CFG, 0x0000583f);
- 	rt2800_register_write(rt2x00dev, TXOP_HLDR_ET, 0x00000002);
-@@ -1519,9 +1528,11 @@ static int rt2800usb_init_registers(stru
- 	rt2800_register_write(rt2x00dev, HW_BEACON_BASE6, 0);
- 	rt2800_register_write(rt2x00dev, HW_BEACON_BASE7, 0);
- 
--	rt2800_register_read(rt2x00dev, USB_CYC_CFG, &reg);
--	rt2x00_set_field32(&reg, USB_CYC_CFG_CLOCK_CYCLE, 30);
--	rt2800_register_write(rt2x00dev, USB_CYC_CFG, reg);
-+	if (rt2x00_intf_is_usb(rt2x00dev)) {
-+		rt2800_register_read(rt2x00dev, USB_CYC_CFG, &reg);
-+		rt2x00_set_field32(&reg, USB_CYC_CFG_CLOCK_CYCLE, 30);
-+		rt2800_register_write(rt2x00dev, USB_CYC_CFG, reg);
-+	}
- 
- 	rt2800_register_read(rt2x00dev, HT_FBK_CFG0, &reg);
- 	rt2x00_set_field32(&reg, HT_FBK_CFG0_HTMCS0FBK, 0);
-@@ -1650,11 +1661,11 @@ static int rt2800usb_init_bbp(struct rt2
- 		rt2800_bbp_write(rt2x00dev, 73, 0x12);
- 	}
- 
--	if (rt2x00_rev(&rt2x00dev->chip) > RT2860D_VERSION) {
-+	if (rt2x00_rev(&rt2x00dev->chip) > RT2860D_VERSION)
- 		rt2800_bbp_write(rt2x00dev, 84, 0x19);
+-
+-	*value = rt2x00_get_field32(reg, BBP_CSR_CFG_VALUE);
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static inline void rt2800_bbp_write(struct rt2x00_dev *rt2x00dev,
+-				    const unsigned int word, const u8 value)
+-{
+-	rt2800usb_bbp_write(rt2x00dev, word, value);
+-}
+-
+-static inline void rt2800_bbp_read(struct rt2x00_dev *rt2x00dev,
+-				   const unsigned int word, u8 *value)
+-{
+-	rt2800usb_bbp_read(rt2x00dev, word, value);
+-}
+-
+-static void rt2800usb_rfcsr_write(struct rt2x00_dev *rt2x00dev,
+-				  const unsigned int word, const u8 value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the RFCSR becomes available, afterwards we
+-	 * can safely write the new data into the register.
+-	 */
+-	if (WAIT_FOR_RFCSR(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_DATA, value);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_REGNUM, word);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_WRITE, 1);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_BUSY, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG, reg);
 -	}
- 
--	if (rt2x00_rev(&rt2x00dev->chip) == RT3070_VERSION) {
-+	if (rt2x00_intf_is_usb(rt2x00dev) &&
-+	    rt2x00_rev(&rt2x00dev->chip) == RT3070_VERSION) {
- 		rt2800_bbp_write(rt2x00dev, 70, 0x0a);
- 		rt2800_bbp_write(rt2x00dev, 84, 0x99);
- 		rt2800_bbp_write(rt2x00dev, 105, 0x05);
-@@ -1738,7 +1749,8 @@ static int rt2800usb_init_rfcsr(struct r
- 	u8 rfcsr;
- 	u8 bbp;
- 
--	if (rt2x00_rev(&rt2x00dev->chip) != RT3070_VERSION)
-+	if (rt2x00_intf_is_usb(rt2x00dev) &&
-+	    rt2x00_rev(&rt2x00dev->chip) != RT3070_VERSION)
- 		return 0;
- 
- 	/*
-@@ -1751,26 +1763,28 @@ static int rt2800usb_init_rfcsr(struct r
- 	rt2x00_set_field8(&rfcsr, RFCSR30_RF_CALIBRATION, 0);
- 	rt2800_rfcsr_write(rt2x00dev, 30, rfcsr);
- 
--	rt2800_rfcsr_write(rt2x00dev, 4, 0x40);
--	rt2800_rfcsr_write(rt2x00dev, 5, 0x03);
--	rt2800_rfcsr_write(rt2x00dev, 6, 0x02);
--	rt2800_rfcsr_write(rt2x00dev, 7, 0x70);
--	rt2800_rfcsr_write(rt2x00dev, 9, 0x0f);
--	rt2800_rfcsr_write(rt2x00dev, 10, 0x71);
--	rt2800_rfcsr_write(rt2x00dev, 11, 0x21);
--	rt2800_rfcsr_write(rt2x00dev, 12, 0x7b);
--	rt2800_rfcsr_write(rt2x00dev, 14, 0x90);
--	rt2800_rfcsr_write(rt2x00dev, 15, 0x58);
--	rt2800_rfcsr_write(rt2x00dev, 16, 0xb3);
--	rt2800_rfcsr_write(rt2x00dev, 17, 0x92);
--	rt2800_rfcsr_write(rt2x00dev, 18, 0x2c);
--	rt2800_rfcsr_write(rt2x00dev, 19, 0x02);
--	rt2800_rfcsr_write(rt2x00dev, 20, 0xba);
--	rt2800_rfcsr_write(rt2x00dev, 21, 0xdb);
--	rt2800_rfcsr_write(rt2x00dev, 24, 0x16);
--	rt2800_rfcsr_write(rt2x00dev, 25, 0x01);
--	rt2800_rfcsr_write(rt2x00dev, 27, 0x03);
--	rt2800_rfcsr_write(rt2x00dev, 29, 0x1f);
-+	if (rt2x00_intf_is_usb(rt2x00dev)) {
-+		rt2800_rfcsr_write(rt2x00dev, 4, 0x40);
-+		rt2800_rfcsr_write(rt2x00dev, 5, 0x03);
-+		rt2800_rfcsr_write(rt2x00dev, 6, 0x02);
-+		rt2800_rfcsr_write(rt2x00dev, 7, 0x70);
-+		rt2800_rfcsr_write(rt2x00dev, 9, 0x0f);
-+		rt2800_rfcsr_write(rt2x00dev, 10, 0x71);
-+		rt2800_rfcsr_write(rt2x00dev, 11, 0x21);
-+		rt2800_rfcsr_write(rt2x00dev, 12, 0x7b);
-+		rt2800_rfcsr_write(rt2x00dev, 14, 0x90);
-+		rt2800_rfcsr_write(rt2x00dev, 15, 0x58);
-+		rt2800_rfcsr_write(rt2x00dev, 16, 0xb3);
-+		rt2800_rfcsr_write(rt2x00dev, 17, 0x92);
-+		rt2800_rfcsr_write(rt2x00dev, 18, 0x2c);
-+		rt2800_rfcsr_write(rt2x00dev, 19, 0x02);
-+		rt2800_rfcsr_write(rt2x00dev, 20, 0xba);
-+		rt2800_rfcsr_write(rt2x00dev, 21, 0xdb);
-+		rt2800_rfcsr_write(rt2x00dev, 24, 0x16);
-+		rt2800_rfcsr_write(rt2x00dev, 25, 0x01);
-+		rt2800_rfcsr_write(rt2x00dev, 27, 0x03);
-+		rt2800_rfcsr_write(rt2x00dev, 29, 0x1f);
-+	}
- 
- 	/*
- 	 * Set RX Filter calibration for 20MHz and 40MHz
-@@ -2644,6 +2658,8 @@ static int rt2800usb_probe_hw(struct rt2
- {
- 	int retval;
- 
-+	rt2x00_set_chip_intf(rt2x00dev, RT2X00_CHIP_INTF_USB);
-+
- 	rt2x00dev->priv = (void *)&rt2800usb_rt2800_ops;
- 
- 	/*
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static void rt2800usb_rfcsr_read(struct rt2x00_dev *rt2x00dev,
+-				 const unsigned int word, u8 *value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the RFCSR becomes available, afterwards we
+-	 * can safely write the read request into the register.
+-	 * After the data has been written, we wait until hardware
+-	 * returns the correct value, if at any time the register
+-	 * doesn't become available in time, reg will be 0xffffffff
+-	 * which means we return 0xff to the caller.
+-	 */
+-	if (WAIT_FOR_RFCSR(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_REGNUM, word);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_WRITE, 0);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG_BUSY, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG, reg);
+-
+-		WAIT_FOR_RFCSR(rt2x00dev, &reg);
+-	}
+-
+-	*value = rt2x00_get_field32(reg, RF_CSR_CFG_DATA);
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static inline void rt2800_rfcsr_write(struct rt2x00_dev *rt2x00dev,
+-				      const unsigned int word, const u8 value)
+-{
+-	rt2800usb_rfcsr_write(rt2x00dev, word, value);
+-}
+-
+-static inline void rt2800_rfcsr_read(struct rt2x00_dev *rt2x00dev,
+-				     const unsigned int word, u8 *value)
+-{
+-	rt2800usb_rfcsr_read(rt2x00dev, word, value);
+-}
+-
+-static void rt2800usb_rf_write(struct rt2x00_dev *rt2x00dev,
+-			       const unsigned int word, const u32 value)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the RF becomes available, afterwards we
+-	 * can safely write the new data into the register.
+-	 */
+-	if (WAIT_FOR_RF(rt2x00dev, &reg)) {
+-		reg = 0;
+-		rt2x00_set_field32(&reg, RF_CSR_CFG0_REG_VALUE_BW, value);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG0_STANDBYMODE, 0);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG0_SEL, 0);
+-		rt2x00_set_field32(&reg, RF_CSR_CFG0_BUSY, 1);
+-
+-		rt2800_register_write_lock(rt2x00dev, RF_CSR_CFG0, reg);
+-		rt2x00_rf_write(rt2x00dev, word, value);
+-	}
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static inline void rt2800_rf_write(struct rt2x00_dev *rt2x00dev,
+-				   const unsigned int word, const u32 value)
+-{
+-	rt2800usb_rf_write(rt2x00dev, word, value);
+-}
+-
+-static void rt2800usb_mcu_request(struct rt2x00_dev *rt2x00dev,
+-				  const u8 command, const u8 token,
+-				  const u8 arg0, const u8 arg1)
+-{
+-	u32 reg;
+-
+-	mutex_lock(&rt2x00dev->csr_mutex);
+-
+-	/*
+-	 * Wait until the MCU becomes available, afterwards we
+-	 * can safely write the new data into the register.
+-	 */
+-	if (WAIT_FOR_MCU(rt2x00dev, &reg)) {
+-		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_OWNER, 1);
+-		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_CMD_TOKEN, token);
+-		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_ARG0, arg0);
+-		rt2x00_set_field32(&reg, H2M_MAILBOX_CSR_ARG1, arg1);
+-		rt2800_register_write_lock(rt2x00dev, H2M_MAILBOX_CSR, reg);
+-
+-		reg = 0;
+-		rt2x00_set_field32(&reg, HOST_CMD_CSR_HOST_COMMAND, command);
+-		rt2800_register_write_lock(rt2x00dev, HOST_CMD_CSR, reg);
+-	}
+-
+-	mutex_unlock(&rt2x00dev->csr_mutex);
+-}
+-
+-static inline void rt2800_mcu_request(struct rt2x00_dev *rt2x00dev,
+-				      const u8 command, const u8 token,
+-				      const u8 arg0, const u8 arg1)
+-{
+-	rt2800usb_mcu_request(rt2x00dev, command, token, arg0, arg1);
+-}
+-
+ #ifdef CONFIG_RT2X00_LIB_DEBUGFS
+ static const struct rt2x00debug rt2800usb_rt2x00debug = {
+ 	.owner	= THIS_MODULE,
