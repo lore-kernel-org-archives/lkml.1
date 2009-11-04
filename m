@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbZKDO05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZKDO0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbZKDO05 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 09:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbZKDO04
+	id S1756533AbZKDO0W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 09:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbZKDO0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 09:26:56 -0500
-Received: from mail.tmr.com ([64.65.253.246]:48983 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755829AbZKDO04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 09:26:56 -0500
-Message-ID: <4AF18F06.50807@tmr.com>
-Date: Wed, 04 Nov 2009 09:26:14 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 SeaMonkey/1.1.16
+	Wed, 4 Nov 2009 09:26:22 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:47982 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756478AbZKDO0U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 09:26:20 -0500
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, jmorris@namei.org,
+       casey@schaufler-ca.com, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] sysfs: Don't leak secdata when a sysfs_dirent is freed.
+References: <m1zl7236ox.fsf@fess.ebiederm.org>
+	<20091104140913.GA4355@us.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 04 Nov 2009 06:26:19 -0800
+In-Reply-To: <20091104140913.GA4355@us.ibm.com> (Serge E. Hallyn's message of "Wed\, 4 Nov 2009 08\:09\:13 -0600")
+Message-ID: <m1fx8uz7qs.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel,gmane.linux.kernel.containers
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Liu Aleaxander <aleaxander@gmail.com>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [PATCH] cgroup: Fixes the un-paired cgroup lock problem
-References: <b741c2440911031740m52f8c11dt6e57b549cc6ce465@mail.gmail.com> <4AF10CEE.5020807@cn.fujitsu.com>
-In-Reply-To: <4AF10CEE.5020807@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Liu Aleaxander wrote:
->> From: Liu Aleaxander <Aleaxander@gmail.com>
->> Date: Wed, 4 Nov 2009 09:27:06 +0800
->> Subject: [PATCH] Fixes the un-paired cgroup lock problem
->>
->> In cgroup_lock_live_group, it locks the cgroup by mutex_lock, while in the
->> cgroup_tasks_write, it unlock it by cgroup_unlock. Even though they are
->> equal, but I do think we should make it pair.
->>
->> BTW, should we replace others with cgroup_lock and cgroup_unlock?
->> Since we already have a wrapper one and it's meaningful.
->>
-> 
-> Before I read the email body, I thought there is a bug where
-> there is a lock without unlock or vise versa.
-> 
-> I agree the case here can be called "unpaired", but I'm not
-> convinced this patch is needed. The code is not buggy or
-> confusing. So the patch neither fixes a bug nor make the code
-> more readable.
-> 
-I would say it fixes a bug, the one that would be introduced when the two 
-methods are no longer compatible and essentially two names for the same thing. 
-And while you may know the code so well that you knew without looking that this 
-was (currently) okay, there will be lots of eyes on this code over the years, I 
-think most people would find use of cgroup_lock to lock the cgroup a LOT more 
-readable.
+"Serge E. Hallyn" <serue@us.ibm.com> writes:
 
-While you can't go back in time to murder your grandfather, it creates no 
-paradox to fix a bug before someone writes it.
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
+>> 
+>> While refreshing my sysfs patches I noticed a leak in the secdata
+>> implementation.  We don't free the secdata when we free the
+>> sysfs dirent. 
+>> 
+>> This is a bug in 2.6.32-rc5 that we really should close.
+>> 
+>> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+>
+> I'm surprised no kmemleak or anything has found this - but I guess
+> not many sites hand-set custom selinux contexts on sysfs?
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+I don't expect so since you couldn't customize it in 2.6.31.
+This is brand new code, and this corner case was just overlooked
+in the review.
+
+Eric
+
+
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+>
+>> ---
+>> 
+>>  fs/sysfs/dir.c |    4 ++++
+>>  1 files changed, 4 insertions(+), 0 deletions(-)
+>> 
+>> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+>> index 5fad489..e020183 100644
+>> --- a/fs/sysfs/dir.c
+>> +++ b/fs/sysfs/dir.c
+>> @@ -21,6 +21,7 @@
+>>  #include <linux/completion.h>
+>>  #include <linux/mutex.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/security.h>
+>>  #include "sysfs.h"
+>> 
+>>  DEFINE_MUTEX(sysfs_mutex);
+>> @@ -285,6 +286,9 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
+>>  		sysfs_put(sd->s_symlink.target_sd);
+>>  	if (sysfs_type(sd) & SYSFS_COPY_NAME)
+>>  		kfree(sd->s_name);
+>> +	if (sd->s_iattr && sd->s_iattr->ia_secdata)
+>> +		security_release_secctx(sd->s_iattr->ia_secdata,
+>> +					sd->s_iattr->ia_secdata_len);
+>>  	kfree(sd->s_iattr);
+>>  	sysfs_free_ino(sd->s_ino);
+>>  	kmem_cache_free(sysfs_dir_cachep, sd);
+>> -- 
+>> 1.6.5.2.143.g8cc62
+>> 
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
