@@ -1,77 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbZKDRzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932128AbZKDRxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932135AbZKDRzT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:55:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbZKDRzS
+	id S932128AbZKDRxX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 12:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbZKDRxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:55:18 -0500
-Received: from mail1-hoer.fullrate.dk ([90.185.1.42]:57403 "EHLO
-	smtp.fullrate.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757455AbZKDRzR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:55:17 -0500
-X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Nov 2009 12:55:16 EST
-From: Martin Nybo Andersen <tweek@tweek.dk>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Subject: Re: package managers [was: FatELF patches...]
-Date: Wed, 4 Nov 2009 18:48:48 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.31.5; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Ryan C. Gordon" <icculus@icculus.org>,
-       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <20091104165407.1481bc29@lxorguk.ukuu.org.uk> <Pine.LNX.4.64.0911041758420.9986@artax.karlin.mff.cuni.cz>
-In-Reply-To: <Pine.LNX.4.64.0911041758420.9986@artax.karlin.mff.cuni.cz>
+	Wed, 4 Nov 2009 12:53:22 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38877 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757154AbZKDRxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 12:53:21 -0500
+Date: Wed, 4 Nov 2009 12:52:44 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 01/20] blkio: Documentation
+Message-ID: <20091104175243.GE2870@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-2-git-send-email-vgoyal@redhat.com> <20091104172100.GL3560@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911041848.48721.tweek@tweek.dk>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104172100.GL3560@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 November 2009 18:25:07 Mikulas Patocka wrote:
-> On Wed, 4 Nov 2009, Alan Cox wrote:
-> > > - With Linux package managers, the user is stuck with the software and
-> > >   version shipped by the distribution. If he wants to install anything
-> > >   newer or older, it turns into black magic and the typical desktop
-> > > user (non-hacker) can't do it.
-> >
-> > In the rpm/yumworld that would be "yum downgrade" and "yum upgrade" for
-> > packages or whatever button on whatever gui wrapper you happen to have.
+On Wed, Nov 04, 2009 at 10:51:00PM +0530, Balbir Singh wrote:
+> * Vivek Goyal <vgoyal@redhat.com> [2009-11-03 18:43:38]:
 > 
-> And what if there isn't a package? Upgrade option doesn't solve the need
-> for [ distributions X software ] matrix of packages.
+> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> > ---
+> >  Documentation/cgroups/blkio-controller.txt |  106 ++++++++++++++++++++++++++++
+> >  1 files changed, 106 insertions(+), 0 deletions(-)
+> >  create mode 100644 Documentation/cgroups/blkio-controller.txt
+> > 
+> > diff --git a/Documentation/cgroups/blkio-controller.txt b/Documentation/cgroups/blkio-controller.txt
+> > new file mode 100644
+> > index 0000000..dc8fb1a
+> > --- /dev/null
+> > +++ b/Documentation/cgroups/blkio-controller.txt
+> > @@ -0,0 +1,106 @@
+> > +				Block IO Controller
+> > +				===================
+> > +Overview
+> > +========
+> > +cgroup subsys "blkio" implements the block io controller. There seems to be
+> > +a need of various kind of IO control policies (like proportional BW, max BW)
+> > +both at leaf nodes as well as at intermediate nodes in storage hierarchy. Plan
+> > +is to use same cgroup based management interface for blkio controller and
+> > +based on user options switch IO policies in the background.
+> > +
+> > +In the first phase, this patchset implements proportional weight time based
+> > +division of disk policy. It is implemented in CFQ. Hence this policy takes
+> > +effect only on leaf nodes when CFQ is being used.
+> > +
+> > +HOWTO
+> > +=====
+> > +You can do a very simple testing of running two dd threads in two different
+> > +cgroups. Here is what you can do.
+> > +
+> > +- Enable group scheduling in CFQ
+> > +	CONFIG_CFQ_GROUP_IOSCHED=y
+> > +
+> > +- Compile and boot into kernel and mount IO controller (blkio).
+> > +
+> > +	mount -t cgroup -o blkio none /cgroup
+> > +
+> > +- Create two cgroups
+> > +	mkdir -p /cgroup/test1/ /cgroup/test2
+> > +
+> > +- Set weights of group test1 and test2
+> > +	echo 1000 > /cgroup/test1/blkio.weight
+> > +	echo 500 > /cgroup/test2/blkio.weight
+> > +
+> > +- Create two same size files (say 512MB each) on same disk (file1, file2) and
+> > +  launch two dd threads in different cgroup to read those files.
+> > +
+> > +	sync
+> > +	echo 3 > /proc/sys/vm/drop_caches
+> > +
+> > +	dd if=/mnt/sdb/zerofile1 of=/dev/null &
+> > +	echo $! > /cgroup/test1/tasks
+> > +	cat /cgroup/test1/tasks
+> > +
+> > +	dd if=/mnt/sdb/zerofile2 of=/dev/null &
+> > +	echo $! > /cgroup/test2/tasks
+> > +	cat /cgroup/test2/tasks
+> > +
+> > +- At macro level, first dd should finish first. To get more precise data, keep
+> > +  on looking at (with the help of script), at blkio.disk_time and
+> > +  blkio.disk_sectors files of both test1 and test2 groups. This will tell how
+> > +  much disk time (in milli seconds), each group got and how many secotors each
+> > +  group dispatched to the disk. We provide fairness in terms of disk time, so
+> > +  ideally io.disk_time of cgroups should be in proportion to the weight.
+> > +
+> > +Various user visible config options
+> > +===================================
+> > +CONFIG_CFQ_GROUP_IOSCHED
+> > +	- Enables group scheduling in CFQ. Currently only 1 level of group
+> > +	  creation is allowed.
+> > +
+> > +CONFIG_DEBUG_CFQ_IOSCHED
+> > +	- Enables some debugging messages in blktrace. Also creates extra
+> > +	  cgroup file blkio.dequeue.
+> > +
+> > +Config options selected automatically
+> > +=====================================
+> > +These config options are not user visible and are selected/deselected
+> > +automatically based on IO scheduler configuration.
+> > +
+> > +CONFIG_BLK_CGROUP
+> > +	- Block IO controller. Selected by CONFIG_CFQ_GROUP_IOSCHED.
+> > +
+> > +CONFIG_DEBUG_BLK_CGROUP
+> > +	- Debug help. Selected by CONFIG_DEBUG_CFQ_IOSCHED.
+> > +
+> > +Details of cgroup files
+> > +=======================
+> > +- blkio.ioprio_class
+> > +	- Specifies class of the cgroup (RT, BE, IDLE). This is default io
+> > +	  class of the group on all the devices.
+> > +
+> > +	  1 = RT; 2 = BE, 3 = IDLE
+> > +
+> > +- blkio.weight
+> > +	- Specifies per cgroup weight.
+> > +
+> > +	  Currently allowed range of weights is from 100 to 1000.
+> > +
+> > +- blkio.time
+> > +	- disk time allocated to cgroup per device in milliseconds. First
+> > +	  two fields specify the major and minor number of the device and
+> > +	  third field specifies the disk time allocated to group in
+> > +	  milliseconds.
+> > +
+> > +- blkio.sectors
+> > +	- number of sectors transferred to/from disk by the group. First
+> > +	  two fields specify the major and minor number of the device and
+> > +	  third field specifies the number of sectors transferred by the
+> > +	  group to/from the device.
+> > +
+> > +- blkio.dequeue
+> > +	- Debugging aid only enabled if CONFIG_DEBUG_CFQ_IOSCHED=y. This
+> > +	  gives the statistics about how many a times a group was dequeued
+> > +	  from service tree of the device. First two fields specify the major
+> > +	  and minor number of the device and third field specifies the number
+> > +	  of times a group was dequeued from a particular device.
 > 
-> > And of course yum supports third party repositories so you can also deal
-> > with the updating problem which Windows tends not to do well for third
-> > party software.
+> Hi, Vivek,
 > 
-> A practical example --- when I wanted to get Wine on RHEL 5, all I found
-> was a package for 1.0.1. Nothing newer.
-> 
-> I managed to compile the current version of Wine (it wasn't straghtforward
-> and took few days to solve all the problems) and it ran the program I
-> wanted. But I can imagine that a typical business user or home gamer will
-> just say "that Linux sux".
-> 
-> You can say that I should delete RHEL-5 and install Fedora, but that is
-> just that "upgrade one program" => "upgrade all programs" problem.
+> Are the parameters inter-related? What if you have conflicts w.r.t.
+> time, sectors, etc?
 
-Have you ever tried upgrading Windows because some program is incompatible 
-with the current installation? ... That is indeed an 'upgrade all' procedure 
-... _If_ you're lucky enough to be able to reinstall your software.
+What kind of conflicts?
 
-Being able to upgrade at least Debian -- and others as well -- without the 
-need to attend the computer is IMHO one of Linux' biggest wins.
+time, sectors, and dequeue are read only files. They are mainly for 
+monitoring purposes. CFQ provides fairness in terms of disk time, so one
+can monitor whether time share received by a group is fair or not.
 
-BTW: Wine has, like many others, the newest version of their software 
-prepackaged for RHEL 4 & 5 among others at their site: 
-http://www.winehq.org/download/
+"sectors" just gives additional data of how many sectors were transferred.
+It it not a necessary file. I just exported it to get some sense of both
+time and amount IO done by cgroup.
 
-If all else fail the developers could go for statically compiled binaries in 
-an executable tarball, which then handles the installation to /usr/local
+So I am not sure what kind of conflicts you are referring to.
 
--Martin
-
+Thanks
+Vivek
