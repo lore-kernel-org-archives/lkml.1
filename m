@@ -1,203 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbZKDUbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932466AbZKDUhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932546AbZKDUbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 15:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932512AbZKDUbm
+	id S932466AbZKDUhg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 15:37:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbZKDUhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 15:31:42 -0500
-Received: from RELAY-01.ANDREW.CMU.EDU ([128.2.10.212]:45934 "EHLO
-	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932511AbZKDUbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 15:31:41 -0500
-Date: Wed, 4 Nov 2009 15:30:25 -0500
-From: Ben Blum <bblum@andrew.cmu.edu>
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       lizf@cn.fujistu.com, akpm@linux-foundation.org, menage@google.com,
-       bblum@andrew.cmu.edu
-Subject: Re: [RFC][PATCH 2/3] cgroups: subsystem module interface
-Message-ID: <20091104203024.GA14471@andrew.cmu.edu>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	containers@lists.linux-foundation.org, lizf@cn.fujistu.com,
-	akpm@linux-foundation.org, menage@google.com
-References: <20091102212825.GA13692@andrew.cmu.edu> <20091102213022.GC13692@andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102213022.GC13692@andrew.cmu.edu>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Wed, 4 Nov 2009 15:37:36 -0500
+Received: from mail.gmx.net ([213.165.64.20]:60413 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932297AbZKDUhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 15:37:35 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19sXGVm/vtsGHL9suScv1u/lFrSmtY2Y2H3Wdys15
+	AsRMtoK9DNTugH
+Subject: Re: [tip:sched/core] sched: Check for an idle shared cache in
+ select_task_rq_fair()
+From: Mike Galbraith <efault@gmx.de>
+To: arjan@infradead.org, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, stable@kernel.org, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-a1f84a3ab8e002159498814eaa7e48c33752b04b@git.kernel.org>
+References: <1256654138.17752.7.camel@marge.simson.net>
+	 <tip-a1f84a3ab8e002159498814eaa7e48c33752b04b@git.kernel.org>
+Content-Type: text/plain
+Date: Wed, 04 Nov 2009 21:37:15 +0100
+Message-Id: <1257367035.9923.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 02, 2009 at 04:30:22PM -0500, Ben Blum wrote:
-> Add interface between cgroups subsystem management and module loading
+On Wed, 2009-11-04 at 19:33 +0000, tip-bot for Mike Galbraith wrote:
+> Commit-ID:  a1f84a3ab8e002159498814eaa7e48c33752b04b
+> Gitweb:     http://git.kernel.org/tip/a1f84a3ab8e002159498814eaa7e48c33752b04b
+> Author:     Mike Galbraith <efault@gmx.de>
+> AuthorDate: Tue, 27 Oct 2009 15:35:38 +0100
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 4 Nov 2009 18:46:22 +0100
 > 
-> From: Ben Blum <bblum@andrew.cmu.edu>
+> sched: Check for an idle shared cache in select_task_rq_fair()
 > 
-> This patch implements rudimentary module-loading support for cgroups - namely,
-> a cgroup_load_subsys (similar to cgroup_init_subsys) for use as a module
-> initcall, and a struct module pointer in struct cgroup_subsys. Support for
-> subsystem unloading not here, yet to be done (requires more advanced reference
-> counting, for one thing).
-> 
-> I tested compiling a subsystem outside of the kernel source tree, and it was
-> apparent that I wanted the EXPORT_SYMBOL for several functions, but I'm not
-> sure what else it might be good to put them on. Suggestions welcome.
-> 
-> Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
-> ---
-> 
->  include/linux/cgroup.h |    4 ++
->  kernel/cgroup.c        |   92 ++++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 96 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-> index d7f1545..c8474c4 100644
-> --- a/include/linux/cgroup.h
-> +++ b/include/linux/cgroup.h
-> @@ -38,6 +38,7 @@ extern void cgroup_fork_failed(struct task_struct *p, int run_callbacks,
->  			       unsigned long clone_flags);
->  extern int cgroupstats_build(struct cgroupstats *stats,
->  				struct dentry *dentry);
-> +extern int cgroup_load_subsys(struct cgroup_subsys *ss);
->  
->  extern struct file_operations proc_cgroup_operations;
->  
-> @@ -477,6 +478,9 @@ struct cgroup_subsys {
->  	/* used when use_id == true */
->  	struct idr idr;
->  	spinlock_t id_lock;
-> +
-> +	/* should be defined only by modular subsystems */
-> +	struct module *module;
->  };
->  
->  #define SUBSYS(_x) extern struct cgroup_subsys _x ## _subsys;
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 9966dfe..8eba8a5 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -2491,6 +2491,7 @@ int cgroup_add_file(struct cgroup *cgrp,
->  		error = PTR_ERR(dentry);
->  	return error;
->  }
-> +EXPORT_SYMBOL_GPL(cgroup_add_file);
->  
->  int cgroup_add_files(struct cgroup *cgrp,
->  			struct cgroup_subsys *subsys,
-> @@ -2505,6 +2506,7 @@ int cgroup_add_files(struct cgroup *cgrp,
->  	}
->  	return 0;
->  }
-> +EXPORT_SYMBOL_GPL(cgroup_add_files);
->  
->  /**
->   * cgroup_task_count - count the number of tasks in a cgroup.
-> @@ -3650,7 +3652,97 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss)
->  	mutex_init(&ss->hierarchy_mutex);
->  	lockdep_set_class(&ss->hierarchy_mutex, &ss->subsys_key);
->  	ss->active = 1;
-> +
-> +	/* this function shouldn't be used with modular subsystems, since they
-> +	 * need to register a subsys_id, among other things */
-> +	BUG_ON(ss->module);
-> +}
-> +
-> +/**
-> + * cgroup_load_subsys: load and register a modular subsystem at runtime
-> + * @ss: the subsystem to load
-> + *
-> + * This function should be called in a modular subsystem's initcall. If the
-> + * subsytem is built as a module, it will be assigned a new subsys_id and set
-> + * up for use. If the subsystem is built-in anyway, work is delegated to the
-> + * simpler cgroup_init_subsys.
-> + */
-> +int __init_or_module cgroup_load_subsys(struct cgroup_subsys *ss)
-> +{
-> +	int i;
-> +	struct cgroup_subsys_state *css;
-> +
-> +	/* check name validity */
-> +	if (ss->name == NULL || strlen(ss->name) > MAX_CGROUP_TYPE_NAMELEN)
-> +		return -EINVAL;
-> +
-> +	/* we don't support callbacks in modular subsystems. this check is
-> +	 * before the ss->module check for consistency - a module that *could*
-> +	 * be a module should still have no callbacks for consistency. */
-> +	if (ss->fork || ss->exit)
-> +		return -EINVAL;
-> +
-> +	/* an optionally modular subsystem is built-in: we want to do nothing,
-> +	 * since cgroup_init_subsys will take care of it. */
-> +	if (ss->module == NULL) {
-> +		/* sanity: ss->module NULL only if the subsys is built-in and
-> +		 * appears in subsys[] already. */
-> +		BUG_ON(ss->subsys_id >= CGROUP_BUILTIN_SUBSYS_COUNT);
-> +		BUG_ON(subsys[ss->subsys_id] != ss);
-> +		return 0;
-> +	}
-> +
-> +	/* need to register a subsys id before anything else - for example,
-> +	 * init_cgroup_css needs it. also, subsys_mutex needs to nest outside
-> +	 * cgroup_mutex. */
-> +	down_write(&subsys_mutex);
-> +	/* find the first empty slot in the array */
-> +	for (i = CGROUP_BUILTIN_SUBSYS_COUNT; i < CGROUP_SUBSYS_COUNT; i++) {
-> +		if (subsys[i] == NULL)
-> +			break;
-> +	}
-> +	if (i == CGROUP_SUBSYS_COUNT) {
-> +		/* maximum number of subsystems already registered! */
-> +		up_write(&subsys_mutex);
-> +		return -EBUSY;
-> +	}
-> +	/* assign ourselves the subsys_id */
-> +	ss->subsys_id = i;
-> +	subsys[i] = ss;
-> +
-> +	mutex_lock(&cgroup_mutex);
-> +	/* no ss->create seems to need anything important in the ss struct, so
-> +	 * this can happen first (i.e. before the rootnode attachment). */
-> +	css = ss->create(ss, dummytop);
-> +	if (IS_ERR(css)) {
-> +		/* failure case - need to deassign the subsys[] slot. */
-> +		mutex_unlock(&cgroup_mutex);
-> +		subsys[i] = NULL;
-> +		up_write(&subsys_mutex);
-> +		return PTR_ERR(css);
-> +	}
-> +
-> +	list_add(&ss->sibling, &rootnode.subsys_list);
-> +	ss->root = &rootnode;
-> +
-> +	init_cgroup_css(css, ss, dummytop);
-> +	init_css_set.subsys[ss->subsys_id] = dummytop->subsys[ss->subsys_id];
+> When waking affine, check for an idle shared cache, and if
+> found, wake to that CPU/sibling instead of the waker's CPU.
 
-There is a problem here; namely, the init_css_set is supposed to be
-immutable after boot. Putting a new subsystem state in it seems like it
-will be impossible to get right, since a hierarchy might be mounted and
-already using the init_css_set. Perhaps it would be better to use
-find_css_set for this?
+This one still wants some work.  It's not playing well with 1b9508f.
 
-> +
-> +	mutex_init(&ss->hierarchy_mutex);
-> +	lockdep_set_class(&ss->hierarchy_mutex, &ss->subsys_key);
-> +	ss->active = 1;
-> +
-> +	/* pin the subsystem's module so it doesn't go away. this shouldn't
-> +	 * fail, since the module's initcall calls us.
-> +	 * TODO: with module unloading, move this elsewhere */
-> +	BUG_ON(!try_module_get(ss->module));
-> +
-> +	/* success! */
-> +	mutex_unlock(&cgroup_mutex);
-> +	up_write(&subsys_mutex);
-> +	return 0;
->  }
-> +EXPORT_SYMBOL_GPL(cgroup_load_subsys);
->  
->  /**
->   * cgroup_init_early - cgroup initialization at system boot
-> 
+tip v2.6.32-rc6-1731-gc5bb4b1
+
+mysql+oltp
+clients             1          2          4          8         16         32         64        128        256
+tip          10447.14   19734.58   36038.18   35776.85   34662.76   33682.30   32256.22   28770.99   25323.23
+             10462.61   19580.14   36050.48   35942.63   35054.84   33988.40   32423.89   29259.65   25892.24
+             10501.02   19231.27   36007.03   35985.32   35060.79   33945.47   32400.42   29140.84   25716.16
+tip avg      10470.25   19515.33   36031.89   35901.60   34926.13   33872.05   32360.17   29057.16   25643.87
+
+tip v2.6.32-rc6-1731-gc5bb4b1 + 1b9508f (Rate-limit newidle)
+tip+         10095.64   19989.67   36449.85   35923.98   35024.24   34026.61   32411.75   28965.77   27287.96
+             10764.98   19864.03   36632.78   36338.00   35610.52   34439.88   32942.57   29889.18   27426.12
+             10734.48   19572.63   36507.90   36236.36   35486.51   34443.86   32938.90   30136.39   27186.61
+tip+ avg     10531.70   19808.77   36530.17   36166.11   35373.75   34303.45   32764.40   29663.78   27300.23
+                1.005      1.015      1.013      1.007      1.012      1.012      1.012      1.020      1.064
+
+v2.6.32-rc6-1796-gd995f1d (a1f84a3 not playing well with 1b9508f)
+             10578.44   19358.96   36184.70   35549.19   34625.40   33658.72   31947.51   27504.11   20400.97
+             10610.76   19748.84   36401.08   36021.75   34830.67   33566.52   31989.97   27622.25   21348.00
+             10568.87   19600.60   36190.48   35959.96   34805.45   33641.46   32005.30   27591.48   22509.01
+
+
