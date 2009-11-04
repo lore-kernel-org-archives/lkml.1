@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbZKDVLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932641AbZKDVRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932611AbZKDVLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 16:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932384AbZKDVLn
+	id S932641AbZKDVRx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 16:17:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbZKDVRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 16:11:43 -0500
-Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:36200 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932330AbZKDVLm (ORCPT
+	Wed, 4 Nov 2009 16:17:52 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:59093 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932384AbZKDVRu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 16:11:42 -0500
-Date: Wed, 4 Nov 2009 22:11:47 +0100 (CET)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Valdis.Kletnieks@vt.edu
-cc: Martin Nybo Andersen <tweek@tweek.dk>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Ryan C. Gordon" <icculus@icculus.org>,
-       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: package managers [was: FatELF patches...]
-In-Reply-To: <23950.1257367315@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.64.0911042144200.17832@artax.karlin.mff.cuni.cz>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
- <20091104165407.1481bc29@lxorguk.ukuu.org.uk>
- <Pine.LNX.4.64.0911041758420.9986@artax.karlin.mff.cuni.cz>
- <200911041848.48721.tweek@tweek.dk> <Pine.LNX.4.64.0911041901090.26209@artax.karlin.mff.cuni.cz>
- <22108.1257364949@turing-police.cc.vt.edu>           
- <Pine.LNX.4.64.0911042104260.8785@artax.karlin.mff.cuni.cz>
- <23950.1257367315@turing-police.cc.vt.edu>
-X-Personality-Disorder: Schizoid
+	Wed, 4 Nov 2009 16:17:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=OhT8WIQmPjo0QEqDuQfWVdVmqLuJlGqJURYnS1znrTl71jPgyuarNh+2TXwzKUiQY0
+         J8BrkM+7T6cGSAXbqZGIChcod2L1lV5wNjbdp/bo+RAoU8XictogxzBWhlIr9rxXP6aq
+         D/coVf7QDv2Ze7BNFlbZzHsuGFKmSHoUGicz8=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Date: Wed, 4 Nov 2009 22:17:48 +0100
+User-Agent: KMail/1.9.10
+Cc: Pavel Machek <pavel@ucw.cz>, Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1256886023.3555.5.camel@johannes.local> <20091102211629.GA1322@ucw.cz> <alpine.LRH.2.00.0911041403480.31913@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.2.00.0911041403480.31913@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911042217.49144.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > No, all they need to do is bump the .so version number.
-> > 
-> > That's what Debian did. Obviously, I can extract the old library from the 
-> > old package. But non-technical desktop user can't.
+On Wednesday 04 November 2009, Jiri Kosina wrote:
+> On Mon, 2 Nov 2009, Pavel Machek wrote:
 > 
-> But the non-technical user probably wouldn't have hand-compiled vim and links
-> either, so how would they get into that situation?
+> > > I've searched on my GMail archives and the only patch Bart has
+> > > provided so far for the rt2x00 project is this:
+> > > 
+> > > [PATCH] MAINTAINERS: rt2x00 list is moderated
+> > > 
+> > > Which, while technically correct, adds nothing to the project.
+> > > 
+> > > So, I will personally continue to ignore Bart's comments, regards and
+> > > rants, until he provides patches for rt2x00 that actually make the
+> > > driver better.
+> > 
+> > Well, he provided review feedback... he should be thanked for that,
+> > not flamed for it.
+> 
+> He has actually written real patches (and quite non-trivial both in amount 
+> and in functionality), see
+> 
+> 	http://lkml.org/lkml/2009/11/3/372
 
-Non-technical users won't hand-compile but they want third party software 
-that doesn't come from the distribution. And package management system 
-hates it. Truly. It is written with the assumption that everything 
-installed is registered in the package database.
+Please look at the TIMESTAMP of the mail you refer to, and the TIMESTAMP
+of the mail from Luis. And then you can make assumptions about the text...
 
-Another example: I needed new binutils because it had some bugs fixed over 
-standard Debian binutils. So I downloaded .tar.gz from ftp.gnu.org, 
-compiled it, then issued a command to remove the old package, passed it a 
-flag to ignore broken dependencies and then typed make install to install 
-new binaries. --- guess what --- on any further invocation of dselect it 
-complained that there are broken dependencies (the compiler needs 
-binutils) and tried to install the old binutils package!
+> But yes, he got flamed for this for some odd reason. I got the impression 
+> that the community around rt2x00 doesn't like (or understand) the way how 
+> opensource development happens.
 
-Why is the package management so stupid? Why can't it check $PATH for "ld" 
-and if there is one, don't try to install it again?
+Well you mean the open source development where non-contributors
+complain that the contributors work too slowly? Well if that is the way
+things should go, then I don't want to be part of such idiocy. Perhaps
+that is the policy in some companies which try to import it into the
+Open Source world...
 
-After few hours, I resolved the issue by creating an empty "binutils" 
-package and stuffing it into the database.
-
-Now, if I were not a programmer ... if I were an artist who needs the 
-latest version of graphics software, if I were a musican who needs the 
-latest version of audio software, if I were a gamer who needs the latest 
-version of wine ... I'd be f'cked up. That's why I think that package 
-management is an evil feature hurts desktop users. As a technical user, I 
-somehow solve these quirks and install what I want, as a non-technical 
-user, I wouldn't have a chance.
-
-Mikulas
+Ivo
