@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZKDLKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbZKDLKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZKDLKW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 06:10:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZKDLKT
+	id S1755481AbZKDLKi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 06:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbZKDLKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 06:10:19 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39725 "EHLO hera.kernel.org"
+	Wed, 4 Nov 2009 06:10:36 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39737 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755422AbZKDLKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 06:10:17 -0500
-Date: Wed, 4 Nov 2009 11:09:57 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <4AEF7F8A.3080300@cn.fujitsu.com>
-References: <4AEF7F8A.3080300@cn.fujitsu.com>
+	id S1755459AbZKDLKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 06:10:34 -0500
+Date: Wed, 4 Nov 2009 11:10:12 GMT
+From: tip-bot for Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, h-shimamoto@ct.jp.nec.com, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, h-shimamoto@ct.jp.nec.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4AF129C8.3030008@ct.jp.nec.com>
+References: <4AF129C8.3030008@ct.jp.nec.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] ftrace: Fix unmatched locking in ftrace_regex_write()
-Message-ID: <tip-ed146b25942b428f8e8056587b7638ce76573c2f@git.kernel.org>
-Git-Commit-ID: ed146b25942b428f8e8056587b7638ce76573c2f
+Subject: [tip:sched/core] sched: Remove unused __schedule() declaration
+Message-ID: <tip-1477b6a7edd9ffa7bba4f9779ce9a76ce92761ed@git.kernel.org>
+Git-Commit-ID: 1477b6a7edd9ffa7bba4f9779ce9a76ce92761ed
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,48 +31,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ed146b25942b428f8e8056587b7638ce76573c2f
-Gitweb:     http://git.kernel.org/tip/ed146b25942b428f8e8056587b7638ce76573c2f
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Tue, 3 Nov 2009 08:55:38 +0800
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Wed, 4 Nov 2009 01:42:10 -0500
+Commit-ID:  1477b6a7edd9ffa7bba4f9779ce9a76ce92761ed
+Gitweb:     http://git.kernel.org/tip/1477b6a7edd9ffa7bba4f9779ce9a76ce92761ed
+Author:     Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+AuthorDate: Wed, 4 Nov 2009 16:14:16 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 4 Nov 2009 11:43:42 +0100
 
-ftrace: Fix unmatched locking in ftrace_regex_write()
+sched: Remove unused __schedule() declaration
 
-When a command is passed to the set_ftrace_filter, then
-the ftrace_regex_lock is still held going back to user space.
+__schedule() had been removed.
 
- # echo 'do_open : foo' > set_ftrace_filter
- (still holding ftrace_regex_lock when returning to user space!)
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4AEF7F8A.3080300@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <4AF129C8.3030008@ct.jp.nec.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/trace/ftrace.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ include/linux/sched.h |    1 -
+ kernel/kgdb.c         |    2 +-
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 9c451a1..6dc4e5e 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2222,15 +2222,15 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
- 		ret = ftrace_process_regex(parser->buffer,
- 					   parser->idx, enable);
- 		if (ret)
--			goto out;
-+			goto out_unlock;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 75e6e60..f18102c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -349,7 +349,6 @@ extern signed long schedule_timeout(signed long timeout);
+ extern signed long schedule_timeout_interruptible(signed long timeout);
+ extern signed long schedule_timeout_killable(signed long timeout);
+ extern signed long schedule_timeout_uninterruptible(signed long timeout);
+-asmlinkage void __schedule(void);
+ asmlinkage void schedule(void);
+ extern int mutex_spin_on_owner(struct mutex *lock, struct thread_info *owner);
  
- 		trace_parser_clear(parser);
- 	}
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index 9147a31..7d70146 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -870,7 +870,7 @@ static void gdb_cmd_getregs(struct kgdb_state *ks)
  
- 	ret = read;
--
-+out_unlock:
- 	mutex_unlock(&ftrace_regex_lock);
--out:
-+
- 	return ret;
- }
- 
+ 	/*
+ 	 * All threads that don't have debuggerinfo should be
+-	 * in __schedule() sleeping, since all other CPUs
++	 * in schedule() sleeping, since all other CPUs
+ 	 * are in kgdb_wait, and thus have debuggerinfo.
+ 	 */
+ 	if (local_debuggerinfo) {
