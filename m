@@ -1,57 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757161AbZKDQw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZKDQzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757161AbZKDQw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 11:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbZKDQw3
+	id S1757379AbZKDQzX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 11:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbZKDQzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 11:52:29 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55255 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756516AbZKDQw2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 11:52:28 -0500
-Date: Wed, 4 Nov 2009 16:54:07 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Cc: "Ryan C. Gordon" <icculus@icculus.org>,
-       =?ISO-8859-14?B?TeVucyBSdWxs?= =?ISO-8859-14?B?Z+VyZA==?= 
-	<mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: package managers [was: FatELF patches...]
-Message-ID: <20091104165407.1481bc29@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0911041710530.2927@artax.karlin.mff.cuni.cz>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	<1257103201.2865.6.camel@chumley>
-	<yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	<alpine.OSX.1.10.0911011540400.53392@caridad.local>
-	<20091102000147.424f104b@lxorguk.ukuu.org.uk>
-	<alpine.OSX.1.10.0911012023020.55434@caridad.local>
-	<Pine.LNX.4.64.0911041710530.2927@artax.karlin.mff.cuni.cz>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 11:55:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:5607 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757195AbZKDQzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 11:55:22 -0500
+Date: Wed, 4 Nov 2009 11:54:34 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 07/20] blkio: Provide capablity to enqueue/dequeue
+	group entities
+Message-ID: <20091104165434.GD2870@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-8-git-send-email-vgoyal@redhat.com> <x49zl72tiam.fsf@segfault.boston.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49zl72tiam.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - With Linux package managers, the user is stuck with the software and 
->   version shipped by the distribution. If he wants to install anything 
->   newer or older, it turns into black magic and the typical desktop user 
->   (non-hacker) can't do it.
+On Wed, Nov 04, 2009 at 10:34:57AM -0500, Jeff Moyer wrote:
+> Vivek Goyal <vgoyal@redhat.com> writes:
+> 
+> > o This patch embeds cfq_entity object in cfq_group and provides helper routines
+> >   so that group entities can be scheduled.
+> >
+> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> > ---
+> >  block/cfq-iosched.c |  110 +++++++++++++++++++++++++++++++++++++++++++--------
+> >  1 files changed, 93 insertions(+), 17 deletions(-)
+> >
+> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> > index bc99163..8ec8a82 100644
+> > --- a/block/cfq-iosched.c
+> > +++ b/block/cfq-iosched.c
+> > @@ -79,6 +79,7 @@ struct cfq_service_tree {
+> >  #define CFQ_RB_ROOT	(struct cfq_service_tree) { RB_ROOT, NULL, 0, NULL}
+> >  
+> >  struct cfq_sched_data {
+> > +	unsigned int nr_active;
+> >  	struct cfq_service_tree service_tree[IO_IOPRIO_CLASSES];
+> >  };
+> >  
+> > @@ -89,6 +90,10 @@ struct cfq_entity {
+> >  	struct cfq_service_tree *st;
+> >  	unsigned short ioprio_class;
+> >  	bool ioprio_class_changed;
+> > +	struct cfq_entity *parent;
+> > +	bool on_st;
+> > +	/* Points to the sched_data of group entity. Null for cfqq */
+> > +	struct cfq_sched_data *my_sd;
+> 
+> Why my_sd?  None of the other members required a my.  ;-)
+> 
 
-In the rpm/yumworld that would be "yum downgrade" and "yum upgrade" for
-packages or whatever button on whatever gui wrapper you happen to have.
+Because in rest of the code, we have been using "struct cfq_sched_data *sd"
+to mean pointer to scheduling data entity/queue/group is queued. 
 
-And of course yum supports third party repositories so you can also deal
-with the updating problem which Windows tends not to do well for third
-party software.
+In this case entity is embedded inside a cfq_group object and it is
+hosting a sched_data tree. So "*sd" means the sched_data the entity is
+queued on and "*my_sd" means the sched_data entity is hosting.
 
-Installing it is the easy bit, keeping it current and secure is the fun
-bit.
+> > +static inline struct cfq_entity *parent_entity(struct cfq_entity *cfqe)
+> > +{
+> > +	return cfqe->parent;
+> > +}
+> 
+> Wow, is this really necessary for a pointer dereference?
+> 
 
-All pretty routine stuff and a lot of users add other repositories
-themselves: generally by having a package that adds the repository, so
-you just have one package to click on in a web browser and open, then off
-it all goes.
+I guess no. As core scheduling code is inspired from CFS, it is coming
+from there. :-). Will get rid of it in next posting.
 
+> > +#ifdef CONFIG_CFQ_GROUP_IOSCHED
+> > +/* check for entity->parent so that loop is not executed for root entity. */
+> > +#define for_each_entity(entity)	\
+> > +	for (; entity && entity->parent; entity = entity->parent)
+> 
+> See, you don't use it here
+
+:-)
+
+> 
+> > @@ -660,7 +723,13 @@ static void enqueue_cfqe(struct cfq_entity *cfqe)
+> >  
+> >  static void enqueue_cfqq(struct cfq_queue *cfqq)
+> >  {
+> > -	enqueue_cfqe(&cfqq->entity);
+> > +	struct cfq_entity *cfqe = &cfqq->entity;
+> > +
+> > +	for_each_entity(cfqe) {
+> > +		if (cfqe->on_st)
+> > +			break;
+> > +		enqueue_cfqe(cfqe);
+> > +	}
+> >  }
+> 
+> Maybe I'm slow, but I would have benefitted from a comment above that
+> function stating that we have to walk up the tree to make sure that the
+> parent is also scheduled.
+
+Sure, will put a comment here.
+
+Thanks
+Vivek
