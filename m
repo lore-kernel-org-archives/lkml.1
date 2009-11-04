@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757250AbZKDTKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZKDTIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757250AbZKDTKP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:10:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZKDTKN
+	id S1755907AbZKDTIq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZKDTIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:10:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17169 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbZKDTKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:10:12 -0500
-Date: Wed, 4 Nov 2009 21:06:09 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com
-Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091104190609.GB772@redhat.com>
-References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com> <4AF07199.2020601@gmail.com> <4AF072EE.9020202@gmail.com> <20091103235744.GF6726@linux.vnet.ibm.com> <20091104115729.GD8398@redhat.com> <20091104172542.GC6736@linux.vnet.ibm.com>
+	Wed, 4 Nov 2009 14:08:46 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:50115 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751361AbZKDTIp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:08:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=PWLtEhPgnvz+pB+BMhuu7PhfWuzeC27Vng2/AUpBExeM3QmYHFgovG99SZpxosScIp
+         egfDsIdMlGfJtIlwGtFK4I5bWY4HW04+FRG8v/4N4Z7q0LiRQ1bUDFl56VxvtEacsrr8
+         KuiePTyrkUW7YKVaCQb9WlUYme7aoJPyWYp4Y=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091104172542.GC6736@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091104173305.28463.69600.sendpatchset@localhost.localdomain>
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
+	 <20091104173305.28463.69600.sendpatchset@localhost.localdomain>
+Date: Wed, 4 Nov 2009 20:08:50 +0100
+Message-ID: <14add3d10911041108u42f0323csdd02fbefa8f4f30f@mail.gmail.com>
+Subject: Re: [PATCH 09/41] rt2800usb: add rt2800_register_[read,write]() 
+	wrappers
+From: Gertjan van Wingerde <gwingerde@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 09:25:42AM -0800, Paul E. McKenney wrote:
-> (Sorry, but, as always, I could not resist!)
-> 
-> 							Thanx, Paul
+On Wed, Nov 4, 2009 at 6:33 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] rt2800usb: add rt2800_register_[read,write]() wrappers
+>
+> Part of preparations for later code unification.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
 
-Thanks Paul!
-Jonathan: are you reading this?
-Another one for your quotes of the week collection :)
+For what it is worth:
 
--- 
-MST
+Acked-by: Gertjan van Wingerde <gwingerde@gmail.com>
