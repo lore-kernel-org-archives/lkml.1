@@ -1,39 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbZKDRcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbZKDRcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932073AbZKDRcY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbZKDRcX
+	id S932101AbZKDRcc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 12:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbZKDRcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:32:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:5665 "EHLO
+	Wed, 4 Nov 2009 12:32:31 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:41096 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755180AbZKDRcV (ORCPT
+	with ESMTP id S932086AbZKDRc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:32:21 -0500
+	Wed, 4 Nov 2009 12:32:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=b0RJNRJox2xS3iRS/5fEFKycN8l6uWt9LG24kBccPMNGs7LKZvkQYltU69lSXU72O+
-         TtQqXkxCh2muNLjTPNHJdn3jx7Z9/MWD+J6KyIc4nC6+lX07bqLutYPg/zfqsFZq15LD
-         FJm6t5PfbOzu8Y9CP4DayhBrMpFpt1c5O1Yaw=
+        b=YXBVePq9f8nAu/5LJL6yWWm90VhNh2RaKDnhFNpF9vOT8Vo/ghgP9fIhzHKs0VD+bB
+         oZa+dFbvef2Lhe3Jyg2o5xZq4OKHpnUdMWitUWqN8wYegnZtAIwKQJKINBfCMo8gEJsT
+         vmQj0m1edWElbU+a/EnHGv8/fTDp5vo+FoSEY=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-wireless@vger.kernel.org
-Cc: Ivo van Doorn <ivdoorn@gmail.com>,
+Cc: Gertjan van Wingerde <gwingerde@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Gertjan van Wingerde <gwingerde@gmail.com>,
-       linux-kernel@vger.kernel.org,
+       Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
        "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 04 Nov 2009 18:31:58 +0100
-Message-Id: <20091104173158.28463.66661.sendpatchset@localhost.localdomain>
+Date: Wed, 04 Nov 2009 18:32:10 +0100
+Message-Id: <20091104173210.28463.95558.sendpatchset@localhost.localdomain>
 In-Reply-To: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
 References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
-Subject: [PATCH 01/41] rt2800usb: make Kconfig help entry more helpful
+Subject: [PATCH 02/41] rt2800pci: make Kconfig help entry more helpful
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] rt2800usb: make Kconfig help entry more helpful
+Subject: [PATCH] rt2800pci: make Kconfig help entry more helpful
 
 Document known issues with the driver to aid distribution makers,
 users and developers in making informed decisions instead of wasting
@@ -41,32 +40,31 @@ their time needlessly.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-This reflects the actual state of affairs for driver in Linus' tree.
+This reflects the actual state of affairs for driver in net-next tree.
 
- drivers/net/wireless/rt2x00/Kconfig |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/wireless/rt2x00/Kconfig |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 Index: b/drivers/net/wireless/rt2x00/Kconfig
 ===================================================================
 --- a/drivers/net/wireless/rt2x00/Kconfig
 +++ b/drivers/net/wireless/rt2x00/Kconfig
-@@ -104,7 +104,7 @@ config RT73USB
- 	  When compiled as a module, this driver will be called rt73usb.
+@@ -64,7 +64,7 @@ config RT2800PCI_SOC
+ 	default y
  
- config RT2800USB
--	tristate "Ralink rt2800 (USB) support"
-+	tristate "Ralink rt2800 (USB) support (EXPERIMENTAL)"
- 	depends on USB && EXPERIMENTAL
- 	select RT2X00_LIB_USB
- 	select RT2X00_LIB_HT
-@@ -115,6 +115,10 @@ config RT2800USB
- 	  This adds experimental support for rt2800 wireless chipset family.
- 	  Supported chips: RT2770, RT2870 & RT3070.
+ config RT2800PCI
+-	tristate "Ralink rt2800 (PCI/PCMCIA) support"
++	tristate "Ralink rt2800 (PCI/PCMCIA) support (VERY EXPERIMENTAL)"
+ 	depends on (RT2800PCI_PCI || RT2800PCI_SOC) && EXPERIMENTAL
+ 	select RT2X00_LIB_PCI if RT2800PCI_PCI
+ 	select RT2X00_LIB_SOC if RT2800PCI_SOC
+@@ -77,6 +77,9 @@ config RT2800PCI
+ 	  This adds support for rt2800 wireless chipset family.
+ 	  Supported chips: RT2760, RT2790, RT2860, RT2880, RT2890 & RT3052
  
-+	  Known issues:
-+	  - support for RT2870 chips doesn't work with 802.11n APs yet
-+	  - support for RT3070 chips is non-functional at the moment
++	  This driver is non-functional at the moment and is intended for
++	  developers.
 +
- 	  When compiled as a module, this driver will be called "rt2800usb.ko".
+ 	  When compiled as a module, this driver will be called "rt2800pci.ko".
  
- config RT2X00_LIB_PCI
+ config RT2500USB
