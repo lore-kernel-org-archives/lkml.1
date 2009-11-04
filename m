@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbZKDWAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932764AbZKDWDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932838AbZKDWAd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 17:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932638AbZKDWAc
+	id S932764AbZKDWDq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 17:03:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758252AbZKDWDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 17:00:32 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43490 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932791AbZKDWA1 (ORCPT
+	Wed, 4 Nov 2009 17:03:45 -0500
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:59249 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755803AbZKDWDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 17:00:27 -0500
-Date: Wed, 4 Nov 2009 23:00:25 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Luis Correia <luis.f.correia@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-next-2.6 2009-10-28
-Message-ID: <20091104220024.GC27325@elf.ucw.cz>
-References: <1256886023.3555.5.camel@johannes.local>
- <20091102211629.GA1322@ucw.cz>
- <alpine.LRH.2.00.0911041403480.31913@twin.jikos.cz>
- <200911042217.49144.IvDoorn@gmail.com>
+	Wed, 4 Nov 2009 17:03:44 -0500
+Date: Wed, 4 Nov 2009 17:02:12 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Andi Kleen <andi@firstfloor.org>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>
+Subject: Re: [MM] Remove rss batching from copy_page_range()
+In-Reply-To: <87my3280mb.fsf@basil.nowhere.org>
+Message-ID: <alpine.DEB.1.10.0911041640340.17859@V090114053VZO-1>
+References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1> <alpine.DEB.1.10.0911041415480.7409@V090114053VZO-1> <87my3280mb.fsf@basil.nowhere.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911042217.49144.IvDoorn@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > But yes, he got flamed for this for some odd reason. I got the impression 
-> > that the community around rt2x00 doesn't like (or understand) the way how 
-> > opensource development happens.
-> 
-> Well you mean the open source development where non-contributors
-> complain that the contributors work too slowly? 
+On Wed, 4 Nov 2009, Andi Kleen wrote:
 
-This was the case when non-contributor complained that patch adds
-2KLoC of unneccessary code.
+> > With per cpu counters in mm there is no need for batching
+> > mm counter updates anymore. Update counters directly while
+> > copying pages.
+>
+> Hmm, but with all the inlining with some luck the local
+> counters will be in registers. That will never be the case
+> with the per cpu counters.
 
-> Perhaps
-> that is the policy in some companies which try to import it into the
-> Open Source world...
+The function is too big for that to occur and the counters have to be
+preserved across function calls. The code is shorter with the patch
+applied:
 
-Do you really have to attack everyone around?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+christoph@:~/n/linux-2.6$ size mm/memory.o
+   text	   data	    bss	    dec	    hex	filename
+  20140	     56	     40	  20236	   4f0c	mm/memory.o
+christoph@:~/n/linux-2.6$ quilt push
+Applying patch mmcounter
+patching file include/linux/mm_types.h
+patching file include/linux/sched.h
+patching file kernel/fork.c
+patching file fs/proc/task_mmu.c
+patching file mm/filemap_xip.c
+patching file mm/fremap.c
+patching file mm/memory.c
+patching file mm/rmap.c
+patching file mm/swapfile.c
+patching file mm/init-mm.c
+
+Now at patch mmcounter
+christoph@:~/n/linux-2.6$ make mm/memory.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CC      arch/x86/kernel/asm-offsets.s
+  GEN     include/asm/asm-offsets.h
+  CALL    scripts/checksyscalls.sh
+  CC      mm/memory.o
+christoph@:~/n/linux-2.6$ size mm/memory.o
+   text	   data	    bss	    dec	    hex	filename
+  20028	     56	     40	  20124	   4e9c	mm/memory.o
+christoph@:~/n/linux-2.6$ quilt push
+Applying patch simplify
+patching file mm/memory.c
+
+Now at patch simplify
+christoph@:~/n/linux-2.6$ make mm/memory.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    scripts/checksyscalls.sh
+  CC      mm/memory.o
+christoph@:~/n/linux-2.6$ size mm/memory.o
+   text	   data	    bss	    dec	    hex	filename
+  19888	     56	     40	  19984	   4e10	mm/memory.o
+
+
