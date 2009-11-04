@@ -1,109 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbZKDIhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462AbZKDIiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbZKDIhr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 03:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZKDIhq
+	id S1754462AbZKDIiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 03:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZKDIiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 03:37:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45165 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbZKDIhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 03:37:45 -0500
-Date: Wed, 4 Nov 2009 09:37:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project
-	tree
-Message-ID: <20091104083737.GA16978@elte.hu>
-References: <200911031951.05235.bzolnier@gmail.com> <200911032200.04516.IvDoorn@gmail.com>
+	Wed, 4 Nov 2009 03:38:21 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44090 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZKDIiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 03:38:21 -0500
+Date: Wed, 4 Nov 2009 09:38:11 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: Re: [ANNOUNCE] 2.6.31.4-rt14
+Message-ID: <20091104083811.GA23889@pengutronix.de>
+References: <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain> <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <1257300790.25489.16.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200911032200.04516.IvDoorn@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1257300790.25489.16.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ivo van Doorn <ivdoorn@gmail.com> wrote:
-
-> >       MAINTAINERS: add rt2800 entry
+On Wed, Nov 04, 2009 at 02:13:10AM +0000, Fernando Lopez-Lezcano wrote:
+> On Wed, 2009-10-14 at 12:02 +0200, Thomas Gleixner wrote:
+> > We are pleased to announce the next update to our new preempt-rt
+> > series.
+> > 
+> >    - Forward to 2.6.31.4
 > 
-> I see you decided to take over the maintainership? Doesn't that need 
-> the current maintainer to move away, or was this part of the "going 
-> over other peoples head" plan?
->
-> [...]
->
-> These are too much (and too big) patches for me to review at once, 
-> I'll look at them later.
+> Could some guru rebase to 2.6.31.5 please?
+> I get two failed chunks in kernel/futex.c
+tip/rt/2.6.31 [1] is at v2.6.31.5-rt16 (but untagged).  You might get
+kernel/futex.c from there.  I assume -rt16 isn't released yet as there
+is no tag.
 
-Frankly, having read through the recent discussions related to the 
-rt2800pci/usb drivers, the subtle (and largely undeserved) group 
-violence and abuse you are inflicting on Bart is stomach-turning.
+Best regards
+Uwe
 
-The non-working rt2800pci driver has been pending in your private tree 
-for how long, 1.5 _years_?
+[1] http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=refs/heads/rt/2.6.31
 
-Look at the diffstat of Bart's driver:
-
-   15 files changed, 4036 insertions(+), 7158 deletions(-)
-
-He reduced your 5.2 KLOC non-working driver into a 1.8 KLOC _working_ 
-driver.
-
-And _still_ your complaint about Bart's series is that he updated the 
-MAINTAINERS entry and added an entry for rt2800? Heck _sure_ he should 
-update it, he is the one doing the hard work of trying to bring it to 
-users, trying to clean up a messy driver space, trying to turn crap into 
-gold.
-
-The thing is, if you dont have the time or interest to listen to and act 
-upon review feedback, be constructive about it and fix (obvious) 
-structural problems in your rt2800 code, you should just step aside and 
-let Bart maintain what he is apparently more capable of maintaining than 
-you are.
-
-What you are doing here is a thinly veiled land-grab: you did a minimal 
-token driver for rt2800 that doesnt work, kept it in your private tree 
-for _1.5 years_, and the moment someone _else_ came along and did 
-something better and more functional in drivers/staging/, you discovered 
-your sudden interest for it and moved the crappy driver upstream at 
-lightning's speed (it is already in net-next AFAICS, despite negative 
-test and review feedback) - ignoring and throwing away all the work that 
-Bart has done.
-
-Such behavior wouldnt fly in _any_ other Linux subsystem, but apparently 
-there is one set of rules for upstream kernel maintainers and then 
-there's another, different set of rules for upstream wireless driver 
-maintainers.
-
-Really, you should listen to contrary opinion and _you_ should work 
-_hard_ to integrate Bart socially and open up your close circle of 
-wireless insiders instead of fighting his 'outsider' contributions every 
-which way. We dont care if people are rough, express displeasure and 
-show strong opinion about crappy code - but the moment you are 
-_excluding_ capable people and playing petty office politics (like you 
-are very clearly doing it with Bart here) everyone loses.
-
-Guys, show some minimal amount of honesty, openness and critical 
-thinking please ...
-
-	Ingo
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
