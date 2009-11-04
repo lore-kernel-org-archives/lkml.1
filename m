@@ -1,292 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbZKDPyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZKDP6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756842AbZKDPyr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbZKDPyq
+	id S1756899AbZKDP6D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:58:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbZKDP6B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:54:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41185 "EHLO mx3.mail.elte.hu"
+	Wed, 4 Nov 2009 10:58:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64268 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752413AbZKDPyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:54:46 -0500
-Date: Wed, 4 Nov 2009 16:54:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20091104155440.GA692@elte.hu>
+	id S1751984AbZKDP57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:57:59 -0500
+Date: Wed, 4 Nov 2009 17:55:02 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com, Daniel Walker <dwalker@fifo99.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: [PATCHv8 1/3] tun: export underlying socket
+Message-ID: <20091104155502.GB32673@redhat.com>
+References: <cover.1257349249.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <cover.1257349249.git.mst@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Tun device looks similar to a packet socket
+in that both pass complete frames from/to userspace.
 
-Please pull the latest sched-fixes-for-linus git tree from:
+This patch fills in enough fields in the socket underlying tun driver
+to support sendmsg/recvmsg operations, and message flags
+MSG_TRUNC and MSG_DONTWAIT, and exports access to this socket
+to modules.  Regular read/write behaviour is unchanged.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+This way, code using raw sockets to inject packets
+into a physical device, can support injecting
+packets into host network stack almost without modification.
 
-Two throughput regression fixes and two fixes.
+First user of this interface will be vhost virtualization
+accelerator.
 
- Thanks,
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
+Acked-by: David S. Miller <davem@davemloft.net>
+---
 
-	Ingo
+DaveM agreed that this will go in through Rusty's tree together
+with vhost patch, because vhost is the first user of the new
+interface.
 
------------------->
-Mike Galbraith (3):
-      sched: Strengthen buddies and mitigate buddy induced latencies
-      sched: Disable SD_PREFER_LOCAL at node level
-      sched: Fix kthread_bind() by moving the body of kthread_bind() to sched.c
+ drivers/net/tun.c      |  101 +++++++++++++++++++++++++++++++++++++++---------
+ include/linux/if_tun.h |   14 +++++++
+ 2 files changed, 96 insertions(+), 19 deletions(-)
 
-Rusty Russell (1):
-      sched: Fix boot crash by zalloc()ing most of the cpu masks
-
-
- arch/x86/include/asm/topology.h |    2 +-
- kernel/kthread.c                |   23 ------------
- kernel/sched.c                  |   40 +++++++++++++++++++--
- kernel/sched_fair.c             |   73 +++++++++++++++++++++++++--------------
- 4 files changed, 84 insertions(+), 54 deletions(-)
-
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index d823c24..40e37b1 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -143,7 +143,7 @@ extern unsigned long node_remap_size[];
- 				| 1*SD_BALANCE_FORK			\
- 				| 0*SD_BALANCE_WAKE			\
- 				| 1*SD_WAKE_AFFINE			\
--				| 1*SD_PREFER_LOCAL			\
-+				| 0*SD_PREFER_LOCAL			\
- 				| 0*SD_SHARE_CPUPOWER			\
- 				| 0*SD_POWERSAVINGS_BALANCE		\
- 				| 0*SD_SHARE_PKG_RESOURCES		\
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 5fe7099..ab7ae57 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -150,29 +150,6 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
- EXPORT_SYMBOL(kthread_create);
+diff --git a/drivers/net/tun.c b/drivers/net/tun.c
+index 4fdfa2a..18f8876 100644
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -144,6 +144,7 @@ static int tun_attach(struct tun_struct *tun, struct file *file)
+ 	err = 0;
+ 	tfile->tun = tun;
+ 	tun->tfile = tfile;
++	tun->socket.file = file;
+ 	dev_hold(tun->dev);
+ 	sock_hold(tun->socket.sk);
+ 	atomic_inc(&tfile->count);
+@@ -158,6 +159,7 @@ static void __tun_detach(struct tun_struct *tun)
+ 	/* Detach from net device */
+ 	netif_tx_lock_bh(tun->dev);
+ 	tun->tfile = NULL;
++	tun->socket.file = NULL;
+ 	netif_tx_unlock_bh(tun->dev);
  
- /**
-- * kthread_bind - bind a just-created kthread to a cpu.
-- * @k: thread created by kthread_create().
-- * @cpu: cpu (might not be online, must be possible) for @k to run on.
-- *
-- * Description: This function is equivalent to set_cpus_allowed(),
-- * except that @cpu doesn't need to be online, and the thread must be
-- * stopped (i.e., just returned from kthread_create()).
-- */
--void kthread_bind(struct task_struct *k, unsigned int cpu)
--{
--	/* Must have done schedule() in kthread() before we set_task_cpu */
--	if (!wait_task_inactive(k, TASK_UNINTERRUPTIBLE)) {
--		WARN_ON(1);
--		return;
--	}
--	set_task_cpu(k, cpu);
--	k->cpus_allowed = cpumask_of_cpu(cpu);
--	k->rt.nr_cpus_allowed = 1;
--	k->flags |= PF_THREAD_BOUND;
--}
--EXPORT_SYMBOL(kthread_bind);
--
--/**
-  * kthread_stop - stop a thread created by kthread_create().
-  * @k: thread created by kthread_create().
-  *
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 789001d..5cb7d63 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1996,6 +1996,38 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
- 		p->sched_class->prio_changed(rq, p, oldprio, running);
+ 	/* Drop read queue */
+@@ -387,7 +389,8 @@ static netdev_tx_t tun_net_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	/* Notify and wake up reader process */
+ 	if (tun->flags & TUN_FASYNC)
+ 		kill_fasync(&tun->fasync, SIGIO, POLL_IN);
+-	wake_up_interruptible(&tun->socket.wait);
++	wake_up_interruptible_poll(&tun->socket.wait, POLLIN |
++				   POLLRDNORM | POLLRDBAND);
+ 	return NETDEV_TX_OK;
+ 
+ drop:
+@@ -743,7 +746,7 @@ static __inline__ ssize_t tun_put_user(struct tun_struct *tun,
+ 	len = min_t(int, skb->len, len);
+ 
+ 	skb_copy_datagram_const_iovec(skb, 0, iv, total, len);
+-	total += len;
++	total += skb->len;
+ 
+ 	tun->dev->stats.tx_packets++;
+ 	tun->dev->stats.tx_bytes += len;
+@@ -751,34 +754,23 @@ static __inline__ ssize_t tun_put_user(struct tun_struct *tun,
+ 	return total;
  }
  
-+/**
-+ * kthread_bind - bind a just-created kthread to a cpu.
-+ * @k: thread created by kthread_create().
-+ * @cpu: cpu (might not be online, must be possible) for @k to run on.
-+ *
-+ * Description: This function is equivalent to set_cpus_allowed(),
-+ * except that @cpu doesn't need to be online, and the thread must be
-+ * stopped (i.e., just returned from kthread_create()).
-+ *
-+ * Function lives here instead of kthread.c because it messes with
-+ * scheduler internals which require locking.
-+ */
-+void kthread_bind(struct task_struct *p, unsigned int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long flags;
-+
-+	/* Must have done schedule() in kthread() before we set_task_cpu */
-+	if (!wait_task_inactive(p, TASK_UNINTERRUPTIBLE)) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	set_task_cpu(p, cpu);
-+	p->cpus_allowed = cpumask_of_cpu(cpu);
-+	p->rt.nr_cpus_allowed = 1;
-+	p->flags |= PF_THREAD_BOUND;
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+}
-+EXPORT_SYMBOL(kthread_bind);
-+
- #ifdef CONFIG_SMP
- /*
-  * Is this task likely cache-hot:
-@@ -2008,7 +2040,7 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
- 	/*
- 	 * Buddy candidates are cache hot:
- 	 */
--	if (sched_feat(CACHE_HOT_BUDDY) &&
-+	if (sched_feat(CACHE_HOT_BUDDY) && this_rq()->nr_running &&
- 			(&p->se == cfs_rq_of(&p->se)->next ||
- 			 &p->se == cfs_rq_of(&p->se)->last))
- 		return 1;
-@@ -9535,13 +9567,13 @@ void __init sched_init(void)
- 	current->sched_class = &fair_sched_class;
- 
- 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
--	alloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
-+	zalloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
- #ifdef CONFIG_SMP
- #ifdef CONFIG_NO_HZ
--	alloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
-+	zalloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
- 	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
- #endif
--	alloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
-+	zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
- #endif /* SMP */
- 
- 	perf_event_init();
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index c32c3e6..37087a7 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -822,6 +822,26 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
- 		 * re-elected due to buddy favours.
- 		 */
- 		clear_buddies(cfs_rq, curr);
-+		return;
-+	}
-+
-+	/*
-+	 * Ensure that a task that missed wakeup preemption by a
-+	 * narrow margin doesn't have to wait for a full slice.
-+	 * This also mitigates buddy induced latencies under load.
-+	 */
-+	if (!sched_feat(WAKEUP_PREEMPT))
-+		return;
-+
-+	if (delta_exec < sysctl_sched_min_granularity)
-+		return;
-+
-+	if (cfs_rq->nr_running > 1) {
-+		struct sched_entity *se = __pick_next_entity(cfs_rq);
-+		s64 delta = curr->vruntime - se->vruntime;
-+
-+		if (delta > ideal_runtime)
-+			resched_task(rq_of(cfs_rq)->curr);
- 	}
- }
- 
-@@ -861,21 +881,18 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se);
- static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
+-static ssize_t tun_chr_aio_read(struct kiocb *iocb, const struct iovec *iv,
+-			    unsigned long count, loff_t pos)
++static ssize_t tun_do_read(struct tun_struct *tun,
++			   struct kiocb *iocb, const struct iovec *iv,
++			   ssize_t len, int noblock)
  {
- 	struct sched_entity *se = __pick_next_entity(cfs_rq);
--	struct sched_entity *buddy;
-+	struct sched_entity *left = se;
+-	struct file *file = iocb->ki_filp;
+-	struct tun_file *tfile = file->private_data;
+-	struct tun_struct *tun = __tun_get(tfile);
+ 	DECLARE_WAITQUEUE(wait, current);
+ 	struct sk_buff *skb;
+-	ssize_t len, ret = 0;
+-
+-	if (!tun)
+-		return -EBADFD;
++	ssize_t ret = 0;
  
--	if (cfs_rq->next) {
--		buddy = cfs_rq->next;
--		cfs_rq->next = NULL;
--		if (wakeup_preempt_entity(buddy, se) < 1)
--			return buddy;
--	}
-+	if (cfs_rq->next && wakeup_preempt_entity(cfs_rq->next, left) < 1)
-+		se = cfs_rq->next;
+ 	DBG(KERN_INFO "%s: tun_chr_read\n", tun->dev->name);
  
--	if (cfs_rq->last) {
--		buddy = cfs_rq->last;
--		cfs_rq->last = NULL;
--		if (wakeup_preempt_entity(buddy, se) < 1)
--			return buddy;
+-	len = iov_length(iv, count);
+-	if (len < 0) {
+-		ret = -EINVAL;
+-		goto out;
 -	}
-+	/*
-+	 * Prefer last buddy, try to return the CPU to a preempted task.
-+	 */
-+	if (cfs_rq->last && wakeup_preempt_entity(cfs_rq->last, left) < 1)
-+		se = cfs_rq->last;
+-
+ 	add_wait_queue(&tun->socket.wait, &wait);
+ 	while (len) {
+ 		current->state = TASK_INTERRUPTIBLE;
+ 
+ 		/* Read frames from the queue */
+ 		if (!(skb=skb_dequeue(&tun->socket.sk->sk_receive_queue))) {
+-			if (file->f_flags & O_NONBLOCK) {
++			if (noblock) {
+ 				ret = -EAGAIN;
+ 				break;
+ 			}
+@@ -805,6 +797,27 @@ static ssize_t tun_chr_aio_read(struct kiocb *iocb, const struct iovec *iv,
+ 	current->state = TASK_RUNNING;
+ 	remove_wait_queue(&tun->socket.wait, &wait);
+ 
++	return ret;
++}
 +
-+	clear_buddies(cfs_rq, se);
- 
- 	return se;
- }
-@@ -1577,6 +1594,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
- 	struct sched_entity *se = &curr->se, *pse = &p->se;
- 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
- 	int sync = wake_flags & WF_SYNC;
-+	int scale = cfs_rq->nr_running >= sched_nr_latency;
- 
- 	update_curr(cfs_rq);
- 
-@@ -1591,18 +1609,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
- 	if (unlikely(se == pse))
++static ssize_t tun_chr_aio_read(struct kiocb *iocb, const struct iovec *iv,
++			    unsigned long count, loff_t pos)
++{
++	struct file *file = iocb->ki_filp;
++	struct tun_file *tfile = file->private_data;
++	struct tun_struct *tun = __tun_get(tfile);
++	ssize_t len, ret;
++
++	if (!tun)
++		return -EBADFD;
++	len = iov_length(iv, count);
++	if (len < 0) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	ret = tun_do_read(tun, iocb, iv, len, file->f_flags & O_NONBLOCK);
++	ret = min_t(ssize_t, ret, len);
+ out:
+ 	tun_put(tun);
+ 	return ret;
+@@ -847,7 +860,8 @@ static void tun_sock_write_space(struct sock *sk)
  		return;
  
--	/*
--	 * Only set the backward buddy when the current task is still on the
--	 * rq. This can happen when a wakeup gets interleaved with schedule on
--	 * the ->pre_schedule() or idle_balance() point, either of which can
--	 * drop the rq lock.
--	 *
--	 * Also, during early boot the idle thread is in the fair class, for
--	 * obvious reasons its a bad idea to schedule back to the idle thread.
--	 */
--	if (sched_feat(LAST_BUDDY) && likely(se->on_rq && curr != rq->idle))
--		set_last_buddy(se);
--	if (sched_feat(NEXT_BUDDY) && !(wake_flags & WF_FORK))
-+	if (sched_feat(NEXT_BUDDY) && scale && !(wake_flags & WF_FORK))
- 		set_next_buddy(pse);
+ 	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+-		wake_up_interruptible_sync(sk->sk_sleep);
++		wake_up_interruptible_sync_poll(sk->sk_sleep, POLLOUT |
++						POLLWRNORM | POLLWRBAND);
  
- 	/*
-@@ -1648,8 +1655,22 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
- 
- 	BUG_ON(!pse);
- 
--	if (wakeup_preempt_entity(se, pse) == 1)
-+	if (wakeup_preempt_entity(se, pse) == 1) {
- 		resched_task(curr);
-+		/*
-+		 * Only set the backward buddy when the current task is still
-+		 * on the rq. This can happen when a wakeup gets interleaved
-+		 * with schedule on the ->pre_schedule() or idle_balance()
-+		 * point, either of which can * drop the rq lock.
-+		 *
-+		 * Also, during early boot the idle thread is in the fair class,
-+		 * for obvious reasons its a bad idea to schedule back to it.
-+		 */
-+		if (unlikely(!se->on_rq || curr == rq->idle))
-+			return;
-+		if (sched_feat(LAST_BUDDY) && scale && entity_is_task(se))
-+			set_last_buddy(se);
-+	}
+ 	tun = container_of(sk, struct tun_sock, sk)->tun;
+ 	kill_fasync(&tun->fasync, SIGIO, POLL_OUT);
+@@ -858,6 +872,37 @@ static void tun_sock_destruct(struct sock *sk)
+ 	free_netdev(container_of(sk, struct tun_sock, sk)->tun->dev);
  }
  
- static struct task_struct *pick_next_task_fair(struct rq *rq)
++static int tun_sendmsg(struct kiocb *iocb, struct socket *sock,
++		       struct msghdr *m, size_t total_len)
++{
++	struct tun_struct *tun = container_of(sock, struct tun_struct, socket);
++	return tun_get_user(tun, m->msg_iov, total_len,
++			    m->msg_flags & MSG_DONTWAIT);
++}
++
++static int tun_recvmsg(struct kiocb *iocb, struct socket *sock,
++		       struct msghdr *m, size_t total_len,
++		       int flags)
++{
++	struct tun_struct *tun = container_of(sock, struct tun_struct, socket);
++	int ret;
++	if (flags & ~(MSG_DONTWAIT|MSG_TRUNC))
++		return -EINVAL;
++	ret = tun_do_read(tun, iocb, m->msg_iov, total_len,
++			  flags & MSG_DONTWAIT);
++	if (ret > total_len) {
++		m->msg_flags |= MSG_TRUNC;
++		ret = flags & MSG_TRUNC ? ret : total_len;
++	}
++	return ret;
++}
++
++/* Ops structure to mimic raw sockets with tun */
++static const struct proto_ops tun_socket_ops = {
++	.sendmsg = tun_sendmsg,
++	.recvmsg = tun_recvmsg,
++};
++
+ static struct proto tun_proto = {
+ 	.name		= "tun",
+ 	.owner		= THIS_MODULE,
+@@ -986,6 +1031,7 @@ static int tun_set_iff(struct net *net, struct file *file, struct ifreq *ifr)
+ 			goto err_free_dev;
+ 
+ 		init_waitqueue_head(&tun->socket.wait);
++		tun->socket.ops = &tun_socket_ops;
+ 		sock_init_data(&tun->socket, sk);
+ 		sk->sk_write_space = tun_sock_write_space;
+ 		sk->sk_sndbuf = INT_MAX;
+@@ -1489,6 +1535,23 @@ static void tun_cleanup(void)
+ 	rtnl_link_unregister(&tun_link_ops);
+ }
+ 
++/* Get an underlying socket object from tun file.  Returns error unless file is
++ * attached to a device.  The returned object works like a packet socket, it
++ * can be used for sock_sendmsg/sock_recvmsg.  The caller is responsible for
++ * holding a reference to the file for as long as the socket is in use. */
++struct socket *tun_get_socket(struct file *file)
++{
++	struct tun_struct *tun;
++	if (file->f_op != &tun_fops)
++		return ERR_PTR(-EINVAL);
++	tun = tun_get(file);
++	if (!tun)
++		return ERR_PTR(-EBADFD);
++	tun_put(tun);
++	return &tun->socket;
++}
++EXPORT_SYMBOL_GPL(tun_get_socket);
++
+ module_init(tun_init);
+ module_exit(tun_cleanup);
+ MODULE_DESCRIPTION(DRV_DESCRIPTION);
+diff --git a/include/linux/if_tun.h b/include/linux/if_tun.h
+index 3f5fd52..404abe0 100644
+--- a/include/linux/if_tun.h
++++ b/include/linux/if_tun.h
+@@ -86,4 +86,18 @@ struct tun_filter {
+ 	__u8   addr[0][ETH_ALEN];
+ };
+ 
++#ifdef __KERNEL__
++#if defined(CONFIG_TUN) || defined(CONFIG_TUN_MODULE)
++struct socket *tun_get_socket(struct file *);
++#else
++#include <linux/err.h>
++#include <linux/errno.h>
++struct file;
++struct socket;
++static inline struct socket *tun_get_socket(struct file *f)
++{
++	return ERR_PTR(-EINVAL);
++}
++#endif /* CONFIG_TUN */
++#endif /* __KERNEL__ */
+ #endif /* __IF_TUN_H */
+-- 
+1.6.5.2.143.g8cc62
+
