@@ -1,93 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZKDO0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZKDO1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbZKDO0W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 09:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbZKDO0W
+	id S1756564AbZKDO1S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 09:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbZKDO1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 09:26:22 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:47982 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756478AbZKDO0U (ORCPT
+	Wed, 4 Nov 2009 09:27:18 -0500
+Received: from xenbox.codefidence.com ([92.48.73.16]:38751 "EHLO
+	xenbox.codefidence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756431AbZKDO1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 09:26:20 -0500
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, jmorris@namei.org,
-       casey@schaufler-ca.com, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] sysfs: Don't leak secdata when a sysfs_dirent is freed.
-References: <m1zl7236ox.fsf@fess.ebiederm.org>
-	<20091104140913.GA4355@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 04 Nov 2009 06:26:19 -0800
-In-Reply-To: <20091104140913.GA4355@us.ibm.com> (Serge E. Hallyn's message of "Wed\, 4 Nov 2009 08\:09\:13 -0600")
-Message-ID: <m1fx8uz7qs.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 4 Nov 2009 09:27:17 -0500
+Message-ID: <4AF18F41.9040500@codefidence.com>
+Date: Wed, 04 Nov 2009 16:27:13 +0200
+From: Gilad Ben-Yossef <gilad@codefidence.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+To: David Miller <davem@davemloft.net>
+CC: Valdis.Kletnieks@vt.edu, netdev@vger.kernel.org, ori@comsleep.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/1] Use defaults when no route options are available
+References: <4AF07024.80103@gmail.com>	<1257276085-13681-1-git-send-email-gilad@codefidence.com> <20091104.052816.74593826.davem@davemloft.net>
+In-Reply-To: <20091104.052816.74593826.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+David Miller wrote:
 
-> Quoting Eric W. Biederman (ebiederm@xmission.com):
->> 
->> While refreshing my sysfs patches I noticed a leak in the secdata
->> implementation.  We don't free the secdata when we free the
->> sysfs dirent. 
->> 
->> This is a bug in 2.6.32-rc5 that we really should close.
->> 
->> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> From: Gilad Ben-Yossef <gilad@codefidence.com>
+> Date: Tue,  3 Nov 2009 21:21:25 +0200
 >
-> I'm surprised no kmemleak or anything has found this - but I guess
-> not many sites hand-set custom selinux contexts on sysfs?
-
-I don't expect so since you couldn't customize it in 2.6.31.
-This is brand new code, and this corner case was just overlooked
-in the review.
-
-Eric
-
-
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
+>   
+>> Trying to parse the option of a SYN packet that we have
+>> no route entry for should just use global wide defaults
+>> for route entry options.
+>>
+>> Signed-off-by: Gilad Ben-Yossef <gilad@codefidence.com>
+>>     
 >
->> ---
->> 
->>  fs/sysfs/dir.c |    4 ++++
->>  1 files changed, 4 insertions(+), 0 deletions(-)
->> 
->> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
->> index 5fad489..e020183 100644
->> --- a/fs/sysfs/dir.c
->> +++ b/fs/sysfs/dir.c
->> @@ -21,6 +21,7 @@
->>  #include <linux/completion.h>
->>  #include <linux/mutex.h>
->>  #include <linux/slab.h>
->> +#include <linux/security.h>
->>  #include "sysfs.h"
->> 
->>  DEFINE_MUTEX(sysfs_mutex);
->> @@ -285,6 +286,9 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
->>  		sysfs_put(sd->s_symlink.target_sd);
->>  	if (sysfs_type(sd) & SYSFS_COPY_NAME)
->>  		kfree(sd->s_name);
->> +	if (sd->s_iattr && sd->s_iattr->ia_secdata)
->> +		security_release_secctx(sd->s_iattr->ia_secdata,
->> +					sd->s_iattr->ia_secdata_len);
->>  	kfree(sd->s_iattr);
->>  	sysfs_free_ino(sd->s_ino);
->>  	kmem_cache_free(sysfs_dir_cachep, sd);
->> -- 
->> 1.6.5.2.143.g8cc62
->> 
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> The tester has indicated that this doesn't solve things
+> for them.  I suspect there is another dependency on 'dst'
+> not being NULL in another path somewhere.
+>
+> So until this is fully resolved I'm holding off on applying
+> this patch.
+>
+>   
+Yes, indeed.
+
+I managed to replicate it here. Looking into it right now.
+
+Thanks,
+Gilad
+
+
+-- 
+Gilad Ben-Yossef
+Chief Coffee Drinker & CTO
+Codefidence Ltd.
+
+Web:   http://codefidence.com
+Cell:  +972-52-8260388
+Skype: gilad_codefidence
+Tel:   +972-8-9316883 ext. 201
+Fax:   +972-8-9316884
+Email: gilad@codefidence.com
+
+Check out our Open Source technology and training blog - http://tuxology.net
+
+	"The biggest risk you can take it is to take no risk."
+		-- Mark Zuckerberg and probably others
+
