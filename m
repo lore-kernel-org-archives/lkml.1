@@ -1,101 +1,347 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbZKDR7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbZKDSAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbZKDR7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754879AbZKDR7p
+	id S1757585AbZKDSAv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 13:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbZKDSAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:59:45 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:62699 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757392AbZKDR7m convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:59:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xKSMSa9H2UNl5ORLkLTSgVxPKxLMOFpjol2TRFFj3YVZYX+yvDfFsOz8/M4gKVSkss
-         iWFUF+IXcZ2+jPDafQfPK43vOIXq2lrEvq2xF06B+pRzHakZvNtbK1rj5Xf7KIySSjSU
-         F9gPWS2tJxo4oDKKM5HzD+52OrhT6i9jsPe1w=
-MIME-Version: 1.0
-In-Reply-To: <20091104163752.GB2870@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
-	 <1257291837-6246-3-git-send-email-vgoyal@redhat.com>
-	 <x49d43yuzud.fsf@segfault.boston.devel.redhat.com>
-	 <20091104163752.GB2870@redhat.com>
-Date: Wed, 4 Nov 2009 18:59:45 +0100
-Message-ID: <4e5e476b0911040959t122df6aaqee1039f265cbd18a@mail.gmail.com>
-Subject: Re: [PATCH 02/20] blkio: Change CFQ to use CFS like queue time stamps
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Nov 2009 13:00:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29263 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757392AbZKDSAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 13:00:50 -0500
+Date: Wed, 4 Nov 2009 12:00:06 -0600
+From: Clark Williams <williams@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] debugfs utility routines for perf
+Message-ID: <20091104120006.0a0b2700@torg>
+In-Reply-To: <20091104115906.7045cf65@torg>
+References: <20091104115906.7045cf65@torg>
+Organization: Red Hat, Inc
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/p6x+I6uOUwXxpnk+MUwxcbi"; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 4, 2009 at 5:37 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Wed, Nov 04, 2009 at 09:30:34AM -0500, Jeff Moyer wrote:
->> Vivek Goyal <vgoyal@redhat.com> writes:
->>
->
-> Thanks for the review Jeff.
->
->> > o Currently CFQ provides priority scaled time slices to processes. If a process
->> >   does not use the time slice, either because process did not have sufficient
->> >   IO to do or because think time of process is large and CFQ decided to disable
->> >   idling, then processes looses it time slice share.
->>                            ^^^^^^
->> loses
->>
-should be 'process loses'
-
->> > +static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
->> > +{
->> > +   s64 delta = (s64)(vdisktime - min_vdisktime);
->> > +   if (delta > 0)
->> > +           min_vdisktime = vdisktime;
->> > +
->> > +   return min_vdisktime;
->> > +}
->> > +
->> > +static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
->> > +{
->> > +   s64 delta = (s64)(vdisktime - min_vdisktime);
->> > +   if (delta < 0)
->> > +           min_vdisktime = vdisktime;
->> > +
->> > +   return min_vdisktime;
->> > +}
->>
->> Is there a reason you've reimplemented min and max?
->
-> I think you are referring to min_t and max_t. Will these macros take care
-> of wrapping too?
->
-> For example, if I used min_t(u64, A, B), then unsigned comparision will
-> not work right wrapping has just taken place for any of the A or B. So if
-> A=-1 and B=2, then min_t() would return B as minimum. This is not right
-> in our case.
->
-> If we do signed comparison (min_t(s64, A, B)), that also seems to be
-> broken in another case where a value of variable moves from 63bits to 64bits,
-> (A=0x7fffffffffffffff, B=0x8000000000000000). Above will return B as minimum but
-> in our scanario, vdisktime will progress from 0x7fffffffffffffff to
-> 0x8000000000000000 and A should be returned as minimum (unsigned
-> comparison).
->
-> Hence I took these difnitions from CFS.
-If those are times (measured in jiffies), why are you using u64? You
-could use unsigned long and time_before/time_after, that perform the
-proper wrap checking.
+--Sig_/p6x+I6uOUwXxpnk+MUwxcbi
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
 
-Corrado
+Add routines to locate the debugfs mount point and to manage the
+mounting and unmountin of the debugfs.
+
+Signed-off-by: Clark Williams <williams@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/util/debugfs.c |  247 +++++++++++++++++++++++++++++++++++++++++=
+++++
+ tools/perf/util/debugfs.h |   22 ++++
+ 2 files changed, 269 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/util/debugfs.c
+ create mode 100644 tools/perf/util/debugfs.h
+
+diff --git a/tools/perf/util/debugfs.c b/tools/perf/util/debugfs.c
+new file mode 100644
+index 0000000..368b44e
+--- /dev/null
++++ b/tools/perf/util/debugfs.c
+@@ -0,0 +1,247 @@
++#include "util.h"
++#include "debugfs.h"
++#include "cache.h"
++
++static int debugfs_premounted;
++static char debugfs_mountpoint[MAX_PATH+1];
++
++static const char *debugfs_known_mountpoints[] =3D {
++	"/sys/kernel/debug/",
++	"/debug/",
++	0,
++};
++
++/* use this to force a umount */
++void debugfs_force_cleanup(void)
++{
++	debugfs_find_mountpoint();
++	debugfs_premounted =3D 0;
++	debugfs_umount();
++}
++
++/* construct a full path to a debugfs element */
++int debugfs_make_path(const char *element, char *buffer, int size)
++{
++	int len;
++
++	if (strlen(debugfs_mountpoint) =3D=3D 0) {
++		buffer[0] =3D '\0';
++		return -1;
++	}
++
++	len =3D strlen(debugfs_mountpoint) + strlen(element) + 1;
++	if (len >=3D size)
++		return len+1;
++
++	snprintf(buffer, size-1, "%s/%s", debugfs_mountpoint, element);
++	return 0;
++}
++
++/* find the path to the mounted debugfs */
++const char *
++debugfs_find_mountpoint(void)
++{
++	static int debugfs_found;
++	char type[100];
++	FILE *fp;
++	const char **ptr;
++
++	if (debugfs_found)
++		return (const char *) debugfs_mountpoint;
++
++	ptr =3D debugfs_known_mountpoints;
++	while (*ptr) {
++		if (debugfs_valid_mountpoint(*ptr) =3D=3D 0) {
++			debugfs_found =3D 1;
++			strcpy(debugfs_mountpoint, *ptr);
++			return debugfs_mountpoint;
++		}
++		ptr++;
++	}
++
++	/* give up and parse /proc/mounts */
++	fp =3D fopen("/proc/mounts", "r");
++	if (fp =3D=3D NULL)
++		die("Can't open /proc/mounts for read");
++
++	while (fscanf(fp, "%*s %"
++		      STR(MAX_PATH)
++		      "s %99s %*s %*d %*d\n",
++		      debugfs_mountpoint, type) =3D=3D 2) {
++		if (strcmp(type, "debugfs") =3D=3D 0)
++			break;
++	}
++	fclose(fp);
++
++	if (strcmp(type, "debugfs") !=3D 0)
++		return NULL;
++
++	debugfs_found =3D 1;
++
++	return debugfs_mountpoint;
++}
++
++/* verify that a mountpoint is actually a debugfs instance */
++
++int
++debugfs_valid_mountpoint(const char *debugfs)
++{
++	struct statfs st_fs;
++
++	if (statfs(debugfs, &st_fs) < 0)
++		return -ENOENT;
++	else if (st_fs.f_type !=3D (long) DEBUGFS_MAGIC)
++		return -ENOENT;
++	return 0;
++}
++
++
++int
++debugfs_valid_entry(const char *path)
++{
++	struct stat st;
++
++	if (stat(path, &st))
++		return -errno;
++	return 0;
++}
++
++/* mount the debugfs somewhere */
++
++int
++debugfs_mount(const char *mountpoint)
++{
++	char mountcmd[128];
++
++	/* see if it's already mounted */
++	if (debugfs_find_mountpoint()) {
++		debugfs_premounted =3D 1;
++		return 0;
++	}
++
++	/* if not mounted and no argument */
++	if (mountpoint =3D=3D NULL) {
++		/* see if environment variable set */
++		mountpoint =3D getenv(PERF_DEBUGFS_ENVIRONMENT);
++		/* if no environment variable, use default */
++		if (mountpoint =3D=3D NULL)
++			mountpoint =3D "/sys/kernel/debug";
++	}
++
++	/* save the mountpoint */
++	strncpy(debugfs_mountpoint, mountpoint, sizeof(debugfs_mountpoint));
++
++	/* mount it */
++	snprintf(mountcmd, sizeof(mountcmd),
++		 "/bin/mount -t debugfs debugfs %s", mountpoint);
++	return system(mountcmd);
++}
++
++/* umount the debugfs */
++
++int
++debugfs_umount(void)
++{
++	int ret;
++	char umountcmd[128];
++
++	/* if it was already mounted, leave it */
++	if (debugfs_premounted)
++		return 0;
++
++	/* make sure it's a valid mount point */
++	ret =3D debugfs_valid_mountpoint(debugfs_mountpoint);
++	if (ret)
++		return ret;
++
++	snprintf(umountcmd, sizeof(umountcmd),
++		 "/bin/umount %s", debugfs_mountpoint);
++	return system(umountcmd);
++}
++
++
++int
++debugfs_write(const char *entry, const char *value)
++{
++	int ret, count;
++	int fd;
++	char path[MAX_PATH+1];
++
++	/* construct the path */
++	snprintf(path, sizeof(path), "%s/%s", debugfs_mountpoint, entry);
++
++	/* verify that it exists */
++	ret =3D debugfs_valid_entry(path);
++	if (ret)
++		return ret;
++
++	/* get how many chars we're going to write */
++	count =3D strlen(value);
++
++	/* open the debugfs entry */
++	fd =3D open(path, O_RDWR);
++	if (fd < 0)
++		return -errno;
++
++	while (count > 0) {
++		/* write it */
++		ret =3D write(fd, value, count);
++		if (ret <=3D 0) {
++			if (ret =3D=3D EAGAIN)
++				continue;
++			close(fd);
++			return -errno;
++		}
++		count -=3D ret;
++	}
++
++	/* close it */
++	close(fd);
++
++	/* return success */
++	return 0;
++}
++
++/*
++ * read a debugfs entry
++ * returns the number of chars read or a negative errno
++ */
++
++int
++debugfs_read(const char *entry, char *buffer, size_t size)
++{
++	int ret;
++	int fd;
++	char path[MAX_PATH+1];
++
++	/* construct the path */
++	snprintf(path, sizeof(path), "%s/%s", debugfs_mountpoint, entry);
++
++	/* verify that it exists */
++	ret =3D debugfs_valid_entry(path);
++	if (ret)
++		return ret;
++
++	/* open the debugfs entry */
++	fd =3D open(path, O_RDONLY);
++	if (fd < 0)
++		return -errno;
++
++	do {
++		/* read it */
++		ret =3D read(fd, buffer, size);
++		if (ret =3D=3D 0) {
++			close(fd);
++			return EOF;
++		}
++	} while (ret < 0 && errno =3D=3D EAGAIN);
++
++	/* close it */
++	close(fd);
++
++	/* make *sure* there's a null character at the end */
++	buffer[ret] =3D '\0';
++
++	/* return the number of chars read */
++	return ret;
++}
+diff --git a/tools/perf/util/debugfs.h b/tools/perf/util/debugfs.h
+new file mode 100644
+index 0000000..df14c2a
+--- /dev/null
++++ b/tools/perf/util/debugfs.h
+@@ -0,1 +1,22 @@
++#ifndef __DEBUGFS_H__
++#define __DEBUGFS_H__
++#include <sys/mount.h>
++#ifndef MAX_PATH
++#define MAX_PATH 256
++#endif
++
++#ifndef STR
++#define _STR(x) #x
++#define STR(x) _STR(x)
++#endif
++
++extern const char *debugfs_find_mountpoint(void);
++extern int debugfs_valid_mountpoint(const char *debugfs);
++extern int debugfs_valid_entry(const char *path);
++extern int debugfs_mount(const char *mountpoint);
++extern int debugfs_umount(void);
++extern int debugfs_write(const char *entry, const char *value);
++extern int debugfs_read(const char *entry, char *buffer, size_t size);
++extern void debugfs_force_cleanup(void);
++extern int debugfs_make_path(const char *element, char *buffer, int size);
++#endif
+--=20
+1.6.2.5
+
+
+--Sig_/p6x+I6uOUwXxpnk+MUwxcbi
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iEYEARECAAYFAkrxwSoACgkQHyuj/+TTEp3tsgCgvkri8I6vJs299G/LW8XMHIMf
+F+oAoNqadmbw19eyuUXrkxf8kMHKLcK2
+=K0xY
+-----END PGP SIGNATURE-----
+
+--Sig_/p6x+I6uOUwXxpnk+MUwxcbi--
