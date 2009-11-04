@@ -1,84 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZKDSM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757709AbZKDSU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbZKDSM6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 13:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZKDSM5
+	id S1757709AbZKDSU2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 13:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbZKDSU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 13:12:57 -0500
-Received: from stargate.chelsio.com ([67.207.112.58]:27954 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755810AbZKDSM4 convert rfc822-to-8bit (ORCPT
+	Wed, 4 Nov 2009 13:20:27 -0500
+Received: from outbound-mail-12.bluehost.com ([69.89.18.112]:49411 "HELO
+	outbound-mail-12.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757692AbZKDSUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 13:12:56 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH -2nd repost 2/4] SCSI: remove unnecessary NULL test
-Date: Wed, 4 Nov 2009 10:18:42 -0800
-Message-ID: <8A71B368A89016469F72CD08050AD33406BFD213@maui.asicdesigners.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH -2nd repost 2/4] SCSI: remove unnecessary NULL test
-Thread-Index: AcpdapMEJ81W+IECT96DWBNFl74W+wAEIYHw
-References: <1257351321-8281-1-git-send-email-jirislaby@gmail.com> <1257351321-8281-2-git-send-email-jirislaby@gmail.com>
-From: "Karen Xie" <kxie@chelsio.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>, <James.Bottomley@suse.de>
-Cc: <aacraid@adaptec.com>, <james.smart@emulex.com>,
-       <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+	Wed, 4 Nov 2009 13:20:23 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=P8WnvPij5x3Xx9wXx4hL9iW1b6CEs7VrHS8kh17m3/VkAkFra1Q/8IsqOhM9P5udNbHthld1nsl6C4zfEkAGuCgnofaT0Spl1BHMh1zaGAJx+XrxQu0NTFQLhVRY3aaI;
+Date: Wed, 4 Nov 2009 10:20:26 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] resources: when allocate_resource() fails, leave
+ resource untouched
+Message-ID: <20091104102026.5698a9b4@jbarnes-piketon>
+In-Reply-To: <20091102174536.12512.56685.stgit@bob.kio>
+References: <20091102174536.12512.56685.stgit@bob.kio>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, the check is not necessary.
+On Mon, 02 Nov 2009 10:45:36 -0700
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-Thanks,
-Karen
+> When "allocate_resource(root, new, size, ...)" fails, we currently
+> clobber "new".  This is inconvenient for the caller, who might care
+> about the original contents of the resource.
+> 
+> For example, when pci_bus_alloc_resource() fails, the "can't allocate
+> mem resource %pR" message from pci_assign_resources() currently
+> contains junk for the resource start/end.
+> 
+> This patch delays the "new" update until we're about to return
+> success.
+> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> ---
+>  kernel/resource.c |   26 ++++++++++++++------------
+>  1 files changed, 14 insertions(+), 12 deletions(-)
+> 
+> diff --git a/kernel/resource.c b/kernel/resource.c
+> index fb11a58..dc15686 100644
+> --- a/kernel/resource.c
+> +++ b/kernel/resource.c
+> @@ -308,35 +308,37 @@ static int find_resource(struct resource *root,
+> struct resource *new, void *alignf_data)
+>  {
+>  	struct resource *this = root->child;
+> +	resource_size_t start, end;
+>  
+> -	new->start = root->start;
+> +	start = root->start;
+>  	/*
+>  	 * Skip past an allocated resource that starts at 0, since
+> the assignment
+>  	 * of this->start - 1 to new->end below would cause an
+> underflow. */
+>  	if (this && this->start == 0) {
+> -		new->start = this->end + 1;
+> +		start = this->end + 1;
+>  		this = this->sibling;
+>  	}
+>  	for(;;) {
+>  		if (this)
+> -			new->end = this->start - 1;
+> +			end = this->start - 1;
+>  		else
+> -			new->end = root->end;
+> -		if (new->start < min)
+> -			new->start = min;
+> -		if (new->end > max)
+> -			new->end = max;
+> -		new->start = ALIGN(new->start, align);
+> +			end = root->end;
+> +		if (start < min)
+> +			start = min;
+> +		if (end > max)
+> +			end = max;
+> +		start = ALIGN(start, align);
+>  		if (alignf)
+>  			alignf(alignf_data, new, size, align);
+> -		if (new->start < new->end && new->end - new->start
+> >= size - 1) {
+> -			new->end = new->start + size - 1;
+> +		if (start < end && end - start >= size - 1) {
+> +			new->start = start;
+> +			new->end = start + size - 1;
+>  			return 0;
+>  		}
+>  		if (!this)
+>  			break;
+> -		new->start = this->end + 1;
+> +		start = this->end + 1;
+>  		this = this->sibling;
+>  	}
+>  	return -EBUSY;
 
------Original Message-----
-From: linux-scsi-owner@vger.kernel.org
-[mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Jiri Slaby
-Sent: Wednesday, November 04, 2009 8:15 AM
-To: James.Bottomley@suse.de
-Cc: aacraid@adaptec.com; james.smart@emulex.com;
-linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; Jiri Slaby
-Subject: [PATCH -2nd repost 2/4] SCSI: remove unnecessary NULL test
+Seems like a reasonable change to me.  Linus is usually the gatekeeper
+for resource.c.
 
-Stanse found that c3cn is poked many times around in
-cxgb3i_conn_pdu_ready, there is no need to check if it is NULL.
-
-Remove the test.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: James E.J. Bottomley <James.Bottomley@suse.de>
----
- drivers/scsi/cxgb3i/cxgb3i_pdu.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_pdu.c
-b/drivers/scsi/cxgb3i/cxgb3i_pdu.c
-index 7091050..64bbc28 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_pdu.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_pdu.c
-@@ -461,10 +461,8 @@ void cxgb3i_conn_pdu_ready(struct s3_conn *c3cn)
- 		skb = skb_peek(&c3cn->receive_queue);
- 	}
- 	read_unlock(&c3cn->callback_lock);
--	if (c3cn) {
--		c3cn->copied_seq += read;
--		cxgb3i_c3cn_rx_credits(c3cn, read);
--	}
-+	c3cn->copied_seq += read;
-+	cxgb3i_c3cn_rx_credits(c3cn, read);
- 	conn->rxdata_octets += read;
- 
- 	if (err) {
 -- 
-1.6.4.2
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Jesse Barnes, Intel Open Source Technology Center
