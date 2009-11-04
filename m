@@ -1,143 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbZKDKZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbZKDK0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755132AbZKDKZQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 05:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbZKDKZP
+	id S1755181AbZKDK0f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 05:26:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148AbZKDK0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 05:25:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56729 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbZKDKZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 05:25:13 -0500
-Date: Wed, 4 Nov 2009 11:24:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Andi Kleen <ak@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: Limit the number of processor bootup messages
-Message-ID: <20091104102436.GB15086@elte.hu>
-References: <20091023233746.128967000@alcatraz.americas.sgi.com> <87tyxmy6x6.fsf@basil.nowhere.org> <4AE5E48F.6020408@sgi.com> <20091026215544.GA3355@basil.fritz.box> <4AEB3D95.50300@sgi.com> <4AEEBE65.3070202@linux.intel.com> <4AEF3143.2030701@sgi.com> <20091102193445.GA9948@elte.hu> <4AEF41C5.6010503@sgi.com> <4AF0C958.6010103@sgi.com>
+	Wed, 4 Nov 2009 05:26:35 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42379 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754985AbZKDK0d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 05:26:33 -0500
+Date: Wed, 4 Nov 2009 11:26:29 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org, marcel@holtmann.org
+Subject: Re: 2.6.32-rc5: bluetooth still broken
+Message-ID: <20091104102629.GA15003@elf.ucw.cz>
+References: <20091030061635.GB28648@elf.ucw.cz>
+ <a8e1da0911031701q4328604ayef5ee7eb939a9d50@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4AF0C958.6010103@sgi.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a8e1da0911031701q4328604ayef5ee7eb939a9d50@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed 2009-11-04 09:01:20, Dave Young wrote:
+> On Fri, Oct 30, 2009 at 2:16 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> > Today I got this... IIRC I was told it was fixed already...?
+> 
+> Hi, this looks like another case.  Can you tell the way to
+> reproduce?
 
-* Mike Travis <travis@sgi.com> wrote:
+Well, repeatedly start/stop bluetooth connecting script in attempt to
+get PC <-> android tethering to work :-(. So no, I do not think I can 
+reproduce this easily.
 
->
-> ...
->>> So please go with the simple solution i suggested days ago: print  
->>> stuff on the boot CPU but after that only a single line per AP CPU.
->>>
->>>     Ingo
->>
->
-> Hi Ingo,
->
-> Here is some timing info I collected...  Would you accept the first
-> format (line per node) as a compromise?
->
-> (Note there will be 256 node systems w/4096 threads as well as
-> 512 node systems w/HT disabled thus still 4096 threads.)
->
-> Btw, I think we should keep the processor summary as it does show some
-> useful information.  Agreed?  
->
-> (... I'll clean up the BogoMIPS line a bit:
->
-> 	BogoMIPS(lpj):  MIN xxx (yyy)   AVG xxx (yyy)   MAX xxx (yyy)
-> ...)
->
-> Thanks,
-> Mike
->
-> 64 Nodes/512 cores/1024 threads...
->
-> By Node:
->  1 [   27.998414] Booting Node   0, Processors 1-7,512-519
->  2 [   28.645066] Booting Node   1, Processors 8-15,520-527
->  3 [   29.389359] Booting Node   2, Processors 16-23,528-535
->  4 [   30.160646] Booting Node   3, Processors 24-31,536-543
-> ...
-> 62 [   75.013459] Booting Node  61, Processors 488-495,1000-1007
-> 63 [   75.789663] Booting Node  62, Processors 496-503,1008-1015
-> 64 [   76.565430] Booting Node  63, Processors 504-511,1016-1023
-> 65 [  126.860204] Brought up 1024 CPUs
+								Pavel
 
-Yeah, this portion certainly looks good. The important thing is to make 
-this the default - i.e. we dont want some weird switch (or other hw 
-dependent flaggery) to turn on two styles of bootup output.
 
-We have trouble keeping a single variant sane already, we definitely 
-dont want to have multiple variants.
+> > ehci_hcd 0000:00:1d.7: suspend root hub
+> > EXT3 FS on sda4, internal journal
+> > kjournald starting.  Commit interval 5 seconds
+> > EXT3 FS on sda2, internal journal
+> > EXT3-fs: mounted filesystem with ordered data mode.
+> > iwl3945 0000:03:00.0: firmware: requesting iwlwifi-3945-2.ucode
+> > iwl3945 0000:03:00.0: iwlwifi-3945-2.ucode firmware file req failed: -2
+> > iwl3945 0000:03:00.0: firmware: requesting iwlwifi-3945-1.ucode
+> > iwl3945 0000:03:00.0: Loaded firmware iwlwifi-3945-1.ucode, which is deprecated.  Please use API v2 instead.
+> > iwl3945 0000:03:00.0: Firmware has old API version. Expected 2, got 1. New firmware can be obtained from http://www.intellinuxwireless.org.
+> > iwl3945 0000:03:00.0: loaded firmware version 15.28.1.8
+> > Registered led device: iwl-phy0::radio
+> > Registered led device: iwl-phy0::assoc
+> > Registered led device: iwl-phy0::RX
+> > Registered led device: iwl-phy0::TX
+> > coda_read_super: Bad mount data
+> > coda_read_super: device index: 0
+> > coda_read_super: rootfid is (01234567.ffffffff.08051b10.00000000)
+> > coda: Unexpected interruption.
+> > Failure of coda_cnode_make for root: error -4
+> > CE: hpet increasing min_delta_ns to 15000 nsec
+> > CE: hpet increasing min_delta_ns to 22500 nsec
+> > uhci_hcd 0000:00:1d.3: reserve dev 2 ep81-INT, period 1, phase 0, 23 us
+> > INFO: trying to register non-static key.
+> > the code is fine but needs lockdep annotation.
+> > turning off the locking correctness validator.
+> > Pid: 30385, comm: ps Not tainted 2.6.32-rc5-00154-gfbad3ad-dirty #83
+> > Call Trace:
+> >  [<c0791da9>] ? printk+0x18/0x1a
+> >  [<c0255492>] __lock_acquire+0x4a2/0xad0
+> >  [<c0255b28>] lock_acquire+0x68/0x90
+> >  [<c06733bd>] ? skb_dequeue+0x1d/0x70
+> >  [<c0794e0b>] _spin_lock_irqsave+0x3b/0x50
+> >  [<c06733bd>] ? skb_dequeue+0x1d/0x70
+> >  [<c06733bd>] skb_dequeue+0x1d/0x70
+> >  [<c0674034>] skb_queue_purge+0x14/0x20
+> >  [<c07139a7>] l2cap_recv_frame+0x5d7/0x3270
+> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
+> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
+> >  [<c06732c9>] ? skb_queue_tail+0x39/0x50
+> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
+> >  [<c050cd50>] ? usb_submit_urb+0x140/0x360
+> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
+> >  [<c07167d2>] l2cap_recv_acldata+0x192/0x3d0
+> >  [<c07079b8>] ? hci_rx_task+0x268/0x440
+> >  [<c0716640>] ? l2cap_recv_acldata+0x0/0x3d0
+> >  [<c07079e5>] hci_rx_task+0x295/0x440
+> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
+> >  [<c0235b30>] tasklet_action+0x50/0xb0
+> >  [<c0236275>] __do_softirq+0x85/0x110
+> >  [<c023632d>] do_softirq+0x2d/0x40
+> >  [<c0236495>] irq_exit+0x65/0x80
+> >  [<c0204bbf>] do_IRQ+0x4f/0xc0
+> >  [<c02034a9>] common_interrupt+0x29/0x30
+> >  [<c0794a2f>] ? _write_unlock_irq+0x1f/0x30
+> >  [<c023474f>] do_exit+0x3df/0x650
+> >  [<c021bdc2>] ? do_page_fault+0x152/0x240
+> >  [<c02349f3>] do_group_exit+0x33/0x90
+> >  [<c0234a63>] sys_exit_group+0x13/0x20
+> >  [<c0202e50>] sysenter_do_call+0x12/0x31
+> > e1000e: eth0 NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
+> > 0000:02:00.0: eth0: 10/100 speed: disabling TSO
+> > hci_acl_tx_to: hci0 ACL tx timeout
+> > hci_acl_tx_to: hci0 killing stalled ACL connection 80:09:6E:BA:21:00
+> >
+> > --
+> > (english) http://www.livejournal.com/~pavelmachek
+> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-bluetooth" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> 
+> 
+> 
 
-> 66 [  126.865392] Summary Processor Information for CPUS: 0-143,256-383,448-655,768-895,960-1023
-> 67 [  126.876033] Genuine Intel(R) CPU             0000 @ 2.13GHz stepping 04
-> 68 [  126.881404] BogoMIPS: MIN 3980.53 MAX 4268.28 AVG 4265.85
-> 69 [  126.888032] Loops/Jiffy: MIN 7961074 MAX 8536570 AVG 8531701
-> 70 [  126.896875] Summary Processor Information for CPUS: 144-239,384-447,656-751,896-959
-> 71 [  126.904032] Intel(R) Xeon(R) CPU           X7560  @ 2.27GHz stepping 05
-> 72 [  126.913404] BogoMIPS: MIN 4528.51 MAX 4762.75 AVG 4535.89
-> 73 [  126.920032] Loops/Jiffy: MIN 9057030 MAX 9525505 AVG 9071785
-> 74 [  126.924217] Summary Processor Information for CPUS: 240-255,752-767
-> 75 [  126.932032] Genuine Intel(R) CPU             0000 @ 2.13GHz stepping 03
-> 76 [  126.937404] BogoMIPS: MIN 4267.31 MAX 4268.24 AVG 4267.66
-> 77 [  126.944032] Loops/Jiffy: MIN 8534632 MAX 8536490 AVG 8535338
-> 78 [  126.952425] Total of 1024 processors activated (4454702.72 BogoMIPS).
-
-4.4 million bogomips. Nice ;-)
-
->
-> By CPU:
->   1 [   28.010255] Booting Processor 1 APIC 0x2 ip 0x6000
->   2 [   28.106191] Booting Processor 2 APIC 0x4 ip 0x6000
->   3 [   28.204705] Booting Processor 3 APIC 0x6 ip 0x6000
->   4 [   28.300709] Booting Processor 4 APIC 0x10 ip 0x6000
->   5 [   28.400707] Booting Processor 5 APIC 0x12 ip 0x6000
-> ...
-> 1020 [  131.440341] Booting Processor 1020 APIC 0x7f1 ip 0x6000
-> 1021 [  131.544366] Booting Processor 1021 APIC 0x7f3 ip 0x6000
-> 1022 [  131.648354] Booting Processor 1022 APIC 0x7f5 ip 0x6000
-> 1023 [  131.752350] Booting Processor 1023 APIC 0x7f7 ip 0x6000
-> 1024 [  131.852202] Brought up 1024 CPUs
-
-i'd suggest some cleanups to this single line output.
-
-The 'ip' printout is very lame an comes from ancient times, from our 
-first attempts to boot Linux in SMP mode on dual 100 MHz pentia ;-)
-
-Something like:
-
-        Booting CPU #1020 ... ok.
-
-Would be more than enough. Any other info can be made a debug boot flag, 
-dependent on apic=verbose.
-
-Please send a new iteration of the arch/x86 (and scheduler/timer) 
-patches in a separate series instead of mixed into this thread.
-
-Thanks,
-
-	Ingo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
