@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbZKDVzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933035AbZKDV5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933041AbZKDVzx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 16:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932620AbZKDVzv
+	id S933035AbZKDV5z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 16:57:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933007AbZKDV5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 16:55:51 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:35457 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933041AbZKDVzs (ORCPT
+	Wed, 4 Nov 2009 16:57:54 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:45607 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933004AbZKDV5x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 16:55:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=pRnsC2ocr0/8OB6prr8AplIoo8ZeLc5bQ9Cz07LmkhLLb4KR6NOuLzWVot1LPd9Ajr
-         HVL48ZYigElWDSZpIeRITjWkkZrzMpQ1Mh8s0NHkfA6j/U/wIB++UdmPAjHlNwnEnwjx
-         RMF3WDWwcBqRvuaSmUh1SsjTI4alHeGuO4Y4A=
-From: Paul Fertser <fercerpav@gmail.com>
-To: Alessandro Zummo <a.zummo@towertech.it>
-Cc: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
-       Werner Almesberger <werner@openmoko.org>,
-       Paul Fertser <fercerpav@gmail.com>
-Subject: [PATCH 3/3] rtc: pcf50633: manage RTC alarm "pending" flag
-Date: Thu,  5 Nov 2009 00:55:17 +0300
-Message-Id: <1257371717-547-4-git-send-email-fercerpav@gmail.com>
-X-Mailer: git-send-email 1.6.4.4
-In-Reply-To: <1257371717-547-3-git-send-email-fercerpav@gmail.com>
-References: <1257371717-547-1-git-send-email-fercerpav@gmail.com>
- <1257371717-547-2-git-send-email-fercerpav@gmail.com>
- <1257371717-547-3-git-send-email-fercerpav@gmail.com>
+	Wed, 4 Nov 2009 16:57:53 -0500
+Date: Wed, 4 Nov 2009 13:56:23 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging: RTL8192SU depends on USB
+Message-Id: <20091104135623.8542c041.randy.dunlap@oracle.com>
+In-Reply-To: <20091102173845.210d1c57.sfr@canb.auug.org.au>
+References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AF1F8DB.0169:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Werner Almesberger <werner@openmoko.org>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-This patch adds setting and clearing of the "pending" flag of the
-RTC alarm. The semantics follow the UEFI specification 2.2 available
-at http://www.uefi.org/specs/, i.e., the "pending" flag is cleared
-by disabling the alarm, but not by any other condition (such as the
-passing of time, a successful wakeup, or setting of a new alarm.)
+USB device driver needs to depend on USB to prevent build errors:
 
-Signed-off-by: Werner Almesberger <werner@openmoko.org>
-Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+ERROR: "usb_kill_urb" [drivers/staging/rtl8192su/r8192s_usb.ko] undefined!
+ERROR: "usb_deregister" [drivers/staging/rtl8192su/r8192s_usb.ko] undefined!
+ERROR: "usb_control_msg" [drivers/staging/rtl8192su/r8192s_usb.ko] undefined!
+ERROR: "usb_submit_urb" [drivers/staging/rtl8192su/r8192s_usb.ko] undefined!
+ERROR: "usb_register_driver" [drivers/staging/rtl8192su/r8192s_usb.ko] undefined!
+ERROR: "usb_free_urb" [drivers/staging/rtl8192su/r8192s_usb.ko] undefined!
+ERROR: "usb_alloc_urb" [drivers/staging/rtl8192su/r8192s_usb.ko] undefined!
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/rtc/rtc-pcf50633.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ drivers/staging/rtl8192su/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/rtc/rtc-pcf50633.c b/drivers/rtc/rtc-pcf50633.c
-index 33a10c4..8669815 100644
---- a/drivers/rtc/rtc-pcf50633.c
-+++ b/drivers/rtc/rtc-pcf50633.c
-@@ -58,6 +58,7 @@ struct pcf50633_time {
- struct pcf50633_rtc {
- 	int alarm_enabled;
- 	int second_enabled;
-+	int alarm_pending;
- 
- 	struct pcf50633 *pcf;
- 	struct rtc_device *rtc_dev;
-@@ -209,6 +210,7 @@ static int pcf50633_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
- 	rtc = dev_get_drvdata(dev);
- 
- 	alrm->enabled = rtc->alarm_enabled;
-+	alrm->pending = rtc->alarm_pending;
- 
- 	ret = pcf50633_read_block(rtc->pcf, PCF50633_REG_RTCSCA,
- 				PCF50633_TI_EXTENT, &pcf_tm.time[0]);
-@@ -244,6 +246,8 @@ static int pcf50633_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
- 	/* Returns 0 on success */
- 	ret = pcf50633_write_block(rtc->pcf, PCF50633_REG_RTCSCA,
- 				PCF50633_TI_EXTENT, &pcf_tm.time[0]);
-+	if (!alrm->enabled)
-+		rtc->alarm_pending = 0;
- 
- 	if (!alarm_masked || alrm->enabled)
- 		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
-@@ -268,6 +272,7 @@ static void pcf50633_rtc_irq(int irq, void *data)
- 	switch (irq) {
- 	case PCF50633_IRQ_ALARM:
- 		rtc_update_irq(rtc->rtc_dev, 1, RTC_AF | RTC_IRQF);
-+		rtc->alarm_pending = 1;
- 		break;
- 	case PCF50633_IRQ_SECOND:
- 		rtc_update_irq(rtc->rtc_dev, 1, RTC_UF | RTC_IRQF);
--- 
-1.6.0.6
-
+--- linux-next-20091102.orig/drivers/staging/rtl8192su/Kconfig
++++ linux-next-20091102/drivers/staging/rtl8192su/Kconfig
+@@ -1,6 +1,6 @@
+ config RTL8192SU
+ 	tristate "RealTek RTL8192SU Wireless LAN NIC driver"
+-	depends on PCI && WLAN
++	depends on PCI && WLAN && USB
+ 	depends on WIRELESS_EXT
+ 	default N
+ 	---help---
