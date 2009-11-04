@@ -1,81 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbZKDTPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbZKDTQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757888AbZKDTPm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757816AbZKDTPm
+	id S1757857AbZKDTQO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbZKDTQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:15:42 -0500
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:33618 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756941AbZKDTPk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:15:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=UlXl8Dgq+AaetKY5oy5MqHLfg8S1SujOpRfYcqr6U/msnjCwmS1hj0kMK+zz6w3hHY
-         7kQ2mLrArGYMU5fJISnFHFNLy2g53McfFBA28qZpBSu8GyxwEfazY/5LSi0n0/ZstUbG
-         I63WynZpl/RrSCOBcYt+DjTnwwEu3gNNySdgY=
-Message-ID: <4AF1D2DE.10705@gmail.com>
-Date: Wed, 04 Nov 2009 14:15:42 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Wed, 4 Nov 2009 14:16:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7303 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757900AbZKDTQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:16:12 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 03/20] blkio: Introduce the notion of weights
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
+	<1257291837-6246-4-git-send-email-vgoyal@redhat.com>
+	<x498wemuy6v.fsf@segfault.boston.devel.redhat.com>
+	<20091104154135.GA2870@redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 04 Nov 2009 14:15:47 -0500
+In-Reply-To: <20091104154135.GA2870@redhat.com> (Vivek Goyal's message of
+	"Wed, 4 Nov 2009 10:41:35 -0500")
+Message-ID: <x49skcurti4.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       Daniel Walker <dwalker@fifo99.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCHv8 0/3] vhost: a kernel-level virtio server
-References: <20091104155234.GA32673@redhat.com> <4AF1A587.8000509@gmail.com> <20091104162339.GA311@redhat.com>
-In-Reply-To: <20091104162339.GA311@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE41C0DE2FBFBF3E83786E82A"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE41C0DE2FBFBF3E83786E82A
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-Michael S. Tsirkin wrote:
-> On Wed, Nov 04, 2009 at 11:02:15AM -0500, Gregory Haskins wrote:
->> Michael S. Tsirkin wrote:
->>> Ok, I think I've addressed all comments so far here.
->>> Rusty, I'd like this to go into linux-next, through your tree, and
->>> hopefully 2.6.33.  What do you think?
->> I think the benchmark data is a prerequisite for merge consideration, =
-IMO.
->=20
-> Shirley Ma was kind enough to send me some measurement results showing
-> how kernel level acceleration helps speed up you can find them here:
-> http://www.linux-kvm.org/page/VhostNet
+> On Wed, Nov 04, 2009 at 10:06:16AM -0500, Jeff Moyer wrote:
+>> Vivek Goyal <vgoyal@redhat.com> writes:
+>> 
+>> > o Introduce the notion of weights. Priorities are mapped to weights internally.
+>> >   These weights will be useful once IO groups are introduced and group's share
+>> >   will be decided by the group weight.
+>> 
+>> I'm sorry, but I need more background to review this patch.  Where do
+>> the min and max come from?  Why do you scale 7-0 from 200-900?  How does
+>> this map to what was there before (exactly, approximately)?
+>> 
+>
+> Well, So far we only have the notion of iopriority for the process and
+> based on that we determine time slice length.
+>
+> Soon we will throw cfq groups also in the mix. Because cpu IO controller
+> is weight driven, people have shown preference that group's share should
+> be decided based on its weight and not introduce the notion of ioprio for
+> groups.
 
-Thanks for the pointers.  I will roll your latest v8 code into our test
-matrix.  What kernel/qemu trees do they apply to?
+I certainly agree with that.
 
--Greg
+> Hence, to begin with I wanted to limit the range of weights allowed because
+> wider range opens up lot of interesting corner cases. That's why limited
+> minimum weight to 100. So at max user can expect the 1000/100=10 times service
+> differentiation between highest and lower weight groups. If folks need more
+> than that, we can look into it once things stablize.
+>
+> Priority and weights follow reverse order. Higher priority means low
+> weight and vice-versa.
+>
+> Currently we support 8 priority levels and prio "4" is the middle point.
+> Anything higher than prio 4 gets 20% less slice as compared to prio 4 and
+> priorities lower than 4, get 20% higher slice of prio 4 (20% higher/lower
+> for each priority level).
+>
+> For weight range 100 - 1000, 500 can be considered as mid point. Now this
+> is how priority mapping looks like.
+>
+> 	100 200 300 400 500 600 700 800 900 1000  (Weights) 
+> 	     7   6   5   4   3   2  1   0         (io prio).
+>
+> Once priorities are converted to weights, we are able to retain the notion
+> of 20% difference between prio levels by choosing 500 as the mid point and
+> mapping prio 0-7 to weights 900-200, hence this mapping. 
 
+I see.  So when using the old ioprio mechanism, we get a smaller range
+of possible values than with the cgroup configuration.
 
---------------enigE41C0DE2FBFBF3E83786E82A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> I am all ears if you have any suggestions on how this ca be handled
+> better.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+I think that's a fine way to handle it.  I just needed to be spoon-fed.
+It would be nice if you included a write-up of how service is
+differentiated in your documentation patch.  In other words, from the
+point of view of the sysadmin, how does he use the thing?  Simple math
+would likely help, too.
 
-iEYEARECAAYFAkrx0t4ACgkQP5K2CMvXmqFRbgCeLpbxRPIlSPlPG7HtOurzxEQp
-lWUAnjOvhcZm8LOVA2vlgoLaN/wgPdzQ
-=JO1s
------END PGP SIGNATURE-----
-
---------------enigE41C0DE2FBFBF3E83786E82A--
+Cheers,
+Jeff
