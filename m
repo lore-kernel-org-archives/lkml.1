@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZKDLgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZKDLmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbZKDLgI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 06:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbZKDLgH
+	id S1755480AbZKDLmE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 06:42:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbZKDLmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 06:36:07 -0500
-Received: from mx1.moondrake.net ([212.85.150.166]:33897 "EHLO
-	mx1.mandriva.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755528AbZKDLgG (ORCPT
+	Wed, 4 Nov 2009 06:42:03 -0500
+Received: from mga05.intel.com ([192.55.52.89]:28632 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755224AbZKDLmC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 06:36:06 -0500
-X-Spam-Virus: No
-From: Arnaud Patard <apatard@mandriva.com>
-To: wuzhangjin@gmail.com
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
-       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
-       liujl@lemote.com
-Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
-References: <cover.1257325319.git.wuzhangjin@gmail.com>
-	<a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com>
-	<m3iqdqtwgk.fsf@anduin.mandriva.com>
-	<1257332652.8716.5.camel@falcon.domain.org>
-Organization: Mandriva
-Date: Wed, 04 Nov 2009 12:36:23 +0100
-In-Reply-To: <1257332652.8716.5.camel@falcon.domain.org> (Wu Zhangjin's message of "Wed, 04 Nov 2009 19:04:12 +0800")
-Message-ID: <m3639qttc8.fsf@anduin.mandriva.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.1 (gnu/linux)
+	Wed, 4 Nov 2009 06:42:02 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,679,1249282800"; 
+   d="scan'208";a="743718561"
+Date: Wed, 4 Nov 2009 12:43:54 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Ben Dooks <ben@simtec.co.uk>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       Simtec Liunx Team <linux@simtec.co.uk>
+Subject: Re: tps65010: Allow the board to choose any GPIO base.
+Message-ID: <20091104114353.GA3607@sortiz.org>
+References: <20091102165220.310450538@fluff.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091102165220.310450538@fluff.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Zhangjin <wuzhangjin@gmail.com> writes:
+Hi Ben,
 
-> Hi,
->
-> On Wed, 2009-11-04 at 11:28 +0100, Arnaud Patard wrote:
-> [...]
->> > +
->> > +config CPU_LOONGSON2F
->> > +	bool "Loongson 2F"
->> > +	depends on SYS_HAS_CPU_LOONGSON2F
->> > +	select CPU_LOONGSON2
->> > +	help
->> > +	  The Loongson 2F processor implements the MIPS III instruction set
->> > +	  with many extensions.
->> > +
->> > +	  Loongson2F have built-in DDR2 and PCIX controller. The PCIX controller
->> > +	  have a similar programming interface with FPGA northbridge used in
->> > +	  Loongson2E.
->> > +
->> 
->> Small question : Why don't you restrict to 64bit kernels only ? From
->> what I remember from some discussions with ST, trying to use a 32-bit
->> kernel on 2f is a nice way to get troubles. It would be better imho to
->> forbid such a configuration. As a side effect, this will remove all
->> 'defined(CONFIG_64BIT)' parts of your #ifdef tests. 
->> 
->
-> It's hard to make such a decision ;) Perhaps some guys want to play with
-> the 32bit version.
+On Mon, Nov 02, 2009 at 04:52:20PM +0000, Ben Dooks wrote:
+> If the board does not care where the TPS turns up, then specifiying the
+> value -1 to get gpiolib to dynamically allocate the base for the chip
+> is valid.
+> 
+> Change the test to look for != 0, so that any boards specifying zero
+> will not end up with gpio that they didn't want.
+> 
+> Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+> Signed-off-by: Simtec Liunx Team <linux@simtec.co.uk>
+Applied, thanks a lot.
 
-It's a matter of taste : using 32 bit and getting an more or less broken
-machine or using 64bit and getting a working machine. I don't think a
-lot of people will choose the first option :)
 
-Arnaud
+> ---
+>  drivers/mfd/tps65010.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: b/drivers/mfd/tps65010.c
+> ===================================================================
+> --- a/drivers/mfd/tps65010.c	2009-10-21 19:09:28.000000000 +0100
+> +++ b/drivers/mfd/tps65010.c	2009-10-21 19:09:39.000000000 +0100
+> @@ -637,7 +637,7 @@ static int tps65010_probe(struct i2c_cli
+>  				tps, DEBUG_FOPS);
+>  
+>  	/* optionally register GPIOs */
+> -	if (board && board->base > 0) {
+> +	if (board && board->base != 0) {
+>  		tps->outmask = board->outmask;
+>  
+>  		tps->chip.label = client->name;
+> 
+> -- 
+> Ben (ben@fluff.org, http://www.fluff.org/)
+> 
+>   'a smiley only costs 4 bytes'
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
