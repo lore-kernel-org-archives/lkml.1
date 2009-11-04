@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbZKDPOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbZKDPPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961AbZKDPOx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbZKDPOw
+	id S1756142AbZKDPPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZKDPPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:14:52 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48816 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755911AbZKDPOw (ORCPT
+	Wed, 4 Nov 2009 10:15:21 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:50883 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755917AbZKDPPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:14:52 -0500
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Thierry Vignaud <tvignaud@mandriva.com>,
-       bugzilla-daemon@bugzilla.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 14537] New: missing compat_ioctl on x86_64
-From: Andi Kleen <andi@firstfloor.org>
-References: <bug-14537-6666@http.bugzilla.kernel.org/>
-	<alpine.LFD.2.00.0911041142370.12138@localhost.localdomain>
-Date: Wed, 04 Nov 2009 16:14:55 +0100
-In-Reply-To: <alpine.LFD.2.00.0911041142370.12138@localhost.localdomain> (Thomas Gleixner's message of "Wed, 4 Nov 2009 12:43:57 +0100 (CET)")
-Message-ID: <87vdhq8gpc.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Wed, 4 Nov 2009 10:15:19 -0500
+Date: Wed, 4 Nov 2009 10:15:06 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Gertjan van Wingerde <gwingerde@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project
+	tree
+Message-ID: <20091104151505.GE12965@tuxdriver.com>
+References: <200911031951.05235.bzolnier@gmail.com> <4AF09A15.3060504@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF09A15.3060504@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+On Tue, Nov 03, 2009 at 10:01:09PM +0100, Gertjan van Wingerde wrote:
 
->> - with gnome-terminal:
->> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
->> arg(48111345) on /dev/pts/0
->> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
->> arg(4811134a) on /dev/pts/0
->> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
->> arg(48111351) on /dev/pts/0
->
-> That looks more like an application problem. 'S' is SNDRV_SEQ_IOCTL
-> which has no ioctl nr 0xb. Also I have no idea why a sound sequencer
-> ioctl should work on /dev/pts/0 :)
+> However, it is good to see that you have put effort in providing a patch series
+> for these issues.
 
-ioctl numbers are not always unique (I haven't checked if this is the
-case here).  But it might be that it's some other ioctl actually.
+Yes, indeed.  Thanks to Bart for making patches available!
 
-One easy way to check is to install debuginfo and set break points
-on ioctl in gdb and then look at the sources in the backtrace.
+> Now, since I believe that it is better to work with people, rather than against
+> them, would it be possible to post this patch series somewhere as a set of 
+> separate patches, so that they can be reviewed as such?
 
--Andi
+I must echo this request.
+
+Thanks!
+
+John
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
