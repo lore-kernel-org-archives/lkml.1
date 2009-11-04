@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbZKDXhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbZKDXlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbZKDXhv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 18:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbZKDXhv
+	id S1758375AbZKDXlP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 18:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbZKDXlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 18:37:51 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:39000 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755015AbZKDXhu (ORCPT
+	Wed, 4 Nov 2009 18:41:15 -0500
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:45090 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756788AbZKDXlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 18:37:50 -0500
-Date: Wed, 4 Nov 2009 15:37:45 -0800
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       balbir@linux.vnet.ibm.com, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jan@smtp1.linux-foundation.org, Bharata B Rao <bharata.rao@in.ibm.com>,
-       libcg-devel <libcg-devel@lists.sourceforge.net>,
-       Safranek <jsafrane@redhat.com>
-Subject: Re: [RFC] Mount point suggestions for cgroup
-Message-ID: <20091104233745.GB3668@count0.beaverton.ibm.com>
-References: <20091104063005.GC3560@balbir.in.ibm.com>
- <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com>
- <20091104173517.GA3668@count0.beaverton.ibm.com>
- <6599ad830911041325i9b309a7y4d912d6be7ddbdd9@mail.gmail.com>
+	Wed, 4 Nov 2009 18:41:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=e3KWwMAldlKkDQVdMy4ZzafxWfwNaUYDTLezRyWKPUoD9owmfBewYs1JiR3L1OQknN
+         AI/QxDfSeyuMcuhUI/qTFFqVJ5NlNAJrRNCKZk1rdve9SjLkCq+cvKfV+pc5shd0i7n4
+         niYoy9w6x3WJsPEbOsReDbn8Tfie6vwYbAo6g=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830911041325i9b309a7y4d912d6be7ddbdd9@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Wed, 4 Nov 2009 15:40:59 -0800
+Message-ID: <43e72e890911041540hd1e5f87u8d282d9c95857504@mail.gmail.com>
+Subject: Reverting 5d423 fixes loading of ath9k on Acer Extensa 7630EZ
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yannick Roehlly <yannick.roehlly@free.fr>,
+       Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jesse.barnes@intel.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "John W. Linville" <linville@tuxdriver.com>, berndl81@gmx.at,
+       Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 01:25:46PM -0800, Paul Menage wrote:
-> On Wed, Nov 4, 2009 at 9:35 AM, Matt Helsley <matthltc@us.ibm.com> wrote:
-> >
-> > If anything, "standardizing" the mount point(s) will likely provide a false
-> > sense of uniformity and we'll get some bad userspace scripts/tools that
-> > break when "nonstandard" usage appears. Leaving the mount point undefined
-> > forces anyone writing scripts or tools to consider whether they want to be
-> > portable and, if so, the proper way to find the cgroup hierarchies they need
-> > to manipulate.
-> 
-> Scanning /proc/mounts to find the relevant mount locations is pretty
-> simple, for code that's just wanting to use existing cgroup mounts.
-> But for the code that sets up mounts in the first place, its probably
-> helpful to have recommendations of suitable locations.
+Ingo,
 
-If the tool set up the mounts in the first place then there's nothing
-gained, as far as the code is concerned, by standardizing the location.
-It could just as easily make a temporary directory and put it there.
+reverting the commit 5d423, titled "x86/pci: remove rounding quirk
+from e820_setup_gap()" fixes loading of ath9k on an Acer Extensa
+7630EZ. We've troubleshooted the issue with the user,  Bernhard, who
+eventually did a full bisect between 2.6.30 and 2.6.31 and found 5d423
+was the culprit. For details please feel free to check:
 
-If it's specified in an /etc file by the user then standardization
-gets us nothing but inflexibility. The user knows where it is (they set it)
-and the code knows where it is (via /proc OR /etc).
+http://bugzilla.kernel.org/show_bug.cgi?id=14402
 
-Recommending default locations seems helpful only so that users can inspect
-what the code does. Blessing one location as the "standard, one, true location"
-for code to use -- via FHS/LSB/whatnot -- seems like asking for trouble.
+Can you please consider reviewing this issue and help determine if
+this indeed needs to be reverted for 2.6.32 and the next 2.6.31.y.
 
-Cheers,
-	-Matt
+I am curious if other devices would work by reverting this as well.
+
+  Luis
