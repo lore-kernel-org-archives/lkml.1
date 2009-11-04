@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZKDGpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbZKDGnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677AbZKDGpP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 01:45:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZKDGpO
+	id S1752606AbZKDGnx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 01:43:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZKDGnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 01:45:14 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:54142 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752441AbZKDGpL (ORCPT
+	Wed, 4 Nov 2009 01:43:52 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:61271 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751887AbZKDGnv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 01:45:11 -0500
+	Wed, 4 Nov 2009 01:43:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=aV3H2cQhlxAZPnVJ7jM+Jvvu5GVGKzYtVDUQfaMhpGV3hWlLbMyd5kr+nMhlNS9tDV
-         fCcOmMdV73pg4APcidltz2x0FErj9JV+XcuHhxr9lszOmTLJNUqEcOCTy7GhuREU/WpC
-         tmt8lDiXa5fZhY00bYNL2TQS5mEnV9T7VrPe4=
-Subject: [PATCH] mm/ksm.c - Fix compile warnings (PS ignore my formatting
- in previous email)
-From: askb <askb23@gmail.com>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 04 Nov 2009 12:13:30 +0530
-Message-Id: <1257317010.14838.55.camel@linux-k65f.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=MLY8Ma9L0rRiumdZonO7CEABYI5XZOntXyp5X5eBVFW0o2+6vytyeib04ukOi2j4Kx
+         MziZ4EmDJGCf3do2kHKO8gugRJhjltVWFu1wuEzqQfFK8aI75gEPAl03JqelTh5jYZq4
+         7ulDo+mW858JyZ/k/zllNWknZgSokfAU7KNkU=
+Message-ID: <4AF122BB.7000202@gmail.com>
+Date: Tue, 03 Nov 2009 22:44:11 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gcc@gcc.gnu.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@cs.washington.edu>
+Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
+References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com> <20091103222432.4a94bd8f.akpm@linux-foundation.org>
+In-Reply-To: <20091103222432.4a94bd8f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Found the compiler warning on linux-next: 	
+Andrew Morton wrote:
+> On Mon, 2 Nov 2009 13:29:29 -0800 Justin Mattock<justinmattock@gmail.com>  wrote:
+>
+>    
+>> Hello,
+>> I'm not sure how to handle this,
+>> while compiling firefox-3.6b1.source
+>> I get this with the default compiling options,
+>> as well as custom:
+>>
+>> ...
+>>
+>> active_anon:2360492kB inactive_anon:590196kB active_file:84kB
+>>      
+>
+> 2.8GB of anonymous memory
+>
+>    
+figured it would be good enough
+(I think I have 4gig's total)
+>> [  532.942508] Free swap  = 0kB
+>> [  532.942510] Total swap = 431632kB
+>>      
+>
+> 430MB of swap, all used up.
+>
+>    
+yep, narrow down to the smallest amount.
+> That's a genuine OOM.  Something (presumably cc1plus) has consumed
+> waaaay too much memory, quite possibly leaked it.
+>
+> It would help if the oom-killer were to print some information about
+> the oom-killed process's memory footprint.
+>
+>
+>    
+I still have everything setup(if you need me to add a debug patch
+let me know)
+as for compiling: libc compiled fine, kernel fine,
+and every package on the clfs list up to boot up the fresh system.
+(was figuring out how to compiling/install firefox before
+  I threw the old system away).
 
-mm/ksm.c: In function ‘ksm_scan_thread’:
-mm/ksm.c:1083: warning: ‘page2[0u]’ may be used uninitialized in this
-function
-mm/ksm.c:1083: note: ‘page2[0u]’ was declared here
+stable gcc(4.4*) on the macbook(same os/kernel) compiled fine
+firefox, xulrunner, and in the process thunderbird...
 
-fix for the above warning:
-
-Signed-off-by: Anil SB <askb23@gmail.com>
-
-diff --git a/mm/ksm.c b/mm/ksm.c
-index bef1af4..2ea0fd3 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -1080,7 +1080,7 @@ static void stable_tree_append(struct rmap_item *rmap_item,
-  */
- static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
- {
--	struct page *page2[1];
-+	struct page *page2[1] = {NULL};
- 	struct rmap_item *tree_rmap_item;
- 	unsigned int checksum;
- 	int err;
-
-
-
-
+Justin P. Mattock
