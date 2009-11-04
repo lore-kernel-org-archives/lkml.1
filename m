@@ -1,179 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZKDIMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZKDIQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752952AbZKDIMR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 03:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZKDIMQ
+	id S1753994AbZKDIQX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 03:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZKDIQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 03:12:16 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57507 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbZKDIMP (ORCPT
+	Wed, 4 Nov 2009 03:16:22 -0500
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:35061 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753299AbZKDIQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 03:12:15 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 4 Nov 2009 17:09:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       cl@linux-foundation.org, rientjes@google.com
-Subject: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
-Message-Id: <20091104170944.cef988c7.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 03:16:22 -0500
+Date: Wed, 4 Nov 2009 13:46:18 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: libcg-devel <libcg-devel@lists.sourceforge.net>,
+       "menage@google.com" <menage@google.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       containers@lists.linux-foundation.org,
+       Jan Safranek <jsafrane@redhat.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Bharata B Rao <bharata.rao@in.ibm.com>
+Subject: Re: [RFC] Mount point suggestions for cgroup
+Message-ID: <20091104081618.GD3560@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091104063005.GC3560@balbir.in.ibm.com>
+ <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If clarification is not enough, let me know.
-Thank you for all your review in RFC version.
-Thanks,
--Kame
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-11-04 15:40:24]:
 
-Fixing node-oriented allocation handling in oom-kill.c
-I myself think this as bugfix not as enhancement.
+> On Wed, 4 Nov 2009 12:00:05 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > Hi, All,
+> > 
+> > We've been having a discussion as to what would be the right place to
+> > mount the cgroup filesystem. Jan has been proactively looking into
+> > this. The FHS has no recommendation since cgroup filesystem came in
+> > much later.
+> > 
+> > The options are
+> > 
+> > 1. /dev/cgroup
+> > 2. /cgroup
+> > 3. Some place under /sys
+> > 
+> > The problem with (2) is that it is quite non-standard and pollutes the
+> > root directory. (3) requires some basic support to create a directory
+> > for cgroup under /sys. (1) seems the most obvious choice since cpusets
+> > were mounted under /dev/cpuset, but /dev is controlled by udev.
+> > 
+> > Given the three choices or any other suggestions, is there a general
+> > preference as to where we can mount it? The goal is to standardize
+> > the mount point (if possible).
+> > 
+> > BTW, the mounting is expected to be done using cgconfigparser present
+> > in libcgroup.
+> > 
+> 
+> IMHO, even if anywhere is ok to me, the suggestion should includes the fact
+>   - Each cgroup subsystem can be mounted independenty from other cgroup.
+>   - some cgroup (noop) can be mounted multiple times
+> etc...there are some points which is different from /proc or /sys.
+> So, we need multiple mount points.
+> 
+> Then, to say my own not-seriously-considered idea, I vote for
+>  - /cgroup/[HierarchyName]/
+> rather than /dev/ or /sys or /opt. This sounds straightforward.
 
-In these days, things are changed as
-  - alloc_pages() eats nodemask as its arguments, __alloc_pages_nodemask().
-  - mempolicy don't maintain its own private zonelists.
-  (And cpuset doesn't use nodemask for __alloc_pages_nodemask())
+The reason I liked /dev/cgroup was because cpusets could be
+mounted at /dev/cpuset or /dev/cgroup/cpuset. My concern with /cgroup
+is that a ls "/" now becomes larger in size. But I'll take your vote
+for it as +1 for /cgroup.
 
-So, current oom-killer's check function is wrong.
+> 
+> If /sys,  /sys/cgroup/[HierarchyName] will be candidate. But considering
+> users can use arbitarary combination of subsystem, using /sys may require
+> much work, I think.
+> 
 
-This patch does
-  - check nodemask, if nodemask && nodemask != node_states[N_HIGH_MEMORY]
-    this is never be CONSTRAINT_NONE. We assume this from mempolicy.
-  - Scan all zonelist under nodemask, if it hits cpuset's wall
-    this faiulre is from cpuset.
-And
-  - modifies the caller of out_of_memory not to call oom if __GFP_THISNODE.
-    This doesn't change "current" behavior.
-    If callers use __GFP_THISNODE, it should handle "page allocation failure"
-    by itself.
+Yes, Agreed.
 
-Changelog: 2009/11/04
- - cut out as bug-fix for passing nodemask.
- - added GFP_THISNODE sanity check.
+> Thanks,
+> -Kame
+> 
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
----
- drivers/char/sysrq.c |    2 +-
- mm/oom_kill.c        |   38 ++++++++++++++++++++++++++------------
- mm/page_alloc.c      |   10 ++++++++--
- 3 files changed, 35 insertions(+), 15 deletions(-)
-
-Index: mmotm-2.6.32-Nov2/drivers/char/sysrq.c
-===================================================================
---- mmotm-2.6.32-Nov2.orig/drivers/char/sysrq.c
-+++ mmotm-2.6.32-Nov2/drivers/char/sysrq.c
-@@ -339,7 +339,7 @@ static struct sysrq_key_op sysrq_term_op
- 
- static void moom_callback(struct work_struct *ignored)
- {
--	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
-+	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0, NULL);
- }
- 
- static DECLARE_WORK(moom_work, moom_callback);
-Index: mmotm-2.6.32-Nov2/mm/oom_kill.c
-===================================================================
---- mmotm-2.6.32-Nov2.orig/mm/oom_kill.c
-+++ mmotm-2.6.32-Nov2/mm/oom_kill.c
-@@ -196,27 +196,40 @@ unsigned long badness(struct task_struct
- /*
-  * Determine the type of allocation constraint.
-  */
-+#ifdef CONFIG_NUMA
- static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
--						    gfp_t gfp_mask)
-+				    gfp_t gfp_mask, nodemask_t *nodemask)
- {
--#ifdef CONFIG_NUMA
- 	struct zone *zone;
- 	struct zoneref *z;
- 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
--	nodemask_t nodes = node_states[N_HIGH_MEMORY];
-+	int ret = CONSTRAINT_NONE;
- 
--	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
--		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
--			node_clear(zone_to_nid(zone), nodes);
--		else
-+	/*
-+ 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
-+ 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
-+ 	 * feature. Then, only mempolicy use this nodemask.
-+ 	 */
-+	if (nodemask && nodes_equal(*nodemask, node_states[N_HIGH_MEMORY]))
-+		ret = CONSTRAINT_MEMORY_POLICY;
-+
-+	/* Check this allocation failure is caused by cpuset's wall function */
-+	for_each_zone_zonelist_nodemask(zone, z, zonelist,
-+			high_zoneidx, nodemask)
-+		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
- 			return CONSTRAINT_CPUSET;
- 
--	if (!nodes_empty(nodes))
--		return CONSTRAINT_MEMORY_POLICY;
--#endif
-+	/* __GFP_THISNODE never calls OOM.*/
- 
-+	return ret;
-+}
-+#else
-+static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-+				gfp_t gfp_mask, nodemask_t *nodemask)
-+{
- 	return CONSTRAINT_NONE;
- }
-+#endif
- 
- /*
-  * Simple selection loop. We chose the process with the highest
-@@ -603,7 +616,8 @@ rest_and_return:
-  * OR try to be smart about which process to kill. Note that we
-  * don't have to be perfect here, we just have to be good.
-  */
--void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
-+void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
-+		int order, nodemask_t *nodemask)
- {
- 	unsigned long freed = 0;
- 	enum oom_constraint constraint;
-@@ -622,7 +636,7 @@ void out_of_memory(struct zonelist *zone
- 	 * Check if there were limitations on the allocation (only relevant for
- 	 * NUMA) that may require different handling.
- 	 */
--	constraint = constrained_alloc(zonelist, gfp_mask);
-+	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
- 	read_lock(&tasklist_lock);
- 
- 	switch (constraint) {
-Index: mmotm-2.6.32-Nov2/mm/page_alloc.c
-===================================================================
---- mmotm-2.6.32-Nov2.orig/mm/page_alloc.c
-+++ mmotm-2.6.32-Nov2/mm/page_alloc.c
-@@ -1667,9 +1667,15 @@ __alloc_pages_may_oom(gfp_t gfp_mask, un
- 	/* The OOM killer will not help higher order allocs */
- 	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
- 		goto out;
--
-+	/*
-+	 * In usual, GFP_THISNODE contains __GFP_NORETRY and we never hit this.
-+	 * Sanity check for bare calls of __GFP_THISNODE, not real OOM.
-+	 * Note: Hugepage uses it but will hit PAGE_ALLOC_COSTLY_ORDER.
-+	 */
-+	if (gfp_mask & __GFP_THISNODE)
-+		goto out;
- 	/* Exhausted what can be done so it's blamo time */
--	out_of_memory(zonelist, gfp_mask, order);
-+	out_of_memory(zonelist, gfp_mask, order, nodemask);
- 
- out:
- 	clear_zonelist_oom(zonelist, gfp_mask);
-
+-- 
+	Balbir
