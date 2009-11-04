@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZKDSSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZKDSM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757631AbZKDSSY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 13:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbZKDSSY
+	id S1757636AbZKDSM6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 13:12:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZKDSM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 13:18:24 -0500
-Received: from outbound-mail-147.bluehost.com ([67.222.38.37]:48489 "HELO
-	outbound-mail-147.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755192AbZKDSSX (ORCPT
+	Wed, 4 Nov 2009 13:12:57 -0500
+Received: from stargate.chelsio.com ([67.207.112.58]:27954 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755810AbZKDSM4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 13:18:23 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=JgeKrymMGAHrgGVAhxmIeTr2qdSlQW4OzXIDZzkcQxz8DW/mRJ+al0AvcfeCMlQoLqRJP+iBFkYt6smLFP3QoteBjxtFOi9wxxoRbtCoZ4dJYcEWF64gX4xAUaGQDJ4l;
-Date: Wed, 4 Nov 2009 10:18:25 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: trivial@kernel.org, Alex Chiang <achiang@hp.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci: remove pci_find_slot from PCI_LEGACY config
- description
-Message-ID: <20091104101825.5e80c974@jbarnes-piketon>
-In-Reply-To: <1256932009-5905-1-git-send-email-cascardo@holoscopio.com>
-References: <1256932009-5905-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 4 Nov 2009 13:12:56 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH -2nd repost 2/4] SCSI: remove unnecessary NULL test
+Date: Wed, 4 Nov 2009 10:18:42 -0800
+Message-ID: <8A71B368A89016469F72CD08050AD33406BFD213@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH -2nd repost 2/4] SCSI: remove unnecessary NULL test
+Thread-Index: AcpdapMEJ81W+IECT96DWBNFl74W+wAEIYHw
+References: <1257351321-8281-1-git-send-email-jirislaby@gmail.com> <1257351321-8281-2-git-send-email-jirislaby@gmail.com>
+From: "Karen Xie" <kxie@chelsio.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>, <James.Bottomley@suse.de>
+Cc: <aacraid@adaptec.com>, <james.smart@emulex.com>,
+       <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Oct 2009 17:46:48 -0200
-Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote:
-
-> Commit 3b073eda has removed pci_find_slot, so there's no point in
-> mentioning it in the config description as one of the deprecated APIs
-> there are enabled by PCI_LEGACY and still used by some drivers.
-> 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> ---
-
-Applied to linux-next.  You can do the suggested pci.txt stuff in a
-followup if you want.
+Yes, the check is not necessary.
 
 Thanks,
+Karen
+
+-----Original Message-----
+From: linux-scsi-owner@vger.kernel.org
+[mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Jiri Slaby
+Sent: Wednesday, November 04, 2009 8:15 AM
+To: James.Bottomley@suse.de
+Cc: aacraid@adaptec.com; james.smart@emulex.com;
+linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; Jiri Slaby
+Subject: [PATCH -2nd repost 2/4] SCSI: remove unnecessary NULL test
+
+Stanse found that c3cn is poked many times around in
+cxgb3i_conn_pdu_ready, there is no need to check if it is NULL.
+
+Remove the test.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: James E.J. Bottomley <James.Bottomley@suse.de>
+---
+ drivers/scsi/cxgb3i/cxgb3i_pdu.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/scsi/cxgb3i/cxgb3i_pdu.c
+b/drivers/scsi/cxgb3i/cxgb3i_pdu.c
+index 7091050..64bbc28 100644
+--- a/drivers/scsi/cxgb3i/cxgb3i_pdu.c
++++ b/drivers/scsi/cxgb3i/cxgb3i_pdu.c
+@@ -461,10 +461,8 @@ void cxgb3i_conn_pdu_ready(struct s3_conn *c3cn)
+ 		skb = skb_peek(&c3cn->receive_queue);
+ 	}
+ 	read_unlock(&c3cn->callback_lock);
+-	if (c3cn) {
+-		c3cn->copied_seq += read;
+-		cxgb3i_c3cn_rx_credits(c3cn, read);
+-	}
++	c3cn->copied_seq += read;
++	cxgb3i_c3cn_rx_credits(c3cn, read);
+ 	conn->rxdata_octets += read;
+ 
+ 	if (err) {
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+1.6.4.2
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
