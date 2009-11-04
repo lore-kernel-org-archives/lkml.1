@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZKDTSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbZKDTWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbZKDTSj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757827AbZKDTSi
+	id S1757980AbZKDTWR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbZKDTWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:18:38 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:58736 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756960AbZKDTSh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:18:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=gNqM980gEjmnmeE6eomPRydXy1Bizx4ynLgY7K/R9KiTH+sd3JSrmvU8p43NpMNm/o
-         6z/8Tln688r8i22Ei9U8RoY/m2vWsZi//ImYTWic1pAJwm2RhV1McNyAexNKnWxqmd+4
-         eCVS5kafQ+igYnd+8F2eZg+ggNobaS+AvEl0E=
+	Wed, 4 Nov 2009 14:22:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60655 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757674AbZKDTWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:22:13 -0500
+Date: Wed, 4 Nov 2009 21:19:26 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       Daniel Walker <dwalker@fifo99.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCHv8 0/3] vhost: a kernel-level virtio server
+Message-ID: <20091104191926.GC772@redhat.com>
+References: <20091104155234.GA32673@redhat.com> <4AF1A587.8000509@gmail.com> <20091104162339.GA311@redhat.com> <4AF1D2DE.10705@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20091104173320.28463.59233.sendpatchset@localhost.localdomain>
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
-	 <20091104173320.28463.59233.sendpatchset@localhost.localdomain>
-Date: Wed, 4 Nov 2009 20:18:42 +0100
-Message-ID: <14add3d10911041118u3f0ec41eif0ee1a0421d719db@mail.gmail.com>
-Subject: Re: [PATCH 11/41] rt2800usb: add rt2800_register_multi[read,write]() 
-	wrappers
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF1D2DE.10705@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 4, 2009 at 6:33 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] rt2800usb: add rt2800_register_multi[read,write]() wrappers
->
-> Part of preparations for later code unification.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
+On Wed, Nov 04, 2009 at 02:15:42PM -0500, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Wed, Nov 04, 2009 at 11:02:15AM -0500, Gregory Haskins wrote:
+> >> Michael S. Tsirkin wrote:
+> >>> Ok, I think I've addressed all comments so far here.
+> >>> Rusty, I'd like this to go into linux-next, through your tree, and
+> >>> hopefully 2.6.33.  What do you think?
+> >> I think the benchmark data is a prerequisite for merge consideration, IMO.
+> > 
+> > Shirley Ma was kind enough to send me some measurement results showing
+> > how kernel level acceleration helps speed up you can find them here:
+> > http://www.linux-kvm.org/page/VhostNet
+> 
+> Thanks for the pointers.  I will roll your latest v8 code into our test
+> matrix.  What kernel/qemu trees do they apply to?
+> 
+> -Greg
+> 
 
-For what it is worth:
 
-Acked-by: Gertjan van Wingerde <gwingerde@gmail.com>
+kernel 2.6.32-rc6, qemu-kvm 47e465f031fc43c53ea8f08fa55cc3482c6435c8.
+You can also use my development git trees if you like.
+
+kernel:
+git://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost.git vhost
+userspace:
+git://git.kernel.org/pub/scm/linux/kernel/git/mst/qemu-kvm.git vhost
+
+Please note I rebase especially userspace tree now and when.
+
+-- 
+MST
