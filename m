@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbZKDKE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbZKDKND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbZKDKE0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 05:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZKDKEZ
+	id S1755038AbZKDKND (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 05:13:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbZKDKND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 05:04:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:39694 "EHLO mx1.redhat.com"
+	Wed, 4 Nov 2009 05:13:03 -0500
+Received: from tservice.ru ([195.178.208.66]:48544 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbZKDKEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 05:04:24 -0500
-Date: Wed, 4 Nov 2009 05:04:26 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, Amerigo Wang <amwang@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>
-Message-Id: <20091104100717.4785.57149.sendpatchset@localhost.localdomain>
-Subject: [Patch] net: fix incorrect counting in __scm_destroy()
+	id S1752219AbZKDKNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 05:13:02 -0500
+Date: Wed, 4 Nov 2009 13:13:05 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Greg KH <gregkh@suse.de>
+Cc: Roel Kluin <roel.kluin@gmail.com>, devel@driverdev.osuosl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] dst: Fix parentheses
+Message-ID: <20091104101305.GA25640@ioremap.net>
+References: <4AF0B35A.8080400@gmail.com> <20091103225343.GA9145@ioremap.net> <20091103230827.GA746@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091103230827.GA746@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 03, 2009 at 03:08:27PM -0800, Greg KH (gregkh@suse.de) wrote:
+> > > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> > 
+> > Looks good, thank you!
+> > Andrew, please queue it into the appropriate tree.
+> 
+> That would be my tree, I'll do it.
 
-It seems that in __scm_destroy() we forgot to decrease
-the ->count after fput(->fp[i]), this may cause some
-problem when we recursively call fput() again.
+Ok, no problem. Thank you Greg.
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: David S. Miller <davem@davemloft.net>
-
----
-diff --git a/net/core/scm.c b/net/core/scm.c
-index b7ba91b..fa53219 100644
---- a/net/core/scm.c
-+++ b/net/core/scm.c
-@@ -120,8 +120,10 @@ void __scm_destroy(struct scm_cookie *scm)
- 				fpl = list_first_entry(&work_list, struct scm_fp_list, list);
- 
- 				list_del(&fpl->list);
--				for (i=fpl->count-1; i>=0; i--)
-+				for (i = fpl->count-1; i >= 0; i--) {
- 					fput(fpl->fp[i]);
-+					fpl->count--;
-+				}
- 				kfree(fpl);
- 			}
- 
+-- 
+	Evgeniy Polyakov
