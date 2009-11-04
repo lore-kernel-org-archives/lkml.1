@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZKDOUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZKDOuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbZKDOUk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 09:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbZKDOUk
+	id S1756713AbZKDOuM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 09:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756640AbZKDOuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 09:20:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756343AbZKDOUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 09:20:39 -0500
-Date: Wed, 4 Nov 2009 16:17:30 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Sam Ravnborg <sam@ravnborg.org>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alex Williamson <alex.williamson@hp.com>,
-       Mark McLoughlin <markmc@redhat.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: virtio-net: new section mismatch warning. revert patch?
-Message-ID: <20091104141729.GA27288@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 4 Nov 2009 09:50:11 -0500
+Received: from relay1.vodamail.co.za ([196.11.146.226]:55077 "EHLO
+	vodamail.co.za" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756046AbZKDOuK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 09:50:10 -0500
+X-Greylist: delayed 1850 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Nov 2009 09:50:10 EST
+From: "=?utf-8?B?Ri5DLiBGcmFzZXI=?=" <GoForward@vodamail.co.za>
+To: linux-kernel@vger.kernel.org
+Subject: =?utf-8?B?V2UgY291bGQgYmUgb2YgYXNzaXN0YW5jZQ==?=
+	=?utf-8?B?IHRvIGVhY2ggb3RoZXI=?=
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Date: Wed, 4 Nov 2009 16:19:13 +0200
+Message-ID: <20091104141913516.2D26701D76062F59@LAPPIE>
+X-Mailer: Web CEO 8.0.0.3791
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nA4Eob16024140
 
-With v2.6.32-rcX I started getting section mismatch warnings for
-virtio_net.
-make with CONFIG_DEBUG_SECTION_MISMATCH=y shows:
+Hello,
+I have found your website groups.google.com when searching the web on the topics related to my website theme.
+I must say your site content is very good and I think we would benefit much from possible partnership - for example link exchange. This would bring more targeted traffic to our sites, plus increase our websites' weight at the search engines, as they give greater value to the links from the topic-related sites rather than irrelevant backlinks.
 
-WARNING: drivers/net/virtio_net.o(.data+0x90): Section mismatch in
-reference from the variable virtio_net to the function
-.devexit.text:virtnet_remove()                                                                    
-The variable virtio_net references                                                                            
-the function __devexit virtnet_remove()                                                                       
-If the reference is valid then annotate the                                                                   
-variable with __exit* (see linux/init.h) or name the variable:                                                
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,                                  
+My website http://www.canimambo.za.net/ is definitely related to yours.
 
-virtnet_remove was converted to devexit by this commit:
+I would be glad to link to your site in return to you linking back to mine.
+Feel free to email me direct to GoForward@vodamail.co.za to discuss the details on the possible partnership.
 
-	commit 3d1285beff2e8467b8c3884d83b7a91a99aa9fcd
-	Author: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-	Date:   Wed Sep 30 22:28:34 2009 +0000
+Hope for the fruitful cooperation,
 
-	    move virtnet_remove to .devexit.text
-
-We didn't have these warnings in v2.6.31, so this is a regression.
-revert?
-
--- 
-MST
+Best regards,
+F.C. Fraser,
+http://www.canimambo.za.net/
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
