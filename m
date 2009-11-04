@@ -1,134 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbZKDTBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZKDTBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbZKDTBV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZKDTBU
+	id S1755575AbZKDTBc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbZKDTBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:01:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27739 "EHLO mx1.redhat.com"
+	Wed, 4 Nov 2009 14:01:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2880 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbZKDTBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:01:19 -0500
-Date: Wed, 4 Nov 2009 14:00:33 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Divyesh Shah <dpshah@google.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, nauman@google.com, lizf@cn.fujitsu.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+	id S1753856AbZKDTBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:01:20 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       akpm@linux-foundation.org, riel@redhat.com,
        kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 03/20] blkio: Introduce the notion of weights
-Message-ID: <20091104190033.GG2870@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-4-git-send-email-vgoyal@redhat.com> <x498wemuy6v.fsf@segfault.boston.devel.redhat.com> <20091104154135.GA2870@redhat.com> <af41c7c40911040907y11103944ief0654f84ffdf5ed@mail.gmail.com>
+Subject: Re: [PATCH 15/20] blkio: Take care of preemptions across groups
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
+	<1257291837-6246-16-git-send-email-vgoyal@redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 04 Nov 2009 14:00:33 -0500
+In-Reply-To: <1257291837-6246-16-git-send-email-vgoyal@redhat.com> (Vivek
+	Goyal's message of "Tue, 3 Nov 2009 18:43:52 -0500")
+Message-ID: <x49d43yt8ry.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <af41c7c40911040907y11103944ief0654f84ffdf5ed@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 09:07:41AM -0800, Divyesh Shah wrote:
-> On Wed, Nov 4, 2009 at 7:41 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> >
-> > On Wed, Nov 04, 2009 at 10:06:16AM -0500, Jeff Moyer wrote:
-> > > Vivek Goyal <vgoyal@redhat.com> writes:
-> > >
-> > > > o Introduce the notion of weights. Priorities are mapped to weights internally.
-> > > >   These weights will be useful once IO groups are introduced and group's share
-> > > >   will be decided by the group weight.
-> > >
-> > > I'm sorry, but I need more background to review this patch.  Where do
-> > > the min and max come from?  Why do you scale 7-0 from 200-900?  How does
-> > > this map to what was there before (exactly, approximately)?
-> > >
-> >
-> > Well, So far we only have the notion of iopriority for the process and
-> > based on that we determine time slice length.
-> >
-> > Soon we will throw cfq groups also in the mix. Because cpu IO controller
-> > is weight driven, people have shown preference that group's share should
-> > be decided based on its weight and not introduce the notion of ioprio for
-> > groups.
-> >
-> > So now core scheduling algorithm only recognizes weights for entities (be it
-> > cfq queues or cfq groups), and it is required that we convert the ioprio
-> > of cfqq into weight.
-> >
-> > Now it is a matter of coming up with what weight range do we support and
-> > how ioprio should be mapped onto these weights. We can always change the
-> > mappings but to being with, I have followed following.
-> >
-> > Allow a weight range from 100 to 1000. Allowing too small a weights like
-> > "1", can lead to very interesting corner cases and I wanted to avoid that
-> > in first implementation. For example, if some group with weight "1" gets
-> > a time slice of 100ms, its vtime will be really high and after that it
-> > will not get scheduled in for a very long time.
-> >
-> > Seconly allowing too small a weights can make vtime of the tree move very
-> > fast with faster wrap around of min_vdistime. (especially on SSD where idling
-> > might not be enabled, and for every queue expiry we will attribute minimum of
-> > 1ms of slice. If weight of the group is "1" it will higher vtime and
-> > min_vdisktime will move very fast). We don't want too fast a wrap around
-> > of min_vdisktime (especially in case of idle tree. That infrastructure is
-> > not part of current patches).
-> >
-> > Hence, to begin with I wanted to limit the range of weights allowed because
-> > wider range opens up lot of interesting corner cases. That's why limited
-> > minimum weight to 100. So at max user can expect the 1000/100=10 times service
-> > differentiation between highest and lower weight groups. If folks need more
-> > than that, we can look into it once things stablize.
-> 
-> We definitely need the 1:100 differentiation. I'm ok with adding that
-> later after the core set of patches stabilize but just letting you
-> know that it is important to us.
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-Good to know. I will begin with max service difference of 10 times and
-once things stablize, will go enable wider range of weights.
+> +static bool cfq_should_preempt_group(struct cfq_data *cfqd,
+> +		struct cfq_queue *cfqq, struct cfq_queue *new_cfqq)
+> +{
+> +	struct cfq_entity *cfqe = &cfqq->entity;
+> +	struct cfq_entity *new_cfqe = &new_cfqq->entity;
+> +
+> +	if (cfqq_to_cfqg(cfqq) != &cfqd->root_group)
+> +		cfqe = parent_entity(&cfqq->entity);
+> +
+> +	if (cfqq_to_cfqg(new_cfqq) != &cfqd->root_group)
+> +		new_cfqe = parent_entity(&new_cfqq->entity);
+> +
+> +	/*
+> +	 * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
+> +	 */
+> +
+> +	if (new_cfqe->ioprio_class == IOPRIO_CLASS_RT
+> +	    && cfqe->ioprio_class != IOPRIO_CLASS_RT)
+> +		return true;
+> +	/*
+> +	 * Allow an BE request to pre-empt an ongoing IDLE clas timeslice.
+> +	 */
+> +
+> +	if (new_cfqe->ioprio_class == IOPRIO_CLASS_BE
+> +	    && cfqe->ioprio_class == IOPRIO_CLASS_IDLE)
+> +		return true;
+> +
+> +	return false;
+> +}
 
-> Also curious why you chose a higher
-> range 100-1000 instead of 10-100? For smaller vtime leaps?
+What was the motivation for this?  It seems like this would really break
+isolation.  What if one group has all RT priority tasks, will it starve
+out the other groups?
 
-Good question. Initially we had thought that range of 1-1000 should be 
-good enough. Later decided to cap minimum weight to 100. But same can be
-achieved by smaller range of 1-100 and capping minimum weight at 10. This
-will make vtime leap forward slower also.
-
-Later if somebody needs ratio higher than 1:100, we can think of
-supporting even wider weight range.
-
-Thanks Divyesh for the idea. I think I will change weight range to 10-100
-and map ioprio 0-7 on weights 20 to 90.
-
-Thanks
-Vivek
-
-> 
-> >
-> > Priority and weights follow reverse order. Higher priority means low
-> > weight and vice-versa.
-> >
-> > Currently we support 8 priority levels and prio "4" is the middle point.
-> > Anything higher than prio 4 gets 20% less slice as compared to prio 4 and
-> > priorities lower than 4, get 20% higher slice of prio 4 (20% higher/lower
-> > for each priority level).
-> >
-> > For weight range 100 - 1000, 500 can be considered as mid point. Now this
-> > is how priority mapping looks like.
-> >
-> >        100 200 300 400 500 600 700 800 900 1000  (Weights)
-> >             7   6   5   4   3   2  1   0         (io prio).
-> >
-> > Once priorities are converted to weights, we are able to retain the notion
-> > of 20% difference between prio levels by choosing 500 as the mid point and
-> > mapping prio 0-7 to weights 900-200, hence this mapping.
-> >
-> > I am all ears if you have any suggestions on how this ca be handled
-> > better.
-> >
-> > Thanks
-> > Vivek
+Cheers,
+Jeff
