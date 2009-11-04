@@ -1,886 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbZKDVX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbZKDVZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758193AbZKDVX6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 16:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758176AbZKDVX5
+	id S1758201AbZKDVZd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 16:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758176AbZKDVZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 16:23:57 -0500
-Received: from icebox.esperi.org.uk ([81.187.191.129]:40022 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757351AbZKDVXz (ORCPT
+	Wed, 4 Nov 2009 16:25:32 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:61407 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757387AbZKDVZb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 16:23:55 -0500
-To: tuxonice-users@lists.tuxonice.net,
-       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: An assortment of TuxOnIce resume panics on a Radeon KMS-running system in 2.6.31.5, lzo-related?
-From: Nix <nix@esperi.org.uk>
-Emacs: Lovecraft was an optimist.
-Date: Wed, 04 Nov 2009 21:23:28 +0000
-Message-ID: <87ocnim1bj.fsf@spindle.srvr.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-DCC-URT-Metrics: spindle 1060; Body=3 Fuz1=3 Fuz2=3
+	Wed, 4 Nov 2009 16:25:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=PJdsMO1QjQ0p0Ev1IZE8jFv/Zs9xCZZf6QOnteG821BBBtMqHZXigPprzBGze/f3Fe
+         +MKi/VyM1YXmxgipMHOv4dz26z5qPph4tXgBRWpoC7reCWdqruZjipEvs/9xEh1KPLd9
+         lRpM5mj9kuGuKCGplrVbtnUKNSdz3EYu+79Xs=
+From: Paul Fertser <fercerpav@gmail.com>
+To: Anton Vorontsov <cbou@mail.ru>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Sean McNeil <sean@mcneil.com>,
+       Paul Fertser <fercerpav@gmail.com>
+Subject: [PATCH 1/6] power: pcf50633: add ac power supply class to the charger
+Date: Thu,  5 Nov 2009 00:24:54 +0300
+Message-Id: <1257369899-325-1-git-send-email-fercerpav@gmail.com>
+X-Mailer: git-send-email 1.6.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm not quite sure where to send these. LKML may not be interested 'cos
-TuxOnIce is out-of-tree. The tuxonice list may not be interested because
-these panics don't look like they're in the tuxonice code. It might be
-an lzo compressor bug, or even a RAM fault intermittently revealed by
-lzo compressor bugs yet oddly with not a single other symptom (somewhat
-unlikely, perhaps, but e.g. full GCC bootstraps complete without
-incident, which normally tease out *anything* of this nature in my
-experience: so I'm assuming it's not bad RAM for now). I'm using Dave
-Airlie's drm-next tree as well for kernel modesetting for my Radeon
-HD4870, so I'm amazed things are working as well as they are :) (I must
-say the Radeon KMS works wonderfully with not a single negative
-consequence: bravo! It works well enough that I'm not even considering
-it as a root cause of this yet, thus not Cc:ing Dave. I went through a
-spate of compressor faults a month or so back, anyway, before I was
-running KMS at all.)
+From: Sean McNeil <sean@mcneil.com>
 
-(It might also be that the reserved pages overflowed this time around,
-but I'd expect it to die at suspension time in that case, rather than at
-resume time. The DRM code seems to want about 14000 reserved pages
-normally: I've given it 20000, but maybe that isn't enough.)
+This adds an appropriate ac power_supply class and shows usb only when
+at the appropriate current limit.
 
-(There are no obvious MAINTAINERS for the lzo code, but I'm Cc:ing its
-original author of the lzo code anyway. Maybe this is all really
-obvious.)
+Signed-off-by: Sean McNeil <sean@mcneil.com>
+Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+---
+ drivers/power/pcf50633-charger.c |   46 +++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 45 insertions(+), 1 deletions(-)
 
-Still, I just got some panics on resume, logged courtesy of
-netconsole. I tried a couple of times, getting a slightly different set
-of recursive panics each time, but I think for the same reason. (The
-system's a quad-core hyperthreaded Core i7 in 64-bit mode, so you never
-know but that some sort of lethal race window might be missed the second
-time around.)
+diff --git a/drivers/power/pcf50633-charger.c b/drivers/power/pcf50633-charger.c
+index e8b278f..48e92c0 100644
+--- a/drivers/power/pcf50633-charger.c
++++ b/drivers/power/pcf50633-charger.c
+@@ -36,6 +36,7 @@ struct pcf50633_mbc {
+ 
+ 	struct power_supply usb;
+ 	struct power_supply adapter;
++	struct power_supply ac;
+ 
+ 	struct delayed_work charging_restart_work;
+ };
+@@ -237,6 +238,7 @@ pcf50633_mbc_irq_handler(int irq, void *data)
+ 	else if (irq == PCF50633_IRQ_USBLIMOFF)
+ 		mbc->usb_active = 1;
+ 
++	power_supply_changed(&mbc->ac);
+ 	power_supply_changed(&mbc->usb);
+ 	power_supply_changed(&mbc->adapter);
+ 
+@@ -269,10 +271,34 @@ static int usb_get_property(struct power_supply *psy,
+ {
+ 	struct pcf50633_mbc *mbc = container_of(psy, struct pcf50633_mbc, usb);
+ 	int ret = 0;
++	u8 usblim = pcf50633_reg_read(mbc->pcf, PCF50633_REG_MBCC7) &
++						PCF50633_MBCC7_USB_MASK;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		val->intval = mbc->usb_online &&
++				(usblim <= PCF50633_MBCC7_USB_500mA);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++	return ret;
++}
++
++static int ac_get_property(struct power_supply *psy,
++			enum power_supply_property psp,
++			union power_supply_propval *val)
++{
++	struct pcf50633_mbc *mbc = container_of(psy, struct pcf50633_mbc, ac);
++	int ret = 0;
++	u8 usblim = pcf50633_reg_read(mbc->pcf, PCF50633_REG_MBCC7) &
++						PCF50633_MBCC7_USB_MASK;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_ONLINE:
+-		val->intval = mbc->usb_online;
++		val->intval = mbc->usb_online &&
++				(usblim == PCF50633_MBCC7_USB_1000mA);
+ 		break;
+ 	default:
+ 		ret = -EINVAL;
+@@ -337,6 +363,14 @@ static int __devinit pcf50633_mbc_probe(struct platform_device *pdev)
+ 	mbc->usb.supplied_to		= mbc->pcf->pdata->batteries;
+ 	mbc->usb.num_supplicants	= mbc->pcf->pdata->num_batteries;
+ 
++	mbc->ac.name			= "ac";
++	mbc->ac.type			= POWER_SUPPLY_TYPE_MAINS;
++	mbc->ac.properties		= power_props;
++	mbc->ac.num_properties		= ARRAY_SIZE(power_props);
++	mbc->ac.get_property		= ac_get_property;
++	mbc->ac.supplied_to		= mbc->pcf->pdata->batteries;
++	mbc->ac.num_supplicants		= mbc->pcf->pdata->num_batteries;
++
+ 	ret = power_supply_register(&pdev->dev, &mbc->adapter);
+ 	if (ret) {
+ 		dev_err(mbc->pcf->dev, "failed to register adapter\n");
+@@ -352,6 +386,15 @@ static int __devinit pcf50633_mbc_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	ret = power_supply_register(&pdev->dev, &mbc->ac);
++	if (ret) {
++		dev_err(mbc->pcf->dev, "failed to register ac\n");
++		power_supply_unregister(&mbc->adapter);
++		power_supply_unregister(&mbc->usb);
++		kfree(mbc);
++		return ret;
++	}
++
+ 	INIT_DELAYED_WORK(&mbc->charging_restart_work,
+ 				pcf50633_mbc_charging_restart);
+ 
+@@ -379,6 +422,7 @@ static int __devexit pcf50633_mbc_remove(struct platform_device *pdev)
+ 
+ 	power_supply_unregister(&mbc->usb);
+ 	power_supply_unregister(&mbc->adapter);
++	power_supply_unregister(&mbc->ac);
+ 
+ 	cancel_delayed_work_sync(&mbc->charging_restart_work);
+ 
+-- 
+1.6.4.4
 
-.config attached, trimmed-down as usual by dropping comments and blank
-lines.
-
-The first panic, with a quite remarkably garbage task structure, probably
-because that bit of the kernel state hadn't been read in yet, so the
-oops printer oopses (not really very surprising):
-
-[    8.756565] ...20% ...40% 
-[    9.461683] Compress_read returned -22.
-[    9.461685] 
-[    9.467815] 
-[    9.467816] Breaking out of I/O loop because of result code -22.
-[    9.481769] 
-[    9.481770] Breaking out of I/O loop because of result code -22.
-[    9.482162] BUG: unable to handle kernel paging request at ffffffff02056c90
-[    9.482164] IP: [<ffffffff8105c2e8>] scheduler_tick+0xf6/0x237
-[    9.482171] PGD 1003067 PUD 0 
-[    9.482174] general protection fault: 0000 [#1] PREEMPT SMP 
-[    9.482176] last sysfs file: /sys/power/tuxonice/do_resume
-[    9.482178] CPU 2 
-[    9.482179] Modules linked in:
-[    9.482181] Pid: 41684592, comm: �߽ڔI Not tainted 2.6.31.5-05080-gc59e5ec-dirty #1 System Product Name
-[    9.482183] RIP: 0010:[<ffffffff8104407a>]  [<ffffffff8104407a>] no_context+0x18a/0x205
-[    9.482187] RSP: 0018:ffff88002806dc48  EFLAGS: 00010092
-[    9.482188] RAX: 02015c05009502a8 RBX: ffffffff02056c90 RCX: 00000000000000bc
-[    9.482190] RDX: 0000000000000001 RSI: 0000000000000046 RDI: ffffffff8181f9e0
-[    9.482191] RBP: ffff88002806dc88 R08: ffff88002806db08 R09: 0000000000000000
-[    9.482193] R10: 0000000000000000 R11: 0000000000000020 R12: ffff88002806ddc8
-[    9.482194] R13: 0000000000000000 R14: ffff88033f9be340 R15: 0000000000000046
-[    9.482196] FS:  0000000000000000(0000) GS:ffff88002806a000(0000) knlGS:0000000000000000
-[    9.482197] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-[    9.482199] CR2: ffffffff02056c90 CR3: 0000000001001000 CR4: 00000000000026e0
-[    9.482200] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[    9.482201] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[    9.482203] Process �߽ڔI (pid: 41684592, threadinfo 02015c05009502a8, task ffff88033f9be340)
-[    9.482204] Stack:
-[    9.482205]  ffffffff81053191 ffff88002807d180 0000000000013180 ffff88002806ddc8
-[    9.482207] <0> ffff88033f9be340 ffffffff02056c90 0000000000000000 0000000000030001
-[    9.482209] <0> ffff88002806dd58 ffffffff81044292 ffff88002806de58 0000000000000008
-[    9.482211] Call Trace:
-[    9.482212]  <IRQ> 
-[    9.482215]  [<ffffffff81053191>] ? find_busiest_group+0x2ce/0x864
-[    9.482217]  [<ffffffff81044292>] __bad_area_nosemaphore+0x19d/0x1c3
-[    9.482222]  [<ffffffff81081645>] ? tick_sched_timer+0x0/0x9a
-[    9.482224]  [<ffffffff810442cb>] bad_area_nosemaphore+0x13/0x15
-[    9.482226]  [<ffffffff81044561>] do_page_fault+0x129/0x260
-[    9.482229]  [<ffffffff81081645>] ? tick_sched_timer+0x0/0x9a
-[    9.482232]  [<ffffffff8145f3ef>] page_fault+0x1f/0x30
-[    9.482234]  [<ffffffff81081645>] ? tick_sched_timer+0x0/0x9a
-[    9.482236]  [<ffffffff8105c2e8>] ? scheduler_tick+0xf6/0x237
-[    9.482238]  [<ffffffff8105c23e>] ? scheduler_tick+0x4c/0x237
-[    9.482241]  [<ffffffff81081645>] ? tick_sched_timer+0x0/0x9a
-[    9.482244]  [<ffffffff8106ab0c>] update_process_times+0x57/0x67
-[    9.482246]  [<ffffffff810816bf>] tick_sched_timer+0x7a/0x9a
-[    9.482248]  [<ffffffff810791ce>] __run_hrtimer+0x76/0xaa
-[    9.482250]  [<ffffffff81079e02>] hrtimer_interrupt+0xf6/0x160
-[    9.482254]  [<ffffffff8103d70a>] smp_apic_timer_interrupt+0x89/0x9c
-[    9.482258]  [<ffffffff81029be3>] apic_timer_interrupt+0x13/0x20
-[    9.482259]  <EOI> 
-[    9.482260] Code: c7 c7 26 6d 5c 81 31 c0 e8 f9 81 41 00 49 8b bc 24 80 00 00 00 be 01 00 00 00 e8 56 8f fe ff 48 89 df e8 2a fa ff ff 49 8b 46 08 <48> 81 78 68 9d 6e ac 57 74 0e 48 c7 c7 2d 6d 5c 81 31 c0 e8 c3 
-[    9.482272] RIP  [<ffffffff8104407a>] no_context+0x18a/0x205
-[    9.482275]  RSP <ffff88002806dc48>
-[    9.482276] ---[ end trace 6ad7e556947a941e ]---
-[    9.482278] Kernel panic - not syncing: Fatal exception in interrupt
-[    9.482280] Pid: 41684592, comm: �߽ڔI Tainted: G      D    2.6.31.5-05080-gc59e5ec-dirty #1
-[    9.482281] Call Trace:
-[    9.482282]  <IRQ>  [<ffffffff8145c1b0>] panic+0x89/0x12e
-[    9.482286]  [<ffffffff8102d160>] oops_end+0x81/0x8e
-[    9.482288]  [<ffffffff8102d335>] die+0x5a/0x63
-[    9.482290]  [<ffffffff8102afa1>] do_general_protection+0x123/0x12b
-[    9.482292]  [<ffffffff8145f3bf>] general_protection+0x1f/0x30
-[    9.482294]  [<ffffffff8104407a>] ? no_context+0x18a/0x205
-[    9.482297]  [<ffffffff81044076>] ? no_context+0x186/0x205
-[    9.482299]  [<ffffffff81053191>] ? find_busiest_group+0x2ce/0x864
-[    9.482301]  [<ffffffff81044292>] __bad_area_nosemaphore+0x19d/0x1c3
-[    9.482303]  [<ffffffff81081645>] ? tick_sched_timer+0x0/0x9a
-[    9.482306]  [<ffffffff810442cb>] bad_area_nosemaphore+0x13/0x15
-[    9.482308]  [<ffffffff81044561>] do_page_fault+0x129/0x260
-[    9.482310]  [<ffffffff81081645>] ? tick_sched_timer+0x0/0x9a
-[    9.482312]  [<ffffffff8145f3ef>] page_fault+0x1f/0x30
-[    9.482314]  [<ffffffff81081645>] ? tick_sched_timer+0x0/0x9a
-[    9.482316]  [<ffffffff8105c2e8>] ? scheduler_tick+0xf6/0x237
-[    9.482318]  [<ffffffff8105c23e>] ? scheduler_tick+0x4c/0x237
-[    9.482321]  [<ffffffff81081645>] ? tick_sched_timer+0x0/0x9a
-[    9.482323]  [<ffffffff8106ab0c>] update_process_times+0x57/0x67
-[    9.482325]  [<ffffffff810816bf>] tick_sched_timer+0x7a/0x9a
-[    9.482326]  [<ffffffff810791ce>] __run_hrtimer+0x76/0xaa
-[    9.482328]  [<ffffffff81079e02>] hrtimer_interrupt+0xf6/0x160
-[    9.482331]  [<ffffffff8103d70a>] smp_apic_timer_interrupt+0x89/0x9c
-[    9.482333]  [<ffffffff81029be3>] apic_timer_interrupt+0x13/0x20
-[    9.482334]  <EOI> 
-
-So I hit reset and tried again, and got this:
-
-[    8.642269] ...20% ...40%
-[    9.347393] Compress_read returned -22.
-[    9.347395] 
-[    9.353603] 
-[    9.353604] Breaking out of I/O loop because of result code -22.
-[    9.359200] 
-[    9.359201] Breaking out of I/O loop because of result code -22.
-[    9.361770] general protection fault: 0000 [#1] PREEMPT SMP 
-[    9.361774] last sysfs file: /sys/power/tuxonice/do_resume
-[    9.361776] CPU 0 
-[    9.361777] Modules linked in:
-[    9.361781] Pid: 0, comm: swapper Not tainted 2.6.31.5-05080-gc59e5ec-dirty #1 System Product Name
-[    9.361784] RIP: 0010:[<ffffffff811f3f38>]  [<ffffffff811f3f38>] __blk_complete_request+0x17/0xe2
-[    9.361793] RSP: 0018:ffff880028037ce8  EFLAGS: 00010246
-[    9.361795] RAX: 0000000000000000 RBX: ffff88033dffc0d0 RCX: 0000000000000000
-[    9.361798] RDX: 0000000000000017 RSI: 000000021fd40000 RDI: ffff8802f91ee060
-[    9.361800] RBP: ffff880028037d08 R08: 0000000000000000 R09: 0000000000000000
-[    9.361802] R10: 0000000000000000 R11: ffff880028037f78 R12: ffff8802f91ee060
-[    9.361805] R13: ffff88033d990000 R14: 6f178021bf00da0f R15: ffff88033dec1280
-[    9.361808] FS:  0000000000000000(0000) GS:ffff880028034000(0000) knlGS:0000000000000000
-[    9.361811] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-[    9.361813] CR2: 0000000008067fd0 CR3: 000000033d53a000 CR4: 00000000000026f0
-[    9.361815] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[    9.361818] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[    9.361821] Process swapper (pid: 0, threadinfo ffffffff8168c000, task ffffffff8168f070)
-[    9.361823] Stack:
-[    9.361824]  ffff88033dffc0d0 ffff88033dffc000 ffff88033d990000 ffff88033dffc000
-[    9.361827] <0> ffff880028037d18 ffffffff811f401d ffff880028037d28 ffffffff812fae28
-[    9.361830] <0> ffff880028037d98 ffffffff81312920 0000000000000000 ffff88033dffc0d0
-[    9.361834] Call Trace:
-[    9.361836]  <IRQ> 
-[    9.361840]  [<ffffffff811f401d>] blk_complete_request+0x1a/0x1d
-[    9.361846]  [<ffffffff812fae28>] scsi_done+0x15/0x17
-[    9.361850]  [<ffffffff81312920>] ata_scsi_qc_complete+0x341/0x358
-[    9.361855]  [<ffffffff8130c1fa>] __ata_qc_complete+0xea/0xf2
-[    9.361859]  [<ffffffff8130df81>] ata_qc_complete+0x190/0x199
-[    9.361863]  [<ffffffff8130e2ed>] ata_qc_complete_multiple+0xc7/0xcc
-[    9.361867]  [<ffffffff8132162c>] ahci_interrupt+0x3f2/0x499
-[    9.361872]  [<ffffffff810795e2>] ? hrtimer_get_next_event+0xa7/0xc3
-[    9.361877]  [<ffffffff8106ac9d>] ? get_next_timer_interrupt+0x181/0x1f4
-[    9.361883]  [<ffffffff810a3606>] handle_IRQ_event+0x91/0x183
-[    9.361887]  [<ffffffff810a4e63>] handle_fasteoi_irq+0x90/0xd0
-[    9.361891]  [<ffffffff8102bd6b>] handle_irq+0x24/0x2c
-[    9.361894]  [<ffffffff8102b39e>] do_IRQ+0x5c/0xbc
-[    9.361898]  [<ffffffff81029a53>] ret_from_intr+0x0/0xa
-[    9.361900]  <EOI> 
-[    9.361904]  [<ffffffff81030474>] ? mwait_idle+0xe7/0x155
-[    9.361909]  [<ffffffff8107ab3d>] ? __atomic_notifier_call_chain+0x20/0x4e
-[    9.361913]  [<ffffffff8107ab7a>] ? atomic_notifier_call_chain+0xf/0x11
-[    9.361917]  [<ffffffff810283f2>] ? cpu_idle+0x57/0xbb
-[    9.361922]  [<ffffffff8144b1a0>] ? rest_init+0x84/0x86
-[    9.361927]  [<ffffffff8170878c>] ? start_kernel+0x346/0x351
-[    9.361931]  [<ffffffff81707dfc>] ? x86_64_start_reservations+0xac/0xb0
-[    9.361935]  [<ffffffff81707ee4>] ? x86_64_start_kernel+0xe4/0xeb
-[    9.361937] Code: 39 10 75 0a bf 04 00 00 00 e8 37 16 e7 ff 53 9d 58 5b c9 c3 55 48 89 e5 41 56 41 55 41 54 53 0f 1f 44 00 00 4c 8b 77 40 49 89 fc <49> 83 be a8 00 00 00 00 75 04 0f 0b eb fe 9c 5b fa 65 44 8b 2c 
-[    9.361959] RIP  [<ffffffff811f3f38>] __blk_complete_request+0x17/0xe2
-[    9.361963]  RSP <ffff880028037ce8>
-[    9.361966] ---[ end trace 0e3a6b5d7df259ed ]---
-[    9.361968] Kernel panic - not syncing: Fatal exception in interrupt
-[    9.361971] Pid: 0, comm: swapper Tainted: G      D    2.6.31.5-05080-gc59e5ec-dirty #1
-[    9.361973] Call Trace:
-[    9.361975]  <IRQ>  [<ffffffff8145c1b0>] panic+0x89/0x12e
-[    9.361981]  [<ffffffff8102d160>] oops_end+0x81/0x8e
-[    9.361984]  [<ffffffff8102d335>] die+0x5a/0x63
-[    9.361987]  [<ffffffff8102afa1>] do_general_protection+0x123/0x12b
-[    9.361991]  [<ffffffff8145f3bf>] general_protection+0x1f/0x30
-[    9.361995]  [<ffffffff811f3f38>] ? __blk_complete_request+0x17/0xe2
-[    9.361998]  [<ffffffff811f401d>] blk_complete_request+0x1a/0x1d
-[    9.362001]  [<ffffffff812fae28>] scsi_done+0x15/0x17
-[    9.362004]  [<ffffffff81312920>] ata_scsi_qc_complete+0x341/0x358
-[    9.362008]  [<ffffffff8130c1fa>] __ata_qc_complete+0xea/0xf2
-[    9.362012]  [<ffffffff8130df81>] ata_qc_complete+0x190/0x199
-[    9.362016]  [<ffffffff8130e2ed>] ata_qc_complete_multiple+0xc7/0xcc
-[    9.362019]  [<ffffffff8132162c>] ahci_interrupt+0x3f2/0x499
-[    9.362023]  [<ffffffff810795e2>] ? hrtimer_get_next_event+0xa7/0xc3
-[    9.362026]  [<ffffffff8106ac9d>] ? get_next_timer_interrupt+0x181/0x1f4
-[    9.362030]  [<ffffffff810a3606>] handle_IRQ_event+0x91/0x183
-[    9.362034]  [<ffffffff810a4e63>] handle_fasteoi_irq+0x90/0xd0
-[    9.362037]  [<ffffffff8102bd6b>] handle_irq+0x24/0x2c
-[    9.362040]  [<ffffffff8102b39e>] do_IRQ+0x5c/0xbc
-[    9.362044]  [<ffffffff81029a53>] ret_from_intr+0x0/0xa
-[    9.362045]  <EOI>  [<ffffffff81030474>] ? mwait_idle+0xe7/0x155
-[    9.362052]  [<ffffffff8107ab3d>] ? __atomic_notifier_call_chain+0x20/0x4e
-[    9.362055]  [<ffffffff8107ab7a>] ? atomic_notifier_call_chain+0xf/0x11
-[    9.362059]  [<ffffffff810283f2>] ? cpu_idle+0x57/0xbb
-[    9.362062]  [<ffffffff8144b1a0>] ? rest_init+0x84/0x86
-[    9.362066]  [<ffffffff8170878c>] ? start_kernel+0x346/0x351
-[    9.362069]  [<ffffffff81707dfc>] ? x86_64_start_reservations+0xac/0xb0
-[    9.362073]  [<ffffffff81707ee4>] ? x86_64_start_kernel+0xe4/0xeb
-[    9.542660] [drm:drm_fb_helper_panic] *ERROR* panic occurred, switching back to text console
-
-Still a -22 compression fault at the core, but the call traces are quite different.
-
-I'm going to try instrumenting the lzo code and add printks on error
-(why aren't they there already?).
-
-
-CONFIG_64BIT=y
-CONFIG_X86_64=y
-CONFIG_X86=y
-CONFIG_OUTPUT_FORMAT="elf64-x86-64"
-CONFIG_ARCH_DEFCONFIG="arch/x86/configs/x86_64_defconfig"
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-CONFIG_FAST_CMPXCHG_LOCAL=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_BUG_RELATIVE_POINTERS=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_TIME_VSYSCALL=y
-CONFIG_ARCH_HAS_CPU_RELAX=y
-CONFIG_ARCH_HAS_DEFAULT_IDLE=y
-CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
-CONFIG_HAVE_SETUP_PER_CPU_AREA=y
-CONFIG_HAVE_DYNAMIC_PER_CPU_AREA=y
-CONFIG_HAVE_CPUMASK_OF_CPU_MAP=y
-CONFIG_ARCH_HIBERNATION_POSSIBLE=y
-CONFIG_ARCH_SUSPEND_POSSIBLE=y
-CONFIG_ZONE_DMA32=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_AUDIT_ARCH=y
-CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
-CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_GENERIC_PENDING_IRQ=y
-CONFIG_USE_GENERIC_SMP_HELPERS=y
-CONFIG_X86_64_SMP=y
-CONFIG_X86_HT=y
-CONFIG_X86_TRAMPOLINE=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_CONSTRUCTORS=y
-CONFIG_EXPERIMENTAL=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_HAVE_KERNEL_GZIP=y
-CONFIG_HAVE_KERNEL_BZIP2=y
-CONFIG_HAVE_KERNEL_LZMA=y
-CONFIG_KERNEL_GZIP=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_POSIX_MQUEUE_SYSCTL=y
-CONFIG_BSD_PROCESS_ACCT=y
-CONFIG_CLASSIC_RCU=y
-CONFIG_LOG_BUF_SHIFT=16
-CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
-CONFIG_GROUP_SCHED=y
-CONFIG_FAIR_GROUP_SCHED=y
-CONFIG_RT_GROUP_SCHED=y
-CONFIG_USER_SCHED=y
-CONFIG_CGROUPS=y
-CONFIG_RELAY=y
-CONFIG_NAMESPACES=y
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE="usr/initramfs.mutilate"
-CONFIG_INITRAMFS_ROOT_UID=99
-CONFIG_INITRAMFS_ROOT_GID=101
-CONFIG_RD_GZIP=y
-CONFIG_RD_BZIP2=y
-CONFIG_RD_LZMA=y
-CONFIG_INITRAMFS_COMPRESSION_GZIP=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_ANON_INODES=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_PCSPKR_PLATFORM=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_AIO=y
-CONFIG_HAVE_PERF_COUNTERS=y
-CONFIG_PERF_COUNTERS=y
-CONFIG_EVENT_PROFILE=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_PCI_QUIRKS=y
-CONFIG_STRIP_ASM_SYMS=y
-CONFIG_SLAB=y
-CONFIG_TRACEPOINTS=y
-CONFIG_MARKERS=y
-CONFIG_HAVE_OPROFILE=y
-CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
-CONFIG_HAVE_IOREMAP_PROT=y
-CONFIG_HAVE_KPROBES=y
-CONFIG_HAVE_KRETPROBES=y
-CONFIG_HAVE_ARCH_TRACEHOOK=y
-CONFIG_HAVE_DMA_ATTRS=y
-CONFIG_HAVE_DMA_API_DEBUG=y
-CONFIG_SLABINFO=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_STOP_MACHINE=y
-CONFIG_BLOCK=y
-CONFIG_BLOCK_COMPAT=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=m
-CONFIG_IOSCHED_DEADLINE=m
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_PREEMPT_NOTIFIERS=y
-CONFIG_FREEZER=y
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_SMP=y
-CONFIG_SPARSE_IRQ=y
-CONFIG_SCHED_OMIT_FRAME_POINTER=y
-CONFIG_MCORE2=y
-CONFIG_X86_CPU=y
-CONFIG_X86_L1_CACHE_BYTES=64
-CONFIG_X86_INTERNODE_CACHE_BYTES=64
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=6
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_P6_NOP=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMPXCHG64=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=64
-CONFIG_X86_DEBUGCTLMSR=y
-CONFIG_CPU_SUP_INTEL=y
-CONFIG_CPU_SUP_AMD=y
-CONFIG_CPU_SUP_CENTAUR=y
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-CONFIG_DMI=y
-CONFIG_GART_IOMMU=y
-CONFIG_SWIOTLB=y
-CONFIG_IOMMU_HELPER=y
-CONFIG_IOMMU_API=y
-CONFIG_NR_CPUS=8
-CONFIG_SCHED_SMT=y
-CONFIG_SCHED_MC=y
-CONFIG_PREEMPT=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_X86_MCE=y
-CONFIG_X86_NEW_MCE=y
-CONFIG_X86_MCE_INTEL=y
-CONFIG_X86_MCE_THRESHOLD=y
-CONFIG_X86_THERMAL_VECTOR=y
-CONFIG_MICROCODE=m
-CONFIG_MICROCODE_INTEL=y
-CONFIG_MICROCODE_OLD_INTERFACE=y
-CONFIG_X86_MSR=m
-CONFIG_X86_CPUID=y
-CONFIG_X86_CPU_DEBUG=m
-CONFIG_ARCH_PHYS_ADDR_T_64BIT=y
-CONFIG_DIRECT_GBPAGES=y
-CONFIG_ARCH_SPARSEMEM_DEFAULT=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_SPARSEMEM_MANUAL=y
-CONFIG_SPARSEMEM=y
-CONFIG_HAVE_MEMORY_PRESENT=y
-CONFIG_SPARSEMEM_EXTREME=y
-CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
-CONFIG_SPARSEMEM_VMEMMAP=y
-CONFIG_PAGEFLAGS_EXTENDED=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_PHYS_ADDR_T_64BIT=y
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_VIRT_TO_BUS=y
-CONFIG_HAVE_MLOCK=y
-CONFIG_HAVE_MLOCKED_PAGE_BIT=y
-CONFIG_MMU_NOTIFIER=y
-CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
-CONFIG_X86_CHECK_BIOS_CORRUPTION=y
-CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK=y
-CONFIG_X86_RESERVE_LOW_64K=y
-CONFIG_MTRR=y
-CONFIG_X86_PAT=y
-CONFIG_HZ_1000=y
-CONFIG_HZ=1000
-CONFIG_SCHED_HRTICK=y
-CONFIG_PHYSICAL_START=0x1000000
-CONFIG_PHYSICAL_ALIGN=0x1000000
-CONFIG_HOTPLUG_CPU=y
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-CONFIG_ARCH_HIBERNATION_HEADER=y
-CONFIG_PM=y
-CONFIG_PM_SLEEP_SMP=y
-CONFIG_PM_SLEEP=y
-CONFIG_HIBERNATION_NVS=y
-CONFIG_HIBERNATION=y
-CONFIG_PM_STD_PARTITION=""
-CONFIG_TOI_CORE=y
-CONFIG_TOI_SWAP=y
-CONFIG_TOI_CRYPTO=y
-CONFIG_TOI_USERUI=y
-CONFIG_TOI_USERUI_DEFAULT_PATH="/usr/sbin/tuxoniceui_text"
-CONFIG_TOI_REPLACE_SWSUSP=y
-CONFIG_TOI_IGNORE_LATE_INITCALL=y
-CONFIG_TOI_DEFAULT_WAIT=-1
-CONFIG_TOI_DEFAULT_EXTRA_PAGES_ALLOWANCE=20000
-CONFIG_TOI_CHECKSUM=y
-CONFIG_TOI=y
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-CONFIG_ACPI_PROC_EVENT=y
-CONFIG_ACPI_BUTTON=y
-CONFIG_ACPI_FAN=y
-CONFIG_ACPI_DOCK=y
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_HOTPLUG_CPU=y
-CONFIG_ACPI_THERMAL=y
-CONFIG_ACPI_CUSTOM_DSDT_FILE=""
-CONFIG_ACPI_BLACKLIST_YEAR=0
-CONFIG_ACPI_PCI_SLOT=y
-CONFIG_X86_PM_TIMER=y
-CONFIG_ACPI_CONTAINER=y
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_X86_ACPI_CPUFREQ=y
-CONFIG_CPU_IDLE=y
-CONFIG_CPU_IDLE_GOV_LADDER=y
-CONFIG_CPU_IDLE_GOV_MENU=y
-CONFIG_I7300_IDLE_IOAT_CHANNEL=y
-CONFIG_I7300_IDLE=y
-CONFIG_PCI=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-CONFIG_PCI_DOMAINS=y
-CONFIG_DMAR=y
-CONFIG_DMAR_DEFAULT_ON=y
-CONFIG_DMAR_FLOPPY_WA=y
-CONFIG_PCIEPORTBUS=y
-CONFIG_PCIEAER=y
-CONFIG_PCIEASPM=y
-CONFIG_ARCH_SUPPORTS_MSI=y
-CONFIG_PCI_MSI=y
-CONFIG_PCI_IOV=y
-CONFIG_ISA_DMA_API=y
-CONFIG_K8_NB=y
-CONFIG_BINFMT_ELF=y
-CONFIG_COMPAT_BINFMT_ELF=y
-CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
-CONFIG_BINFMT_MISC=y
-CONFIG_IA32_EMULATION=y
-CONFIG_COMPAT=y
-CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
-CONFIG_SYSVIPC_COMPAT=y
-CONFIG_NET=y
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_INET_LRO=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_UEVENT_HELPER_PATH=""
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-CONFIG_FIRMWARE_IN_KERNEL=y
-CONFIG_EXTRA_FIRMWARE=""
-CONFIG_PNP=y
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_LOOP=m
-CONFIG_BLK_DEV_CRYPTOLOOP=m
-CONFIG_BLK_DEV_NBD=m
-CONFIG_CDROM_PKTCDVD=y
-CONFIG_CDROM_PKTCDVD_BUFFERS=16
-CONFIG_MISC_DEVICES=y
-CONFIG_HAVE_IDE=y
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-CONFIG_BLK_DEV_SD=y
-CONFIG_BLK_DEV_SR=y
-CONFIG_SCSI_MULTI_LUN=y
-CONFIG_SCSI_SCAN_ASYNC=y
-CONFIG_SCSI_WAIT_SCAN=m
-CONFIG_SCSI_LOWLEVEL=y
-CONFIG_ATA=y
-CONFIG_ATA_ACPI=y
-CONFIG_SATA_PMP=y
-CONFIG_SATA_AHCI=y
-CONFIG_ATA_SFF=y
-CONFIG_PATA_JMICRON=y
-CONFIG_MD=y
-CONFIG_BLK_DEV_MD=y
-CONFIG_MD_RAID1=y
-CONFIG_BLK_DEV_DM=y
-CONFIG_DM_CRYPT=y
-CONFIG_DM_SNAPSHOT=y
-CONFIG_DM_MIRROR=y
-CONFIG_DM_ZERO=y
-CONFIG_FIREWIRE=m
-CONFIG_FIREWIRE_OHCI=m
-CONFIG_FIREWIRE_OHCI_DEBUG=y
-CONFIG_FIREWIRE_SBP2=m
-CONFIG_NETDEVICES=y
-CONFIG_DUMMY=m
-CONFIG_MII=y
-CONFIG_NETDEV_1000=y
-CONFIG_R8169=y
-CONFIG_NETCONSOLE=y
-CONFIG_NETCONSOLE_DYNAMIC=y
-CONFIG_NETPOLL=y
-CONFIG_NET_POLL_CONTROLLER=y
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1680
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=1050
-CONFIG_INPUT_JOYDEV=y
-CONFIG_INPUT_EVDEV=y
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_MOUSE_PS2_ALPS=y
-CONFIG_MOUSE_PS2_LOGIPS2PP=y
-CONFIG_MOUSE_PS2_SYNAPTICS=y
-CONFIG_MOUSE_PS2_LIFEBOOK=y
-CONFIG_MOUSE_PS2_TRACKPOINT=y
-CONFIG_INPUT_JOYSTICK=y
-CONFIG_JOYSTICK_ANALOG=y
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_GAMEPORT=y
-CONFIG_VT=y
-CONFIG_CONSOLE_TRANSLATIONS=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_8250=y
-CONFIG_FIX_EARLYCON_MEM=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_CORE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_NVRAM=m
-CONFIG_HPET=y
-CONFIG_HPET_MMAP=y
-CONFIG_DEVPORT=y
-CONFIG_I2C=y
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_CHARDEV=y
-CONFIG_I2C_HELPER_AUTO=y
-CONFIG_I2C_ALGOBIT=y
-CONFIG_I2C_I801=y
-CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
-CONFIG_HWMON=y
-CONFIG_SENSORS_ATK0110=y
-CONFIG_THERMAL=y
-CONFIG_THERMAL_HWMON=y
-CONFIG_SSB_POSSIBLE=y
-CONFIG_AGP=y
-CONFIG_AGP_AMD64=y
-CONFIG_DRM=y
-CONFIG_DRM_KMS_HELPER=y
-CONFIG_DRM_TTM=y
-CONFIG_DRM_RADEON=y
-CONFIG_FB=y
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_VGACON_SOFT_SCROLLBACK=y
-CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=512
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE=y
-CONFIG_FONT_8x8=y
-CONFIG_FONT_8x16=y
-CONFIG_SOUND=y
-CONFIG_SOUND_OSS_CORE=y
-CONFIG_SND=y
-CONFIG_SND_TIMER=y
-CONFIG_SND_PCM=y
-CONFIG_SND_JACK=y
-CONFIG_SND_SEQUENCER=y
-CONFIG_SND_SEQ_DUMMY=m
-CONFIG_SND_OSSEMUL=y
-CONFIG_SND_MIXER_OSS=y
-CONFIG_SND_PCM_OSS=y
-CONFIG_SND_PCM_OSS_PLUGINS=y
-CONFIG_SND_SEQUENCER_OSS=y
-CONFIG_SND_HRTIMER=y
-CONFIG_SND_SEQ_HRTIMER_DEFAULT=y
-CONFIG_SND_DYNAMIC_MINORS=y
-CONFIG_SND_VERBOSE_PROCFS=y
-CONFIG_SND_VMASTER=y
-CONFIG_SND_PCI=y
-CONFIG_SND_HDA_INTEL=y
-CONFIG_SND_HDA_INPUT_JACK=y
-CONFIG_SND_HDA_CODEC_ATIHDMI=y
-CONFIG_SND_HDA_CODEC_INTELHDMI=y
-CONFIG_SND_HDA_ELD=y
-CONFIG_SND_HDA_GENERIC=y
-CONFIG_SND_HDA_POWER_SAVE=y
-CONFIG_SND_HDA_POWER_SAVE_DEFAULT=0
-CONFIG_HID_SUPPORT=y
-CONFIG_HID=y
-CONFIG_USB_HID=y
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=y
-CONFIG_USB_DEVICEFS=y
-CONFIG_USB_DYNAMIC_MINORS=y
-CONFIG_USB_EHCI_HCD=y
-CONFIG_USB_UHCI_HCD=y
-CONFIG_USB_PRINTER=y
-CONFIG_USB_STORAGE=y
-CONFIG_RTC_LIB=y
-CONFIG_RTC_CLASS=y
-CONFIG_RTC_HCTOSYS=y
-CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-CONFIG_RTC_INTF_SYSFS=y
-CONFIG_RTC_INTF_PROC=y
-CONFIG_RTC_INTF_DEV=y
-CONFIG_RTC_DRV_CMOS=y
-CONFIG_DMADEVICES=y
-CONFIG_INTEL_IOATDMA=y
-CONFIG_DMA_ENGINE=y
-CONFIG_NET_DMA=y
-CONFIG_DCA=y
-CONFIG_STAGING=y
-CONFIG_DRM_RADEON_KMS=y
-CONFIG_X86_PLATFORM_DEVICES=y
-CONFIG_FIRMWARE_MEMMAP=y
-CONFIG_DMIID=y
-CONFIG_EXT4_FS=y
-CONFIG_EXT4_FS_XATTR=y
-CONFIG_EXT4_FS_POSIX_ACL=y
-CONFIG_JBD2=y
-CONFIG_FS_MBCACHE=y
-CONFIG_FS_POSIX_ACL=y
-CONFIG_FILE_LOCKING=y
-CONFIG_FSNOTIFY=y
-CONFIG_DNOTIFY=y
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-CONFIG_QUOTA=y
-CONFIG_QUOTA_NETLINK_INTERFACE=y
-CONFIG_PRINT_QUOTA_WARNING=y
-CONFIG_QUOTA_TREE=y
-CONFIG_QFMT_V2=y
-CONFIG_QUOTACTL=y
-CONFIG_FUSE_FS=y
-CONFIG_CUSE=y
-CONFIG_GENERIC_ACL=y
-CONFIG_ISO9660_FS=y
-CONFIG_JOLIET=y
-CONFIG_UDF_FS=y
-CONFIG_UDF_NLS=y
-CONFIG_FAT_FS=m
-CONFIG_MSDOS_FS=m
-CONFIG_VFAT_FS=m
-CONFIG_FAT_DEFAULT_CODEPAGE=437
-CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-CONFIG_PROC_FS=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_PROC_PAGE_MONITOR=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_TMPFS_POSIX_ACL=y
-CONFIG_HUGETLBFS=y
-CONFIG_HUGETLB_PAGE=y
-CONFIG_CONFIGFS_FS=y
-CONFIG_MISC_FILESYSTEMS=y
-CONFIG_NETWORK_FILESYSTEMS=y
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-CONFIG_NFS_V3_ACL=y
-CONFIG_NFSD=y
-CONFIG_NFSD_V2_ACL=y
-CONFIG_NFSD_V3=y
-CONFIG_NFSD_V3_ACL=y
-CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=y
-CONFIG_NFS_ACL_SUPPORT=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-CONFIG_PARTITION_ADVANCED=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_NLS_CODEPAGE_437=y
-CONFIG_NLS_ASCII=m
-CONFIG_NLS_ISO8859_1=y
-CONFIG_NLS_ISO8859_15=m
-CONFIG_NLS_UTF8=m
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_PRINTK_TIME=y
-CONFIG_ENABLE_WARN_DEPRECATED=y
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_FRAME_WARN=1024
-CONFIG_DEBUG_FS=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
-CONFIG_DETECT_HUNG_TASK=y
-CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
-CONFIG_SCHED_DEBUG=y
-CONFIG_SCHEDSTATS=y
-CONFIG_TIMER_STATS=y
-CONFIG_STACKTRACE=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_INFO=y
-CONFIG_DEBUG_MEMORY_INIT=y
-CONFIG_ARCH_WANT_FRAME_POINTERS=y
-CONFIG_FRAME_POINTER=y
-CONFIG_LATENCYTOP=y
-CONFIG_SYSCTL_SYSCALL_CHECK=y
-CONFIG_USER_STACKTRACE_SUPPORT=y
-CONFIG_NOP_TRACER=y
-CONFIG_HAVE_FTRACE_NMI_ENTER=y
-CONFIG_HAVE_FUNCTION_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
-CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
-CONFIG_HAVE_DYNAMIC_FTRACE=y
-CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-CONFIG_HAVE_FTRACE_SYSCALLS=y
-CONFIG_RING_BUFFER=y
-CONFIG_FTRACE_NMI_ENTER=y
-CONFIG_EVENT_TRACING=y
-CONFIG_CONTEXT_SWITCH_TRACER=y
-CONFIG_TRACING=y
-CONFIG_GENERIC_TRACER=y
-CONFIG_TRACING_SUPPORT=y
-CONFIG_FTRACE=y
-CONFIG_FUNCTION_TRACER=y
-CONFIG_SYSPROF_TRACER=y
-CONFIG_BRANCH_PROFILE_NONE=y
-CONFIG_BLK_DEV_IO_TRACE=y
-CONFIG_DYNAMIC_FTRACE=y
-CONFIG_FTRACE_MCOUNT_RECORD=y
-CONFIG_HAVE_ARCH_KGDB=y
-CONFIG_HAVE_ARCH_KMEMCHECK=y
-CONFIG_STRICT_DEVMEM=y
-CONFIG_X86_VERBOSE_BOOTUP=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_DEBUG_RODATA=y
-CONFIG_HAVE_MMIOTRACE_SUPPORT=y
-CONFIG_IO_DELAY_TYPE_0X80=0
-CONFIG_IO_DELAY_TYPE_0XED=1
-CONFIG_IO_DELAY_TYPE_UDELAY=2
-CONFIG_IO_DELAY_TYPE_NONE=3
-CONFIG_IO_DELAY_0X80=y
-CONFIG_DEFAULT_IO_DELAY_TYPE=0
-CONFIG_SECURITY_FILE_CAPABILITIES=y
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_ALGAPI2=y
-CONFIG_CRYPTO_AEAD2=y
-CONFIG_CRYPTO_BLKCIPHER=y
-CONFIG_CRYPTO_BLKCIPHER2=y
-CONFIG_CRYPTO_HASH=y
-CONFIG_CRYPTO_HASH2=y
-CONFIG_CRYPTO_RNG2=y
-CONFIG_CRYPTO_PCOMP=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_MANAGER2=y
-CONFIG_CRYPTO_WORKQUEUE=y
-CONFIG_CRYPTO_CBC=y
-CONFIG_CRYPTO_MD4=y
-CONFIG_CRYPTO_LZO=y
-CONFIG_HAVE_KVM=y
-CONFIG_HAVE_KVM_IRQCHIP=y
-CONFIG_VIRTUALIZATION=y
-CONFIG_KVM=y
-CONFIG_KVM_INTEL=y
-CONFIG_BINARY_PRINTF=y
-CONFIG_BITREVERSE=y
-CONFIG_GENERIC_FIND_FIRST_BIT=y
-CONFIG_GENERIC_FIND_NEXT_BIT=y
-CONFIG_GENERIC_FIND_LAST_BIT=y
-CONFIG_CRC16=y
-CONFIG_CRC_ITU_T=y
-CONFIG_CRC32=y
-CONFIG_ZLIB_INFLATE=y
-CONFIG_LZO_COMPRESS=y
-CONFIG_LZO_DECOMPRESS=y
-CONFIG_DECOMPRESS_GZIP=y
-CONFIG_DECOMPRESS_BZIP2=y
-CONFIG_DECOMPRESS_LZMA=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_NLATTR=y
