@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbZKDNUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZKDNWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754452AbZKDNUW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 08:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZKDNUW
+	id S1756109AbZKDNWQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 08:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZKDNWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 08:20:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4703 "EHLO mx1.redhat.com"
+	Wed, 4 Nov 2009 08:22:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43800 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752276AbZKDNUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 08:20:21 -0500
-Date: Wed, 4 Nov 2009 15:17:36 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091104131735.GD8920@redhat.com>
-References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <878wema6o0.fsf@basil.nowhere.org> <20091104121009.GF8398@redhat.com> <20091104125957.GL31511@one.firstfloor.org> <20091104130828.GC8920@redhat.com> <20091104131533.GM31511@one.firstfloor.org>
+	id S1756025AbZKDNWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 08:22:15 -0500
+Message-ID: <4AF17F04.1030709@redhat.com>
+Date: Wed, 04 Nov 2009 08:17:56 -0500
+From: Prarit Bhargava <prarit@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091104131533.GM31511@one.firstfloor.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Yong Zhang <yong.zhang0@gmail.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH]: use spin_lock_irqsave in try_one_irq()
+References: <20091103134342.24414.82986.sendpatchset@prarit.bos.redhat.com>	 <2674af740911030658m76b702cfxb67723984286c4bb@mail.gmail.com>	 <alpine.LFD.2.00.0911041016070.12138@localhost.localdomain>	 <2674af740911040449h14eaac35y2ec3016862479bc6@mail.gmail.com> <2674af740911040501p4ef8b6c5jcbd11f1a57dbf8b7@mail.gmail.com>
+In-Reply-To: <2674af740911040501p4ef8b6c5jcbd11f1a57dbf8b7@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 02:15:33PM +0100, Andi Kleen wrote:
-> On Wed, Nov 04, 2009 at 03:08:28PM +0200, Michael S. Tsirkin wrote:
-> > On Wed, Nov 04, 2009 at 01:59:57PM +0100, Andi Kleen wrote:
-> > > > Fine?
-> > > 
-> > > I cannot say -- are there paths that could drop the device beforehand?
-> > 
-> > Do you mean drop the mm reference?
-> 
-> No the reference to the device, which owns the mm for you.
 
-The device is created when file is open and destroyed
-when file is closed. So I think the fs code handles the
-reference counting for me: it won't call file cleanup
-callback while some userspace process has the file open.
-Right?
 
-> > 
-> > > (as in do you hold a reference to it?)
-> > 
-> > By design I think I always have a reference to mm before I use it.
-> > 
-> > This works like this:
-> > ioctl SET_OWNER - calls get_task_mm, I think this gets a reference to mm
-> > ioctl SET_BACKEND - checks that SET_OWNER was run, starts virtqueue
-> > ioctl RESET_OWNER - stops virtqueues, drops the reference to mm
-> > file close - stops virtqueues, if we still have it then drops mm
-> > 
-> > This is why I think I can call use_mm/unuse_mm while virtqueue is running,
-> > safely.
-> > Makes sense?
-> 
-> Do you protect against another thread doing RESET_OWNER in parallel while
-> RESET_OWNER runs?
+Yong Zhang wrote:
+> From 83ee4c7591aae764f1656bd68f6e95ae112e2e7a Mon Sep 17 00:00:00 2001
+> From: Yong Zhang <yong.zhang0@gmail.com>
+> Date: Wed, 4 Nov 2009 20:52:45 +0800
+> Subject: [PATCH] genirq: try_one_irq() should be called with irq disabled
+>
+> Prarit report this:
+>   
 
-Yes, I have a mutex in the device for that. Same with SET_BACKEND.
+<snip>
 
-> -Andi
-> 
-> -- 
-> ak@linux.intel.com -- Speaking for myself only.
+Testing verifies that this patch works.
+
+P.
+
+> Reported-by: Prarit Bhargava <prarit@redhat.com>
+> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+> ---
+>  kernel/irq/spurious.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
+> index 114e704..bd7273e 100644
+> --- a/kernel/irq/spurious.c
+> +++ b/kernel/irq/spurious.c
+> @@ -121,7 +121,9 @@ static void poll_all_shared_irqs(void)
+>  		if (!(status & IRQ_SPURIOUS_DISABLED))
+>  			continue;
+>
+> +		local_irq_disable();
+>  		try_one_irq(i, desc);
+> +		local_irq_enable();
+>  	}
+>  }
+>
+>   
