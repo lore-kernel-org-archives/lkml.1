@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZKDDpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbZKDDYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbZKDDpK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 22:45:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbZKDDpJ
+	id S1754478AbZKDDYw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 22:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbZKDDYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 22:45:09 -0500
-Received: from ozlabs.org ([203.10.76.45]:47301 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754014AbZKDDpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 22:45:08 -0500
-Date: Wed, 4 Nov 2009 14:22:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       linuxppc-dev@lists.ozlabs.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Filtering bits in set_pte_at()
-Message-ID: <20091104032242.GC27772@yookeroo.seuss>
-Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1256957081.6372.344.camel@pasglop>
- <Pine.LNX.4.64.0911021256330.32400@sister.anvils>
- <1257200367.7907.50.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257200367.7907.50.camel@pasglop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 3 Nov 2009 22:24:51 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:54312 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754252AbZKDDYv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 22:24:51 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: Hal Finney <hal.finney@gmail.com>, tpmdd-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, srajiv@linux.vnet.ibm.com
+Subject: Re: [tpmdd-devel] [PATCH] TPM: Let the tpm char device be openable multiple times
+In-Reply-To: Your message of "Tue, 03 Nov 2009 15:41:58 MST."
+             <20091103224157.GA20963@obsidianresearch.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20091103003511.GL7768@obsidianresearch.com> <da7b3ce30911030931u1ccbff69ted4206606475c83@mail.gmail.com> <6926.1257272068@turing-police.cc.vt.edu>
+            <20091103224157.GA20963@obsidianresearch.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1257305069_3003P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 03 Nov 2009 22:24:29 -0500
+Message-ID: <13189.1257305069@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.34.98 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020207.4AF0F3EE.0161,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-07-29 21:33:33,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 09:19:27AM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-11-02 at 13:27 +0000, Hugh Dickins wrote:
-> > On Sat, 31 Oct 2009, Benjamin Herrenschmidt wrote:
-> > 
-> > > Hi folks !
-> > > 
-> > > So I have a little problem on powerpc ... :-)
-> > 
-> > Thanks a lot for running this by us.
-> 
-> Heh, I though you may have been bored :-)
-> 
-> > I've not looked to see if there are more such issues in arch/powerpc
-> > itself, but those instances you mention are the only ones I managed
-> > to find: uses of update_mmu_cache() and that hugetlb_cow() one.
-> 
-> Right, that's all I spotted so far
-> 
-> > The hugetlb_cow() one involves not set_pte_at() but set_huge_pte_at(),
-> > so you'd want to change that too?  And presumably set_pte_at_notify()?
-> > It all seems a lot of tedium, when so very few places are interested
-> > in the pte after they've set it.
-> 
-> We need to change set_huge_pte_at() too. Currently, David fixed the
-> problem in a local tree by making hugetlb_cow() re-read the PTE . 
+--==_Exmh_1257305069_3003P
+Content-Type: text/plain; charset=us-ascii
 
-Well, actually I have another cleanup patch in the queue which makes
-set_huge_pte_at() equal to set_pte_at() on powerpc, and I was using
-that on the tree where this problem became apparent.
+On Tue, 03 Nov 2009 15:41:58 MST, Jason Gunthorpe said:
+> On Tue, Nov 03, 2009 at 01:14:28PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> > On Tue, 03 Nov 2009 09:31:55 PST, Hal Finney said:
+> > > What if you don't want it accessible by user mode apps, you only want
+> > > your middleware (ie tcs daemon, tcsd) to open it? Will this still
+> > > allow that to be enforced, so nobody can interfere with tcsd's
+> > > exclusive access to the device?
+> > 
+> > Couldn't tcsd just open the device with O_EXCL? Or am I missing something
+> > subtle here?
+> 
+> O_EXCL isn't a locking flag...
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Sorry, getting over the flu, my brain isn't totally online yet. I was
+thinking of TIOCEXCL which is (a) an ioctl() and (b) apparently tty-specific.
+
+A number of other things under drivers/ implement "only one open" semantics,
+but those are hard-coded into the driver. But for the TPM, it's unclear if
+exclusive or non-exclusive is the right model. Maybe the right answer is to
+default to multiple opens, but have an ioctl() that turns on exclusive mode.
+If you have a 'tcsd' daemon, it will need to get launched early enough
+to do the open/ioctl before somebody else gets running anyhow, so it's
+not adding to any raciness.  Yeah, it's a hack. And there's still a small
+DoS issue - if the system is supposed to allow multiple opens, an abusive
+process can ioctl() it and break it.
+
+--==_Exmh_1257305069_3003P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFK8PPtcC3lWbTT17ARAhMCAJ9j4mNEAr6oPhEbaeElvN/1bgPpoQCglEOW
+ZI1LJR5CLT4nfo8nsFNm+Pg=
+=+L76
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1257305069_3003P--
+
