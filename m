@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbZKDRdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbZKDRdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756404AbZKDRdE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932149AbZKDRdB
+	id S1757411AbZKDRdO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 12:33:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756956AbZKDRdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:33:01 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:41096 "EHLO
+	Wed, 4 Nov 2009 12:33:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:5665 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932095AbZKDRc7 (ORCPT
+	with ESMTP id S1756853AbZKDRdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:32:59 -0500
+	Wed, 4 Nov 2009 12:33:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=GyPx/5alVUIiqWE+uEH/QhUGfM1oVH5ndfTAh/k+hhUjGwjrlavuCOlC85IuNvr2N8
-         h0gZR1mzH6pQ82ymWh4M+u48qYrpgH4F+iSBQ9LXGVmQEMAi5VBLuBEPYZWwHcKLtVC3
-         S8O7x68o6/+uMtz2CL2Qjqh+QIy3Z1RaviWk8=
+        b=BEGntuPBumA2VI3QlbVAletZeleSCMl0rtu1xVg/WtD3XXODkl3zMVrN2DA0mRm1dd
+         DxjSqNj7LscTiOyKWbyZfGd1sCu29c/FKeYUNbiTfsSgYzZ5CXY16/ynfBa4mdUxqD9m
+         8XIZxPw0pfL7OHWZ7hTMl1zYqQUOO5txHZKs8=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-wireless@vger.kernel.org
-Cc: Gertjan van Wingerde <gwingerde@gmail.com>,
+Cc: Ivo van Doorn <ivdoorn@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
+       Gertjan van Wingerde <gwingerde@gmail.com>,
+       linux-kernel@vger.kernel.org,
        "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 04 Nov 2009 18:32:40 +0100
-Message-Id: <20091104173239.28463.22571.sendpatchset@localhost.localdomain>
+Date: Wed, 04 Nov 2009 18:32:50 +0100
+Message-Id: <20091104173250.28463.45273.sendpatchset@localhost.localdomain>
 In-Reply-To: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
 References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
-Subject: [PATCH 06/41] rt2800pci: fix comment about IV/EIV fields
+Subject: [PATCH 07/41] rt2x00: fix rt2x00usb_register_read() comment
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] rt2800pci: fix comment about IV/EIV fields
-
-The bit tested by hardware is TXD_W3_WIV and its value
-equals the negated value of ENTRY_TXD_ENCRYPT_IV bit.
+Subject: [PATCH] rt2x00: fix rt2x00usb_register_read() comment
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/net/wireless/rt2x00/rt2800pci.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/wireless/rt2x00/rt2x00usb.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: b/drivers/net/wireless/rt2x00/rt2800pci.c
+Index: b/drivers/net/wireless/rt2x00/rt2x00usb.h
 ===================================================================
---- a/drivers/net/wireless/rt2x00/rt2800pci.c
-+++ b/drivers/net/wireless/rt2x00/rt2800pci.c
-@@ -2206,8 +2206,8 @@ static void rt2800pci_write_tx_desc(stru
+--- a/drivers/net/wireless/rt2x00/rt2x00usb.h
++++ b/drivers/net/wireless/rt2x00/rt2x00usb.h
+@@ -232,7 +232,7 @@ static inline int rt2x00usb_eeprom_read(
+ }
  
- 	/*
- 	 * Always write 0 to IV/EIV fields, hardware will insert the IV
--	 * from the IVEIV register when ENTRY_TXD_ENCRYPT_IV is set to 0.
--	 * When ENTRY_TXD_ENCRYPT_IV is set to 1 it will use the IV data
-+	 * from the IVEIV register when TXD_W3_WIV is set to 0.
-+	 * When TXD_W3_WIV is set to 1 it will use the IV data
- 	 * from the descriptor. The TXWI_W1_WIRELESS_CLI_ID indicates which
- 	 * crypto entry in the registers should be used to encrypt the frame.
- 	 */
+ /**
+- * rt2x00usb_regbusy_read - Read 32bit register word
++ * rt2x00usb_register_read - Read 32bit register word
+  * @rt2x00dev: Device pointer, see &struct rt2x00_dev.
+  * @offset: Register offset
+  * @value: Pointer to where register contents should be stored
