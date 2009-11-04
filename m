@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbZKDTFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbZKDTJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792AbZKDTFm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:05:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbZKDTFl
+	id S1756967AbZKDTJc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:09:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbZKDTJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:05:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52861 "EHLO mx1.redhat.com"
+	Wed, 4 Nov 2009 14:09:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17490 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbZKDTFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:05:40 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 18/20] blkio: arm idle timer even if think time is great then time slice left
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com>
-	<1257291837-6246-19-git-send-email-vgoyal@redhat.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 04 Nov 2009 14:04:45 -0500
-In-Reply-To: <1257291837-6246-19-git-send-email-vgoyal@redhat.com> (Vivek
-	Goyal's message of "Tue, 3 Nov 2009 18:43:55 -0500")
-Message-ID: <x498wemt8ky.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	id S1755960AbZKDTJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:09:27 -0500
+Date: Wed, 4 Nov 2009 21:05:23 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com
+Subject: Re: [PATCHv6 1/3] tun: export underlying socket
+Message-ID: <20091104190523.GA772@redhat.com>
+References: <cover.1257193660.git.mst@redhat.com> <20091102222612.GB15184@redhat.com> <200911031312.33580.arnd@arndb.de> <200911041909.06054.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911041909.06054.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@redhat.com> writes:
+On Wed, Nov 04, 2009 at 07:09:05PM +0100, Arnd Bergmann wrote:
+> On Tuesday 03 November 2009, Arnd Bergmann wrote:
+> > > index 3f5fd52..404abe0 100644
+> > > --- a/include/linux/if_tun.h
+> > > +++ b/include/linux/if_tun.h
+> > > @@ -86,4 +86,18 @@ struct tun_filter {
+> > >         __u8   addr[0][ETH_ALEN];
+> > >  };
+> > >  
+> > > +#ifdef __KERNEL__
+> > > +#if defined(CONFIG_TUN) || defined(CONFIG_TUN_MODULE)
+> > > +struct socket *tun_get_socket(struct file *);
+> > > +#else
+> > > +#include <linux/err.h>
+> > > +#include <linux/errno.h>
+> > > +struct file;
+> > > +struct socket;
+> > > +static inline struct socket *tun_get_socket(struct file *f)
+> > > +{
+> > > +       return ERR_PTR(-EINVAL);
+> > > +}
+> > > +#endif /* CONFIG_TUN */
+> > > +#endif /* __KERNEL__ */
+> > >  #endif /* __IF_TUN_H */
+> > 
+> > Is this a leftover from testing? Exporting the function for !__KERNEL__
+> > seems pointless.
+> > 
+> 
+> Michael, you didn't reply on this comment and the code is still there in v8.
+> Do you actually need this? What for?
+> 
+> 	Arnd <><
 
-> o Now we plan to wait for a queue to get backlogged before we expire it. So
->   we need to arm slice timer even if think time is greater than slice left.
->   if process sends next IO early and time slice is left, we will dispatch it
->   otherwise we will expire the queue and move on to next queue.
+Sorry, missed the question. If you look closely it is not exported for
+!__KERNEL__ at all.  The stub is for when CONFIG_TUN is undefined.
+Maybe I'll add a comment near #else, even though this is a bit strange
+since the #if is just 2 lines above it.
 
-Should this be rolled into patch 17?  I'm just worried about breaking
-bisection runs.  What happens if this patch isn't applied?
-
-Cheers,
-Jeff
+-- 
+MST
