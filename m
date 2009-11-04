@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932902AbZKDVom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932953AbZKDVqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932902AbZKDVom (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 16:44:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbZKDVoj
+	id S932953AbZKDVqq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 16:46:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932937AbZKDVqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 16:44:39 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:44798 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932873AbZKDVoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 16:44:37 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <4AF1F611.6050206@crca.org.au>
-Date: Thu, 05 Nov 2009 08:45:53 +1100
-From: Nigel Cunningham <ncunningham@crca.org.au>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 4 Nov 2009 16:46:45 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46501 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932933AbZKDVqo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 16:46:44 -0500
+Date: Wed, 4 Nov 2009 22:46:22 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] power: pcf50633: properly reenable charging when
+ the supply conditions change
+Message-ID: <20091104214622.GA27325@elf.ucw.cz>
+References: <1257369899-325-1-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-2-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-3-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-4-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-5-git-send-email-fercerpav@gmail.com>
 MIME-Version: 1.0
-To: "TuxOnIce users' list" <tuxonice-users@lists.tuxonice.net>
-CC: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [TuxOnIce-users] An assortment of TuxOnIce resume panics on a
- Radeon KMS-running system in 2.6.31.5, lzo-related?
-References: <87ocnim1bj.fsf@spindle.srvr.nix>
-In-Reply-To: <87ocnim1bj.fsf@spindle.srvr.nix>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257369899-325-5-git-send-email-fercerpav@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Thu 2009-11-05 00:24:58, Paul Fertser wrote:
+> If chgmod == BATFULL, setting chgena has no effect. Datasheet says we
+> need to set resume instead but when autoresume is used resume doesn't
+> work. Clear and set chgena instead.
+> 
+> This enables a user to force charging by re-plugging USB even when the
+> charger entered Battery Full mode, might be handy before a long
+> trip.
 
-Thanks for your bug report.
+And is against manufacturer recommendation and will unneccessary
+shorted life of battery with frequent plugs/unplugs. Is it good idea?
 
-I'd say it's a bug in the TuxOnIce code. How recent a version are you
-running? (It's been a while since I bumped the version number, so saying
-3.0.1 doesn't mean much any more). Is it recent git?
+If you want to "top-up" the battery, perhaps that should be on
+explicit request, like something in /sys?
+								Pavel
 
-Would you also let me know how your storage is configured - file
-allocator? swap allocator? More than one swap device? priorities? (I've
-been doing work in this area recently, and so suspect that it might be
-the cause).
 
-Regards,
 
-Nigel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
