@@ -1,83 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZKDPXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZKDPZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZKDPXp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZKDPXo
+	id S1756669AbZKDPZZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:25:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbZKDPZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:23:44 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:42796 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756040AbZKDPXn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:23:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=NqOSNuxSMdZbf2gusNnmuDT0GMnoyrNV3EvMWchzzwJdLpicGVP18r5H0/CIbp8eJU
-         scwY6fTaqoiQag+jEsk4IzqkcrR+eku0zOyarcz3viY9GWg0IEIP25pa5DfcHJf8/qGD
-         NmTD3kc4TNdf/XFFgV9+OfEl4UrrFSaJ5aviA=
-Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Arnaud Patard <apatard@mandriva.com>, linux-mips@linux-mips.org,
-       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
-       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
-       liujl@lemote.com
-In-Reply-To: <20091104111957.GA13549@linux-mips.org>
-References: <cover.1257325319.git.wuzhangjin@gmail.com>
-	 <a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com>
-	 <m3iqdqtwgk.fsf@anduin.mandriva.com>
-	 <1257332652.8716.5.camel@falcon.domain.org>
-	 <20091104111957.GA13549@linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Wed, 04 Nov 2009 23:23:46 +0800
-Message-ID: <1257348226.16033.4.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 10:25:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57277 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755991AbZKDPZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:25:23 -0500
+Date: Wed, 4 Nov 2009 15:24:34 GMT
+From: tip-bot for Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com,
+       balbir@in.ibm.com, bharata@linux.vnet.ibm.com, serue@us.ibm.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, vatsa@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, balbir@in.ibm.com,
+       bharata@linux.vnet.ibm.com, serue@us.ibm.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20091103214544.GI5495@linux.vnet.ibm.com>
+References: <20091103214544.GI5495@linux.vnet.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Add USER_SCHED to feature removal list
+Message-ID: <tip-45a5c8bad827ebb9c9798becc15bce2e804d49e0@git.kernel.org>
+Git-Commit-ID: 45a5c8bad827ebb9c9798becc15bce2e804d49e0
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Commit-ID:  45a5c8bad827ebb9c9798becc15bce2e804d49e0
+Gitweb:     http://git.kernel.org/tip/45a5c8bad827ebb9c9798becc15bce2e804d49e0
+Author:     Dhaval Giani <dhaval@linux.vnet.ibm.com>
+AuthorDate: Wed, 4 Nov 2009 03:15:44 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 4 Nov 2009 12:40:26 +0100
 
-On Wed, 2009-11-04 at 12:19 +0100, Ralf Baechle wrote:
-> On Wed, Nov 04, 2009 at 07:04:12PM +0800, Wu Zhangjin wrote:
-> 
-> > > Small question : Why don't you restrict to 64bit kernels only ? From
-> > > what I remember from some discussions with ST, trying to use a 32-bit
-> > > kernel on 2f is a nice way to get troubles. It would be better imho to
-> > > forbid such a configuration. As a side effect, this will remove all
-> > > 'defined(CONFIG_64BIT)' parts of your #ifdef tests. 
-> > > 
-> > 
-> > It's hard to make such a decision ;) Perhaps some guys want to play with
-> > the 32bit version.
-> 
-> We have other systems where 32-bit kernel support is just remarkably ugly.
-> We've dropped 32-bit support for the SGI IP32 aka O2 - nobody seems to even
-> have really noticed that.  The Sibyte systems would be good candidates to do
-> the same as accesses to outside the 32-bit address space are needed very
-> frequently.
-> 
+sched: Add USER_SCHED to feature removal list
 
-So, we really remove the 32bit support?
+Peter Zijlstra suggested that we remove USER_SCHED at:
 
-1312 config CPU_LOONGSON2
-1313         bool
-1314         select CPU_SUPPORTS_32BIT_KERNEL  --> remove it?
-1315         select CPU_SUPPORTS_64BIT_KERNEL
-1316         select CPU_SUPPORTS_HIGHMEM
+   http://lkml.org/lkml/2009/3/21/67
 
-If you all agree, I will send a new patch to remove the above line and
-resend the corresponding patches without 32bit support, and removed the
-relative CONFIG_64BIT lines in the patches too.
+Removing USER_SCHED removes a lot of code from the scheduler
+and simplifies the code.
 
-Regards,
-	Wu Zhangjin
+We already have the ability to do user based classification
+which is tightened using PAM in userspace.
 
+Schedule USER_SCHED for removal in 2.6.34
+
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Balbir Singh <balbir@in.ibm.com>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: Serge E. Hallyn <serue@us.ibm.com>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+LKML-Reference: <20091103214544.GI5495@linux.vnet.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ Documentation/feature-removal-schedule.txt |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index bc693ff..f613df8 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -6,6 +6,21 @@ be removed from this file.
+ 
+ ---------------------------
+ 
++What:	USER_SCHED
++When:	2.6.34
++
++Why:	USER_SCHED was implemented as a proof of concept for group scheduling.
++	The effect of USER_SCHED can already be achieved from userspace with
++	the help of libcgroup. The removal of USER_SCHED will also simplify
++	the scheduler code with the removal of one major ifdef. There are also
++	issues USER_SCHED has with USER_NS. A decision was taken not to fix
++	those and instead remove USER_SCHED. Also new group scheduling
++	features will not be implemented for USER_SCHED.
++
++Who:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
++
++---------------------------
++
+ What:	PRISM54
+ When:	2.6.34
+ 
