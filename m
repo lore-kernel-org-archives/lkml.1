@@ -1,59 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbZKDPl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZKDPmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbZKDPl6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbZKDPl6
+	id S1756811AbZKDPmr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbZKDPmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:41:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:26740 "EHLO mx1.redhat.com"
+	Wed, 4 Nov 2009 10:42:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64600 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755836AbZKDPl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:41:57 -0500
-From: Andreas Schwab <schwab@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Thierry Vignaud <tvignaud@mandriva.com>,
-       bugzilla-daemon@bugzilla.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 14537] New: missing compat_ioctl on x86_64
-References: <bug-14537-6666@http.bugzilla.kernel.org/>
-	<alpine.LFD.2.00.0911041142370.12138@localhost.localdomain>
-	<87vdhq8gpc.fsf@basil.nowhere.org>
-X-Yow: HOW could a GLASS be YELLING??
-Date: Wed, 04 Nov 2009 16:41:34 +0100
-In-Reply-To: <87vdhq8gpc.fsf@basil.nowhere.org> (Andi Kleen's message of "Wed,
-	04 Nov 2009 16:14:55 +0100")
-Message-ID: <m3d43ys3f5.fsf@hase.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	id S1756179AbZKDPmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:42:45 -0500
+Date: Wed, 4 Nov 2009 10:41:35 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 03/20] blkio: Introduce the notion of weights
+Message-ID: <20091104154135.GA2870@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-4-git-send-email-vgoyal@redhat.com> <x498wemuy6v.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x498wemuy6v.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
+On Wed, Nov 04, 2009 at 10:06:16AM -0500, Jeff Moyer wrote:
+> Vivek Goyal <vgoyal@redhat.com> writes:
+> 
+> > o Introduce the notion of weights. Priorities are mapped to weights internally.
+> >   These weights will be useful once IO groups are introduced and group's share
+> >   will be decided by the group weight.
+> 
+> I'm sorry, but I need more background to review this patch.  Where do
+> the min and max come from?  Why do you scale 7-0 from 200-900?  How does
+> this map to what was there before (exactly, approximately)?
+> 
 
-> Thomas Gleixner <tglx@linutronix.de> writes:
->
->>> - with gnome-terminal:
->>> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
->>> arg(48111345) on /dev/pts/0
->>> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
->>> arg(4811134a) on /dev/pts/0
->>> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
->>> arg(48111351) on /dev/pts/0
->>
->> That looks more like an application problem. 'S' is SNDRV_SEQ_IOCTL
->> which has no ioctl nr 0xb. Also I have no idea why a sound sequencer
->> ioctl should work on /dev/pts/0 :)
->
-> ioctl numbers are not always unique (I haven't checked if this is the
-> case here).  But it might be that it's some other ioctl actually.
+Well, So far we only have the notion of iopriority for the process and
+based on that we determine time slice length.
 
-'S' is also used for streams ioctls, 0x530b is I_FIND.
+Soon we will throw cfq groups also in the mix. Because cpu IO controller
+is weight driven, people have shown preference that group's share should
+be decided based on its weight and not introduce the notion of ioprio for
+groups.
 
-Andreas.
+So now core scheduling algorithm only recognizes weights for entities (be it
+cfq queues or cfq groups), and it is required that we convert the ioprio
+of cfqq into weight.
 
--- 
-Andreas Schwab, schwab@redhat.com
-GPG Key fingerprint = D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
-"And now for something completely different."
+Now it is a matter of coming up with what weight range do we support and
+how ioprio should be mapped onto these weights. We can always change the
+mappings but to being with, I have followed following.
+
+Allow a weight range from 100 to 1000. Allowing too small a weights like
+"1", can lead to very interesting corner cases and I wanted to avoid that
+in first implementation. For example, if some group with weight "1" gets
+a time slice of 100ms, its vtime will be really high and after that it
+will not get scheduled in for a very long time.
+
+Seconly allowing too small a weights can make vtime of the tree move very
+fast with faster wrap around of min_vdistime. (especially on SSD where idling
+might not be enabled, and for every queue expiry we will attribute minimum of
+1ms of slice. If weight of the group is "1" it will higher vtime and
+min_vdisktime will move very fast). We don't want too fast a wrap around
+of min_vdisktime (especially in case of idle tree. That infrastructure is
+not part of current patches).
+
+Hence, to begin with I wanted to limit the range of weights allowed because
+wider range opens up lot of interesting corner cases. That's why limited
+minimum weight to 100. So at max user can expect the 1000/100=10 times service
+differentiation between highest and lower weight groups. If folks need more
+than that, we can look into it once things stablize.
+
+Priority and weights follow reverse order. Higher priority means low
+weight and vice-versa.
+
+Currently we support 8 priority levels and prio "4" is the middle point.
+Anything higher than prio 4 gets 20% less slice as compared to prio 4 and
+priorities lower than 4, get 20% higher slice of prio 4 (20% higher/lower
+for each priority level).
+
+For weight range 100 - 1000, 500 can be considered as mid point. Now this
+is how priority mapping looks like.
+
+	100 200 300 400 500 600 700 800 900 1000  (Weights) 
+	     7   6   5   4   3   2  1   0         (io prio).
+
+Once priorities are converted to weights, we are able to retain the notion
+of 20% difference between prio levels by choosing 500 as the mid point and
+mapping prio 0-7 to weights 900-200, hence this mapping. 
+
+I am all ears if you have any suggestions on how this ca be handled
+better.
+
+Thanks
+Vivek
