@@ -1,113 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZKDCPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbZKDCPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbZKDCPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 21:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbZKDCP3
+	id S1754113AbZKDCPq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 21:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZKDCPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 21:15:29 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:39948 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbZKDCP2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 21:15:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xCuXQx5d0odPcN2DhH+azFqz46jYN6/NsULMqMJlRVscaARXPChA2FOEvtvVh3uStt
-         lsnm4OBWLY8CA8DCVmxhJ0FSZxbrRhuSGSeSY/rViGr52KGDCwHqfdK2hR8/pKghwQ/Q
-         eHxPhGkxXt7tq+8/6CqcuD/hxsAzD5+svqpCg=
-Date: Wed, 4 Nov 2009 03:15:34 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip perf/probes 0/5] perf-probe and kprobe-tracer
-	updates
-Message-ID: <20091104021532.GC5092@nowhere>
-References: <20091104001204.3454.75999.stgit@harusame>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091104001204.3454.75999.stgit@harusame>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Nov 2009 21:15:45 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53156 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753579AbZKDCPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 21:15:44 -0500
+Date: Wed, 4 Nov 2009 13:15:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, linux-usb@vger.kernel.org
+Subject: linux-next: pcmcia tree build failure
+Message-Id: <20091104131540.f39af556.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__4_Nov_2009_13_15_40_+1100_6pxCgNBd+MeBMsVq"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 07:12:04PM -0500, Masami Hiramatsu wrote:
-> Hi,
-> 
-> Here are some updates according to previous LKML threads.
->  - Update perf-probe document.
->  - Improve error messages.
->  - Fall back to non-dwarf mode if possible.
->  - Change group name to probe.
->  - Rename kprobe-tracer to kprobe-event.
-> 
-> BTW, I think perf-probe and kprobe-event might better share
-> similar syntax for not confusing users. And for that purpose,
-> perf-probe syntax should introduce event/group specifier,
-> for example,
+--Signature=_Wed__4_Nov_2009_13_15_40_+1100_6pxCgNBd+MeBMsVq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Dominik,
 
-I personally more imagine the debugfs kprobe-event interface as
-something used by higher level applications rather than users.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-I've tried to use kprobe events directly by the past to do
-some debugging, and once I wanted to go further a simple function
-probe, like fetching a variable or putting a probe in a given branch,
-it rapidly grew into a pain: I had to read assembly code, guess
-which register was matching which variable, etc... It works, but
-it takes too much time, and printk() rapidly becomes a temptation :)
+drivers/telephony/ixj_pcmcia.c: In function 'ixj_probe':
+drivers/telephony/ixj_pcmcia.c:35: error: 'link' undeclared (first use in t=
+his function)
 
-It too low-level, but its use through perf brings all that to the
-human dimension.
+Caused by commit 990c0c8eeb34f62d062052d462feaa99715cb043 ("pcmcia: use
+dynamic debug infrastructure, deprecate CS_CHECK (misc drivers)").
 
-So, I'm not sure we really need to have such tight syntax between
-both, since the debugfs more likely behaves as a gateway, something
-I don't imagine to be used broadly as an end-user interface but mostly
-as a kernel interface.
+I have used the version of the pcmcia tree from next-20091102 for today.
+Please build test.  :-(
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Especially we shouldn't break the perf probe syntax simplicity
-just because we want both syntaxes to be tight.
+--Signature=_Wed__4_Nov_2009_13_15_40_+1100_6pxCgNBd+MeBMsVq
+Content-Type: application/pgp-signature
 
-(Nothing related to the event/group feature itself, it's just an
-opinion about the need of this similarity between two interfaces).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAkrw48wACgkQjjKRsyhoI8wo+ACdGiea9nS6Z8lDTpWOCGCREpxh
+4hMAnRSNpLE80hZN2xgDwvZUfLSRonwp
+=H7Tk
+-----END PGP SIGNATURE-----
 
->  perf probe "newgroup:newevnt=func:10 arg1 arg2"
-> 
-> adds the newevent under newgroup. On the other hand, ftrace
-> users can also add a new event as below;
-> 
->  echo 'newgroup:newevent=func+0x18 arg1=$a1 arg2=$a2' > kprobe_events
-> 
-> Any thoughts?
-
-
-Yeah, that would probably be nice, especially once we have a good
-collection of probes to handle and to organize in a sensical output.
-
-But it would be better to have that as an optional thing:
-
-	perf probe "[group:name=]func...."
-
-
-so that we keep the simplicity of:
-
-	perf probe func
-
-I guess you meant it as optional already, but just in case... :)
-
-Thanks.
-
+--Signature=_Wed__4_Nov_2009_13_15_40_+1100_6pxCgNBd+MeBMsVq--
