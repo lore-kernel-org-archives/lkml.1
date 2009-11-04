@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbZKDXoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbZKDXpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933115AbZKDXoX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 18:44:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758018AbZKDXoX
+	id S933142AbZKDXpT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 18:45:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932752AbZKDXpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 18:44:23 -0500
-Received: from claw.goop.org ([74.207.240.146]:60225 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757974AbZKDXoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 18:44:22 -0500
-Message-ID: <4AF211DB.605@goop.org>
-Date: Wed, 04 Nov 2009 15:44:27 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+	Wed, 4 Nov 2009 18:45:18 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:11312 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932635AbZKDXpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 18:45:17 -0500
+Date: Thu, 5 Nov 2009 02:45:19 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Anton Vorontsov <cbou@mail.ru>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] power: pcf50633: properly reenable charging when
+ the supply conditions change
+Message-ID: <20091104234519.GA4587@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1257369899-325-1-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-2-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-3-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-4-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-5-git-send-email-fercerpav@gmail.com>
+ <20091104214622.GA27325@elf.ucw.cz>
+ <20091104222431.GB24196@home.pavel.comp>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Stable Kernel <stable@kernel.org>
-Subject: [GIT PULL] A couple of Xen bugfixes
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20091104222431.GB24196@home.pavel.comp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Nov 05, 2009 at 01:24:31AM +0300, Paul Fertser wrote:
+[...]
+> > If you want to "top-up" the battery, perhaps that should be on
+> > explicit request, like something in /sys?
+> 
+> Well, probably but to me it seems like an unnecessary complexity. Also
+> since Li* batteries are dominating the market nowadays this
+> functionality would need to be introduced in the power_supply core to
+> provide userspace with a consistent interface. Anton, can you please
+> comment on this?
 
-Here's a couple of Xen bugfixes:
+Power supply class doesn't have writeable properties (initially
+it was a 'battery monitor class'). Though. I'd happily merge
+the support for writeable properties. ACPI batteries would
+benefit too, i.e. they could export 'alarm' property (see
+drivers/acpi/battery.c).
 
-    * Suppress the extended topology leaf in cpuid; such details are
-      meaningless in a virtual cpu
-    * Make hvc_xen poll when the output buffer is full rather than
-      depend on a workqueue to do it.  Otherwise we can lose oops info
-      on crashes when scheduling has been disabled.
+Though, I'd want to apply this patch set as is (i.e. I prefer 
+the new behaviour, as it's really more 'user friendly'), and
+we could implement configurable option later.
 
-Thanks,
-    J
+Pavel do you have a strong objection against this patch, or
+you can live with it? :-)
 
-The following changes since commit 973df35ed9ff7806403e793a2ad7e9bd4c2fd2a9:
-  Jeremy Fitzhardinge (1):
-        xen: set up mmu_ops before trying to set any ptes
+Thanks!
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git bugfix
-
-Jeremy Fitzhardinge (2):
-      xen/hvc: make sure console output is always emitted, with explicit polling
-      xen: mask extended topology info in cpuid
-
- arch/x86/xen/enlighten.c |   11 ++++++++++-
- drivers/char/hvc_xen.c   |   25 ++++++++++++++++++++++++-
- 2 files changed, 34 insertions(+), 2 deletions(-)
-
-
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
