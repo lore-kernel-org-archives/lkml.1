@@ -1,72 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932876AbZKDWYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbZKDWZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932876AbZKDWYn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 17:24:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932723AbZKDWYm
+	id S932861AbZKDWZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 17:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932649AbZKDWZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 17:24:42 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:53984 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932712AbZKDWYl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 17:24:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PbVQdDJ3+3lQ7/aCCXveEi2U/9xJuKvBNefFHLHOZXUiT7iv2j9XrFzjPoNtdcKflq
-         11GyqhuKEs8Prs+KZ7ERvMT3ihfThgp5+ujUz7W4dD9fbOAcnPEAaLRMJSVUDk+Lh64s
-         NK17N7f0XKrxq8Yvpx/IV8n9S0RfrglGoXFPY=
-Date: Thu, 5 Nov 2009 01:24:31 +0300
-From: Paul Fertser <fercerpav@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] power: pcf50633: properly reenable charging when
-	the supply conditions change
-Message-ID: <20091104222431.GB24196@home.pavel.comp>
-References: <1257369899-325-1-git-send-email-fercerpav@gmail.com> <1257369899-325-2-git-send-email-fercerpav@gmail.com> <1257369899-325-3-git-send-email-fercerpav@gmail.com> <1257369899-325-4-git-send-email-fercerpav@gmail.com> <1257369899-325-5-git-send-email-fercerpav@gmail.com> <20091104214622.GA27325@elf.ucw.cz>
+	Wed, 4 Nov 2009 17:25:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61525 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932082AbZKDWZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 17:25:57 -0500
+Date: Wed, 4 Nov 2009 17:25:29 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 02/20] blkio: Change CFQ to use CFS like queue time
+	stamps
+Message-ID: <20091104222529.GO2870@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-3-git-send-email-vgoyal@redhat.com> <4e5e476b0911041318w68bd774qf110d1abd7f946e4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091104214622.GA27325@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-30)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b0911041318w68bd774qf110d1abd7f946e4@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Wed, Nov 04, 2009 at 10:46:22PM +0100, Pavel Machek wrote:
-> On Thu 2009-11-05 00:24:58, Paul Fertser wrote:
-> > If chgmod == BATFULL, setting chgena has no effect. Datasheet says we
-> > need to set resume instead but when autoresume is used resume doesn't
-> > work. Clear and set chgena instead.
-> > 
-> > This enables a user to force charging by re-plugging USB even when the
-> > charger entered Battery Full mode, might be handy before a long
-> > trip.
+On Wed, Nov 04, 2009 at 10:18:15PM +0100, Corrado Zoccolo wrote:
+> Hi Vivek,
+> On Wed, Nov 4, 2009 at 12:43 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > o Previously CFQ had one service tree where queues of all theree prio classes
+> >  were being queued. One side affect of this time stamping approach is that
+> >  now single tree approach might not work and we need to keep separate service
+> >  trees for three prio classes.
+> >
+> Single service tree is no longer true in cfq for-2.6.33.
+> Now we have a matrix of service trees, with first dimension being the
+> priority class, and second dimension being the workload type
+> (synchronous idle, synchronous no-idle, async).
+> You can have a look at the series: http://lkml.org/lkml/2009/10/26/482 .
+> It may have other interesting influences on your work, as the idle
+> introduced at the end of the synchronous no-idle tree, that provides
+> fairness also for seeky or high-think-time queues.
 > 
-> And is against manufacturer recommendation and will unneccessary
-> shorted life of battery with frequent plugs/unplugs. Is it good idea?
 
-Well, to me it seems that frequent plugs/unplugs is not exactly common
-usecase so i consider that to be acceptable.
+Thanks. I am looking at your patches right now. Got one question about 
+following commit.
 
-Especially comparing to millions of laptops and netbooks that always
-top their battery while being externally powered and heat it at the
-same time, probably the worst conditions lifetime-wise one can
-imagine.
+****************************************************************
+commit a6d44e982d3734583b3b4e1d36921af8cfd61fc0
+Author: Corrado Zoccolo <czoccolo@gmail.com>
+Date:   Mon Oct 26 22:45:11 2009 +0100
 
-> If you want to "top-up" the battery, perhaps that should be on
-> explicit request, like something in /sys?
+    cfq-iosched: enable idling for last queue on priority class
 
-Well, probably but to me it seems like an unnecessary complexity. Also
-since Li* batteries are dominating the market nowadays this
-functionality would need to be introduced in the power_supply core to
-provide userspace with a consistent interface. Anton, can you please
-comment on this?
+    cfq can disable idling for queues in various circumstances.
+    When workloads of different priorities are competing, if the higher
+    priority queue has idling disabled, lower priority queues may steal
+    its disk share. For example, in a scenario with an RT process
+    performing seeky reads vs a BE process performing sequential reads,
+    on an NCQ enabled hardware, with low_latency unset,
+    the RT process will dispatch only the few pending requests every full
+    slice of service for the BE process.
 
--- 
-Be free, use free (http://www.gnu.org/philosophy/free-sw.html) software!
-mailto:fercerpav@gmail.com
+    The patch solves this issue by always performing idle on the last
+    queue at a given priority class > idle. If the same process, or one
+    that can pre-empt it (so at the same priority or higher), submits a
+    new request within the idle window, the lower priority queue won't
+    dispatch, saving the disk bandwidth for higher priority ones.
+
+    Note: this doesn't touch the non_rotational + NCQ case (no hardware
+    to test if this is a benefit in that case).
+*************************************************************************
+
+Not able to understand the logic of waiting for last queue in prio
+class. This whole patch series seems to be about low latencies. So why
+would not somebody set "low_latency" in IO scheduler? And if somebody
+sets "low_latencies" then we will enable idling on random seeky reader
+also. So problem will not exist.
+
+On top of that, even if we don't idle for RT reader, we will always
+preempt BE reader immediately and get the disk. The only side affect
+is that on rotational media, disk head might have moved and bring the
+overall throughput down.
+
+So my concern is that with this idling on last queue, we are targetting
+fairness issue for the random seeky readers with thinktime with-in 8ms.
+That can be easily solved by setting low_latency=1. Why are we going
+to this lenth then?
+
+Thanks
+Vivek
