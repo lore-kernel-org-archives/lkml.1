@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbZKDOpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZKDOjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756662AbZKDOpO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 09:45:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbZKDOpO
+	id S1756620AbZKDOjv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 09:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbZKDOju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 09:45:14 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:57349 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756646AbZKDOpM (ORCPT
+	Wed, 4 Nov 2009 09:39:50 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:38033 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756431AbZKDOju convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 09:45:12 -0500
-Date: Wed, 4 Nov 2009 09:38:14 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project
-	tree
-Message-ID: <20091104143813.GB12965@tuxdriver.com>
-References: <200911031951.05235.bzolnier@gmail.com> <200911032200.04516.IvDoorn@gmail.com> <20091104083737.GA16978@elte.hu>
+	Wed, 4 Nov 2009 09:39:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=iqBo30lwKHI8Xi3hhB30dtEC+33hR/kyal6VEP+7BNy6quq4fdLqinccO3ngN+gOYZ
+         8SwMUQIYWWZzQPXyFOuuGIl2bGVDEmCnrP0uXlPVELd6tZ0RQjrqYby66bf88n6aDXaN
+         1yhYLxbE6c0nAYE8wF6dqc9Zt4np5l/ZFX3W4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091104083737.GA16978@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Date: Wed, 4 Nov 2009 12:39:35 -0200
+Message-ID: <b8bf37780911040639k67575fe6sf0731ed7b3edea62@mail.gmail.com>
+Subject: [PATCH v3 0/7] vsprintf: reduce code size and clean up
+To: Frederic Weisbecker <fweisbec@gmail.com>, laijs@cn.fujitsu.com,
+       mingo@elte.hu, davem@davemloft.net, akpm@linux-foundation.org,
+       harvey.harrison@gmail.com, linux list <linux-kernel@vger.kernel.org>
+Cc: me <andre.goddard@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 09:37:37AM +0100, Ingo Molnar wrote:
+From: André Goddard Rosa <andre.goddard@gmail.com>
+Date: Tue, 3 Nov 2009 11:21:39 -0200
+Subject: [PATCH v3 0/7] vsprintf: reduce code size and clean up
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-<snip>
+This patch reduces code size by 224 bytes on my Core 2 with gcc 4.4.1:
 
-> Really, you should listen to contrary opinion and _you_ should work 
-> _hard_ to integrate Bart socially and open up your close circle of 
-> wireless insiders instead of fighting his 'outsider' contributions every 
-> which way. We dont care if people are rough, express displeasure and 
-> show strong opinion about crappy code - but the moment you are 
-> _excluding_ capable people and playing petty office politics (like you 
-> are very clearly doing it with Bart here) everyone loses.
+      text    data     bss     dec     hex filename
+     15767       0       8   15775    3d9f lib/vsprintf.o-before
+     15543       0       8   15551    3cbf lib/vsprintf.o-after
 
-Ivo almost immediately ACKed 10 of Bart's patches (despite Bart's
-failure to post them to the mailing list directly per convention),
-so you criticize Ivo for saying he needed time to review the rest?
-And you accuse him of excluding Bart's contributions when they have
-only just arrived?
+and implements some cleanups.
 
-> Guys, show some minimal amount of honesty, openness and critical 
-> thinking please ...
+Changelog:
+    v3: improved comments on patch 5/7 and factorize a switch statement on 6/7
+as per suggestions from Ingo and Frederic (thanks!)
+    v2: addressed feedback from Frederic Weisbecker review (thanks!!)
+and split into separate patches
+    v1: original submission
 
-I would ask the same of you, Ingo.  You have burst onto the scene
-only recently, full of accusations and blame for one side and
-apparently unable to recognize the faults of the other.  You fail to
-recognize that this set of patches is essentially the _first_ time
-Bart has actually made any attempt to work on the rt2x00 drivers.
-Your partisanship is clear.
+André Goddard Rosa (7):
+  vsprintf: factorize "(null)" string
+  vsprintf: pre-calculate final string length for later use
+  vsprintf: give it some care to please checkpatch.pl
+  vsprintf: use TOLOWER whenever possible
+  vsprintf: reduce code size by avoiding extra check
+  vsprintf: move local vars to block local vars and remove unneeded ones
+  vsprintf: factor out skip_space code in a separate function
 
-At least Bart has finally made some rt2x00 patches available.  That is
-how things get done.  You continuing to defend him as some sort of
-martyr is completely unhelpful.
-
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+ lib/vsprintf.c |  307 +++++++++++++++++++++++++++++---------------------------
+ 1 files changed, 159 insertions(+), 148 deletions(-)
