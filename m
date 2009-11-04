@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZKDLKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZKDLKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbZKDLKQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 06:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZKDLKP
+	id S1755454AbZKDLKW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 06:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZKDLKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 06:10:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39722 "EHLO hera.kernel.org"
+	Wed, 4 Nov 2009 06:10:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39725 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755128AbZKDLKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 06:10:14 -0500
-Date: Wed, 4 Nov 2009 11:09:43 GMT
-From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
+	id S1755422AbZKDLKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 06:10:17 -0500
+Date: Wed, 4 Nov 2009 11:09:57 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
-       laijs@cn.fujitsu.com
+       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <4AF01735.9060409@cn.fujitsu.com>
-References: <4AF01735.9060409@cn.fujitsu.com>
+       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de
+In-Reply-To: <4AEF7F8A.3080300@cn.fujitsu.com>
+References: <4AEF7F8A.3080300@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] ring-buffer: Synchronize resizing buffer with reader lock
-Message-ID: <tip-f7112949f6a4cd6883d66c882d568c2197321de6@git.kernel.org>
-Git-Commit-ID: f7112949f6a4cd6883d66c882d568c2197321de6
+Subject: [tip:tracing/urgent] ftrace: Fix unmatched locking in ftrace_regex_write()
+Message-ID: <tip-ed146b25942b428f8e8056587b7638ce76573c2f@git.kernel.org>
+Git-Commit-ID: ed146b25942b428f8e8056587b7638ce76573c2f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,56 +29,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f7112949f6a4cd6883d66c882d568c2197321de6
-Gitweb:     http://git.kernel.org/tip/f7112949f6a4cd6883d66c882d568c2197321de6
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Tue, 3 Nov 2009 19:42:45 +0800
+Commit-ID:  ed146b25942b428f8e8056587b7638ce76573c2f
+Gitweb:     http://git.kernel.org/tip/ed146b25942b428f8e8056587b7638ce76573c2f
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Tue, 3 Nov 2009 08:55:38 +0800
 Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Wed, 4 Nov 2009 00:04:20 -0500
+CommitDate: Wed, 4 Nov 2009 01:42:10 -0500
 
-ring-buffer: Synchronize resizing buffer with reader lock
+ftrace: Fix unmatched locking in ftrace_regex_write()
 
-We got a sudden panic when we reduced the size of the
-ringbuffer.
+When a command is passed to the set_ftrace_filter, then
+the ftrace_regex_lock is still held going back to user space.
 
-We can reproduce the panic by the following steps:
+ # echo 'do_open : foo' > set_ftrace_filter
+ (still holding ftrace_regex_lock when returning to user space!)
 
-echo 1 > events/sched/enable
-cat trace_pipe > /dev/null &
-
-while ((1))
-do
-echo 12000 > buffer_size_kb
-echo 512 > buffer_size_kb
-done
-
-(not more than 5 seconds, panic ...)
-
-Reported-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <4AF01735.9060409@cn.fujitsu.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <4AEF7F8A.3080300@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/ring_buffer.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ kernel/trace/ftrace.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 3ffa502..5dd017f 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -1193,6 +1193,7 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
- 	atomic_inc(&cpu_buffer->record_disabled);
- 	synchronize_sched();
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 9c451a1..6dc4e5e 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2222,15 +2222,15 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
+ 		ret = ftrace_process_regex(parser->buffer,
+ 					   parser->idx, enable);
+ 		if (ret)
+-			goto out;
++			goto out_unlock;
  
-+	spin_lock_irq(&cpu_buffer->reader_lock);
- 	rb_head_page_deactivate(cpu_buffer);
+ 		trace_parser_clear(parser);
+ 	}
  
- 	for (i = 0; i < nr_pages; i++) {
-@@ -1207,6 +1208,7 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
- 		return;
- 
- 	rb_reset_cpu(cpu_buffer);
-+	spin_unlock_irq(&cpu_buffer->reader_lock);
- 
- 	rb_check_pages(cpu_buffer);
+ 	ret = read;
+-
++out_unlock:
+ 	mutex_unlock(&ftrace_regex_lock);
+-out:
++
+ 	return ret;
+ }
  
