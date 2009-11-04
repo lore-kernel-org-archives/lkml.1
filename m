@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZKDN2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbZKDN2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbZKDN2d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 08:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZKDN2c
+	id S1756203AbZKDN2I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 08:28:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZKDN2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 08:28:32 -0500
-Received: from ns1.ata-over-ethernet.org ([12.51.113.4]:47902 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753923AbZKDN2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 08:28:31 -0500
-Date: Wed, 4 Nov 2009 08:27:02 -0500
-From: Ed Cashin <ecashin@coraid.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Horton <phorton@bitbox.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] prevent AoE causing cache aliases
-Message-ID: <20091104132702.GA22112@ed-cashins-computer.local>
-References: <20091022142228.GA18986@bitbox.co.uk> <20091103163755.57d3530c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091103163755.57d3530c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 4 Nov 2009 08:28:07 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43263 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756181AbZKDN2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 08:28:06 -0500
+Date: Wed, 4 Nov 2009 14:28:10 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Myron Stowe <myron.stowe@hp.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/7] acpi: processor: fix section mismatch
+In-Reply-To: <1255906474-25091-5-git-send-email-felipe.contreras@gmail.com>
+Message-ID: <alpine.LSU.2.00.0911041427400.9988@wotan.suse.de>
+References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com> <1255906474-25091-5-git-send-email-felipe.contreras@gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 04:37:55PM -0800, Andrew Morton wrote:
-> On Thu, 22 Oct 2009 15:22:28 +0100
-> phorton@bitbox.co.uk (Peter Horton) wrote:
-> 
-> > To: ecashin@coraid.com
-> 
-> Have you heard back from Ed on this?
+On Mon, 19 Oct 2009, Felipe Contreras wrote:
 
-Sorry, I didn't comment because I don't have much experience
-with virtually indexed caches, and while the fix seems to
-make sense, I was hoping to learn more from the discussion
-to follow.
+> WARNING: drivers/acpi/processor.o(.text+0x99a): Section mismatch in
+> reference from the function acpi_processor_add() to the function
+> .cpuinit.text:acpi_processor_power_init()
+> 
+> acpi_processor_add replaced acpi_processor_start which had __cpuinit.
+> 
+> Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+> ---
+>  drivers/acpi/processor_core.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+> index c567b46..ec742a4 100644
+> --- a/drivers/acpi/processor_core.c
+> +++ b/drivers/acpi/processor_core.c
+> @@ -770,7 +770,7 @@ static struct notifier_block acpi_cpu_notifier =
+>  	    .notifier_call = acpi_cpu_soft_notify,
+>  };
+>  
+> -static int acpi_processor_add(struct acpi_device *device)
+> +static int __cpuinit acpi_processor_add(struct acpi_device *device)
+>  {
+>  	struct acpi_processor *pr = NULL;
+>  	int result = 0;
 
-I do think that it would be helpful to spell out "virtually
-indexed" in the comment.  "VI" might not be enough to jog
-the memory of folks who haven't used such an architecture
-recently.
+I don't see this patch in today's linux-next ... ACPI guys, are you going 
+to merge it?
+
+Thanks,
 
 -- 
-  Ed
-
+Jiri Kosina
+SUSE Labs, Novell Inc.
