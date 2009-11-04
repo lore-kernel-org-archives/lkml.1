@@ -1,73 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZKDLmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZKDLoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbZKDLmE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 06:42:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbZKDLmD
+	id S1755527AbZKDLoW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 06:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbZKDLoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 06:42:03 -0500
-Received: from mga05.intel.com ([192.55.52.89]:28632 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755224AbZKDLmC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 06:42:02 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,679,1249282800"; 
-   d="scan'208";a="743718561"
-Date: Wed, 4 Nov 2009 12:43:54 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Ben Dooks <ben@simtec.co.uk>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       Simtec Liunx Team <linux@simtec.co.uk>
-Subject: Re: tps65010: Allow the board to choose any GPIO base.
-Message-ID: <20091104114353.GA3607@sortiz.org>
-References: <20091102165220.310450538@fluff.org.uk>
+	Wed, 4 Nov 2009 06:44:22 -0500
+Received: from www.tglx.de ([62.245.132.106]:40039 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755320AbZKDLoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 06:44:21 -0500
+Date: Wed, 4 Nov 2009 12:43:57 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Thierry Vignaud <tvignaud@mandriva.com>,
+       bugzilla-daemon@bugzilla.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 14537] New: missing compat_ioctl on x86_64
+In-Reply-To: <bug-14537-6666@http.bugzilla.kernel.org/>
+Message-ID: <alpine.LFD.2.00.0911041142370.12138@localhost.localdomain>
+References: <bug-14537-6666@http.bugzilla.kernel.org/>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091102165220.310450538@fluff.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+B1;2005;0c(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-On Mon, Nov 02, 2009 at 04:52:20PM +0000, Ben Dooks wrote:
-> If the board does not care where the TPS turns up, then specifiying the
-> value -1 to get gpiolib to dynamically allocate the base for the chip
-> is valid.
-> 
-> Change the test to look for != 0, so that any boards specifying zero
-> will not end up with gpio that they didn't want.
-> 
-> Signed-off-by: Ben Dooks <ben@simtec.co.uk>
-> Signed-off-by: Simtec Liunx Team <linux@simtec.co.uk>
-Applied, thanks a lot.
+On Tue, 3 Nov 2009, bugzilla-daemon@bugzilla.kernel.org wrote:
 
+> http://bugzilla.kernel.org/show_bug.cgi?id=14537
+> 
+>            Summary: missing compat_ioctl on x86_64
+>            Product: Platform Specific/Hardware
+>            Version: 2.5
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: x86-64
+>         AssignedTo: platform_x86_64@kernel-bugs.osdl.org
+>         ReportedBy: tvignaud@mandriva.com
+>         Regression: No
+> 
+> 
+> I used to run 64bit userspace on 64bit kernel but I recently tried to run a
+> 64bit kernel with as minimal as possible as 64bit userspace (that is
+> rpm+glibc+... in order to mananage 64bit kernel packages).
+> 
+> This revealed several missing compat_ioctl.
+> Running 32bit gnome-terminal on a 64 bit kernel results in the following in
+> dmesg:
+> 
+> - with gnome-terminal:
+> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
+> arg(48111345) on /dev/pts/0
+> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
+> arg(4811134a) on /dev/pts/0
+> ioctl32(gnome-terminal:1755): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0}
+> arg(48111351) on /dev/pts/0
 
-> ---
->  drivers/mfd/tps65010.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: b/drivers/mfd/tps65010.c
-> ===================================================================
-> --- a/drivers/mfd/tps65010.c	2009-10-21 19:09:28.000000000 +0100
-> +++ b/drivers/mfd/tps65010.c	2009-10-21 19:09:39.000000000 +0100
-> @@ -637,7 +637,7 @@ static int tps65010_probe(struct i2c_cli
->  				tps, DEBUG_FOPS);
->  
->  	/* optionally register GPIOs */
-> -	if (board && board->base > 0) {
-> +	if (board && board->base != 0) {
->  		tps->outmask = board->outmask;
->  
->  		tps->chip.label = client->name;
-> 
-> -- 
-> Ben (ben@fluff.org, http://www.fluff.org/)
-> 
->   'a smiley only costs 4 bytes'
+That looks more like an application problem. 'S' is SNDRV_SEQ_IOCTL
+which has no ioctl nr 0xb. Also I have no idea why a sound sequencer
+ioctl should work on /dev/pts/0 :)
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+> - with X:
+> ioctl32(X:2803): Unknown cmd fd(0) cmd(40086408){t:'d';sz:8} arg(ff840a68) on
+> /var/log/Xorg.0.log
+> ioctl32(X:2803): Unknown cmd fd(0) cmd(40086408){t:'d';sz:8} arg(ff840a68) on
+> /var/log/Xorg.0.log
+
+'d' is used by pcmcia and DRM. DRM sounds more likely for X, but I
+have a hard time to understand why a DRM ioctl should work on
+/var/log/Xorg.0.log :)
+
+For both gnome-terminal and X strace should tell you more.
+
+> - when trying to suspend:
+> ioctl32(s2disk:8164): Unknown cmd fd(4) cmd(400c330d){t:'3';sz:12}
+> arg(ffc190ec) on /dev/snapshot
+> ioctl32(s2disk:8164): Unknown cmd fd(4) cmd(4004330a){t:'3';sz:4} arg(00000806)
+> on /dev/snapshot
+
+snapshot_ioctl seems to lack compat support completely. Raphael ??
+ 
+> Of course we'd better run 64bit userspace on 64bit kernel but 32bit
+> applications are supposed to still work.
+> Some may say some of them are too hardware specific but still it would be best
+> to fix them...
+> 
+> Tested with 2.6.31.5 and 2.6.32-rc5.
+
+Thanks,
+
+	tglx
