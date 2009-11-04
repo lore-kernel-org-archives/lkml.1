@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZKDNWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZKDNUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbZKDNWQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 08:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZKDNWP
+	id S1755935AbZKDNUq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 08:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZKDNUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 08:22:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43800 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756025AbZKDNWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 08:22:15 -0500
-Message-ID: <4AF17F04.1030709@redhat.com>
-Date: Wed, 04 Nov 2009 08:17:56 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Yong Zhang <yong.zhang0@gmail.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH]: use spin_lock_irqsave in try_one_irq()
-References: <20091103134342.24414.82986.sendpatchset@prarit.bos.redhat.com>	 <2674af740911030658m76b702cfxb67723984286c4bb@mail.gmail.com>	 <alpine.LFD.2.00.0911041016070.12138@localhost.localdomain>	 <2674af740911040449h14eaac35y2ec3016862479bc6@mail.gmail.com> <2674af740911040501p4ef8b6c5jcbd11f1a57dbf8b7@mail.gmail.com>
-In-Reply-To: <2674af740911040501p4ef8b6c5jcbd11f1a57dbf8b7@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 08:20:45 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:56649 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbZKDNUo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 08:20:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=F4ny4MmWndmWDUQIeatLJETRKI2UoTXGWFaQ0Eo+Czc9Yi8mswNUVtLOyPSUCf4wM4
+         7gN46c5aU2XVqZgH80vS5Gy4ibrsa2jbLCCembU2Wqw2MXxofhidFsFiueAWv4jv8ACH
+         flXdRXhFGZGxpzLVTRqiPhOox9jxZxzPqbz8A=
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 1/3] genirq: omit validate of desc->chip->shutdown
+Date: Wed,  4 Nov 2009 21:20:39 +0800
+Message-Id: <1257340841-3739-1-git-send-email-yong.zhang0@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Because irq_chip_set_defaults() will do the init things, chip->shutdown
+can't be NULL then the validate of it is redundant.
 
+Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/irq/manage.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-Yong Zhang wrote:
-> From 83ee4c7591aae764f1656bd68f6e95ae112e2e7a Mon Sep 17 00:00:00 2001
-> From: Yong Zhang <yong.zhang0@gmail.com>
-> Date: Wed, 4 Nov 2009 20:52:45 +0800
-> Subject: [PATCH] genirq: try_one_irq() should be called with irq disabled
->
-> Prarit report this:
->   
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index bde4c66..0b5e5ed 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -878,10 +878,7 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+ 	/* If this was the last handler, shut down the IRQ line: */
+ 	if (!desc->action) {
+ 		desc->status |= IRQ_DISABLED;
+-		if (desc->chip->shutdown)
+-			desc->chip->shutdown(irq);
+-		else
+-			desc->chip->disable(irq);
++		desc->chip->shutdown(irq);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+-- 
+1.6.3.3
 
-<snip>
-
-Testing verifies that this patch works.
-
-P.
-
-> Reported-by: Prarit Bhargava <prarit@redhat.com>
-> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-> ---
->  kernel/irq/spurious.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-> index 114e704..bd7273e 100644
-> --- a/kernel/irq/spurious.c
-> +++ b/kernel/irq/spurious.c
-> @@ -121,7 +121,9 @@ static void poll_all_shared_irqs(void)
->  		if (!(status & IRQ_SPURIOUS_DISABLED))
->  			continue;
->
-> +		local_irq_disable();
->  		try_one_irq(i, desc);
-> +		local_irq_enable();
->  	}
->  }
->
->   
