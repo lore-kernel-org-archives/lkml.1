@@ -1,144 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbZKDTSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbZKDTSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757925AbZKDTSO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:18:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbZKDTSN
+	id S1757908AbZKDTSx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbZKDTSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:18:13 -0500
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:43791 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756909AbZKDTSM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:18:12 -0500
-Date: Wed, 4 Nov 2009 14:17:24 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>
-Subject: Re: [MM] Remove rss batching from copy_page_range() 
-In-Reply-To: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
-Message-ID: <alpine.DEB.1.10.0911041415480.7409@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 4 Nov 2009 14:18:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14594 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755277AbZKDTSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:18:51 -0500
+Date: Wed, 4 Nov 2009 14:18:37 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 20/20] blkio: Drop the reference to queue once the task
+	changes cgroup
+Message-ID: <20091104191837.GK2870@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-21-git-send-email-vgoyal@redhat.com> <x494opat8cr.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x494opat8cr.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <cl@linux-foundation.org>
-Subject: Remove rss batching from copy_page_range()
+On Wed, Nov 04, 2009 at 02:09:40PM -0500, Jeff Moyer wrote:
+> Vivek Goyal <vgoyal@redhat.com> writes:
+> 
+> > o If a task changes cgroup, drop reference to the cfqq associated with io
+> >   context so that upon next request arrival we will allocate a  new queue in
+> >   new group.
+> 
+> You're doing more than dropping the reference, you're also setting the
+> pointer in the cic to NULL.  This is what you need to do, of course, but
+> your changelog is misleading (and sounds incomplete, and sends off
+> alarms in my head).
+> 
 
-With per cpu counters in mm there is no need for batching
-mm counter updates anymore. Update counters directly while
-copying pages.
+Will enrich changelog in next version.
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
----
- mm/memory.c |   27 ++++++++-------------------
- 1 file changed, 8 insertions(+), 19 deletions(-)
-
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2009-11-04 12:15:03.000000000 -0600
-+++ linux-2.6/mm/memory.c	2009-11-04 13:03:45.000000000 -0600
-@@ -376,14 +376,6 @@ int __pte_alloc_kernel(pmd_t *pmd, unsig
- 	return 0;
- }
-
--static inline void add_mm_rss(struct mm_struct *mm, int file_rss, int anon_rss)
--{
--	if (file_rss)
--		__this_cpu_add(mm->rss->file, file_rss);
--	if (anon_rss)
--		__this_cpu_add(mm->rss->anon, anon_rss);
--}
--
- /*
-  * This function is called to print an error when a bad pte
-  * is found. For example, we might have a PFN-mapped pte in
-@@ -575,7 +567,7 @@ out:
- static inline void
- copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
- 		pte_t *dst_pte, pte_t *src_pte, struct vm_area_struct *vma,
--		unsigned long addr, int *rss)
-+		unsigned long addr)
- {
- 	unsigned long vm_flags = vma->vm_flags;
- 	pte_t pte = *src_pte;
-@@ -630,7 +622,10 @@ copy_one_pte(struct mm_struct *dst_mm, s
- 	if (page) {
- 		get_page(page);
- 		page_dup_rmap(page);
--		rss[PageAnon(page)]++;
-+		if (PageAnon(page))
-+			__this_cpu_inc(dst_mm->rss->anon);
-+		else
-+			__this_cpu_inc(dst_mm->rss->file);
- 	}
-
- out_set_pte:
-@@ -645,10 +640,8 @@ static int copy_pte_range(struct mm_stru
- 	pte_t *src_pte, *dst_pte;
- 	spinlock_t *src_ptl, *dst_ptl;
- 	int progress = 0;
--	int rss[2];
-
- again:
--	rss[1] = rss[0] = 0;
- 	dst_pte = pte_alloc_map_lock(dst_mm, dst_pmd, addr, &dst_ptl);
- 	if (!dst_pte)
- 		return -ENOMEM;
-@@ -674,14 +667,13 @@ again:
- 			progress++;
- 			continue;
- 		}
--		copy_one_pte(dst_mm, src_mm, dst_pte, src_pte, vma, addr, rss);
-+		copy_one_pte(dst_mm, src_mm, dst_pte, src_pte, vma, addr);
- 		progress += 8;
- 	} while (dst_pte++, src_pte++, addr += PAGE_SIZE, addr != end);
-
- 	arch_leave_lazy_mmu_mode();
- 	spin_unlock(src_ptl);
- 	pte_unmap_nested(orig_src_pte);
--	add_mm_rss(dst_mm, rss[0], rss[1]);
- 	pte_unmap_unlock(orig_dst_pte, dst_ptl);
- 	cond_resched();
- 	if (addr != end)
-@@ -803,8 +795,6 @@ static unsigned long zap_pte_range(struc
- 	struct mm_struct *mm = tlb->mm;
- 	pte_t *pte;
- 	spinlock_t *ptl;
--	int file_rss = 0;
--	int anon_rss = 0;
-
- 	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
- 	arch_enter_lazy_mmu_mode();
-@@ -850,14 +840,14 @@ static unsigned long zap_pte_range(struc
- 				set_pte_at(mm, addr, pte,
- 					   pgoff_to_pte(page->index));
- 			if (PageAnon(page))
--				anon_rss--;
-+				__this_cpu_dec(mm->rss->anon);
- 			else {
- 				if (pte_dirty(ptent))
- 					set_page_dirty(page);
- 				if (pte_young(ptent) &&
- 				    likely(!VM_SequentialReadHint(vma)))
- 					mark_page_accessed(page);
--				file_rss--;
-+				__this_cpu_dec(mm->rss->file);
- 			}
- 			page_remove_rmap(page);
- 			if (unlikely(page_mapcount(page) < 0))
-@@ -880,7 +870,6 @@ static unsigned long zap_pte_range(struc
- 		pte_clear_not_present_full(mm, addr, pte, tlb->fullmm);
- 	} while (pte++, addr += PAGE_SIZE, (addr != end && *zap_work > 0));
-
--	add_mm_rss(mm, file_rss, anon_rss);
- 	arch_leave_lazy_mmu_mode();
- 	pte_unmap_unlock(pte - 1, ptl);
-
+Thanks
+Vivek
