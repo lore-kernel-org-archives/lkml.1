@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbZKDTiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbZKDTkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbZKDTiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbZKDTiS
+	id S1758003AbZKDTkD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:40:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbZKDTkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:38:18 -0500
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:37443 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757223AbZKDTiR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:38:17 -0500
-Date: Wed, 4 Nov 2009 14:37:06 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, Ian Campbell <Ian.Campbell@citrix.com>,
-       Tejun Heo <tj@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Correct nr_processes() when CPUs have been unplugged
-In-Reply-To: <20091104060933.GB6830@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.1.10.0911041434530.7409@V090114053VZO-1>
-References: <1257243074.23110.779.camel@zakaz.uk.xensource.com> <20091103160734.GA21362@elte.hu> <alpine.DEB.1.10.0911031324380.32136@V090114053VZO-1> <20091104060933.GB6830@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 4 Nov 2009 14:40:03 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42460 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756876AbZKDTkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:40:01 -0500
+Date: Wed, 4 Nov 2009 14:38:52 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [RFC] Block IO Controller V1
+Message-ID: <20091104193852.GN2870@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <x49ws26rtnw.fsf@segfault.boston.devel.redhat.com> <20091104191939.GL2870@redhat.com> <x49k4y6rsz5.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49k4y6rsz5.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009, Paul E. McKenney wrote:
+On Wed, Nov 04, 2009 at 02:27:10PM -0500, Jeff Moyer wrote:
+> Vivek Goyal <vgoyal@redhat.com> writes:
+> 
+> > On Wed, Nov 04, 2009 at 02:12:19PM -0500, Jeff Moyer wrote:
+> >> Vivek Goyal <vgoyal@redhat.com> writes:
+> >> 
+> >> > Hi All,
+> >> >
+> >> > This is V1 of the Block IO controller patches on top of 2.6.32-rc5.
+> >> >
+> >> > A consolidated patch can be found here:
+> >> >
+> >> > http://people.redhat.com/vgoyal/io-controller/blkio-controller/blkio-controller-v1.patch
+> >> 
+> >> Overall it looks good.  Vivek, could you please run some benchmarks
+> >> against a vanilla kernel and then with your patch applied and cgroups
+> >> compiled in but not configured?
+> >> 
+> >
+> > Sure I can. Do you have something specific in mind?
+> 
+> I don't, actually.  iozone comes to mind as a simple test to setup and
+> run.  Or you could run one or more of the fio sample job files.  Really,
+> I just want to see if we're taking a huge performance hit so we can fix
+> that up before it's merged.
 
-> > Cpu hotplug is rarely used (what you listed are rare and unusual cases)
-> > and therefore online cpus == possible cpus == present cpus.
->
-> Though it is not unusual for "possible cpus" to be quite a bit larger
-> than "online cpus"...
+Sure, will run some tests to see if this patchset is introducing any huge
+performance regressions somewhere.
 
-The only reason for possible cpus to be larger than online cpus is if you
-can actually plugin more processors while the system is running. Typically
-the larger possible cpus seems to be some sort of Vendor BIOS screwup
-where the vendor advertises how many processors the maximum configuration
-of a certain type of hardware would suppport if one would buy that config.
-
+Thanks
+Vivek
