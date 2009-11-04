@@ -1,128 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbZKDK0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZKDK2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbZKDK0f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 05:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148AbZKDK0f
+	id S1755169AbZKDK2o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 05:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZKDK2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 05:26:35 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42379 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754985AbZKDK0d (ORCPT
+	Wed, 4 Nov 2009 05:28:43 -0500
+Received: from mx1.moondrake.net ([212.85.150.166]:60033 "EHLO
+	mx1.mandriva.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751426AbZKDK2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 05:26:33 -0500
-Date: Wed, 4 Nov 2009 11:26:29 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org, marcel@holtmann.org
-Subject: Re: 2.6.32-rc5: bluetooth still broken
-Message-ID: <20091104102629.GA15003@elf.ucw.cz>
-References: <20091030061635.GB28648@elf.ucw.cz>
- <a8e1da0911031701q4328604ayef5ee7eb939a9d50@mail.gmail.com>
+	Wed, 4 Nov 2009 05:28:43 -0500
+X-Spam-Virus: No
+From: Arnaud Patard <apatard@mandriva.com>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
+       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       liujl@lemote.com
+Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
+References: <cover.1257325319.git.wuzhangjin@gmail.com>
+	<a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com>
+Organization: Mandriva
+Date: Wed, 04 Nov 2009 11:28:59 +0100
+In-Reply-To: <a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com> (Wu Zhangjin's message of "Wed,  4 Nov 2009 17:04:47 +0800")
+Message-ID: <m3iqdqtwgk.fsf@anduin.mandriva.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a8e1da0911031701q4328604ayef5ee7eb939a9d50@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-11-04 09:01:20, Dave Young wrote:
-> On Fri, Oct 30, 2009 at 2:16 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> > Today I got this... IIRC I was told it was fixed already...?
-> 
-> Hi, this looks like another case.  Can you tell the way to
-> reproduce?
 
-Well, repeatedly start/stop bluetooth connecting script in attempt to
-get PC <-> android tethering to work :-(. So no, I do not think I can 
-reproduce this easily.
+Hi,
 
-								Pavel
+Wu Zhangjin <wuzhangjin@gmail.com> writes:
 
+> Loongson2F has built-in DDR2 and PCIX controller. The PCIX controller
+> have a similar programming interface with FPGA northbridge used in
+> Loongson2E.
+>
+> The main differences between loongson-2e and loongson-2f include:
+>
+> 1. loongson-2f has an extra address windows configuration module, which
+> can be used to map CPU address space to DDR or PCI address space, or map
+> the PCI-DMA address space to DDR or LIO address space.
+>
+> 2. loongson-2f support 8 levels of software configurable cpu frequency,
+> which can be configured via a register(LOONGSON_CHIPCFG0).  the coming
+> cpufreq and standby support are based on this feature.
+>
+> herein, the module and the corresponding operations are abstracted to
+> loongson.h.
+>
+> besides, the other loongson2f-specific source code are added here,
+> including gcc 4.4 support, pci memory space, pci io space, dma address.
+>
+> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+> ---
+>  arch/mips/Kconfig                                  |   18 ++++
+>  arch/mips/Makefile                                 |    2 +
+>  .../mips/include/asm/mach-loongson/dma-coherence.h |    4 +
+>  arch/mips/include/asm/mach-loongson/loongson.h     |   84 +++++++++++++++++++-
+>  arch/mips/include/asm/mach-loongson/mem.h          |   25 ++++--
+>  arch/mips/include/asm/mach-loongson/pci.h          |   28 ++++++-
+>  arch/mips/loongson/common/bonito-irq.c             |    5 +
+>  arch/mips/loongson/common/init.c                   |   18 ++++
+>  arch/mips/loongson/common/mem.c                    |   17 ++++
+>  arch/mips/loongson/common/pci.c                    |    8 ++
+>  10 files changed, 199 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+> index ae9fa98..8417357 100644
+> --- a/arch/mips/Kconfig
+> +++ b/arch/mips/Kconfig
+> @@ -1059,6 +1059,21 @@ config CPU_LOONGSON2E
+>  	  The Loongson 2E processor implements the MIPS III instruction set
+>  	  with many extensions.
+>  
+> +	  It has an internal FPGA northbridge, which is compatiable to
+> +	  bonito64.
+> +
+> +config CPU_LOONGSON2F
+> +	bool "Loongson 2F"
+> +	depends on SYS_HAS_CPU_LOONGSON2F
+> +	select CPU_LOONGSON2
+> +	help
+> +	  The Loongson 2F processor implements the MIPS III instruction set
+> +	  with many extensions.
+> +
+> +	  Loongson2F have built-in DDR2 and PCIX controller. The PCIX controller
+> +	  have a similar programming interface with FPGA northbridge used in
+> +	  Loongson2E.
+> +
 
-> > ehci_hcd 0000:00:1d.7: suspend root hub
-> > EXT3 FS on sda4, internal journal
-> > kjournald starting.  Commit interval 5 seconds
-> > EXT3 FS on sda2, internal journal
-> > EXT3-fs: mounted filesystem with ordered data mode.
-> > iwl3945 0000:03:00.0: firmware: requesting iwlwifi-3945-2.ucode
-> > iwl3945 0000:03:00.0: iwlwifi-3945-2.ucode firmware file req failed: -2
-> > iwl3945 0000:03:00.0: firmware: requesting iwlwifi-3945-1.ucode
-> > iwl3945 0000:03:00.0: Loaded firmware iwlwifi-3945-1.ucode, which is deprecated.  Please use API v2 instead.
-> > iwl3945 0000:03:00.0: Firmware has old API version. Expected 2, got 1. New firmware can be obtained from http://www.intellinuxwireless.org.
-> > iwl3945 0000:03:00.0: loaded firmware version 15.28.1.8
-> > Registered led device: iwl-phy0::radio
-> > Registered led device: iwl-phy0::assoc
-> > Registered led device: iwl-phy0::RX
-> > Registered led device: iwl-phy0::TX
-> > coda_read_super: Bad mount data
-> > coda_read_super: device index: 0
-> > coda_read_super: rootfid is (01234567.ffffffff.08051b10.00000000)
-> > coda: Unexpected interruption.
-> > Failure of coda_cnode_make for root: error -4
-> > CE: hpet increasing min_delta_ns to 15000 nsec
-> > CE: hpet increasing min_delta_ns to 22500 nsec
-> > uhci_hcd 0000:00:1d.3: reserve dev 2 ep81-INT, period 1, phase 0, 23 us
-> > INFO: trying to register non-static key.
-> > the code is fine but needs lockdep annotation.
-> > turning off the locking correctness validator.
-> > Pid: 30385, comm: ps Not tainted 2.6.32-rc5-00154-gfbad3ad-dirty #83
-> > Call Trace:
-> >  [<c0791da9>] ? printk+0x18/0x1a
-> >  [<c0255492>] __lock_acquire+0x4a2/0xad0
-> >  [<c0255b28>] lock_acquire+0x68/0x90
-> >  [<c06733bd>] ? skb_dequeue+0x1d/0x70
-> >  [<c0794e0b>] _spin_lock_irqsave+0x3b/0x50
-> >  [<c06733bd>] ? skb_dequeue+0x1d/0x70
-> >  [<c06733bd>] skb_dequeue+0x1d/0x70
-> >  [<c0674034>] skb_queue_purge+0x14/0x20
-> >  [<c07139a7>] l2cap_recv_frame+0x5d7/0x3270
-> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
-> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
-> >  [<c06732c9>] ? skb_queue_tail+0x39/0x50
-> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
-> >  [<c050cd50>] ? usb_submit_urb+0x140/0x360
-> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
-> >  [<c07167d2>] l2cap_recv_acldata+0x192/0x3d0
-> >  [<c07079b8>] ? hci_rx_task+0x268/0x440
-> >  [<c0716640>] ? l2cap_recv_acldata+0x0/0x3d0
-> >  [<c07079e5>] hci_rx_task+0x295/0x440
-> >  [<c02551e5>] ? __lock_acquire+0x1f5/0xad0
-> >  [<c0235b30>] tasklet_action+0x50/0xb0
-> >  [<c0236275>] __do_softirq+0x85/0x110
-> >  [<c023632d>] do_softirq+0x2d/0x40
-> >  [<c0236495>] irq_exit+0x65/0x80
-> >  [<c0204bbf>] do_IRQ+0x4f/0xc0
-> >  [<c02034a9>] common_interrupt+0x29/0x30
-> >  [<c0794a2f>] ? _write_unlock_irq+0x1f/0x30
-> >  [<c023474f>] do_exit+0x3df/0x650
-> >  [<c021bdc2>] ? do_page_fault+0x152/0x240
-> >  [<c02349f3>] do_group_exit+0x33/0x90
-> >  [<c0234a63>] sys_exit_group+0x13/0x20
-> >  [<c0202e50>] sysenter_do_call+0x12/0x31
-> > e1000e: eth0 NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
-> > 0000:02:00.0: eth0: 10/100 speed: disabling TSO
-> > hci_acl_tx_to: hci0 ACL tx timeout
-> > hci_acl_tx_to: hci0 killing stalled ACL connection 80:09:6E:BA:21:00
-> >
-> > --
-> > (english) http://www.livejournal.com/~pavelmachek
-> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-bluetooth" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> 
-> 
-> 
+Small question : Why don't you restrict to 64bit kernels only ? From
+what I remember from some discussions with ST, trying to use a 32-bit
+kernel on 2f is a nice way to get troubles. It would be better imho to
+forbid such a configuration. As a side effect, this will remove all
+'defined(CONFIG_64BIT)' parts of your #ifdef tests. 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Arnaud
