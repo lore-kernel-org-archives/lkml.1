@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbZKDPGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbZKDPGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645AbZKDPGw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbZKDPGu
+	id S1756525AbZKDPGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbZKDPGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:06:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37609 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755850AbZKDPGs (ORCPT
+	Wed, 4 Nov 2009 10:06:13 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:43589 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756012AbZKDPGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:06:48 -0500
-Date: Wed, 4 Nov 2009 07:06:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Paul Rolland <rol@witbe.net>
-cc: Jesse Barnes <jesse.barnes@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc6
-In-Reply-To: <20091104104004.77c439e0@tux.DEF.witbe.net>
-Message-ID: <alpine.LFD.2.01.0911040705560.31845@localhost.localdomain>
-References: <alpine.LFD.2.01.0911031142170.31845@localhost.localdomain> <20091104104004.77c439e0@tux.DEF.witbe.net>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 4 Nov 2009 10:06:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=JP1YEzguUBsvwJR+urvMJLcyW5Lv5pM4LVbpnHqjPWUY5a5O5r8BakOOQfFTaUMXtp
+         uMGqvEi5795bXlLezwHLDWF1P/K299TcdD1Vod4Aak9GuyP7HI/EjyzekE2z3Er1wSC5
+         ryOYfVgooKxP4iDjPgY8r9I28cyJniGRA/CGY=
+Message-ID: <4AF198B4.40801@gmail.com>
+Date: Wed, 04 Nov 2009 17:07:32 +0200
+From: Tommi Rantala <tt.rantala@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Aaro Koskinen <aaro.koskinen@nokia.com>
+CC: linux-input@vger.kernel.org, linux-omap@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
+       tony@atomide.com
+Subject: Re: [PATCH v2 2/2] omap: RX-51: enable tsc2005
+References: <1257340982-22814-1-git-send-email-aaro.koskinen@nokia.com> <1257340982-22814-2-git-send-email-aaro.koskinen@nokia.com>
+In-Reply-To: <1257340982-22814-2-git-send-email-aaro.koskinen@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Aaro Koskinen wrote:
+> +static struct spi_board_info rx51_peripherals_spi_board_info[] = {
 
+This can be marked with __initdata.
 
-On Wed, 4 Nov 2009, Paul Rolland wrote:
-> 
-> It seems the patches in http://lkml.org/lkml/2009/10/18/142? are not
-> included in 2.6.32-rc6
-
-Indeed. I got the pull request yesterday evening, and they're in -git now, 
-but they didn't make -rc6.
-
-		Linus
+BR,
+Tommi Rantala
