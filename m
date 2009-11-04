@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbZKDRWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbZKDRY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbZKDRWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZKDRWR
+	id S1757508AbZKDRY5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 12:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbZKDRY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:22:17 -0500
-Received: from outbound-mail-146.bluehost.com ([67.222.38.36]:36160 "HELO
-	outbound-mail-146.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757293AbZKDRWQ (ORCPT
+	Wed, 4 Nov 2009 12:24:56 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:40747 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757316AbZKDRY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:22:16 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=oqueTmX8Wxr4+2oPmmJHJQnSnQpIcRPqQYdc+CL4faQ6pfu5MvP9/H5LgNPYr61M52owpebGLo/XflyWxxrJKvWwS6PPG4Cx5uV1qxZP04oUA+4GKZJiv83VxOZoBxaJ;
-Date: Wed, 4 Nov 2009 09:22:19 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Brad Spengler <spender@grsecurity.net>, Matthew Wilcox <matthew@wil.cx>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH] ia64: Don't call SAL < 3.2 for extended config space
-Message-ID: <20091104092219.228a5186@jbarnes-piketon>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E36222B3@orsmsx505.amr.corp.intel.com>
-References: <20091011074531.GA12357@grsecurity.net>
-	<4AD1AE0D.1030007@kernel.org>
-	<4AD24766.7050205@kernel.org>
-	<20091011213245.GC18513@grsecurity.net>
-	<20091011231039.GB7545@parisc-linux.org>
-	<20091012135628.GA310@grsecurity.net>
-	<20091012142430.GE7545@parisc-linux.org>
-	<20091013045808.GB9782@grsecurity.net>
-	<20091104091608.7b813549@jbarnes-piketon>
-	<57C9024A16AD2D4C97DC78E552063EA3E36222B3@orsmsx505.amr.corp.intel.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 4 Nov 2009 12:24:56 -0500
+Date: Wed, 4 Nov 2009 18:25:00 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Alex Williamson <alex.williamson@hp.com>,
+       Mark McLoughlin <markmc@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: virtio-net: new section mismatch warning. revert patch?
+Message-ID: <20091104172500.GB6323@merkur.ravnborg.org>
+References: <20091104141729.GA27288@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091104141729.GA27288@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Nov 2009 09:20:13 -0800
-"Luck, Tony" <tony.luck@intel.com> wrote:
-
-> > I've dropped the ball on this one though; maybe Tony already picked
-> > it up?  Tony?
+On Wed, Nov 04, 2009 at 04:17:30PM +0200, Michael S. Tsirkin wrote:
+> With v2.6.32-rcX I started getting section mismatch warnings for
+> virtio_net.
+> make with CONFIG_DEBUG_SECTION_MISMATCH=y shows:
 > 
-> Yes.  It went in to Linus' tree with the git pull I sent on Monday
-> (just prior to -rc6).
+> WARNING: drivers/net/virtio_net.o(.data+0x90): Section mismatch in
+> reference from the variable virtio_net to the function
+> .devexit.text:virtnet_remove()                                                                    
+> The variable virtio_net references                                                                            
+> the function __devexit virtnet_remove()                                                                       
+> If the reference is valid then annotate the                                                                   
+> variable with __exit* (see linux/init.h) or name the variable:                                                
+> *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,                                  
 > 
-> Commit: adcd74034 ...
+> virtnet_remove was converted to devexit by this commit:
+> 
+> 	commit 3d1285beff2e8467b8c3884d83b7a91a99aa9fcd
+> 	Author: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> 	Date:   Wed Sep 30 22:28:34 2009 +0000
+> 
+> 	    move virtnet_remove to .devexit.text
+> 
+> We didn't have these warnings in v2.6.31, so this is a regression.
+> revert?
 
-Great, thanks for confirming.
+It is correct to annotate the exit function __devexit.
+So we should try to silence modpost in other ways.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Two options:
+1) annotate the virtio_net variable with __ref to tell
+   it is allowed to reference __init, __exit annotated stuff.
+2) Rename virtio_net to virtio_net_driver
+
+This is not a "my machine no longer works" issue but it would
+be nice to have it sorted out one way or the other before next -rc.
+
+	Sam
