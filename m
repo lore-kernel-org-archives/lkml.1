@@ -1,212 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbZKDEUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZKDEYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbZKDEUh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 23:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbZKDEUg
+	id S1754653AbZKDEYg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 23:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZKDEYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 23:20:36 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:55438 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753803AbZKDEUf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 23:20:35 -0500
-Date: Tue, 3 Nov 2009 22:20:38 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 09/13] sysfs: Implement sysfs_getattr & sysfs_permission
-Message-ID: <20091104042038.GE27639@us.ibm.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-9-git-send-email-ebiederm@xmission.com>
+	Tue, 3 Nov 2009 23:24:35 -0500
+Received: from arroyo.ext.ti.com ([192.94.94.40]:57541 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754347AbZKDEYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 23:24:34 -0500
+From: "Chaithrika U S" <chaithrika@ti.com>
+To: "'Chaithrika U S'" <chaithrika@ti.com>, <linux-kernel@vger.kernel.org>
+Cc: <akpm@linux-foundation.org>,
+       <davinci-linux-open-source@linux.davincidsp.com>,
+       <vipin.bhandari@ti.com>, <khilman@deeprootsystems.com>
+References: <1256040610-30684-1-git-send-email-chaithrika@ti.com>
+In-Reply-To: <1256040610-30684-1-git-send-email-chaithrika@ti.com>
+Subject: RE: [PATCH] davinci: MMC: add cpufreq support
+Date: Wed, 4 Nov 2009 09:52:16 +0530
+Message-ID: <008101ca5d06$644e23f0$2cea6bd0$@com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257249429-12384-9-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcpRfhVihMeH54IfT9uXpJ8NW37e8wLhz/Xw
+Content-Language: en-us
+x-cr-hashedpuzzle: B6Ja IJ3Y Jdr1 LISW LLjX N+ND SEoW UPVn VuQU dPf6 eN+z llUt mPaI vl4A 0C1Q 9ftZ;6;YQBrAHAAbQBAAGwAaQBuAHUAeAAtAGYAbwB1AG4AZABhAHQAaQBvAG4ALgBvAHIAZwA7AGMAaABhAGkAdABoAHIAaQBrAGEAQAB0AGkALgBjAG8AbQA7AGQAYQB2AGkAbgBjAGkALQBsAGkAbgB1AHgALQBvAHAAZQBuAC0AcwBvAHUAcgBjAGUAQABsAGkAbgB1AHgALgBkAGEAdgBpAG4AYwBpAGQAcwBwAC4AYwBvAG0AOwBrAGgAaQBsAG0AYQBuAEAAZABlAGUAcAByAG8AbwB0AHMAeQBzAHQAZQBtAHMALgBjAG8AbQA7AGwAaQBuAHUAeAAtAGsAZQByAG4AZQBsAEAAdgBnAGUAcgAuAGsAZQByAG4AZQBsAC4AbwByAGcAOwB2AGkAcABpAG4ALgBiAGgAYQBuAGQAYQByAGkAQAB0AGkALgBjAG8AbQA=;Sosha1_v1;7;{320FC7EE-D904-46AA-B67F-6405BD5C35F8};YwBoAGEAaQB0AGgAcgBpAGsAYQBAAHQAaQAuAGMAbwBtAA==;Wed, 04 Nov 2009 04:22:00 GMT;UgBFADoAIABbAFAAQQBUAEMASABdACAAZABhAHYAaQBuAGMAaQA6ACAATQBNAEMAOgAgAGEAZABkACAAYwBwAHUAZgByAGUAcQAgAHMAdQBwAHAAbwByAHQA
+x-cr-puzzleid: {320FC7EE-D904-46AA-B67F-6405BD5C35F8}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> From: Eric W. Biederman <ebiederm@xmission.com>
+Do you have any review comments or suggestions for this patch?
+
+Regards, 
+Chaithrika
+
+On Tue, Oct 20, 2009 at 17:40:10, Chaithrika U S wrote:
+> Add cpufreq support to MMC driver. The clock divider value has to be
+> modified according to the controller input frequency.
 > 
-> With the implementation of sysfs_getattr and sysfs_permission
-> sysfs becomes able to lazily propogate inode attribute changes
-> from the sysfs_dirents to the vfs inodes.   This paves the way
-> for deleting significant chunks of now unnecessary code.
->
-> Acked-by: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> Signed-off-by: Chaithrika U S <chaithrika@ti.com>
 > ---
->  fs/sysfs/dir.c     |    2 +
->  fs/sysfs/inode.c   |   64 ++++++++++++++++++++++++++++++++++++++-------------
->  fs/sysfs/symlink.c |    3 ++
->  fs/sysfs/sysfs.h   |    2 +
->  4 files changed, 54 insertions(+), 17 deletions(-)
+> This patch applies on top of the following two patches submitted to LKML
+> http://patchwork.kernel.org/patch/54013/
+> http://patchwork.kernel.org/patch/50914/
 > 
-> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-> index fa37126..25d052a 100644
-> --- a/fs/sysfs/dir.c
-> +++ b/fs/sysfs/dir.c
-> @@ -800,7 +800,9 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
+>  drivers/mmc/host/davinci_mmc.c |  100 +++++++++++++++++++++++++++++++++------
+>  1 files changed, 84 insertions(+), 16 deletions(-)
 > 
->  const struct inode_operations sysfs_dir_inode_operations = {
->  	.lookup		= sysfs_lookup,
-> +	.permission	= sysfs_permission,
->  	.setattr	= sysfs_setattr,
-> +	.getattr	= sysfs_getattr,
->  	.setxattr	= sysfs_setxattr,
+> diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
+> index fe8f613..b54c779 100644
+> --- a/drivers/mmc/host/davinci_mmc.c
+> +++ b/drivers/mmc/host/davinci_mmc.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/clk.h>
+>  #include <linux/err.h>
+> +#include <linux/cpufreq.h>
+>  #include <linux/mmc/host.h>
+>  #include <linux/io.h>
+>  #include <linux/irq.h>
+> @@ -200,6 +201,9 @@ struct mmc_davinci_host {
+>  	u8 version;
+>  	/* for ns in one cycle calculation */
+>  	unsigned ns_in_one_cycle;
+> +#ifdef CONFIG_CPU_FREQ
+> +	struct notifier_block	freq_transition;
+> +#endif
 >  };
-> 
-> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-> index fccfb55..2dcafe8 100644
-> --- a/fs/sysfs/inode.c
-> +++ b/fs/sysfs/inode.c
-> @@ -37,7 +37,9 @@ static struct backing_dev_info sysfs_backing_dev_info = {
->  };
-> 
->  static const struct inode_operations sysfs_inode_operations ={
-> +	.permission	= sysfs_permission,
->  	.setattr	= sysfs_setattr,
-> +	.getattr	= sysfs_getattr,
->  	.setxattr	= sysfs_setxattr,
->  };
-> 
-> @@ -196,7 +198,6 @@ static inline void set_default_inode_attr(struct inode * inode, mode_t mode)
-> 
->  static inline void set_inode_attr(struct inode * inode, struct iattr * iattr)
->  {
-> -	inode->i_mode = iattr->ia_mode;
->  	inode->i_uid = iattr->ia_uid;
->  	inode->i_gid = iattr->ia_gid;
->  	inode->i_atime = iattr->ia_atime;
-> @@ -227,38 +228,56 @@ static int sysfs_count_nlink(struct sysfs_dirent *sd)
->  	return nr + 2;
+>  
+>  
+> @@ -739,27 +743,12 @@ static unsigned int calculate_freq_for_card(struct mmc_davinci_host *host,
+>  	return mmc_push_pull_divisor;
 >  }
-> 
-> +static void sysfs_refresh_inode(struct sysfs_dirent *sd, struct inode *inode)
-> +{
-> +	struct sysfs_inode_attrs *iattrs = sd->s_iattr;
-> +
-> +	inode->i_mode = sd->s_mode;
-> +	if (iattrs) {
-> +		/* sysfs_dirent has non-default attributes
-> +		 * get them from persistent copy in sysfs_dirent
-> +		 */
-> +		set_inode_attr(inode, &iattrs->ia_iattr);
-> +		security_inode_notifysecctx(inode,
-> +					    iattrs->ia_secdata,
-> +					    iattrs->ia_secdata_len);
-> +	}
-> +
-> +	if (sysfs_type(sd) == SYSFS_DIR)
-> +		inode->i_nlink = sysfs_count_nlink(sd);
+>  
+> -static void mmc_davinci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+> +static void calculate_clk_divider(struct mmc_host *mmc, struct mmc_ios *ios)
+>  {
+>  	unsigned int open_drain_freq = 0, mmc_pclk = 0;
+>  	unsigned int mmc_push_pull_freq = 0;
+>  	struct mmc_davinci_host *host = mmc_priv(mmc);
+>  
+> -	mmc_pclk = host->mmc_input_clk;
+> -	dev_dbg(mmc_dev(host->mmc),
+> -		"clock %dHz busmode %d powermode %d Vdd %04x\n",
+> -		ios->clock, ios->bus_mode, ios->power_mode,
+> -		ios->vdd);
+> -	if (ios->bus_width == MMC_BUS_WIDTH_4) {
+> -		dev_dbg(mmc_dev(host->mmc), "Enabling 4 bit mode\n");
+> -		writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_WIDTH_4_BIT,
+> -			host->base + DAVINCI_MMCCTL);
+> -	} else {
+> -		dev_dbg(mmc_dev(host->mmc), "Disabling 4 bit mode\n");
+> -		writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_WIDTH_4_BIT,
+> -			host->base + DAVINCI_MMCCTL);
+> -	}
+> -
+>  	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN) {
+>  		u32 temp;
+>  
+> @@ -798,6 +787,29 @@ static void mmc_davinci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+>  
+>  		udelay(10);
+>  	}
 > +}
 > +
-> +int sysfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
+> +static void mmc_davinci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 > +{
-> +	struct sysfs_dirent *sd = dentry->d_fsdata;
-> +	struct inode *inode = dentry->d_inode;
+> +	unsigned int mmc_pclk = 0;
+> +	struct mmc_davinci_host *host = mmc_priv(mmc);
 > +
-> +	mutex_lock(&sysfs_mutex);
-> +	sysfs_refresh_inode(sd, inode);
-> +	mutex_unlock(&sysfs_mutex);
-
-So the inode->i_mutex is not needed?
-
+> +	mmc_pclk = host->mmc_input_clk;
+> +	dev_dbg(mmc_dev(host->mmc),
+> +		"clock %dHz busmode %d powermode %d Vdd %04x\n",
+> +		ios->clock, ios->bus_mode, ios->power_mode,
+> +		ios->vdd);
+> +	if (ios->bus_width == MMC_BUS_WIDTH_4) {
+> +		dev_dbg(mmc_dev(host->mmc), "Enabling 4 bit mode\n");
+> +		writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_WIDTH_4_BIT,
+> +			host->base + DAVINCI_MMCCTL);
+> +	} else {
+> +		dev_dbg(mmc_dev(host->mmc), "Disabling 4 bit mode\n");
+> +		writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_WIDTH_4_BIT,
+> +			host->base + DAVINCI_MMCCTL);
+> +	}
 > +
-> +	generic_fillattr(inode, stat);
+> +	calculate_clk_divider(mmc, ios);
+>  
+>  	host->bus_mode = ios->bus_mode;
+>  	if (ios->power_mode == MMC_POWER_UP) {
+> @@ -1040,6 +1052,52 @@ static struct mmc_host_ops mmc_davinci_ops = {
+>  
+>  /*----------------------------------------------------------------------*/
+>  
+> +#ifdef CONFIG_CPU_FREQ
+> +static int mmc_davinci_cpufreq_transition(struct notifier_block *nb,
+> +				     unsigned long val, void *data)
+> +{
+> +	struct mmc_davinci_host *host;
+> +	unsigned int mmc_pclk;
+> +	struct mmc_host *mmc;
+> +	unsigned long flags;
+> +
+> +	host = container_of(nb, struct mmc_davinci_host, freq_transition);
+> +	mmc = host->mmc;
+> +	mmc_pclk = clk_get_rate(host->clk);
+> +
+> +	if (val == CPUFREQ_POSTCHANGE) {
+> +		spin_lock_irqsave(&mmc->lock, flags);
+> +		host->mmc_input_clk = mmc_pclk;
+> +		calculate_clk_divider(mmc, &mmc->ios);
+> +		spin_unlock_irqrestore(&mmc->lock, flags);
+> +	}
+> +
 > +	return 0;
 > +}
 > +
->  static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
->  {
->  	struct bin_attribute *bin_attr;
-> -	struct sysfs_inode_attrs *iattrs;
-> 
->  	inode->i_private = sysfs_get(sd);
->  	inode->i_mapping->a_ops = &sysfs_aops;
->  	inode->i_mapping->backing_dev_info = &sysfs_backing_dev_info;
->  	inode->i_op = &sysfs_inode_operations;
-> -	inode->i_ino = sd->s_ino;
->  	lockdep_set_class(&inode->i_mutex, &sysfs_inode_imutex_key);
-> 
-> -	iattrs = sd->s_iattr;
-> -	if (iattrs) {
-> -		/* sysfs_dirent has non-default attributes
-> -		 * get them for the new inode from persistent copy
-> -		 * in sysfs_dirent
-> -		 */
-> -		set_inode_attr(inode, &iattrs->ia_iattr);
-> -		if (iattrs->ia_secdata)
-> -			security_inode_notifysecctx(inode,
-> -						iattrs->ia_secdata,
-> -						iattrs->ia_secdata_len);
-> -	} else
-> -		set_default_inode_attr(inode, sd->s_mode);
-> +	set_default_inode_attr(inode, sd->s_mode);
-> +	sysfs_refresh_inode(sd, inode);
-> 
->  	/* initialize inode according to type */
->  	switch (sysfs_type(sd)) {
->  	case SYSFS_DIR:
->  		inode->i_op = &sysfs_dir_inode_operations;
->  		inode->i_fop = &sysfs_dir_operations;
-> -		inode->i_nlink = sysfs_count_nlink(sd);
->  		break;
->  	case SYSFS_KOBJ_ATTR:
->  		inode->i_size = PAGE_SIZE;
-> @@ -341,3 +360,14 @@ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
->  	else
->  		return -ENOENT;
->  }
-> +
-> +int sysfs_permission(struct inode *inode, int mask)
+> +static inline int mmc_davinci_cpufreq_register(struct mmc_davinci_host *host)
 > +{
-> +	struct sysfs_dirent *sd = inode->i_private;
+> +	host->freq_transition.notifier_call = mmc_davinci_cpufreq_transition;
 > +
-> +	mutex_lock(&sysfs_mutex);
-> +	sysfs_refresh_inode(sd, inode);
-> +	mutex_unlock(&sysfs_mutex);
-> +
-> +	return generic_permission(inode, mask, NULL);
+> +	return cpufreq_register_notifier(&host->freq_transition,
+> +					 CPUFREQ_TRANSITION_NOTIFIER);
 > +}
-> diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-> index 1137418..c5eff49 100644
-> --- a/fs/sysfs/symlink.c
-> +++ b/fs/sysfs/symlink.c
-> @@ -214,6 +214,9 @@ const struct inode_operations sysfs_symlink_inode_operations = {
->  	.readlink	= generic_readlink,
->  	.follow_link	= sysfs_follow_link,
->  	.put_link	= sysfs_put_link,
-> +	.setattr	= sysfs_setattr,
-> +	.getattr	= sysfs_getattr,
-> +	.permission	= sysfs_permission,
->  };
-> 
-> 
-> diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-> index a96d967..12ccc07 100644
-> --- a/fs/sysfs/sysfs.h
-> +++ b/fs/sysfs/sysfs.h
-> @@ -156,7 +156,9 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
->  struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
->  void sysfs_delete_inode(struct inode *inode);
->  int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
-> +int sysfs_permission(struct inode *inode, int mask);
->  int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
-> +int sysfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat);
->  int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
->  		size_t size, int flags);
->  int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
+> +
+> +static inline void mmc_davinci_cpufreq_deregister(struct mmc_davinci_host *host)
+> +{
+> +	cpufreq_unregister_notifier(&host->freq_transition,
+> +				    CPUFREQ_TRANSITION_NOTIFIER);
+> +}
+> +#else
+> +static inline int mmc_davinci_cpufreq_register(struct mmc_davinci_host *host)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline void mmc_davinci_cpufreq_deregister(struct mmc_davinci_host *host)
+> +{
+> +}
+> +#endif
+>  static void __init init_mmcsd_host(struct mmc_davinci_host *host)
+>  {
+>  	/* DAT line portion is diabled and in reset state */
+> @@ -1169,6 +1227,12 @@ static int __init davinci_mmcsd_probe(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, host);
+>  
+> +	ret = mmc_davinci_cpufreq_register(host);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "failed to register cpufreq\n");
+> +		goto cpu_freq_fail;
+> +	}
+> +
+>  	ret = mmc_add_host(mmc);
+>  	if (ret < 0)
+>  		goto out;
+> @@ -1186,6 +1250,8 @@ static int __init davinci_mmcsd_probe(struct platform_device *pdev)
+>  	return 0;
+>  
+>  out:
+> +	mmc_davinci_cpufreq_deregister(host);
+> +cpu_freq_fail:
+>  	if (host) {
+>  		davinci_release_dma_channels(host);
+>  
+> @@ -1215,6 +1281,8 @@ static int __exit davinci_mmcsd_remove(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, NULL);
+>  	if (host) {
+> +		mmc_davinci_cpufreq_deregister(host);
+> +
+>  		mmc_remove_host(host->mmc);
+>  		free_irq(host->irq, host);
+>  
 > -- 
-> 1.6.5.2.143.g8cc62
+> 1.5.6
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
