@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZKDNaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbZKDNa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216AbZKDNaH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 08:30:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZKDNaG
+	id S1756242AbZKDNa7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 08:30:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbZKDNa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 08:30:06 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34545
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755340AbZKDNaE (ORCPT
+	Wed, 4 Nov 2009 08:30:59 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44231 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756182AbZKDNa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 08:30:04 -0500
-Date: Wed, 04 Nov 2009 05:30:29 -0800 (PST)
-Message-Id: <20091104.053029.166783766.davem@davemloft.net>
-To: mst@redhat.com
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, rusty@rustcorp.com.au, s.hetze@linux-ag.com
-Subject: Re: [PATCHv7 1/3] tun: export underlying socket
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091103172400.GB5591@redhat.com>
-References: <cover.1257267892.git.mst@redhat.com>
-	<20091103172400.GB5591@redhat.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 08:30:58 -0500
+Date: Wed, 4 Nov 2009 11:30:32 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric=5FWeisbecker?= <fweisbec@gmail.com>
+Subject: Re: [PATCH v3 0/7] Adding general performance benchmarking
+	subcommand to perf.
+Message-ID: <20091104133032.GD2603@ghostprotocols.net>
+References: <1257339987-22953-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257339987-22953-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Tue, 3 Nov 2009 19:24:00 +0200
+Em Wed, Nov 04, 2009 at 10:06:20PM +0900, Hitoshi Mitake escreveu:
+> This patch series add general benchmark subcommand to perf.
+> 
+> The subcommand will unify the benchmarking programs
+> and provide these in standardized way.
+> 
+> Hitoshi Mitake (7):
+>   Adding general performance benchmarking subcommand to perf.
+>   Adding general performance benchmarking subcommand to perf.
+>   Adding general performance benchmarking subcommand to perf.
+>   Adding general performance benchmarking subcommand to perf.
+>   Adding general performance benchmarking subcommand to perf.
+>   Adding general performance benchmarking subcommand to perf.
+>   Adding general performance benchmarking subcommand to perf.
 
-> Assuming it's okay with davem, I think it makes sense to merge this
-> patch through Rusty's tree because vhost is the first user of the new
-> interface.  Posted here for completeness.
+Why do you use the same description for all patches in this series?
 
-I'm fine with that, please add my:
-
-Acked-by: David S. Miller <davem@davemloft.net>
+- Arnaldo
