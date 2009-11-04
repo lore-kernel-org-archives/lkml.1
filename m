@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbZKDRff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZKDVJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932358AbZKDRff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 12:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbZKDRfc
+	id S1758186AbZKDVJm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 16:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758162AbZKDVJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 12:35:32 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:5665 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932347AbZKDRfa (ORCPT
+	Wed, 4 Nov 2009 16:09:42 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:45094 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758106AbZKDVJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 12:35:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=qFIBxP9Fqr/VyoPbDr6JxYyatQXDQoinZ2iLOJOd3jzWCSV6qItGTn/q2CT01He5JE
-         j25+x/d1FPKQHQEMb2A/s8HGfXyM8XtekahM5gp9B6Le9sGMDDR41eq4KnICIJEpad0L
-         xWwbot8+vWEd74V5EFSRZ6eep+ekkqwa3zv88=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-wireless@vger.kernel.org
-Cc: Gertjan van Wingerde <gwingerde@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 04 Nov 2009 18:35:10 +0100
-Message-Id: <20091104173510.28463.24779.sendpatchset@localhost.localdomain>
-In-Reply-To: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
-Subject: [PATCH 26/41] rt2x00: fix rt2x00usb_register_multiwrite() arguments
+	Wed, 4 Nov 2009 16:09:41 -0500
+Date: Wed, 4 Nov 2009 09:35:17 -0800
+From: Matt Helsley <matthltc@us.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jan@smtp1.linux-foundation.org, Bharata B Rao <bharata.rao@in.ibm.com>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>,
+       "menage@google.com" <menage@google.com>, Safranek <jsafrane@redhat.com>
+Subject: Re: [RFC] Mount point suggestions for cgroup
+Message-ID: <20091104173517.GA3668@count0.beaverton.ibm.com>
+References: <20091104063005.GC3560@balbir.in.ibm.com>
+ <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] rt2x00: fix rt2x00usb_register_multiwrite() arguments
+On Wed, Nov 04, 2009 at 03:40:24PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 4 Nov 2009 12:00:05 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > Hi, All,
+> > 
+> > We've been having a discussion as to what would be the right place to
+> > mount the cgroup filesystem. Jan has been proactively looking into
+> > this. The FHS has no recommendation since cgroup filesystem came in
+> > much later.
+> > 
+> > The options are
+> > 
+> > 1. /dev/cgroup
+> > 2. /cgroup
+> > 3. Some place under /sys
+> > 
+> > The problem with (2) is that it is quite non-standard and pollutes the
+> > root directory. (3) requires some basic support to create a directory
+> > for cgroup under /sys. (1) seems the most obvious choice since cpusets
+> > were mounted under /dev/cpuset, but /dev is controlled by udev.
+> > 
+> > Given the three choices or any other suggestions, is there a general
+> > preference as to where we can mount it? The goal is to standardize
+> > the mount point (if possible).
+> > 
+> > BTW, the mounting is expected to be done using cgconfigparser present
+> > in libcgroup.
+> > 
+> 
+> IMHO, even if anywhere is ok to me, the suggestion should includes the fact
+>   - Each cgroup subsystem can be mounted independenty from other cgroup.
+>   - some cgroup (noop) can be mounted multiple times
+> etc...there are some points which is different from /proc or /sys.
+> So, we need multiple mount points.
+> 
+> Then, to say my own not-seriously-considered idea, I vote for
+>  - /cgroup/[HierarchyName]/
+> rather than /dev/ or /sys or /opt. This sounds straightforward.
+> 
+> If /sys,  /sys/cgroup/[HierarchyName] will be candidate. But considering
+> users can use arbitarary combination of subsystem, using /sys may require
+> much work, I think.
 
-Add const to 'value' argument of rt2x00usb_register_multiwrite()
-(all arguments match rt2x00pci_register_multiwrite() ones now).
+I agree.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/net/wireless/rt2x00/rt2800usb.h |    2 +-
- drivers/net/wireless/rt2x00/rt2x00usb.h |    7 ++++---
- 2 files changed, 5 insertions(+), 4 deletions(-)
+If anything, "standardizing" the mount point(s) will likely provide a false
+sense of uniformity and we'll get some bad userspace scripts/tools that
+break when "nonstandard" usage appears. Leaving the mount point undefined
+forces anyone writing scripts or tools to consider whether they want to be
+portable and, if so, the proper way to find the cgroup hierarchies they need
+to manipulate.
 
-Index: b/drivers/net/wireless/rt2x00/rt2800usb.h
-===================================================================
---- a/drivers/net/wireless/rt2x00/rt2800usb.h
-+++ b/drivers/net/wireless/rt2x00/rt2800usb.h
-@@ -40,7 +40,7 @@ struct rt2800_ops {
- 				   void *value, const u32 length);
- 	void (*register_multiwrite)(struct rt2x00_dev *rt2x00dev,
- 				    const unsigned int offset,
--				    void *value, const u32 length);
-+				    const void *value, const u32 length);
- 
- 	int (*regbusy_read)(struct rt2x00_dev *rt2x00dev,
- 			    const unsigned int offset,
-Index: b/drivers/net/wireless/rt2x00/rt2x00usb.h
-===================================================================
---- a/drivers/net/wireless/rt2x00/rt2x00usb.h
-+++ b/drivers/net/wireless/rt2x00/rt2x00usb.h
-@@ -340,12 +340,13 @@ static inline void rt2x00usb_register_wr
-  * through rt2x00usb_vendor_request_buff().
-  */
- static inline void rt2x00usb_register_multiwrite(struct rt2x00_dev *rt2x00dev,
--					       const unsigned int offset,
--					       void *value, const u32 length)
-+						 const unsigned int offset,
-+						 const void *value,
-+						 const u32 length)
- {
- 	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
- 				      USB_VENDOR_REQUEST_OUT, offset,
--				      value, length,
-+				      (void *)value, length,
- 				      REGISTER_TIMEOUT32(length));
- }
- 
+Cheers,
+	-Matt Helsley
