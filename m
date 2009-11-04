@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZKDOjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZKDOmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbZKDOjv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 09:39:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbZKDOju
+	id S1756636AbZKDOmL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 09:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbZKDOmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 09:39:50 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:38033 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756431AbZKDOju convert rfc822-to-8bit (ORCPT
+	Wed, 4 Nov 2009 09:42:10 -0500
+Received: from perceval.irobotique.be ([92.243.18.41]:60509 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756359AbZKDOmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 09:39:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=iqBo30lwKHI8Xi3hhB30dtEC+33hR/kyal6VEP+7BNy6quq4fdLqinccO3ngN+gOYZ
-         8SwMUQIYWWZzQPXyFOuuGIl2bGVDEmCnrP0uXlPVELd6tZ0RQjrqYby66bf88n6aDXaN
-         1yhYLxbE6c0nAYE8wF6dqc9Zt4np5l/ZFX3W4=
+	Wed, 4 Nov 2009 09:42:09 -0500
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 5/8] drivers/media/video/uvc: Use %pUl to print UUIDs
+Date: Wed, 4 Nov 2009 15:42:30 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.1; KDE/4.3.2; x86_64; ; )
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-media@vger.kernel.org
+References: <1254890742-28245-1-git-send-email-joe@perches.com> <200910312010.39785.laurent.pinchart@ideasonboard.com> <1257017258.1917.138.camel@Joe-Laptop.home>
+In-Reply-To: <1257017258.1917.138.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Wed, 4 Nov 2009 12:39:35 -0200
-Message-ID: <b8bf37780911040639k67575fe6sf0731ed7b3edea62@mail.gmail.com>
-Subject: [PATCH v3 0/7] vsprintf: reduce code size and clean up
-To: Frederic Weisbecker <fweisbec@gmail.com>, laijs@cn.fujitsu.com,
-       mingo@elte.hu, davem@davemloft.net, akpm@linux-foundation.org,
-       harvey.harrison@gmail.com, linux list <linux-kernel@vger.kernel.org>
-Cc: me <andre.goddard@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911041542.30543.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: André Goddard Rosa <andre.goddard@gmail.com>
-Date: Tue, 3 Nov 2009 11:21:39 -0200
-Subject: [PATCH v3 0/7] vsprintf: reduce code size and clean up
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Hi Joe,
 
-This patch reduces code size by 224 bytes on my Core 2 with gcc 4.4.1:
+On Saturday 31 October 2009 20:27:38 Joe Perches wrote:
+> On Sat, 2009-10-31 at 20:10 +0100, Laurent Pinchart wrote:
+> > On Saturday 31 October 2009 10:07:01 Mauro Carvalho Chehab wrote:
+> > > I'm assuming that those printk patches from Joe to uvc will go via your
+> > >  tree, so please submit a pull request when they'll be ready for
+> > > upstream.
+> >
+> > I'll submit the pull request as soon as the printk core patch hits
+> > upstream.
+> 
+> I believe Andrew Morton has picked up the patches for
+> his mm-commits set.  If you do nothing, these should
+> show up in Linus' tree after awhile.
 
-      text    data     bss     dec     hex filename
-     15767       0       8   15775    3d9f lib/vsprintf.o-before
-     15543       0       8   15551    3cbf lib/vsprintf.o-after
+Thanks for the notice.
 
-and implements some cleanups.
+Andrew, could you please drop drivers-media-video-uvc-use-%pul-to-print-
+uuids.patch ? I will push it through the v4l-dvb tree as I need to add 
+backward compatibility support.
 
-Changelog:
-    v3: improved comments on patch 5/7 and factorize a switch statement on 6/7
-as per suggestions from Ingo and Frederic (thanks!)
-    v2: addressed feedback from Frederic Weisbecker review (thanks!!)
-and split into separate patches
-    v1: original submission
+-- 
+Regards,
 
-André Goddard Rosa (7):
-  vsprintf: factorize "(null)" string
-  vsprintf: pre-calculate final string length for later use
-  vsprintf: give it some care to please checkpatch.pl
-  vsprintf: use TOLOWER whenever possible
-  vsprintf: reduce code size by avoiding extra check
-  vsprintf: move local vars to block local vars and remove unneeded ones
-  vsprintf: factor out skip_space code in a separate function
-
- lib/vsprintf.c |  307 +++++++++++++++++++++++++++++---------------------------
- 1 files changed, 159 insertions(+), 148 deletions(-)
+Laurent Pinchart
