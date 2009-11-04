@@ -1,103 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751858AbZKDSql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZKDStL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751858AbZKDSql (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 13:46:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbZKDSqk
+	id S1753763AbZKDStL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 13:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbZKDStJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 13:46:40 -0500
-Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:54058 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbZKDSqk (ORCPT
+	Wed, 4 Nov 2009 13:49:09 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:42880 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbZKDStI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 13:46:40 -0500
-Date: Wed, 4 Nov 2009 19:46:44 +0100 (CET)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Martin Nybo Andersen <tweek@tweek.dk>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Ryan C. Gordon" <icculus@icculus.org>,
-       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: package managers [was: FatELF patches...]
-In-Reply-To: <200911041848.48721.tweek@tweek.dk>
-Message-ID: <Pine.LNX.4.64.0911041901090.26209@artax.karlin.mff.cuni.cz>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
- <20091104165407.1481bc29@lxorguk.ukuu.org.uk>
- <Pine.LNX.4.64.0911041758420.9986@artax.karlin.mff.cuni.cz>
- <200911041848.48721.tweek@tweek.dk>
-X-Personality-Disorder: Schizoid
+	Wed, 4 Nov 2009 13:49:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=J5DJ8/E3Ve9ojX61okJI2SZh5hPJjehlv2b0WMi9K3JMxUrLJHyPg18a26C3nNsTLQ
+         c3GqCi2vgrUOhuEgufaq3gLrRTcQ/FCb9IasQxWPXqtX4d8Mo+/DB/ri+mJWZ/2VrTze
+         C1aa9Xz3MokSwOJpS+qZ8PyNkl3DB54e8Dduw=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <alpine.LFD.2.01.0911041025350.31845@localhost.localdomain>
+References: <20091102174536.12512.56685.stgit@bob.kio>
+	 <20091104102026.5698a9b4@jbarnes-piketon>
+	 <alpine.LFD.2.01.0911041025350.31845@localhost.localdomain>
+Date: Wed, 4 Nov 2009 10:49:13 -0800
+Message-ID: <86802c440911041049g592770dqc69b0ce34ea04a10@mail.gmail.com>
+Subject: Re: [PATCH] resources: when allocate_resource() fails, leave resource 
+	untouched
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>, jbarnes@virtuousgeek.org
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > You can say that I should delete RHEL-5 and install Fedora, but that is
-> > just that "upgrade one program" => "upgrade all programs" problem.
-> 
-> Have you ever tried upgrading Windows because some program is incompatible 
-> with the current installation? ... That is indeed an 'upgrade all' procedure 
-> ... _If_ you're lucky enough to be able to reinstall your software.
+On Wed, Nov 4, 2009 at 10:29 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Wed, 4 Nov 2009, Jesse Barnes wrote:
+>>
+>> Seems like a reasonable change to me.  Linus is usually the gatekeeper
+>> for resource.c.
+>
+> I'm certainly ok with this one. I wouldn't be surprised if it even allows
+> for better code generation, apart from leaving resources untouched when
+> allocation fails. So:
+>
+>        Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+>
+> It was apparently sent to Andrew, but I can certainly take it. Or you can
+> take it into the PCI tree. Or we can leave it in -mm. Anything goes. Just
+> tell me.
+>
 
-Some Windows programs force upgrade, but not in yearly cycles, like Linux 
-programs. Majority of programs still work on XP shipped in 2001.
+looks should be put into pci tree.
 
-> Being able to upgrade at least Debian -- and others as well -- without the 
-> need to attend the computer is IMHO one of Linux' biggest wins.
+two of patches that is releasing not big enough range from leaf bridge
+could be user.
 
-When I did it (from Etch to Lenny), two programs that I have compiled 
-manually ("vim" and "links") stopped working because Etch and Lenny have 
-binary-incompatible libgpm.
+don't need the "save and restore" trick anymore.
 
-If some library cannot keep binary compatibility, it should be linked 
-staticaly, dynamic version shouldn't even exists on the system --- so that 
-no one can create incompatible binaries.
+YH
 
-> BTW: Wine has, like many others, the newest version of their software 
-> prepackaged for RHEL 4 & 5 among others at their site: 
-> http://www.winehq.org/download/
-
-This is exactly the link that I followed and the last version for "RHEL 5" 
-is "wine-1.0.1-1.el5.i386.rpm".
-
-> If all else fail the developers could go for statically compiled binaries in 
-> an executable tarball, which then handles the installation to /usr/local
-> 
-> -Martin
-
-Static linking doesn't work for any program that needs plug-ins (i.e. 
-you'd have one glibc statically linked into the program and another glibc 
-dynamically linked with a plug-in and these two glibcs will beat each 
-other).
-
----
-
-I mean this --- the distributions should agree on a common set of 
-libraries and their versions (call this for example "Linux-2010 
-standard"). This standard should include libraries that are used 
-frequently, that have low occurence of bugs and security holes and that 
-have never had an ABI change.
-
-A distribution that claims compatibility with the standard must ship 
-libraries that are compatible with the libraries in the standard (not 
-necessarily the same version, it may ship higher version for security or 
-so).
-
-Software developers that claim compatibility with the standard will link 
-standard libraries dynamically and must use static linking for all 
-libraries not included in the standard. Or they can use dynamic linking 
-and ship the non-standard library with the application in its private 
-directory (so that nothing but that application links against it).
-
-Then, software developers could make a release for "Linux-2010" and it 
-would work on all distributions.
-
-You'd no longer need a [ distributions X programs ] matrix of binaries 
-and packages.
-
-In five years, you could revisit the standard to "Linux-2015" with newer 
-versions of libraries and force the users only to five-years upgrades, not 
-yearly upgrades as it is now. "Linux-2015" should be backward compatible 
-with "Linux-2010", so an user doing upgrade would only need to overwrite 
-his /lib and /usr/lib, he woudn't even need to change the programs.
-
-Mikulas
+@@ -57,10 +100,23 @@ static void pbus_assign_resources_sorted
+        for (list = head.next; list;) {
+                res = list->res;
+                idx = res - &list->dev->resource[0];
++               /* save the size at first */
++               size = resource_size(res);
+                if (pci_assign_resource(list->dev, idx)) {
+-                       res->start = 0;
+-                       res->end = 0;
+-                       res->flags = 0;
++                       if (fail_head && !list->dev->subordinate &&
++                           !pci_is_root_bus(list->dev->bus)) {
++                               /*
++                                * device need to keep flags and size
++                                * for second try
++                                */
++                               res->start = 0;
++                               res->end   = size - 1;
++                               add_to_failed_list(fail_head, list->dev, res);
++                       } else {
++                               res->start = 0;
++                               res->end = 0;
++                               res->flags = 0;
++                       }
+                }
+                tmp = list;
+                list = list->next;
