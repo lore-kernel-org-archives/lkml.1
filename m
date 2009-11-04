@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbZKDGaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751974AbZKDGeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752072AbZKDGaG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 01:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZKDGaF
+	id S1751974AbZKDGeI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 01:34:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZKDGeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 01:30:05 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:53000 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbZKDGaE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 01:30:04 -0500
-Date: Wed, 4 Nov 2009 12:00:05 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: libcg-devel <libcg-devel@lists.sourceforge.net>,
-       "menage@google.com" <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org,
-       Jan Safranek <jsafrane@redhat.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Bharata B Rao <bharata.rao@in.ibm.com>
-Subject: [RFC] Mount point suggestions for cgroup
-Message-ID: <20091104063005.GC3560@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
+	Wed, 4 Nov 2009 01:34:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46748 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751196AbZKDGeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 01:34:05 -0500
+Date: Wed, 4 Nov 2009 06:33:42 GMT
+From: tip-bot for Brian Gerst <brgerst@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       brgerst@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       brgerst@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1257274925-15713-1-git-send-email-brgerst@gmail.com>
+References: <1257274925-15713-1-git-send-email-brgerst@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/asm] x86, 64-bit: Fix bstep_iret jump
+Message-ID: <tip-97829de5a3b88899c5f3ac8802d11868bf4180ba@git.kernel.org>
+Git-Commit-ID: 97829de5a3b88899c5f3ac8802d11868bf4180ba
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, All,
+Commit-ID:  97829de5a3b88899c5f3ac8802d11868bf4180ba
+Gitweb:     http://git.kernel.org/tip/97829de5a3b88899c5f3ac8802d11868bf4180ba
+Author:     Brian Gerst <brgerst@gmail.com>
+AuthorDate: Tue, 3 Nov 2009 14:02:05 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 3 Nov 2009 20:50:02 +0100
 
-We've been having a discussion as to what would be the right place to
-mount the cgroup filesystem. Jan has been proactively looking into
-this. The FHS has no recommendation since cgroup filesystem came in
-much later.
+x86, 64-bit: Fix bstep_iret jump
 
-The options are
+This jump should be unconditional.
 
-1. /dev/cgroup
-2. /cgroup
-3. Some place under /sys
+Signed-off-by: Brian Gerst <brgerst@gmail.com>
+LKML-Reference: <1257274925-15713-1-git-send-email-brgerst@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/entry_64.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The problem with (2) is that it is quite non-standard and pollutes the
-root directory. (3) requires some basic support to create a directory
-for cgroup under /sys. (1) seems the most obvious choice since cpusets
-were mounted under /dev/cpuset, but /dev is controlled by udev.
-
-Given the three choices or any other suggestions, is there a general
-preference as to where we can mount it? The goal is to standardize
-the mount point (if possible).
-
-BTW, the mounting is expected to be done using cgconfigparser present
-in libcgroup.
-
-
--- 
-	Balbir
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index af0f4b2..1579a6c 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -1501,7 +1501,7 @@ error_kernelspace:
+ bstep_iret:
+ 	/* Fix truncated RIP */
+ 	movq %rcx,RIP+8(%rsp)
+-	je error_swapgs
++	jmp error_swapgs
+ END(error_entry)
+ 
+ 
