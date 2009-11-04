@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZKDBsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZKDBy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbZKDBsK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 20:48:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZKDBsJ
+	id S1753276AbZKDBy4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 20:54:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZKDByz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 20:48:09 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:41852 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753455AbZKDBsJ (ORCPT
+	Tue, 3 Nov 2009 20:54:55 -0500
+Received: from mga06.intel.com ([134.134.136.21]:28686 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750751AbZKDByz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 20:48:09 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Tue, 03 Nov 2009 20:48:13 -0500 (EST)
-From: Nicolas Pitre <nico@fluxnic.net>
-X-X-Sender: nico@xanadu.home
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Alan Cox <alan@linux.intel.com>, linux-mmc@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/11] Sort out sdio_uart - stage two
-In-reply-to: <20091104005432.3cdc924f@lxorguk.ukuu.org.uk>
-Message-id: <alpine.LFD.2.00.0911032042240.13333@xanadu.home>
-References: <20091103141525.31032.45206.stgit@localhost.localdomain>
- <alpine.LFD.2.00.0911031401170.13333@xanadu.home>
- <20091104005432.3cdc924f@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 3 Nov 2009 20:54:55 -0500
+X-ExtLoop1: 1
+Subject: Re: UDP-U stream performance regression on 32-rc1 kernel
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: alex.shi@intel.com, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+In-Reply-To: <20091103174531.GA14747@elte.hu>
+References: <1257220036.3819.193.camel@alexs-hp.sh.intel.com>
+	 <1257222791.16282.46.camel@ymzhang>  <20091103174531.GA14747@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 04 Nov 2009 09:55:45 +0800
+Message-Id: <1257299745.16282.49.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Nov 2009, Alan Cox wrote:
-
-> > >From what I can see, sdio_uart_open() and sdio_uart_activate() are 
-> > called on the first cat invocation, and then sdio_uart_close() and 
-> > sdio_uart_shutdown() when cat is stopped with ^C.  However neither 
+On Tue, 2009-11-03 at 18:45 +0100, Ingo Molnar wrote:
+> * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
 > 
-> I would have expected the cat to terminate when the port is unplugged
-> (and the uart remove method called - doing a hangup)
-
-That works fine... the first time only.  After the card is inserted back 
-then -EIO is always returned on open() from user space, same thing as 
-subsequent open() after ^C.
-
-> > sdio_uart_open() nor sdio_uart_activate() is ever called anymore with 
-> > any subsequent cat invocations until a reboot.  Some upper layer must 
-> > have taken upon itself to return -EIO to user space.
+> > On Tue, 2009-11-03 at 11:47 +0800, Alex Shi wrote:
+> > > We found the UDP-U 1k/4k stream of netperf benchmark have some
+> > > performance regression from 10% to 20% on our Tulsa and some NHM
+> > > machines. 
+> > ﻿ perf events shows function find_busiest_group consumes about 4.5% cpu 
+> > time with the patch while it only consumes 0.5% cpu time without the 
+> > patch.
+> > 
+> > The communication between netperf client and netserver is very fast. 
+> > When netserver receives a message and there is no new message 
+> > available, it goes to sleep and scheduler calls idle_balance => 
+> > load_balance_newidle. load_balance_newidle spends too much time and a 
+> > new message arrives quickly before load_balance_newidle ends.
+> > 
+> > As the comments in the patch say hackbench benefits from it, I tested 
+> > hackbench on Nehalem and core2 machines. hackbench does benefit from 
+> > it, about 6% on nehalem machines, but doesn't benefit on core2 
+> > machines.
 > 
-> The first call into the driver is to sdio_uart_install which looks up the
-> port from tty->index and would blow up if for some reason the get method
-> failed.
+> Can you confirm that -tip:
+> 
+>   http://people.redhat.com/mingo/tip.git/README
+> 
+> has it fixed (or at least improved)?
+The latest tips improves netperf loopback result, but doesn't fix it
+thoroughly. For example, on a Nehalem machine, netperf UDP-U-1k has
+about 25% regression, but with the tips kernel, the regression becomes
+less than 10%.
 
-Well, same issue: I see it being called the first time.  No calls what 
-so ever afterward until the next reboot.
+yanmin
 
 
-Nicolas
