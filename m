@@ -1,94 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbZKDTMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbZKDTNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbZKDTMv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757850AbZKDTMu
+	id S1757893AbZKDTNL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbZKDTNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:12:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48225 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757812AbZKDTMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:12:48 -0500
-Date: Wed, 4 Nov 2009 14:12:32 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 11/20] blkio: Some CFQ debugging Aid
-Message-ID: <20091104191232.GI2870@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-12-git-send-email-vgoyal@redhat.com> <x49hbtat94s.fsf@segfault.boston.devel.redhat.com>
+	Wed, 4 Nov 2009 14:13:10 -0500
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:63087 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757784AbZKDTNH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:13:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=ZHKXpIo4pRPici9cZSE+9j4d5ERnsj/M4nYFJe5xPNcmnRE1q1BTprr6LcHk+dyORr
+         CZGoB63vYD1Uko9MJ/TTBeOXUv3nDeAIOSa91NxSz3FpyXjCR01oAhc7afakj9n+IJS8
+         RSVvH/lRgZtFcxekxpmqVmruilGW2AkcKFPTY=
+Message-ID: <4AF1D233.7050409@gmail.com>
+Date: Wed, 04 Nov 2009 14:12:51 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49hbtat94s.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com
+Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com> <4AF07199.2020601@gmail.com> <4AF072EE.9020202@gmail.com> <20091103235744.GF6726@linux.vnet.ibm.com> <20091104115729.GD8398@redhat.com> <20091104172542.GC6736@linux.vnet.ibm.com> <20091104190609.GB772@redhat.com>
+In-Reply-To: <20091104190609.GB772@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCCA63008B2D675AA17A46E78"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 01:52:51PM -0500, Jeff Moyer wrote:
-> Vivek Goyal <vgoyal@redhat.com> writes:
-> 
-> > o Some CFQ debugging Aid.
-> 
-> Some CFQ debugging aids.  Sorry, I couldn't help myself.
-> 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCCA63008B2D675AA17A46E78
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-It thought this was all about IO controller and not english grammar. :-)
+Michael S. Tsirkin wrote:
+> On Wed, Nov 04, 2009 at 09:25:42AM -0800, Paul E. McKenney wrote:
+>> (Sorry, but, as always, I could not resist!)
+>>
+>> 							Thanx, Paul
+>=20
+> Thanks Paul!
+> Jonathan: are you reading this?
+> Another one for your quotes of the week collection :)
+>=20
 
-Will fix it.
+I second that.
 
-> > +config DEBUG_BLK_CGROUP
-> > +	bool
-> > +	depends on BLK_CGROUP
-> > +	default n
-> > +	---help---
-> > +	Enable some debugging help. Currently it stores the cgroup path
-> > +	in the blk group which can be used by cfq for tracing various
-> > +	group related activity.
-> > +
-> >  endif # BLOCK
-> >  
-> 
-> > +config DEBUG_CFQ_IOSCHED
-> > +	bool "Debug CFQ Scheduling"
-> > +	depends on CFQ_GROUP_IOSCHED
-> > +	select DEBUG_BLK_CGROUP
-> 
-> This seems wrong.  DEBUG_CFQ_IOSCHED sounds like it enables debugging of
-> CFQ.  In your implementation, though, it only enables this in tandem
-> with the blkio cgroup infrastructure.  Please decouple these things.
-> 
 
-What's wrong with this? We are emitting more debugging information for
-CFQ like cgroup name and paths in blktrace output. That's a different
-thing that internally that information is also dependent debugging being
-enabled in blk io controller.
+--------------enigCCA63008B2D675AA17A46E78
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Important thing here is that blk io controller and its debugging option is
-automatically selected depending on what user wants from end policies.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-So I really can't see that what's wrong if CFQ debugging option internally
-selects some other config option also.
- 
+iEYEARECAAYFAkrx0jMACgkQP5K2CMvXmqE8mQCfdYADcYmCghf4KZwD0wmBm3nY
+8dAAn0L2oESRSjXqAFFqur1MOK0OCYC9
+=7C80
+-----END PGP SIGNATURE-----
 
-> > +#ifdef CONFIG_DEBUG_BLK_CGROUP
-> > +	/* Store cgroup path */
-> > +	char path[128];
-> > +#endif
-> 
-> Where does 128 come from?  What's wrong with PATH_MAX?
-
-CFS influence (kernel/sched_debug.c)
-
-Actually PATH_MAX will be 4096 bytes. Too long to display in blktrace
-output? I have not check what's the blktrace limit but we don't want too
-long a lines in output. 
-
-Thanks
-Vivek
+--------------enigCCA63008B2D675AA17A46E78--
