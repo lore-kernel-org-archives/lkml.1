@@ -1,66 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZKDGfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbZKDGiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394AbZKDGfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 01:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZKDGfn
+	id S1752578AbZKDGiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 01:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZKDGiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 01:35:43 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53270 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751253AbZKDGfm (ORCPT
+	Wed, 4 Nov 2009 01:38:24 -0500
+Received: from xenbox.codefidence.com ([92.48.73.16]:45641 "EHLO
+	xenbox.codefidence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752491AbZKDGiX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 01:35:42 -0500
-Date: Tue, 3 Nov 2009 22:34:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: Please consider reverting
- 7d930bc33653d5592dc386a76a38f39c2e962344
-Message-Id: <20091103223433.23765578.akpm@linux-foundation.org>
-In-Reply-To: <1257234299.28469.25.camel@johannes.local>
-References: <20091103053156.GA3212@core.coreip.homeip.net>
-	<20091102.224957.32364226.davem@davemloft.net>
-	<20091103065238.GE3212@core.coreip.homeip.net>
-	<1257232587.3420.55.camel@localhost.localdomain>
-	<1257234299.28469.25.camel@johannes.local>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 01:38:23 -0500
+Message-ID: <4AF12149.1060305@codefidence.com>
+Date: Wed, 04 Nov 2009 08:38:01 +0200
+From: Gilad Ben-Yossef <gilad@codefidence.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: =?windows-1252?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Ori Finkelman <ori@comsleep.com>
+Subject: Re: 2.6.32-rc5-mmotm1101 - kernel BUG at net/ipv4/tcp_input.c:3707!
+References: <5765.1257270611@turing-police.cc.vt.edu> <4AF07024.80103@gmail.com> <4AF08292.7090102@codefidence.com>            <Pine.LNX.4.64.0911032330090.3488@melkinkari.cs.Helsinki.FI> <7916.1257300093@turing-police.cc.vt.edu>
+In-Reply-To: <7916.1257300093@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Nov 2009 08:44:59 +0100 Johannes Berg <johannes@sipsolutions.net> wrote:
+Valdis.Kletnieks@vt.edu wrote:
 
-> On Tue, 2009-11-03 at 16:16 +0900, Marcel Holtmann wrote:
-> 
-> > and can we please stop jumping the gun here and going past the subsystem
-> > maintainers. I think this happens a little bit too much lately.
-> 
-> I'll rant a bit too -- I've been very annoyed by this many times.
+> On Tue, 03 Nov 2009 23:34:19 +0200, Ilpo JÃâ‚¬rvinen said:
+>
+>   
+>> On Tue, 3 Nov 2009, Gilad Ben-Yossef wrote:
+>>
+>>     
+>>> Eric Dumazet wrote:
+>>>
+>>>       
+>>>> Valdis.Kletnieks@vt.edu a écrit :
+>>>>   
+>>>>         
+>>>>> Seen right after I started 'fetchmail'.  Reproducible - 3 out of 3.
+>>>>> I'll bisect this tonight if nobody jumps up and yells they know what it
+>>>>> is...
+>>>>>     
+>>>>>           
+>>> Bah... this is most probably my fault. Sorry about that.
+>>>
+>>> Can you please try the patch in the next email?
+>>>       
+>
+> Tried while at home, machine panic'ed.  No netconsole here at the moment, sorry.
+>   
 
-Problem is, subsystem maintainers are very unreliable.
+Ok, thanks.That is ... strange.
 
-Right now I'm sitting on 17 patches which I think should be in 2.6.32,
-which I need to plead with subsystem maintainers to take a look at. 
-They've already seen the patches (usually at least twice) and they've
-just blown them off.  This is typical.
+I didn't manage to recreate this here with a simple IPv6 set and netcat
+as server client but I will try further, but if there is any way to send me
+the crash location that would be a big help. Thanks.
+>   
+>
+> Why was this blowing chunks in the IPv6 when I was making an IPv4 connection
+> then? I just noticed that. My fetchmail can't make an IPv6 TCP connection to
+> our IMAP server because the server isn't v6-enabled yet.  And although I
+> contact our DNS over IPv6, but that's UDP not TCP.
+>
+>   
+I don't think the chunk blowing occurred due to the connection to the IMAP
+server. That codes deals with incoming SYNs. I guess it happened when 
+fetchmail
+tried to connect to the local mail daemon and this should be happening 
+over the loopback interface...
 
-And then there are the 100 to 200 non-critical patches which I'm always
-sitting on, similarly ignored.  And I'm increasingly just ignoring
-stuff nowadays because this situation is so bad.
 
-And then there are all the bug reports which flow in one ear and out
-the other.
+Gilad
 
-Now, some subsystem maintainer are good, and some aren't.  I'm probably
-the only person who could write the detailed list for each column. 
-Unfortunately, people who have better lives than me are best off
-assuming that a subsystem maintainer is unreliable.  If the problem is
-severe enough, bypassing the maintainer is a sensible default.
+
+-- 
+Gilad Ben-Yossef
+Chief Coffee Drinker & CTO
+Codefidence Ltd.
+
+Web:   http://codefidence.com
+Cell:  +972-52-8260388
+Skype: gilad_codefidence
+Tel:   +972-8-9316883 ext. 201
+Fax:   +972-8-9316884
+Email: gilad@codefidence.com
+
+Check out our Open Source technology and training blog - http://tuxology.net
+
+	"The biggest risk you can take it is to take no risk."
+		-- Mark Zuckerberg and probably others
 
