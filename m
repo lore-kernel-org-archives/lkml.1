@@ -1,50 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbZKDIHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZKDIMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbZKDIHx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 03:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbZKDIHw
+	id S1752952AbZKDIMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 03:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZKDIMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 03:07:52 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:33622 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752639AbZKDIHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 03:07:51 -0500
-Date: Wed, 4 Nov 2009 09:07:54 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, linux-usb@vger.kernel.org
-Subject: Re: linux-next: pcmcia tree build failure
-Message-ID: <20091104080754.GA27784@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-	linux-usb@vger.kernel.org
-References: <20091104131540.f39af556.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091104131540.f39af556.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 4 Nov 2009 03:12:16 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57507 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752081AbZKDIMP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 03:12:15 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 4 Nov 2009 17:09:44 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       cl@linux-foundation.org, rientjes@google.com
+Subject: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
+Message-Id: <20091104170944.cef988c7.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+If clarification is not enough, let me know.
+Thank you for all your review in RFC version.
+Thanks,
+-Kame
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
 
-On Wed, Nov 04, 2009 at 01:15:40PM +1100, Stephen Rothwell wrote:
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/telephony/ixj_pcmcia.c: In function 'ixj_probe':
-> drivers/telephony/ixj_pcmcia.c:35: error: 'link' undeclared (first use in this function)
-> 
-> Caused by commit 990c0c8eeb34f62d062052d462feaa99715cb043 ("pcmcia: use
-> dynamic debug infrastructure, deprecate CS_CHECK (misc drivers)").
-> 
-> I have used the version of the pcmcia tree from next-20091102 for today.
-> Please build test.  :-(
+Fixing node-oriented allocation handling in oom-kill.c
+I myself think this as bugfix not as enhancement.
 
-Thanks -- fixed both issues (build failure and test setup).
+In these days, things are changed as
+  - alloc_pages() eats nodemask as its arguments, __alloc_pages_nodemask().
+  - mempolicy don't maintain its own private zonelists.
+  (And cpuset doesn't use nodemask for __alloc_pages_nodemask())
 
-Best,
-	Domiik
+So, current oom-killer's check function is wrong.
+
+This patch does
+  - check nodemask, if nodemask && nodemask != node_states[N_HIGH_MEMORY]
+    this is never be CONSTRAINT_NONE. We assume this from mempolicy.
+  - Scan all zonelist under nodemask, if it hits cpuset's wall
+    this faiulre is from cpuset.
+And
+  - modifies the caller of out_of_memory not to call oom if __GFP_THISNODE.
+    This doesn't change "current" behavior.
+    If callers use __GFP_THISNODE, it should handle "page allocation failure"
+    by itself.
+
+Changelog: 2009/11/04
+ - cut out as bug-fix for passing nodemask.
+ - added GFP_THISNODE sanity check.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
+---
+ drivers/char/sysrq.c |    2 +-
+ mm/oom_kill.c        |   38 ++++++++++++++++++++++++++------------
+ mm/page_alloc.c      |   10 ++++++++--
+ 3 files changed, 35 insertions(+), 15 deletions(-)
+
+Index: mmotm-2.6.32-Nov2/drivers/char/sysrq.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/drivers/char/sysrq.c
++++ mmotm-2.6.32-Nov2/drivers/char/sysrq.c
+@@ -339,7 +339,7 @@ static struct sysrq_key_op sysrq_term_op
+ 
+ static void moom_callback(struct work_struct *ignored)
+ {
+-	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
++	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0, NULL);
+ }
+ 
+ static DECLARE_WORK(moom_work, moom_callback);
+Index: mmotm-2.6.32-Nov2/mm/oom_kill.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/mm/oom_kill.c
++++ mmotm-2.6.32-Nov2/mm/oom_kill.c
+@@ -196,27 +196,40 @@ unsigned long badness(struct task_struct
+ /*
+  * Determine the type of allocation constraint.
+  */
++#ifdef CONFIG_NUMA
+ static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+-						    gfp_t gfp_mask)
++				    gfp_t gfp_mask, nodemask_t *nodemask)
+ {
+-#ifdef CONFIG_NUMA
+ 	struct zone *zone;
+ 	struct zoneref *z;
+ 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+-	nodemask_t nodes = node_states[N_HIGH_MEMORY];
++	int ret = CONSTRAINT_NONE;
+ 
+-	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+-		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
+-			node_clear(zone_to_nid(zone), nodes);
+-		else
++	/*
++ 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
++ 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
++ 	 * feature. Then, only mempolicy use this nodemask.
++ 	 */
++	if (nodemask && nodes_equal(*nodemask, node_states[N_HIGH_MEMORY]))
++		ret = CONSTRAINT_MEMORY_POLICY;
++
++	/* Check this allocation failure is caused by cpuset's wall function */
++	for_each_zone_zonelist_nodemask(zone, z, zonelist,
++			high_zoneidx, nodemask)
++		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
+ 			return CONSTRAINT_CPUSET;
+ 
+-	if (!nodes_empty(nodes))
+-		return CONSTRAINT_MEMORY_POLICY;
+-#endif
++	/* __GFP_THISNODE never calls OOM.*/
+ 
++	return ret;
++}
++#else
++static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
++				gfp_t gfp_mask, nodemask_t *nodemask)
++{
+ 	return CONSTRAINT_NONE;
+ }
++#endif
+ 
+ /*
+  * Simple selection loop. We chose the process with the highest
+@@ -603,7 +616,8 @@ rest_and_return:
+  * OR try to be smart about which process to kill. Note that we
+  * don't have to be perfect here, we just have to be good.
+  */
+-void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
++void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
++		int order, nodemask_t *nodemask)
+ {
+ 	unsigned long freed = 0;
+ 	enum oom_constraint constraint;
+@@ -622,7 +636,7 @@ void out_of_memory(struct zonelist *zone
+ 	 * Check if there were limitations on the allocation (only relevant for
+ 	 * NUMA) that may require different handling.
+ 	 */
+-	constraint = constrained_alloc(zonelist, gfp_mask);
++	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
+ 	read_lock(&tasklist_lock);
+ 
+ 	switch (constraint) {
+Index: mmotm-2.6.32-Nov2/mm/page_alloc.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/mm/page_alloc.c
++++ mmotm-2.6.32-Nov2/mm/page_alloc.c
+@@ -1667,9 +1667,15 @@ __alloc_pages_may_oom(gfp_t gfp_mask, un
+ 	/* The OOM killer will not help higher order allocs */
+ 	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
+ 		goto out;
+-
++	/*
++	 * In usual, GFP_THISNODE contains __GFP_NORETRY and we never hit this.
++	 * Sanity check for bare calls of __GFP_THISNODE, not real OOM.
++	 * Note: Hugepage uses it but will hit PAGE_ALLOC_COSTLY_ORDER.
++	 */
++	if (gfp_mask & __GFP_THISNODE)
++		goto out;
+ 	/* Exhausted what can be done so it's blamo time */
+-	out_of_memory(zonelist, gfp_mask, order);
++	out_of_memory(zonelist, gfp_mask, order, nodemask);
+ 
+ out:
+ 	clear_zonelist_oom(zonelist, gfp_mask);
+
