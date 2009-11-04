@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZKDKAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZKDKAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbZKDKAj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 05:00:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZKDKAj
+	id S1755094AbZKDKAu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 05:00:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZKDKAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 05:00:39 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:53059 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754775AbZKDKAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 05:00:38 -0500
-Message-ID: <4AF150BB.3020309@atmel.com>
-Date: Wed, 04 Nov 2009 11:00:27 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 4 Nov 2009 05:00:49 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:52098 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755065AbZKDKAs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 05:00:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=M0RArnPj9T4217mXQVmEoJRohuxTvBfmbmziK/XP8ALs9olL/NGcwce/Wm2XhHZY+L
+         IF37H4fnap7iy4SgSfELfczyIOKesA+UqOJ6Kg2NddL9+IYDDfv1t3l3pzkQdtqh1y/M
+         V59Apo1ELC9gouXE2d9kiCtOVb+r7X/We68lg=
+Message-ID: <4AF150D2.6000207@tuffmail.co.uk>
+Date: Wed, 04 Nov 2009 10:00:50 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Matthew Palmer <mpalmer@hezmatt.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: kernel <kernel@avr32linux.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "'linux-arm-kernel@lists.infradead.org'" 
-	<linux-arm-kernel@lists.infradead.org>
-Subject: Re: [GIT PULL] AT91/AVR32 some common macros
-References: <4AF07242.3070803@atmel.com> <alpine.LFD.2.01.0911031014340.31845@localhost.localdomain> <20091103185635.GE8322@hezmatt.org>
-In-Reply-To: <20091103185635.GE8322@hezmatt.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: greg@kroah.com, linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the
+ kernel (__ksymtab)
+References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> <1257242782-10496-6-git-send-email-alan-jenkins@tuffmail.co.uk> <200911041849.43311.rusty@rustcorp.com.au>
+In-Reply-To: <200911041849.43311.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Palmer :
-> On Tue, Nov 03, 2009 at 10:15:38AM -0800, Linus Torvalds wrote:
->> On Tue, 3 Nov 2009, Nicolas Ferre wrote:
->>> If it not bother you too much to pull such a tiny and 
->>> trivial piece of code, can you please pull:
->>>
->>>   git://github.com/at91linux/linux-2.6-at91.git for-linus
->> 	"fatal: The remote end hung up unexpectedly"
-> 
-> Something was hinky with the repository; I don't know why, but it was
-> missind the git-daemon-export-ok flag file.  It's working now.
+Rusty Russell wrote:
+> On Tue, 3 Nov 2009 08:36:17 pm Alan Jenkins wrote:
+>   
+>> +/*
+>> + * We use CPP macros since they are more familiar than assembly macros.
+>> + * Note that CPP macros eat newlines, so each statement must be terminated
+>> + * by a semicolon.
+>> + */
+>> +
+>> +#ifdef CONFIG_HAVE_SYMBOL_PREFIX
+>> +#define __SYM(sym) _##sym
+>> +#else
+>> +#define __SYM(sym) sym
+>> +#endif
+>>     
+>
+> Ideally, you would used MODULE_SYMBOL_PREFIX here, but of course it's a
+> string.  I don't think Kconfig can do arbitrary identifiers, so we can't
+> make CONFIG_SYMBOL_PREFIX empty or _.
+>
+> Perhaps clarify it to a bool CONFIG_HAVE_MODULE_UNDERSCORE_PREFIX then,
+> since that's what you're assuming here?
+>
+> Thanks,
+> Rusty.
 
-Linus, I have seen the merge. Thank you.
+I made the same assumption in patch 4.  The arch defines 
+CONFIG_HAVE_SYMBOL_PREFIX, which then causes init/Kconfig to define 
+CONFIG_SYMBOL_PREFIX="_".
 
-Matthew, thanks for handling the repository error.
+Mike suggested that I hack kbuild instead, to do something like
 
-Sorry for the false start...
+unquote = ...
+AFLAGS_.tmp_export-asm.o += -DSYMBOL_PREFIX=$(unquote CONFIG_SYMBOL_PREFIX)
 
-Best regards,
--- 
-Nicolas Ferre
+I'm experimenting with the idea, but I haven't managed to get it working 
+yet.
 
+Alan
