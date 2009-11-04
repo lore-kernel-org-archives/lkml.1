@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbZKDHGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbZKDHST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752222AbZKDHGS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 02:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZKDHGR
+	id S1754347AbZKDHST (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 02:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZKDHSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 02:06:17 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56079 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbZKDHGR (ORCPT
+	Wed, 4 Nov 2009 02:18:18 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:39335 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752626AbZKDHSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 02:06:17 -0500
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: yodor1@gmail.com, linux-kernel@vger.kernel.org
-In-reply-to: <20091103104044.GC22235@kernel.dk> (message from Jens Axboe on
-	Tue, 3 Nov 2009 11:40:44 +0100)
-Subject: Re: kernel BUG at mm/highmem.c:259
-References: <4AEF4181.9080100@gmail.com> <20091103104044.GC22235@kernel.dk>
-Message-Id: <E1N5Zwf-0005r9-Fn@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 04 Nov 2009 08:06:17 +0100
+	Wed, 4 Nov 2009 02:18:17 -0500
+Message-ID: <4AF129C8.3030008@ct.jp.nec.com>
+Date: Wed, 04 Nov 2009 16:14:16 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] sched: remove __schedule() declaration
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009, Jens Axboe wrote:
-> Looks like another victim of the confusing kmap() vs kmap_atomic() API
-> differences.
-> 
-> diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-> index a3492f7..8a219bd 100644
-> --- a/fs/fuse/file.c
-> +++ b/fs/fuse/file.c
-> @@ -1599,7 +1599,7 @@ static int fuse_ioctl_copy_user(struct page **pages, struct iovec *iov,
->  			kaddr += copy;
->  		}
->  
-> -		kunmap(map);
-> +		kunmap(page);
->  	}
->  
->  	return 0;
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Todor, thanks for the bug report!  Jens, can I add your Signed-off-by?
+__schedule() had been removed.
 
-Thanks,
-Miklos
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ include/linux/sched.h |    1 -
+ kernel/kgdb.c         |    2 +-
+ 2 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 75e6e60..f18102c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -349,7 +349,6 @@ extern signed long schedule_timeout(signed long timeout);
+ extern signed long schedule_timeout_interruptible(signed long timeout);
+ extern signed long schedule_timeout_killable(signed long timeout);
+ extern signed long schedule_timeout_uninterruptible(signed long timeout);
+-asmlinkage void __schedule(void);
+ asmlinkage void schedule(void);
+ extern int mutex_spin_on_owner(struct mutex *lock, struct thread_info *owner);
+ 
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index 9147a31..7d70146 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -870,7 +870,7 @@ static void gdb_cmd_getregs(struct kgdb_state *ks)
+ 
+ 	/*
+ 	 * All threads that don't have debuggerinfo should be
+-	 * in __schedule() sleeping, since all other CPUs
++	 * in schedule() sleeping, since all other CPUs
+ 	 * are in kgdb_wait, and thus have debuggerinfo.
+ 	 */
+ 	if (local_debuggerinfo) {
+-- 
+1.6.3.3
+
