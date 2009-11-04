@@ -1,158 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbZKDDQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbZKDDWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754410AbZKDDQc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 22:16:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbZKDDQa
+	id S1754399AbZKDDWe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 22:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbZKDDWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 22:16:30 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:56608 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753946AbZKDDQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 22:16:29 -0500
-Date: Tue, 3 Nov 2009 21:16:32 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 06/13] sysfs: Fix locking and factor out
-	sysfs_sd_setattr
-Message-ID: <20091104031632.GC27639@us.ibm.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-6-git-send-email-ebiederm@xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257249429-12384-6-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Nov 2009 22:22:33 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47206 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753899AbZKDDWc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 22:22:32 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 4 Nov 2009 12:19:52 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: vedran.furac@gmail.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+Message-Id: <20091104121952.07ea695a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0911031905390.11790@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org>
+	<alpine.DEB.2.00.0910272205200.7507@chino.kir.corp.google.com>
+	<20091028150536.674abe68.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0910272311001.15462@chino.kir.corp.google.com>
+	<20091028152015.3d383cd6.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0910290136000.11476@chino.kir.corp.google.com>
+	<4AE97861.1070902@gmail.com>
+	<alpine.DEB.2.00.0910291248480.2276@chino.kir.corp.google.com>
+	<20091030084836.5428e085.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0910300200170.18076@chino.kir.corp.google.com>
+	<20091030183638.1125c987.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911031240470.29695@chino.kir.corp.google.com>
+	<20091104095021.5532e913.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911031752180.1187@chino.kir.corp.google.com>
+	<20091104111703.b46ae72b.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911031905390.11790@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> Cleanly separate the work that is specific to setting the
-> attributes of a sysfs_dirent from what is needed to update
-> the attributes of a vfs inode.
-> 
-> Additionally grab the sysfs_mutex to keep any nasties from
-> surprising us when updating the sysfs_dirent.
-> 
-> Acked-by: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
-> ---
->  fs/sysfs/inode.c |   52 ++++++++++++++++++++++++++++++++--------------------
->  fs/sysfs/sysfs.h |    1 +
->  2 files changed, 33 insertions(+), 20 deletions(-)
-> 
-> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-> index fed7a74..fccfb55 100644
-> --- a/fs/sysfs/inode.c
-> +++ b/fs/sysfs/inode.c
-> @@ -64,30 +64,15 @@ struct sysfs_inode_attrs *sysfs_init_inode_attrs(struct sysfs_dirent *sd)
-> 
->  	return attrs;
->  }
-> -int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
-> +
-> +int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
->  {
-> -	struct inode * inode = dentry->d_inode;
-> -	struct sysfs_dirent * sd = dentry->d_fsdata;
->  	struct sysfs_inode_attrs *sd_attrs;
->  	struct iattr *iattrs;
->  	unsigned int ia_valid = iattr->ia_valid;
-> -	int error;
-> -
-> -	if (!sd)
-> -		return -EINVAL;
-> 
->  	sd_attrs = sd->s_iattr;
-> 
-> -	error = inode_change_ok(inode, iattr);
-> -	if (error)
-> -		return error;
-> -
-> -	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
-> -
-> -	error = inode_setattr(inode, iattr);
-> -	if (error)
-> -		return error;
-> -
->  	if (!sd_attrs) {
->  		/* setting attributes for the first time, allocate now */
->  		sd_attrs = sysfs_init_inode_attrs(sd);
-> @@ -110,12 +95,39 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
->  			iattrs->ia_ctime = iattr->ia_ctime;
->  		if (ia_valid & ATTR_MODE) {
->  			umode_t mode = iattr->ia_mode;
-> -
-> -			if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
-> -				mode &= ~S_ISGID;
->  			iattrs->ia_mode = sd->s_mode = mode;
->  		}
->  	}
-> +	return 0;
-> +}
-> +
-> +int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
-> +{
-> +	struct inode * inode = dentry->d_inode;
-> +	struct sysfs_dirent * sd = dentry->d_fsdata;
-> +	int error;
-> +
-> +	if (!sd)
-> +		return -EINVAL;
-> +
-> +	error = inode_change_ok(inode, iattr);
-> +	if (error)
-> +		return error;
-> +
-> +	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
-> +	if (iattr->ia_valid & ATTR_MODE) {
-> +		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
-> +			iattr->ia_mode &= ~S_ISGID;
-> +	}
+On Tue, 3 Nov 2009 19:10:34 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
-Was it a bug that before this patch this wasn't cleared before the
-actual inode_setattr()?
-
-Since the S_ISGID will be set for the *new* gid, that is,
-iattr->ia_gid, shouldn't the user be required to be
-in_group_p(iattr->i_gid)?  Note you haven't done the
-inode_setattr() yet.
-
-> +
-> +	error = inode_setattr(inode, iattr);
-> +	if (error)
-> +		return error;
-> +
-> +	mutex_lock(&sysfs_mutex);
-> +	error = sysfs_sd_setattr(sd, iattr);
-> +	mutex_unlock(&sysfs_mutex);
-> +
->  	return error;
->  }
+> On Wed, 4 Nov 2009, KAMEZAWA Hiroyuki wrote:
 > 
-> diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-> index af4c4e7..a96d967 100644
-> --- a/fs/sysfs/sysfs.h
-> +++ b/fs/sysfs/sysfs.h
-> @@ -155,6 +155,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
->   */
->  struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
->  void sysfs_delete_inode(struct inode *inode);
-> +int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
->  int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
->  int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
->  		size_t size, int flags);
-> -- 
-> 1.6.5.2.143.g8cc62
+> > My point and your point are differnt.
+> > 
+> >   1. All my concern is "baseline for heuristics"
+> >   2. All your concern is "baseline for knob, as oom_adj"
+> > 
+> > ok ? For selecting victim by the kernel, dynamic value is much more useful.
+> > Current behavior of "Random kill" and "Kill multiple processes" are too bad.
+> > Considering oom-killer is for what, I think "1" is more important.
+> > 
+> > But I know what you want, so, I offers new knob which is not affected by RSS
+> > as I wrote in previous mail.
+> > 
+> > Off-topic:
+> > As memcg is growing better, using OOM-Killer for resource control should be
+> > ended, I think. Maybe Fake-NUMA+cpuset is working well for google system, 
+> > but plz consider to use memcg. 
+> > 
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I understand what you're trying to do, and I agree with it for most 
+> desktop systems.  However, I think that admins should have a very strong 
+> influence in what tasks the oom killer kills.  It doesn't really matter if 
+> it's via oom_adj or not, and its debatable whether an adjustment on a 
+> static heuristic score is in our best interest in the first place.  But we 
+> must have an alternative so that our control over oom killing isn't lost.
+> 
+I'll not go too quickly, so, let's discuss and rewrite patches more, later.
+I'll parepare new version in the next week. For this week, I'll post
+swap accounting and improve fork-bomb detector.
+
+> I'd also like to open another topic for discussion if you're proposing 
+> such sweeping changes: at what point do we allow ~__GFP_NOFAIL allocations 
+> to fail even if order < PAGE_ALLOC_COSTLY_ORDER and defer killing 
+> anything?  We both agreed that it's not always in the best interest to 
+> kill a task so that an allocation can succeed, so we need to define some 
+> criteria to simply fail the allocation instead.
+> 
+Yes, I think allocation itself (> order=0) should fail more before we finally
+invoke OOM. It tends to be soft-landing rather than oom-killer.
+
+Thanks,
+-Kame
+
