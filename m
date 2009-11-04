@@ -1,126 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751911AbZKDGXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbZKDG04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751911AbZKDGXN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 01:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZKDGXM
+	id S1751988AbZKDG04 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 01:26:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZKDG04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 01:23:12 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:39178 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751642AbZKDGXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 01:23:12 -0500
-Date: Tue, 3 Nov 2009 22:23:13 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Josh Triplett <josh@joshtriplett.org>, Jon Bernard <jbernard@debian.org>,
-       Jan Blunck <jblunck@suse.de>, Pierre Habouzit <madcoder@debian.org>,
-       Steven Munroe <munroesj@linux.vnet.ibm.com>,
-       Bert Wesarg <bert.wesarg@googlemail.com>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>,
-       ltt-dev@lists.casi.polymtl.ca, rp@svcs.cs.pdx.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RELEASE] Userspace RCU 0.3.0
-Message-ID: <20091104062313.GC6830@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091103150234.GA20060@Krystal> <20091103155028.GC6726@linux.vnet.ibm.com> <20091103165314.GD27775@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091103165314.GD27775@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 4 Nov 2009 01:26:56 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56198 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751654AbZKDG0z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 01:26:55 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 4 Nov 2009 15:24:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       cl@linux-foundation.org, akpm@linux-foundation.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH] show per-process swap usage via procfs
+Message-Id: <20091104152426.eacc894f.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 11:53:14AM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Tue, Nov 03, 2009 at 10:02:34AM -0500, Mathieu Desnoyers wrote:
-> > > Hi everyone,
-> > > 
-> > > I released userspace RCU 0.3.0, which includes a small API change for
-> > > the "deferred work" interface. After discussion with Paul, I decided to
-> > > drop the support for call_rcu() and only provide defer_rcu(), to make
-> > > sure I don't provide an API with the same name as the kernel RCU but
-> > > with different arguments and semantic. It will generate the following
-> > > linker error if used:
-> > > 
-> > > file.c:240: undefined reference to 
-> > >    `__error_call_rcu_not_implemented_please_use_defer_rcu'
-> > > 
-> > > Note that defer_rcu() should *not* be used in RCU read-side C.S.,
-> > > because it calls synchronize_rcu() if the queue is full. This is a major
-> > > distinction from call_rcu(). (note to self: eventually we should add
-> > > some self-check code to detect defer_rcu() nested within RCU read-side
-> > > C.S.).
-> > > 
-> > > I plan to eventually implement a proper call_rcu() within the userspace
-> > > RCU library. It's not, however, a short-term need for me at the moment.
-> > 
-> > I can tell that we need to get you going on some real-time work.  ;-)
-> 
-> :-)
-> 
-> > (Sorry, but I really couldn't resist!)
-> 
-> It's true that it becomes important when real-time behavior is required
-> at the call_rcu() execution site. However, even typical use of
-> call_rcu() has some limitations in this area: in a scenario where the
-> struct rcu_head passed to call_rcu() is allocated dynamically, kmalloc
-> and friends do not offer any kind of wait-free/lock-free guarantees. So
-> the way call_rcu() works is to push the burden of RT impact on the
-> original struct rcu_head allocation. But I agree that it makes
-> out-of-memory/queue full error handling much easier, because all the
-> allocation is done at the same site.
-> 
-> The main disadvantage of the call_rcu() approach though is that I cannot
-> see any clean way to perform call_rcu() rate-limitation on a per-cpu
-> basis. This would basically imply that we have to stop providing RT
-> call_rcu() at some point to ensure we do not go over a certain
-> threshold.
 
-Or that we use other means to accelerate the grace period when any given
-CPU starts getting filled up, such as force_quiescent_state().  Now,
-force_quiescent_state() is not exactly lightweight, but at that point,
-we should not be all that concerned about incurring some extra overhead.
+Passed several tests and one bug was fixed since RFC version.
+This patch is against mmotm.
+=
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Now, an RCU read-side critical section might take forever, but then
-you are stuck no matter what you do.  And this is why SRCU has a
-separate API that does not include a call_srcu().
+Now, anon_rss and file_rss is counted as RSS and exported via /proc.
+RSS usage is important information but one more information which
+is often asked by users is "usage of swap".(user support team said.)
 
-> A possible solution would be to make call_rcu() return an error when it
-> goes over some threshold. The caller would have to deal with the error,
-> possibly by rejecting the whole operation (so maybe another CPU/cloud
-> node could take over the work). This seems cleaner than delaying
-> execution of the call_rcu() site. The caller could actually decide to
-> either reject the whole operation or to delay its execution.
+This patch counts swap entry usage per process and show it via
+/proc/<pid>/status. I think status file is robust against new entry.
+Then, it is the first candidate..
 
-That sort of error handling usually turns out to be surprisingly
-complex, difficult to test, and prone to bugs.  Having a deterministic
-call_rcu() that avoids error returns is actually quite valuable.
+ After this, /proc/<pid>/status includes following line
+ <snip>
+ VmPeak:   315360 kB
+ VmSize:   315360 kB
+ VmLck:         0 kB
+ VmHWM:    180452 kB
+ VmRSS:    180452 kB
+ VmData:   311624 kB
+ VmStk:        84 kB
+ VmExe:         4 kB
+ VmLib:      1568 kB
+ VmPTE:       640 kB
+ VmSwap:   131240 kB <=== new information
 
-The problem in user mode is that you cannot guarantee that a given
-thread won't get preempted for an extended time period.  One approach
-would be to make call_rcu() provide a conditional guarantee, so
-that it (for example) provides deterministic execution time only
-if readers are getting done in a timely manner and if the call_rcu()
-rate is bounded.  But even that would prohibit call_rcu() from being
-invoked from within an RCU read-side critical section.
+Note:
+  Because this patch catches swap_pte on page table, this will
+  not catch shmem's swapout. It's already accounted in per-shmem
+  inode and we don't need to do more.
 
-So another approach is to test whether call_rcu() is being invoked
-from within an RCU read-side critical section, and only block if
-not.  And yet a another would be for call_rcu() to block for a fixed
-time period if within an RCU read-side critical section.  Either way,
-the system would make forward progress if at least -some- of the
-call_rcu() invocations were from outside of RCU read-side critical
-sections.
+Changelog: 2009/11/03
+ - clean up.
+ - fixed initialization bug at fork (init_mm())
 
-							Thanx, Paul
+Acked-by: Acked-by; David Rientjes <rientjes@google.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ fs/proc/task_mmu.c       |    9 ++++++---
+ include/linux/mm_types.h |    1 +
+ kernel/fork.c            |    1 +
+ mm/memory.c              |   30 +++++++++++++++++++++---------
+ mm/rmap.c                |    1 +
+ mm/swapfile.c            |    1 +
+ 6 files changed, 31 insertions(+), 12 deletions(-)
 
-> Mathieu
-> 
-> 
-> > 							Thanx, Paul
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Index: mmotm-2.6.32-Nov2/include/linux/mm_types.h
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/include/linux/mm_types.h
++++ mmotm-2.6.32-Nov2/include/linux/mm_types.h
+@@ -228,6 +228,7 @@ struct mm_struct {
+ 	 */
+ 	mm_counter_t _file_rss;
+ 	mm_counter_t _anon_rss;
++	mm_counter_t _swap_usage;
+ 
+ 	unsigned long hiwater_rss;	/* High-watermark of RSS usage */
+ 	unsigned long hiwater_vm;	/* High-water virtual memory usage */
+Index: mmotm-2.6.32-Nov2/mm/memory.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/mm/memory.c
++++ mmotm-2.6.32-Nov2/mm/memory.c
+@@ -376,12 +376,15 @@ int __pte_alloc_kernel(pmd_t *pmd, unsig
+ 	return 0;
+ }
+ 
+-static inline void add_mm_rss(struct mm_struct *mm, int file_rss, int anon_rss)
++static inline void
++add_mm_rss(struct mm_struct *mm, int file_rss, int anon_rss, int swap_usage)
+ {
+ 	if (file_rss)
+ 		add_mm_counter(mm, file_rss, file_rss);
+ 	if (anon_rss)
+ 		add_mm_counter(mm, anon_rss, anon_rss);
++	if (swap_usage)
++		add_mm_counter(mm, swap_usage, swap_usage);
+ }
+ 
+ /*
+@@ -597,7 +600,9 @@ copy_one_pte(struct mm_struct *dst_mm, s
+ 						 &src_mm->mmlist);
+ 				spin_unlock(&mmlist_lock);
+ 			}
+-			if (is_write_migration_entry(entry) &&
++			if (!is_migration_entry(entry))
++				rss[2]++;
++			else if (is_write_migration_entry(entry) &&
+ 					is_cow_mapping(vm_flags)) {
+ 				/*
+ 				 * COW mappings require pages in both parent
+@@ -648,11 +653,11 @@ static int copy_pte_range(struct mm_stru
+ 	pte_t *src_pte, *dst_pte;
+ 	spinlock_t *src_ptl, *dst_ptl;
+ 	int progress = 0;
+-	int rss[2];
++	int rss[3];
+ 	swp_entry_t entry = (swp_entry_t){0};
+ 
+ again:
+-	rss[1] = rss[0] = 0;
++	rss[2] = rss[1] = rss[0] = 0;
+ 	dst_pte = pte_alloc_map_lock(dst_mm, dst_pmd, addr, &dst_ptl);
+ 	if (!dst_pte)
+ 		return -ENOMEM;
+@@ -688,7 +693,7 @@ again:
+ 	arch_leave_lazy_mmu_mode();
+ 	spin_unlock(src_ptl);
+ 	pte_unmap_nested(orig_src_pte);
+-	add_mm_rss(dst_mm, rss[0], rss[1]);
++	add_mm_rss(dst_mm, rss[0], rss[1], rss[2]);
+ 	pte_unmap_unlock(orig_dst_pte, dst_ptl);
+ 	cond_resched();
+ 
+@@ -818,6 +823,7 @@ static unsigned long zap_pte_range(struc
+ 	spinlock_t *ptl;
+ 	int file_rss = 0;
+ 	int anon_rss = 0;
++	int swap_usage = 0;
+ 
+ 	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
+ 	arch_enter_lazy_mmu_mode();
+@@ -887,13 +893,18 @@ static unsigned long zap_pte_range(struc
+ 		if (pte_file(ptent)) {
+ 			if (unlikely(!(vma->vm_flags & VM_NONLINEAR)))
+ 				print_bad_pte(vma, addr, ptent, NULL);
+-		} else if
+-		  (unlikely(!free_swap_and_cache(pte_to_swp_entry(ptent))))
+-			print_bad_pte(vma, addr, ptent, NULL);
++		} else {
++			swp_entry_t ent = pte_to_swp_entry(ptent);
++
++			if (!is_migration_entry(ent))
++				swap_usage--;
++			if (unlikely(!free_swap_and_cache(ent)))
++				print_bad_pte(vma, addr, ptent, NULL);
++		}
+ 		pte_clear_not_present_full(mm, addr, pte, tlb->fullmm);
+ 	} while (pte++, addr += PAGE_SIZE, (addr != end && *zap_work > 0));
+ 
+-	add_mm_rss(mm, file_rss, anon_rss);
++	add_mm_rss(mm, file_rss, anon_rss, swap_usage);
+ 	arch_leave_lazy_mmu_mode();
+ 	pte_unmap_unlock(pte - 1, ptl);
+ 
+@@ -2595,6 +2606,7 @@ static int do_swap_page(struct mm_struct
+ 	 */
+ 
+ 	inc_mm_counter(mm, anon_rss);
++	dec_mm_counter(mm, swap_usage);
+ 	pte = mk_pte(page, vma->vm_page_prot);
+ 	if ((flags & FAULT_FLAG_WRITE) && reuse_swap_page(page)) {
+ 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
+Index: mmotm-2.6.32-Nov2/mm/swapfile.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/mm/swapfile.c
++++ mmotm-2.6.32-Nov2/mm/swapfile.c
+@@ -837,6 +837,7 @@ static int unuse_pte(struct vm_area_stru
+ 	}
+ 
+ 	inc_mm_counter(vma->vm_mm, anon_rss);
++	dec_mm_counter(vma->vm_mm, swap_usage);
+ 	get_page(page);
+ 	set_pte_at(vma->vm_mm, addr, pte,
+ 		   pte_mkold(mk_pte(page, vma->vm_page_prot)));
+Index: mmotm-2.6.32-Nov2/fs/proc/task_mmu.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/fs/proc/task_mmu.c
++++ mmotm-2.6.32-Nov2/fs/proc/task_mmu.c
+@@ -17,7 +17,7 @@
+ void task_mem(struct seq_file *m, struct mm_struct *mm)
+ {
+ 	unsigned long data, text, lib;
+-	unsigned long hiwater_vm, total_vm, hiwater_rss, total_rss;
++	unsigned long hiwater_vm, total_vm, hiwater_rss, total_rss, swap;
+ 
+ 	/*
+ 	 * Note: to minimize their overhead, mm maintains hiwater_vm and
+@@ -36,6 +36,7 @@ void task_mem(struct seq_file *m, struct
+ 	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
+ 	text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
+ 	lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
++	swap = get_mm_counter(mm, swap_usage);
+ 	seq_printf(m,
+ 		"VmPeak:\t%8lu kB\n"
+ 		"VmSize:\t%8lu kB\n"
+@@ -46,7 +47,8 @@ void task_mem(struct seq_file *m, struct
+ 		"VmStk:\t%8lu kB\n"
+ 		"VmExe:\t%8lu kB\n"
+ 		"VmLib:\t%8lu kB\n"
+-		"VmPTE:\t%8lu kB\n",
++		"VmPTE:\t%8lu kB\n"
++		"VmSwap:\t%8lu kB\n",
+ 		hiwater_vm << (PAGE_SHIFT-10),
+ 		(total_vm - mm->reserved_vm) << (PAGE_SHIFT-10),
+ 		mm->locked_vm << (PAGE_SHIFT-10),
+@@ -54,7 +56,8 @@ void task_mem(struct seq_file *m, struct
+ 		total_rss << (PAGE_SHIFT-10),
+ 		data << (PAGE_SHIFT-10),
+ 		mm->stack_vm << (PAGE_SHIFT-10), text, lib,
+-		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10);
++		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10,
++		swap << (PAGE_SHIFT - 10));
+ }
+ 
+ unsigned long task_vsize(struct mm_struct *mm)
+Index: mmotm-2.6.32-Nov2/mm/rmap.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/mm/rmap.c
++++ mmotm-2.6.32-Nov2/mm/rmap.c
+@@ -834,6 +834,7 @@ static int try_to_unmap_one(struct page 
+ 				spin_unlock(&mmlist_lock);
+ 			}
+ 			dec_mm_counter(mm, anon_rss);
++			inc_mm_counter(mm, swap_usage);
+ 		} else if (PAGE_MIGRATION) {
+ 			/*
+ 			 * Store the pfn of the page in a special migration
+Index: mmotm-2.6.32-Nov2/kernel/fork.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/kernel/fork.c
++++ mmotm-2.6.32-Nov2/kernel/fork.c
+@@ -454,6 +454,7 @@ static struct mm_struct * mm_init(struct
+ 	mm->nr_ptes = 0;
+ 	set_mm_counter(mm, file_rss, 0);
+ 	set_mm_counter(mm, anon_rss, 0);
++	set_mm_counter(mm, swap_usage, 0);
+ 	spin_lock_init(&mm->page_table_lock);
+ 	mm->free_area_cache = TASK_UNMAPPED_BASE;
+ 	mm->cached_hole_size = ~0UL;
+
