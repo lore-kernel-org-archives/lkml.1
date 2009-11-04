@@ -1,69 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933056AbZKDV6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbZKDV7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933056AbZKDV6I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 16:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933049AbZKDV6G
+	id S933026AbZKDV7o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 16:59:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758197AbZKDV7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 16:58:06 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:20181 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933042AbZKDV6D (ORCPT
+	Wed, 4 Nov 2009 16:59:43 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:53209 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758183AbZKDV7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 16:58:03 -0500
-Date: Wed, 4 Nov 2009 13:57:33 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] edac: fix i7core build
-Message-Id: <20091104135733.cb878718.randy.dunlap@oracle.com>
-In-Reply-To: <20091104170931.4aa51b77.sfr@canb.auug.org.au>
-References: <20091104170931.4aa51b77.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4AF1F8DB.00A3:SCFMA4539814,ss=1,fgs=0
+	Wed, 4 Nov 2009 16:59:42 -0500
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
+       Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+References: <m13a4vbz8r.fsf@fess.ebiederm.org>
+	<1257249429-12384-12-git-send-email-ebiederm@xmission.com>
+	<20091104214938.GA21033@us.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 04 Nov 2009 13:59:36 -0800
+In-Reply-To: <20091104214938.GA21033@us.ibm.com> (Serge E. Hallyn's message of "Wed\, 4 Nov 2009 15\:49\:38 -0600")
+Message-ID: <m13a4ux86v.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Serge E. Hallyn" <serue@us.ibm.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 12/13] sysfs: Propagate renames to the vfs on demand
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+"Serge E. Hallyn" <serue@us.ibm.com> writes:
 
-Fix build warning (missing header file) and
-build error when CONFIG_SMP=n.
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
+>> From: Eric W. Biederman <ebiederm@xmission.com>
+>> 
+>> By teaching sysfs_revalidate to hide a dentry for
+>> a sysfs_dirent if the sysfs_dirent has been renamed,
+>> and by teaching sysfs_lookup to return the original
+>> dentry if the sysfs dirent has been renamed.  I can
+>> show the results of renames correctly without having to
+>> update the dcache during the directory rename.
+>> 
+>> This massively simplifies the rename logic allowing a lot
+>> of weird sysfs special cases to be removed along with
+>> a lot of now unnecesary helper code.
+>> 
+>> Acked-by: Tejun Heo <tj@kernel.org>
+>> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+>
+> Patch looks *great*, except:
+>
+> ...
+>
+>> @@ -315,6 +274,14 @@ static int sysfs_dentry_revalidate(struct dentry *dentry, struct nameidata *nd)
+>>  	if (sd->s_flags & SYSFS_FLAG_REMOVED)
+>>  		goto out_bad;
+>> 
+>> +	/* The sysfs dirent has been moved? */
+>> +	if (dentry->d_parent->d_fsdata != sd->s_parent)
+>> +		goto out_bad;
+>> +
+>> +	/* The sysfs dirent has been renamed */
+>> +	if (strcmp(dentry->d_name.name, sd->s_name) != 0)
+>> +		goto out_bad;
+>> +
+>>  	mutex_unlock(&sysfs_mutex);
+>>  out_valid:
+>>  	return 1;
+>> @@ -322,6 +289,12 @@ out_bad:
+>>  	/* Remove the dentry from the dcache hashes.
+>>  	 * If this is a deleted dentry we use d_drop instead of d_delete
+>>  	 * so sysfs doesn't need to cope with negative dentries.
+>> +	 *
+>> +	 * If this is a dentry that has simply been renamed we
+>> +	 * use d_drop to remove it from the dcache lookup on its
+>> +	 * old parent.  If this dentry persists later when a lookup
+>> +	 * is performed at its new name the dentry will be readded
+>> +	 * to the dcache hashes.
+>>  	 */
+>>  	is_dir = (sysfs_type(sd) == SYSFS_DIR);
+>>  	mutex_unlock(&sysfs_mutex);
+>
+> After this, if (is_dir) and (have_submounts(dentry)) then you'll
+> still goto out_valid and return 1.  Is that what you want?
 
-drivers/edac/i7core_edac.c:860: error: implicit declaration of function 'msleep'
-drivers/edac/i7core_edac.c:1700: error: 'struct cpuinfo_x86' has no member named 'phys_proc_id'
+It isn't what I want but it is what the VFS requires.  If let the vfs
+continue on it's delusional state we will leak the vfs mount and
+everything mounted on top of it, with no way to remove the mounts.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
----
- drivers/edac/i7core_edac.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- linux-next-20091104.orig/drivers/edac/i7core_edac.c
-+++ linux-next-20091104/drivers/edac/i7core_edac.c
-@@ -25,6 +25,7 @@
- #include <linux/pci.h>
- #include <linux/pci_ids.h>
- #include <linux/slab.h>
-+#include <linux/delay.h>
- #include <linux/edac.h>
- #include <linux/mmzone.h>
- #include <linux/edac_mce.h>
-@@ -1696,9 +1697,11 @@ static int i7core_mce_check_error(void *
- 	if (mce->bank != 8)
- 		return 0;
- 
-+#ifdef CONFIG_SMP
- 	/* Only handle if it is the right mc controller */
- 	if (cpu_data(mce->cpu).phys_proc_id != pvt->i7core_dev->socket)
- 		return 0;
-+#endif
- 
- 	smp_rmb();
- 	if ((pvt->mce_out + 1) % MCE_LOG_LEN == pvt->mce_in) {
+Eric
