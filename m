@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZKDQed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbZKDQfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757254AbZKDQed (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 11:34:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbZKDQec
+	id S1757266AbZKDQfH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 11:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757199AbZKDQfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 11:34:32 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38428 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757015AbZKDQec (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 11:34:32 -0500
-Date: Wed, 4 Nov 2009 16:36:11 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH -2nd repost 1/1] ATA: pata_via, fix double put on isa
- bridge
-Message-ID: <20091104163611.4e71f01d@lxorguk.ukuu.org.uk>
-In-Reply-To: <1257351063-5616-1-git-send-email-jirislaby@gmail.com>
-References: <1257351063-5616-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 11:35:05 -0500
+Received: from mga09.intel.com ([134.134.136.24]:53765 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756941AbZKDQfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 11:35:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,680,1249282800"; 
+   d="scan'208";a="464302242"
+Date: Wed, 4 Nov 2009 17:36:56 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Peter Ujfalusi <peter.ujfalusi@nokia.com>, alsa-devel@alsa-project.org,
+       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tony@atomide.com
+Subject: Re: [PATCH 0/4 v2] ASoC/MFD/OMAP: TWL4030: APLL_CTL handling change
+Message-ID: <20091104163655.GG3607@sortiz.org>
+References: <1257321500-27049-1-git-send-email-peter.ujfalusi@nokia.com>
+ <20091104102040.GA25922@rakim.wolfsonmicro.main>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104102040.GA25922@rakim.wolfsonmicro.main>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  4 Nov 2009 17:11:03 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
+Hi Mark,
 
-> In via_init_one, when via_isa_bridges iterator reaches
-> PCI_DEVICE_ID_VIA_ANON and last but one via_isa_bridges bridge is
-> found but rev doesn't match, pci_dev_put(isa) is called twice.
+On Wed, Nov 04, 2009 at 10:20:41AM +0000, Mark Brown wrote:
+> On Wed, Nov 04, 2009 at 09:58:16AM +0200, Peter Ujfalusi wrote:
 > 
-> Do pci_dev_put only once.
+> > The following series changes the way how the APLL_CTL register is handled by
+> > the twl4030 codec related drivers.
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Jeff Garzik <jgarzik@pobox.com>
+> I'm OK with this but I'll wait for acks from Tony and Samuel before
+> applying.
+You can add my Acked-by: Samuel Ortiz <sameo@linux.intel.com> to the 2 MFD
+patches. Peter: thanks for the patches, and Mark: thanks for taking them :)
 
-Acked-by: Alan Cox <alan@linux.intel.com>
+Cheers,
+Samuel.
 
-Definitely a far saner way to do it.
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
