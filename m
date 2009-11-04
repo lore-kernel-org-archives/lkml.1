@@ -1,102 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZKDC0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZKDC0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbZKDC0Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 21:26:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZKDC0Q
+	id S1754189AbZKDC0j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 21:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbZKDC0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 21:26:16 -0500
-Received: from mga02.intel.com ([134.134.136.20]:17302 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751707AbZKDC0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 21:26:15 -0500
-X-ExtLoop1: 1
-Subject: Re: [tip:x86/apic] x86: Use EOI register in io-apic on intel
- platforms
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "garyhade@us.ibm.com" <garyhade@us.ibm.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "Sankaran, Rajesh" <rajesh.sankaran@intel.com>
-In-Reply-To: <alpine.LFD.2.00.0911040038460.9725@eddie.linux-mips.org>
-References: <20091026230001.947855317@sbs-t61.sc.intel.com>
-	 <tip-b3ec0a37a7907813bb4fb85a2d94102c152470b7@git.kernel.org>
-	 <alpine.LFD.2.00.0911040038460.9725@eddie.linux-mips.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 03 Nov 2009 18:24:50 -0800
-Message-Id: <1257301490.2668.280.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Nov 2009 21:26:38 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:46153 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754014AbZKDC0h convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 21:26:37 -0500
+MIME-Version: 1.0
+In-Reply-To: <1257300186.26028.3817.camel@gandalf.stny.rr.com>
+References: <4AF030EE.7050609@monstr.eu>
+	 <1257266154.31359.14.camel@localhost.localdomain>
+	 <4AF05E0C.5090305@monstr.eu>
+	 <1257269575.26028.3355.camel@gandalf.stny.rr.com>
+	 <4AF0725C.1050106@monstr.eu>
+	 <1257300186.26028.3817.camel@gandalf.stny.rr.com>
+Date: Wed, 4 Nov 2009 12:26:42 +1000
+Message-ID: <1d3f23370911031826u1a601db1jab678030eafd200e@mail.gmail.com>
+Subject: Re: Ftrace for Microblaze - notrace
+From: John Williams <john.williams@petalogix.com>
+To: rostedt@goodmis.org
+Cc: monstr@monstr.eu, Steven Rostedt <srostedt@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-03 at 16:53 -0800, Maciej W. Rozycki wrote:
-> On Mon, 2 Nov 2009, tip-bot for Suresh Siddha wrote:
-> 
-> > Commit-ID:  b3ec0a37a7907813bb4fb85a2d94102c152470b7
-> > Gitweb:     http://git.kernel.org/tip/b3ec0a37a7907813bb4fb85a2d94102c152470b7
-> > Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-> > AuthorDate: Mon, 26 Oct 2009 14:24:35 -0800
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Mon, 2 Nov 2009 15:56:36 +0100
-> > 
-> > x86: Use EOI register in io-apic on intel platforms
-> > 
-> > IO-APIC's in intel chipsets support EOI register starting from
-> > IO-APIC version 2. Use that when ever we need to clear the
-> > IO-APIC RTE's RemoteIRR bit explicitly.
-> > 
-> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> > Acked-by: Gary Hade <garyhade@us.ibm.com>
-> > Cc: Eric W. Biederman <ebiederm@xmission.com>
-> > LKML-Reference: <20091026230001.947855317@sbs-t61.sc.intel.com>
-> > [ Marked use_eio_reg as __read_mostly, fixed small details ]
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> [...]
-> > +static int ioapic_supports_eoi(void)
-> > +{
-> > +	struct pci_dev *root;
-> > +
-> > +	root = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
-> > +	if (root && root->vendor == PCI_VENDOR_ID_INTEL &&
-> > +	    mp_ioapics[0].apicver >= 0x2) {
-> > +		use_eoi_reg = 1;
-> > +		printk(KERN_INFO "IO-APIC supports EOI register\n");
-> > +	} else
-> > +		printk(KERN_INFO "IO-APIC doesn't support EOI\n");
-> > +
-> > +	return 0;
-> > +}
-> 
->  This is wrong -- the 82093AA I/O APIC has its version set to 0x11 and it 
-> does not support the EOI register.  Similarly I/O APICs integrated into 
-> the 82379AB south bridge and the 82374EB/SB EISA component.
+>>  From my test I don't understand MCOUNT_INSN_SIZE - and which function
+>> doesn't care about. There is this line of pseudocode in your doc
+>> (unsigned long selfpc = <return address> - MCOUNT_INSN_SIZE;) but what
+>> the reason is to do that. If I understand correct selfpc and frompc just
+>> give addresses which functions called that mcount and has impact to log.
+>> I mean that if that address is not proper begin of function is found
+>> (not sure if the code do it or not) function name (and function) which
+>> contain that address. Or is there any special reason why to substract
+>> that MCOUNT_INSN_SIZE - for timing or anything like that?
+>
+> The passed in address to mcount is really the return address and not the
+> caller to mcount. We want the actual address to the mcount caller. To
+> get that we must subtract size of the call to mcount from the address
+> passed in.
 
-Maciej, There might be some confusion (mostly on my side). When I looked
-at ICH2 spec http://www.intel.com/assets/pdf/datasheet/290687.pdf it
-says it has an EOI register and it is version 2.
+Is it critical that mcount calculate and use the exact entry point of
+the calling function, or just that it be consistent and be located
+"inside" the caller's footprint?  If so, MCOUNT_INSN_SIZE would be
+superfluous?...
 
-All I heard internally was we have it from version 2 and it works (our
-experiments on ICH4 etc worked).
+MicroBlaze gcc currently inserts the mcount call after the function
+prologue, and the prologue will differ in length depending upon how
+much stack and register shuffling is required for that function.  So,
+a single constant cannot correctly describe the offset of the mcount
+call site to the function's true entry point.
 
-But I do agree that I overlooked the version 11h of 82093AA (which is
-older than ICH2).
+Or, perhaps the entry point is defined as "the first opcode after the
+prologue", in which case MCOUNT_INSN_SIZE can just be the size of the
+"bralid r15, _mcount; nop" sequence that we are generating (ie 8
+bytes).
 
-> Overall values below 0x10 are reserved for the 82489DX
+There is a simple GCC #define that will force the mcount branch before
+the prologue, but that makes things a little trickier because our
+mcount hook must take care of saving away the branch link register.
+If we call after the prologue, gcc has already done that for us.
 
-This is for local apic right?
+Thanks,
 
->  -- are you sure 
-> you didn't mean 0x12 or 0x20?
-
-Let me check tomorrow and see where the confusion is.
-
-thanks for looking at this.
-
+John
+-- 
+John Williams
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
