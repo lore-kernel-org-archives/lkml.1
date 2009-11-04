@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932790AbZKDWAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbZKDWAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932790AbZKDWAQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 17:00:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932675AbZKDWAP
+	id S932838AbZKDWAd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 17:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932638AbZKDWAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 17:00:15 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:37649 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932607AbZKDWAN (ORCPT
+	Wed, 4 Nov 2009 17:00:32 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43490 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932791AbZKDWA1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 17:00:13 -0500
-Date: Wed, 4 Nov 2009 17:00:03 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Harald Arnesen <harald@skogtun.org>,
-       Fabio Comolli <fabio.comolli@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>,
-       Len Brown <len.brown@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #14372] ath5k wireless not working after rfkill [BISECTED]
-Message-ID: <20091104220002.GH10786@tuxdriver.com>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.xRH.vre5KB@chimera> <b637ec0b0910261315u43033948ge041cf70292bfa58@mail.gmail.com> <87aazddvft.fsf@basilikum.skogtun.org> <20091104200714.GA24699@sucs.org>
+	Wed, 4 Nov 2009 17:00:27 -0500
+Date: Wed, 4 Nov 2009 23:00:25 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-next-2.6 2009-10-28
+Message-ID: <20091104220024.GC27325@elf.ucw.cz>
+References: <1256886023.3555.5.camel@johannes.local>
+ <20091102211629.GA1322@ucw.cz>
+ <alpine.LRH.2.00.0911041403480.31913@twin.jikos.cz>
+ <200911042217.49144.IvDoorn@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091104200714.GA24699@sucs.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200911042217.49144.IvDoorn@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 08:07:14PM +0000, Sitsofe Wheeler wrote:
-> On Tue, Oct 27, 2009 at 10:42:46AM +0100, Harald Arnesen wrote:
-> > Fabio Comolli <fabio.comolli@gmail.com> writes:
-> > 
-> > > Still present in -rc5
+> > But yes, he got flamed for this for some odd reason. I got the impression 
+> > that the community around rt2x00 doesn't like (or understand) the way how 
+> > opensource development happens.
 > 
-> Help. I've just bisected this down to the same commit
-> b56ab33d68638e6aafdbfc694025e8354a628f49 (that will teach me for not
-> reading the whole thread) as I have the same problem on my EeePC 900.
-> 
-> Still present in -rc6 and the latest git.
+> Well you mean the open source development where non-contributors
+> complain that the contributors work too slowly? 
 
-Thank you for taking the time to bisect this!
+This was the case when non-contributor complained that patch adds
+2KLoC of unneccessary code.
 
-I move that we revert it.  It appears to be a work-around for a staging
-driver that causes problems for a non-staging one...
+> Perhaps
+> that is the policy in some companies which try to import it into the
+> Open Source world...
 
-John
+Do you really have to attack everyone around?
+									Pavel
 -- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
