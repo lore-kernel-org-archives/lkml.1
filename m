@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbZKDXLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932801AbZKDWh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbZKDXLM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 18:11:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933060AbZKDXLL
+	id S932801AbZKDWh3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 17:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758363AbZKDWh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 18:11:11 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:33508 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932775AbZKDXLK (ORCPT
+	Wed, 4 Nov 2009 17:37:28 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:49291 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758360AbZKDWh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 18:11:10 -0500
-Date: Wed, 04 Nov 2009 22:35:11 +0000
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, Harald Arnesen <harald@skogtun.org>,
-       Fabio Comolli <fabio.comolli@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #14372] ath5k wireless not working after rfkill [BISECTED]
-Message-ID: <50BA90468C%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <20091104220002.GH10786@tuxdriver.com>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> 
- <6dRYo8ss7vL.A.xRH.vre5KB@chimera> 
- <b637ec0b0910261315u43033948ge041cf70292bfa58@mail.gmail.com> 
- <87aazddvft.fsf@basilikum.skogtun.org> <20091104200714.GA24699@sucs.org> 
- <20091104220002.GH10786@tuxdriver.com>
-Mail-Followup-To: "John W. Linville" <linville@tuxdriver.com>, Sitsofe Wheeler 
- <sitsofe@yahoo.com>, Harald Arnesen <harald@skogtun.org>, Fabio Comolli 
- <fabio.comolli@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux Kernel 
- Mailing List <linux-kernel@vger.kernel.org>, Kernel Testers List 
- <kernel-testers@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linus 
- Torvalds <torvalds@linux-foundation.org>, Darren Salt 
- <linux@youmustbejoking.demon.co.uk>
-User-Agent: Messenger-Pro/2.60.0.3101 (Qt/4.5.3) (Linux-x86_64)
-X-NuLabour-Date: Wed, 9105 Dec 1984 22:35:11 +0000
+	Wed, 4 Nov 2009 17:37:27 -0500
+Date: Wed, 4 Nov 2009 16:37:28 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
+       Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 13/13] sysfs: Factor out sysfs_rename from
+	sysfs_rename_dir and sysfs_move_dir
+Message-ID: <20091104223728.GA23322@us.ibm.com>
+References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-13-git-send-email-ebiederm@xmission.com> <20091104221957.GB21033@us.ibm.com> <m1my32vsi1.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <m1my32vsi1.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I demand that John W. Linville may or may not have written...
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> 
+> > Quoting Eric W. Biederman (ebiederm@xmission.com):
+> >> From: Eric W. Biederman <ebiederm@xmission.com>
+> >> 
+> >> These two functions do 90% of the same work and it doesn't significantly
+> >> obfuscate the function to allow both the parent dir and the name to change
+> >> at the same time.  So merge them together to simplify maintenance, and
+> >> increase testing.
+> >> 
+> >> Acked-by: Tejun Heo <tj@kernel.org>
+> >> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> >
+> > Based on just this patchset it seems sysfs_rename() could be static,
+> > but since it isn't static I assume your later patchset will use it
+> > outside fs/sysfs/dir.c?
+> 
+> To implement sysfs_rename_link, but that is too much to digest/review/push
+> all at once.
 
-> On Wed, Nov 04, 2009 at 08:07:14PM +0000, Sitsofe Wheeler wrote:
->> On Tue, Oct 27, 2009 at 10:42:46AM +0100, Harald Arnesen wrote:
->>> Fabio Comolli <fabio.comolli@gmail.com> writes:
->>>> Still present in -rc5
->> Help. I've just bisected this down to the same commit
->> b56ab33d68638e6aafdbfc694025e8354a628f49 (that will teach me for not
->> reading the whole thread) as I have the same problem on my EeePC 900.
->> Still present in -rc6 and the latest git.
+Ok, just making sure it'll get used.
 
-> Thank you for taking the time to bisect this!
+To repeat myself,
 
-> I move that we revert it.  It appears to be a work-around for a staging
-> driver that causes problems for a non-staging one...
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Already in hand: a reversion patch was sent by Corentin Chary, and I have
-mail from Len Brown saying that it has been applied. (The correct fix is
-present in -rc5 and -rc6, so once this reversion is out of the way, I see no
-reason not to close bug 13390.)
+> I have a snapshot of my development tree up on kernel.org if you are
+> interested.
 
--- 
-| Darren Salt            | linux at youmustbejoking | nr. Ashington, | Doon
-| using Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
-|   <URL:http://www.youmustbejoking.demon.co.uk/> (PGP 2.6, GPG keys)
+I think this was an appropriately sized set :)  Might take a look this
+weekend though.
 
-About all some men accomplish in life is to send a son to Oxbridge.
+thanks,
+-serge
