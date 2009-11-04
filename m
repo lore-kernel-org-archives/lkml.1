@@ -1,117 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZKDMBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZKDMAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbZKDMBP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 07:01:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbZKDMBP
+	id S1755611AbZKDMAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 07:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZKDMAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 07:01:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28047 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755601AbZKDMBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 07:01:14 -0500
-Date: Wed, 4 Nov 2009 13:57:29 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com
-Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091104115729.GD8398@redhat.com>
-References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <4AF0708B.4020406@gmail.com> <4AF07199.2020601@gmail.com> <4AF072EE.9020202@gmail.com> <20091103235744.GF6726@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 4 Nov 2009 07:00:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47142 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755451AbZKDMAO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 07:00:14 -0500
+Date: Wed, 4 Nov 2009 13:00:19 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Americo Wang <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH] update fix X86_64 procfs provide stack information for threads
+Message-ID: <20091104120019.GK31511@one.firstfloor.org>
+References: <1257233486.22553.6.camel@wall-e> <874opaa68v.fsf@basil.nowhere.org> <1257335404.2123.29.camel@wall-e>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091103235744.GF6726@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1257335404.2123.29.camel@wall-e>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 03, 2009 at 03:57:44PM -0800, Paul E. McKenney wrote:
-> On Tue, Nov 03, 2009 at 01:14:06PM -0500, Gregory Haskins wrote:
-> > Gregory Haskins wrote:
-> > > Eric Dumazet wrote:
-> > >> Michael S. Tsirkin a écrit :
-> > >>> +static void handle_tx(struct vhost_net *net)
-> > >>> +{
-> > >>> +	struct vhost_virtqueue *vq = &net->dev.vqs[VHOST_NET_VQ_TX];
-> > >>> +	unsigned head, out, in, s;
-> > >>> +	struct msghdr msg = {
-> > >>> +		.msg_name = NULL,
-> > >>> +		.msg_namelen = 0,
-> > >>> +		.msg_control = NULL,
-> > >>> +		.msg_controllen = 0,
-> > >>> +		.msg_iov = vq->iov,
-> > >>> +		.msg_flags = MSG_DONTWAIT,
-> > >>> +	};
-> > >>> +	size_t len, total_len = 0;
-> > >>> +	int err, wmem;
-> > >>> +	size_t hdr_size;
-> > >>> +	struct socket *sock = rcu_dereference(vq->private_data);
-> > >>> +	if (!sock)
-> > >>> +		return;
-> > >>> +
-> > >>> +	wmem = atomic_read(&sock->sk->sk_wmem_alloc);
-> > >>> +	if (wmem >= sock->sk->sk_sndbuf)
-> > >>> +		return;
-> > >>> +
-> > >>> +	use_mm(net->dev.mm);
-> > >>> +	mutex_lock(&vq->mutex);
-> > >>> +	vhost_no_notify(vq);
-> > >>> +
-> > >> using rcu_dereference() and mutex_lock() at the same time seems wrong, I suspect
-> > >> that your use of RCU is not correct.
-> > >>
-> > >> 1) rcu_dereference() should be done inside a read_rcu_lock() section, and
-> > >>    we are not allowed to sleep in such a section.
-> > >>    (Quoting Documentation/RCU/whatisRCU.txt :
-> > >>      It is illegal to block while in an RCU read-side critical section, )
-> > >>
-> > >> 2) mutex_lock() can sleep (ie block)
-> > >>
-> > > 
-> > > 
-> > > Michael,
-> > >   I warned you that this needed better documentation ;)
-> > > 
-> > > Eric,
-> > >   I think I flagged this once before, but Michael convinced me that it
-> > > was indeed "ok", if but perhaps a bit unconventional.  I will try to
-> > > find the thread.
-> > > 
-> > > Kind Regards,
-> > > -Greg
-> > > 
-> > 
-> > Here it is:
-> > 
-> > http://lkml.org/lkml/2009/8/12/173
-> 
-> What was happening in that case was that the rcu_dereference()
-> was being used in a workqueue item.  The role of rcu_read_lock()
-> was taken on be the start of execution of the workqueue item, of
-> rcu_read_unlock() by the end of execution of the workqueue item, and
-> of synchronize_rcu() by flush_workqueue().  This does work, at least
-> assuming that flush_workqueue() operates as advertised, which it appears
-> to at first glance.
-> 
-> The above code looks somewhat different, however -- I don't see
-> handle_tx() being executed in the context of a work queue.  Instead
-> it appears to be in an interrupt handler.
-> So what is the story?  Using synchronize_irq() or some such?
-> 
-> 							Thanx, Paul
+> This is true, but i think it is better to get an outdated value than a
+> complete wrong value like -1.
 
-No, there has been no change (I won't be able to use a mutex in an
-interrupt handler, will I?).  handle_tx is still called in the context
-of a work queue: either from handle_tx_kick or from handle_tx_net which
-are work queue items.
+-1 means "I don't know".  I don't think "completely wrong" 
+is the correct term to describe that.
 
-Can you ack this usage please?
+> The truth is that KSTK_ESP always return an outdated value on a multi
+> core system if the process never do a system call.
+
+I think not supporting updates on interrupts at least is very poor.
+Unfortunately there's no good way fast path way to detect this I know of
+(that is why I originally added -1 here)
+
+> Question: is task_pt_regs(task)->sp set in 64 bit mode when the process
+> is blocked in an interrupt? If true, we can add two additional assembly
+> instruction to the system call handler and store the stack pointer into
+> this. Than KSTK_ESP wil be again a simple macro like
+
+You want to add instructions to one of the hottest kernel paths
+for this hyper-obscure application?  Bad idea.
+
+> The drawback is that this will cost a litte bit performance for a litte
+> bit more accuracy.
+
+As far as I can figure out this whole proc hack is never accurate
+anyways, because it can report arbitarily outdated (or completely bogus
+if the process never did any system calls/interrupts) information.
+
+My recommendation would be to just deprecate this proc field
+and if anyone really wants that information they can use
+a trivial ptrace() based user program.
+
+-Andi
 
 -- 
-MST
+ak@linux.intel.com -- Speaking for myself only.
