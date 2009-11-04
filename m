@@ -1,81 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbZKDAz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZKDBGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752880AbZKDAz4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 19:55:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbZKDAz4
+	id S1753024AbZKDBGK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 20:06:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZKDBGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 19:55:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:39291 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750751AbZKDAzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 19:55:55 -0500
-Subject: Re: [PATCH 10/10] send events using read
-From: Eric Paris <eparis@redhat.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, linus-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, hch@infradead.org, agruen@suse.de,
-       vegard.nossum@gmail.com
-In-Reply-To: <20091103165947.35bd78d7@bike.lwn.net>
-References: <20091031184721.17244.16465.stgit@paris.rdu.redhat.com>
-	 <20091031184819.17244.55795.stgit@paris.rdu.redhat.com>
-	 <20091103165947.35bd78d7@bike.lwn.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 03 Nov 2009 19:55:48 -0500
-Message-Id: <1257296148.2891.223.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+	Tue, 3 Nov 2009 20:06:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54927 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbZKDBGI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 20:06:08 -0500
+Message-ID: <4AF0D1D4.7090907@zytor.com>
+Date: Tue, 03 Nov 2009 16:59:00 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Huang Ying <ying.huang@intel.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       Daniel Walker <dwalker@fifo99.com>
+Subject: Re: [PATCH -v4] crypto: Add PCLMULQDQ accelerated GHASH	implementation
+References: <1253064946.15717.372.camel@yhuang-dev.sh.intel.com> <20091019025332.GA26624@gondor.apana.org.au> <20091031173015.69e8e9f8.akpm@linux-foundation.org> <20091101175043.GA25257@gondor.apana.org.au> <20091102075039.GA15942@elte.hu> <20091102142824.GA31981@gondor.apana.org.au> <20091102143258.GA23776@elte.hu> <1257227236.30470.1192.camel@yhuang-dev.sh.intel.com> <20091103090322.GA11988@elte.hu>
+In-Reply-To: <20091103090322.GA11988@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-03 at 16:59 -0700, Jonathan Corbet wrote:
-> Hi, Eric,
+On 11/03/2009 01:03 AM, Ingo Molnar wrote:
+>>
+>> .macro xmm_num opd xmm
+>> .ifc \xmm,%xmm0
+>> \opd = 0
+>> .endif
+>> .ifc \xmm,%xmm1
+>> \opd = 1
+>> .endif
+>> .ifc \xmm,%xmm2
+>> \opd = 2
+>> .endif
+>> .ifc \xmm,%xmm3
+>> \opd = 3
+>> .endif
+>> .ifc \xmm,%xmm4
+>> \opd = 4
+>> .endif
+>> .ifc \xmm,%xmm5
+>> \opd = 5
+>> .endif
+>> .ifc \xmm,%xmm6
+>> \opd = 6
+>> .endif
+>> .ifc \xmm,%xmm7
+>> \opd = 7
+>> .endif
+>> .ifc \xmm,%xmm8
+>> \opd = 8
+>> .endif
+>> .ifc \xmm,%xmm9
+>> \opd = 9
+>> .endif
+>> .ifc \xmm,%xmm10
+>> \opd = 10
+>> .endif
+>> .ifc \xmm,%xmm11
+>> \opd = 11
+>> .endif
+>> .ifc \xmm,%xmm12
+>> \opd = 12
+>> .endif
+>> .ifc \xmm,%xmm13
+>> \opd = 13
+>> .endif
+>> .ifc \xmm,%xmm14
+>> \opd = 14
+>> .endif
+>> .ifc \xmm,%xmm15
+>> \opd = 15
+>> .endif
+>> .endm
+>>
+>> .macro PSHUFB_XMM xmm1 xmm2
+>> xmm_num pshufb_opd1 \xmm1
+>> xmm_num pshufb_opd2 \xmm2
+>> .if (pshufb_opd1 < 8) && (pshufb_opd2 < 8)
+>> .byte 0x66, 0x0f, 0x38, 0x00, 0xc0 | pshufb_opd1 | (pshufb_opd2<<3)
+>> .elseif (pshufb_opd1 >= 8) && (pshufb_opd2 < 8)
+>> .byte 0x66, 0x41, 0x0f, 0x38, 0x00, 0xc0 | (pshufb_opd1-8) | (pshufb_opd2<<3)
+>> .elseif (pshufb_opd1 < 8) && (pshufb_opd2 >= 8)
+>> .byte 0x66, 0x44, 0x0f, 0x38, 0x00, 0xc0 | pshufb_opd1 | ((pshufb_opd2-8)<<3)
+>> .else
+>> .byte 0x66, 0x45, 0x0f, 0x38, 0x00, 0xc0 | (pshufb_opd1-8) | ((pshufb_opd2-8)<<3)
+>> .endif
+>> .endm
 > 
-> This is not a full review, but I did notice a problem as I was trying to
-> figure out the new API...
-
-This is a rip off of inotify which was introduced in commit 3632dee2f8b
-from Vegard Nossum back in January.  I can't seem to find any discussion
-of this before it went into Linus' tree, so if someone knows how this
-patch got to Linus and what was said about it, I'd like to know.  Thanks
-for unwittingly finding and inotify bug!
-
-I looked back over it and it looks to me like it will work although
-there may be a race like situation if there are multiple things trying
-to read events.  I can see how with perfect timing and precision Task A
-might try to get the mutex and it is being held by task B.  Task B drops
-the mutex and Task A gets it, this causes Task A to be TASK_RUNNABLE.
-Lets assume Task B runs back around the loop and tries to get it while
-Task A still holds it.  Task A will drop the mutex and Task B gets it,
-now B is runnable.  Repeat until infinity with perfect timing!  It's not
-really a live-lock, if either of them ever gets the mutex uncontested or
-if an event ever arrives they are going to sleep and/or break the cycle.
-
-Certainly I'll take a look at it.
-
-> > +static ssize_t fanotify_read(struct file *file, char __user *buf,
-> > +			     size_t count, loff_t *pos)
-> > +{
-> > +	struct fsnotify_group *group;
-> > +	struct fsnotify_event *kevent;
-> > +	char __user *start;
-> > +	int ret;
-> > +	DEFINE_WAIT(wait);
-> > +
-> > +	start = buf;
-> > +	group = file->private_data;
-> > +
-> > +	pr_debug("%s: group=%p\n", __func__, group);
-> > +
-> > +	while (1) {
-> > +		prepare_to_wait(&group->notification_waitq, &wait, TASK_INTERRUPTIBLE);
-> > +
-> > +		mutex_lock(&group->notification_mutex);
-> > +		kevent = get_one_event(group, count);
-> > +		mutex_unlock(&group->notification_mutex);
+> Looks far too clever, i like it :-) We have quite a few assembly macros 
+> in arch/x86/include/asm/. The above one could be put into calling.h for 
+> example.
 > 
-> prepare_to_wait(), among other things, sets the task state.  But then you
-> go into various sleeping calls (mutex_lock(), for starters); that will undo
-> what prepare_to_wait has done.  You'll be back in TASK_RUNNING at this
-> point, so you'll never sleep.
+
+I would really like to see something like that, with only one minor
+tweak: please use submacros to generate the REX and MODRM bytes, since
+we are *guaranteed* to want to do the same thing again.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
