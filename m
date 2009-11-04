@@ -1,108 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbZKDP2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbZKDP3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbZKDP2Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbZKDP2P
+	id S1756426AbZKDP3B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:29:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZKDP3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:28:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57472 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756392AbZKDP2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:28:13 -0500
-Date: Wed, 4 Nov 2009 15:27:06 GMT
-From: tip-bot for Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       stefani@seibold.net, viro@zeniv.linux.org.uk, xiyou.wangcong@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       adobriyan@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       stefani@seibold.net, viro@zeniv.linux.org.uk, xiyou.wangcong@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, adobriyan@gmail.com,
-       mingo@elte.hu
-In-Reply-To: <1257240160.4889.24.camel@wall-e>
-References: <1257240160.4889.24.camel@wall-e>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, fs: Fix x86 procfs stack information for threads on 64-bit
-Message-ID: <tip-89240ba059ca468ae7a8346edf7f95082458c2fc@git.kernel.org>
-Git-Commit-ID: 89240ba059ca468ae7a8346edf7f95082458c2fc
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Wed, 4 Nov 2009 10:29:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36137 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751187AbZKDP27 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 10:28:59 -0500
+Date: Wed, 4 Nov 2009 07:28:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Justin Mattock <justinmattock@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gcc@gcc.gnu.org, David Rientjes <rientjes@cs.washington.edu>
+Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0,
+ oom_adj=0
+Message-Id: <20091104072826.8b2dfb73.akpm@linux-foundation.org>
+In-Reply-To: <20091104182238.54CB.A69D9226@jp.fujitsu.com>
+References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com>
+	<20091103222432.4a94bd8f.akpm@linux-foundation.org>
+	<20091104182238.54CB.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  89240ba059ca468ae7a8346edf7f95082458c2fc
-Gitweb:     http://git.kernel.org/tip/89240ba059ca468ae7a8346edf7f95082458c2fc
-Author:     Stefani Seibold <stefani@seibold.net>
-AuthorDate: Tue, 3 Nov 2009 10:22:40 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 4 Nov 2009 13:25:03 +0100
+On Wed,  4 Nov 2009 18:32:16 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-x86, fs: Fix x86 procfs stack information for threads on 64-bit
+> > It would help if the oom-killer were to print some information about
+> > the oom-killed process's memory footprint.
+> > 
+> 
+> 
+> How about this?
 
-This patch fixes two issues in the procfs stack information on
-x86-64 linux.
+looks good, thanks.
 
-The 32 bit loader compat_do_execve did not store stack
-start. (this was figured out by Alexey Dobriyan).
+> ========
+> Subject: [PATCH] oom: show vsz and rss information of the killed process
+> 
+> In typical oom anylysis scenario, we frequently want to know the killed
+> process has memory leak or not at first step.
+> This patch add vsz and rss information to oom log for helping its
+> analysis. It save much times of debugging guys.
+> 
+> example:
+> ===================================================================
+> rsyslogd invoked oom-killer: gfp_mask=0x201da, order=0, oom_adj=0
+> Pid: 1308, comm: rsyslogd Not tainted 2.6.32-rc6 #24
+> Call Trace:
+> [<ffffffff8132e35b>] ?_spin_unlock+0x2b/0x40
+> [<ffffffff810f186e>] oom_kill_process+0xbe/0x2b0
+> 
+> (snip)
+> 
+> 492283 pages non-shared
+> Out of memory: kill process 2341 (memhog) score 527276 or a child
+> Killed process 2341 (memhog) vsz:1054552kB, anon-rss:970588kB, file-rss:4kB
+> ===========================================================================
+>                              ^
+>                              |
+>                             here
+> ...
+>
+> +	if (verbose) {
+> +		task_lock(p);
 
-The stack information on a x64_64 kernel always shows 0 kbyte
-stack usage, because of a missing implementation of the KSTK_ESP
-macro which always returned -1.
+We need to be careful with which locks we take on the oom-killer path,
+because it can be called by code which already holds locks.  But I
+expect task_lock() will be OK.
 
-The new implementation now returns the right value.
+> +		printk(KERN_ERR "Killed process %d (%s) "
+> +		       "vsz:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
+> +		       task_pid_nr(p), p->comm,
+> +		       K(p->mm->total_vm),
+> +		       K(get_mm_counter(p->mm, anon_rss)),
+> +		       K(get_mm_counter(p->mm, file_rss)));
+> +		task_unlock(p);
+> +	}
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
-Cc: Americo Wang <xiyou.wangcong@gmail.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1257240160.4889.24.camel@wall-e>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/processor.h |    2 +-
- arch/x86/kernel/process_64.c     |    5 +++++
- fs/compat.c                      |    2 ++
- 3 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index c3429e8..c978648 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -1000,7 +1000,7 @@ extern unsigned long thread_saved_pc(struct task_struct *tsk);
- #define thread_saved_pc(t)	(*(unsigned long *)((t)->thread.sp - 8))
- 
- #define task_pt_regs(tsk)	((struct pt_regs *)(tsk)->thread.sp0 - 1)
--#define KSTK_ESP(tsk)		-1 /* sorry. doesn't work for syscall. */
-+extern unsigned long KSTK_ESP(struct task_struct *task);
- #endif /* CONFIG_X86_64 */
- 
- extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index ad535b6..eb62cbc 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -664,3 +664,8 @@ long sys_arch_prctl(int code, unsigned long addr)
- 	return do_arch_prctl(current, code, addr);
- }
- 
-+unsigned long KSTK_ESP(struct task_struct *task)
-+{
-+	return (test_tsk_thread_flag(task, TIF_IA32)) ?
-+			(task_pt_regs(task)->sp) : ((task)->thread.usersp);
-+}
-diff --git a/fs/compat.c b/fs/compat.c
-index d576b55..6c19040 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1532,6 +1532,8 @@ int compat_do_execve(char * filename,
- 	if (retval < 0)
- 		goto out;
- 
-+	current->stack_start = current->mm->start_stack;
-+
- 	/* execve succeeded */
- 	current->fs->in_exec = 0;
- 	current->in_execve = 0;
