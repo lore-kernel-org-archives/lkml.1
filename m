@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbZKDUOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932271AbZKDUQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758165AbZKDUOJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 15:14:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbZKDUOI
+	id S932271AbZKDUQb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 15:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758153AbZKDUQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 15:14:08 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:37554 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758132AbZKDUOH (ORCPT
+	Wed, 4 Nov 2009 15:16:30 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:52119 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758133AbZKDUQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 15:14:07 -0500
-Date: Wed, 4 Nov 2009 21:15:20 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: Arnaud Patard <apatard@mandriva.com>, linux-mips@linux-mips.org,
-       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
-       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
-       liujl@lemote.com
-Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
-Message-ID: <20091104201520.GA26504@linux-mips.org>
-References: <cover.1257325319.git.wuzhangjin@gmail.com> <a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com> <m3iqdqtwgk.fsf@anduin.mandriva.com> <1257332652.8716.5.camel@falcon.domain.org> <20091104111957.GA13549@linux-mips.org> <1257348226.16033.4.camel@falcon.domain.org>
+	Wed, 4 Nov 2009 15:16:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=RnH9EfGDcqz3AvSE/saph1MRwqNE9X+tEsjjF03FUS0gTLaOsrL5ymto6/Xf+DAjBQ
+         xOzuHVUYPomUMpTxDljBXVZ41SIoIepqP5pXHeeUDZC7ycnfGrWMSCN6MPSPRNlRCIfn
+         SaMhvep4gKZt8PI0YoU73Cpd4sQepnqxPKTCM=
+Message-ID: <4AF1E11F.6000404@gmail.com>
+Date: Wed, 04 Nov 2009 21:16:31 +0100
+From: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257348226.16033.4.camel@falcon.domain.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: linux-kernel@vger.kernel.org, mjg@redhat.com, eric@anholt.net,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: no video output after suspend after "drm/i915: force mode set
+ at lid open time"
+References: <4AE4BBBC.2070809@gmail.com>	<20091026090548.2d4e20a9@jbarnes-g45>	<4AE76463.6010404@gmail.com>	<20091027142609.73ac95e2@jbarnes-g45>	<4AEC3ED7.6010003@gmail.com>	<4AEC3FC3.3090209@gmail.com> <20091104111958.1b9c738e@jbarnes-piketon>
+In-Reply-To: <20091104111958.1b9c738e@jbarnes-piketon>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 11:23:46PM +0800, Wu Zhangjin wrote:
-
-> > We have other systems where 32-bit kernel support is just remarkably ugly.
-> > We've dropped 32-bit support for the SGI IP32 aka O2 - nobody seems to even
-> > have really noticed that.  The Sibyte systems would be good candidates to do
-> > the same as accesses to outside the 32-bit address space are needed very
-> > frequently.
-> > 
+Jesse Barnes ha scritto:
+> On Sat, 31 Oct 2009 14:46:43 +0100
+> Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com> wrote:
+>>> Sorry for taking so long to respond. Anyway latest Linus' git
+>>> master with reverted c1c7af60892070e4b82ad63bbfb95ae745056de0 , per
+>>> attached patch, does not fix the issue for me. Please note that
+>>> just reverting the commit does not compile because of an added user
+>>> of acpi_lid_open() which requires acpi/button.h which has been
+>>> added in 7121413f2accf14cf05b38539fb7a8be77543370. Will try to
+>>> revert that too.
+>> Sorry, that commit just change that line, it does not add the 
+>> acpi_lid_open() call.
 > 
-> So, we really remove the 32bit support?
+> Linus's tree has another change which might help:
 > 
-> 1312 config CPU_LOONGSON2
-> 1313         bool
-> 1314         select CPU_SUPPORTS_32BIT_KERNEL  --> remove it?
-> 1315         select CPU_SUPPORTS_64BIT_KERNEL
-> 1316         select CPU_SUPPORTS_HIGHMEM
+> commit c9354c85c1c7bac788ce57d3c17f2016c1c45b1d
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Mon Nov 2 09:29:55 2009 -0800
 > 
-> If you all agree, I will send a new patch to remove the above line and
-> resend the corresponding patches without 32bit support, and removed the
-> relative CONFIG_64BIT lines in the patches too.
+>     i915: fix intel graphics suspend breakage due to resume/lid event
+>     confusion
+> 
+> Have you tried a tree with it included yet?
 
-If you need highmem with 32-bit (and with Loongson systems I assume that
-virtually all systems will have enough RAM to require that) then you're
-almost certainly better off going 64-bit.  Highmem takes a performance toll
-which for some workloads can be very significant.  And while highmem won't
-go away any time soon it's nothing kernel performance is being tuned for,
-so it's only going to get worse into the future so I'd not waste time on
-highmem unless I have to.
+Sure, i tested 2.6.32-rc6 and latest Linus' git 
+91d3f9bacdb4950d2f79fe2ba296aa249f60d06c which has latest pull from drm 
+tree.
 
-  Ralf
+Btw, does anybody know how to update bugzilla by email? Can't find it 
+mentioned anywhere.
+
+thanks,
+riccardo
