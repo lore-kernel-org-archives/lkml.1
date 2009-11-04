@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbZKDP3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZKDPf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756426AbZKDP3B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:29:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZKDP3A
+	id S1756218AbZKDPf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbZKDPf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:29:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36137 "EHLO
+	Wed, 4 Nov 2009 10:35:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50030 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751187AbZKDP27 (ORCPT
+	by vger.kernel.org with ESMTP id S1752860AbZKDPf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:28:59 -0500
-Date: Wed, 4 Nov 2009 07:28:26 -0800
+	Wed, 4 Nov 2009 10:35:27 -0500
+Date: Wed, 4 Nov 2009 07:34:38 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Justin Mattock <justinmattock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gcc@gcc.gnu.org, David Rientjes <rientjes@cs.washington.edu>
-Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0,
- oom_adj=0
-Message-Id: <20091104072826.8b2dfb73.akpm@linux-foundation.org>
-In-Reply-To: <20091104182238.54CB.A69D9226@jp.fujitsu.com>
-References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com>
-	<20091103222432.4a94bd8f.akpm@linux-foundation.org>
-	<20091104182238.54CB.A69D9226@jp.fujitsu.com>
+To: Peter Horton <phorton@bitbox.co.uk>
+Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] prevent AoE causing cache aliases
+Message-Id: <20091104073438.7d2fa27a.akpm@linux-foundation.org>
+In-Reply-To: <4AF15D6A.5020403@bitbox.co.uk>
+References: <20091022142228.GA18986@bitbox.co.uk>
+	<20091103163755.57d3530c.akpm@linux-foundation.org>
+	<4AF15D6A.5020403@bitbox.co.uk>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,57 +29,95 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  4 Nov 2009 18:32:16 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Wed, 04 Nov 2009 10:54:34 +0000 Peter Horton <phorton@bitbox.co.uk> wrote:
 
-> > It would help if the oom-killer were to print some information about
-> > the oom-killed process's memory footprint.
+> Andrew Morton wrote:
+> > On Thu, 22 Oct 2009 15:22:28 +0100
+> > phorton@bitbox.co.uk (Peter Horton) wrote:
 > > 
+> >> To: ecashin@coraid.com
+> > 
+> > Have you heard back from Ed on this?
+> >
 > 
+> No.
 > 
-> How about this?
+> >> Cc: linux-kernel@vger.kernel.org
+> >> Subject: [PATCH] prevent AoE causing cache aliases
+> >> Date: 	Thu, 22 Oct 2009 15:22:28 +0100
+> >> Sender: linux-kernel-owner@vger.kernel.org
+> >> User-Agent: Mutt/1.5.9i
+> >>
+> >> This patch prevents the AoE block driver from creating cache aliases of
+> >> page cache pages on machines with virtually indexed caches.
+> >>
+> >> Building kernels on an AT91SAM9G20 board without this patch fails with
+> >> segmentation faults after a couple of passes.
+> >>
+> >>
+> >> Index: linux-2.6.31/drivers/block/aoe/aoecmd.c
+> >> ===================================================================
+> >> --- linux-2.6.31.orig/drivers/block/aoe/aoecmd.c	2009-09-09 23:13:59.000000000 +0100
+> >> +++ linux-2.6.31/drivers/block/aoe/aoecmd.c	2009-10-22 10:24:50.000000000 +0100
+> >> @@ -735,6 +735,21 @@
+> >>  	part_stat_unlock();
+> >>  }
+> >>  
+> >> +/*
+> >> + * Ensure we don't create aliases in VI caches
+> >> + */
+> >> +static inline void
+> >> +killalias(struct bio *bio)
+> >> +{
+> >> +	struct bio_vec *bv;
+> >> +	int i;
+> >> +
+> >> +	if (bio_data_dir(bio) == READ)
+> >> +		__bio_for_each_segment(bv, bio, i, 0) {
+> >> +			flush_dcache_page(bv->bv_page);
+> >> +		}
+> >> +}
+> >> +
+> >>  void
+> >>  aoecmd_ata_rsp(struct sk_buff *skb)
+> >>  {
+> >> @@ -853,8 +868,12 @@
+> >>  
+> >>  	if (buf && --buf->nframesout == 0 && buf->resid == 0) {
+> >>  		diskstats(d->gd, buf->bio, jiffies - buf->stime, buf->sector);
+> >> -		n = (buf->flags & BUFFL_FAIL) ? -EIO : 0;
+> >> -		bio_endio(buf->bio, n);
+> >> +		if (buf->flags & BUFFL_FAIL)
+> >> +			bio_endio(buf->bio, -EIO);
+> >> +		else {
+> >> +			killalias(buf->bio);
+> >> +			bio_endio(buf->bio, 0);
+> >> +		}
+> >>  		mempool_free(buf, d->bufpool);
+> >>  	}
+> > 
+> > Looks OK.
+> > 
+> > This bugfix will cause a pointless __bio_for_each_segment() busywait
+> > loop to be executed on architectures for which flush_dcache_page() is a
+> > no-op.
+> > 
+> > We don't have infrastructure to fix that.
+> 
+> Couldn't we add a flag to the bio that users could set to indicate that 
+> they are not house trained with respect to the D-cache (i.e non-DMA 
+> drivers). Architectures that needed to could then flush the relevant 
+> pages in the bio_endio() path somewhere. At the moment all the non-DMA 
+> block drivers need to be aware of the cache aliasing issue which means 
+> this problem keeps arising ...
+> 
 
-looks good, thanks.
+Could.  We'll need to change each arch _somehow_.  Even if it's a
+matter of adding `#define i_am_not_house_trained' to the troublesome
+ones or something, then ifdeffing existing code.
 
-> ========
-> Subject: [PATCH] oom: show vsz and rss information of the killed process
-> 
-> In typical oom anylysis scenario, we frequently want to know the killed
-> process has memory leak or not at first step.
-> This patch add vsz and rss information to oom log for helping its
-> analysis. It save much times of debugging guys.
-> 
-> example:
-> ===================================================================
-> rsyslogd invoked oom-killer: gfp_mask=0x201da, order=0, oom_adj=0
-> Pid: 1308, comm: rsyslogd Not tainted 2.6.32-rc6 #24
-> Call Trace:
-> [<ffffffff8132e35b>] ?_spin_unlock+0x2b/0x40
-> [<ffffffff810f186e>] oom_kill_process+0xbe/0x2b0
-> 
-> (snip)
-> 
-> 492283 pages non-shared
-> Out of memory: kill process 2341 (memhog) score 527276 or a child
-> Killed process 2341 (memhog) vsz:1054552kB, anon-rss:970588kB, file-rss:4kB
-> ===========================================================================
->                              ^
->                              |
->                             here
-> ...
->
-> +	if (verbose) {
-> +		task_lock(p);
+I was thinking that a general bio_flush_dcache_pages() in block core
+(or in each arch) would be a suitable way to handle this but I was
+unable to find other drivers which needed it after a brief search.
 
-We need to be careful with which locks we take on the oom-killer path,
-because it can be called by code which already holds locks.  But I
-expect task_lock() will be OK.
-
-> +		printk(KERN_ERR "Killed process %d (%s) "
-> +		       "vsz:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
-> +		       task_pid_nr(p), p->comm,
-> +		       K(p->mm->total_vm),
-> +		       K(get_mm_counter(p->mm, anon_rss)),
-> +		       K(get_mm_counter(p->mm, file_rss)));
-> +		task_unlock(p);
-> +	}
 
