@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932340AbZKDUV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbZKDUWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932340AbZKDUV1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 15:21:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932292AbZKDUV1
+	id S932423AbZKDUWk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 15:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932372AbZKDUWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 15:21:27 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:52557 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932244AbZKDUV0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 15:21:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=pNHHyo6L3L+E9gABxZr5mO9TJW2VC4AHpx4m3K3KSfv82joeb1G/pOxokUzvnBfYxu
-         ReNbfdVoiHLgG/kde4h4fwLwJCJZ2jFd0IZR5Kzq+zrOY1w3orBS4L5HJWPgZZPg2zex
-         jHCnjiysMeejJFhQcL6vknftAm/vE6aYrosD8=
-MIME-Version: 1.0
-In-Reply-To: <20091104173439.28463.20951.sendpatchset@localhost.localdomain>
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
-	 <20091104173439.28463.20951.sendpatchset@localhost.localdomain>
-Date: Wed, 4 Nov 2009 21:21:27 +0100
-Message-ID: <14add3d10911041221h683e324dp40226f0a5f827358@mail.gmail.com>
-Subject: Re: [PATCH 22/41] rt2800pci: add rt2800_mcu_request() wrapper
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Nov 2009 15:22:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23944 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932363AbZKDUWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 15:22:39 -0500
+Date: Wed, 4 Nov 2009 15:22:34 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Eric Blake <ebb9@byu.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: make getdents/readdir POSIX compliant wrt mount-point 
+ dirent.d_ino
+Message-ID: <20091104152234.1d4b2b81@tlielax.poochiereds.net>
+In-Reply-To: <loom.20090903T164650-995@post.gmane.org>
+References: <87y6oyhkz8.fsf@meyering.net>
+	<20090901201943.GB6996@mit.edu>
+	<a36005b50909011503y73efdf56yabc4d981db2989bc@mail.gmail.com>
+	<loom.20090903T164650-995@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 4, 2009 at 6:34 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] rt2800pci: add rt2800_mcu_request() wrapper
->
-> Part of preparations for later code unification.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
+On Thu, 3 Sep 2009 14:50:52 +0000 (UTC)
+Eric Blake <ebb9@byu.net> wrote:
 
-For what it is worth:
+> Ulrich Drepper <drepper <at> gmail.com> writes:
+> 
+> > I guess that this is really a difficult way to solve.  I wouldn't want
+> > to pay for something which is hardly ever really used.
+> > 
+> > But there are programs out there which would like to use the inode
+> > uniqueness.  Therefore the next best thing to do is perhaps to return
+> > a flag in the getdents information (in d_type, perhaps) to indicate
+> > that this is a mount point and/or that there are multiple ways to
+> > access the file in question.  Then programs which can use the inode
+> > information can be watching for this flag and enter the slow path only
+> > if it's set.
+> 
+> An alternative to a flag in d_type might be setting d_ino to a sentinel value
+> (there is plenty of existing code that refuses to use a readdir entry with d_ino
+> of 0, so it would have to be something else; but maybe -1 would work).  But I
+> definitely like your idea of making it obvious to the application (whether by
+> d_ino or d_type) when it is necessary to use lstat to validate the inode number,
+> and promising that if the flag is not set then d_ino is correct.
+> 
 
-Acked-by: Gertjan van Wingerde <gwingerde@gmail.com>
+The only problem with those schemes is that they assume that you're
+using getdents. If you just lstat something then it's not clear.
+
+It seems like a better scheme might be to do something that makes this
+clear when using an lstat call too. Maybe we could coopt a bit in the
+st_mode?
+
+S_IFXDEV          020000
+
+That's outside of the S_IFMT mask, so it shouldn't break S_IS* checks,
+right?
+
+-- 
+Jeff Layton <jlayton@redhat.com>
