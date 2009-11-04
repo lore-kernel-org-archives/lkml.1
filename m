@@ -1,196 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932198AbZKDSBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbZKDSJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932198AbZKDSBz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 13:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbZKDSBy
+	id S1757618AbZKDSJM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 13:09:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbZKDSJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 13:01:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37715 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756750AbZKDSBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 13:01:54 -0500
-Date: Wed, 4 Nov 2009 12:01:20 -0600
-From: Clark Williams <williams@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] modify perf routines to use new debugfs routines
-Message-ID: <20091104120120.36ba2839@torg>
-In-Reply-To: <20091104115906.7045cf65@torg>
-References: <20091104115906.7045cf65@torg>
-Organization: Red Hat, Inc
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/zvhtaQE_pAXQkJ4/b_iwLdL"; protocol="application/pgp-signature"
+	Wed, 4 Nov 2009 13:09:11 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:58381 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbZKDSJK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 13:09:10 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: virtualization@lists.linux-foundation.org
+Subject: Re: [PATCHv6 1/3] tun: export underlying socket
+Date: Wed, 4 Nov 2009 19:09:05 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com
+References: <cover.1257193660.git.mst@redhat.com> <20091102222612.GB15184@redhat.com> <200911031312.33580.arnd@arndb.de>
+In-Reply-To: <200911031312.33580.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911041909.06054.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18DCdzuXdL2vqnnzAm9II9OrjKyCnZiQDWJz/Y
+ kPC9xcJVenQn4SnpExDFrBEgW5Gt51fy4+wwrYdyblva2P0yyx
+ IH3sUHin6zejNXj4GmuEw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/zvhtaQE_pAXQkJ4/b_iwLdL
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tuesday 03 November 2009, Arnd Bergmann wrote:
+> > index 3f5fd52..404abe0 100644
+> > --- a/include/linux/if_tun.h
+> > +++ b/include/linux/if_tun.h
+> > @@ -86,4 +86,18 @@ struct tun_filter {
+> >         __u8   addr[0][ETH_ALEN];
+> >  };
+> >  
+> > +#ifdef __KERNEL__
+> > +#if defined(CONFIG_TUN) || defined(CONFIG_TUN_MODULE)
+> > +struct socket *tun_get_socket(struct file *);
+> > +#else
+> > +#include <linux/err.h>
+> > +#include <linux/errno.h>
+> > +struct file;
+> > +struct socket;
+> > +static inline struct socket *tun_get_socket(struct file *f)
+> > +{
+> > +       return ERR_PTR(-EINVAL);
+> > +}
+> > +#endif /* CONFIG_TUN */
+> > +#endif /* __KERNEL__ */
+> >  #endif /* __IF_TUN_H */
+> 
+> Is this a leftover from testing? Exporting the function for !__KERNEL__
+> seems pointless.
+> 
 
+Michael, you didn't reply on this comment and the code is still there in v8.
+Do you actually need this? What for?
 
-modified perf.c get_debugfs_mntpnt() to use the util/debugfs.c
-debugfs_find_mountpoint()
-modified util/parse-events.c to use debugfs_valid_mountpoint().
-
-Signed-off-by: Clark Williams <williams@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/perf.c              |   45 ++++++------------------------------=
----
- tools/perf/util/parse-events.c |   17 +++-----------
- 2 files changed, 11 insertions(+), 51 deletions(-)
-
-diff --git a/tools/perf/perf.c b/tools/perf/perf.c
-index 9cafe54..940cbf6 100644
---- a/tools/perf/perf.c
-+++ b/tools/perf/perf.c
-@@ -14,6 +14,7 @@
- #include "util/run-command.h"
- #include "util/parse-events.h"
- #include "util/string.h"
-+#include "util/debugfs.h"
-=20
- const char perf_usage_string[] =3D
- 	"perf [--version] [--help] COMMAND [ARGS]";
-@@ -296,6 +297,7 @@ static void handle_internal_command(int argc, const cha=
-r **argv)
- 		{ "trace", cmd_trace, 0 },
- 		{ "sched", cmd_sched, 0 },
- 		{ "probe", cmd_probe, 0 },
-+		{ "latency", cmd_latency, 0},
- 	};
- 	unsigned int i;
- 	static const char ext[] =3D STRIP_EXTENSION;
-@@ -383,45 +385,12 @@ static int run_argv(int *argcp, const char ***argv)
- /* mini /proc/mounts parser: searching for "^blah /mount/point debugfs" */
- static void get_debugfs_mntpt(void)
- {
--	FILE *file;
--	char fs_type[100];
--	char debugfs[MAXPATHLEN];
-+	const char *path =3D debugfs_find_mountpoint();
-=20
--	/*
--	 * try the standard location
--	 */
--	if (valid_debugfs_mount("/sys/kernel/debug/") =3D=3D 0) {
--		strcpy(debugfs_mntpt, "/sys/kernel/debug/");
--		return;
--	}
--
--	/*
--	 * try the sane location
--	 */
--	if (valid_debugfs_mount("/debug/") =3D=3D 0) {
--		strcpy(debugfs_mntpt, "/debug/");
--		return;
--	}
--
--	/*
--	 * give up and parse /proc/mounts
--	 */
--	file =3D fopen("/proc/mounts", "r");
--	if (file =3D=3D NULL)
--		return;
--
--	while (fscanf(file, "%*s %"
--		      STR(MAXPATHLEN)
--		      "s %99s %*s %*d %*d\n",
--		      debugfs, fs_type) =3D=3D 2) {
--		if (strcmp(fs_type, "debugfs") =3D=3D 0)
--			break;
--	}
--	fclose(file);
--	if (strcmp(fs_type, "debugfs") =3D=3D 0) {
--		strncpy(debugfs_mntpt, debugfs, MAXPATHLEN);
--		debugfs_mntpt[MAXPATHLEN - 1] =3D '\0';
--	}
-+	if (path)
-+		strncpy(debugfs_mntpt, path, sizeof(debugfs_mntpt));
-+	else
-+		debugfs_mntpt[0] =3D '\0';
- }
-=20
- int main(int argc, const char **argv)
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 31baa5a..097938a 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -7,6 +7,7 @@
- #include "string.h"
- #include "cache.h"
- #include "header.h"
-+#include "debugfs.h"
-=20
- int				nr_counters;
-=20
-@@ -149,16 +150,6 @@ static int tp_event_has_id(struct dirent *sys_dir, str=
-uct dirent *evt_dir)
-=20
- #define MAX_EVENT_LENGTH 512
-=20
--int valid_debugfs_mount(const char *debugfs)
--{
--	struct statfs st_fs;
--
--	if (statfs(debugfs, &st_fs) < 0)
--		return -ENOENT;
--	else if (st_fs.f_type !=3D (long) DEBUGFS_MAGIC)
--		return -ENOENT;
--	return 0;
--}
-=20
- struct tracepoint_path *tracepoint_id_to_path(u64 config)
- {
-@@ -171,7 +162,7 @@ struct tracepoint_path *tracepoint_id_to_path(u64 confi=
-g)
- 	char evt_path[MAXPATHLEN];
- 	char dir_path[MAXPATHLEN];
-=20
--	if (valid_debugfs_mount(debugfs_path))
-+	if (debugfs_valid_mountpoint(debugfs_path))
- 		return NULL;
-=20
- 	sys_dir =3D opendir(debugfs_path);
-@@ -510,7 +501,7 @@ static enum event_result parse_tracepoint_event(const c=
-har **strp,
- 	char sys_name[MAX_EVENT_LENGTH];
- 	unsigned int sys_length, evt_length;
-=20
--	if (valid_debugfs_mount(debugfs_path))
-+	if (debugfs_valid_mountpoint(debugfs_path))
- 		return 0;
-=20
- 	evt_name =3D strchr(*strp, ':');
-@@ -788,7 +779,7 @@ static void print_tracepoint_events(void)
- 	char evt_path[MAXPATHLEN];
- 	char dir_path[MAXPATHLEN];
-=20
--	if (valid_debugfs_mount(debugfs_path))
-+	if (debugfs_valid_mountpoint(debugfs_path))
- 		return;
-=20
- 	sys_dir =3D opendir(debugfs_path);
---=20
-1.6.2.5
-
-
---Sig_/zvhtaQE_pAXQkJ4/b_iwLdL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-
-iEYEARECAAYFAkrxwXQACgkQHyuj/+TTEp1kdACdGm+77dMkDR6Zy2qtN4A4JXqn
-9nAAoMx201YCOx5ezwQnpv4KAIwAOMFK
-=+a+2
------END PGP SIGNATURE-----
-
---Sig_/zvhtaQE_pAXQkJ4/b_iwLdL--
+	Arnd <><
