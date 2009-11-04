@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbZKDToW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbZKDTo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758040AbZKDToW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 14:44:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758030AbZKDToV
+	id S1758056AbZKDTo2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 14:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758045AbZKDTo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 14:44:21 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:53549 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758031AbZKDToT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 14:44:19 -0500
-Date: Wed, 4 Nov 2009 11:44:20 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Ian Campbell <Ian.Campbell@citrix.com>,
-       Tejun Heo <tj@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Correct nr_processes() when CPUs have been unplugged
-Message-ID: <20091104194420.GG6736@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1257243074.23110.779.camel@zakaz.uk.xensource.com> <20091103160734.GA21362@elte.hu> <alpine.DEB.1.10.0911031324380.32136@V090114053VZO-1> <20091104060933.GB6830@linux.vnet.ibm.com> <alpine.DEB.1.10.0911041434530.7409@V090114053VZO-1>
+	Wed, 4 Nov 2009 14:44:26 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:35235 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758042AbZKDToY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 14:44:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=w3al4dcaE8sud6bJfMh1d7ufkihIJ38+f4QpEa9kgHAa/dQWtqEGJvLoQtStWcOKLT
+         sUkxFN4mc+KHOwiTBan/4uO+sKoInRQ2KFyIbMw1I3qukorgEl/bD9BoZd6iPTg+L3h9
+         o9BRKW9w5vE0KWHaj7zN3aLvR0EckbH3WgFS8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0911041434530.7409@V090114053VZO-1>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20091104173411.28463.16599.sendpatchset@localhost.localdomain>
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain>
+	 <20091104173411.28463.16599.sendpatchset@localhost.localdomain>
+Date: Wed, 4 Nov 2009 20:44:28 +0100
+Message-ID: <14add3d10911041144u6819150eq21a39b1fada9d33b@mail.gmail.com>
+Subject: Re: [PATCH 18/41] rt2800pci: add rt2800_rfcsr_[read,write]() wrappers
+From: Gertjan van Wingerde <gwingerde@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 02:37:06PM -0500, Christoph Lameter wrote:
-> On Tue, 3 Nov 2009, Paul E. McKenney wrote:
-> 
-> > > Cpu hotplug is rarely used (what you listed are rare and unusual cases)
-> > > and therefore online cpus == possible cpus == present cpus.
-> >
-> > Though it is not unusual for "possible cpus" to be quite a bit larger
-> > than "online cpus"...
-> 
-> The only reason for possible cpus to be larger than online cpus is if you
-> can actually plugin more processors while the system is running. Typically
-> the larger possible cpus seems to be some sort of Vendor BIOS screwup
-> where the vendor advertises how many processors the maximum configuration
-> of a certain type of hardware would suppport if one would buy that config.
+On Wed, Nov 4, 2009 at 6:34 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] rt2800pci: add rt2800_rfcsr_[read,write]() wrappers
+>
+> Part of preparations for later code unification.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
 
-Or if you are running as a guest OS on top of some sort of hypervisor.
+For what it is worth:
 
-							Thanx, Paul
+Acked-by: Gertjan van Wingerde <gwingerde@gmail.com>
