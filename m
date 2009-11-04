@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbZKDBFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZKDBJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753100AbZKDBFH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Nov 2009 20:05:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZKDBFG
+	id S1753293AbZKDBJy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Nov 2009 20:09:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZKDBJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Nov 2009 20:05:06 -0500
-Received: from mail1.ugh.no ([80.239.42.168]:51606 "EHLO mail1.ugh.no"
+	Tue, 3 Nov 2009 20:09:54 -0500
+Received: from icculus.org ([67.106.77.212]:33577 "EHLO icculus.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752147AbZKDBFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Nov 2009 20:05:05 -0500
-X-Greylist: delayed 867 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Nov 2009 20:05:05 EST
-Message-ID: <4AF0D342.3090904@tomt.net>
-Date: Wed, 04 Nov 2009 02:05:06 +0100
-From: Andre Tomt <andre@tomt.net>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1751105AbZKDBJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Nov 2009 20:09:53 -0500
+Date: Tue, 3 Nov 2009 20:09:53 -0500 (EST)
+From: "Ryan C. Gordon" <icculus@icculus.org>
+X-X-Sender: icculus@caridad.icculuslan
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: FatELF patches...
+In-Reply-To: <alpine.OSX.1.10.0911021509090.702@caridad.icculuslan>
+Message-ID: <alpine.OSX.1.10.0911032006320.11070@caridad.icculuslan>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com> <alpine.OSX.1.10.0911011540400.53392@caridad.local> <20091102000147.424f104b@lxorguk.ukuu.org.uk>
+ <alpine.OSX.1.10.0911021057450.464@caridad.icculuslan> <20091102185315.6326e148@lxorguk.ukuu.org.uk> <alpine.OSX.1.10.0911021509090.702@caridad.icculuslan>
+User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: tfjellstrom@shaw.ca, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
-References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca> <4AA7F965.6020408@garzik.org> <4AF0CFE1.8050407@tomt.net>
-In-Reply-To: <4AF0CFE1.8050407@tomt.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andre Tomt wrote:
-> Jeff Garzik wrote:
->> On 09/09/2009 12:30 PM, Thomas Fjellstrom wrote:
->>> No errors on that disk. Other than the one above, and its more of a 
->>> warning.
->>> However, I just rebooted to add some extra drives, thinking 
->>> everything was
->>> working a little better now that I've updated to 2.6.31-rc9, I'm 
->>> treated to
->>> the following two messages right after boot (and a system lockup to 
->>> boot):
-> 
-> Jeff & Co,
-> 
-> Just chiming in with a "me too" comment.
-> 
-> Identical issues with the AOC-SASLP-MV8 card with 8 Seagate Barracuda 
-> 7200.11 1.5TB drives using the mvsas driver. Creating a md raid array 
-> seems to trigger it nearly instantly, however other loads do not trigger 
-> it as fast (if at all, only tested briefly with paralell dd).
-> 
-> Not sure if its related in any way, but I also noticed that with 
-> parallell dd read on all ports, the card/driver tops out at 600MB/s even 
-> though the card is in a northbridge connected slot running in x4 mode. 
-> Only the first 4-5 ports run at nearly full speed, while the rest barely 
-> gets to read any data at all. To illustrate, it looks sort of like this 
-> in iostat -m:
-> sda 122
-> sdb 122
-> sbc 120
-> sdd 121
-> sde 100
-> sdf 10
-> sdg 5
-> sdh 5
-> 
-> Starting to think this driver has some issues with concurrency.. The 
-> other controllers have no issues saturating all their ports, even if 
-> they are on a south bridge connected slot.
 
-Err, saturating all the disks. I'm not expecting 300MB/s*8, even though 
-it would be very cool 8)
+> You mentioned the patent thing and I don't have an answer at all yet from 
+> a lawyer. Let's table this for awhile until I have more information about 
+> that. If there's going to be a patent problem, it's not worth wasting 
+> everyone's time any further.
+> 
+> If it turns out to be no big deal, we can decide to revisit this.
 
-> 
-> Same disks/setup works just fine on AHCI and sata_mv controllers on the 
-> same computer, easily pushes 8-900MB/s with md software raid5/6 (Yipes!)
-> 
+The Software Freedom Law Center replied with this...
+
+"I refer you to our Legal Guide section on dealing with patents available 
+from our website.  I also refer you to our amici brief in Bilski, where we 
+argue that patents on pure software are invalid.  If a patent is invalid, 
+there's no reason to consider whether it is infringed."
+
+...which may be promising some day, but doesn't resolve current concerns. 
+Also: "I read a FAQ" doesn't hold up in court.  :)
+
+Based on feedback from this list, the patent concern that I'm not 
+qualified to resolve myself, and belief that I'll be on the losing end of 
+the same argument with the glibc maintainers after this, I'm withdrawing 
+my FatELF patch. If anyone wants it, I'll leave the project page and 
+patches in place at http://icculus.org/fatelf/ ...
+
+Thank you everyone for your time and feedback.
+
+--ryan.
+
