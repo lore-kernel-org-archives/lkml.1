@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbZKDIDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbZKDIHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059AbZKDIDL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 03:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZKDIDK
+	id S1753315AbZKDIHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 03:07:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZKDIHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 03:03:10 -0500
-Received: from ozlabs.org ([203.10.76.45]:52067 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639AbZKDIDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 03:03:09 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 5/14] cpumask: use modern cpumask style in drivers/edac/amd64_edac.c
-Date: Wed, 4 Nov 2009 18:33:07 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       bluesmoke-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200911031456.35354.rusty@rustcorp.com.au> <20091103064347.GA8082@liondog.tnic>
-In-Reply-To: <20091103064347.GA8082@liondog.tnic>
+	Wed, 4 Nov 2009 03:07:39 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:36006 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752538AbZKDIHi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 03:07:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=w2UJ5tKAZUgiUrusKk1xyCwUSDsqAAdBHouqHE/2CQ91Yiqeb2h9Z0HN/8A3cejzi7
+         ZU5iZexGwaKxzdZXYamIo6HeNv5QYE4D+uNvEOxZcacWeNyRomyECR4MWA/LfK2uWq3q
+         MRG+OCeNutAPVMovFEPhTGhwODXkDsEtnfWx8=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911041833.07866.rusty@rustcorp.com.au>
+In-Reply-To: <1257296148.2891.223.camel@dhcp231-106.rdu.redhat.com>
+References: <20091031184721.17244.16465.stgit@paris.rdu.redhat.com>
+	 <20091031184819.17244.55795.stgit@paris.rdu.redhat.com>
+	 <20091103165947.35bd78d7@bike.lwn.net>
+	 <1257296148.2891.223.camel@dhcp231-106.rdu.redhat.com>
+Date: Wed, 4 Nov 2009 09:07:42 +0100
+Message-ID: <19f34abd0911040007i738bfc4eq5481b6c85117d525@mail.gmail.com>
+Subject: Re: [PATCH 10/10] send events using read
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       linus-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org, agruen@suse.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Nov 2009 05:13:47 pm Borislav Petkov wrote:
-> Hi,
-> 
-> On Tue, Nov 03, 2009 at 02:56:35PM +1030, Rusty Russell wrote:
-> > cpumask_t -> struct cpumask, and don't put one on the stack.  (Note: this
-> > is actually on the stack unless CONFIG_CPUMASK_OFFSTACK=y).
-> > 
-> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> I've got a similar patch already queued up but it
-> depends on the changes to rdmsr_on_cpus/wrmsr_on_cpus in
-> b8a4754147d61f5359a765a3afd3eb03012aa052 which is in tip/x86/cpu and
-> which does a bit more than your patch 4 so IMHO you could drop yours.
-> 
-> Concerning the edac change, yours is better and I could pick it up and
-> add it to my patch queue if nobody else has a problem with that?
+2009/11/4 Eric Paris <eparis@redhat.com>:
+> On Tue, 2009-11-03 at 16:59 -0700, Jonathan Corbet wrote:
+>> Hi, Eric,
+>>
+>> This is not a full review, but I did notice a problem as I was trying to
+>> figure out the new API...
+>
+> This is a rip off of inotify which was introduced in commit 3632dee2f8b
+> from Vegard Nossum back in January.  I can't seem to find any discussion
+> of this before it went into Linus' tree, so if someone knows how this
+> patch got to Linus and what was said about it, I'd like to know.  Thanks
+> for unwittingly finding and inotify bug!
 
-Less work for me sounds *excellent*.
+I don't have a git tree handy, but I think this is the locking
+imbalance fix. It went to the security list, so that's probably why
+you didn't find it. As far as I can tell, the code in question was
+wrong even before that patch, though.
 
-Thanks!
-Rusty.
+
+Vegard
