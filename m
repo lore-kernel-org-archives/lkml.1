@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZKDLcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZKDLe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbZKDLcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 06:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZKDLcR
+	id S1755546AbZKDLe2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 06:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZKDLe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 06:32:17 -0500
-Received: from mga14.intel.com ([143.182.124.37]:65358 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755524AbZKDLcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 06:32:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,679,1249282800"; 
-   d="scan'208";a="207409156"
-Date: Wed, 4 Nov 2009 19:32:11 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: "npiggin@suse.de" <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] [PATCH] Avoid livelock for fsync
-Message-ID: <20091104113211.GA23859@localhost>
-References: <20091026181314.GE7233@duck.suse.cz> <20091103131434.GA9648@localhost> <20091103145654.GC29873@duck.suse.cz>
+	Wed, 4 Nov 2009 06:34:27 -0500
+Received: from mx1.moondrake.net ([212.85.150.166]:33843 "EHLO
+	mx1.mandriva.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755387AbZKDLe1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 06:34:27 -0500
+X-Spam-Virus: No
+From: Arnaud Patard <apatard@mandriva.com>
+To: wuzhangjin@gmail.com
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
+       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       liujl@lemote.com
+Subject: Re: [PATCH -queue v0 5/6] [loongson] rtc: enable legacy RTC driver on fuloong2f
+References: <cover.1257325319.git.wuzhangjin@gmail.com>
+	<e13ed33a99dbf14f223360d414aa2b2c5caa9b1f.1257325319.git.wuzhangjin@gmail.com>
+	<m3eioetvx5.fsf@anduin.mandriva.com>
+	<1257333527.8716.20.camel@falcon.domain.org>
+Organization: Mandriva
+Date: Wed, 04 Nov 2009 12:34:44 +0100
+In-Reply-To: <1257333527.8716.20.camel@falcon.domain.org> (Wu Zhangjin's message of "Wed, 04 Nov 2009 19:18:47 +0800")
+Message-ID: <m3aaz2ttez.fsf@anduin.mandriva.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091103145654.GC29873@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan,
+Wu Zhangjin <wuzhangjin@gmail.com> writes:
 
-On Tue, Nov 03, 2009 at 10:56:54PM +0800, Jan Kara wrote:
-[snip]
-> > > inodes really does not make any sence - why should be a page in a file
-> > > penalized and written later only because there are lots of other dirty
-> > > pages in the file? It is enough to make sure that we don't write one file
-> > > indefinitely when there are new dirty pages continuously created - and my
-> > > patch achieves that.
-> > 
-> > This is a big policy change. Imagine dirty files A=4GB, B=C=D=1MB.
-> > With current policy, it could be
-> > 
-> >         sync 4MB of A
-> >         sync B
-> >         sync C
-> >         sync D
-> >         sync 4MB of A
-> >         sync 4MB of A
-> >         ...
-> > 
-> > And you want to change to
-> > 
-> >         sync A (all 4GB)
-> >         sync B
-> >         sync C
-> >         sync D
-> > 
-> > This means the writeback of B,C,D won't be able to start at 30s, but
-> > delayed to 80s because of A. This is not entirely fair. IMHO writeback
-> > of big files shall not delay small files too much. 
->   Yes, I'm aware of this change. It's just that I'm not sure we really
-> care. There are few reasons to this: What advantage does it bring that we
-> are "fair among files"? User can only tell the difference if after a crash,
+> Hi,
+>
+> On Wed, 2009-11-04 at 11:40 +0100, Arnaud Patard wrote:
+>> Wu Zhangjin <wuzhangjin@gmail.com> writes:
+>> 
+>> Hi,
+>> 
+>> > RTC_LIB is selected by MIPS by default, and therefore, the legacy RTC driver is
+>> > disabled. but unfortunately, RTC_LIB not works on fulong, so, enabling the legcy
+>> > RTC driver is needed, otherwise, the tools like hwclock will not work.
+>> >
+>> > because loongson family machines, including fuloong2e, fuloong2f and
+>> > yeeloong2f need to enable legacy RTC driver, so we use MACH_LOONGSON
+>> > here.
+>> 
+>> There are loongson machines which are working fine with RTC_LIB (for
+>> instance the gdium which is using a m41t83 on i2c) so would be better to
+>> be more restrictive imho.
+>
+> In reality, fuloong2e, fuloong2f and yeeloong2f work fine with RTC_LIB,
+> but relative patches need to append to drivers/rtc/rtc-cmos.c and also
+> need a RTC platform device. If what I remembered is right, Gdium also
+> need corresponding patches to make it work with RTC_LIB.
 
-I'm not all that sure, too. The perception is, big files normally
-contain less valuable information per-page than small files ;)
+As I said, Gdium is using an i2c chip and the bus is made with the sm501
+gpio. So except the patch for gpiolib support for ls2f, there's nothing
+special for RTC_LIB. It's just working out of the box (as long as you
+declare the platform devices but that's not what I call a problem).
 
-If crashed, it's much better to lose one single big file, than to lose
-all the (big and small) files.
+>
+> Herein, I just let the basic support for those machines work, and then,
+> the RTC_LIB support will be sent out later.
+>
+> and a small question: if legacy RTC driver works well on these machines,
+> why should we forbid people to use it? I think it's better to remove the
+> "select RTC_LIB" line for MIPS, and then, the people will be free to
+> choose what they want, and even for the users whose platform not support
+> RTC_LIB.
 
-Maybe nobody really care that - sync() has always been working file
-after file (ignoring nr_to_write) and no one complained.
+Well, I though about this. If you go that way and remove the "select
+RTC_LIB", please check and enable it for all platforms which needs it or
+warn people about. Would be nice to avoid regression due to that.
 
-> files he wrote long time ago are still not on disk. But we shouldn't
-> accumulate too many dirty data (like minutes of writeback) in caches
-> anyway... So the difference should not be too big. Also how is the case
-> "one big and a few small files" different from the case "many small files"
-> where to be fair among files does not bring anything? 
->   It's just that see some substantial code complexity and also performance
-> impact (because of smaller chunks of sequential IO) in trying to be fair
-> among files and I don't really see adequate advantages of that approach.
-> That's why I'm suggesting we should revisit the decision and possibly go in
-> a different direction.
 
-Anyway, if this is not a big concern, nr_to_write could be removed.
-
-Note that requeue_io() (or requeue_io_wait) still cannot be removed
-because sometimes we have (temporary) problems on writeback an inode.
-
-Thanks,
-Fengguang
+Arnaud
