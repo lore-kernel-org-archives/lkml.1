@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbZKDNHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059AbZKDNLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071AbZKDNHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 08:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbZKDNHO
+	id S1756059AbZKDNLz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 08:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZKDNLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 08:07:14 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57192
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755952AbZKDNHJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 08:07:09 -0500
-Date: Wed, 04 Nov 2009 05:07:34 -0800 (PST)
-Message-Id: <20091104.050734.211699606.davem@davemloft.net>
-To: tfransosi@gmail.com
-Cc: trivial@kernel.org, yanghy@cn.fujitsu.com, baum@tehutinetworks.net,
-       andy@greyhouse.net, shemminger@vyatta.com, apkm@linux-fundation.org,
-       ben@decadent.org.uk, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trivial: remove duplicated MIN macro from tehuti.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1257253829-4531-1-git-send-email-tfransosi@gmail.com>
-References: <1257253829-4531-1-git-send-email-tfransosi@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 08:11:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:34076 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755453AbZKDNLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 08:11:54 -0500
+Date: Wed, 4 Nov 2009 15:08:28 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org
+Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
+Message-ID: <20091104130828.GC8920@redhat.com>
+References: <cover.1257267892.git.mst@redhat.com> <20091103172422.GD5591@redhat.com> <878wema6o0.fsf@basil.nowhere.org> <20091104121009.GF8398@redhat.com> <20091104125957.GL31511@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104125957.GL31511@one.firstfloor.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thiago Farina <tfransosi@gmail.com>
-Date: Tue,  3 Nov 2009 08:10:29 -0500
-
-> Since the kernel api already has the macro "min",
-> just use it instead of declaring another one.
+On Wed, Nov 04, 2009 at 01:59:57PM +0100, Andi Kleen wrote:
+> > Fine?
 > 
-> Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+> I cannot say -- are there paths that could drop the device beforehand?
 
-Applied to net-next-2.6, thanks!
+Do you mean drop the mm reference?
+
+> (as in do you hold a reference to it?)
+
+By design I think I always have a reference to mm before I use it.
+
+This works like this:
+ioctl SET_OWNER - calls get_task_mm, I think this gets a reference to mm
+ioctl SET_BACKEND - checks that SET_OWNER was run, starts virtqueue
+ioctl RESET_OWNER - stops virtqueues, drops the reference to mm
+file close - stops virtqueues, if we still have it then drops mm
+
+This is why I think I can call use_mm/unuse_mm while virtqueue is running,
+safely.
+Makes sense?
+
+> -Andi
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
