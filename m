@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZKDPXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZKDPZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbZKDPXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 10:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbZKDPXu
+	id S1756760AbZKDPZl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 10:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZKDPZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 10:23:50 -0500
-Received: from sitar.i-cable.com ([203.83.115.100]:62536 "HELO
-	sitar.i-cable.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756657AbZKDPXs (ORCPT
+	Wed, 4 Nov 2009 10:25:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42692 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756158AbZKDPZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 10:23:48 -0500
-From: Zhang Le <r0bertz@gentoo.org>
-To: gregkh@suse.de
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       smurf@smurf.noris.de, Zhang Le <r0bertz@gentoo.org>
-Subject: [PATCH v2] USB: option.c: add support for D-Link DWM-162-U5
-Date: Wed,  4 Nov 2009 23:22:59 +0800
-Message-Id: <1257348179-20430-1-git-send-email-r0bertz@gentoo.org>
-X-Mailer: git-send-email 1.6.3.3
+	Wed, 4 Nov 2009 10:25:36 -0500
+Date: Wed, 4 Nov 2009 07:23:15 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: johannes@sipsolutions.net, marcel@holtmann.org, dmitry.torokhov@gmail.com,
+       torvalds@linux-foundation.org, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: Please consider reverting
+ 7d930bc33653d5592dc386a76a38f39c2e962344
+Message-Id: <20091104072315.18f56322.akpm@linux-foundation.org>
+In-Reply-To: <20091104.004157.86565200.davem@davemloft.net>
+References: <1257232587.3420.55.camel@localhost.localdomain>
+	<1257234299.28469.25.camel@johannes.local>
+	<20091103223433.23765578.akpm@linux-foundation.org>
+	<20091104.004157.86565200.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add D-Link DWM-162-U5 device id 1e0e:ce16 into option driver. The device
-has 4 interfaces, of which 1 is handled by storage and the other 3 by
-option driver.
+On Wed, 04 Nov 2009 00:41:57 -0800 (PST) David Miller <davem@davemloft.net> wrote:
 
-The device appears first as CD-only 05c6:2100 device and must be
-switched to 1e0e:ce16 mode either by using "eject CD" or usb_modeswitch.
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Tue, 3 Nov 2009 22:34:33 -0800
+> 
+> > Problem is, subsystem maintainers are very unreliable.
+> 
+> This is common, but not universal Andrew.
 
-The MessageContent for usb_modeswitch.conf is:
-"55534243e0c26a85000000000000061b000000020000000000000000000000"
+That's what I said too.
 
-Signed-off-by: Zhang Le <r0bertz@gentoo.org>
----
- drivers/usb/serial/option.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> Or, if it is, what patches from you have I been sitting on? :-)
 
-diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index cd44c68..319aaf9 100644
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -308,6 +308,7 @@ static int  option_resume(struct usb_serial *serial);
- 
- #define DLINK_VENDOR_ID				0x1186
- #define DLINK_PRODUCT_DWM_652			0x3e04
-+#define DLINK_PRODUCT_DWM_652_U5		0xce16
- 
- #define QISDA_VENDOR_ID				0x1da5
- #define QISDA_PRODUCT_H21_4512			0x4512
-@@ -586,6 +587,7 @@ static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_AC2726, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE(BENQ_VENDOR_ID, BENQ_PRODUCT_H10) },
- 	{ USB_DEVICE(DLINK_VENDOR_ID, DLINK_PRODUCT_DWM_652) },
-+	{ USB_DEVICE(ALINK_VENDOR_ID, DLINK_PRODUCT_DWM_652_U5) }, /* Yes, ALINK_VENDOR_ID */
- 	{ USB_DEVICE(QISDA_VENDOR_ID, QISDA_PRODUCT_H21_4512) },
- 	{ USB_DEVICE(QISDA_VENDOR_ID, QISDA_PRODUCT_H21_4523) },
- 	{ USB_DEVICE(QISDA_VENDOR_ID, QISDA_PRODUCT_H20_4515) },
--- 
-1.6.5.1
+zippo.  Although if you can help these:
 
+isdn-hisax-fix-lock-imbalance.patch
+hfc_usb-fix-read-buffer-overflow.patch
+misdn-fix-reversed-if-in-st_own_ctrl.patch
+isdn-eicon-use-offsetof.patch
+isdn-eicon-return-on-error.patch
+hisax-fix-test-in-waitforxfw.patch
+
+move forward it'd be nice!
