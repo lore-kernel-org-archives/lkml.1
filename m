@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbZKDMLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbZKDMPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbZKDMLK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 07:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZKDMLJ
+	id S1755631AbZKDMPb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 07:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbZKDMPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 07:11:09 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:61929 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753040AbZKDMLI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 07:11:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=VoZJtYQBBD+dWmfK3HiMaTgGrOsTBDu3WikRE4ZEE3ydYEwmQxWOrFyjvWvGm/VaA7
-         TfGfOUObp05I2eLsjX09ADmNKWDwV3YyEtz49bmT34oNet8zWAEp3FbUJJL+ncMd88Ip
-         DAQzeWuiZMrbrUEP45bQywf8TRAvquGh0e6jI=
-Date: Wed, 4 Nov 2009 20:11:05 +0800
-From: "Liuweni" <qingshenlwy@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Cc: "qingshenlwy" <qingshenlwy@tom.com>, "xgr178" <xgr178@163.com>
-Subject: [PATCH]kernel/irq/chip.c:Modify the code note
-Message-ID: <200911042011027500109@gmail.com>
-X-mailer: Foxmail 6, 15, 201, 22 [cn]
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 07:15:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55749 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754959AbZKDMPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 07:15:30 -0500
+Date: Wed, 4 Nov 2009 13:15:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH 4/14] cpumask: use struct cpumask rather than the
+	deprecated cpumask_t
+Message-ID: <20091104121520.GC16993@elte.hu>
+References: <200911031454.09261.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911031454.09261.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the origin, the code notes are not fit for set_irq_msi. 
-The function name is set_irq_data.
 
-And, I change function note "handle_percpu_IRQ" to "handle_percpu_irq".
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> To: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/include/asm/msr.h |    4 ++--
+>  arch/x86/lib/msr.c         |    4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 
-Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
+Mind sending this against latest -tip? We already have:
 
-------------------------------------------
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index c166019..ba566c2 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -166,11 +166,11 @@ int set_irq_data(unsigned int irq, void *data)
- EXPORT_SYMBOL(set_irq_data);
- 
- /**
-- *	set_irq_data - set irq type data for an irq
-+ *	set_irq_msi - set MSI descriptor data for an irq
-  *	@irq:	Interrupt number
-  *	@entry:	Pointer to MSI descriptor data
-  *
-- *	Set the hardware irq controller data for an irq
-+ *	Set the MSI descriptor entry for an irq
-  */
- int set_irq_msi(unsigned int irq, struct msi_desc *entry)
- {
-@@ -590,7 +590,7 @@ out_unlock:
- }
- 
- /**
-- *	handle_percpu_IRQ - Per CPU local irq handler
-+ *	handle_percpu_irq - Per CPU local irq handler
-  *	@irq:	the interrupt number
-  *	@desc:	the interrupt description structure for this irq
-  *
+  b8a4754: x86, msr: Unify rdmsr_on_cpus/wrmsr_on_cpus
 
- 				
---------------
-Liuweni
-2009-11-04
+which makes your patch not apply:
 
+ patching file arch/x86/include/asm/msr.h
+ Hunk #1 FAILED at 247.
+ 1 out of 1 hunk FAILED -- rejects in file arch/x86/include/asm/msr.h
+ patching file arch/x86/lib/msr.c
+ Hunk #1 FAILED at 78.
+ Hunk #2 FAILED at 107.
+ 2 out of 2 hunks FAILED -- rejects in file arch/x86/lib/msr.c
+
+Thanks,
+
+	Ingo
