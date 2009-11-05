@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZKEUpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbZKEUr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879AbZKEUpZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 15:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758852AbZKEUpZ
+	id S1758883AbZKEUr4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 15:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758852AbZKEUrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 15:45:25 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:39095 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758775AbZKEUpY (ORCPT
+	Thu, 5 Nov 2009 15:47:55 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:16423 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758468AbZKEUry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 15:45:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mflFpfpxdSI0r2Y2+j73EEDJnGhifeGemQuySl64oUJgPFGIsZSKUFwQ67FVfKRi/5
-         NEBFGAZjmtbw66d7kLZ06ND2QbrLuk9gK8aeVHfRn0n9UJghLSSqLI/2HnkgTR6MLryy
-         Tf04iPEl6buTbUxoNNIfV9QFmDHZwioMeL3eg=
-Message-ID: <4AF33965.9090708@gmail.com>
-Date: Thu, 05 Nov 2009 21:45:25 +0100
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090926 Lightning/1.0pre Shredder/3.0b4
+	Thu, 5 Nov 2009 15:47:54 -0500
+Date: Thu, 5 Nov 2009 13:47:58 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 2/2] pci: pciehp update the slot bridge res to get big
+	range for pcie devices - v9
+Message-ID: <20091105204758.GA2091@ldl.fc.hp.com>
+References: <4AE899A0.3020006@kernel.org> <4AE95247.8080401@jp.fujitsu.com> <4AE952B9.1010603@kernel.org> <4AE9588E.90708@jp.fujitsu.com> <4AE9657F.7010302@kernel.org> <4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH 37/41] rt2x00: remove needless ifdefs from rt2x00leds.h
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173633.28463.3378.sendpatchset@localhost.localdomain>
-In-Reply-To: <20091104173633.28463.3378.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF22D26.4070500@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/04/09 18:36, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] rt2x00: remove needless ifdefs from rt2x00leds.h
+* Yinghai Lu <yinghai@kernel.org>:
 > 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
+> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+> and at last do them all together one time including slot bridge, to avoid to
+> call assign resources several times, when there are several bridges under the
+> slot bridge.
+> 
+> need to introduce pci_bridge_assign_resources there.
+> 
+> handle the case the slot bridge that doesn't get pre-allocated big enough res
+> from FW.
+> for example pcie devices need 256M, but the bridge only get preallocated 2M...
+> 
+> pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
+> update res is not updated to bridge BAR. that is bridge is enabled already for
+> port service.
+> 
+> v2: address Alex's concern about pci remove/rescan feature about
+>     pci_setup_bridge changes.
+> v3: Kenji pointed out that pci_config_slot need to be called before
+>     pci_bus_add_devices()
+> v4: move out pci_is_enabled checkout of pci_setup_bridge()
+> v5: change the applying sequence.
+> v6: change the functions name according to Jesse
+> v8: address Eric's concern, only overwrite leaf bridge resource that is not
+>      big enough
+> v9: refresh to be applied after bjorn's patch, and remove trick about save
+>     size and restore resource second try.
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-For what it is worth:
+How did you build and test this? I got this during building:
 
-Acked-by: Gertjan van Wingerde <gwingerde@gmail.com>
+ERROR: "pci_assign_unassigned_bridge_resources" [drivers/pci/hotplug/pciehp.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
+make: *** Waiting for unfinished jobs....
 
+This patch fixed it for me:
+---
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 95fe3f4..2f15473 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -962,3 +962,4 @@ again:
+ 
+ 	goto again;
+ }
++EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
