@@ -1,63 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757818AbZKERzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZKEP01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757818AbZKERzm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 12:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbZKERzl
+	id S1755087AbZKEP01 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 10:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZKEP01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 12:55:41 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:45221 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757262AbZKERzl (ORCPT
+	Thu, 5 Nov 2009 10:26:27 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:53811 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751608AbZKEP00 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 12:55:41 -0500
-Message-Id: <20091105152702.606651698@linux-mips.org>
-User-Agent: quilt/0.47-1
-Date: Thu, 05 Nov 2009 16:26:04 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Maxime Bizon <mbizon@freebox.fr>, linux-mips@linux-mips.org,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 6/6] SERIAL: BCM63xx: Fix serial driver compile breakage.
-References: <20091105152555.227009519@linux-mips.org>
-Content-Disposition: inline; filename=0009.patch
+	Thu, 5 Nov 2009 10:26:26 -0500
+Date: Thu, 5 Nov 2009 16:26:26 +0100
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
+Subject: Re: OOM killer, page fault
+Message-ID: <20091105152626.GD21659@gamma.logic.tuwien.ac.at>
+References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at> <20091102005218.8352.A69D9226@jp.fujitsu.com> <20091102135640.93de7c2a.minchan.kim@barrios-desktop> <28c262360911012300h4535118ewd65238c746b91a52@mail.gmail.com> <20091102155543.E60E.A69D9226@jp.fujitsu.com> <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com> <20091102141917.GJ2116@gamma.logic.tuwien.ac.at> <28c262360911020640k3f9dfcdct2cac6cc1d193144d@mail.gmail.com> <20091105132109.GA12676@gamma.logic.tuwien.ac.at> <28c262360911050719u4de4223eub08c0f7ea8797137@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <28c262360911050719u4de4223eub08c0f7ea8797137@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Maxime Bizon <mbizon@freebox.fr>
+Hi Kim,
 
-The driver missed an API change.
+> > sorry for the late reply. I have two news, one good and one bad: The good
+> > being that I can reproduce the bug by running VirtualBox with some W7
+> 
+> W7 means "Windows 7"?
 
-Signed-off-by: Maxime Bizon <mbizon@freebox.fr>
-Cc: linux-mips@linux-mips.org
-Cc: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Yes, sorry for the shorthand.
 
- drivers/serial/bcm63xx_uart.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> > I know it sounds completely crazy, the patch only does harmless things
+> > afais. But I tried it. Several times. rc6+patch never did boot, while
+> > rc5 without path did boot. Then I patched it into -rc5, recompiled, and
+> > boom, no boot. booting into .31.5, recompiling rc6 and rc5 without
+> > that patch and suddenly rc6 boots (and I am sure rc5, too).
+> 
+> Hmm. It's out of my knowledge.
+> Probably, It's because WARN_ON?
+> Could you try it with omitting WARN_ON, again?
 
-Index: upstream-linus/drivers/serial/bcm63xx_uart.c
-===================================================================
---- upstream-linus.orig/drivers/serial/bcm63xx_uart.c
-+++ upstream-linus/drivers/serial/bcm63xx_uart.c
-@@ -242,7 +242,7 @@ static void bcm_uart_do_rx(struct uart_p
- 	 * higher than fifo size anyway since we're much faster than
- 	 * serial port */
- 	max_count = 32;
--	tty = port->info->port.tty;
-+	tty = port->state->port.tty;
- 	do {
- 		unsigned int iestat, c, cstat;
- 		char flag;
-@@ -318,7 +318,7 @@ static void bcm_uart_do_tx(struct uart_p
- 		return;
- 	}
- 
--	xmit = &port->info->xmit;
-+	xmit = &port->state->xmit;
- 	if (uart_circ_empty(xmit))
- 		goto txq_empty;
- 
+Will do that.
 
+> > Ah yes, I can reproduce the original strange bug with oom killer!
+> 
+> Sounds good to me.
+> Could you tell me your test scenario, your system info(CPU, RAM) and
+> config?
+> I want to reproduce it in my mahchine to not bother you. :)
 
+Puhh, well, I meant "I could reproduce it", but not "I have a clear
+idea what steps to be taken to reproduce it" ;-) Well here is what I can
+tell you:
+actual hardware:
+Intel(R) Core(TM)2 Duo CPU     P9500
+Memory 2G
+Config of my kernel attached.
+
+Virtual Machine (VirtualBox, not the OSE variant, I need USB 2.0 support
+for GPS stuff):
+VirtualBox 3.0.10
+memory for the machine: 1G (50%)
+ACPI and IO/APIC turned on
+1 processor with PAE/NX
+VT-x and Nested Paging activated
+Display 128M
+(need more details?)
+
+I will remove the WARN_ON and reboot and see if that works. If yes I try
+to recreate the problem.
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining                                        Associate Professor
+JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
+Vienna University of Technology                               preining@logic.at
+Debian Developer (Debian TeX Task Force)                    preining@debian.org
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+BROMSGROVE
+Any urban environment containing a small amount of dogturd and about
+forty-five tons of bent steel pylon or a lump of concrete with holes
+claiming to be sculpture. 'Oh, come my dear, and come with me. And
+wander 'neath the bromsgrove tree' - Betjeman.
+			--- Douglas Adams, The Meaning of Liff
