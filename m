@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbZKETHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbZKETHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758698AbZKETHG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 14:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758139AbZKETHF
+	id S1758707AbZKETHg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 14:07:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758662AbZKETHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 14:07:05 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:47128 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758057AbZKETHE (ORCPT
+	Thu, 5 Nov 2009 14:07:35 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:46260 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758139AbZKETHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 14:07:04 -0500
-Date: Thu, 5 Nov 2009 12:07:07 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, rdh@east.sun.com,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
-Message-ID: <20091105190707.GM10555@parisc-linux.org>
-References: <19184.41676.262206.134000@gargle.gargle.HOWL> <200911041628.17905.bjorn.helgaas@hp.com> <4AF240E7.8050200@jp.fujitsu.com> <200911051159.26046.bjorn.helgaas@hp.com>
+	Thu, 5 Nov 2009 14:07:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=KfYSP02lhiMUtzQxcEv3hfFHqjuFSxH2ptjo2pnKMV4C0Y1HIwX0fBi136FxpDQqto
+         knA0YaPK3Jy7Daz+3iLL9N6UNkMwxKI0Y83WUPr+HvTozNxZbdUwB3jq2YtptU5mCO7l
+         Dv8HOpnIbrb9t6nAElzlcoZGz+hkTzvp6y/fM=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH 35/41] rt2800: prepare for rt2800lib addition
+Date: Thu, 5 Nov 2009 20:07:36 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-wireless@vger.kernel.org, Gertjan van Wingerde <gwingerde@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173617.28463.6733.sendpatchset@localhost.localdomain>
+In-Reply-To: <20091104173617.28463.6733.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200911051159.26046.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200911052007.37268.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 05, 2009 at 12:59:25PM -0600, Bjorn Helgaas wrote:
-> Here's another possibility, the idea being to collect all the PCIe
-> stuff in one place.  This would require a lot of changes in the PCIe
-> driver code, but most of them would be trivial.
+On Wednesday 04 November 2009, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] rt2800: prepare for rt2800lib addition
+> 
+> Part of preparations for later code unification.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-I don't like the idea of kmallocing a 6- or 10-byte data structure
-... better to keep it in the pci_dev.  Maybe embedding a pcie_dev inside
-the pci_dev would be a good idea, but unless there're more things to
-move to it, this seems like a net loss to me.
+Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+
