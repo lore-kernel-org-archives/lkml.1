@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbZKEO1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbZKEOal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbZKEO1f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbZKEO1e
+	id S1757305AbZKEOal (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:30:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbZKEOal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:27:34 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56988 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756966AbZKEO1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:27:33 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
-       dhowells@redhat.com, hch@infradead.org, adilger@sun.com,
-       mtk.manpages@gmail.com, torvalds@linux-foundation.org,
-       drepper@gmail.com, jamie@shareable.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20091105131545.72b4e319@lxorguk.ukuu.org.uk> (message from Alan
-	Cox on Thu, 5 Nov 2009 13:15:45 +0000)
-Subject: Re: [PATCH v2 resend] vfs: new O_NODE open flag
-References: <E1N60RV-0002ed-FX@pomaz-ex.szeredi.hu> <20091105131545.72b4e319@lxorguk.ukuu.org.uk>
-Message-Id: <E1N63Io-000353-KX@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Nov 2009 15:27:06 +0100
+	Thu, 5 Nov 2009 09:30:41 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33035 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756655AbZKEOak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 09:30:40 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+qV9Npg1WqJ1pGzi5ckyVjr7kTskpY8eLXS0Jz31
+	7ILiIaW9DpEm0F
+Subject: Re: There is something with scheduler (was Re: [patch] Re:
+ [regression bisect -next] BUG: using smp_processor_id() in preemptible
+ [00000000] code: rmmod)
+From: Mike Galbraith <efault@gmx.de>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, tglx@linutronix.de
+In-Reply-To: <1257430388.6437.31.camel@marge.simson.net>
+References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
+	 <1256805552.7158.22.camel@marge.simson.net>
+	 <20091029091411.GE22963@elte.hu>
+	 <1256807967.7158.58.camel@marge.simson.net>
+	 <1256813310.7574.3.camel@marge.simson.net> <20091102182808.GA8950@elte.hu>
+	 <1257190811.19608.2.camel@marge.simson.net>
+	 <4AF2AC30.4000003@cn.fujitsu.com>
+	 <1257430388.6437.31.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 05 Nov 2009 15:30:37 +0100
+Message-Id: <1257431437.7016.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Nov 2009, Alan Cox wrote:
-> >  - re-opening normally after checking file type (there's a debate
-> >    whether this would have security issues, but currently we do allow
-> >    re-opening with increased permissions thorugh /proc/*/fd)
-> 
-> Which has already been demonstrated to be an (unfixed) security hole.
+BTW, with (only) the full scheduler pull request applied, it also acts
+sane, and this little hunk is responsible... somehow.  But if that's the
+problem, why does locking the runqueue fix it too??
 
-No it hasn't :)  Jamie theorized that there *might* be a real world
-situation where the application writer didn't anticipate this
-behavior.  But as to actual demonstration, we have not seen one yet, I
-think.
+Index: linux-2.6.32.git/kernel/sched.c
+===================================================================
+--- linux-2.6.32.git.orig/kernel/sched.c
++++ linux-2.6.32.git/kernel/sched.c
+@@ -9552,13 +9584,13 @@ void __init sched_init(void)
+ 	current->sched_class = &fair_sched_class;
+ 
+ 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
+-	alloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
++	zalloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
+ #ifdef CONFIG_SMP
+ #ifdef CONFIG_NO_HZ
+-	alloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
++	zalloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
+ 	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
+ #endif
+-	alloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
++	zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
+ #endif /* SMP */
+ 
+ 	perf_event_init();
 
-And as for reopening O_NODE files with increased permission: that's
-feature people actually expressed interest in, so it's hardly a
-security hole, is it?
 
-> 
-> > Filesystems which want to install special file operations for O_NODE
-> > opens (e.g. ioctl) may set S_OPEN_NODE flag in the inode.  This will
-> 
-> Wrong way around. The defailt should be that O_NODE fails for any handle
-> which has not specifically added support.
-
-Why?  O_NODE can be nicely implemented without any filesystem support.
-
-The only filesystems that need to do anything special is things like
-AFS which for example want to implement special ioctls, which work on
-the node itself.
-
-> You also need to address the open with no permissions pinning a removable
-> device question.
-
-The whole point of O_NODE is that it doesn't do that, it only goes as
-far as the mnt/dentry for the filesystem node and not further.  It
-does not get to touch the device at all, so it can't pin it or have
-any other side effect.
-
-Thanks,
-Miklos
