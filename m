@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbZKEEqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbZKEEvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbZKEEqO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 23:46:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbZKEEqN
+	id S1755976AbZKEEvY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 23:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZKEEvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 23:46:13 -0500
-Received: from sh.osrg.net ([192.16.179.4]:50048 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751716AbZKEEqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 23:46:12 -0500
-Date: Thu, 5 Nov 2009 13:44:45 +0900
-To: mingo@elte.hu
-Cc: tj@kernel.org, joerg.roedel@amd.com, jbarnes@virtuousgeek.org,
-       dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp, x86@kernel.org,
-       tglx@linutronix.de, hpa@zytor.com, athena@fftw.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix iommu=nodac parameter handling
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091104122827.GB11968@elte.hu>
-References: <4AE5B52A.4050408@kernel.org>
-	<20091104122827.GB11968@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091105134306W.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 05 Nov 2009 13:44:48 +0900 (JST)
+	Wed, 4 Nov 2009 23:51:24 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:59481 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755891AbZKEEvW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 23:51:22 -0500
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
+       Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+References: <m13a4vbz8r.fsf@fess.ebiederm.org>
+	<1257249429-12384-13-git-send-email-ebiederm@xmission.com>
+	<20091104221957.GB21033@us.ibm.com> <m1my32vsi1.fsf@fess.ebiederm.org>
+	<20091104223728.GA23322@us.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 04 Nov 2009 20:51:15 -0800
+In-Reply-To: <20091104223728.GA23322@us.ibm.com> (Serge E. Hallyn's message of "Wed\, 4 Nov 2009 16\:37\:28 -0600")
+Message-ID: <m11vkdwp4s.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Serge E. Hallyn" <serue@us.ibm.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 13/13] sysfs: Factor out sysfs_rename from sysfs_rename_dir and sysfs_move_dir
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Nov 2009 13:28:27 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+"Serge E. Hallyn" <serue@us.ibm.com> writes:
 
-> 
-> * Tejun Heo <tj@kernel.org> wrote:
-> 
-> > nodac should forbid dac instead of enabling it.  Fix it.
-> > 
-> > Signed-off-by: Tejun Heo <tj@kernel.org>
-> > Cc: Matteo Frigo <athena@fftw.org>
-> > Cc: stable@kernel.org
-> > ---
-> > This was posted several months ago in a two patch series.  The second
-> > one was rejected by Alan and with that the first one got lost too
-> > although it's an apparent bug fix.  Matteo hit this bug recently and
-> > reminded me about this patch.  So, regenerated and reposting.
-> > 
-> > Thanks.
-> > 
-> >  arch/x86/kernel/pci-dma.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> > index d20009b..8cf3996 100644
-> > --- a/arch/x86/kernel/pci-dma.c
-> > +++ b/arch/x86/kernel/pci-dma.c
-> > @@ -216,7 +216,7 @@ static __init int iommu_setup(char *p)
-> >  		if (!strncmp(p, "allowdac", 8))
-> >  			forbid_dac = 0;
-> >  		if (!strncmp(p, "nodac", 5))
-> > -			forbid_dac = -1;
-> > +			forbid_dac = 1;
-> >  		if (!strncmp(p, "usedac", 6)) {
-> >  			forbid_dac = -1;
-> >  			return 1;
-> 
-> (Cc:-ed more interested parties.)
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
+>> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+>> 
+>> > Quoting Eric W. Biederman (ebiederm@xmission.com):
+>> >> From: Eric W. Biederman <ebiederm@xmission.com>
+>> >> 
+>> >> These two functions do 90% of the same work and it doesn't significantly
+>> >> obfuscate the function to allow both the parent dir and the name to change
+>> >> at the same time.  So merge them together to simplify maintenance, and
+>> >> increase testing.
+>> >> 
+>> >> Acked-by: Tejun Heo <tj@kernel.org>
+>> >> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+>> >
+>> > Based on just this patchset it seems sysfs_rename() could be static,
+>> > but since it isn't static I assume your later patchset will use it
+>> > outside fs/sysfs/dir.c?
+>> 
+>> To implement sysfs_rename_link, but that is too much to digest/review/push
+>> all at once.
+>
+> Ok, just making sure it'll get used.
+>
+> To repeat myself,
+>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+>
+>> I have a snapshot of my development tree up on kernel.org if you are
+>> interested.
+>
+> I think this was an appropriately sized set :)  Might take a look this
+> weekend though.
 
-Looks fine to me.
+Thanks for the review.
+
+Eric
