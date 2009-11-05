@@ -1,133 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbZKEOkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbZKEOkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbZKEOkM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbZKEOkL
+	id S1757727AbZKEOkb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664AbZKEOk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:40:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48621 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757055AbZKEOkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:40:09 -0500
-Date: Thu, 5 Nov 2009 09:39:14 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Divyesh Shah <dpshah@google.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, nauman@google.com, lizf@cn.fujitsu.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 02/20] blkio: Change CFQ to use CFS like queue time
-	stamps
-Message-ID: <20091105143914.GC4001@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-3-git-send-email-vgoyal@redhat.com> <x49d43yuzud.fsf@segfault.boston.devel.redhat.com> <20091104163752.GB2870@redhat.com> <af41c7c40911041844v2905a9c6vb9d0649faf060726@mail.gmail.com>
+	Thu, 5 Nov 2009 09:40:29 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:13698 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757598AbZKEOkY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 09:40:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=iuA/ewWbzay2ARgeF9TnpCWcbDXXoJA7erZ9s9K4pH6D4puD+bKyrRKaPqb4RA2tfY
+         7gDBuzObUe8LjQ8BB37BO+f6m3XPRv+BXUaQJcFseK4z0E8tC4+F9+O7gS3wyKNv6Hro
+         AJGuJecMxCAPR3EtaRaVxCAqb7CD0ajUGEbIY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <af41c7c40911041844v2905a9c6vb9d0649faf060726@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1257403455.22519.249.camel@yhuang-dev.sh.intel.com>
+References: <1257403455.22519.249.camel@yhuang-dev.sh.intel.com>
+Date: Thu, 5 Nov 2009 09:40:28 -0500
+Message-ID: <73c1f2160911050640u45f47e46yf6e18101231c2729@mail.gmail.com>
+Subject: Re: [PATCH 1/2] x86, crypto, Generate .byte code for some new 
+	instructions via gas macro
+From: Brian Gerst <brgerst@gmail.com>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 06:44:28PM -0800, Divyesh Shah wrote:
-> On Wed, Nov 4, 2009 at 8:37 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Wed, Nov 04, 2009 at 09:30:34AM -0500, Jeff Moyer wrote:
-> >> Vivek Goyal <vgoyal@redhat.com> writes:
-> >>
-> >
-> > Thanks for the review Jeff.
-> >
-> >> > o Currently CFQ provides priority scaled time slices to processes. If a process
-> >> > � does not use the time slice, either because process did not have sufficient
-> >> > � IO to do or because think time of process is large and CFQ decided to disable
-> >> > � idling, then processes looses it time slice share.
-> >> � � � � � � � � � � � � � �^^^^^^
-> >> loses
-> >>
-> >
-> > Will fix it.
-> >
-> >> > o One possible way to handle this is implement CFS like time stamping of the
-> >> > � cfq queues and keep track of vtime. Next queue for execution will be selected
-> >> > � based on the one who got lowest vtime. This patch implemented time stamping
-> >> > � mechanism of cfq queues based on disk time used.
-> >> >
-> >> > o min_vdisktime represents the minimum vdisktime of the queue, either being
-> >> � � � � � � � � � � � � � � � � � � � � � � � � � � � � � ^^^^^
-> >> > � serviced or leftmost element on the serviec tree.
-> >>
-> >> queue or service tree? �The latter seems to make more sense to me.
-> >
-> > Yes, it should be service tree. Will fix it.
-> >
-> >>
-> >> > +static inline u64
-> >> > +cfq_delta_fair(unsigned long delta, struct cfq_queue *cfqq)
-> >> > +{
-> >> > + � const int base_slice = cfqq->cfqd->cfq_slice[cfq_cfqq_sync(cfqq)];
-> >> > +
-> >> > + � return delta + (base_slice/CFQ_SLICE_SCALE * (cfqq->ioprio - 4));
-> >> > +}
-> >>
-> >> cfq_scale_delta might be a better name.
-> >>
-> >
-> > cfq_scale_delta sounds good. Will use it in next version.
-> >
-> >>
-> >> > +static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
-> >> > +{
-> >> > + � s64 delta = (s64)(vdisktime - min_vdisktime);
-> >> > + � if (delta > 0)
-> >> > + � � � � � min_vdisktime = vdisktime;
-> >> > +
-> >> > + � return min_vdisktime;
-> >> > +}
-> >> > +
-> >> > +static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
-> >> > +{
-> >> > + � s64 delta = (s64)(vdisktime - min_vdisktime);
-> >> > + � if (delta < 0)
-> >> > + � � � � � min_vdisktime = vdisktime;
-> >> > +
-> >> > + � return min_vdisktime;
-> >> > +}
-> >>
-> >> Is there a reason you've reimplemented min and max?
-> >
-> > I think you are referring to min_t and max_t. Will these macros take care
-> > of wrapping too?
-> >
-> > For example, if I used min_t(u64, A, B), then unsigned comparision will
-> > not work right wrapping has just taken place for any of the A or B. So if
-> > A=-1 and B=2, then min_t() would return B as minimum. This is not right
-> > in our case.
-> >
-> > If we do signed comparison (min_t(s64, A, B)), that also seems to be
-> > broken in another case where a value of variable moves from 63bits to 64bits,
-> > (A=0x7fffffffffffffff, B=0x8000000000000000). Above will return B as minimum but
-> > in our scanario, vdisktime will progress from 0x7fffffffffffffff to
-> > 0x8000000000000000 and A should be returned as minimum (unsigned
-> > comparison).
-> 
-> Can you define and use u64 versions of time_before() and time_after()
-> (from include/linux/jiffies.h) for your comparisons? These take care
-> of wrapping as well. Maybe call them timestamp_before()/after().
-> 
-> >
-> > Hence I took these difnitions from CFS.
-> 
-> Also if these are exactly the same and you decide to continue using
-> these, can we move them to a common header file (time.h or maybe add a
-> vtime.h) and reuse?
-> 
+On Thu, Nov 5, 2009 at 1:44 AM, Huang Ying <ying.huang@intel.com> wrote:
+> It will take some time for binutils (gas) to support some newly added
+> instructions, such as SSE4.1 instructions or the AES-NI instructions
+> found in upcoming Intel CPU.
+>
+> To make the source code can be compiled by old binutils, .byte code is
+> used instead of the assembly instruction. But the readability and
+> flexibility of raw .byte code is not good.
+>
+> This patch solves the issue of raw .byte code via generating it via
+> assembly instruction like gas macro. The syntax is as close as
+> possible to real assembly instruction.
+>
+> Some helper macros such as MODRM is not a full feature
+> implementation. It can be extended when necessary.
+>
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> ---
+>  arch/x86/include/asm/inst.h |  150 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 150 insertions(+)
+>
+> --- /dev/null
+> +++ b/arch/x86/include/asm/inst.h
+> @@ -0,0 +1,150 @@
+> +/*
+> + * Generate .byte code for some instructions not supported by old
+> + * binutils.
+> + */
+> +#ifndef X86_ASM_INST_H
+> +#define X86_ASM_INST_H
+> +
+> +#ifdef __ASSEMBLY__
+> +
+> +       .macro XMM_NUM opd xmm
+> +       .ifc \xmm,%xmm0
+> +       \opd = 0
+> +       .endif
+> +       .ifc \xmm,%xmm1
+> +       \opd = 1
+> +       .endif
+> +       .ifc \xmm,%xmm2
+> +       \opd = 2
+> +       .endif
+> +       .ifc \xmm,%xmm3
+> +       \opd = 3
+> +       .endif
+> +       .ifc \xmm,%xmm4
+> +       \opd = 4
+> +       .endif
+> +       .ifc \xmm,%xmm5
+> +       \opd = 5
+> +       .endif
+> +       .ifc \xmm,%xmm6
+> +       \opd = 6
+> +       .endif
+> +       .ifc \xmm,%xmm7
+> +       \opd = 7
+> +       .endif
+> +       .ifc \xmm,%xmm8
+> +       \opd = 8
+> +       .endif
+> +       .ifc \xmm,%xmm9
+> +       \opd = 9
+> +       .endif
+> +       .ifc \xmm,%xmm10
+> +       \opd = 10
+> +       .endif
+> +       .ifc \xmm,%xmm11
+> +       \opd = 11
+> +       .endif
+> +       .ifc \xmm,%xmm12
+> +       \opd = 12
+> +       .endif
+> +       .ifc \xmm,%xmm13
+> +       \opd = 13
+> +       .endif
+> +       .ifc \xmm,%xmm14
+> +       \opd = 14
+> +       .endif
+> +       .ifc \xmm,%xmm15
+> +       \opd = 15
+> +       .endif
+> +       .endm
+> +
+> +       .macro PFX_OPD_SIZE
+> +       .byte 0x66
+> +       .endm
+> +
+> +       .macro PFX_REX opd1 opd2
+> +       .if (\opd1 | \opd2) & 8
+> +       .byte 0x40 | ((\opd1 & 8) >> 3) | ((\opd2 & 8) >> 1)
+> +       .endif
+> +       .endm
+> +
+> +       .macro MODRM mod opd1 opd2
+> +       .byte \mod | (\opd1 & 7) | ((\opd2 & 7) << 3)
+> +       .endm
+> +
+> +       .macro PSHUFB_XMM xmm1 xmm2
+> +       XMM_NUM pshufb_opd1 \xmm1
+> +       XMM_NUM pshufb_opd2 \xmm2
+> +       PFX_OPD_SIZE
+> +       PFX_REX pshufb_opd1 pshufb_opd2
+> +       .byte 0x0f, 0x38, 0x00
+> +       MODRM 0xc0 pshufb_opd1 pshufb_opd2
+> +       .endm
+> +
+> +       .macro PCLMULQDQ imm8 xmm1 xmm2
+> +       XMM_NUM clmul_opd1 \xmm1
+> +       XMM_NUM clmul_opd2 \xmm2
+> +       PFX_OPD_SIZE
+> +       PFX_REX clmul_opd1 clmul_opd2
+> +       .byte 0x0f, 0x3a, 0x44
+> +       MODRM 0xc0 clmul_opd1 clmul_opd2
+> +       .byte \imm8
+> +       .endm
+> +
+> +       .macro AESKEYGENASSIST rcon xmm1 xmm2
+> +       XMM_NUM aeskeygen_opd1 \xmm1
+> +       XMM_NUM aeskeygen_opd2 \xmm2
+> +       PFX_OPD_SIZE
+> +       PFX_REX aeskeygen_opd1 aeskeygen_opd2
+> +       .byte 0x0f, 0x3a, 0xdf
+> +       MODRM 0xc0 aeskeygen_opd1 aeskeygen_opd2
+> +       .byte \rcon
+> +       .endm
+> +
+> +       .macro AESIMC xmm1 xmm2
+> +       XMM_NUM aesimc_opd1 \xmm1
+> +       XMM_NUM aesimc_opd2 \xmm2
+> +       PFX_OPD_SIZE
+> +       PFX_REX aesimc_opd1 aesimc_opd2
+> +       .byte 0x0f, 0x38, 0xdb
+> +       MODRM 0xc0 aesimc_opd1 aesimc_opd2
+> +       .endm
+> +
+> +       .macro AESENC xmm1 xmm2
+> +       XMM_NUM aesenc_opd1 \xmm1
+> +       XMM_NUM aesenc_opd2 \xmm2
+> +       PFX_OPD_SIZE
+> +       PFX_REX aesenc_opd1 aesenc_opd2
+> +       .byte 0x0f, 0x38, 0xdc
+> +       MODRM 0xc0 aesenc_opd1 aesenc_opd2
+> +       .endm
+> +
+> +       .macro AESENCLAST xmm1 xmm2
+> +       XMM_NUM aesenclast_opd1 \xmm1
+> +       XMM_NUM aesenclast_opd2 \xmm2
+> +       PFX_OPD_SIZE
+> +       PFX_REX aesenclast_opd1 aesenclast_opd2
+> +       .byte 0x0f, 0x38, 0xdd
+> +       MODRM 0xc0 aesenclast_opd1 aesenclast_opd2
+> +       .endm
+> +
+> +       .macro AESDEC xmm1 xmm2
+> +       XMM_NUM aesdec_opd1 \xmm1
+> +       XMM_NUM aesdec_opd2 \xmm2
+> +       PFX_OPD_SIZE
+> +       PFX_REX aesdec_opd1 aesdec_opd2
+> +       .byte 0x0f, 0x38, 0xde
+> +       MODRM 0xc0 aesdec_opd1 aesdec_opd2
+> +       .endm
+> +
+> +       .macro AESDECLAST xmm1 xmm2
+> +       XMM_NUM aesdeclast_opd1 \xmm1
+> +       XMM_NUM aesdeclast_opd2 \xmm2
+> +       PFX_OPD_SIZE
+> +       PFX_REX aesdeclast_opd1 aesdeclast_opd2
+> +       .byte 0x0f, 0x38, 0xdf
+> +       MODRM 0xc0 aesdeclast_opd1 aesdeclast_opd2
+> +       .endm
+> +#endif
+> +
+> +#endif
 
-Ok. I will look into it. Sharing the function between CFS scheduler and
-CFQ scheduler.
+It would be nice to document which version of GAS added support for
+each instruction, so that if/when that version becomes the minimum
+supported these macros can be removed.
 
-Thanks
-Vivek
+--
+Brian Gerst
