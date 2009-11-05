@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZKEQ2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbZKEQ22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbZKEQ2Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 11:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZKEQ2P
+	id S1757299AbZKEQ22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 11:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbZKEQ21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 11:28:15 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:33962 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752596AbZKEQ2O (ORCPT
+	Thu, 5 Nov 2009 11:28:27 -0500
+Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:50935 "HELO
+	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752830AbZKEQ20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 11:28:14 -0500
-Message-ID: <4AF2FD04.4030306@gmail.com>
-Date: Thu, 05 Nov 2009 17:27:48 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Max Kellermann <max@duempel.org>
-CC: linux-kernel@vger.kernel.org, mk@cm4all.com
-Subject: Re: [PATCH] pipe: don't block after data has been written
-References: <20091105153147.27473.19570.stgit@woodpecker.roonstrasse.net>
-In-Reply-To: <20091105153147.27473.19570.stgit@woodpecker.roonstrasse.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 05 Nov 2009 17:27:49 +0100 (CET)
+	Thu, 5 Nov 2009 11:28:26 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=X55kIvqqcp2kqZ34Ld5p48RMfNJN+LM1gzXNR6E+1WUpXfmwmRwngoWEGUZglkETdoqubZnK2eP18tonKzg5f2zAc6UATYQfpCOa1CXDaDzN6z6rlaQR0VsxSx+3MN4p;
+Date: Thu, 5 Nov 2009 08:28:29 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [resend] i915: high power consumption after suspend/resume
+Message-ID: <20091105082829.2d59dcae@jbarnes-piketon>
+In-Reply-To: <cb0375e10911042000h3cf215a1o44add74510c15a1c@mail.gmail.com>
+References: <cb0375e10910030939v8d03df7m861a2f05219f173c@mail.gmail.com>
+	<cb0375e10910030950kcd19fe9i7835eaaf4314c0fb@mail.gmail.com>
+	<20091005092148.4341d9ab@jbarnes-g45>
+	<cb0375e10910072044m470c8cbasef33de3b36bb62ee@mail.gmail.com>
+	<20091029094723.7e5a3376@jbarnes-g45>
+	<cb0375e10910291022l5650994dyc4a36d55f1e5bbc4@mail.gmail.com>
+	<cb0375e10910291040i31a7b9aatb6da5c20778d9791@mail.gmail.com>
+	<cb0375e10910292325l659034c4u36cf263cda8e90c8@mail.gmail.com>
+	<20091030083742.48f5d4f3@jbarnes-g45>
+	<cb0375e10910301155s5e2b2e79t562bfa798ba75e23@mail.gmail.com>
+	<cb0375e10911042000h3cf215a1o44add74510c15a1c@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Kellermann a écrit :
-> According to the select() / poll() documentation, a write operation on
-> a file descriptor which is "ready for writing" must not block.  Linux
-> violates this rule: if you pass a very large buffer to write(), the
-> system call will not return until everything is written, or an error
-> occurs.
-> 
-> This patch adds a simple check: if at least one byte has already been
-> written, break from the loop, instead of calling pipe_wait().
-> 
-> Signed-off-by: Max Kellermann <max@duempel.org>
-> ---
-> 
->  fs/pipe.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/pipe.c b/fs/pipe.c
-> index ae17d02..9d84f0b 100644
-> --- a/fs/pipe.c
-> +++ b/fs/pipe.c
-> @@ -582,7 +582,7 @@ redo2:
->  		}
->  		if (bufs < PIPE_BUFFERS)
->  			continue;
-> -		if (filp->f_flags & O_NONBLOCK) {
-> +		if (filp->f_flags & O_NONBLOCK || ret > 0) {
->  			if (!ret)
->  				ret = -EAGAIN;
->  			break;
-> 
+On Wed, 4 Nov 2009 23:00:14 -0500
+Andrew Lutomirski <luto@mit.edu> wrote:
+> so it looks like it's not a register setting after all.  Maybe my BIOS
+> leaves the renderer in some weird state.
 
-Then select()/poll() documentation is wrong, please correct documentation ?
+Note that the register dumping tool doesn't capture everything.  If you
+really want to do some detective work you could dump the whole MMIO
+space and compare differences.  You should be able to find definitions
+for many of the reg offsets in the docs at intellinuxgraphics.org,
+maybe there's something we don't dump that's changing and that explains
+your power consumption changes.
 
-http://www.opengroup.org/onlinepubs/000095399/functions/write.html
-
-	ssize_t write(int fildes, const void *buf, size_t nbyte);
-
-	If the O_NONBLOCK flag is clear, a write request may cause the thread to block,
-	but on normal completion it shall return nbyte.
-
-Every Unix I know behaves the same when writing to a pipe.
-
-
-Your patch breaks many programs, that dont use poll()/select()
-
-char result[1000000];
-main()
-{
-	computethings();
-	write(1, buffer, 1000000);
-}
-
-
-$ ./program | more
-
-Please learn how useful O_NDELAY can be in a poll()/select() environment.
-
-Thanks
+-- 
+Jesse Barnes, Intel Open Source Technology Center
