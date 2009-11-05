@@ -1,89 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbZKEACX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751002AbZKEAEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932859AbZKEACX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 19:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932745AbZKEACW
+	id S1751002AbZKEAEI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 19:04:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZKEAEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 19:02:22 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:44390 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932687AbZKEACV (ORCPT
+	Wed, 4 Nov 2009 19:04:07 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:55763 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789AbZKEAEG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 19:02:21 -0500
-Subject: RE: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
- implementation
-From: john stultz <johnstul@us.ibm.com>
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-Cc: Avi Kivity <avi@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Glauber Costa <glommer@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
-       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <5419f8c1-218e-42d2-991f-e52fc20e5ee4@default>
-References: <5419f8c1-218e-42d2-991f-e52fc20e5ee4@default>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 04 Nov 2009 16:02:18 -0800
-Message-ID: <1257379338.10811.152.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 4 Nov 2009 19:04:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=qcbGfTYeP8Dy8BKvtU/63SDBOzE8mxtzkTTsfEkGpbdGAh4PC5WnzTk/OxZQXIwMgz
+         kpiuN/Ml6yfnXdy4S6pYY7zELRccCwY6zm0xIbU/syvdyFBe2Q2zDN1sKE5f75/RL+hQ
+         O/aJFroEkZm7RoAwmeB1Xfew4ZgfZ7u4doen8=
+Message-ID: <4AF21678.5020107@gmail.com>
+Date: Wed, 04 Nov 2009 18:04:08 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel Options: To use MSI-X or not?
+References: <alpine.DEB.2.00.0911041151410.17867@p34.internal.lan> <14754.1257356211@turing-police.cc.vt.edu>
+In-Reply-To: <14754.1257356211@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-04 at 13:28 -0800, Dan Magenheimer wrote:
-> > From: john stultz [mailto:johnstul@us.ibm.com]
-> > On Thu, Oct 29, 2009 at 7:07 AM, Avi Kivity <avi@redhat.com> wrote:
-> > >
-> > > Out of interest, do you know (and can you relate) why those 
-> > apps need
-> > > 100k/sec monotonically increasing timestamps?
-> > 
-> > This is sort of tangential, but depending on the need, this might be
-> > of interest:  Recently I've added a new clock_id,
-> > CLOCK_MONOTONIC_COARSE (as well as CLOCK_REALTIME_COARSE), which
-> > return a HZ granular timestamp (same granularity as filesystem
-> > timestamps). Its very fast to access, since there's no hardware to
-> > touch, and is accessible via vsyscall.
-> > 
-> > The idea being, if your hitting clock_gettime 100k/sec but you really
-> > don't have the need for nsec granular timestamps, it might provide a
-> > really nice performance boost.
-> > 
-> > Here's the commit:
-> 
-> Hi John --
-> 
-> Yes, possibly of interest.  But does it work with CONFIG_NO_HZ?
-> (I'm expecting that over time NO_HZ will become widespread
-> for VM OS's, though interested in if you agree.)
+On 11/04/2009 11:36 AM, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 04 Nov 2009 11:53:18 EST, Justin Piszcz said:
+>
+>> Example, 3ware cards/Intel Audio Drivers you can use MSI-X instead of
+>> having several devices use/share an interrupt.
+>>
+>> What are the pros/cons to using MSI-X vs. having devices share an IRQ?
+>
+> Cons: Sometimes, you'll find a device that claims to support MSI but in fact is
+> to some extent borked...
+>
+> I'm the proud owner of a Dell Latitude D820, which includes this PCI:
+>
+> 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 01)
+>          Subsystem: Dell Device 01cc
+>          Flags: bus master, fast devsel, latency 0, IRQ 30
+>          Memory at efffc000 (64-bit, non-prefetchable) [size=16K]
+>          Capabilities: [50] Power Management version 2
+>          Capabilities: [60] MSI: Enable+ Count=1/1 Maskable- 64bit+
+>          Capabilities: [70] Express Root Complex Integrated Endpoint, MSI 00
+>          Capabilities: [100] Virtual Channel<?>
+>          Capabilities: [130] Root Complex Link<?>
+>          Kernel driver in use: HDA Intel
+>
+> However, actually trying to enable MSI gets me this at some pseudo-random
+> time after booting (one for each of 7 boots):
+>
+> [    4.519264] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00df0900
+> [   22.788015] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x008f0c00
+> [    4.719263] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00df0900
+> [   12.497263] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00df0900
+> [  815.350265] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00df0900
+> [  595.171267] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00171700
+> [    4.968263] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00df0900
+>
+> (Am slightly mystified about the resets at 4 and 12 seconds - at that point,
+> we're not up far enough to actually try to use the audio. I suspect udev trying
+> to initialize the card - except sometimes it works and runs just fine with
+> MSI for quite some time:
+>
+> [14267.701267] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00df0900
+> [12841.892050] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00df0900
+> [10647.783274] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x001f1500
+> [15091.102034] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00171700
+> [20085.955293] ALSA sound/pci/hda/hda_intel.c:683: No response from codec, disabling MSI: last cmd=0x00df0700
 
-It should work, with CONFIG_NO_HZ, as soon as we come out of a long idle
-(likely due to a timer tick), the timekeeping code will accumulate all
-the skipped ticks.
-
-If we ever get to non-idle NOHZ, we'll need some extra work here
-(probably lazy accumulation done conditionally in the read path), but
-that's also true for filesystem timestamps. 
-
-
-> Also very interested in your thoughts about a variation
-> that returns something similar to a TSC_AUX to notify
-> caller that the underlying reference clock has/may have
-> changed.
-
-I haven't been following that closely. Personally, experience makes me
-skeptical of workarounds for unsynced TSCs. But I'm sure there's sharper
-folks out there that might make it work. The kernel just requires that
-it *really really* works, and not "mostly" works. :)
-
-thanks
--john
-
-
-
-
+This may not be an actual MSI problem (in fact I'd say it's probably 
+not). Currently hda_intel disables MSI after any codec response timeout, 
+so it could be it would have worked if it retried while still using MSI. 
+I believe Takashi was going to change the driver to be less sensitive 
+about this.
