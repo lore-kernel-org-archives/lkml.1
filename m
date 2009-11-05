@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZKEK5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZKEK6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZKEK5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 05:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZKEK5k
+	id S1754088AbZKEK6V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 05:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZKEK6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 05:57:40 -0500
-Received: from s2.homepagix.de ([91.199.241.131]:59242 "EHLO fry.cm4all.net"
+	Thu, 5 Nov 2009 05:58:21 -0500
+Received: from fanny.its.uu.se ([130.238.4.241]:56128 "EHLO fanny.its.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbZKEK5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 05:57:39 -0500
-Date: Thu, 5 Nov 2009 11:57:49 +0100
-From: Max Kellermann <mk@cm4all.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] tcp: set SPLICE_F_NONBLOCK after first buffer has been
-	spliced
-Message-ID: <20091105105749.GA4901@rabbit.intern.cm-ag>
-References: <20091105095947.32131.99768.stgit@rabbit.intern.cm-ag> <4AF2A929.3000201@gmail.com>
+	id S1753948AbZKEK6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 05:58:20 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF2A929.3000201@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19186.44983.543376.657628@pilspetsen.it.uu.se>
+Date: Thu, 5 Nov 2009 11:57:59 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Aristeu Rozanski <aris@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: introduce NMI_AUTO as nmi_watchdog option
+In-Reply-To: <20091104155641.GA11444@elte.hu>
+References: <20091103171054.GB25437@redhat.com>
+	<20091104114630.GA16993@elte.hu>
+	<20091104151929.GH18613@redhat.com>
+	<20091104155641.GA11444@elte.hu>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009/11/05 11:30, Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> I dont think this patch is correct. Could you describe your use case ?
+Ingo Molnar writes:
+ > > but that would work only for LAPIC. You're suggesting killing IOAPIC 
+ > > mode too?
+ > 
+ > Would it be a big loss, with all modern systems expected to have a 
+ > working lapic based NMI source?
 
-See my second email, there's a demo source.
+The IOAPIC NMI uses a HW resource that is free and reliable, the LAPIC NMI
+uses a HW resource that is neither free nor reliable (for that application),
+and for which better applications exist. So I prefer the IOAPIC NMI.
 
-> If you dont want to block on output pipe, you should set this NONBLOCK 
-> flag before calling splice(SPLICE_F_NONBLOCK) syscall.
-> 
-> ie : Use the socket in blocking mode, but output pipe in non-blocking mode.
-
-Do you think that a splice() should block if the socket is readable
-and the pipe is writable according to select()?
-
-"The correct behavior would be to copy as much as possible, and return
-without blocking.  Block only if nothing can be transferred."
-
-Do you disagree with that?
-
-> Some application could have a thread working in full blocking mode,
-> and have another thread reading the pipe (and eventually unblocking
-> first thread)
-
-I don't get this objection.  Please explain.
+(I admit part of that preference is because using the IOAPIC NMI helped
+stabilize a Dell PE2650 here years ago. Without the IOAPIC NMI the machine
+would lock up hard within days or a few weeks at the most.)
