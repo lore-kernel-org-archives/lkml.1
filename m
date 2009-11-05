@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbZKEOHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZKEOQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbZKEOHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbZKEOH3
+	id S1757057AbZKEOQw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756966AbZKEOQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:07:29 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:59471 "EHLO bamako.nerim.net"
+	Thu, 5 Nov 2009 09:16:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60004 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756541AbZKEOH2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:07:28 -0500
-Date: Thu, 5 Nov 2009 15:07:15 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mika Kuoppala <mika.kuoppala@nokia.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>
-Subject: Re: Shared i2c adapter locking
-Message-ID: <20091105150715.692b5200@hyperion.delvare>
-In-Reply-To: <1257429444.2793.2.camel@achroite.uk.solarflarecom.com>
-References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-	<20091029154317.651904b9@hyperion.delvare>
-	<1256828976.2827.27.camel@achroite>
-	<20091105141122.56b6b4f8@hyperion.delvare>
-	<1257429444.2793.2.camel@achroite.uk.solarflarecom.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1756918AbZKEOQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 09:16:51 -0500
+Date: Thu, 5 Nov 2009 15:10:55 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: 2.6.32-rc5-mmotm1101 - lockdep whinge during early boot
+Message-ID: <20091105141055.GA17350@redhat.com>
+References: <6417.1257351084@turing-police.cc.vt.edu> <200911051941.03401.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911051941.03401.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Nov 2009 13:57:24 +0000, Ben Hutchings wrote:
-> On Thu, 2009-11-05 at 14:11 +0100, Jean Delvare wrote:
-> [...]
-> > What about the following patch?
-> > 
-> > From: Jean Delvare <khali@linux-fr.org>
-> > Subject: i2c: Add an interface to lock/unlock I2C bus segment
-> > 
-> > Some drivers need to be able to prevent access to an I2C bus segment
-> > for a specific period of time. Add an interface for them to do so
-> > without twiddling with i2c-core internals.
-> > 
-> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > Cc: Ben Hutchings <bhutchings@solarflare.com>
-> Acked-by: ﻿Ben Hutchings <bhutchings@solarflare.com>
-> 
-> Presumably this is meant for net-next-2.6, and you'll implement
+On 11/05, Rusty Russell wrote:
+>
+> On Thu, 5 Nov 2009 02:41:24 am Valdis.Kletnieks@vt.edu wrote:
+>  [    0.344147] swapper/1 is trying to acquire lock:
+> > [    0.344154]  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff8103c222>] cpu_maps_update_begin+0x12/0x14
+> > [    0.344174]
+> > [    0.344175] but task is already holding lock:
+> > [    0.344183]  (setup_lock){+.+.+.}, at: [<ffffffff81078755>] stop_machine_create+0x12/0x9b
+> > [    0.344200]
+> > [    0.344201] which lock already depends on the new lock.
+>
+> Hi Vladis!
+>
+>     Sigh.  I always find reading these a complete mindfuck.
+>
+> stop_machine_create: setup_lock then cpu_add_remove_lock
+> 	(in create_workqueue_key() -> cpu_maps_update_begin())
+> clocksource_done_booting: clocksource_mutex then setup_lock
+> 	(in stop_machine_create(), as above)
+> cpu_up: cpu_add_remove_lock then clocksource_mutex
+> 	(in mark_tsc_unstable() -> clocksource_change_rating())
+>
+> AFAICT this is our circular dependency.  But I'm no closer to knowing how to
+> solve it.
 
-Actually I meant to push this to Linus immediately, through my i2c
-tree. This is essentially a no-op: the binary code will be the same as
-before the patch, so guaranteed to be safe, and this will solve
-conflicts in linux-next.
+Not sure I understand this correctly, but afaics this dependency is
+even simpler:
 
-> i2c_{lock,unlock}_adapter() using rt_mutex in your i2c tree?
+	cpu_up()->clocksource_change_rating() path takes clocksource_mutex
+	under CPU hotplug locks.
 
-Correct.
+	clocksource_done_booting()->create_workueue() path takes CPU hotplug
+	locks under clocksource_mutex.
 
--- 
-Jean Delvare
+> Oleg (CC'd) made workqueues use cpu_maps_update_begin() instead of the
+> more obvious get_online_cpus() in 3da1c84c00c7e5f.  Reverting that seems like
+> a bad idea.
+
+Even if create_workueue() used get_online_cpus() instead of cpu_add_remove_lock,
+we have the same problem: _cpu_up() takes cpu_hotplug.lock which is needed for
+get_online_cpus(). The dependency above becomes:
+
+	cpu_up()->clocksource_change_rating() takes clocksource_mutex under
+	cpu_hotplug.lock (cpu_hotplug_begin)
+
+	clocksource_done_booting()->create_workueue() takes cpu_hotplug.lock
+	(get_online_cpus) under clocksource_mutex
+
+Oleg.
+
