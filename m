@@ -1,65 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbZKEGAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZKEGBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676AbZKEGAK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 01:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbZKEGAK
+	id S1755898AbZKEGBv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 01:01:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZKEGBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 01:00:10 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44215 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZKEGAI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 01:00:08 -0500
-Date: Thu, 5 Nov 2009 11:30:08 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Avi Kivity <avi@redhat.com>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
-	on top of perf events
-Message-ID: <20091105060008.GA3261@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com> <19186.5488.320389.567026@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19186.5488.320389.567026@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 5 Nov 2009 01:01:51 -0500
+Received: from gate.crashing.org ([63.228.1.57]:36979 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750825AbZKEGBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 01:01:50 -0500
+Subject: Re: [PATCH] BUILD_BUG_ON: make it handle more cases
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Hollis Blanchard <hollisb@us.ibm.com>, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+       linux-next@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
+       akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <200910201415.34361.rusty@rustcorp.com.au>
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
+	 <200910201142.34006.rusty@rustcorp.com.au> <1256002193.6546.2.camel@slab>
+	 <200910201415.34361.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 17:01:26 +1100
+Message-ID: <1257400886.13611.98.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 05, 2009 at 10:59:44AM +1100, Paul Mackerras wrote:
-> Frederic Weisbecker writes:
-> 
-> > This patch rebase the implementation of the breakpoints API on top of
-> > perf events instances.
-> > 
-> > Each breakpoints are now perf events that handle the
-> > register scheduling, thread/cpu attachment, etc..
-> 
-> What I haven't managed to understand yet is how you provide reliable
-> breakpoints for debugging purposes.  If I'm debugging a program and I
-> have set a breakpoint, I'll be very unhappy if the breakpoint should
-> trigger but doesn't because the perf_event infrastructure has decided
-> it can't schedule that breakpoint in.  If the breakpoint isn't going
-> to work then I want to know that at the time that I set it.
->
+On Tue, 2009-10-20 at 14:15 +1030, Rusty Russell wrote:
+> BUILD_BUG_ON used to use the optimizer to do code elimination or fail
+> at link time; it was changed to first the size of a negative array (a
+> nicer compile time error), then (in
+> 8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
 
-The hw-breakpoint layer avoids such issues by not over-committing debug
-registers i.e. 'n' number of debug registers are reserved for user-space
-where n = max(no. of breakpoints requested by any given process/thread).
-And book-keeping certainly helps here too.
+What's the status with this patch ? The lack of it breaks my KVM stuff
+in powerpc...
 
-Thanks,
-K.Prasad
- 
+Cheers,
+Ben.
+
+> bitfields: needs a literal constant at parse time, and can't be put under
+> 	"if (__builtin_constant_p(x))" for example.
+> negative array: can handle anything, but if the compiler can't tell it's
+> 	a constant, silently has no effect.
+> link time: breaks link if the compiler can't determine the value, but the
+> 	linker output is not usually as informative as a compiler error.
+> 
+> If we use the negative-array-size method *and* the link time trick,
+> we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
+> branches, and maximal ability for the compiler to detect errors at
+> build time.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -683,12 +683,6 @@ struct sysinfo {
+>  	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+>  };
+>  
+> -/* Force a compilation error if condition is true */
+> -#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
+> -
+> -/* Force a compilation error if condition is constant and true */
+> -#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
+> -
+>  /* Force a compilation error if condition is true, but also produce a
+>     result (of value 0 and type size_t), so the expression can be used
+>     e.g. in a structure initializer (or where-ever else comma expressions
+> @@ -696,6 +690,33 @@ struct sysinfo {
+>  #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
+>  #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
+>  
+> +/**
+> + * BUILD_BUG_ON - break compile if a condition is true.
+> + * @cond: the condition which the compiler should know is false.
+> + *
+> + * If you have some code which relies on certain constants being equal, or
+> + * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
+> + * detect if someone changes it.
+> + *
+> + * The implementation uses gcc's reluctance to create a negative array, but
+> + * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
+> + * to inline functions).  So as a fallback we use the optimizer; if it can't
+> + * prove the condition is false, it will cause a link error on the undefined
+> + * "__build_bug_on_failed".  This error message can be harder to track down
+> + * though, hence the two different methods.
+> + */
+> +#ifndef __OPTIMIZE__
+> +#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+> +#else
+> +extern int __build_bug_on_failed;
+> +#define BUILD_BUG_ON(condition)					\
+> +	do {							\
+> +		((void)sizeof(char[1 - 2*!!(condition)]));	\
+> +		if (condition) __build_bug_on_failed = 1;	\
+> +	} while(0)
+> +#endif
+> +#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
+> +
+>  /* Trap pasters of __FUNCTION__ at compile-time */
+>  #define __FUNCTION__ (__func__)
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
