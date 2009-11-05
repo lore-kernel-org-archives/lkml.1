@@ -1,206 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZKENGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbZKENLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756043AbZKENGe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 08:06:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbZKENGd
+	id S1756106AbZKENLX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 08:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZKENLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 08:06:33 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39324 "EHLO mx2.suse.de"
+	Thu, 5 Nov 2009 08:11:22 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:50188 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755838AbZKENGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 08:06:32 -0500
-Date: Thu, 5 Nov 2009 14:06:35 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@lst.de>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 05/27] BKL: Remove BKL from ext2 filesystem
-Message-ID: <20091105130635.GE21750@bolzano.suse.de>
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-6-git-send-email-jblunck@suse.de> <20091105124111.GC12770@duck.suse.cz>
+	id S1755403AbZKENLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 08:11:20 -0500
+Date: Thu, 5 Nov 2009 14:11:22 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mika Kuoppala <mika.kuoppala@nokia.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+Subject: Re: Shared i2c adapter locking
+Message-ID: <20091105141122.56b6b4f8@hyperion.delvare>
+In-Reply-To: <1256828976.2827.27.camel@achroite>
+References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
+	<20091029154317.651904b9@hyperion.delvare>
+	<1256828976.2827.27.camel@achroite>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091105124111.GC12770@duck.suse.cz>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 05, Jan Kara wrote:
+Hi Ben,
 
-> On Mon 02-11-09 11:04:45, Jan Blunck wrote:
-> > The BKL is still used in ext2_put_super(), ext2_fill_super(), ext2_sync_fs()
-> > ext2_remount() and ext2_write_inode(). From these calls ext2_put_super(),
-> > ext2_fill_super() and ext2_remount() are protected against each other by
-> > the struct super_block s_umount rw semaphore. The call in ext2_write_inode()
-> > could only protect the modification of the ext2_sb_info through
-> > ext2_update_dynamic_rev() against concurrent ext2_sync_fs() or ext2_remount().
-> > ext2_fill_super() and ext2_put_super() can be left out because you need a
-> > valid filesystem reference in all three cases, which you do not have when
-> > you are one of these functions.
->   This is not quite true. Actually, ext2_sync_fs() is called also with
-> s_umount held (for reading) so it cannot race with any of the mounting /
-> umounting functions. But it should probably be guarded against running two
-> instances of ext2_sync_fs() in parallel.
->   Looking into the code, we probably have a race in ext2_write_inode that
-> two threads can write one inode in parallel. But that's a separe issue from
-> BKL removal.
-
-Have you actually seen that the previous patch introduces s_mutex? Meanwhile
-that mutex has been replaced by a spinlock due to Andy's feedback.
-
-Anyway, thanks for the review.
-
-Cheers,
-	Jan
-
-
-> 								Honza 
-> 
-> > diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-> > index 057074e..8b51416 100644
-> > --- a/fs/ext2/inode.c
-> > +++ b/fs/ext2/inode.c
-> > @@ -22,7 +22,6 @@
-> >   *  Assorted race fixes, rewrite of ext2_get_block() by Al Viro, 2000
-> >   */
-> >  
-> > -#include <linux/smp_lock.h>
-> >  #include <linux/time.h>
-> >  #include <linux/highuid.h>
-> >  #include <linux/pagemap.h>
-> > @@ -1400,13 +1399,11 @@ int ext2_write_inode(struct inode *inode, int do_sync)
-> >  			       /* If this is the first large file
-> >  				* created, add a flag to the superblock.
-> >  				*/
-> > -				lock_kernel();
-> >  				mutex_lock(&EXT2_SB(sb)->s_mutex);
-> >  				ext2_update_dynamic_rev(sb);
-> >  				EXT2_SET_RO_COMPAT_FEATURE(sb,
-> >  					EXT2_FEATURE_RO_COMPAT_LARGE_FILE);
-> >  				mutex_unlock(&EXT2_SB(sb)->s_mutex);
-> > -				unlock_kernel();
-> >  				ext2_write_super(sb);
-> >  			}
-> >  		}
-> > diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-> > index d610eb9..7e819ac 100644
-> > --- a/fs/ext2/super.c
-> > +++ b/fs/ext2/super.c
-> > @@ -26,7 +26,6 @@
-> >  #include <linux/random.h>
-> >  #include <linux/buffer_head.h>
-> >  #include <linux/exportfs.h>
-> > -#include <linux/smp_lock.h>
-> >  #include <linux/vfs.h>
-> >  #include <linux/seq_file.h>
-> >  #include <linux/mount.h>
-> > @@ -118,8 +117,6 @@ static void ext2_put_super (struct super_block * sb)
-> >  	int i;
-> >  	struct ext2_sb_info *sbi = EXT2_SB(sb);
-> >  
-> > -	lock_kernel();
-> > -
-> >  	if (sb->s_dirt && !(sb->s_flags & MS_RDONLY))
-> >  		ext2_sync_fs(sb, 1);
-> >  
-> > @@ -143,8 +140,6 @@ static void ext2_put_super (struct super_block * sb)
-> >  	sb->s_fs_info = NULL;
-> >  	kfree(sbi->s_blockgroup_lock);
-> >  	kfree(sbi);
-> > -
-> > -	unlock_kernel();
-> >  }
-> >  
-> >  static struct kmem_cache * ext2_inode_cachep;
-> > @@ -750,8 +745,6 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
-> >  	__le32 features;
-> >  	int err;
-> >  
-> > -	lock_kernel();
-> > -
-> >  	err = -ENOMEM;
-> >  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
-> >  	if (!sbi)
-> > @@ -1077,7 +1070,6 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
-> >  		ext2_warning(sb, __func__,
-> >  			"mounting ext3 filesystem as ext2");
-> >  	ext2_setup_super (sb, es, sb->s_flags & MS_RDONLY);
-> > -	unlock_kernel();
-> >  	return 0;
-> >  
-> >  cantfind_ext2:
-> > @@ -1102,7 +1094,6 @@ failed_sbi:
-> >  	kfree(sbi->s_blockgroup_lock);
-> >  	kfree(sbi);
-> >  failed_unlock:
-> > -	unlock_kernel();
-> >  	return ret;
-> >  }
-> >  
-> > @@ -1140,7 +1131,6 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
-> >  {
-> >  	struct ext2_super_block *es = EXT2_SB(sb)->s_es;
-> >  
-> > -	lock_kernel();
-> >  	if (es->s_state & cpu_to_le16(EXT2_VALID_FS)) {
-> >  		ext2_debug("setting valid to 0\n");
-> >  		es->s_state &= cpu_to_le16(~EXT2_VALID_FS);
-> > @@ -1154,7 +1144,6 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
-> >  		ext2_commit_super(sb, es);
-> >  	}
-> >  	sb->s_dirt = 0;
-> > -	unlock_kernel();
-> >  
-> >  	return 0;
-> >  }
-> > @@ -1181,7 +1170,6 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
-> >  	unsigned long old_sb_flags;
-> >  	int err;
-> >  
-> > -	lock_kernel();
-> >  	mutex_lock(&sbi->s_mutex);
-> >  
-> >  	/* Store the old options */
-> > @@ -1221,14 +1209,12 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
-> >  	}
-> >  	if ((*flags & MS_RDONLY) == (sb->s_flags & MS_RDONLY)) {
-> >  		mutex_unlock(&sbi->s_mutex);
-> > -		unlock_kernel();
-> >  		return 0;
-> >  	}
-> >  	if (*flags & MS_RDONLY) {
-> >  		if (le16_to_cpu(es->s_state) & EXT2_VALID_FS ||
-> >  		    !(sbi->s_mount_state & EXT2_VALID_FS)) {
-> >  			mutex_unlock(&sbi->s_mutex);
-> > -			unlock_kernel();
-> >  			return 0;
-> >  		}
-> >  		/*
-> > @@ -1258,7 +1244,6 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
-> >  	}
-> >  	ext2_sync_super(sb, es);
-> >  	mutex_unlock(&sbi->s_mutex);
-> > -	unlock_kernel();
-> >  	return 0;
-> >  restore_opts:
-> >  	sbi->s_mount_opt = old_opts.s_mount_opt;
-> > @@ -1266,7 +1251,6 @@ restore_opts:
-> >  	sbi->s_resgid = old_opts.s_resgid;
-> >  	sb->s_flags = old_sb_flags;
-> >  	mutex_unlock(&sbi->s_mutex);
-> > -	unlock_kernel();
-> >  	return err;
-> >  }
-> >  
-> > -- 
-> > 1.6.4.2
+On Thu, 29 Oct 2009 15:09:36 +0000, Ben Hutchings wrote:
+> On Thu, 2009-10-29 at 15:43 +0100, Jean Delvare wrote:
+> > Hi Stephen,
 > > 
-> -- 
-> Jan Kara <jack@suse.cz>
-> SUSE Labs, CR
+> > On Mon, 26 Oct 2009 13:37:57 +1100, Stephen Rothwell wrote:
+> > > Today's linux-next merge of the net tree got a conflict in
+> > > drivers/net/sfc/sfe4001.c between commit
+> > > 3f7c0648f727a6d5baf6117653e4001dc877b90b ("i2c: Prevent priority
+> > > inversion on top of bus lock") from the i2c tree and commit
+> > > c9597d4f89565b6562bd3026adbe6eac6c317f47 ("sfc: Merge sfe4001.c into
+> > > falcon_boards.c") from the net tree.
+> > > 
+> > > I have applied the following merge fixup patch (after removing
+> > > drivers/net/sfc/sfe4001.c) and can carry it as necessary.
+> > 
+> > Thanks for fixing it. The core problem here IMHO is that the sfc
+> > network driver touches i2c internals which it would rather leave alone.
+> 
+> I'm just a little proud of having the idea that we could avoid using an
+> I/O-expander on this board, but yes, the software side of this
+> multiplexing is a hack.
+> 
+> > This is the only driver I know of which does this.
+> > 
+> > I can think of 3 different ways to address the issue.
+> > 
+> > Method #1: add a public API to grab/release an I2C segment.
+> > 
+> > void i2c_adapter_lock(struct i2c_adapter *adapter)
+> > {
+> > 	rt_mutex_lock(&adapter->bus_lock);
+> > }
+> > 
+> > void i2c_adapter_unlock(struct i2c_adapter *adapter)
+> > {
+> > 	rt_mutex_unlock(&adapter->bus_lock);
+> > }
+> [...]
+> > I'm not really sure if I have a preference yet, so please speak up if
+> > you do.
+> 
+> Indirect lock operations are a recipe for deadlock, and there doesn't
+> seem to be any other user for this, so method 1 seems best.
+
+Well, all 3 methods rely on indirect lock operations to some degree.
+But I am fine with method #1 for now. We can always move to something
+more complex if the need ever arises.
+
+What about the following patch?
+
+From: Jean Delvare <khali@linux-fr.org>
+Subject: i2c: Add an interface to lock/unlock I2C bus segment
+
+Some drivers need to be able to prevent access to an I2C bus segment
+for a specific period of time. Add an interface for them to do so
+without twiddling with i2c-core internals.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Ben Hutchings <bhutchings@solarflare.com>
+---
+ drivers/net/sfc/sfe4001.c |    4 ++--
+ include/linux/i2c.h       |   18 ++++++++++++++++++
+ 2 files changed, 20 insertions(+), 2 deletions(-)
+
+--- linux-2.6.32-rc6.orig/drivers/net/sfc/sfe4001.c	2009-11-05 10:51:56.000000000 +0100
++++ linux-2.6.32-rc6/drivers/net/sfc/sfe4001.c	2009-11-05 13:40:17.000000000 +0100
+@@ -188,7 +188,7 @@ static int sfn4111t_reset(struct efx_nic
+ 	efx_oword_t reg;
+ 
+ 	/* GPIO 3 and the GPIO register are shared with I2C, so block that */
+-	mutex_lock(&efx->i2c_adap.bus_lock);
++	i2c_lock_adapter(&efx->i2c_adap);
+ 
+ 	/* Pull RST_N (GPIO 2) low then let it up again, setting the
+ 	 * FLASH_CFG_1 strap (GPIO 3) appropriately.  Only change the
+@@ -204,7 +204,7 @@ static int sfn4111t_reset(struct efx_nic
+ 	falcon_write(efx, &reg, GPIO_CTL_REG_KER);
+ 	msleep(1);
+ 
+-	mutex_unlock(&efx->i2c_adap.bus_lock);
++	i2c_unlock_adapter(&efx->i2c_adap);
+ 
+ 	ssleep(1);
+ 	return 0;
+--- linux-2.6.32-rc6.orig/include/linux/i2c.h	2009-11-05 10:51:56.000000000 +0100
++++ linux-2.6.32-rc6/include/linux/i2c.h	2009-11-05 14:03:53.000000000 +0100
+@@ -361,6 +361,24 @@ static inline void i2c_set_adapdata(stru
+ 	dev_set_drvdata(&dev->dev, data);
+ }
+ 
++/**
++ * i2c_lock_adapter - Prevent access to an I2C bus segment
++ * @adapter: Target I2C bus segment
++ */
++static inline void i2c_lock_adapter(struct i2c_adapter *adapter)
++{
++	mutex_lock(&adapter->bus_lock);
++}
++
++/**
++ * i2c_unlock_adapter - Reauthorize access to an I2C bus segment
++ * @adapter: Target I2C bus segment
++ */
++static inline void i2c_unlock_adapter(struct i2c_adapter *adapter)
++{
++	mutex_unlock(&adapter->bus_lock);
++}
++
+ /*flags for the client struct: */
+ #define I2C_CLIENT_PEC	0x04		/* Use Packet Error Checking */
+ #define I2C_CLIENT_TEN	0x10		/* we have a ten bit chip address */
+
+
+-- 
+Jean Delvare
