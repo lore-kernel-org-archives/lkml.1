@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbZKENXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbZKEN2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756357AbZKENXo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 08:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZKENXn
+	id S1756421AbZKEN2P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 08:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbZKEN2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 08:23:43 -0500
-Received: from s2.homepagix.de ([91.199.241.131]:56250 "EHLO fry.cm4all.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755759AbZKENXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 08:23:43 -0500
-Date: Thu, 5 Nov 2009 14:23:52 +0100
-From: Max Kellermann <mk@cm4all.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] tcp: set SPLICE_F_NONBLOCK after first buffer has been
-	spliced
-Message-ID: <20091105132352.GA14453@rabbit.intern.cm-ag>
-References: <20091105095947.32131.99768.stgit@rabbit.intern.cm-ag> <4AF2A929.3000201@gmail.com> <20091105105749.GA4901@rabbit.intern.cm-ag> <4AF2B551.6010302@gmail.com>
+	Thu, 5 Nov 2009 08:28:15 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:23498 "EHLO
+	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755652AbZKEN2O convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 08:28:14 -0500
+X-SpamScore: -26
+X-BigFish: VPS-26(zz1418M1432R98dN179dN1442Jzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KSN1EA-03-4BS-02
+X-M-MSG: 
+Date: Thu, 5 Nov 2009 14:27:58 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Pavel Machek <pavel@ucw.cz>, Doug Thompson <norsk5@yahoo.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] amd64_edac: syndromes loading
+Message-ID: <20091105132758.GC17984@aftab>
+References: <20091028163534.GA625@aftab>
+ <143841.81095.qm@web50110.mail.re2.yahoo.com>
+ <20091028172853.GE625@aftab>
+ <20091101211305.GB2085@ucw.cz>
+ <4AEE0CAA.4070403@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AF2B551.6010302@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4AEE0CAA.4070403@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Nov 2009 13:27:42.0470 (UTC) FILETIME=[C0C45260:01CA5E1B]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009/11/05 12:21, Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> Max Kellermann a écrit :
-> > Do you think that a splice() should block if the socket is readable
-> > and the pipe is writable according to select()?
-> > 
+Hi,
+
+sorry for the delay, I had to talk to the hardware guys about those
+tables.
+
+On Mon, Nov 02, 2009 at 07:33:14AM +0900, H. Peter Anvin wrote:
+> >>Alternatively, we could make the syndromes builtin thus removing the
+> >>requirement to go to userspace for the loading. For that we'll need
+> >>two new .c files in drivers/edac/ which represent the x4 and x8 tables
+> >>respectively:
+> >>
+> >>unsigned short x8_raw_data[] = {
+> >>         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+> >>         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+> >>         0x0000, 0x0100, 0x0001, 0x0101, 0x01B8, 0x015C, 0x012E, 0x01C6, 0x0163,
+> >>         0x01FD, 0x0189, 0x019D, 0xB801, 0x5C01, 0x2E01, 0xC601, 0x6301, 0xFD01,
+> >>         0x8901, 0x9D01, 0x0200, 0x0002, 0x0202, 0x0201, 0x02B8, 0x025C, 0x02FD,
+> >>	....
+> >>
+> >>The drawback with these is that they'll always be builtin, enlarging
+> >>kernel code by 10-15K although only one of them is in use.
+> >
+> >I believe that 15K is reasonable price to pay for not having to
+> >install another 'firmware' file.
 > 
-> Yes, this is perfectly legal
-> 
-> select() can return "OK to write on fd",
-> and still, write(fd, buffer, 10000000) is supposer/allowed to block if fd is not O_NDELAY
+> a) aren't these computable somehow?  If so, it's probably easier to
+> include the algorithm in the kernel rather than a table.
 
->From the select() manpage: "those in writefds will be watched to see
-if a write will not block"
+That's a no-go since it would involve IP disclosure.
 
->From the poll() manpage: "Writing now will not block."
+> b) "I believe that 15K is reasonable price to pay for not having to
+> install another 'firmware' file."  I think that's a tradeoff a lot
+> of people would *not* choose to make.  This is of course why we have
+> (or at least, should have) to either compile in firmware blobs or
+> not.
 
-This looks unambiguous to me, and contradicts with your thesis.  Can
-you provide sources?
+The good news is they've come up with a modified algorithm which will
+require a smaller table, roughly 1/4th the size of the current 10K one.
+Now, on a second thought and IMHO, we should simply add another .c file
+instantiating those two x4 and x8 tables statically and linking them
+into the edac code. This way you
 
-What is your interpretation of the guarantees provided by select() and
-poll()?  Which byte count is "ok" to write after POLLOUT, and how much
-is "too much"?  How does the application know?
+1) don't have the additional complexity of adding firmware handling code
+and thus don't add a dependency on the firmware API
 
-> Please read recent commit on this area and why I think your patch
-> conflicts with this commit.
+2) don't have to actually carry two firmware images with the kernel
 
-I understand your patch, but I don't understand the conflict with my
-patch.  Can you describe a breakage caused by my patch?
+See, the natural use case for those tables are big machines which do not
+care about 4K memory wasted in ECC decoding tables when the recovery
+from the missed early warnings of a failing DIMM module is much more
+expensive.
+
+Hmm... ?
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
