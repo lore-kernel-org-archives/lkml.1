@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbZKETMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbZKETNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758719AbZKETMy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 14:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758494AbZKETMx
+	id S1758737AbZKETNw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 14:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758612AbZKETNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 14:12:53 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:54241 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757672AbZKETMw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 14:12:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=AOmYJPABiktFTVyQrz9dhS+RfTrIpcdEP6nzGuyjYJB6DpnqSimA3rRZbs9VIMJhen
-         5kLTc1L7fy6GXYICmWro+671Xnj/PAKi0GFJLft05T3rEfzHvSrSIjzEAOhOHceOfRFW
-         oI6oZ6MKaE7lkKkkGLZ7a2b7GmHWiSqG6TFos=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 41/41] rt2800: add rt2800lib (part four)
-Date: Thu, 5 Nov 2009 20:12:55 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-wireless@vger.kernel.org, Gertjan van Wingerde <gwingerde@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173705.28463.81484.sendpatchset@localhost.localdomain>
-In-Reply-To: <20091104173705.28463.81484.sendpatchset@localhost.localdomain>
+	Thu, 5 Nov 2009 14:13:52 -0500
+Received: from www.tglx.de ([62.245.132.106]:44559 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758057AbZKETNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 14:13:51 -0500
+Date: Thu, 5 Nov 2009 20:13:52 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: linux-kernel@vger.kernel.org
+cc: mm-commits@vger.kernel.org
+Subject: Re: mmotm 2009-11-01-10-01 uploaded
+In-Reply-To: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
+References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911052012.55674.IvDoorn@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 November 2009, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] rt2800: add rt2800lib (part four)
-> 
-> Code unification.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+On Sun, 1 Nov 2009, akpm@linux-foundation.org wrote:
 
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
+> 
+>    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> and will soon be available at
 
+Does "soon" mean within this century ?
+
+>    git://git.zen-sources.org/zen/mmotm.git
+
+# git pull git://git.zen-sources.org/zen/mmotm.git master
+git.zen-sources.org[0: 216.98.141.250]: errno=Connection timed out
+git.zen-sources.org[0: 69.72.142.98]: errno=Connection refused
+fatal: unable to connect a socket (Connection refused)
+
+Thanks,
+
+	tglx
