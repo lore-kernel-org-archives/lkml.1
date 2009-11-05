@@ -1,92 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZKECo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbZKECox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZKECo1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 21:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZKECo0
+	id S1755431AbZKECox (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 21:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZKECow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 21:44:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8357 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755178AbZKECo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 21:44:26 -0500
-From: Xiaotian Feng <dfeng@redhat.com>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com
-Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>
-Subject: [PATCH V2] x86: fix error return sequence in __ioremap_caller
-Date: Thu,  5 Nov 2009 10:43:51 +0800
-Message-Id: <1257389031-20429-1-git-send-email-dfeng@redhat.com>
-In-Reply-To: <20091104105149.GC13194@elte.hu>
-References: <20091104105149.GC13194@elte.hu>
+	Wed, 4 Nov 2009 21:44:52 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:1766 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755193AbZKECov convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 21:44:51 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:from:date:message-id:
+	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=syJ8mYFb/XF4Y+i/A+zMWffBXKIHXPrIByl5z9lWnstfSDyvxdR5CjtfscHVe8qxN
+	YcIHDEG6/jGV1LrP0vc2g==
+MIME-Version: 1.0
+In-Reply-To: <20091104163752.GB2870@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> 
+	<1257291837-6246-3-git-send-email-vgoyal@redhat.com> <x49d43yuzud.fsf@segfault.boston.devel.redhat.com> 
+	<20091104163752.GB2870@redhat.com>
+From: Divyesh Shah <dpshah@google.com>
+Date: Wed, 4 Nov 2009 18:44:28 -0800
+Message-ID: <af41c7c40911041844v2905a9c6vb9d0649faf060726@mail.gmail.com>
+Subject: Re: [PATCH 02/20] blkio: Change CFQ to use CFS like queue time stamps
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, nauman@google.com, lizf@cn.fujitsu.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel missed to free memtype if get_vm_area_caller failed in __ioremap_caller.
-This patch introduces error path to fix this and cleanup the repetitive error
-return sequence.  
+On Wed, Nov 4, 2009 at 8:37 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Wed, Nov 04, 2009 at 09:30:34AM -0500, Jeff Moyer wrote:
+>> Vivek Goyal <vgoyal@redhat.com> writes:
+>>
+>
+> Thanks for the review Jeff.
+>
+>> > o Currently CFQ provides priority scaled time slices to processes. If a process
+>> >   does not use the time slice, either because process did not have sufficient
+>> >   IO to do or because think time of process is large and CFQ decided to disable
+>> >   idling, then processes looses it time slice share.
+>>                            ^^^^^^
+>> loses
+>>
+>
+> Will fix it.
+>
+>> > o One possible way to handle this is implement CFS like time stamping of the
+>> >   cfq queues and keep track of vtime. Next queue for execution will be selected
+>> >   based on the one who got lowest vtime. This patch implemented time stamping
+>> >   mechanism of cfq queues based on disk time used.
+>> >
+>> > o min_vdisktime represents the minimum vdisktime of the queue, either being
+>>                                                           ^^^^^
+>> >   serviced or leftmost element on the serviec tree.
+>>
+>> queue or service tree?  The latter seems to make more sense to me.
+>
+> Yes, it should be service tree. Will fix it.
+>
+>>
+>> > +static inline u64
+>> > +cfq_delta_fair(unsigned long delta, struct cfq_queue *cfqq)
+>> > +{
+>> > +   const int base_slice = cfqq->cfqd->cfq_slice[cfq_cfqq_sync(cfqq)];
+>> > +
+>> > +   return delta + (base_slice/CFQ_SLICE_SCALE * (cfqq->ioprio - 4));
+>> > +}
+>>
+>> cfq_scale_delta might be a better name.
+>>
+>
+> cfq_scale_delta sounds good. Will use it in next version.
+>
+>>
+>> > +static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
+>> > +{
+>> > +   s64 delta = (s64)(vdisktime - min_vdisktime);
+>> > +   if (delta > 0)
+>> > +           min_vdisktime = vdisktime;
+>> > +
+>> > +   return min_vdisktime;
+>> > +}
+>> > +
+>> > +static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
+>> > +{
+>> > +   s64 delta = (s64)(vdisktime - min_vdisktime);
+>> > +   if (delta < 0)
+>> > +           min_vdisktime = vdisktime;
+>> > +
+>> > +   return min_vdisktime;
+>> > +}
+>>
+>> Is there a reason you've reimplemented min and max?
+>
+> I think you are referring to min_t and max_t. Will these macros take care
+> of wrapping too?
+>
+> For example, if I used min_t(u64, A, B), then unsigned comparision will
+> not work right wrapping has just taken place for any of the A or B. So if
+> A=-1 and B=2, then min_t() would return B as minimum. This is not right
+> in our case.
+>
+> If we do signed comparison (min_t(s64, A, B)), that also seems to be
+> broken in another case where a value of variable moves from 63bits to 64bits,
+> (A=0x7fffffffffffffff, B=0x8000000000000000). Above will return B as minimum but
+> in our scanario, vdisktime will progress from 0x7fffffffffffffff to
+> 0x8000000000000000 and A should be returned as minimum (unsigned
+> comparison).
 
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
----
- arch/x86/mm/ioremap.c |   24 +++++++++++-------------
- 1 files changed, 11 insertions(+), 13 deletions(-)
+Can you define and use u64 versions of time_before() and time_after()
+(from include/linux/jiffies.h) for your comparisons? These take care
+of wrapping as well. Maybe call them timestamp_before()/after().
 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 334e63c..7574575 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -170,8 +170,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 				(unsigned long long)phys_addr,
- 				(unsigned long long)(phys_addr + size),
- 				prot_val, new_prot_val);
--			free_memtype(phys_addr, phys_addr + size);
--			return NULL;
-+			goto err_free_memtype;
- 		}
- 		prot_val = new_prot_val;
- 	}
-@@ -197,26 +196,25 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 	 */
- 	area = get_vm_area_caller(size, VM_IOREMAP, caller);
- 	if (!area)
--		return NULL;
-+		goto err_free_memtype;
- 	area->phys_addr = phys_addr;
- 	vaddr = (unsigned long) area->addr;
- 
--	if (kernel_map_sync_memtype(phys_addr, size, prot_val)) {
--		free_memtype(phys_addr, phys_addr + size);
--		free_vm_area(area);
--		return NULL;
--	}
-+	if (kernel_map_sync_memtype(phys_addr, size, prot_val)) 
-+		goto err_free_area;
- 
--	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot)) {
--		free_memtype(phys_addr, phys_addr + size);
--		free_vm_area(area);
--		return NULL;
--	}
-+	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot))
-+		goto err_free_area;
- 
- 	ret_addr = (void __iomem *) (vaddr + offset);
- 	mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
- 
- 	return ret_addr;
-+err_free_area:
-+	free_vm_area(area);
-+err_free_memtype:
-+	free_memtype(phys_addr, phys_addr + size);
-+	return NULL;
- }
- 
- /**
--- 
-1.6.2.5
+>
+> Hence I took these difnitions from CFS.
 
+Also if these are exactly the same and you decide to continue using
+these, can we move them to a common header file (time.h or maybe add a
+vtime.h) and reuse?
+
+>
+>>
+>> > +   /*
+>> > +    * Maintain a cache of leftmost tree entries (it is frequently
+>> > +    * used)
+>> > +    */
+>>
+>> You make it sound like there is a cache of more than one entry.  Please
+>> fix the comment.
+>
+> Will fix it.
+>
+>>
+>> > +static void cfqq_served(struct cfq_queue *cfqq, unsigned long served)
+>> > +{
+>> > +   /*
+>> > +    * We don't want to charge more than allocated slice otherwise this
+>> > +    * queue can miss one dispatch round doubling max latencies. On the
+>> > +    * other hand we don't want to charge less than allocated slice as
+>> > +    * we stick to CFQ theme of queue loosing its share if it does not
+>>                                           ^^^^^^^
+>> losing
+>>
+>
+> Will fix it.
+>
+>>
+>> > +/*
+>> > + * Handles three operations.
+>> > + * Addition of a new queue to service tree, when a new request comes in.
+>> > + * Resorting of an expiring queue (used after slice expired)
+>> > + * Requeuing a queue at the front (used during preemption).
+>> > + */
+>> > +static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>> > +                           bool add_front, unsigned long service)
+>>
+>> service?  Can we come up with a better name that actually hints at what
+>> this is?  service_time, maybe?
+>
+> Ok, service_time sounds good. Will change it.
+>
+>>
+>>
+>> Mostly this looks pretty good and is fairly easy to read.
+>
+> Thanks
+> Vivek
+>
