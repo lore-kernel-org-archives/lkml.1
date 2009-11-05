@@ -1,96 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZKEP01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbZKEP1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbZKEP01 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 10:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZKEP01
+	id S1755714AbZKEP1U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 10:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZKEP1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 10:26:27 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:53811 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751608AbZKEP00 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 10:26:26 -0500
-Date: Thu, 5 Nov 2009 16:26:26 +0100
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
-Subject: Re: OOM killer, page fault
-Message-ID: <20091105152626.GD21659@gamma.logic.tuwien.ac.at>
-References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at> <20091102005218.8352.A69D9226@jp.fujitsu.com> <20091102135640.93de7c2a.minchan.kim@barrios-desktop> <28c262360911012300h4535118ewd65238c746b91a52@mail.gmail.com> <20091102155543.E60E.A69D9226@jp.fujitsu.com> <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com> <20091102141917.GJ2116@gamma.logic.tuwien.ac.at> <28c262360911020640k3f9dfcdct2cac6cc1d193144d@mail.gmail.com> <20091105132109.GA12676@gamma.logic.tuwien.ac.at> <28c262360911050719u4de4223eub08c0f7ea8797137@mail.gmail.com>
+	Thu, 5 Nov 2009 10:27:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:37508 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753800AbZKEP1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 10:27:19 -0500
+Date: Thu, 5 Nov 2009 16:27:23 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Michael Gilbert <michael.s.gilbert@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Buesch <mb@bu3sch.de>, Jack Steiner <steiner@sgi.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: CVE-2009-2584
+In-Reply-To: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com>
+Message-ID: <alpine.LRH.2.00.0911051620510.31913@twin.jikos.cz>
+References: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <28c262360911050719u4de4223eub08c0f7ea8797137@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Norbert Preining <preining@logic.at>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kim,
 
-> > sorry for the late reply. I have two news, one good and one bad: The good
-> > being that I can reproduce the bug by running VirtualBox with some W7
-> 
-> W7 means "Windows 7"?
+[ adding some more CCs and including patch below for completness, 
+  obviously it got lost in space ]
 
-Yes, sorry for the shorthand.
+On Wed, 4 Nov 2009, Michael Gilbert wrote:
 
-> > I know it sounds completely crazy, the patch only does harmless things
-> > afais. But I tried it. Several times. rc6+patch never did boot, while
-> > rc5 without path did boot. Then I patched it into -rc5, recompiled, and
-> > boom, no boot. booting into .31.5, recompiling rc6 and rc5 without
-> > that patch and suddenly rc6 boots (and I am sure rc5, too).
-> 
-> Hmm. It's out of my knowledge.
-> Probably, It's because WARN_ON?
-> Could you try it with omitting WARN_ON, again?
+> CVE-2009-2584 [0],[1] has been disclosed for quite a while now (with 
+> existing exploit code by Brad Spengler [2]).  A patch has also been 
+> available for the same amount of time [3], but as of 2.6.32-rc6 it is 
+> still not applied.  Did this slip through the cracks?  Thanks upfront 
+> for any info on the matter.
+[ ... ]
+> [0] http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2009-2584
+> [1] http://xorl.wordpress.com/2009/07/21/linux-kernel-sgi-gru-driver-off-by-one-overwrite/
+> [2] http://grsecurity.net/~spender/exploit_demo.c
+> [3] http://lkml.org/lkml/2009/7/20/348
 
-Will do that.
 
-> > Ah yes, I can reproduce the original strange bug with oom killer!
-> 
-> Sounds good to me.
-> Could you tell me your test scenario, your system info(CPU, RAM) and
-> config?
-> I want to reproduce it in my mahchine to not bother you. :)
 
-Puhh, well, I meant "I could reproduce it", but not "I have a clear
-idea what steps to be taken to reproduce it" ;-) Well here is what I can
-tell you:
-actual hardware:
-Intel(R) Core(TM)2 Duo CPU     P9500
-Memory 2G
-Config of my kernel attached.
+From: Michael Buesch <mb@bu3sch.de>
+Subject: sgi-gru: Fix kernel stack buffer overrun
 
-Virtual Machine (VirtualBox, not the OSE variant, I need USB 2.0 support
-for GPS stuff):
-VirtualBox 3.0.10
-memory for the machine: 1G (50%)
-ACPI and IO/APIC turned on
-1 processor with PAE/NX
-VT-x and Nested Paging activated
-Display 128M
-(need more details?)
+This patch fixes a kernel stack buffer overrun in the sgi-gru procfs 
+interface implementation. The "count" parameter to options_write() is user 
+controlled. So this bug can be used to write '\0' bytes to almost 
+arbitrary places on the kernel stack.
 
-I will remove the WARN_ON and reboot and see if that works. If yes I try
-to recreate the problem.
+Cc: stable@kernel.org
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Acked-by: Jack Steiner <steiner@sgi.com>
 
-Best wishes
+--- linux-2.6.orig/drivers/misc/sgi-gru/gruprocfs.c
++++ linux-2.6/drivers/misc/sgi-gru/gruprocfs.c
+@@ -157,23 +157,23 @@ static int options_show(struct seq_file 
+ 	seq_printf(s, "0x%lx\n", gru_options);
+ 	return 0;
+ }
+ 
+ static ssize_t options_write(struct file *file, const char __user *userbuf,
+ 			     size_t count, loff_t *data)
+ {
+ 	unsigned long val;
+ 	char buf[80];
+ 
++	memset(buf, 0, sizeof(buf));
+ 	if (strncpy_from_user(buf, userbuf, sizeof(buf) - 1) < 0)
+ 		return -EFAULT;
+-	buf[count - 1] = '\0';
+ 	if (!strict_strtoul(buf, 10, &val))
+ 		gru_options = val;
+ 
+ 	return count;
+ }
+ 
+ static int cch_seq_show(struct seq_file *file, void *data)
+ {
+ 	long gid = *(long *)data;
+ 	int i;
 
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining                                        Associate Professor
-JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
-Vienna University of Technology                               preining@logic.at
-Debian Developer (Debian TeX Task Force)                    preining@debian.org
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-BROMSGROVE
-Any urban environment containing a small amount of dogturd and about
-forty-five tons of bent steel pylon or a lump of concrete with holes
-claiming to be sculpture. 'Oh, come my dear, and come with me. And
-wander 'neath the bromsgrove tree' - Betjeman.
-			--- Douglas Adams, The Meaning of Liff
+  
