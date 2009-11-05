@@ -1,122 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbZKEQjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbZKEQ3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbZKEQjE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 11:39:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757155AbZKEQjD
+	id S1757372AbZKEQ3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 11:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbZKEQ3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 11:39:03 -0500
-Received: from qmta04.emeryville.ca.mail.comcast.net ([76.96.30.40]:51597 "EHLO
-	QMTA04.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751808AbZKEQjC (ORCPT
+	Thu, 5 Nov 2009 11:29:16 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:63228 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755153AbZKEQ3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 11:39:02 -0500
-Message-Id: <200911051638.nA5GcH18028889@deneb.dwf.com>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Cant build 2.6.31.5
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 05 Nov 2009 09:38:17 -0700
-From: Reg Clemens <reg@dwf.com>
+	Thu, 5 Nov 2009 11:29:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=etiAWRsjPVyZmNBKWv3LYBjLqKllw9gEKGB5YD8ITq9qLjDjnU7ky2Hz4e1bQZyrC4
+         p5+aldPeOCbil6orRF3nFtTYM0c4/QYxotDA74pvruPU7Uo6XE/DKMYnZ7zpq1fmq/7q
+         mzraJ2UQPaMG4BqcaIseGTLqlCQwcolXUdR3k=
+Message-ID: <4AF3000C.8080607@gmail.com>
+Date: Thu, 05 Nov 2009 17:40:44 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sparc,sparc64: replace parentheses in pmul()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are more details on a problem I am having building 2.6.31.5
-on a Pentium 4.
+`>>' has a higher precedence than `?' so src2 evaluated to
+either 16 or 0 dependent on the bits set in rs2.
 
-My .config file is exactly the same as it is on another Pentium 4 where
-I can build with no problem, The difference is that that is Fedora11, and
-the problem occurs on Fedora6.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ arch/sparc/kernel/visemul.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I did a 
-	make mrproper
-	make -j3 bzImage ; make -j3 modules
+I am not 100% sure that the code was incorrect, however, if it
+was intended I think it is a very strange way to write it.
 
-I then did a
-	make modules_install
-	make install
+Roel
 
-and the install failed with the messages
-
-[root@deneb linux-2.6.31.5-PPSv]# make install
-sh /mnt/home/share/usr-src/kernels/linux-2.6.31.5-PPSv/arch/x86/boot/install.sh
- 2.6.31.5-PPSv arch/x86/boot/bzImage \
-                System.map "/boot"
-
- *** Missing file: arch/x86/boot/bzImage
- *** You need to run "make" before "make install".
-
-make[1]: *** [install] Error 1
-make: *** [install] Error 2
-
-I reran the
-	make bzImage
-and got the messages
-
-[root@deneb linux-2.6.31.5-PPSv]# make bzImage
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  GEN     .version
-  CHK     include/linux/compile.hnm semaphore.o | grep __up
-
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-kernel/built-in.o:(__mcount_loc+0x838): undefined reference to 
-`sleep_on_common'
-kernel/built-in.o:(__mcount_loc+0x83c): undefined reference to 
-`sleep_on_common'
-kernel/built-in.o:(__mcount_loc+0x840): undefined reference to 
-`sleep_on_common'
-kernel/built-in.o:(__mcount_loc+0x844): undefined reference to 
-`sleep_on_common'
-kernel/built-in.o:(__mcount_loc+0x848): undefined reference to 
-`sleep_on_common'
-kernel/built-in.o:(__mcount_loc+0x84c): more undefined references to 
-`sleep_on_common' follow
-kernel/built-in.o:(__mcount_loc+0x17a8): undefined reference to `__up'
-kernel/built-in.o:(__mcount_loc+0x17ac): undefined reference to `__up'
-kernel/built-in.o:(__mcount_loc+0x17b0): undefined reference to `__up'
-kernel/built-in.o:(__mcount_loc+0x17b4): undefined reference to `__up'
-kernel/built-in.o:(__mcount_loc+0x17b8): undefined reference to `__up'
-kernel/built-in.o:(__mcount_loc+0x17bc): more undefined references to `__up' 
-follow
-make: *** [.tmp_vmlinux1] Error 1
-
-scanning on 
-	sleep_on_common
-I find it in 
-	sched.c
-doing a
-	nm sched.o | grep sleep_on_common
-I see
-
-[reg@deneb kernel]$ nm sched.o | grep sleep_on_common
-00000000 ? sleep_on_common
-         U sleep_on_common
-
-For __up, it is used in semaphore.c
-
-doing
-	nm semaphore.o | grep __up
-I see
-	00000000 ? __up
-         U __up
-
-
-I will assume that the problem is the '?' that nm is returning.
-What can I do about that?
-Any way to build this kernel on this OS?
-I have tried copying this kernel built on another machine to this
-machine, and had other problems (it just stopped during the load).
-
--- 
-                                        Reg.Clemens
-                                        reg@dwf.com
-
-
+diff --git a/arch/sparc/kernel/visemul.c b/arch/sparc/kernel/visemul.c
+index b956fd7..d231cbd 100644
+--- a/arch/sparc/kernel/visemul.c
++++ b/arch/sparc/kernel/visemul.c
+@@ -617,7 +617,7 @@ static void pmul(struct pt_regs *regs, unsigned int insn, unsigned int opf)
+ 		rs2 = fps_regval(f, RS2(insn));
+ 
+ 		rd_val = 0;
+-		src2 = (rs2 >> (opf == FMUL8x16AU_OPF) ? 16 : 0);
++		src2 = rs2 >> (opf == FMUL8x16AU_OPF ? 16 : 0);
+ 		for (byte = 0; byte < 4; byte++) {
+ 			u16 src1 = (rs1 >> (byte * 8)) & 0x00ff;
+ 			u32 prod = src1 * src2;
