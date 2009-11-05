@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbZKEAOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbZKEAQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752022AbZKEAOe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 19:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZKEAOd
+	id S1752711AbZKEAQg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 19:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbZKEAQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 19:14:33 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40899 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751363AbZKEAOd (ORCPT
+	Wed, 4 Nov 2009 19:16:36 -0500
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:41835 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbZKEAQf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 19:14:33 -0500
-Date: Thu, 5 Nov 2009 00:16:17 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: linux-kernel@vger.kernel.org, Tilman Schmidt <tilman@imap.cc>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 7/8] docs: serial/tty, add to ldisc methods
-Message-ID: <20091105001617.53cda4c2@lxorguk.ukuu.org.uk>
-In-Reply-To: <12573794921501@xenotime.net>
-References: <1257379492822@xenotime.net>
-	<12573794921501@xenotime.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 19:16:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=s6/d+yYjLqRPbY98o4MNWs5SkxqNZ3r6jYl09VOV5GOSxpUOc2ZuceLAL2l1vJN4gF
+         4NekclOV5+J7ngFWaHXbMt98BPj+UpsoHYY6qzgvPq82XBl25TWEn92sw+7xiPBDMhdV
+         fcedhE7y4z2FBn8F3rhpvvG80zkc1NnuwmBEI=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.01.0911041551220.31845@localhost.localdomain>
+References: <43e72e890911041540hd1e5f87u8d282d9c95857504@mail.gmail.com> 
+	<alpine.LFD.2.01.0911041551220.31845@localhost.localdomain>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Wed, 4 Nov 2009 16:16:20 -0800
+Message-ID: <43e72e890911041616w547fc9e4t34915827f65c2682@mail.gmail.com>
+Subject: Re: Reverting 5d423 fixes loading of ath9k on Acer Extensa 7630EZ
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Yannick Roehlly <yannick.roehlly@free.fr>,
+       Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jesse.barnes@intel.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "John W. Linville" <linville@tuxdriver.com>, berndl81@gmx.at,
+       Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Nov 2009 16:04:52 -0800
-Randy Dunlap <rdunlap@xenotime.net> wrote:
+On Wed, Nov 4, 2009 at 3:57 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Wed, 4 Nov 2009, Luis R. Rodriguez wrote:
+>>
+>> Can you please consider reviewing this issue and help determine if
+>> this indeed needs to be reverted for 2.6.32 and the next 2.6.31.y.
+>>
+>> I am curious if other devices would work by reverting this as well.
+>> [ ... ] For details please feel free to check:
+>>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=14402
+>
+> That same commit was the cause for
+>
+>        http://bugzilla.kernel.org/show_bug.cgi?id=13940
+>
+> and we just increased the rounding to make it go away (see commit
+> 15b812f1). But that was a hack.
+>
+> And if that didn't help the ath9k case, then we should just revert
+> entirely.
 
-> From: Tilman Schmidt <tilman@imap.cc>
-> Subject: Doc: update serial/tty.txt ldisc methods
-> 
-> A small addition to the ldisc method descriptions.
-> 
-> Impact: Crater
-> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Alright, will see if Bernhard is up for testing the 15b812f1 hack and
+report back.
 
-Acked-by: Alan Cox <alan@linux.intel.com>
-
-Alan
+  Luis
