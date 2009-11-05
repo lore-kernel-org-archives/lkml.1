@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZKEOdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbZKEOhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbZKEOdN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:33:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbZKEOdM
+	id S1757392AbZKEOhy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757012AbZKEOhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:33:12 -0500
-Received: from s2.homepagix.de ([91.199.241.131]:40092 "EHLO fry.cm4all.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757262AbZKEOdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:33:11 -0500
-Date: Thu, 5 Nov 2009 15:33:20 +0100
-From: Max Kellermann <mk@cm4all.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] tcp: set SPLICE_F_NONBLOCK after first buffer has been
-	spliced
-Message-ID: <20091105143320.GA22787@rabbit.intern.cm-ag>
-References: <20091105095947.32131.99768.stgit@rabbit.intern.cm-ag> <4AF2A929.3000201@gmail.com> <20091105105749.GA4901@rabbit.intern.cm-ag> <4AF2B551.6010302@gmail.com> <20091105132352.GA14453@rabbit.intern.cm-ag> <4AF2DD21.8060604@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF2DD21.8060604@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 5 Nov 2009 09:37:54 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:57862 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756920AbZKEOhw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 09:37:52 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-kernel@vger.kernel.org
+Cc: David Miller <davem@davemloft.net>, John Kacur <jkacur@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 0/5] net: push down BKL into proto ops
+Date: Thu,  5 Nov 2009 15:37:25 +0100
+Message-Id: <1257431850-20874-1-git-send-email-arnd@arndb.de>
+X-Mailer: git-send-email 1.6.3.3
+X-Provags-ID: V01U2FsdGVkX1+woWBUSFpYCnJHULXpz+FQ4x5eVrJZjct85M0
+ 2m8wAzb74TuYBAPZ9/NwcdlZvqXGFiN+fhwfYGYC0DY1Qj03hh
+ n5BFwoJPgdPkEsLWseqJg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009/11/05 15:11, Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> It cannot, therefore an application uses O_NDELAY to avoid blocking.
-> 
-> Try following program if you are not convinced
+This pushes one more use of the BKL from common code into specific
+network protocols by killing off the proto ops wrappers.
+This should cause no visible changes on the code but saves a few
+kilobytes of object code in allyesconfig.
 
-Indeed, I'm surprised by the result rendered by the Linux kernel.
-That however still contradicts with the poll() documentation.
+Arnd Bergmann (5):
+  net/appletalk: push down BKL into a atalk_dgram_ops
+  net/ipx: push down BKL into a ipx_dgram_ops
+  net/irda: push BKL into proto_ops
+  net/x25: push BKL usage into x25_proto
+  net: kill proto_ops wrapper
 
-So this boils down to the question: kernel bug or documentation bug?
+ include/linux/net.h |   83 -------------
+ net/appletalk/ddp.c |  105 ++++++++++++-----
+ net/ipx/af_ipx.c    |   54 +++++++--
+ net/irda/af_irda.c  |  331 ++++++++++++++++++++++++++++++++++-----------------
+ net/x25/af_x25.c    |   71 +++++++++--
+ 5 files changed, 407 insertions(+), 237 deletions(-)
 
-http://www.opengroup.org/onlinepubs/9699919799/functions/pselect.html
-
-"A descriptor shall be considered ready for writing when a call to an
-output function with O_NONBLOCK clear would not block, whether or not
-the function would transfer data successfully."
-
-There is no size limit mentioned here.  Your program reveals that the
-kernel violates this definition.
-
-> Your patch basically makes SPLICE_F_NONBLOCK option always set
-> (choice 1) above)
-[...]
-> Why in the first place have an option if it is always set ?
-
-It is not, you misunderstood my patch.  If there's no room in the pipe
-buffer, then the first iteration of the "while" loop will block (as
-usual).  *After* the first iteration has finished (and at least one
-buffer has been moved already), the flag is set, and further
-iterations will not block.
