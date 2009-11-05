@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbZKER4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZKESQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758179AbZKER4y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 12:56:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbZKER4w
+	id S1758174AbZKESQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 13:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbZKESQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 12:56:52 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:55736 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757974AbZKER4t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 12:56:49 -0500
-Authentication-Results: sj-iport-5.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEADOh8kqrR7H+/2dsb2JhbADJAJdzhD0E
-X-IronPort-AV: E=Sophos;i="4.44,687,1249257600"; 
-   d="scan'208";a="102612714"
-From: Roland Dreier <rdreier@cisco.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jiri Kosina <jkosina@suse.cz>,
+	Thu, 5 Nov 2009 13:16:26 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:43845 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757270AbZKESQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 13:16:25 -0500
+Date: Thu, 5 Nov 2009 12:16:28 -0600
+From: Jack Steiner <steiner@sgi.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jiri Kosina <jkosina@suse.cz>,
        Michael Gilbert <michael.s.gilbert@gmail.com>,
-       Michael Buesch <mb@bu3sch.de>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org, stable@kernel.org
 Subject: Re: CVE-2009-2584
-References: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com>
-	<alpine.LRH.2.00.0911051620510.31913@twin.jikos.cz>
-	<alpine.LFD.2.01.0911050831330.31845@localhost.localdomain>
-	<alpine.LFD.2.01.0911050923580.31845@localhost.localdomain>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 05 Nov 2009 09:56:53 -0800
-In-Reply-To: <alpine.LFD.2.01.0911050923580.31845@localhost.localdomain>
-	(Linus Torvalds's message of "Thu, 5 Nov 2009 09:38:21 -0800 (PST)")
-Message-ID: <aday6mkc0t6.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
+Message-ID: <20091105181628.GA2239@sgi.com>
+References: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com> <alpine.LFD.2.01.0911050831330.31845@localhost.localdomain> <alpine.LFD.2.01.0911050923580.31845@localhost.localdomain> <200911051847.36103.mb@bu3sch.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 Nov 2009 17:56:54.0210 (UTC) FILETIME=[5BF44220:01CA5E41]
+Content-Disposition: inline
+In-Reply-To: <200911051847.36103.mb@bu3sch.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 05, 2009 at 06:47:33PM +0100, Michael Buesch wrote:
+> On Thursday 05 November 2009 18:38:21 Linus Torvalds wrote:
+> > @@ -161,14 +161,15 @@ static int options_show(struct seq_file *s, void *p)
+> >  static ssize_t options_write(struct file *file, const char __user *userbuf,
+> >  			     size_t count, loff_t *data)
+> >  {
+> > -	unsigned long val;
+> > -	char buf[80];
+> > +	char buf[16];
+> >  
+> > -	if (strncpy_from_user(buf, userbuf, sizeof(buf) - 1) < 0)
+> > +	if (count >= sizeof(buf))
+> > +		return -EINVAL;
+> > +	if (copy_from_user(buf, userbuf, count))
+> >  		return -EFAULT;
+> > -	buf[count - 1] = '\0';
+> > -	if (!strict_strtoul(buf, 10, &val))
+> > -		gru_options = val;
+> > +	buf[count] = '\0';
+> > +	if (strict_strtoul(buf, 0, &gru_options))
+> > +		return -EINVAL;
+> >  
+> >  	return count;
+> >  }
+> > 
+> > 
+> 
+> Looks OK to me. I can't test it however, as I don't own the hardware.
 
- > So here's a second try. I guess the 'return count/-EFAULT' lines were
- > actually correct after all. So it wasn't _all_ buggy or insane.
+"buf" should be larger than 16. The string could be "0x" + 16 characters.
 
-The blank lines seem fine too.
+I'll verify the the rest.
 
- - R.
+
+We have the hardware :-)
+
+
+--- jack
