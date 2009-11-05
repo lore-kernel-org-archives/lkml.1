@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbZKEFRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZKEFUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752107AbZKEFRu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 00:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZKEFRt
+	id S1753303AbZKEFUS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 00:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZKEFUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 00:17:49 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:58323 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751194AbZKEFRt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 00:17:49 -0500
-Message-ID: <4AF25FFB.5020700@us.ibm.com>
-Date: Wed, 04 Nov 2009 21:17:47 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
-       Mike Fulton <fultonm@ca.ibm.com>, Sean Foley <Sean_Foley@ca.ibm.com>
-Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
-References: <1256172744.4768.22.camel@localhost.localdomain> <20091021190028.623a7f6e.akpm@linux-foundation.org> <20091105112303.208A.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091105112303.208A.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Nov 2009 00:20:17 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49319 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750965AbZKEFUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 00:20:16 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+TG4QRgyCTy3eFBLgT40D9WrIWXy/aL2uE9Ghv13
+	O8W0Ktbri/UV/Q
+Subject: Re: UDP-U stream performance regression on 32-rc1 kernel
+From: Mike Galbraith <efault@gmx.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, alex.shi@intel.com,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1257387645.16282.66.camel@ymzhang>
+References: <1257220036.3819.193.camel@alexs-hp.sh.intel.com>
+	 <1257222791.16282.46.camel@ymzhang>  <20091103174531.GA14747@elte.hu>
+	 <1257299745.16282.49.camel@ymzhang>
+	 <1257336461.16163.18.camel@marge.simson.net>
+	 <1257387645.16282.66.camel@ymzhang>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 06:20:17 +0100
+Message-Id: <1257398417.6401.27.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
+On Thu, 2009-11-05 at 10:20 +0800, Zhang, Yanmin wrote:
+> On Wed, 2009-11-04 at 13:07 +0100, Mike Galbraith wrote:
 
-> John, I'd prefer to suggested another design.
-> How about this?
-> 
-> 1. remove pid argument from prctl
-> 2. cancel pthread_setname_np()
-> 3. instead, create pthread_attr_setname_np()
-> 4. pthread_create() change own thread name by pthread_attr.
-> 
-> 
-> It avoid many racy problem automatically.
+> > Can you try the below, and send me 
+> I tested it on Nehalem machine against the latest tips kernel. netperf loopback
+> result is good and regression disappears.
 
-Perhaps, but it also greatly reduces the flexibility of the 
-implementation by restricting name changes to create time.
+Excellent.  Ingo has picked up a version in tip (1b9508f) which has zero
+negative effect on my x264 testcase, and is a win for mysql+oltp through
+the whole test spectrum.  As that may (dunno, Ingo?) now be considered a
+regression fix, ie candidate for 32.final, testing that it does no harm
+to your big machines would be a good thing.  (pretty please?:)
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+> tbench result has no improvement.
+
+Can you remind me where we stand on tbench?
+
+> > your UDP-U-1k args so I can try it? 
+> #taskset -c 0 ./netserver
+> #taskset -c 15 ./netperf -t UDP_STREAM -l 60 -H 127.0.0.1 -i 50 3 -I 99 5 -- -P 12384,12888 -s 32768 -S 32768 -m 4096
+> 
+> Pls. check /proc/cpuinfo to make sure cpu 0 and cpu 15 are not in the
+> same physical cpu.
+
+Thanks. My little box doesn't have a 15 (darn) so 0,3 will have to do.
+
+> I also run sysbench(oltp)+mysql testing with thread number 14,16,18,20,32,64,128. The average
+> number is good. If I compare every single result against 2.6.32-rc5's, I find thread number
+> ﻿14,16,18,20,32's result are better than 2.6.32-rc5's, but 64,128's result are worse. 128's is
+> the worst.
+
+Hm.  That's disconcerting.  However, that patch isn't going anywhere but
+to the bitwolf anyway (diagnostic).  If 1b9508f regresses, that will be
+a problem.  With diag, my box also regressed at the tail.  Balancing a
+bit seems to help mysql once it starts tripping all over itself, it
+improves the decay curve markedly.  1b9508f does brief bursts of newidle
+balancing when idle time climbs, which translated to a ~6% improvement
+at 256 clients on my little quad.
+
+	-Mike
+
