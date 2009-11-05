@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbZKEU4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZKEU4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758874AbZKEU4P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 15:56:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbZKEU4O
+	id S1758909AbZKEU4f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 15:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758595AbZKEU4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 15:56:14 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37459 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758509AbZKEU4O (ORCPT
+	Thu, 5 Nov 2009 15:56:34 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:55605 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758877AbZKEU4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 15:56:14 -0500
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: npiggin@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: Re: Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu counter instead
-From: Andi Kleen <andi@firstfloor.org>
-References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1>
-	<alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1>
-Date: Thu, 05 Nov 2009 21:56:18 +0100
-In-Reply-To: <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1> (Christoph Lameter's message of "Thu, 5 Nov 2009 14:20:47 -0500 (EST)")
-Message-ID: <87r5sc7kst.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Thu, 5 Nov 2009 15:56:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=LKwMtaHSmuSwHNyyKdnSkqHuuuIpSTnHxl2vvrdXzSK2tHzZrpJ80drtndmoci+0Rs
+         f5FKLpz5ls+V4W2jgio4AVcNKHsBX5ksB61h4WDEgMUMiR2HuH0Tw+cdllMtIya8nJPy
+         PRRp4Q3R2kNYg1itwhKn0LFf4yIxIUV8Flk+M=
+Message-ID: <4AF33C02.6040606@gmail.com>
+Date: Thu, 05 Nov 2009 21:56:34 +0100
+From: Gertjan van Wingerde <gwingerde@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090926 Lightning/1.0pre Shredder/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-wireless@vger.kernel.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH 40/41] rt2800: add rt2800lib (part three)
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173657.28463.90918.sendpatchset@localhost.localdomain>
+In-Reply-To: <20091104173657.28463.90918.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter <cl@linux-foundation.org> writes:
+On 11/04/09 18:36, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] rt2800: add rt2800lib (part three)
+> 
+> Code unification.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
 
-> Instead of a rw semaphore use a mutex and a per cpu counter for the number
-> of the current readers. read locking then becomes very cheap requiring only
-> the increment of a per cpu counter.
->
-> Write locking is more expensive since the writer must scan the percpu array
-> and wait until all readers are complete. Since the readers are not holding
-> semaphores we have no wait queue from which the writer could wakeup. In this
-> draft we simply wait for one millisecond between scans of the percpu
-> array. A different solution must be found there.
+For what it is worth:
 
-I'm not sure making all writers more expensive is really a good idea.
+Acked-by: Gertjan van Wingerde <gwingerde@gmail.com>
 
-For example it will definitely impact the AIM7 multi brk() issue
-or the mysql allocation case, which are all writer intensive. I assume
-doing a lot of mmaps/brks in parallel is not that uncommon.
+I wonder how many differences we are going to get between rt2800pci and rt2800usb with respect to register settings, but this is good enough for now. When the differences turn out to be too big, we can always move the affected functions into rt2800_ops and let each driver provide his own version.
 
-My thinking was more that we simply need per VMA locking or
-some other per larger address range locking. Unfortunately that
-needs changes in a lot of users that mess with the VMA lists
-(perhaps really needs some better abstractions for VMA list management
-first)
-
-That said also addressing the convoying issues in the current
-semaphores would be a good idea, which is what your patch does.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
