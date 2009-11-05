@@ -1,98 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbZKEH7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbZKEIDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbZKEH7s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 02:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZKEH7r
+	id S1755651AbZKEIDX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 03:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZKEIDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 02:59:47 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52800
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751115AbZKEH7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 02:59:47 -0500
-Date: Thu, 05 Nov 2009 00:00:12 -0800 (PST)
-Message-Id: <20091105.000012.61292273.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kristoffer@gaisler.com
-Subject: Re: linux-next: sparc tree build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091104.235315.18303666.davem@davemloft.net>
-References: <20091105185014.76dd0d31.sfr@canb.auug.org.au>
-	<20091104.235315.18303666.davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 5 Nov 2009 03:03:22 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64527 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755171AbZKEIDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 03:03:22 -0500
+Message-ID: <4AF28695.7070806@cn.fujitsu.com>
+Date: Thu, 05 Nov 2009 16:02:29 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Liu Aleaxander <aleaxander@gmail.com>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [PATCH] cgroup: Fixes the un-paired cgroup lock problem
+References: <b741c2440911031740m52f8c11dt6e57b549cc6ce465@mail.gmail.com> <4AF10CEE.5020807@cn.fujitsu.com> <4AF18F06.50807@tmr.com>
+In-Reply-To: <4AF18F06.50807@tmr.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Wed, 04 Nov 2009 23:53:15 -0800 (PST)
-
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Thu, 5 Nov 2009 18:50:14 +1100
+Bill Davidsen wrote:
+> Li Zefan wrote:
+>> Liu Aleaxander wrote:
+>>> From: Liu Aleaxander <Aleaxander@gmail.com>
+>>> Date: Wed, 4 Nov 2009 09:27:06 +0800
+>>> Subject: [PATCH] Fixes the un-paired cgroup lock problem
+>>>
+>>> In cgroup_lock_live_group, it locks the cgroup by mutex_lock, while
+>>> in the
+>>> cgroup_tasks_write, it unlock it by cgroup_unlock. Even though they are
+>>> equal, but I do think we should make it pair.
+>>>
+>>> BTW, should we replace others with cgroup_lock and cgroup_unlock?
+>>> Since we already have a wrapper one and it's meaningful.
+>>>
+>>
+>> Before I read the email body, I thought there is a bug where
+>> there is a lock without unlock or vise versa.
+>>
+>> I agree the case here can be called "unpaired", but I'm not
+>> convinced this patch is needed. The code is not buggy or
+>> confusing. So the patch neither fixes a bug nor make the code
+>> more readable.
+>>
+> I would say it fixes a bug, the one that would be introduced when the
+> two methods are no longer compatible and essentially two names for the
+> same thing. And while you may know the code so well that you knew
+> without looking that this was (currently) okay, there will be lots of
+> eyes on this code over the years, I think most people would find use of
+> cgroup_lock to lock the cgroup a LOT more readable.
 > 
->> Caused by commit d4ac42a582e46d7f86f0acb4253a310423c72c4c ("sparc:
->> Support for GRLIB APBUART serial port").  I added the following patch for
->> today.
+> While you can't go back in time to murder your grandfather, it creates
+> no paradox to fix a bug before someone writes it.
 > 
-> Thanks, the real fix is to simply remove that include, it isn't
-> actually needed and the CONFIG_OF dependency is sufficient.
 
-Hmm, it took a tiny bit more than that :-)  Here's what I commited
-to fix this, thanks.
+cgroup_lock() is not necessarily more readable than mutex_lock(&cgroup_mutex),
+at least the former doesn't tell you the lock is a spin_lock or a mutex.
 
-apbuart: Kill dependency on deprecated Sparc-only PROM interfaces.
+In fact, Ingo showed his distaste towards cgroup_lock():
+	http://lkml.org/lkml/2009/1/18/39
 
-Use the proper modern OF ones instead.
-
-Noticed by Stephen Rothwell.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- drivers/serial/apbuart.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/serial/apbuart.c b/drivers/serial/apbuart.c
-index c7883a3..5f9dec3 100644
---- a/drivers/serial/apbuart.c
-+++ b/drivers/serial/apbuart.c
-@@ -29,7 +29,6 @@
- #include <linux/io.h>
- #include <linux/serial_core.h>
- #include <asm/irq.h>
--#include <asm/oplib.h>
- 
- #include "apbuart.h"
- 
-@@ -596,10 +595,9 @@ static struct of_platform_driver grlib_apbuart_of_driver = {
- static void grlib_apbuart_configure(void)
- {
- 	static int enum_done;
--	struct device_node *np;
-+	struct device_node *np, *rp;
- 	struct uart_port *port = NULL;
--
--	int node;
-+	const u32 *prop;
- 	int freq_khz;
- 	int v = 0, d = 0;
- 	unsigned int addr;
-@@ -610,8 +608,10 @@ static void grlib_apbuart_configure(void)
- 		return;
- 
- 	/* Get bus frequency */
--	node = prom_getchild(prom_root_node);
--	freq_khz = prom_getint(node, "clock-frequency");
-+	rp = of_find_node_by_name(NULL, "/");
-+	rp = of_get_next_child(rp, NULL);
-+	prop = of_get_property(rp, "clock-frequency", NULL);
-+	freq_khz = *prop;
- 
- 	line = 0;
- 	for_each_matching_node(np, apbuart_match) {
--- 
-1.6.5.2
+And I won't worry about the issue you mentioned above. If It does
+happen, the one, who makes the 2 mehtods no long compatible, will
+definitely find out all the places where cgroup_mutex is used and
+make proper change.
 
