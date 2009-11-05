@@ -1,60 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbZKEQ3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbZKEQsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757372AbZKEQ3R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 11:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbZKEQ3Q
+	id S1757402AbZKEQsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 11:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbZKEQsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 11:29:16 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:63228 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755153AbZKEQ3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 11:29:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=etiAWRsjPVyZmNBKWv3LYBjLqKllw9gEKGB5YD8ITq9qLjDjnU7ky2Hz4e1bQZyrC4
-         p5+aldPeOCbil6orRF3nFtTYM0c4/QYxotDA74pvruPU7Uo6XE/DKMYnZ7zpq1fmq/7q
-         mzraJ2UQPaMG4BqcaIseGTLqlCQwcolXUdR3k=
-Message-ID: <4AF3000C.8080607@gmail.com>
-Date: Thu, 05 Nov 2009 17:40:44 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 5 Nov 2009 11:48:32 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:58751 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754450AbZKEQsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 11:48:31 -0500
+Date: Thu, 5 Nov 2009 16:48:32 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Frans Pop <elendil@planet.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 3/3] vmscan: Force kswapd to take notice faster when
+	high-order watermarks are being hit (data on latencies available)
+Message-ID: <20091105164832.GB25926@csn.ul.ie>
+References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <200911040305.59352.elendil@planet.nl> <20091104154853.GM22046@csn.ul.ie> <200911042157.25020.elendil@planet.nl>
 MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sparc,sparc64: replace parentheses in pmul()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200911042157.25020.elendil@planet.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-`>>' has a higher precedence than `?' so src2 evaluated to
-either 16 or 0 dependent on the bits set in rs2.
+On Wed, Nov 04, 2009 at 09:57:21PM +0100, Frans Pop wrote:
+> On Wednesday 04 November 2009, Mel Gorman wrote:
+> > Agreed. I'll start from scratch again trying to reproduce what you're
+> > seeing locally. I'll try breaking my network card so that it's making
+> > high-order atomics and see where I get. Machines that were previously
+> > tied up are now free so I might have a better chance.
+> 
+> Hmmm. IMO you're looking at this from the wrong side. You don't need to 
+> break your network card because the SKB problems are only the *result* of 
+> the change, not the *cause*.
+> 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- arch/sparc/kernel/visemul.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+They are a symptom though - albeit a dramatic one from the change on
+timing.
 
-I am not 100% sure that the code was incorrect, however, if it
-was intended I think it is a very strange way to write it.
+> I can reproduce the desktop freeze just as easily when I'm using wired 
+> (e1000e) networking and when I'm not streaming music at all, but just 
+> loading that 3rd gitk instance.
+> 
 
-Roel
+No one likes desktop freezes but it's a bit on the hard side to measure and
+reproduce with multiple kernels reliability.  However, I think I might have
+something to help this side of things out.
 
-diff --git a/arch/sparc/kernel/visemul.c b/arch/sparc/kernel/visemul.c
-index b956fd7..d231cbd 100644
---- a/arch/sparc/kernel/visemul.c
-+++ b/arch/sparc/kernel/visemul.c
-@@ -617,7 +617,7 @@ static void pmul(struct pt_regs *regs, unsigned int insn, unsigned int opf)
- 		rs2 = fps_regval(f, RS2(insn));
- 
- 		rd_val = 0;
--		src2 = (rs2 >> (opf == FMUL8x16AU_OPF) ? 16 : 0);
-+		src2 = rs2 >> (opf == FMUL8x16AU_OPF ? 16 : 0);
- 		for (byte = 0; byte < 4; byte++) {
- 			u16 src1 = (rs1 >> (byte * 8)) & 0x00ff;
- 			u32 prod = src1 * src2;
+> So it's not
+>   "I get a desktop freeze because of high order allocations from wireless
+>    during swapping",
+> but
+>   "during very heavy swapping on a system with an encrypted LMV volume
+>    group containing (encrypted) fs and (encrytpted) swap, the swapping
+>    gets into some semi-stalled state *causing* a long desktop freeze
+>    and, if there also happens to be some process trying higher order
+>    allocations, failures of those allocations".
+> 
+
+Right, so it's a related problem, but not the root cause.
+
+> I have tried to indicate this in the past, but it may have gotten lost in 
+> the complexity of the issue.
+> 
+
+I got it all right, but felt that the page allocation problems were both
+compounding the problem and easier to measure.
+
+> An important clue is still IMO that during the first part of the freezes 
+> there is very little disk activity for a long time. Why would that be when 
+> the system is supposed to be swapping like hell?
+> 
+
+One possible guess is that the system as a whole decides everything is
+congested and waits for something else to make forward progress. I
+really think the people who were involved in the writeback changes need
+to get in here and help out.
+
+In the interest of getting something more empirical, I sat down from scratch
+with the view to recreating your case and I believe I was successful. I was
+able to reproduce your problem after a fashion and generate some figures -
+crucially including some latency figures.
+
+I don't have a fix for this, but I'm hoping someone will follow the notes
+to recreate the reproduction case and add their own instrumentation to pin
+this down.
+
+Steps to setup and reproduce are;
+
+1. X86-64 AMD Phenom booted with mem=512MB. Expectation is any machine
+	will do as long as it's 512MB for the size of workload involved.
+
+2. A crypted work partition and swap partition was created. On my
+   own setup, I gave no passphrase so it'd be easier to activate without
+   interaction but there are multiple options. I should have taken better
+   notes but the setup goes something like this;
+
+	cryptsetup create -y crypt-partition /dev/sda5
+	pvcreate /dev/mapper/crypt-partition
+	vgcreate crypt-volume /dev/mapper/crypt-partition
+	lvcreate -L 5G -n crypt-logical crypt-volume
+	lvcreate -L 2G -n crypt-swap crypt-volume
+	mkfs -t ext3 /dev/crypt-volume/crypt-logical
+	mkswap /dev/crypt-volume/crypt-swap
+
+3. With the partition mounted on /scratch, I
+	cd /scratch
+	mkdir music
+	git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6
+
+4. On a normal partition, I expand a tarball containing test scripts available at
+	http://www.csn.ul.ie/~mel/postings/latency-20091105/latency-tests-with-results.tar.gz
+
+	There are two helper programs that run as part of the test - a fake
+	music player and a fake gitk.
+
+	The fake music player uses rsync with bandwidth limits to start
+	downloading a music folder from another machine. It's bandwidth limited
+	to simulate playing music over NFS. I believe it generates similar if
+	not exact traffic to a music player. It occured to be afterwards that
+	if one patched ogg123 to print a line when 1/10th of a seconds worth
+	of music was played, it could be used as an indirect measure of desktop
+	interactivity and help pin down pesky "audio skips" bug reports.
+
+	The fake gitk is based on observing roughly what gitk does using
+	strace. It loads all the logs into a large buffer and then builds a
+	very basic hash map of parent to child commits.  The data is stored
+	because it was insufficient just to read the logs. It had to be kept in
+	an in-memory buffer to generate swap.  It then discards the data and
+	does it over again in a loop for a small number of times so the test
+	is finite. When it processes a large number of commits, it outputs
+	a line to stdout so that stalls can be observed. Ideal behaviour is
+	that commits are read at a constant rate and latencies look flat.
+
+	Output from the two programs is piped through another script -
+	latency-output. It records how far into the test it was when the
+	line was outputted and what the latency was since the last line
+	appeared. The latency should always be very smooth. Because pipes
+	buffer IO, they are all run by expect_unbuffered which is available
+	from expect-dev on Debian at least.
+
+	All the tests are driven via run-test.sh. While the tests run,
+	it records the kern.log to track page allocation failures, records
+	nr_writeback at regular intervals and tracks Page IO and Swap IO.
+
+5. For running an actual test, a kernel is built, booted, the
+	crypted partition activated, lvm restarted,
+	/dev/crypt-volume/crypt-logical mounted on /scratch, all
+	swap partitions turned off and then the swap partition on
+	/dev/crypt-volume/crypt-swap activated. I then run run-test.sh from
+	the tarball
+
+6. I tested kernels 2.6.30, 2.6.31, 2.6.32-rc6,
+	2.6.32-rc6-revert-8aa7e847, 2.6.32-rc6-patches123 where patches123
+	are the patches in this thread and 2.6.32-rc6-patches45 which include
+	the account patch and a delay for direct reclaimers posted within
+	this thread. To simulate the wireless network card, I patched skbuff
+	on all kernels to always allocate at least order-2. However, the
+	latencies are expected to occur without order-2 atomic allocations
+	from network being involved.
+
+The tarball contains the scripts I used, generated graphs and the raw
+data. Broadly speaking;
+	2.6.30 was fine with rare fails although I did trigger page
+		allocation failures during at least one test
+	2.6.31 was mostly fine with occasional fails both ok latency-wise
+	2.6.32-rc6 sucked with multiple failures and large latencies. On
+		a few occasions, it's possible for this kernel to get into
+		a page allocation failure lockup. I left one running and
+		it was still locked up spewing out error messages 8 hours
+		later. i.e. it's possible to almost live-lock this kernel
+		using this workload
+	2.6.32-rc6-revert-8aa7e847 smooths out the latencies but is not great.
+		I suspect it made more a difference to 2.6.31 than it
+		does to mainline
+
+	2.6.32-rc6-patches123 help a little with latencies and has fewer
+	failures.
+		More importantly, the failures are hard to trigger. It was
+		actually rare for a failure to occur. It just happened to
+		occur on the final set of results I gathered so I think that's
+		important. It's also important that they bring the allocator
+		more in line with 2.6.30 behaviour. The most important
+		contribion of all was that I couldn't live-lock the kernel
+		with these patches applied but I can with the vanilla kernel.
+
+	2.6.32-rc6-patches12345 did not significantly help leading me to
+		conclude that the congestion_wait() called in the page
+		allocator is not significant.
+
+patches123 are the three patches that formed this thread originally.
+Patches 4 and 5 are the accounting patch and the one that makes kswapd sleep
+for a short interval before rechecking watermarks.
+
+On the latency front, look at
+
+http://www.csn.ul.ie/~mel/postings/latency-20091105/graphs/gitk-latency.ps
+http://www.csn.ul.ie/~mel/postings/latency-20091105/graphs/gitk-latency-smooth.ps
+
+Both graphs are based on the same data but the smooth one (plotted with
+smooth bezier in gnuplot but otherwise based on the same data) is easier
+to read for doing a direct comparison. The gitk-latency.ps is based on how
+the fourth instance of fake-gitk was running. Every X number of commits, it
+prints out how many commits it processed. It should be able to process them
+at a constant rate so the Y bars should be all levelish.  2.6.30 is mostly
+low with small spikes and 2.6.31 is not too bad.  However, mainline has
+massive stalls evidenced by the sawtooth like pattern where there were big
+delays and latencies. It can't be seen in the graph but on a few occasions,
+2.6.32-rc6 live-locked in order-2 allocation failures during the test.
+
+It's not super-clear from the IO statistics if IO was really happening or
+not during the stalls and I can't hear the disks for activity. All that can
+be seen on the graphs is the huge spike on pages queued during a period of
+proce3sses being stalled. What can be said is that this is probably very
+similar to the desktop freezes Frans sees.
+
+Because of other reports, the slight improvements on latency and the removal
+of a possible live-lock situation, I think patches 1-3 and the accounting
+patch posted in this thread should go ahead. Patches 1,2 bring allocator
+behaviour more in line with 2.6.30 and are a proper fix. Patch 3 makes a lot
+of sense when there are a lot of high-order atomics going on so that kswapd
+notices as fast as possible that it needs to do other work. The accounting
+patch monitors what's going on with patch 3.
+
+Beyond that, independent of any allocation failure problems, desktop
+latency problems have been reported and I believe this is what I'm
+seeing with the massive latencties and stalled processes. This could
+lead to some very nasty bug reports when 2.6.32 comes out.
+
+I'm going to rerun these through a profiler and see if something obvious
+pops out and if not, then bisect 2.6.31..2.6.32-rc6. It would be great
+if those involved in the IO-related changes could take a look at the
+results and try reproducing the problem monitoring what they think is
+important.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
