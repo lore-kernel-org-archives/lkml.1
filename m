@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZKELzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZKEL45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZKELzj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 06:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZKELzi
+	id S1755336AbZKEL45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 06:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZKEL44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 06:55:38 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56508 "EHLO mx1.suse.de"
+	Thu, 5 Nov 2009 06:56:56 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56554 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754910AbZKELzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 06:55:37 -0500
-Date: Thu, 5 Nov 2009 12:55:39 +0100
+	id S1754927AbZKEL4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 06:56:55 -0500
+Date: Thu, 5 Nov 2009 12:56:59 +0100
 From: Jan Kara <jack@suse.cz>
 To: Jan Blunck <jblunck@suse.de>
 Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
@@ -17,81 +17,82 @@ Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
        Andreas Dilger <adilger@sun.com>, Jan Kara <jack@suse.cz>,
        Al Viro <viro@zeniv.linux.org.uk>, "Theodore Ts'o" <tytso@mit.edu>,
        linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 06/27] BKL: Remove BKL from ext3 fill_super()
-Message-ID: <20091105115539.GA12770@duck.suse.cz>
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-7-git-send-email-jblunck@suse.de>
+Subject: Re: [PATCH 07/27] BKL: Remove BKL from ext3_put_super() and
+	ext3_remount()
+Message-ID: <20091105115659.GB12770@duck.suse.cz>
+References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-8-git-send-email-jblunck@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257156307-24175-7-git-send-email-jblunck@suse.de>
+In-Reply-To: <1257156307-24175-8-git-send-email-jblunck@suse.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 02-11-09 11:04:46, Jan Blunck wrote:
-> The BKL is protecting nothing than two memory allocations here.
-  The patch looks good.
-Acked-by: Jan Kara <jack@suse.cz>
-  Should I merge it or will you do it with other patches?
+On Mon 02-11-09 11:04:47, Jan Blunck wrote:
+> The BKL lock is protecting the remounting against a potential call to
+> ext3_put_super(). This could not happen, since this is protected by the
+> s_umount rw semaphore of struct super_block.
+> 
+> Therefore I think the BKL is protecting nothing here.
+  Yes, I'm also not aware of anything BKL would really protect. So I'm fine
+with removing it here.
+  Acked-by: Jan Kara <jack@suse.cz>
+I can merge this patch as well if you want.
 
 									Honza
 > 
 > Signed-off-by: Jan Blunck <jblunck@suse.de>
 > ---
->  fs/ext3/super.c |   13 +------------
->  1 files changed, 1 insertions(+), 12 deletions(-)
+>  fs/ext3/super.c |    8 --------
+>  1 files changed, 0 insertions(+), 8 deletions(-)
 > 
 > diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-> index 38261a5..4b635b7 100644
+> index 4b635b7..3ddce03 100644
 > --- a/fs/ext3/super.c
 > +++ b/fs/ext3/super.c
-> @@ -1568,19 +1568,14 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
->  	__le32 features;
->  	int err;
+> @@ -398,8 +398,6 @@ static void ext3_put_super (struct super_block * sb)
+>  	struct ext3_super_block *es = sbi->s_es;
+>  	int i, err;
 >  
 > -	lock_kernel();
 > -
->  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
-> -	if (!sbi) {
-> -		unlock_kernel();
-> +	if (!sbi)
->  		return -ENOMEM;
-> -	}
->  
->  	sbi->s_blockgroup_lock =
->  		kzalloc(sizeof(struct blockgroup_lock), GFP_KERNEL);
->  	if (!sbi->s_blockgroup_lock) {
->  		kfree(sbi);
-> -		unlock_kernel();
->  		return -ENOMEM;
->  	}
->  	sb->s_fs_info = sbi;
-> @@ -1589,8 +1584,6 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
->  	sbi->s_resgid = EXT3_DEF_RESGID;
->  	sbi->s_sb_block = sb_block;
->  
-> -	unlock_kernel();
-> -
->  	blocksize = sb_min_blocksize(sb, EXT3_MIN_BLOCK_SIZE);
->  	if (!blocksize) {
->  		printk(KERN_ERR "EXT3-fs: unable to set blocksize\n");
-> @@ -1996,8 +1989,6 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
->  		test_opt(sb,DATA_FLAGS) == EXT3_MOUNT_ORDERED_DATA ? "ordered":
->  		"writeback");
->  
-> -	lock_kernel();
-> -	unlock_kernel();
->  	return 0;
->  
->  cantfind_ext3:
-> @@ -2027,8 +2018,6 @@ out_fail:
+>  	ext3_xattr_put_super(sb);
+>  	err = journal_destroy(sbi->s_journal);
+>  	sbi->s_journal = NULL;
+> @@ -448,8 +446,6 @@ static void ext3_put_super (struct super_block * sb)
 >  	sb->s_fs_info = NULL;
 >  	kfree(sbi->s_blockgroup_lock);
 >  	kfree(sbi);
-> -	lock_kernel();
+> -
 > -	unlock_kernel();
->  	return ret;
+>  }
+>  
+>  static struct kmem_cache *ext3_inode_cachep;
+> @@ -2495,8 +2491,6 @@ static int ext3_remount (struct super_block * sb, int * flags, char * data)
+>  	int i;
+>  #endif
+>  
+> -	lock_kernel();
+> -
+>  	/* Store the original options */
+>  	lock_super(sb);
+>  	old_sb_flags = sb->s_flags;
+> @@ -2607,7 +2601,6 @@ static int ext3_remount (struct super_block * sb, int * flags, char * data)
+>  			kfree(old_opts.s_qf_names[i]);
+>  #endif
+>  	unlock_super(sb);
+> -	unlock_kernel();
+>  	return 0;
+>  restore_opts:
+>  	sb->s_flags = old_sb_flags;
+> @@ -2625,7 +2618,6 @@ restore_opts:
+>  	}
+>  #endif
+>  	unlock_super(sb);
+> -	unlock_kernel();
+>  	return err;
 >  }
 >  
 > -- 
