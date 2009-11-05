@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZKEQ1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZKEQ2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbZKEQ1u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 11:27:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZKEQ1u
+	id S1756920AbZKEQ2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 11:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZKEQ2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 11:27:50 -0500
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:4262 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbZKEQ1t (ORCPT
+	Thu, 5 Nov 2009 11:28:15 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:33962 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752596AbZKEQ2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 11:27:49 -0500
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [BUG] radio-gemtek-pci.c: double mutex_lock
-Date: Thu, 5 Nov 2009 17:27:29 +0100
-User-Agent: KMail/1.9.9
-Cc: Alexander Strakh <strakh@ispras.ru>,
-       Vladimir Shebordaev <vshebordaev@mail.ru>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org,
-       Linux Kernlel Mailing List <linux-kernel@vger.kernel.org>
-References: <200910081852.50816.strakh@ispras.ru> <alpine.LRH.2.00.0910082046370.12171@twin.jikos.cz>
-In-Reply-To: <alpine.LRH.2.00.0910082046370.12171@twin.jikos.cz>
+	Thu, 5 Nov 2009 11:28:14 -0500
+Message-ID: <4AF2FD04.4030306@gmail.com>
+Date: Thu, 05 Nov 2009 17:27:48 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911051727.29973.hverkuil@xs4all.nl>
+To: Max Kellermann <max@duempel.org>
+CC: linux-kernel@vger.kernel.org, mk@cm4all.com
+Subject: Re: [PATCH] pipe: don't block after data has been written
+References: <20091105153147.27473.19570.stgit@woodpecker.roonstrasse.net>
+In-Reply-To: <20091105153147.27473.19570.stgit@woodpecker.roonstrasse.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 05 Nov 2009 17:27:49 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 October 2009 20:47:25 Jiri Kosina wrote:
-> On Thu, 8 Oct 2009, Alexander Strakh wrote:
+Max Kellermann a écrit :
+> According to the select() / poll() documentation, a write operation on
+> a file descriptor which is "ready for writing" must not block.  Linux
+> violates this rule: if you pass a very large buffer to write(), the
+> system call will not return until everything is written, or an error
+> occurs.
 > 
-> > 	KERNEL_VERSION: 2.6.31
-> > 	DESCRIBE:
-> > In driver ./drivers/media/radio/radio-gemtek-pci.c 
-> > mutex_lock is called first time in line 184, then in line 186 
-> > gemtek_pci_setfrequency is called.
-> > 
-> > 182 static void gemtek_pci_unmute(struct gemtek_pci *card)
-> > 183 {
-> > 184		mutex_lock(&card->lock);
-> > 185		if (card->mute) {
-> > 186         	gemtek_pci_setfrequency(card, card->current_frequency);
-> > 187			card->mute = false;
-> > 188		}
-> > 189		mutex_unlock(&card->lock);190 }
-> > 
-> > In gemtek_pci_setfrequency we call mutex_lock again in line 152
-> > 
-> > 144 static void gemtek_pci_setfrequency(struct gemtek_pci *card, unsigned long 
-> > frequency)
-> > 145 {
-> > 146         int i;
-> > 147         u32 value = frequency / 200 + 856;
-> > 148         u16 mask = 0x8000;
-> > 149         u8 last_byte;
-> > 150         u32 port = card->iobase;
-> > 151
-> > 152         mutex_lock(&card->lock);
+> This patch adds a simple check: if at least one byte has already been
+> written, break from the loop, instead of calling pipe_wait().
 > 
-> Good catch. Adding Hans, who added the (incorrect) locking into 
-> gemtek_pci_unmute(), to CC.
+> Signed-off-by: Max Kellermann <max@duempel.org>
+> ---
+> 
+>  fs/pipe.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/pipe.c b/fs/pipe.c
+> index ae17d02..9d84f0b 100644
+> --- a/fs/pipe.c
+> +++ b/fs/pipe.c
+> @@ -582,7 +582,7 @@ redo2:
+>  		}
+>  		if (bufs < PIPE_BUFFERS)
+>  			continue;
+> -		if (filp->f_flags & O_NONBLOCK) {
+> +		if (filp->f_flags & O_NONBLOCK || ret > 0) {
+>  			if (!ret)
+>  				ret = -EAGAIN;
+>  			break;
 > 
 
-Thanks, I've committed a fix and will post a pull request later today.
+Then select()/poll() documentation is wrong, please correct documentation ?
 
-Sorry for the late reply, but I've been abroad for some time.
+http://www.opengroup.org/onlinepubs/000095399/functions/write.html
 
-Regards,
+	ssize_t write(int fildes, const void *buf, size_t nbyte);
 
-	Hans
+	If the O_NONBLOCK flag is clear, a write request may cause the thread to block,
+	but on normal completion it shall return nbyte.
 
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG Telecom
+Every Unix I know behaves the same when writing to a pipe.
+
+
+Your patch breaks many programs, that dont use poll()/select()
+
+char result[1000000];
+main()
+{
+	computethings();
+	write(1, buffer, 1000000);
+}
+
+
+$ ./program | more
+
+Please learn how useful O_NDELAY can be in a poll()/select() environment.
+
+Thanks
