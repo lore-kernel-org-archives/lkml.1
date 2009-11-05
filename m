@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZKEKH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbZKEKAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbZKEKH7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 05:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZKEKH6
+	id S1752496AbZKEKAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 05:00:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbZKEKAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 05:07:58 -0500
-Received: from s2.homepagix.de ([91.199.241.131]:51837 "EHLO fry.cm4all.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbZKEKH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 05:07:57 -0500
-X-Greylist: delayed 495 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Nov 2009 05:07:57 EST
-From: Max Kellermann <mk@cm4all.com>
-Subject: [PATCH] tcp: set SPLICE_F_NONBLOCK after first buffer has been spliced
-To: linux-kernel@vger.kernel.org
-Cc: jens.axboe@oracle.com, max@duempel.org
-Date: Thu, 05 Nov 2009 10:59:50 +0100
-Message-ID: <20091105095947.32131.99768.stgit@rabbit.intern.cm-ag>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 5 Nov 2009 05:00:40 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57627 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750848AbZKEKAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 05:00:39 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19jyXxDfIFjkfzufptlTyot6f4buctVLg6hcKQ0WY
+	tjMqR/t0Ey9K3n
+Subject: Re: [tip:sched/core] sched: Check for an idle shared cache in
+ select_task_rq_fair()
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, peterz@infradead.org,
+       arjan@infradead.org, stable@kernel.org, tglx@linutronix.de
+In-Reply-To: <1257415066.12867.1.camel@marge.simson.net>
+References: <1256654138.17752.7.camel@marge.simson.net>
+	 <tip-a1f84a3ab8e002159498814eaa7e48c33752b04b@git.kernel.org>
+	 <20091105093016.GA18892@elte.hu>
+	 <1257415066.12867.1.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 05 Nov 2009 11:00:39 +0100
+Message-Id: <1257415239.12867.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.72
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When splicing a large amount of bytes from a TCP socket to a pipe
-(more than PIPE_BUFFERS), splice() can block, even though the pipe was
-empty.  The correct behavior would be to copy as much as possible, and
-return without blocking.  Block only if nothing can be transferred.
-When the destination pipe is (initially) writable, splice() should do
-the same with or without SPLICE_F_NONBLOCK.
+On Thu, 2009-11-05 at 10:57 +0100, Mike Galbraith wrote:
 
-The cause is the loop in tcp_splice_read(): it calls
-__tcp_splice_read() (and thus skb_splice_bits() and splice_to_pipe())
-again and again, until the requested number of bytes has been
-transferred, or an error occurs.  In the first iteration, up to 64 kB
-is copied, and the second iteration will block, because
-splice_to_pipe() is called again and sees the pipe is already full.
+> Erk, indeed.  You didn't apply the follow-up fix, and I forgot as well.
 
-This patch adds SPLICE_F_NONBLOCK to the splice flags after the first
-iteration has finished successfully.  This prevents the second
-splice_to_pipe() call from blocking.  The resulting EAGAIN error is
-handled gracefully, and tcp_splice_read() returns the number of bytes
-successfully moved.
----
+But maybe you should just back it out until I've fiddled/tested a bit
+more.  Dunno.
 
- net/ipv4/tcp.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 9114524..0f8b01f 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -628,6 +628,11 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
- 		    (sk->sk_shutdown & RCV_SHUTDOWN) ||
- 		    signal_pending(current))
- 			break;
-+
-+		/* the following splice_to_pipe() calls should not
-+		   block, because we have already successfully
-+		   transferred at least one buffer */
-+		tss.flags |= SPLICE_F_NONBLOCK;
- 	}
- 
- 	release_sock(sk);
+	-Mike
 
