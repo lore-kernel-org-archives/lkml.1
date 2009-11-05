@@ -1,139 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbZKERzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbZKER4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757910AbZKERzo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 12:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbZKERzn
+	id S1758031AbZKER4L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 12:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbZKER4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 12:55:43 -0500
+	Thu, 5 Nov 2009 12:56:10 -0500
 Received: from eddie.linux-mips.org ([78.24.191.182]:45221 "EHLO
 	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757572AbZKERzl (ORCPT
+	with ESMTP id S1757500AbZKERzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 12:55:41 -0500
-Message-Id: <20091105152702.201728770@linux-mips.org>
+	Thu, 5 Nov 2009 12:55:43 -0500
+Message-Id: <20091105152702.283954757@linux-mips.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 05 Nov 2009 16:25:59 +0100
+Date: Thu, 05 Nov 2009 16:26:00 +0100
 From: Ralf Baechle <ralf@linux-mips.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Daney <ddaney@caviumnetworks.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       netdev@vger.kernel.org
-Subject: [PATCH 3/6] Staging: octeon-ethernet: Assign proper MAC addresses.
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH 4/6] SPI: spi_txx9: Fix bit rate calculation
 References: <20091105152555.227009519@linux-mips.org>
-Content-Disposition: inline; filename=0004.patch
+Content-Disposition: inline; filename=0005.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Daney <ddaney@caviumnetworks.com>
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 
-Allocate MAC addresses using the same method as the bootloader.  This
-avoids changing the MAC between bootloader and kernel operation as
-well as avoiding duplicates and use of addresses outside of the
-assigned range.
+TXx9 SPI bit rate is calculated by:
+        fBR = (spi-baseclk) / (n + 1)
+Fix calculation of min_speed_hz, max_speed_hz and n.
 
-Signed-off-by: David Daney <ddaney@caviumnetworks.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: devel@driverdev.osuosl.org
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: spi-devel-general@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org
-Cc: linux-mips@linux-mips.org
-Cc: netdev@vger.kernel.org
 Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
- drivers/staging/octeon/ethernet.c |   53 +++++++++++++++++++++++++++++---------
- 1 file changed, 41 insertions(+), 12 deletions(-)
+ drivers/spi/spi_txx9.c |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-Index: upstream-linus/drivers/staging/octeon/ethernet.c
+Index: upstream-linus/drivers/spi/spi_txx9.c
 ===================================================================
---- upstream-linus.orig/drivers/staging/octeon/ethernet.c
-+++ upstream-linus/drivers/staging/octeon/ethernet.c
-@@ -111,6 +111,16 @@ MODULE_PARM_DESC(disable_core_queueing, 
- 	"\tallows packets to be sent without lock contention in the packet\n"
- 	"\tscheduler resulting in some cases in improved throughput.\n");
+--- upstream-linus.orig/drivers/spi/spi_txx9.c
++++ upstream-linus/drivers/spi/spi_txx9.c
+@@ -29,6 +29,8 @@
  
-+
-+/*
-+ * The offset from mac_addr_base that should be used for the next port
-+ * that is configured.  By convention, if any mgmt ports exist on the
-+ * chip, they get the first mac addresses, The ports controlled by
-+ * this driver are numbered sequencially following any mgmt addresses
-+ * that may exist.
-+ */
-+static unsigned int cvm_oct_mac_addr_offset;
-+
- /**
-  * Periodic timer to check auto negotiation
-  */
-@@ -474,16 +484,30 @@ static int cvm_oct_common_set_mac_addres
-  */
- int cvm_oct_common_init(struct net_device *dev)
- {
--	static int count;
--	char mac[8] = { 0x00, 0x00,
--		octeon_bootinfo->mac_addr_base[0],
--		octeon_bootinfo->mac_addr_base[1],
--		octeon_bootinfo->mac_addr_base[2],
--		octeon_bootinfo->mac_addr_base[3],
--		octeon_bootinfo->mac_addr_base[4],
--		octeon_bootinfo->mac_addr_base[5] + count
--	};
- 	struct octeon_ethernet *priv = netdev_priv(dev);
-+	struct sockaddr sa;
-+	u64 mac = ((u64)(octeon_bootinfo->mac_addr_base[0] & 0xff) << 40) |
-+		((u64)(octeon_bootinfo->mac_addr_base[1] & 0xff) << 32) |
-+		((u64)(octeon_bootinfo->mac_addr_base[2] & 0xff) << 24) |
-+		((u64)(octeon_bootinfo->mac_addr_base[3] & 0xff) << 16) |
-+		((u64)(octeon_bootinfo->mac_addr_base[4] & 0xff) << 8) |
-+		(u64)(octeon_bootinfo->mac_addr_base[5] & 0xff);
-+
-+	mac += cvm_oct_mac_addr_offset;
-+	sa.sa_data[0] = (mac >> 40) & 0xff;
-+	sa.sa_data[1] = (mac >> 32) & 0xff;
-+	sa.sa_data[2] = (mac >> 24) & 0xff;
-+	sa.sa_data[3] = (mac >> 16) & 0xff;
-+	sa.sa_data[4] = (mac >> 8) & 0xff;
-+	sa.sa_data[5] = mac & 0xff;
-+
-+	if (cvm_oct_mac_addr_offset >= octeon_bootinfo->mac_addr_count)
-+		printk(KERN_DEBUG "%s: Using MAC outside of the assigned range:"
-+			" %02x:%02x:%02x:%02x:%02x:%02x\n", dev->name,
-+			sa.sa_data[0] & 0xff, sa.sa_data[1] & 0xff,
-+			sa.sa_data[2] & 0xff, sa.sa_data[3] & 0xff,
-+			sa.sa_data[4] & 0xff, sa.sa_data[5] & 0xff);
-+	cvm_oct_mac_addr_offset++;
  
- 	/*
- 	 * Force the interface to use the POW send if always_use_pow
-@@ -496,14 +520,12 @@ int cvm_oct_common_init(struct net_devic
- 	if (priv->queue != -1 && USE_HW_TCPUDP_CHECKSUM)
- 		dev->features |= NETIF_F_IP_CSUM;
+ #define SPI_FIFO_SIZE 4
++#define SPI_MAX_DIVIDER 0xff	/* Max. value for SPCR1.SER */
++#define SPI_MIN_DIVIDER 1	/* Min. value for SPCR1.SER */
  
--	count++;
--
- 	/* We do our own locking, Linux doesn't need to */
- 	dev->features |= NETIF_F_LLTX;
- 	SET_ETHTOOL_OPS(dev, &cvm_oct_ethtool_ops);
+ #define TXx9_SPMCR		0x00
+ #define TXx9_SPCR0		0x04
+@@ -193,11 +195,8 @@ static void txx9spi_work_one(struct txx9
  
- 	cvm_oct_mdio_setup_device(dev);
--	dev->netdev_ops->ndo_set_mac_address(dev, mac);
-+	dev->netdev_ops->ndo_set_mac_address(dev, &sa);
- 	dev->netdev_ops->ndo_change_mtu(dev, dev->mtu);
+ 		if (prev_speed_hz != speed_hz
+ 				|| prev_bits_per_word != bits_per_word) {
+-			u32 n = (c->baseclk + speed_hz - 1) / speed_hz;
+-			if (n < 1)
+-				n = 1;
+-			else if (n > 0xff)
+-				n = 0xff;
++			int n = DIV_ROUND_UP(c->baseclk, speed_hz) - 1;
++			n = clamp(n, SPI_MIN_DIVIDER, SPI_MAX_DIVIDER);
+ 			/* enter config mode */
+ 			txx9spi_wr(c, mcr | TXx9_SPMCR_CONFIG | TXx9_SPMCR_BCLR,
+ 					TXx9_SPMCR);
+@@ -370,8 +369,8 @@ static int __init txx9spi_probe(struct p
+ 		goto exit;
+ 	}
+ 	c->baseclk = clk_get_rate(c->clk);
+-	c->min_speed_hz = (c->baseclk + 0xff - 1) / 0xff;
+-	c->max_speed_hz = c->baseclk;
++	c->min_speed_hz = DIV_ROUND_UP(c->baseclk, SPI_MAX_DIVIDER + 1);
++	c->max_speed_hz = c->baseclk / (SPI_MIN_DIVIDER + 1);
  
- 	/*
-@@ -620,6 +642,13 @@ static int __init cvm_oct_init_module(vo
- 
- 	pr_notice("cavium-ethernet %s\n", OCTEON_ETHERNET_VERSION);
- 
-+	if (OCTEON_IS_MODEL(OCTEON_CN52XX))
-+		cvm_oct_mac_addr_offset = 2; /* First two are the mgmt ports. */
-+	else if (OCTEON_IS_MODEL(OCTEON_CN56XX))
-+		cvm_oct_mac_addr_offset = 1; /* First one is the mgmt port. */
-+	else
-+		cvm_oct_mac_addr_offset = 0;
-+
- 	cvm_oct_proc_initialize();
- 	cvm_oct_rx_initialize();
- 	cvm_oct_configure_common_hw();
+ 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
+ 	if (!res)
 
 
