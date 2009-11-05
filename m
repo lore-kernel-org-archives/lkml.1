@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbZKEFgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbZKEFh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288AbZKEFgn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 00:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZKEFgm
+	id S1754494AbZKEFh3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 00:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZKEFh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 00:36:42 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:45144 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbZKEFgl (ORCPT
+	Thu, 5 Nov 2009 00:37:28 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56331 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbZKEFh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 00:36:41 -0500
-Date: Wed, 4 Nov 2009 21:37:36 -0800
+	Thu, 5 Nov 2009 00:37:27 -0500
+Date: Wed, 4 Nov 2009 21:38:15 -0800
 From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, Containers <containers@lists.linux-foundation.org>,
@@ -18,8 +18,8 @@ Cc: arnd@arndb.de, Containers <containers@lists.linux-foundation.org>,
        Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
        Pavel Emelyanov <xemul@openvz.org>, serue@us.ibm.com,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [v11][PATCH 2/9] Have alloc_pidmap() return actual error code
-Message-ID: <20091105053736.GB16142@us.ibm.com>
+Subject: [v11][PATCH 3/9] Define set_pidmap() function
+Message-ID: <20091105053815.GC16142@us.ibm.com>
 References: <20091105053053.GA11289@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -33,93 +33,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: [v11][PATCH 2/9] Have alloc_pidmap() return actual error code
+Subject: [v11][PATCH 3/9] Define set_pidmap() function
 
-alloc_pidmap() can fail either because all pid numbers are in use or
-because memory allocation failed.  With support for setting a specific
-pid number, alloc_pidmap() would also fail if either the given pid
-number is invalid or in use.
+Define a set_pidmap() interface which is like alloc_pidmap() only that
+caller specifies the pid number to be assigned.
 
-Rather than have callers assume -ENOMEM, have alloc_pidmap() return
-the actual error.
+Changelog[v9]:
+	- Completely rewrote this patch based on Eric Biederman's code.
+Changelog[v7]:
+        - [Eric Biederman] Generalize alloc_pidmap() to take a range of pids.
+Changelog[v6]:
+        - Separate target_pid > 0 case to minimize the number of checks needed.
+Changelog[v3]:
+        - (Eric Biederman): Avoid set_pidmap() function. Added couple of
+          checks for target_pid in alloc_pidmap() itself.
+Changelog[v2]:
+        - (Serge Hallyn) Check for 'pid < 0' in set_pidmap().(Code
+          actually checks for 'pid <= 0' for completeness).
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
+Acked-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- kernel/fork.c |    5 +++--
- kernel/pid.c  |   14 +++++++++-----
- 2 files changed, 12 insertions(+), 7 deletions(-)
+ kernel/pid.c |   41 +++++++++++++++++++++++++++++++++--------
+ 1 files changed, 33 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 4c20fff..93626b2 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1156,10 +1156,11 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 		goto bad_fork_cleanup_io;
- 
- 	if (pid != &init_struct_pid) {
--		retval = -ENOMEM;
- 		pid = alloc_pid(p->nsproxy->pid_ns);
--		if (!pid)
-+		if (IS_ERR(pid)) {
-+			retval = PTR_ERR(pid);
- 			goto bad_fork_cleanup_io;
-+		}
- 
- 		if (clone_flags & CLONE_NEWPID) {
- 			retval = pid_ns_prepare_proc(p->nsproxy->pid_ns);
 diff --git a/kernel/pid.c b/kernel/pid.c
-index 7d4bb6e..c4d9914 100644
+index c4d9914..c849327 100644
 --- a/kernel/pid.c
 +++ b/kernel/pid.c
-@@ -150,7 +150,7 @@ static int alloc_pidmap_page(struct pidmap *map)
- static int alloc_pidmap(struct pid_namespace *pid_ns)
+@@ -147,18 +147,19 @@ static int alloc_pidmap_page(struct pidmap *map)
+ 	return 0;
+ }
+ 
+-static int alloc_pidmap(struct pid_namespace *pid_ns)
++static int do_alloc_pidmap(struct pid_namespace *pid_ns, int last, int min,
++		int max)
  {
- 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
--	int rc;
-+	int rc = -EAGAIN;
+-	int i, offset, max_scan, pid, last = pid_ns->last_pid;
++	int i, offset, max_scan, pid;
+ 	int rc = -EAGAIN;
  	struct pidmap *map;
  
  	pid = last + 1;
-@@ -189,12 +189,14 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ 	if (pid >= pid_max)
+-		pid = RESERVED_PIDS;
++		pid = min;
+ 	offset = pid & BITS_PER_PAGE_MASK;
+ 	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
+-	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
++	max_scan = (max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
+ 	for (i = 0; i <= max_scan; ++i) {
+ 		rc = alloc_pidmap_page(map);
+ 		if (rc)
+@@ -168,7 +169,6 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ 			do {
+ 				if (!test_and_set_bit(offset, map->page)) {
+ 					atomic_dec(&map->nr_free);
+-					pid_ns->last_pid = pid;
+ 					return pid;
+ 				}
+ 				offset = find_next_offset(map, offset);
+@@ -179,16 +179,16 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ 			 * bitmap block and the final block was the same
+ 			 * as the starting point, pid is before last_pid.
+ 			 */
+-			} while (offset < BITS_PER_PAGE && pid < pid_max &&
++			} while (offset < BITS_PER_PAGE && pid < max &&
+ 					(i != max_scan || pid < last ||
+ 					    !((last+1) & BITS_PER_PAGE_MASK)));
+ 		}
+-		if (map < &pid_ns->pidmap[(pid_max-1)/BITS_PER_PAGE]) {
++		if (map < &pid_ns->pidmap[(max-1)/BITS_PER_PAGE]) {
+ 			++map;
+ 			offset = 0;
  		} else {
  			map = &pid_ns->pidmap[0];
- 			offset = RESERVED_PIDS;
--			if (unlikely(last == offset))
-+			if (unlikely(last == offset)) {
-+				rc = -EAGAIN;
+-			offset = RESERVED_PIDS;
++			offset = min;
+ 			if (unlikely(last == offset)) {
+ 				rc = -EAGAIN;
  				break;
-+			}
- 		}
- 		pid = mk_pid(pid_ns, map, offset);
- 	}
--	return -1;
-+	return rc;
+@@ -199,6 +199,31 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ 	return rc;
  }
  
++static int alloc_pidmap(struct pid_namespace *pid_ns)
++{
++	int nr;
++
++	nr = do_alloc_pidmap(pid_ns, pid_ns->last_pid, RESERVED_PIDS, pid_max);
++	if (nr >= 0)
++		pid_ns->last_pid = nr;
++	return nr;
++}
++
++static int set_pidmap(struct pid_namespace *pid_ns, int target)
++{
++	if (!target)
++		return alloc_pidmap(pid_ns);
++
++	if (target >= pid_max)
++		return -EINVAL;
++
++	if ((target < 0) || (target < RESERVED_PIDS && 
++				pid_ns->last_pid >= RESERVED_PIDS))
++		return -EINVAL;
++
++	return do_alloc_pidmap(pid_ns, target - 1, target, target + 1);
++}
++
  int next_pidmap(struct pid_namespace *pid_ns, int last)
-@@ -263,8 +265,10 @@ struct pid *alloc_pid(struct pid_namespace *ns)
- 	struct upid *upid;
- 
- 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
--	if (!pid)
-+	if (!pid) {
-+		pid = ERR_PTR(-ENOMEM);
- 		goto out;
-+	}
- 
- 	tmp = ns;
- 	for (i = ns->level; i >= 0; i--) {
-@@ -299,7 +303,7 @@ out_free:
- 		free_pidmap(pid->numbers + i);
- 
- 	kmem_cache_free(ns->pid_cachep, pid);
--	pid = NULL;
-+	pid = ERR_PTR(nr);
- 	goto out;
- }
- 
+ {
+ 	int offset;
 -- 
 1.6.0.4
 
