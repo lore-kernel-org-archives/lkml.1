@@ -1,216 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbZKETmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbZKETWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbZKETmt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 14:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbZKETms
+	id S1758766AbZKETWN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 14:22:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbZKETWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 14:42:48 -0500
-Received: from smtp4.ultrahosting.com ([74.213.175.253]:43948 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758800AbZKETmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 14:42:47 -0500
-Date: Thu, 5 Nov 2009 14:20:47 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: npiggin@suse.de
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu counter
- instead
-In-Reply-To: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1>
-Message-ID: <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 5 Nov 2009 14:22:12 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:35396 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758693AbZKETWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 14:22:11 -0500
+Message-ID: <4AF325DE.4000901@us.ibm.com>
+Date: Thu, 05 Nov 2009 11:22:06 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.32-rc5-mmotm1101 - unkillable processes stuck in futex.
+References: <5906.1257443268@turing-police.cc.vt.edu>
+In-Reply-To: <5906.1257443268@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lamter <cl@linux-foundation.org>
-Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu counter instead
+Valdis.Kletnieks@vt.edu wrote:
 
-Instead of a rw semaphore use a mutex and a per cpu counter for the number
-of the current readers. read locking then becomes very cheap requiring only
-the increment of a per cpu counter.
+Hi Valdis,
 
-Write locking is more expensive since the writer must scan the percpu array
-and wait until all readers are complete. Since the readers are not holding
-semaphores we have no wait queue from which the writer could wakeup. In this
-draft we simply wait for one millisecond between scans of the percpu
-array. A different solution must be found there.
+Thanks for reporting. There are a couple things of interest below, but
+first: which kernel version exactly?
 
-Patch is on top of -next and the percpu counter patches that I posted
-yesterday. The patch adds another per cpu counter to the file and anon rss
-counters.
+Specifically, do you have the following patches applied:
 
-Signed-off-by: Christoph Lamter <cl@linux-foundation.org>
+43746940a0067656b612490e921ee8e782f12e30 futex: Fix spurious wakeup for requeue_pi r
+e814515d47b9e15ebaa08bab0559d189e8ec90eb futex: Detect mismatched requeue targets
+41890f2456998c170f416fc29715fadfd57e6626 futex: Handle spurious wake up
+370eaf38450c77ec9b5ce6bc74bc575b2e2ce448 futex: Revert "futex: Wake up waiter outsid
+a03d103555aa7b3e0c39a9bc9608502d3354392f futex: Fix wakeup race by setting TASK_INTE
 
----
- include/linux/mm_types.h |   68 ++++++++++++++++++++++++++++++++++++++---------
- mm/init-mm.c             |    2 -
- 2 files changed, 56 insertions(+), 14 deletions(-)
+> (Hmm.. I seem to be on a roll on this -mmotm, breaking all sorts of stuff.. :)
+> 
+> Am cc'ing Thomas and Darren because their names were attached to commits in
+> the origin.patch that touched futex.c
+> 
+> It looks like pulseaudio clients with multiple threads manage to hose up
+> the futex code to the point they're not kill -9'able.  Semi-replicatable,
+> as I've hit it twice by accident. No recipe for triggering it yet.
+> 
+> Did it once to gyachi (a Yahoo Messenger client) and  twice to pidgin (an
+> everything-else IM client). 'top' would report 100%CPU usage, all of it kernel
+> mode, and it was confirmed by the CPU going to top Ghz and warming up some 6-7
+> degrees (so we were spinning on something rather than a wait/deadlock). In both
+> cases, I tried to kill -9 the process, the process didn't go away.
+> 
+> Here's the 'alt-sysrq-t' for both cases.  I started a second pidgin the second
+> time around, that one wedged real fast (on the first thread it created) and
+> didn't get kill -9'ed (if that makes a diff in the stack trace...)
+> 
+> gyachi wedged up - main thread kept going, subthread hung.
 
-Index: linux-2.6/include/linux/mm_types.h
-===================================================================
---- linux-2.6.orig/include/linux/mm_types.h	2009-11-05 13:03:11.000000000 -0600
-+++ linux-2.6/include/linux/mm_types.h	2009-11-05 13:06:31.000000000 -0600
-@@ -14,6 +14,7 @@
- #include <linux/page-debug-flags.h>
- #include <asm/page.h>
- #include <asm/mmu.h>
-+#include <linux/percpu.h>
+> 
+> [44347.339018] gyachi        ? ffff88000260e010  3856  3183   2393 0x00000080
+> [44347.339018]  ffff88006c3cfeb8 0000000000000046 ffff88006c3cfe80 ffff88006c3cfe7c
+> [44347.339018]  ffff88006c3cfe28 0000000000000000 0000000000000155 ffff88006c0dabc0
+> [44347.339018]  ffff88006c3ce000 000000000000e010 ffff88006c0dabc0 00000001029f3766
+> [44347.339018] Call Trace:
+> [44347.339018]  [<ffffffff8103ed89>] do_exit+0x8f7/0x906
+> [44347.339018]  [<ffffffff814bb838>] ? preempt_schedule+0x5e/0x67
+> [44347.339018]  [<ffffffff8103ee27>] do_group_exit+0x8f/0xb8
+> [44347.339018]  [<ffffffff8103ee62>] sys_exit_group+0x12/0x16
+> [44347.339018]  [<ffffffff8100246b>] system_call_fastpath+0x16/0x1b
+> [44347.339018] gyachi        R  running task     5344  3187   2393 0x00000084
+> [44347.339018]  ffff88006c2c6b40 0000000000000002 ffff88007967f988 ffffffff81066193
+> [44347.339018]  ffff88007967f998 ffffffff81066193 ffffffff823ceab0 0000000000000000
+> [44347.339018]  000000007967fab8 ffffffff814bd184 0000000000000000 ffff88007f8b0000
+> [44347.339018] Call Trace:
+> [44347.339018]  [<ffffffff81066193>] ? trace_hardirqs_on_caller+0x16/0x13c
+> [44347.339018]  [<ffffffff81066193>] ? trace_hardirqs_on_caller+0x16/0x13c
+> [44347.339018]  [<ffffffff814bd184>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [44347.339018]  [<ffffffff814be2c0>] ? restore_args+0x0/0x30
+> [44347.339018]  [<ffffffff81069189>] ? queue_lock+0x50/0x5b
+> [44347.339018]  [<ffffffff81069189>] ? queue_lock+0x50/0x5b
+> [44347.339018]  [<ffffffff811caa4c>] ? _raw_spin_lock+0xe9/0x1ab
+> [44347.339018]  [<ffffffff81030429>] ? get_parent_ip+0x11/0x41
+> [44347.339018]  [<ffffffff814c0df1>] ? sub_preempt_count+0x35/0x48
+> [44347.339018]  [<ffffffff81069189>] ? queue_lock+0x50/0x5b
+> [44347.339018]  [<ffffffff810692d2>] ? queue_unlock+0x1d/0x21
+> [44347.339018]  [<ffffffff8106939f>] ? futex_wait_setup+0xc9/0xeb
+> [44347.339018]  [<ffffffff8106ae9d>] ? futex_wait_requeue_pi+0x190/0x3d4
 
- #ifndef AT_VECTOR_SIZE_ARCH
- #define AT_VECTOR_SIZE_ARCH 0
-@@ -27,6 +28,7 @@ struct address_space;
- struct mm_counter {
- 	long file;
- 	long anon;
-+	long readers;
- };
+I see this a couple of times in this trace. This indicates the use of the requeue_pi feature. You shouldn't be able to use this without a not-yet-released version of glibc and applications that are using PTHREAD_PRIO_INHERIT pthread_mutexes. Neither of the apps you mentioned seem like good candidates for that. Do you have some other RT workload running?
 
- /*
-@@ -214,7 +216,7 @@ struct mm_struct {
- 	atomic_t mm_users;			/* How many users with user space? */
- 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users count as 1) */
- 	int map_count;				/* number of VMAs */
--	struct rw_semaphore sem;
-+	struct mutex lock;
- 	spinlock_t page_table_lock;		/* Protects page tables and some counters */
+Thanks,
 
- 	struct list_head mmlist;		/* List of maybe swapped mm's.	These are globally strung
-@@ -285,64 +287,104 @@ struct mm_struct {
- #endif
- };
-
-+static inline int mm_readers(struct mm_struct *mm)
-+{
-+	int cpu;
-+	int readers = 0;
-+
-+	for_each_possible_cpu(cpu)
-+		readers += per_cpu(mm->rss->readers, cpu);
-+
-+	return readers;
-+}
-+
- static inline void mm_reader_lock(struct mm_struct *mm)
- {
--	down_read(&mm->sem);
-+redo:
-+	this_cpu_inc(mm->rss->readers);
-+	if (mutex_is_locked(&mm->lock)) {
-+		this_cpu_dec(mm->rss->readers);
-+		/* Need to wait till mutex is released */
-+		mutex_lock(&mm->lock);
-+		mutex_unlock(&mm->lock);
-+		goto redo;
-+	}
- }
-
- static inline void mm_reader_unlock(struct mm_struct *mm)
- {
--	up_read(&mm->sem);
-+	this_cpu_dec(mm->rss->readers);
- }
-
- static inline int mm_reader_trylock(struct mm_struct *mm)
- {
--	return down_read_trylock(&mm->sem);
-+	this_cpu_inc(mm->rss->readers);
-+	if (mutex_is_locked(&mm->lock)) {
-+		this_cpu_dec(mm->rss->readers);
-+		return 0;
-+	}
-+	return 1;
- }
-
- static inline void mm_writer_lock(struct mm_struct *mm)
- {
--	down_write(&mm->sem);
-+redo:
-+	mutex_lock(&mm->lock);
-+	if (mm_readers(mm) == 0)
-+		return;
-+
-+	mutex_unlock(&mm->lock);
-+	msleep(1);
-+	goto redo;
- }
-
- static inline void mm_writer_unlock(struct mm_struct *mm)
- {
--	up_write(&mm->sem);
-+	mutex_unlock(&mm->lock);
- }
-
- static inline int mm_writer_trylock(struct mm_struct *mm)
- {
--	return down_write_trylock(&mm->sem);
-+	if (!mutex_trylock(&mm->lock))
-+		goto fail;
-+
-+	if (mm_readers(mm) == 0)
-+		return 1;
-+
-+	mutex_unlock(&mm->lock);
-+fail:
-+	return 0;
- }
-
- static inline int mm_locked(struct mm_struct *mm)
- {
--	return rwsem_is_locked(&mm->sem);
-+	return mutex_is_locked(&mm->lock) || mm_readers(mm);
- }
-
- static inline void mm_writer_to_reader_lock(struct mm_struct *mm)
- {
--	downgrade_write(&mm->sem);
-+	this_cpu_inc(mm->rss->readers);
-+	mutex_unlock(&mm->lock);
- }
-
- static inline void mm_writer_lock_nested(struct mm_struct *mm, int x)
- {
--	down_write_nested(&mm->sem, x);
-+	mutex_lock_nested(&mm->lock, x);
- }
-
- static inline void mm_lock_init(struct mm_struct *mm)
- {
--	init_rwsem(&mm->sem);
-+	mutex_init(&mm->lock);
- }
-
- static inline void mm_lock_prefetch(struct mm_struct *mm)
- {
--	prefetchw(&mm->sem);
-+	prefetchw(&mm->lock);
- }
-
- static inline void mm_nest_lock(spinlock_t *s, struct mm_struct *mm)
- {
--	spin_lock_nest_lock(s, &mm->sem);
-+	spin_lock_nest_lock(s, &mm->lock);
- }
-
- /* Future-safe accessor for struct mm_struct's cpu_vm_mask. */
-Index: linux-2.6/mm/init-mm.c
-===================================================================
---- linux-2.6.orig/mm/init-mm.c	2009-11-05 13:02:54.000000000 -0600
-+++ linux-2.6/mm/init-mm.c	2009-11-05 13:03:22.000000000 -0600
-@@ -15,7 +15,7 @@ struct mm_struct init_mm = {
- 	.pgd		= swapper_pg_dir,
- 	.mm_users	= ATOMIC_INIT(2),
- 	.mm_count	= ATOMIC_INIT(1),
--	.sem		= __RWSEM_INITIALIZER(init_mm.sem),
-+	.lock		= __MUTEX_INITIALIZER(init_mm.lock),
- 	.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),
- 	.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),
- 	.cpu_vm_mask	= CPU_MASK_ALL,
-
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
