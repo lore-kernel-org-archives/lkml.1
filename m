@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbZKESlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758439AbZKESld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758430AbZKESlB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 13:41:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbZKESlA
+	id S1758439AbZKESld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 13:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758341AbZKESlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 13:41:00 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:26762 "EHLO
+	Thu, 5 Nov 2009 13:41:32 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:49531 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758409AbZKESk7 (ORCPT
+	with ESMTP id S1758066AbZKESlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 13:40:59 -0500
+	Thu, 5 Nov 2009 13:41:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-type:content-transfer-encoding
          :content-disposition:message-id;
-        b=uFIBX/mBIPcMJpiSx05HcHLSlEECFWLjq1J0T9MTSmtu5aSAJyJOlseIZMkBN5m52T
-         wfTlbuui1LM/h33JjYti9LTiQDqovlPi2x7r5EMGMPBV/DLiA8HffWskwVTO7ZpL4wZz
-         fLbAtfD9TQZwPz9qhi23USftUePhBILTEdxgI=
+        b=fWl/pTGbKZTHre517r1hialYpz0x0J5B5RzCnPqJD3VTaWkiwe6XOs6btvOloMiCjO
+         Q7RGlC4XcbKSAizpPeP8du57zfaHs1fHCxbCtNpQqbxYAs9HiQRm506mM5vmSkqWUsDt
+         8vI1MlTt2GW/NvxlKZQrcPyzHGobXQDi9T210=
 From: Ivo van Doorn <ivdoorn@gmail.com>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 02/41] rt2800pci: make Kconfig help entry more helpful
-Date: Thu, 5 Nov 2009 19:41:00 +0100
+Subject: Re: [PATCH 03/41] rt2800usb: fix rt2800usb_rfcsr_read()
+Date: Thu, 5 Nov 2009 19:41:28 +0100
 User-Agent: KMail/1.9.10
 Cc: linux-wireless@vger.kernel.org, Gertjan van Wingerde <gwingerde@gmail.com>,
        linux-kernel@vger.kernel.org,
        "John W. Linville" <linville@tuxdriver.com>
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173210.28463.95558.sendpatchset@localhost.localdomain>
-In-Reply-To: <20091104173210.28463.95558.sendpatchset@localhost.localdomain>
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173217.28463.23610.sendpatchset@localhost.localdomain>
+In-Reply-To: <20091104173217.28463.23610.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200911051941.01166.IvDoorn@gmail.com>
+Message-Id: <200911051941.28657.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Wednesday 04 November 2009, Bartlomiej Zolnierkiewicz wrote:
 > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] rt2800pci: make Kconfig help entry more helpful
+> Subject: [PATCH] rt2800usb: fix rt2800usb_rfcsr_read()
 > 
-> Document known issues with the driver to aid distribution makers,
-> users and developers in making informed decisions instead of wasting
-> their time needlessly.
+> The driver should write the read request into RF_CSR_CFG register
+> and not BBP_CSR_CFG one in rt2800usb_rfcsr_read().
 > 
 > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Making it depend on CONFIG_BROKEN makes more sense if the comment
-is "non-functional".
-
-Ivo
+Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
 
 > ---
-> This reflects the actual state of affairs for driver in net-next tree.
+>  drivers/net/wireless/rt2x00/rt2800usb.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
->  drivers/net/wireless/rt2x00/Kconfig |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> Index: b/drivers/net/wireless/rt2x00/Kconfig
+> Index: b/drivers/net/wireless/rt2x00/rt2800usb.c
 > ===================================================================
-> --- a/drivers/net/wireless/rt2x00/Kconfig
-> +++ b/drivers/net/wireless/rt2x00/Kconfig
-> @@ -64,7 +64,7 @@ config RT2800PCI_SOC
->  	default y
+> --- a/drivers/net/wireless/rt2x00/rt2800usb.c
+> +++ b/drivers/net/wireless/rt2x00/rt2800usb.c
+> @@ -167,7 +167,7 @@ static void rt2800usb_rfcsr_read(struct 
+>  		rt2x00_set_field32(&reg, RF_CSR_CFG_WRITE, 0);
+>  		rt2x00_set_field32(&reg, RF_CSR_CFG_BUSY, 1);
 >  
->  config RT2800PCI
-> -	tristate "Ralink rt2800 (PCI/PCMCIA) support"
-> +	tristate "Ralink rt2800 (PCI/PCMCIA) support (VERY EXPERIMENTAL)"
->  	depends on (RT2800PCI_PCI || RT2800PCI_SOC) && EXPERIMENTAL
->  	select RT2X00_LIB_PCI if RT2800PCI_PCI
->  	select RT2X00_LIB_SOC if RT2800PCI_SOC
-> @@ -77,6 +77,9 @@ config RT2800PCI
->  	  This adds support for rt2800 wireless chipset family.
->  	  Supported chips: RT2760, RT2790, RT2860, RT2880, RT2890 & RT3052
+> -		rt2x00usb_register_write_lock(rt2x00dev, BBP_CSR_CFG, reg);
+> +		rt2x00usb_register_write_lock(rt2x00dev, RF_CSR_CFG, reg);
 >  
-> +	  This driver is non-functional at the moment and is intended for
-> +	  developers.
-> +
->  	  When compiled as a module, this driver will be called "rt2800pci.ko".
->  
->  config RT2500USB
+>  		WAIT_FOR_RFCSR(rt2x00dev, &reg);
+>  	}
 > 
 
 
