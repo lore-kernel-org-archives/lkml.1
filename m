@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbZKEHDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751427AbZKEHHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752788AbZKEHDX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 02:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZKEHDW
+	id S1751427AbZKEHHm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 02:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZKEHHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 02:03:22 -0500
-Received: from mail.gmx.net ([213.165.64.20]:56941 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751780AbZKEHDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 02:03:21 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19nLV4TgFFnKTH4nHkX3ARTzE8HQEX6bcrOmOJq2n
-	mAbuKm41iI6b/X
-Subject: Re: UDP-U stream performance regression on 32-rc1 kernel
-From: Mike Galbraith <efault@gmx.de>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, alex.shi@intel.com,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1257398417.6401.27.camel@marge.simson.net>
-References: <1257220036.3819.193.camel@alexs-hp.sh.intel.com>
-	 <1257222791.16282.46.camel@ymzhang>  <20091103174531.GA14747@elte.hu>
-	 <1257299745.16282.49.camel@ymzhang>
-	 <1257336461.16163.18.camel@marge.simson.net>
-	 <1257387645.16282.66.camel@ymzhang>
-	 <1257398417.6401.27.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 05 Nov 2009 08:03:18 +0100
-Message-Id: <1257404598.6406.11.camel@marge.simson.net>
+	Thu, 5 Nov 2009 02:07:42 -0500
+Received: from gate.crashing.org ([63.228.1.57]:40345 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750787AbZKEHHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 02:07:41 -0500
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 18:07:22 +1100
+Message-ID: <1257404842.13611.109.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-05 at 06:20 +0100, Mike Galbraith wrote:
-> On Thu, 2009-11-05 at 10:20 +0800, Zhang, Yanmin wrote:
-> > On Wed, 2009-11-04 at 13:07 +0100, Mike Galbraith wrote:
-> 
-> > > Can you try the below, and send me 
-> > I tested it on Nehalem machine against the latest tips kernel. netperf loopback
-> > result is good and regression disappears.
-> 
-> Excellent.  Ingo has picked up a version in tip (1b9508f) which has zero
-> negative effect on my x264 testcase, and is a win for mysql+oltp through
-> the whole test spectrum.  As that may (dunno, Ingo?) now be considered a
-> regression fix, ie candidate for 32.final, testing that it does no harm
-> to your big machines would be a good thing.  (pretty please?:)
+Hi Linus !
 
-Egad. Size XXL difference on my cheap Q6600 box
+Here are some small bits for .32
 
-git v2.6.32-rc6-26-g91d3f9b
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
+The Kconfig cleanup you asked for hugetlbfs selection, a few regression
+fixes and an actual bug fix that I decided was worth putting in now
+(the RTC dates thingy)
 
- 65536    4096   60.00     7793073      0    4256.06
- 65536           60.00     7780487           4249.18
+Cheers,
+Ben. 
 
-git v2.6.32-rc6-26-g91d3f9b + 1b9508f
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
+The following changes since commit 2e2ec952350f25242f2e0539db16b1e46f9eb01b:
+  Linus Torvalds (1):
+        Merge branch 'bugfix' of git://git.kernel.org/.../jeremy/xen
 
- 65536    4096   60.00     15133547      0    8264.93
- 65536           60.00     15131466           8263.80
+are available in the git repository at:
 
-tip v2.6.32-rc6-1796-gd995f1d
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
- 65536    4096   60.00     13998562      0    7645.08
- 65536           60.00     13986112           7638.28 (uhoh, tinker time.)
+Andre Detsch (1):
+      powerpc/pci: Fix regression in powerpc MSI-X
 
-	-Mike
+Benjamin Herrenschmidt (4):
+      powerpc: Cleanup Kconfig selection of hugetlbfs support
+      powerpc/mm: Remove debug context clamping from nohash code
+      powerpc: Avoid giving out RTC dates below EPOCH
+      powerpc/kvm: Remove problematic BUILD_BUG_ON statement
+
+ arch/powerpc/Kconfig                  |    4 ++++
+ arch/powerpc/kernel/time.c            |   15 ++++++++++++++-
+ arch/powerpc/kvm/timing.h             |    4 ++++
+ arch/powerpc/mm/mmu_context_nohash.c  |    4 ++--
+ arch/powerpc/platforms/pseries/msi.c  |    2 --
+ arch/powerpc/platforms/pseries/xics.c |    9 +++++++++
+ fs/Kconfig                            |    2 +-
+ 7 files changed, 34 insertions(+), 6 deletions(-)
+
 
