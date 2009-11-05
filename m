@@ -1,112 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbZKELYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZKELbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbZKELYA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 06:24:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZKELX7
+	id S1754665AbZKELbH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 06:31:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZKELbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 06:23:59 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:42205 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754043AbZKELX6 (ORCPT
+	Thu, 5 Nov 2009 06:31:05 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:63035 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753858AbZKELbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 06:23:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BsxQk60OpgsUT37J0596DDgCXCFmzpSEXgAN4PwPTFD74x/KP7Yz21RTvBVAlFuK1D
-         aQrDempQnXd8WdG6LWcbvw25DbGMGXsL6RfgBozjguCdoGKOyZyku4+UoSGu3Q0VXsmb
-         YK7EQx64SS5yphLgzdMp0GnHf3G4RtfAGAs6o=
-Date: Thu, 5 Nov 2009 12:24:01 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Avi Kivity <avi@redhat.com>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 5/6] hw-breakpoints: Arbitrate access to pmu following
-	registers constraints
-Message-ID: <20091105112359.GD4877@nowhere>
-References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-6-git-send-email-fweisbec@gmail.com> <19186.45014.502448.698606@cargo.ozlabs.ibm.com>
+	Thu, 5 Nov 2009 06:31:04 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCHv6 1/3] tun: export underlying socket
+Date: Thu, 5 Nov 2009 12:30:43 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com
+References: <cover.1257193660.git.mst@redhat.com> <200911041909.06054.arnd@arndb.de> <20091104190523.GA772@redhat.com>
+In-Reply-To: <20091104190523.GA772@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19186.45014.502448.698606@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911051230.43272.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/pz6eud0/A0bku24muw1CK5NUxghP0VGk/7rN
+ 5p7oYcCGK8JL6sIzaT3OssP1OC5d8NaxI4fv3LlOyhDuiIgzGg
+ h8pjzuEMO9xFHG5N3Rbnw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 05, 2009 at 09:58:30PM +1100, Paul Mackerras wrote:
-> Frederic Weisbecker writes:
+On Wednesday 04 November 2009, Michael S. Tsirkin wrote:
+> > 
+> > Michael, you didn't reply on this comment and the code is still there in v8.
+> > Do you actually need this? What for?
+> > 
+> >       Arnd <><
 > 
-> > Allow or refuse to build a counter using the breakpoints pmu following
-> > given constraints.
-> 
-> As far as I can see, you assume each CPU has HBP_NUM breakpoint
-> registers which are all interchangeable and can all be used either for
-> data breakpoints or instruction breakpoints.  Is that accurate?
+> Sorry, missed the question. If you look closely it is not exported for
+> !__KERNEL__ at all.  The stub is for when CONFIG_TUN is undefined.
+> Maybe I'll add a comment near #else, even though this is a bit strange
+> since the #if is just 2 lines above it.
 
+Ah right, I'm just blind.
 
+Don't bother changing it then, the code looks good as it is.
 
-Yes, they are interchangeable at runtime while calling
-enable/disable callbacks of the pmu.
-
-I'm not sure instruction breakpoints are supported though.
-
- 
-> If so, we'll need to extend it a bit for Power since we have some CPUs
-> that have one data breakpoint register and one instruction breakpoint
-> register.  In general on powerpc the instruction and data breakpoint
-> facilities are separate, i.e. we have no registers that can be used
-> for either.
-
-
-
-Sure. I would be glad to help in that area. That said I won't be
-able to test anything as I don't have a PowerPc box.
-
-
-
-> > +static void toggle_bp_slot(struct perf_event *bp, bool enable)
-> > +{
-> > +	int cpu = bp->cpu;
-> > +	unsigned int *nr;
-> > +	struct task_struct *tsk = bp->ctx->task;
-> > +
-> > +	/* Flexible */
-> > +	if (!bp->attr.pinned) {
-> > +		if (cpu >= 0) {
-> > +			nr = &per_cpu(nr_bp_flexible, cpu);
-> > +			goto toggle;
-> > +		}
-> > +
-> > +		for_each_online_cpu(cpu) {
-> > +			nr = &per_cpu(nr_bp_flexible, cpu);
-> > +			goto toggle;
-> 
-> ...
-> 
-> > +toggle:
-> > +	*nr = enable ? *nr + 1 : *nr - 1;
-> > +}
-> 
-> This won't do what I think you want.  In the case where
-> !bp->attr.pinned and cpu == -1, it will only update the count for the
-> first online cpu, not all of them.
-> 
-> Paul.
-
-
-Oh right! That's really idiotic. Will fix.
-
-Thanks!
-
-
-
+	Arnd <><
