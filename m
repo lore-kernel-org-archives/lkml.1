@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbZKEIXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZKEI0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756316AbZKEIXA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 03:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZKEIW7
+	id S1756039AbZKEI0J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 03:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZKEI0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 03:22:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30122 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755291AbZKEIW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 03:22:58 -0500
-Message-ID: <4AF28B49.7000509@redhat.com>
-Date: Thu, 05 Nov 2009 10:22:33 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: "Tian, Kevin" <kevin.tian@intel.com>
-CC: Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Gleb Natapov <gleb@redhat.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+	Thu, 5 Nov 2009 03:26:09 -0500
+Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:48489 "EHLO
+	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753538AbZKEI0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 03:26:08 -0500
+Date: Thu, 5 Nov 2009 09:26:12 +0100
+From: Gabor Gombas <gombasg@sztaki.hu>
+To: Jan Safranek <jsafrane@redhat.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, balbir@linux.vnet.ibm.com,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com> <20091102092214.GB8933@elte.hu> <4AEF2D0A.4070807@redhat.com> <4AEF3419.1050200@redhat.com> <4AEF6CC3.4000508@redhat.com> <4AEFB823.4040607@redhat.com> <0A882F4D99BBF6449D58E61AAFD7EDD6339E7098@pdsmsx502.ccr.corp.intel.com>
-In-Reply-To: <0A882F4D99BBF6449D58E61AAFD7EDD6339E7098@pdsmsx502.ccr.corp.intel.com>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8bit
+       Bharata B Rao <bharata.rao@in.ibm.com>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [RFC] Mount point suggestions for cgroup
+Message-ID: <20091105082612.GE24467@boogie.lpds.sztaki.hu>
+References: <20091104063005.GC3560@balbir.in.ibm.com>
+ <20091104154024.0b8f6123.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091104081618.GD3560@balbir.in.ibm.com>
+ <1257348117.31972.4360.camel@nimitz>
+ <20091104161142.GA8825@us.ibm.com>
+ <4AF1AACE.6060705@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF1AACE.6060705@redhat.com>
+X-Copyright: Forwarding or publishing without permission is prohibited.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/05/2009 08:44 AM, Tian, Kevin wrote:
->> From: Avi Kivity
->> Sent: 2009Äê11ÔÂ3ÈÕ 12:57
->>
->> On 11/03/2009 01:35 AM, Rik van Riel wrote:
->>     
->>>> We can't add an exception vector since all the existing 
->>>>         
->> ones are either
->>     
->>>> taken or reserved.
->>>>         
->>>
->>> I believe some are reserved for operating system use.
->>>       
->> Table 6-1 says:
->>
->>   9 |  | Coprocessor Segment Overrun (reserved)  |  Fault |  No  | 
->> Floating-point instruction.2
->>   15 |  ¡ª |  (Intel reserved. Do not use.) |   | No |
->>   20-31 |  ¡ª | Intel reserved. Do not use.  |
->>   32-255 |  ¡ª  | User Defined (Non-reserved) Interrupts |  Interrupt  
->> |   | External interrupt or INT n instruction.
->>
->> So we can only use 32-255, but these are not fault-like 
->> exceptions that 
->> can be delivered with interrupts disabled.
->>
->>     
-> would you really want to inject a fault-like exception here? Fault
-> is architurally synchronous event while here apf is more like an 
-> asynchronous interrupt as it's not caused by guest itself. If 
-> guest is with interrupt disabled, preemption won't happen and 
-> apf path just ends up "wait for page" hypercall to waste cycles.
->   
+On Wed, Nov 04, 2009 at 05:24:46PM +0100, Jan Safranek wrote:
 
-An async page fault is, despite its name, synchronous, since it is
-associated with an instruction. It must either be delivered immediately
-or not at all.
+> LSB (and FHS) IMHO does not specify any place for such stuff:
+> 
+> /dev - for devices only, cgroups are not devices
 
-It's true that in kernel mode you can't do much with an apf if
-interrupts are disabled, but you still want to receive apfs for user
-mode with interrupts disabled (for example due to interrupt shadow).
+The FHS says the following for /dev on Linux:
+
+	/dev : Devices and special files
+
+IMHO cgroups are covered by "special files".
+
+Gabor
 
 -- 
-error compiling committee.c: too many arguments to function
-
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences
+     ---------------------------------------------------------
