@@ -1,150 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZKEAbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932715AbZKEAbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbZKEAbg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 19:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZKEAbg
+	id S932715AbZKEAbn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 19:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbZKEAbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 19:31:36 -0500
-Received: from l2mail1.panix.com ([166.84.1.75]:51038 "EHLO l2mail1.panix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754000AbZKEAbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 19:31:35 -0500
-Message-ID: <wimfcqp7en98mcwl7epikoo5.1257381002531@email.android.com>
-Subject: Re: [TuxOnIce-users] strange OOM receiving a wireless network
- packet on	a SLUB system
-From: Kenneth Crudup <kenny@panix.com>
-Date: Wed, 04 Nov 2009 16:30:02 -0800
-To: "TuxOnIce users' list" <tuxonice-users@lists.tuxonice.net>,
-       "TuxOnIce users' list" <tuxonice-users@lists.tuxonice.net>,
-       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary="----3VSP78IFGK1N9ED4LR31IQV817C7RA"
-MIME-Version: 1.0
+	Wed, 4 Nov 2009 19:31:41 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:50429 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbZKEAbi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 19:31:38 -0500
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+To: mingo@elte.hu, linux-kernel@vger.kernel.org
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, fweisbec@gmail.com,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: [PATCH v5 0/7] Adding general performance benchmarking subcommand to perf.
+Date: Thu,  5 Nov 2009 09:31:30 +0900
+Message-Id: <1257381097-4743-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------3VSP78IFGK1N9ED4LR31IQV817C7RA
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: base64
+This patch series add general benchmark subcommand to perf.
 
-VGhpcyBpcyBhIGtub3duIGlzc3VlIGluIHRoZSAuMzEga2VybmVscy4gR29vZ2xlIGZvciBpdC4g
-SSdtIG9uIGEgcGxhbmUgcmlnaHQgbm93IHtnb3R0YSBsb3ZlIEdvR28gV2lyZWxlc3MgOi0pIGFu
-ZCB3aWxsIGdpdmUgbW9yZSBkZXRhaWxzIGxhdGVyIGFuZCBhIHdvcmthcm91bmQuCgpOaXggPG5p
-eEBlc3Blcmkub3JnLnVrPiB3cm90ZToKCj5PbiA0IE5vdiAyMDA5LCBEb21pbmlrIFN0YWRsZXIg
-c3RhdGVkOg0KPj4gSSBqdXN0IHNhdyBhIHZlcnkgc2ltaWxhciB0aGluZyBoYXBwZW5pbmcgdG8g
-bWUgaGVyZSwgVGhpbmtQYWQgVDUwMCwgVWJ1bnR1DQo+PiA5LjEwLCBsYXRlc3QgMy4wLjErVE9J
-LUtlcm5lbCBmcm9tIEthcm1pYy1QUEEsIEkgIGhhdmUgc29tZSBvdGhlciB3ZWlyZG5lc3MNCj4+
-IGFzIHdlbGwgd2hpY2ggSSBhbSBub3Qgc3VyZSBpZiBUT0ktcmVsYXRlZCBvciBLYXJtaWMsIHdp
-bGwgZG8gc29tZQ0KPj4gRGl2aWRlLUFuZC1Db25xdWVyIGFuYWx5c2lzIG5leHQgdG8gZmluZCBv
-dXQgdGhlIHJvb3QgY2F1c2Ugb2YgdGhlc2UgYW5kDQo+PiByZXBvcnQgYmFjay4NCj4+DQo+PiAk
-IHVuYW1lIC1hDQo+PiBMaW51eCBYWFhYWFggMi42LjMxLTE1LWdlbmVyaWMgIzQ5K3R1eG9uaWNl
-Mi1VYnVudHUgU01QIFNhdCBPY3QgMzEgMDE6NDY6MTUNCj4+IFVUQyAyMDA5IHg4Nl82NCBHTlUv
-TGludXgNCj4+DQo+PiBUaGlzIGlzIHdoYXQgSSBnb3QganVzdCBub3c6DQo+Pg0KPj4gTm92ICA0
-IDIyOjQwOjIyIGRzdGF0aGluayBrZXJuZWw6IFszOTgzNS45NTExNzhdIHN3YXBwZXI6IHBhZ2Ug
-YWxsb2NhdGlvbg0KPj4gZmFpbHVyZS4gb3JkZXI6MiwgbW9kZToweDQwMjANCj4NCj5UaGF0IGRv
-ZXNuJ3QgcmVhbGx5IGxvb2sgc2ltaWxhciB0byBtZSAobm90IGEgZGVjb21wcmVzc29yIC0yMiBl
-cnJvcikuDQo+VG8gbWUgaXQgbG9va3MgbW9yZSBsaWtlIHlvdSByYW4gb3V0IG9mIG1lbW9yeSwg
-b3IgYXQgbGVhc3QgcmFuIHZlcnkgY2xvc2UNCj50byBvdXQ6IGFuIG9yZGVyLTIgYWxsb2NhdGlv
-biBpcyBub3QgZW5vcm1vdXMgKDE2S2Igb24geDg2KSBhbmQgc2hvdWxkDQo+ZGVmaW5pdGVseSB3
-b3JrIGFmdGVyIGV2ZXJ5dGhpbmcncyBiZWVuIGNodWNrZWQgb3V0LiAobW9kZSAweDQwMjAgaW1w
-bGllcw0KPmEgY29tcG91bmQtcGFnZSBHRlBfQVRPTUlDIGFsbG9jYXRpb24sIHNvIGl0IGNvdWxk
-bid0IHN3YXAsIGJ1dCBpdA0KPmNvdWxkIGNlcnRhaW5seSBkaXNjYXJkIGNsZWFuIHBhZ2VzLikN
-Cj4NCj5EaWQgdGhpcyBoYXBwZW4gYXQgc3VzcGVuc2lvbiB0aW1lLCByZXN1bXB0aW9uIHRpbWUs
-b3Igd2hhdD8gSXQgbG9va3MNCj5saWtlIHRoZSBrZXJuZWwgaGFkbid0IGJlZW4gdXAgZm9yIGxv
-bmcsIHNvIEkgZ3Vlc3Mgd2UgY2FuIHJ1bGUgb3V0DQo+cmVhbGx5IHJlYWxseSBiYWQgYXJlbmEg
-ZnJhZ21lbnRhdGlvbi4uLiBidXQgaXQgd2FzIGxvbmcgZW5vdWdoIHRoYXQgSQ0KPmd1ZXNzIHRo
-aXMgd2FzIGF0IHN1c3BlbnNpb24gdGltZT8NCj4NCj4+IE5vdiAgNCAyMjo0MDoyMiBkc3RhdGhp
-bmsga2VybmVsOiBbMzk4MzUuOTUxMTc4XSBQaWQ6IDAsIGNvbW06IHN3YXBwZXINCj4+IFRhaW50
-ZWQ6IEcgICAgICAgICBDIDIuNi4zMS0xNS1nZW5lcmljICM0OSt0dXhvbmljZTItVWJ1bnR1DQo+
-PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gQ2FsbA0K
-Pj4gVHJhY2U6DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1
-MTE3OF0gIDxJUlE+DQo+PiBbPGZmZmZmZmZmODEwZjFhYmM+XQ0KPj4gX19hbGxvY19wYWdlc19z
-bG93cGF0aCsweDRjYy8weDRlMA0KPj4gDQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtl
-cm5lbDogWzM5ODM1Ljk1MTE3OF0gIFs8ZmZmZmZmZmY4MTBmMWMxZT5dDQo+PiBfX2FsbG9jX3Bh
-Z2VzX25vZGVtYXNrKzB4MTRlLzB4MTUwDQo+PiANCj4+IE5vdiAgNCAyMjo0MDoyMiBkc3RhdGhp
-bmsga2VybmVsOiBbMzk4MzUuOTUxMTc4XSAgWzxmZmZmZmZmZjgxMTIzMGNhPl0NCj4+IGttYWxs
-b2NfbGFyZ2Vfbm9kZSsweDVhLzB4YjANCj4+IA0KPj4gTm92ICA0IDIyOjQwOjIyIGRzdGF0aGlu
-ayBrZXJuZWw6IFszOTgzNS45NTExNzhdICBbPGZmZmZmZmZmODExMjcyNzU+XQ0KPj4gX19rbWFs
-bG9jX25vZGVfdHJhY2tfY2FsbGVyKzB4MTM1LzB4MTgwDQo+DQo+VGhpcyBpcyBTTFVCIHN0dWZm
-LiBJcyBTTFVCIHByb2R1Y3Rpb24tcmVhZHkgeWV0PyAoSSBoYXZlbid0IGJlZW4NCj5mb2xsb3dp
-bmcgaXQuKQ0KPg0KPihOZXR3b3JraW5nLCB3aXJlbGVzcywgU0xVQiwgbm8gaWRlYSB3aGVyZSB0
-byBDYyB0aGlzLiBJJ2xsIGp1c3QgQ2MgTEtNTA0KPmFuZCBzZWUgaWYgYW55b25lIG5vdGljZXMg
-OikgKQ0KPg0KPj4gTm92ICA0IDIyOjQwOjIyIGRzdGF0aGluayBrZXJuZWw6IFszOTgzNS45NTEx
-NzhdICBbPGZmZmZmZmZmYTAyNDU4OTk+XSA/DQo+PiBpd2xfcnhfYWxsb2NhdGUrMHgxYTkvMHgy
-MzANCj4+IFtpd2xjb3JlXQ0KPj4NCj4+IE5vdiAgNCAyMjo0MDoyMiBkc3RhdGhpbmsga2VybmVs
-OiBbMzk4MzUuOTUxMTc4XSAgWzxmZmZmZmZmZjgxNDQwODhiPl0NCj4+IF9fYWxsb2Nfc2tiKzB4
-N2IvMHgxODANCj4+DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1
-Ljk1MTE3OF0gIFs8ZmZmZmZmZmZhMDI0NTg5OT5dDQo+PiBpd2xfcnhfYWxsb2NhdGUrMHgxYTkv
-MHgyMzANCj4+IFtpd2xjb3JlXQ0KPg0KPldpcmVsZXNzIG5ldHdvcmsgcGFja2V0IHJlY2VwdGlv
-biBsZWFkaW5nIHRvIE9PTS4gTm90IFR1eE9uSWNlLCBJJ2Qgc2F5Lg0KPkNlcnRhaW5seSBub3Qg
-dGhlIHNhbWUgcHJvYmxlbSBhcyBtZTogSSBkb24ndCBldmVuICpoYXZlKiBhbnkgd2lyZWxlc3MN
-Cj5oYXJkd2FyZSAod2l0aCBteSBSU0ksIGxhcHRvcHMgbWlnaHQgYXMgd2VsbCBoYXZlIHJhem9y
-IGJsYWRlcyBvbiB0aGVpcg0KPmtleXMpLg0KPg0KPihXaHkgZG9lcyBpdCBuZWVkIGEgMTZLYiBj
-b250aWd1b3VzIHJlZ2lvbiBhbnl3YXk/DQo+DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5r
-IGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gIFs8ZmZmZmZmZmY4MTAxMGUxMj5dID8NCj4+IGNwdV9p
-ZGxlKzB4YjIvMHgxMDANCj4NCj5JZGxlLCBub3Qgc3VzcGVuZGluZy4uLg0KPg0KPj4gTm92ICA0
-IDIyOjQwOjIyIGRzdGF0aGluayBrZXJuZWw6IFszOTgzNS45NTExNzhdIEFjdGl2ZV9hbm9uOjM2
-NTExMQ0KPj4gYWN0aXZlX2ZpbGU6ODg2MTIgaW5hY3RpdmVfYW5vbjoxNjIzNjENCj4NCj5Mb3Rz
-IG9mIGluYWN0aXZlIHBhZ2VzLiBXaHkgd2VyZSBub25lIGNodWNrZWQgb3V0Pw0KPg0KPj4gTm92
-ICA0IDIyOjQwOjIyIGRzdGF0aGluayBrZXJuZWw6IFszOTgzNS45NTExNzhdICBpbmFjdGl2ZV9m
-aWxlOjI0MzIyMg0KPj4gdW5ldmljdGFibGU6NCBkaXJ0eToyMTQ1OTggd3JpdGViYWNrOjMyMCB1
-bnN0YWJsZTowDQo+DQo+MjE0MDAwKyBkaXJ0eSBwYWdlcyBzZWVtcyBhd2Z1bGx5IGhpZ2guDQo+
-DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gIGZy
-ZWU6Njg3NiBzbGFiOjUxNTgyDQo+PiBtYXBwZWQ6NDAxNDcgcGFnZXRhYmxlczo4NDQwIGJvdW5j
-ZTowDQo+DQo+Njg3NiBmcmVlIHBhZ2VzLCBhIHJlYXNvbmFibGUtZW5vdWdoIGZpZ3VyZSwgeWV0
-IGl0IGNvdWxkbid0IGZpbmQgZm91cg0KPmluIGEgcm93IHRvIHJlY2VpdmUgYSBuZXR3b3JrIHBh
-Y2tldD8gU2VlbXMgdW5saWtlbHkuDQo+DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtl
-cm5lbDogWzM5ODM1Ljk1MTE3OF0gTm9kZSAwIERNQSBmcmVlOjE1NjQ0a0INCj4+IG1pbjoyOGtC
-IGxvdzozMmtCIGhpZ2g6NDBrQiBhY3RpdmVfYW5vbjoxMmtCIGluYWN0aXZlX2Fub246MzJrQg0K
-Pj4gYWN0aXZlX2ZpbGU6NGtCIGluYWN0aXZlX2ZpbGU6MjA4a0IgdW5ldmljdGFibGU6MGtCIHBy
-ZXNlbnQ6MTUzMzZrQg0KPj4gcGFnZXNfc2Nhbm5lZDowIGFsbF91bnJlY2xhaW1hYmxlPyBubw0K
-Pj4gDQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0g
-bG93bWVtX3Jlc2VydmVbXTogMCAyOTU4DQo+PiAzOTA1IDM5MDUNCj4+DQo+PiBOb3YgIDQgMjI6
-NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gTm9kZSAwIERNQTMyIGZyZWU6
-MTAxMjRrQg0KPj4gbWluOjYwNDRrQiBsb3c6NzU1MmtCIGhpZ2g6OTA2NGtCIGFjdGl2ZV9hbm9u
-OjEyMjMwODhrQg0KPj4gaW5hY3RpdmVfYW5vbjozNjc1MDBrQiBhY3RpdmVfZmlsZToyMTgwMzZr
-QiBpbmFjdGl2ZV9maWxlOjgzMzU5NmtCDQo+PiB1bmV2aWN0YWJsZToxNmtCIHByZXNlbnQ6MzAy
-OTYzNmtCIHBhZ2VzX3NjYW5uZWQ6MCBhbGxfdW5yZWNsYWltYWJsZT8NCj4+IG5vDQo+Pg0KPj4g
-Tm92ICA0IDIyOjQwOjIyIGRzdGF0aGluayBrZXJuZWw6IFszOTgzNS45NTExNzhdIGxvd21lbV9y
-ZXNlcnZlW106IDAgMCA5NDYNCj4+IDk0Ng0KPj4NCj4+IE5vdiAgNCAyMjo0MDoyMiBkc3RhdGhp
-bmsga2VybmVsOiBbMzk4MzUuOTUxMTc4XSBOb2RlIDAgTm9ybWFsIGZyZWU6MTczNmtCDQo+PiBt
-aW46MTkzMmtCIGxvdzoyNDEya0IgaGlnaDoyODk2a0IgYWN0aXZlX2Fub246MjM3MzQ0a0INCj4+
-IGluYWN0aXZlX2Fub246MjgxOTEya0IgYWN0aXZlX2ZpbGU6MTM2NDA4a0IgaW5hY3RpdmVfZmls
-ZToxMzkwODRrQg0KPj4gdW5ldmljdGFibGU6MGtCIHByZXNlbnQ6OTY5NjAwa0IgcGFnZXNfc2Nh
-bm5lZDowIGFsbF91bnJlY2xhaW1hYmxlPw0KPj4gbm8NCj4NCj5BZ2FpbiwgaGVhcHMgb2YgaW5h
-Y3RpdmUuDQo+DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1
-MTE3OF0gbG93bWVtX3Jlc2VydmVbXTogMCAwIDANCj4+IDANCj4+DQo+PiBOb3YgIDQgMjI6NDA6
-MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gTm9kZSAwIERNQTogNyo0a0IgNCo4
-a0INCj4+IDIqMTZrQiAyKjMya0IgMio2NGtCIDIqMTI4a0IgMyoyNTZrQiAyKjUxMmtCIDMqMTAy
-NGtCIDMqMjA0OGtCIDEqNDA5NmtCIDE1NjQ0a0INCj4+IE5vdiAgNCAyMjo0MDoyMiBkc3RhdGhp
-bmsga2VybmVsOiBbMzk4MzUuOTUxMTc4XSBOb2RlIDAgRE1BMzI6IDIyNDkqNGtCDQo+PiAzNSo4
-a0IgMSoxNmtCIDAqMzJrQiAxKjY0a0IgMCoxMjhrQiAxKjI1NmtCIDEqNTEya0IgMCoxMDI0a0Ig
-MCoyMDQ4a0INCj4+IDAqNDA5NmtCID0gMTAxMjRrQg0KPj4gTm92ICA0IDIyOjQwOjIyIGRzdGF0
-aGluayBrZXJuZWw6IFszOTgzNS45NTExNzhdIE5vZGUgMCBOb3JtYWw6IDEzMio0a0INCj4+IDEy
-Nyo4a0IgMioxNmtCIDEqMzJrQiAwKjY0a0IgMSoxMjhrQiAwKjI1NmtCIDAqNTEya0IgMCoxMDI0
-a0IgMCoyMDQ4a0INCj4+IDAqNDA5NmtCID0gMTczNmtCDQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0
-YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gMzkwODAzIHRvdGFsIHBhZ2VjYWNoZQ0KPj4g
-cGFnZXMNCj4+DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1
-MTE3OF0gMTIwMzkgcGFnZXMgaW4gc3dhcA0KPj4gY2FjaGUNCj4+DQo+PiBOb3YgIDQgMjI6NDA6
-MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gU3dhcCBjYWNoZSBzdGF0czogYWRk
-DQo+PiA0MTI5NiwgZGVsZXRlIDI5MjU3LCBmaW5kDQo+PiA0ODI1Lzc1MTYNCj4+DQo+PiBOb3Yg
-IDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gRnJlZSBzd2FwICA4
-MzMwODQ0a0INCj4+DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0YXRoaW5rIGtlcm5lbDogWzM5ODM1
-Ljk1MTE3OF0gVG90YWwgc3dhcCA4MzkzOTUya0INCj4+DQo+PiBOb3YgIDQgMjI6NDA6MjIgZHN0
-YXRoaW5rIGtlcm5lbDogWzM5ODM1Ljk1MTE3OF0gMTAzMjE5MiBwYWdlcw0KPj4gUkFNDQo+Pg0K
-Pj4gTm92ICA0IDIyOjQwOjIyIGRzdGF0aGluayBrZXJuZWw6IFszOTgzNS45NTExNzhdIDc2OTI4
-IHBhZ2VzDQo+PiByZXNlcnZlZA0KPj4NCj4+IE5vdiAgNCAyMjo0MDoyMiBkc3RhdGhpbmsga2Vy
-bmVsOiBbMzk4MzUuOTUxMTc4XSA0ODgzNDcgcGFnZXMNCj4+IHNoYXJlZA0KPj4NCj4+IE5vdiAg
-NCAyMjo0MDoyMiBkc3RhdGhpbmsga2VybmVsOiBbMzk4MzUuOTUxMTc4XSA1OTY2OTIgcGFnZXMg
-bm9uLXNoYXJlZA0KPg0KPk9LLCBJIGRvbid0IGtub3cgd2h5IHRoaXMgZmFpbGVkLCBidXQgSSdt
-IGFuIG1tIG5lb3BoeXRlIHJ1bm5pbmcgb24gcHVyZQ0KPmdyZXAuIEFueSBpZGVhcyBmcm9tIGFu
-eW9uZSB3aXRoIGFuIGFjdHVhbCBjbHVlIGluIHRoaXMgYXJlYT8gKEkga25vdyBPT00NCj5pcyBh
-bGwgdGhlIHJhZ2UgcmlnaHQgbm93LCBzbyBtYXliZSB0aGlzIHdpbGwgZ2FybmVyIHNvbWUgYXR0
-ZW50aW9uIDopICkNCj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXw0KPlR1eE9uSWNlLXVzZXJzIG1haWxpbmcgbGlzdA0KPlR1eE9uSWNlLXVzZXJzQGxpc3Rz
-LnR1eG9uaWNlLm5ldA0KPmh0dHA6Ly9saXN0cy50dXhvbmljZS5uZXQvbGlzdGluZm8vdHV4b25p
-Y2UtdXNlcnMNCj4NCg==
+The subcommand will unify the benchmarking programs
+and provide these in standardized way.
 
-------3VSP78IFGK1N9ED4LR31IQV817C7RA--
+I fixed this series for latest tip tree.
+My previous patch series conflicts with cmd_probe().
+So please discard v4 and use this v5.
+
+Hitoshi Mitake (7):
+  Adding new directory and header for new subcommand 'bench'
+  sched-messaging.c: benchmark for scheduler and IPC mechanisms based
+    on hackbench
+  sched-pipe.c: benchmark for pipe() system call
+  builtin-bench.c: General framework for benchmark suites
+  Modifying builtin.h for new prototype
+  Modyfing perf.c for subcommand 'bench'
+  Modyfing Makefile to build subcommand 'bench'
+
+ tools/perf/Makefile                |    6 +
+ tools/perf/bench/bench.h           |    9 +
+ tools/perf/bench/sched-messaging.c |  332 ++++++++++++++++++++++++++++++++++++
+ tools/perf/bench/sched-pipe.c      |  113 ++++++++++++
+ tools/perf/builtin-bench.c         |  128 ++++++++++++++
+ tools/perf/builtin.h               |    1 +
+ tools/perf/perf.c                  |    1 +
+ 7 files changed, 590 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/bench/bench.h
+ create mode 100644 tools/perf/bench/sched-messaging.c
+ create mode 100644 tools/perf/bench/sched-pipe.c
+ create mode 100644 tools/perf/builtin-bench.c
 
