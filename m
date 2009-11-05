@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbZKEFt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbZKEGAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbZKEFt2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 00:49:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZKEFt1
+	id S1754676AbZKEGAK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 01:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbZKEGAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 00:49:27 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:61387 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbZKEFt0 (ORCPT
+	Thu, 5 Nov 2009 01:00:10 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44215 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbZKEGAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 00:49:26 -0500
-Message-Id: <200911050549.nA55nQt1094958@www262.sakura.ne.jp>
-Subject: Re: [Patch 0/12] AppArmor security module
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: john.johansen@canonical.com
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+	Thu, 5 Nov 2009 01:00:08 -0500
+Date: Thu, 5 Nov 2009 11:30:08 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Avi Kivity <avi@redhat.com>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
+	on top of perf events
+Message-ID: <20091105060008.GA3261@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com> <19186.5488.320389.567026@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Thu, 05 Nov 2009 14:49:26 +0900
-References: <1257292099-15802-1-git-send-email-john.johansen@canonical.com> <200911040441.nA44fxms062617@www262.sakura.ne.jp> <4AF25E51.1010609@canonical.com>
-In-Reply-To: <4AF25E51.1010609@canonical.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 05112009 #2900046, status: clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19186.5488.320389.567026@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, Nov 05, 2009 at 10:59:44AM +1100, Paul Mackerras wrote:
+> Frederic Weisbecker writes:
+> 
+> > This patch rebase the implementation of the breakpoints API on top of
+> > perf events instances.
+> > 
+> > Each breakpoints are now perf events that handle the
+> > register scheduling, thread/cpu attachment, etc..
+> 
+> What I haven't managed to understand yet is how you provide reliable
+> breakpoints for debugging purposes.  If I'm debugging a program and I
+> have set a breakpoint, I'll be very unhappy if the breakpoint should
+> trigger but doesn't because the perf_event infrastructure has decided
+> it can't schedule that breakpoint in.  If the breakpoint isn't going
+> to work then I want to know that at the time that I set it.
+>
 
-I browsed using lxr.
+The hw-breakpoint layer avoids such issues by not over-committing debug
+registers i.e. 'n' number of debug registers are reserved for user-space
+where n = max(no. of breakpoints requested by any given process/thread).
+And book-keeping certainly helps here too.
 
-
-
-> static int aa_audit_caps(struct aa_profile *profile, struct aa_audit_caps *sa)
-...snipped...
-> 	ent = &get_cpu_var(audit_cache);
-> 	if (sa->base.task == ent->task && cap_raised(ent->caps, sa->cap)) {
-
-		put_cpu_var(audit_cache); ?
-
-> 		if (PROFILE_COMPLAIN(profile))
-> 			return 0;
-> 		return sa->base.error;
-> 	} else {
-> 		ent->task = sa->base.task;
-> 		cap_raise(ent->caps, sa->cap);
-> 	}
-> 	put_cpu_var(audit_cache);
-...snipped...
-
-
-
-Regarding unpack_*(), I'm not sure, but e seems to be no longer used after once
-unpack_*() failed. If so, we can remove
-
-> 	void *pos = e->pos;
-
-and
-
->  fail:
->  	e->pos = pos;
-
-
-
-Also, please add comments regarding
-
-  memory allocated here is released by ...
-
-  refcount obtained here is released by ...
-
-  the caller of this function need to hold ... lock
-
-as it is difficult for me to track memleak/refcounter/locking bugs.
-For example, in function apparmor_dentry_open(), from
-
-	fcxt->profile = aa_get_profile(profile);
-
-to something like
-
-	/* released by ... */
-	fcxt->profile = aa_get_profile(profile);
-
-(Oh, is it correct to get refcount even if aa_path_perm() failed?)
-
-
-
-Regards.
+Thanks,
+K.Prasad
+ 
