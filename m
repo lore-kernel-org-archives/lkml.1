@@ -1,76 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZKEGnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbZKEGoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbZKEGnM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 01:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbZKEGnL
+	id S1756436AbZKEGoP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 01:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbZKEGoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 01:43:11 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:58861 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756052AbZKEGnL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 01:43:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=OFL0igsCO5e8sxnMzyBuRmH+EYgd95ULxbA79lsO7H8Ff1iV+koIuhg17FQaMSd4qB
-         j85VAOj4mRDk84GCtdBAGjuNMX8tU+cm7FIoQwpYTKdej3vD7hUhXlk2b70n2/YQfPIt
-         eVX5cadDEqrIOhQPBEMMt6afRtcBusURRUql8=
-MIME-Version: 1.0
-In-Reply-To: <200911042206.54801.elendil@planet.nl>
-References: <1257315285-6782-1-git-send-email-akinobu.mita@gmail.com>
-	 <200911042206.54801.elendil@planet.nl>
-Date: Thu, 5 Nov 2009 15:43:16 +0900
-Message-ID: <961aa3350911042243n3cf78cadtf45fb33da35a0f3a@mail.gmail.com>
-Subject: Re: [PATCH] kbuild: let make O=dir rpm-pkg fail
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 5 Nov 2009 01:44:13 -0500
+Received: from mga01.intel.com ([192.55.52.88]:20332 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756168AbZKEGoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 01:44:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,684,1249282800"; 
+   d="scan'208";a="744037129"
+Subject: [PATCH 1/2] x86, crypto, Generate .byte code for some new
+ instructions via gas macro
+From: Huang Ying <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 05 Nov 2009 14:44:15 +0800
+Message-Id: <1257403455.22519.249.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/5 Frans Pop <elendil@planet.nl>:
-> On Wednesday 04 November 2009, Akinobu Mita wrote:
->> make rpm-pkg with setting KBUILD_OUTPUT is not possible and
->> it will print the good message since the commit
->> db9038c89d129383a9db2afcb72b504fe54f6edf
->>
->> $ KBUILD_OUTPUT=dir make rpm-pkg
->> ...
->> Building source + binary RPM is not possible outside the
->> kernel source tree. Don't set KBUILD_OUTPUT, or use the
->> binrpm-pkg target instead.
->> ...
->>
->> make O=dir should have the same effect of KBUILD_OUTPUT, but
->> it won't print that message.
->>
->> This fixes it by exporting KBUILD_OUTPUT if O= is set so that
->> the rpm-pkg target in scripts/package/Makefile can find it.
->
-> Looks good to me. I suspect this will also fix the open question that I had
-> when I submitted the patch you refer to:
-> <quote>
-> One open issue is that the following commands should IIUC be identical,
-> but the second one does not work:
-> - KBUILD_OUTPUT=../builds/amd64 make -j4 binrpm-pkg
-> - make -j4 O=../builds/amd64 binrpm-pkg
->
-> AFAICT the root Makefile is supposed to set KBUILD_OUTPUT based on O=, but
-> that is not visible when the lines within the binrpm-pkg target are
-> executed.
-> My make foo was not strong enough to debug this.
-> </quote>
+It will take some time for binutils (gas) to support some newly added
+instructions, such as SSE4.1 instructions or the AES-NI instructions
+found in upcoming Intel CPU.
 
-make binrpm-pkg with O= works without this patch on my system
-(CentOS5 i386). So I did not mention about it in the patch description.
+To make the source code can be compiled by old binutils, .byte code is
+used instead of the assembly instruction. But the readability and
+flexibility of raw .byte code is not good.
 
-> I also suspect that the use of O= is currently equally broken for the
-> deb-pkg target (I know setting KBUILD_OUTPUT does work) and that this
-> patch will fix that as well.
+This patch solves the issue of raw .byte code via generating it via
+assembly instruction like gas macro. The syntax is as close as
+possible to real assembly instruction.
 
-I don't have debian based system and I can't test deb-pkg now.
-But I hope it works, too.
+Some helper macros such as MODRM is not a full feature
+implementation. It can be extended when necessary.
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ arch/x86/include/asm/inst.h |  150 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 150 insertions(+)
+
+--- /dev/null
++++ b/arch/x86/include/asm/inst.h
+@@ -0,0 +1,150 @@
++/*
++ * Generate .byte code for some instructions not supported by old
++ * binutils.
++ */
++#ifndef X86_ASM_INST_H
++#define X86_ASM_INST_H
++
++#ifdef __ASSEMBLY__
++
++	.macro XMM_NUM opd xmm
++	.ifc \xmm,%xmm0
++	\opd = 0
++	.endif
++	.ifc \xmm,%xmm1
++	\opd = 1
++	.endif
++	.ifc \xmm,%xmm2
++	\opd = 2
++	.endif
++	.ifc \xmm,%xmm3
++	\opd = 3
++	.endif
++	.ifc \xmm,%xmm4
++	\opd = 4
++	.endif
++	.ifc \xmm,%xmm5
++	\opd = 5
++	.endif
++	.ifc \xmm,%xmm6
++	\opd = 6
++	.endif
++	.ifc \xmm,%xmm7
++	\opd = 7
++	.endif
++	.ifc \xmm,%xmm8
++	\opd = 8
++	.endif
++	.ifc \xmm,%xmm9
++	\opd = 9
++	.endif
++	.ifc \xmm,%xmm10
++	\opd = 10
++	.endif
++	.ifc \xmm,%xmm11
++	\opd = 11
++	.endif
++	.ifc \xmm,%xmm12
++	\opd = 12
++	.endif
++	.ifc \xmm,%xmm13
++	\opd = 13
++	.endif
++	.ifc \xmm,%xmm14
++	\opd = 14
++	.endif
++	.ifc \xmm,%xmm15
++	\opd = 15
++	.endif
++	.endm
++
++	.macro PFX_OPD_SIZE
++	.byte 0x66
++	.endm
++
++	.macro PFX_REX opd1 opd2
++	.if (\opd1 | \opd2) & 8
++	.byte 0x40 | ((\opd1 & 8) >> 3) | ((\opd2 & 8) >> 1)
++	.endif
++	.endm
++
++	.macro MODRM mod opd1 opd2
++	.byte \mod | (\opd1 & 7) | ((\opd2 & 7) << 3)
++	.endm
++
++	.macro PSHUFB_XMM xmm1 xmm2
++	XMM_NUM pshufb_opd1 \xmm1
++	XMM_NUM pshufb_opd2 \xmm2
++	PFX_OPD_SIZE
++	PFX_REX pshufb_opd1 pshufb_opd2
++	.byte 0x0f, 0x38, 0x00
++	MODRM 0xc0 pshufb_opd1 pshufb_opd2
++	.endm
++
++	.macro PCLMULQDQ imm8 xmm1 xmm2
++	XMM_NUM clmul_opd1 \xmm1
++	XMM_NUM clmul_opd2 \xmm2
++	PFX_OPD_SIZE
++	PFX_REX clmul_opd1 clmul_opd2
++	.byte 0x0f, 0x3a, 0x44
++	MODRM 0xc0 clmul_opd1 clmul_opd2
++	.byte \imm8
++	.endm
++
++	.macro AESKEYGENASSIST rcon xmm1 xmm2
++	XMM_NUM aeskeygen_opd1 \xmm1
++	XMM_NUM aeskeygen_opd2 \xmm2
++	PFX_OPD_SIZE
++	PFX_REX aeskeygen_opd1 aeskeygen_opd2
++	.byte 0x0f, 0x3a, 0xdf
++	MODRM 0xc0 aeskeygen_opd1 aeskeygen_opd2
++	.byte \rcon
++	.endm
++
++	.macro AESIMC xmm1 xmm2
++	XMM_NUM aesimc_opd1 \xmm1
++	XMM_NUM aesimc_opd2 \xmm2
++	PFX_OPD_SIZE
++	PFX_REX aesimc_opd1 aesimc_opd2
++	.byte 0x0f, 0x38, 0xdb
++	MODRM 0xc0 aesimc_opd1 aesimc_opd2
++	.endm
++
++	.macro AESENC xmm1 xmm2
++	XMM_NUM aesenc_opd1 \xmm1
++	XMM_NUM aesenc_opd2 \xmm2
++	PFX_OPD_SIZE
++	PFX_REX aesenc_opd1 aesenc_opd2
++	.byte 0x0f, 0x38, 0xdc
++	MODRM 0xc0 aesenc_opd1 aesenc_opd2
++	.endm
++
++	.macro AESENCLAST xmm1 xmm2
++	XMM_NUM aesenclast_opd1 \xmm1
++	XMM_NUM aesenclast_opd2 \xmm2
++	PFX_OPD_SIZE
++	PFX_REX aesenclast_opd1 aesenclast_opd2
++	.byte 0x0f, 0x38, 0xdd
++	MODRM 0xc0 aesenclast_opd1 aesenclast_opd2
++	.endm
++
++	.macro AESDEC xmm1 xmm2
++	XMM_NUM aesdec_opd1 \xmm1
++	XMM_NUM aesdec_opd2 \xmm2
++	PFX_OPD_SIZE
++	PFX_REX aesdec_opd1 aesdec_opd2
++	.byte 0x0f, 0x38, 0xde
++	MODRM 0xc0 aesdec_opd1 aesdec_opd2
++	.endm
++
++	.macro AESDECLAST xmm1 xmm2
++	XMM_NUM aesdeclast_opd1 \xmm1
++	XMM_NUM aesdeclast_opd2 \xmm2
++	PFX_OPD_SIZE
++	PFX_REX aesdeclast_opd1 aesdeclast_opd2
++	.byte 0x0f, 0x38, 0xdf
++	MODRM 0xc0 aesdeclast_opd1 aesdeclast_opd2
++	.endm
++#endif
++
++#endif
+
+
