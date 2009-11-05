@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757682AbZKERxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZKEPSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757682AbZKERxM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 12:53:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273AbZKERxL
+	id S1754927AbZKEPSo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 10:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbZKEPSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 12:53:11 -0500
-Received: from smtp4.ultrahosting.com ([74.213.175.253]:58392 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757398AbZKERxK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 12:53:10 -0500
-X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Nov 2009 12:53:10 EST
-Date: Thu, 5 Nov 2009 10:15:36 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       akpm@linux-foundation.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] lib: generic percpu counter array
-In-Reply-To: <20091105141653.132d4977.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0911051013080.25718@V090114053VZO-1>
-References: <20091104152426.eacc894f.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.1.10.0911041414560.7409@V090114053VZO-1> <20091105090659.9a5d17b1.kamezawa.hiroyu@jp.fujitsu.com> <20091105141653.132d4977.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 5 Nov 2009 10:18:12 -0500
+Received: from cantor.suse.de ([195.135.220.2]:37089 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755385AbZKEPSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 10:18:10 -0500
+Date: Thu, 5 Nov 2009 16:18:15 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Davidlohr Bueso <dave@gnu.org>
+Cc: dougthompson@xmission.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Documentation/edac
+In-Reply-To: <1257359434.5291.5.camel@dbueso-pc>
+Message-ID: <alpine.LSU.2.00.0911051616530.9988@wotan.suse.de>
+References: <1257359434.5291.5.camel@dbueso-pc>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Nov 2009, KAMEZAWA Hiroyuki wrote:
+On Wed, 4 Nov 2009, Davidlohr Bueso wrote:
 
-> +static inline void
-> +counter_array_add(struct counter_array *ca, int idx, int val)
-> +{
-> +	ca->counters[idx] += val;
-> +}
+> ---
+>  Documentation/edac.txt |    7 +++----
+>  1 files changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/edac.txt b/Documentation/edac.txt
+> index 06f8f46..79c5332 100644
+> --- a/Documentation/edac.txt
+> +++ b/Documentation/edac.txt
+> @@ -80,7 +80,7 @@ is:
+>  
+>  	broken_parity_status
+>  
+> -as is located in /sys/devices/pci<XXX>/0000:XX:YY.Z directorys for
+> +as is located in /sys/devices/pci<XXX>/0000:XX:YY.Z directories for
+>  PCI devices.
+>  
+>  FUTURE HARDWARE SCANNING
+> @@ -288,9 +288,8 @@ Total UE count that had no information attribute fileY:
+>  
+>  	'ue_noinfo_count'
+>  
+> -	This attribute file displays the number of UEs that
+> -	have occurred have occurred with  no informations as to which DIMM
+> -	slot is having errors.
+> +	This attribute file displays the number of UEs that have occurred
+> +	with no information as to which DIMM slot is having errors.
+>  
 
-This is not a per cpu operation and therefore expensive. The new percpu
-this_cpu_inc f.e. generates a single x86 instruction for an increment.
+Applied, thanks.
 
-> +void __counter_array_add(struct counter_array *ca, int idx, int val, int batch)
-> +{
-> +	long count, *pcount;
-> +
-> +	preempt_disable();
-> +
-> +	pcount = this_cpu_ptr(ca->v.array);
-> +	count = pcount[idx] + val;
-> +	if (!ca->v.nosync && ((count > batch) || (count < -batch))) {
-> +		atomic_long_add(count, &ca->counters[idx]);
-> +		pcount[idx] = 0;
-> +	} else
-> +		pcount[idx] = count;
-> +	preempt_enable();
-> +}
-
-Too expensive to use in critical VM paths. The percpu operations generate
-a single instruction instead of the code above. No need for preempt etc.
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
