@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZKEMIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbZKEML5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbZKEMIV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 07:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZKEMIV
+	id S1755136AbZKEML5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 07:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbZKEML5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 07:08:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52950 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755158AbZKEMIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 07:08:20 -0500
-Message-ID: <4AF2C000.3020807@redhat.com>
-Date: Thu, 05 Nov 2009 13:07:28 +0100
-From: Jan Safranek <jsafrane@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Daniel Lezcano <daniel.lezcano@free.fr>
-CC: balbir@linux.vnet.ibm.com, libcg-devel <libcg-devel@lists.sourceforge.net>,
-       "menage@google.com" <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       containers@lists.linux-foundation.org,
-       Bharata B Rao <bharata.rao@in.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [RFC] Mount point suggestions for cgroup
-References: <20091104063005.GC3560@balbir.in.ibm.com> <4AF1AF68.40704@free.fr>
-In-Reply-To: <4AF1AF68.40704@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 5 Nov 2009 07:11:57 -0500
+Received: from www84.your-server.de ([213.133.104.84]:50798 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754291AbZKEML4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 07:11:56 -0500
+Subject: Re: [PATCH] RFC x86_64 more accurate KSTK_ESP implementation
+From: Stefani Seibold <stefani@seibold.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091105110857.GR31511@one.firstfloor.org>
+References: <1257233486.22553.6.camel@wall-e>
+	 <20091103082843.GA27676@elte.hu> <1257239184.4889.15.camel@wall-e>
+	 <1257409189.26874.18.camel@wall-e>
+	 <20091105110857.GR31511@one.firstfloor.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Thu, 05 Nov 2009 13:11:03 +0100
+Message-ID: <1257423063.961.10.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/04/2009 05:44 PM, Daniel Lezcano wrote:
-> Balbir Singh wrote:
->> Hi, All,
->>
->> We've been having a discussion as to what would be the right place to
->> mount the cgroup filesystem. Jan has been proactively looking into
->> this. The FHS has no recommendation since cgroup filesystem came in
->> much later.
->>
->> The options are
->>
->> 1. /dev/cgroup
->> 2. /cgroup
->> 3. Some place under /sys
->>
->> The problem with (2) is that it is quite non-standard and pollutes the
->> root directory. (3) requires some basic support to create a directory
->> for cgroup under /sys. (1) seems the most obvious choice since cpusets
->> were mounted under /dev/cpuset, but /dev is controlled by udev.
->>
->> Given the three choices or any other suggestions, is there a general
->> preference as to where we can mount it? The goal is to standardize
->> the mount point (if possible).
-> Why the mount point has to be standardized ?
->
+Am Donnerstag, den 05.11.2009, 12:08 +0100 schrieb Andi Kleen:
+> > +void update_usersp(struct pt_regs *regs)
+> > +{
+> > +	unsigned long stk = (unsigned long)task_stack_page(current);
+> > +	unsigned long stkp = (regs)->sp; 
+> > +
+> > +	if (((stkp < stk) || (stkp >= stk + THREAD_SIZE))
+> > +	    && regs->ip < PAGE_OFFSET)
+> > +		percpu_write(old_rsp, stkp);
+> 
+> This does not handle interrupt and exception stacks correctly.
+> 
+> Also regs->ip is never a safe check for running in user space,
+> because a program can set the IP to a arbitrary value for a one
+> instruction window.
+> 
 
-The mount point does not need to be set into stone so everybody *must* 
-use it. I, as Fedora packager, just need some default place where to 
-mount it, so applications which need to create/manage groups work 
-without any (potentially dumb) user assistance. Of course, advanced 
-admin can change the settings and move the groups anywhere, applications 
-still need to parse /proc/mounts or use appropriate library like libcgroup.
+I think this doesn't matter, because i want only detect if it is save to
+wrire the old_rsp value. There are only three places in the kernel where
+this value will be writen, all of them are in the kernel. So checking if
+the ip is in the kernel and the stack pointer points outside the kernel
+stack of the current task will be enough. Or i am wrong?
 
-Jan
+> The larger problem is also if the kernel moves to no-tick-for-non-idle
+> (which I guess will happen sooner or later) your method won't
+> work anyways, or again be arbitarily inaccurate. Even today 10ms
+> worst time inaccuracy for HZ=100 is rather bad, there can be a lot of stack
+> allocations in that time. And adding new dependencies on a regular
+> timer when everything else is moving away from that doesn't seem right.
+
+The value is correct in case of on uni processor system. In an multi
+core system it is a good approximation. A quick look into other
+architectures shows that this is not a x86_64 issue. All architecture
+give you only a snapshot.
+
+But this is good enough for ps or /proc usage. If someone want an exact
+value, then it is necessary to stop the task.
+
+> 
+> Also I suspect this method won't work on preempt-rt without 
+> additional tweaks.
+> 
+
+That is a other issue. Let us first fix and agree about the basics.
+
+Stefani
+
+
