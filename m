@@ -1,240 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbZKEOnC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbZKEOnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbZKEOnC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:43:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757765AbZKEOnB
+	id S1757924AbZKEOnU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbZKEOnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:43:01 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32934 "EHLO mx1.redhat.com"
+	Thu, 5 Nov 2009 09:43:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8458 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757634AbZKEOnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:43:00 -0500
-Date: Thu, 5 Nov 2009 09:42:22 -0500
+	id S1757765AbZKEOnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 09:43:18 -0500
+Date: Thu, 5 Nov 2009 09:42:45 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
-To: Divyesh Shah <dpshah@google.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
        jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
        m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
        kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 11/20] blkio: Some CFQ debugging Aid
-Message-ID: <20091105144222.GD4001@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-12-git-send-email-vgoyal@redhat.com> <af41c7c40911041910s20e9ac8dpe56f32ecc9f5886a@mail.gmail.com>
+Subject: Re: [PATCH 09/20] blkio: Porpogate blkio cgroup weight or ioprio
+	class updation to cfq groups
+Message-ID: <20091105144245.GE4001@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-10-git-send-email-vgoyal@redhat.com> <4AF2641A.7030306@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <af41c7c40911041910s20e9ac8dpe56f32ecc9f5886a@mail.gmail.com>
+In-Reply-To: <4AF2641A.7030306@cn.fujitsu.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 07:10:00PM -0800, Divyesh Shah wrote:
-> In the previous patchset when merged with the bio tracking patches we
-> had a very convenient
->  biocg_id we could use for debugging. If the eventual plan is to merge
-> the biotrack patches, do you think it makes sense to introduce the
-> per-blkio cgroup id here when DEBUG_BLK_CGROUP=y and use that for all
-> traces? The cgroup path name seems ugly to me.
+On Thu, Nov 05, 2009 at 01:35:22PM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> > o If a user decides the change the weight or ioprio class of a cgroup, this
+> >   information needs to be passed on to io controlling policy module also so
+> >   that new information can take effect.
+> > 
+> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> > ---
+> >  block/blk-cgroup.c  |   16 ++++++++++++++++
+> >  block/cfq-iosched.c |   18 ++++++++++++++++++
+> >  2 files changed, 34 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+> > index 7bde5c4..0d52a2c 100644
+> > --- a/block/blk-cgroup.c
+> > +++ b/block/blk-cgroup.c
+> > @@ -13,6 +13,10 @@
+> >  #include <linux/ioprio.h>
+> >  #include "blk-cgroup.h"
+> >  
+> > +extern void cfq_update_blkio_group_weight(struct blkio_group *, unsigned int);
+> > +extern void cfq_update_blkio_group_ioprio_class(struct blkio_group *,
+> > +		unsigned short);
+> > +
+> >  struct blkio_cgroup blkio_root_cgroup = {
+> >  	.weight = BLKIO_WEIGHT_DEFAULT,
+> >  	.ioprio_class = IOPRIO_CLASS_BE,
+> > @@ -75,12 +79,18 @@ static int
+> >  blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+> >  {
+> >  	struct blkio_cgroup *blkcg;
+> > +	struct blkio_group *blkg;
+> > +	struct hlist_node *n;
+> >  
+> >  	if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
+> >  		return -EINVAL;
+> >  
+> >  	blkcg = cgroup_to_blkio_cgroup(cgroup);
+> > +	spin_lock_irq(&blkcg->lock);
+> >  	blkcg->weight = (unsigned int)val;
+> > +	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node)
+> > +		cfq_update_blkio_group_weight(blkg, blkcg->weight);
+> > +	spin_unlock_irq(&blkcg->lock);
+> >  	return 0;
+> >  }
+> >  
+> > @@ -88,12 +98,18 @@ static int blkiocg_ioprio_class_write(struct cgroup *cgroup,
+> >  					struct cftype *cftype, u64 val)
+> >  {
+> >  	struct blkio_cgroup *blkcg;
+> > +	struct blkio_group *blkg;
+> > +	struct hlist_node *n;
+> >  
+> >  	if (val < IOPRIO_CLASS_RT || val > IOPRIO_CLASS_IDLE)
+> >  		return -EINVAL;
+> >  
+> >  	blkcg = cgroup_to_blkio_cgroup(cgroup);
+> > +	spin_lock_irq(&blkcg->lock);
+> >  	blkcg->ioprio_class = (unsigned int)val;
+> > +	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node)
+> > +		cfq_update_blkio_group_weight(blkg, blkcg->weight);
+> 
+>   Here should be cfq_update_blkio_group_ioprio_class()
 > 
 
-Hi Divyesh,
-
-We still have biocg_id. Just that new name is "blkcg_id". So in evrey
-blkio_group, we embed this id to know which cgroup this blkio_group
-belongs to.
-
-We had cgroup path in previous patches also. The only advantage of path
-is that we don't have to call cgroup_path() again and again and we can
-call it once when blkio_group instanciates and then store the path in
-blio_group and use it.
+Good catch Gui. Will fix it in next version.
 
 Thanks
 Vivek
-
-> -Divyesh
-> 
-> On Tue, Nov 3, 2009 at 3:43 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > o Some CFQ debugging Aid.
-> >
-> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> > ---
-> >  block/Kconfig         |    9 +++++++++
-> >  block/Kconfig.iosched |    9 +++++++++
-> >  block/blk-cgroup.c    |    4 ++++
-> >  block/blk-cgroup.h    |   13 +++++++++++++
-> >  block/cfq-iosched.c   |   33 +++++++++++++++++++++++++++++++++
-> >  5 files changed, 68 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/block/Kconfig b/block/Kconfig
-> > index 6ba1a8e..e20fbde 100644
-> > --- a/block/Kconfig
-> > +++ b/block/Kconfig
-> > @@ -90,6 +90,15 @@ config BLK_CGROUP
-> >        control disk bandwidth allocation (proportional time slice allocation)
-> >        to such task groups.
-> >
-> > +config DEBUG_BLK_CGROUP
-> > +       bool
-> > +       depends on BLK_CGROUP
-> > +       default n
-> > +       ---help---
-> > +       Enable some debugging help. Currently it stores the cgroup path
-> > +       in the blk group which can be used by cfq for tracing various
-> > +       group related activity.
-> > +
-> >  endif # BLOCK
-> >
-> >  config BLOCK_COMPAT
-> > diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-> > index a521c69..9c5f0b5 100644
-> > --- a/block/Kconfig.iosched
-> > +++ b/block/Kconfig.iosched
-> > @@ -48,6 +48,15 @@ config CFQ_GROUP_IOSCHED
-> >        ---help---
-> >          Enable group IO scheduling in CFQ.
-> >
-> > +config DEBUG_CFQ_IOSCHED
-> > +       bool "Debug CFQ Scheduling"
-> > +       depends on CFQ_GROUP_IOSCHED
-> > +       select DEBUG_BLK_CGROUP
-> > +       default n
-> > +       ---help---
-> > +         Enable CFQ IO scheduling debugging in CFQ. Currently it makes
-> > +         blktrace output more verbose.
-> > +
-> >  choice
-> >        prompt "Default I/O scheduler"
-> >        default DEFAULT_CFQ
-> > diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
-> > index a62b8a3..4c68682 100644
-> > --- a/block/blk-cgroup.c
-> > +++ b/block/blk-cgroup.c
-> > @@ -39,6 +39,10 @@ void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-> >        blkg->blkcg_id = css_id(&blkcg->css);
-> >        hlist_add_head_rcu(&blkg->blkcg_node, &blkcg->blkg_list);
-> >        spin_unlock_irqrestore(&blkcg->lock, flags);
-> > +#ifdef CONFIG_DEBUG_BLK_CGROUP
-> > +       /* Need to take css reference ? */
-> > +       cgroup_path(blkcg->css.cgroup, blkg->path, sizeof(blkg->path));
-> > +#endif
-> >  }
-> >
-> >  static void __blkiocg_del_blkio_group(struct blkio_group *blkg)
-> > diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
-> > index 2bf736b..cb72c35 100644
-> > --- a/block/blk-cgroup.h
-> > +++ b/block/blk-cgroup.h
-> > @@ -26,12 +26,25 @@ struct blkio_group {
-> >        void *key;
-> >        struct hlist_node blkcg_node;
-> >        unsigned short blkcg_id;
-> > +#ifdef CONFIG_DEBUG_BLK_CGROUP
-> > +       /* Store cgroup path */
-> > +       char path[128];
-> > +#endif
-> >  };
-> >
-> >  #define BLKIO_WEIGHT_MIN       100
-> >  #define BLKIO_WEIGHT_MAX       1000
-> >  #define BLKIO_WEIGHT_DEFAULT   500
-> >
-> > +#ifdef CONFIG_DEBUG_BLK_CGROUP
-> > +static inline char *blkg_path(struct blkio_group *blkg)
-> > +{
-> > +       return blkg->path;
-> > +}
-> > +#else
-> > +static inline char *blkg_path(struct blkio_group *blkg) { return NULL; }
-> > +#endif
-> > +
-> >  extern struct blkio_cgroup blkio_root_cgroup;
-> >  struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup);
-> >  void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > index b9a052b..2fde3c4 100644
-> > --- a/block/cfq-iosched.c
-> > +++ b/block/cfq-iosched.c
-> > @@ -258,8 +258,29 @@ CFQ_CFQQ_FNS(sync);
-> >  CFQ_CFQQ_FNS(coop);
-> >  #undef CFQ_CFQQ_FNS
-> >
-> > +#ifdef CONFIG_DEBUG_CFQ_IOSCHED
-> > +#define cfq_log_cfqq(cfqd, cfqq, fmt, args...) \
-> > +       blk_add_trace_msg((cfqd)->queue, "cfq%d%c %s " fmt, (cfqq)->pid, \
-> > +                       cfq_cfqq_sync((cfqq)) ? 'S' : 'A', \
-> > +                       blkg_path(&cfqq_to_cfqg((cfqq))->blkg), ##args);
-> > +
-> > +#define cfq_log_cfqe(cfqd, cfqe, fmt, args...)                 \
-> > +       if (cfqq_of(cfqe)) {                                            \
-> > +               struct cfq_queue *cfqq = cfqq_of(cfqe);                 \
-> > +               blk_add_trace_msg((cfqd)->queue, "cfq%d%c %s " fmt,     \
-> > +                       (cfqq)->pid, cfq_cfqq_sync((cfqq)) ? 'S' : 'A', \
-> > +                       blkg_path(&cfqq_to_cfqg((cfqq))->blkg), ##args);\
-> > +       } else {                                                        \
-> > +               struct cfq_group *cfqg = cfqg_of(cfqe);                 \
-> > +               blk_add_trace_msg((cfqd)->queue, "%s " fmt,             \
-> > +                               blkg_path(&(cfqg)->blkg), ##args);      \
-> > +       }
-> > +#else
-> >  #define cfq_log_cfqq(cfqd, cfqq, fmt, args...) \
-> >        blk_add_trace_msg((cfqd)->queue, "cfq%d " fmt, (cfqq)->pid, ##args)
-> > +#define cfq_log_cfqe(cfqd, cfqe, fmt, args...)
-> > +#endif
-> > +
-> >  #define cfq_log(cfqd, fmt, args...)    \
-> >        blk_add_trace_msg((cfqd)->queue, "cfq " fmt, ##args)
-> >
-> > @@ -400,6 +421,8 @@ cfq_init_cfqe_parent(struct cfq_entity *cfqe, struct cfq_entity *p_cfqe)
-> >  #define for_each_entity(entity)        \
-> >        for (; entity && entity->parent; entity = entity->parent)
-> >
-> > +#define cfqe_is_cfqq(cfqe)     (!(cfqe)->my_sd)
-> > +
-> >  static inline struct cfq_group *cfqg_of_blkg(struct blkio_group *blkg)
-> >  {
-> >        if (blkg)
-> > @@ -588,6 +611,8 @@ void cfq_delink_blkio_group(void *key, struct blkio_group *blkg)
-> >  #define for_each_entity(entity)        \
-> >        for (; entity != NULL; entity = NULL)
-> >
-> > +#define cfqe_is_cfqq(cfqe)     1
-> > +
-> >  static void cfq_release_cfq_groups(struct cfq_data *cfqd) {}
-> >  static inline void cfq_get_cfqg_ref(struct cfq_group *cfqg) {}
-> >  static inline void cfq_put_cfqg(struct cfq_group *cfqg) {}
-> > @@ -885,6 +910,10 @@ static void dequeue_cfqq(struct cfq_queue *cfqq)
-> >                struct cfq_sched_data *sd = cfq_entity_sched_data(cfqe);
-> >
-> >                dequeue_cfqe(cfqe);
-> > +               if (!cfqe_is_cfqq(cfqe)) {
-> > +                       cfq_log_cfqe(cfqq->cfqd, cfqe, "del_from_rr group");
-> > +               }
-> > +
-> >                /* Do not dequeue parent if it has other entities under it */
-> >                if (sd->nr_active)
-> >                        break;
-> > @@ -970,6 +999,8 @@ static void requeue_cfqq(struct cfq_queue *cfqq, int add_front)
-> >
-> >  static void cfqe_served(struct cfq_entity *cfqe, unsigned long served)
-> >  {
-> > +       struct cfq_data *cfqd = cfqq_of(cfqe)->cfqd;
-> > +
-> >        for_each_entity(cfqe) {
-> >                /*
-> >                 * Can't update entity disk time while it is on sorted rb-tree
-> > @@ -979,6 +1010,8 @@ static void cfqe_served(struct cfq_entity *cfqe, unsigned long served)
-> >                cfqe->vdisktime += cfq_delta_fair(served, cfqe);
-> >                update_min_vdisktime(cfqe->st);
-> >                __enqueue_cfqe(cfqe->st, cfqe, 0);
-> > +               cfq_log_cfqe(cfqd, cfqe, "served: vt=%llx min_vt=%llx",
-> > +                               cfqe->vdisktime, cfqe->st->min_vdisktime);
-> >
-> >                /* If entity prio class has changed, take that into account */
-> >                if (unlikely(cfqe->ioprio_class_changed)) {
-> > --
-> > 1.6.2.5
-> >
-> >
