@@ -1,70 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbZKEOal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZKEObp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757305AbZKEOal (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbZKEOal
+	id S1757297AbZKEObp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756939AbZKEObp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:30:41 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33035 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756655AbZKEOak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:30:40 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+qV9Npg1WqJ1pGzi5ckyVjr7kTskpY8eLXS0Jz31
-	7ILiIaW9DpEm0F
-Subject: Re: There is something with scheduler (was Re: [patch] Re:
- [regression bisect -next] BUG: using smp_processor_id() in preemptible
- [00000000] code: rmmod)
-From: Mike Galbraith <efault@gmx.de>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, tglx@linutronix.de
-In-Reply-To: <1257430388.6437.31.camel@marge.simson.net>
-References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
-	 <1256805552.7158.22.camel@marge.simson.net>
-	 <20091029091411.GE22963@elte.hu>
-	 <1256807967.7158.58.camel@marge.simson.net>
-	 <1256813310.7574.3.camel@marge.simson.net> <20091102182808.GA8950@elte.hu>
-	 <1257190811.19608.2.camel@marge.simson.net>
-	 <4AF2AC30.4000003@cn.fujitsu.com>
-	 <1257430388.6437.31.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 05 Nov 2009 15:30:37 +0100
-Message-Id: <1257431437.7016.3.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.54
+	Thu, 5 Nov 2009 09:31:45 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35017 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756888AbZKEObo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 09:31:44 -0500
+Date: Thu, 5 Nov 2009 15:31:48 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       cl@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: irq lock inversion
+In-Reply-To: <4AF28D7A.6020209@kernel.org>
+Message-ID: <alpine.LSU.2.00.0911051502060.9988@wotan.suse.de>
+References: <86802c440911041008q4969b9bdk15b4598c40bb84bd@mail.gmail.com> <4AF25FC7.4000502@kernel.org> <20091105082102.GA2870@elte.hu> <4AF28D7A.6020209@kernel.org>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BTW, with (only) the full scheduler pull request applied, it also acts
-sane, and this little hunk is responsible... somehow.  But if that's the
-problem, why does locking the runqueue fix it too??
 
-Index: linux-2.6.32.git/kernel/sched.c
-===================================================================
---- linux-2.6.32.git.orig/kernel/sched.c
-+++ linux-2.6.32.git/kernel/sched.c
-@@ -9552,13 +9584,13 @@ void __init sched_init(void)
- 	current->sched_class = &fair_sched_class;
+[ added LKML to CC so that the lockdep message is at least indexed by 
+  search engines in archives ]
+
+On Thu, 5 Nov 2009, Tejun Heo wrote:
+
+> > lockdep only considers a lock irq-safe if it was used from an irq 
+> > context before.
+> > 
+> > _irqsave() API usage alone does not trigger this.
+> 
+> Thanks for the explanation.  It's about the same tho.  sched_init() is
+> calling it with irq disabled but that's an exception to might_sleep()
+> rule.  Maybe making lockdep recognize the same exception as
+> might_sleep() so that lockdep doesn't consider a lock irq-safe if it's
+> called with irq off but before system_state is set to SYSTEM_RUNNING
+> works around the problem?
+
+Hmm, I wonder why I don't see this lockdep warning myself with 
+head on 1836d9592, even though I have 
+
+	CONFIG_PROVE_LOCKING=y
+	CONFIG_TRACE_IRQFLAGS=y
+
+... ?
+
+Anyway, how about something like this? (I can't verify myself that it even 
+fixes the warning, as I don't see it for some odd reason)
+
+
+
+
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: lockdep: avoid false positives about irq-safety
+
+Commit 403a91b1 ("percpu: allow pcpu_alloc() to be called
+with IRQs off") introduced this warning:
+
+	=========================================================
+	[ INFO: possible irq lock inversion dependency detected ]
+	2.6.32-rc5-tip-04815-g12f0f93-dirty #745
+	---------------------------------------------------------
+	hub 1-3:1.0: state 7 ports 2 chg 0000 evt 0004
+	ksoftirqd/65/199 just changed the state of lock:
+	 (pcpu_lock){..-...}, at: [<ffffffff81130e04>] free_percpu+0x38/0x104
+	but this lock took another, SOFTIRQ-unsafe lock in the past:
+	 (vmap_area_lock){+.+...}
+
+	and interrupts could create inverse lock ordering between them.
+
+This warning is bogus -- sched_init() is being called very early with IRQs
+disabled, and the irqsave/restore code paths in pcpu_alloc() are only for early
+init. The path can never be called from irq context once the early init
+finishes. Rationale for this is explained in changelog of the commit mentioned
+above.
+
+This problem can be encountered generally in any other early code running
+with IRQs off and using irqsave/irqrestore.
+
+Reported-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+--- 
+ kernel/lockdep.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 9af5672..996b395 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -2487,6 +2487,14 @@ void lockdep_trace_alloc(gfp_t gfp_mask)
  
- 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
--	alloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
-+	zalloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
- #ifdef CONFIG_SMP
- #ifdef CONFIG_NO_HZ
--	alloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
-+	zalloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
- 	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
- #endif
--	alloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
-+	zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
- #endif /* SMP */
- 
- 	perf_event_init();
-
-
+ static int mark_irqflags(struct task_struct *curr, struct held_lock *hlock)
+ {
++	/* 
++	 * This is exception similar to the might_sleep() one. 
++	 * We don't care about irq-safety of the locks this early, as
++	 * it will produce false positives (sched_init() is called with
++	 * irqs off, but needs to use irqsave/irqrestore API)
++	 */
++	if (system_state != SYSTEM_RUNNING)
++		return 1;
+ 	/*
+ 	 * If non-trylock use in a hardirq or softirq context, then
+ 	 * mark the lock as used in these contexts:
