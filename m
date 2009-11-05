@@ -1,114 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbZKEO7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757785AbZKERyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676AbZKEO7d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbZKEO7c
+	id S1757785AbZKERyg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 12:54:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757625AbZKERyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:59:32 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46443 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755837AbZKEO7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:59:31 -0500
-Date: Thu, 5 Nov 2009 06:59:33 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-Subject: Re: [net-next-2.6 PATCH RFC] TCPCT part 1d: generate Responder
-	Cookie
-Message-ID: <20091105145933.GA6770@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4AEAC763.4070200@gmail.com> <4AED86AD.6010906@gmail.com> <4AEDCD7C.2010403@gmail.com> <4AF0B0D2.4030905@gmail.com> <20091104214844.GA6714@linux.vnet.ibm.com> <4AF2C266.1010603@gmail.com>
+	Thu, 5 Nov 2009 12:54:35 -0500
+Received: from smtp4.ultrahosting.com ([74.213.175.253]:47184 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757529AbZKERyf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 12:54:35 -0500
+Date: Thu, 5 Nov 2009 10:04:01 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] show per-process swap usage via procfs
+In-Reply-To: <20091105082357.54D3.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0911051003060.25718@V090114053VZO-1>
+References: <20091104152426.eacc894f.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.1.10.0911041414560.7409@V090114053VZO-1> <20091105082357.54D3.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF2C266.1010603@gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 05, 2009 at 07:17:42AM -0500, William Allen Simpson wrote:
-> Paul E. McKenney wrote:
->> On Tue, Nov 03, 2009 at 05:38:10PM -0500, William Allen Simpson wrote:
->>> Documentation/RCU/checklist.txt #7 says:
->>>
->>>   One exception to this rule: rcu_read_lock() and rcu_read_unlock()
->>>   may be substituted for rcu_read_lock_bh() and rcu_read_unlock_bh()
->>>   in cases where local bottom halves are already known to be
->>>   disabled, for example, in irq or softirq context.  Commenting
->>>   such cases is a must, of course!  And the jury is still out on
->>>   whether the increased speed is worth it.
->> I strongly suggest using the matching primitives unless you have a
->> really strong reason not to.
-> Eric gave contrary advice.  But he also suggested (in an earlier message)
-> clearing the secrets with a timer, which could be a separate context --
-> although much later in time.
->
-> As you suggest, I'll use the _bh suffix everywhere until every i is dotted
-> and t is crossed.  Then, check for efficiency later after thorough
-> analysis by experts such as yourself.
->
-> This code will be hit on every SYN and SYNACK that has a cookie option.
-> But it's just prior to a CPU intensive sha_transform -- in comparison,
-> it's trivial.
+On Thu, 5 Nov 2009, KOSAKI Motohiro wrote:
 
-Had Eric said that this code were performance-critical, where every
-nanosecond mattered, that would certainly be good enough for me.
-Eric has excellent knowledge of the networking code, certainly much
-better than mine.  And 10Gb Ethernet is certainly a performance
-challenge, and I don't expect 40Gb Ethernet to be any easier.
+> > On Wed, 4 Nov 2009, KAMEZAWA Hiroyuki wrote:
+> >
+> > > Now, anon_rss and file_rss is counted as RSS and exported via /proc.
+> > > RSS usage is important information but one more information which
+> > > is often asked by users is "usage of swap".(user support team said.)
+> >
+> > Hmmm... Could we do some rework of the counters first so that they are per
+> > cpu?
+>
+> per-cpu swap counter?
+> It seems overkill effort....
 
-Of course, I would still argue that the use of rcu_read_lock() rather
-than rcu_read_unlock() needs to be commented.  And if this sort of
-substitution happens a lot, maybe we need a way for it to happen
-automatically.
+The other alternative is to use atomic ops which are significantly slower
+and have an impact on critical sections.
 
-							Thanx, Paul
-
->>> +			rcu_assign_pointer(tcp_secret_generating,
->>> +					   tcp_secret_secondary);
->>> +			rcu_assign_pointer(tcp_secret_retiring,
->>> +					   tcp_secret_primary);
->>> +			spin_unlock_bh(&tcp_secret_locker);
->>> +			/* call_rcu() or synchronize_rcu() not needed. */
->> Would you be willing to say why?  Are you relying on a time delay for a
->> given item to pass through tcp_secret_secondary and tcp_secret_retiring
->> or some such?  If so, how do you know that this time delay will always
->> be long enough?
->> Or are you just shuffling the data structures around, without ever
->> freeing them?  If so, is it really OK for a given reader to keep a
->> reference to a given item through the full range of shuffling, especially
->> given that it might be accesssing this concurrently with the ->expires
->> assignments above?
->> Either way, could you please expand the comment to give at least some
->> hint to the poor guy reading your code?  ;-)
-> Yes.  Just shuffling the pointers without ever freeing anything.  So,
-> there's nothing for call_rcu() to do, and nothing else to synchronize
-> (only the pointers).  This assumes that after _unlock_ any CPU cache
-> with an old pointer->expires will hit the _lock_ code, and that will
-> update *both* ->expires and the other array elements concurrently?
->
-> One of the advantages of this scheme is the new secret is initialized
-> while the old secret is still used, and the old secret can continue to
-> be verified as old packets arrive.  (I originally designed this for
-> Photuris [RFC-2522] circa 1995.)
->
-> As described in the long header given, each array element goes through
-> four (4) states.  This is handling the first state transition.  It will
-> hit at least 2 more locks, pointer updates, and unlocks before reuse.
->
-> Also, a great deal of time passes.  After being retired (and expired), it
-> will be unused for approximately 5 minutes.
->
-> All that's a bit long for a comment.
->
-> +			/*
-> +			 * The retiring data is never freed.  Instead, it is
-> +			 * replaced after later pointer updates and a quiet
-> +			 * time of approximately 5 minutes.  There is nothing
-> +			 * for call_rcu() or synchronize_rcu() to handle.
-> +			 */
->
-> Clear enough?
