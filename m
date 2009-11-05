@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751471AbZKEHDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbZKEHDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751471AbZKEHDL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 02:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZKEHDK
+	id S1752788AbZKEHDX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 02:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZKEHDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 02:03:10 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:49312 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbZKEHDJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 02:03:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RlHCh7yh/uAr3UPnd2FAl6epr0gYKaMyWOZ+fwJZCcdwZpFpgrBTYJcWi2bkc3SJDn
-         vgwFU2c+NVs7H/A4M+BmSuT05k7hjPmv3zyLxEQCQoVR7EXu47o2pJjzVbECi7cH8Hyi
-         Y5kMhylVXTkN/QoIh6xhc+MNfqzmNXqblzklU=
-MIME-Version: 1.0
-In-Reply-To: <1256797453.4362.61.camel@ben-desktop>
-References: <3a665c760910270627u784d43b8t2978731110c920a4@mail.gmail.com>
-	 <3a665c760910270723l6989539er7e820d630cce51ac@mail.gmail.com>
-	 <1256797453.4362.61.camel@ben-desktop>
-Date: Thu, 5 Nov 2009 15:03:14 +0800
-Message-ID: <3a665c760911042303p7cdbd99frfeda5a3c3cb68ccb@mail.gmail.com>
-Subject: Re: kernel panic about kernel unaligned access
-From: loody <miloody@gmail.com>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 5 Nov 2009 02:03:22 -0500
+Received: from mail.gmx.net ([213.165.64.20]:56941 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751780AbZKEHDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 02:03:21 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19nLV4TgFFnKTH4nHkX3ARTzE8HQEX6bcrOmOJq2n
+	mAbuKm41iI6b/X
+Subject: Re: UDP-U stream performance regression on 32-rc1 kernel
+From: Mike Galbraith <efault@gmx.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, alex.shi@intel.com,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1257398417.6401.27.camel@marge.simson.net>
+References: <1257220036.3819.193.camel@alexs-hp.sh.intel.com>
+	 <1257222791.16282.46.camel@ymzhang>  <20091103174531.GA14747@elte.hu>
+	 <1257299745.16282.49.camel@ymzhang>
+	 <1257336461.16163.18.camel@marge.simson.net>
+	 <1257387645.16282.66.camel@ymzhang>
+	 <1257398417.6401.27.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 05 Nov 2009 08:03:18 +0100
+Message-Id: <1257404598.6406.11.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi all:
+On Thu, 2009-11-05 at 06:20 +0100, Mike Galbraith wrote:
+> On Thu, 2009-11-05 at 10:20 +0800, Zhang, Yanmin wrote:
+> > On Wed, 2009-11-04 at 13:07 +0100, Mike Galbraith wrote:
+> 
+> > > Can you try the below, and send me 
+> > I tested it on Nehalem machine against the latest tips kernel. netperf loopback
+> > result is good and regression disappears.
+> 
+> Excellent.  Ingo has picked up a version in tip (1b9508f) which has zero
+> negative effect on my x264 testcase, and is a win for mysql+oltp through
+> the whole test spectrum.  As that may (dunno, Ingo?) now be considered a
+> regression fix, ie candidate for 32.final, testing that it does no harm
+> to your big machines would be a good thing.  (pretty please?:)
 
-2009/10/29 Ben Nizette <bn@niasdigital.com>:
-> On Tue, 2009-10-27 at 22:23 +0800, loody wrote:
->> Dear all:
->> I use kernel 2.6.18 and I get the kernel panic as below:
->
-> Very old kernel, you're unlikely to get good responses.
->
->> 1. what does "Not tainted" mean?
->
-> You haven't loaded a closed-source module, the system hasn't crashed
-> before and a few other things.  Pretty much that your system was in good
-> shape before the bug
->
->> 2. I grep the kernel and I find the above message comes from do_ade in
->> unaligned.c, If I guess correctly.
->>    but from the call trace I cannot find out who call it.
->>    who and how kernel pass the information to do_ade?
->
-> No-one calls it, it's an exception handler invoked when an unaligned
-> access is attempted.  Your question should be "on which assembler
-> instruction is the unaligned access attempted" and you can find that out
-> as below
->
->> 3. as far as i know, inode is the data structure we used to record file.
->
-> Well, its a structure which holds metadata about files, yes
->
->> From what information in the inode I can find out the file name the
->> writeback_inodes try to write?
->
-> Not with just this information; you'd need additional debug output, but
-> even then I very much doubt that information would help you
->
->> 4. take  [<87189564>] preempt_schedule+0x68/0xac for example, what
->> does "0xac" mean?
->
-> That's the symbol size. 0x68 is the offset in to preempt_schedule and
-> probably more useful for you.  With that info, your vmlinux and gdb you
-> can get the offending asm instruction.
->
-> All that said, it's such an old kernel you're unlikely to get much help
-> actually fixing the bug, you're much better off to upgrade if there's
-> any chance of it.
->
->        --Ben.
-I have one question.
-If we use mmap in usermode to map HW registers under mips machine,
-what is the proper flag I should use in mmap or open?
-Since I find the problem seems come from some application try to
-access registers by mmaping.
-appreciate your help,
-miloody
+Egad. Size XXL difference on my cheap Q6600 box
+
+git v2.6.32-rc6-26-g91d3f9b
+Socket  Message  Elapsed      Messages
+Size    Size     Time         Okay Errors   Throughput
+bytes   bytes    secs            #      #   10^6bits/sec
+
+ 65536    4096   60.00     7793073      0    4256.06
+ 65536           60.00     7780487           4249.18
+
+git v2.6.32-rc6-26-g91d3f9b + 1b9508f
+Socket  Message  Elapsed      Messages
+Size    Size     Time         Okay Errors   Throughput
+bytes   bytes    secs            #      #   10^6bits/sec
+
+ 65536    4096   60.00     15133547      0    8264.93
+ 65536           60.00     15131466           8263.80
+
+tip v2.6.32-rc6-1796-gd995f1d
+Socket  Message  Elapsed      Messages
+Size    Size     Time         Okay Errors   Throughput
+bytes   bytes    secs            #      #   10^6bits/sec
+
+ 65536    4096   60.00     13998562      0    7645.08
+ 65536           60.00     13986112           7638.28 (uhoh, tinker time.)
+
+	-Mike
+
