@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbZKESv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbZKESwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758614AbZKESv2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 13:51:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758605AbZKESv0
+	id S1758622AbZKESwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 13:52:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758569AbZKESwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 13:51:26 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:51846 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758606AbZKESvY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 13:51:24 -0500
-Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAOus8kqrRN+J/2dsb2JhbADJBJd1hD0E
-X-IronPort-AV: E=Sophos;i="4.44,687,1249257600"; 
-   d="scan'208";a="425727204"
-From: Roland Dreier <rdreier@cisco.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6 v5] Memory DLPAR Handling
-References: <4AE8ADCF.6090104@austin.ibm.com>
-	<4AE8B02C.3060706@austin.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 05 Nov 2009 10:51:27 -0800
-In-Reply-To: <4AE8B02C.3060706@austin.ibm.com> (Nathan Fontenot's message of
-	"Wed, 28 Oct 2009 15:57:16 -0500")
-Message-ID: <adapr7wbya8.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Thu, 5 Nov 2009 13:52:43 -0500
+Received: from d1.icnet.pl ([212.160.220.21]:37310 "EHLO d1.icnet.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758260AbZKESwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 13:52:42 -0500
+To: linux-omap@vger.kernel.org
+Subject: [PATCH v3] OMAP: DMA: Fix omapfb/lcdc on OMAP1510 broken when PM set
+Cc: Tony Lindgren <tony@atomide.com>, linux-fbdev-devel@lists.sourceforge.net,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Disposition: inline
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+Date: Thu, 5 Nov 2009 19:51:28 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 Nov 2009 18:51:27.0923 (UTC) FILETIME=[FB3D3830:01CA5E48]
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911051951.32020.jkrzyszt@tis.icnet.pl>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This isn't a review of this patch -- more a question out of curiousity
-about how you actually can do memory remove in practice.  Do you have
-any coordination between the platform/hypervisor and the kernel to make
-sure that a memory region you might want to remove later gets put into
-zone_movable so that there's a chance for the kernel to vacate it?  Or
-do you have some other way to coordinate or at least expose which
-regions of memory the kernel will have a chance at releasing?
+With CONFIG_PM=y, the omapfb/lcdc device on Amstrad Delta, after initially
+starting correctly, breaks with the following error messages:
 
-Thanks,
-  Roland
+omapfb omapfb: resetting (status 0xffffff96,reset count 1)
+...
+omapfb omapfb: resetting (status 0xffffff96,reset count 100)
+omapfb omapfb: too many reset attempts, giving up.
+
+Looking closer at this I have found that it had been broken almost 2 years ago
+with commit 2418996e3b100114edb2ae110d5d4acb928909d2, PM fixes for OMAP1.
+
+The definite reason for broken omapfb/lcdc behavoiur in PM mode
+appeared to be ARM_IDLECT1:IDLIF_ARM (bit 6) put into idle regardless of LCD
+DMA possibly running. The bit were set based on return value of the
+omap_dma_running() function that did not check for dedicated LCD DMA
+channel status. The patch below fixes this.
+
+Created against linux-2.6.32-rc6
+
+Tested on Amstrad Delta
+
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+
+---
+Tuesday 03 November 2009 21:10:48 Tony Lindgren wrote:
+> * Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091103 12:05]:
+> > Sorry, I've not checked for new mail before posting this one and missed
+> > your acceptance for my idea of fixing all omap1510, not only ams_delta.
+> > If there are no more comments, I'll submit v3 with cpu_is_omap1510()
+> > replacing machine_is_ams_delta().
+>
+> Sounds good to me.
+>
+> Tony
+
+--- linux-2.6.32-rc6/arch/arm/plat-omap/dma.c.orig	2009-11-03 20:37:49.000000000 +0100
++++ linux-2.6.32-rc6/arch/arm/plat-omap/dma.c	2009-11-05 19:30:39.000000000 +0100
+@@ -1108,6 +1108,14 @@ int omap_dma_running(void)
+ {
+ 	int lch;
+ 
++	/*
++	 * On OMAP1510, internal LCD controller will start the transfer
++	 * when it gets enabled, so assume DMA running if LCD enabled.
++	 */
++	if (cpu_is_omap1510())
++		if (omap_readw(0xfffec000 + 0x00) & (1 << 0))
++			return 1;
++
+ 	/* Check if LCD DMA is running */
+ 	if (cpu_is_omap16xx())
+ 		if (omap_readw(OMAP1610_DMA_LCD_CCR) & OMAP_DMA_CCR_EN)
