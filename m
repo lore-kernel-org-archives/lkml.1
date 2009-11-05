@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbZKEUVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbZKEUV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758587AbZKEUVY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 15:21:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758168AbZKEUVW
+	id S1758785AbZKEUV2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 15:21:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758631AbZKEUVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 15:21:22 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:29861 "EHLO
+	Thu, 5 Nov 2009 15:21:24 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:29877 "EHLO
 	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758503AbZKEUVR (ORCPT
+	with ESMTP id S1758587AbZKEUVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 15:21:17 -0500
-Subject: [PATCH v2 2/3] page-types: whitespace alignment
+	Thu, 5 Nov 2009 15:21:23 -0500
+Subject: [PATCH v2 3/3] page-types: exit early when invoked with -d|--describe
 To: akpm@linux-foundation.org, fengguang.wu@intel.com
 From: Alex Chiang <achiang@hp.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Date: Thu, 05 Nov 2009 13:21:21 -0700
-Message-ID: <20091105202121.25492.26616.stgit@bob.kio>
+Cc: Haicheng Li <haicheng.li@intel.com>, linux-mm@kvack.org,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Date: Thu, 05 Nov 2009 13:21:26 -0700
+Message-ID: <20091105202126.25492.84269.stgit@bob.kio>
 In-Reply-To: <20091105201846.25492.52935.stgit@bob.kio>
 References: <20091105201846.25492.52935.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -26,75 +27,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Align the output when page-type -h is invoked.
+On a system with large amount of memory (256GB), invoking page-types
+can take quite a long time, which is unreasonable considering the user
+only wants a description of the flags:
 
+	# time ./page-types -d 0x10
+	0x0000000000000010	____D_____________________________	dirty
+
+	real	0m34.285s
+	user	0m1.966s
+	sys	0m32.313s
+
+This is because we still walk the entire address range.
+
+Exiting early seems like a reasonble solution:
+
+# time ./page-types -d 0x10
+	0x0000000000000010	____D_____________________________	dirty
+
+	real	0m0.007s
+	user	0m0.001s
+	sys	0m0.005s
+
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Haicheng Li <haicheng.li@intel.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- Documentation/vm/page-types.c |   46 +++++++++++++++++++++--------------------
- 1 files changed, 23 insertions(+), 23 deletions(-)
+ Documentation/vm/page-types.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
 diff --git a/Documentation/vm/page-types.c b/Documentation/vm/page-types.c
-index a93c28e..9c09eb5 100644
+index 9c09eb5..9cf50ab 100644
 --- a/Documentation/vm/page-types.c
 +++ b/Documentation/vm/page-types.c
-@@ -673,35 +673,35 @@ static void usage(void)
- 
- 	printf(
- "page-types [options]\n"
--"            -r|--raw                  Raw mode, for kernel developers\n"
-+"            -r|--raw                   Raw mode, for kernel developers\n"
- "            -d|--describe flags        Describe flags\n"
--"            -a|--addr    addr-spec    Walk a range of pages\n"
--"            -b|--bits    bits-spec    Walk pages with specified bits\n"
--"            -p|--pid     pid          Walk process address space\n"
-+"            -a|--addr     addr-spec    Walk a range of pages\n"
-+"            -b|--bits     bits-spec    Walk pages with specified bits\n"
-+"            -p|--pid      pid          Walk process address space\n"
- #if 0 /* planned features */
--"            -f|--file    filename     Walk file address space\n"
-+"            -f|--file     filename     Walk file address space\n"
- #endif
--"            -l|--list                 Show page details in ranges\n"
--"            -L|--list-each            Show page details one by one\n"
--"            -N|--no-summary           Don't show summay info\n"
--"            -X|--hwpoison             hwpoison pages\n"
--"            -x|--unpoison             unpoison pages\n"
--"            -h|--help                 Show this usage message\n"
-+"            -l|--list                  Show page details in ranges\n"
-+"            -L|--list-each             Show page details one by one\n"
-+"            -N|--no-summary            Don't show summary info\n"
-+"            -X|--hwpoison              hwpoison pages\n"
-+"            -x|--unpoison              unpoison pages\n"
-+"            -h|--help                  Show this usage message\n"
- "flags:\n"
--"            0x10                      bitfield format, e.g.\n"
--"            anon                      bit-name, e.g.\n"
--"            0x10,anon                 comma-separated list, e.g.\n"
-+"            0x10                       bitfield format, e.g.\n"
-+"            anon                       bit-name, e.g.\n"
-+"            0x10,anon                  comma-separated list, e.g.\n"
- "addr-spec:\n"
--"            N                         one page at offset N (unit: pages)\n"
--"            N+M                       pages range from N to N+M-1\n"
--"            N,M                       pages range from N to M-1\n"
--"            N,                        pages range from N to end\n"
--"            ,M                        pages range from 0 to M-1\n"
-+"            N                          one page at offset N (unit: pages)\n"
-+"            N+M                        pages range from N to N+M-1\n"
-+"            N,M                        pages range from N to M-1\n"
-+"            N,                         pages range from N to end\n"
-+"            ,M                         pages range from 0 to M-1\n"
- "bits-spec:\n"
--"            bit1,bit2                 (flags & (bit1|bit2)) != 0\n"
--"            bit1,bit2=bit1            (flags & (bit1|bit2)) == bit1\n"
--"            bit1,~bit2                (flags & (bit1|bit2)) == bit1\n"
--"            =bit1,bit2                flags == (bit1|bit2)\n"
-+"            bit1,bit2                  (flags & (bit1|bit2)) != 0\n"
-+"            bit1,bit2=bit1             (flags & (bit1|bit2)) == bit1\n"
-+"            bit1,~bit2                 (flags & (bit1|bit2)) == bit1\n"
-+"            =bit1,bit2                 flags == (bit1|bit2)\n"
- "bit-names:\n"
- 	);
- 
+@@ -940,9 +940,8 @@ int main(int argc, char *argv[])
+ 			parse_bits_mask(optarg);
+ 			break;
+ 		case 'd':
+-			opt_no_summary = 1;
+ 			describe_flags(optarg);
+-			break;
++			exit(0);
+ 		case 'l':
+ 			opt_list = 1;
+ 			break;
 
