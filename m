@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbZKERs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbZKERrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757643AbZKERs2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 12:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbZKERs1
+	id S1757448AbZKERrk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 12:47:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZKERrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 12:48:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41400 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755299AbZKERs1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 12:48:27 -0500
-Date: Thu, 5 Nov 2009 09:47:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Michael Gilbert <michael.s.gilbert@gmail.com>,
-       Michael Buesch <mb@bu3sch.de>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
+	Thu, 5 Nov 2009 12:47:39 -0500
+Received: from bu3sch.de ([62.75.166.246]:48094 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755171AbZKERri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 12:47:38 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: CVE-2009-2584
+Date: Thu, 5 Nov 2009 18:47:33 +0100
+User-Agent: KMail/1.9.9
+Cc: Jiri Kosina <jkosina@suse.cz>,
+       Michael Gilbert <michael.s.gilbert@gmail.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+References: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com> <alpine.LFD.2.01.0911050831330.31845@localhost.localdomain> <alpine.LFD.2.01.0911050923580.31845@localhost.localdomain>
 In-Reply-To: <alpine.LFD.2.01.0911050923580.31845@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0911050945070.31845@localhost.localdomain>
-References: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com> <alpine.LRH.2.00.0911051620510.31913@twin.jikos.cz> <alpine.LFD.2.01.0911050831330.31845@localhost.localdomain> <alpine.LFD.2.01.0911050923580.31845@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911051847.36103.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 5 Nov 2009, Linus Torvalds wrote:
+On Thursday 05 November 2009 18:38:21 Linus Torvalds wrote:
+> @@ -161,14 +161,15 @@ static int options_show(struct seq_file *s, void *p)
+>  static ssize_t options_write(struct file *file, const char __user *userbuf,
+>  			     size_t count, loff_t *data)
 >  {
 > -	unsigned long val;
 > -	char buf[80];
 > +	char buf[16];
+>  
+> -	if (strncpy_from_user(buf, userbuf, sizeof(buf) - 1) < 0)
+> +	if (count >= sizeof(buf))
+> +		return -EINVAL;
+> +	if (copy_from_user(buf, userbuf, count))
+>  		return -EFAULT;
+> -	buf[count - 1] = '\0';
+> -	if (!strict_strtoul(buf, 10, &val))
+> -		gru_options = val;
+> +	buf[count] = '\0';
+> +	if (strict_strtoul(buf, 0, &gru_options))
+> +		return -EINVAL;
+>  
+>  	return count;
+>  }
+> 
+> 
 
-On third thought, this was too aggressive.
+Looks OK to me. I can't test it however, as I don't own the hardware.
 
-Using "0x%16ul" as a format on 64-bit machines is reasonable, so 19 bytes 
-of buffer is not insane (with the terminating NUL). Of course, it never 
-used to accept hex numbers, so it's not like it would have worked before, 
-but the point is that I cut down the buffer unnecessarily strictly.
-
-Can anybody see anything else wrong in that suggested fix?
-
-		Linus
+-- 
+Greetings, Michael.
