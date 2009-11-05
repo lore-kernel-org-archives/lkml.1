@@ -1,82 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbZKER4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbZKER4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758031AbZKER4L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 12:56:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbZKER4K
+	id S1758154AbZKER4i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 12:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbZKERzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 12:56:10 -0500
+	Thu, 5 Nov 2009 12:55:42 -0500
 Received: from eddie.linux-mips.org ([78.24.191.182]:45221 "EHLO
 	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757500AbZKERzn (ORCPT
+	with ESMTP id S1757412AbZKERzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 12:55:43 -0500
-Message-Id: <20091105152702.283954757@linux-mips.org>
+	Thu, 5 Nov 2009 12:55:41 -0500
+Message-Id: <20091105152702.365281887@linux-mips.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 05 Nov 2009 16:26:00 +0100
+Date: Thu, 05 Nov 2009 16:26:01 +0100
 From: Ralf Baechle <ralf@linux-mips.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/6] SPI: spi_txx9: Fix bit rate calculation
+Cc: Julia Lawall <julia@diku.dk>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 5/6] VIDEO: Correct use of request_region/request_mem_region
 References: <20091105152555.227009519@linux-mips.org>
-Content-Disposition: inline; filename=0005.patch
+Content-Disposition: inline; filename=0006.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+From: Julia Lawall <julia@diku.dk>
 
-TXx9 SPI bit rate is calculated by:
-        fBR = (spi-baseclk) / (n + 1)
-Fix calculation of min_speed_hz, max_speed_hz and n.
+Geert Uytterhoeven pointed out that in the case of drivers/video/gbefb.c,
+the problem is actually the other way around; request_mem_region should be
+used instead of request_region.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: spi-devel-general@lists.sourceforge.net
+The semantic patch that finds/fixes this problem is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@r1@
+expression start;
+@@
+
+request_region(start,...)
+
+@b1@
+expression r1.start;
+@@
+
+request_mem_region(start,...)
+
+@depends on !b1@
+expression r1.start;
+expression E;
+@@
+
+- release_mem_region
++ release_region
+  (start,E)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Cc: linux-mips@linux-mips.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
- drivers/spi/spi_txx9.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/video/gbefb.c  |    2 +-
+ drivers/video/tdfxfb.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Index: upstream-linus/drivers/spi/spi_txx9.c
+Index: upstream-linus/drivers/video/gbefb.c
 ===================================================================
---- upstream-linus.orig/drivers/spi/spi_txx9.c
-+++ upstream-linus/drivers/spi/spi_txx9.c
-@@ -29,6 +29,8 @@
+--- upstream-linus.orig/drivers/video/gbefb.c
++++ upstream-linus/drivers/video/gbefb.c
+@@ -1147,7 +1147,7 @@ static int __init gbefb_probe(struct pla
+ 	gbefb_setup(options);
+ #endif
  
- 
- #define SPI_FIFO_SIZE 4
-+#define SPI_MAX_DIVIDER 0xff	/* Max. value for SPCR1.SER */
-+#define SPI_MIN_DIVIDER 1	/* Min. value for SPCR1.SER */
- 
- #define TXx9_SPMCR		0x00
- #define TXx9_SPCR0		0x04
-@@ -193,11 +195,8 @@ static void txx9spi_work_one(struct txx9
- 
- 		if (prev_speed_hz != speed_hz
- 				|| prev_bits_per_word != bits_per_word) {
--			u32 n = (c->baseclk + speed_hz - 1) / speed_hz;
--			if (n < 1)
--				n = 1;
--			else if (n > 0xff)
--				n = 0xff;
-+			int n = DIV_ROUND_UP(c->baseclk, speed_hz) - 1;
-+			n = clamp(n, SPI_MIN_DIVIDER, SPI_MAX_DIVIDER);
- 			/* enter config mode */
- 			txx9spi_wr(c, mcr | TXx9_SPMCR_CONFIG | TXx9_SPMCR_BCLR,
- 					TXx9_SPMCR);
-@@ -370,8 +369,8 @@ static int __init txx9spi_probe(struct p
- 		goto exit;
- 	}
- 	c->baseclk = clk_get_rate(c->clk);
--	c->min_speed_hz = (c->baseclk + 0xff - 1) / 0xff;
--	c->max_speed_hz = c->baseclk;
-+	c->min_speed_hz = DIV_ROUND_UP(c->baseclk, SPI_MAX_DIVIDER + 1);
-+	c->max_speed_hz = c->baseclk / (SPI_MIN_DIVIDER + 1);
- 
- 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
- 	if (!res)
+-	if (!request_region(GBE_BASE, sizeof(struct sgi_gbe), "GBE")) {
++	if (!request_mem_region(GBE_BASE, sizeof(struct sgi_gbe), "GBE")) {
+ 		printk(KERN_ERR "gbefb: couldn't reserve mmio region\n");
+ 		ret = -EBUSY;
+ 		goto out_release_framebuffer;
+Index: upstream-linus/drivers/video/tdfxfb.c
+===================================================================
+--- upstream-linus.orig/drivers/video/tdfxfb.c
++++ upstream-linus/drivers/video/tdfxfb.c
+@@ -1571,8 +1571,8 @@ out_err_iobase:
+ 	if (default_par->mtrr_handle >= 0)
+ 		mtrr_del(default_par->mtrr_handle, info->fix.smem_start,
+ 			 info->fix.smem_len);
+-	release_mem_region(pci_resource_start(pdev, 2),
+-			   pci_resource_len(pdev, 2));
++	release_region(pci_resource_start(pdev, 2),
++		       pci_resource_len(pdev, 2));
+ out_err_screenbase:
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
 
 
