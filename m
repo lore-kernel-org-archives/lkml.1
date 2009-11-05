@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751550AbZKEIoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbZKEI5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751550AbZKEIoW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 03:44:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZKEIoV
+	id S1752131AbZKEI5X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 03:57:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZKEI5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 03:44:21 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:58272 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751092AbZKEIoU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 03:44:20 -0500
-Date: Thu, 5 Nov 2009 09:45:37 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: Arnaud Patard <apatard@mandriva.com>, linux-mips@linux-mips.org,
-       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
-       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
-       liujl@lemote.com
-Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
-Message-ID: <20091105084537.GA12582@linux-mips.org>
-References: <cover.1257325319.git.wuzhangjin@gmail.com> <a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com> <m3iqdqtwgk.fsf@anduin.mandriva.com> <1257332652.8716.5.camel@falcon.domain.org> <20091104111957.GA13549@linux-mips.org> <1257348226.16033.4.camel@falcon.domain.org> <20091104201520.GA26504@linux-mips.org> <1257385176.16033.17.camel@falcon.domain.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257385176.16033.17.camel@falcon.domain.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 5 Nov 2009 03:57:22 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45440 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751260AbZKEI5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 03:57:21 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19z2OUe45hzyOF8gomLiokJiqcFuao65qFwkfgi9C
+	8M9NLJ6uFgoKe0
+Subject: Re: UDP-U stream performance regression on 32-rc1 kernel
+From: Mike Galbraith <efault@gmx.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, alex.shi@intel.com,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1257404598.6406.11.camel@marge.simson.net>
+References: <1257220036.3819.193.camel@alexs-hp.sh.intel.com>
+	 <1257222791.16282.46.camel@ymzhang>  <20091103174531.GA14747@elte.hu>
+	 <1257299745.16282.49.camel@ymzhang>
+	 <1257336461.16163.18.camel@marge.simson.net>
+	 <1257387645.16282.66.camel@ymzhang>
+	 <1257398417.6401.27.camel@marge.simson.net>
+	 <1257404598.6406.11.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 05 Nov 2009 09:57:18 +0100
+Message-Id: <1257411438.6497.13.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 05, 2009 at 09:39:36AM +0800, Wu Zhangjin wrote:
-
-> > > > We have other systems where 32-bit kernel support is just remarkably ugly.
-> > > > We've dropped 32-bit support for the SGI IP32 aka O2 - nobody seems to even
-> > > > have really noticed that.  The Sibyte systems would be good candidates to do
-> > > > the same as accesses to outside the 32-bit address space are needed very
-> > > > frequently.
-> > > > 
-> > > 
-> > > So, we really remove the 32bit support?
-> > > 
-> > > 1312 config CPU_LOONGSON2
-> > > 1313         bool
-> > > 1314         select CPU_SUPPORTS_32BIT_KERNEL  --> remove it?
-> > > 1315         select CPU_SUPPORTS_64BIT_KERNEL
-> > > 1316         select CPU_SUPPORTS_HIGHMEM
-> > > 
-> > > If you all agree, I will send a new patch to remove the above line and
-> > > resend the corresponding patches without 32bit support, and removed the
-> > > relative CONFIG_64BIT lines in the patches too.
+On Thu, 2009-11-05 at 08:03 +0100, Mike Galbraith wrote:
+> On Thu, 2009-11-05 at 06:20 +0100, Mike Galbraith wrote:
+> > On Thu, 2009-11-05 at 10:20 +0800, Zhang, Yanmin wrote:
+> > > On Wed, 2009-11-04 at 13:07 +0100, Mike Galbraith wrote:
 > > 
-> > If you need highmem with 32-bit (and with Loongson systems I assume that
-> > virtually all systems will have enough RAM to require that) then you're
-> > almost certainly better off going 64-bit.  Highmem takes a performance toll
-> > which for some workloads can be very significant.  And while highmem won't
-> > go away any time soon it's nothing kernel performance is being tuned for,
-> > so it's only going to get worse into the future so I'd not waste time on
-> > highmem unless I have to.
+> > > > Can you try the below, and send me 
+> > > I tested it on Nehalem machine against the latest tips kernel. netperf loopback
+> > > result is good and regression disappears.
 > > 
+> > Excellent.  Ingo has picked up a version in tip (1b9508f) which has zero
+> > negative effect on my x264 testcase, and is a win for mysql+oltp through
+> > the whole test spectrum.  As that may (dunno, Ingo?) now be considered a
+> > regression fix, ie candidate for 32.final, testing that it does no harm
+> > to your big machines would be a good thing.  (pretty please?:)
 > 
-> What I have mentioned: "perhaps some guys need the 32bit version" here
-> means, perhaps some embedded systems without enough memory and enough
-> storage space may need the 32bit version, they not need highmem and
-> also, the 32bit version will save some storage space for them. and I
-> have used the 32bit version on my box and notebook(of course, only for
-> experiments), no obvious problems.
+> Egad. Size XXL difference on my cheap Q6600 box
+
+Ingo, ignore my "eek!" reaction (for now).
+
+I'm trying to test the pull lineup with as many benchmarks as I can fit
+in, but methinks I'm screwing this one (unfamiliar) up :-/
+
+> git v2.6.32-rc6-26-g91d3f9b
+> Socket  Message  Elapsed      Messages
+> Size    Size     Time         Okay Errors   Throughput
+> bytes   bytes    secs            #      #   10^6bits/sec
 > 
-> Reserve the 32bit version as an choice and select 64bit by default in
-> the default config file?
+>  65536    4096   60.00     7793073      0    4256.06
+>  65536           60.00     7780487           4249.18
+> 
+> git v2.6.32-rc6-26-g91d3f9b + 1b9508f
+> Socket  Message  Elapsed      Messages
+> Size    Size     Time         Okay Errors   Throughput
+> bytes   bytes    secs            #      #   10^6bits/sec
+> 
+>  65536    4096   60.00     15133547      0    8264.93
+>  65536           60.00     15131466           8263.80
+> 
+> tip v2.6.32-rc6-1796-gd995f1d
+> Socket  Message  Elapsed      Messages
+> Size    Size     Time         Okay Errors   Throughput
+> bytes   bytes    secs            #      #   10^6bits/sec
+> 
+>  65536    4096   60.00     13998562      0    7645.08
+>  65536           60.00     13986112           7638.28 (uhoh, tinker time.)
+> 
+> 	-Mike
 
-No problem - I was just expressing my expressing my experiences on the
-usefulness of supporting both settings.  One usually tends up favored, the
-other little used.
-
-  Ralf
