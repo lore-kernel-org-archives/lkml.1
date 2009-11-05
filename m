@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZKERcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbZKERRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbZKERcE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 12:32:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZKERcE
+	id S1755991AbZKERRJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 12:17:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZKERRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 12:32:04 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:33530 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751903AbZKERcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 12:32:03 -0500
-X-Greylist: delayed 1129 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Nov 2009 12:32:03 EST
-Message-ID: <4AF307A6.2010101@acm.org>
-Date: Thu, 05 Nov 2009 10:13:10 -0700
-From: Zan Lynx <zlynx@acm.org>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
+	Thu, 5 Nov 2009 12:17:08 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:35062 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751443AbZKERRI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 12:17:08 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: linux-next: Tree for November 5
+Date: Thu, 5 Nov 2009 11:17:11 -0600
+User-Agent: KMail/1.9.10
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+References: <20091105190426.c9cadada.sfr@canb.auug.org.au> <4AF2AB23.9000907@in.ibm.com> <200911050931.04838.bjorn.helgaas@hp.com>
+In-Reply-To: <200911050931.04838.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: linux-kernel@vger.kernel.org, mk@cm4all.com
-Subject: Re: [PATCH] pipe: don't block after data has been written
-References: <20091105153147.27473.19570.stgit@woodpecker.roonstrasse.net> <4AF2FD04.4030306@gmail.com> <20091105163603.GA4089@squirrel.roonstrasse.net> <4AF2FF5A.6050205@gmail.com>
-In-Reply-To: <4AF2FF5A.6050205@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20091105/1N65tX-0001Pm-6S-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911051017.12135.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/5/09 9:37 AM, Eric Dumazet wrote:
-> Max Kellermann a écrit :
->> On 2009/11/05 17:27, Eric Dumazet<eric.dumazet@gmail.com>  wrote:
->>> Your patch breaks many programs, that dont use poll()/select()
->>>
->>> char result[1000000];
->>> main()
->>> {
->>> 	computethings();
->>> 	write(1, buffer, 1000000);
->>> }
->>
->> Your code does not check the return value of write().  This is a bug.
->>
->
-> Welcome to real world.
+On Thursday 05 November 2009 09:31:04 am Bjorn Helgaas wrote:
+> On Thursday 05 November 2009 03:38:27 am Sachin Sant wrote:
+> > Today's next tree fails to build on i386 with
+> > 
+> > arch/x86/pci/built-in.o: In function `align_resource':
+> > arch/x86/pci/acpi.c:82: undefined reference to `__udivdi3'
+> > 
+> > The code in question was added by commit
+> > 03db42adfeeabe856dbb6894dd3aaff55838330a.
+> 
+> I'll look into this.  I did build and test a 32-bit x86 kernel, but
+> I built it on an x86_64 box using "linux32 make ...", which looks like
+> it used gcc 4.3.2.
 
-Yes in the real world there are bugs. The decision is to choose which 
-bug you are going to expose. If it was my decision I would make the code 
-work as documented, as Max wants to do.
+Can you try the patch below, please?
 
-I remember many years ago needing to fix some inetd-called server code 
-that got unexpected partial writes on blocking sockets. It was either 
-Solaris or HP/UX. So this is nothing new.
 
-In fact I think that Linux will already do short writes if a signal is 
-received without restart set for the handler. I found several bugs last 
-year in glibc and libstdc++ fwrite and iostreams regarding that.
--- 
-Zan Lynx
-zlynx@acm.org
+commit 00f16f0a2f4826eadec0565e4b454ab8bc7824cc
+Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date:   Thu Nov 5 10:03:57 2009 -0700
 
-"Knowledge is Power.  Power Corrupts.  Study Hard.  Be Evil."
+    x86/PCI: remove 64-bit division
+    
+    The roundup() caused a build error (undefined reference to `__udivdi3').
+    We're aligning to power-of-two boundaries, so it's simpler to just use
+    ALIGN() anyway, which avoids the division.
+    
+    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+index 8ddf4f4..959e548 100644
+--- a/arch/x86/pci/acpi.c
++++ b/arch/x86/pci/acpi.c
+@@ -69,17 +69,17 @@ align_resource(struct acpi_device *bridge, struct resource *res)
+ 	 * that claim this address space have starting alignment and length
+ 	 * constraints, so fix any obvious BIOS goofs.
+ 	 */
+-	if (res->start & (align - 1)) {
++	if (!IS_ALIGNED(res->start, align)) {
+ 		dev_printk(KERN_DEBUG, &bridge->dev,
+ 			   "host bridge window %pR invalid; "
+ 			   "aligning start to %d-byte boundary\n", res, align);
+ 		res->start &= ~(align - 1);
+ 	}
+-	if ((res->end + 1) & (align - 1)) {
++	if (!IS_ALIGNED(res->end + 1, align)) {
+ 		dev_printk(KERN_DEBUG, &bridge->dev,
+ 			   "host bridge window %pR invalid; "
+ 			   "aligning end to %d-byte boundary\n", res, align);
+-		res->end = roundup(res->end, align) - 1;
++		res->end = ALIGN(res->end, align) - 1;
+ 	}
+ }
+ 
