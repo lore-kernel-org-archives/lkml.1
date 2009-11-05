@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932881AbZKEAbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbZKEAcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932881AbZKEAbr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 19:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932479AbZKEAbp
+	id S932886AbZKEAcS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 19:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbZKEAcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 19:31:45 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:50498 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932220AbZKEAbn (ORCPT
+	Wed, 4 Nov 2009 19:32:15 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57190 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754762AbZKEAcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 19:31:43 -0500
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu, linux-kernel@vger.kernel.org
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, fweisbec@gmail.com,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH v5 6/7] Modyfing perf.c for subcommand 'bench'
-Date: Thu,  5 Nov 2009 09:31:36 +0900
-Message-Id: <1257381097-4743-7-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1257381097-4743-6-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1257381097-4743-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257381097-4743-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257381097-4743-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257381097-4743-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257381097-4743-5-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1257381097-4743-6-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	Wed, 4 Nov 2009 19:32:12 -0500
+Date: Wed, 4 Nov 2009 22:31:36 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jarod Wilson <jarod@wilsonet.com>
+Cc: Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [PATCH 0/3 v2] linux infrared remote control drivers
+Message-ID: <20091104223136.62cfc791@pedra.chehab.org>
+In-Reply-To: <C5A8E7EC-81D6-49AA-A65F-9F5D3DED1690@wilsonet.com>
+References: <200910200956.33391.jarod@redhat.com>
+	<C5A8E7EC-81D6-49AA-A65F-9F5D3DED1690@wilsonet.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies perf.c for invoking 'bench' subcommand.
+Em Wed, 4 Nov 2009 17:56:31 -0500
+Jarod Wilson <jarod@wilsonet.com> escreveu:
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
----
- tools/perf/perf.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> On Oct 20, 2009, at 9:56 AM, Jarod Wilson wrote:
+> 
+> > This here is a second go at submitting linux infrared remote control
+> > (lirc) drivers for kernel inclusion, with a much smaller patch set  
+> > that
+> > includes only the core lirc driver and two device drivers, all three  
+> > of
+> > which have been heavily updated since the last submission, based on
+> > feedback received.
+> 
+> Hm. Submitting this while the vast majority of people who might review  
+> it were at the Japan Linux Symposium seems like it might have been a  
+> bad idea. 
 
-diff --git a/tools/perf/perf.c b/tools/perf/perf.c
-index 9cafe54..5877b01 100644
---- a/tools/perf/perf.c
-+++ b/tools/perf/perf.c
-@@ -296,6 +296,7 @@ static void handle_internal_command(int argc, const char **argv)
- 		{ "trace", cmd_trace, 0 },
- 		{ "sched", cmd_sched, 0 },
- 		{ "probe", cmd_probe, 0 },
-+		{ "bench", cmd_bench, 0 },
- 	};
- 	unsigned int i;
- 	static const char ext[] = STRIP_EXTENSION;
--- 
-1.6.5.2
+True :) Such long trips generally affects the week before (to finish some
+pending stuff before traveling) and the week after, where we have a big
+backlog to handle.
 
+> Or does no feedback mean its all good and ready to be  
+> merged? ;)
+
+They are on my queue. I was handling a long pile of patches for the existing
+drivers during last week. I intend to send the fixes upstream during this week,
+and then going to analyze the lirc patches.
+
+It would be wonderful to get also some feedback from the event/input people.
+
+Cheers,
+Mauro
