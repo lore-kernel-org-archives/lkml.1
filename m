@@ -1,255 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbZKEQsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbZKEQx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbZKEQsd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 11:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbZKEQsc
+	id S1757494AbZKEQx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 11:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbZKEQx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 11:48:32 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:58751 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754450AbZKEQsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 11:48:31 -0500
-Date: Thu, 5 Nov 2009 16:48:32 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Frans Pop <elendil@planet.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 3/3] vmscan: Force kswapd to take notice faster when
-	high-order watermarks are being hit (data on latencies available)
-Message-ID: <20091105164832.GB25926@csn.ul.ie>
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <200911040305.59352.elendil@planet.nl> <20091104154853.GM22046@csn.ul.ie> <200911042157.25020.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200911042157.25020.elendil@planet.nl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 5 Nov 2009 11:53:26 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:49866 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756672AbZKEQxZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 11:53:25 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: miklos@szeredi.hu, miklos@szeredi.hu, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, dhowells@redhat.com, hch@infradead.org,
+       adilger@sun.com, mtk.manpages@gmail.com, torvalds@linux-foundation.org,
+       drepper@gmail.com, jamie@shareable.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20091105155648.4329f5b7@lxorguk.ukuu.org.uk> (message from Alan
+	Cox on Thu, 5 Nov 2009 15:56:48 +0000)
+Subject: Re: [PATCH v2 resend] vfs: new O_NODE open flag
+References: <E1N60RV-0002ed-FX@pomaz-ex.szeredi.hu>
+	<20091105131545.72b4e319@lxorguk.ukuu.org.uk>
+	<E1N63Io-000353-KX@pomaz-ex.szeredi.hu>
+	<20091105145054.11f36b35@lxorguk.ukuu.org.uk>
+	<E1N64Ch-0003C6-Rn@pomaz-ex.szeredi.hu> <20091105155648.4329f5b7@lxorguk.ukuu.org.uk>
+Message-Id: <E1N65Zt-0003L5-84@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Nov 2009 17:52:53 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 09:57:21PM +0100, Frans Pop wrote:
-> On Wednesday 04 November 2009, Mel Gorman wrote:
-> > Agreed. I'll start from scratch again trying to reproduce what you're
-> > seeing locally. I'll try breaking my network card so that it's making
-> > high-order atomics and see where I get. Machines that were previously
-> > tied up are now free so I might have a better chance.
+On Thu, 5 Nov 2009, Alan Cox wrote:
+> > > Fortunately you can patch it by hand.
+> > 
+> > How do you patch it by hand?
 > 
-> Hmmm. IMO you're looking at this from the wrong side. You don't need to 
-> break your network card because the SKB problems are only the *result* of 
-> the change, not the *cause*.
+> I find "joe" quite useful, some people prefer vi or emacs
+
+Emacs, please.  But I'm not quite sure anymore what we are talking
+about :)
+
+> >   "A file descriptor opened with O_NODE | O_NOACCESS may be used to
+> >    re-open the same file later with increased permissions
+> >    (e.g. O_RDWR) if the access mode allows.  This is true even if the
+> >    permissions on the path leading up to the file would prevent it"
 > 
+> Which is contrary to the assumptions made by systems designers for the
+> past forty years, so its a very dangerous assumption to break.
 
-They are a symptom though - albeit a dramatic one from the change on
-timing.
+I don't know.  I would be surprised if anyone actually found a setup
+where the current "hole" wrt proc makes any difference.
 
-> I can reproduce the desktop freeze just as easily when I'm using wired 
-> (e1000e) networking and when I'm not streaming music at all, but just 
-> loading that 3rd gitk instance.
+Take a step back and look at what would be required for this to be
+exploitable:
+
+ 1) a file which is readable and writable by some user
+ 2) but is not reachable by said user (because of permissions on path)
+ 3) a privileged process opening this file with O_RDONLY
+ 4) sending the fd it to an unprivileged process owned by user
+ 5) assuming that user won't be able to write it (even though the file
+    has write permission)
+
+If I was a system designer, I'd think of that as a very fragile
+assumption.
+
+I'm still not sure which is more harmful, leaving this "hole" as it
+is, or fixing it, thereby possibly breaking uses of this (mis)feature.
+IMO the latter is far more likely to cause problems.
+
+> What are the sematics with regards to vhangup ?
+
+The file descriptor opened with O_NODE cannot refer to a terminal.
+
+> What are the sematics of O_NODE opening a device file when the device is
+> later unloaded and a new device is created on the same node with totally
+> unrelated permissions ? [happens all the time btw]
+
+Right, that's a valid point.
+
+So re-opening a device node opened with O_NODE is not safe, I agree.
+Which means, I'll either have to remove the possibilty of re-opening
+O_NODE files through proc, or limit it to non-device nodes.
+
+I'd really prefer just limiting it, since that would leave re-opening
+a useful feature, while having minimal risk (especially if documented)
+of it causing trouble.
+
+But I can be convinced either way with sufficiently good arguments :)
+
+> > > But that isn't the case for some things - consider CIFS and other network
+> > > file systems.
+> > 
+> > Why?
 > 
+> open O_NODE
+> remote file moves
+> new one appears
+> reopen
 
-No one likes desktop freezes but it's a bit on the hard side to measure and
-reproduce with multiple kernels reliability.  However, I think I might have
-something to help this side of things out.
+Consider
 
-> So it's not
->   "I get a desktop freeze because of high order allocations from wireless
->    during swapping",
-> but
->   "during very heavy swapping on a system with an encrypted LMV volume
->    group containing (encrypted) fs and (encrytpted) swap, the swapping
->    gets into some semi-stalled state *causing* a long desktop freeze
->    and, if there also happens to be some process trying higher order
->    allocations, failures of those allocations".
+ open O_RDONLY
+ remote file moves
+ new one appears
+ fstat
+
+What's the difference?
+
+> Now what should happen and what does happen ?
+
+I'd like fstat() to work in that situation as well, but any patches in
+that direction consistently get rejected by Christoph, saying
+"CIFS/FUSE/etc are broken by design, we shouldn't care".
+
+> > of the volume does not allow any access to the user, so normal
+> > open/chdir won't work.  Yet open(O_NODE) will and so user can pin the
+> > volume.
 > 
-
-Right, so it's a related problem, but not the root cause.
-
-> I have tried to indicate this in the past, but it may have gotten lost in 
-> the complexity of the issue.
+> and without permission on the node.
 > 
-
-I got it all right, but felt that the page allocation problems were both
-compounding the problem and easier to measure.
-
-> An important clue is still IMO that during the first part of the freezes 
-> there is very little disk activity for a long time. Why would that be when 
-> the system is supposed to be swapping like hell?
+> > However, there's not all that much difference between the above and
+> > doing "stat()" on the mountpoint in a tight loop, except the former is
+> > a more reliable way to prevent unmounting.
 > 
+> That doesn't seem to be the case testing it, but its fixable trivially if
+> so and its fixable without API breakage.
 
-One possible guess is that the system as a whole decides everything is
-congested and waits for something else to make forward progress. I
-really think the people who were involved in the writeback changes need
-to get in here and help out.
+No it's not.  While a node is looked up, it will pin the mount, albeit
+for just a short time.  And permission on the inode itself are not
+required for lookup, only permissions on the parent.
 
-In the interest of getting something more empirical, I sat down from scratch
-with the view to recreating your case and I believe I was successful. I was
-able to reproduce your problem after a fashion and generate some figures -
-crucially including some latency figures.
+I think you are being paranoid here.  If the user has access to the
+path leading up the mountpoint, he might as well pin that mount.
+Permissions on the mount itself shouldn't really make a difference.
 
-I don't have a fix for this, but I'm hoping someone will follow the notes
-to recreate the reproduction case and add their own instrumentation to pin
-this down.
-
-Steps to setup and reproduce are;
-
-1. X86-64 AMD Phenom booted with mem=512MB. Expectation is any machine
-	will do as long as it's 512MB for the size of workload involved.
-
-2. A crypted work partition and swap partition was created. On my
-   own setup, I gave no passphrase so it'd be easier to activate without
-   interaction but there are multiple options. I should have taken better
-   notes but the setup goes something like this;
-
-	cryptsetup create -y crypt-partition /dev/sda5
-	pvcreate /dev/mapper/crypt-partition
-	vgcreate crypt-volume /dev/mapper/crypt-partition
-	lvcreate -L 5G -n crypt-logical crypt-volume
-	lvcreate -L 2G -n crypt-swap crypt-volume
-	mkfs -t ext3 /dev/crypt-volume/crypt-logical
-	mkswap /dev/crypt-volume/crypt-swap
-
-3. With the partition mounted on /scratch, I
-	cd /scratch
-	mkdir music
-	git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6
-
-4. On a normal partition, I expand a tarball containing test scripts available at
-	http://www.csn.ul.ie/~mel/postings/latency-20091105/latency-tests-with-results.tar.gz
-
-	There are two helper programs that run as part of the test - a fake
-	music player and a fake gitk.
-
-	The fake music player uses rsync with bandwidth limits to start
-	downloading a music folder from another machine. It's bandwidth limited
-	to simulate playing music over NFS. I believe it generates similar if
-	not exact traffic to a music player. It occured to be afterwards that
-	if one patched ogg123 to print a line when 1/10th of a seconds worth
-	of music was played, it could be used as an indirect measure of desktop
-	interactivity and help pin down pesky "audio skips" bug reports.
-
-	The fake gitk is based on observing roughly what gitk does using
-	strace. It loads all the logs into a large buffer and then builds a
-	very basic hash map of parent to child commits.  The data is stored
-	because it was insufficient just to read the logs. It had to be kept in
-	an in-memory buffer to generate swap.  It then discards the data and
-	does it over again in a loop for a small number of times so the test
-	is finite. When it processes a large number of commits, it outputs
-	a line to stdout so that stalls can be observed. Ideal behaviour is
-	that commits are read at a constant rate and latencies look flat.
-
-	Output from the two programs is piped through another script -
-	latency-output. It records how far into the test it was when the
-	line was outputted and what the latency was since the last line
-	appeared. The latency should always be very smooth. Because pipes
-	buffer IO, they are all run by expect_unbuffered which is available
-	from expect-dev on Debian at least.
-
-	All the tests are driven via run-test.sh. While the tests run,
-	it records the kern.log to track page allocation failures, records
-	nr_writeback at regular intervals and tracks Page IO and Swap IO.
-
-5. For running an actual test, a kernel is built, booted, the
-	crypted partition activated, lvm restarted,
-	/dev/crypt-volume/crypt-logical mounted on /scratch, all
-	swap partitions turned off and then the swap partition on
-	/dev/crypt-volume/crypt-swap activated. I then run run-test.sh from
-	the tarball
-
-6. I tested kernels 2.6.30, 2.6.31, 2.6.32-rc6,
-	2.6.32-rc6-revert-8aa7e847, 2.6.32-rc6-patches123 where patches123
-	are the patches in this thread and 2.6.32-rc6-patches45 which include
-	the account patch and a delay for direct reclaimers posted within
-	this thread. To simulate the wireless network card, I patched skbuff
-	on all kernels to always allocate at least order-2. However, the
-	latencies are expected to occur without order-2 atomic allocations
-	from network being involved.
-
-The tarball contains the scripts I used, generated graphs and the raw
-data. Broadly speaking;
-	2.6.30 was fine with rare fails although I did trigger page
-		allocation failures during at least one test
-	2.6.31 was mostly fine with occasional fails both ok latency-wise
-	2.6.32-rc6 sucked with multiple failures and large latencies. On
-		a few occasions, it's possible for this kernel to get into
-		a page allocation failure lockup. I left one running and
-		it was still locked up spewing out error messages 8 hours
-		later. i.e. it's possible to almost live-lock this kernel
-		using this workload
-	2.6.32-rc6-revert-8aa7e847 smooths out the latencies but is not great.
-		I suspect it made more a difference to 2.6.31 than it
-		does to mainline
-
-	2.6.32-rc6-patches123 help a little with latencies and has fewer
-	failures.
-		More importantly, the failures are hard to trigger. It was
-		actually rare for a failure to occur. It just happened to
-		occur on the final set of results I gathered so I think that's
-		important. It's also important that they bring the allocator
-		more in line with 2.6.30 behaviour. The most important
-		contribion of all was that I couldn't live-lock the kernel
-		with these patches applied but I can with the vanilla kernel.
-
-	2.6.32-rc6-patches12345 did not significantly help leading me to
-		conclude that the congestion_wait() called in the page
-		allocator is not significant.
-
-patches123 are the three patches that formed this thread originally.
-Patches 4 and 5 are the accounting patch and the one that makes kswapd sleep
-for a short interval before rechecking watermarks.
-
-On the latency front, look at
-
-http://www.csn.ul.ie/~mel/postings/latency-20091105/graphs/gitk-latency.ps
-http://www.csn.ul.ie/~mel/postings/latency-20091105/graphs/gitk-latency-smooth.ps
-
-Both graphs are based on the same data but the smooth one (plotted with
-smooth bezier in gnuplot but otherwise based on the same data) is easier
-to read for doing a direct comparison. The gitk-latency.ps is based on how
-the fourth instance of fake-gitk was running. Every X number of commits, it
-prints out how many commits it processed. It should be able to process them
-at a constant rate so the Y bars should be all levelish.  2.6.30 is mostly
-low with small spikes and 2.6.31 is not too bad.  However, mainline has
-massive stalls evidenced by the sawtooth like pattern where there were big
-delays and latencies. It can't be seen in the graph but on a few occasions,
-2.6.32-rc6 live-locked in order-2 allocation failures during the test.
-
-It's not super-clear from the IO statistics if IO was really happening or
-not during the stalls and I can't hear the disks for activity. All that can
-be seen on the graphs is the huge spike on pages queued during a period of
-proce3sses being stalled. What can be said is that this is probably very
-similar to the desktop freezes Frans sees.
-
-Because of other reports, the slight improvements on latency and the removal
-of a possible live-lock situation, I think patches 1-3 and the accounting
-patch posted in this thread should go ahead. Patches 1,2 bring allocator
-behaviour more in line with 2.6.30 and are a proper fix. Patch 3 makes a lot
-of sense when there are a lot of high-order atomics going on so that kswapd
-notices as fast as possible that it needs to do other work. The accounting
-patch monitors what's going on with patch 3.
-
-Beyond that, independent of any allocation failure problems, desktop
-latency problems have been reported and I believe this is what I'm
-seeing with the massive latencties and stalled processes. This could
-lead to some very nasty bug reports when 2.6.32 comes out.
-
-I'm going to rerun these through a profiler and see if something obvious
-pops out and if not, then bisect 2.6.31..2.6.32-rc6. It would be great
-if those involved in the IO-related changes could take a look at the
-results and try reproducing the problem monitoring what they think is
-important.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks,
+Miklos
