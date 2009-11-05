@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZKESvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbZKESv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbZKESvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 13:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758516AbZKESvS
+	id S1758614AbZKESv2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 13:51:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758605AbZKESv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 13:51:18 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:32950 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758484AbZKESvR (ORCPT
+	Thu, 5 Nov 2009 13:51:26 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:51846 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758606AbZKESvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 13:51:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=UigI1ERDREm+h3vNEM9e3XDD3qOnFLOhtd9ZkLtDVw86Tpmox9JFY4tSE+NfzHKC6k
-         vMH2CAs3VjIBx7r1HpTPk1BHvG5VBTy1lMhISjs8Bsvf7fyNyx0qk4zCgDPDo6v2tK5f
-         XCUOryHsMr+MJCZuH6M9F1dP4Ul32lbgamZ1g=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 19/41] rt2800usb: add rt2800_rf_[read,write]() wrappers
-Date: Thu, 5 Nov 2009 19:51:19 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-wireless@vger.kernel.org, Gertjan van Wingerde <gwingerde@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173418.28463.79825.sendpatchset@localhost.localdomain>
-In-Reply-To: <20091104173418.28463.79825.sendpatchset@localhost.localdomain>
+	Thu, 5 Nov 2009 13:51:24 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAOus8kqrRN+J/2dsb2JhbADJBJd1hD0E
+X-IronPort-AV: E=Sophos;i="4.44,687,1249257600"; 
+   d="scan'208";a="425727204"
+From: Roland Dreier <rdreier@cisco.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/6 v5] Memory DLPAR Handling
+References: <4AE8ADCF.6090104@austin.ibm.com>
+	<4AE8B02C.3060706@austin.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 05 Nov 2009 10:51:27 -0800
+In-Reply-To: <4AE8B02C.3060706@austin.ibm.com> (Nathan Fontenot's message of
+	"Wed, 28 Oct 2009 15:57:16 -0500")
+Message-ID: <adapr7wbya8.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911051951.19563.IvDoorn@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 05 Nov 2009 18:51:27.0923 (UTC) FILETIME=[FB3D3830:01CA5E48]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 November 2009, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] rt2800usb: add rt2800_rf_[read,write]() wrappers
-> 
-> Part of preparations for later code unification.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+This isn't a review of this patch -- more a question out of curiousity
+about how you actually can do memory remove in practice.  Do you have
+any coordination between the platform/hypervisor and the kernel to make
+sure that a memory region you might want to remove later gets put into
+zone_movable so that there's a chance for the kernel to vacate it?  Or
+do you have some other way to coordinate or at least expose which
+regions of memory the kernel will have a chance at releasing?
 
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
-
+Thanks,
+  Roland
