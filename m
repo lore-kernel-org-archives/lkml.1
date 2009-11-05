@@ -1,70 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbZKETUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbZKETUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758704AbZKETUB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 14:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758574AbZKETUB
+	id S1758759AbZKETUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 14:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbZKETUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 14:20:01 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36600 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758438AbZKETUA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 14:20:00 -0500
-Date: Thu, 5 Nov 2009 20:19:52 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: Please consider reverting
-	7d930bc33653d5592dc386a76a38f39c2e962344
-Message-ID: <20091105191951.GC1392@ucw.cz>
-References: <20091103053156.GA3212@core.coreip.homeip.net> <20091102.224957.32364226.davem@davemloft.net> <20091103065238.GE3212@core.coreip.homeip.net> <1257232587.3420.55.camel@localhost.localdomain> <1257234299.28469.25.camel@johannes.local> <20091103082201.GG3212@core.coreip.homeip.net> <1257237061.28469.43.camel@johannes.local> <20091103084744.GH3212@core.coreip.homeip.net> <1257238623.28469.47.camel@johannes.local> <1257262187.3420.73.camel@localhost.localdomain>
+	Thu, 5 Nov 2009 14:20:40 -0500
+Received: from www.tglx.de ([62.245.132.106]:51897 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758683AbZKETUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 14:20:40 -0500
+Date: Thu, 5 Nov 2009 20:20:32 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Valdis.Kletnieks@vt.edu
+cc: Andrew Morton <akpm@linux-foundation.org>, Darren Hart <dvhltc@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.32-rc5-mmotm1101 - unkillable processes stuck in futex.
+In-Reply-To: <5906.1257443268@turing-police.cc.vt.edu>
+Message-ID: <alpine.LFD.2.00.0911052000140.12138@localhost.localdomain>
+References: <5906.1257443268@turing-police.cc.vt.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257262187.3420.73.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-11-04 00:29:47, Marcel Holtmann wrote:
-> Hi Johannes,
-> 
-> > > > I just think that it's a matter of courtesy that should be independent
-> > > > from the release cycle to ask the author/maintainer by default, not as a
-> > > > second thought ("unless [...] have other solution"). You can always CC
-> > > > Linus and ask him to revert if you don't get a response.
-> > > > 
-> > > > What's wrong with that? It doesn't actually delay the action, but it
-> > > > makes the discussion much more friendly and cooperative instead of
-> > > > giving the author and maintainer the feeling that their opinion only
-> > > > matters as a second thought.
-> > > > 
-> > > 
-> > > I think you are reading too much into who was addressed directly and who
-> > > was "only" CCed... 
-> > 
-> > Maybe. But it seems to be happening pretty often recently that people
-> > first ask for a revert and then for a fix, ignoring any thought that
-> > might have gone into a particular commit...
-> 
-> I have to agree here. It happens why too often lately. And this needs to
-> stop. Otherwise why bother with subsystem maintainers? Just send
-> everything to Linus directly and have him to review every line of code.
-> 
-> Dmitry, this is not against you, but the proper way would have been to
-> just mail linux-wireless about it and you would have gotten the same
-> response to it than you got by including Linus and LKML. This blind CC
-> to LKML is not helpful. It starts confusion and just increases the load
+On Thu, 5 Nov 2009, Valdis.Kletnieks@vt.edu wrote:
 
-Yes, lkml cc *is* helpful, as he's probably not the only one hitting
-that problem.
-								Pavel
+> (Hmm.. I seem to be on a roll on this -mmotm, breaking all sorts of stuff.. :)
+> 
+> Am cc'ing Thomas and Darren because their names were attached to commits in
+> the origin.patch that touched futex.c
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Looks like you are hitting the bug we fixed last week. 
+
+Thanks,
+
+	tglx
+---
+commit 11df6dddcbc38affb7473aad3d962baf8414a947
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Wed Oct 28 20:26:48 2009 +0100
+
+    futex: Fix spurious wakeup for requeue_pi really
+    
+    The requeue_pi path doesn't use unqueue_me() (and the racy lock_ptr ==
+    NULL test) nor does it use the wake_list of futex_wake() which where
+    the reason for commit 41890f2 (futex: Handle spurious wake up)
+    
+    See debugging discussing on LKML Message-ID: <4AD4080C.20703@us.ibm.com>
+    
+    The changes in this fix to the wait_requeue_pi path were considered to
+    be a likely unecessary, but harmless safety net. But it turns out that
+    due to the fact that for unknown $@#!*( reasons EWOULDBLOCK is defined
+    as EAGAIN we built an endless loop in the code path which returns
+    correctly EWOULDBLOCK.
+    
+    Spurious wakeups in wait_requeue_pi code path are unlikely so we do
+    the easy solution and return EWOULDBLOCK^WEAGAIN to user space and let
+    it deal with the spurious wakeup.
+    
+    Cc: Darren Hart <dvhltc@us.ibm.com>
+    Cc: Peter Zijlstra <peterz@infradead.org>
+    Cc: Eric Dumazet <eric.dumazet@gmail.com>
+    Cc: John Stultz <johnstul@linux.vnet.ibm.com>
+    Cc: Dinakar Guniguntala <dino@in.ibm.com>
+    LKML-Reference: <4AE23C74.1090502@us.ibm.com>
+    Cc: stable@kernel.org
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 642f3bb..fb65e82 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -2127,7 +2127,7 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
+ 		plist_del(&q->list, &q->list.plist);
+ 
+ 		/* Handle spurious wakeups gracefully */
+-		ret = -EAGAIN;
++		ret = -EWOULDBLOCK;
+ 		if (timeout && !timeout->task)
+ 			ret = -ETIMEDOUT;
+ 		else if (signal_pending(current))
+@@ -2208,7 +2208,6 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
+ 	debug_rt_mutex_init_waiter(&rt_waiter);
+ 	rt_waiter.task = NULL;
+ 
+-retry:
+ 	key2 = FUTEX_KEY_INIT;
+ 	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
+ 	if (unlikely(ret != 0))
+@@ -2303,9 +2302,6 @@ out_put_keys:
+ out_key2:
+ 	put_futex_key(fshared, &key2);
+ 
+-	/* Spurious wakeup ? */
+-	if (ret == -EAGAIN)
+-		goto retry;
+ out:
+ 	if (to) {
+ 		hrtimer_cancel(&to->timer);
