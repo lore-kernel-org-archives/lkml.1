@@ -1,89 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbZKEPhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZKEPtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbZKEPhn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 10:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbZKEPhm
+	id S1756683AbZKEPtU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 10:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbZKEPtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 10:37:42 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:64112 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbZKEPhm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 10:37:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZONOOLxKx1P4bqHXBenEaAWfy50S5xL7yCXRJSzYQDbuScLtXAHo83SMhUhKa+2wvT
-         ezluHaDjPajW0F+XsnWMP/UWwk8UhrRt6As/su99fNDlY3oJJYlhFIpG9R8RkxUqxnBq
-         q961+GE6FhFqufvenyUVMq+62+e0EERhUrBsg=
-Date: Thu, 5 Nov 2009 16:37:42 +0100
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-To: dimm <dmitry.adamushko@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [ RFC, PATCH - 1/2, v2 ] x86-microcode: refactor microcode
- output messages
-Message-ID: <20091105153742.GA18592@alberich.amd.com>
-References: <1257192496.5941.8.camel@dimm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257192496.5941.8.camel@dimm>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 5 Nov 2009 10:49:19 -0500
+Received: from nox.protox.org ([88.191.38.29]:48250 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756482AbZKEPtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 10:49:18 -0500
+Subject: RFC: TTM
+From: Jerome Glisse <glisse@freedesktop.org>
+To: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Cc: thomas@shipmail.org, bskeggs@redhat.com, Dave Airlie <airlied@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 16:48:44 +0100
+Message-Id: <1257436124.6064.64.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patches don't properly work here.
+Hi,
 
-(1) For instance I got following log entries when doing
-    suspend/resume, doing CPU offline/online test and reloading the
-    module:
+I would like to do some modification for 2.6.33, so i figure it's good
+time to talk about them. I have 2 aims :
+1) add flexibility to bo placement
+2) simplify bo move code
+3) avoid sub optimal move scenario
+4) Allow support of GPU with unmappable memory
 
-  microcode: original microcode versions...
-  microcode: CPU0-3: patch_level=0x1000065
+1) i think the core idea is to take memory placement table as
+an argument rather than having one static table. Here are the API
+change (code change is pretty straight forward):
 
+        int ttm_buffer_object_validate(struct ttm_buffer_object *bo,
+                                       uint32_t proposed_placement,
+                                       uint32_t *mem_type_prio,
+                                       uint32_t num_mem_type_prio,
+                                       bool interruptible, bool no_wait)
 
-  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-  ...
-  microcode: CPU0-1,3: patch_level=0x1000083
+        int ttm_bo_move_buffer(struct ttm_buffer_object *bo,
+			       uint32_t proposed_placement,
+                               uint32_t *mem_type_prio,
+                               uint32_t num_mem_type_prio,
+	                       bool interruptible, bool no_wait);
+        
+        int ttm_bo_mem_space(struct ttm_buffer_object *bo,
+                             uint32_t proposed_placement,
+                             struct ttm_mem_reg *mem,
+                             uint32_t *mem_type_prio,
+                             uint32_t num_mem_type_prio,
+                             bool interruptible, bool no_wait);
 
-  microcode: CPU2-3: patch_level=0x1000065
-
-  Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
-
-The patch levels are:
-
-  # for i in `seq 0 3`; do lsmsr -c $i PATCH_LEVEL; done
-  PATCH_LEVEL          = 0x0000000001000083
-  PATCH_LEVEL          = 0x0000000001000083
-  PATCH_LEVEL          = 0x0000000001000065
-  PATCH_LEVEL          = 0x0000000001000065
-
-(2) During suspend/resume the ucode is not updated:
-
-  hadburg linux # for i in `seq 0 3`; do lsmsr -c $i PATCH_LEVEL; done
-  PATCH_LEVEL          = 0x0000000001000083
-  PATCH_LEVEL          = 0x0000000001000083
-  PATCH_LEVEL          = 0x0000000001000083
-  PATCH_LEVEL          = 0x0000000001000083
-  hadburg linux # pm-suspend
-  hadburg linux # for i in `seq 0 3`; do lsmsr -c $i PATCH_LEVEL; done
-  PATCH_LEVEL          = 0x0000000001000065
-  PATCH_LEVEL          = 0x0000000001000065
-  PATCH_LEVEL          = 0x0000000001000065
-  PATCH_LEVEL          = 0x0000000001000065
+Drive conversion in first pass could be as easy as supplying the current
+fixed table. Then driver can take advantage of this feature. For
+instance a big texture can have such priority tables: [vram, gart],
+while a small texture or a temporary one or vertex buffer could have
+[gart, vram].
 
 
-That used to work w/o your patches. Didn't have time to look why this
-is now failing. You've changed mc_cpu_callback() -- most likely that
-is causing this regression.
+2 & 3 can be achieve by the following change
+      New driver callback :
+          - bo_move
+          - mem_copy
+      Remove the old move callback
+All core ttm replace call to ttm_bo_move_buffer by a driver callback to
+bo_move. Driver bo_move callback should then call ttm_bo_move_buffer
+several time until achieving the wanted result. Example of a bo_move
+callback :
+int radeon_bo_move(struct ttm_buffer_object *bo,
+                   uint32_t proposed_placement,
+                   uint32_t *mem_type_prio,
+                   uint32_t num_mem_type_prio,
+                   bool interruptible, bool no_wait)
+{
+	int ret;
+
+	if (new|old.type == VRAM && new|old.type == SYSTEM) {
+	        ret = ttm_bo_move_buffer(bo, GTT, ...)
+        }
+	ret = ttm_bo_move_buffer(bo, proposed_placement, ...)
+}
+
+The mem_copy is just their to copy data btw 2 valid gpu address.
+This change would simplify quite a bit the driver code while not
+needing much change to ttm :
+        -ttm_bo_handle_move_mem need to call mem_copy and 
+         ttm_bo_move_accel_cleanup
+	-evict path need to be adapted to use the driver callback
+         bo_move
+	-s/ttm_bo_move/driver->bo_move
+
+Beside simplifying driver code it allows to kill unoptimal pattern.
+For instance nowadays on radeon when we get move a BO from VRAM to
+system here is what happen (evil AGP case) :
+	-ttm_bo_handle_move_mem allocate ttm for system, cached
+         memory
+	        -radeon move callback changes the memory to uncached
+	         allocate tmp mem block in GTT to do the copy cleanup
+                 its mess
+
+New scheme:
+	-call radeon move_bo
+		-call ttm_bo_handle_move_mem VRAM->GTT which allocate
+                 uncached memory for ttm and thus can use pool allocator
+		 also ttm_bo_handle_move_mem now do the cleanup
+                -call ttm_bo_handle_move_mem GTT->SYSTEM call
+                 ttm_bo_move_ttm and then ttm_bo_handle_move_mem
+Less code in the driver and not that much more in the ttm, also if we
+ever have to support a gpu with bigger move dependency chain it would
+be a lot easier with this scheme. For instance a GPU with VRAM0, VRAM1
+and GTT where VRAM1 can only communicate with VRAM0, and VRAM0 can
+communicate with VRAM1 & GTT.
 
 
-Regards,
-Andreas
+4) haven't looked much at the code for this one thus my solution might
+not be doable. TTM would have man->io_size != man->size. TTM would
+evict|move buffer to a somewhere CPU can access if userspace calls mmap
+or read/write on the buffer. TTM would also need a new flag to force
+placement in visible area for some buffer (like scanout). Driver would
+be responsible to pass some kind of hint to ttm to only place buffer
+with unfrequent CPU access into the unvisible area.
+
+
+Thomas what's your feeling on those change ? I plan to do 3 patches, one
+for the priority stuff, one for changing the move path and last one for
+the unvisible memory. These would need driver update but i think beside
+radeon, nouveau and new poulsbo driver there isn't much user of TTM
+nowadays.
+
+Ben what's your thought on those change ? I don't think it would be too
+much work for nouveau driver. I will have a look but i suspect second
+patch would allow similar simplification in nouveau as in radeon.
+
+Cheers,
+Jerome
+
