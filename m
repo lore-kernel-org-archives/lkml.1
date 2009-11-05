@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbZKESlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbZKESlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758488AbZKESlp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 13:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbZKESlo
+	id S1758492AbZKESlr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 13:41:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbZKESlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 13:41:44 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:53580 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758380AbZKESlm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 13:41:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=LU34f6eyUwqDUKi5DZLuX7nvmfFXKZg9uCC1H/JLpa6dsGAI0SOqQtEfUBv2gvnbY2
-         /ofWZ+HJmzvOyqYUVtoElSpAgijlwTpBpAzihbpKZ9ycd8NIynJq9hoW+4lsVTQ6WEQv
-         vek1uPbBMWxzpPXQNJ3kUhpwp604s3KVB/29I=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 05/41] rt2800pci: fix comment about register access
-Date: Thu, 5 Nov 2009 19:41:43 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-wireless@vger.kernel.org, Gertjan van Wingerde <gwingerde@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173232.28463.47998.sendpatchset@localhost.localdomain>
-In-Reply-To: <20091104173232.28463.47998.sendpatchset@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Nov 2009 13:41:45 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:46888 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758475AbZKESln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 13:41:43 -0500
+Date: Thu, 5 Nov 2009 12:41:44 -0600
+From: Jack Steiner <steiner@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michael Buesch <mb@bu3sch.de>, Jiri Kosina <jkosina@suse.cz>,
+       Michael Gilbert <michael.s.gilbert@gmail.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: CVE-2009-2584
+Message-ID: <20091105184144.GA19372@sgi.com>
+References: <20091104170542.e40b12ec.michael.s.gilbert@gmail.com> <alpine.LFD.2.01.0911050831330.31845@localhost.localdomain> <alpine.LFD.2.01.0911050923580.31845@localhost.localdomain> <200911051847.36103.mb@bu3sch.de> <20091105181628.GA2239@sgi.com> <alpine.LFD.2.01.0911051021320.31845@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200911051941.44268.IvDoorn@gmail.com>
+In-Reply-To: <alpine.LFD.2.01.0911051021320.31845@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 November 2009, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] rt2800pci: fix comment about register access
+On Thu, Nov 05, 2009 at 10:22:43AM -0800, Linus Torvalds wrote:
 > 
-> Registers used for indirect BBP and RF registers access are
-> respectively BBPCSR and RFCSR, also make it clear that all CSR
-> registers access goes through rt2x00pci_register_[read,write]()
-> methods.
 > 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> On Thu, 5 Nov 2009, Jack Steiner wrote:
+> > 
+> > "buf" should be larger than 16. The string could be "0x" + 16 characters.
+> 
+> I have 'char buf[20];' in my tree now.
+> 
+> > I'll verify the the rest.
+> > 
+> > We have the hardware :-)
+> 
+> Thanks. I've committed it locally, but if I get a tested-by or an ack (or 
+> a fix) soon enough, I'll update the commit before I push it out.
 
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+Tested on real hardware.
 
-> ---
->  drivers/net/wireless/rt2x00/rt2800pci.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> Index: b/drivers/net/wireless/rt2x00/rt2800pci.c
-> ===================================================================
-> --- a/drivers/net/wireless/rt2x00/rt2800pci.c
-> +++ b/drivers/net/wireless/rt2x00/rt2800pci.c
-> @@ -56,8 +56,10 @@ MODULE_PARM_DESC(nohwcrypt, "Disable har
->  
->  /*
->   * Register access.
-> + * All access to the CSR registers will go through the methods
-> + * rt2x00pci_register_read and rt2x00pci_register_write.
->   * BBP and RF register require indirect register access,
-> - * and use the CSR registers PHY_CSR3 and PHY_CSR4 to achieve this.
-> + * and use the CSR registers BBPCSR and RFCSR to achieve this.
->   * These indirect registers work with busy bits,
->   * and we will try maximal REGISTER_BUSY_COUNT times to access
->   * the register while taking a REGISTER_BUSY_DELAY us delay
-> 
+Acked-by: Jack Steiner <steiner@sgi.com>
 
 
+--- jack
