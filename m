@@ -1,84 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbZKEUr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbZKEUst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758883AbZKEUr4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 15:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758852AbZKEUrz
+	id S1758888AbZKEUst (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 15:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758858AbZKEUst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 15:47:55 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:16423 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758468AbZKEUry (ORCPT
+	Thu, 5 Nov 2009 15:48:49 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37515 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758848AbZKEUss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 15:47:54 -0500
-Date: Thu, 5 Nov 2009 13:47:58 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 2/2] pci: pciehp update the slot bridge res to get big
-	range for pcie devices - v9
-Message-ID: <20091105204758.GA2091@ldl.fc.hp.com>
-References: <4AE899A0.3020006@kernel.org> <4AE95247.8080401@jp.fujitsu.com> <4AE952B9.1010603@kernel.org> <4AE9588E.90708@jp.fujitsu.com> <4AE9657F.7010302@kernel.org> <4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org>
+	Thu, 5 Nov 2009 15:48:48 -0500
+Date: Thu, 5 Nov 2009 15:48:43 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
+	external to a process (v7)
+Message-ID: <20091105204843.GA2980@hmsreliant.think-freely.org>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091012161342.GA32088@hmsreliant.think-freely.org> <20091012201304.GG32088@hmsreliant.think-freely.org> <20091020005214.GA8886@localhost.localdomain> <20091102152520.GG23776@elte.hu> <20091102175407.GE4075@hmsreliant.think-freely.org> <20091102185137.GA28803@elte.hu> <20091103002355.GB19891@localhost.localdomain> <20091104112632.GA9243@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AF22D26.4070500@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091104112632.GA9243@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.9 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu <yinghai@kernel.org>:
+On Wed, Nov 04, 2009 at 12:26:32PM +0100, Ingo Molnar wrote:
 > 
-> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
-> and at last do them all together one time including slot bridge, to avoid to
-> call assign resources several times, when there are several bridges under the
-> slot bridge.
+> * Neil Horman <nhorman@tuxdriver.com> wrote:
 > 
-> need to introduce pci_bridge_assign_resources there.
-> 
-> handle the case the slot bridge that doesn't get pre-allocated big enough res
-> from FW.
-> for example pcie devices need 256M, but the bridge only get preallocated 2M...
-> 
-> pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
-> update res is not updated to bridge BAR. that is bridge is enabled already for
-> port service.
-> 
-> v2: address Alex's concern about pci remove/rescan feature about
->     pci_setup_bridge changes.
-> v3: Kenji pointed out that pci_config_slot need to be called before
->     pci_bus_add_devices()
-> v4: move out pci_is_enabled checkout of pci_setup_bridge()
-> v5: change the applying sequence.
-> v6: change the functions name according to Jesse
-> v8: address Eric's concern, only overwrite leaf bridge resource that is not
->      big enough
-> v9: refresh to be applied after bjorn's patch, and remove trick about save
->     size and restore resource second try.
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> > On Mon, Nov 02, 2009 at 07:51:37PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Neil Horman <nhorman@tuxdriver.com> wrote:
+> > > 
+> > > > > Have you ensured that no rlimit gets propagated during task init 
+> > > > > into some other value - under the previously correct assumption that 
+> > > > > rlimits dont change asynchronously under the feet of tasks?
+> > > > 
+> > > > I've looked, and the only place that I see the rlim array getting 
+> > > > copied is via copy_signal when we're in the clone path.  The 
+> > > > entire rlim array is copied from old task_struct to new 
+> > > > task_struct under the protection of the current->group_leader task 
+> > > > lock, which I also hold when updating via sys_setprlimit, so I 
+> > > > think we're safe in this case.
+> > > 
+> > > I mean - do we set up any data structure based on a particular 
+> > > rlimit, that can get out of sync with the rlimit being updated?
+> > > 
+> > > A prominent example would be the stack limit - we base address 
+> > > layout decisions on it. Check arch/x86/mm/mmap.c. RLIM_INFINITY has 
+> > > a special meaning plus we also set mmap_base() based on the rlim.
+> > 
+> > Ah, I didn't consider those.  Yes it looks like some locking might be 
+> > needed for cases like that.  what would you suggest, simply grabbing 
+> > the task lock before looking at the rlim array?  That seems a bit 
+> > heavy handed, especially if we want to use the locking consistently.  
+> > What if we just converted the int array of rlimit to atomic_t's?  
+> > Would that be sufficient, or still to heavy?
 
-How did you build and test this? I got this during building:
+Just to provide a quick update on this, it appears that (unbeknowst to me), 
+Jiri Slaby got almost this exact same feature in via the linux-next tree:
+commits
+ba9ba971a9241250646091935d77d2f31b7c15af
+4a4a4e5f51d866284db401ea4d8ba5f0c91cc1eb
+c1b9b7eaf7386a7f142d59a2bb433ac8217b0ad1
 
-ERROR: "pci_assign_unassigned_bridge_resources" [drivers/pci/hotplug/pciehp.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
-make: *** Waiting for unfinished jobs....
+It still likely needs an audit to make sure theres no race with task access on
+the rlimit array, but it doesn't currently require additional security checks
+because the only access for a process to another processes limits is by writing
+to the /proc/<pid>/limits file, as I had initial proposed.  I think theres still
+value in the sysscall, so I'll keep going with that aspect, but the rest of the
+work appears done.
 
-This patch fixed it for me:
----
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 95fe3f4..2f15473 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -962,3 +962,4 @@ again:
- 
- 	goto again;
- }
-+EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
+Regards
+
+Neil
+
