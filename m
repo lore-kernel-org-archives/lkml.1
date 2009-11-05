@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZKEN4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZKEN5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbZKEN4t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 08:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbZKEN4s
+	id S1756940AbZKEN5Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 08:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbZKEN5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 08:56:48 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41322 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756172AbZKEN4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 08:56:47 -0500
-Date: Thu, 5 Nov 2009 14:56:52 +0100
-From: Jan Kara <jack@suse.cz>
-To: Jan Blunck <jblunck@suse.de>
-Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@lst.de>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 05/27] BKL: Remove BKL from ext2 filesystem
-Message-ID: <20091105135651.GE12770@duck.suse.cz>
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-6-git-send-email-jblunck@suse.de> <20091105124111.GC12770@duck.suse.cz> <20091105130635.GE21750@bolzano.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091105130635.GE21750@bolzano.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 5 Nov 2009 08:57:24 -0500
+Received: from exchange.solarflare.com ([216.237.3.220]:30045 "EHLO
+	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756604AbZKEN5X convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 08:57:23 -0500
+Subject: Re: Shared i2c adapter locking
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mika Kuoppala <mika.kuoppala@nokia.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+In-Reply-To: <20091105141122.56b6b4f8@hyperion.delvare>
+References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
+	 <20091029154317.651904b9@hyperion.delvare>
+	 <1256828976.2827.27.camel@achroite>
+	 <20091105141122.56b6b4f8@hyperion.delvare>
+Content-Type: text/plain; charset=utf-8
+Organization: Solarflare Communications
+Date: Thu, 05 Nov 2009 13:57:24 +0000
+Message-Id: <1257429444.2793.2.camel@achroite.uk.solarflarecom.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Nov 2009 13:57:28.0214 (UTC) FILETIME=[E9273B60:01CA5E1F]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.600.1016-16990.004
+X-TM-AS-Result: No--13.455700-0.000000-31
+X-TM-AS-User-Approved-Sender: Yes
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 05-11-09 14:06:35, Jan Blunck wrote:
-> On Thu, Nov 05, Jan Kara wrote:
+On Thu, 2009-11-05 at 14:11 +0100, Jean Delvare wrote:
+[...]
+> What about the following patch?
 > 
-> > On Mon 02-11-09 11:04:45, Jan Blunck wrote:
-> > > The BKL is still used in ext2_put_super(), ext2_fill_super(), ext2_sync_fs()
-> > > ext2_remount() and ext2_write_inode(). From these calls ext2_put_super(),
-> > > ext2_fill_super() and ext2_remount() are protected against each other by
-> > > the struct super_block s_umount rw semaphore. The call in ext2_write_inode()
-> > > could only protect the modification of the ext2_sb_info through
-> > > ext2_update_dynamic_rev() against concurrent ext2_sync_fs() or ext2_remount().
-> > > ext2_fill_super() and ext2_put_super() can be left out because you need a
-> > > valid filesystem reference in all three cases, which you do not have when
-> > > you are one of these functions.
-> >   This is not quite true. Actually, ext2_sync_fs() is called also with
-> > s_umount held (for reading) so it cannot race with any of the mounting /
-> > umounting functions. But it should probably be guarded against running two
-> > instances of ext2_sync_fs() in parallel.
-> >   Looking into the code, we probably have a race in ext2_write_inode that
-> > two threads can write one inode in parallel. But that's a separe issue from
-> > BKL removal.
+> From: Jean Delvare <khali@linux-fr.org>
+> Subject: i2c: Add an interface to lock/unlock I2C bus segment
 > 
-> Have you actually seen that the previous patch introduces s_mutex? Meanwhile
-> that mutex has been replaced by a spinlock due to Andy's feedback.
-  Ops, I wanted to comment on that patch as well but then decided it might
-be better to write my version and didn't get to it yet... Thinking more
-about it, probably go ahead with these two patches (modulo some changes
-I've now suggested in a reply to your second ext2 patch) and I can cleanup
-ext2 code after that.
+> Some drivers need to be able to prevent access to an I2C bus segment
+> for a specific period of time. Add an interface for them to do so
+> without twiddling with i2c-core internals.
+> 
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Ben Hutchings <bhutchings@solarflare.com>
+Acked-by: ﻿Ben Hutchings <bhutchings@solarflare.com>
 
-									Honza
+Presumably this is meant for net-next-2.6, and you'll implement
+i2c_{lock,unlock}_adapter() using rt_mutex in your i2c tree?
+
+Ben.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
+
