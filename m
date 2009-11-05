@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZKEMpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZKEMyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbZKEMpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 07:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbZKEMp3
+	id S1755667AbZKEMyb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 07:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbZKEMya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 07:45:29 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:46048 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755385AbZKEMp3 (ORCPT
+	Thu, 5 Nov 2009 07:54:30 -0500
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:45789 "EHLO
+	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbZKEMy3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 07:45:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=f64nXF52xeV9uOwGUfq4Wst9pL9wVDHzo36akGcyLmku9vAQ5qiNNQ91UalKMe0Lz4
-         3UvmdxxVmJYFJrJRIRCiu2CRcII4akaw2qCCCLVWT+yoyk+WCPfD8Bj/hvalzLUEfdyG
-         ++FCNFNLXN669KPhnkNQ72nRi1FLKuGtfMdtE=
-Message-ID: <4AF2C8E4.9020202@gmail.com>
-Date: Thu, 05 Nov 2009 07:45:24 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 5 Nov 2009 07:54:29 -0500
+X-SpamScore: -1
+X-BigFish: VPS-1(z34a4jz98dNzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KSMZUN-04-2H0-02
+X-M-MSG: 
+Date: Thu, 5 Nov 2009 13:54:38 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH] cpumask: use struct cpumask rather than the deprecated
+ cpumask_t
+Message-ID: <20091105125438.GB17984@aftab>
+References: <200911052245.41803.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Eric Dumazet <eric.dumazet@gmail.com>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-Subject: Re: [net-next-2.6 PATCH RFC] TCPCT part 1d: generate Responder	Cookie
-References: <4AEAC763.4070200@gmail.com> <4AED86AD.6010906@gmail.com> <4AEDCD7C.2010403@gmail.com> <4AF0B0D2.4030905@gmail.com> <20091104214844.GA6714@linux.vnet.ibm.com> <4AF2C266.1010603@gmail.com>
-In-Reply-To: <4AF2C266.1010603@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <200911052245.41803.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Nov 2009 12:54:22.0468 (UTC) FILETIME=[18AC3C40:01CA5E17]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Allen Simpson wrote:
-> Yes.  Just shuffling the pointers without ever freeing anything.  So,
-> there's nothing for call_rcu() to do, and nothing else to synchronize
-> (only the pointers).  This assumes that after _unlock_ any CPU cache
-> with an old pointer->expires will hit the _lock_ code, and that will
-> update *both* ->expires and the other array elements concurrently?
-> 
-Reiterating, I've not found Documentation showing that this code works:
+On Thu, Nov 05, 2009 at 10:45:41PM +1030, Rusty Russell wrote:
+> This makes the declarations match the definitions, which already use
+> 'struct cpumask'.
 
-+	unsigned long jiffy = jiffies;
-+
-+	if (unlikely(time_after(jiffy, tcp_secret_generating->expires))) {
-+		spin_lock_bh(&tcp_secret_locker);
-+		if (!time_after(jiffy, tcp_secret_generating->expires)) {
-+			/* refreshed by another */
-+			spin_unlock_bh(&tcp_secret_locker);
-+			memcpy(&xvp->cookie_bakery[0],
-+			       &tcp_secret_generating->secrets[0],
-+			       sizeof(tcp_secret_generating->secrets));
-+		} else {
+Oops, I missed those, thanks.
 
-How is it ensured that an old tcp_secret_generating or an old ->expires,
-followed by a spin_lock, has updated both?
+Acked-by: Borislav Petkov <borislav.petkov@amd.com>
 
-And even when both are updated, then every word of the ->secrets array has
-also been updated in the local cache?
+-- 
+Regards/Gruss,
+Boris.
 
-Is this a property of spin_lock()?  Or spin_unlock()?
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
