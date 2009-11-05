@@ -1,264 +1,29 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757055AbZKBVwd (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 2 Nov 2009 16:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbZKBVwd
+	id S1755372AbZKEMXL (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 5 Nov 2009 07:23:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZKEMXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Nov 2009 16:52:33 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:55451 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755482AbZKBVwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Nov 2009 16:52:30 -0500
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/3] rcu: Fix synchronization for rcu_process_gp_end() uses of ->completed counter
-Date: Mon,  2 Nov 2009 13:52:28 -0800
-Message-Id: <12571987494069-git-send-email->
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <20091102215147.GA9704@linux.vnet.ibm.com>
-References: <20091102215147.GA9704@linux.vnet.ibm.com>
+	Thu, 5 Nov 2009 07:23:10 -0500
+Received: from web1110.biz.mail.sk1.yahoo.com ([74.6.114.42]:47126 "HELO
+	web1110.biz.mail.sk1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754306AbZKEMXK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 07:23:10 -0500
+Message-ID: <183953.33195.qm@web1110.biz.mail.sk1.yahoo.com>
+X-YMail-OSG: sEe_Tt8VM1nUDDt6fn1IFn1KtwQ1bgtczeilpnK5WIiLNWtcEi5pmwL1U4PpiannVP_M2Livq3cLjeTWsRpQgDb4DkGPH87w0FmiwunfxSmhTvHyW53EvEZponP5HnzglP9_rmlbjIl8AP2CUPwaUfEgTs8WOhAYmVAxPaoIQWEopuP6qZ8LR4lHTG8hCDLTbWzbnLyQfbKu0UZ7KZYT3QUeLOT9Tp_PJaIZfJUOQddH8XnsO7YwfpbdmoSg3wqU45kS18_XN_LZsvkyT93BqEz1VhqIhOhAqbiAoDDONpL5CcjhuD6gGurfENhpszQJwIjpP88sVMDXOP708s7Xcc0q.nync4eRCnGiEEWT5mK7zqtdpcHloApIr_bMREP59w0ktvnlhJTQKeg_NuEYfBZIpTRdv6DRoYiRk8ZRJt0.R7xVvoeFpA--
+X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.347.3
+Date: Thu, 5 Nov 2009 04:23:15 -0800 (PST)
+From: Anna Luck <annaluck@ubunasse.com>
+Reply-To: annaluc02@yahoo.fr
+Subject: Hello
+To: undisclosed recipients:;
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-Imposes a clear locking design on the rcu_process_gp_end() function's
-use of the ->completed counter.  This is done by creating a ->completed
-field in the rcu_node structure, which can safely be accessed under
-the protection of that structure's lock.  Performance and scalability
-are maintained by using a form of double-checked locking, so that
-rcu_process_gp_end() only acquires the leaf rcu_node structure's ->lock if
-a grace period has recently ended.
-
-This fix reduces rcutorture failure rate by at least two orders of
-magnitude under heavy stress with force_quiescent_state() being invoked
-artificially often.  Without this fix, unsynchronized access to the
-->completed field can cause rcu_process_gp_end() to advance callbacks
-whose grace period has not yet expired.  (Bad idea!)
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- kernel/rcutree.c |  128 +++++++++++++++++++++++++++++++++--------------------
- kernel/rcutree.h |    3 +
- 2 files changed, 83 insertions(+), 48 deletions(-)
-
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 154f4f1..ceb4042 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -570,6 +570,76 @@ check_for_new_grace_period(struct rcu_state *rsp, struct rcu_data *rdp)
- }
- 
- /*
-+ * Advance this CPU's callbacks, but only if the current grace period
-+ * has ended.  This may be called only from the CPU to whom the rdp
-+ * belongs.  In addition, the corresponding leaf rcu_node structure's
-+ * ->lock must be held by the caller, with irqs disabled.
-+ */
-+static void
-+__rcu_process_gp_end(struct rcu_state *rsp, struct rcu_node *rnp, struct rcu_data *rdp)
-+{
-+	/* Did another grace period end? */
-+	if (rdp->completed != rnp->completed) {
-+
-+		/* Advance callbacks.  No harm if list empty. */
-+		rdp->nxttail[RCU_DONE_TAIL] = rdp->nxttail[RCU_WAIT_TAIL];
-+		rdp->nxttail[RCU_WAIT_TAIL] = rdp->nxttail[RCU_NEXT_READY_TAIL];
-+		rdp->nxttail[RCU_NEXT_READY_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
-+
-+		/* Remember that we saw this grace-period completion. */
-+		rdp->completed = rnp->completed;
-+	}
-+}
-+
-+/*
-+ * Advance this CPU's callbacks, but only if the current grace period
-+ * has ended.  This may be called only from the CPU to whom the rdp
-+ * belongs.
-+ */
-+static void
-+rcu_process_gp_end(struct rcu_state *rsp, struct rcu_data *rdp)
-+{
-+	unsigned long flags;
-+	struct rcu_node *rnp;
-+
-+	local_irq_save(flags);
-+	rnp = rdp->mynode;
-+	if (rdp->completed == ACCESS_ONCE(rnp->completed) || /* outside lock. */
-+	    !spin_trylock(&rnp->lock)) { /* irqs already off, retry later. */
-+		local_irq_restore(flags);
-+		return;
-+	}
-+	__rcu_process_gp_end(rsp, rnp, rdp);
-+	spin_unlock_irqrestore(&rnp->lock, flags);
-+}
-+
-+/*
-+ * Do per-CPU grace-period initialization for running CPU.  The caller
-+ * must hold the lock of the leaf rcu_node structure corresponding to
-+ * this CPU.
-+ */
-+static void
-+rcu_start_gp_per_cpu(struct rcu_state *rsp, struct rcu_node *rnp, struct rcu_data *rdp)
-+{
-+	/* Prior grace period ended, so advance callbacks for current CPU. */
-+	__rcu_process_gp_end(rsp, rnp, rdp);
-+
-+	/*
-+	 * Because this CPU just now started the new grace period, we know
-+	 * that all of its callbacks will be covered by this upcoming grace
-+	 * period, even the ones that were registered arbitrarily recently.
-+	 * Therefore, advance all outstanding callbacks to RCU_WAIT_TAIL.
-+	 *
-+	 * Other CPUs cannot be sure exactly when the grace period started.
-+	 * Therefore, their recently registered callbacks must pass through
-+	 * an additional RCU_NEXT_READY stage, so that they will be handled
-+	 * by the next RCU grace period.
-+	 */
-+	rdp->nxttail[RCU_NEXT_READY_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
-+	rdp->nxttail[RCU_WAIT_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
-+}
-+
-+/*
-  * Start a new RCU grace period if warranted, re-initializing the hierarchy
-  * in preparation for detecting the next grace period.  The caller must hold
-  * the root node's ->lock, which is released before return.  Hard irqs must
-@@ -596,26 +666,14 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	dyntick_record_completed(rsp, rsp->completed - 1);
- 	note_new_gpnum(rsp, rdp);
- 
--	/*
--	 * Because this CPU just now started the new grace period, we know
--	 * that all of its callbacks will be covered by this upcoming grace
--	 * period, even the ones that were registered arbitrarily recently.
--	 * Therefore, advance all outstanding callbacks to RCU_WAIT_TAIL.
--	 *
--	 * Other CPUs cannot be sure exactly when the grace period started.
--	 * Therefore, their recently registered callbacks must pass through
--	 * an additional RCU_NEXT_READY stage, so that they will be handled
--	 * by the next RCU grace period.
--	 */
--	rdp->nxttail[RCU_NEXT_READY_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
--	rdp->nxttail[RCU_WAIT_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
--
- 	/* Special-case the common single-level case. */
- 	if (NUM_RCU_NODES == 1) {
- 		rcu_preempt_check_blocked_tasks(rnp);
- 		rnp->qsmask = rnp->qsmaskinit;
- 		rnp->gpnum = rsp->gpnum;
-+		rnp->completed = rsp->completed;
- 		rsp->signaled = RCU_SIGNAL_INIT; /* force_quiescent_state OK. */
-+		rcu_start_gp_per_cpu(rsp, rnp, rdp);
- 		spin_unlock_irqrestore(&rnp->lock, flags);
- 		return;
- 	}
-@@ -648,6 +706,9 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 		rcu_preempt_check_blocked_tasks(rnp);
- 		rnp->qsmask = rnp->qsmaskinit;
- 		rnp->gpnum = rsp->gpnum;
-+		rnp->completed = rsp->completed;
-+		if (rnp == rdp->mynode)
-+			rcu_start_gp_per_cpu(rsp, rnp, rdp);
- 		spin_unlock(&rnp->lock);	/* irqs remain disabled. */
- 	}
- 
-@@ -659,34 +720,6 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- }
- 
- /*
-- * Advance this CPU's callbacks, but only if the current grace period
-- * has ended.  This may be called only from the CPU to whom the rdp
-- * belongs.
-- */
--static void
--rcu_process_gp_end(struct rcu_state *rsp, struct rcu_data *rdp)
--{
--	long completed_snap;
--	unsigned long flags;
--
--	local_irq_save(flags);
--	completed_snap = ACCESS_ONCE(rsp->completed);  /* outside of lock. */
--
--	/* Did another grace period end? */
--	if (rdp->completed != completed_snap) {
--
--		/* Advance callbacks.  No harm if list empty. */
--		rdp->nxttail[RCU_DONE_TAIL] = rdp->nxttail[RCU_WAIT_TAIL];
--		rdp->nxttail[RCU_WAIT_TAIL] = rdp->nxttail[RCU_NEXT_READY_TAIL];
--		rdp->nxttail[RCU_NEXT_READY_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
--
--		/* Remember that we saw this grace-period completion. */
--		rdp->completed = completed_snap;
--	}
--	local_irq_restore(flags);
--}
--
--/*
-  * Clean up after the prior grace period and let rcu_start_gp() start up
-  * the next grace period if one is needed.  Note that the caller must
-  * hold rnp->lock, as required by rcu_start_gp(), which will release it.
-@@ -697,7 +730,6 @@ static void cpu_quiet_msk_finish(struct rcu_state *rsp, unsigned long flags)
- 	WARN_ON_ONCE(!rcu_gp_in_progress(rsp));
- 	rsp->completed = rsp->gpnum;
- 	rsp->signaled = RCU_GP_IDLE;
--	rcu_process_gp_end(rsp, rsp->rda[smp_processor_id()]);
- 	rcu_start_gp(rsp, flags);  /* releases root node's rnp->lock. */
- }
- 
-@@ -1526,21 +1558,16 @@ static void __cpuinit
- rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
- {
- 	unsigned long flags;
--	long lastcomp;
- 	unsigned long mask;
- 	struct rcu_data *rdp = rsp->rda[cpu];
- 	struct rcu_node *rnp = rcu_get_root(rsp);
- 
- 	/* Set up local state, ensuring consistent view of global state. */
- 	spin_lock_irqsave(&rnp->lock, flags);
--	lastcomp = rsp->completed;
--	rdp->completed = lastcomp;
--	rdp->gpnum = lastcomp;
- 	rdp->passed_quiesc = 0;  /* We could be racing with new GP, */
- 	rdp->qs_pending = 1;	 /*  so set up to respond to current GP. */
- 	rdp->beenonline = 1;	 /* We have now been online. */
- 	rdp->preemptable = preemptable;
--	rdp->passed_quiesc_completed = lastcomp - 1;
- 	rdp->qlen_last_fqs_check = 0;
- 	rdp->n_force_qs_snap = rsp->n_force_qs;
- 	rdp->blimit = blimit;
-@@ -1562,6 +1589,11 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
- 		spin_lock(&rnp->lock);	/* irqs already disabled. */
- 		rnp->qsmaskinit |= mask;
- 		mask = rnp->grpmask;
-+		if (rnp == rdp->mynode) {
-+			rdp->gpnum = rnp->completed; /* if GP in progress... */
-+			rdp->completed = rnp->completed;
-+			rdp->passed_quiesc_completed = rnp->completed - 1;
-+		}
- 		spin_unlock(&rnp->lock); /* irqs already disabled. */
- 		rnp = rnp->parent;
- 	} while (rnp != NULL && !(rnp->qsmaskinit & mask));
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index 39c325d..5de1fe8 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -84,6 +84,9 @@ struct rcu_node {
- 	long	gpnum;		/* Current grace period for this node. */
- 				/*  This will either be equal to or one */
- 				/*  behind the root rcu_node's gpnum. */
-+	long	completed;	/* Last grace period completed for this node. */
-+				/*  This will either be equal to or one */
-+				/*  behind the root rcu_node's gpnum. */
- 	unsigned long qsmask;	/* CPUs or groups that need to switch in */
- 				/*  order for current grace period to proceed.*/
- 				/*  In leaf rcu_node, each bit corresponds to */
--- 
-1.5.2.5
-
+Hello
+How are you today? I hope you are fine.If so thank be to God almighty.My name is Anna Luck,26 years I am single girl looking for honest and nice person. Somebody who care and fear God whom i can partner with .I don't care about your colour or ethnicity.I would like to know you more,most especially what you like and what you dislike.I'm sending you this beautiful mail, with a wish for much happiness.I am looking forward to hear from you,
+Love from,
+Anna
