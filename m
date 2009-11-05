@@ -1,91 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbZKEOzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZKEOyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758042AbZKEOzP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbZKEOzO
+	id S1757959AbZKEOyN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbZKEOyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:55:14 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:59339 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757807AbZKEOzN convert rfc822-to-8bit (ORCPT
+	Thu, 5 Nov 2009 09:54:12 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:36984 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757761AbZKEOyL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:55:13 -0500
+	Thu, 5 Nov 2009 09:54:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=UJ6BMmidRT9ABmXhGLTCvqA7YzdSESjOA0kQfAGy2635Vk8M9rOQhjEYEJJZC8DTc/
+         etXkGE3GJgZ14zxInkEY5cXGFECrmb2Anz60oRapq/8Rw3gKVEYN5s8pyK40cJVomabK
+         eSebVqn6B/lNrLsweCQrNDFIoc86zjs1WVjXU=
 MIME-Version: 1.0
-Message-ID: <fb5e5ebd-6c3c-4031-b710-2deab63a98bb@default>
-Date: Thu, 5 Nov 2009 06:52:38 -0800 (PST)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Glauber Costa <glommer@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
-       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
-Subject: RE: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
-	implementation
-In-Reply-To: <4AF274E5.5080205@redhat.com>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
- 9.0.0.6627]
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4AF2E712.015C:SCFMA4539814,ss=1,fgs=0
+In-Reply-To: <20091105141055.GA17350@redhat.com>
+References: <6417.1257351084@turing-police.cc.vt.edu>
+	 <200911051941.03401.rusty@rustcorp.com.au>
+	 <20091105141055.GA17350@redhat.com>
+Date: Thu, 5 Nov 2009 15:54:15 +0100
+Message-ID: <6e0cfd1d0911050654q2e1f23e6o2b47edfdcf3137cb@mail.gmail.com>
+Subject: Re: 2.6.32-rc5-mmotm1101 - lockdep whinge during early boot
+From: Martin Schwidefsky <schwidefsky@googlemail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Valdis.Kletnieks@vt.edu,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Avi Kivity [mailto:avi@redhat.com]
-> 
-> Within a process, yes.  Across processes, not without writable shared 
-> memory.
-> 
-> That's why I'm trying to understand what the actual 
-> requirements are.  
-> Real monotonic, accurate, high resolution, low cost time sources are 
-> hard to come by.
+That is imho caused by this patch snippet from the linux-next.patch from mmotd:
 
-Hmmm... this has significant implications for the rdtsc
-emulation discussion on xen-devel.  Since that's not
-a Linux question, I'll start another thread on xen-devel
-with a shorter cc list.
+diff -puN arch/x86/kernel/tsc.c~linux-next arch/x86/kernel/tsc.c
+--- a/arch/x86/kernel/tsc.c~linux-next
++++ a/arch/x86/kernel/tsc.c
+@@ -763,14 +763,12 @@ void mark_tsc_unstable(char *reason)
+ {
+        if (!tsc_unstable) {
+                tsc_unstable = 1;
+-               printk(KERN_INFO "Marking TSC unstable due to %s\n", reason);
++               printk("Marking TSC unstable due to %s\n", reason);
+                /* Change only the rating, when not registered */
+                if (clocksource_tsc.mult)
+-                       clocksource_mark_unstable(&clocksource_tsc);
+-               else {
+-                       clocksource_tsc.flags |= CLOCK_SOURCE_UNSTABLE;
++                       clocksource_change_rating(&clocksource_tsc, 0);
++               else
+                        clocksource_tsc.rating = 0;
+-               }
+        }
+ }
 
-> > Actually, I think for many/most profiling applications,
-> > just knowing a discontinuity occurred between two
-> > timestamps is very useful as that one specific measurement
-> > can be discarded.  If a discontinuity is invisible,
-> > one clearly knows that a negative interval is bad,
-> > but if an interval is very small or very large,
-> > one never knows if it is due to a discontinuity or
-> > due to some other reason.
-> >
-> > This would argue for a syscall/vsyscall that can
-> > "return" two values: the "time" and a second
-> > "continuity generation" counter.
-> 
-> I doubt it.  You should expect discontinuities in user space due to 
-> being swapped out, scheduled out, migrated to a different 
-> cpu, or your 
-> laptop lid being closed.  There are no guarantees to a userspace 
-> application.  Even the kernel can expect discontinuities due 
-> to SMIs.  
-> So an explicit notification about one type of discontinuity 
-> adds nothing.
 
-Good point.  I'm interested in enterprise apps that have more
-control over the machine (and rarely suffer from laptop lid
-closures :-) and would intend for all discontinuities visible
-to a hypervisor or kernel to increment "AUX", but bare-metal-
-kernel-invisible discontinuities such as SMI do throw a wrench
-in the works.
+The upstream variant of mark_tsc_unstable uses clocksource_mark_unstable
+which does not take the mutex. The reason is the clocksource mutex vs. the
+cpu_add_remove_lock spinlock.
 
-Well, all this discussion has convince me that
-my original proposals do make sense for enterprise apps to be
-virtualization-aware and use rdtsc/p directly for timestamping
-needs rather than OS APIs (with the hypervisor deciding
-whether or not to emulate rdtsc/p based on the underlying
-physical machine and whether or not migration is enabled
-or has occurred).
+-- 
+blue skies,
+  Martin
