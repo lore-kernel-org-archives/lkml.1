@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569AbZKEJLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZKEJSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569AbZKEJLF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 04:11:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZKEJLE
+	id S1752883AbZKEJSJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 04:18:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbZKEJSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 04:11:04 -0500
-Received: from ozlabs.org ([203.10.76.45]:53318 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbZKEJLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 04:11:01 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: 2.6.32-rc5-mmotm1101 - lockdep whinge during early boot
-Date: Thu, 5 Nov 2009 19:41:03 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-References: <6417.1257351084@turing-police.cc.vt.edu>
-In-Reply-To: <6417.1257351084@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911051941.03401.rusty@rustcorp.com.au>
+	Thu, 5 Nov 2009 04:18:07 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:50188 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbZKEJSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 04:18:05 -0500
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Mack <daniel@caiaq.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrea Righi <righi.andrea@gmail.com>
+Subject: [PATCH] fbcon: make cursor display conditional
+Date: Thu,  5 Nov 2009 10:17:38 +0100
+Message-Id: <1257412658-9444-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Nov 2009 02:41:24 am Valdis.Kletnieks@vt.edu wrote:
- [    0.344147] swapper/1 is trying to acquire lock:
-> [    0.344154]  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff8103c222>] cpu_maps_update_begin+0x12/0x14
-> [    0.344174]
-> [    0.344175] but task is already holding lock:
-> [    0.344183]  (setup_lock){+.+.+.}, at: [<ffffffff81078755>] stop_machine_create+0x12/0x9b
-> [    0.344200]
-> [    0.344201] which lock already depends on the new lock.
+For embedded systems, the blinking cursor at startup time can be
+annoying and unintended. Add a new kernel parameter
+'fbcon_disable_cursor' which disables it conditionally. The default
+behaviour is unchanged.
 
-Hi Vladis!
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrea Righi <righi.andrea@gmail.com>
+---
+ Documentation/kernel-parameters.txt |    3 +++
+ drivers/video/console/fbcon.c       |   11 ++++++++++-
+ 2 files changed, 13 insertions(+), 1 deletions(-)
 
-    Sigh.  I always find reading these a complete mindfuck.
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9107b38..80ac54e 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -743,6 +743,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Format: <interval>,<probability>,<space>,<times>
+ 			See also /Documentation/fault-injection/.
+ 
++	fbcon_disable_cursor
++			Disable the cursor in the framebuffer console
++
+ 	fd_mcs=		[HW,SCSI]
+ 			See header of drivers/scsi/fd_mcs.c.
+ 
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 5a686ce..039aa86 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -116,6 +116,14 @@ static int fbcon_has_exited;
+ static int primary_device = -1;
+ static int fbcon_has_console_bind;
+ 
++static int fbcon_disable_cursor;
++static int __init _fbcon_disable_cursor(char *str)
++{
++	fbcon_disable_cursor = 1;
++	return 1;
++}
++__setup("fbcon_disable_cursor", _fbcon_disable_cursor);
++
+ #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+ static int map_override;
+ 
+@@ -1288,7 +1296,8 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 	int y;
+  	int c = scr_readw((u16 *) vc->vc_pos);
+ 
+-	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
++	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1 ||
++	    fbcon_disable_cursor)
+ 		return;
+ 
+ 	if (vc->vc_cursor_type & 0x10)
+-- 
+1.6.5
 
-stop_machine_create: setup_lock then cpu_add_remove_lock
-	(in create_workqueue_key() -> cpu_maps_update_begin())
-clocksource_done_booting: clocksource_mutex then setup_lock
-	(in stop_machine_create(), as above)
-cpu_up: cpu_add_remove_lock then clocksource_mutex
-	(in mark_tsc_unstable() -> clocksource_change_rating())
-
-AFAICT this is our circular dependency.  But I'm no closer to knowing how to
-solve it.
-
-Oleg (CC'd) made workqueues use cpu_maps_update_begin() instead of the
-more obvious get_online_cpus() in 3da1c84c00c7e5f.  Reverting that seems like
-a bad idea.
-
-Or, if the clocksource list wasn't ordered, we could change the rating without
-a lock.
-
-Either way, the locking shark is well and truly jumped...
-Rusty.
