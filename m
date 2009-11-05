@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbZKEQUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbZKEQUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756980AbZKEQUP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 11:20:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbZKEQUO
+	id S1757153AbZKEQUZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 11:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbZKEQUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 11:20:14 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:6430 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756912AbZKEQUM (ORCPT
+	Thu, 5 Nov 2009 11:20:21 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:32976 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756918AbZKEQUQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 11:20:12 -0500
+	Thu, 5 Nov 2009 11:20:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=U+H8KZwspmhx4w2W/APxDBHoJ1ElGAm0YJLYnjpDUYifQGO9OOCFoJUr2nna9oFIkM
-         iTxhqq6iWyL0eTptx09QdtjKmEnzId+vL2rJZrCz3dBwV55Ob4NinIgP9b4V85faSIRq
-         MLHJiHqsOzRrr8u+S3Yi0wL1KydbQnFC2jkk4=
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=IbiSYkfTBCSmrigiSck3W8fUHUSpMplfV+GIfX5hGOiiLsbehF3OGK5V4t8v+cM1GQ
+         iKV7moc1ivoDY1zZB0eWE2E0015/pxU86VgslT1VFOwYAE9rWbtf6ndLkYENCUj/OiYl
+         1isyWjWwwlIM8jhM0DNm/x3s+Ow7V7hZjYlH0=
+Date: Fri, 6 Nov 2009 00:20:44 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Max Kellermann <max@duempel.org>
+Cc: linux-kernel@vger.kernel.org, eric.dumazet@gmail.com, mk@cm4all.com
+Subject: Re: [PATCH] pipe: don't block after data has been written
+Message-ID: <20091105162043.GA2611@hack>
+References: <20091105153147.27473.19570.stgit@woodpecker.roonstrasse.net>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0911051653170.12138@localhost.localdomain>
-References: <6417.1257351084@turing-police.cc.vt.edu>
-	 <200911051941.03401.rusty@rustcorp.com.au>
-	 <20091105141055.GA17350@redhat.com>
-	 <alpine.LFD.2.00.0911051547110.12138@localhost.localdomain>
-	 <20091105152241.GA24690@redhat.com>
-	 <20091105153321.GB24690@redhat.com>
-	 <alpine.LFD.2.00.0911051653170.12138@localhost.localdomain>
-Date: Thu, 5 Nov 2009 17:20:17 +0100
-Message-ID: <6e0cfd1d0911050820v19ebedl4177eea7b576ad67@mail.gmail.com>
-Subject: Re: 2.6.32-rc5-mmotm1101 - lockdep whinge during early boot
-From: Martin Schwidefsky <schwidefsky@googlemail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Oleg Nesterov <oleg@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091105153147.27473.19570.stgit@woodpecker.roonstrasse.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 05, 2009 at 04:31:47PM +0100, Max Kellermann wrote:
+>According to the select() / poll() documentation, a write operation on
+>a file descriptor which is "ready for writing" must not block.  Linux
+>violates this rule: if you pass a very large buffer to write(), the
+>system call will not return until everything is written, or an error
+>occurs.
 >
-> Which basically reverts commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
+>This patch adds a simple check: if at least one byte has already been
+>written, break from the loop, instead of calling pipe_wait().
+
+Do you have any working test-case for this?
+
+Thanks.
+
 >
-
-It is this commit in linux-next:
-
-commit 66b1a72ceaa7da811db025855f19482f0a38e815
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Thu Sep 10 19:39:52 2009 +0200
-
-    Revert "clocksource: Resolve cpu hotplug dead lock with TSC unstable"
-
-    This reverts commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16.
-
-    causes crashes.
-
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>Signed-off-by: Max Kellermann <max@duempel.org>
+>---
+>
+> fs/pipe.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+>diff --git a/fs/pipe.c b/fs/pipe.c
+>index ae17d02..9d84f0b 100644
+>--- a/fs/pipe.c
+>+++ b/fs/pipe.c
+>@@ -582,7 +582,7 @@ redo2:
+> 		}
+> 		if (bufs < PIPE_BUFFERS)
+> 			continue;
+>-		if (filp->f_flags & O_NONBLOCK) {
+>+		if (filp->f_flags & O_NONBLOCK || ret > 0) {
+> 			if (!ret)
+> 				ret = -EAGAIN;
+> 			break;
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-blue skies,
-  Martin
+Live like a child, think like the god.
+ 
