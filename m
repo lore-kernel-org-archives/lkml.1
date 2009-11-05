@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZKEFmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbZKEFt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbZKEFmW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 00:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbZKEFmV
+	id S1755250AbZKEFt2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 00:49:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZKEFt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 00:42:21 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59583 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754953AbZKEFmV (ORCPT
+	Thu, 5 Nov 2009 00:49:27 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:61387 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZKEFt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 00:42:21 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
-       Mike Fulton <fultonm@ca.ibm.com>, Sean Foley <Sean_Foley@ca.ibm.com>
-In-Reply-To: <4AF26471.6010705@us.ibm.com>
-References: <20091105141953.2090.A69D9226@jp.fujitsu.com> <4AF26471.6010705@us.ibm.com>
-Message-Id: <20091105143959.2093.A69D9226@jp.fujitsu.com>
+	Thu, 5 Nov 2009 00:49:26 -0500
+Message-Id: <200911050549.nA55nQt1094958@www262.sakura.ne.jp>
+Subject: Re: [Patch 0/12] AppArmor security module
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: john.johansen@canonical.com
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu,  5 Nov 2009 14:42:23 +0900 (JST)
+Date: Thu, 05 Nov 2009 14:49:26 +0900
+References: <1257292099-15802-1-git-send-email-john.johansen@canonical.com> <200911040441.nA44fxms062617@www262.sakura.ne.jp> <4AF25E51.1010609@canonical.com>
+In-Reply-To: <4AF25E51.1010609@canonical.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 05112009 #2900046, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> KOSAKI Motohiro wrote:
-> >> KOSAKI Motohiro wrote:
-> >>
-> >>> John, I'd prefer to suggested another design.
-> >>> How about this?
-> >>>
-> >>> 1. remove pid argument from prctl
-> >>> 2. cancel pthread_setname_np()
-> >>> 3. instead, create pthread_attr_setname_np()
-> >>> 4. pthread_create() change own thread name by pthread_attr.
-> >>>
-> >>> It avoid many racy problem automatically.
-> >> Perhaps, but it also greatly reduces the flexibility of the 
-> >> implementation by restricting name changes to create time.
-> > 
-> > Hm.
-> > if your program really need to change another thread name, can you please tell us
-> > why it is necessary and when it is used?
-> 
-> I think John's previous mails covered that pretty well. As for doing the 
-> name change at create time, or sometime later, it just seems to me that 
-> the flexibility of doing so later is worth having. While I know we don't 
-> have to follow other systems implementations, in this case 
-> pthread_setname_np() seems a reasonable model to follow to me.
+Hello.
 
-You only said your mode is more flexible. but I want to know _why_ this flexibiliby is
-necessay. please tell us concrete use-case.
+I browsed using lxr.
 
 
+
+> static int aa_audit_caps(struct aa_profile *profile, struct aa_audit_caps *sa)
+...snipped...
+> 	ent = &get_cpu_var(audit_cache);
+> 	if (sa->base.task == ent->task && cap_raised(ent->caps, sa->cap)) {
+
+		put_cpu_var(audit_cache); ?
+
+> 		if (PROFILE_COMPLAIN(profile))
+> 			return 0;
+> 		return sa->base.error;
+> 	} else {
+> 		ent->task = sa->base.task;
+> 		cap_raise(ent->caps, sa->cap);
+> 	}
+> 	put_cpu_var(audit_cache);
+...snipped...
+
+
+
+Regarding unpack_*(), I'm not sure, but e seems to be no longer used after once
+unpack_*() failed. If so, we can remove
+
+> 	void *pos = e->pos;
+
+and
+
+>  fail:
+>  	e->pos = pos;
+
+
+
+Also, please add comments regarding
+
+  memory allocated here is released by ...
+
+  refcount obtained here is released by ...
+
+  the caller of this function need to hold ... lock
+
+as it is difficult for me to track memleak/refcounter/locking bugs.
+For example, in function apparmor_dentry_open(), from
+
+	fcxt->profile = aa_get_profile(profile);
+
+to something like
+
+	/* released by ... */
+	fcxt->profile = aa_get_profile(profile);
+
+(Oh, is it correct to get refcount even if aa_path_perm() failed?)
+
+
+
+Regards.
