@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932839AbZKDX7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932831AbZKEABt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932839AbZKDX7v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 18:59:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932814AbZKDX7u
+	id S932831AbZKEABt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 19:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbZKEABs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 18:59:50 -0500
-Received: from ozlabs.org ([203.10.76.45]:58862 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932692AbZKDX7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 18:59:49 -0500
+	Wed, 4 Nov 2009 19:01:48 -0500
+Received: from icebox.esperi.org.uk ([81.187.191.129]:33726 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932633AbZKEABs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 19:01:48 -0500
+To: "TuxOnIce users' list" <tuxonice-users@lists.tuxonice.net>
+Cc: Richard Purdie <rpurdie@rpsys.net>,
+       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Subject: Re: [TuxOnIce-users] An assortment of TuxOnIce resume panics on a Radeon KMS-running system in 2.6.31.5, lzo-related?
+References: <87ocnim1bj.fsf@spindle.srvr.nix> <4AF1F611.6050206@crca.org.au>
+From: Nix <nix@esperi.org.uk>
+Emacs: a learning curve that you can use as a plumb line.
+Date: Thu, 05 Nov 2009 00:01:44 +0000
+In-Reply-To: <4AF1F611.6050206@crca.org.au> (Nigel Cunningham's message of "Thu, 05 Nov 2009 08:45:53 +1100")
+Message-ID: <874op9n8k7.fsf@spindle.srvr.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19186.5488.320389.567026@cargo.ozlabs.ibm.com>
-Date: Thu, 5 Nov 2009 10:59:44 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Avi Kivity <avi@redhat.com>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer on top of perf events
-In-Reply-To: <1257275474-5285-5-git-send-email-fweisbec@gmail.com>
-References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com>
-	<1257275474-5285-5-git-send-email-fweisbec@gmail.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+X-DCC-URT-Metrics: spindle 1060; Body=3 Fuz1=3 Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker writes:
+On 4 Nov 2009, Nigel Cunningham told this:
 
-> This patch rebase the implementation of the breakpoints API on top of
-> perf events instances.
-> 
-> Each breakpoints are now perf events that handle the
-> register scheduling, thread/cpu attachment, etc..
+> Hi.
+>
+> Thanks for your bug report.
+>
+> I'd say it's a bug in the TuxOnIce code. How recent a version are you
+> running? (It's been a while since I bumped the version number, so saying
+> 3.0.1 doesn't mean much any more). Is it recent git?
 
-What I haven't managed to understand yet is how you provide reliable
-breakpoints for debugging purposes.  If I'm debugging a program and I
-have set a breakpoint, I'll be very unhappy if the breakpoint should
-trigger but doesn't because the perf_event infrastructure has decided
-it can't schedule that breakpoint in.  If the breakpoint isn't going
-to work then I want to know that at the time that I set it.
+4eddd0d169ddd285b9d7afdcbbfc1a85b870f5ea from your tuxonice 2.6.31 tree,
+(merged, as mentioned, with Dave Airlie's drm-next branch).
 
-We can go some distance towards that with the pinned attribute, but
-not far enough.  The pinned attribute doesn't guarantee that the event
-will always be scheduled in, it just says that we'll do our best to
-schedule it in, and if we can't, we'll put the event into error state
-so that the user knows we didn't manage to schedule it in.  But
-there's no way to get back to gdb and tell it that a breakpoint that
-it had previously successfully created is no longer working.
+I think that's the latest, right?
 
-Also, we don't currently fail the creation of a pinned event if it
-would conflict with another pinned event already created in the same
-context.  We would need to do something like that if we want to use
-pinned events for debugging breakpoints (as distinct from breakpoints
-for performance monitoring purposes, for which it matters less if they
-are sometimes not scheduled in).
+> Would you also let me know how your storage is configured - file
+> allocator? swap allocator? More than one swap device? priorities? (I've
 
-And then there's the question of whether a per-cpu pinned breakpoint
-event conflicts with a per-task pinned breakpoint event if you only
-have one breakpoint register (as is the case on Power server CPUs).
-Plus the fact that we don't currently give per-task pinned events
-priority over per-cpu non-pinned events (perhaps that would be a good
-idea anyway).
+Swap allocator, striped equal-priority swap on two physical disks
+(otherwise occupied entirely with an md1 array):
 
-Paul.
+             total       used       free     shared    buffers     cached
+Mem:      12301216    1238928   11062288          0     111228     440956
+-/+ buffers/cache:     686744   11614472
+Swap:     25189904          0   25189904
+mutilate 2 ~% cat /proc/swaps
+Filename                                Type            Size    Used    Priority
+/dev/sda2                               partition       12594952        0       0
+/dev/sdb2                               partition       12594952        0       0
+
+(yes, I know it was mad to define swap as 2xRAM on this machine, but I
+have disk space coming out of my ears and have no idea what to do with it :) )
+
+Swap was barely in use when I suspended (and it's even less in use now
+relatively recently post-reboot).
+
+> been doing work in this area recently, and so suspect that it might be
+> the cause).
+
+It's odd that it manifested as a decompressor failure. I suppose if
+something corrupts the data en route to or from the disk you might see
+this? (wild speculation: maybe ordinary swapping happened on top of it,
+though this seems rather unlikely).
+
+
+I'm impressed with how well ToI works, btw: it must have saved me about
+twenty quid in power costs on this desktop box already and I've only
+been using it for a couple of months. I was even more impressed that
+nothing went wrong when I started using KMS, once I'd boosted the
+reserved pages enough: took a while to figure out the cause of those
+crashes, though. Maybe you should print a very loud message when the
+number of reserved pages that haven't been consumed drops below some
+smallish number, if it's detectable, 'cos right now exceeding it
+generally results in a crash at suspension time and newbies like me
+can't tell the cause easily...
