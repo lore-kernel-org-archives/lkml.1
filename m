@@ -1,194 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZKEMlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZKEMpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbZKEMlN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 07:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbZKEMlM
+	id S1755716AbZKEMpa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 07:45:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbZKEMp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 07:41:12 -0500
-Received: from cantor.suse.de ([195.135.220.2]:58386 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754981AbZKEMlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 07:41:10 -0500
-Date: Thu, 5 Nov 2009 13:41:11 +0100
-From: Jan Kara <jack@suse.cz>
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Jan Kara <jack@suse.cz>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@lst.de>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 05/27] BKL: Remove BKL from ext2 filesystem
-Message-ID: <20091105124111.GC12770@duck.suse.cz>
-References: <1257156307-24175-1-git-send-email-jblunck@suse.de> <1257156307-24175-6-git-send-email-jblunck@suse.de>
+	Thu, 5 Nov 2009 07:45:29 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:46048 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755385AbZKEMp3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 07:45:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=f64nXF52xeV9uOwGUfq4Wst9pL9wVDHzo36akGcyLmku9vAQ5qiNNQ91UalKMe0Lz4
+         3UvmdxxVmJYFJrJRIRCiu2CRcII4akaw2qCCCLVWT+yoyk+WCPfD8Bj/hvalzLUEfdyG
+         ++FCNFNLXN669KPhnkNQ72nRi1FLKuGtfMdtE=
+Message-ID: <4AF2C8E4.9020202@gmail.com>
+Date: Thu, 05 Nov 2009 07:45:24 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257156307-24175-6-git-send-email-jblunck@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: paulmck@linux.vnet.ibm.com
+CC: Eric Dumazet <eric.dumazet@gmail.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: [net-next-2.6 PATCH RFC] TCPCT part 1d: generate Responder	Cookie
+References: <4AEAC763.4070200@gmail.com> <4AED86AD.6010906@gmail.com> <4AEDCD7C.2010403@gmail.com> <4AF0B0D2.4030905@gmail.com> <20091104214844.GA6714@linux.vnet.ibm.com> <4AF2C266.1010603@gmail.com>
+In-Reply-To: <4AF2C266.1010603@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 02-11-09 11:04:45, Jan Blunck wrote:
-> The BKL is still used in ext2_put_super(), ext2_fill_super(), ext2_sync_fs()
-> ext2_remount() and ext2_write_inode(). From these calls ext2_put_super(),
-> ext2_fill_super() and ext2_remount() are protected against each other by
-> the struct super_block s_umount rw semaphore. The call in ext2_write_inode()
-> could only protect the modification of the ext2_sb_info through
-> ext2_update_dynamic_rev() against concurrent ext2_sync_fs() or ext2_remount().
-> ext2_fill_super() and ext2_put_super() can be left out because you need a
-> valid filesystem reference in all three cases, which you do not have when
-> you are one of these functions.
-  This is not quite true. Actually, ext2_sync_fs() is called also with
-s_umount held (for reading) so it cannot race with any of the mounting /
-umounting functions. But it should probably be guarded against running two
-instances of ext2_sync_fs() in parallel.
-  Looking into the code, we probably have a race in ext2_write_inode that
-two threads can write one inode in parallel. But that's a separe issue from
-BKL removal.
-
-								Honza 
-
-> diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-> index 057074e..8b51416 100644
-> --- a/fs/ext2/inode.c
-> +++ b/fs/ext2/inode.c
-> @@ -22,7 +22,6 @@
->   *  Assorted race fixes, rewrite of ext2_get_block() by Al Viro, 2000
->   */
->  
-> -#include <linux/smp_lock.h>
->  #include <linux/time.h>
->  #include <linux/highuid.h>
->  #include <linux/pagemap.h>
-> @@ -1400,13 +1399,11 @@ int ext2_write_inode(struct inode *inode, int do_sync)
->  			       /* If this is the first large file
->  				* created, add a flag to the superblock.
->  				*/
-> -				lock_kernel();
->  				mutex_lock(&EXT2_SB(sb)->s_mutex);
->  				ext2_update_dynamic_rev(sb);
->  				EXT2_SET_RO_COMPAT_FEATURE(sb,
->  					EXT2_FEATURE_RO_COMPAT_LARGE_FILE);
->  				mutex_unlock(&EXT2_SB(sb)->s_mutex);
-> -				unlock_kernel();
->  				ext2_write_super(sb);
->  			}
->  		}
-> diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-> index d610eb9..7e819ac 100644
-> --- a/fs/ext2/super.c
-> +++ b/fs/ext2/super.c
-> @@ -26,7 +26,6 @@
->  #include <linux/random.h>
->  #include <linux/buffer_head.h>
->  #include <linux/exportfs.h>
-> -#include <linux/smp_lock.h>
->  #include <linux/vfs.h>
->  #include <linux/seq_file.h>
->  #include <linux/mount.h>
-> @@ -118,8 +117,6 @@ static void ext2_put_super (struct super_block * sb)
->  	int i;
->  	struct ext2_sb_info *sbi = EXT2_SB(sb);
->  
-> -	lock_kernel();
-> -
->  	if (sb->s_dirt && !(sb->s_flags & MS_RDONLY))
->  		ext2_sync_fs(sb, 1);
->  
-> @@ -143,8 +140,6 @@ static void ext2_put_super (struct super_block * sb)
->  	sb->s_fs_info = NULL;
->  	kfree(sbi->s_blockgroup_lock);
->  	kfree(sbi);
-> -
-> -	unlock_kernel();
->  }
->  
->  static struct kmem_cache * ext2_inode_cachep;
-> @@ -750,8 +745,6 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
->  	__le32 features;
->  	int err;
->  
-> -	lock_kernel();
-> -
->  	err = -ENOMEM;
->  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
->  	if (!sbi)
-> @@ -1077,7 +1070,6 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
->  		ext2_warning(sb, __func__,
->  			"mounting ext3 filesystem as ext2");
->  	ext2_setup_super (sb, es, sb->s_flags & MS_RDONLY);
-> -	unlock_kernel();
->  	return 0;
->  
->  cantfind_ext2:
-> @@ -1102,7 +1094,6 @@ failed_sbi:
->  	kfree(sbi->s_blockgroup_lock);
->  	kfree(sbi);
->  failed_unlock:
-> -	unlock_kernel();
->  	return ret;
->  }
->  
-> @@ -1140,7 +1131,6 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
->  {
->  	struct ext2_super_block *es = EXT2_SB(sb)->s_es;
->  
-> -	lock_kernel();
->  	if (es->s_state & cpu_to_le16(EXT2_VALID_FS)) {
->  		ext2_debug("setting valid to 0\n");
->  		es->s_state &= cpu_to_le16(~EXT2_VALID_FS);
-> @@ -1154,7 +1144,6 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
->  		ext2_commit_super(sb, es);
->  	}
->  	sb->s_dirt = 0;
-> -	unlock_kernel();
->  
->  	return 0;
->  }
-> @@ -1181,7 +1170,6 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
->  	unsigned long old_sb_flags;
->  	int err;
->  
-> -	lock_kernel();
->  	mutex_lock(&sbi->s_mutex);
->  
->  	/* Store the old options */
-> @@ -1221,14 +1209,12 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
->  	}
->  	if ((*flags & MS_RDONLY) == (sb->s_flags & MS_RDONLY)) {
->  		mutex_unlock(&sbi->s_mutex);
-> -		unlock_kernel();
->  		return 0;
->  	}
->  	if (*flags & MS_RDONLY) {
->  		if (le16_to_cpu(es->s_state) & EXT2_VALID_FS ||
->  		    !(sbi->s_mount_state & EXT2_VALID_FS)) {
->  			mutex_unlock(&sbi->s_mutex);
-> -			unlock_kernel();
->  			return 0;
->  		}
->  		/*
-> @@ -1258,7 +1244,6 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
->  	}
->  	ext2_sync_super(sb, es);
->  	mutex_unlock(&sbi->s_mutex);
-> -	unlock_kernel();
->  	return 0;
->  restore_opts:
->  	sbi->s_mount_opt = old_opts.s_mount_opt;
-> @@ -1266,7 +1251,6 @@ restore_opts:
->  	sbi->s_resgid = old_opts.s_resgid;
->  	sb->s_flags = old_sb_flags;
->  	mutex_unlock(&sbi->s_mutex);
-> -	unlock_kernel();
->  	return err;
->  }
->  
-> -- 
-> 1.6.4.2
+William Allen Simpson wrote:
+> Yes.  Just shuffling the pointers without ever freeing anything.  So,
+> there's nothing for call_rcu() to do, and nothing else to synchronize
+> (only the pointers).  This assumes that after _unlock_ any CPU cache
+> with an old pointer->expires will hit the _lock_ code, and that will
+> update *both* ->expires and the other array elements concurrently?
 > 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Reiterating, I've not found Documentation showing that this code works:
+
++	unsigned long jiffy = jiffies;
++
++	if (unlikely(time_after(jiffy, tcp_secret_generating->expires))) {
++		spin_lock_bh(&tcp_secret_locker);
++		if (!time_after(jiffy, tcp_secret_generating->expires)) {
++			/* refreshed by another */
++			spin_unlock_bh(&tcp_secret_locker);
++			memcpy(&xvp->cookie_bakery[0],
++			       &tcp_secret_generating->secrets[0],
++			       sizeof(tcp_secret_generating->secrets));
++		} else {
+
+How is it ensured that an old tcp_secret_generating or an old ->expires,
+followed by a spin_lock, has updated both?
+
+And even when both are updated, then every word of the ->secrets array has
+also been updated in the local cache?
+
+Is this a property of spin_lock()?  Or spin_unlock()?
