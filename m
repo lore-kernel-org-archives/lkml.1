@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbZKEFjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbZKEFgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582AbZKEFjB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 00:39:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZKEFjA
+	id S1754611AbZKEFgw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 00:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZKEFgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 00:39:00 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55012 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbZKEFi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 00:38:59 -0500
-Message-ID: <4AF2641A.7030306@cn.fujitsu.com>
-Date: Thu, 05 Nov 2009 13:35:22 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 5 Nov 2009 00:36:52 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:60313 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbZKEFgv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 00:36:51 -0500
+Message-ID: <4AF26471.6010705@us.ibm.com>
+Date: Wed, 04 Nov 2009 21:36:49 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 09/20] blkio: Porpogate blkio cgroup weight or ioprio
- class updation to cfq groups
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-10-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1257291837-6246-10-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
+       Mike Fulton <fultonm@ca.ibm.com>, Sean Foley <Sean_Foley@ca.ibm.com>
+Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
+References: <20091105112303.208A.A69D9226@jp.fujitsu.com> <4AF25FFB.5020700@us.ibm.com> <20091105141953.2090.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091105141953.2090.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> o If a user decides the change the weight or ioprio class of a cgroup, this
->   information needs to be passed on to io controlling policy module also so
->   that new information can take effect.
+KOSAKI Motohiro wrote:
+>> KOSAKI Motohiro wrote:
+>>
+>>> John, I'd prefer to suggested another design.
+>>> How about this?
+>>>
+>>> 1. remove pid argument from prctl
+>>> 2. cancel pthread_setname_np()
+>>> 3. instead, create pthread_attr_setname_np()
+>>> 4. pthread_create() change own thread name by pthread_attr.
+>>>
+>>> It avoid many racy problem automatically.
+>> Perhaps, but it also greatly reduces the flexibility of the 
+>> implementation by restricting name changes to create time.
 > 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
->  block/blk-cgroup.c  |   16 ++++++++++++++++
->  block/cfq-iosched.c |   18 ++++++++++++++++++
->  2 files changed, 34 insertions(+), 0 deletions(-)
+> Hm.
+> if your program really need to change another thread name, can you please tell us
+> why it is necessary and when it is used?
 > 
-> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
-> index 7bde5c4..0d52a2c 100644
-> --- a/block/blk-cgroup.c
-> +++ b/block/blk-cgroup.c
-> @@ -13,6 +13,10 @@
->  #include <linux/ioprio.h>
->  #include "blk-cgroup.h"
->  
-> +extern void cfq_update_blkio_group_weight(struct blkio_group *, unsigned int);
-> +extern void cfq_update_blkio_group_ioprio_class(struct blkio_group *,
-> +		unsigned short);
-> +
->  struct blkio_cgroup blkio_root_cgroup = {
->  	.weight = BLKIO_WEIGHT_DEFAULT,
->  	.ioprio_class = IOPRIO_CLASS_BE,
-> @@ -75,12 +79,18 @@ static int
->  blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
->  {
->  	struct blkio_cgroup *blkcg;
-> +	struct blkio_group *blkg;
-> +	struct hlist_node *n;
->  
->  	if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
->  		return -EINVAL;
->  
->  	blkcg = cgroup_to_blkio_cgroup(cgroup);
-> +	spin_lock_irq(&blkcg->lock);
->  	blkcg->weight = (unsigned int)val;
-> +	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node)
-> +		cfq_update_blkio_group_weight(blkg, blkcg->weight);
-> +	spin_unlock_irq(&blkcg->lock);
->  	return 0;
->  }
->  
-> @@ -88,12 +98,18 @@ static int blkiocg_ioprio_class_write(struct cgroup *cgroup,
->  					struct cftype *cftype, u64 val)
->  {
->  	struct blkio_cgroup *blkcg;
-> +	struct blkio_group *blkg;
-> +	struct hlist_node *n;
->  
->  	if (val < IOPRIO_CLASS_RT || val > IOPRIO_CLASS_IDLE)
->  		return -EINVAL;
->  
->  	blkcg = cgroup_to_blkio_cgroup(cgroup);
-> +	spin_lock_irq(&blkcg->lock);
->  	blkcg->ioprio_class = (unsigned int)val;
-> +	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node)
-> +		cfq_update_blkio_group_weight(blkg, blkcg->weight);
 
-  Here should be cfq_update_blkio_group_ioprio_class()
+I think John's previous mails covered that pretty well. As for doing the 
+name change at create time, or sometime later, it just seems to me that 
+the flexibility of doing so later is worth having. While I know we don't 
+have to follow other systems implementations, in this case 
+pthread_setname_np() seems a reasonable model to follow to me.
 
-Thanks 
-Gui
-
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
