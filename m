@@ -1,149 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbZKEF37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbZKEFjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbZKEF37 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 00:29:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZKEF36
+	id S1754582AbZKEFjB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 00:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZKEFjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 00:29:58 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:55934 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbZKEF35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 00:29:57 -0500
-Date: Wed, 4 Nov 2009 21:30:53 -0800
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com, roland@redhat.com,
-       arnd@arndb.de, hpa@zytor.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Containers <containers@lists.linux-foundation.org>
-Subject: [v11][PATCH 0/9] Implement clone_with_pids() system call
-Message-ID: <20091105053053.GA11289@us.ibm.com>
+	Thu, 5 Nov 2009 00:39:00 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55012 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbZKEFi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 00:38:59 -0500
+Message-ID: <4AF2641A.7030306@cn.fujitsu.com>
+Date: Thu, 05 Nov 2009 13:35:22 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 09/20] blkio: Porpogate blkio cgroup weight or ioprio
+ class updation to cfq groups
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-10-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1257291837-6246-10-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Vivek Goyal wrote:
+> o If a user decides the change the weight or ioprio class of a cgroup, this
+>   information needs to be passed on to io controlling policy module also so
+>   that new information can take effect.
+> 
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/blk-cgroup.c  |   16 ++++++++++++++++
+>  block/cfq-iosched.c |   18 ++++++++++++++++++
+>  2 files changed, 34 insertions(+), 0 deletions(-)
+> 
+> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+> index 7bde5c4..0d52a2c 100644
+> --- a/block/blk-cgroup.c
+> +++ b/block/blk-cgroup.c
+> @@ -13,6 +13,10 @@
+>  #include <linux/ioprio.h>
+>  #include "blk-cgroup.h"
+>  
+> +extern void cfq_update_blkio_group_weight(struct blkio_group *, unsigned int);
+> +extern void cfq_update_blkio_group_ioprio_class(struct blkio_group *,
+> +		unsigned short);
+> +
+>  struct blkio_cgroup blkio_root_cgroup = {
+>  	.weight = BLKIO_WEIGHT_DEFAULT,
+>  	.ioprio_class = IOPRIO_CLASS_BE,
+> @@ -75,12 +79,18 @@ static int
+>  blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+>  {
+>  	struct blkio_cgroup *blkcg;
+> +	struct blkio_group *blkg;
+> +	struct hlist_node *n;
+>  
+>  	if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
+>  		return -EINVAL;
+>  
+>  	blkcg = cgroup_to_blkio_cgroup(cgroup);
+> +	spin_lock_irq(&blkcg->lock);
+>  	blkcg->weight = (unsigned int)val;
+> +	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node)
+> +		cfq_update_blkio_group_weight(blkg, blkcg->weight);
+> +	spin_unlock_irq(&blkcg->lock);
+>  	return 0;
+>  }
+>  
+> @@ -88,12 +98,18 @@ static int blkiocg_ioprio_class_write(struct cgroup *cgroup,
+>  					struct cftype *cftype, u64 val)
+>  {
+>  	struct blkio_cgroup *blkcg;
+> +	struct blkio_group *blkg;
+> +	struct hlist_node *n;
+>  
+>  	if (val < IOPRIO_CLASS_RT || val > IOPRIO_CLASS_IDLE)
+>  		return -EINVAL;
+>  
+>  	blkcg = cgroup_to_blkio_cgroup(cgroup);
+> +	spin_lock_irq(&blkcg->lock);
+>  	blkcg->ioprio_class = (unsigned int)val;
+> +	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node)
+> +		cfq_update_blkio_group_weight(blkg, blkcg->weight);
 
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: [v11][PATCH 0/9] Implement clone_with_pids() system call
+  Here should be cfq_update_blkio_group_ioprio_class()
 
-To support application checkpoint/restart, a task must have the same pid it
-had when it was checkpointed.  When containers are nested, the tasks within
-the containers exist in multiple pid namespaces and hence have multiple pids
-to specify during restart.
+Thanks 
+Gui
 
-This patchset implements a new system call, clone_with_pids() that lets a
-process specify the pids of the child process.
-
-Patches 1 through 6 are helper patches needed for choosing a pid for the
-child process.
-
-PATCH 8 defines a prototype of the new system call. PATCH 9 adds some
-documentation on the new system call, some/all of which will eventually
-go into a man page.
-
-Changelog[v11]:
-	- [Dave Hansen] Move clone_args validation checks to arch-indpeendent
-	  code.
-	- [Oren Laadan] Make args_size a parameter to system call and remove
-	  it from 'struct clone_args'
-
-Changelog[v10]:
-	- [Linus Torvalds] Use PTREGSCALL() implementation for clone rather
-	  than the generic system call
-	- Rename clone3() to clone_with_pids()
-	- Update Documentation/clone_with_pids() to show example usage with
-	  the PTREGSCALL implementation.
-
-Changelog[v9]:
-	- [Pavel Emelyanov] Drop the patch that made 'pid_max' a property
-	  of struct pid_namespace
-	- [Roland McGrath, H. Peter Anvin and earlier on, Serge Hallyn] To
-	  avoid inadvertent truncation clone_flags, preserve the first
-	  parameter of clone3() as 'u32 clone_flags' and specify newer
-	  flags in clone_args.flags_high (PATCH 8/9 and PATCH 9/9)
-	- [Eric Biederman] Generalize alloc_pidmap() code to simplify and
-	  remove duplication (see PATCH 3/9].
-	  
-Changelog[v8]:
-	- [Oren Laadan, Louis Rilling, KOSAKI Motohiro]
-	  The name 'clone2()' is in use - renamed new syscall to clone3().
-	- [Oren Laadan] ->parent_tidptr and ->child_tidptr need to be 64bit.
-	- [Oren Laadan] Ensure that unused fields/flags in clone_struct are 0.
-	  (Added [PATCH 7/10] to the patchset).
-
-Changelog[v7]:
-	- [Peter Zijlstra, Arnd Bergmann]
-	  Group the arguments to clone2() into a 'struct clone_arg' to
-	  workaround the issue of exceeding 6 arguments to the system call.
-	  Also define clone-flags as u64 to allow additional clone-flags.
-
-Changelog[v6]:
-	- [Nathan Lynch, Arnd Bergmann, H. Peter Anvin, Linus Torvalds]
-	  Change 'pid_set.pids' to 'pid_t pids[]' so sizeof(struct pid_set) is
-	  constant across architectures (Patches 7, 8).
-	- (Nathan Lynch) Change pid_set.num_pids to unsigned and remove
-	  'unum_pids < 0' check (Patches 7,8)
-	- (Pavel Machek) New patch (Patch 9) to add some documentation.
-
-Changelog[v5]:
-	- Make 'pid_max' a property of pid_ns (Integrated Serge Hallyn's patch
-	  into this set)
-	- (Eric Biederman): Avoid the new function, set_pidmap() - added
-	  couple of checks on 'target_pid' in alloc_pidmap() itself.
-
-=== IMPORTANT NOTE:
-
-clone() system call has another limitation - all but one bits in clone-flags
-are in use and if more new clone-flags are needed, we will need a variant of
-the clone() system call. 
-
-It appears to make sense to try and extend this new system call to address
-this limitation as well. The requirements of a new clone system call could
-then be summarized as:
-
-	- do everything clone() does today, and
-	- give application an ability to choose pids for the child process
-	  in all ancestor pid namespaces, and
-	- allow more clone_flags
-
-Contstraints:
-
-	- system-calls are restricted to 6 parameters and clone() already
-	  takes 5 parameters, any extension to clone() interface would require
-	  one or more copy_from_user().  (Not sure if copy_from_user() of ~40
-	  bytes would have a significant impact on performance of clone()).
-
-Based on these requirements and constraints, we explored a couple of system
-call interfaces (in earlier versions of this patchset). Based on input from
-Arnd Bergmann and others, the new interface of the system call is: 
-
-	struct clone_args {
-		u64 clone_flags_high;
-		u64 child_stack_base;
-		u64 child_stack_size;
-		u64 parent_tid_ptr;
-		u64 child_tid_ptr;
-		u32 nr_pids;
-		u32 reserved0;
-		u64 reserved1;
-	};
-
-	sys_clone_with_pids(u32 flags_low, struct clone_args *cargs, 
-			int args_size, pid_t *pids)
-
-Details of the struct clone_args and the usage are explained in the
-documentation (PATCH 9/9).
-
-NOTE:
-	While this patchset enables support for more clone-flags, actual
-	implementation for additional clone-flags is best implemented as
-	a separate patchset (PATCH 8/9 identifies some TODOs)
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
