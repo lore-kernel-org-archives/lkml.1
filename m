@@ -1,180 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbZKECox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZKECwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbZKECox (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 21:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZKECow
+	id S1755423AbZKECwc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 21:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZKECwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 21:44:52 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:1766 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755193AbZKECov convert rfc822-to-8bit (ORCPT
+	Wed, 4 Nov 2009 21:52:31 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:53076 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755014AbZKECwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 21:44:51 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:from:date:message-id:
-	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=syJ8mYFb/XF4Y+i/A+zMWffBXKIHXPrIByl5z9lWnstfSDyvxdR5CjtfscHVe8qxN
-	YcIHDEG6/jGV1LrP0vc2g==
+	Wed, 4 Nov 2009 21:52:31 -0500
+Date: Thu, 5 Nov 2009 03:52:35 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Valdis.Kletnieks@vt.edu
+cc: Martin Nybo Andersen <tweek@tweek.dk>,
+       kevin granade <kevin.granade@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Ryan C. Gordon" <icculus@icculus.org>,
+       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: package managers [was: FatELF patches...]
+In-Reply-To: <5659.1257387887@turing-police.cc.vt.edu>
+Message-ID: <Pine.LNX.4.64.0911050329130.18234@artax.karlin.mff.cuni.cz>
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
+ <7004b08e0911041332x259c02afg612be7eb02e4d6bb@mail.gmail.com>
+ <Pine.LNX.4.64.0911042244030.24799@artax.karlin.mff.cuni.cz>
+ <200911042343.01957.tweek@tweek.dk>           
+ <Pine.LNX.4.64.0911050019540.1469@artax.karlin.mff.cuni.cz>
+ <5659.1257387887@turing-police.cc.vt.edu>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-In-Reply-To: <20091104163752.GB2870@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> 
-	<1257291837-6246-3-git-send-email-vgoyal@redhat.com> <x49d43yuzud.fsf@segfault.boston.devel.redhat.com> 
-	<20091104163752.GB2870@redhat.com>
-From: Divyesh Shah <dpshah@google.com>
-Date: Wed, 4 Nov 2009 18:44:28 -0800
-Message-ID: <af41c7c40911041844v2905a9c6vb9d0649faf060726@mail.gmail.com>
-Subject: Re: [PATCH 02/20] blkio: Change CFQ to use CFS like queue time stamps
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, nauman@google.com, lizf@cn.fujitsu.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 4, 2009 at 8:37 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Wed, Nov 04, 2009 at 09:30:34AM -0500, Jeff Moyer wrote:
->> Vivek Goyal <vgoyal@redhat.com> writes:
->>
->
-> Thanks for the review Jeff.
->
->> > o Currently CFQ provides priority scaled time slices to processes. If a process
->> >   does not use the time slice, either because process did not have sufficient
->> >   IO to do or because think time of process is large and CFQ decided to disable
->> >   idling, then processes looses it time slice share.
->>                            ^^^^^^
->> loses
->>
->
-> Will fix it.
->
->> > o One possible way to handle this is implement CFS like time stamping of the
->> >   cfq queues and keep track of vtime. Next queue for execution will be selected
->> >   based on the one who got lowest vtime. This patch implemented time stamping
->> >   mechanism of cfq queues based on disk time used.
->> >
->> > o min_vdisktime represents the minimum vdisktime of the queue, either being
->>                                                           ^^^^^
->> >   serviced or leftmost element on the serviec tree.
->>
->> queue or service tree?  The latter seems to make more sense to me.
->
-> Yes, it should be service tree. Will fix it.
->
->>
->> > +static inline u64
->> > +cfq_delta_fair(unsigned long delta, struct cfq_queue *cfqq)
->> > +{
->> > +   const int base_slice = cfqq->cfqd->cfq_slice[cfq_cfqq_sync(cfqq)];
->> > +
->> > +   return delta + (base_slice/CFQ_SLICE_SCALE * (cfqq->ioprio - 4));
->> > +}
->>
->> cfq_scale_delta might be a better name.
->>
->
-> cfq_scale_delta sounds good. Will use it in next version.
->
->>
->> > +static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
->> > +{
->> > +   s64 delta = (s64)(vdisktime - min_vdisktime);
->> > +   if (delta > 0)
->> > +           min_vdisktime = vdisktime;
->> > +
->> > +   return min_vdisktime;
->> > +}
->> > +
->> > +static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
->> > +{
->> > +   s64 delta = (s64)(vdisktime - min_vdisktime);
->> > +   if (delta < 0)
->> > +           min_vdisktime = vdisktime;
->> > +
->> > +   return min_vdisktime;
->> > +}
->>
->> Is there a reason you've reimplemented min and max?
->
-> I think you are referring to min_t and max_t. Will these macros take care
-> of wrapping too?
->
-> For example, if I used min_t(u64, A, B), then unsigned comparision will
-> not work right wrapping has just taken place for any of the A or B. So if
-> A=-1 and B=2, then min_t() would return B as minimum. This is not right
-> in our case.
->
-> If we do signed comparison (min_t(s64, A, B)), that also seems to be
-> broken in another case where a value of variable moves from 63bits to 64bits,
-> (A=0x7fffffffffffffff, B=0x8000000000000000). Above will return B as minimum but
-> in our scanario, vdisktime will progress from 0x7fffffffffffffff to
-> 0x8000000000000000 and A should be returned as minimum (unsigned
-> comparison).
 
-Can you define and use u64 versions of time_before() and time_after()
-(from include/linux/jiffies.h) for your comparisons? These take care
-of wrapping as well. Maybe call them timestamp_before()/after().
 
->
-> Hence I took these difnitions from CFS.
+On Wed, 4 Nov 2009, Valdis.Kletnieks@vt.edu wrote:
 
-Also if these are exactly the same and you decide to continue using
-these, can we move them to a common header file (time.h or maybe add a
-vtime.h) and reuse?
+> On Thu, 05 Nov 2009 00:55:53 +0100, Mikulas Patocka said:
+> 
+> > In some situations, the package manager is even more dangerous than manual 
+> > install. For example, if you are manually installing new alpha-quality 
+> > version of mplayer, and it is buggy, you end up with a working system with 
+> > broken mplayer. If you install alpha-quality version from some package 
+> > repository, it may need experimental version of libfoo, that needs 
+> > experimental version of libfee, that needs experimental version of glibc, 
+> > that contains a bug 
+> 
+> Total bullshit.  You know *damned* well that if you were installing that 
+> alpha version of mplayer by hand, and it needed experimental libfoo, 
+> you'd go and build libfoo by hand, and then build the experimental 
+> libfee by hand, and then shoehorn in that glibc by hand, and bricked 
+> your system anyhow.
 
->
->>
->> > +   /*
->> > +    * Maintain a cache of leftmost tree entries (it is frequently
->> > +    * used)
->> > +    */
->>
->> You make it sound like there is a cache of more than one entry.  Please
->> fix the comment.
->
-> Will fix it.
->
->>
->> > +static void cfqq_served(struct cfq_queue *cfqq, unsigned long served)
->> > +{
->> > +   /*
->> > +    * We don't want to charge more than allocated slice otherwise this
->> > +    * queue can miss one dispatch round doubling max latencies. On the
->> > +    * other hand we don't want to charge less than allocated slice as
->> > +    * we stick to CFQ theme of queue loosing its share if it does not
->>                                           ^^^^^^^
->> losing
->>
->
-> Will fix it.
->
->>
->> > +/*
->> > + * Handles three operations.
->> > + * Addition of a new queue to service tree, when a new request comes in.
->> > + * Resorting of an expiring queue (used after slice expired)
->> > + * Requeuing a queue at the front (used during preemption).
->> > + */
->> > +static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->> > +                           bool add_front, unsigned long service)
->>
->> service?  Can we come up with a better name that actually hints at what
->> this is?  service_time, maybe?
->
-> Ok, service_time sounds good. Will change it.
->
->>
->>
->> Mostly this looks pretty good and is fairly easy to read.
->
-> Thanks
-> Vivek
->
+No, if I compile alpha version of mplayer by hand, it compiles and links 
+against whatever libraries I have on my system. If I pull it out of some 
+"testing" repository, it is already compiled and linked against libraries 
+in the same "testing" repository and it will load the system with crap.
+
+That is the unfortunate reality of not having a binary standard :-(
+
+> Or if you're arguing "you'd give up after seeing it needed an experimental
+> libfoo", I'll counter "you'd hopefully think twice if yum said it was
+> installing a experimental mplayer, and dragging in a whole chain of pre-reqs".
+
+... or use --disable-libfoo if it insists on newer version and I don't 
+want to upgrade it. Or maybe the configure scripts detects on its own that 
+the library is too old will compile without new features. Or it uses 
+libfoo shipped with the sources.
+
+But if the binary in the package is compiled with --enable-libfoo, there 
+is no other way. It forces libfoo upgrade.
+
+Mikulas
