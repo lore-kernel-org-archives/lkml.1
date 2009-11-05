@@ -1,299 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZKEBlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZKECOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZKEBlv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 20:41:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZKEBlv
+	id S1755027AbZKECOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 21:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZKECOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 20:41:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35448 "EHLO hera.kernel.org"
+	Wed, 4 Nov 2009 21:14:53 -0500
+Received: from mga14.intel.com ([143.182.124.37]:4116 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbZKEBlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 20:41:49 -0500
-Message-ID: <4AF22D26.4070500@kernel.org>
-Date: Wed, 04 Nov 2009 17:40:54 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
+	id S1751171AbZKECOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 21:14:53 -0500
+X-ExtLoop1: 1
+Date: Thu, 5 Nov 2009 10:14:56 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH 2/2] pci: pciehp update the slot bridge res to get big range
- for pcie devices - v9
-References: <4ADEB601.8020200@kernel.org>	<4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org>	<4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org>
-In-Reply-To: <4AF22CF1.1020508@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Andi Kleen <andi@firstfloor.org>,
+       "Li, Haicheng" <haicheng.li@intel.com>
+Subject: Re: [PATCH] page-types: decode flags directly from command line
+Message-ID: <20091105021456.GA9328@localhost>
+References: <20091103225441.GB4087@grease> <20091104121832.GB26504@localhost> <20091104204008.GA8211@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104204008.GA8211@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alex,
 
-move out bus_size_bridges and assign resources out of pciehp_add_bridge()
-and at last do them all together one time including slot bridge, to avoid to
-call assign resources several times, when there are several bridges under the
-slot bridge.
+It's easier to illustrate the idea with example and code :)
 
-need to introduce pci_bridge_assign_resources there.
+# Documentation/vm/page-types -d 0x10,anon
+0x0000000000001010      ____D_______a_____________________      dirty,anonymous
 
-handle the case the slot bridge that doesn't get pre-allocated big enough res
-from FW.
-for example pcie devices need 256M, but the bridge only get preallocated 2M...
 
-pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
-update res is not updated to bridge BAR. that is bridge is enabled already for
-port service.
-
-v2: address Alex's concern about pci remove/rescan feature about
-    pci_setup_bridge changes.
-v3: Kenji pointed out that pci_config_slot need to be called before
-    pci_bus_add_devices()
-v4: move out pci_is_enabled checkout of pci_setup_bridge()
-v5: change the applying sequence.
-v6: change the functions name according to Jesse
-v8: address Eric's concern, only overwrite leaf bridge resource that is not
-     big enough
-v9: refresh to be applied after bjorn's patch, and remove trick about save
-    size and restore resource second try.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/pci/hotplug/pciehp_pci.c |   23 +++++-
- drivers/pci/setup-bus.c          |  129 +++++++++++++++++++++++++++++++++++++--
- include/linux/pci.h              |    1 
- 3 files changed, 143 insertions(+), 10 deletions(-)
-
-Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
-+++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
-@@ -53,17 +53,15 @@ static int __ref pciehp_add_bridge(struc
- 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
- 	if (!dev->subordinate)
- 		return -1;
--	pci_bus_size_bridges(dev->subordinate);
--	pci_bus_assign_resources(parent);
--	pci_enable_bridges(parent);
--	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
- 
- int pciehp_configure_device(struct slot *p_slot)
- {
- 	struct pci_dev *dev;
--	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
-+	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
-+	struct pci_bus *parent = bridge->subordinate;
- 	int num, fn;
- 	struct controller *ctrl = p_slot->ctrl;
- 
-@@ -96,12 +94,25 @@ int pciehp_configure_device(struct slot
- 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
- 			pciehp_add_bridge(dev);
- 		}
-+		pci_dev_put(dev);
-+	}
-+
-+	pci_assign_unassigned_bridge_resources(bridge);
-+
-+	for (fn = 0; fn < 8; fn++) {
-+		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
-+		if (!dev)
-+			continue;
-+		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
-+			pci_dev_put(dev);
-+			continue;
-+		}
- 		pci_configure_slot(dev);
- 		pci_dev_put(dev);
- 	}
- 
--	pci_bus_assign_resources(parent);
- 	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/pci/setup-bus.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -68,6 +68,52 @@ static void free_failed_list(struct reso
- 	head->next = NULL;
- }
- 
-+static void pdev_assign_resources_sorted(struct pci_dev *dev,
-+				 struct resource_list *fail_head)
++static void describe_flags(const char *optarg)
 +{
-+	struct resource *res;
-+	struct resource_list head, *list, *tmp;
-+	int idx;
-+	u16 class = dev->class >> 8;
++	uint64_t flags = parse_flag_names(optarg, 0);
 +
-+	head.next = NULL;
-+
-+	/* Don't touch classless devices or host bridges or ioapics.  */
-+	if (class == PCI_CLASS_NOT_DEFINED || class == PCI_CLASS_BRIDGE_HOST)
-+		return;
-+
-+	/* Don't touch ioapic devices already enabled by firmware */
-+	if (class == PCI_CLASS_SYSTEM_PIC) {
-+		u16 command;
-+		pci_read_config_word(dev, PCI_COMMAND, &command);
-+		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
-+			return;
-+	}
-+
-+	pdev_sort_resources(dev, &head);
-+
-+	for (list = head.next; list;) {
-+		res = list->res;
-+		idx = res - &list->dev->resource[0];
-+		if (pci_assign_resource(list->dev, idx)) {
-+			if (fail_head && !list->dev->subordinate &&
-+			    !pci_is_root_bus(list->dev->bus)) {
-+				/*
-+				 * device need to keep flags and size
-+				 * for second try
-+				 */
-+				add_to_failed_list(fail_head, list->dev, res);
-+			} else {
-+				res->start = 0;
-+				res->end = 0;
-+				res->flags = 0;
-+			}
-+		}
-+		tmp = list;
-+		list = list->next;
-+		kfree(tmp);
-+	}
++	printf("0x%016llx\t%s\t%s\n",
++	       (unsigned long long)flags,
++	       page_flag_name(flags),
++	       page_flag_longname(flags));
 +}
- static void pbus_assign_resources_sorted(const struct pci_bus *bus,
- 					 struct resource_list *fail_head)
- {
-@@ -282,9 +328,6 @@ static void __pci_setup_bridge(struct pc
- {
- 	struct pci_dev *bridge = bus->self;
  
--	if (pci_is_enabled(bridge))
--		return;
--
- 	dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
- 		 bus->secondary, bus->subordinate);
- 
-@@ -645,7 +688,8 @@ static void __ref __pci_bus_assign_resou
- 
- 		switch (dev->class >> 8) {
- 		case PCI_CLASS_BRIDGE_PCI:
--			pci_setup_bridge(b);
-+			if (!pci_is_enabled(dev))
-+				pci_setup_bridge(b);
- 			break;
- 
- 		case PCI_CLASS_BRIDGE_CARDBUS:
-@@ -666,6 +710,34 @@ void __ref pci_bus_assign_resources(cons
- }
- EXPORT_SYMBOL(pci_bus_assign_resources);
- 
-+static void __ref __pci_bridge_assign_resources(const struct pci_dev *bridge,
-+					 struct resource_list *fail_head)
-+{
-+	struct pci_bus *b;
-+
-+	pdev_assign_resources_sorted((struct pci_dev *)bridge, fail_head);
-+
-+	b = bridge->subordinate;
-+	if (!b)
-+		return;
-+
-+	__pci_bus_assign_resources(b, fail_head);
-+
-+	switch (bridge->class >> 8) {
-+	case PCI_CLASS_BRIDGE_PCI:
-+		pci_setup_bridge(b);
-+		break;
-+
-+	case PCI_CLASS_BRIDGE_CARDBUS:
-+		pci_setup_cardbus(b);
-+		break;
-+
-+	default:
-+		dev_info(&bridge->dev, "not setting up bridge for bus "
-+			 "%04x:%02x\n", pci_domain_nr(b), b->number);
-+		break;
-+	}
-+}
- static void release_children_resource(struct resource *r)
- {
- 	struct resource *p;
-@@ -841,3 +913,52 @@ enable_and_dump:
- 		pci_bus_dump_resources(bus);
- 	}
- }
-+
-+void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge)
-+{
-+	struct pci_bus *bus;
-+	struct pci_bus *parent = bridge->subordinate;
-+	bool second_tried = false;
-+	struct resource_list head, *list, *tmp;
-+	int retval;
-+	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
-+				  IORESOURCE_PREFETCH;
-+
-+again:
-+	head.next = NULL;
-+
-+	pci_bus_size_bridges(parent);
-+	pci_clear_master(bridge);
-+	__pci_bridge_assign_resources(bridge, &head);
-+	retval = pci_reenable_device(bridge);
-+	pci_set_master(bridge);
-+	pci_enable_bridges(parent);
-+
-+	/* any device complain? */
-+	if (!head.next)
-+		return;
-+
-+	if (second_tried) {
-+		/* still fail, don't want to try more */
-+		free_failed_list(&head);
-+		return;
-+	}
-+
-+	second_tried = true;
-+	printk(KERN_DEBUG "PCI: second try to assign unassigned res\n");
-+
-+	/*
-+	 * Try to release leaf bridge's resources that doesn't fit resource of
-+	 * child device under that bridge
-+	 */
-+	for (list = head.next; list;) {
-+		bus = list->dev->bus;
-+		pci_bus_release_unused_bridge_res(bus,
-+				 list->res->flags & type_mask);
-+		tmp = list;
-+		list = list->next;
-+		kfree(tmp);
-+	}
-+
-+	goto again;
-+}
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -767,6 +767,7 @@ void pci_bus_assign_resources(const stru
- void pci_bus_size_bridges(struct pci_bus *bus);
- int pci_claim_resource(struct pci_dev *, int);
- void pci_assign_unassigned_resources(void);
-+void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge);
- void pdev_enable_device(struct pci_dev *);
- void pdev_sort_resources(struct pci_dev *, struct resource_list *);
- int pci_enable_resources(struct pci_dev *, int mask);
++		case 'd':
++			opt_no_summary = 1;
++			describe_flags(optarg);
++			break;
+
+Thanks,
+Fengguang
+
+On Thu, Nov 05, 2009 at 04:40:08AM +0800, Alex Chiang wrote:
+> Hi Fengguang,
+> 
+> * Wu Fengguang <fengguang.wu@intel.com>:
+> > On Wed, Nov 04, 2009 at 06:54:41AM +0800, Alex Chiang wrote:
+> > > Why is this useful? For instance, if you're using memory hotplug
+> > > and see this in /var/log/messages:
+> > > 
+> > > 	kernel: removing from LRU failed 3836dd0/1/1e00000000000400
+> > > 
+> > > It would be nice to decode those page flags without staring at
+> > > the source.
+> > 
+> > In fact it's more than decode - encoding is also possible with the
+> > _same_ code! So maybe "-d" and help message will not be all that
+> > appropriate.
+> 
+> I'm sorry, I don't understand this use case, so I'm not sure what
+> you're asking me to do.
+> 
+> You're saying that a use case would be something like:
+> 
+> 	./page-types --encode referenced,mmap
+> 	0x0000000000000004
+> 
+> ?
+> 
+> If that's what you're asking for, I guess I'm not sure why that's
+> so useful, but then again, I'm a vm n00b so there are probably
+> lots of things I don't understand. ;)
+> 
+> > > Example usage and output:
+> > > 
+> > > linux-2.6/Documentation/vm$ ./page-types -d 0x1e00000000000400
+> > >              flags	page-count       MB  symbolic-flags			long-symbolic-flags
+> > > 0x1e00000000000400	         1        0  __________B_______________________buddy
+> > >              total	         1        0
+> > 
+> > The output is a bit redundant - so does the code. Could you simplify
+> > them a bit?
+> 
+> Well, the code is redundant, but add_page() / show_summary() is a
+> simple sequence.
+> 
+> In contrast, I think I'd have to modify walk_addr_ranges() and
+> maybe walk_pfn() to do something special when we don't really
+> want to do any address space walking, and simply want to
+> decode/encode some user input.
+> 
+> Maybe I don't understand you fully? Could you give me a better
+> idea of what you're looking for?
+> 
+> As for the output, I'm just reusing show_summary(). Maybe we
+> don't need the flags, page-count, and MB columns, but again, the
+> patch would be more intrusisive because we'd have to teach
+> show_summary() about the special case.
+> 
+> Anyway, I'm happy to make changes closer to what you're looking
+> for, but I'd like some more guidance as to what you're expecting.
+> 
+> Thanks,
+> /ac
