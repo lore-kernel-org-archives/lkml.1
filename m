@@ -1,86 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZKECd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZKECo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbZKECd6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 21:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZKECd5
+	id S1755383AbZKECo1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 21:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZKECo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 21:33:57 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:55513 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751956AbZKECd4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 21:33:56 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Gilad Ben-Yossef <gilad@codefidence.com>
-Cc: =?windows-1252?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Ori Finkelman <ori@comsleep.com>
-Subject: Re: 2.6.32-rc5-mmotm1101 - kernel BUG at net/ipv4/tcp_input.c:3707!
-In-Reply-To: Your message of "Wed, 04 Nov 2009 18:43:20 +0200."
-             <4AF1AF28.2030106@codefidence.com>
-From: Valdis.Kletnieks@vt.edu
-References: <5765.1257270611@turing-police.cc.vt.edu> <4AF07024.80103@gmail.com> <4AF08292.7090102@codefidence.com> <Pine.LNX.4.64.0911032330090.3488@melkinkari.cs.Helsinki.FI> <7916.1257300093@turing-police.cc.vt.edu>
-            <4AF1AF28.2030106@codefidence.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1257388392_4430P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 04 Nov 2009 21:33:12 -0500
-Message-ID: <6025.1257388392@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.34.98 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020206.4AF2396A.00B7,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Wed, 4 Nov 2009 21:44:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8357 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755178AbZKECo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 21:44:26 -0500
+From: Xiaotian Feng <dfeng@redhat.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com
+Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>
+Subject: [PATCH V2] x86: fix error return sequence in __ioremap_caller
+Date: Thu,  5 Nov 2009 10:43:51 +0800
+Message-Id: <1257389031-20429-1-git-send-email-dfeng@redhat.com>
+In-Reply-To: <20091104105149.GC13194@elte.hu>
+References: <20091104105149.GC13194@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1257388392_4430P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+kernel missed to free memtype if get_vm_area_caller failed in __ioremap_caller.
+This patch introduces error path to fix this and cleanup the repetitive error
+return sequence.  
 
-On Wed, 04 Nov 2009 18:43:20 +0200, Gilad Ben-Yossef said:
+Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+ arch/x86/mm/ioremap.c |   24 +++++++++++-------------
+ 1 files changed, 11 insertions(+), 13 deletions(-)
 
-> OK, I thing I've got it.
->=20
-> Kindly try the next patch. It goes on top (in addition to) the previous=
-=20
-> one. This should fix the crash.
-
-OK. much better.  Have been up for about 25 minutes now, and fetchmail ha=
-s
-pulled down e-mail several times, and no proboems seen.
-
-> There is still some small cruft in the handling of the per route TCP
-> options for IPv6 left, which means that the per route options might get=
-=20
-> ignored for
-> incoming IPv6 connections right now. I will fix this if this works.
-
-Yell if you want something tested. ;)
-
---==_Exmh_1257388392_4430P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK8jlocC3lWbTT17ARAksWAJ44jUJb0L8DbE4WmHfOIJs6AU89IQCg7W1u
-Z8LT0ZYlWPucVQe8d5ps5bg=
-=H/XB
------END PGP SIGNATURE-----
-
---==_Exmh_1257388392_4430P--
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 334e63c..7574575 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -170,8 +170,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
+ 				(unsigned long long)phys_addr,
+ 				(unsigned long long)(phys_addr + size),
+ 				prot_val, new_prot_val);
+-			free_memtype(phys_addr, phys_addr + size);
+-			return NULL;
++			goto err_free_memtype;
+ 		}
+ 		prot_val = new_prot_val;
+ 	}
+@@ -197,26 +196,25 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
+ 	 */
+ 	area = get_vm_area_caller(size, VM_IOREMAP, caller);
+ 	if (!area)
+-		return NULL;
++		goto err_free_memtype;
+ 	area->phys_addr = phys_addr;
+ 	vaddr = (unsigned long) area->addr;
+ 
+-	if (kernel_map_sync_memtype(phys_addr, size, prot_val)) {
+-		free_memtype(phys_addr, phys_addr + size);
+-		free_vm_area(area);
+-		return NULL;
+-	}
++	if (kernel_map_sync_memtype(phys_addr, size, prot_val)) 
++		goto err_free_area;
+ 
+-	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot)) {
+-		free_memtype(phys_addr, phys_addr + size);
+-		free_vm_area(area);
+-		return NULL;
+-	}
++	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot))
++		goto err_free_area;
+ 
+ 	ret_addr = (void __iomem *) (vaddr + offset);
+ 	mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
+ 
+ 	return ret_addr;
++err_free_area:
++	free_vm_area(area);
++err_free_memtype:
++	free_memtype(phys_addr, phys_addr + size);
++	return NULL;
+ }
+ 
+ /**
+-- 
+1.6.2.5
 
