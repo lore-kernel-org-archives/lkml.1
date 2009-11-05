@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbZKEUXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbZKEU3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbZKEUXD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 15:23:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758371AbZKEUXC
+	id S1758798AbZKEU3k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 15:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbZKEU3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 15:23:02 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:56348 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758255AbZKEUXB (ORCPT
+	Thu, 5 Nov 2009 15:29:39 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:30967 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758592AbZKEU3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 15:23:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=ZT4GJabwarNaDrIG7F+eR6HLAiDaLgsjIuLx+xcufVZUdEphCW3t9NxR/X3vEYJjAg
-         wV1yL/UQDik5nU2ODG1JHUbTT2qFe8E4FWnQWylxuawQH/de7Oy4MjN9gxlHfztzkOqp
-         N/5O11YWaOHZDx+lj77T2wqSV18ok/7sI58mk=
+	Thu, 5 Nov 2009 15:29:39 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
+Date: Thu, 5 Nov 2009 14:29:40 -0600
+User-Agent: KMail/1.9.10
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, rdh@east.sun.com,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+References: <19184.41676.262206.134000@gargle.gargle.HOWL> <200911051159.26046.bjorn.helgaas@hp.com> <20091105190707.GM10555@parisc-linux.org>
+In-Reply-To: <20091105190707.GM10555@parisc-linux.org>
 MIME-Version: 1.0
-From: Paolo Giarrusso <p.giarrusso@gmail.com>
-Date: Thu, 5 Nov 2009 21:22:45 +0100
-Message-ID: <a4d0c86c0911051222q1ec384a2u724e0c8b1432ddb6@mail.gmail.com>
-Subject: Daylight saving time & FAT
-To: hirofumi@mail.parknet.co.jp
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911051329.41893.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I'm an ex kernel developer, writing to you because of a problem with
-FAT and its Linux driver.
+On Thursday 05 November 2009 12:07:07 pm Matthew Wilcox wrote:
+> On Thu, Nov 05, 2009 at 12:59:25PM -0600, Bjorn Helgaas wrote:
+> > Here's another possibility, the idea being to collect all the PCIe
+> > stuff in one place.  This would require a lot of changes in the PCIe
+> > driver code, but most of them would be trivial.
+> 
+> I don't like the idea of kmallocing a 6- or 10-byte data structure
+> ... better to keep it in the pci_dev.  Maybe embedding a pcie_dev inside
+> the pci_dev would be a good idea, but unless there're more things to
+> move to it, this seems like a net loss to me.
 
-When re-rsync'ing two hard drives (one VFAT, one NTFS mounted with
-ntfs-3g) after a Daylight Saving Time change (I was on CEST, +0200,
-now I'm on CET, +0100), I discovered a one-hour time difference over
-all files (on FAT, they are one hour in future).
-My current understanding is that FAT stores times relative to the
-current timezone, and that's crappy (see fat_time_fat2unix(), in
-fs/fat/misc.c). But with the current code, it gets even more crappy -
-the same file will have a different _UTC_ timestamp depending on my
-current timezone, since the current offset from UTC is added to the
-stored timestamp to get the UTC time (I verified the timezone change
-would perfectly explain, even in sign, the time difference I found).
-That's why I guess that the FAT timestamps are wrong.
-I frankly doubt that Windows is so bad.
+That's true, it's not worth it for such a small structure.  I figured
+there would probably be more PCIe-related stuff that could go there,
+e.g., embedding the link_state directly.  But I haven't looked to
+see whether there actually is enough PCIe stuff to make it worthwhile.
 
-On DOS, they could get away without any conversion at all. But on
-current Windows systems? Either you find the right time zone at file
-saving time (too complicated IMHO) or ignore DST when saving/restoring
-time (i.e. pretend DST is not in effect, and add the shift if needed).
-I don't know right now what happens.
-I wrote this mail to discuss what would be the correct solution (the
-second?), and if it is possible to implement it.
+Bjorn
 
-Thanks for your attention
-Regards
--- 
-Paolo Giarrusso
