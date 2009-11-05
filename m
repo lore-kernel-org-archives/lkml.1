@@ -1,32 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbZKEDeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZKED21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311AbZKEDeX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 22:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZKEDeW
+	id S1755729AbZKED21 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 22:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbZKED20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 22:34:22 -0500
-Received: from web82002.mail.mud.yahoo.com ([66.163.178.246]:29108 "HELO
-	web82002.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751365AbZKEDeV (ORCPT
+	Wed, 4 Nov 2009 22:28:26 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:36213
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbZKED20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 22:34:21 -0500
-X-Greylist: delayed 606 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Nov 2009 22:34:21 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=bellsouth.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
-  b=EUZTL8uiWgKbh0VZqQyLf9W5lSDo/npvHgTBkw7Rw5woztXWarr2Jj1IUSQN7bwnRU3uUNdBxvOJ6GUwQU4/QAUUe++cPIonqSuezSNU5DY1cjMscawJCL6NzsEz8mAXXJ6+BwoaFhxwxOAVxmP660+09zeEwxpjaRXwMW9AQYc=;
-Message-ID: <356768.6865.qm@web82002.mail.mud.yahoo.com>
-X-YMail-OSG: NqkD8zgVM1nkpLmWusxfPSjr2JmB13gIioAgQ9v_2YVUGiPzA9UCC6c6bFfBPluNI0P_PoBiSaEOknQG37TTEy7J3K6tRXCDOQtdVSzRmt_Z8gXTuOXqlfA40nsYCcxZanJ4iZd0po650h3FExFBJUGTT_BA5WaQ7A9IRXIKsdvj.ytNu.aZOhecCUqoI1NqnGRhfob6Ar7jUuH0BDMD_bnKlxatm1tJQOQ6zb.hWbqkVm59I7rHWTT_5VHJEkbf8jxU4jIpm2LQU5lU1.sdtyPjMjl7fPOhq7Q94.xLU_d4l_tVjbDI3.R4_sArVEpXLH6d6RJnJ1PQgU0JuBhClOGfR0VwqHrvkmfn0myVipCp.6nuewyVgpFic3ngkTbl8fswkGfxfIjOxaR81_KSsyqDX_9T
-X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.361.4
-Date: Wed, 4 Nov 2009 19:24:20 -0800 (PST)
-From: Irish News Centre <irs.krrr@bellsouth.net>
-Reply-To: ers.derekwhite@live.com
-Subject: Re:
-To: undisclosed recipients:;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 4 Nov 2009 22:28:26 -0500
+Subject: Re: [PATCH 0/3 v2] linux infrared remote control drivers
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <1257379629.3074.13.camel@palomino.walls.org>
+Date: Wed, 4 Nov 2009 22:28:26 -0500
+Cc: Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Content-Transfer-Encoding: 7bit
+Message-Id: <2958557D-F4C1-43AC-B004-7C18C5632CC0@wilsonet.com>
+References: <200910200956.33391.jarod@redhat.com> <C5A8E7EC-81D6-49AA-A65F-9F5D3DED1690@wilsonet.com> <1257379629.3074.13.camel@palomino.walls.org>
+To: Andy Walls <awalls@radix.net>
+X-Mailer: Apple Mail (2.1076)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You won 750,000gbp.Send:Name,Age,Country
+On Nov 4, 2009, at 7:07 PM, Andy Walls wrote:
+
+> On Wed, 2009-11-04 at 17:56 -0500, Jarod Wilson wrote:
+>> On Oct 20, 2009, at 9:56 AM, Jarod Wilson wrote:
+>>
+>>> This here is a second go at submitting linux infrared remote control
+>>> (lirc) drivers for kernel inclusion, with a much smaller patch set
+>>> that
+>>> includes only the core lirc driver and two device drivers, all three
+>>> of
+>>> which have been heavily updated since the last submission, based on
+>>> feedback received.
+>>
+>> Hm. Submitting this while the vast majority of people who might  
+>> review
+>> it were at the Japan Linux Symposium seems like it might have been a
+>> bad idea. Or does no feedback mean its all good and ready to be
+>> merged? ;)
+>
+> Silence is concurrence. :)
+>
+> Actually I will note, that lirc_dev.h uses kfifo:
+>
+> http://git.wilsonet.com/linux-2.6-lirc.git/?a=blob_plain;f=drivers/input/lirc/lirc_dev.h;hb=f47f5e852d08f174c303d0ed53649733190014f7
+>
+> but it least it appear to be nicely wrappered in that file. Moving  
+> to a
+> new kfifo implementation should be fairly easy, if the kfifo change
+> makes it in first.
+
+Yeah, been keeping an eye on your own kfifo usage discussion w/lirc's  
+usage in mind... Thank you for blazing that trail. ;)
+
+-- 
+Jarod Wilson
+jarod@wilsonet.com
+
+
+
