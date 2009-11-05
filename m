@@ -1,78 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZKEGrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZKEGrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbZKEGrN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 01:47:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbZKEGrM
+	id S1756619AbZKEGrr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 01:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZKEGrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 01:47:12 -0500
-Received: from mga02.intel.com ([134.134.136.20]:20923 "EHLO mga02.intel.com"
+	Thu, 5 Nov 2009 01:47:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22261 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756025AbZKEGrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 01:47:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,684,1249282800"; 
-   d="scan'208";a="566715594"
-From: "Tian, Kevin" <kevin.tian@intel.com>
-To: Avi Kivity <avi@redhat.com>, Rik van Riel <riel@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Gleb Natapov <gleb@redhat.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Date: Thu, 5 Nov 2009 14:44:51 +0800
-Subject: RE: [PATCH 02/11] Add "handle page fault" PV helper.
-Thread-Topic: [PATCH 02/11] Add "handle page fault" PV helper.
-Thread-Index: AcpcQlVUfBflC1Y3SQey9svSowWv1ABoB5bw
-Message-ID: <0A882F4D99BBF6449D58E61AAFD7EDD6339E7098@pdsmsx502.ccr.corp.intel.com>
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
- <1257076590-29559-3-git-send-email-gleb@redhat.com>
- <20091102092214.GB8933@elte.hu> <4AEF2D0A.4070807@redhat.com>
- <4AEF3419.1050200@redhat.com> <4AEF6CC3.4000508@redhat.com>
- <4AEFB823.4040607@redhat.com>
-In-Reply-To: <4AEFB823.4040607@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="gb2312"
+	id S1756318AbZKEGrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 01:47:46 -0500
+Message-ID: <4AF274E5.5080205@redhat.com>
+Date: Thu, 05 Nov 2009 08:47:01 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Glauber Costa <glommer@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
+       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall	implementation
+References: <284e5d6c-7b31-4284-bd2d-c1d2ded1bc72@default>
+In-Reply-To: <284e5d6c-7b31-4284-bd2d-c1d2ded1bc72@default>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nA56lU16000510
 
->From: Avi Kivity
->Sent: 2009Äê11ÔÂ3ÈÕ 12:57
->
->On 11/03/2009 01:35 AM, Rik van Riel wrote:
->>> We can't add an exception vector since all the existing 
->ones are either
->>> taken or reserved.
+On 11/04/2009 10:30 PM, Dan Magenheimer wrote:
 >>
->>
->> I believe some are reserved for operating system use.
->
->Table 6-1 says:
->
->   9 |  | Coprocessor Segment Overrun (reserved)  |  Fault |  No  | 
->Floating-point instruction.2
->   15 |  ¡ª |  (Intel reserved. Do not use.) |   | No |
->   20-31 |  ¡ª | Intel reserved. Do not use.  |
->   32-255 |  ¡ª  | User Defined (Non-reserved) Interrupts |  Interrupt  
->|   | External interrupt or INT n instruction.
->
->So we can only use 32-255, but these are not fault-like 
->exceptions that 
->can be delivered with interrupts disabled.
->
+>> In this case we should provide a facility for this.
+>> Providing a global
+>> monotonic counter may be easier than providing a monotonic
+>> clock.  Hence
+>> my question.
+>>      
+> Maybe I'm misunderstanding something, but enterprise
+> apps can do this entirely on their own without any
+> kernel help, correct?
+>    
 
-would you really want to inject a fault-like exception here? Fault
-is architurally synchronous event while here apf is more like an 
-asynchronous interrupt as it's not caused by guest itself. If 
-guest is with interrupt disabled, preemption won't happen and 
-apf path just ends up "wait for page" hypercall to waste cycles.
+Within a process, yes.  Across processes, not without writable shared 
+memory.
 
-Thanks,
-Kevinÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+That's why I'm trying to understand what the actual requirements are.  
+Real monotonic, accurate, high resolution, low cost time sources are 
+hard to come by.
+
+>> I doubt it.  A discontinuity has occured, but what do we know
+>> about it? nothing.
+>>      
+> Actually, I think for many/most profiling applications,
+> just knowing a discontinuity occurred between two
+> timestamps is very useful as that one specific measurement
+> can be discarded.  If a discontinuity is invisible,
+> one clearly knows that a negative interval is bad,
+> but if an interval is very small or very large,
+> one never knows if it is due to a discontinuity or
+> due to some other reason.
+>
+> This would argue for a syscall/vsyscall that can
+> "return" two values: the "time" and a second
+> "continuity generation" counter.
+>
+>    
+
+I doubt it.  You should expect discontinuities in user space due to 
+being swapped out, scheduled out, migrated to a different cpu, or your 
+laptop lid being closed.  There are no guarantees to a userspace 
+application.  Even the kernel can expect discontinuities due to SMIs.  
+So an explicit notification about one type of discontinuity adds nothing.
+
+>>> True, though clock_gettime(CLOCK_MONOTONIC) can provide
+>>> the monotonicity where it is required.
+>>>        
+>> We have that already.  The question is how to implement it in
+>> a vsyscall.
+>>      
+> Oh, I see.  I missed that very crucial point.
+>
+> So, just to verify/clarify... There is NO WAY for
+> a vsyscall to ensure monotonicity (presumably because
+> the previous reading can't be safely stored?).  So
+> speed and "correctness" are mutually exclusive?
+>    
+
+Yes.
+
+> If true, yes, that's a potentially significant problem\
+> though an intelligent app can layer monotonicity
+> on top of the call I suppose.
+>    
+
+Unless it's a multi-process app with limited trust.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
