@@ -1,94 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbZKEWR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbZKEWST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758964AbZKEWR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 17:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758937AbZKEWR2
+	id S1758978AbZKEWST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 17:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758942AbZKEWST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 17:17:28 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33789 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758848AbZKEWR1 (ORCPT
+	Thu, 5 Nov 2009 17:18:19 -0500
+Received: from mail-px0-f179.google.com ([209.85.216.179]:37524 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758941AbZKEWSS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 17:17:27 -0500
-Date: Thu, 5 Nov 2009 23:17:25 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Doug Thompson <norsk5@yahoo.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] amd64_edac: syndromes loading
-Message-ID: <20091105221725.GA3683@elf.ucw.cz>
-References: <20091028163534.GA625@aftab>
- <143841.81095.qm@web50110.mail.re2.yahoo.com>
- <20091028172853.GE625@aftab>
- <20091101211305.GB2085@ucw.cz>
- <4AEE0CAA.4070403@zytor.com>
- <20091105132758.GC17984@aftab>
+	Thu, 5 Nov 2009 17:18:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LTYEwHLW3fZ2NTbFrVHvS2togvYaowTon8P7Nc9Qzkd3jC4nPAxPD/L5SuGoDL746w
+         DyAosPJHYIR0p3Wo5jhwQci6PitVwtOkV0uioPvayjHAsN5Z8/S4FEq8znDdBFHttjNu
+         JSisOSmDfYdCJaGB9gwCl3WobFhA2yEmj684E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091105132758.GC17984@aftab>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <loom.20091105T213323-393@post.gmane.org>
+References: <20091030063216.GA30712@gamma.logic.tuwien.ac.at>
+	 <20091102005218.8352.A69D9226@jp.fujitsu.com>
+	 <20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+	 <28c262360911012300h4535118ewd65238c746b91a52@mail.gmail.com>
+	 <20091102155543.E60E.A69D9226@jp.fujitsu.com>
+	 <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091102141917.GJ2116@gamma.logic.tuwien.ac.at>
+	 <28c262360911020640k3f9dfcdct2cac6cc1d193144d@mail.gmail.com>
+	 <20091105132109.GA12676@gamma.logic.tuwien.ac.at>
+	 <loom.20091105T213323-393@post.gmane.org>
+Date: Fri, 6 Nov 2009 07:18:23 +0900
+Message-ID: <28c262360911051418r1aefbff6oa54a63d887c0ea48@mail.gmail.com>
+Subject: Re: OOM killer, page fault
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Norbert Preining <preining@logic.at>, Jody Belka <jody+lkml@jj79.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, Nov 6, 2009 at 5:37 AM, Jody Belka <jody+lkml@jj79.org> wrote:
+> Norbert Preining <preining <at> logic.at> writes:
+>> Don't ask me why, please, and I don't have a serial/net console so that
+>> I can tell you more, but the booting hangs badly at:
+>
+> <snip>
+>
+>>
+>> > diff --git a/mm/memory.c b/mm/memory.c
+>> > index 7e91b5f..47e4b15 100644
+>> > --- a/mm/memory.c
+>> > +++ b/mm/memory.c
+>> > @@ -2713,7 +2713,11 @@ static int __do_fault(struct mm_struct *mm,
+>> > struct vm_area_struct *vma,
+>> >        vmf.page = NULL;
+>> >
+>> >        ret = vma->vm_ops->fault(vma, &vmf);
+>> > -       if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
+>> > +       if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
+>> > +               printk(KERN_DEBUG "vma->vm_ops->fault : 0x%lx\n",
+>> > vma->vm_ops->fault);
+>> > +               WARN_ON(1);
+>> > +
+>> > +       }
+>> >                return ret;
+>> >
+>> >        if (unlikely(PageHWPoison(vmf.page))) {
+>>
+>
+> Erm, could it not be due to the "return ret;" line being moved outside of the
+> if(), so that it always executes?
 
-> sorry for the delay, I had to talk to the hardware guys about those
-> tables.
-> 
-> On Mon, Nov 02, 2009 at 07:33:14AM +0900, H. Peter Anvin wrote:
-> > >>Alternatively, we could make the syndromes builtin thus removing the
-> > >>requirement to go to userspace for the loading. For that we'll need
-> > >>two new .c files in drivers/edac/ which represent the x4 and x8 tables
-> > >>respectively:
-> > >>
-> > >>unsigned short x8_raw_data[] = {
-> > >>         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-> > >>         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-> > >>         0x0000, 0x0100, 0x0001, 0x0101, 0x01B8, 0x015C, 0x012E, 0x01C6, 0x0163,
-> > >>         0x01FD, 0x0189, 0x019D, 0xB801, 0x5C01, 0x2E01, 0xC601, 0x6301, 0xFD01,
-> > >>         0x8901, 0x9D01, 0x0200, 0x0002, 0x0202, 0x0201, 0x02B8, 0x025C, 0x02FD,
-> > >>	....
-> > >>
-> > >>The drawback with these is that they'll always be builtin, enlarging
-> > >>kernel code by 10-15K although only one of them is in use.
-> > >
-> > >I believe that 15K is reasonable price to pay for not having to
-> > >install another 'firmware' file.
-> > 
-> > a) aren't these computable somehow?  If so, it's probably easier to
-> > include the algorithm in the kernel rather than a table.
-> 
-> That's a no-go since it would involve IP disclosure.
+Right. Sorry it's my fault.
+I become  blind.
+'return ret' should be inclueded in debug code.
 
-Then you should really talk to the lawyers. Is AMD willing to risk GPL
-violation by merging something other than "form preferable for
-editing"?
+>
+>
+> J
+>
+> ps, sending this through gmane, don't know if it'll keep cc's or not, so
+> apologies if not. please cc me on any replies
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
 
-> > b) "I believe that 15K is reasonable price to pay for not having to
-> > install another 'firmware' file."  I think that's a tradeoff a lot
-> > of people would *not* choose to make.  This is of course why we have
-> > (or at least, should have) to either compile in firmware blobs or
-> > not.
-> 
-> The good news is they've come up with a modified algorithm which will
-> require a smaller table, roughly 1/4th the size of the current 10K one.
-> Now, on a second thought and IMHO, we should simply add another .c file
-> instantiating those two x4 and x8 tables statically and linking them
-> into the edac code. This way you
-> 
-> 1) don't have the additional complexity of adding firmware handling code
-> and thus don't add a dependency on the firmware API
-> 
-> 2) don't have to actually carry two firmware images with the kernel
 
-Well, that's certainly better than current situation.
-
-									Pavel
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Kind regards,
+Minchan Kim
