@@ -1,85 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbZKERRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZKERXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbZKERRJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 12:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZKERRI
+	id S1753103AbZKERXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 12:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZKERXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 12:17:08 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:35062 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbZKERRI (ORCPT
+	Thu, 5 Nov 2009 12:23:19 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:40460 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650AbZKERXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 12:17:08 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Sachin Sant <sachinp@in.ibm.com>
-Subject: Re: linux-next: Tree for November 5
-Date: Thu, 5 Nov 2009 11:17:11 -0600
-User-Agent: KMail/1.9.10
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       jbarnes@virtuousgeek.org
-References: <20091105190426.c9cadada.sfr@canb.auug.org.au> <4AF2AB23.9000907@in.ibm.com> <200911050931.04838.bjorn.helgaas@hp.com>
-In-Reply-To: <200911050931.04838.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 5 Nov 2009 12:23:19 -0500
+Date: Thu, 5 Nov 2009 09:22:30 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Jaroslav Kysela <perex@perex.cz>,
+       Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH -next] sound: hda, move hp_bseries_system
+Message-Id: <20091105092230.7765af8c.randy.dunlap@oracle.com>
+In-Reply-To: <20091105190426.c9cadada.sfr@canb.auug.org.au>
+References: <20091105190426.c9cadada.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911051017.12135.bjorn.helgaas@hp.com>
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4AF30A01.017D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 November 2009 09:31:04 am Bjorn Helgaas wrote:
-> On Thursday 05 November 2009 03:38:27 am Sachin Sant wrote:
-> > Today's next tree fails to build on i386 with
-> > 
-> > arch/x86/pci/built-in.o: In function `align_resource':
-> > arch/x86/pci/acpi.c:82: undefined reference to `__udivdi3'
-> > 
-> > The code in question was added by commit
-> > 03db42adfeeabe856dbb6894dd3aaff55838330a.
-> 
-> I'll look into this.  I did build and test a 32-bit x86 kernel, but
-> I built it on an x86_64 box using "linux32 make ...", which looks like
-> it used gcc 4.3.2.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Can you try the patch below, please?
+Function hp_bseries_system() is always used, outside of
+CONFIG_ boundaries/controls, so move it.
 
+sound/pci/hda/patch_sigmatel.c:5458: error: implicit declaration of function 'hp_bseries_system'
 
-commit 00f16f0a2f4826eadec0565e4b454ab8bc7824cc
-Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Date:   Thu Nov 5 10:03:57 2009 -0700
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ sound/pci/hda/patch_sigmatel.c |   40 +++++++++++++++----------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
-    x86/PCI: remove 64-bit division
-    
-    The roundup() caused a build error (undefined reference to `__udivdi3').
-    We're aligning to power-of-two boundaries, so it's simpler to just use
-    ALIGN() anyway, which avoids the division.
-    
-    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-index 8ddf4f4..959e548 100644
---- a/arch/x86/pci/acpi.c
-+++ b/arch/x86/pci/acpi.c
-@@ -69,17 +69,17 @@ align_resource(struct acpi_device *bridge, struct resource *res)
- 	 * that claim this address space have starting alignment and length
- 	 * constraints, so fix any obvious BIOS goofs.
- 	 */
--	if (res->start & (align - 1)) {
-+	if (!IS_ALIGNED(res->start, align)) {
- 		dev_printk(KERN_DEBUG, &bridge->dev,
- 			   "host bridge window %pR invalid; "
- 			   "aligning start to %d-byte boundary\n", res, align);
- 		res->start &= ~(align - 1);
- 	}
--	if ((res->end + 1) & (align - 1)) {
-+	if (!IS_ALIGNED(res->end + 1, align)) {
- 		dev_printk(KERN_DEBUG, &bridge->dev,
- 			   "host bridge window %pR invalid; "
- 			   "aligning end to %d-byte boundary\n", res, align);
--		res->end = roundup(res->end, align) - 1;
-+		res->end = ALIGN(res->end, align) - 1;
+--- linux-next-20091105.orig/sound/pci/hda/patch_sigmatel.c
++++ linux-next-20091105/sound/pci/hda/patch_sigmatel.c
+@@ -4668,6 +4668,26 @@ static void stac92xx_unsol_event(struct 
  	}
  }
  
++static int hp_bseries_system(u32 subsystem_id)
++{
++	switch (subsystem_id) {
++	case 0x103c307e:
++	case 0x103c307f:
++	case 0x103c3080:
++	case 0x103c3081:
++	case 0x103c1722:
++	case 0x103c1723:
++	case 0x103c1724:
++	case 0x103c1725:
++	case 0x103c1726:
++	case 0x103c1727:
++	case 0x103c1728:
++	case 0x103c1729:
++		return 1;
++	}
++	return 0;
++}
++
+ #ifdef CONFIG_PROC_FS
+ static void stac92hd_proc_hook(struct snd_info_buffer *buffer,
+ 			       struct hda_codec *codec, hda_nid_t nid)
+@@ -4733,26 +4753,6 @@ static int stac92xx_resume(struct hda_co
+ 	return 0;
+ }
+ 
+-static int hp_bseries_system(u32 subsystem_id)
+-{
+-	switch (subsystem_id) {
+-	case 0x103c307e:
+-	case 0x103c307f:
+-	case 0x103c3080:
+-	case 0x103c3081:
+-	case 0x103c1722:
+-	case 0x103c1723:
+-	case 0x103c1724:
+-	case 0x103c1725:
+-	case 0x103c1726:
+-	case 0x103c1727:
+-	case 0x103c1728:
+-	case 0x103c1729:
+-		return 1;
+-	}
+-	return 0;
+-}
+-
+ /*
+  * using power check for controlling mute led of HP notebooks
+  * check for mute state only on Speakers (nid = 0x10)
