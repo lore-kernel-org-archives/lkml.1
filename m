@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZKEP3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbZKEPZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZKEP3J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 10:29:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZKEP3J
+	id S1754535AbZKEPZR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 10:25:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbZKEPZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 10:29:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25567 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbZKEP3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 10:29:08 -0500
-Date: Thu, 5 Nov 2009 16:22:41 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Valdis.Kletnieks@vt.edu,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: 2.6.32-rc5-mmotm1101 - lockdep whinge during early boot
-Message-ID: <20091105152241.GA24690@redhat.com>
-References: <6417.1257351084@turing-police.cc.vt.edu> <200911051941.03401.rusty@rustcorp.com.au> <20091105141055.GA17350@redhat.com> <alpine.LFD.2.00.0911051547110.12138@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0911051547110.12138@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 5 Nov 2009 10:25:17 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:49636 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbZKEPZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 10:25:15 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: miklos@szeredi.hu, miklos@szeredi.hu, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, dhowells@redhat.com, hch@infradead.org,
+       adilger@sun.com, mtk.manpages@gmail.com, torvalds@linux-foundation.org,
+       drepper@gmail.com, jamie@shareable.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20091105145054.11f36b35@lxorguk.ukuu.org.uk> (message from Alan
+	Cox on Thu, 5 Nov 2009 14:50:54 +0000)
+Subject: Re: [PATCH v2 resend] vfs: new O_NODE open flag
+References: <E1N60RV-0002ed-FX@pomaz-ex.szeredi.hu>
+	<20091105131545.72b4e319@lxorguk.ukuu.org.uk>
+	<E1N63Io-000353-KX@pomaz-ex.szeredi.hu> <20091105145054.11f36b35@lxorguk.ukuu.org.uk>
+Message-Id: <E1N64Ch-0003C6-Rn@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Nov 2009 16:24:51 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/05, Thomas Gleixner wrote:
->
-> On Thu, 5 Nov 2009, Oleg Nesterov wrote:
-> > > Oleg (CC'd) made workqueues use cpu_maps_update_begin() instead of the
-> > > more obvious get_online_cpus() in 3da1c84c00c7e5f.  Reverting that seems like
-> > > a bad idea.
-> >
-> > Even if create_workueue() used get_online_cpus() instead of cpu_add_remove_lock,
-> > we have the same problem: _cpu_up() takes cpu_hotplug.lock which is needed for
-> > get_online_cpus(). The dependency above becomes:
-> >
-> > 	cpu_up()->clocksource_change_rating() takes clocksource_mutex under
-> > 	cpu_hotplug.lock (cpu_hotplug_begin)
-> >
-> > 	clocksource_done_booting()->create_workueue() takes cpu_hotplug.lock
-> > 	(get_online_cpus) under clocksource_mutex
->
-> Hmm, we fixed all this lock madness in mainline already.
-> clocksource_done_booting() does not longer call
-> create_workqueue(). How got this code reverted in motm ?
+On Thu, 5 Nov 2009, Alan Cox wrote:
+> The examples on the list are not entirely theoretical but based on
+> accepted and normal behaviour for application programming and Unix
+> security models -so they are a security bug, minor or otherwise.
+> 
+> Fortunately you can patch it by hand.
 
-I don't understand this code at all. But this is what I see
-in Linus's tree:
+How do you patch it by hand?
 
-	clocksource_done_booting
-	    clocksource_select
-	        timekeeping_notify
-	            stop_machine
-	                 stop_machine_create
+> > And as for reopening O_NODE files with increased permission: that's
+> > feature people actually expressed interest in, so it's hardly a
+> > security hole, is it?
+> 
+> Its a very unexpected semantic particularly for a passed file handle.
 
+All of this is about new and unexpected semantics.  I don't think
+anything more needs to be done than document it in the manpage:
 
-OTOH, I don't see where native_cpu_up() path calls clocksource_change_rating(),
-perhaps this was changed in -mm.
+  "A file descriptor opened with O_NODE | O_NOACCESS may be used to
+   re-open the same file later with increased permissions
+   (e.g. O_RDWR) if the access mode allows.  This is true even if the
+   permissions on the path leading up to the file would prevent it"
 
-Oleg.
+> > > Wrong way around. The defailt should be that O_NODE fails for any handle
+> > > which has not specifically added support.
+> > 
+> > Why?  O_NODE can be nicely implemented without any filesystem support.
+> 
+> So that you audit the behaviour for unexpected surprises as you go. And
+> in most filesystem cases that consists of "dum de dum, nothing to see,
+> add default handler, tick".
+> 
+> But that isn't the case for some things - consider CIFS and other network
+> file systems.
 
+Why?
+
+Why would the server need to know anything about that?  O_NODE is
+similar to a chdir() in this respect, and chdir doesn't have a handler
+either.
+
+> > > You also need to address the open with no permissions pinning a removable
+> > > device question.
+> > 
+> > The whole point of O_NODE is that it doesn't do that, it only goes as
+> > far as the mnt/dentry for the filesystem node and not further.  It
+> > does not get to touch the device at all, so it can't pin it or have
+> > any other side effect.
+> 
+> You have a reference to the mnt/dentry pinned so how will you unmount the
+> volume ?
+
+Oh, I see what you are getting at.  So the situation is this: the root
+of the volume does not allow any access to the user, so normal
+open/chdir won't work.  Yet open(O_NODE) will and so user can pin the
+volume.
+
+However, there's not all that much difference between the above and
+doing "stat()" on the mountpoint in a tight loop, except the former is
+a more reliable way to prevent unmounting.
+
+I don't see this as a huge issue, but ideas about handling it better
+are welcome.
+
+Thanks,
+Miklos
