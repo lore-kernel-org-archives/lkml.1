@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbZKEOuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbZKEOzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757645AbZKEOuA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 09:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757012AbZKEOt7
+	id S1758042AbZKEOzP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:55:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbZKEOzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 09:49:59 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50133 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756920AbZKEOt7 (ORCPT
+	Thu, 5 Nov 2009 09:55:14 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:59339 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757807AbZKEOzN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 09:49:59 -0500
-Date: Thu, 5 Nov 2009 14:50:54 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: miklos@szeredi.hu, akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
-       dhowells@redhat.com, hch@infradead.org, adilger@sun.com,
-       mtk.manpages@gmail.com, torvalds@linux-foundation.org,
-       drepper@gmail.com, jamie@shareable.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 resend] vfs: new O_NODE open flag
-Message-ID: <20091105145054.11f36b35@lxorguk.ukuu.org.uk>
-In-Reply-To: <E1N63Io-000353-KX@pomaz-ex.szeredi.hu>
-References: <E1N60RV-0002ed-FX@pomaz-ex.szeredi.hu>
-	<20091105131545.72b4e319@lxorguk.ukuu.org.uk>
-	<E1N63Io-000353-KX@pomaz-ex.szeredi.hu>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Nov 2009 09:55:13 -0500
+MIME-Version: 1.0
+Message-ID: <fb5e5ebd-6c3c-4031-b710-2deab63a98bb@default>
+Date: Thu, 5 Nov 2009 06:52:38 -0800 (PST)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Glauber Costa <glommer@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
+       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
+Subject: RE: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
+	implementation
+In-Reply-To: <4AF274E5.5080205@redhat.com>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4AF2E712.015C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Nov 2009 15:27:06 +0100
-Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> On Thu, 5 Nov 2009, Alan Cox wrote:
-> > >  - re-opening normally after checking file type (there's a debate
-> > >    whether this would have security issues, but currently we do allow
-> > >    re-opening with increased permissions thorugh /proc/*/fd)
-> > 
-> > Which has already been demonstrated to be an (unfixed) security hole.
+> From: Avi Kivity [mailto:avi@redhat.com]
 > 
-> No it hasn't :)  Jamie theorized that there *might* be a real world
-> situation where the application writer didn't anticipate this
-> behavior.  But as to actual demonstration, we have not seen one yet, I
-> think.
-
-The examples on the list are not entirely theoretical but based on
-accepted and normal behaviour for application programming and Unix
-security models -so they are a security bug, minor or otherwise.
-
-Fortunately you can patch it by hand.
-
-> And as for reopening O_NODE files with increased permission: that's
-> feature people actually expressed interest in, so it's hardly a
-> security hole, is it?
-
-Its a very unexpected semantic particularly for a passed file handle.
-
-> > Wrong way around. The defailt should be that O_NODE fails for any handle
-> > which has not specifically added support.
+> Within a process, yes.  Across processes, not without writable shared 
+> memory.
 > 
-> Why?  O_NODE can be nicely implemented without any filesystem support.
+> That's why I'm trying to understand what the actual 
+> requirements are.  
+> Real monotonic, accurate, high resolution, low cost time sources are 
+> hard to come by.
 
-So that you audit the behaviour for unexpected surprises as you go. And
-in most filesystem cases that consists of "dum de dum, nothing to see,
-add default handler, tick".
+Hmmm... this has significant implications for the rdtsc
+emulation discussion on xen-devel.  Since that's not
+a Linux question, I'll start another thread on xen-devel
+with a shorter cc list.
 
-But that isn't the case for some things - consider CIFS and other network
-file systems.
-
-> The only filesystems that need to do anything special is things like
-> AFS which for example want to implement special ioctls, which work on
-> the node itself.
+> > Actually, I think for many/most profiling applications,
+> > just knowing a discontinuity occurred between two
+> > timestamps is very useful as that one specific measurement
+> > can be discarded.  If a discontinuity is invisible,
+> > one clearly knows that a negative interval is bad,
+> > but if an interval is very small or very large,
+> > one never knows if it is due to a discontinuity or
+> > due to some other reason.
+> >
+> > This would argue for a syscall/vsyscall that can
+> > "return" two values: the "time" and a second
+> > "continuity generation" counter.
 > 
-> > You also need to address the open with no permissions pinning a removable
-> > device question.
-> 
-> The whole point of O_NODE is that it doesn't do that, it only goes as
-> far as the mnt/dentry for the filesystem node and not further.  It
-> does not get to touch the device at all, so it can't pin it or have
-> any other side effect.
+> I doubt it.  You should expect discontinuities in user space due to 
+> being swapped out, scheduled out, migrated to a different 
+> cpu, or your 
+> laptop lid being closed.  There are no guarantees to a userspace 
+> application.  Even the kernel can expect discontinuities due 
+> to SMIs.  
+> So an explicit notification about one type of discontinuity 
+> adds nothing.
 
-You have a reference to the mnt/dentry pinned so how will you unmount the
-volume ?
+Good point.  I'm interested in enterprise apps that have more
+control over the machine (and rarely suffer from laptop lid
+closures :-) and would intend for all discontinuities visible
+to a hypervisor or kernel to increment "AUX", but bare-metal-
+kernel-invisible discontinuities such as SMI do throw a wrench
+in the works.
 
-Alan
+Well, all this discussion has convince me that
+my original proposals do make sense for enterprise apps to be
+virtualization-aware and use rdtsc/p directly for timestamping
+needs rather than OS APIs (with the hypervisor deciding
+whether or not to emulate rdtsc/p based on the underlying
+physical machine and whether or not migration is enabled
+or has occurred).
