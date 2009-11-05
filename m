@@ -1,104 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZKEGrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbZKEG6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbZKEGrr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 01:47:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZKEGrq
+	id S1756467AbZKEG6G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 01:58:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZKEG6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 01:47:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22261 "EHLO mx1.redhat.com"
+	Thu, 5 Nov 2009 01:58:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60804 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756318AbZKEGrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 01:47:46 -0500
-Message-ID: <4AF274E5.5080205@redhat.com>
-Date: Thu, 05 Nov 2009 08:47:01 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	id S1756144AbZKEG6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 01:58:04 -0500
+Date: Thu, 5 Nov 2009 06:57:41 GMT
+From: tip-bot for Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
+In-Reply-To: <20090929122533.206589318@de.ibm.com>
+References: <20090929122533.206589318@de.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/core] nohz: Reuse ktime in sub-functions of tick_check_idle.
+Message-ID: <tip-eed3b9cf3fe3fcc7a50238dfcab63a63914e8f42@git.kernel.org>
+Git-Commit-ID: eed3b9cf3fe3fcc7a50238dfcab63a63914e8f42
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Glauber Costa <glommer@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
-       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall	implementation
-References: <284e5d6c-7b31-4284-bd2d-c1d2ded1bc72@default>
-In-Reply-To: <284e5d6c-7b31-4284-bd2d-c1d2ded1bc72@default>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/04/2009 10:30 PM, Dan Magenheimer wrote:
->>
->> In this case we should provide a facility for this.
->> Providing a global
->> monotonic counter may be easier than providing a monotonic
->> clock.  Hence
->> my question.
->>      
-> Maybe I'm misunderstanding something, but enterprise
-> apps can do this entirely on their own without any
-> kernel help, correct?
->    
+Commit-ID:  eed3b9cf3fe3fcc7a50238dfcab63a63914e8f42
+Gitweb:     http://git.kernel.org/tip/eed3b9cf3fe3fcc7a50238dfcab63a63914e8f42
+Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
+AuthorDate: Tue, 29 Sep 2009 14:25:15 +0200
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Thu, 5 Nov 2009 07:53:53 +0100
 
-Within a process, yes.  Across processes, not without writable shared 
-memory.
+nohz: Reuse ktime in sub-functions of tick_check_idle.
 
-That's why I'm trying to understand what the actual requirements are.  
-Real monotonic, accurate, high resolution, low cost time sources are 
-hard to come by.
+On a system with NOHZ=y tick_check_idle calls tick_nohz_stop_idle and
+tick_nohz_update_jiffies. Given the right conditions (ts->idle_active
+and/or ts->tick_stopped) both function get a time stamp with ktime_get.
+The same time stamp can be reused if both function require one.
 
->> I doubt it.  A discontinuity has occured, but what do we know
->> about it? nothing.
->>      
-> Actually, I think for many/most profiling applications,
-> just knowing a discontinuity occurred between two
-> timestamps is very useful as that one specific measurement
-> can be discarded.  If a discontinuity is invisible,
-> one clearly knows that a negative interval is bad,
-> but if an interval is very small or very large,
-> one never knows if it is due to a discontinuity or
-> due to some other reason.
->
-> This would argue for a syscall/vsyscall that can
-> "return" two values: the "time" and a second
-> "continuity generation" counter.
->
->    
+On s390 this change has the additional benefit that gcc inlines the
+tick_nohz_stop_idle function into tick_check_idle. The number of
+instructions to execute tick_check_idle drops from 225 to 144
+(without the ktime_get optimization it is 367 vs 215 instructions).
 
-I doubt it.  You should expect discontinuities in user space due to 
-being swapped out, scheduled out, migrated to a different cpu, or your 
-laptop lid being closed.  There are no guarantees to a userspace 
-application.  Even the kernel can expect discontinuities due to SMIs.  
-So an explicit notification about one type of discontinuity adds nothing.
+before:
 
->>> True, though clock_gettime(CLOCK_MONOTONIC) can provide
->>> the monotonicity where it is required.
->>>        
->> We have that already.  The question is how to implement it in
->> a vsyscall.
->>      
-> Oh, I see.  I missed that very crucial point.
->
-> So, just to verify/clarify... There is NO WAY for
-> a vsyscall to ensure monotonicity (presumably because
-> the previous reading can't be safely stored?).  So
-> speed and "correctness" are mutually exclusive?
->    
+ 0)               |  tick_check_idle() {
+ 0)               |    tick_nohz_stop_idle() {
+ 0)               |      ktime_get() {
+ 0)               |        read_tod_clock() {
+ 0)   0.601 us    |        }
+ 0)   1.765 us    |      }
+ 0)   3.047 us    |    }
+ 0)               |    ktime_get() {
+ 0)               |      read_tod_clock() {
+ 0)   0.570 us    |      }
+ 0)   1.727 us    |    }
+ 0)               |    tick_do_update_jiffies64() {
+ 0)   0.609 us    |    }
+ 0)   8.055 us    |  }
 
-Yes.
+after:
 
-> If true, yes, that's a potentially significant problem\
-> though an intelligent app can layer monotonicity
-> on top of the call I suppose.
->    
+ 0)               |  tick_check_idle() {
+ 0)               |    ktime_get() {
+ 0)               |      read_tod_clock() {
+ 0)   0.617 us    |      }
+ 0)   1.773 us    |    }
+ 0)               |    tick_do_update_jiffies64() {
+ 0)   0.593 us    |    }
+ 0)   4.477 us    |  }
 
-Unless it's a multi-process app with limited trust.
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: john stultz <johnstul@us.ibm.com>
+LKML-Reference: <20090929122533.206589318@de.ibm.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/time/tick-sched.c |   62 ++++++++++++++++++++++++---------------------
+ 1 files changed, 33 insertions(+), 29 deletions(-)
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index e0f59a2..7378e2c 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -134,18 +134,13 @@ __setup("nohz=", setup_tick_nohz);
+  * value. We do this unconditionally on any cpu, as we don't know whether the
+  * cpu, which has the update task assigned is in a long sleep.
+  */
+-static void tick_nohz_update_jiffies(void)
++static void tick_nohz_update_jiffies(ktime_t now)
+ {
+ 	int cpu = smp_processor_id();
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+ 	unsigned long flags;
+-	ktime_t now;
+-
+-	if (!ts->tick_stopped)
+-		return;
+ 
+ 	cpumask_clear_cpu(cpu, nohz_cpu_mask);
+-	now = ktime_get();
+ 	ts->idle_waketime = now;
+ 
+ 	local_irq_save(flags);
+@@ -155,20 +150,17 @@ static void tick_nohz_update_jiffies(void)
+ 	touch_softlockup_watchdog();
+ }
+ 
+-static void tick_nohz_stop_idle(int cpu)
++static void tick_nohz_stop_idle(int cpu, ktime_t now)
+ {
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
++	ktime_t delta;
+ 
+-	if (ts->idle_active) {
+-		ktime_t now, delta;
+-		now = ktime_get();
+-		delta = ktime_sub(now, ts->idle_entrytime);
+-		ts->idle_lastupdate = now;
+-		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
+-		ts->idle_active = 0;
++	delta = ktime_sub(now, ts->idle_entrytime);
++	ts->idle_lastupdate = now;
++	ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
++	ts->idle_active = 0;
+ 
+-		sched_clock_idle_wakeup_event(0);
+-	}
++	sched_clock_idle_wakeup_event(0);
+ }
+ 
+ static ktime_t tick_nohz_start_idle(struct tick_sched *ts)
+@@ -431,7 +423,11 @@ void tick_nohz_restart_sched_tick(void)
+ 	ktime_t now;
+ 
+ 	local_irq_disable();
+-	tick_nohz_stop_idle(cpu);
++	if (ts->idle_active || (ts->inidle && ts->tick_stopped))
++		now = ktime_get();
++
++	if (ts->idle_active)
++		tick_nohz_stop_idle(cpu, now);
+ 
+ 	if (!ts->inidle || !ts->tick_stopped) {
+ 		ts->inidle = 0;
+@@ -445,7 +441,6 @@ void tick_nohz_restart_sched_tick(void)
+ 
+ 	/* Update jiffies first */
+ 	select_nohz_load_balancer(0);
+-	now = ktime_get();
+ 	tick_do_update_jiffies64(now);
+ 	cpumask_clear_cpu(cpu, nohz_cpu_mask);
+ 
+@@ -579,22 +574,18 @@ static void tick_nohz_switch_to_nohz(void)
+  * timer and do not touch the other magic bits which need to be done
+  * when idle is left.
+  */
+-static void tick_nohz_kick_tick(int cpu)
++static void tick_nohz_kick_tick(int cpu, ktime_t now)
+ {
+ #if 0
+ 	/* Switch back to 2.6.27 behaviour */
+ 
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+-	ktime_t delta, now;
+-
+-	if (!ts->tick_stopped)
+-		return;
++	ktime_t delta;
+ 
+ 	/*
+ 	 * Do not touch the tick device, when the next expiry is either
+ 	 * already reached or less/equal than the tick period.
+ 	 */
+-	now = ktime_get();
+ 	delta =	ktime_sub(hrtimer_get_expires(&ts->sched_timer), now);
+ 	if (delta.tv64 <= tick_period.tv64)
+ 		return;
+@@ -603,9 +594,26 @@ static void tick_nohz_kick_tick(int cpu)
+ #endif
+ }
+ 
++static inline void tick_check_nohz(int cpu)
++{
++	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
++	ktime_t now;
++
++	if (!ts->idle_active && !ts->tick_stopped)
++		return;
++	now = ktime_get();
++	if (ts->idle_active)
++		tick_nohz_stop_idle(cpu, now);
++	if (ts->tick_stopped) {
++		tick_nohz_update_jiffies(now);
++		tick_nohz_kick_tick(cpu, now);
++	}
++}
++
+ #else
+ 
+ static inline void tick_nohz_switch_to_nohz(void) { }
++static inline void tick_check_nohz(int cpu) { }
+ 
+ #endif /* NO_HZ */
+ 
+@@ -615,11 +623,7 @@ static inline void tick_nohz_switch_to_nohz(void) { }
+ void tick_check_idle(int cpu)
+ {
+ 	tick_check_oneshot_broadcast(cpu);
+-#ifdef CONFIG_NO_HZ
+-	tick_nohz_stop_idle(cpu);
+-	tick_nohz_update_jiffies();
+-	tick_nohz_kick_tick(cpu);
+-#endif
++	tick_check_nohz(cpu);
+ }
+ 
+ /*
