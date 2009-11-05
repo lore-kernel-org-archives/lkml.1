@@ -1,148 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbZKEC4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZKEDFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbZKEC4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 21:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbZKEC4T
+	id S1755399AbZKEDFU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 22:05:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbZKEDFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 21:56:19 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53383 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755345AbZKEC4S (ORCPT
+	Wed, 4 Nov 2009 22:05:19 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60987 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbZKEDFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 21:56:18 -0500
-Message-ID: <4AF23EC0.2070606@cn.fujitsu.com>
-Date: Thu, 05 Nov 2009 11:56:00 +0900
-From: Miao Xie <miaox@cn.fujitsu.com>
+	Wed, 4 Nov 2009 22:05:18 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AF240E7.8050200@jp.fujitsu.com>
+Date: Thu, 05 Nov 2009 12:05:11 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
-References: <4AEF94E8.3030403@cn.fujitsu.com>
-In-Reply-To: <4AEF94E8.3030403@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, rdh@east.sun.com,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
+References: <19184.41676.262206.134000@gargle.gargle.HOWL> <20091104110321.5e58e112@jbarnes-piketon> <200911041628.17905.bjorn.helgaas@hp.com>
+In-Reply-To: <200911041628.17905.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ingo
-
-Could you see the following problems?
-
-Regards
-Miao
-
-on 2009-11-3 11:26, Miao Xie wrote:
-> Hi, Peter.
+Bjorn Helgaas wrote:
+> On Wednesday 04 November 2009 12:03:21 pm Jesse Barnes wrote:
+>> [Cc'ing linux-pci@vger.kernel.org too]
+>>
+>> On Tue, 3 Nov 2009 16:38:20 -0500
+>> RDH <rdh@east.sun.com> wrote:
+>>
+>>> This patch avoids unnecessary PCIe link retraining sequences within
+>>> the PCIe ASPM common clock setup code by issuing a link retrain
+>>> command only if we are actually changing the PCIe clock configuration.
+>>>
+>>> Signed-off-by: Robert D. Houk <rdh@East.Sun.COM>
+>>> ---
+>>>  aspm.c |   20 ++++++++++++++++++++
+>>>  1 file changed, 20 insertions(+)
+>>> --- a/drivers/pci/pcie/aspm.c	2009-10-15 20:41:50.000000000
+>>> -0400 +++ b/drivers/pci/pcie/aspm.c	2009-11-02
+>>> 14:29:35.000000000 -0500 @@ -183,6 +183,7 @@ static void
+>>> pcie_aspm_configure_common_c {
+>>>  	int ppos, cpos, same_clock = 1;
+>>>  	u16 reg16, parent_reg, child_reg[8];
+>>> +	u16 lnkctl_ccc_or, lnkctl_ccc_and;
+>>>  	unsigned long start_jiffies;
+>>>  	struct pci_dev *child, *parent = link->pdev;
+>>>  	struct pci_bus *linkbus = parent->subordinate;
+>>> @@ -205,6 +206,25 @@ static void pcie_aspm_configure_common_c
+>>>  	if (!(reg16 & PCI_EXP_LNKSTA_SLC))
+>>>  		same_clock = 0;
+>>>  
+>>> +	/* Check upstream component for Common Clock Config */
+>>> +	pci_read_config_word(parent, ppos + PCI_EXP_LNKCTL, &reg16);
+>>> +	lnkctl_ccc_and = lnkctl_ccc_or = (reg16 &
+>>> PCI_EXP_LNKCTL_CCC); +
+>>> +	/* Scan downstream component for CCC, all functions */
+>>> +	list_for_each_entry(child, &linkbus->devices, bus_list) {
+>>> +		cpos = pci_find_capability(child, PCI_CAP_ID_EXP);
 > 
-> I found two problems about cpu controller:
-> 1) cpu controller didn't provide fair CPU time to groups when the tasks
->    attached into those groups were bound to the same logic CPU.
-> 2) cpu controller didn't provide fair CPU time to groups when shares of
->    each group <= 2 * nr_cpus.
+> Some other places in pcie/aspm (e.g., pcie_set_clkpm_nocheck() and
+> pcie_clkpm_cap_init()) check cpos for NULL.  Your code looks
+> superficially similar, so maybe you should check it, too, although
+> I do see many other place in aspm where we *don't* check it.
 > 
-> The detail is following:
-> 1) The first one is that cpu controller didn't provide fair CPU time to
->    groups when the tasks attached into those groups were bound to the
->    same logic CPU.
-> 
->    The reason is that there is something with the computing of the per
->    cpu shares.
-> 
->    on my test box with 16 logic CPU, I did the following manipulation:
->    a. create 2 cpu controller groups.
->    b. attach a task into one group and 2 tasks into the other.
->    c. bind three tasks to the same logic cpu.
->             +--------+     +--------+
->             | group1 |     | group2 |
->             +--------+     +--------+
->                 |              |
->    CPU0      Task A      Task B & Task C
-> 
->    The following is the reproduce steps:
->    # mkdir /dev/cpuctl
->    # mount -t cgroup -o cpu,noprefix cpuctl /dev/cpuctl
->    # mkdir /dev/cpuctl/1
->    # mkdir /dev/cpuctl/2
->    # cat /dev/zero > /dev/null &
->    # pid1=$!
->    # echo $pid1 > /dev/cpuctl/1/tasks
->    # taskset -p -c 0 $pid1
->    # cat /dev/zero > /dev/null &
->    # pid2=$!
->    # echo $pid2 > /dev/cpuctl/2/tasks
->    # taskset -p -c 0 $pid2
->    # cat /dev/zero > /dev/null &
->    # pid3=$!
->    # echo $pid3 > /dev/cpuctl/2/tasks
->    # taskset -p -c 0 $pid3
-> 
->    some time later, I found the the task in the group1 got the 35% CPU 
-> time not
->    50% CPU time. It was very strange that this result against the expected.
-> 
->    this problem was caused by the wrong computing of the per cpu shares.
->    According to the design of the cpu controller, the shares of each cpu
->    controller group will be divided for every CPU by the workload of each
->    logic CPU.
->       cpu[i] shares = group shares * CPU[i] workload / sum(CPU workload)
-> 
->    But if the CPU has no task, cpu controller will pretend there is one of
->    average load, usually this average load is 1024, the load of the task 
-> whose
->    nice is zero. So in the test, the shares of group1 on CPU0 is:
->       1024 * (1 * 1024) / ((1 * 1024 + 15 * 1024)) = 64
->    and the shares of group2 on CPU0 is:
->       1024 * (2 * 1024) / ((2 * 1024 + 15 * 1024)) = 120
->    The scheduler of the CPU0 provided CPU time to each group by the shares
->    above. The bug occured.
-> 
-> 2) The second problem is that cpu controller didn't provide fair CPU 
-> time to
->    groups when shares of each group <= 2 * nr_cpus
-> 
->    The reason is that per cpu shares was set to MIN_SHARES(=2) if shares of
->    each group <= 2 * nr_cpus.
-> 
->    on the test box with 16 logic CPU, we do the following test:
->    a. create two cpu controller groups
->    b. attach 32 tasks into each group
->    c. set shares of the first group to 16, the other to 32
->             +--------+     +--------+
->             | group1 |     | group2 |
->             +--------+     +--------+
->             |shares=16     |shares=32
->                 |              |
->              16 Tasks       32 Tasks
-> 
->    some time later, the first group got 50% CPU time, not 33%. It also 
-> was very
->    strange that this result against the expected.
-> 
->    It is because the shares of cpuctl group was small, and there is many 
-> logic
->    CPU. So per cpu shares that was computed was less than MIN_SHARES, 
-> and then
->    was set to MIN_SHARES.
-> 
->    Maybe 16 and 32 is not used usually. We can set a usual number(such 
-> as 1024)
->    to avoid this problem on my box. But the number of CPU on a machine will
->    become more and more in the future. If the number of CPU is greater 
-> than 512,
->    this bug will occur even we set shares of group to 1024. This is a usual
->    number. At this rate, the usual user will feel strange.
-> 
-> 
-> 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+> We look up this capability so often, I wonder if we should save it
+> in the struct pci_dev or struct pcie_link or something in such a
+> way that if we have a struct pcie_link, we are guaranteed that there
+> is a PCIe capability, and we don't have to search for it again.
 > 
 
+I agree. There are a lot of codes using pci_find_capability() to
+search PCIe capability offset in addition to ASPM driver. So I
+think it's good idea to have PCIe cap offset in struct pci_dev.
+
+To be honest, I have already made a following patch to add a new
+field into struct pci_dev and some other patches to use this new
+field a few months ago. But I have never posted them yet. If it
+is a right direction, I would like to update and post them soon.
+
+Thanks,
+Kenji Kaneshige
+
+
+There are a lot of codes that searches PCI express capability offset
+in the PCI configuration space using pci_find_capability(). Caching it
+in the struct pci_dev will reduce unncecessary search. This patch adds
+an additional 'pcie_cap' fields into struct pci_dev, which is
+initialized at pci device scan time (in set_pcie_port_type()).
+
+Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+
+---
+ drivers/pci/probe.c |    1 +
+ include/linux/pci.h |    1 +
+ 2 files changed, 2 insertions(+)
+
+Index: 20090825/drivers/pci/probe.c
+===================================================================
+--- 20090825.orig/drivers/pci/probe.c
++++ 20090825/drivers/pci/probe.c
+@@ -693,6 +693,7 @@ static void set_pcie_port_type(struct pc
+ 	if (!pos)
+ 		return;
+ 	pdev->is_pcie = 1;
++	pdev->pcie_cap = pos;
+ 	pci_read_config_word(pdev, pos + PCI_EXP_FLAGS, &reg16);
+ 	pdev->pcie_type = (reg16 & PCI_EXP_FLAGS_TYPE) >> 4;
+ }
+Index: 20090825/include/linux/pci.h
+===================================================================
+--- 20090825.orig/include/linux/pci.h
++++ 20090825/include/linux/pci.h
+@@ -218,6 +218,7 @@ struct pci_dev {
+ 	unsigned int	class;		/* 3 bytes: (base,sub,prog-if) */
+ 	u8		revision;	/* PCI revision, low byte of class word */
+ 	u8		hdr_type;	/* PCI header type (`multi' flag masked out) */
++	u8		pcie_cap;	/* PCI-E capability offset */
+ 	u8		pcie_type;	/* PCI-E device/port type */
+ 	u8		rom_base_reg;	/* which config register controls the ROM */
+ 	u8		pin;  		/* which interrupt pin this device uses */
 
