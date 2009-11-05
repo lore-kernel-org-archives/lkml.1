@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbZKEG6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbZKEG6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756467AbZKEG6G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 01:58:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZKEG6F
+	id S1756698AbZKEG6X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 01:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756491AbZKEG6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 01:58:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60804 "EHLO hera.kernel.org"
+	Thu, 5 Nov 2009 01:58:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60806 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756144AbZKEG6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 01:58:04 -0500
-Date: Thu, 5 Nov 2009 06:57:41 GMT
+	id S1756593AbZKEG6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 01:58:10 -0500
+Date: Thu, 5 Nov 2009 06:57:55 GMT
 From: tip-bot for Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
+       schwidefsky@de.ibm.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
-In-Reply-To: <20090929122533.206589318@de.ibm.com>
-References: <20090929122533.206589318@de.ibm.com>
+       schwidefsky@de.ibm.com, tglx@linutronix.de
+In-Reply-To: <20090929122533.402715150@de.ibm.com>
+References: <20090929122533.402715150@de.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] nohz: Reuse ktime in sub-functions of tick_check_idle.
-Message-ID: <tip-eed3b9cf3fe3fcc7a50238dfcab63a63914e8f42@git.kernel.org>
-Git-Commit-ID: eed3b9cf3fe3fcc7a50238dfcab63a63914e8f42
+Subject: [tip:timers/core] nohz: Introduce arch_needs_cpu
+Message-ID: <tip-3c5d92a0cfb5103c0d5ab74d4ae6373d3af38148@git.kernel.org>
+Git-Commit-ID: 3c5d92a0cfb5103c0d5ab74d4ae6373d3af38148
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,196 +29,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  eed3b9cf3fe3fcc7a50238dfcab63a63914e8f42
-Gitweb:     http://git.kernel.org/tip/eed3b9cf3fe3fcc7a50238dfcab63a63914e8f42
+Commit-ID:  3c5d92a0cfb5103c0d5ab74d4ae6373d3af38148
+Gitweb:     http://git.kernel.org/tip/3c5d92a0cfb5103c0d5ab74d4ae6373d3af38148
 Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
-AuthorDate: Tue, 29 Sep 2009 14:25:15 +0200
+AuthorDate: Tue, 29 Sep 2009 14:25:16 +0200
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Thu, 5 Nov 2009 07:53:53 +0100
 
-nohz: Reuse ktime in sub-functions of tick_check_idle.
+nohz: Introduce arch_needs_cpu
 
-On a system with NOHZ=y tick_check_idle calls tick_nohz_stop_idle and
-tick_nohz_update_jiffies. Given the right conditions (ts->idle_active
-and/or ts->tick_stopped) both function get a time stamp with ktime_get.
-The same time stamp can be reused if both function require one.
+Allow the architecture to request a normal jiffy tick when the system
+goes idle and tick_nohz_stop_sched_tick is called . On s390 the hook is
+used to prevent the system going fully idle if there has been an
+interrupt other than a clock comparator interrupt since the last wakeup.
 
-On s390 this change has the additional benefit that gcc inlines the
-tick_nohz_stop_idle function into tick_check_idle. The number of
-instructions to execute tick_check_idle drops from 225 to 144
-(without the ktime_get optimization it is 367 vs 215 instructions).
-
-before:
-
- 0)               |  tick_check_idle() {
- 0)               |    tick_nohz_stop_idle() {
- 0)               |      ktime_get() {
- 0)               |        read_tod_clock() {
- 0)   0.601 us    |        }
- 0)   1.765 us    |      }
- 0)   3.047 us    |    }
- 0)               |    ktime_get() {
- 0)               |      read_tod_clock() {
- 0)   0.570 us    |      }
- 0)   1.727 us    |    }
- 0)               |    tick_do_update_jiffies64() {
- 0)   0.609 us    |    }
- 0)   8.055 us    |  }
-
-after:
-
- 0)               |  tick_check_idle() {
- 0)               |    ktime_get() {
- 0)               |      read_tod_clock() {
- 0)   0.617 us    |      }
- 0)   1.773 us    |    }
- 0)               |    tick_do_update_jiffies64() {
- 0)   0.593 us    |    }
- 0)   4.477 us    |  }
+On s390 the HiperSockets response time for 1 connection ping-pong goes
+down from 42 to 34 microseconds. The CPU cost decreases by 27%.
 
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: john stultz <johnstul@us.ibm.com>
-LKML-Reference: <20090929122533.206589318@de.ibm.com>
+LKML-Reference: <20090929122533.402715150@de.ibm.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- kernel/time/tick-sched.c |   62 ++++++++++++++++++++++++---------------------
- 1 files changed, 33 insertions(+), 29 deletions(-)
+ arch/s390/include/asm/cputime.h |    8 ++++++++
+ arch/s390/kernel/s390_ext.c     |    2 ++
+ arch/s390/kernel/vtime.c        |    2 ++
+ drivers/s390/cio/cio.c          |    1 +
+ include/linux/tick.h            |    3 +++
+ kernel/time/tick-sched.c        |   13 ++++++++-----
+ 6 files changed, 24 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index e0f59a2..7378e2c 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -134,18 +134,13 @@ __setup("nohz=", setup_tick_nohz);
-  * value. We do this unconditionally on any cpu, as we don't know whether the
-  * cpu, which has the update task assigned is in a long sleep.
-  */
--static void tick_nohz_update_jiffies(void)
-+static void tick_nohz_update_jiffies(ktime_t now)
- {
- 	int cpu = smp_processor_id();
- 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
- 	unsigned long flags;
--	ktime_t now;
--
--	if (!ts->tick_stopped)
--		return;
+diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
+index 24b1244..95f3561 100644
+--- a/arch/s390/include/asm/cputime.h
++++ b/arch/s390/include/asm/cputime.h
+@@ -183,6 +183,7 @@ struct s390_idle_data {
+ 	unsigned long long idle_count;
+ 	unsigned long long idle_enter;
+ 	unsigned long long idle_time;
++	int nohz_delay;
+ };
  
- 	cpumask_clear_cpu(cpu, nohz_cpu_mask);
--	now = ktime_get();
- 	ts->idle_waketime = now;
- 
- 	local_irq_save(flags);
-@@ -155,20 +150,17 @@ static void tick_nohz_update_jiffies(void)
- 	touch_softlockup_watchdog();
+ DECLARE_PER_CPU(struct s390_idle_data, s390_idle);
+@@ -198,4 +199,11 @@ static inline void s390_idle_check(void)
+ 		vtime_start_cpu();
  }
  
--static void tick_nohz_stop_idle(int cpu)
-+static void tick_nohz_stop_idle(int cpu, ktime_t now)
- {
- 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
-+	ktime_t delta;
- 
--	if (ts->idle_active) {
--		ktime_t now, delta;
--		now = ktime_get();
--		delta = ktime_sub(now, ts->idle_entrytime);
--		ts->idle_lastupdate = now;
--		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
--		ts->idle_active = 0;
-+	delta = ktime_sub(now, ts->idle_entrytime);
-+	ts->idle_lastupdate = now;
-+	ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
-+	ts->idle_active = 0;
- 
--		sched_clock_idle_wakeup_event(0);
--	}
-+	sched_clock_idle_wakeup_event(0);
- }
- 
- static ktime_t tick_nohz_start_idle(struct tick_sched *ts)
-@@ -431,7 +423,11 @@ void tick_nohz_restart_sched_tick(void)
- 	ktime_t now;
- 
- 	local_irq_disable();
--	tick_nohz_stop_idle(cpu);
-+	if (ts->idle_active || (ts->inidle && ts->tick_stopped))
-+		now = ktime_get();
-+
-+	if (ts->idle_active)
-+		tick_nohz_stop_idle(cpu, now);
- 
- 	if (!ts->inidle || !ts->tick_stopped) {
- 		ts->inidle = 0;
-@@ -445,7 +441,6 @@ void tick_nohz_restart_sched_tick(void)
- 
- 	/* Update jiffies first */
- 	select_nohz_load_balancer(0);
--	now = ktime_get();
- 	tick_do_update_jiffies64(now);
- 	cpumask_clear_cpu(cpu, nohz_cpu_mask);
- 
-@@ -579,22 +574,18 @@ static void tick_nohz_switch_to_nohz(void)
-  * timer and do not touch the other magic bits which need to be done
-  * when idle is left.
-  */
--static void tick_nohz_kick_tick(int cpu)
-+static void tick_nohz_kick_tick(int cpu, ktime_t now)
- {
- #if 0
- 	/* Switch back to 2.6.27 behaviour */
- 
- 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
--	ktime_t delta, now;
--
--	if (!ts->tick_stopped)
--		return;
-+	ktime_t delta;
- 
- 	/*
- 	 * Do not touch the tick device, when the next expiry is either
- 	 * already reached or less/equal than the tick period.
- 	 */
--	now = ktime_get();
- 	delta =	ktime_sub(hrtimer_get_expires(&ts->sched_timer), now);
- 	if (delta.tv64 <= tick_period.tv64)
- 		return;
-@@ -603,9 +594,26 @@ static void tick_nohz_kick_tick(int cpu)
- #endif
- }
- 
-+static inline void tick_check_nohz(int cpu)
++static inline int s390_nohz_delay(int cpu)
 +{
-+	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
-+	ktime_t now;
-+
-+	if (!ts->idle_active && !ts->tick_stopped)
-+		return;
-+	now = ktime_get();
-+	if (ts->idle_active)
-+		tick_nohz_stop_idle(cpu, now);
-+	if (ts->tick_stopped) {
-+		tick_nohz_update_jiffies(now);
-+		tick_nohz_kick_tick(cpu, now);
-+	}
++	return per_cpu(s390_idle, cpu).nohz_delay != 0;
 +}
 +
- #else
++#define arch_needs_cpu(cpu) s390_nohz_delay(cpu)
++
+ #endif /* _S390_CPUTIME_H */
+diff --git a/arch/s390/kernel/s390_ext.c b/arch/s390/kernel/s390_ext.c
+index 0de305b..59618bc 100644
+--- a/arch/s390/kernel/s390_ext.c
++++ b/arch/s390/kernel/s390_ext.c
+@@ -126,6 +126,8 @@ void __irq_entry do_extint(struct pt_regs *regs, unsigned short code)
+ 		/* Serve timer interrupts first. */
+ 		clock_comparator_work();
+ 	kstat_cpu(smp_processor_id()).irqs[EXTERNAL_INTERRUPT]++;
++	if (code != 0x1004)
++		__get_cpu_var(s390_idle).nohz_delay = 1;
+         index = ext_hash(code);
+ 	for (p = ext_int_hash[index]; p; p = p->next) {
+ 		if (likely(p->code == code))
+diff --git a/arch/s390/kernel/vtime.c b/arch/s390/kernel/vtime.c
+index c41bb0d..b59a812 100644
+--- a/arch/s390/kernel/vtime.c
++++ b/arch/s390/kernel/vtime.c
+@@ -167,6 +167,8 @@ void vtime_stop_cpu(void)
+ 	/* Wait for external, I/O or machine check interrupt. */
+ 	psw.mask = psw_kernel_bits | PSW_MASK_WAIT | PSW_MASK_IO | PSW_MASK_EXT;
  
- static inline void tick_nohz_switch_to_nohz(void) { }
-+static inline void tick_check_nohz(int cpu) { }
++	idle->nohz_delay = 0;
++
+ 	/* Check if the CPU timer needs to be reprogrammed. */
+ 	if (vq->do_spt) {
+ 		__u64 vmax = VTIMER_MAX_SLICE;
+diff --git a/drivers/s390/cio/cio.c b/drivers/s390/cio/cio.c
+index 138124f..126f240 100644
+--- a/drivers/s390/cio/cio.c
++++ b/drivers/s390/cio/cio.c
+@@ -618,6 +618,7 @@ void __irq_entry do_IRQ(struct pt_regs *regs)
+ 	old_regs = set_irq_regs(regs);
+ 	s390_idle_check();
+ 	irq_enter();
++	__get_cpu_var(s390_idle).nohz_delay = 1;
+ 	if (S390_lowcore.int_clock >= S390_lowcore.clock_comparator)
+ 		/* Serve timer interrupts first. */
+ 		clock_comparator_work();
+diff --git a/include/linux/tick.h b/include/linux/tick.h
+index 0482229..8dc0821 100644
+--- a/include/linux/tick.h
++++ b/include/linux/tick.h
+@@ -98,6 +98,9 @@ extern int tick_check_oneshot_change(int allow_nohz);
+ extern struct tick_sched *tick_get_tick_sched(int cpu);
+ extern void tick_check_idle(int cpu);
+ extern int tick_oneshot_mode_active(void);
++#  ifndef arch_needs_cpu
++#   define arch_needs_cpu(cpu) (0)
++#  endif
+ # else
+ static inline void tick_clock_notify(void) { }
+ static inline int tick_check_oneshot_change(int allow_nohz) { return 0; }
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 7378e2c..3840f6d 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -264,12 +264,15 @@ void tick_nohz_stop_sched_tick(int inidle)
+ 		last_jiffies = jiffies;
+ 	} while (read_seqretry(&xtime_lock, seq));
  
- #endif /* NO_HZ */
- 
-@@ -615,11 +623,7 @@ static inline void tick_nohz_switch_to_nohz(void) { }
- void tick_check_idle(int cpu)
- {
- 	tick_check_oneshot_broadcast(cpu);
--#ifdef CONFIG_NO_HZ
--	tick_nohz_stop_idle(cpu);
--	tick_nohz_update_jiffies();
--	tick_nohz_kick_tick(cpu);
--#endif
-+	tick_check_nohz(cpu);
- }
- 
- /*
+-	/* Get the next timer wheel timer */
+-	next_jiffies = get_next_timer_interrupt(last_jiffies);
+-	delta_jiffies = next_jiffies - last_jiffies;
+-
+-	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu))
++	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu) ||
++	    arch_needs_cpu(cpu)) {
++		next_jiffies = last_jiffies + 1;
+ 		delta_jiffies = 1;
++	} else {
++		/* Get the next timer wheel timer */
++		next_jiffies = get_next_timer_interrupt(last_jiffies);
++		delta_jiffies = next_jiffies - last_jiffies;
++	}
+ 	/*
+ 	 * Do not stop the tick, if we are only one off
+ 	 * or if the cpu is required for rcu
