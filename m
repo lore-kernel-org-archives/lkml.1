@@ -1,91 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZKENe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZKENgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbZKENe4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 08:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbZKENez
+	id S1756628AbZKENgW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 08:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbZKENgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 08:34:55 -0500
-Received: from mail-forward2.uio.no ([129.240.10.71]:33664 "EHLO
+	Thu, 5 Nov 2009 08:36:21 -0500
+Received: from mail-forward2.uio.no ([129.240.10.71]:47087 "EHLO
 	mail-forward2.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755786AbZKENey (ORCPT
+	with ESMTP id S1756567AbZKENgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 08:34:54 -0500
-Message-ID: <4AF2D47F.4030701@simula.no>
-Date: Thu, 05 Nov 2009 14:34:55 +0100
+	Thu, 5 Nov 2009 08:36:20 -0500
+Message-ID: <4AF2D4D3.6060606@simula.no>
+Date: Thu, 05 Nov 2009 14:36:19 +0100
 From: Andreas Petlund <apetlund@simula.no>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-CC: William Allen Simpson <william.allen.simpson@gmail.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "shemminger@vyatta.com" <shemminger@vyatta.com>,
-       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
-       "davem@davemloft.net" <davem@davemloft.net>
+       "davem@davemloft.net" <davem@davemloft.net>,
+       Christian Samsel <christian.samsel@rwth-aachen.de>
 Subject: Re: [PATCH 1/3] net: TCP thin-stream detection
-References: <f7b4caf3a5b5c906cb8d508239455322.squirrel@webmail.uio.no> <4AEB0512.4010804@nets.rwth-aachen.de>
-In-Reply-To: <4AEB0512.4010804@nets.rwth-aachen.de>
+References: <52481f5b4edfdbd96dcde46aed403fcf.squirrel@webmail.uio.no> <4AEB109A.7090506@gmail.com>
+In-Reply-To: <4AEB109A.7090506@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 7 msgs/h 1 sum rcpts/h 8 sum msgs/h 2 total rcpts 502 max rcpts/h 37 ratelimit 0
+X-UiO-Ratelimit-Test: rcpts/h 15 msgs/h 2 sum rcpts/h 16 sum msgs/h 3 total rcpts 510 max rcpts/h 37 ratelimit 0
 X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: FBB48B2E7C22E9CA32F4ADE1CA0937098A40F49F
-X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 23 total 5508 max/h 49 blacklist 0 greylist 0 ratelimit 0
+X-UiO-Scanned: BBE01A50EFD6C40F29C4C7CF0A3978002BDB3463
+X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 25 total 5510 max/h 49 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Hannemann wrote:
-> Both mechanism prevent retransmission timeouts, thereby reducing latency.
-> Who cares, that they were motivated by performance?
-
-The essence of motivation is that there exist an incentive for performing an 
-action. If the motivation for fast retransmitting earlier is to keep the cwnd 
-open for a greedy application with small time-dependency, the question may be 
-posed whether it is worth the effort of the proposed changes. With the 
-thin-stream applications, we have confirmed that this is very often an 
-indication of time-dependent/interactive applications (like SSH-text sessions, 
-RDP, sensor networks, stock trading systems, interactive games etc). We have 
-further shown that such applications are prone to lag upon retransmissions due 
-to the inadequacies of TCP to deal with thin streams. We have also shown that 
-by performing the proposed adjustments, we can drastically improve the 
-situation. 
-
-Since we now know that the modifications can drastically improve the user 
-experience, the motivation/incentive for implementing the modifications is 
-increased. 
-
-> I agree, that you are more aggressive, and that your scheme may have
-> latency advantages, at least for the Limited Transmit case. And there are
-> probably good reasons for your proposal. But I really think you should
-> bring your proposal up in IETF TCPM WG. I have the feeling that there are
-> a lot of corner cases we didn't think of.
+William Allen Simpson wrote:
+> I'm finding it hard to follow 3 threads, for the 3 parts of the patch.
 > 
-> One example: Consider standard NewReno non-SACK enabled flow:
-> For some reasons two data packets get reordered.
-> The TCP sender will produce a dupACK and an ACK.
-> The dupACK will trigger (because of your logic) a spurious retransmit.
-> The spurious retransmit will trigger a dupACK.
-> This dupACK will again trigger a spurious retransmit.
-> And this game will continue, unless a packet is dropped by coincidence.
+> As I mentioned in one of these threads, I've plenty of experience with
+> designing and implementing protocols for gaming.  And it seems to me that
+> you're making changes to the entire TCP stack to make up for shortcomings
+> in the implementor's design.  Yet, these changes require application
+> implementors to set a sockopt that's only available in Linux.  Unlikely,
+> as they probably don't even keep track of such things....
+>
 
-Such an effect will be extremely rare. It will depend on the application 
-producing an extremely even flow of packets with just the right 
-interarrival time, and also on reordering of data (which also will 
-happen very seldom when the number of packets in flight are so low). 
-Even though it can happen, the data flow will progress (with spurious 
-retransmissions). The effect will stop as soon as the application sends 
-more than 4 segments in an RTT (which will disable the thin-stream 
-modifications) or less than 1 (which will cause all segments to be 
-successfully ACKed), or if, as you say, a packet is dropped.
+The target is not only games, but for instance SSH sessions, RDP or VNC, 
+stock trading services, sensor networks and so forth. There are a lot of 
+time-dependent applications that shows thin stream properties. Many of 
+these use TCP, and will continue to use it. Some of these applications 
+use UDP as default, but fall back to TCP if there is a problem with the 
+UDP connection (for instance Skype). By providing better latency for thin 
+streams, we can increase the service level for all these applications. 
 
-I will be thankful for more input on eventual corner cases and also on 
-test cases that we may perform to evaluate the modifications for 
-scenarios that are of concern.
+Our experience is that at least some designers of interactive/time-dependent 
+applications are skilled enough and concerned enough to investigate whether 
+options exist that may improve the applications they are designing. Of 
+course there are exceptions, but for open-sourced software, there will be 
+people who can provide this input. If the argument is that there is no need 
+for customised options because developers are stupid, we could strip away a 
+lot of the existing network code.
+
+> I've already suggested the end-to-end interest list, where you'll find many
+> of us with a strong interest in this topic.
+
+I've been reading end-to-end for several years, and I think I will take this 
+discussion to that list eventually. We have discussed whether we should take 
+this to end-to-end first, and netdev after, but decided to go here for the 
+following reasons: 1) We have working patches that we wanted to contribute. 
+2) The modifications are implemented as optional. 3) When active, the 
+modifications handle a special case of TCP streams that we have shown to 
+have minimal impact on general TCP behaviour.
+
+Also, in my experience, the end-to-end list discussions tend to digress, 
+making it difficult to keep the discussion to the special case that we 
+address. Since we wanted technical and practical feedback that would help us
+to refine the modifications in the patches in addition to the discussion on 
+transport protocols, we chose to go to netdev first.
+
+> The IETF has two related working groups:
+>   tcpm -- tcp modifications
+>   tsvwg -- general transport, including sctp modifications
+
+There are plenty of examples of TCP mechanisms present in the Linux 
+kernel that has not been standardised, for instance TCP CUBIC, the 
+default congestion control for many Linux distributions at this time.
+
+We have a set of patches, and a large body of experiments that shows them to
+be effective for the thin-stream scenario without any significant disadvantages.
+Please consider this before discarding the proposition based on a general 
+principle of standardisation. We believe that the thin-stream modifications 
+will provide extra value to Linux networking.
 
 Best regards,
 Andreas
-
-
 
 
