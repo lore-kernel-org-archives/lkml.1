@@ -1,82 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbZKEDQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbZKEDeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755628AbZKEDQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 22:16:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZKEDQ4
+	id S1755311AbZKEDeX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 22:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZKEDeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 22:16:56 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:43782 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbZKEDQz (ORCPT
+	Wed, 4 Nov 2009 22:34:22 -0500
+Received: from web82002.mail.mud.yahoo.com ([66.163.178.246]:29108 "HELO
+	web82002.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751365AbZKEDeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 22:16:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=fJNzx06p1pBN7DPziWwFmgh4YesqMh9fsHuplP9BMdDCbx3n4uUFuV9rMB0gUcYt7r
-         6g+t2zKymsHUXu1z/Q4Cf/vlJkADbkAyOBgS8U9CSkrwscVig5zC2LQcXxe4jeHp/kOD
-         vYd+3aLkh+0as333795ofq9ESaDbVpidVTkg0=
-Subject: Re: Is this needed to enable turbo mode/boost on i7 processors?
-From: Calvin Walton <calvin.walton@gmail.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0911031600130.6593@p34.internal.lan>
-References: <alpine.DEB.2.00.0911031340110.12341@p34.internal.lan>
-	 <alpine.DEB.2.00.0911031600130.6593@p34.internal.lan>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 04 Nov 2009 22:16:56 -0500
-Message-ID: <1257391016.9724.11.camel@nayuki>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Nov 2009 22:34:21 -0500
+X-Greylist: delayed 606 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Nov 2009 22:34:21 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=bellsouth.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
+  b=EUZTL8uiWgKbh0VZqQyLf9W5lSDo/npvHgTBkw7Rw5woztXWarr2Jj1IUSQN7bwnRU3uUNdBxvOJ6GUwQU4/QAUUe++cPIonqSuezSNU5DY1cjMscawJCL6NzsEz8mAXXJ6+BwoaFhxwxOAVxmP660+09zeEwxpjaRXwMW9AQYc=;
+Message-ID: <356768.6865.qm@web82002.mail.mud.yahoo.com>
+X-YMail-OSG: NqkD8zgVM1nkpLmWusxfPSjr2JmB13gIioAgQ9v_2YVUGiPzA9UCC6c6bFfBPluNI0P_PoBiSaEOknQG37TTEy7J3K6tRXCDOQtdVSzRmt_Z8gXTuOXqlfA40nsYCcxZanJ4iZd0po650h3FExFBJUGTT_BA5WaQ7A9IRXIKsdvj.ytNu.aZOhecCUqoI1NqnGRhfob6Ar7jUuH0BDMD_bnKlxatm1tJQOQ6zb.hWbqkVm59I7rHWTT_5VHJEkbf8jxU4jIpm2LQU5lU1.sdtyPjMjl7fPOhq7Q94.xLU_d4l_tVjbDI3.R4_sArVEpXLH6d6RJnJ1PQgU0JuBhClOGfR0VwqHrvkmfn0myVipCp.6nuewyVgpFic3ngkTbl8fswkGfxfIjOxaR81_KSsyqDX_9T
+X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.361.4
+Date: Wed, 4 Nov 2009 19:24:20 -0800 (PST)
+From: Irish News Centre <irs.krrr@bellsouth.net>
+Reply-To: ers.derekwhite@live.com
+Subject: Re:
+To: undisclosed recipients:;
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-03 at 16:00 -0500, Justin Piszcz wrote:
-> I realize the BIOS is supposed to take care of it, but it would be nice if 
-> there was an easy way to verify it is working.
-> 
-> On Tue, 3 Nov 2009, Justin Piszcz wrote:
-> 
-> > Hello,
-> >
-> > Per: http://kolbusa.livejournal.com/71066.html
-> >
-> > Is it necessary to do this--?
-> >
-> > Is there a way to verify whether turbo boost is being enabled when one core 
-> > is at 100% cpu?
-> >
-> > Justin.
-
-Assuming that the cpufreq functionality is enabled in your kernel, a
-simple
-
- cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
-
-Should return the frequencies that each cpu core is currently running
-at. I'm using a core i7 920 (2.67 ghz nominal) and have seen it hit 2.80
-ghz on occasion.
-
-None of the extra kernel options mentioned in that blog post should be
-required, assuming that you are using an up-to-date kernel. I would
-expect this to work correctly in the latest Ubuntu or Fedora, for
-example.
-
-For the record, I have all of the bios power saving modes enabled (and
-turbo mode, of course), and am using the kernel 'ondemand' governor with
-no extra userspace applications or configuration.
-
-My understanding of how it works is that when the cpu load is OK, the
-bios adjusts the values for the top couple of speedstep settings (use 
-
- cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
-
-to see them), and the kernel will automatically take advantage of them,
-according to the cpufreq governor you select.
-
--- 
-Calvin Walton <calvin.walton@gmail.com>
-
+You won 750,000gbp.Send:Name,Age,Country
