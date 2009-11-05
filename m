@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZKETCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbZKETCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbZKETCH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 14:02:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbZKETCH
+	id S1758665AbZKETCq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 14:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758647AbZKETCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 14:02:07 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57071 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756179AbZKETCG (ORCPT
+	Thu, 5 Nov 2009 14:02:46 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:27221 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758260AbZKETCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 14:02:06 -0500
-Date: Thu, 5 Nov 2009 20:02:03 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       vedran.furac@gmail.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rientjes@google.com
-Subject: Re: [RFC][PATCH] oom_kill: avoid depends on total_vm and use real
-	RSS/swap value for oom_score (Re: Memory overcommit
-Message-ID: <20091105190203.GA1392@ucw.cz>
-References: <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com> <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <2f11576a0910262310g7aea23c0n9bfc84c900879d45@mail.gmail.com> <20091027153429.b36866c4.minchan.kim@barrios-desktop> <20091027153626.c5a4b5be.kamezawa.hiroyu@jp.fujitsu.com> <28c262360910262355p3cac5c1bla4de9d42ea67fb4e@mail.gmail.com> <20091027164526.da6a23cb.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271821130.11372@sister.anvils> <20091027184743.GD5753@random.random>
+	Thu, 5 Nov 2009 14:02:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=fOXejzRXPn/O8GRfxdsV+gaGV1PMIrNJBpnM55IiR4CNq2pUY1siH4tqOonSlxisJc
+         QkKKZGWRZC5TjCXDpUSuTeP0zUO7sA6fB1wVzrSac6Gxm9pX6f8Op+HP3Xn9k5+mteTi
+         bqXuS0Vl8wMuv/h3Ey4iJ9iqE3J5MdTZU2xzU=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH 31/41] rt2800usb: add RXINFO_DESC_SIZE definition
+Date: Thu, 5 Nov 2009 20:02:47 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-wireless@vger.kernel.org, Gertjan van Wingerde <gwingerde@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173547.28463.36376.sendpatchset@localhost.localdomain>
+In-Reply-To: <20091104173547.28463.36376.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091027184743.GD5753@random.random>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200911052002.48198.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> Agreed it's not obvious. Intuitively I think only including RSS and no
-> swap is best, but clearly I can't be entirely against including swap
-> too as there may be scenarios where including swap provides for a
-> better choice.
+On Wednesday 04 November 2009, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] rt2800usb: add RXINFO_DESC_SIZE definition
 > 
-> My argument for not including swap is that we kill tasks to free RAM
-> (we don't really care to free swap, system needs RAM at oom time).
+> Add RXINFO_DESC_SIZE definition and use it instead of abusing
+> RXD_DESC_SIZE one (TXD_DESC_SIZE and RXD_DESC_SIZE are specific
+> to PCI version of the chipset).
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-System should be out of _virtual_ memory at that point, so yes,
-freeing swap should help, too.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
