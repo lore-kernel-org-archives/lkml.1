@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbZKEHVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbZKEHWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbZKEHVu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 02:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbZKEHVu
+	id S1753625AbZKEHWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 02:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZKEHWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 02:21:50 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48181
+	Thu, 5 Nov 2009 02:22:24 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48187
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750825AbZKEHVt (ORCPT
+	by vger.kernel.org with ESMTP id S1750825AbZKEHWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 02:21:49 -0500
-Date: Wed, 04 Nov 2009 23:22:14 -0800 (PST)
-Message-Id: <20091104.232214.23355826.davem@davemloft.net>
+	Thu, 5 Nov 2009 02:22:23 -0500
+Date: Wed, 04 Nov 2009 23:22:49 -0800 (PST)
+Message-Id: <20091104.232249.231355554.davem@davemloft.net>
 To: gilad@codefidence.com
-Cc: Valdis.Kletnieks@vt.edu, netdev@vger.kernel.org, ori@comsleep.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH testing] Do not call IPv4 specific func in tcp_check_req
+Cc: Valdis.Kletnieks@vt.edu, ilpo.jarvinen@helsinki.fi, eric.dumazet@gmail.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, ori@comsleep.com
+Subject: Re: 2.6.32-rc5-mmotm1101 - kernel BUG at net/ipv4/tcp_input.c:3707!
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1257352854-19490-1-git-send-email-gilad@codefidence.com>
-References: <7916.1257300093@turing-police.cc.vt.edu>
-	<1257352854-19490-1-git-send-email-gilad@codefidence.com>
+In-Reply-To: <4AF1AF28.2030106@codefidence.com>
+References: <Pine.LNX.4.64.0911032330090.3488@melkinkari.cs.Helsinki.FI>
+	<7916.1257300093@turing-police.cc.vt.edu>
+	<4AF1AF28.2030106@codefidence.com>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,23 +31,12 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gilad Ben-Yossef <gilad@codefidence.com>
-Date: Wed,  4 Nov 2009 18:40:54 +0200
+Date: Wed, 04 Nov 2009 18:43:20 +0200
 
-> Calling IPv4 specific inet_csk_route_req in tcp_check_req
-> is a bad idea and crashes machine on IPv6 connections, as reported
-> by Valdis Kletnieks
-> 
-> Also, all we are really interested in is the timestamp
-> option in the header, so calling tcp_parse_options()
-> with the "estab" set to false flag is an overkill as
-> it tries to parse half a dozen other TCP options.
-> 
-> We know whether timestamp should be enabled or not
-> using data from request_sock.
-> 
-> Signed-off-by: Gilad Ben-Yossef <gilad@codefidence.com>
+> Kindly try the next patch. It goes on top (in addition to) the
+> previous one. This should fix the crash.
 
-Applied, thanks.
+Ok, now I know that both patches need to go in, I'll apply
+the other one too.
 
-I assume that your other patch which attempted to fix this isn't
-necessary.
+Forget about my confusion in my other reply.
