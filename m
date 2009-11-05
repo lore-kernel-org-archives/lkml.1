@@ -1,143 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751004AbZKEBiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZKEBp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751004AbZKEBiQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 20:38:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZKEBiP
+	id S1753368AbZKEBp4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 20:45:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZKEBp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 20:38:15 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46688 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbZKEBiO (ORCPT
+	Wed, 4 Nov 2009 20:45:56 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:47146 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbZKEBpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 20:38:14 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AF22C82.2040105@jp.fujitsu.com>
-Date: Thu, 05 Nov 2009 10:38:10 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: rdh@east.sun.com
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
-References: <19184.41676.262206.134000@gargle.gargle.HOWL> <20091104110321.5e58e112@jbarnes-piketon>
-In-Reply-To: <20091104110321.5e58e112@jbarnes-piketon>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Wed, 4 Nov 2009 20:45:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=rxiAZKtTD6LxFrsjtCifOuAOsT4SXlRvrVoFzpAr0NPbTgHe5L4MLWThEdHd8gy7WD
+         NhCi//8v36UVOP5qQRP2j8hxUMvw/+B90IL4qNrcHCH8qQtLcT+DywKILO4nv2smUUwk
+         g4AP7FTW/xWDI4u+/lLIblUWfMgIShp9Xw+Ws=
+Subject: Re: [PATCH -queue v0 1/6] [loongson] add basic loongson-2f support
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Arnaud Patard <apatard@mandriva.com>, linux-mips@linux-mips.org,
+       LKML <linux-kernel@vger.kernel.org>, huhb@lemote.com, yanh@lemote.com,
+       Zhang Le <r0bertz@gentoo.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       liujl@lemote.com
+In-Reply-To: <20091104201520.GA26504@linux-mips.org>
+References: <cover.1257325319.git.wuzhangjin@gmail.com>
+	 <a1bd2470bc465e505281c761adca8c2287d102b3.1257325319.git.wuzhangjin@gmail.com>
+	 <m3iqdqtwgk.fsf@anduin.mandriva.com>
+	 <1257332652.8716.5.camel@falcon.domain.org>
+	 <20091104111957.GA13549@linux-mips.org>
+	 <1257348226.16033.4.camel@falcon.domain.org>
+	 <20091104201520.GA26504@linux-mips.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Thu, 05 Nov 2009 09:39:36 +0800
+Message-ID: <1257385176.16033.17.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> [Cc'ing linux-pci@vger.kernel.org too]
+On Wed, 2009-11-04 at 21:15 +0100, Ralf Baechle wrote:
+> On Wed, Nov 04, 2009 at 11:23:46PM +0800, Wu Zhangjin wrote:
 > 
-> On Tue, 3 Nov 2009 16:38:20 -0500
-> RDH <rdh@east.sun.com> wrote:
+> > > We have other systems where 32-bit kernel support is just remarkably ugly.
+> > > We've dropped 32-bit support for the SGI IP32 aka O2 - nobody seems to even
+> > > have really noticed that.  The Sibyte systems would be good candidates to do
+> > > the same as accesses to outside the 32-bit address space are needed very
+> > > frequently.
+> > > 
+> > 
+> > So, we really remove the 32bit support?
+> > 
+> > 1312 config CPU_LOONGSON2
+> > 1313         bool
+> > 1314         select CPU_SUPPORTS_32BIT_KERNEL  --> remove it?
+> > 1315         select CPU_SUPPORTS_64BIT_KERNEL
+> > 1316         select CPU_SUPPORTS_HIGHMEM
+> > 
+> > If you all agree, I will send a new patch to remove the above line and
+> > resend the corresponding patches without 32bit support, and removed the
+> > relative CONFIG_64BIT lines in the patches too.
 > 
->> This patch avoids unnecessary PCIe link retraining sequences within
->> the PCIe ASPM common clock setup code by issuing a link retrain
->> command only if we are actually changing the PCIe clock configuration.
->>
->> Signed-off-by: Robert D. Houk <rdh@East.Sun.COM>
->> ---
->>  aspm.c |   20 ++++++++++++++++++++
->>  1 file changed, 20 insertions(+)
->> --- a/drivers/pci/pcie/aspm.c	2009-10-15 20:41:50.000000000
->> -0400 +++ b/drivers/pci/pcie/aspm.c	2009-11-02
->> 14:29:35.000000000 -0500 @@ -183,6 +183,7 @@ static void
->> pcie_aspm_configure_common_c {
->>  	int ppos, cpos, same_clock = 1;
->>  	u16 reg16, parent_reg, child_reg[8];
->> +	u16 lnkctl_ccc_or, lnkctl_ccc_and;
->>  	unsigned long start_jiffies;
->>  	struct pci_dev *child, *parent = link->pdev;
->>  	struct pci_bus *linkbus = parent->subordinate;
->> @@ -205,6 +206,25 @@ static void pcie_aspm_configure_common_c
->>  	if (!(reg16 & PCI_EXP_LNKSTA_SLC))
->>  		same_clock = 0;
->>  
->> +	/* Check upstream component for Common Clock Config */
->> +	pci_read_config_word(parent, ppos + PCI_EXP_LNKCTL, &reg16);
->> +	lnkctl_ccc_and = lnkctl_ccc_or = (reg16 &
->> PCI_EXP_LNKCTL_CCC); +
->> +	/* Scan downstream component for CCC, all functions */
->> +	list_for_each_entry(child, &linkbus->devices, bus_list) {
->> +		cpos = pci_find_capability(child, PCI_CAP_ID_EXP);
->> +		pci_read_config_word(child, cpos + PCI_EXP_LNKCTL,
->> &reg16);
->> +		lnkctl_ccc_and &= (reg16 & PCI_EXP_LNKCTL_CCC);
->> +		lnkctl_ccc_or |= (reg16 & PCI_EXP_LNKCTL_CCC);
->> +	}
->> +
->> +	/* If we want Common Clock OFF and no device/function has it
->> on */
->> +	/* or we want Common Clock ON and every device/function has
->> it on */
->> +	/* then there is no need to retrain PCIe links */
->> +	if (((same_clock == 0) && (lnkctl_ccc_or == 0))
->> +            || ((same_clock == 1) && (lnkctl_ccc_and ==
->> PCI_EXP_LNKCTL_CCC)))
->> +		return;		/* Don't retrain link(s) */
->> +
->>  	/* Configure downstream component, all functions */
->>  	list_for_each_entry(child, &linkbus->devices, bus_list) {
->>  		cpos = pci_find_capability(child, PCI_CAP_ID_EXP);
->>
-> 
-> Seems ok to me, anyone have comments?
+> If you need highmem with 32-bit (and with Loongson systems I assume that
+> virtually all systems will have enough RAM to require that) then you're
+> almost certainly better off going 64-bit.  Highmem takes a performance toll
+> which for some workloads can be very significant.  And while highmem won't
+> go away any time soon it's nothing kernel performance is being tuned for,
+> so it's only going to get worse into the future so I'd not waste time on
+> highmem unless I have to.
 > 
 
-Hi Robert,
+What I have mentioned: "perhaps some guys need the 32bit version" here
+means, perhaps some embedded systems without enough memory and enough
+storage space may need the 32bit version, they not need highmem and
+also, the 32bit version will save some storage space for them. and I
+have used the 32bit version on my box and notebook(of course, only for
+experiments), no obvious problems.
 
-How about like below? IMHO, it is easier to understand.
-(Please note that I don't test it yet)
+Reserve the 32bit version as an choice and select 64bit by default in
+the default config file?
 
-Thanks,
-Kenji Kaneshige
-
-
----
- drivers/pci/pcie/aspm.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
-
-Index: 20091026/drivers/pci/pcie/aspm.c
-===================================================================
---- 20091026.orig/drivers/pci/pcie/aspm.c
-+++ 20091026/drivers/pci/pcie/aspm.c
-@@ -186,6 +186,7 @@ static void pcie_aspm_configure_common_c
- 	unsigned long start_jiffies;
- 	struct pci_dev *child, *parent = link->pdev;
- 	struct pci_bus *linkbus = parent->subordinate;
-+	bool ccc_updated = false;
- 	/*
- 	 * All functions of a slot should have the same Slot Clock
- 	 * Configuration, so just check one function
-@@ -214,7 +215,10 @@ static void pcie_aspm_configure_common_c
- 			reg16 |= PCI_EXP_LNKCTL_CCC;
- 		else
- 			reg16 &= ~PCI_EXP_LNKCTL_CCC;
-+		if (reg16 == child_reg[PCI_FUNC(child->devfn)])
-+			continue;
- 		pci_write_config_word(child, cpos + PCI_EXP_LNKCTL, reg16);
-+		ccc_updated = true;
- 	}
- 
- 	/* Configure upstream component */
-@@ -224,7 +228,14 @@ static void pcie_aspm_configure_common_c
- 		reg16 |= PCI_EXP_LNKCTL_CCC;
- 	else
- 		reg16 &= ~PCI_EXP_LNKCTL_CCC;
--	pci_write_config_word(parent, ppos + PCI_EXP_LNKCTL, reg16);
-+	if (reg16 != parent_reg) {
-+		pci_write_config_word(parent, ppos + PCI_EXP_LNKCTL, reg16);
-+		ccc_updated = true;
-+	}
-+
-+	/* Don't need to retrain link if there is no change in CCC */
-+	if (!ccc_updated)
-+		return;
- 
- 	/* Retrain link */
- 	reg16 |= PCI_EXP_LNKCTL_RL;
-
+Regards,
+	Wu Zhangjin
 
