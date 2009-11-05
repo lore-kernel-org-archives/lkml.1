@@ -1,66 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZKEN5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbZKEOHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756940AbZKEN5Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 08:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbZKEN5Y
+	id S1757062AbZKEOHv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 09:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbZKEOHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 08:57:24 -0500
-Received: from exchange.solarflare.com ([216.237.3.220]:30045 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756604AbZKEN5X convert rfc822-to-8bit (ORCPT
+	Thu, 5 Nov 2009 09:07:50 -0500
+Received: from mga01.intel.com ([192.55.52.88]:61020 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756541AbZKEOHt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 08:57:23 -0500
-Subject: Re: Shared i2c adapter locking
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mika Kuoppala <mika.kuoppala@nokia.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>
-In-Reply-To: <20091105141122.56b6b4f8@hyperion.delvare>
-References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-	 <20091029154317.651904b9@hyperion.delvare>
-	 <1256828976.2827.27.camel@achroite>
-	 <20091105141122.56b6b4f8@hyperion.delvare>
-Content-Type: text/plain; charset=utf-8
-Organization: Solarflare Communications
-Date: Thu, 05 Nov 2009 13:57:24 +0000
-Message-Id: <1257429444.2793.2.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Thu, 5 Nov 2009 09:07:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,686,1249282800"; 
+   d="scan'208";a="744134427"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>
+Date: Thu, 5 Nov 2009 14:06:37 +0000
+Subject: RE: [PATCH 1/2] Add COH 901 318 DMA block driver v3
+Thread-Topic: [PATCH 1/2] Add COH 901 318 DMA block driver v3
+Thread-Index: AcpX4gUUArv4bb+ZTui1MR+jgFLwkgGOlNnA
+Message-ID: <129600E5E5FB004392DDC3FB599660D7B7B992A0@irsmsx504.ger.corp.intel.com>
+References: <1256743137-16987-1-git-send-email-linus.walleij@stericsson.com>
+In-Reply-To: <1256743137-16987-1-git-send-email-linus.walleij@stericsson.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 05 Nov 2009 13:57:28.0214 (UTC) FILETIME=[E9273B60:01CA5E1F]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.600.1016-16990.004
-X-TM-AS-Result: No--13.455700-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-05 at 14:11 +0100, Jean Delvare wrote:
+Linus Walleij wrote:
+> This patch adds support for the ST-Ericsson COH 901 318 DMA block,
+> found in the U300 series platforms. It registers a DMA slave for
+> device I/O and also a memcpy slave for memcpy.
+> 
+> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> ---
+
+Few more things I have noticed:
+
+> +static void dma_tasklet(unsigned long data)
+> +{
+> +	struct coh901318_chan *cohc = (struct coh901318_chan *) data;
+> +	struct coh901318_desc *cohd_fin;
+> +	unsigned long flags;
+> +	dma_async_tx_callback callback;
+> +	void *callback_param;
+> +
+> +	spin_lock_irqsave(&cohc->lock, flags);
+> +
+> +	/* get first active entry from list */
+> +	cohd_fin = coh901318_first_active_get(cohc);
+> +
+> +	BUG_ON(cohd_fin->pending_irqs == 0);
+> +
+> +	cohd_fin->pending_irqs--;
+> +
+> +	BUG_ON(cohc->nbr_active_done && cohd_fin == NULL);
+> +
+> +	if (cohc->nbr_active_done == 0)
+> +		return;
+> +
+> +	if (cohd_fin == NULL)
+> +		goto err;
+
+Checking cohd_fin against NULL should be moved up right after coh901318_first_active_get()
+
+> +
+> +	if (cohd_fin->sg != NULL) {
+> +		dma_unmap_sg(cohc->chan.dev->device.parent,
+> +			     cohd_fin->sg, cohd_fin->sg_len, cohd_fin->dir);
+> +	}
 [...]
-> What about the following patch?
-> 
-> From: Jean Delvare <khali@linux-fr.org>
-> Subject: i2c: Add an interface to lock/unlock I2C bus segment
-> 
-> Some drivers need to be able to prevent access to an I2C bus segment
-> for a specific period of time. Add an interface for them to do so
-> without twiddling with i2c-core internals.
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Cc: Ben Hutchings <bhutchings@solarflare.com>
-Acked-by: ﻿Ben Hutchings <bhutchings@solarflare.com>
+> +coh901318_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
+> +			unsigned int nents, enum dma_data_direction direction,
+> +			unsigned long flags)
+[...]
+> +	sg_len = dma_map_sg(chan->dev->device.parent,
+> +			    sgl, nents, direction);
+[...]
+> + err_dma_alloc:
+> +	if ((direction == DMA_TO_DEVICE &&
+> +	     !(flags & DMA_COMPL_SKIP_SRC_UNMAP)) ||
+> +	    (direction == DMA_FROM_DEVICE &&
+> +	     !(flags & DMA_COMPL_SKIP_DEST_UNMAP)))
+> +		dma_unmap_sg(cohc->chan.dev->device.parent,
+> +			     cohd->sg, cohd->sg_len, direction);
 
-Presumably this is meant for net-next-2.6, and you'll implement
-i2c_{lock,unlock}_adapter() using rt_mutex in your i2c tree?
+Since the following change all dma mapping/unmapping for slave channels should be client's responsibility:
 
-Ben.
+commit 657a77fa7284d8ae28dfa48f1dc5d919bf5b2843
+Author: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Date:   Tue Sep 8 17:53:05 2009 -0700
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+    dmaengine: Move all map_sg/unmap_sg for slave channel to its client
+
+> +static int __init coh901318_probe(struct platform_device *pdev)
+[...]
+> +	return err;
+> +
+> +	dma_async_device_unregister(&base->dma_memcpy);
+
+This one would never be called
+
+> +coh901318_lli_fill_sg(struct coh901318_pool *pool,
+> +		      struct coh901318_lli *lli,
+> +		      struct scatterlist *sgl, unsigned int nents,
+> +		      dma_addr_t dev_addr, u32 ctrl_chained, u32 ctrl,
+> +		      u32 ctrl_last,
+> +		      enum dma_data_direction dir, u32 ctrl_irq_mask)
+> +{
+> +	int i;
+> +	struct scatterlist *sg;
+> +	u32 ctrl_sg;
+> +	dma_addr_t src = 0;
+> +	dma_addr_t dst = 0;
+> +	int nbr_of_irq = 0;
+> +	u32 bytes_to_transfer;
+> +	u32 elem_size;
+> +
+> +	if (lli == NULL)
+> +		goto err;
+> +
+> +	spin_lock(&pool->lock);
+> +
+> +	if (dir == DMA_TO_DEVICE)
+> +		dst = dev_addr;
+> +	else if (dir == DMA_FROM_DEVICE)
+> +		src = dev_addr;
+> +	else
+> +		goto err;
+> +
+> +	for_each_sg(sgl, sg, nents, i) {
+
+spin_unlock(&pool->lock) should be added when goto err;
+Or better I guess: spin_lock moved down, right before the loop.
+
+Regards,
+Maciej
 
