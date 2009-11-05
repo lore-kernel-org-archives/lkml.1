@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbZKEEkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbZKEEqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbZKEEkx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 23:40:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZKEEkw
+	id S1755931AbZKEEqO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 23:46:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbZKEEqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 23:40:52 -0500
-Received: from ozlabs.org ([203.10.76.45]:50743 "EHLO ozlabs.org"
+	Wed, 4 Nov 2009 23:46:13 -0500
+Received: from sh.osrg.net ([192.16.179.4]:50048 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751956AbZKEEkv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 23:40:51 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Michael S. Tsirkin" <mst@redhat.com>, Greg KH <gregkh@suse.de>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: virtio-net: new section mismatch warning. revert patch?
-Date: Thu, 5 Nov 2009 15:10:53 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Alex Williamson <alex.williamson@hp.com>,
-       Mark McLoughlin <markmc@redhat.com>, netdev@vger.kernel.org,
+	id S1751716AbZKEEqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Nov 2009 23:46:12 -0500
+Date: Thu, 5 Nov 2009 13:44:45 +0900
+To: mingo@elte.hu
+Cc: tj@kernel.org, joerg.roedel@amd.com, jbarnes@virtuousgeek.org,
+       dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp, x86@kernel.org,
+       tglx@linutronix.de, hpa@zytor.com, athena@fftw.org,
        linux-kernel@vger.kernel.org
-References: <20091104141729.GA27288@redhat.com>
-In-Reply-To: <20091104141729.GA27288@redhat.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911051510.54163.rusty@rustcorp.com.au>
+Subject: Re: [PATCH] x86: fix iommu=nodac parameter handling
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091104122827.GB11968@elte.hu>
+References: <4AE5B52A.4050408@kernel.org>
+	<20091104122827.GB11968@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20091105134306W.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 05 Nov 2009 13:44:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Nov 2009 12:47:30 am Michael S. Tsirkin wrote:
-> With v2.6.32-rcX I started getting section mismatch warnings for
-> virtio_net.
-> make with CONFIG_DEBUG_SECTION_MISMATCH=y shows:
-> 
-> WARNING: drivers/net/virtio_net.o(.data+0x90): Section mismatch in
-> reference from the variable virtio_net to the function
-> .devexit.text:virtnet_remove()                                                                    
-> The variable virtio_net references                                                                            
-> the function __devexit virtnet_remove()                                                                       
-> If the reference is valid then annotate the                                                                   
-> variable with __exit* (see linux/init.h) or name the variable:                                                
-> *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,                                  
-> 
-> virtnet_remove was converted to devexit by this commit:
-> 
-> 	commit 3d1285beff2e8467b8c3884d83b7a91a99aa9fcd
-> 	Author: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> 	Date:   Wed Sep 30 22:28:34 2009 +0000
-> 
-> 	    move virtnet_remove to .devexit.text
-> 
-> We didn't have these warnings in v2.6.31, so this is a regression.
-> revert?
+On Wed, 4 Nov 2009 13:28:27 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-No, just rename "virtio_net" to "virtio_net_driver".  Meanwhile, ignore it.
-It's worked well for me so far.
+> 
+> * Tejun Heo <tj@kernel.org> wrote:
+> 
+> > nodac should forbid dac instead of enabling it.  Fix it.
+> > 
+> > Signed-off-by: Tejun Heo <tj@kernel.org>
+> > Cc: Matteo Frigo <athena@fftw.org>
+> > Cc: stable@kernel.org
+> > ---
+> > This was posted several months ago in a two patch series.  The second
+> > one was rejected by Alan and with that the first one got lost too
+> > although it's an apparent bug fix.  Matteo hit this bug recently and
+> > reminded me about this patch.  So, regenerated and reposting.
+> > 
+> > Thanks.
+> > 
+> >  arch/x86/kernel/pci-dma.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> > index d20009b..8cf3996 100644
+> > --- a/arch/x86/kernel/pci-dma.c
+> > +++ b/arch/x86/kernel/pci-dma.c
+> > @@ -216,7 +216,7 @@ static __init int iommu_setup(char *p)
+> >  		if (!strncmp(p, "allowdac", 8))
+> >  			forbid_dac = 0;
+> >  		if (!strncmp(p, "nodac", 5))
+> > -			forbid_dac = -1;
+> > +			forbid_dac = 1;
+> >  		if (!strncmp(p, "usedac", 6)) {
+> >  			forbid_dac = -1;
+> >  			return 1;
+> 
+> (Cc:-ed more interested parties.)
 
-Uwe: I apologize for accepting your patches.  I will be more careful in
-future.
-
-Cheers,
-Rusty.
+Looks fine to me.
