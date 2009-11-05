@@ -1,77 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZKECwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbZKEC4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZKECwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Nov 2009 21:52:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZKECwb
+	id S1755541AbZKEC4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Nov 2009 21:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbZKEC4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Nov 2009 21:52:31 -0500
-Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:53076 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755014AbZKECwb (ORCPT
+	Wed, 4 Nov 2009 21:56:19 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53383 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755345AbZKEC4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Nov 2009 21:52:31 -0500
-Date: Thu, 5 Nov 2009 03:52:35 +0100 (CET)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Valdis.Kletnieks@vt.edu
-cc: Martin Nybo Andersen <tweek@tweek.dk>,
-       kevin granade <kevin.granade@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Ryan C. Gordon" <icculus@icculus.org>,
-       =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: package managers [was: FatELF patches...]
-In-Reply-To: <5659.1257387887@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.64.0911050329130.18234@artax.karlin.mff.cuni.cz>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
- <7004b08e0911041332x259c02afg612be7eb02e4d6bb@mail.gmail.com>
- <Pine.LNX.4.64.0911042244030.24799@artax.karlin.mff.cuni.cz>
- <200911042343.01957.tweek@tweek.dk>           
- <Pine.LNX.4.64.0911050019540.1469@artax.karlin.mff.cuni.cz>
- <5659.1257387887@turing-police.cc.vt.edu>
-X-Personality-Disorder: Schizoid
+	Wed, 4 Nov 2009 21:56:18 -0500
+Message-ID: <4AF23EC0.2070606@cn.fujitsu.com>
+Date: Thu, 05 Nov 2009 11:56:00 +0900
+From: Miao Xie <miaox@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
+References: <4AEF94E8.3030403@cn.fujitsu.com>
+In-Reply-To: <4AEF94E8.3030403@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Ingo
 
+Could you see the following problems?
 
-On Wed, 4 Nov 2009, Valdis.Kletnieks@vt.edu wrote:
+Regards
+Miao
 
-> On Thu, 05 Nov 2009 00:55:53 +0100, Mikulas Patocka said:
+on 2009-11-3 11:26, Miao Xie wrote:
+> Hi, Peter.
 > 
-> > In some situations, the package manager is even more dangerous than manual 
-> > install. For example, if you are manually installing new alpha-quality 
-> > version of mplayer, and it is buggy, you end up with a working system with 
-> > broken mplayer. If you install alpha-quality version from some package 
-> > repository, it may need experimental version of libfoo, that needs 
-> > experimental version of libfee, that needs experimental version of glibc, 
-> > that contains a bug 
+> I found two problems about cpu controller:
+> 1) cpu controller didn't provide fair CPU time to groups when the tasks
+>    attached into those groups were bound to the same logic CPU.
+> 2) cpu controller didn't provide fair CPU time to groups when shares of
+>    each group <= 2 * nr_cpus.
 > 
-> Total bullshit.  You know *damned* well that if you were installing that 
-> alpha version of mplayer by hand, and it needed experimental libfoo, 
-> you'd go and build libfoo by hand, and then build the experimental 
-> libfee by hand, and then shoehorn in that glibc by hand, and bricked 
-> your system anyhow.
+> The detail is following:
+> 1) The first one is that cpu controller didn't provide fair CPU time to
+>    groups when the tasks attached into those groups were bound to the
+>    same logic CPU.
+> 
+>    The reason is that there is something with the computing of the per
+>    cpu shares.
+> 
+>    on my test box with 16 logic CPU, I did the following manipulation:
+>    a. create 2 cpu controller groups.
+>    b. attach a task into one group and 2 tasks into the other.
+>    c. bind three tasks to the same logic cpu.
+>             +--------+     +--------+
+>             | group1 |     | group2 |
+>             +--------+     +--------+
+>                 |              |
+>    CPU0      Task A      Task B & Task C
+> 
+>    The following is the reproduce steps:
+>    # mkdir /dev/cpuctl
+>    # mount -t cgroup -o cpu,noprefix cpuctl /dev/cpuctl
+>    # mkdir /dev/cpuctl/1
+>    # mkdir /dev/cpuctl/2
+>    # cat /dev/zero > /dev/null &
+>    # pid1=$!
+>    # echo $pid1 > /dev/cpuctl/1/tasks
+>    # taskset -p -c 0 $pid1
+>    # cat /dev/zero > /dev/null &
+>    # pid2=$!
+>    # echo $pid2 > /dev/cpuctl/2/tasks
+>    # taskset -p -c 0 $pid2
+>    # cat /dev/zero > /dev/null &
+>    # pid3=$!
+>    # echo $pid3 > /dev/cpuctl/2/tasks
+>    # taskset -p -c 0 $pid3
+> 
+>    some time later, I found the the task in the group1 got the 35% CPU 
+> time not
+>    50% CPU time. It was very strange that this result against the expected.
+> 
+>    this problem was caused by the wrong computing of the per cpu shares.
+>    According to the design of the cpu controller, the shares of each cpu
+>    controller group will be divided for every CPU by the workload of each
+>    logic CPU.
+>       cpu[i] shares = group shares * CPU[i] workload / sum(CPU workload)
+> 
+>    But if the CPU has no task, cpu controller will pretend there is one of
+>    average load, usually this average load is 1024, the load of the task 
+> whose
+>    nice is zero. So in the test, the shares of group1 on CPU0 is:
+>       1024 * (1 * 1024) / ((1 * 1024 + 15 * 1024)) = 64
+>    and the shares of group2 on CPU0 is:
+>       1024 * (2 * 1024) / ((2 * 1024 + 15 * 1024)) = 120
+>    The scheduler of the CPU0 provided CPU time to each group by the shares
+>    above. The bug occured.
+> 
+> 2) The second problem is that cpu controller didn't provide fair CPU 
+> time to
+>    groups when shares of each group <= 2 * nr_cpus
+> 
+>    The reason is that per cpu shares was set to MIN_SHARES(=2) if shares of
+>    each group <= 2 * nr_cpus.
+> 
+>    on the test box with 16 logic CPU, we do the following test:
+>    a. create two cpu controller groups
+>    b. attach 32 tasks into each group
+>    c. set shares of the first group to 16, the other to 32
+>             +--------+     +--------+
+>             | group1 |     | group2 |
+>             +--------+     +--------+
+>             |shares=16     |shares=32
+>                 |              |
+>              16 Tasks       32 Tasks
+> 
+>    some time later, the first group got 50% CPU time, not 33%. It also 
+> was very
+>    strange that this result against the expected.
+> 
+>    It is because the shares of cpuctl group was small, and there is many 
+> logic
+>    CPU. So per cpu shares that was computed was less than MIN_SHARES, 
+> and then
+>    was set to MIN_SHARES.
+> 
+>    Maybe 16 and 32 is not used usually. We can set a usual number(such 
+> as 1024)
+>    to avoid this problem on my box. But the number of CPU on a machine will
+>    become more and more in the future. If the number of CPU is greater 
+> than 512,
+>    this bug will occur even we set shares of group to 1024. This is a usual
+>    number. At this rate, the usual user will feel strange.
+> 
+> 
+> 
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+> 
 
-No, if I compile alpha version of mplayer by hand, it compiles and links 
-against whatever libraries I have on my system. If I pull it out of some 
-"testing" repository, it is already compiled and linked against libraries 
-in the same "testing" repository and it will load the system with crap.
 
-That is the unfortunate reality of not having a binary standard :-(
-
-> Or if you're arguing "you'd give up after seeing it needed an experimental
-> libfoo", I'll counter "you'd hopefully think twice if yum said it was
-> installing a experimental mplayer, and dragging in a whole chain of pre-reqs".
-
-... or use --disable-libfoo if it insists on newer version and I don't 
-want to upgrade it. Or maybe the configure scripts detects on its own that 
-the library is too old will compile without new features. Or it uses 
-libfoo shipped with the sources.
-
-But if the binary in the package is compiled with --enable-libfoo, there 
-is no other way. It forces libfoo upgrade.
-
-Mikulas
