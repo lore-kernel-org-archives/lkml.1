@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbZKETtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbZKETuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758664AbZKETtG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 14:49:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbZKETtF
+	id S1758833AbZKETuJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 14:50:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758818AbZKETuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 14:49:05 -0500
-Received: from THUNK.ORG ([69.25.196.29]:50736 "EHLO thunker.thunk.org"
+	Thu, 5 Nov 2009 14:50:07 -0500
+Received: from waste.org ([173.11.57.241]:43440 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758362AbZKETtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 14:49:04 -0500
-Date: Thu, 5 Nov 2009 14:48:58 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Jim Meyering <jim@meyering.net>
-Cc: Ulrich Drepper <drepper@gmail.com>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bug-coreutils@gnu.org
-Subject: Re: make getdents/readdir POSIX compliant wrt mount-point
-	dirent.d_ino
-Message-ID: <20091105194858.GP6510@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jim Meyering <jim@meyering.net>, Ulrich Drepper <drepper@gmail.com>,
-	Ulrich Drepper <drepper@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	bug-coreutils@gnu.org
-References: <87y6oyhkz8.fsf@meyering.net> <20090901201943.GB6996@mit.edu> <a36005b50909011503y73efdf56yabc4d981db2989bc@mail.gmail.com> <87my32rsw3.fsf@meyering.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87my32rsw3.fsf@meyering.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1758678AbZKETuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 14:50:06 -0500
+Subject: Re: netconsole: tulip: possible remote DoS? due to kernel freeze
+ on heavy RX traffic after Order-1 allocation failure
+From: Matt Mackall <mpm@selenic.com>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091105113106.GA4373@yumi.tdiedrich.de>
+References: <20091105113106.GA4373@yumi.tdiedrich.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 13:49:38 -0600
+Message-ID: <1257450578.2873.609.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 08:29:00PM +0100, Jim Meyering wrote:
-> One way to accommodate the current automount semantics, is to make fts.c
-> incur, _for every directory traversed_, the cost of an additional
-> stat (fstatat, actually) call just in case this happens to be one of
-> those rare mount points.
+On Thu, 2009-11-05 at 12:31 +0100, Tobias Diedrich wrote:
+> On one of my rootservers, which is using the tulip driver for the
+> onboard network interface, I am seeing Order-1 allocation failures
+> on heavy RX traffic, which usually hang the machine.
+> As in I'm unable to ping it and after forcing a reboot using the
+> management interface I don't see the allocation failure message in
+> /var/log/kern.log, even though I saw (parts) of it over the
+> netconsole.
 > 
-> I would really rather not pessimize most[*] hierarchy-traversing
-> command-line tools by up to 17% (though usually far less) in order
-> to accommodate device-number change semantics that arise
-> for an automountable directory.
+> Unfortunately the netconsole target is not on the LAN, but a
+> different rootserver on the internet a few hops away, which means
+> bursts of udp Packets are lossy and can get reordered...
+> 
+> I first thought this was introduced in 2.6.31, but it is only easier
+> to trigger there.  Reducing vm.min_free_pages made it easy enough to
+> trigger also on 2.6.30.
+> 
+> Example from netconsole log:
+> |perl: page allocation failure. order:1, mode:0x20
+> |Pid: 3541, comm: perl Tainted: G        W  2.6.30.9-tomodachi #16
+> |Call Trace:
+> | [<c013e56d>] ? __alloc_pages_internal+0x353/0x36f
+> | [<c0154f2c>] ? cache_alloc_refill+0x2ab/0x544
+> | [<c0355479>] ? dev_alloc_skb+0x11/0x25
+> | [<c015526f>] ? __kmalloc_track_caller+0xaa/0xf9
+> | [<c0354ae5>] ? __alloc_skb+0x48/0xff
+> | [<c0355479>] ? dev_alloc_skb+0x11/0x25
+> | [<c02d4ba9>] ? tulip_refill_rx+0x3c/0x115
+> | [<c02d4fff>] ? tulip_poll+0x37d/0x416
+> | [<c0359763>] ? net_rx_action+0x6b/0x12f
+> | [<c0121ad7>] ? __do_softirq+0x4e/0xbf
+> | [<c0121a89>] ? __do_softirq+0x0/0xbf
+> | <IRQ>  [<c0107700>] ? do_IRQ+0x53/0x63
+> | [<c0106610>] ? common_interrupt+0x30/0x38
 
-I must be missing something.  How do you come up with the 17% penalty
-figure?  And what does this actually mean in real life?
+I don't see anything in this trace to implicate netconsole? This is the
+normal network receive path running out of input buffers then running
+into memory fragmentation.
 
-stat() in Linux is fast.  Really fast.  A quick benchmark clocks
-stat() on my system at 0.814 *microseconds* in the warm cache case,
-and if you're stating a directory that you've traversed, odds are
-extremely high that it will still be in the cache.
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-My entire laptop root filesystem has 53,934 directories, so an extra
-stat() per directory translates to an extra 43 milliseconds, assuming
-I needed to walk my entire root filesystem.  It's really hard to see
-why kernel developers should get worked up into a lather over that
-kind of "performance penalty".
 
-Regards,
-
-						- Ted
