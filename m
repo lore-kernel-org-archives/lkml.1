@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933315AbZKFWrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933319AbZKFWrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933315AbZKFWrf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760071AbZKFWWX
+	id S933319AbZKFWrq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:47:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbZKFWro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:22:23 -0500
-Received: from kroah.org ([198.145.64.141]:56633 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:47:44 -0500
+Received: from kroah.org ([198.145.64.141]:56638 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759986AbZKFWWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:21 -0500
+	id S1760047AbZKFWWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:22 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:39 2009
-Message-Id: <20091106221539.517497730@mini.kroah.org>
+Message-Id: <20091106221539.652424942@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:04 -0800
+Date: Fri, 06 Nov 2009 14:14:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [06/99] nfs: Fix nfs_parse_mount_options() kfree() leak
+       Marcelo Tosatti <mtosatti@redhat.com>, Avi Kivity <avi@redhat.com>
+Subject: [07/99] KVM: use proper hrtimer function to retrieve expiration time
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=nfs-fix-nfs_parse_mount_options-kfree-leak.patch
+Content-Disposition: inline; filename=kvm-use-proper-hrtimer-function-to-retrieve-expiration-time.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,36 +29,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Yinghai Lu <yinghai@kernel.org>
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-commit 4223a4a155f245d41c350ed9eba4fc32e965c4da upstream.
+commit ace1546487a0fe4634e3251067f8a32cb2cdc099 upstream.
 
-Fix a (small) memory leak in one of the error paths of the NFS mount
-options parsing code.
+hrtimer->base can be temporarily NULL due to racing hrtimer_start.
+See switch_hrtimer_base/lock_hrtimer_base.
 
-Regression introduced in 2.6.30 by commit a67d18f (NFS: load the
-rpc/rdma transport module automatically).
+Use hrtimer_get_remaining which is robust against it.
 
-Reported-by: Yinghai Lu <yinghai@kernel.org>
-Reported-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/super.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/x86/kvm/i8254.c |    2 +-
+ arch/x86/kvm/lapic.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -1323,6 +1323,7 @@ static int nfs_parse_mount_options(char 
- 			default:
- 				dfprintk(MOUNT, "NFS:   unrecognized "
- 						"transport protocol\n");
-+				kfree(string);
- 				return 0;
- 			}
- 			break;
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -116,7 +116,7 @@ static s64 __kpit_elapsed(struct kvm *kv
+ 	 * itself with the initial count and continues counting
+ 	 * from there.
+ 	 */
+-	remaining = hrtimer_expires_remaining(&ps->pit_timer.timer);
++	remaining = hrtimer_get_remaining(&ps->pit_timer.timer);
+ 	elapsed = ps->pit_timer.period - ktime_to_ns(remaining);
+ 	elapsed = mod_64(elapsed, ps->pit_timer.period);
+ 
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -464,7 +464,7 @@ static u32 apic_get_tmcct(struct kvm_lap
+ 	if (apic_get_reg(apic, APIC_TMICT) == 0)
+ 		return 0;
+ 
+-	remaining = hrtimer_expires_remaining(&apic->lapic_timer.timer);
++	remaining = hrtimer_get_remaining(&apic->lapic_timer.timer);
+ 	if (ktime_to_ns(remaining) < 0)
+ 		remaining = ktime_set(0, 0);
+ 
 
 
