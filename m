@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbZKFWit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbZKFWio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933015AbZKFWit (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932986AbZKFWip
+	id S932991AbZKFWio (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932971AbZKFWim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:38:45 -0500
-Received: from kroah.org ([198.145.64.141]:56801 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:38:42 -0500
+Received: from kroah.org ([198.145.64.141]:56808 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932366AbZKFWWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:47 -0500
+	id S932382AbZKFWWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:48 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:43 2009
-Message-Id: <20091106221542.973446321@mini.kroah.org>
+Message-Id: <20091106221543.125163308@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:31 -0800
+Date: Fri, 06 Nov 2009 14:14:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ben Hutchings <ben@decadent.org.uk>, Eric Sesterhenn <snakebyte@gmx.de>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [33/99] hfsplus: refuse to mount volumes larger than 2TB
+       Stas Sergeev <stsp@aknet.ru>
+Subject: [34/99] Driver core: fix driver_register() return value
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=hfsplus-refuse-to-mount-volumes-larger-than-2tb.patch
+Content-Disposition: inline; filename=driver-core-fix-driver_register-return-value.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,47 +29,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ben Hutchings <ben@decadent.org.uk>
+From: Stas Sergeev <stsp@aknet.ru>
 
-commit 5c36fe3d87b3f0c85894a49193c66096a3d6b26f upstream.
+commit 39acbc12affcaa23ef1d887ba3d197baca8e6e47 upstream.
 
-As found in <http://bugs.debian.org/550010>, hfsplus is using type u32
-rather than sector_t for some sector number calculations.
+In this patch:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=16dc42e018c2868211b4928f20a957c0c216126c
+the check was added for another driver to already claim the same device
+on the same bus. But the returned error code was wrong: to modprobe, the
+-EEXIST means that _this_ driver is already installed. It therefore
+doesn't produce the needed error message when _another_ driver is trying
+to register for the same device.  Returning -EBUSY fixes the problem.
 
-In particular, hfsplus_get_block() does:
-
-        u32 ablock, dblock, mask;
-...
-        map_bh(bh_result, sb, (dblock << HFSPLUS_SB(sb).fs_shift) + HFSPLUS_SB(sb).blockoffset + (iblock & mask));
-
-I am not confident that I can find and fix all cases where a sector number
-may be truncated.  For now, avoid data loss by refusing to mount HFS+
-volumes with more than 2^32 sectors (2TB).
-
-[akpm@linux-foundation.org: fix 32 and 64-bit issues]
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-Cc: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Stas Sergeev <stsp@aknet.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/hfsplus/wrapper.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/base/driver.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/hfsplus/wrapper.c
-+++ b/fs/hfsplus/wrapper.c
-@@ -99,6 +99,10 @@ int hfsplus_read_wrapper(struct super_bl
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@ -236,7 +236,7 @@ int driver_register(struct device_driver
+ 		put_driver(other);
+ 		printk(KERN_ERR "Error: Driver '%s' is already registered, "
+ 			"aborting...\n", drv->name);
+-		return -EEXIST;
++		return -EBUSY;
+ 	}
  
- 	if (hfsplus_get_last_session(sb, &part_start, &part_size))
- 		return -EINVAL;
-+	if ((u64)part_start + part_size > 0x100000000ULL) {
-+		pr_err("hfs: volumes larger than 2TB are not supported yet\n");
-+		return -EINVAL;
-+	}
- 	while (1) {
- 		bh = sb_bread512(sb, part_start + HFSPLUS_VOLHEAD_SECTOR, vhdr);
- 		if (!bh)
+ 	ret = bus_add_driver(drv);
 
 
