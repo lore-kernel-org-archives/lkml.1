@@ -1,33 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbZKFRn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbZKFRog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759507AbZKFRn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 12:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759395AbZKFRnz
+	id S1759529AbZKFRog (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 12:44:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759395AbZKFRog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 12:43:55 -0500
-Received: from kroah.org ([198.145.64.141]:55794 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759298AbZKFRnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 12:43:55 -0500
-Date: Fri, 6 Nov 2009 09:40:37 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] Still not applied (resending again)
-Message-ID: <20091106174037.GA7541@kroah.com>
-References: <20091106113159.14699.16040.stgit@localhost.localdomain>
+	Fri, 6 Nov 2009 12:44:36 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42252 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758787AbZKFRof (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 12:44:35 -0500
+Date: Fri, 6 Nov 2009 18:44:39 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: Re: Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu
+	counter instead
+Message-ID: <20091106174439.GB819@basil.fritz.box>
+References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1> <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1> <87r5sc7kst.fsf@basil.nowhere.org> <alpine.DEB.1.10.0911051558220.7668@V090114053VZO-1> <20091106073946.GV31511@one.firstfloor.org> <alpine.DEB.1.10.0911061208370.5187@V090114053VZO-1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091106113159.14699.16040.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.DEB.1.10.0911061208370.5187@V090114053VZO-1>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 06, 2009 at 11:32:29AM +0000, Alan Cox wrote:
-> Regression fixes for the carrier handling when using O_NDELAY
+On Fri, Nov 06, 2009 at 12:08:54PM -0500, Christoph Lameter wrote:
+> On Fri, 6 Nov 2009, Andi Kleen wrote:
+> 
+> > Yes but all the major calls still take mmap_sem, which is not ranged.
+> 
+> But exactly that issue is addressed by this patch!
 
-I added these to my tree yesterday, sorry for the delay.
+Major calls = mmap, brk, etc.
 
-greg k-h
+Only for page faults, not for anything that takes it for write.
+
+Anyways the better reader lock is a step in the right direction, but
+I have my doubts it's a good idea to make write really slow here.
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
