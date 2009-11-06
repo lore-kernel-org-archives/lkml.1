@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbZKFWFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760105AbZKFWKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759925AbZKFWFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932191AbZKFWFt
+	id S1760105AbZKFWKu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932173AbZKFWFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:05:49 -0500
-Received: from kroah.org ([198.145.64.141]:39738 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:05:48 -0500
+Received: from kroah.org ([198.145.64.141]:39743 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932113AbZKFWFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:05:47 -0500
+	id S932147AbZKFWFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:48 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:51 2009
-Message-Id: <20091106215951.213173511@mini.kroah.org>
+Message-Id: <20091106215951.349463309@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 13:56:12 -0800
+Date: Fri, 06 Nov 2009 13:56:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>
-Subject: [09/30] libata: fix internal command failure handling
+       David Woodhouse <David.Woodhouse@intel.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [10/30] libertas if_usb: Fix crash on 64-bit machines
 References: <20091106215603.413650799@mini.kroah.org>
-Content-Disposition: inline; filename=libata-fix-internal-command-failure-handling.patch
+Content-Disposition: inline; filename=libertas-if_usb-fix-crash-on-64-bit-machines.patch
 In-Reply-To: <20091106220156.GA13813@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,51 +31,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Tejun Heo <tj@kernel.org>
+From: David Woodhouse <dwmw2@infradead.org>
 
-commit f4b31db92d163df8a639f5a8c8633bdeb6e8432d upstream.
+commit e9024a059f2c17fb2bfab212ee9d31511d7b8e57 upstream.
 
-When an internal command fails, it should be failed directly without
-invoking EH.  In the original implemetation, this was accomplished by
-letting internal command bypass failure handling in ata_qc_complete().
-However, later changes added post-successful-completion handling to
-that code path and the success path is no longer adequate as internal
-command failure path.  One of the visible problems is that internal
-command failure due to timeout or other freeze conditions would
-spuriously trigger WARN_ON_ONCE() in the success path.
+On a 64-bit kernel, skb->tail is an offset, not a pointer. The libertas
+usb driver passes it to usb_fill_bulk_urb() anyway, causing interesting
+crashes. Fix that by using skb->data instead.
 
-This patch updates failure path such that internal command failure
-handling is contained there.
+This highlights a problem with usb_fill_bulk_urb(). It doesn't notice
+when dma_map_single() fails and return the error to its caller as it
+should. In fact it _can't_ currently return the error, since it returns
+void.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+So this problem was showing up only at unmap time, after we'd already
+suffered memory corruption by doing DMA to a bogus address.
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-core.c |   12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/net/wireless/libertas/if_usb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -4747,12 +4747,14 @@ void ata_qc_complete(struct ata_queued_c
- 			qc->flags |= ATA_QCFLAG_FAILED;
+--- a/drivers/net/wireless/libertas/if_usb.c
++++ b/drivers/net/wireless/libertas/if_usb.c
+@@ -443,7 +443,7 @@ static int __if_usb_submit_rx_urb(struct
+ 	/* Fill the receive configuration URB and initialise the Rx call back */
+ 	usb_fill_bulk_urb(cardp->rx_urb, cardp->udev,
+ 			  usb_rcvbulkpipe(cardp->udev, cardp->ep_in),
+-			  (void *) (skb->tail + (size_t) IPFIELD_ALIGN_OFFSET),
++			  skb->data + IPFIELD_ALIGN_OFFSET,
+ 			  MRVDRV_ETH_RX_PACKET_BUFFER_SIZE, callbackfn,
+ 			  cardp);
  
- 		if (unlikely(qc->flags & ATA_QCFLAG_FAILED)) {
--			if (!ata_tag_internal(qc->tag)) {
--				/* always fill result TF for failed qc */
--				fill_result_tf(qc);
-+			/* always fill result TF for failed qc */
-+			fill_result_tf(qc);
-+
-+			if (!ata_tag_internal(qc->tag))
- 				ata_qc_schedule_eh(qc);
--				return;
--			}
-+			else
-+				__ata_qc_complete(qc);
-+			return;
- 		}
- 
- 		/* read result TF if requested */
 
 
