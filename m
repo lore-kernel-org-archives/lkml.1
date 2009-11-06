@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbZKFW0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbZKFW0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760288AbZKFW0t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760104AbZKFW0r
+	id S1760274AbZKFW0a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:26:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760198AbZKFW02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:26:47 -0500
-Received: from kroah.org ([198.145.64.141]:57184 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:26:28 -0500
+Received: from kroah.org ([198.145.64.141]:57190 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932688AbZKFWXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932704AbZKFWXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Nov 2009 17:23:40 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:51 2009
-Message-Id: <20091106221551.250413089@mini.kroah.org>
+Message-Id: <20091106221551.389639017@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:15:27 -0800
+Date: Fri, 06 Nov 2009 14:15:28 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [89/99] x86: mce: Fix thermal throttling message storm
+       Reinette Chatre <reinette.chatre@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [90/99] iwlwifi: fix potential rx buffer loss
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=x86-mce-fix-thermal-throttling-message-storm.patch
+Content-Disposition: inline; filename=iwlwifi-fix-potential-rx-buffer-loss.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,65 +30,134 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ingo Molnar <mingo@elte.hu>
+From: Reinette Chatre <reinette.chatre@intel.com>
 
-commit b417c9fd8690637f0c91479435ab3e2bf450c038 upstream.
+commit de0bd50845eb5935ce3d503c5d2f565d6cb9ece1 upstream.
 
-If a system switches back and forth between hot and cold mode,
-the MCE code will print a stream of critical kernel messages.
+RX handling maintains a few lists that keep track of the RX buffers.
+Buffers move from one list to the other as they are used, replenished, and
+again made available for usage. In one such instance, when a buffer is used
+it enters the "rx_used" list. When buffers are replenished an skb is
+attached to the buffer and it is moved to the "rx_free" list. The problem
+here is that the buffer is first removed from the "rx_used" list _before_ the
+skb is allocated. Thus, if the skb allocation fails this buffer remains
+removed from the "rx_used" list and is thus lost for future usage.
 
-Extend the throttling code to properly notice this, by
-only printing the first hot + cold transition and omitting
-the rest up to CHECK_INTERVAL (5 minutes).
+Fix this by first allocating the skb before trying to attach it to a list.
+We add an additional check to not do this unnecessarily.
 
-This way we'll only get a single incident of:
-
- [  102.356584] CPU0: Temperature above threshold, cpu clock throttled (total events = 1)
- [  102.357000] Disabling lock debugging due to kernel taint
- [  102.369223] CPU0: Temperature/speed normal
-
-Every 5 minutes. The 'total events' count tells the number of cold/hot
-transitions detected, should overheating occur after 5 minutes again:
-
-[  402.357580] CPU0: Temperature above threshold, cpu clock throttled (total events = 24891)
-[  402.358001] CPU0: Temperature/speed normal
-[  450.704142] Machine check events logged
-
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Huang Ying <ying.huang@intel.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Reported-by: Rick Farrington <rickdic@hotmail.com>
+Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/cpu/mcheck/therm_throt.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/wireless/iwlwifi/iwl-rx.c       |   24 +++++++++++++++++-------
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |   24 ++++++++++++++++--------
+ 2 files changed, 33 insertions(+), 15 deletions(-)
 
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -42,6 +42,7 @@ struct thermal_state {
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -1196,6 +1196,7 @@ static void iwl3945_rx_allocate(struct i
+ 	struct iwl_rx_queue *rxq = &priv->rxq;
+ 	struct list_head *element;
+ 	struct iwl_rx_mem_buffer *rxb;
++	struct sk_buff *skb;
+ 	unsigned long flags;
  
- 	u64			next_check;
- 	unsigned long		throttle_count;
-+	unsigned long		last_throttle_count;
- };
+ 	while (1) {
+@@ -1205,17 +1206,11 @@ static void iwl3945_rx_allocate(struct i
+ 			spin_unlock_irqrestore(&rxq->lock, flags);
+ 			return;
+ 		}
+-
+-		element = rxq->rx_used.next;
+-		rxb = list_entry(element, struct iwl_rx_mem_buffer, list);
+-		list_del(element);
+ 		spin_unlock_irqrestore(&rxq->lock, flags);
  
- static DEFINE_PER_CPU(struct thermal_state, thermal_state);
-@@ -120,11 +121,12 @@ static int therm_throt_process(bool is_t
- 	if (is_throttled)
- 		state->throttle_count++;
+ 		/* Alloc a new receive buffer */
+-		rxb->skb =
+-		    alloc_skb(priv->hw_params.rx_buf_size,
+-				priority);
+-		if (!rxb->skb) {
++		skb = alloc_skb(priv->hw_params.rx_buf_size, priority);
++		if (!skb) {
+ 			if (net_ratelimit())
+ 				IWL_CRIT(priv, ": Can not allocate SKB buffers\n");
+ 			/* We don't reschedule replenish work here -- we will
+@@ -1224,6 +1219,19 @@ static void iwl3945_rx_allocate(struct i
+ 			break;
+ 		}
  
--	if (!(was_throttled ^ is_throttled) &&
--			time_before64(now, state->next_check))
-+	if (time_before64(now, state->next_check) &&
-+			state->throttle_count != state->last_throttle_count)
- 		return 0;
++		spin_lock_irqsave(&rxq->lock, flags);
++		if (list_empty(&rxq->rx_used)) {
++			spin_unlock_irqrestore(&rxq->lock, flags);
++			dev_kfree_skb_any(skb);
++			return;
++		}
++		element = rxq->rx_used.next;
++		rxb = list_entry(element, struct iwl_rx_mem_buffer, list);
++		list_del(element);
++		spin_unlock_irqrestore(&rxq->lock, flags);
++
++		rxb->skb = skb;
++
+ 		/* If radiotap head is required, reserve some headroom here.
+ 		 * The physical head count is a variable rx_stats->phy_count.
+ 		 * We reserve 4 bytes here. Plus these extra bytes, the
+--- a/drivers/net/wireless/iwlwifi/iwl-rx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-rx.c
+@@ -239,26 +239,22 @@ void iwl_rx_allocate(struct iwl_priv *pr
+ 	struct iwl_rx_queue *rxq = &priv->rxq;
+ 	struct list_head *element;
+ 	struct iwl_rx_mem_buffer *rxb;
++	struct sk_buff *skb;
+ 	unsigned long flags;
  
- 	state->next_check = now + CHECK_INTERVAL;
-+	state->last_throttle_count = state->throttle_count;
+ 	while (1) {
+ 		spin_lock_irqsave(&rxq->lock, flags);
+-
+ 		if (list_empty(&rxq->rx_used)) {
+ 			spin_unlock_irqrestore(&rxq->lock, flags);
+ 			return;
+ 		}
+-		element = rxq->rx_used.next;
+-		rxb = list_entry(element, struct iwl_rx_mem_buffer, list);
+-		list_del(element);
+-
+ 		spin_unlock_irqrestore(&rxq->lock, flags);
  
- 	/* if we just entered the thermal event */
- 	if (is_throttled) {
+ 		/* Alloc a new receive buffer */
+-		rxb->skb = alloc_skb(priv->hw_params.rx_buf_size + 256,
++		skb = alloc_skb(priv->hw_params.rx_buf_size + 256,
+ 						priority);
+ 
+-		if (!rxb->skb) {
++		if (!skb) {
+ 			IWL_CRIT(priv, "Can not allocate SKB buffers\n");
+ 			/* We don't reschedule replenish work here -- we will
+ 			 * call the restock method and if it still needs
+@@ -266,6 +262,20 @@ void iwl_rx_allocate(struct iwl_priv *pr
+ 			break;
+ 		}
+ 
++		spin_lock_irqsave(&rxq->lock, flags);
++
++		if (list_empty(&rxq->rx_used)) {
++			spin_unlock_irqrestore(&rxq->lock, flags);
++			dev_kfree_skb_any(skb);
++			return;
++		}
++		element = rxq->rx_used.next;
++		rxb = list_entry(element, struct iwl_rx_mem_buffer, list);
++		list_del(element);
++
++		spin_unlock_irqrestore(&rxq->lock, flags);
++
++		rxb->skb = skb;
+ 		/* Get physical address of RB/SKB */
+ 		rxb->real_dma_addr = pci_map_single(
+ 					priv->pci_dev,
 
 
