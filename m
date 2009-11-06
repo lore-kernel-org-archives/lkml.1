@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZKFI6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZKFJE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbZKFI6T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 03:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbZKFI6T
+	id S1755291AbZKFJE1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 04:04:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbZKFJE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 03:58:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47208
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755186AbZKFI6R convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 03:58:17 -0500
-Date: Fri, 06 Nov 2009 00:58:42 -0800 (PST)
-Message-Id: <20091106.005842.231236256.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Cc: francis.moro@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4AF3E2A9.2020601@gmail.com>
-References: <4AEB0059.1050400@gmail.com>
-	<38b2ab8a0911060045hb6ebab8p43bf8aa838eabfd3@mail.gmail.com>
-	<4AF3E2A9.2020601@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 6 Nov 2009 04:04:26 -0500
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:57558 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751530AbZKFJEW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 04:04:22 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 01/11] sysctl: Separate the binary sysctl logic into it's own file.
+Date: Fri, 6 Nov 2009 10:04:00 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-self-00026-g91d3f9b; KDE/4.3.2; i686; ; )
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <m1tyx8trik.fsf@fess.ebiederm.org> <1257468114-6823-1-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <1257468114-6823-1-git-send-email-ebiederm@xmission.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911061004.01007.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Fri, 06 Nov 2009 09:47:37 +0100
+Am Freitag 06 November 2009 01:41:44 schrieb Eric W. Biederman:
+> From: Eric W. Biederman <ebiederm@xmission.com>
+> 
+> In preparation for more invasive cleanups separate the core
+> binary sysctl logic into it's own file.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-> Francis Moreau a écrit :
->> On Fri, Oct 30, 2009 at 4:03 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
->> 
->> [...]
->> 
->>> [PATCH take2] net: fix sk_forward_alloc corruption
->>>
->> 
->> With this patch applied 4 days ago, I haven't got any oops so far.
->
-> Thanks a lot for testing and report Francis, I believe David will
-> push it for stable (if not already done)
+Hmm, with your patches on Linus git I get the following on s390:
 
-I'm pretty sure it's already in Greg's current batch, but if it
-doesn't show up in his next -stable release I'll make sure to
-submit it.
+kernel/sysctl_binary.c: In function 'SYSC_sysctl':
+kernel/sysctl_binary.c:126: error: implicit declaration of function 
+'lock_kernel'
+kernel/sysctl_binary.c:129: error: implicit declaration of function 
+'unlock_kernel'
+
+Christian
