@@ -1,71 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbZKFHrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZKFHqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754197AbZKFHrP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 02:47:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZKFHrO
+	id S1753985AbZKFHqu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 02:46:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZKFHqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 02:47:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42700 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751779AbZKFHrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 02:47:13 -0500
-Message-ID: <4AF3D428.8000804@kernel.org>
-Date: Fri, 06 Nov 2009 16:45:44 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 6 Nov 2009 02:46:49 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38521 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbZKFHqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 02:46:48 -0500
+Date: Fri, 6 Nov 2009 08:46:44 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project
+	tree
+Message-ID: <20091106074643.GA5562@ucw.cz>
+References: <200911031951.05235.bzolnier@gmail.com> <200911032200.04516.IvDoorn@gmail.com> <20091104083737.GA16978@elte.hu> <200911042251.23506.IvDoorn@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jiri Kosina <jkosina@suse.cz>, Peter Zijlstra <peterz@infradead.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, cl@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: irq lock inversion
-References: <86802c440911041008q4969b9bdk15b4598c40bb84bd@mail.gmail.com> <4AF25FC7.4000502@kernel.org> <20091105082102.GA2870@elte.hu> <4AF28D7A.6020209@kernel.org> <alpine.LSU.2.00.0911051502060.9988@wotan.suse.de> <4AF3B9BD.9050300@kernel.org> <20091106071711.GA20946@elte.hu>
-In-Reply-To: <20091106071711.GA20946@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911042251.23506.IvDoorn@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->>> This warning is bogus -- sched_init() is being called very early with IRQs
->>> disabled, and the irqsave/restore code paths in pcpu_alloc() are only for early
->>> init. The path can never be called from irq context once the early init
->>> finishes. Rationale for this is explained in changelog of the commit mentioned
->>> above.
->>>
->>> This problem can be encountered generally in any other early code running
->>> with IRQs off and using irqsave/irqrestore.
->>>
->>> Reported-by: Yinghai Lu <yhlu.kernel@gmail.com>
->>> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
->> Looks good to me.  Ingo, what do you think?
+
+> > Look at the diffstat of Bart's driver:
+> > 
+> >    15 files changed, 4036 insertions(+), 7158 deletions(-)
+> > 
+> > He reduced your 5.2 KLOC non-working driver into a 1.8 KLOC _working_ 
+> > driver.
 > 
-> Ugh, this explanation is _BOGUS_. As i said, taking a lock with irqs 
-> disabled does _NOT_ mark a lock as 'irq safe' - if it did, we'd have 
-> false positives left and right.
+> Bullshit, read the mails again.
+
+This was uncalled for, right?
+
+...
+> Some people actually require sleep during the night, perhaps that you don't need
+> that and can hence review 41 patches which changes thousands of lines on the
+> same day the patches were submitted.
+
+If you lack time, "Really start reading my mails" sentence you used at
+the start of email is *not* user-friendly way to say that.
+
+> > And _still_ your complaint about Bart's series is that he updated the 
+> > MAINTAINERS entry and added an entry for rt2800? Heck _sure_ he should 
+> > update it, he is the one doing the hard work of trying to bring it to 
+> > users, trying to clean up a messy driver space, trying to turn crap into 
+> > gold.
 > 
-> Read the lockdep message please, consider all the backtraces it prints, 
-> it says something different.
+> So if I want to focus on something different in the kernel, I just send 1 patch,
+> and a second to claim the maintainership of it even though there is an active
+> maintainer available?
 
-Ah... okay, the pcpu_free() path is correctly marking the lock
-irqsafe.  I assumed this was caused by recent pcpu_alloc() change.
-Sorry about that.  The lock inversion problem has always been there,
-it just never showed up because none has use allocation map that large
-I suppose.
+What about listing yourself as a maintainer for a start?
 
-So, the correct fix would be either 1. push down irqsafeness down to
-vmalloc locks or 2. the rather ugly unlock-lock dancing in
-pcpu_extend_area_map() I posted earlier.  For 2.6.32, I guess we'll
-have to go with #2.  For longer term, we'll probably have to do #1 as
-it's required to implement atomic percpu allocations too.
+> > The thing is, if you dont have the time or interest to listen to and act 
+> > upon review feedback, be constructive about it and fix (obvious) 
+> > structural problems in your rt2800 code, you should just step aside and 
+> > let Bart maintain what he is apparently more capable of maintaining than 
+> > you are.
+> >
+> > What you are doing here is a thinly veiled land-grab: you did a minimal 
+> > token driver for rt2800 that doesnt work, kept it in your private tree 
+> > for _1.5 years_, and the moment someone _else_ came along and did 
+> > something better and more functional in drivers/staging/, you discovered 
+> > your sudden interest for it and moved the crappy driver upstream at 
+> > lightning's speed (it is already in net-next AFAICS, despite negative 
+> > test and review feedback) - ignoring and throwing away all the work that 
+> > Bart has done.
+> 
+> Get your facts straight, the bullshit level in your mail is staggering.
+> 
+> You have no fucking clue who wrote the rt2800 driver which is in
+> drivers/staging/,
 
-I'll try to reproduce the problem here and verify the previous locking
-dance patch.
+Perhaps you should not be a maintainer if you can't behave yourself?
 
-Thanks.
+> 	Because a lot of people prefer looking from the sideline,
+> contributing _nothing_
+
+Given your behaviour, I'm not suprised people are not too eager to
+work with you.
+
+> As for "throwing away that work" I ACKED 10 of his patches, and said I would review
+> the rest later! But like I said, apparently it is a bad habit for people to sleep during
+> the night.
+
+Read your email again. It was quite far from 'acked 10, asked for
+time'. You flamed him first.
+									Pavel
 
 -- 
-tejun
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
