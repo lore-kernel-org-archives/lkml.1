@@ -1,77 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZKFVGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759909AbZKFVVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759891AbZKFVGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 16:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759874AbZKFVGT
+	id S1759909AbZKFVVi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 16:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbZKFVVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 16:06:19 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8823 "EHLO mx1.redhat.com"
+	Fri, 6 Nov 2009 16:21:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48386 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759769AbZKFVGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 16:06:18 -0500
-Date: Fri, 6 Nov 2009 16:06:12 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, adobriyan@gmail.com, viro@ZenIV.linux.org.uk
-Subject: Re: [PATCH] proc: revalidate dentry returned by
- proc_pid_follow_link
-Message-ID: <20091106160612.4cd05e76@tlielax.poochiereds.net>
-In-Reply-To: <20091106203601.GD27751@shareable.org>
-References: <1257513594-31071-1-git-send-email-jlayton@redhat.com>
-	<20091106203601.GD27751@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1759887AbZKFVV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 16:21:29 -0500
+Date: Fri, 6 Nov 2009 22:16:37 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: [PATCH] ptrace: copy_thread() should clear TIF_SINGLESTEP and
+	X86_EFLAGS_TF
+Message-ID: <20091106211637.GA1696@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009 20:36:01 +0000
-Jamie Lokier <jamie@shareable.org> wrote:
+This patch fixes x86, other machines need the similar fix. Hopefully
+maintainers can help.
 
-> Jeff Layton wrote:
-> > The problem here is that this makes that code shortcut any lookup or
-> > revalidation of the dentry. In general, this isn't a problem -- in most
-> > cases the dentry is known to be good. It is a problem however for NFSv4.
-> > If this symlink is followed on an open operation no actual open call
-> > occurs and the open state isn't properly established. This causes
-> > problems when we later try to use this file descriptor for actual
-> > operations.
-> 
-> As NFS uses open() as a kind of fcntl-lock barrier, I can see it's
-> important to do _something_ on new opens, rather than just cloning
-> most of the file descriptor.
-> 
+If the tracee calls fork() after PTRACE_SINGLESTEP, the forked child starts
+with TIF_SINGLESTEP/X86_EFLAGS_TF bits copied from ptraced parent. This is
+not right, especially when the new child is not auto-attaced: in this case
+it is killed by SIGTRAP.
 
-I guess you mean the close-to-open cache consistency? If so, this
-problem doesn't actually break that. The actual nfs_file_open call does
-occur even when you're opening by following one of these symlinks. I
-believe the cache consistency code occurs there.
+Test-case:
 
-The problem here is really nfsv4 specific. There the on-the-wire open
-call and initialization of state actually happens during d_lookup and
-d_revalidate. Neither of these happens with these LAST_BIND symlinks so
-we end up with a filp that has no NFSv4 state attached.
+	#include <stdio.h>
+	#include <unistd.h>
+	#include <signal.h>
+	#include <sys/ptrace.h>
+	#include <sys/wait.h>
+	#include <assert.h>
 
-> > This patch takes a minimalist approach to fixing this by making the
-> > /proc/pid follow_link routine revalidate the dentry before returning it.
-> 
-> What happens if the file descriptor you are re-opening is for a file
-> which has been deleted.  Does it still have a revalidatable dentry?
-> 
+	int main(void)
+	{
+		int pid, status;
 
-Well, these LAST_BIND symlinks return a real dget'ed dentry today. If
-we assume that it always returns a valid dentry (which seems to be the
-case), then I suppose it's OK to do a d_revalidate against it.
+		if (!(pid = fork())) {
+			assert(ptrace(PTRACE_TRACEME) == 0);
+			kill(getpid(), SIGSTOP);
 
-It's possible though that that revalidate will either fail though or
-return that it's no good. In that case, this code just returns ESTALE
-which should make the path walking code revalidate all the way up the
-chain. That should (hopefully) make whatever syscall we're servicing
-return an error.
+			if (!fork()) {
+				/* kernel bug: this child will be killed by SIGTRAP */
+				printf("Hello world\n");
+				return 43;
+			}
 
-Thanks for the review so far.
+			wait(&status);
+			return WEXITSTATUS(status);
+		}
 
--- 
-Jeff Layton <jlayton@redhat.com>
+		for (;;) {
+			assert(pid == wait(&status));
+			if (WIFEXITED(status))
+				break;
+			assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
+		}
+
+		assert(WEXITSTATUS(status) == 43);
+		return 0;
+	}
+
+Tested on x86_64, hopefully the change in process_32.c is right too.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ arch/x86/kernel/process_32.c |    3 +++
+ arch/x86/kernel/process_64.c |    3 +++
+ 2 files changed, 6 insertions(+)
+
+--- V1/arch/x86/kernel/process_32.c~FORK_CLEAR_TIF_SINGLESTEP	2009-09-15 08:45:40.000000000 +0200
++++ V1/arch/x86/kernel/process_32.c	2009-11-06 21:51:57.000000000 +0100
+@@ -252,6 +252,8 @@ int copy_thread(unsigned long clone_flag
+ 	childregs->ax = 0;
+ 	childregs->sp = sp;
+ 
++	childregs->flags &= ~X86_EFLAGS_TF;
++
+ 	p->thread.sp = (unsigned long) childregs;
+ 	p->thread.sp0 = (unsigned long) (childregs+1);
+ 
+@@ -287,6 +289,7 @@ int copy_thread(unsigned long clone_flag
+ 	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
+ 	p->thread.ds_ctx = NULL;
+ 
++	clear_tsk_thread_flag(p, TIF_SINGLESTEP);
+ 	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
+ 	p->thread.debugctlmsr = 0;
+ 
+--- V1/arch/x86/kernel/process_64.c~FORK_CLEAR_TIF_SINGLESTEP	2009-09-15 08:45:40.000000000 +0200
++++ V1/arch/x86/kernel/process_64.c	2009-11-06 21:45:16.000000000 +0100
+@@ -289,6 +289,8 @@ int copy_thread(unsigned long clone_flag
+ 	if (sp == ~0UL)
+ 		childregs->sp = (unsigned long)childregs;
+ 
++	childregs->flags &= ~X86_EFLAGS_TF;
++
+ 	p->thread.sp = (unsigned long) childregs;
+ 	p->thread.sp0 = (unsigned long) (childregs+1);
+ 	p->thread.usersp = me->thread.usersp;
+@@ -332,6 +334,7 @@ int copy_thread(unsigned long clone_flag
+ 	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
+ 	p->thread.ds_ctx = NULL;
+ 
++	clear_tsk_thread_flag(p, TIF_SINGLESTEP);
+ 	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
+ 	p->thread.debugctlmsr = 0;
+ 
+
