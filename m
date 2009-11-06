@@ -1,91 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbZKFTCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbZKFTD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759634AbZKFTCn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 14:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759429AbZKFTCm
+	id S1759649AbZKFTD0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 14:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759568AbZKFTD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 14:02:42 -0500
-Received: from sinclair.provo.novell.com ([137.65.248.137]:34956 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757783AbZKFTCl convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-ghaskins@novell.com;6:1>);
-	Fri, 6 Nov 2009 14:02:41 -0500
-Message-Id: <4AF42C810200005A00058361@sinclair.provo.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 06 Nov 2009 12:02:41 -0700
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Gregory Haskins" <gregory.haskins@gmail.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
-Cc: <sfr@canb.auug.org.au>, <greg@kroah.com>,
-       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       "LKML" <linux-kernel@vger.kernel.org>, <linux-next@vger.kernel.org>,
-       <netdev@vger.kernel.org>
-Subject: Re: [BUILD-FAILURE] next-20091015 - vbus_enet driver breaks
-	 with allmodconfig
-References: <20091015152538.74a1cb15.sfr@canb.auug.org.au>
- <20091015104852.GA6740@linux.vnet.ibm.com>
- <4AD6CD940200005A00056857@sinclair.provo.novell.com>
- <4AD75E60.4020306@gmail.com>
- <20091015114210.65e1be72.randy.dunlap@oracle.com>
- <4AD7A141.3060102@gmail.com>
- <20091106093856.e9eac13e.randy.dunlap@oracle.com>
-In-Reply-To: <20091106093856.e9eac13e.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 6 Nov 2009 14:03:26 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59220 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757783AbZKFTDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 14:03:25 -0500
+Message-ID: <da621335371fccd6cfb3d8d7c0c2bf3a.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.10.0911061231580.5187@V090114053VZO-1>
+References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
+    <20091104234923.GA25306@redhat.com>
+    <alpine.DEB.1.10.0911051004360.25718@V090114053VZO-1>
+    <alpine.DEB.1.10.0911051035100.25718@V090114053VZO-1>
+    <20091106101106.8115e0f1.kamezawa.hiroyu@jp.fujitsu.com>
+    <20091106122344.51118116.kamezawa.hiroyu@jp.fujitsu.com>
+    <alpine.DEB.1.10.0911061231580.5187@V090114053VZO-1>
+Date: Sat, 7 Nov 2009 04:03:17 +0900 (JST)
+Subject: Re: [MM] Make mm counters per cpu instead of atomic V2
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Dave Jones" <davej@redhat.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, "Tejun Heo" <tj@kernel.org>
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On 11/6/2009 at 12:38 PM, in message
-<20091106093856.e9eac13e.randy.dunlap@oracle.com>, Randy Dunlap
-<randy.dunlap@oracle.com> wrote: 
-> On Thu, 15 Oct 2009 18:25:05 -0400 Gregory Haskins wrote:
-> 
->> Randy Dunlap wrote:
->> > On Thu, 15 Oct 2009 13:39:44 -0400 Gregory Haskins wrote:
->> > 
->> >>
->> >> I am having difficulty reproducing the problem.  When I look at the
->> >> Kconfig, I see that VBUS_ENET has a "select VBUS_PROXY" as I would
->> >> expect.  Additionally, if I run allmodconfig I can confirm that I get
->> >> VBUS_ENET=m, VBUS_PROXY=y:
->> > 
->> > Greg,
->> > 
->> > Did you try to reproduce it with the ppc64 config file?
->> > allmodconfig on what arch?
->> > 
->> > I think the problem is that arch/x86/Kconfig says:
->> > 
->> > source "drivers/vbus/Kconfig"
->> > 
->> > and that should actually be in drivers/Kconfig, so that it applies
->> > to ppc64 et al, not just x86.
->> 
->> Ah, indeed.  I only have/tried x86, and that is the issue.  I will have
->> to fix this (and the create_irq() dependency you mention in the next mail).
-> 
-> Hi Greg,
-> 
-> I'm still getting
-> pci-bridge.c:(.text+0x31b633): undefined reference to `create_irq'
-> 
-> on today's linux-next-20091106.
-> CONFIG_SMP=n
-> CONFIG_X86_UP_APIC=n
-> 
-> full config attached.
-> 
-> 
-> ---
-> ~Randy
+Christoph Lameter wrote:
+> On Fri, 6 Nov 2009, KAMEZAWA Hiroyuki wrote:
+>
+>> BTW, can't we have single-thread-mode for this counter ?
+>> Usual program's read-side will get much benefit.....
+>
+> Thanks for the measurements.
+>
+> A single thread mode would be good. Ideas on how to add that would be
+> appreciated.
+>
 
-Indeed.  Looks like I need to be smarter about how the create_irq facility is used.  I will fix this. 
+Maybe there are some ways....At brief thought....
+==
+struct usage_counter {
+    long rss;
+    long file;
+}
 
-Thanks Randy,
--Greg
+
+struct mm_struct {
+    ....
+    atomic_long_t  rss;   /* only updated when usage_counter is NULL */
+    atomic_long_t  file;  /* only updated when usage_counter is NULL */
+    struct usage_counter *usage;  /* percpu counter used when
+                                     multi-threaded */
+    .....
+}
+
+And allocate mm->usage only when the first CLONE_THREAD is specified.
+
+if (mm->usage)
+    access per cpu
+else
+    atomic_long_xxx
+
+and read operation will be
+
+    val = atomic_read(mm->rss);
+    if (mm->usage)
+        for_each_possible_cpu()....
+==
+Does "if" seems too costly ?
+
+If this idea is bad, I think moving mm_counter to task_struct from
+mm_struct and doing slow-sync is an idea instead of percpu.
+
+for example
+
+struct task_struct {
+    ....
+    mm_counter_t temp_counter;
+    ....
+};
+
+struct mm_struct {
+    .....
+    atomic_long_t rss;
+    atomic_long_t file;
+};
+
+And adds temp_counter's value to mm_struct at some good point....before
+sleep ?
+kswapd and reclaim routine can update mm_struct's counter, directly.
+Readers just read mm_struct's counter.
+
+Thanks,
+-Kame
+
+
+
+
+
+
 
 
 
