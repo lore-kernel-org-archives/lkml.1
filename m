@@ -1,113 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759716AbZKFUA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZKFUGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759716AbZKFUA4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 15:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759644AbZKFUA4
+	id S1759705AbZKFUGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 15:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759561AbZKFUGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 15:00:56 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52270 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756951AbZKFUAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 15:00:55 -0500
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: davej@redhat.com, cpufreq@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, mcgrof@gmail.com,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Matthew Garrett <mjg@redhat.com>,
-       "Arjan van de Ven\"" <arjan@linux.intel.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Aeolus Yang <Aeolus.Yang@atheros.com>,
-       Amod Bodas <Amod.Bodas@atheros.com>,
-       David Quan <David.Quan@atheros.com>,
-       Kishore Jotwani <Kishore.Jotwani@atheros.com>
-Subject: [PATCH] cpu-freq: add troubleshooting section for FSB changes
-Date: Fri,  6 Nov 2009 15:01:00 -0500
-Message-Id: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com>
-X-Mailer: git-send-email 1.6.2.rc1.3.g81d3f
+	Fri, 6 Nov 2009 15:06:18 -0500
+Received: from mail.gmx.net ([213.165.64.20]:41801 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759392AbZKFUGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 15:06:17 -0500
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Fri, 06 Nov 2009 21:06:20 +0100
+From: "Martin Schleier" <drahemmaps@gmx.net>
+In-Reply-To: <20091106182218.43940287@lxorguk.ukuu.org.uk>
+Message-ID: <20091106200620.179910@gmx.net>
+MIME-Version: 1.0
+References: <20091106154911.29400@gmx.net>
+	<20091106155937.11d95279@lxorguk.ukuu.org.uk>	<20091106165731.26800@gmx.net>
+ <20091106182218.43940287@lxorguk.ukuu.org.uk>
+Subject: Re: i686 quirk for AMD Geode
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+X-Authenticated: #35928486
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1/1oaRQy/H1jSyCwX8JPwk0/plYp5y2vdQl0kCMW/
+ hbN9H34uEPXkHj8CBoMQ7QMumL1ZZQ4Y1kwA== 
+Content-Transfer-Encoding: 8bit
+X-GMX-UID: 0uyWHgBmbXB+TMNLFjY2MtYiLyUmZYit
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With cpu frequency scaling you may run into some system
-performance issues when the FSB changes speed due to the
-throughput constraints this brings on the system.
+On Fri, 6 Nov 2009 18:22:18 Alan Cox wrote:
+> > If it wasn't riddled with 19 errors (not bad for only 133 lines),
+> > I would have bothered to remove these irrelevant lines.
+> 
+> Checkpatch is just formatting - its just an aide nothing more.
+> It's not remotely useful to bother with them for stuff that is
+> basically sanely formatted until such point as someone is actually
+> sure the patch is worth going into the tree.
 
-Document how to rule out whether or not FSB changes
-affect general system issues.
+the utility is called checkpatch and not checkstyle or checkformatting.
+And there's a good reason behind this decision, because it does
+more than just checking style.
 
-Cc: Matthew Garrett <mjg@redhat.com>
-Cc: Arjan van de Ven" <arjan@linux.intel.com>
-Cc: Reinette Chatre <reinette.chatre@intel.com>
-Cc: Aeolus Yang <Aeolus.Yang@Atheros.com>
-Cc: Amod Bodas <Amod.Bodas@Atheros.com>
-Cc: David Quan <David.Quan@Atheros.com>
-Cc: Kishore Jotwani <Kishore.Jotwani@Atheros.com>
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
----
- Documentation/cpu-freq/user-guide.txt |   45 +++++++++++++++++++++++++++++++++
- 1 files changed, 45 insertions(+), 0 deletions(-)
+e.g:
+ - correct use of some blackfin hi/lo macros.
+ - if certain data structures are declared as const
+   (struct seq_operations/file_operations)
+ - correct use of NR_CPUS is usually wrong
+ - complains about in_atomic() outside core kernel code
+ - warns about LINUX_VERSION_CODE, #if 0,
+   volatile or deprecated functions.
+ - informs about needless kfree/usb_free_urb checks
+ - etc...
 
-diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
-index 2a5b850..846729d 100644
---- a/Documentation/cpu-freq/user-guide.txt
-+++ b/Documentation/cpu-freq/user-guide.txt
-@@ -32,6 +32,7 @@ Contents:
- 3. How to change the CPU cpufreq policy and/or speed
- 3.1 Preferred interface: sysfs
- 
-+4. Troubleshooting
- 
- 
- 1. Supported Architectures and Processors
-@@ -211,3 +212,47 @@ scaling_setspeed.		By "echoing" a new frequency into this
- 				you can change the speed of the CPU,
- 				but only within the limits of
- 				scaling_min_freq and scaling_max_freq.
-+
-+4. Troubleshooting
-+==================
-+
-+If you are not sure if frequency scaling is the culprit to your
-+issues you can try to disable the feature on the BIOS if possible.
-+
-+Alternatively it helps to understand that on some CPUs (Intel)
-+the Front Side Bus (FSB) speed is changed when you happen to change
-+the active CPU frequency to the lowest supported frequency, which
-+happens to be the frequency used on the highest supported P-n state.
-+The P0 state is the highest Performance state with the highest
-+CPU frequency and system power. The highest P-n state would be
-+the one with the lowest supported frequency and power.
-+
-+On Intel CPUs the FSB will not be modified with SpeedStep enabled if the
-+second to last lowest frequency on the available scaling frequencies
-+is used. Testing this would rule out whether or not the FSB changes
-+made by SpeedStep would be the main issue.
-+
-+Modifying the FSB will alter your general system throughput
-+on your Northbridge so to prevent general throughput issues
-+with devices on it you can modify frequency scaling so that
-+it nevers uses the lowest supported frequency.
-+
-+For example:
-+
-+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
-+1801000 1800000 1200000 800000
-+1801000 1800000 1200000 800000
-+
-+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq
-+800000
-+800000
-+
-+To disable changing the FSB select the second to last CPU freq
-+on the available freq for each CPU and set the scaling_min_freq
-+for each CPU to that value. For the example output this would be
-+echo'ing 1200000 to each scaling_min_freq:
-+
-+echo 1200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-+echo 1200000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-+
-+The first line is for the 1st CPU, the second line for the second line.
+and I'm sure that future modifications will add more
+useful functionality _checks_ to many more _common pitfalls_ 
+areas.
 -- 
-1.6.5.2.143.g8cc62
-
+DSL-Preisknaller: DSL Komplettpakete von GMX schon für 
+16,99 Euro mtl.!* Hier klicken: http://portal.gmx.net/de/go/dsl02
