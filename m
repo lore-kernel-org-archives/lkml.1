@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbZKFAst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbZKFAvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbZKFAst (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 19:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757983AbZKFAss
+	id S1759234AbZKFAvc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 19:51:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbZKFAvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 19:48:48 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:57748 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757855AbZKFAsr (ORCPT
+	Thu, 5 Nov 2009 19:51:32 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39655 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbZKFAvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 19:48:47 -0500
-To: <linux-arch@vger.kernel.org>
-Cc: <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       Thibaut Varene <T-Bone@parisc-linux.org>,
-       Carsten Otte <cotte@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0/11] generic compat_sys_sysctl
-References: <m1tyx8trik.fsf@fess.ebiederm.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 05 Nov 2009 16:48:48 -0800
-In-Reply-To: <m1tyx8trik.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Thu\, 05 Nov 2009 16\:40\:19 -0800")
-Message-ID: <m1eioctr4f.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+	Thu, 5 Nov 2009 19:51:31 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 6 Nov 2009 09:49:03 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       akpm@linux-foundation.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH] lib: generic percpu counter array
+Message-Id: <20091106094903.5ede138d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.10.0911051013080.25718@V090114053VZO-1>
+References: <20091104152426.eacc894f.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.1.10.0911041414560.7409@V090114053VZO-1>
+	<20091105090659.9a5d17b1.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091105141653.132d4977.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.1.10.0911051013080.25718@V090114053VZO-1>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> I am in the process of cleaning up, and converting the binary sysctl
-> sysctl call into a wrapper on top of the text based proc/sys.
->
-> A first step in that process is to introduce a generic
-> compat_sys_sysctl to reduce the number of places I have to touch.
-> The following patcheset is the start of my series for handling that.
->
-> The only architecture specific changes should be replace the
-> current architecture name for it's 32bit compat syscall with
-> compat_sys_sysctl, and deleting the architectures private
-> 32bit compat syscall.  The only requirement is that CONFIG_COMPAT
-> be set when you need compat_sys_sysctl.
->
-> These patches should just work, but an eyeball from someone who is
-> familiar with the architecture specific details would be appreciated.
-> I have only tested the 32bit compat code on x86_64.
+Thank you for review.
 
-I forgot to mention, my plan is to carry these patches in my tree
-until the next merge window opens.  That way I will be able to build
-on top of them, without having to worry what happens if someone is
-slow to merge the patches.
+On Thu, 5 Nov 2009 10:15:36 -0500 (EST)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Eric
+> On Thu, 5 Nov 2009, KAMEZAWA Hiroyuki wrote:
+> 
+> > +static inline void
+> > +counter_array_add(struct counter_array *ca, int idx, int val)
+> > +{
+> > +	ca->counters[idx] += val;
+> > +}
+> 
+> This is not a per cpu operation and therefore expensive. The new percpu
+> this_cpu_inc f.e. generates a single x86 instruction for an increment.
+> 
+This code is for !SMP.
+
+
+> > +void __counter_array_add(struct counter_array *ca, int idx, int val, int batch)
+> > +{
+> > +	long count, *pcount;
+> > +
+> > +	preempt_disable();
+> > +
+> > +	pcount = this_cpu_ptr(ca->v.array);
+> > +	count = pcount[idx] + val;
+> > +	if (!ca->v.nosync && ((count > batch) || (count < -batch))) {
+> > +		atomic_long_add(count, &ca->counters[idx]);
+> > +		pcount[idx] = 0;
+> > +	} else
+> > +		pcount[idx] = count;
+> > +	preempt_enable();
+> > +}
+> 
+> Too expensive to use in critical VM paths. The percpu operations generate
+> a single instruction instead of the code above. No need for preempt etc.
+> 
+Hmm, ok. I'll have to see your patch, more.
+I wonder how to use indexed-array and ops like add_return..
+
+
+Thanks,
+-Kame
+
+
+
