@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbZKFPSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759335AbZKFPSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759345AbZKFPSK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 10:18:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759298AbZKFPSH
+	id S1759335AbZKFPSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 10:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758553AbZKFPSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 10:18:07 -0500
-Received: from mail.tmr.com ([64.65.253.246]:56750 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759297AbZKFPSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 10:18:06 -0500
-Message-ID: <4AF43E22.6020505@tmr.com>
-Date: Fri, 06 Nov 2009 10:17:54 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 SeaMonkey/1.1.16
+	Fri, 6 Nov 2009 10:18:48 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:45939 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758615AbZKFPSr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 10:18:47 -0500
+Date: Fri, 6 Nov 2009 16:18:50 +0100
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Jody Belka <jody+lkml@jj79.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
+Subject: Re: OOM killer, page fault
+Message-ID: <20091106151850.GC3816@gamma.logic.tuwien.ac.at>
+References: <20091102155543.E60E.A69D9226@jp.fujitsu.com> <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com> <20091102141917.GJ2116@gamma.logic.tuwien.ac.at> <28c262360911020640k3f9dfcdct2cac6cc1d193144d@mail.gmail.com> <20091105132109.GA12676@gamma.logic.tuwien.ac.at> <loom.20091105T213323-393@post.gmane.org> <28c262360911051418r1aefbff6oa54a63d887c0ea48@mail.gmail.com> <20091106000113.GE22289@gamma.logic.tuwien.ac.at> <20091106133833.GA23151@gamma.logic.tuwien.ac.at> <28c262360911060714h16cf55dfibbecc090c76341ab@mail.gmail.com>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Liu Aleaxander <aleaxander@gmail.com>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [PATCH] cgroup: Fixes the un-paired cgroup lock problem
-References: <b741c2440911031740m52f8c11dt6e57b549cc6ce465@mail.gmail.com> <4AF10CEE.5020807@cn.fujitsu.com> <4AF18F06.50807@tmr.com> <4AF28695.7070806@cn.fujitsu.com>
-In-Reply-To: <4AF28695.7070806@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360911060714h16cf55dfibbecc090c76341ab@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Bill Davidsen wrote:
->   
->> Li Zefan wrote:
->>     
->>> Liu Aleaxander wrote:
->>>       
->>>> From: Liu Aleaxander <Aleaxander@gmail.com>
->>>> Date: Wed, 4 Nov 2009 09:27:06 +0800
->>>> Subject: [PATCH] Fixes the un-paired cgroup lock problem
->>>>
->>>> In cgroup_lock_live_group, it locks the cgroup by mutex_lock, while
->>>> in the
->>>> cgroup_tasks_write, it unlock it by cgroup_unlock. Even though they are
->>>> equal, but I do think we should make it pair.
->>>>
->>>> BTW, should we replace others with cgroup_lock and cgroup_unlock?
->>>> Since we already have a wrapper one and it's meaningful.
->>>>
->>>>         
->>> Before I read the email body, I thought there is a bug where
->>> there is a lock without unlock or vise versa.
->>>
->>> I agree the case here can be called "unpaired", but I'm not
->>> convinced this patch is needed. The code is not buggy or
->>> confusing. So the patch neither fixes a bug nor make the code
->>> more readable.
->>>
->>>       
->> I would say it fixes a bug, the one that would be introduced when the
->> two methods are no longer compatible and essentially two names for the
->> same thing. And while you may know the code so well that you knew
->> without looking that this was (currently) okay, there will be lots of
->> eyes on this code over the years, I think most people would find use of
->> cgroup_lock to lock the cgroup a LOT more readable.
->>
->> While you can't go back in time to murder your grandfather, it creates
->> no paradox to fix a bug before someone writes it.
->>
->>     
->
-> cgroup_lock() is not necessarily more readable than mutex_lock(&cgroup_mutex),
-> at least the former doesn't tell you the lock is a spin_lock or a mutex.
->
->   
-That's the point, cgroup_lock() is an abstraction, you want to lock the 
-cgroup, you call the macro, the macro handles the details, and if 
-thinking (or the most common cache configurations) change, the code 
-still works.
+recompiling and retrying ...
 
-> In fact, Ingo showed his distaste towards cgroup_lock():
-> 	http://lkml.org/lkml/2009/1/18/39
->
-> And I won't worry about the issue you mentioned above. If It does
-> happen, the one, who makes the 2 mehtods no long compatible, will
-> definitely find out all the places where cgroup_mutex is used and
-> make proper change.
->
->   
+On Sa, 07 Nov 2009, Minchan Kim wrote:
+> +           printk(KERN_DEBUG "fault handler : 0x%lx\n", vma->vm_ops->fault);
 
+BTW:
+	m/memory.c:2722: warning: format ‘%lx’ expects type ‘long unsigned int’, but argument 2 has type ‘int (* const)(struct vm_area_struct *, struct vm_fault *)’
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-  Unintended results are the well-earned reward for incompetence.
+Best wishes
 
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining                                        Associate Professor
+JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
+Vienna University of Technology                               preining@logic.at
+Debian Developer (Debian TeX Task Force)                    preining@debian.org
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+LOWTHER (vb.)
+(Of a large group of people who have been to the cinema together.) To
+stand aimlessly about on the pavement and argue about whatever to go
+and eat either a Chinese meal nearby or an Indian meal at a restaurant
+which somebody says is very good but isn't certain where it is, or
+have a drink and think about it, or just go home, or have a Chinese
+meal nearby - until by the time agreement is reached everything is
+shut.
+			--- Douglas Adams, The Meaning of Liff
