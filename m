@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932399AbZKFWWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933043AbZKFWjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932399AbZKFWWs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbZKFWWq
+	id S933043AbZKFWjb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:39:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932781AbZKFWj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:22:46 -0500
-Received: from kroah.org ([198.145.64.141]:56787 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:39:29 -0500
+Received: from kroah.org ([198.145.64.141]:56793 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760146AbZKFWWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:44 -0500
+	id S1760149AbZKFWWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:45 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:42 2009
-Message-Id: <20091106221542.613588302@mini.kroah.org>
+Message-Id: <20091106221542.713075246@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:28 -0800
+Date: Fri, 06 Nov 2009 14:14:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Alan Cox <alan@linux.intel.com>, Michael Reed <mreed10@us.ibm.com>
-Subject: [30/99] 8250_pci: add IBM Saturn serial card
+       Alan Cox <alan@linux.intel.com>
+Subject: [31/99] dpt_i2o: Fix up copy*user
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=8250_pci-add-ibm-saturn-serial-card.patch
+Content-Disposition: inline; filename=dpt_i2o-fix-up-copy-user.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,73 +29,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Alan Cox <alan@linux.intel.com>
 
-commit c68d2b1594548cda7f6dbac6a4d9d30a9b01558c upstream.
+commit ef7562b7f28319e6dd1f85dc1af87df2a7a84832 upstream.
 
-The IBM Saturn serial card has only one port. Without that fixup,
-the kernel thinks it has two, which confuses userland setup and
-admin tools as well.
-
-[akpm@linux-foundation.org: fix pci-ids.h layout]
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Alan Cox <alan@linux.intel.com>
-Cc: Michael Reed <mreed10@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Acked-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250_pci.c |   11 +++++++++++
- include/linux/pci_ids.h   |    3 +++
- 2 files changed, 14 insertions(+)
+ drivers/scsi/dpt_i2o.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -1561,6 +1561,7 @@ enum pci_board_num_t {
- 	pbn_exar_XR17C152,
- 	pbn_exar_XR17C154,
- 	pbn_exar_XR17C158,
-+	pbn_exar_ibm_saturn,
- 	pbn_pasemi_1682M,
- 	pbn_ni8430_2,
- 	pbn_ni8430_4,
-@@ -2146,6 +2147,13 @@ static struct pciserial_board pci_boards
- 		.base_baud	= 921600,
- 		.uart_offset	= 0x200,
- 	},
-+	[pbn_exar_ibm_saturn] = {
-+		.flags		= FL_BASE0,
-+		.num_ports	= 1,
-+		.base_baud	= 921600,
-+		.uart_offset	= 0x200,
-+	},
-+
- 	/*
- 	 * PA Semi PWRficient PA6T-1682M on-chip UART
- 	 */
-@@ -2649,6 +2657,9 @@ static struct pci_device_id serial_pci_t
- 		PCI_SUBVENDOR_ID_CONNECT_TECH,
- 		PCI_SUBDEVICE_ID_CONNECT_TECH_PCI_UART_8_485, 0, 0,
- 		pbn_b0_8_1843200_200 },
-+	{	PCI_VENDOR_ID_EXAR, PCI_DEVICE_ID_EXAR_XR17C152,
-+		PCI_VENDOR_ID_IBM, PCI_SUBDEVICE_ID_IBM_SATURN_SERIAL_ONE_PORT,
-+		0, 0, pbn_exar_ibm_saturn },
- 
- 	{	PCI_VENDOR_ID_SEALEVEL, PCI_DEVICE_ID_SEALEVEL_U530,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -479,6 +479,9 @@
- #define PCI_DEVICE_ID_IBM_ICOM_V2_ONE_PORT_RVX_ONE_PORT_MDM_PCIE 0x0361
- #define PCI_DEVICE_ID_IBM_ICOM_FOUR_PORT_MODEL	0x252
- 
-+#define PCI_SUBVENDOR_ID_IBM		0x1014
-+#define PCI_SUBDEVICE_ID_IBM_SATURN_SERIAL_ONE_PORT	0x03d4
-+
- #define PCI_VENDOR_ID_UNISYS		0x1018
- #define PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR 0x001C
- 
+--- a/drivers/scsi/dpt_i2o.c
++++ b/drivers/scsi/dpt_i2o.c
+@@ -1918,6 +1918,10 @@ static int adpt_i2o_passthru(adpt_hba* p
+ 		}
+ 		size = size>>16;
+ 		size *= 4;
++		if (size > MAX_MESSAGE_SIZE) {
++			rcode = EINVAL;
++			goto cleanup;
++		}
+ 		/* Copy in the user's I2O command */
+ 		if (copy_from_user (msg, user_msg, size)) {
+ 			rcode = -EFAULT;
 
 
