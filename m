@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbZKFKF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbZKFKTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbZKFKF7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 05:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZKFKF6
+	id S1755750AbZKFKTy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 05:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbZKFKTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 05:05:58 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:58008 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753503AbZKFKF5 (ORCPT
+	Fri, 6 Nov 2009 05:19:53 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:45446 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755143AbZKFKTw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 05:05:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=xfV/sDxlZ/ReG1Hk98JXSFPYSKZFU/USVXPgSV3zt0HvAKz9kFUBiud/vwcFduGsy5
-         SIhwr2AuwkO1nPV812qalHyhxfqkxsvdEETY+YIzeie4C2n0OZiOG96DY0nbPz7TmHjk
-         lc51S9qa/dCdmoGWr8lWFoNdmSAATTE8ClahA=
-Subject: Re: [PATCH -queue v0 4/6] [loongson] add basic fuloong2f support
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, LKML <linux-kernel@vger.kernel.org>,
-       huhb@lemote.com, yanh@lemote.com, Zhang Le <r0bertz@gentoo.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
-       liujl@lemote.com
-In-Reply-To: <20091106083042.GA17723@linux-mips.org>
-References: <cover.1257325319.git.wuzhangjin@gmail.com>
-	 <0f805f7d12c5a7cbcc125ba4a1b70113ec2047a6.1257325319.git.wuzhangjin@gmail.com>
-	 <20091105131603.GA18232@linux-mips.org>
-	 <1257485984.2299.21.camel@falcon.domain.org>
-	 <20091106083042.GA17723@linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Fri, 06 Nov 2009 18:05:59 +0800
-Message-ID: <1257501959.2299.52.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Nov 2009 05:19:52 -0500
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Carsten Otte <cotte@de.ibm.com>
+Subject: Re: [PATCH 07/11] sysctl: s390 Use the compat_sys_sysctl
+References: <m1tyx8trik.fsf@fess.ebiederm.org>
+	<1257468114-6823-7-git-send-email-ebiederm@xmission.com>
+	<200911061012.17239.borntraeger@de.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 06 Nov 2009 02:19:51 -0800
+In-Reply-To: <200911061012.17239.borntraeger@de.ibm.com> (Christian Borntraeger's message of "Fri\, 6 Nov 2009 10\:12\:17 +0100")
+Message-ID: <m13a4srm48.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ralf
+Christian Borntraeger <borntraeger@de.ibm.com> writes:
 
-I will split the coming patchset as three parts?
+> Am Freitag 06 November 2009 01:41:50 schrieb Eric W. Biederman:
+>> From: Eric W. Biederman <ebiederm@xmission.com>
+>> 
+>> Now that we have a generic 32bit compatibility implementation
+>> there is no need for s390 to implement it's own.
+>> 
+>> Cc: Carsten Otte <cotte@de.ibm.com>
+>> Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+>
+> You should have CCed Martin & Heiko, since this is cleary not KVM.
+> I took a look anyway ;-)
 
-1. fixes of old support
-2. loongson2f support
-3. lemote 2f family machines support
+Groan. I got the wrong s390 line in MAINTAINERS.
 
-is this okay?
-
-Regards,
-	Wu Zhangjin
-
-On Fri, 2009-11-06 at 09:30 +0100, Ralf Baechle wrote:
-> On Fri, Nov 06, 2009 at 01:39:44PM +0800, Wu Zhangjin wrote:
-> 
-> > > > +	if ((LOONGSON_INTISR & LOONGSON_INTEN) & LOONGSON_INT_BIT_INT0) {
-> > > > +		imr = inb(0x21) | (inb(0xa1) << 8);
-> > > > +		isr = inb(0x20) | (inb(0xa0) << 8);
-> > > > +		isr &= ~0x4;	/* irq2 for cascade */
-> > > > +		isr &= ~imr;
-> > > > +		irq = ffs(isr) - 1;
-> > > > +	}
-> > > 
-> > > Any reason why you're not using i8259_irq() from <asm/i8259.h> here?
-> > > That function not only gets the locking right, it also minimizes the number
-> > > of accesses to the i8259 - which even on modern silicon can be stuningly
-> > > slow.
-> 
-> > Just asked Yanhua, He told me there is a bug in cs5536, if using the
-> > i8259_irq() directly, we can not get the irq. and just tried it, the
-> > kernel hang on booting.
-> 
-> Wonderful.  Even 30 years after it was built there are still new i8259
-> bugs :-)
-> 
-> This is probably worth a comment in the code.
-> 
->   Ralf
-
-
+>> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> Patch looks good.
+>
+> Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
