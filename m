@@ -1,117 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759076AbZKFAC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759088AbZKFAEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759076AbZKFAC6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 19:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbZKFAC5
+	id S1759088AbZKFAEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 19:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758796AbZKFAEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 19:02:57 -0500
-Received: from mga09.intel.com ([134.134.136.24]:62183 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758281AbZKFAC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 19:02:56 -0500
-X-ExtLoop1: 1
-Subject: Re: [tip:x86/apic] x86: Use EOI register in io-apic on intel
- platforms
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
+	Thu, 5 Nov 2009 19:04:35 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37367 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758283AbZKFAEe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 19:04:34 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 6 Nov 2009 09:02:02 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "garyhade@us.ibm.com" <garyhade@us.ibm.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "Sankaran, Rajesh" <rajesh.sankaran@intel.com>
-In-Reply-To: <alpine.LFD.2.00.0911051415340.9725@eddie.linux-mips.org>
-References: <20091026230001.947855317@sbs-t61.sc.intel.com>
-	 <tip-b3ec0a37a7907813bb4fb85a2d94102c152470b7@git.kernel.org>
-	 <alpine.LFD.2.00.0911040038460.9725@eddie.linux-mips.org>
-	 <1257301490.2668.280.camel@sbs-t61.sc.intel.com>
-	 <1257375875.4716.24.camel@sbs-t61.sc.intel.com>
-	 <alpine.LFD.2.00.0911051415340.9725@eddie.linux-mips.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 05 Nov 2009 16:01:32 -0800
-Message-Id: <1257465692.4394.295.camel@sbs-t61.sc.intel.com>
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       cl@linux-foundation.org, rientjes@google.com
+Subject: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask v2
+Message-Id: <20091106090202.dc2472b3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091104170944.cef988c7.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091104170944.cef988c7.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-05 at 06:46 -0800, Maciej W. Rozycki wrote:
->  For the record: the original ICH/ICH0 (82801AA/AB) seems to have the 
-> version set to 0x11 as well.  Now its datasheet mentions the EOI register, 
-> but even if it is not a mistake, 
+On Wed, 4 Nov 2009 17:09:44 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>  drivers/char/sysrq.c |    2 +-
+>  mm/oom_kill.c        |   38 ++++++++++++++++++++++++++------------
+>  mm/page_alloc.c      |   10 ++++++++--
 
-hmm. what a mess.
+Very sorry, this patch doesn't includes changes to oom.h...
 
-I found a kernel log in an archive
-(http://www.mail-archive.com/linux-usb-users@lists.sourceforge.net/msg13255.html) for ICH0 which shows that it uses an io-apic of version 0x20. So mostly the version in the datasheet is wrong here aswell :-(
+From: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
 
-And our IO/chipset architect (Rajesh) also confirmed that ICH0 indeed
-has an EOI reg.
+Fixing node-oriented allocation handling in oom-kill.c
+I myself think this as bugfix not as ehnancement.
 
-So, version 0x20 seems to be pretty safe to use EOI register. And
-according to Gary Hade's experiments on IBM platforms having  an io-apic
-version 0x11, magic of mask+edge and unmask+level seems to clear
-remoteIRR.
+In these days, things are changed as
+  - alloc_pages() eats nodemask as its arguments, __alloc_pages_nodemask().
+  - mempolicy don't maintain its own private zonelists.
+  (And cpuset doesn't use nodemask for __alloc_pages_nodemask())
 
-So the current logic looks safe to me.
+So, current oom-killer's check function is wrong.
 
->  Also for the record: the 82489DX is a combined local and I/O APIC chip -- 
+This patch does
+  - check nodemask, if nodemask && nodemask != node_states[N_HIGH_MEMORY]
+    this is never be CONSTRAINT_NONE. We assume this from mempolicy.
+  - Scan all zonelist under nodemask, if it hits cpuset's wall
+    this faiulre is from cpuset.
+And
+  - modifies the caller of out_of_memory not to call oom if __GFP_THISNODE.
+    This doesn't change "current" behavior.
+    If callers use __GFP_THISNODE, it should handle "page allocation failure"
+    by itself.
 
-Thanks. This is what I learnt internally too yesterday and hence the
-documentation update ;)
+Changelog: 2009/11/06
+ - fixed lack of oom.h
 
->  I've checked some docs too and you may want to check whether to qualify 
-> the use of the EOI register further with the DT (Delivery Type) bit in the 
-> Boot Configuration register.  It affects ICH2 at least
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
+---
+ drivers/char/sysrq.c |    2 +-
+ include/linux/oom.h  |    3 ++-
+ mm/oom_kill.c        |   38 ++++++++++++++++++++++++++------------
+ mm/page_alloc.c      |   10 ++++++++--
+ 4 files changed, 37 insertions(+), 16 deletions(-)
 
-For relatively newer ICH's like ICH5, boot configuration register is
-marked as a reserved register (perhaps with the serial bus going away,
-so did this register but again with out the io-apic version change).
-
-Anyways, our understanding is that EOI register in ICH2 should work
-irrespective of DT bit in the boot config register.
-
->  Also you may want to see whether the complication in ack_apic_level() 
-> that is meant to deal with an APIC erratum really matters for FSB delivery 
-> -- I guess not, because if you explicitly ACK an interrupt in the I/O 
-> unit, then even if it was incorrectly recorded as edge-triggered in the 
-> local unit, the IRR bit will be correctly reset and the next message 
-> delivered properly.  Given you introduce a conditional statement anyway, 
-> you can place more code within it and there will be no performance hit for 
-> the other path and certainly a gain for this one.
-
-I am not sure if I follow. With the recent changes (tip commit
-5231a68614b94f60e8f6c56bc6e3d75955b9e75e), we use ipi on a new cpu to
-handle a pending level-triggered  interrupt on the cpu that is going
-offline. It's just not only in the case of io-apic erratum for 0x11, we
-see level triggered interrupt as edge interrupt at the cpu.
-
-
->  Additionally it seems to me that code to migrate an IRQ is placed 
-> incorrectly -- the erratum workaround should be placed above it as it 
-> complements ack_APIC_irq() -- the IRR bit will not have been reset before 
-> the workaround has been executed if the erratum was hit.  Will you care 
-> about this problem?
-
-Yes. I see this issue and agree with your assesment. The result is that
-we missed an irq migration attempt and delay it to the next arrival.
-
-I will post a different fix and also update some of the code comments
-around this to reflect new changes in the code.
-
-> > Maciej, can I have your ack for the appended patch?
-> 
->  Certainly, it looks good to me.
-> 
-> Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
-
-Thanks. Ingo, Can you please queue this patch too? I am planning to do
-couple of more cleanups on top of this. I will post them shortly.
-
-thanks,
-suresh
+Index: mmotm-2.6.32-Nov2/drivers/char/sysrq.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/drivers/char/sysrq.c
++++ mmotm-2.6.32-Nov2/drivers/char/sysrq.c
+@@ -339,7 +339,7 @@ static struct sysrq_key_op sysrq_term_op
+ 
+ static void moom_callback(struct work_struct *ignored)
+ {
+-	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
++	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0, NULL);
+ }
+ 
+ static DECLARE_WORK(moom_work, moom_callback);
+Index: mmotm-2.6.32-Nov2/mm/oom_kill.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/mm/oom_kill.c
++++ mmotm-2.6.32-Nov2/mm/oom_kill.c
+@@ -196,27 +196,40 @@ unsigned long badness(struct task_struct
+ /*
+  * Determine the type of allocation constraint.
+  */
++#ifdef CONFIG_NUMA
+ static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+-						    gfp_t gfp_mask)
++				    gfp_t gfp_mask, nodemask_t *nodemask)
+ {
+-#ifdef CONFIG_NUMA
+ 	struct zone *zone;
+ 	struct zoneref *z;
+ 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+-	nodemask_t nodes = node_states[N_HIGH_MEMORY];
++	int ret = CONSTRAINT_NONE;
+ 
+-	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+-		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
+-			node_clear(zone_to_nid(zone), nodes);
+-		else
++	/*
++ 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
++ 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
++ 	 * feature. Then, only mempolicy use this nodemask.
++ 	 */
++	if (nodemask && nodes_equal(*nodemask, node_states[N_HIGH_MEMORY]))
++		ret = CONSTRAINT_MEMORY_POLICY;
++
++	/* Check this allocation failure is caused by cpuset's wall function */
++	for_each_zone_zonelist_nodemask(zone, z, zonelist,
++			high_zoneidx, nodemask)
++		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
+ 			return CONSTRAINT_CPUSET;
+ 
+-	if (!nodes_empty(nodes))
+-		return CONSTRAINT_MEMORY_POLICY;
+-#endif
++	/* __GFP_THISNODE never calls OOM.*/
+ 
++	return ret;
++}
++#else
++static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
++				gfp_t gfp_mask, nodemask_t *nodemask)
++{
+ 	return CONSTRAINT_NONE;
+ }
++#endif
+ 
+ /*
+  * Simple selection loop. We chose the process with the highest
+@@ -603,7 +616,8 @@ rest_and_return:
+  * OR try to be smart about which process to kill. Note that we
+  * don't have to be perfect here, we just have to be good.
+  */
+-void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
++void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
++		int order, nodemask_t *nodemask)
+ {
+ 	unsigned long freed = 0;
+ 	enum oom_constraint constraint;
+@@ -622,7 +636,7 @@ void out_of_memory(struct zonelist *zone
+ 	 * Check if there were limitations on the allocation (only relevant for
+ 	 * NUMA) that may require different handling.
+ 	 */
+-	constraint = constrained_alloc(zonelist, gfp_mask);
++	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
+ 	read_lock(&tasklist_lock);
+ 
+ 	switch (constraint) {
+Index: mmotm-2.6.32-Nov2/mm/page_alloc.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/mm/page_alloc.c
++++ mmotm-2.6.32-Nov2/mm/page_alloc.c
+@@ -1667,9 +1667,15 @@ __alloc_pages_may_oom(gfp_t gfp_mask, un
+ 	/* The OOM killer will not help higher order allocs */
+ 	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
+ 		goto out;
+-
++	/*
++	 * In usual, GFP_THISNODE contains __GFP_NORETRY and we never hit this.
++	 * Sanity check for bare calls of __GFP_THISNODE, not real OOM.
++	 * Note: Hugepage uses it but will hit PAGE_ALLOC_COSTLY_ORDER.
++	 */
++	if (gfp_mask & __GFP_THISNODE)
++		goto out;
+ 	/* Exhausted what can be done so it's blamo time */
+-	out_of_memory(zonelist, gfp_mask, order);
++	out_of_memory(zonelist, gfp_mask, order, nodemask);
+ 
+ out:
+ 	clear_zonelist_oom(zonelist, gfp_mask);
+Index: mmotm-2.6.32-Nov2/include/linux/oom.h
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/include/linux/oom.h
++++ mmotm-2.6.32-Nov2/include/linux/oom.h
+@@ -27,7 +27,8 @@ enum oom_constraint {
+ extern int try_set_zone_oom(struct zonelist *zonelist, gfp_t gfp_flags);
+ extern void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_flags);
+ 
+-extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order);
++extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
++		int order, nodemask_t *mask);
+ extern int register_oom_notifier(struct notifier_block *nb);
+ extern int unregister_oom_notifier(struct notifier_block *nb);
+ 
 
