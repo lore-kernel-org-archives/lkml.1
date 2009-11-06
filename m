@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbZKFXGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbZKFXKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760006AbZKFXGr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 18:06:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758659AbZKFXGr
+	id S932289AbZKFXKs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 18:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759924AbZKFXKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 18:06:47 -0500
-Received: from outbound-mail-308.bluehost.com ([67.222.53.254]:50401 "HELO
-	outbound-mail-308.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758590AbZKFXGq (ORCPT
+	Fri, 6 Nov 2009 18:10:47 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:54307 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753708AbZKFXKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 18:06:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=od71QsxFV/FiDuLIeuNkfNpeE/1r8RMGnhRPFbQvohzGwxaSbqsRlSg3pEPFexmuEZUg4+tQ5SUGgWtUp98Hn6FIHP9KuXFnGvv1ReAGhfbN05iL4Yee0dxx1CGADhNE;
-Date: Fri, 6 Nov 2009 15:06:56 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 05/16] pci: Replace old style lock initializer
-Message-ID: <20091106150656.7422a47b@jbarnes-piketon>
-In-Reply-To: <20091106223806.601092947@linutronix.de>
-References: <20091106223547.784916750@linutronix.de>
-	<20091106223806.601092947@linutronix.de>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 6 Nov 2009 18:10:47 -0500
+Message-ID: <4AF4ACBE.5030005@nortel.com>
+Date: Fri, 06 Nov 2009 17:09:50 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: simultaneous signal handling and setjmp/longjmp
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+X-OriginalArrivalTime: 06 Nov 2009 23:10:49.0929 (UTC) FILETIME=[6154A390:01CA5F36]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Nov 2009 22:41:23 -0000
-Thomas Gleixner <tglx@linutronix.de> wrote:
+I've got a bit of an odd hypothetical question dealing with signals and
+setjmp/longjmp.
 
-> SPIN_LOCK_UNLOCKED is deprecated. Use DEFINE_SPINLOCK instead.
-> 
-> Make the lock static while at it.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-> ---
->  drivers/pci/pci.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/pci/pci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci.c
-> +++ linux-2.6/drivers/pci/pci.c
-> @@ -2590,7 +2590,7 @@ int pci_set_vga_state(struct pci_dev *de
->  
->  #define RESOURCE_ALIGNMENT_PARAM_SIZE COMMAND_LINE_SIZE
->  static char resource_alignment_param[RESOURCE_ALIGNMENT_PARAM_SIZE]
-> = {0}; -spinlock_t resource_alignment_lock = SPIN_LOCK_UNLOCKED;
-> +static DEFINE_SPINLOCK(resource_alignment_lock);
->  
->  /**
->   * pci_specified_resource_alignment - get resource alignment
-> specified by user.
+Suppose we have an app with multiple signals pending.  (Say, SIGALRM and
+SIGSEGV.)  In the signal handler for SIGSEGV, we're going to call call
+longjmp().  (Yes, I'm aware of the issues.)
 
-Applied to my linux-next branch, thanks.
+At this point we're still in the kernel and both SIGSEGV and SIGALARM
+are pending. What happens?
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+If we run the SIGSEGV handler does the SIGALARM stay pending until the
+segfault handler completes?  What happens when the segfault handler
+calls longjmp()?  Does the SIGALARM handler get called on the logical
+return from sigsetjmp(), and if so how does that happen since the glibc
+code for setjmp/longjmp doesn't seem to call any kernel syscalls?
+
+Thanks for any information you can provide...
+
+Chris
