@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZKFUGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbZKFUyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759705AbZKFUGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 15:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759561AbZKFUGS
+	id S1759851AbZKFUyM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 15:54:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759818AbZKFUyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 15:06:18 -0500
-Received: from mail.gmx.net ([213.165.64.20]:41801 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759392AbZKFUGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 15:06:17 -0500
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Fri, 06 Nov 2009 21:06:20 +0100
-From: "Martin Schleier" <drahemmaps@gmx.net>
-In-Reply-To: <20091106182218.43940287@lxorguk.ukuu.org.uk>
-Message-ID: <20091106200620.179910@gmx.net>
+	Fri, 6 Nov 2009 15:54:12 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:48762 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759767AbZKFUyL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 15:54:11 -0500
+Date: Fri, 6 Nov 2009 12:18:14 -0800
+From: Matt Helsley <matthltc@us.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [v11][PATCH 9/9] Document clone_with_pids() syscall
+Message-ID: <20091106201814.GA26614@count0.beaverton.ibm.com>
+References: <20091105053053.GA11289@us.ibm.com>
+ <20091105054204.GI16142@us.ibm.com>
+ <20091106183936.GA32531@us.ibm.com>
 MIME-Version: 1.0
-References: <20091106154911.29400@gmx.net>
-	<20091106155937.11d95279@lxorguk.ukuu.org.uk>	<20091106165731.26800@gmx.net>
- <20091106182218.43940287@lxorguk.ukuu.org.uk>
-Subject: Re: i686 quirk for AMD Geode
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-X-Authenticated: #35928486
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/1oaRQy/H1jSyCwX8JPwk0/plYp5y2vdQl0kCMW/
- hbN9H34uEPXkHj8CBoMQ7QMumL1ZZQ4Y1kwA== 
-Content-Transfer-Encoding: 8bit
-X-GMX-UID: 0uyWHgBmbXB+TMNLFjY2MtYiLyUmZYit
-X-FuHaFi: 0.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091106183936.GA32531@us.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009 18:22:18 Alan Cox wrote:
-> > If it wasn't riddled with 19 errors (not bad for only 133 lines),
-> > I would have bothered to remove these irrelevant lines.
+On Fri, Nov 06, 2009 at 12:39:36PM -0600, Serge E. Hallyn wrote:
+> Quoting Sukadev Bhattiprolu (sukadev@us.ibm.com):
+> ...
+> > +	If a pid in the @pids list is non-zero, the kernel tries to assign
+> > +	the specified pid in that namespace.  If that pid is already in use
+> > +	by another process, the system call fails (see EBUSY below).
+> > +
+> > +	The order of pids in @pids is oldest in pids[0] to youngest pid
+> > +	namespace in pids[nr_pids-1]. If the number of pids specified in the
 > 
-> Checkpatch is just formatting - its just an aide nothing more.
-> It's not remotely useful to bother with them for stuff that is
-> basically sanely formatted until such point as someone is actually
-> sure the patch is worth going into the tree.
+> In the sys_choosepid() discussion, Matt suggested it would be more
+> user-friendly to have the pid for the youngest pidns be pids[0].
+> That way the user doesn't have to know their pidns depth.
 
-the utility is called checkpatch and not checkstyle or checkformatting.
-And there's a good reason behind this decision, because it does
-more than just checking style.
+As far as I could see, Suka's solution also does not require knowing
+the pidns depth (aka level). He made it so that copy_from_user()
+adjusts its destination using the discrepancy between the number of
+pids passed and the number of levels.
 
-e.g:
- - correct use of some blackfin hi/lo macros.
- - if certain data structures are declared as const
-   (struct seq_operations/file_operations)
- - correct use of NR_CPUS is usually wrong
- - complains about in_atomic() outside core kernel code
- - warns about LINUX_VERSION_CODE, #if 0,
-   volatile or deprecated functions.
- - informs about needless kfree/usb_free_urb checks
- - etc...
+If userspace passes an array with n pids and there are k namespace levels
+then clone_with_pids() makes sure that the kernel sees a pid array like:
 
-and I'm sure that future modifications will add more
-useful functionality _checks_ to many more _common pitfalls_ 
-areas.
--- 
-DSL-Preisknaller: DSL Komplettpakete von GMX schon für 
-16,99 Euro mtl.!* Hier klicken: http://portal.gmx.net/de/go/dsl02
+index	  0     ... k - (n + 1)        ...          k - 1
+	+-----------------------+-------------------------+
+pid_t	| 0 ..................0 | <copied from userspace> |
+	+-----------------------+-------------------------+
+
+So even though the order is different from choosepid() the calling
+task still doesn't need to know its pidns level. Of course, just
+like choosepid(), n <= k or userspace will get EINVAL.
+
+Cheers,
+	-Matt Helsley
+
