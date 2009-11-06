@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbZKFRM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZKFRO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759484AbZKFRM1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 12:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759429AbZKFRM0
+	id S1759531AbZKFRO4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 12:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759445AbZKFRO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 12:12:26 -0500
-Received: from smtp.ultrahosting.com ([74.213.175.253]:42729 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758420AbZKFRM0 (ORCPT
+	Fri, 6 Nov 2009 12:14:56 -0500
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:58534 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759377AbZKFROz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 12:12:26 -0500
-Date: Fri, 6 Nov 2009 12:10:45 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: npiggin@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: Re: Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu counter
-  instead
-In-Reply-To: <28c262360911060741x3f7ab0a2k15be645e287e05ac@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0911061209520.5187@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1>  <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1> <28c262360911060741x3f7ab0a2k15be645e287e05ac@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 6 Nov 2009 12:14:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=d0s22HA2YArAtbe5LCIJ+Tz7Bz6Fpb4BOOkTV++2z5APHg+0/piR5l7fGZYz9n90/K
+         vIPPpJkAH7vP+2zHVryd/ljQlunVmDx4HSG2t/vWisqkhp6ryt/ftRDybiQnDSOiHk9r
+         l7tVD0S4vyAaiO63rma1K+nEu9V+clEPWl8T4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4AF452B8.7080306@googlemail.com>
+References: <43e72e890911051654i19c18bf3nd397662ed79712c4@mail.gmail.com> 
+	<1257484663.2873.622.camel@calx> <43e72e890911060832k1b831f32w93357c71b370e71c@mail.gmail.com> 
+	<4AF452B8.7080306@googlemail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Fri, 6 Nov 2009 09:14:40 -0800
+Message-ID: <43e72e890911060914i6233b71dgd68e228074869096@mail.gmail.com>
+Subject: Re: Using netconsole and getting double prints
+To: Andre Naujoks <nautsch2@googlemail.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Nov 2009, Minchan Kim wrote:
+On Fri, Nov 6, 2009 at 8:45 AM, Andre Naujoks <nautsch2@googlemail.com> wrote:
 
-> How about change from 'mm_readers' to 'is_readers' to improve your
-> goal 'scalibility'?
+> I think the intention behind this is for you to check if they are double
+> prints on your end or double sends on the other end.
 
-Good idea. Thanks. Next rev will use your suggestion.
-
-Any creative thoughts on what to do about the 1 millisecond wait period?
-
+Ah yeah, good point :)
