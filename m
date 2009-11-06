@@ -1,96 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759331AbZKFM42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbZKFNAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759331AbZKFM42 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 07:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759129AbZKFM42
+	id S1755372AbZKFNAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 08:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZKFNAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 07:56:28 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:59069 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757377AbZKFM41 (ORCPT
+	Fri, 6 Nov 2009 08:00:30 -0500
+Received: from smtpfb1-g21.free.fr ([212.27.42.9]:57853 "EHLO
+	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752365AbZKFNA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 07:56:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Ww3O+YVpyM09tk7oB2XGsgXQXniABlY5xV/B5iKzVXjj4LDsAP3qbJBBqC5FZ6a580
-         8TqZu+LXRadYP742H7HUi1tR+AL/iWpLbNQN6T9lCqPOTSmr3DxlzalThNZ3ebj8i85C
-         ifpJykZGbyPuiGobTyXY6QmHmcDNSdfWP4fJU=
+	Fri, 6 Nov 2009 08:00:29 -0500
+Message-ID: <1257512389.4af41dc504e1b@imp.free.fr>
+Date: Fri, 06 Nov 2009 13:59:49 +0100
+From: castet.matthieu@free.fr
+To: linux-kernel@vger.kernel.org
+Subject: Using x86 segments against NULL pointer deference exploit
 MIME-Version: 1.0
-In-Reply-To: <20091106123403.GB18592@alberich.amd.com>
-References: <1257192496.5941.8.camel@dimm>
-	 <20091105153742.GA18592@alberich.amd.com>
-	 <b647ffbd0911051040r3987f63es1279c87bf349bcf6@mail.gmail.com>
-	 <20091106123403.GB18592@alberich.amd.com>
-Date: Fri, 6 Nov 2009 13:56:31 +0100
-Message-ID: <b647ffbd0911060456x5c37ebfapdb2ece392428f66@mail.gmail.com>
-Subject: Re: [ RFC, PATCH - 1/2, v2 ] x86-microcode: refactor microcode output 
-	messages
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Andreas Herrmann <herrmann.der.user@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
-       Jack Steiner <steiner@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.8
+X-Originating-IP: 213.41.129.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/6 Andreas Herrmann <herrmann.der.user@googlemail.com>:
->>> [ ... ]
->> >  ...
->> >  microcode: CPU0-1,3: patch_level=0x1000083
->>
->> before or after loading a module? CPU2 is down, isn't it?
->
-> No, no CPU was offline at this moment. They all were brought back
-> online after some CPU hotplug and/or suspend/resume tests.
->
->> >  microcode: CPU2-3: patch_level=0x1000065
->
-> Both messages showed up after same ucode-update process.
->
->> same question as above.
->
-> Same answer as above all CPUs are online.
->
->> Here, either CPUs 0 and 1 are down or have a
->> different version. Both above messages don't make sense taken together
->
-> See, and that's the problem.
->
->> (CPU3 belongs to both sets) unless summarize_cpu_info() is utterly
->> broken.
->
-> I didn't check that yet.
+Hi,
 
-Yeah, this behavior is likely due to a missing cpumask_clear() in
-summarize_cpu_info().
+I am wondering why we can't set the KERNEL_DS data segment to not contain the
+first page, ie changing it from R/W flat model to R/W expand down from
+0xffffffff to 4096.
 
-should be as follows:
+The modification seems simple : change GDT_ENTRY_KERNEL_DS [1], and some
+modification for syscall entry point that doesn't support segment (sysenter).
 
-      if (!alloc_cpumask_var(&cpulist, GFP_KERNEL))
-              return;
-
-+    cpumask_clear(cpulist);
-
->> sure, my test is somewhat limited... anyway, first of all I'd like to
->> get a clear understanding of your logs. Thanks for yout test btw. :-))
->
-> I'll send you full logs asap.
-
-Thanks. Maybe it's something about a particular sequence of actions
-that triggers this behavior. Or was it reproducible with the very
-first pm-suspend invocation after "modprobe microcode.ko"?
+The drawback of this it that the kernel can't access anymore data in the first
+segment. Is it needed for application like wine or dosemu ?
 
 
->
-> Regards,
-> Andreas
->
+Regards,
 
--- Dmitry
+Matthieu
+
+PS : why x86_64 segment got access bit set and x86_32 doesn't ?
+
+[1]
+something like
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index cc25c2b..898a569 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -101,7 +101,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = {
+.gdt = {
+ 	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xa0fb, 0, 0xfffff),
+ #else
+ 	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
+-	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
++	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc096, 0, 0x00001),
+ 	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
+ 	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
+ 	/*
