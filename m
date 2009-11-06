@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbZKFWAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbZKFWAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbZKFWAX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:00:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbZKFWAW
+	id S1759827AbZKFWAf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759769AbZKFWAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:00:22 -0500
-Received: from outbound-mail-18.bluehost.com ([69.89.20.233]:45614 "HELO
-	outbound-mail-18.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758688AbZKFWAU (ORCPT
+	Fri, 6 Nov 2009 17:00:35 -0500
+Received: from outbound-mail-152.bluehost.com ([67.222.39.32]:58136 "HELO
+	outbound-mail-152.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759691AbZKFWAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:00:20 -0500
+	Fri, 6 Nov 2009 17:00:34 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=A+G+AiVX9qt0TrPPJ9ih9ufv3HldrHFOy7uHWL8nfzMPXqD0EsZpvdn1qAKMZjKDz5DqRrjvckklWc7z1D26bq9HpOqa0kMVNrEhZ4MGU9NHrIEtQMw9ApSfSAsdJtgJ;
-Date: Fri, 6 Nov 2009 14:00:28 -0800
+	b=eI4uKyyWm7JMarVoW+G/bOlCms8ZHAmtYjldszP2EQK1JSSSVTXSBvdW+0UILc9vPdNzw2eis6WjPx9HvsqVpkX6GGVId4QgW9kzabfyCUT7pbMxWO4eIVhyYVmRhrHN;
+Date: Fri, 6 Nov 2009 14:00:42 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, rdh@east.sun.com,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
-Message-ID: <20091106140028.6242cb94@jbarnes-piketon>
-In-Reply-To: <4AF240E7.8050200@jp.fujitsu.com>
-References: <19184.41676.262206.134000@gargle.gargle.HOWL>
-	<20091104110321.5e58e112@jbarnes-piketon>
-	<200911041628.17905.bjorn.helgaas@hp.com>
-	<4AF240E7.8050200@jp.fujitsu.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Sachin Sant <sachinp@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org
+Subject: Re: linux-next: Tree for November 5
+Message-ID: <20091106140042.1e29d82b@jbarnes-piketon>
+In-Reply-To: <200911051017.12135.bjorn.helgaas@hp.com>
+References: <20091105190426.c9cadada.sfr@canb.auug.org.au>
+	<4AF2AB23.9000907@in.ibm.com>
+	<200911050931.04838.bjorn.helgaas@hp.com>
+	<200911051017.12135.bjorn.helgaas@hp.com>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,52 +34,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Nov 2009 12:05:11 +0900
-Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
-> 
-> There are a lot of codes that searches PCI express capability offset
-> in the PCI configuration space using pci_find_capability(). Caching it
-> in the struct pci_dev will reduce unncecessary search. This patch adds
-> an additional 'pcie_cap' fields into struct pci_dev, which is
-> initialized at pci device scan time (in set_pcie_port_type()).
-> 
-> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-> 
-> ---
->  drivers/pci/probe.c |    1 +
->  include/linux/pci.h |    1 +
->  2 files changed, 2 insertions(+)
-> 
-> Index: 20090825/drivers/pci/probe.c
-> ===================================================================
-> --- 20090825.orig/drivers/pci/probe.c
-> +++ 20090825/drivers/pci/probe.c
-> @@ -693,6 +693,7 @@ static void set_pcie_port_type(struct pc
->  	if (!pos)
->  		return;
->  	pdev->is_pcie = 1;
-> +	pdev->pcie_cap = pos;
->  	pci_read_config_word(pdev, pos + PCI_EXP_FLAGS, &reg16);
->  	pdev->pcie_type = (reg16 & PCI_EXP_FLAGS_TYPE) >> 4;
->  }
-> Index: 20090825/include/linux/pci.h
-> ===================================================================
-> --- 20090825.orig/include/linux/pci.h
-> +++ 20090825/include/linux/pci.h
-> @@ -218,6 +218,7 @@ struct pci_dev {
->  	unsigned int	class;		/* 3 bytes:
-> (base,sub,prog-if) */ u8		revision;	/* PCI
-> revision, low byte of class word */ u8
-> hdr_type;	/* PCI header type (`multi' flag masked out) */
-> +	u8		pcie_cap;	/* PCI-E capability
-> offset */ u8		pcie_type;	/* PCI-E device/port
-> type */ u8		rom_base_reg;	/* which config
-> register controls the ROM */ u8		pin;
-> 		/* which interrupt pin this device uses */
-> 
-> 
+On Thu, 5 Nov 2009 11:17:11 -0600
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-Applied this one to linux-next, thanks Kenji-san.
+> On Thursday 05 November 2009 09:31:04 am Bjorn Helgaas wrote:
+> > On Thursday 05 November 2009 03:38:27 am Sachin Sant wrote:
+> > > Today's next tree fails to build on i386 with
+> > > 
+> > > arch/x86/pci/built-in.o: In function `align_resource':
+> > > arch/x86/pci/acpi.c:82: undefined reference to `__udivdi3'
+> > > 
+> > > The code in question was added by commit
+> > > 03db42adfeeabe856dbb6894dd3aaff55838330a.
+> > 
+> > I'll look into this.  I did build and test a 32-bit x86 kernel, but
+> > I built it on an x86_64 box using "linux32 make ...", which looks
+> > like it used gcc 4.3.2.
+> 
+> Can you try the patch below, please?
+> 
+> 
+> commit 00f16f0a2f4826eadec0565e4b454ab8bc7824cc
+> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> Date:   Thu Nov 5 10:03:57 2009 -0700
+> 
+>     x86/PCI: remove 64-bit division
+>     
+>     The roundup() caused a build error (undefined reference to
+> `__udivdi3'). We're aligning to power-of-two boundaries, so it's
+> simpler to just use ALIGN() anyway, which avoids the division.
+>     
+>     Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Applied with Randy's ack.  Thanks.
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
