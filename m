@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759577AbZKFSRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759450AbZKFQiC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759577AbZKFSRN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 13:17:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759540AbZKFSRL
+	id S1759450AbZKFQiC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 11:38:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758787AbZKFQiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 13:17:11 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:42980 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759315AbZKFSRE (ORCPT
+	Fri, 6 Nov 2009 11:38:00 -0500
+Received: from mx1.informatik.uni-stuttgart.de ([129.69.211.41]:37334 "EHLO
+	mx1.informatik.uni-stuttgart.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757036AbZKFQiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 13:17:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=tzBRJqib4UWpSXWjBNmEj753poONgLM+Iq9KtmkCwh8fy1YbzM3DLs4jq66b07/Nv+
-         Nr7W2u25LWUzsYptncOul2ZwidpYfE6UixJTx7G4hHSasj7qsYSda0aATthgHtinTlBC
-         8IDRZ7OBKhAXo0z9CkEERg6Hc3e+nFhgI3tUw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: [PATCH 13/41] rt2800usb: add rt2800_regbusy_read() wrapper
-Date: Fri, 6 Nov 2009 17:23:10 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: linux-wireless@vger.kernel.org, Gertjan van Wingerde <gwingerde@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-References: <20091104173151.28463.68742.sendpatchset@localhost.localdomain> <20091104173334.28463.13649.sendpatchset@localhost.localdomain> <200911051949.28617.IvDoorn@gmail.com>
-In-Reply-To: <200911051949.28617.IvDoorn@gmail.com>
+	Fri, 6 Nov 2009 11:38:00 -0500
+X-Greylist: delayed 645 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Nov 2009 11:38:00 EST
+From: Alexander Miller <Miller@fmi.uni-stuttgart.de>
+Organization: FMI, =?iso-8859-1?q?Universit=E4t?= Stuttgart
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: fix conservative/ondemand behaviour with ignore_nice_load
+Date: Fri, 6 Nov 2009 17:27:17 +0100
+User-Agent: KMail/1.9.10
+Cc: cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911061723.10099.bzolnier@gmail.com>
+Content-Disposition: inline
+Message-Id: <200911061727.17541.Miller@fmi.uni-stuttgart.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 November 2009 19:49:28 Ivo van Doorn wrote:
-> On Wednesday 04 November 2009, Bartlomiej Zolnierkiewicz wrote:
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] rt2800usb: add rt2800_regbusy_read() wrapper
-> > 
-> > Part of preparations for later code unification.
-> > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> The macros are the same for rt2800pci and rt2800usb.
-> So it might be better to move the entire define set into rt2800lib.h
+Remove conversion of nice load to microseconds which caused addition
+of times measured in different units and thus unreasonable behaviour
+with both governors.                                                  
 
-Indeed, it wasn't possible before patches #13-14 but it is now.
-
-Would you like to send an incremental (on top the series) fix for it?
-
-Thanks.
--- 
-Bartlomiej Zolnierkiewicz
+Signed-off-by: Alexander Miller <Miller@fmi.uni-stuttgart.de>
+---
+diff -uprN linux-2.6.git/drivers/cpufreq/cpufreq_conservative.c linux/drivers/cpufreq/cpufreq_conservative.c
+--- linux-2.6.git/drivers/cpufreq/cpufreq_conservative.c	2009-10-10 15:56:58.010595257 +0200
++++ linux/drivers/cpufreq/cpufreq_conservative.c	2009-10-10 20:56:52.194598889 +0200
+@@ -400,20 +400,10 @@ static void dbs_check_cpu(struct cpu_dbs
+ 		j_dbs_info->prev_cpu_idle = cur_idle_time;
+ 
+ 		if (dbs_tuners_ins.ignore_nice) {
+-			cputime64_t cur_nice;
+-			unsigned long cur_nice_jiffies;
+-
+-			cur_nice = cputime64_sub(kstat_cpu(j).cpustat.nice,
++			idle_time += (unsigned int) cputime64_sub(
++					 kstat_cpu(j).cpustat.nice,
+ 					 j_dbs_info->prev_cpu_nice);
+-			/*
+-			 * Assumption: nice time between sampling periods will
+-			 * be less than 2^32 jiffies for 32 bit sys
+-			 */
+-			cur_nice_jiffies = (unsigned long)
+-					cputime64_to_jiffies64(cur_nice);
+-
+ 			j_dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
+-			idle_time += jiffies_to_usecs(cur_nice_jiffies);
+ 		}
+ 
+ 		if (unlikely(!wall_time || wall_time < idle_time))
+diff -uprN linux-2.6.git/drivers/cpufreq/cpufreq_ondemand.c linux/drivers/cpufreq/cpufreq_ondemand.c
+--- linux-2.6.git/drivers/cpufreq/cpufreq_ondemand.c	2009-10-10 16:00:40.380595816 +0200
++++ linux/drivers/cpufreq/cpufreq_ondemand.c	2009-10-10 20:56:52.195596654 +0200
+@@ -488,20 +488,10 @@ static void dbs_check_cpu(struct cpu_dbs
+ 		j_dbs_info->prev_cpu_idle = cur_idle_time;
+ 
+ 		if (dbs_tuners_ins.ignore_nice) {
+-			cputime64_t cur_nice;
+-			unsigned long cur_nice_jiffies;
+-
+-			cur_nice = cputime64_sub(kstat_cpu(j).cpustat.nice,
++			idle_time += (unsigned int) cputime64_sub(
++					 kstat_cpu(j).cpustat.nice,
+ 					 j_dbs_info->prev_cpu_nice);
+-			/*
+-			 * Assumption: nice time between sampling periods will
+-			 * be less than 2^32 jiffies for 32 bit sys
+-			 */
+-			cur_nice_jiffies = (unsigned long)
+-					cputime64_to_jiffies64(cur_nice);
+-
+ 			j_dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
+-			idle_time += jiffies_to_usecs(cur_nice_jiffies);
+ 		}
+ 
+ 		if (unlikely(!wall_time || wall_time < idle_time))
