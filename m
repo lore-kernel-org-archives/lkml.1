@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759027AbZKFBPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZKFBer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759027AbZKFBPS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 20:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbZKFBPR
+	id S1756642AbZKFBer (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 20:34:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZKFBeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 20:15:17 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:50375 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757333AbZKFBPP (ORCPT
+	Thu, 5 Nov 2009 20:34:46 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:57962 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752474AbZKFBeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 20:15:15 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 09/11] sysctl: x86 Use the compat_sys_sysctl
-References: <m1tyx8trik.fsf@fess.ebiederm.org>
-	<1257468114-6823-9-git-send-email-ebiederm@xmission.com>
-	<4AF37425.9060000@zytor.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 05 Nov 2009 17:15:16 -0800
-In-Reply-To: <4AF37425.9060000@zytor.com> (H. Peter Anvin's message of "Thu\, 05 Nov 2009 16\:56\:05 -0800")
-Message-ID: <m14op8tpwb.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 5 Nov 2009 20:34:46 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqkEABIM80pGGN1W/2dsb2JhbACBT943hD0E
+Date: Thu, 5 Nov 2009 20:29:49 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       fweisbec@gmail.com, Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, zhaolei@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH] softirq,tracing: enable to trace softirq raise latency
+Message-ID: <20091106012949.GG24590@Krystal>
+References: <4AF284CF.3010407@cn.fujitsu.com> <20091105144349.GA8317@Krystal> <4AF3789F.8070904@cn.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4AF3789F.8070904@cn.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 20:29:04 up 79 days, 12:18,  2 users,  load average: 0.30, 0.23,
+	0.24
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> Mathieu Desnoyers wrote:
+> > * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> >> +/**
+> >>   * softirq_entry - called immediately before the softirq handler
+> >>   * @h: pointer to struct softirq_action
+> >>   * @vec: pointer to first struct softirq_action in softirq_vec array
+> > 
+> > Please change this comment to "@vec: softirq vector number" while you
+> > are at it. The same probably needs to be done for softirq_exit. @vec are
+> > not pointers: these are offsets.
+> > 
+> 
+> Thank you for you like it and your comment.
+> 
+> @vec are pointers here. it's softirq_vec. Don't need to change
+> these comments.
 
-> On 11/05/2009 04:41 PM, Eric W. Biederman wrote:
->> From: Eric W. Biederman <ebiederm@xmission.com>
->> 
->> Now that we have a generic 32bit compatibility implementation
->> there is no need for x86 to implement it's own.
->> 
->> Cc: Thomas Gleixner <tglx@linutronix.de>
->> Cc: Ingo Molnar <mingo@redhat.com>
->> Cc: "H. Peter Anvin" <hpa@zytor.com>
->> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->
-> Acked-by: H. Peter Anvin <hpa@zytor.com>
->
-> I'm assuming based on your previous email that you'll hang on to this
-> patch and carry it yourself.
+Ah, yes, you're right. I got confused by looking only at the patch
+context.
 
-That's the plan.
+Thanks,
 
-Eric
+Mathieu
 
+> 
+> Lai
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
