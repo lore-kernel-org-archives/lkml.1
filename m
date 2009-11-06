@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbZKFNhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbZKFNib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759224AbZKFNhs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 08:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757965AbZKFNhs
+	id S1759261AbZKFNib (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 08:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757997AbZKFNia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 08:37:48 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:58742 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757003AbZKFNhr (ORCPT
+	Fri, 6 Nov 2009 08:38:30 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:50047 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757460AbZKFNia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 08:37:47 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [lm-sensors] [patch 1/5] hwmon: Convert fschmd to unlocked_ioctl
-Date: Fri, 6 Nov 2009 14:37:05 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Jean Delvare <khali@linux-fr.org>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, lm-sensors@lm-sensors.org
-References: <20091015202722.372890083@linutronix.de> <200911061422.49596.arnd@arndb.de> <4AF42672.7040501@redhat.com>
-In-Reply-To: <4AF42672.7040501@redhat.com>
+	Fri, 6 Nov 2009 08:38:30 -0500
+Date: Fri, 6 Nov 2009 14:38:33 +0100
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Jody Belka <jody+lkml@jj79.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
+Subject: Re: OOM killer, page fault
+Message-ID: <20091106133833.GA23151@gamma.logic.tuwien.ac.at>
+References: <20091102135640.93de7c2a.minchan.kim@barrios-desktop> <28c262360911012300h4535118ewd65238c746b91a52@mail.gmail.com> <20091102155543.E60E.A69D9226@jp.fujitsu.com> <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com> <20091102141917.GJ2116@gamma.logic.tuwien.ac.at> <28c262360911020640k3f9dfcdct2cac6cc1d193144d@mail.gmail.com> <20091105132109.GA12676@gamma.logic.tuwien.ac.at> <loom.20091105T213323-393@post.gmane.org> <28c262360911051418r1aefbff6oa54a63d887c0ea48@mail.gmail.com> <20091106000113.GE22289@gamma.logic.tuwien.ac.at>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911061437.06978.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18PQS23q/fxtoRIN7fpTIMHYvwhQIZUC+lfM/G
- KV+s5Ybo+NBylIgqLX4Wv4OT9rnQvF+nt3+k4eZ/HFL8EOpfKv
- x1G8LoQftu8hk3TQuR86Q==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091106000113.GE22289@gamma.logic.tuwien.ac.at>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 November 2009, Hans de Goede wrote:
-> Moving the ident struct to the data structure would have it needlessly
-> using RAM all the time, the best and simplest fix for this is to simply
-> stop declaring ident static inside the ioctl function.
+Hi Kim,
 
-Ok. Considering the case of multiple watchdogs in the system, that seems
-best then. Of course, the watchdog infrastructure does not allow this
-right now, but it may be added at some point.
+On Fr, 06 Nov 2009, preining wrote:
+> Recompiling already and trying to recreate the oom-killer boom.
 
-	Arnd <><
+Well, after rebooting into that kernel I get *loads*, every few seconds,
+of warnings in the log. Hard to sort out what is real. Is that expected?
+
+Excerpt from the log:
+[ 2077.753841] vma->vm_ops->fault : 0xffffffff811df4bd
+[ 2077.753842] ------------[ cut here ]------------
+[ 2077.753845] WARNING: at mm/memory.c:2722 __do_fault+0x89/0x382()
+[ 2077.753847] Hardware name: VGN-Z11VN_B
+...
+[ 2077.753880] Pid: 4892, comm: Xorg Tainted: G        W  2.6.32-rc6 #5
+[ 2077.753881] Call Trace:
+[ 2077.753884]  [<ffffffff8108c6cc>] ? __do_fault+0x89/0x382
+[ 2077.753887]  [<ffffffff8108c6cc>] ? __do_fault+0x89/0x382
+[ 2077.753889]  [<ffffffff8103ae54>] ? warn_slowpath_common+0x77/0xa3
+[ 2077.753892]  [<ffffffff8108c6cc>] ? __do_fault+0x89/0x382
+[ 2077.753895]  [<ffffffff81341a82>] ? _spin_unlock+0x23/0x2f
+[ 2077.753898]  [<ffffffff8108e5d0>] ? handle_mm_fault+0x2b9/0x608
+[ 2077.753900]  [<ffffffff810af792>] ? do_vfs_ioctl+0x443/0x47b
+[ 2077.753903]  [<ffffffff81026759>] ? do_page_fault+0x25f/0x27b
+[ 2077.753906]  [<ffffffff81341e8f>] ? page_fault+0x1f/0x30
+[ 2077.753908] ---[ end trace d3324ef5061f0136 ]---
+
+hundreds/thousands of them.
+
+And even without starting anything else. Is that what you want?
+My syslog file has grown to some hundred megabytes ...
+
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining                                        Associate Professor
+JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
+Vienna University of Technology                               preining@logic.at
+Debian Developer (Debian TeX Task Force)                    preining@debian.org
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+LARGOWARD (n.)
+Motorists' name for the kind of pedestrian who stands beside a main
+road and waves on the traffic, as if it's their right of way.
+			--- Douglas Adams, The Meaning of Liff
