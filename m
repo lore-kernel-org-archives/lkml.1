@@ -1,86 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbZKFAvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbZKFAyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759234AbZKFAvc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 19:51:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbZKFAvc
+	id S1756303AbZKFAyd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 19:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbZKFAyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 19:51:32 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39655 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbZKFAvb (ORCPT
+	Thu, 5 Nov 2009 19:54:32 -0500
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:65468 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbZKFAya (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 19:51:31 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 6 Nov 2009 09:49:03 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       akpm@linux-foundation.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] lib: generic percpu counter array
-Message-Id: <20091106094903.5ede138d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.1.10.0911051013080.25718@V090114053VZO-1>
-References: <20091104152426.eacc894f.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.1.10.0911041414560.7409@V090114053VZO-1>
-	<20091105090659.9a5d17b1.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091105141653.132d4977.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.1.10.0911051013080.25718@V090114053VZO-1>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Nov 2009 19:54:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=G7XBdYXzGWMGD5UP+Su4fBsImcqUBbztiL5l7aDzIbtWpjpHgTexGxzDvBBUrkTtEz
+         8XCJRPyR+RiOGge3V7gWuZal87adT8PBVaD/Cy/Yszp0aUxIss1EUouXoW9qT/O5aocq
+         OrZIfsUDCSekQAMiAVOADCIgPmI0+jyMf9TJ0=
+MIME-Version: 1.0
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 5 Nov 2009 16:54:14 -0800
+Message-ID: <43e72e890911051654i19c18bf3nd397662ed79712c4@mail.gmail.com>
+Subject: Using netconsole and getting double prints
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm getting double prints when using netconsole. This used to happen
+to me and then I just enable debugging log level manually (dmesg -n 8)
+but now no matter what I try I always get double prints.
 
-Thank you for review.
+For example:
 
-On Thu, 5 Nov 2009 10:15:36 -0500 (EST)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+[   23.425448] console [netcon0] enabled
+[   23.425567] netconsole: network logging started
+[   23.425448] console [netcon0] enabled
+[   23.425567] netconsole: network logging started
+[   32.856073] eth0: no IPv6 routers present
+[   32.856073] eth0: no IPv6 routers present
+[   66.307342] kmemleak: 6 new suspected memory leaks (see
+/sys/kernel/debug/kmemleak)
+[   66.307342] kmemleak: 6 new suspected memory leaks (see
+/sys/kernel/debug/kmemleak)
 
-> On Thu, 5 Nov 2009, KAMEZAWA Hiroyuki wrote:
-> 
-> > +static inline void
-> > +counter_array_add(struct counter_array *ca, int idx, int val)
-> > +{
-> > +	ca->counters[idx] += val;
-> > +}
-> 
-> This is not a per cpu operation and therefore expensive. The new percpu
-> this_cpu_inc f.e. generates a single x86 instruction for an increment.
-> 
-This code is for !SMP.
+Instead of dmesg -8 I'm now using ignore_loglevel as a kernel
+parameter but I still get double prints. This also happens if I use
+"debug" as a kernel parameter instead.
 
+The netconsole is set up on the dev box as follows through an /etc/rc.local
 
-> > +void __counter_array_add(struct counter_array *ca, int idx, int val, int batch)
-> > +{
-> > +	long count, *pcount;
-> > +
-> > +	preempt_disable();
-> > +
-> > +	pcount = this_cpu_ptr(ca->v.array);
-> > +	count = pcount[idx] + val;
-> > +	if (!ca->v.nosync && ((count > batch) || (count < -batch))) {
-> > +		atomic_long_add(count, &ca->counters[idx]);
-> > +		pcount[idx] = 0;
-> > +	} else
-> > +		pcount[idx] = count;
-> > +	preempt_enable();
-> > +}
-> 
-> Too expensive to use in critical VM paths. The percpu operations generate
-> a single instruction instead of the code above. No need for preempt etc.
-> 
-Hmm, ok. I'll have to see your patch, more.
-I wonder how to use indexed-array and ops like add_return..
+dhclient eth0
+IP=192.168.2
+# sudo dmesg -n 8
+modprobe netconsole netconsole=@/eth0,6666@${IP}/
+exit 0
 
+I capture my data with netcat script (I call it netlog):
 
-Thanks,
--Kame
+#!/bin/bash
+echo "You should now run in another window: tail -f $HOME/log"
+while true; do
+	/bin/nc -u -l -p 6666 >> $HOME/log
+done
 
+This also just doesn't work if I run the nc manually without a redirect:
 
+while true; do /bin/nc -u -l -p 6666; done
 
+Any ideas?
+
+  Luis
