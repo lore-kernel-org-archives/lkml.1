@@ -1,121 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759909AbZKFVVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbZKFVVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759909AbZKFVVi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 16:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbZKFVVg
+	id S1759877AbZKFVVY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 16:21:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759725AbZKFVVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 16:21:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48386 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759887AbZKFVV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 16:21:29 -0500
-Date: Fri, 6 Nov 2009 22:16:37 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: [PATCH] ptrace: copy_thread() should clear TIF_SINGLESTEP and
-	X86_EFLAGS_TF
-Message-ID: <20091106211637.GA1696@redhat.com>
+	Fri, 6 Nov 2009 16:21:23 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:43486 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753542AbZKFVVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 16:21:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=S81GmIpqG+fi8VB7R/25j9KVN/OgS19aXslsJv5HBszjF7YNIkM0OMmDnYGUmphIPA
+         lbRYxrEeCMlARd9DBso0wZ9TSG8/E8bUoRUrH4ku0QlTF5A2mCmdAu4f/Q7HzkPWt5gp
+         hF4BzOM/svjhDgEUh9gmAmHRpdP+FgTit6Oh0=
+Message-ID: <4AF49365.5010601@gmail.com>
+Date: Fri, 06 Nov 2009 13:21:41 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dave Korn <dave.korn.cygwin@googlemail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gcc@gcc.gnu.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@cs.washington.edu>
+Subject: Re: cc1plus invoked oom-killer: gfp_mask=0x280da, order=0, oom_adj=0
+References: <dd18b0c30911021329g3c99a783n6b0a293240c3312c@mail.gmail.com>	 <20091103222432.4a94bd8f.akpm@linux-foundation.org>	 <4AF17DED.7080808@gmail.com> <4AF198E1.9010303@gmail.com>	 <4AF1A198.1090709@gmail.com>	 <dd18b0c30911040839ice58f81v7c8aa10e79f5d1b8@mail.gmail.com>	 <4AF1DA8D.9070009@gmail.com> <4AF1E66D.6060705@gmail.com>	 <dd18b0c30911041322y2cfd58f8m168550bbe3e8234b@mail.gmail.com>	 <4AF21E0C.90506@gmail.com> <dd18b0c30911041936i7876f2d1o7e31059cc44c644f@mail.gmail.com> <4AF25DCE.3010101@gmail.com>
+In-Reply-To: <4AF25DCE.3010101@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes x86, other machines need the similar fix. Hopefully
-maintainers can help.
+Dave Korn wrote:
+> Justin Mattock wrote:
+>
+>
+>    
+>> ==1830== Command: c++ -o jsxml.o -c -DOSTYPE="Linux2.6" -DOSARCH=Linux
+>>      
+>
+>    Ah, you're running it on the "c++" utility and it's reporting the stats for
+> that, but how it works is that "c++" (and "gcc", "g++", et al) is just a
+> driver, that parses the command line arguments and shells out to the actual
+> compiler ("cc1plus"), assembler and linker to get them to do all the work.
+>
+>    If you add "-v --save-temps" to the c++ invocation, it'll show you the
+> separate command lines it executes for the subprograms; the first invocation
+> will be of cc1plus, using the -E flag to generate the preprocessed source into
+> a .ii file, it's the second invocation you want, the one which uses the
+> "-fpreprocessed" flag and names the .ii file as input, which is the one that
+> actually then compiles the pre-processed source into assembly.  For fuller
+> explanation, see the GCC wiki:
+>
+> http://gcc.gnu.org/wiki/DebuggingGCC
+>
+>      cheers,
+>        DaveK
+>
+>
+>
+>    
+o.k. after some reading and some experimenting,
+I finally got firefox to compile all the way without a
+memory leak..
+here's what I found:
+using the default .mozconfig I see during compiling there
+is a -O3 in the CFLAGS(mozilla default optimization)
+When using my optimization I use -O2
+by mistake I accidentally forgot to add the -O2 while
+tweaking my .mozconfig for a right CFLAGS to use for
+debugging, in doing so firefox compiled all the way.
 
-If the tracee calls fork() after PTRACE_SINGLESTEP, the forked child starts
-with TIF_SINGLESTEP/X86_EFLAGS_TF bits copied from ptraced parent. This is
-not right, especially when the new child is not auto-attaced: in this case
-it is killed by SIGTRAP.
+So using a custom CFLAGS in mozconfig and leaving out
+-O* works..
 
-Test-case:
+Any ideas what might be happening here?
 
-	#include <stdio.h>
-	#include <unistd.h>
-	#include <signal.h>
-	#include <sys/ptrace.h>
-	#include <sys/wait.h>
-	#include <assert.h>
-
-	int main(void)
-	{
-		int pid, status;
-
-		if (!(pid = fork())) {
-			assert(ptrace(PTRACE_TRACEME) == 0);
-			kill(getpid(), SIGSTOP);
-
-			if (!fork()) {
-				/* kernel bug: this child will be killed by SIGTRAP */
-				printf("Hello world\n");
-				return 43;
-			}
-
-			wait(&status);
-			return WEXITSTATUS(status);
-		}
-
-		for (;;) {
-			assert(pid == wait(&status));
-			if (WIFEXITED(status))
-				break;
-			assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
-		}
-
-		assert(WEXITSTATUS(status) == 43);
-		return 0;
-	}
-
-Tested on x86_64, hopefully the change in process_32.c is right too.
-
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
-
- arch/x86/kernel/process_32.c |    3 +++
- arch/x86/kernel/process_64.c |    3 +++
- 2 files changed, 6 insertions(+)
-
---- V1/arch/x86/kernel/process_32.c~FORK_CLEAR_TIF_SINGLESTEP	2009-09-15 08:45:40.000000000 +0200
-+++ V1/arch/x86/kernel/process_32.c	2009-11-06 21:51:57.000000000 +0100
-@@ -252,6 +252,8 @@ int copy_thread(unsigned long clone_flag
- 	childregs->ax = 0;
- 	childregs->sp = sp;
- 
-+	childregs->flags &= ~X86_EFLAGS_TF;
-+
- 	p->thread.sp = (unsigned long) childregs;
- 	p->thread.sp0 = (unsigned long) (childregs+1);
- 
-@@ -287,6 +289,7 @@ int copy_thread(unsigned long clone_flag
- 	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
- 	p->thread.ds_ctx = NULL;
- 
-+	clear_tsk_thread_flag(p, TIF_SINGLESTEP);
- 	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
- 	p->thread.debugctlmsr = 0;
- 
---- V1/arch/x86/kernel/process_64.c~FORK_CLEAR_TIF_SINGLESTEP	2009-09-15 08:45:40.000000000 +0200
-+++ V1/arch/x86/kernel/process_64.c	2009-11-06 21:45:16.000000000 +0100
-@@ -289,6 +289,8 @@ int copy_thread(unsigned long clone_flag
- 	if (sp == ~0UL)
- 		childregs->sp = (unsigned long)childregs;
- 
-+	childregs->flags &= ~X86_EFLAGS_TF;
-+
- 	p->thread.sp = (unsigned long) childregs;
- 	p->thread.sp0 = (unsigned long) (childregs+1);
- 	p->thread.usersp = me->thread.usersp;
-@@ -332,6 +334,7 @@ int copy_thread(unsigned long clone_flag
- 	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
- 	p->thread.ds_ctx = NULL;
- 
-+	clear_tsk_thread_flag(p, TIF_SINGLESTEP);
- 	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
- 	p->thread.debugctlmsr = 0;
- 
-
+Justin P. Mattock
