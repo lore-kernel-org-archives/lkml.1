@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZKFK3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbZKFKt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbZKFK3T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 05:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZKFK3S
+	id S1756609AbZKFKt5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 05:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbZKFKt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 05:29:18 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:64963 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755164AbZKFK3R (ORCPT
+	Fri, 6 Nov 2009 05:49:56 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:42113 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754654AbZKFKtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 05:29:17 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/11] generic compat_sys_sysctl
-Date: Fri, 6 Nov 2009 11:27:24 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       Thibaut Varene <T-Bone@parisc-linux.org>,
-       Carsten Otte <cotte@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <m1tyx8trik.fsf@fess.ebiederm.org>
-In-Reply-To: <m1tyx8trik.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911061127.25337.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/u1zV9p2JgBah6HgYMRBKX0D3/NtrmGbs+EK0
- jpsWeee97xLYTOf9SJbm3Wx8RCjZaBvw+LdQmbtMzsDv4VPJIA
- 0HeDX/gNcmd+Xrlw06f8g==
+	Fri, 6 Nov 2009 05:49:55 -0500
+From: Rodolfo Giometti <giometti@linux.it>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Rodolfo Giometti <giometti@linux.it>
+Date: Fri,  6 Nov 2009 11:49:55 +0100
+Message-Id: <1257504596-27781-1-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.5.6.5
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH] pps: locking scheme fix up for PPS_GETPARAMS.
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 November 2009, Eric W. Biederman wrote:
-> current architecture name for it's 32bit compat syscall with
-> compat_sys_sysctl, and deleting the architectures private
-> 32bit compat syscall.  The only requirement is that CONFIG_COMPAT
-> be set when you need compat_sys_sysctl.
-> 
-> These patches should just work, but an eyeball from someone who is
-> familiar with the architecture specific details would be appreciated.
-> I have only tested the 32bit compat code on x86_64.
+Userland programs may read/write PPS parameters at same time and these
+operations may corrupt PPS data.
 
-I have done similar conversions for other syscalls and am familiar
-with s390 and powerpc specific details. Your compat code looks good
-for all of the pitfalls I'm aware of and possibly fixes bugs in the
-existing arch specific implementations.
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+Tested-by: Reg Clemens <clemens@dwf.com>
+---
+ drivers/pps/pps.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-Very nice series!
+diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
+index fea17e7..ca5183b 100644
+--- a/drivers/pps/pps.c
++++ b/drivers/pps/pps.c
+@@ -71,9 +71,14 @@ static long pps_cdev_ioctl(struct file *file,
+ 	case PPS_GETPARAMS:
+ 		pr_debug("PPS_GETPARAMS: source %d\n", pps->id);
+ 
+-		/* Return current parameters */
+-		err = copy_to_user(uarg, &pps->params,
+-						sizeof(struct pps_kparams));
++		spin_lock_irq(&pps->lock);
++
++		/* Get the current parameters */
++		params = pps->params;
++
++		spin_unlock_irq(&pps->lock);
++
++		err = copy_to_user(uarg, &params, sizeof(struct pps_kparams));
+ 		if (err)
+ 			return -EFAULT;
+ 
+-- 
+1.6.3.3
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
