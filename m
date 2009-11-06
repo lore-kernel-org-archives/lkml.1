@@ -1,74 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759407AbZKFQFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbZKFQIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759407AbZKFQFq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 11:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758546AbZKFQFp
+	id S1759420AbZKFQIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 11:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757150AbZKFQIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 11:05:45 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:52550 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758189AbZKFQFo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 11:05:44 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: nir.tzachar@gmail.com
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, zippel@linux-m68k.org, andi@firstfloor.org
-Subject: Re: [PATCH] nconfig v5
-In-Reply-To: Your message of "Fri, 06 Nov 2009 10:36:54 +0200."
-             <1257496614-12052-1-git-send-email-nir.tzachar@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1257496614-12052-1-git-send-email-nir.tzachar@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1257523499_2875P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 06 Nov 2009 11:04:59 -0500
-Message-ID: <4185.1257523499@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020202.4AF4492D.012B,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Fri, 6 Nov 2009 11:08:51 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:57326 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755867AbZKFQIu (ORCPT
+	<rfc822;groupwise-GHaskins@novell.com;0:0>);
+	Fri, 6 Nov 2009 11:08:50 -0500
+Message-ID: <4AF44A05.4060701@novell.com>
+Date: Fri, 06 Nov 2009 11:08:37 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+References: <20091002141407.30224.54207.stgit@dev.haskins.net> <20091105.210810.124818005.davem@davemloft.net>
+In-Reply-To: <20091105.210810.124818005.davem@davemloft.net>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig62984E88BA9121BD157CBBAD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1257523499_2875P
-Content-Type: text/plain; charset=us-ascii
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig62984E88BA9121BD157CBBAD
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 06 Nov 2009 10:36:54 +0200, nir.tzachar@gmail.com said:
-> Building on menuconfig, this patch implements a more modern look interface using
-> ncurses and ncurses' satellite libraries (menu, panel, form).
+David Miller wrote:
+> From: Gregory Haskins <ghaskins@novell.com>
+> Date: Fri, 02 Oct 2009 10:20:00 -0400
+>=20
+>> The following is an RFC for an attempt at addressing a zero-copy solut=
+ion.
+>>
+>> To be perfectly honest, I have no idea if this is the best solution, o=
+r if
+>> there is truly a problem with skb->destructor that requires an alterna=
+te
+>> mechanism.  What I do know is that this patch seems to work, and I wou=
+ld
+>> like to see some kind of solution available upstream.  So I thought I =
+would
+>> send my hack out as at least a point of discussion.  FWIW: This has be=
+en
+>> tested heavily in my rig and is technically suitable for inclusion aft=
+er
+>> review as is, if that is decided to be the optimal path forward here.
+>>
+>> Thanks for your review and consideration,
+>=20
+> I have no fundamental objections, but when you submit this for
+> real can you show the code that uses it so we can get a better
+> idea about things?
+>=20
+> Thanks.
 
-What is the minimum release of ncurses needed?  Some of us silverbacks have
-bad memories of twisty little mazes of ncurses releases, all incompatible. ;)
+Absolutely.  I am not sure if this content would be appropriate for the
+patch header, so I will just reply to your request here.  If you would
+like to see the patch resubmitted with the following in the header, let
+me know.
 
-(Much less of an issue if we're only trying to build on Linux - but at least
-in the semi-recent past we've supported doing a kernel build on non-Linux
-boxes.  Did that get lopped out at some point, or do we need to worry about
-what ncurses Solaris ships with?)
+The way we use this today is in the venet driver as part of the
+AlacrityVM hypervisor.  We therefore have a guest and host environment,
+where the guest builds fully formed L2 frames, and the host generally
+acts as a conduit for passing those frames to a real physical device
+(such as through a soft-bridge, etc).  We would like to do this without
+requiring copies for certain classes of packets (i.e. packets larger
+than a threshold).  However we have to be smart about how we do this
+since the guest technically "owns" the pages, and therefore needs
+io-completion events to properly signify when pages are actually freed.
 
---==_Exmh_1257523499_2875P
-Content-Type: application/pgp-signature
+The way this all looks today is (I hope this doesn't get mangled):
+
+----------------------------------------------------------------------
+|              guest              |               host               |
+----------------------------------------------------------------------
+|     stack      |     venet      |     venetdev    |     phydev     |
+----------------------------------------------------------------------
+| alloc_skb()                                                        |
+| dev_xmit()                                                         |
+|                -> queue_tx(sg)                                     |
+|                                 -> dequeue_rx(sg)                  |
+|                                    alloc_pskb()                    |
+|                                    map_sg(sg)->pskb                |
+|                                    loop(get_page())                |
+|                                    skb->release =3D cb               |
+|                                                   -> dev_xmit()    |
+|                                                                    |
+|                                                     txc_isr() <-   |
+|                                                     kfree_skb()    |
+|                                                     skb->release() |
+|                                    cb()           <-               |
+|                                     queue_event(sg)                |
+|                    txc_isr()    <-                                 |
+|                    kfree_skb()                                     |
+|                                                    loop(put_page())|
+----------------------------------------------------------------------
+
+And here is the actual code in action
+(kernel/vbus/devices/venet/device.c) from the alacrityvm.git tree
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/ghaskins/alacrityvm/linux-2.6=
+=2Egit;a=3Dblob;f=3Dkernel/vbus/devices/venet/device.c;h=3Dd49ba7fa9f70cb=
+b7e61c366d52d4c316d15f8b73;hb=3DHEAD
+
+Line 587 is the "dequeue_rx()" operation from the diagram.  Line 627 is
+where we map in the guests pages to a scatterlist.  Line 649 is where we
+update the skb_shinfo->frags with the mapping.  And finally, Line 677 is
+where I register a callback for when the skb is released.
+
+Line 853 is the callback that the stack invokes when the phydev finally
+frees the packet.  You can see that line 863 then sends an
+transmit-complete event back up to the guest.
+
+If this is not what you were looking for, please let me know.  If this
+looks acceptable to you, please consider the original patch for
+inclusion at the next convenient merge window.
+
+Thanks David!
+-Greg
+
+
+--------------enig62984E88BA9121BD157CBBAD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iD8DBQFK9EkrcC3lWbTT17ARAu8TAKDp+W2/NJzWADBeAjmqQEm65bOfYgCg330W
-0NV+D86LCWRfAZba0FgYQfU=
-=XBfP
+iEYEARECAAYFAkr0SgUACgkQP5K2CMvXmqHznwCeO0+B7MfMXZkXJ3m2lwg0G223
+cikAn2mhwOibFLybMzy7hEqThtijVEJI
+=C70E
 -----END PGP SIGNATURE-----
 
---==_Exmh_1257523499_2875P--
-
+--------------enig62984E88BA9121BD157CBBAD--
