@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932898AbZKFWgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932884AbZKFWfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932898AbZKFWgJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbZKFWgG
+	id S932884AbZKFWfv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932561AbZKFWfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:36:06 -0500
-Received: from kroah.org ([198.145.64.141]:56881 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:35:47 -0500
+Received: from kroah.org ([198.145.64.141]:56888 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932214AbZKFWW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:59 -0500
+	id S932455AbZKFWXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:23:00 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:45 2009
-Message-Id: <20091106221544.917678408@mini.kroah.org>
+Message-Id: <20091106221545.069595559@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:44 -0800
+Date: Fri, 06 Nov 2009 14:14:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Steve French <sfrench@us.ibm.com>
-Subject: [46/99] CIFS: Fixing to avoid invalid kfree() in cifs_get_tcp_session()
+       =?ISO-8859-15?q?Bj=C3=B6rn=20Smedman?= <bjorn.smedman@venatech.se>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [47/99] mac80211: fix for incorrect sequence number on hostapd injected frames
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=cifs-fixing-to-avoid-invalid-kfree-in-cifs_get_tcp_session.patch
+Content-Disposition: inline; filename=mac80211-fix-for-incorrect-sequence-number-on-hostapd-injected-frames.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,106 +30,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Steve French <sfrench@us.ibm.com>
+From: Björn Smedman <bjorn.smedman@venatech.se>
 
-commit 8347a5cdd1422eea0470ed586274c7f29e274b47 upstream.
+commit 9b1ce526eb917c8b5c8497c327768130ee683392 upstream.
 
-trivial bug in fs/cifs/connect.c .
-The bug is caused by fail of extract_hostname()
-when mounting cifs file system.
+When hostapd injects a frame, e.g. an authentication or association
+response, mac80211 looks for a suitable access point virtual interface
+to associate the frame with based on its source address. This makes it
+possible e.g. to correctly assign sequence numbers to the frames.
 
-This is the situation when I noticed this bug.
+A small typo in the ethernet address comparison statement caused a
+failure to find a suitable ap interface. Sequence numbers on such
+frames where therefore left unassigned causing some clients
+(especially windows-based 11b/g clients) to reject them and fail to
+authenticate or associate with the access point. This patch fixes the
+typo in the address comparison statement.
 
-% sudo mount -t cifs //192.168.10.208 mountpoint -o options...
-
-Then my kernel says,
-
-[ 1461.807776] ------------[ cut here ]------------
-[ 1461.807781] kernel BUG at mm/slab.c:521!
-[ 1461.807784] invalid opcode: 0000 [#2] PREEMPT SMP
-[ 1461.807790] last sysfs file:
-/sys/devices/pci0000:00/0000:00:1e.0/0000:09:02.0/resource
-[ 1461.807793] CPU 0
-[ 1461.807796] Modules linked in: nls_iso8859_1 usbhid sbp2 uhci_hcd
-ehci_hcd i2c_i801 ohci1394 ieee1394 psmouse serio_raw pcspkr sky2 usbcore
-evdev
-[ 1461.807816] Pid: 3446, comm: mount Tainted: G      D 2.6.32-rc2-vanilla
-[ 1461.807820] RIP: 0010:[<ffffffff810b888e>]  [<ffffffff810b888e>]
-kfree+0x63/0x156
-[ 1461.807829] RSP: 0018:ffff8800b4f7fbb8  EFLAGS: 00010046
-[ 1461.807832] RAX: ffffea00033fff98 RBX: ffff8800afbae7e2 RCX:
-0000000000000000
-[ 1461.807836] RDX: ffffea0000000000 RSI: 000000000000005c RDI:
-ffffffffffffffea
-[ 1461.807839] RBP: ffff8800b4f7fbf8 R08: 0000000000000001 R09:
-0000000000000000
-[ 1461.807842] R10: 0000000000000000 R11: ffff8800b4f7fbf8 R12:
-00000000ffffffea
-[ 1461.807845] R13: ffff8800afb23000 R14: ffff8800b4f87bc0 R15:
-ffffffffffffffea
-[ 1461.807849] FS:  00007f52b6f187c0(0000) GS:ffff880007600000(0000)
-knlGS:0000000000000000
-[ 1461.807852] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[ 1461.807855] CR2: 0000000000613000 CR3: 00000000af8f9000 CR4:
-00000000000006f0
-[ 1461.807858] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-0000000000000000
-[ 1461.807861] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
-0000000000000400
-[ 1461.807865] Process mount (pid: 3446, threadinfo ffff8800b4f7e000, task
-ffff8800950e4380)
-[ 1461.807867] Stack:
-[ 1461.807869]  0000000000000202 0000000000000282 ffff8800b4f7fbf8
-ffff8800afbae7e2
-[ 1461.807876] <0> 00000000ffffffea ffff8800afb23000 ffff8800b4f87bc0
-ffff8800b4f7fc28
-[ 1461.807884] <0> ffff8800b4f7fcd8 ffffffff81159f6d ffffffff81147bc2
-ffffffff816bfb48
-[ 1461.807892] Call Trace:
-[ 1461.807899]  [<ffffffff81159f6d>] cifs_get_tcp_session+0x440/0x44b
-[ 1461.807904]  [<ffffffff81147bc2>] ? find_nls+0x1c/0xe9
-[ 1461.807909]  [<ffffffff8115b889>] cifs_mount+0x16bc/0x2167
-[ 1461.807917]  [<ffffffff814455bd>] ? _spin_unlock+0x30/0x4b
-[ 1461.807923]  [<ffffffff81150da9>] cifs_get_sb+0xa5/0x1a8
-[ 1461.807928]  [<ffffffff810c1b94>] vfs_kern_mount+0x56/0xc9
-[ 1461.807933]  [<ffffffff810c1c64>] do_kern_mount+0x47/0xe7
-[ 1461.807938]  [<ffffffff810d8632>] do_mount+0x712/0x775
-[ 1461.807943]  [<ffffffff810d671f>] ? copy_mount_options+0xcf/0x132
-[ 1461.807948]  [<ffffffff810d8714>] sys_mount+0x7f/0xbf
-[ 1461.807953]  [<ffffffff8144509a>] ? lockdep_sys_exit_thunk+0x35/0x67
-[ 1461.807960]  [<ffffffff81011cc2>] system_call_fastpath+0x16/0x1b
-[ 1461.807963] Code: 00 00 00 00 ea ff ff 48 c1 e8 0c 48 6b c0 68 48 01 d0
-66 83 38 00 79 04 48 8b 40 10 66 83 38 00 79 04 48 8b 40 10 80 38 00 78 04
-<0f> 0b eb fe 4c 8b 70 58 4c 89 ff 41 8b 76 4c e8 b8 49 fb ff e8
-[ 1461.808022] RIP  [<ffffffff810b888e>] kfree+0x63/0x156
-[ 1461.808027]  RSP <ffff8800b4f7fbb8>
-[ 1461.808031] ---[ end trace ffe26fcdc72c0ce4 ]---
-
-The reason of this bug is that the error handling code of
-cifs_get_tcp_session()
-calls kfree() when corresponding kmalloc() failed.
-(The kmalloc() is called by extract_hostname().)
-
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Reviewed-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+Signed-off-by: Björn Smedman <bjorn.smedman@venatech.se>
+Reviewed-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/connect.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/mac80211/tx.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -1556,7 +1556,8 @@ cifs_get_tcp_session(struct smb_vol *vol
- 
- out_err:
- 	if (tcp_ses) {
--		kfree(tcp_ses->hostname);
-+		if (!IS_ERR(tcp_ses->hostname))
-+			kfree(tcp_ses->hostname);
- 		if (tcp_ses->ssocket)
- 			sock_release(tcp_ses->ssocket);
- 		kfree(tcp_ses);
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -1478,7 +1478,7 @@ int ieee80211_master_start_xmit(struct s
+ 				if (sdata->vif.type != NL80211_IFTYPE_AP)
+ 					continue;
+ 				if (compare_ether_addr(sdata->dev->dev_addr,
+-						       hdr->addr2)) {
++						       hdr->addr2) == 0) {
+ 					dev_hold(sdata->dev);
+ 					dev_put(odev);
+ 					osdata = sdata;
 
 
