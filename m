@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbZKFIo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZKFIrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755452AbZKFIo7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 03:44:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZKFIo6
+	id S1755343AbZKFIrh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 03:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZKFIrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 03:44:58 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:51270 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753875AbZKFIo5 (ORCPT
+	Fri, 6 Nov 2009 03:47:36 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:36021 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754472AbZKFIrf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 03:44:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=qvDDUs5KA7WDDfKwkv35D/rQna9r5k8iYorGBg6Srtb464OfhNfEQKVzipJUMb6KpU
-         yJymTxE7fNxmmFHgAB5o6cJX8YUP3oIebx10xo5ZbapHAMSmddhtWTqhU8PFuFfoBys4
-         04O+0ox1250QpY6PR4lSORxhodiyj/Vw2klqc=
+	Fri, 6 Nov 2009 03:47:35 -0500
+Message-ID: <4AF3E2A9.2020601@gmail.com>
+Date: Fri, 06 Nov 2009 09:47:37 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <4AEB0059.1050400@gmail.com>
-References: <38b2ab8a0909290109m3f82c161j4fb0f1266152877e@mail.gmail.com>
-	 <4AC1D0F5.4050709@gmail.com>
-	 <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com>
-	 <4AEACD88.8080108@gmail.com> <4AEB0059.1050400@gmail.com>
-Date: Fri, 6 Nov 2009 09:45:01 +0100
-Message-ID: <38b2ab8a0911060045hb6ebab8p43bf8aa838eabfd3@mail.gmail.com>
-Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
-From: Francis Moreau <francis.moro@gmail.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+To: Francis Moreau <francis.moro@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Netdev List <netdev@vger.kernel.org>,
        "David S. Miller" <davem@davemloft.net>
+Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
+References: <38b2ab8a0909290109m3f82c161j4fb0f1266152877e@mail.gmail.com>	 <4AC1D0F5.4050709@gmail.com>	 <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com>	 <4AEACD88.8080108@gmail.com> <4AEB0059.1050400@gmail.com> <38b2ab8a0911060045hb6ebab8p43bf8aa838eabfd3@mail.gmail.com>
+In-Reply-To: <38b2ab8a0911060045hb6ebab8p43bf8aa838eabfd3@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 06 Nov 2009 09:47:38 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 4:03 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
+Francis Moreau a écrit :
+> On Fri, Oct 30, 2009 at 4:03 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> 
+> [...]
+> 
+>> [PATCH take2] net: fix sk_forward_alloc corruption
+>>
+> 
+> With this patch applied 4 days ago, I haven't got any oops so far.
 
-[...]
+Thanks a lot for testing and report Francis, I believe David will push it for stable
+(if not already done)
 
->
-> [PATCH take2] net: fix sk_forward_alloc corruption
->
 
-With this patch applied 4 days ago, I haven't got any oops so far.
--- 
-Francis
