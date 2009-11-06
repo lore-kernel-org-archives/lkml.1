@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbZKFLig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbZKFMKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbZKFLig (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 06:38:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbZKFLif
+	id S1757496AbZKFMKP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 07:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757480AbZKFMKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 06:38:35 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:48363 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754654AbZKFLie convert rfc822-to-8bit (ORCPT
+	Fri, 6 Nov 2009 07:10:14 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:64017 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757312AbZKFMKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 06:38:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=vFpPGI8GiW3kFhhT0r2FPGzQoXhjt17hkIIOXjmn+GlhwrHmGPQn2uQdVez0yiVP1F
-         oVqjVBJd/jtn2OS31NiHcDWm1mp9MpeuGm9G7CQtRaQimrmALD2O38e6xMYeAc66EbXM
-         G1wF/L9YdZsNN9ICLg3mE6c8l4lGy7/aBYofY=
+	Fri, 6 Nov 2009 07:10:13 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 01/11] sysctl: Separate the binary sysctl logic into it's own file.
+Date: Fri, 6 Nov 2009 13:10:02 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <m1tyx8trik.fsf@fess.ebiederm.org> <200911061004.01007.borntraeger@de.ibm.com> <m18wejanw4.fsf@fess.ebiederm.org>
+In-Reply-To: <m18wejanw4.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
-	 <alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
-Date: Fri, 6 Nov 2009 17:08:39 +0530
-X-Google-Sender-Auth: 8ef71a6d5869dd59
-Message-ID: <661de9470911060338q66746acbr219eedc24e752ca9@mail.gmail.com>
-Subject: Re: mmotm 2009-11-01-10-01 uploaded
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911061310.02785.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/MBBw4A7hZ09V2vaMx6Fl05/5cnH1Vf/D2K1c
+ 2XKfMZgBYdLQeS0f8mDVfp3yk5ae18T6FDqSLFcflvgNUd7NyX
+ PRDjhahKz+7uCQpiK72YA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 6, 2009 at 12:43 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Sun, 1 Nov 2009, akpm@linux-foundation.org wrote:
->
->> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
->>
->>    http://userweb.kernel.org/~akpm/mmotm/
->>
->> and will soon be available at
->
-> Does "soon" mean within this century ?
->
->>    git://git.zen-sources.org/zen/mmotm.git
->
-> # git pull git://git.zen-sources.org/zen/mmotm.git master
-> git.zen-sources.org[0: 216.98.141.250]: errno=Connection timed out
-> git.zen-sources.org[0: 69.72.142.98]: errno=Connection refused
-> fatal: unable to connect a socket (Connection refused)
->
-I've seen that too, in fact I can't even reach the domain. I've pinged
-the owner but not heard back yet.
+On Friday 06 November 2009, Eric W. Biederman wrote:
+> Christian Borntraeger <borntraeger@de.ibm.com> writes:
+> 
+> > Am Freitag 06 November 2009 01:41:44 schrieb Eric W. Biederman:
+> >> From: Eric W. Biederman <ebiederm@xmission.com>
+> >> 
+> >> In preparation for more invasive cleanups separate the core
+> >> binary sysctl logic into it's own file.
+> >> 
+> >> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> >
+> > Hmm, with your patches on Linus git I get the following on s390:
+> >
+> > kernel/sysctl_binary.c: In function 'SYSC_sysctl':
+> > kernel/sysctl_binary.c:126: error: implicit declaration of function 
+> > 'lock_kernel'
+> > kernel/sysctl_binary.c:129: error: implicit declaration of function 
+> > 'unlock_kernel'
+> 
+> Bah.  A missing smp_lock.h.
 
-Balbir
+BTW, there is a patch in the kill-the-BKL tree to push down the BKL
+further into the sysctl handlers. It may be a good idea to put that
+into your tree, or to redo the same thing there differently, since
+you already have a patch series touching this area.
+
+	Arnd <><
