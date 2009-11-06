@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbZKFWjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbZKFWj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933063AbZKFWjr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:39:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760138AbZKFWWn
+	id S933080AbZKFWj7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbZKFWj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:22:43 -0500
-Received: from kroah.org ([198.145.64.141]:56772 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:39:58 -0500
+Received: from kroah.org ([198.145.64.141]:56776 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932370AbZKFWWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:41 -0500
+	id S1760134AbZKFWWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:42 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:42 2009
-Message-Id: <20091106221542.205393474@mini.kroah.org>
+Message-Id: <20091106221542.333265650@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:25 -0800
+Date: Fri, 06 Nov 2009 14:14:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Cox <alan@linux.intel.com>
-Subject: [27/99] ray_cs: Fix copy_from_user handling
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [28/99] mbind(): fix leak of never putback pages
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=ray_cs-fix-copy_from_user-handling.patch
+Content-Disposition: inline; filename=mbind-fix-leak-of-never-putback-pages.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,30 +30,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Cox <alan@linux.intel.com>
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-commit 575c9ed7798218dc923f319c0d78f0c25ca506b9 upstream.
+commit ab8a3e14e6f8e567560f664bbd29aefb306a274e upstream.
 
-I've not touched the other stuff here but the word "locking" comes to mind.
+If mbind() receives an invalid address, do_mbind leaks a page.  The
+following test program detects this leak.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
+This patch fixes it.
+
+migrate_efault.c
+=======================================
+ #include <numaif.h>
+ #include <numa.h>
+ #include <sys/mman.h>
+ #include <stdio.h>
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <string.h>
+
+static unsigned long pagesize;
+
+static void* make_hole_mapping(void)
+{
+
+	void* addr;
+
+	addr = mmap(NULL, pagesize*3, PROT_READ|PROT_WRITE,
+		    MAP_ANON|MAP_PRIVATE, 0, 0);
+	if (addr == MAP_FAILED)
+		return NULL;
+
+	/* make page populate */
+	memset(addr, 0, pagesize*3);
+
+	/* make memory hole */
+	munmap(addr+pagesize, pagesize);
+
+	return addr;
+}
+
+int main(int argc, char** argv)
+{
+	void* addr;
+	int ch;
+	int node;
+	struct bitmask *nmask = numa_allocate_nodemask();
+	int err;
+	int node_set = 0;
+
+	while ((ch = getopt(argc, argv, "n:")) != -1){
+		switch (ch){
+		case 'n':
+			node = strtol(optarg, NULL, 0);
+			numa_bitmask_setbit(nmask, node);
+			node_set = 1;
+			break;
+		default:
+			;
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (!node_set)
+		numa_bitmask_setbit(nmask, 0);
+
+	pagesize = getpagesize();
+
+	addr = make_hole_mapping();
+
+	err = mbind(addr, pagesize*3, MPOL_BIND, nmask->maskp, nmask->size, MPOL_MF_MOVE_ALL);
+	if (err)
+		perror("mbind ");
+
+	return 0;
+}
+=======================================
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Acked-by: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ray_cs.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/mempolicy.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/net/wireless/ray_cs.c
-+++ b/drivers/net/wireless/ray_cs.c
-@@ -2878,7 +2878,7 @@ static int write_essid(struct file *file
- 		       unsigned long count, void *data)
- {
- 	static char proc_essid[33];
--	int len = count;
-+	unsigned int len = count;
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -1058,7 +1058,8 @@ static long do_mbind(unsigned long start
  
- 	if (len > 32)
- 		len = 32;
+ 		if (!err && nr_failed && (flags & MPOL_MF_STRICT))
+ 			err = -EIO;
+-	}
++	} else
++		putback_lru_pages(&pagelist);
+ 
+ 	up_write(&mm->mmap_sem);
+ 	mpol_put(new);
 
 
