@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbZKFWeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932809AbZKFWeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760472AbZKFWeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760203AbZKFWeO
+	id S932809AbZKFWeQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760200AbZKFWeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:34:14 -0500
-Received: from kroah.org ([198.145.64.141]:56932 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:34:12 -0500
+Received: from kroah.org ([198.145.64.141]:56925 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760204AbZKFWXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760203AbZKFWXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Nov 2009 17:23:09 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:46 2009
-Message-Id: <20091106221546.450155859@mini.kroah.org>
+Message-Id: <20091106221546.595113397@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:54 -0800
+Date: Fri, 06 Nov 2009 14:14:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>
-Subject: [56/99] drm/i915: fix to setup display reference clock control on Ironlake
+Subject: [57/99] drm/i915: fix panel fitting filter coefficient select for Ironlake
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=drm-i915-fix-to-setup-display-reference-clock-control-on-ironlake.patch
+Content-Disposition: inline; filename=drm-i915-fix-panel-fitting-filter-coefficient-select-for-ironlake.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,89 +31,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Zhenyu Wang <zhenyuw@linux.intel.com>
 
-commit c038e51e841581cc3fb9a76e5e16331331e9c85c upstream.
+commit b1f60b7029989da71fd8ea1b1176480fac9e846c upstream.
 
-For new stepping of PCH, the display reference clock
-is fully under driver's control. This one trys to setup
-all needed reference clock for different outputs. Older
-stepping of PCH chipset should be ignoring this.
+Must set filter selection as hardcoded coefficients for medium 3x3
+filtering, which matches vbios setting for Ironlake.
 
-This fixes output failure issue on newer PCH which requires
-driver to take control of reference clock enabling.
+This fixes display corrupt issue on HP arrandale with new vbios.
 
 Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
 Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_reg.h      |    4 +--
- drivers/gpu/drm/i915/intel_display.c |   40 +++++++++++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/i915/i915_reg.h      |    5 +++++
+ drivers/gpu/drm/i915/intel_display.c |    2 +-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
 --- a/drivers/gpu/drm/i915/i915_reg.h
 +++ b/drivers/gpu/drm/i915/i915_reg.h
-@@ -1990,11 +1990,11 @@
- #define  DREF_CPU_SOURCE_OUTPUT_MASK		(3<<13)
- #define  DREF_SSC_SOURCE_DISABLE                (0<<11)
- #define  DREF_SSC_SOURCE_ENABLE                 (2<<11)
--#define  DREF_SSC_SOURCE_MASK			(2<<11)
-+#define  DREF_SSC_SOURCE_MASK			(3<<11)
- #define  DREF_NONSPREAD_SOURCE_DISABLE          (0<<9)
- #define  DREF_NONSPREAD_CK505_ENABLE		(1<<9)
- #define  DREF_NONSPREAD_SOURCE_ENABLE           (2<<9)
--#define  DREF_NONSPREAD_SOURCE_MASK		(2<<9)
-+#define  DREF_NONSPREAD_SOURCE_MASK		(3<<9)
- #define  DREF_SUPERSPREAD_SOURCE_DISABLE        (0<<7)
- #define  DREF_SUPERSPREAD_SOURCE_ENABLE         (2<<7)
- #define  DREF_SSC4_DOWNSPREAD                   (0<<6)
+@@ -1871,6 +1871,11 @@
+ #define PFA_CTL_1               0x68080
+ #define PFB_CTL_1               0x68880
+ #define  PF_ENABLE              (1<<31)
++#define  PF_FILTER_MASK		(3<<23)
++#define  PF_FILTER_PROGRAMMED	(0<<23)
++#define  PF_FILTER_MED_3x3	(1<<23)
++#define  PF_FILTER_EDGE_ENHANCE	(2<<23)
++#define  PF_FILTER_EDGE_SOFTEN	(3<<23)
+ #define PFA_WIN_SZ		0x68074
+ #define PFB_WIN_SZ		0x68874
+ #define PFA_WIN_POS		0x68070
 --- a/drivers/gpu/drm/i915/intel_display.c
 +++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -2442,6 +2442,46 @@ static int intel_crtc_mode_set(struct dr
- 				  link_bw, &m_n);
- 	}
+@@ -1213,7 +1213,7 @@ static void igdng_crtc_dpms(struct drm_c
+ 		/* Enable panel fitting for LVDS */
+ 		if (intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS)) {
+ 			temp = I915_READ(pf_ctl_reg);
+-			I915_WRITE(pf_ctl_reg, temp | PF_ENABLE);
++			I915_WRITE(pf_ctl_reg, temp | PF_ENABLE | PF_FILTER_MED_3x3);
  
-+	/* Ironlake: try to setup display ref clock before DPLL
-+	 * enabling. This is only under driver's control after
-+	 * PCH B stepping, previous chipset stepping should be
-+	 * ignoring this setting.
-+	 */
-+	if (IS_IGDNG(dev)) {
-+		temp = I915_READ(PCH_DREF_CONTROL);
-+		/* Always enable nonspread source */
-+		temp &= ~DREF_NONSPREAD_SOURCE_MASK;
-+		temp |= DREF_NONSPREAD_SOURCE_ENABLE;
-+		I915_WRITE(PCH_DREF_CONTROL, temp);
-+		POSTING_READ(PCH_DREF_CONTROL);
-+
-+		temp &= ~DREF_SSC_SOURCE_MASK;
-+		temp |= DREF_SSC_SOURCE_ENABLE;
-+		I915_WRITE(PCH_DREF_CONTROL, temp);
-+		POSTING_READ(PCH_DREF_CONTROL);
-+
-+		udelay(200);
-+
-+		if (is_edp) {
-+			if (dev_priv->lvds_use_ssc) {
-+				temp |= DREF_SSC1_ENABLE;
-+				I915_WRITE(PCH_DREF_CONTROL, temp);
-+				POSTING_READ(PCH_DREF_CONTROL);
-+
-+				udelay(200);
-+
-+				temp &= ~DREF_CPU_SOURCE_OUTPUT_MASK;
-+				temp |= DREF_CPU_SOURCE_OUTPUT_DOWNSPREAD;
-+				I915_WRITE(PCH_DREF_CONTROL, temp);
-+				POSTING_READ(PCH_DREF_CONTROL);
-+			} else {
-+				temp |= DREF_CPU_SOURCE_OUTPUT_NONSPREAD;
-+				I915_WRITE(PCH_DREF_CONTROL, temp);
-+				POSTING_READ(PCH_DREF_CONTROL);
-+			}
-+		}
-+	}
-+
- 	if (IS_IGD(dev))
- 		fp = (1 << clock.n) << 16 | clock.m1 << 8 | clock.m2;
- 	else
+ 			/* currently full aspect */
+ 			I915_WRITE(pf_win_pos, 0);
 
 
