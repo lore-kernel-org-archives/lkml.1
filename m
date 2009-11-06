@@ -1,231 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbZKFSJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbZKFSJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759479AbZKFSJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 13:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759429AbZKFSJR
+	id S1759545AbZKFSJz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 13:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759525AbZKFSJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 13:09:17 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:50925 "EHLO
+	Fri, 6 Nov 2009 13:09:54 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:56696 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757376AbZKFSJO (ORCPT
+	with ESMTP id S1754537AbZKFSJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 13:09:14 -0500
+	Fri, 6 Nov 2009 13:09:16 -0500
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>, Christoph Hellwig <hch@lst.de>,
        netdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 3/7] net, compat_ioctl: handle socket ioctl abuses in tty drivers
-Date: Fri,  6 Nov 2009 19:09:05 +0100
-Message-Id: <1257530949-9695-4-git-send-email-arnd@arndb.de>
+Subject: [PATCH 4/7] =?utf-8?q?appletalk:=C2=A0handle=20SIOCATALKDIFADDR=20compat=20ioctl?=
+Date: Fri,  6 Nov 2009 19:09:06 +0100
+Message-Id: <1257530949-9695-5-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1257530949-9695-1-git-send-email-arnd@arndb.de>
 References: <1257530949-9695-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19HCf2rMyrJnDS08XDiw1z78gW2cVZ9sxxBMBg
- TAKQ+qK/PGzNCAoSVz4Gqlja9BO1cCvcpYCCu6h5qJt0kgo70i
- Qwb5IIkkOZXf7yNVus2fA==
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX19uPibJZme3ytjQgPvp+drJkr0+vI7Q58vme+q
+ zbcp8TB61me14Xt/aTJk7DrVcBnGeqdiwAsRIYcd58JGHxdv/p
+ 2FGGWIQXVkGrGbdNRomUQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Slip and a few other drivers use the same ioctl numbers on
-tty devices that are normally meant for sockets. This causes
-problems with our compat_ioctl handling that tries to convert
-the data structures in a different format.
-
-Fortunately, these five drivers all use 32 bit compatible
-data structures in the ioctl numbers, so we can just add
-a trivial compat_ioctl conversion function to each of them.
-
-SIOCSIFENCAP and SIOCGIFENCAP do not need to live in
-fs/compat_ioctl.c after this any more, and they are not
-used on any sockets.
+We must not have a compat ioctl handler for SIOCATALKDIFADDR
+in common code, because the same number is used in other protocols
+with different data structures.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/net/hamradio/6pack.c |   16 ++++++++++++++++
- drivers/net/hamradio/mkiss.c |   16 ++++++++++++++++
- drivers/net/slip.c           |   21 +++++++++++++++++++++
- drivers/net/wan/x25_asy.c    |   15 +++++++++++++++
- drivers/net/wireless/strip.c |   12 ++++++++++++
- fs/compat_ioctl.c            |    2 --
- 6 files changed, 80 insertions(+), 2 deletions(-)
+ fs/compat_ioctl.c   |    1 -
+ net/appletalk/ddp.c |   12 +++++++-----
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/hamradio/6pack.c b/drivers/net/hamradio/6pack.c
-index fb58830..d75a551 100644
---- a/drivers/net/hamradio/6pack.c
-+++ b/drivers/net/hamradio/6pack.c
-@@ -777,6 +777,21 @@ static int sixpack_ioctl(struct tty_struct *tty, struct file *file,
- 	return err;
- }
- 
-+static long sixpack_compat_ioctl(struct tty_struct * tty, struct file * file,
-+				unsigned int cmd, unsigned long arg)
-+{
-+	switch (cmd) {
-+	case SIOCGIFNAME:
-+	case SIOCGIFENCAP:
-+	case SIOCSIFENCAP:
-+	case SIOCSIFHWADDR:
-+		return sixpack_ioctl(tty, file, cmd,
-+				(unsigned long)compat_ptr(arg));
-+	}
-+
-+	return -ENOIOCTLCMD;
-+}
-+
- static struct tty_ldisc_ops sp_ldisc = {
- 	.owner		= THIS_MODULE,
- 	.magic		= TTY_LDISC_MAGIC,
-@@ -784,6 +799,7 @@ static struct tty_ldisc_ops sp_ldisc = {
- 	.open		= sixpack_open,
- 	.close		= sixpack_close,
- 	.ioctl		= sixpack_ioctl,
-+	.compat_ioctl	= sixpack_compat_ioctl,
- 	.receive_buf	= sixpack_receive_buf,
- 	.write_wakeup	= sixpack_write_wakeup,
- };
-diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
-index db4b7f1..15020ec 100644
---- a/drivers/net/hamradio/mkiss.c
-+++ b/drivers/net/hamradio/mkiss.c
-@@ -898,6 +898,21 @@ static int mkiss_ioctl(struct tty_struct *tty, struct file *file,
- 	return err;
- }
- 
-+static long mkiss_compat_ioctl(struct tty_struct *tty, struct file *file,
-+	unsigned int cmd, unsigned long arg)
-+{
-+	switch (arg) {
-+	case SIOCGIFNAME:
-+	case SIOCGIFENCAP:
-+	case SIOCSIFENCAP:
-+	case SIOCSIFHWADDR:
-+		return mkiss_ioctl(tty, file, cmd,
-+			(unsigned long)compat_ptr(arg));
-+	}
-+
-+	return -ENOIOCTLCMD;
-+}
-+
- /*
-  * Handle the 'receiver data ready' interrupt.
-  * This function is called by the 'tty_io' module in the kernel when
-@@ -972,6 +987,7 @@ static struct tty_ldisc_ops ax_ldisc = {
- 	.open		= mkiss_open,
- 	.close		= mkiss_close,
- 	.ioctl		= mkiss_ioctl,
-+	.compat_ioctl	= mkiss_compat_ioctl,
- 	.receive_buf	= mkiss_receive_buf,
- 	.write_wakeup	= mkiss_write_wakeup
- };
-diff --git a/drivers/net/slip.c b/drivers/net/slip.c
-index fe3cebb..d9c87e6 100644
---- a/drivers/net/slip.c
-+++ b/drivers/net/slip.c
-@@ -1169,6 +1169,26 @@ static int slip_ioctl(struct tty_struct *tty, struct file *file,
- 	}
- }
- 
-+static long slip_compat_ioctl(struct tty_struct *tty, struct file *file,
-+					unsigned int cmd, unsigned long arg)
-+{
-+	switch (cmd) {
-+	case SIOCGIFNAME:
-+	case SIOCGIFENCAP:
-+	case SIOCSIFENCAP:
-+	case SIOCSIFHWADDR:
-+	case SIOCSKEEPALIVE:
-+	case SIOCGKEEPALIVE:
-+	case SIOCSOUTFILL:
-+	case SIOCGOUTFILL:
-+		return slip_ioctl(tty, file, cmd,
-+			(unsigned long)compat_ptr(arg));
-+	}
-+
-+	return -ENOIOCTLCMD;
-+}
-+
-+
- /* VSV changes start here */
- #ifdef CONFIG_SLIP_SMART
- /* function do_ioctl called from net/core/dev.c
-@@ -1261,6 +1281,7 @@ static struct tty_ldisc_ops sl_ldisc = {
- 	.close	 	= slip_close,
- 	.hangup	 	= slip_hangup,
- 	.ioctl		= slip_ioctl,
-+	.compat_ioctl	= slip_compat_ioctl,
- 	.receive_buf	= slip_receive_buf,
- 	.write_wakeup	= slip_write_wakeup,
- };
-diff --git a/drivers/net/wan/x25_asy.c b/drivers/net/wan/x25_asy.c
-index 2794504..266e984 100644
---- a/drivers/net/wan/x25_asy.c
-+++ b/drivers/net/wan/x25_asy.c
-@@ -705,6 +705,20 @@ static int x25_asy_ioctl(struct tty_struct *tty, struct file *file,
- 	}
- }
- 
-+static long x25_asy_compat_ioctl(struct tty_struct *tty, struct file *file,
-+			 unsigned int cmd,  unsigned long arg)
-+{
-+	switch (cmd) {
-+	case SIOCGIFNAME:
-+	case SIOCSIFHWADDR:
-+		return x25_asy_ioctl(tty, file, cmd,
-+			(unsigned long)compat_ptr(arg);
-+	}
-+
-+	return -ENOIOCTLCMD;
-+}
-+
-+
- static int x25_asy_open_dev(struct net_device *dev)
- {
- 	struct x25_asy *sl = netdev_priv(dev);
-@@ -754,6 +768,7 @@ static struct tty_ldisc_ops x25_ldisc = {
- 	.open		= x25_asy_open_tty,
- 	.close		= x25_asy_close_tty,
- 	.ioctl		= x25_asy_ioctl,
-+	.compat_ioctl	= x25_asy_compat_ioctl,
- 	.receive_buf	= x25_asy_receive_buf,
- 	.write_wakeup	= x25_asy_write_wakeup,
- };
-diff --git a/drivers/net/wireless/strip.c b/drivers/net/wireless/strip.c
-index ea6a87c..6673ce9 100644
---- a/drivers/net/wireless/strip.c
-+++ b/drivers/net/wireless/strip.c
-@@ -2725,6 +2725,18 @@ static int strip_ioctl(struct tty_struct *tty, struct file *file,
- 	return 0;
- }
- 
-+static long strip_compat_ioctl(struct tty_struct *tty, struct file *file,
-+		       unsigned int cmd, unsigned long arg)
-+{
-+	switch (cmd) {
-+	case SIOCGIFNAME:
-+	case SIOCSIFHWADDR:
-+		return strip_ioctl(tty, file, cmd,
-+			(unsigned long)compat_ptr(arg));
-+	}
-+	return -ENOIOCTLCMD;
-+}
-+
- 
- /************************************************************************/
- /* Initialization							*/
 diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index c562e9a..f4a5a01 100644
+index f4a5a01..50d2a5f 100644
 --- a/fs/compat_ioctl.c
 +++ b/fs/compat_ioctl.c
-@@ -2020,8 +2020,6 @@ COMPATIBLE_IOCTL(FIOGETOWN)
- COMPATIBLE_IOCTL(SIOCGPGRP)
- COMPATIBLE_IOCTL(SIOCATMARK)
- COMPATIBLE_IOCTL(SIOCSIFLINK)
--COMPATIBLE_IOCTL(SIOCSIFENCAP)
--COMPATIBLE_IOCTL(SIOCGIFENCAP)
- COMPATIBLE_IOCTL(SIOCSIFNAME)
- COMPATIBLE_IOCTL(SIOCSARP)
- COMPATIBLE_IOCTL(SIOCGARP)
+@@ -2536,7 +2536,6 @@ HANDLE_IOCTL(SIOCSIFHWBROADCAST, dev_ifsioc)
+ HANDLE_IOCTL(SIOCSHWTSTAMP, dev_ifsioc)
+ 
+ /* ioctls used by appletalk ddp.c */
+-HANDLE_IOCTL(SIOCATALKDIFADDR, dev_ifsioc)
+ HANDLE_IOCTL(SIOCDIFADDR, dev_ifsioc)
+ HANDLE_IOCTL(SIOCSARP, dev_ifsioc)
+ HANDLE_IOCTL(SIOCDARP, dev_ifsioc)
+diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
+index b1a4290..db9c75a 100644
+--- a/net/appletalk/ddp.c
++++ b/net/appletalk/ddp.c
+@@ -1810,12 +1810,14 @@ static int atalk_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+ static int atalk_compat_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+ {
+ 	/*
+-	 * All Appletalk ioctls except SIOCATALKDIFADDR are standard.  And
+-	 * SIOCATALKDIFADDR is handled by upper layer as well, so there is
+-	 * nothing to do.  Eventually SIOCATALKDIFADDR should be moved
+-	 * here so there is no generic SIOCPROTOPRIVATE translation in the
+-	 * system.
++	 * SIOCATALKDIFADDR is a SIOCPROTOPRIVATE ioctl number, so we
++	 * cannot handle it in common code. The data we access if ifreq
++	 * here is compatible, so we can simply call the native
++	 * handler.
+ 	 */
++	if (cmd == SIOCATALKDIFADDR)
++		return atalk_ioctl(sock, cmd, (unsigned long)compat_ptr(arg));
++
+ 	return -ENOIOCTLCMD;
+ }
+ #endif
 -- 
 1.6.3.3
 
