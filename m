@@ -1,164 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbZKFWWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbZKFWWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759951AbZKFWWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759921AbZKFWWR
+	id S1759988AbZKFWWU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759964AbZKFWWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:22:17 -0500
-Received: from kroah.org ([198.145.64.141]:56610 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:22:19 -0500
+Received: from kroah.org ([198.145.64.141]:56614 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758434AbZKFWWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:17 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:38 2009
-Message-Id: <20091106221538.846686350@mini.kroah.org>
+	id S1758434AbZKFWWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:18 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:39 2009
+Message-Id: <20091106221538.993410171@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:13:59 -0800
+Date: Fri, 06 Nov 2009 14:14:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Earl Chew <earl_chew@agilent.com>
-Subject: [01/99] fs: pipe.c null pointer dereference
+       Yinghai Lu <yinghai@kernel.org>
+Subject: [02/99] pci: increase alignment to make more space for hidden code
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=fs-pipe.c-null-pointer-dereference.patch
+Content-Disposition: inline; filename=pci-increase-alignment-to-make-more-space-for-hidden-code.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Earl Chew <earl_chew@agilent.com>
+From: Yinghai Lu <yinghai@kernel.org>
 
-commit ad3960243e55320d74195fb85c975e0a8cc4466c upstream.
+commit 15b812f1d0a5ca8f5efe7f5882f468af10682ca8 upstream.
 
-This patch fixes a null pointer exception in pipe_rdwr_open() which
-generates the stack trace:
+As reported in
 
-> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
->  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
->  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
->  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
->  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
->  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
+	http://bugzilla.kernel.org/show_bug.cgi?id=13940
 
-The failure mode is triggered by an attempt to open an anonymous
-pipe via /proc/pid/fd/* as exemplified by this script:
+on some system when acpi are enabled, acpi clears some BAR for some
+devices without reason, and kernel will need to allocate devices for
+them.  It then apparently hits some undocumented resource conflict,
+resulting in non-working devices.
 
-=============================================================
-while : ; do
-   { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
-   PID=$!
-   OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
-        { read PID REST ; echo $PID; } )
-   OUT="${OUT%% *}"
-   DELAY=$((RANDOM * 1000 / 32768))
-   usleep $((DELAY * 1000 + RANDOM % 1000 ))
-   echo n > /proc/$OUT/fd/1                 # Trigger defect
-done
-=============================================================
+Try to increase alignment to get more safe range for unassigned devices.
 
-Note that the failure window is quite small and I could only
-reliably reproduce the defect by inserting a small delay
-in pipe_rdwr_open(). For example:
-
- static int
- pipe_rdwr_open(struct inode *inode, struct file *filp)
- {
-       msleep(100);
-       mutex_lock(&inode->i_mutex);
-
-Although the defect was observed in pipe_rdwr_open(), I think it
-makes sense to replicate the change through all the pipe_*_open()
-functions.
-
-The core of the change is to verify that inode->i_pipe has not
-been released before attempting to manipulate it. If inode->i_pipe
-is no longer present, return ENOENT to indicate so.
-
-The comment about potentially using atomic_t for i_pipe->readers
-and i_pipe->writers has also been removed because it is no longer
-relevant in this context. The inode->i_mutex lock must be used so
-that inode->i_pipe can be dealt with correctly.
-
-Signed-off-by: Earl Chew <earl_chew@agilent.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/pipe.c |   41 ++++++++++++++++++++++++++++++-----------
- 1 file changed, 30 insertions(+), 11 deletions(-)
+ arch/x86/kernel/e820.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -777,36 +777,55 @@ pipe_rdwr_release(struct inode *inode, s
- static int
- pipe_read_open(struct inode *inode, struct file *filp)
- {
--	/* We could have perhaps used atomic_t, but this and friends
--	   below are the only places.  So it doesn't seem worthwhile.  */
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->readers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->readers++;
-+	}
-+
- 	mutex_unlock(&inode->i_mutex);
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -1378,8 +1378,8 @@ static unsigned long ram_alignment(resou
+ 	if (mb < 16)
+ 		return 1024*1024;
  
--	return 0;
-+	return ret;
+-	/* To 32MB for anything above that */
+-	return 32*1024*1024;
++	/* To 64MB for anything above that */
++	return 64*1024*1024;
  }
  
- static int
- pipe_write_open(struct inode *inode, struct file *filp)
- {
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->writers++;
-+	}
-+
- 	mutex_unlock(&inode->i_mutex);
- 
--	return 0;
-+	return ret;
- }
- 
- static int
- pipe_rdwr_open(struct inode *inode, struct file *filp)
- {
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	if (filp->f_mode & FMODE_READ)
--		inode->i_pipe->readers++;
--	if (filp->f_mode & FMODE_WRITE)
--		inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		if (filp->f_mode & FMODE_READ)
-+			inode->i_pipe->readers++;
-+		if (filp->f_mode & FMODE_WRITE)
-+			inode->i_pipe->writers++;
-+	}
-+
- 	mutex_unlock(&inode->i_mutex);
- 
--	return 0;
-+	return ret;
- }
- 
- /*
+ #define MAX_RESOURCE_SIZE ((resource_size_t)-1)
 
 
