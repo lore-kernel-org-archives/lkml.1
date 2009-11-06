@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZKFQpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbZKFQop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759500AbZKFQpn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 11:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759490AbZKFQpm
+	id S1759466AbZKFQop (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 11:44:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759419AbZKFQoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 11:45:42 -0500
-Received: from waste.org ([173.11.57.241]:38838 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759488AbZKFQpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 11:45:38 -0500
-Subject: Re: Using netconsole and getting double prints
-From: Matt Mackall <mpm@selenic.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <43e72e890911060832k1b831f32w93357c71b370e71c@mail.gmail.com>
-References: <43e72e890911051654i19c18bf3nd397662ed79712c4@mail.gmail.com>
-	 <1257484663.2873.622.camel@calx>
-	 <43e72e890911060832k1b831f32w93357c71b370e71c@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 06 Nov 2009 10:43:22 -0600
-Message-ID: <1257525802.2873.753.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Fri, 6 Nov 2009 11:44:44 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42658 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758611AbZKFQoo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 11:44:44 -0500
+Message-ID: <4AF4526B.4060101@zytor.com>
+Date: Fri, 06 Nov 2009 08:44:27 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Matteo Croce <technoboy85@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 	<20091003072127.GC21407@elte.hu> <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
+In-Reply-To: <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-06 at 08:32 -0800, Luis R. Rodriguez wrote:
-> On Thu, Nov 5, 2009 at 9:17 PM, Matt Mackall <mpm@selenic.com> wrote:
-> > On Thu, 2009-11-05 at 16:54 -0800, Luis R. Rodriguez wrote:
-> >> I'm getting double prints when using netconsole. This used to happen
-> >> to me and then I just enable debugging log level manually (dmesg -n 8)
-> >> but now no matter what I try I always get double prints.
-> >
-> > This is the first report I've seen of that. Recommend investigating with
-> > wireshark.
-> 
-> Matt, did you really mean wireshark? I'm a wireless guy so wireshark
-> to me is this:
-> 
-> http://www.wireshark.org/
+On 11/06/2009 06:59 AM, Matteo Croce wrote:
+> indeed it has MMX, MMXEXT and CMOV, just lacks the long NOP instruction (NOPL).
 
-> The prints have nothing to do with protocols though. I can get a
-> double print on a simple hello world driver.
+MMX and MMXEXT are hardly hallmarks of i686, which leaves only cmov.
+I'm somewhat wondering about the general value of this patch; is i686
+code really that much faster on Geode that it's worth it?
 
-Are you saying you get these double prints on the *local* machine? Are
-the messages logged dmesg doubled too?
+	-hpa
 
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
