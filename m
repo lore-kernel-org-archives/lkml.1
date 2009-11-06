@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZKFFxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbZKFGAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbZKFFxq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 00:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZKFFxp
+	id S1756009AbZKFGAv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 01:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbZKFGAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 00:53:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36464 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752157AbZKFFxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 00:53:45 -0500
-Message-ID: <4AF3B9BD.9050300@kernel.org>
-Date: Fri, 06 Nov 2009 14:53:01 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 6 Nov 2009 01:00:50 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:60562 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752380AbZKFGAu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 01:00:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=wOrzk62YRNs+C0tMItJFNfXsPvUOnMR6TlUjuRNvZBgfa7mHwB6tlH5Cf1u412uS8w
+         LhBBpxQynsAAHxz8iNFdMVOzuXTfHI7kTRnoBWIN5JDUNo/Qj/WPn3auC6bWVcW2K6Y3
+         RPJCKoJHNzdeVL62obW0FRL41WtXZyp9YcUzI=
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, cl@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: irq lock inversion
-References: <86802c440911041008q4969b9bdk15b4598c40bb84bd@mail.gmail.com> <4AF25FC7.4000502@kernel.org> <20091105082102.GA2870@elte.hu> <4AF28D7A.6020209@kernel.org> <alpine.LSU.2.00.0911051502060.9988@wotan.suse.de>
-In-Reply-To: <alpine.LSU.2.00.0911051502060.9988@wotan.suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Fri, 6 Nov 2009 14:00:55 +0800
+Message-ID: <2674af740911052200m141e71d5v37d621d23771aa91@mail.gmail.com>
+Subject: [PATCH] irq: remove __weak early_irq_init()
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Jiri.
+>From 86a53664e3f503fe06b166fb248ed64a77212b3d Mon Sep 17 00:00:00 2001
+From: Yong Zhang <yong.zhang0@gmail.com>
+Date: Fri, 6 Nov 2009 13:53:30 +0800
+Subject: [PATCH] irq: remove __weak early_irq_init()
 
-Jiri Kosina wrote:
-> Hmm, I wonder why I don't see this lockdep warning myself with 
-> head on 1836d9592, even though I have 
-> 
-> 	CONFIG_PROVE_LOCKING=y
-> 	CONFIG_TRACE_IRQFLAGS=y
-> 
-> ... ?
+impact: cleanup
 
-You need pcpu_mem_free() hit vfree() to trigger the warning by
-allocating a lot of small percpu areas so that allocation map inside a
-chunk becomes larger than 4k and then get extended once more.
+Since commit 12026ea16a618b289fcf457661aed24f57323a20
+early_irq_init() is always defined in kernel/irq/handle.c
+So remove the weak definition.
 
-> Anyway, how about something like this? (I can't verify myself that it even 
-> fixes the warning, as I don't see it for some odd reason)
-> 
-> From: Jiri Kosina <jkosina@suse.cz>
-> Subject: lockdep: avoid false positives about irq-safety
-> 
-> Commit 403a91b1 ("percpu: allow pcpu_alloc() to be called
-> with IRQs off") introduced this warning:
-> 
-> 	=========================================================
-> 	[ INFO: possible irq lock inversion dependency detected ]
-> 	2.6.32-rc5-tip-04815-g12f0f93-dirty #745
-> 	---------------------------------------------------------
-> 	hub 1-3:1.0: state 7 ports 2 chg 0000 evt 0004
-> 	ksoftirqd/65/199 just changed the state of lock:
-> 	 (pcpu_lock){..-...}, at: [<ffffffff81130e04>] free_percpu+0x38/0x104
-> 	but this lock took another, SOFTIRQ-unsafe lock in the past:
-> 	 (vmap_area_lock){+.+...}
-> 
-> 	and interrupts could create inverse lock ordering between them.
-> 
-> This warning is bogus -- sched_init() is being called very early with IRQs
-> disabled, and the irqsave/restore code paths in pcpu_alloc() are only for early
-> init. The path can never be called from irq context once the early init
-> finishes. Rationale for this is explained in changelog of the commit mentioned
-> above.
-> 
-> This problem can be encountered generally in any other early code running
-> with IRQs off and using irqsave/irqrestore.
-> 
-> Reported-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+---
+ kernel/softirq.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
-Looks good to me.  Ingo, what do you think?
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index f8749e5..5e881e3 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -886,11 +886,6 @@ EXPORT_SYMBOL(on_each_cpu);
+  *   GCC does not inline them incorrectly. ]
+  */
 
-Thanks.
-
+-int __init __weak early_irq_init(void)
+-{
+-	return 0;
+-}
+-
+ int __init __weak arch_probe_nr_irqs(void)
+ {
+ 	return 0;
 -- 
-tejun
+1.6.3.3
