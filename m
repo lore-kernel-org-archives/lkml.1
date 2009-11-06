@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbZKFWLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbZKFWFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932195AbZKFWLi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:11:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759936AbZKFWLg
+	id S1759925AbZKFWFv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932191AbZKFWFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:11:36 -0500
-Received: from kroah.org ([198.145.64.141]:39735 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:05:49 -0500
+Received: from kroah.org ([198.145.64.141]:39738 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759918AbZKFWFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:05:46 -0500
+	id S932113AbZKFWFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:47 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:51 2009
-Message-Id: <20091106215951.081519349@mini.kroah.org>
+Message-Id: <20091106215951.213173511@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 13:56:11 -0800
+Date: Fri, 06 Nov 2009 13:56:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [08/30] Input: synaptics - add another Protege M300 to rate blacklist
+       Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>
+Subject: [09/30] libata: fix internal command failure handling
 References: <20091106215603.413650799@mini.kroah.org>
-Content-Disposition: inline; filename=input-synaptics-add-another-protege-m300-to-rate-blacklist.patch
+Content-Disposition: inline; filename=libata-fix-internal-command-failure-handling.patch
 In-Reply-To: <20091106220156.GA13813@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,42 +29,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Tejun Heo <tj@kernel.org>
 
-commit 5f5eeff4c93256ee93435a3bf08cf18c45e9a994 upstream.
+commit f4b31db92d163df8a639f5a8c8633bdeb6e8432d upstream.
 
-Apparently some of Toshiba Protege M300 identify themselves as
-"Portable PC" in DMI so we need to add that to the DMI table as
-well. We need DMI data so we can automatically lower Synaptics
-reporting rate from 80 to 40 pps to avoid over-taxing their
-keyboard controllers.
+When an internal command fails, it should be failed directly without
+invoking EH.  In the original implemetation, this was accomplished by
+letting internal command bypass failure handling in ata_qc_complete().
+However, later changes added post-successful-completion handling to
+that code path and the success path is no longer adequate as internal
+command failure path.  One of the visible problems is that internal
+command failure due to timeout or other freeze conditions would
+spuriously trigger WARN_ON_ONCE() in the success path.
 
-Tested-by: Rod Davison <roddavison@gmail.com>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+This patch updates failure path such that internal command failure
+handling is contained there.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/mouse/synaptics.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/ata/libata-core.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
---- a/drivers/input/mouse/synaptics.c
-+++ b/drivers/input/mouse/synaptics.c
-@@ -623,6 +623,16 @@ static const struct dmi_system_id toshib
- 			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
- 			DMI_MATCH(DMI_PRODUCT_NAME, "PORTEGE M300"),
- 		},
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -4747,12 +4747,14 @@ void ata_qc_complete(struct ata_queued_c
+ 			qc->flags |= ATA_QCFLAG_FAILED;
+ 
+ 		if (unlikely(qc->flags & ATA_QCFLAG_FAILED)) {
+-			if (!ata_tag_internal(qc->tag)) {
+-				/* always fill result TF for failed qc */
+-				fill_result_tf(qc);
++			/* always fill result TF for failed qc */
++			fill_result_tf(qc);
 +
-+	},
-+	{
-+		.ident = "Toshiba Portege M300",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Portable PC"),
-+			DMI_MATCH(DMI_PRODUCT_VERSION, "Version 1.0"),
-+		},
-+
- 	},
- 	{ }
- };
++			if (!ata_tag_internal(qc->tag))
+ 				ata_qc_schedule_eh(qc);
+-				return;
+-			}
++			else
++				__ata_qc_complete(qc);
++			return;
+ 		}
+ 
+ 		/* read result TF if requested */
 
 
