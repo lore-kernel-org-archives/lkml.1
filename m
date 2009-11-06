@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbZKFXhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbZKFXhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760115AbZKFXhT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 18:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbZKFXhS
+	id S1760327AbZKFXhZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 18:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbZKFXhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 18:37:18 -0500
-Received: from kroah.org ([198.145.64.141]:54815 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 18:37:19 -0500
+Received: from kroah.org ([198.145.64.141]:54820 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759958AbZKFXhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 18:37:17 -0500
-Date: Fri, 6 Nov 2009 14:47:28 -0800
+	id S1759959AbZKFXhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 18:37:18 -0500
+Date: Fri, 6 Nov 2009 14:48:57 -0800
 From: Greg KH <greg@kroah.com>
-To: Thiago Farina <tfransosi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
-       Luis.Rodriguez@Atheros.com
-Subject: Re: [PATCH] staging/otus: trivial, fix sparse warnig.
-Message-ID: <20091106224728.GA32205@kroah.com>
-References: <1256861066-21954-1-git-send-email-tfransosi@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>
+Subject: Re: [PATCH 0/13] sysfs lazification.
+Message-ID: <20091106224857.GB32205@kroah.com>
+References: <m13a4vbz8r.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256861066-21954-1-git-send-email-tfransosi@gmail.com>
+In-Reply-To: <m13a4vbz8r.fsf@fess.ebiederm.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 29, 2009 at 08:04:26PM -0400, Thiago Farina wrote:
-> *apdbg.c: use NULL pointer instead of 0 integer.
+On Tue, Nov 03, 2009 at 03:53:56AM -0800, Eric W. Biederman wrote:
 > 
-> Signed-off-by: Thiago Farina <tfransosi@gmail.com>
-> ---
->  drivers/staging/otus/apdbg.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> The sysfs code updates the vfs caches immediately when the sysfs data
+> structures change causing a lot of unnecessary complications.  The
+> following patchset untangles that beast.  Allowing for simpler
+> more straight forward code, the removal of a hack from the vfs
+> to support sysfs, and human comprehensible locking on sysfs.
 > 
-> diff --git a/drivers/staging/otus/apdbg.c b/drivers/staging/otus/apdbg.c
-> index d3e2f62..70a40b8 100644
-> --- a/drivers/staging/otus/apdbg.c
-> +++ b/drivers/staging/otus/apdbg.c
-> @@ -109,7 +109,7 @@ int set_ioctl(int sock, struct ifreq *req)
->  
->  int read_reg(int sock, struct ifreq *req)
->  {
-> -    struct zdap_ioctl *zdreq = 0;
-> +    struct zdap_ioctl *zdreq = NULL;
+> Most of these patches have already been reviewed and acked from the
+> last time I had time to work on sysfs.
+> 
+> In net the patches look like:
 
-The tabs somehow got converted to spaces in your patches, so they can't
-be applied :(
-
-care to rediff both of them?
+Can you resend these based on the review that you just got, with the new
+acks and changes so that I can apply them?
 
 thanks,
 
