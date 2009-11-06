@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbZKFGNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZKFFtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbZKFGNk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 01:13:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbZKFGNj
+	id S1755618AbZKFFtu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 00:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbZKFFtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 01:13:39 -0500
-Received: from mga12.intel.com ([143.182.124.36]:51438 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756101AbZKFGNj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 01:13:39 -0500
-X-ExtLoop1: 1
-Date: Fri, 6 Nov 2009 13:46:46 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: suresh.b.siddha@intel.com, qi.wang@intel.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86, therm: Only read the initial value of thermal LVT
-	entry on BSP
-Message-ID: <20091106054646.GA26336@ywang-moblin2.bj.intel.com>
+	Fri, 6 Nov 2009 00:49:50 -0500
+Received: from yumi.tdiedrich.de ([85.10.210.183]:55679 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751814AbZKFFtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 00:49:50 -0500
+Date: Fri, 6 Nov 2009 06:49:54 +0100
+From: Tobias Diedrich <ranma@tdiedrich.de>
+To: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
+Subject: Re: netconsole: tulip: possible remote DoS? due to kernel freeze
+	on heavy RX traffic after Order-1 allocation failure
+Message-ID: <20091106054954.GA5387@yumi.tdiedrich.de>
+Mail-Followup-To: Tobias Diedrich <ranma@tdiedrich.de>,
+	Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
+References: <20091105113106.GA4373@yumi.tdiedrich.de> <1257450578.2873.609.camel@calx> <20091106032754.GA15429@yumi.tdiedrich.de> <1257484384.2873.618.camel@calx> <20091106052505.GA3912@yumi.tdiedrich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091106052505.GA3912@yumi.tdiedrich.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only read the initial value of thermal LVT entry on BSP. The initial
-value of thermal LVT entries on all APs always reads 0x10000 because
-APs are woken up by BSP issuing INIT-SIPI-SIPI sequence to them and
-LVT registers are reset to 0s except for mask bits which are set to
-1s when APs receive INIT IPI.
+Tobias Diedrich wrote:
+> Matt Mackall wrote:
+> > Running out of order-1 buffers hasn't been a problem for most people
+> > lately though - is there anything interesting about your workload? Lots
+> > of threads? NFS? Long network processing latencies?
 
-It is enough to check only BSP since BIOS is always setting the same
-value for all threads/cores.
+BTW I think that the allocator bug in 2.6.31 is responsible for me
+seeing these allocation failures, since I never had problems with
+older kernels.
+http://lkml.org/lkml/2009/10/22/128
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
----
- arch/x86/kernel/cpu/mcheck/therm_throt.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+However since I can reproduce it even on 2.6.30 (and presumably even
+older kernels) with enough memory pressure and it causes the kernel
+to hang with netconsole enabled (see my other followup, it seems to be
+fine without netconsole) I think this should be fixed to not
+hang the kernel.
 
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index b3a1dba..69ba972 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -259,6 +259,7 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	unsigned int cpu = smp_processor_id();
- 	int tm2 = 0;
- 	u32 l, h;
-+	static u32 lvtthmr;
- 
- 	/* Thermal monitoring depends on ACPI and clock modulation*/
- 	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
-@@ -270,7 +271,19 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	 * since it might be delivered via SMI already:
- 	 */
- 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--	h = apic_read(APIC_LVTTHMR);
-+
-+	/*
-+	 * Only read the initial value of thermal LVT entry on BSP. The
-+	 * initial value of thermal LVT entries on all APs always reads
-+	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
-+	 * sequence to them and LVT registers are reset to 0s except for
-+	 * the mask bits which are set to 1s when APs receive INIT IPI.
-+	 */
-+	if (cpu == 0)
-+		lvtthmr = apic_read(APIC_LVTTHMR);
-+
-+	h = lvtthmr;
-+
- 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
- 		printk(KERN_DEBUG
- 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
+-- 
+Tobias						PGP: http://8ef7ddba.uguu.de
