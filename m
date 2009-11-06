@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZKFHjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZKFHn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbZKFHjp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 02:39:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZKFHjo
+	id S1753665AbZKFHn3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 02:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZKFHn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 02:39:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56418 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbZKFHjo (ORCPT
+	Fri, 6 Nov 2009 02:43:29 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:56138 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbZKFHn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 02:39:44 -0500
-Date: Fri, 6 Nov 2009 08:39:46 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: Re: Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu counter instead
-Message-ID: <20091106073946.GV31511@one.firstfloor.org>
-References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1> <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1> <87r5sc7kst.fsf@basil.nowhere.org> <alpine.DEB.1.10.0911051558220.7668@V090114053VZO-1>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0911051558220.7668@V090114053VZO-1>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 6 Nov 2009 02:43:28 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: Amit Shah <amit.shah@redhat.com>
+Subject: Re: [PATCH v10 1/1] virtio_console: Add support for multiple ports for generic guest and host communication
+Date: Fri, 6 Nov 2009 08:43:05 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-self-00026-g91d3f9b; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       virtualization@linux-foundation.org
+References: <1257266319-24300-1-git-send-email-amit.shah@redhat.com> <1257266319-24300-2-git-send-email-amit.shah@redhat.com>
+In-Reply-To: <1257266319-24300-2-git-send-email-amit.shah@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911060843.05934.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 05, 2009 at 04:03:39PM -0500, Christoph Lameter wrote:
-> > For example it will definitely impact the AIM7 multi brk() issue
-> > or the mysql allocation case, which are all writer intensive. I assume
-> > doing a lot of mmaps/brks in parallel is not that uncommon.
-> 
-> No its not that common. Page faults are much more common. The AIM7 seems
-> to be an artificial case? What does mysql do for allocation? If its brk()
+Am Dienstag 03 November 2009 17:38:39 schrieb Amit Shah:
 
-AIM7 is artificial yes, but I suspect similar problems (to a less
-extreme degree) are in other workloads.
+> drivers/char/Kconfig           |    6 +
+> drivers/char/virtio_console.c  | 1412 ++++++++++++++++++++++++++++++++++++----
+> include/linux/virtio_console.h |   50 ++-
+> 3 files changed, 1332 insertions(+), 136 deletions(-)
 
-> related then simply going to larger increases may fix the issue??
+I have not looked at your last two versions of the patch  since you did not add 
+a changelog to your patch description. I thought you only did minor changes.
+Turned out you added/changed several places. (e.g. VIRTIO_CONSOLE_CACHE_BUFFERS, 
+VIRTIO_CONSOLE_THROTTLE_PORT  and VIRTIO_CONSOLE_BUFFER_LIMIT  are all new)
 
-For mysql it's mmap through malloc(). There has been some tuning in
-glibc for it. But I suspect it's a more general problem that will
-still need kernel improvements.
-
-> 
-> > My thinking was more that we simply need per VMA locking or
-> > some other per larger address range locking. Unfortunately that
-> > needs changes in a lot of users that mess with the VMA lists
-> > (perhaps really needs some better abstractions for VMA list management
-> > first)
-> 
-> We have range locking through the distribution of the ptl for systems with
-> more than 4 processors. One can use that today to lock ranges of the
-> address space.
-
-Yes but all the major calls still take mmap_sem, which is not ranged.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+When you do bigger changes can you add a changelog in your patch description in 
+the future?
