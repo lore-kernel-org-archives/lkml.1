@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbZKFWbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932670AbZKFWcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932512AbZKFWbn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932543AbZKFWXQ
+	id S932670AbZKFWcg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932326AbZKFWcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:23:16 -0500
-Received: from kroah.org ([198.145.64.141]:56981 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:32:35 -0500
+Received: from kroah.org ([198.145.64.141]:56988 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932501AbZKFWXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:23:13 -0500
+	id S932514AbZKFWXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:23:14 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:47 2009
-Message-Id: <20091106221547.180631669@mini.kroah.org>
+Message-Id: <20091106221547.296924651@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:59 -0800
+Date: Fri, 06 Nov 2009 14:15:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [61/99] xen: mask extended topology info in cpuid
+       Michael Buesch <mb@bu3sch.de>, Jiri Kosina <jkosina@suse.cz>,
+       Michael Gilbert <michael.s.gilbert@gmail.com>
+Subject: [62/99] sgi-gru: decrapfiy options_write() function
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=xen-mask-extended-topology-info-in-cpuid.patch
+Content-Disposition: inline; filename=sgi-gru-decrapfiy-options_write-function.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,57 +30,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit 82d6469916c6fcfa345636a49004c9d1753905d1 upstream.
+commit d39b7dd1dcbf394a1cb897457c862dafe9a20ac5 upstream.
 
-A Xen guest never needs to know about extended topology, and knowing
-would just confuse it.
+Not a single line of actual code in the function was really
+fundamentally correct.
 
-This patch just zeros ebx in leaf 0xb which indicates no topology info,
-preventing a crash under Xen on cpus which support this leaf.
+Problems ranged from lack of proper range checking, to removing the last
+character written (which admittedly is usually '\n'), to not accepting
+hex numbers even though the 'show' routine would show the data in that
+format.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+This tries to do better.
+
+Acked-by: Michael Buesch <mb@bu3sch.de>
+Tested-and-acked-by: Jack Steiner <steiner@sgi.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
+Cc: Michael Gilbert <michael.s.gilbert@gmail.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/xen/enlighten.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ drivers/misc/sgi-gru/gruprocfs.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -178,6 +178,7 @@ static __read_mostly unsigned int cpuid_
- static void xen_cpuid(unsigned int *ax, unsigned int *bx,
- 		      unsigned int *cx, unsigned int *dx)
+--- a/drivers/misc/sgi-gru/gruprocfs.c
++++ b/drivers/misc/sgi-gru/gruprocfs.c
+@@ -161,14 +161,15 @@ static int options_show(struct seq_file 
+ static ssize_t options_write(struct file *file, const char __user *userbuf,
+ 			     size_t count, loff_t *data)
  {
-+	unsigned maskebx = ~0;
- 	unsigned maskecx = ~0;
- 	unsigned maskedx = ~0;
+-	unsigned long val;
+-	char buf[80];
++	char buf[20];
  
-@@ -185,9 +186,16 @@ static void xen_cpuid(unsigned int *ax, 
- 	 * Mask out inconvenient features, to try and disable as many
- 	 * unsupported kernel subsystems as possible.
- 	 */
--	if (*ax == 1) {
-+	switch (*ax) {
-+	case 1:
- 		maskecx = cpuid_leaf1_ecx_mask;
- 		maskedx = cpuid_leaf1_edx_mask;
-+		break;
-+
-+	case 0xb:
-+		/* Suppress extended topology stuff */
-+		maskebx = 0;
-+		break;
- 	}
+-	if (strncpy_from_user(buf, userbuf, sizeof(buf) - 1) < 0)
++	if (count >= sizeof(buf))
++		return -EINVAL;
++	if (copy_from_user(buf, userbuf, count))
+ 		return -EFAULT;
+-	buf[count - 1] = '\0';
+-	if (!strict_strtoul(buf, 10, &val))
+-		gru_options = val;
++	buf[count] = '\0';
++	if (strict_strtoul(buf, 0, &gru_options))
++		return -EINVAL;
  
- 	asm(XEN_EMULATE_PREFIX "cpuid"
-@@ -197,6 +205,7 @@ static void xen_cpuid(unsigned int *ax, 
- 		  "=d" (*dx)
- 		: "0" (*ax), "2" (*cx));
- 
-+	*bx &= maskebx;
- 	*cx &= maskecx;
- 	*dx &= maskedx;
+ 	return count;
  }
 
 
