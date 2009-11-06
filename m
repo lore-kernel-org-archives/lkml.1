@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932754AbZKFWdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932603AbZKFWcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932754AbZKFWdg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbZKFWXL
+	id S932603AbZKFWcI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:32:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932527AbZKFWXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:23:11 -0500
-Received: from kroah.org ([198.145.64.141]:56932 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:23:15 -0500
+Received: from kroah.org ([198.145.64.141]:56917 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760197AbZKFWXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:23:06 -0500
+	id S1760201AbZKFWXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:23:07 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:46 2009
-Message-Id: <20091106221546.018042424@mini.kroah.org>
+Message-Id: <20091106221546.158296779@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:51 -0800
+Date: Fri, 06 Nov 2009 14:14:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Beulich <jbeulich@novell.com>, Roland McGrath <roland@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [53/99] x86-64: Fix register leak in 32-bit syscall audting
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [54/99] nilfs2: fix dirty page accounting leak causing hang at write
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=x86-64-fix-register-leak-in-32-bit-syscall-audting.patch
+Content-Disposition: inline; filename=nilfs2-fix-dirty-page-accounting-leak-causing-hang-at-write.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,54 +29,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jan Beulich <JBeulich@novell.com>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 
-commit 81766741fe1eee3884219e8daaf03f466f2ed52f upstream.
+commit b1e19e5601277845b4f17ecd7c9ba04f73ee11aa upstream.
 
-Restoring %ebp after the call to audit_syscall_exit() is not
-only unnecessary (because the register didn't get clobbered),
-but in the sysenter case wasn't even doing the right thing: It
-loaded %ebp from a location below the top of stack (RBP <
-ARGOFFSET), i.e. arbitrary kernel data got passed back to user
-mode in the register.
+Bruno Prémont and Dunphy, Bill noticed me that NILFS will certainly
+hang on ARM-based targets.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Acked-by: Roland McGrath <roland@redhat.com>
-LKML-Reference: <4AE5CC4D020000780001BD13@vpn.id2.novell.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I found this was caused by an underflow of dirty pages counter.  A
+b-tree cache routine was marking page dirty without adjusting page
+account information.
+
+This fixes the dirty page accounting leak and resolves the hang on
+arm-based targets.
+
+Reported-by: Bruno Prémont <bonbons@linux-vserver.org>
+Reported-by: Dunphy, Bill <WDunphy@tandbergdata.com>
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Tested-by: Bruno Prémont <bonbons@linux-vserver.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/ia32/ia32entry.S |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ fs/nilfs2/btnode.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -204,7 +204,7 @@ sysexit_from_sys_call:
- 	movl RDI-ARGOFFSET(%rsp),%r8d	/* reload 5th syscall arg */
- 	.endm
+--- a/fs/nilfs2/btnode.c
++++ b/fs/nilfs2/btnode.c
+@@ -276,8 +276,7 @@ void nilfs_btnode_commit_change_key(stru
+ 				       "invalid oldkey %lld (newkey=%lld)",
+ 				       (unsigned long long)oldkey,
+ 				       (unsigned long long)newkey);
+-		if (!test_set_buffer_dirty(obh) && TestSetPageDirty(opage))
+-			BUG();
++		nilfs_btnode_mark_dirty(obh);
  
--	.macro auditsys_exit exit,ebpsave=RBP
-+	.macro auditsys_exit exit
- 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
- 	jnz ia32_ret_from_sys_call
- 	TRACE_IRQS_ON
-@@ -217,7 +217,6 @@ sysexit_from_sys_call:
- 	call audit_syscall_exit
- 	GET_THREAD_INFO(%r10)
- 	movl RAX-ARGOFFSET(%rsp),%eax	/* reload syscall return value */
--	movl \ebpsave-ARGOFFSET(%rsp),%ebp /* reload user register value */
- 	movl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),%edi
- 	cli
- 	TRACE_IRQS_OFF
-@@ -351,7 +350,7 @@ cstar_auditsys:
- 	jmp cstar_dispatch
- 
- sysretl_audit:
--	auditsys_exit sysretl_from_sys_call, RCX /* user %ebp in RCX slot */
-+	auditsys_exit sysretl_from_sys_call
- #endif
- 
- cstar_tracesys:
+ 		spin_lock_irq(&btnc->tree_lock);
+ 		radix_tree_delete(&btnc->page_tree, oldkey);
 
 
