@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbZKFLK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZKFLPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413AbZKFLK6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 06:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbZKFLK5
+	id S1756663AbZKFLPR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 06:15:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZKFLPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 06:10:57 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43726 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755089AbZKFLK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 06:10:56 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: miklos@szeredi.hu, miklos@szeredi.hu, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, dhowells@redhat.com, hch@infradead.org,
-       adilger@sun.com, mtk.manpages@gmail.com, torvalds@linux-foundation.org,
-       drepper@gmail.com, jamie@shareable.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20091105182548.07ca4bff@lxorguk.ukuu.org.uk> (message from Alan
-	Cox on Thu, 5 Nov 2009 18:25:48 +0000)
-Subject: Re: [PATCH v2 resend] vfs: new O_NODE open flag
-References: <E1N60RV-0002ed-FX@pomaz-ex.szeredi.hu>
-	<20091105131545.72b4e319@lxorguk.ukuu.org.uk>
-	<E1N63Io-000353-KX@pomaz-ex.szeredi.hu>
-	<20091105145054.11f36b35@lxorguk.ukuu.org.uk>
-	<E1N64Ch-0003C6-Rn@pomaz-ex.szeredi.hu>
-	<20091105155648.4329f5b7@lxorguk.ukuu.org.uk>
-	<E1N65Zt-0003L5-84@pomaz-ex.szeredi.hu> <20091105182548.07ca4bff@lxorguk.ukuu.org.uk>
-Message-Id: <E1N6Mhx-0004s8-UU@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 06 Nov 2009 12:10:21 +0100
+	Fri, 6 Nov 2009 06:15:16 -0500
+Received: from yumi.tdiedrich.de ([85.10.210.183]:38587 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754493AbZKFLPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 06:15:14 -0500
+Date: Fri, 6 Nov 2009 12:15:14 +0100
+From: Tobias Diedrich <ranma@tdiedrich.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
+	failures V2
+Message-ID: <20091106111514.GB5387@yumi.tdiedrich.de>
+Mail-Followup-To: Tobias Diedrich <ranma@tdiedrich.de>,
+	Mel Gorman <mel@csn.ul.ie>, Frans Pop <elendil@planet.nl>,
+	Jiri Kosina <jkosina@suse.cz>,
+	Sven Geggus <lists@fuchsschwanzdomain.de>,
+	Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+	Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	David Miller <davem@davemloft.net>,
+	Reinette Chatre <reinette.chatre@intel.com>,
+	Kalle Valo <kalle.valo@iki.fi>,
+	David Rientjes <rientjes@google.com>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Mohamed Abbas <mohamed.abbas@intel.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Stephan von Krawczynski <skraw@ithnet.com>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091106060323.GA5528@yumi.tdiedrich.de> <20091106092447.GC25926@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091106092447.GC25926@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Nov 2009, Alan Cox wrote:
-> >  open O_RDONLY
-> >  remote file moves
-> >  new one appears
-> >  fstat
+Mel Gorman wrote:
+> On Fri, Nov 06, 2009 at 07:03:23AM +0100, Tobias Diedrich wrote:
+> > Mel Gorman wrote:
+> > > [No BZ ID] Kernel crash on 2.6.31.x (kcryptd: page allocation failure..)
+> > > 	This apparently is easily reproducible, particular in comparison to
+> > > 	the other reports. The point of greatest interest is that this is
+> > > 	order-0 GFP_ATOMIC failures. Sven, I'm hoping that you in particular
+> > > 	will be able to follow the tests below as you are the most likely
+> > > 	person to have an easily reproducible situation.
 > > 
-> > What's the difference?
+> > I've also seen order-0 failures on 2.6.31.5:
+> > Note that this is with a one process hogging and mlocking memory and
+> > min_free_kbytes reduced to 100 to reproduce the problem more easily.
+> > 
 > 
-> CIFS in the second case gets a handle to the remote object I believe. NFS
-> certainly gets it right.
+> Is that a vanilla, with patches 1-3 applied or both?
+That was on vanilla 2.6.31.5.
 
-There's no f_op->fgetattr(), just i_op->getattr().
+I tried 2.6.31.5 before with patches 1+2 and netconsole enabled and
+still got the order-1 failures (apparently I get order-1 failures
+with netconsole and order-0 failures without).
 
-NFS gets it right, but NFSD is in the kernel and it can juggle with
-looking up the inode by its number (for certain filesystems),
-something CIFS is unlikely to be able to do.
+> > I tried bisecting the issue, but in the end without memory pressure
+> > I can't reproduce it reliably and with the above mentioned pressure
+> > I get allocation failures even on 2.6.30.o
+> 
+> To be honest, it's not entirely unexpected with min_free_kbytes set that
+> low. The system should cope with a certain amount of pressure but with
+> pressure and a low min_free_kbytes, the system will simply be reacting
+> too late to free memory in the non-atomic paths.
+Maybe I should try again on 2.6.30 without netconsole und try
+increasing min_free_kbytes until the allocation failures
+disappear and try to bisect again with that setting...
 
-Thanks,
-Miklos
+-- 
+Tobias						PGP: http://8ef7ddba.uguu.de
