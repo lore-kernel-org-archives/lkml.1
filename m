@@ -1,109 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZKFHqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZKFH7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753985AbZKFHqu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 02:46:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZKFHqt
+	id S1753909AbZKFH7h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 02:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbZKFH7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 02:46:49 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38521 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbZKFHqs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 02:46:48 -0500
-Date: Fri, 6 Nov 2009 08:46:44 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project
-	tree
-Message-ID: <20091106074643.GA5562@ucw.cz>
-References: <200911031951.05235.bzolnier@gmail.com> <200911032200.04516.IvDoorn@gmail.com> <20091104083737.GA16978@elte.hu> <200911042251.23506.IvDoorn@gmail.com>
+	Fri, 6 Nov 2009 02:59:36 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52695 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbZKFH7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 02:59:36 -0500
+Message-ID: <4AF3D68E.3050203@cn.fujitsu.com>
+Date: Fri, 06 Nov 2009 15:55:58 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911042251.23506.IvDoorn@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 15/20] blkio: Take care of preemptions across groups
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-16-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1257291837-6246-16-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > Look at the diffstat of Bart's driver:
-> > 
-> >    15 files changed, 4036 insertions(+), 7158 deletions(-)
-> > 
-> > He reduced your 5.2 KLOC non-working driver into a 1.8 KLOC _working_ 
-> > driver.
+Vivek Goyal wrote:
+> o Additional preemption checks for groups where we travel up the hierarchy
+>   and see if one queue should preempt other or not.
 > 
-> Bullshit, read the mails again.
-
-This was uncalled for, right?
-
-...
-> Some people actually require sleep during the night, perhaps that you don't need
-> that and can hence review 41 patches which changes thousands of lines on the
-> same day the patches were submitted.
-
-If you lack time, "Really start reading my mails" sentence you used at
-the start of email is *not* user-friendly way to say that.
-
-> > And _still_ your complaint about Bart's series is that he updated the 
-> > MAINTAINERS entry and added an entry for rt2800? Heck _sure_ he should 
-> > update it, he is the one doing the hard work of trying to bring it to 
-> > users, trying to clean up a messy driver space, trying to turn crap into 
-> > gold.
+> o Also prevents preemption across groups in some cases to provide isolation
+>   between groups.
 > 
-> So if I want to focus on something different in the kernel, I just send 1 patch,
-> and a second to claim the maintainership of it even though there is an active
-> maintainer available?
-
-What about listing yourself as a maintainer for a start?
-
-> > The thing is, if you dont have the time or interest to listen to and act 
-> > upon review feedback, be constructive about it and fix (obvious) 
-> > structural problems in your rt2800 code, you should just step aside and 
-> > let Bart maintain what he is apparently more capable of maintaining than 
-> > you are.
-> >
-> > What you are doing here is a thinly veiled land-grab: you did a minimal 
-> > token driver for rt2800 that doesnt work, kept it in your private tree 
-> > for _1.5 years_, and the moment someone _else_ came along and did 
-> > something better and more functional in drivers/staging/, you discovered 
-> > your sudden interest for it and moved the crappy driver upstream at 
-> > lightning's speed (it is already in net-next AFAICS, despite negative 
-> > test and review feedback) - ignoring and throwing away all the work that 
-> > Bart has done.
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/cfq-iosched.c |   33 +++++++++++++++++++++++++++++++++
+>  1 files changed, 33 insertions(+), 0 deletions(-)
 > 
-> Get your facts straight, the bullshit level in your mail is staggering.
-> 
-> You have no fucking clue who wrote the rt2800 driver which is in
-> drivers/staging/,
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 87b1799..98dbead 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -2636,6 +2636,36 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>  	}
+>  }
+>  
+> +static bool cfq_should_preempt_group(struct cfq_data *cfqd,
+> +		struct cfq_queue *cfqq, struct cfq_queue *new_cfqq)
+> +{
+> +	struct cfq_entity *cfqe = &cfqq->entity;
+> +	struct cfq_entity *new_cfqe = &new_cfqq->entity;
+> +
+> +	if (cfqq_to_cfqg(cfqq) != &cfqd->root_group)
+> +		cfqe = parent_entity(&cfqq->entity);
+> +
+> +	if (cfqq_to_cfqg(new_cfqq) != &cfqd->root_group)
+> +		new_cfqe = parent_entity(&new_cfqq->entity);
+> +
+> +	/*
+> +	 * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
+> +	 */
+> +
+> +	if (new_cfqe->ioprio_class == IOPRIO_CLASS_RT
+> +	    && cfqe->ioprio_class != IOPRIO_CLASS_RT)
+> +		return true;
+> +	/*
+> +	 * Allow an BE request to pre-empt an ongoing IDLE clas timeslice.
+> +	 */
+> +
+> +	if (new_cfqe->ioprio_class == IOPRIO_CLASS_BE
+> +	    && cfqe->ioprio_class == IOPRIO_CLASS_IDLE)
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+>  /*
+>   * Check if new_cfqq should preempt the currently active queue. Return 0 for
+>   * no or if we aren't sure, a 1 will cause a preempt.
+> @@ -2666,6 +2696,9 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+>  	if (rq_is_sync(rq) && !cfq_cfqq_sync(cfqq))
+>  		return true;
+>  
+> +	if (cfqq_to_cfqg(new_cfqq) != cfqq_to_cfqg(cfqq))
+> +		return cfq_should_preempt_group(cfqd, cfqq, new_cfqq);
+> +
 
-Perhaps you should not be a maintainer if you can't behave yourself?
-
-> 	Because a lot of people prefer looking from the sideline,
-> contributing _nothing_
-
-Given your behaviour, I'm not suprised people are not too eager to
-work with you.
-
-> As for "throwing away that work" I ACKED 10 of his patches, and said I would review
-> the rest later! But like I said, apparently it is a bad habit for people to sleep during
-> the night.
-
-Read your email again. It was quite far from 'acked 10, asked for
-time'. You flamed him first.
-									Pavel
+Vivek, why not put cfq_should_preempt_group() at the beginning of cfq_should_preempt()
+to prevent preemption across groups?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards
+Gui Jianfeng
+
