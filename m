@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbZKFW3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760263AbZKFW3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760358AbZKFW3n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760281AbZKFW3m
+	id S1760263AbZKFW3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760346AbZKFW25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:29:42 -0500
-Received: from kroah.org ([198.145.64.141]:57111 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:28:57 -0500
+Received: from kroah.org ([198.145.64.141]:57118 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932643AbZKFWXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:23:30 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:49 2009
-Message-Id: <20091106221549.793440409@mini.kroah.org>
+	id S932635AbZKFWXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:23:31 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:50 2009
+Message-Id: <20091106221549.935130836@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:15:17 -0800
+Date: Fri, 06 Nov 2009 14:15:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Pirko <jpirko@redhat.com>, "David S. Miller" <davem@davemloft.net>,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: [79/99] netlink: fix typo in initialization (CVE-2009-3612)
+       Ben Hutchings <ben@decadent.org.uk>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [80/99] nfs: Avoid overrun when copying client IP address string
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=netlink-fix-typo-in-initialization-cve-2009-3612.patch
+Content-Disposition: inline; filename=nfs-avoid-overrun-when-copying-client-ip-address-string.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,33 +30,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jiri Pirko <jpirko@redhat.com>
+From: Ben Hutchings <ben@decadent.org.uk>
 
-commit ad61df918c44316940404891d5082c63e79c256a upstream.
+commit f4373bf9e67e4a653c8854acd7b02dac9714c98a upstream.
 
-Commit 9ef1d4c7c7aca1cd436612b6ca785b726ffb8ed8 ("[NETLINK]: Missing
-initializations in dumped data") introduced a typo in
-initialization. This patch fixes this.
+As seen in <http://bugs.debian.org/549002>, nfs4_init_client() can
+overrun the source string when copying the client IP address from
+nfs_parsed_mount_data::client_address to nfs_client::cl_ipaddr.  Since
+these are both treated as null-terminated strings elsewhere, the copy
+should be done with strlcpy() not memcpy().
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sched/cls_api.c |    2 +-
+ fs/nfs/client.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/sched/cls_api.c
-+++ b/net/sched/cls_api.c
-@@ -348,7 +348,7 @@ static int tcf_fill_node(struct sk_buff 
- 	tcm = NLMSG_DATA(nlh);
- 	tcm->tcm_family = AF_UNSPEC;
- 	tcm->tcm__pad1 = 0;
--	tcm->tcm__pad1 = 0;
-+	tcm->tcm__pad2 = 0;
- 	tcm->tcm_ifindex = qdisc_dev(tp->q)->ifindex;
- 	tcm->tcm_parent = tp->classid;
- 	tcm->tcm_info = TC_H_MAKE(tp->prio, tp->protocol);
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -1171,7 +1171,7 @@ static int nfs4_init_client(struct nfs_c
+ 				      1, flags & NFS_MOUNT_NORESVPORT);
+ 	if (error < 0)
+ 		goto error;
+-	memcpy(clp->cl_ipaddr, ip_addr, sizeof(clp->cl_ipaddr));
++	strlcpy(clp->cl_ipaddr, ip_addr, sizeof(clp->cl_ipaddr));
+ 
+ 	error = nfs_idmap_new(clp);
+ 	if (error < 0) {
 
 
