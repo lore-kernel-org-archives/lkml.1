@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZKFCoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbZKFCsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbZKFCoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 21:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754340AbZKFCoU
+	id S1755268AbZKFCsc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 21:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZKFCsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 21:44:20 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:39639 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753923AbZKFCoT (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Thu, 5 Nov 2009 21:44:19 -0500
-Message-ID: <4AF38D7C.40604@novell.com>
-Date: Thu, 05 Nov 2009 21:44:12 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 5 Nov 2009 21:48:31 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59737 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbZKFCsa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 21:48:30 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AF38E6B.3000604@jp.fujitsu.com>
+Date: Fri, 06 Nov 2009 11:48:11 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       alacrityvm-users@lists.sourceforge.net
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>, netdev@vger.kernel.org
-Subject: [ANNOUNCE] AlacrityVM v0.2 is released
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig28E20E2114CB3B191A4FEB5A"
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, rdh@east.sun.com,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
+References: <19184.41676.262206.134000@gargle.gargle.HOWL> <20091104110321.5e58e112@jbarnes-piketon> <200911041628.17905.bjorn.helgaas@hp.com> <4AF240E7.8050200@jp.fujitsu.com> <20091105191138.GN10555@parisc-linux.org>
+In-Reply-To: <20091105191138.GN10555@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig28E20E2114CB3B191A4FEB5A
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Matthew Wilcox wrote:
+> On Thu, Nov 05, 2009 at 12:05:11PM +0900, Kenji Kaneshige wrote:
+>> There are a lot of codes that searches PCI express capability offset
+>> in the PCI configuration space using pci_find_capability(). Caching it
+>> in the struct pci_dev will reduce unncecessary search. This patch adds
+>> an additional 'pcie_cap' fields into struct pci_dev, which is
+>> initialized at pci device scan time (in set_pcie_port_type()).
+> 
+> I think adding this should imply the removal of ->is_pcie.  pcie_cap == 0
+> means !is_pcie.
 
-We (the AlacrityVM team) are pleased to announce the availability of the
-v0.2 release.  There are numerous tweaks, fixes, and features that we
-have added since the v0.1 days.  Here are a few of the key highlights.
+Right.
 
-*) VENET support:
-   *) zero-copy transmits (guest memory is paged directly to the
-physical adapter on the host, where applicable)
-   *) "SAR offloading" (essentially bi-directional GSO with "64k MTU")
-   *) pre-mapped descriptors to reduce latency
-   *) pre-loading of mmu context to reduce latency
+But, as you know, we need to change users of is_pcie (including some
+adapter card drivers) before removing it.
 
-*) shm-signal's are now routable (e.g. future MQ support)
-
-*) vbus is optionally managed in its entirely from the rebundled qemu
-   *) "-net venet-tap" will fully initialize the interface
-internally..no more scripting!
-
-*) vbus components are automatically reaped when the guest exits, even
-if the exit is not clean.
-
-We will update the performance numbers ASAP and announce any changes.
-For further details, please visit our wiki:
-
-http://developer.novell.com/wiki/index.php/AlacrityVM
-
-Kind Regards,
--Greg
+Thanks,
+Kenji Kaneshige
 
 
---------------enig28E20E2114CB3B191A4FEB5A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkrzjXwACgkQP5K2CMvXmqHLDQCfZhxj5nscvq8nWmYamuMcLZrO
-yZ0An27Wd9gNQZdNDP3tEiJ1nJFeZjF4
-=qEZW
------END PGP SIGNATURE-----
-
---------------enig28E20E2114CB3B191A4FEB5A--
