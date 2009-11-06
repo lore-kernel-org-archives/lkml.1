@@ -1,293 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759744AbZKFUbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759774AbZKFUf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759744AbZKFUbi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 15:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759562AbZKFUbh
+	id S1759774AbZKFUf4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 15:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759725AbZKFUfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 15:31:37 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:37111 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759271AbZKFUbg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 15:31:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=NlOm0eUvo3kI45qg2iC0FycbcqKYdybrzOTdTV36xEXvSEj0tTnVodRRtFMD6XN18O
-         fKDKw64x0ovNNfZdqeoW+DqRZhCjmPqzPOxWPcQ2DWyAr+Oi153Drl29nF7FKrxKSBEH
-         DgBBdJhLsBQHLttab5IOKkW1Ab0Zsxdg2C+60=
+	Fri, 6 Nov 2009 15:35:55 -0500
+Received: from smtp2-g21.free.fr ([212.27.42.2]:32915 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759704AbZKFUfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 15:35:55 -0500
+Message-ID: <4AF488A7.4010408@free.fr>
+Date: Fri, 06 Nov 2009 21:35:51 +0100
+From: matthieu castet <castet.matthieu@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.22) Gecko/20090605 Iceape/1.1.17 (Debian-1.1.17-2)
 MIME-Version: 1.0
-In-Reply-To: <20091105082829.2d59dcae@jbarnes-piketon>
-References: <cb0375e10910030939v8d03df7m861a2f05219f173c@mail.gmail.com>
-	 <cb0375e10910072044m470c8cbasef33de3b36bb62ee@mail.gmail.com>
-	 <20091029094723.7e5a3376@jbarnes-g45>
-	 <cb0375e10910291022l5650994dyc4a36d55f1e5bbc4@mail.gmail.com>
-	 <cb0375e10910291040i31a7b9aatb6da5c20778d9791@mail.gmail.com>
-	 <cb0375e10910292325l659034c4u36cf263cda8e90c8@mail.gmail.com>
-	 <20091030083742.48f5d4f3@jbarnes-g45>
-	 <cb0375e10910301155s5e2b2e79t562bfa798ba75e23@mail.gmail.com>
-	 <cb0375e10911042000h3cf215a1o44add74510c15a1c@mail.gmail.com>
-	 <20091105082829.2d59dcae@jbarnes-piketon>
-Date: Fri, 6 Nov 2009 15:25:26 -0500
-X-Google-Sender-Auth: 6c14d6ce53cde330
-Message-ID: <cb0375e10911061225y1bc29807y5abd67e748ef4164@mail.gmail.com>
-Subject: Re: [resend] i915: high power consumption after suspend/resume
-From: Andrew Lutomirski <luto@mit.edu>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Using x86 segments against NULL pointer deference exploit
+References: <1257512389.4af41dc504e1b@imp.free.fr> <20091106131330.0ce956f4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091106131330.0ce956f4@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 5, 2009 at 11:28 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Wed, 4 Nov 2009 23:00:14 -0500
-> Andrew Lutomirski <luto@mit.edu> wrote:
->> so it looks like it's not a register setting after all.  Maybe my BIOS
->> leaves the renderer in some weird state.
->
-> Note that the register dumping tool doesn't capture everything.  If you
-> really want to do some detective work you could dump the whole MMIO
-> space and compare differences.  You should be able to find definitions
-> for many of the reg offsets in the docs at intellinuxgraphics.org,
-> maybe there's something we don't dump that's changing and that explains
-> your power consumption changes.
+Hi Alan,
 
-Here's the diff for another i915_wedged test.  - is high power and +
-is low power.
+Alan Cox wrote:
+> On Fri, 06 Nov 2009 13:59:49 +0100
+> castet.matthieu@free.fr wrote:
+> 
+>> Hi,
+>>
+>> I am wondering why we can't set the KERNEL_DS data segment to not contain the
+>> first page, ie changing it from R/W flat model to R/W expand down from
+>> 0xffffffff to 4096.
+> 
+> For one it is enormously expensive because the moment you have segment
+> limits all sorts of stuff goes slower.
+We can always imagine a lazy mechanism that will enable segment limit when page0 is mapped.
+That will only slow down the machine when wine & co are running. 
 
---- /tmp/regs_pre_wedge	2009-11-06 14:46:44.042345316 -0500
-+++ /tmp/regs_post_wedge	2009-11-06 14:47:14.798345239 -0500
-@@ -45,8 +45,8 @@
- (II):           PP_DIVISOR: 0x003e7f03
- (II):         PFIT_CONTROL: 0x00000000
- (II):      PFIT_PGM_RATIOS: 0x00000000
--(II):      PORT_HOTPLUG_EN: 0x3e040320
--(II):    PORT_HOTPLUG_STAT: 0x38560800
-+(II):      PORT_HOTPLUG_EN: 0x3e040200
-+(II):    PORT_HOTPLUG_STAT: 0x38000300
- (II):             DSPACNTR: 0x00000000 (disabled, pipe A)
- (II):           DSPASTRIDE: 0x00000000 (0 bytes)
- (II):              DSPAPOS: 0x00000000 (0, 0)
-@@ -179,9 +179,9 @@
- (II):           AUD_CONFIG: 0x00000004
- (II):     AUD_HDMIW_STATUS: 0x00000000
- (II):       AUD_CONV_CHCNT: 0x00000000
--(II):        VIDEO_DIP_CTL: 0x20000602
-+(II):        VIDEO_DIP_CTL: 0x20000603
- (II):        AUD_PINW_CNTR: 0x00000140
--(II):          AUD_CNTL_ST: 0x00002042
-+(II):          AUD_CNTL_ST: 0x00002063
- (II):          AUD_PIN_CAP: 0x00000094
- (II):         AUD_PINW_CAP: 0x004073bd
- (II):   AUD_PINW_UNSOLRESP: 0x00000000
-@@ -2285,8 +2285,8 @@
- 00002024: 00000000
- 00002028: 00000900
- 0000202C: 00000000
--00002030: 00005B10
--00002034: 07205B10
-+00002030: 00000000
-+00002034: 02000000
- 00002038: 02000000
- 0000203C: 0001F001
- 00002040: 00000000
-@@ -2302,7 +2302,7 @@
- 00002068: 01000000
- 0000206C: FFFFFFFE
- 00002070: 0001E000
--00002074: 07205B10
-+00002074: 02000000
- 00002078: 02005B10
- 0000207C: FFFFFFFF
- 00002080: 01FFF000
-@@ -2316,7 +2316,7 @@
- 000020A0: 00028053
- 000020A4: 00000000
- 000020A8: FFFC5FAE
--000020AC: 00020000
-+000020AC: 00000000
- 000020B0: 00000000
- 000020B4: FFFFFF05
- 000020B8: 00000001
-@@ -2407,7 +2407,7 @@
- 0000220C: 10800001
- 00002210: 00000000
- 00002214: 00000000
--00002218: 07205B10
-+00002218: 02000000
- 0000221C: 00000000
- 00002220: 00000000
- 00002224: 00000000
-@@ -2487,8 +2487,8 @@
- 0000234C: 00000000
- 00002350: 2364819D
- 00002354: 00000000
--00002358: 55A00000
--0000235C: 56C9F19D
-+00002358: A9000000
-+0000235C: 5892DB63
- 00002360: 00000000
- 00002364: 00000000
- 00002368: 00000000
-@@ -16935,7 +16935,7 @@
- 0001050C: 00000000
- 00010510: 00000000
- 00010514: 00000000
--00010518: 25280A0B
-+00010518: 25270A0B
- 0001051C: 00000000
- 00010520: 00000000
- 00010524: 00000000
-@@ -17169,7 +17169,7 @@
- 000108B4: 00000024
- 000108B8: 00000000
- 000108BC: 00000000
--000108C0: 00003B37
-+000108C0: 00003937
- 000108C4: 00000807
- 000108C8: 0000211F
- 000108CC: 00000000
-@@ -17577,7 +17577,7 @@
- 00010F14: 00000000
- 00010F18: 00000000
- 00010F1C: 00000000
--00010F20: 20024808
-+00010F20: 28036A8D
- 00010F24: 00000000
- 00010F28: 00000000
- 00010F2C: 00000000
-@@ -17633,9 +17633,9 @@
- 00010FF4: 00000000
- 00010FF8: 00000000
- 00010FFC: 000007D0
--00011000: 0093007A
--00011004: 007C0400
--00011008: 0000007C
-+00011000: 0093007F
-+00011004: 00FF0000
-+00011008: 000000FF
- 0001100C: 00000000
- 00011010: 80000009
- 00011014: 00000000
-@@ -17747,7 +17747,7 @@
- 000111BC: 00000000
- 000111C0: 03030100
- 000111C4: 0A030A03
--000111C8: 00000020
-+000111C8: 00000021
- 000111CC: 00000017
- 000111D0: 00000000
- 000111D4: 00000000
-@@ -17891,9 +17891,9 @@
- 000113FC: 00000000
- 00011400: 00113300
- 00011404: 00000000
--00011408: 0FFEFFFF
-+00011408: 00047E7F
- 0001140C: 80010880
--00011410: 60002C59
-+00011410: 40002C59
- 00011414: 24049801
- 00011418: 00000000
- 0001141C: 00000000
-@@ -18068,7 +18068,7 @@
- 000116C0: 00000000
- 000116C4: 00000000
- 000116C8: 00000000
--000116CC: 0000007C
-+000116CC: 000000FF
- 000116D0: 00000000
- 000116D4: 00000400
- 000116D8: 00000000
-@@ -99621,8 +99621,8 @@
- 00061104: 00000000
- 00061108: 00000000
- 0006110C: 00000000
--00061110: 3E040320
--00061114: 38560800
-+00061110: 3E040200
-+00061114: 38000300
- 00061118: 00000000
- 0006111C: 00000000
- 00061120: 00000000
-@@ -99645,7 +99645,7 @@
- 00061164: 00000000
- 00061168: 00000000
- 0006116C: 00000000
--00061170: 20000602
-+00061170: 20000603
- 00061174: 00000000
- 00061178: 00000000
- 0006117C: 00000000
-@@ -99705,7 +99705,7 @@
- 00061254: 0CF80CF8
- 00061258: 00000000
- 0006125C: 00000000
--00061260: 00000002
-+00061260: 00000003
- 00061264: 00000000
- 00061268: 00000000
- 0006126C: 00000000
-@@ -100622,7 +100622,7 @@
- 000620A8: 00000001
- 000620AC: 00000002
- 000620B0: 00000140
--000620B4: 00002042
-+000620B4: 00002063
- 000620B8: 00000000
- 000620BC: 18560010
- 000620C0: 00000000
-@@ -115937,7 +115937,7 @@
- 00070FF4: 00000000
- 00070FF8: 00000000
- 00070FFC: 00000000
--00071000: 00000172
-+00071000: 00000286
- 00071004: 834C0384
- 00071008: C0000000
- 0007100C: 00000000
-@@ -115953,9 +115953,9 @@
- 00071034: 00000000
- 00071038: 00000000
- 0007103C: 00000000
--00071040: 0001218C
-+00071040: 00012784
- 00071044: 00000004
--00071048: 56CAB03B
-+00071048: 5893BC94
- 0007104C: 4C8BF9B3
- 00071050: 00000000
- 00071054: 00000000
+> and for APM and so on.
+APM clears all segment before calling bios (APM_ZERO_SEGS is defined for detecting buggy bios) 
+and pnpbios seems to have their own segment (GDT_ENTRY_PNPBIOS) There is also GDT_ENTRY_APMBIOS_BASE,
+but that seems unused.
 
-Here's what the docs say:
+> You also do sometimes need low 4K
+> access for wine/dosemu etc as you guess - 
+That's a bigger problem. If there not many access we can imagine fix it with trap/single step.
 
+> 64bit you don't have a lot of those features ayway.
+Yes.
 
-2030, 2034: ring buffer head/tail
-2074: Active head pointer register
-20AC: Interrupt Status Register (ISR)
-2218: Reserved
-2358, 235C: TIMESTAMP
+May be the sane way should be to forbid mapping page 0, and make run application needing page 0 in a
+emulator. After all it is for special case [1] :
+- Win16 binary for wine
+- upstream version of dosemu and qemu have workaround
 
-1xxxx: MCHBAR aperture
+But some distro still set mmap_min_addr to 0 (ubuntu+wine, ...) :(
 
-61110: PORT_HOTPLU_EN
-61114: PORT_HOTPLU_STAT
-61170: UDI_IF_CTL (UDI InfoFrame Control)
+Matthieu
 
-61260: BLM_HIST_CTL (Image BLM Histogram Control Register)
-
-620B4: Reserved (for High Definition?)
-
-71000: PIPEB_DSL (Pipe B Display Scan Line Count)
-71040: PIPEBFRAMEH: Pipe B Frame Count High
-71048: Reserved
-
-Any ideas?
-
-Thanks,
-Andy
+[1] http://wiki.debian.org/mmap_min_addr
