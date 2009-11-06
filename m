@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbZKFNAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbZKFNAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372AbZKFNAa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 08:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZKFNAa
+	id S1758018AbZKFNAr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 08:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757632AbZKFNAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 08:00:30 -0500
-Received: from smtpfb1-g21.free.fr ([212.27.42.9]:57853 "EHLO
-	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbZKFNA3 (ORCPT
+	Fri, 6 Nov 2009 08:00:47 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:43930 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757491AbZKFNAq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 08:00:29 -0500
-Message-ID: <1257512389.4af41dc504e1b@imp.free.fr>
-Date: Fri, 06 Nov 2009 13:59:49 +0100
-From: castet.matthieu@free.fr
-To: linux-kernel@vger.kernel.org
-Subject: Using x86 segments against NULL pointer deference exploit
+	Fri, 6 Nov 2009 08:00:46 -0500
+Message-ID: <4AF41DF0.7050002@us.ibm.com>
+Date: Fri, 06 Nov 2009 07:00:32 -0600
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.8
-X-Originating-IP: 213.41.129.48
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Amit Shah <amit.shah@redhat.com>,
+       linux-kernel@vger.kernel.org, virtualization@linux-foundation.org,
+       "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v10 1/1] virtio_console: Add support for multiple ports
+ for generic guest and host communication
+References: <1257266319-24300-1-git-send-email-amit.shah@redhat.com> <1257266319-24300-2-git-send-email-amit.shah@redhat.com> <200911061740.03734.rusty@rustcorp.com.au> <200911060900.49923.borntraeger@de.ibm.com>
+In-Reply-To: <200911060900.49923.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Christian Borntraeger wrote:
+> I know that Anthony disagrees, but _If we start over_, I still think we should 
+> use that chance and leave the old virtio console untouched and add a new driver 
+> for the host guest communication. IMHO it turned out that there is only a tiny 
+> bit of commonality. (most code pathes check for use_multiport and  then do two 
+> completely different things).
+> I like simplicity. According to David A. Wheeler's SLOCCount, the old console 
+> has 141 lines of code and the I truly believe that a separate guest-host comm 
+> vehicle would also be a lot simpler if it must not take care of the old 
+> virtio_console interface.
+>   
 
-I am wondering why we can't set the KERNEL_DS data segment to not contain the
-first page, ie changing it from R/W flat model to R/W expand down from
-0xffffffff to 4096.
+It's the wrong metrics for evaluating a device ABI.  We should consider 
+device ABIs based on whether they make sense--not about how many lines 
+of code it takes to implement the Linux driver.
 
-The modification seems simple : change GDT_ENTRY_KERNEL_DS [1], and some
-modification for syscall entry point that doesn't support segment (sysenter).
+Fundamentally speaking, right now, virtio-console is a single stream 
+that acts as an interactive terminal.  What we're looking to add here is 
+to support multiple terminals that can be enumerated in a rationale way.
 
-The drawback of this it that the kernel can't access anymore data in the first
-segment. Is it needed for application like wine or dosemu ?
+I see no reason why that should be two separate devices.
+
+> On the other hand we all should agree on one driver vs. two drivers before we go 
+> on. Everything else would be unfair to Amit, who had the unpleasant task to 
+> implement conflicting review comments....
+>   
+
+I agree and there are multiple maintainers on the qemu side who feel the 
+same way I do.  I'm really strongly opposed to making this separate devices.
+
+If you think it's easier, you can do a check in the virtio_probe 
+function that checks for the feature bits and calls a completely 
+separate virtio initialization routine so it ends up being two separate 
+files in Linux.  But that's a Linux implementation detail.
+
+> Christian
+>   
 
 
+-- 
 Regards,
 
-Matthieu
+Anthony Liguori
 
-PS : why x86_64 segment got access bit set and x86_32 doesn't ?
-
-[1]
-something like
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index cc25c2b..898a569 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -101,7 +101,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = {
-.gdt = {
- 	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xa0fb, 0, 0xfffff),
- #else
- 	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
--	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-+	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc096, 0, 0x00001),
- 	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
- 	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
- 	/*
