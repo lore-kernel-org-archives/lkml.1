@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbZKFUyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759788AbZKFUSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759851AbZKFUyM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 15:54:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759818AbZKFUyM
+	id S1759788AbZKFUSy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 15:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759715AbZKFUSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 15:54:12 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:48762 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759767AbZKFUyL (ORCPT
+	Fri, 6 Nov 2009 15:18:54 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56029 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753407AbZKFUSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 15:54:11 -0500
-Date: Fri, 6 Nov 2009 12:18:14 -0800
-From: Matt Helsley <matthltc@us.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [v11][PATCH 9/9] Document clone_with_pids() syscall
-Message-ID: <20091106201814.GA26614@count0.beaverton.ibm.com>
-References: <20091105053053.GA11289@us.ibm.com>
- <20091105054204.GI16142@us.ibm.com>
- <20091106183936.GA32531@us.ibm.com>
+	Fri, 6 Nov 2009 15:18:53 -0500
+To: castet.matthieu@free.fr
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Using x86 segments against NULL pointer deference exploit
+From: Andi Kleen <andi@firstfloor.org>
+References: <1257512389.4af41dc504e1b@imp.free.fr>
+Date: Fri, 06 Nov 2009 21:18:58 +0100
+In-Reply-To: <1257512389.4af41dc504e1b@imp.free.fr> (castet matthieu's message of "Fri, 06 Nov 2009 13:59:49 +0100")
+Message-ID: <87eiob76fh.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091106183936.GA32531@us.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 06, 2009 at 12:39:36PM -0600, Serge E. Hallyn wrote:
-> Quoting Sukadev Bhattiprolu (sukadev@us.ibm.com):
-> ...
-> > +	If a pid in the @pids list is non-zero, the kernel tries to assign
-> > +	the specified pid in that namespace.  If that pid is already in use
-> > +	by another process, the system call fails (see EBUSY below).
-> > +
-> > +	The order of pids in @pids is oldest in pids[0] to youngest pid
-> > +	namespace in pids[nr_pids-1]. If the number of pids specified in the
-> 
-> In the sys_choosepid() discussion, Matt suggested it would be more
-> user-friendly to have the pid for the youngest pidns be pids[0].
-> That way the user doesn't have to know their pidns depth.
+castet.matthieu@free.fr writes:
 
-As far as I could see, Suka's solution also does not require knowing
-the pidns depth (aka level). He made it so that copy_from_user()
-adjusts its destination using the discrepancy between the number of
-pids passed and the number of levels.
+> Hi,
+>
+> I am wondering why we can't set the KERNEL_DS data segment to not contain the
+> first page, ie changing it from R/W flat model to R/W expand down from
+> 0xffffffff to 4096.
 
-If userspace passes an array with n pids and there are k namespace levels
-then clone_with_pids() makes sure that the kernel sees a pid array like:
+As Alan pointed out setting segment limits/bases has large penalties.
 
-index	  0     ... k - (n + 1)        ...          k - 1
-	+-----------------------+-------------------------+
-pid_t	| 0 ..................0 | <copied from userspace> |
-	+-----------------------+-------------------------+
+This has been already addressed by the mmap limit defaults 
+on the VM level by disallowing to place something on the zero page.
 
-So even though the order is different from choosepid() the calling
-task still doesn't need to know its pidns level. Of course, just
-like choosepid(), n <= k or userspace will get EINVAL.
+In fact a lot of systems should already run with that default.
 
-Cheers,
-	-Matt Helsley
+> PS : why x86_64 segment got access bit set and x86_32 doesn't ?
 
+It's a extremly minor optimization, but the CPU sets it on the first
+access anyways.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
