@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbZKFAyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbZKFAzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756303AbZKFAyd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 19:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbZKFAyc
+	id S1756672AbZKFAzh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 19:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZKFAzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 19:54:32 -0500
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:65468 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbZKFAya (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 19:54:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=G7XBdYXzGWMGD5UP+Su4fBsImcqUBbztiL5l7aDzIbtWpjpHgTexGxzDvBBUrkTtEz
-         8XCJRPyR+RiOGge3V7gWuZal87adT8PBVaD/Cy/Yszp0aUxIss1EUouXoW9qT/O5aocq
-         OrZIfsUDCSekQAMiAVOADCIgPmI0+jyMf9TJ0=
-MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Thu, 5 Nov 2009 16:54:14 -0800
-Message-ID: <43e72e890911051654i19c18bf3nd397662ed79712c4@mail.gmail.com>
-Subject: Using netconsole and getting double prints
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Thu, 5 Nov 2009 19:55:37 -0500
+Received: from gate.crashing.org ([63.228.1.57]:39861 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752627AbZKFAzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 19:55:36 -0500
+Subject: More Huawei modem woes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 06 Nov 2009 11:54:59 +1100
+Message-ID: <1257468899.13611.254.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting double prints when using netconsole. This used to happen
-to me and then I just enable debugging log level manually (dmesg -n 8)
-but now no matter what I try I always get double prints.
+Hi Alan !
 
-For example:
+>From user reports, it seems that other model of Huawei modems are still
+broken in a way that seems very similar to what we observed and fixed
+with the E169 but not fixed by the request sense size fix we did.
 
-[   23.425448] console [netcon0] enabled
-[   23.425567] netconsole: network logging started
-[   23.425448] console [netcon0] enabled
-[   23.425567] netconsole: network logging started
-[   32.856073] eth0: no IPv6 routers present
-[   32.856073] eth0: no IPv6 routers present
-[   66.307342] kmemleak: 6 new suspected memory leaks (see
-/sys/kernel/debug/kmemleak)
-[   66.307342] kmemleak: 6 new suspected memory leaks (see
-/sys/kernel/debug/kmemleak)
+IE. The initial fix that "enabled" usb-storage to work in 2.6.31.1 broke
+them causing them to get into a reset loop due to some issues with
+usb-storage.
 
-Instead of dmesg -8 I'm now using ignore_loglevel as a kernel
-parameter but I still get double prints. This also happens if I use
-"debug" as a kernel parameter instead.
+I've obtained a usbmon log from one of those users with a E620, I would
+appreciate if you could have a look as you are a lot better than I am at
+parsing those things :-) I attached it to the existing BZ
+http://bugzilla.kernel.org/show_bug.cgi?id=14355 .
 
-The netconsole is set up on the dev box as follows through an /etc/rc.local
+Of course it's always possible that a whole lot of users have been
+testing the wrong kernel and thus don't have the fix :-) But that might
+also show a different problem with those modems usb storage
+implementation.
 
-dhclient eth0
-IP=192.168.2
-# sudo dmesg -n 8
-modprobe netconsole netconsole=@/eth0,6666@${IP}/
-exit 0
+Cheers,
+Ben.
 
-I capture my data with netcat script (I call it netlog):
-
-#!/bin/bash
-echo "You should now run in another window: tail -f $HOME/log"
-while true; do
-	/bin/nc -u -l -p 6666 >> $HOME/log
-done
-
-This also just doesn't work if I run the nc manually without a redirect:
-
-while true; do /bin/nc -u -l -p 6666; done
-
-Any ideas?
-
-  Luis
