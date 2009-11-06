@@ -1,190 +1,499 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZKFC5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbZKFDNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755491AbZKFC5O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 21:57:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZKFC5N
+	id S1755741AbZKFDNA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 22:13:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZKFDNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 21:57:13 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60180 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbZKFC5N (ORCPT
+	Thu, 5 Nov 2009 22:13:00 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:51947 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754436AbZKFDM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 21:57:13 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 6 Nov 2009 11:54:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: npiggin@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: Re: [RFC MM] swap counters
-Message-Id: <20091106115440.2e6ac39f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.1.10.0911051703320.10180@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1>
-	<alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1>
-	<alpine.DEB.1.10.0911051703320.10180@V090114053VZO-1>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Nov 2009 22:12:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=SAsEt74IMipi5P14e9Xxp0W67Sb1Va8pwsYFMt6kUh9re+laWUlmV3T+g3yl8gdaK/
+         AB49f92Pg3fhUcKn7qmoFdlLYEZ7D8UXmx7zflD/QM435K/UOvCan2FOqRlhSGpYasO7
+         nywwd7SSrk24UiYEFoMo6mQ7mdT2ezFZk/eG0=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>
+Subject: [PATCH v2] tracing: Protect the buffer from recursion in perf
+Date: Fri,  6 Nov 2009 04:13:05 +0100
+Message-Id: <1257477185-7838-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <4AF24144.30003@redhat.com>
+References: <4AF24144.30003@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Nov 2009 17:05:19 -0500 (EST)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+While tracing using events with perf, if one enables the
+lockdep:lock_acquire event, it will infect every other perf trace
+events.
 
-> Kamezawa sans swap counters on top of it all. Now we need no additional
-> atomic ops in VM fast paths.
-> 
-Thanks, I'll rewrite mine in this way.
-(As Minchan pointed out, is_migration_entry() is not enough.)
+Basically, you can enable whatever set of trace events through perf
+but if this event is part of the set, the only result we can get is a
+long list of lock_acquire events of rcu read lock, and only that.
 
-I'll post rebased one in reply to this.
+This is because of a recursion inside perf.
 
-Regards,
--Kame
+1) When a trace event is triggered, it will fill a per cpu buffer and
+   submit it to perf.
+2) Perf will commit this event but will also protect some data using
+   rcu_read_lock
+3) A recursion appears: rcu_read_lock triggers a lock_acquire event that
+   will fill the per cpu event and then submit the buffer to perf.
+4) Perf detects a recursion and ignore it
+5) Perf continue its work on the previous event, but its buffer has been
+   overwritten by the lock_acquire event, it has then been turned into
+   a lock_acquire event of rcu read lock
 
+Such scenario also happens with lock_release with rcu_read_unlock().
 
-> ---
->  fs/proc/task_mmu.c       |   14 +++++++++++---
->  include/linux/mm_types.h |    1 +
->  mm/memory.c              |   17 +++++++++++++----
->  mm/rmap.c                |    1 +
->  mm/swapfile.c            |    1 +
->  5 files changed, 27 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6/fs/proc/task_mmu.c
-> ===================================================================
-> --- linux-2.6.orig/fs/proc/task_mmu.c	2009-11-05 15:58:48.000000000 -0600
-> +++ linux-2.6/fs/proc/task_mmu.c	2009-11-05 16:03:12.000000000 -0600
-> @@ -16,8 +16,9 @@
-> 
->  void task_mem(struct seq_file *m, struct mm_struct *mm)
->  {
-> -	unsigned long data, text, lib;
-> +	unsigned long data, text, lib, swap;
->  	unsigned long hiwater_vm, total_vm, hiwater_rss, total_rss;
-> +	int cpu;
-> 
->  	/*
->  	 * Note: to minimize their overhead, mm maintains hiwater_vm and
-> @@ -36,6 +37,11 @@ void task_mem(struct seq_file *m, struct
->  	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
->  	text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
->  	lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
-> +
-> +	swap = 0;
-> +	for_each_possible_cpu(cpu)
-> +		swap += per_cpu(mm->rss->swap, cpu);
-> +
->  	seq_printf(m,
->  		"VmPeak:\t%8lu kB\n"
->  		"VmSize:\t%8lu kB\n"
-> @@ -46,7 +52,8 @@ void task_mem(struct seq_file *m, struct
->  		"VmStk:\t%8lu kB\n"
->  		"VmExe:\t%8lu kB\n"
->  		"VmLib:\t%8lu kB\n"
-> -		"VmPTE:\t%8lu kB\n",
-> +		"VmPTE:\t%8lu kB\n"
-> +		"VmSwap:\t%8lu kB\n",
->  		hiwater_vm << (PAGE_SHIFT-10),
->  		(total_vm - mm->reserved_vm) << (PAGE_SHIFT-10),
->  		mm->locked_vm << (PAGE_SHIFT-10),
-> @@ -54,7 +61,8 @@ void task_mem(struct seq_file *m, struct
->  		total_rss << (PAGE_SHIFT-10),
->  		data << (PAGE_SHIFT-10),
->  		mm->stack_vm << (PAGE_SHIFT-10), text, lib,
-> -		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10);
-> +		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10,
-> +		swap << (PAGE_SHIFT - 10));
->  }
-> 
->  unsigned long task_vsize(struct mm_struct *mm)
-> Index: linux-2.6/include/linux/mm_types.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm_types.h	2009-11-05 15:51:38.000000000 -0600
-> +++ linux-2.6/include/linux/mm_types.h	2009-11-05 15:51:55.000000000 -0600
-> @@ -28,6 +28,7 @@ struct address_space;
->  struct mm_counter {
->  	long file;
->  	long anon;
-> +	long swap;
->  	long readers;
->  };
-> 
-> Index: linux-2.6/mm/memory.c
-> ===================================================================
-> --- linux-2.6.orig/mm/memory.c	2009-11-05 15:52:00.000000000 -0600
-> +++ linux-2.6/mm/memory.c	2009-11-05 16:01:48.000000000 -0600
-> @@ -587,7 +587,9 @@ copy_one_pte(struct mm_struct *dst_mm, s
->  						 &src_mm->mmlist);
->  				spin_unlock(&mmlist_lock);
->  			}
-> -			if (is_write_migration_entry(entry) &&
-> +			if (!is_migration_entry(entry))
-> +				__this_cpu_inc(src_mm->rss->swap);
-> +			else if (is_write_migration_entry(entry) &&
->  					is_cow_mapping(vm_flags)) {
->  				/*
->  				 * COW mappings require pages in both parent
-> @@ -864,9 +866,15 @@ static unsigned long zap_pte_range(struc
->  		if (pte_file(ptent)) {
->  			if (unlikely(!(vma->vm_flags & VM_NONLINEAR)))
->  				print_bad_pte(vma, addr, ptent, NULL);
-> -		} else if
-> -		  (unlikely(!free_swap_and_cache(pte_to_swp_entry(ptent))))
-> -			print_bad_pte(vma, addr, ptent, NULL);
-> +		} else {
-> +			swp_entry_t ent = pte_to_swp_entry(ptent);
-> +
-> +			if (!is_migration_entry(ent))
-> +				__this_cpu_dec(mm->rss->swap);
-> +
-> +			if (unlikely(!free_swap_and_cache(ent)))
-> +				print_bad_pte(vma, addr, ptent, NULL);
-> +		}
->  		pte_clear_not_present_full(mm, addr, pte, tlb->fullmm);
->  	} while (pte++, addr += PAGE_SIZE, (addr != end && *zap_work > 0));
-> 
-> @@ -2569,6 +2577,7 @@ static int do_swap_page(struct mm_struct
->  	 */
-> 
->  	__this_cpu_inc(mm->rss->anon);
-> +	__this_cpu_dec(mm->rss->swap);
->  	pte = mk_pte(page, vma->vm_page_prot);
->  	if ((flags & FAULT_FLAG_WRITE) && reuse_swap_page(page)) {
->  		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
-> Index: linux-2.6/mm/rmap.c
-> ===================================================================
-> --- linux-2.6.orig/mm/rmap.c	2009-11-05 15:57:51.000000000 -0600
-> +++ linux-2.6/mm/rmap.c	2009-11-05 15:58:43.000000000 -0600
-> @@ -830,6 +830,7 @@ static int try_to_unmap_one(struct page
->  				spin_unlock(&mmlist_lock);
->  			}
->  			__this_cpu_dec(mm->rss->anon);
-> +			__this_cpu_inc(mm->rss->swap);
->  		} else if (PAGE_MIGRATION) {
->  			/*
->  			 * Store the pfn of the page in a special migration
-> Index: linux-2.6/mm/swapfile.c
-> ===================================================================
-> --- linux-2.6.orig/mm/swapfile.c	2009-11-05 15:57:15.000000000 -0600
-> +++ linux-2.6/mm/swapfile.c	2009-11-05 15:57:36.000000000 -0600
-> @@ -832,6 +832,7 @@ static int unuse_pte(struct vm_area_stru
->  	}
-> 
->  	__this_cpu_inc(vma->vm_mm->rss->anon);
-> +	__this_cpu_dec(vma->vm_mm->rss->swap);
->  	get_page(page);
->  	set_pte_at(vma->vm_mm, addr, pte,
->  		   pte_mkold(mk_pte(page, vma->vm_page_prot)));
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+We could turn the rcu_read_lock() into __rcu_read_lock() to drop the
+lock debugging from perf fast path, but that would make us lose
+the rcu debugging and that doesn't prevent from other possible kind of
+recursion from perf in the future.
+
+This patch adds a recursion protection based on a counter on the perf
+trace per cpu buffers to solve the problem.
+
+v2: Fixed lost whitespace, added reviewed-by tag
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Reviewed-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jason Baron <jbaron@redhat.com>
+---
+ include/linux/ftrace_event.h       |    9 +++++-
+ include/trace/ftrace.h             |   39 +++++++++++++++++++++------
+ kernel/trace/trace_event_profile.c |   41 +++++++++++++----------------
+ kernel/trace/trace_kprobe.c        |   50 ++++++++++++++++++++++++++++++------
+ kernel/trace/trace_syscalls.c      |   44 ++++++++++++++++++++++++++------
+ 5 files changed, 133 insertions(+), 50 deletions(-)
+
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index f7b47c3..43360c1 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -137,8 +137,13 @@ struct ftrace_event_call {
+ 
+ #define FTRACE_MAX_PROFILE_SIZE	2048
+ 
+-extern char			*trace_profile_buf;
+-extern char			*trace_profile_buf_nmi;
++struct perf_trace_buf {
++	char	buf[FTRACE_MAX_PROFILE_SIZE];
++	int	recursion;
++};
++
++extern struct perf_trace_buf	*perf_trace_buf;
++extern struct perf_trace_buf	*perf_trace_buf_nmi;
+ 
+ #define MAX_FILTER_PRED		32
+ #define MAX_FILTER_STR_VAL	256	/* Should handle KSYM_SYMBOL_LEN */
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index a7f9460..4945d1c 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -649,6 +649,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+  *	struct ftrace_event_call *event_call = &event_<call>;
+  *	extern void perf_tp_event(int, u64, u64, void *, int);
+  *	struct ftrace_raw_##call *entry;
++ *	struct perf_trace_buf *trace_buf;
+  *	u64 __addr = 0, __count = 1;
+  *	unsigned long irq_flags;
+  *	struct trace_entry *ent;
+@@ -673,14 +674,25 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+  *	__cpu = smp_processor_id();
+  *
+  *	if (in_nmi())
+- *		raw_data = rcu_dereference(trace_profile_buf_nmi);
++ *		trace_buf = rcu_dereference(perf_trace_buf_nmi);
+  *	else
+- *		raw_data = rcu_dereference(trace_profile_buf);
++ *		trace_buf = rcu_dereference(perf_trace_buf);
+  *
+- *	if (!raw_data)
++ *	if (!trace_buf)
+  *		goto end;
+  *
+- *	raw_data = per_cpu_ptr(raw_data, __cpu);
++ *	trace_buf = per_cpu_ptr(trace_buf, __cpu);
++ *
++ * 	// Avoid recursion from perf that could mess up the buffer
++ * 	if (trace_buf->recursion++)
++ *		goto end_recursion;
++ *
++ * 	raw_data = trace_buf->buf;
++ *
++ *	// Make recursion update visible before entering perf_tp_event
++ *	// so that we protect from perf recursions.
++ *
++ *	barrier();
+  *
+  *	//zero dead bytes from alignment to avoid stack leak to userspace:
+  *	*(u64 *)(&raw_data[__entry_size - sizeof(u64)]) = 0ULL;
+@@ -713,8 +725,9 @@ static void ftrace_profile_##call(proto)				\
+ {									\
+ 	struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
+ 	struct ftrace_event_call *event_call = &event_##call;		\
+-	extern void perf_tp_event(int, u64, u64, void *, int);	\
++	extern void perf_tp_event(int, u64, u64, void *, int);		\
+ 	struct ftrace_raw_##call *entry;				\
++	struct perf_trace_buf *trace_buf;				\
+ 	u64 __addr = 0, __count = 1;					\
+ 	unsigned long irq_flags;					\
+ 	struct trace_entry *ent;					\
+@@ -739,14 +752,20 @@ static void ftrace_profile_##call(proto)				\
+ 	__cpu = smp_processor_id();					\
+ 									\
+ 	if (in_nmi())							\
+-		raw_data = rcu_dereference(trace_profile_buf_nmi);		\
++		trace_buf = rcu_dereference(perf_trace_buf_nmi);	\
+ 	else								\
+-		raw_data = rcu_dereference(trace_profile_buf);		\
++		trace_buf = rcu_dereference(perf_trace_buf);		\
+ 									\
+-	if (!raw_data)							\
++	if (!trace_buf)							\
+ 		goto end;						\
+ 									\
+-	raw_data = per_cpu_ptr(raw_data, __cpu);			\
++	trace_buf = per_cpu_ptr(trace_buf, __cpu);			\
++	if (trace_buf->recursion++)					\
++		goto end_recursion;					\
++									\
++	barrier();							\
++									\
++	raw_data = trace_buf->buf;					\
+ 									\
+ 	*(u64 *)(&raw_data[__entry_size - sizeof(u64)]) = 0ULL;		\
+ 	entry = (struct ftrace_raw_##call *)raw_data;			\
+@@ -761,6 +780,8 @@ static void ftrace_profile_##call(proto)				\
+ 	perf_tp_event(event_call->id, __addr, __count, entry,		\
+ 			     __entry_size);				\
+ 									\
++end_recursion:								\
++	trace_buf->recursion--;						\
+ end:									\
+ 	local_irq_restore(irq_flags);					\
+ 									\
+diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+index c9f687a..e0d351b 100644
+--- a/kernel/trace/trace_event_profile.c
++++ b/kernel/trace/trace_event_profile.c
+@@ -8,41 +8,36 @@
+ #include <linux/module.h>
+ #include "trace.h"
+ 
+-/*
+- * We can't use a size but a type in alloc_percpu()
+- * So let's create a dummy type that matches the desired size
+- */
+-typedef struct {char buf[FTRACE_MAX_PROFILE_SIZE];} profile_buf_t;
+ 
+-char		*trace_profile_buf;
+-EXPORT_SYMBOL_GPL(trace_profile_buf);
++struct perf_trace_buf *perf_trace_buf;
++EXPORT_SYMBOL_GPL(perf_trace_buf);
+ 
+-char		*trace_profile_buf_nmi;
+-EXPORT_SYMBOL_GPL(trace_profile_buf_nmi);
++struct perf_trace_buf *perf_trace_buf_nmi;
++EXPORT_SYMBOL_GPL(perf_trace_buf_nmi);
+ 
+ /* Count the events in use (per event id, not per instance) */
+ static int	total_profile_count;
+ 
+ static int ftrace_profile_enable_event(struct ftrace_event_call *event)
+ {
+-	char *buf;
++	struct perf_trace_buf *buf;
+ 	int ret = -ENOMEM;
+ 
+ 	if (atomic_inc_return(&event->profile_count))
+ 		return 0;
+ 
+ 	if (!total_profile_count) {
+-		buf = (char *)alloc_percpu(profile_buf_t);
++		buf = alloc_percpu(struct perf_trace_buf);
+ 		if (!buf)
+ 			goto fail_buf;
+ 
+-		rcu_assign_pointer(trace_profile_buf, buf);
++		rcu_assign_pointer(perf_trace_buf, buf);
+ 
+-		buf = (char *)alloc_percpu(profile_buf_t);
++		buf = alloc_percpu(struct perf_trace_buf);
+ 		if (!buf)
+ 			goto fail_buf_nmi;
+ 
+-		rcu_assign_pointer(trace_profile_buf_nmi, buf);
++		rcu_assign_pointer(perf_trace_buf_nmi, buf);
+ 	}
+ 
+ 	ret = event->profile_enable(event);
+@@ -53,10 +48,10 @@ static int ftrace_profile_enable_event(struct ftrace_event_call *event)
+ 
+ fail_buf_nmi:
+ 	if (!total_profile_count) {
+-		free_percpu(trace_profile_buf_nmi);
+-		free_percpu(trace_profile_buf);
+-		trace_profile_buf_nmi = NULL;
+-		trace_profile_buf = NULL;
++		free_percpu(perf_trace_buf_nmi);
++		free_percpu(perf_trace_buf);
++		perf_trace_buf_nmi = NULL;
++		perf_trace_buf = NULL;
+ 	}
+ fail_buf:
+ 	atomic_dec(&event->profile_count);
+@@ -84,7 +79,7 @@ int ftrace_profile_enable(int event_id)
+ 
+ static void ftrace_profile_disable_event(struct ftrace_event_call *event)
+ {
+-	char *buf, *nmi_buf;
++	struct perf_trace_buf *buf, *nmi_buf;
+ 
+ 	if (!atomic_add_negative(-1, &event->profile_count))
+ 		return;
+@@ -92,11 +87,11 @@ static void ftrace_profile_disable_event(struct ftrace_event_call *event)
+ 	event->profile_disable(event);
+ 
+ 	if (!--total_profile_count) {
+-		buf = trace_profile_buf;
+-		rcu_assign_pointer(trace_profile_buf, NULL);
++		buf = perf_trace_buf;
++		rcu_assign_pointer(perf_trace_buf, NULL);
+ 
+-		nmi_buf = trace_profile_buf_nmi;
+-		rcu_assign_pointer(trace_profile_buf_nmi, NULL);
++		nmi_buf = perf_trace_buf_nmi;
++		rcu_assign_pointer(perf_trace_buf_nmi, NULL);
+ 
+ 		/*
+ 		 * Ensure every events in profiling have finished before
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index cf17a66..3696476 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -1208,6 +1208,7 @@ static __kprobes int kprobe_profile_func(struct kprobe *kp,
+ 	struct trace_probe *tp = container_of(kp, struct trace_probe, rp.kp);
+ 	struct ftrace_event_call *call = &tp->call;
+ 	struct kprobe_trace_entry *entry;
++	struct perf_trace_buf *trace_buf;
+ 	struct trace_entry *ent;
+ 	int size, __size, i, pc, __cpu;
+ 	unsigned long irq_flags;
+@@ -1229,14 +1230,26 @@ static __kprobes int kprobe_profile_func(struct kprobe *kp,
+ 	__cpu = smp_processor_id();
+ 
+ 	if (in_nmi())
+-		raw_data = rcu_dereference(trace_profile_buf_nmi);
++		trace_buf = rcu_dereference(perf_trace_buf_nmi);
+ 	else
+-		raw_data = rcu_dereference(trace_profile_buf);
++		trace_buf = rcu_dereference(perf_trace_buf);
+ 
+-	if (!raw_data)
++	if (!trace_buf)
+ 		goto end;
+ 
+-	raw_data = per_cpu_ptr(raw_data, __cpu);
++	trace_buf = per_cpu_ptr(trace_buf, __cpu);
++
++	if (trace_buf->recursion++)
++		goto end_recursion;
++
++	/*
++	 * Make recursion update visible before entering perf_tp_event
++	 * so that we protect from perf recursions.
++	 */
++	barrier();
++
++	raw_data = trace_buf->buf;
++
+ 	/* Zero dead bytes from alignment to avoid buffer leak to userspace */
+ 	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
+ 	entry = (struct kprobe_trace_entry *)raw_data;
+@@ -1249,8 +1262,12 @@ static __kprobes int kprobe_profile_func(struct kprobe *kp,
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		entry->args[i] = call_fetch(&tp->args[i].fetch, regs);
+ 	perf_tp_event(call->id, entry->ip, 1, entry, size);
++
++end_recursion:
++	trace_buf->recursion--;
+ end:
+ 	local_irq_restore(irq_flags);
++
+ 	return 0;
+ }
+ 
+@@ -1261,6 +1278,7 @@ static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
+ 	struct trace_probe *tp = container_of(ri->rp, struct trace_probe, rp);
+ 	struct ftrace_event_call *call = &tp->call;
+ 	struct kretprobe_trace_entry *entry;
++	struct perf_trace_buf *trace_buf;
+ 	struct trace_entry *ent;
+ 	int size, __size, i, pc, __cpu;
+ 	unsigned long irq_flags;
+@@ -1282,14 +1300,26 @@ static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
+ 	__cpu = smp_processor_id();
+ 
+ 	if (in_nmi())
+-		raw_data = rcu_dereference(trace_profile_buf_nmi);
++		trace_buf = rcu_dereference(perf_trace_buf_nmi);
+ 	else
+-		raw_data = rcu_dereference(trace_profile_buf);
++		trace_buf = rcu_dereference(perf_trace_buf);
+ 
+-	if (!raw_data)
++	if (!trace_buf)
+ 		goto end;
+ 
+-	raw_data = per_cpu_ptr(raw_data, __cpu);
++	trace_buf = per_cpu_ptr(trace_buf, __cpu);
++
++	if (trace_buf->recursion++)
++		goto end_recursion;
++
++	/*
++	 * Make recursion update visible before entering perf_tp_event
++	 * so that we protect from perf recursions.
++	 */
++	barrier();
++
++	raw_data = trace_buf->buf;
++
+ 	/* Zero dead bytes from alignment to avoid buffer leak to userspace */
+ 	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
+ 	entry = (struct kretprobe_trace_entry *)raw_data;
+@@ -1303,8 +1333,12 @@ static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		entry->args[i] = call_fetch(&tp->args[i].fetch, regs);
+ 	perf_tp_event(call->id, entry->ret_ip, 1, entry, size);
++
++end_recursion:
++	trace_buf->recursion--;
+ end:
+ 	local_irq_restore(irq_flags);
++
+ 	return 0;
+ }
+ 
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index 58b8e53..51213b0 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -477,6 +477,7 @@ static int sys_prof_refcount_exit;
+ static void prof_syscall_enter(struct pt_regs *regs, long id)
+ {
+ 	struct syscall_metadata *sys_data;
++	struct perf_trace_buf *trace_buf;
+ 	struct syscall_trace_enter *rec;
+ 	unsigned long flags;
+ 	char *raw_data;
+@@ -507,14 +508,25 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
+ 	cpu = smp_processor_id();
+ 
+ 	if (in_nmi())
+-		raw_data = rcu_dereference(trace_profile_buf_nmi);
++		trace_buf = rcu_dereference(perf_trace_buf_nmi);
+ 	else
+-		raw_data = rcu_dereference(trace_profile_buf);
++		trace_buf = rcu_dereference(perf_trace_buf);
+ 
+-	if (!raw_data)
++	if (!trace_buf)
+ 		goto end;
+ 
+-	raw_data = per_cpu_ptr(raw_data, cpu);
++	trace_buf = per_cpu_ptr(trace_buf, cpu);
++
++	if (trace_buf->recursion++)
++		goto end_recursion;
++
++	/*
++	 * Make recursion update visible before entering perf_tp_event
++	 * so that we protect from perf recursions.
++	 */
++	barrier();
++
++	raw_data = trace_buf->buf;
+ 
+ 	/* zero the dead bytes from align to not leak stack to user */
+ 	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
+@@ -527,6 +539,8 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
+ 			       (unsigned long *)&rec->args);
+ 	perf_tp_event(sys_data->enter_id, 0, 1, rec, size);
+ 
++end_recursion:
++	trace_buf->recursion--;
+ end:
+ 	local_irq_restore(flags);
+ }
+@@ -574,6 +588,7 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
+ {
+ 	struct syscall_metadata *sys_data;
+ 	struct syscall_trace_exit *rec;
++	struct perf_trace_buf *trace_buf;
+ 	unsigned long flags;
+ 	int syscall_nr;
+ 	char *raw_data;
+@@ -605,14 +620,25 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
+ 	cpu = smp_processor_id();
+ 
+ 	if (in_nmi())
+-		raw_data = rcu_dereference(trace_profile_buf_nmi);
++		trace_buf = rcu_dereference(perf_trace_buf_nmi);
+ 	else
+-		raw_data = rcu_dereference(trace_profile_buf);
++		trace_buf = rcu_dereference(perf_trace_buf);
+ 
+-	if (!raw_data)
++	if (!trace_buf)
+ 		goto end;
+ 
+-	raw_data = per_cpu_ptr(raw_data, cpu);
++	trace_buf = per_cpu_ptr(trace_buf, cpu);
++
++	if (trace_buf->recursion++)
++		goto end_recursion;
++
++	/*
++	 * Make recursion update visible before entering perf_tp_event
++	 * so that we protect from perf recursions.
++	 */
++	barrier();
++
++	raw_data = trace_buf->buf;
+ 
+ 	/* zero the dead bytes from align to not leak stack to user */
+ 	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
+@@ -626,6 +652,8 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
+ 
+ 	perf_tp_event(sys_data->exit_id, 0, 1, rec, size);
+ 
++end_recursion:
++	trace_buf->recursion--;
+ end:
+ 	local_irq_restore(flags);
+ }
+-- 
+1.6.2.3
 
