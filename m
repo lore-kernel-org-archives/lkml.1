@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759884AbZKFVCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZKFVGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759884AbZKFVCN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 16:02:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759736AbZKFVCN
+	id S1759891AbZKFVGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 16:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759874AbZKFVGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 16:02:13 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:47163 "EHLO smtp.gentoo.org"
+	Fri, 6 Nov 2009 16:06:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8823 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759787AbZKFVCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 16:02:12 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: ltp-list@lists.sourceforge.net
-Subject: Re: [LTP] [ANNOUNCE] The Linux Test Project has been Released for OCTOBER 2009
-Date: Fri, 6 Nov 2009 16:03:45 -0500
-User-Agent: KMail/1.12.2 (Linux/2.6.31.4; KDE/4.3.2; x86_64; ; )
-Cc: Andi Kleen <andi@firstfloor.org>, subrata@linux.vnet.ibm.com,
-       "ltp-list" <ltp-list@lists.sf.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <1257167821.4977.41.camel@subratamodak.linux.ibm.com> <87iqdn76jg.fsf@basil.nowhere.org>
-In-Reply-To: <87iqdn76jg.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2309661.SqQ7l2ASyA";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	id S1759769AbZKFVGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 16:06:18 -0500
+Date: Fri, 6 Nov 2009 16:06:12 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, adobriyan@gmail.com, viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH] proc: revalidate dentry returned by
+ proc_pid_follow_link
+Message-ID: <20091106160612.4cd05e76@tlielax.poochiereds.net>
+In-Reply-To: <20091106203601.GD27751@shareable.org>
+References: <1257513594-31071-1-git-send-email-jlayton@redhat.com>
+	<20091106203601.GD27751@shareable.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911061603.47785.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2309661.SqQ7l2ASyA
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Fri, 6 Nov 2009 20:36:01 +0000
+Jamie Lokier <jamie@shareable.org> wrote:
 
-On Friday 06 November 2009 15:16:35 Andi Kleen wrote:
-> Subrata Modak <subrata@linux.vnet.ibm.com> writes:
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > OCTOBER 2009 Highlights:
->=20
-> s/High/Low/
->=20
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >      1. LTP Makefiles rewrite:(Project started 1.2 years back)
-> >              I. To accommodate correct build/installation practices,
-> >             II. better integrate Autoconf/Automake with tests for safer
-> >                 builds,
-> >            III. better cross-compilation of LTP sources.
->=20
-> Just as a warning for everyone: that change broke building on most old
-> distributions and there seems to be no interest in fixing that.
+> Jeff Layton wrote:
+> > The problem here is that this makes that code shortcut any lookup or
+> > revalidation of the dentry. In general, this isn't a problem -- in most
+> > cases the dentry is known to be good. It is a problem however for NFSv4.
+> > If this symlink is followed on an open operation no actual open call
+> > occurs and the open state isn't properly established. This causes
+> > problems when we later try to use this file descriptor for actual
+> > operations.
+> 
+> As NFS uses open() as a kind of fcntl-lock barrier, I can see it's
+> important to do _something_ on new opens, rather than just cloning
+> most of the file descriptor.
+> 
 
-clearly as an active developer you should know better.  you dont get people=
- to=20
-agree with and/or help you by pointlessly antagonizing them.
-=2Dmike
+I guess you mean the close-to-open cache consistency? If so, this
+problem doesn't actually break that. The actual nfs_file_open call does
+occur even when you're opening by following one of these symlinks. I
+believe the cache consistency code occurs there.
 
---nextPart2309661.SqQ7l2ASyA
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+The problem here is really nfsv4 specific. There the on-the-wire open
+call and initialization of state actually happens during d_lookup and
+d_revalidate. Neither of these happens with these LAST_BIND symlinks so
+we end up with a filp that has no NFSv4 state attached.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
+> > This patch takes a minimalist approach to fixing this by making the
+> > /proc/pid follow_link routine revalidate the dentry before returning it.
+> 
+> What happens if the file descriptor you are re-opening is for a file
+> which has been deleted.  Does it still have a revalidatable dentry?
+> 
 
-iQIcBAABAgAGBQJK9I8zAAoJEEFjO5/oN/WB4EwQAKX83vQLxg2juYpSzTEZhqjq
-SgDGxGnz2hk0rcMOwsxUma+YIga7CnXwVXcn2qdkH8llnMPv0x89Rp4uair8QAg/
-XjaHW+MiAxTgJKp2XFV+MnzApi6eK9tsxEUojypJV9VBHIOHgWqKUWUER8Xq5l7x
-7rFS2EyRRW18dwworPTf8XQxiAmLQzZdlQ7tCiQEmqPcAygYUwmWNBBNtpRZB7rv
-YSXAisAlI7aqhIw4Qc1kb3S9Kh+LxPP8K02Lfh2/tFgqHn51eINOllLicAVr+Prp
-FzLUjOf52uIRWyl5M27oEFb5x5bt3ye24FWeGOL6R6VBHlHxZ6wu1VkcVi43Ynpu
-3zpWdl0kNjMsogYf1qf4oIfKp49m6I4RCHGnRotdKzHP4fQi8bM7uvko0U8XkKao
-5GRwL93zrRxHC+qBxUEE8Khhcerv7VIC/pjXUZBxZKJm3ic8CyZKCpORERVz6nPm
-9r/gMXXAHXVgU5pVwsnDgMmYwFWZ+yVIeAqbKBXJtjhxHp77I5qlvUZHF320Waai
-6zozcSPPJn3HUMNSesZkFqhFCP+Xc1SBLTpa+0aZ347r0LSbKY4o/2lT1nAB3G3W
-D5vgp9eS3F36mhKdhc2bAt3F3LuLsP5i7yVLb5JfpopC8beWTsQnikxNKmKpNATJ
-e4X+YwOgbK5ih38geUva
-=SH/k
------END PGP SIGNATURE-----
+Well, these LAST_BIND symlinks return a real dget'ed dentry today. If
+we assume that it always returns a valid dentry (which seems to be the
+case), then I suppose it's OK to do a d_revalidate against it.
 
---nextPart2309661.SqQ7l2ASyA--
+It's possible though that that revalidate will either fail though or
+return that it's no good. In that case, this code just returns ESTALE
+which should make the path walking code revalidate all the way up the
+chain. That should (hopefully) make whatever syscall we're servicing
+return an error.
+
+Thanks for the review so far.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
