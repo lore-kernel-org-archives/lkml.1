@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760331AbZKFW7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760474AbZKFXhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760331AbZKFW7L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbZKFW7J
+	id S1760474AbZKFXhf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 18:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760351AbZKFXh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:59:09 -0500
-Received: from gate.crashing.org ([63.228.1.57]:54385 "EHLO gate.crashing.org"
+	Fri, 6 Nov 2009 18:37:26 -0500
+Received: from kroah.org ([198.145.64.141]:54829 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760223AbZKFW7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:59:09 -0500
-Subject: Re: [patch 09/16] powerpc: Replace old style lock initializer
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org
-In-Reply-To: <20091106223806.762624109@linutronix.de>
-References: <20091106223547.784916750@linutronix.de>
-	 <20091106223806.762624109@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 07 Nov 2009 09:55:44 +1100
-Message-ID: <1257548144.13611.267.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1760169AbZKFXhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 18:37:20 -0500
+Date: Fri, 6 Nov 2009 14:59:31 -0800
+From: Greg KH <greg@kroah.com>
+To: Sebastian =?iso-8859-1?Q?Dalfu=DF?= <sd@sedf.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Patch 3/3 v2] staging: rt2860: reduce superfluous exclamation
+ marks
+Message-ID: <20091106225931.GD32205@kroah.com>
+References: <20091106134812.GA27210@sedf.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091106134812.GA27210@sedf.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-06 at 22:41 +0000, Thomas Gleixner wrote:
-> plain text document attachment
-> (power-replace-old-style-lock-init.patch)
-> SPIN_LOCK_UNLOCKED is deprecated. Init the lock array at runtime
-> instead.
+On Fri, Nov 06, 2009 at 02:48:12PM +0100, Sebastian Dalfuﬂ wrote:
+> From: Sebastian Dalfuﬂ <sd@sedf.de>
 > 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linuxppc-dev@ozlabs.org
+> This patch is based on next-20091106.
+> This patch reduces the number of exclamation marks in DBGPRINT() and
+> printk() strings (also comments) to a slightly less insane number.
+> 
+> Signed-off-by: Sebastian Dalfuﬂ <sd@sedf.de>
 > ---
+> diff -ru b/drivers/staging/rt2860/common/cmm_data.c c/drivers/staging/rt2860/common/cmm_data.c
+> --- b/drivers/staging/rt2860/common/cmm_data.c	2009-11-06 08:03:10.000000000 +0100
+> +++ c/drivers/staging/rt2860/common/cmm_data.c	2009-11-06 12:04:42.201639959 +0100
+> @@ -1729,7 +1729,7 @@
+>  				  pAd->MacTab.Size));
+>  		} else {
+>  			DBGPRINT(RT_DEBUG_OFF,
+> -				 ("\n%s: Impossible Wcid = %d !!!!!\n",
+> +				 ("\n%s: Impossible Wcid = %d !!!\n",
 
-Looks reasonable. But iseries can be a bitch, so we do need to test it
-on monday.
+Heh, this is funny.  How did you determine that 3 '!' is acceptable when
+4 or 5 '!' are not?
 
-Cheers,
-Ben.
+As this is a pretty pointless patch, I'm not going to apply it.
 
->  arch/powerpc/platforms/iseries/htab.c |    8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/arch/powerpc/platforms/iseries/htab.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/iseries/htab.c
-> +++ linux-2.6/arch/powerpc/platforms/iseries/htab.c
-> @@ -19,8 +19,7 @@
->  
->  #include "call_hpt.h"
->  
-> -static spinlock_t iSeries_hlocks[64] __cacheline_aligned_in_smp =
-> -	{ [0 ... 63] = SPIN_LOCK_UNLOCKED};
-> +static spinlock_t iSeries_hlocks[64] __cacheline_aligned_in_smp;
->  
->  /*
->   * Very primitive algorithm for picking up a lock
-> @@ -245,6 +244,11 @@ static void iSeries_hpte_invalidate(unsi
->  
->  void __init hpte_init_iSeries(void)
->  {
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(iSeries_hlocks); i++)
-> +		spin_lock_init(&iSeries_hlocks[i]);
-> +
->  	ppc_md.hpte_invalidate	= iSeries_hpte_invalidate;
->  	ppc_md.hpte_updatepp	= iSeries_hpte_updatepp;
->  	ppc_md.hpte_updateboltedpp = iSeries_hpte_updateboltedpp;
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+thanks,
 
-
+greg k-h
