@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbZKFWIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760007AbZKFWGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760054AbZKFWIg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759961AbZKFWF5
+	id S1760007AbZKFWGG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:06:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759993AbZKFWGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:05:57 -0500
-Received: from kroah.org ([198.145.64.141]:39782 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:06:03 -0500
+Received: from kroah.org ([198.145.64.141]:39787 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759944AbZKFWF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:05:56 -0500
+	id S1759963AbZKFWF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:57 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:52 2009
-Message-Id: <20091106215952.485583618@mini.kroah.org>
+Message-Id: <20091106215952.613942748@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 13:56:22 -0800
+Date: Fri, 06 Nov 2009 13:56:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Avi Kivity <avi@redhat.com>, Chuck Ebbert <cebbert@redhat.com>
-Subject: [19/30] KVM: Prevent overflow in KVM_GET_SUPPORTED_CPUID (CVE-2009-3638)
+       Samuel Ortiz <samuel@sortiz.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: [20/30] irda: Add irda_skb_cb qdisc related padding
 References: <20091106215603.413650799@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-prevent-overflow-in-kvm_get_supported_cpuid-cve-2009-3638.patch
+Content-Disposition: inline; filename=irda-add-irda_skb_cb-qdisc-related-padding.patch
 In-Reply-To: <20091106220156.GA13813@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,28 +31,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Avi Kivity <avi@redhat.com>
+From: Samuel Ortiz <samuel@sortiz.org>
 
-commit 6a54435560efdab1a08f429a954df4d6c740bddf upstream.
+commit 69c30e1e7492192f882a3fc11888b320fde5206a upstream.
 
-The number of entries is multiplied by the entry size, which can
-overflow on 32-bit hosts.  Bound the entry count instead.
+We need to pad irda_skb_cb in order to keep it safe accross dev_queue_xmit()
+calls. This is some ugly and temporary hack triggered by recent qisc code
+changes.
+Even though it fixes bugzilla.kernel.org bug #11795, it will be replaced by a
+proper fix before 2.6.29 is released.
 
-Reported-by: David Wagner <daw@cs.berkeley.edu>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Samuel Ortiz <samuel@sortiz.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1591,6 +1591,8 @@ static int kvm_dev_ioctl_get_supported_cpuid(struct kvm_cpuid2 *cpuid,
+---
+ include/net/irda/irda_device.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/include/net/irda/irda_device.h
++++ b/include/net/irda/irda_device.h
+@@ -135,9 +135,11 @@ struct dongle_reg {
  
- 	if (cpuid->nent < 1)
- 		goto out;
-+	if (cpuid->nent > KVM_MAX_CPUID_ENTRIES)
-+		cpuid->nent = KVM_MAX_CPUID_ENTRIES;
- 	r = -ENOMEM;
- 	cpuid_entries = vmalloc(sizeof(struct kvm_cpuid_entry2) * cpuid->nent);
- 	if (!cpuid_entries)
+ /* 
+  * Per-packet information we need to hide inside sk_buff 
+- * (must not exceed 48 bytes, check with struct sk_buff) 
++ * (must not exceed 48 bytes, check with struct sk_buff)
++ * The default_qdisc_pad field is a temporary hack.
+  */
+ struct irda_skb_cb {
++	unsigned int default_qdisc_pad;
+ 	magic_t magic;       /* Be sure that we can trust the information */
+ 	__u32   next_speed;  /* The Speed to be set *after* this frame */
+ 	__u16   mtt;         /* Minimum turn around time */
 
 
