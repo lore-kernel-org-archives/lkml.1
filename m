@@ -1,110 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663AbZKFFjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbZKFGNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755663AbZKFFjp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 00:39:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZKFFjo
+	id S1756923AbZKFGNk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 01:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbZKFGNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 00:39:44 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:35473 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753503AbZKFFjn (ORCPT
+	Fri, 6 Nov 2009 01:13:39 -0500
+Received: from mga12.intel.com ([143.182.124.36]:51438 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756101AbZKFGNj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 00:39:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=OtQ07kUJxKaBrjszk6uL0XQOMsDqnzeAVTJUt5t5hzVkMzLt42WAm+B2CbTC9bG2ld
-         W9Va6KI4YHBuOpQjZqxPUVZcYL+l9/0lgw+PMlreff3pUPQv3c2NWOQg6PLjBLlDz6Lb
-         4i3tHg27PMPJpiG7xl+o/QqAWzmwD+edcrvyQ=
-Subject: Re: [PATCH -queue v0 4/6] [loongson] add basic fuloong2f support
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, LKML <linux-kernel@vger.kernel.org>,
-       huhb@lemote.com, yanh@lemote.com, Zhang Le <r0bertz@gentoo.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
-       liujl@lemote.com
-In-Reply-To: <20091105131603.GA18232@linux-mips.org>
-References: <cover.1257325319.git.wuzhangjin@gmail.com>
-	 <0f805f7d12c5a7cbcc125ba4a1b70113ec2047a6.1257325319.git.wuzhangjin@gmail.com>
-	 <20091105131603.GA18232@linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Fri, 06 Nov 2009 13:39:44 +0800
-Message-ID: <1257485984.2299.21.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Nov 2009 01:13:39 -0500
+X-ExtLoop1: 1
+Date: Fri, 6 Nov 2009 13:46:46 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: suresh.b.siddha@intel.com, qi.wang@intel.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86, therm: Only read the initial value of thermal LVT
+	entry on BSP
+Message-ID: <20091106054646.GA26336@ywang-moblin2.bj.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-05 at 14:16 +0100, Ralf Baechle wrote:
-> On Wed, Nov 04, 2009 at 05:05:47PM +0800, Wu Zhangjin wrote:
-> 
-> > diff --git a/arch/mips/loongson/fuloong-2f/irq.c b/arch/mips/loongson/fuloong-2f/irq.c
-> > new file mode 100644
-> > index 0000000..22c45fd
-> > --- /dev/null
-> > +++ b/arch/mips/loongson/fuloong-2f/irq.c
-> > @@ -0,0 +1,114 @@
-> > +/*
-> > + * Copyright (C) 2007 Lemote Inc.
-> > + * Author: Fuxin Zhang, zhangfx@lemote.com
-> > + *
-> > + *  This program is free software; you can redistribute  it and/or modify it
-> > + *  under  the terms of  the GNU General  Public License as published by the
-> > + *  Free Software Foundation;  either version 2 of the  License, or (at your
-> > + *  option) any later version.
-> > + */
-> > +
-> > +#include <linux/interrupt.h>
-> > +
-> > +#include <asm/irq_cpu.h>
-> > +#include <asm/i8259.h>
-> > +#include <asm/mipsregs.h>
-> > +
-> > +#include <loongson.h>
-> > +#include <machine.h>
-> > +
-> > +#define LOONGSON_TIMER_IRQ	(MIPS_CPU_IRQ_BASE + 7)	/* cpu timer */
-> > +#define LOONGSON_PERFCNT_IRQ	(MIPS_CPU_IRQ_BASE + 6) /* cpu perf counter */
-> > +#define LOONGSON_NORTH_BRIDGE_IRQ	(MIPS_CPU_IRQ_BASE + 6)	/* bonito */
-> > +#define LOONGSON_UART_IRQ	(MIPS_CPU_IRQ_BASE + 3)	/* cpu serial port */
-> > +#define LOONGSON_SOUTH_BRIDGE_IRQ	(MIPS_CPU_IRQ_BASE + 2)	/* i8259 */
-> > +
-> > +#define LOONGSON_INT_BIT_INT0		(1 << 11)
-> > +#define LOONGSON_INT_BIT_INT1		(1 << 12)
-> > +
-> > +static int mach_i8259_irq(void)
-> > +{
-> > +	int irq, isr, imr;
-> > +
-> > +	irq = -1;
-> > +
-> > +	if ((LOONGSON_INTISR & LOONGSON_INTEN) & LOONGSON_INT_BIT_INT0) {
-> > +		imr = inb(0x21) | (inb(0xa1) << 8);
-> > +		isr = inb(0x20) | (inb(0xa0) << 8);
-> > +		isr &= ~0x4;	/* irq2 for cascade */
-> > +		isr &= ~imr;
-> > +		irq = ffs(isr) - 1;
-> > +	}
-> 
-> Any reason why you're not using i8259_irq() from <asm/i8259.h> here?
-> That function not only gets the locking right, it also minimizes the number
-> of accesses to the i8259 - which even on modern silicon can be stuningly
-> slow.
-> 
+Only read the initial value of thermal LVT entry on BSP. The initial
+value of thermal LVT entries on all APs always reads 0x10000 because
+APs are woken up by BSP issuing INIT-SIPI-SIPI sequence to them and
+LVT registers are reset to 0s except for mask bits which are set to
+1s when APs receive INIT IPI.
 
-Hi, Ralf
+It is enough to check only BSP since BIOS is always setting the same
+value for all threads/cores.
 
-Just asked Yanhua, He told me there is a bug in cs5536, if using the
-i8259_irq() directly, we can not get the irq. and just tried it, the
-kernel hang on booting.
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+---
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-Regards,
-	Wu Zhangjin
-
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index b3a1dba..69ba972 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -259,6 +259,7 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
+ 	unsigned int cpu = smp_processor_id();
+ 	int tm2 = 0;
+ 	u32 l, h;
++	static u32 lvtthmr;
+ 
+ 	/* Thermal monitoring depends on ACPI and clock modulation*/
+ 	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
+@@ -270,7 +271,19 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
+ 	 * since it might be delivered via SMI already:
+ 	 */
+ 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-	h = apic_read(APIC_LVTTHMR);
++
++	/*
++	 * Only read the initial value of thermal LVT entry on BSP. The
++	 * initial value of thermal LVT entries on all APs always reads
++	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
++	 * sequence to them and LVT registers are reset to 0s except for
++	 * the mask bits which are set to 1s when APs receive INIT IPI.
++	 */
++	if (cpu == 0)
++		lvtthmr = apic_read(APIC_LVTTHMR);
++
++	h = lvtthmr;
++
+ 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
+ 		printk(KERN_DEBUG
+ 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
