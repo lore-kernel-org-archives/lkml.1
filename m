@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZKFDOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbZKFDTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbZKFDOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 22:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZKFDOQ
+	id S1755995AbZKFDTw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 22:19:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZKFDTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 22:14:16 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:41476 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753328AbZKFDOP convert rfc822-to-8bit (ORCPT
+	Thu, 5 Nov 2009 22:19:51 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:23861 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbZKFDTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 22:14:15 -0500
-From: "Zhang, Sonic" <Sonic.Zhang@analog.com>
-Cc: <vapier@gentoo.org>, "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       <linux-kernel@vger.kernel.org>, "Song, Barry" <Barry.Song@analog.com>,
-       <uclinux-dist-devel@blackfin.uclinux.org>
-X-IronPort-AV: E=Sophos;i="4.44,689,1249272000"; 
-   d="scan'208";a="6964752"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Uclinux-dist-devel] [PATCH] blackfin/trivial: remove duplicatedMAX macro from stamp.
-Date: Fri, 6 Nov 2009 11:17:38 +0800
-Message-ID: <0F1B54C89D5F954D8535DB252AF412FA05042B1D@chinexm1.ad.analog.com>
-In-Reply-To: <1257195888-6122-1-git-send-email-tfransosi@gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Uclinux-dist-devel] [PATCH] blackfin/trivial: remove duplicatedMAX macro from stamp.
-Thread-Index: AcpchouvFMK/Gq9NSKSz2qhH7pe31gCCF7dQ
-References: <1257195888-6122-1-git-send-email-tfransosi@gmail.com>
-To: "Thiago Farina" <tfransosi@gmail.com>, <trivial@kernel.org>
-X-OriginalArrivalTime: 06 Nov 2009 03:14:15.0714 (UTC) FILETIME=[38A4D020:01CA5E8F]
+	Thu, 5 Nov 2009 22:19:51 -0500
+Subject: Re: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent
+ on	passthrough
+From: Alex Williamson <alex.williamson@hp.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: dwmw2@infradead.org, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
+References: <20091104225359.2720.91502.stgit@nehalem.aw>
+	 <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 20:19:52 -0700
+Message-ID: <1257477592.2837.94.camel@2710p.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Sonic Zhang<sonic.zhang@analog.com>
+On Fri, 2009-11-06 at 11:41 +0900, FUJITA Tomonori wrote:
+> On Wed, 04 Nov 2009 15:59:34 -0700
+> Alex Williamson <alex.williamson@hp.com> wrote:
+> > @@ -2582,7 +2582,7 @@ static dma_addr_t __intel_map_single(struct device *hwdev, phys_addr_t paddr,
+> >  	BUG_ON(dir == DMA_NONE);
+> >  
+> >  	if (iommu_no_mapping(hwdev))
+> > -		return paddr;
+> > +		return paddr + size > dma_mask ? 0 : paddr;
+> 
+> You can use dma_capable(hwdev, paddr, size) here.
 
------Original Message-----
-From: uclinux-dist-devel-bounces@blackfin.uclinux.org
-[mailto:uclinux-dist-devel-bounces@blackfin.uclinux.org] On Behalf Of
-Thiago Farina
-Sent: Tuesday, November 03, 2009 5:05 AM
-To: trivial@kernel.org
-Cc: vapier@gentoo.org; Hennerich, Michael; linux-kernel@vger.kernel.org;
-Song, Barry; uclinux-dist-devel@blackfin.uclinux.org; Thiago Farina
-Subject: [Uclinux-dist-devel] [PATCH] blackfin/trivial: remove
-duplicatedMAX macro from stamp.
+Good thought, however __intel_map_single() gets called with either the
+dma_mask or the coherent_dma_mask.  dma_capable() only checks dma_mask,
+so would only work for one of the callers.
 
-Since the kernel api already has the macro "max", just use it instead of
-declaring another one.
+> >  	domain = get_valid_domain_for_dev(pdev);
+> >  	if (!domain)
+> > @@ -2767,7 +2767,15 @@ static void *intel_alloc_coherent(struct device *hwdev, size_t size,
+> >  
+> >  	size = PAGE_ALIGN(size);
+> >  	order = get_order(size);
+> > -	flags &= ~(GFP_DMA | GFP_DMA32);
+> > +
+> > +	if (!iommu_no_mapping(hwdev))
+> > +		flags &= ~(GFP_DMA | GFP_DMA32);
+> > +	else if (hwdev->coherent_dma_mask != DMA_BIT_MASK(64)) {
+> > +		if (hwdev->coherent_dma_mask < DMA_BIT_MASK(32))
+> > +			flags |= GFP_DMA;
+> > +		else
+> > +			flags |= GFP_DMA32;
+> > +	}
+> 
+> This is fine for 2.6.32 but we'll cleanly fix this by using
+> swiotlb_dma_ops later, right?
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- arch/blackfin/mach-bf537/boards/stamp.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+I'm open to suggestions.  I don't really understand why we dropped
+swiotlb for passthrough mode in 2.6.32 to start with.  It seems like we
+now have a couple corner cases where we have to either hope for the best
+or effectively ignore the request to use passthrough.  Thanks,
 
-diff --git a/arch/blackfin/mach-bf537/boards/stamp.c
-b/arch/blackfin/mach-bf537/boards/stamp.c
-index c46baa5..c76da37 100644
---- a/arch/blackfin/mach-bf537/boards/stamp.c
-+++ b/arch/blackfin/mach-bf537/boards/stamp.c
-@@ -385,10 +385,9 @@ static struct platform_nand_data
-bfin_plat_nand_data = {
- 	},
- };
- 
--#define MAX(x, y) (x > y ? x : y)
- static struct resource bfin_plat_nand_resources = {
- 	.start = 0x20212000,
--	.end   = 0x20212000 + (1 << MAX(BFIN_NAND_PLAT_CLE,
-BFIN_NAND_PLAT_ALE)),
-+	.end   = 0x20212000 + (1 << max(BFIN_NAND_PLAT_CLE,
-BFIN_NAND_PLAT_ALE)),
- 	.flags = IORESOURCE_IO,
- };
- 
---
-1.6.5.1.61.ge79999
+Alex
 
-_______________________________________________
-Uclinux-dist-devel mailing list
-Uclinux-dist-devel@blackfin.uclinux.org
-https://blackfin.uclinux.org/mailman/listinfo/uclinux-dist-devel
+
+
