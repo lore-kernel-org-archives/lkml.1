@@ -1,237 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbZKFAmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZKFAnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759270AbZKFAmO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 19:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZKFAmM
+	id S1759274AbZKFAnR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 19:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759250AbZKFAmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 19:42:12 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:39322 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759191AbZKFAmG (ORCPT
+	Thu, 5 Nov 2009 19:42:10 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:43409 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759245AbZKFAmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 19:42:06 -0500
+	Thu, 5 Nov 2009 19:42:07 -0500
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: <linux-arch@vger.kernel.org>
 Cc: <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 02/11] sysctl: Refactor the binary sysctl handling to remove duplicate code
-Date: Thu,  5 Nov 2009 16:41:45 -0800
-Message-Id: <1257468114-6823-2-git-send-email-ebiederm@xmission.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 03/11] sysctl: Introduce a generic compat sysctl sysctl
+Date: Thu,  5 Nov 2009 16:41:46 -0800
+Message-Id: <1257468114-6823-3-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.5.2.143.g8cc62
 In-Reply-To: <m1tyx8trik.fsf@fess.ebiederm.org>
 References: <m1tyx8trik.fsf@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Mail-From: ebiederm@xmission.com
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Read in the binary sysctl path once, instead of reread it
-from user space each time the code needs to access a path
-element.
+This uses compat_alloc_userspace to remove the various
+hacks to allow do_sysctl to write to throuh oldlenp.
 
-The deprecated sysctl warning is moved to do_sysctl so
-that the compat_sysctl entries syscalls will also warn.
+The rest of our mature compat syscall helper facitilies
+are used as well to ensure we have a nice clean maintainable
+compat syscall that can be used on all architectures.
 
-The return of -ENOSYS when !CONFIG_SYSCTL_SYSCALL is moved
-to binary_sysctl.  Always leaving a do_sysctl available
-that handles !CONFIG_SYSCTL_SYSCALL and printing the
-deprecated sysctl warning allows for a single defitition
-of the sysctl syscall.
+The motiviation for a generic compat sysctl (besides the
+obvious hack removal) is to reduce the number of compat
+sysctl defintions out there so I can refactor the
+binary sysctl implementation.
 
+ppc already used the name compat_sys_sysctl so I remove the
+ppcs version here.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- kernel/sysctl_binary.c |  123 ++++++++++++++++++++++-------------------------
- 1 files changed, 58 insertions(+), 65 deletions(-)
+ arch/powerpc/kernel/sys_ppc32.c |   52 ---------------------------------------
+ kernel/sysctl_binary.c          |   50 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+), 52 deletions(-)
 
-diff --git a/kernel/sysctl_binary.c b/kernel/sysctl_binary.c
-index 2431653..c5cc393 100644
---- a/kernel/sysctl_binary.c
-+++ b/kernel/sysctl_binary.c
-@@ -13,8 +13,6 @@
- #include <linux/file.h>
- #include <linux/ctype.h>
- 
--static int deprecated_sysctl_warning(struct __sysctl_args *args);
--
- #ifdef CONFIG_SYSCTL_SYSCALL
- 
- /* Perform the actual read/write of a sysctl table entry. */
-@@ -50,7 +48,7 @@ static int do_sysctl_strategy(struct ctl_table_root *root,
- 	return 0;
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index b97c2d6..c5a4732 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -520,58 +520,6 @@ asmlinkage long compat_sys_umask(u32 mask)
+ 	return sys_umask((int)mask);
  }
  
--static int parse_table(int __user *name, int nlen,
-+static int parse_table(const int *name, int nlen,
- 		       void __user *oldval, size_t __user *oldlenp,
- 		       void __user *newval, size_t newlen,
- 		       struct ctl_table_root *root,
-@@ -60,8 +58,7 @@ static int parse_table(int __user *name, int nlen,
- repeat:
- 	if (!nlen)
- 		return -ENOTDIR;
--	if (get_user(n, name))
+-#ifdef CONFIG_SYSCTL_SYSCALL
+-struct __sysctl_args32 {
+-	u32 name;
+-	int nlen;
+-	u32 oldval;
+-	u32 oldlenp;
+-	u32 newval;
+-	u32 newlen;
+-	u32 __unused[4];
+-};
+-
+-asmlinkage long compat_sys_sysctl(struct __sysctl_args32 __user *args)
+-{
+-	struct __sysctl_args32 tmp;
+-	int error;
+-	size_t oldlen;
+-	size_t __user *oldlenp = NULL;
+-	unsigned long addr = (((unsigned long)&args->__unused[0]) + 7) & ~7;
+-
+-	if (copy_from_user(&tmp, args, sizeof(tmp)))
 -		return -EFAULT;
-+	n = *name;
- 	for ( ; table->ctl_name || table->procname; table++) {
- 		if (!table->ctl_name)
- 			continue;
-@@ -84,19 +81,13 @@ repeat:
- 	return -ENOTDIR;
- }
- 
--int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
--	       void __user *newval, size_t newlen)
-+static ssize_t binary_sysctl(const int *name, int nlen,
-+	void __user *oldval, size_t __user *oldlenp,
-+	void __user *newval, size_t newlen)
-+
- {
- 	struct ctl_table_header *head;
--	int error = -ENOTDIR;
 -
--	if (nlen <= 0 || nlen >= CTL_MAXNAME)
--		return -ENOTDIR;
--	if (oldval) {
--		int old_len;
--		if (!oldlenp || get_user(old_len, oldlenp))
+-	if (tmp.oldval && tmp.oldlenp) {
+-		/* Duh, this is ugly and might not work if sysctl_args
+-		   is in read-only memory, but do_sysctl does indirectly
+-		   a lot of uaccess in both directions and we'd have to
+-		   basically copy the whole sysctl.c here, and
+-		   glibc's __sysctl uses rw memory for the structure
+-		   anyway.  */
+-		oldlenp = (size_t __user *)addr;
+-		if (get_user(oldlen, (compat_size_t __user *)compat_ptr(tmp.oldlenp)) ||
+-		    put_user(oldlen, oldlenp))
 -			return -EFAULT;
 -	}
-+	ssize_t error = -ENOTDIR;
- 
- 	for (head = sysctl_head_next(NULL); head;
- 			head = sysctl_head_next(head)) {
-@@ -111,74 +102,76 @@ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *ol
- 	return error;
- }
- 
--SYSCALL_DEFINE1(sysctl, struct __sysctl_args __user *, args)
--{
--	struct __sysctl_args tmp;
--	int error;
--
--	if (copy_from_user(&tmp, args, sizeof(tmp)))
--		return -EFAULT;
--
--	error = deprecated_sysctl_warning(&tmp);
--	if (error)
--		goto out;
 -
 -	lock_kernel();
--	error = do_sysctl(tmp.name, tmp.nlen, tmp.oldval, tmp.oldlenp,
--			  tmp.newval, tmp.newlen);
+-	error = do_sysctl(compat_ptr(tmp.name), tmp.nlen,
+-			  compat_ptr(tmp.oldval), oldlenp,
+-			  compat_ptr(tmp.newval), tmp.newlen);
 -	unlock_kernel();
--out:
+-	if (oldlenp) {
+-		if (!error) {
+-			if (get_user(oldlen, oldlenp) ||
+-			    put_user(oldlen, (compat_size_t __user *)compat_ptr(tmp.oldlenp)))
+-				error = -EFAULT;
+-		}
+-		copy_to_user(args->__unused, tmp.__unused, sizeof(tmp.__unused));
+-	}
 -	return error;
 -}
+-#endif
 -
- #else /* CONFIG_SYSCTL_SYSCALL */
+ unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
+ 			  unsigned long prot, unsigned long flags,
+ 			  unsigned long fd, unsigned long pgoff)
+diff --git a/kernel/sysctl_binary.c b/kernel/sysctl_binary.c
+index c5cc393..a2fed5b 100644
+--- a/kernel/sysctl_binary.c
++++ b/kernel/sysctl_binary.c
+@@ -175,3 +175,53 @@ SYSCALL_DEFINE1(sysctl, struct __sysctl_args __user *, args)
  
--SYSCALL_DEFINE1(sysctl, struct __sysctl_args __user *, args)
-+static ssize_t binary_sysctl(const int *ctl_name, int nlen,
-+	void __user *oldval, size_t __user *oldlenp,
-+	void __user *newval, size_t newlen)
- {
--	struct __sysctl_args tmp;
--	int error;
--
--	if (copy_from_user(&tmp, args, sizeof(tmp)))
--		return -EFAULT;
--
--	error = deprecated_sysctl_warning(&tmp);
--
--	/* If no error reading the parameters then just -ENOSYS ... */
--	if (!error)
--		error = -ENOSYS;
--
--	return error;
-+	return -ENOSYS;
+ 	return error;
  }
- 
- #endif /* CONFIG_SYSCTL_SYSCALL */
- 
--static int deprecated_sysctl_warning(struct __sysctl_args *args)
-+static void deprecated_sysctl_warning(const int *name, int nlen)
- {
- 	static int msg_count;
--	int name[CTL_MAXNAME];
- 	int i;
- 
--	/* Check args->nlen. */
--	if (args->nlen < 0 || args->nlen > CTL_MAXNAME)
--		return -ENOTDIR;
--
--	/* Read in the sysctl name for better debug message logging */
--	for (i = 0; i < args->nlen; i++)
--		if (get_user(name[i], args->name + i))
--			return -EFAULT;
--
- 	/* Ignore accesses to kernel.version */
--	if ((args->nlen == 2) && (name[0] == CTL_KERN) && (name[1] == KERN_VERSION))
--		return 0;
-+	if ((nlen == 2) && (name[0] == CTL_KERN) && (name[1] == KERN_VERSION))
-+		return;
- 
- 	if (msg_count < 5) {
- 		msg_count++;
- 		printk(KERN_INFO
- 			"warning: process `%s' used the deprecated sysctl "
- 			"system call with ", current->comm);
--		for (i = 0; i < args->nlen; i++)
-+		for (i = 0; i < nlen; i++)
- 			printk("%d.", name[i]);
- 		printk("\n");
- 	}
--	return 0;
-+	return;
-+}
 +
-+int do_sysctl(int __user *args_name, int nlen,
-+	void __user *oldval, size_t __user *oldlenp,
-+	void __user *newval, size_t newlen)
++#ifdef CONFIG_COMPAT
++#include <asm/compat.h>
++
++struct compat_sysctl_args {
++	compat_uptr_t	name;
++	int		nlen;
++	compat_uptr_t	oldval;
++	compat_uptr_t	oldlenp;
++	compat_uptr_t	newval;
++	compat_size_t	newlen;
++	compat_ulong_t	__unused[4];
++};
++
++asmlinkage long compat_sys_sysctl(struct compat_sysctl_args __user *args)
 +{
-+	int name[CTL_MAXNAME];
++	struct compat_sysctl_args tmp;
++	compat_size_t __user *compat_oldlenp;
++	size_t __user *oldlenp = NULL;
 +	size_t oldlen = 0;
-+	int i;
-+
-+	if (nlen <= 0 || nlen >= CTL_MAXNAME)
-+		return -ENOTDIR;
-+	if (oldval && !oldlenp)
-+		return -EFAULT;
-+	if (oldlenp && get_user(oldlen, oldlenp))
-+		return -EFAULT;
-+
-+	/* Read in the sysctl name for simplicity */
-+	for (i = 0; i < nlen; i++)
-+		if (get_user(name[i], args_name + i))
-+			return -EFAULT;
-+
-+	deprecated_sysctl_warning(name, nlen);
-+
-+	return binary_sysctl(name, nlen, oldval, oldlenp, newval, newlen);
-+}
-+
-+
-+SYSCALL_DEFINE1(sysctl, struct __sysctl_args __user *, args)
-+{
-+	struct __sysctl_args tmp;
-+	int error;
++	ssize_t result;
 +
 +	if (copy_from_user(&tmp, args, sizeof(tmp)))
 +		return -EFAULT;
 +
++	compat_oldlenp = compat_ptr(tmp.oldlenp);
++	if (compat_oldlenp) {
++		oldlenp = compat_alloc_user_space(sizeof(*compat_oldlenp));
++
++		if (get_user(oldlen, compat_oldlenp) ||
++		    put_user(oldlen, oldlenp))
++			return -EFAULT;
++	}
++
 +	lock_kernel();
-+	error = do_sysctl(tmp.name, tmp.nlen, tmp.oldval, tmp.oldlenp,
-+			  tmp.newval, tmp.newlen);
++	result = do_sysctl(compat_ptr(tmp.name), tmp.nlen,
++			   compat_ptr(tmp.oldval), oldlenp,
++			   compat_ptr(tmp.newval), tmp.newlen);
 +	unlock_kernel();
 +
-+	return error;
- }
++	if (oldlenp && !result) {
++		if (get_user(oldlen, oldlenp) ||
++		    put_user(oldlen, compat_oldlenp))
++			return -EFAULT;
++	}
++
++	return result;
++}
++
++#endif /* CONFIG_COMPAT */
 -- 
 1.6.5.2.143.g8cc62
 
