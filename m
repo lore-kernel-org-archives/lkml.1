@@ -1,179 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbZKFFZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZKFFeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbZKFFZF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 00:25:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZKFFZE
+	id S1755496AbZKFFeL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 00:34:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbZKFFeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 00:25:04 -0500
-Received: from yumi.tdiedrich.de ([85.10.210.183]:43802 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbZKFFZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 00:25:02 -0500
-Date: Fri, 6 Nov 2009 06:25:05 +0100
-From: Tobias Diedrich <ranma@tdiedrich.de>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: netconsole: tulip: possible remote DoS? due to kernel freeze
-	on heavy RX traffic after Order-1 allocation failure
-Message-ID: <20091106052505.GA3912@yumi.tdiedrich.de>
-Mail-Followup-To: Tobias Diedrich <ranma@tdiedrich.de>,
-	Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
-References: <20091105113106.GA4373@yumi.tdiedrich.de> <1257450578.2873.609.camel@calx> <20091106032754.GA15429@yumi.tdiedrich.de> <1257484384.2873.618.camel@calx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257484384.2873.618.camel@calx>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 6 Nov 2009 00:34:10 -0500
+Received: from mail.gmx.net ([213.165.64.20]:41865 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754595AbZKFFeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 00:34:09 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+BNLBfQwyBKDvs2vp5pT2u306jhHA2laYUguoj/V
+	WiH/3+9gwR1d9z
+Subject: Re: Intermittent early panic in try_to_wake_up
+From: Mike Galbraith <efault@gmx.de>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <4AF36364.9090004@gmail.com>
+References: <4AE0EBBD.6090005@gmail.com>
+	 <1256289781.22979.11.camel@marge.simson.net>  <4AF36364.9090004@gmail.com>
+Content-Type: text/plain
+Date: Fri, 06 Nov 2009 06:34:10 +0100
+Message-Id: <1257485650.6233.17.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Fri, 2009-11-06 at 04:27 +0100, Tobias Diedrich wrote:
-> > Matt Mackall wrote:
-> > > > Example from netconsole log:
-> > > > |perl: page allocation failure. order:1, mode:0x20
-> > > > |Pid: 3541, comm: perl Tainted: G        W  2.6.30.9-tomodachi #16
-> > > > |Call Trace:
-> > > > | [<c013e56d>] ? __alloc_pages_internal+0x353/0x36f
-> > > > | [<c0154f2c>] ? cache_alloc_refill+0x2ab/0x544
-> > > > | [<c0355479>] ? dev_alloc_skb+0x11/0x25
-> > > > | [<c015526f>] ? __kmalloc_track_caller+0xaa/0xf9
-> > > > | [<c0354ae5>] ? __alloc_skb+0x48/0xff
-> > > > | [<c0355479>] ? dev_alloc_skb+0x11/0x25
-> > > > | [<c02d4ba9>] ? tulip_refill_rx+0x3c/0x115
-> > > > | [<c02d4fff>] ? tulip_poll+0x37d/0x416
-> > > > | [<c0359763>] ? net_rx_action+0x6b/0x12f
-> > > > | [<c0121ad7>] ? __do_softirq+0x4e/0xbf
-> > > > | [<c0121a89>] ? __do_softirq+0x0/0xbf
-> > > > | <IRQ>  [<c0107700>] ? do_IRQ+0x53/0x63
-> > > > | [<c0106610>] ? common_interrupt+0x30/0x38
-> > > 
-> > > I don't see anything in this trace to implicate netconsole? This is the
-> > > normal network receive path running out of input buffers then running
-> > > into memory fragmentation.
+Hi Kevin,
+
+On Thu, 2009-11-05 at 19:44 -0400, Kevin Winchester wrote:
+> Mike Galbraith wrote:
+> > On Thu, 2009-10-22 at 20:33 -0300, Kevin Winchester wrote:
+> >> Hi,
+> >>
+> >> A week or two ago I saw a panic on boot in try_to_wake_up, but it was not
+> >> reproducible and I had not written down any trace information.  This
+> >> evening I saw it twice more, but then on the third boot things worked fine.
+> >> This time I copied down the stack trace:
+> >>
+> >> try_to_wake_up+0x2e/0x102
+> >> wake_up_process+0x10/0x12
+> >> kthread_create+0x88/0x12c
+> >> ?ksoftirqd+0x00/0xb7
+> >> cpu_callback+0x42/0x8f
+> >> ?spawn_ksoftirqd+0x0/0x39
+> >> spawn_ksoftirqd+0x17/0x39
+> >> do_one_initcall+0x58/0x147
+> >>
+> >> The first time it happened, I remember checking the git logs and it was
+> >> shortly after:
+> >>
+> >> commit f5dc37530ba8a35aae0f7f4f13781d1904f71e94
+> >> Author: Mike Galbraith <efault@gmx.de>
+> >> Date:   Fri Oct 9 08:35:03 2009 +0200
+> >>
+> >>     sched: Update the clock of runqueue select_task_rq() selected
+> >>     
+> >>     In try_to_wake_up(), we update the runqueue clock, but
+> >>     select_task_rq() may select a different runqueue than the one we
+> >>     updated, leaving the new runqueue's clock stale for a bit.
+> >>     
+> >>     This patch cures occasional huge latencies reported by latencytop
+> >>     when coming out of idle on a mostly idle NO_HZ box.
+> >>     
+> >>     Signed-off-by: Mike Galbraith <efault@gmx.de>
+> >>     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >>     LKML-Reference: <1255070103.7639.30.camel@marge.simson.net>
+> >>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> >>
+> >>
+> >> ...so perhaps that has something to do with it.
 > > 
-> > I'm just thinking the hang might be related to using netconsole.
-> > I guess I should try reproducing it without it.
+> > I don't think that's very likely.  Box did explode near my grubby
+> > fingerprints though.
+> > 
+> >> Config below.  Any help would be appreciated.
+> > 
+> > Building with your config, try_to_wake_up+0x2e is around..
+> > 
+> > (gdb) list *try_to_wake_up+0x2e
+> > 0xffffffff81029107 is in try_to_wake_up (kernel/sched.c:2324).
+> > 2319            this_cpu = get_cpu();
+> > 2320
+> > 2321            smp_wmb();
+> > 2322            rq = orig_rq = task_rq_lock(p, &flags);
+> > 2323            update_rq_clock(rq);
+> > 2324            if (!(p->state & state))
+> > 2325                    goto out;
+> > 2326
+> > 2327            if (p->se.on_rq)
+> > 2328                    goto out_running;
+> > 
+> > I don't see how any of that can explode without something very bad
+> > having happened to ksoftirqd before we tried to wake it.
+> > 
 > 
-> You should, though I'd be surprised if it matters.
-
-Apparently it does matter:
-For one, the system no longer hangs after the allocation failure,
-and also instead of Order-1 it is now Order-0:
-
-[  375.398423] swapper: page allocation failure. order:0, mode:0x20
-[  375.398483] Pid: 0, comm: swapper Not tainted 2.6.31.5-nokmem-tomodachi #3
-[  375.398519] Call Trace:
-[  375.398566]  [<c10395a8>] ? __alloc_pages_nodemask+0x40f/0x453
-[  375.398613]  [<c104e988>] ? cache_alloc_refill+0x1f3/0x382
-[  375.398648]  [<c104eb76>] ? __kmalloc+0x5f/0x97
-[  375.398690]  [<c1228003>] ? __alloc_skb+0x44/0x101
-[  375.398723]  [<c12289b5>] ? dev_alloc_skb+0x11/0x25
-[  375.398760]  [<c11a53a1>] ? tulip_refill_rx+0x3c/0x115
-[  375.398793]  [<c11a57f7>] ? tulip_poll+0x37d/0x416
-[  375.398832]  [<c122cf56>] ? net_rx_action+0x3a/0xdb
-[  375.398874]  [<c101d8b0>] ? __do_softirq+0x5b/0xcb
-[  375.398908]  [<c101d855>] ? __do_softirq+0x0/0xcb
-[  375.398937]  <IRQ>  [<c1003e0b>] ? do_IRQ+0x66/0x76
-[  375.398989]  [<c1002d70>] ? common_interrupt+0x30/0x38
-[  375.399026]  [<c100725c>] ? default_idle+0x25/0x38
-[  375.399058]  [<c1001a1e>] ? cpu_idle+0x64/0x7a
-[  375.399102]  [<c14105ff>] ? start_kernel+0x251/0x258
-[  375.399133] Mem-Info:
-[  375.399159] DMA per-cpu:
-[  375.399184] CPU    0: hi:    0, btch:   1 usd:   0
-[  375.399214] Normal per-cpu:
-[  375.399241] CPU    0: hi:   90, btch:  15 usd:  28
-[  375.399276] Active_anon:6709 active_file:1851 inactive_anon:6729
-[  375.399278]  inactive_file:2051 unevictable:40962 dirty:998 writeback:914 unstable:0
-[  375.399281]  free:232 slab:1843 mapped:1404 pagetables:613 bounce:0
-[  375.399391] DMA free:924kB min:4kB low:4kB high:4kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:15028kB present:15872kB pages_scanned:0 all_unreclaimable? yes
-[  375.399465] lowmem_reserve[]: 0 230 230
-[  375.399537] Normal free:4kB min:92kB low:112kB high:136kB active_anon:26836kB inactive_anon:26916kB active_file:7404kB inactive_file:8204kB unevictable:148820kB present:235648kB pages_scanned:32 all_unreclaimable? no
-[  375.399615] lowmem_reserve[]: 0 0 0
-[  375.399681] DMA: 1*4kB 1*8kB 1*16kB 0*32kB 0*64kB 1*128kB 1*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 924kB
-[  375.399850] Normal: 1*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 4kB
-[  375.400016] 4412 total pagecache pages
-[  375.400041] 494 pages in swap cache
-[  375.400041] Swap cache stats: add 8110, delete 7616, find 139/205
-[  375.400041] Free swap  = 494212kB
-[  375.400041] Total swap = 524280kB
-[  375.400041] 63472 pages RAM
-[  375.400041] 1742 pages reserved
-[  375.400041] 14429 pages shared
-[  375.400041] 56917 pages non-shared
-[  378.306631] swapper: page allocation failure. order:0, mode:0x20
-[  378.306686] Pid: 0, comm: swapper Not tainted 2.6.31.5-nokmem-tomodachi #3
-[  378.306722] Call Trace:
-[  378.306769]  [<c10395a8>] ? __alloc_pages_nodemask+0x40f/0x453
-[  378.306817]  [<c104e988>] ? cache_alloc_refill+0x1f3/0x382
-[  378.306853]  [<c104eb76>] ? __kmalloc+0x5f/0x97
-[  378.306894]  [<c1228003>] ? __alloc_skb+0x44/0x101
-[  378.306927]  [<c12289b5>] ? dev_alloc_skb+0x11/0x25
-[  378.306964]  [<c11a53a1>] ? tulip_refill_rx+0x3c/0x115
-[  378.306996]  [<c11a57f7>] ? tulip_poll+0x37d/0x416
-[  378.307035]  [<c122cf56>] ? net_rx_action+0x3a/0xdb
-[  378.307079]  [<c101d8b0>] ? __do_softirq+0x5b/0xcb
-[  378.307112]  [<c101d855>] ? __do_softirq+0x0/0xcb
-[  378.307142]  <IRQ>  [<c1003e0b>] ? do_IRQ+0x66/0x76
-[  378.307193]  [<c1002d70>] ? common_interrupt+0x30/0x38
-[  378.307232]  [<c100725c>] ? default_idle+0x25/0x38
-[  378.307263]  [<c1001a1e>] ? cpu_idle+0x64/0x7a
-[  378.307306]  [<c14105ff>] ? start_kernel+0x251/0x258
-[  378.307338] Mem-Info:
-[  378.307364] DMA per-cpu:
-[  378.307389] CPU    0: hi:    0, btch:   1 usd:   0
-[  378.307420] Normal per-cpu:
-[  378.307446] CPU    0: hi:   90, btch:  15 usd:  70
-[  378.307480] Active_anon:6231 active_file:2340 inactive_anon:6283
-[  378.307483]  inactive_file:2445 unevictable:40962 dirty:989 writeback:1024 unstable:0
-[  378.307485]  free:232 slab:1872 mapped:1408 pagetables:613 bounce:0
-[  378.307595] DMA free:924kB min:4kB low:4kB high:4kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:15028kB present:15872kB pages_scanned:0 all_unreclaimable? yes
-[  378.307668] lowmem_reserve[]: 0 230 230
-[  378.307739] Normal free:4kB min:92kB low:112kB high:136kB active_anon:24924kB inactive_anon:25132kB active_file:9360kB inactive_file:9780kB unevictable:148820kB present:235648kB pages_scanned:32 all_unreclaimable? no
-[  378.307816] lowmem_reserve[]: 0 0 0
-[  378.307882] DMA: 1*4kB 1*8kB 1*16kB 0*32kB 0*64kB 1*128kB 1*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 924kB
-[  378.308052] Normal: 1*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 4kB
-[  378.308219] 5866 total pagecache pages
-[  378.308247] 1065 pages in swap cache
-[  378.308277] Swap cache stats: add 9651, delete 8586, find 152/220
-[  378.308308] Free swap  = 488152kB
-[  378.308334] Total swap = 524280kB
-[  378.310030] 63472 pages RAM
-[  378.310030] 1742 pages reserved
-[  378.310030] 15289 pages shared
-[  378.310030] 56019 pages non-shared
-
-> > Or is it normal that a box will hang if the network receive path runs out of
-> > input buffers?
+> I thought this problem had solved itself, but I've hit it again three times
+> in the last few days.
 > 
-> No, it's not normal.
-> 
-> > Why does it allocate Order-1 buffers anyway?
-> 
-> Your skbs are allocated via the SLAB allocator, which packs 5 skbs into
-> an order-1 buffer rather than 4 into 2 order-0 buffers.
-> 
-> Running out of order-1 buffers hasn't been a problem for most people
-> lately though - is there anything interesting about your workload? Lots
-> of threads? NFS? Long network processing latencies?
+> I've expanded the CC list a little (based on get_maintainer for
+> kernel/softirq.c, since that seems to be involved somehow, and Rafael since
+> this definitely seems to be a regression), to see if anyone else has any
+> ideas.
 
-Not really. Basically this is just my mailserver and webserver, no
-big traffic.
-Just about 125 Processes running.
-To increase the memory pressure for reproduction of the allocation
-failurs I'm starting a memory hog that allocats 160MB and mlocks it
-(Out of 256MB in total) and I've also been setting
-vm/min_free_kbytes to 100 (Though with 2.6.31 I also see allocation
-failures with the default of about 1MB).
-No nfs.
-For testing I wget a file from a server that is 6 hops away and get
-the almost the full 100Mbit/s of my network interface.
+I may have found the bad thing that could have happened to ksoftirqd.
 
-The first time I've seen this problem was just a simple 'aptitude
-safe-upgrade' downloading packages from the debian server though (on
-2.6.31.4).
+If you feel like testing, try the below.  We were altering the task
+struct outside of locks, which is not interrupt etc safe.  It cures a
+problem I ran into, and will hopefully cure yours as well.
 
--- 
-Tobias						PGP: http://8ef7ddba.uguu.de
+
+sched: fix runqueue locking buglet.
+
+Calling set_task_cpu() with the runqueue unlocked is unsafe.  Add cpu_rq_lock()
+locking primitive, and lock the runqueue.  Also, update rq->clock before calling
+set_task_cpu(), as it could be stale.
+
+Running netperf UDP_STREAM with two pinned tasks with tip 1b9508f applied emitted
+the thoroughly unbelievable result that ratelimiting newidle could produce twice
+the throughput of the virgin kernel.  Reverting to locking the runqueue prior to
+runqueue selection restored benchmarking sanity, as did this patchlet.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+
+---
+ kernel/sched.c |   32 +++++++++++++++++++++++++-------
+ 1 file changed, 25 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.32.git/kernel/sched.c
+===================================================================
+--- linux-2.6.32.git.orig/kernel/sched.c
++++ linux-2.6.32.git/kernel/sched.c
+@@ -1011,6 +1011,24 @@ static struct rq *this_rq_lock(void)
+ 	return rq;
+ }
+ 
++/*
++ * cpu_rq_lock - lock the runqueue a given cpu and disable interrupts.
++ */
++static struct rq *cpu_rq_lock(int cpu, unsigned long *flags)
++	__acquires(rq->lock)
++{
++	struct rq *rq = cpu_rq(cpu);
++
++	spin_lock_irqsave(&rq->lock, *flags);
++	return rq;
++}
++
++static inline void cpu_rq_unlock(struct rq *rq, unsigned long *flags)
++	__releases(rq->lock)
++{
++	spin_unlock_irqrestore(&rq->lock, *flags);
++}
++
+ #ifdef CONFIG_SCHED_HRTICK
+ /*
+  * Use HR-timers to deliver accurate preemption points.
+@@ -2342,16 +2360,17 @@ static int try_to_wake_up(struct task_st
+ 	if (task_contributes_to_load(p))
+ 		rq->nr_uninterruptible--;
+ 	p->state = TASK_WAKING;
++	preempt_disable();
+ 	task_rq_unlock(rq, &flags);
+ 
+ 	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
+-	if (cpu != orig_cpu)
+-		set_task_cpu(p, cpu);
+-
+-	rq = task_rq_lock(p, &flags);
+-
+-	if (rq != orig_rq)
++	if (cpu != orig_cpu) {
++		rq = cpu_rq_lock(cpu, &flags);
+ 		update_rq_clock(rq);
++		set_task_cpu(p, cpu);
++	} else
++		rq = task_rq_lock(p, &flags);
++	preempt_enable_no_resched();
+ 
+ 	if (rq->idle_stamp) {
+ 		u64 delta = rq->clock - rq->idle_stamp;
+@@ -2365,7 +2384,6 @@ static int try_to_wake_up(struct task_st
+ 	}
+ 
+ 	WARN_ON(p->state != TASK_WAKING);
+-	cpu = task_cpu(p);
+ 
+ #ifdef CONFIG_SCHEDSTATS
+ 	schedstat_inc(rq, ttwu_count);
+
+
