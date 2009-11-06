@@ -1,270 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbZKFO7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbZKFPOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758456AbZKFO7e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 09:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbZKFO7d
+	id S1759104AbZKFPOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 10:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758638AbZKFPOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 09:59:33 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:56883 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754797AbZKFO7c convert rfc822-to-8bit (ORCPT
+	Fri, 6 Nov 2009 10:14:22 -0500
+Received: from mail-px0-f179.google.com ([209.85.216.179]:54420 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758628AbZKFPOV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 09:59:32 -0500
+	Fri, 6 Nov 2009 10:14:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=VVZT1MnVcekWDmDtmrnUFuuizdnAx4lBPHQwc1ZAdBoLZgCys/K9cIKPOj+sPOaW3N
-         uvab0h8YrZT3Hs6gyOOU2/IBrYMuLt14WEBtRZEETmKYGducsJ3eewwHRZghwnzua+Vb
-         5m2Mm3l3vTIkRLxv/FW77AsIs/9+gPvla5TEg=
+        b=x1Dm4guO+Mzec9SIUGCzGVyD1li6Ohi2WSC3iB8Blyg0Zti0jVfgysm4qHgDSiT85y
+         IH1zHfEIpSSLW5oYb7Euk+EPwRQBILvh/lrdCpU0lnxYMFJdXelXnjRnzt8f7DXY4Bmj
+         U/mBzKJqfFwt8YYKvHz6F7Rgkz7JgHsytLbVk=
 MIME-Version: 1.0
-In-Reply-To: <20091003072127.GC21407@elte.hu>
-References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 
-	<20091003072127.GC21407@elte.hu>
-From: Matteo Croce <technoboy85@gmail.com>
-Date: Fri, 6 Nov 2009 15:59:16 +0100
-Message-ID: <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
-Subject: Re: i686 quirk for AMD Geode
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20091106133833.GA23151@gamma.logic.tuwien.ac.at>
+References: <20091102135640.93de7c2a.minchan.kim@barrios-desktop>
+	 <20091102155543.E60E.A69D9226@jp.fujitsu.com>
+	 <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091102141917.GJ2116@gamma.logic.tuwien.ac.at>
+	 <28c262360911020640k3f9dfcdct2cac6cc1d193144d@mail.gmail.com>
+	 <20091105132109.GA12676@gamma.logic.tuwien.ac.at>
+	 <loom.20091105T213323-393@post.gmane.org>
+	 <28c262360911051418r1aefbff6oa54a63d887c0ea48@mail.gmail.com>
+	 <20091106000113.GE22289@gamma.logic.tuwien.ac.at>
+	 <20091106133833.GA23151@gamma.logic.tuwien.ac.at>
+Date: Sat, 7 Nov 2009 00:14:26 +0900
+Message-ID: <28c262360911060714h16cf55dfibbecc090c76341ab@mail.gmail.com>
+Subject: Re: OOM killer, page fault
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Norbert Preining <preining@logic.at>
+Cc: Jody Belka <jody+lkml@jj79.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 3, 2009 at 8:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, Nov 6, 2009 at 10:38 PM, Norbert Preining <preining@logic.at> wrote:
+> Hi Kim,
 >
-> * Matteo Croce <technoboy85@gmail.com> wrote:
+> On Fr, 06 Nov 2009, preining wrote:
+>> Recompiling already and trying to recreate the oom-killer boom.
 >
->> Hi,
->>
->> the AMD GEode LX has an x86 id of 5 (i586) tought it's technically an i686:
->>
->> root@alix:/usr/src# cat /proc/cpuinfo
->> processor       : 0
->> vendor_id       : AuthenticAMD
->> cpu family      : 5
->> model           : 10
->> model name      : Geode(TM) Integrated Processor by AMD PCS
->> stepping        : 2
->> cpu MHz         : 498.060
->> cache size      : 128 KB
->> fdiv_bug        : no
->> hlt_bug         : no
->> f00f_bug        : no
->> coma_bug        : no
->> fpu             : yes
->> fpu_exception   : yes
->> cpuid level     : 1
->> wp              : yes
->> flags           : fpu de pse tsc msr cx8 sep pge cmov clflush mmx
->> mmxext 3dnowext 3dnow
->> bogomips        : 996.12
->> clflush size    : 32
->> cache_alignment : 32
->> address sizes   : 32 bits physical, 32 bits virtual
->> power management:
->>
->> indeed it has mmx, mmxext and cmov.
->> So I added the quirk below and I can confirm that the system is running fine.
->> I did an x264 encode to trigger any SIGILL due to missing opcodes, but
->> it worked.
->>
->> I also did this simple test which gives a ~2.5x speed boost:
->> http://pastebin.ca/1590089
->>
->> I wish some feedback from someone, I really dunno why AMD set the
->> cpuid value to 5
->>
->> --- a/arch/x86/kernel/cpu/bugs.c      2009-10-03 03:43:02.399323313 +0200
->> +++ b/arch/x86/kernel/cpu/bugs.c      2009-10-03 03:54:22.582205090 +0200
->> @@ -151,6 +151,12 @@
->>  #endif
->>  }
->>
->> +static void __init check_geode_i586(void)
->> +{
->> +     if(boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
->> +        boot_cpu_data.x86_model == 10 && boot_cpu_data.x86 == 5)
->> +             boot_cpu_data.x86 = 6;
->> +}
->>
->>  void __init check_bugs(void)
->>  {
->> @@ -163,6 +169,7 @@
->>       check_fpu();
->>       check_hlt();
->>       check_popad();
->> +     check_geode_i586();
->>       init_utsname()->machine[1] =
->>               '0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
->>       alternative_instructions();
+> Well, after rebooting into that kernel I get *loads*, every few seconds,
+> of warnings in the log. Hard to sort out what is real. Is that expected?
+
+I guess it is VM_FAULT_NOPAGE of i915_gem or somethings.
+It's not of our concern but VM_FAULT_OOM.
+I couldn't expect that. So let's change debug patch following as.
+
+Most important thing is "Who return VM_FAULT_OOM".
+It it return VM_FAULT_OOM, OOM killer will kill any process who have a
+high score. In case of you, it was 'X'.
+
+If you don't see it until 2.6.32-rc5, It should be regression in somewhere.
+If we can know it, we can pass the problem to maintainer of it.
+
+Could you try it again below patch?
+If you reproduce it, you can match function address of log with
+function address
+of your System.map. Pz, let me know it. :)
+
+diff --git a/mm/memory.c b/mm/memory.c
+index 7e91b5f..97a6fcb 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2713,8 +2713,13 @@ static int __do_fault(struct mm_struct *mm,
+struct vm_area_struct *vma,
+    vmf.page = NULL;
+
+    ret = vma->vm_ops->fault(vma, &vmf);
+-   if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
++   if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
++       if (ret & VM_FAULT_OOM) {
++           printk(KERN_DEBUG "fault handler : 0x%lx\n", vma->vm_ops->fault);
++
++       }
+        return ret;
++   }
+
+    if (unlikely(PageHWPoison(vmf.page))) {
+        if (ret & VM_FAULT_LOCKED)
+
+
+
 >
-> Looks good, but your signoff line is missing.
+> Excerpt from the log:
+> [ 2077.753841] vma->vm_ops->fault : 0xffffffff811df4bd
+> [ 2077.753842] ------------[ cut here ]------------
+> [ 2077.753845] WARNING: at mm/memory.c:2722 __do_fault+0x89/0x382()
+> [ 2077.753847] Hardware name: VGN-Z11VN_B
+> ...
+> [ 2077.753880] Pid: 4892, comm: Xorg Tainted: G        W  2.6.32-rc6 #5
+> [ 2077.753881] Call Trace:
+> [ 2077.753884]  [<ffffffff8108c6cc>] ? __do_fault+0x89/0x382
+> [ 2077.753887]  [<ffffffff8108c6cc>] ? __do_fault+0x89/0x382
+> [ 2077.753889]  [<ffffffff8103ae54>] ? warn_slowpath_common+0x77/0xa3
+> [ 2077.753892]  [<ffffffff8108c6cc>] ? __do_fault+0x89/0x382
+> [ 2077.753895]  [<ffffffff81341a82>] ? _spin_unlock+0x23/0x2f
+> [ 2077.753898]  [<ffffffff8108e5d0>] ? handle_mm_fault+0x2b9/0x608
+> [ 2077.753900]  [<ffffffff810af792>] ? do_vfs_ioctl+0x443/0x47b
+> [ 2077.753903]  [<ffffffff81026759>] ? do_page_fault+0x25f/0x27b
+> [ 2077.753906]  [<ffffffff81341e8f>] ? page_fault+0x1f/0x30
+> [ 2077.753908] ---[ end trace d3324ef5061f0136 ]---
 >
->        Ingo
+> hundreds/thousands of them.
+>
+> And even without starting anything else. Is that what you want?
+> My syslog file has grown to some hundred megabytes ...
+>
+>
+> Best wishes
+>
+> Norbert
+>
+> -------------------------------------------------------------------------------
+> Dr. Norbert Preining                                        Associate Professor
+> JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
+> Vienna University of Technology                               preining@logic.at
+> Debian Developer (Debian TeX Task Force)                    preining@debian.org
+> gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+> -------------------------------------------------------------------------------
+> LARGOWARD (n.)
+> Motorists' name for the kind of pedestrian who stands beside a main
+> road and waves on the traffic, as if it's their right of way.
+>                        --- Douglas Adams, The Meaning of Liff
 >
 
-The AMD Geode LX has an x86 id of 5 (i586) tought it's technically an i686:
 
-root@alix:~# egrep '^(cpu family|model name|flags)' /proc/cpuinfo
-cpu family      : 5
-model name      : Geode(TM) Integrated Processor by AMD PCS
-flags           : fpu de pse tsc msr cx8 sep pge cmov clflush mmx
-mmxext 3dnowext 3dnow
 
-indeed it has MMX, MMXEXT and CMOV, just lacks the long NOP instruction (NOPL).
-This patch adds a quirck to promote the Geode to an i686 and emulates
-the NOPL in the do_invalid_op trap, so the userspace never notices.
-Emulating the NOPL has minimum performance loss, emulating a NOPL
-takes 0.5 usecs
-and they are rarely used in x86
-
-Signed-off-by: Matteo Croce <technoboy85@gmail.com>
-
---- a/arch/x86/kernel/Makefile	2009-11-06 15:06:52.246223989 +0100
-+++ b/arch/x86/kernel/Makefile	2009-11-06 15:07:04.294054613 +0100
-@@ -89,7 +89,7 @@
- obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
-
- obj-$(CONFIG_K8_NB)		+= k8.o
--obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
-+obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o nopl_emu.o
- obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
- obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
-
---- a/arch/x86/kernel/cpu/amd.c	2009-11-06 15:06:52.254223805 +0100
-+++ b/arch/x86/kernel/cpu/amd.c	2009-11-06 15:07:04.294054613 +0100
-@@ -138,8 +138,10 @@
- 	}
-
- 	if (c->x86_model == 10) {
--		/* AMD Geode LX is model 10 */
--		/* placeholder for any needed mods */
-+		/* Geode only lacks the NOPL instruction to be i686,
-+		   but we can emulate it in the exception handler
-+		   and promote it to a class 6 cpu */
-+		boot_cpu_data.x86 = 6;
- 		return;
- 	}
- }
---- a/arch/x86/kernel/entry_32.S	2009-11-06 15:06:52.258224172 +0100
-+++ b/arch/x86/kernel/entry_32.S	2009-11-06 15:07:04.306230613 +0100
-@@ -901,7 +901,11 @@
- 	RING0_INT_FRAME
- 	pushl $0
- 	CFI_ADJUST_CFA_OFFSET 4
-+#ifdef CONFIG_MGEODE_LX
-+	pushl $do_nopl_emu
-+#else
- 	pushl $do_invalid_op
-+#endif
- 	CFI_ADJUST_CFA_OFFSET 4
- 	jmp error_code
- 	CFI_ENDPROC
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/arch/x86/kernel/nopl_emu.c	2009-11-06 15:07:33.537723795 +0100
-@@ -0,0 +1,102 @@
-+/*
-+ *  linux/arch/x86/kernel/nopl_emu.c
-+ *
-+ *  Copyright (C) 2002  Willy Tarreau
-+ *  Copyright (C) 2009  Matteo Croce
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/linkage.h>
-+#include <linux/preempt.h>
-+#include <linux/types.h>
-+
-+void do_invalid_op(struct pt_regs *regs, long error_code);
-+
-+/* This code can be used to allow the AMD Geode to hopefully correctly execute
-+ * some code which was originally compiled for an i686, by emulating NOPL,
-+ * the only missing i686 instruction in the CPU
-+ *
-+ * Willy Tarreau <willy@meta-x.org>
-+ * Matteo Croce <technoboy85@gmail.com>
-+ */
-+
-+static inline int do_1f(u8 *ip)
-+{
-+	int length = 3;
-+	switch(*ip) {
-+		case 0x84:if(!ip[5])
-+				length++;
-+			else
-+				return 0;
-+		case 0x80:if(!ip[4] && !ip[3])
-+				length += 2;
-+			else
-+				return 0;
-+		case 0x44:if(!ip[2])
-+				length++;
-+			else
-+				return 0;
-+		case 0x40:if(!ip[1])
-+				length++;
-+			else
-+				return 0;
-+		case 0x00:return length;
-+		default: return 0;
-+	}
-+	return length;
-+}
-+
-+static inline int do_0f(u8 *ip)
-+{
-+	if(*ip == 0x1f)
-+		return do_1f(ip + 1);
-+	return 0;
-+}
-+
-+static inline int do_66(u8 *ip)
-+{
-+	if(*ip == 0x90)
-+		return 2;
-+	if(*ip == 0x0f) {
-+		int res = do_0f(ip + 1);
-+		if(res)
-+			return res + 1;
-+		else
-+			return 0;
-+	}
-+	return 0;
-+}
-+
-+static inline int do_start(u8 *ip)
-+{
-+	if(*ip == 0x0f)
-+		return do_0f(ip + 1);
-+	if(*ip == 0x66)
-+		return do_66(ip + 1);
-+	return 0;
-+}
-+
-+/* [do_nopl_emu] is called by exception 6 after an invalid opcode has been
-+ * encountered. It will try to emulate it by doing nothing,
-+ * and will send a SIGILL or SIGSEGV to the process if not possible.
-+ * the NOPL can have variable length opcodes:
-+
-+bytes number	opcode
-+	2	66 90
-+	3	0f 1f 00
-+	4	0f 1f 40 00
-+	5	0f 1f 44 00 00
-+	6	66 0f 1f 44 00 00
-+	7	0f 1f 80 00 00 00 00
-+	8	0f 1f 84 00 00 00 00 00
-+	9	66 0f 1f 84 00 00 00 00 00
-+*/
-+void do_nopl_emu(struct pt_regs *regs, long error_code)
-+{
-+	int res = do_start((u8*)regs->ip);
-+
-+	if(res)
-+		regs->ip += res;
-+	else
-+		do_invalid_op(regs, error_code);
-+}
+-- 
+Kind regards,
+Minchan Kim
