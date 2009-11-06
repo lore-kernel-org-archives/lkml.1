@@ -1,278 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752950AbZKFHNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbZKFHS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752950AbZKFHNf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 02:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZKFHNe
+	id S1753145AbZKFHS3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 02:18:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZKFHS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 02:13:34 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:50739 "EHLO smtps.tip.net.au"
+	Fri, 6 Nov 2009 02:18:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59668 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751290AbZKFHNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 02:13:32 -0500
-Date: Fri, 6 Nov 2009 18:13:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for November 6
-Message-Id: <20091106181330.80bca052.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__6_Nov_2009_18_13_30_+1100_AWlEYmbkX=3cUe_w"
+	id S1750970AbZKFHS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 02:18:27 -0500
+Date: Fri, 6 Nov 2009 08:17:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, Peter Zijlstra <peterz@infradead.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, cl@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: irq lock inversion
+Message-ID: <20091106071711.GA20946@elte.hu>
+References: <86802c440911041008q4969b9bdk15b4598c40bb84bd@mail.gmail.com> <4AF25FC7.4000502@kernel.org> <20091105082102.GA2870@elte.hu> <4AF28D7A.6020209@kernel.org> <alpine.LSU.2.00.0911051502060.9988@wotan.suse.de> <4AF3B9BD.9050300@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF3B9BD.9050300@kernel.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__6_Nov_2009_18_13_30_+1100_AWlEYmbkX=3cUe_w
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+* Tejun Heo <tj@kernel.org> wrote:
 
-Changes since 20091105:
+> > From: Jiri Kosina <jkosina@suse.cz>
+> > Subject: lockdep: avoid false positives about irq-safety
+> > 
+> > Commit 403a91b1 ("percpu: allow pcpu_alloc() to be called
+> > with IRQs off") introduced this warning:
+> > 
+> > 	=========================================================
+> > 	[ INFO: possible irq lock inversion dependency detected ]
+> > 	2.6.32-rc5-tip-04815-g12f0f93-dirty #745
+> > 	---------------------------------------------------------
+> > 	hub 1-3:1.0: state 7 ports 2 chg 0000 evt 0004
+> > 	ksoftirqd/65/199 just changed the state of lock:
+> > 	 (pcpu_lock){..-...}, at: [<ffffffff81130e04>] free_percpu+0x38/0x104
+> > 	but this lock took another, SOFTIRQ-unsafe lock in the past:
+> > 	 (vmap_area_lock){+.+...}
+> > 
+> > 	and interrupts could create inverse lock ordering between them.
+> > 
+> > This warning is bogus -- sched_init() is being called very early with IRQs
+> > disabled, and the irqsave/restore code paths in pcpu_alloc() are only for early
+> > init. The path can never be called from irq context once the early init
+> > finishes. Rationale for this is explained in changelog of the commit mentioned
+> > above.
+> > 
+> > This problem can be encountered generally in any other early code running
+> > with IRQs off and using irqsave/irqrestore.
+> > 
+> > Reported-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> 
+> Looks good to me.  Ingo, what do you think?
 
-The build fix for powerpc/kvm is no longer required.
+Ugh, this explanation is _BOGUS_. As i said, taking a lock with irqs 
+disabled does _NOT_ mark a lock as 'irq safe' - if it did, we'd have 
+false positives left and right.
 
-The sparc tree still has a build failure for which I have applied a patch.
+Read the lockdep message please, consider all the backtraces it prints, 
+it says something different.
 
-The kvm tree gained a conflict against Linus' tree.
-
-The net tree gained a conflict against the net-next tree.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 146 trees (counting Linus' and 22 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
-pu.h
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/master
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-CONFLICT (content): Merge conflict in arch/powerpc/kvm/timing.h
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
-nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
-CONFLICT (content): Merge conflict in drivers/net/usb/cdc_ether.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/cmd.c
-CONFLICT (content): Merge conflict in drivers/staging/rtl8187se/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/rtl8192e/Kconfig
-$ git rm -f drivers/net/sfc/sfe4001.c
-Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-omap3evm.c
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging security-testing/next
-CONFLICT (content): Merge conflict in Documentation/dontdiff
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in drivers/net/Kconfig
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging limits/writable_limits
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
-Merging oprofile/for-next
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
-CONFLICT (content): Merge conflict in kernel/softlockup.c
-CONFLICT (content): Merge conflict in mm/percpu.c
-Applying: percpu: merge fixup for variable renaming
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-Merging scsi-post-merge/master
-Applying: sparc: the GRLIB APBUART serial port will only build on sparc
-
---Signature=_Fri__6_Nov_2009_18_13_30_+1100_AWlEYmbkX=3cUe_w
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrzzJoACgkQjjKRsyhoI8xcAgCaAsK+gVEUVZV2pz8BKNx6NyGL
-EDMAoI93A2LGnKz64ZhF4fqTGVt17QqG
-=Jp5e
------END PGP SIGNATURE-----
-
---Signature=_Fri__6_Nov_2009_18_13_30_+1100_AWlEYmbkX=3cUe_w--
+	Ingo
