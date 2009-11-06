@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZKFIQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZKFITG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbZKFIQn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 03:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZKFIQn
+	id S1754595AbZKFITG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 03:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZKFITF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 03:16:43 -0500
-Received: from smtprelay06.ispgateway.de ([80.67.31.29]:56490 "EHLO
-	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753651AbZKFIQm (ORCPT
+	Fri, 6 Nov 2009 03:19:05 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36263
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752887AbZKFITE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 03:16:42 -0500
-Message-ID: <4AF3DB6C.2070300@ladisch.de>
-Date: Fri, 06 Nov 2009 09:16:44 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [PATCH] fbcon: make cursor display conditional
-References: <1257412658-9444-1-git-send-email-daniel@caiaq.de>
-In-Reply-To: <1257412658-9444-1-git-send-email-daniel@caiaq.de>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 6 Nov 2009 03:19:04 -0500
+Date: Fri, 06 Nov 2009 00:19:30 -0800 (PST)
+Message-Id: <20091106.001930.121210402.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kristoffer@gaisler.com
+Subject: Re: linux-next: sparc tree build failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091106180248.7a6aa9ba.sfr@canb.auug.org.au>
+References: <20091106180248.7a6aa9ba.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Mack wrote:
-> For embedded systems, the blinking cursor at startup time can be
-> annoying and unintended. Add a new kernel parameter
-> 'fbcon_disable_cursor' which disables it conditionally.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 6 Nov 2009 18:02:48 +1100
 
-Wouldn't it be more useful to change the CUR_DEFAULT symbol (see the
-end of <linux/console_struct.h>) into a kernel parameter, instead of
-adding a new flag?
+> Caused by commit d4ac42a582e46d7f86f0acb4253a310423c72c4c ("sparc:
+> Support for GRLIB APBUART serial port") (yes again :-)).  I have applied
+> my patch to make it only build on SPARC again ...
+> 
+> (Including linux/of_platform.h - where struct of_platform_driver,
+> of_register_driver() and of_platform_bus_type are declared - would be a
+> good start ...  and the code should probably be using
+> of_register_platform_driver() instead of of_register_driver() in any
+> case.)
 
+Sorry, sparc is getting those headers indirectly.
 
-Best regards,
-Clemens
-
-
+I'll fix this up.
