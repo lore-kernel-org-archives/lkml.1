@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759335AbZKFPSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbZKFPT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759335AbZKFPSt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 10:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758553AbZKFPSs
+	id S1759365AbZKFPT1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 10:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbZKFPT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 10:18:48 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:45939 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758615AbZKFPSr (ORCPT
+	Fri, 6 Nov 2009 10:19:26 -0500
+Received: from mail-px0-f179.google.com ([209.85.216.179]:34684 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758650AbZKFPTZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 10:18:47 -0500
-Date: Fri, 6 Nov 2009 16:18:50 +0100
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Jody Belka <jody+lkml@jj79.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
-Subject: Re: OOM killer, page fault
-Message-ID: <20091106151850.GC3816@gamma.logic.tuwien.ac.at>
-References: <20091102155543.E60E.A69D9226@jp.fujitsu.com> <20091102140216.02567ff8.kamezawa.hiroyu@jp.fujitsu.com> <20091102141917.GJ2116@gamma.logic.tuwien.ac.at> <28c262360911020640k3f9dfcdct2cac6cc1d193144d@mail.gmail.com> <20091105132109.GA12676@gamma.logic.tuwien.ac.at> <loom.20091105T213323-393@post.gmane.org> <28c262360911051418r1aefbff6oa54a63d887c0ea48@mail.gmail.com> <20091106000113.GE22289@gamma.logic.tuwien.ac.at> <20091106133833.GA23151@gamma.logic.tuwien.ac.at> <28c262360911060714h16cf55dfibbecc090c76341ab@mail.gmail.com>
+	Fri, 6 Nov 2009 10:19:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pRP+0OXiUDRRy59sO7u5EhnsyhCANJVRJacx93D/gjRUAtB+cGbwJQVSdD3fzLnQhV
+         kHz+6rs6Vo/yznUO9jDGUBb2IJ/JMavZyw+YAfg6swW4R7EzNhXXXeHbqdrux76sIxXZ
+         BeTGJ2fU2QbSW/ucbTnDzfGOmEooXp6XmgycI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360911060714h16cf55dfibbecc090c76341ab@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Norbert Preining <preining@logic.at>
+In-Reply-To: <20091106134030.a94665d1.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091104152426.eacc894f.kamezawa.hiroyu@jp.fujitsu.com>
+	 <28c262360911050711k47a63896xe4915157664cb822@mail.gmail.com>
+	 <20091106084806.7503b165.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091106134030.a94665d1.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sat, 7 Nov 2009 00:19:30 +0900
+Message-ID: <28c262360911060719y45f4b58ex2f13853f0d142656@mail.gmail.com>
+Subject: Re: [PATCH] show per-process swap usage via procfs v2
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       cl@linux-foundation.org, akpm@linux-foundation.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-recompiling and retrying ...
+On Fri, Nov 6, 2009 at 1:40 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+> Now, anon_rss and file_rss is counted as RSS and exported via /proc.
+> RSS usage is important information but one more information which
+> is often asked by users is "usage of swap".(user support team said.)
+>
+> This patch counts swap entry usage per process and show it via
+> /proc/<pid>/status. I think status file is robust against new entry.
+> Then, it is the first candidate..
+>
+>  After this, /proc/<pid>/status includes following line
+>  <snip>
+>  VmPeak:   315360 kB
+>  VmSize:   315360 kB
+>  VmLck:         0 kB
+>  VmHWM:    180452 kB
+>  VmRSS:    180452 kB
+>  VmData:   311624 kB
+>  VmStk:        84 kB
+>  VmExe:         4 kB
+>  VmLib:      1568 kB
+>  VmPTE:       640 kB
+>  VmSwap:   131240 kB <=== new information
+>
+> Note:
+>  Because this patch catches swap_pte on page table, this will
+>  not catch shmem's swapout. It's already accounted in per-shmem
+>  inode and we don't need to do more.
+>
+> Changelog: 2009/11/06
+>  - fixed bad use of is_migration_entry. Now, non_swap_entry() is used.
+> Changelog: 2009/11/03
+>  - clean up.
+>  - fixed initialization bug at fork (init_mm())
+>
+> Acked-by: Acked-by; David Rientjes <rientjes@google.com>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-On Sa, 07 Nov 2009, Minchan Kim wrote:
-> +           printk(KERN_DEBUG "fault handler : 0x%lx\n", vma->vm_ops->fault);
-
-BTW:
-	m/memory.c:2722: warning: format â€˜%lxâ€™ expects type â€˜long unsigned intâ€™, but argument 2 has type â€˜int (* const)(struct vm_area_struct *, struct vm_fault *)â€™
-
-Best wishes
-
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining                                        Associate Professor
-JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
-Vienna University of Technology                               preining@logic.at
-Debian Developer (Debian TeX Task Force)                    preining@debian.org
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-LOWTHER (vb.)
-(Of a large group of people who have been to the cinema together.) To
-stand aimlessly about on the pavement and argue about whatever to go
-and eat either a Chinese meal nearby or an Indian meal at a restaurant
-which somebody says is very good but isn't certain where it is, or
-have a drink and think about it, or just go home, or have a Chinese
-meal nearby - until by the time agreement is reached everything is
-shut.
-			--- Douglas Adams, The Meaning of Liff
+-- 
+Kind regards,
+Minchan Kim
