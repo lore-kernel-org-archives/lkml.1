@@ -1,101 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbZKFNPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbZKFNTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757650AbZKFNPl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 08:15:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZKFNPk
+	id S1758091AbZKFNTw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 08:19:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZKFNTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 08:15:40 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:54902 "EHLO bamako.nerim.net"
+	Fri, 6 Nov 2009 08:19:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33089 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751798AbZKFNPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 08:15:40 -0500
-Date: Fri, 6 Nov 2009 14:15:42 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, lm-sensors@lm-sensors.org,
-       Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [lm-sensors] [patch 1/5] hwmon: Convert fschmd to
- unlocked_ioctl
-Message-ID: <20091106141542.12404c5c@hyperion.delvare>
-In-Reply-To: <20091015202758.400949170@linutronix.de>
-References: <20091015202722.372890083@linutronix.de>
-	<20091015202758.400949170@linutronix.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752423AbZKFNTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 08:19:51 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Cc: adobriyan@gmail.com, viro@ZenIV.linux.org.uk
+Subject: [PATCH] proc: revalidate dentry returned by proc_pid_follow_link
+Date: Fri,  6 Nov 2009 08:19:54 -0500
+Message-Id: <1257513594-31071-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+The procfs follow_link operation doesn't provide an actual pathname
+string.  Instead, it returns a struct path in the nameidata and sets the
+last_type field in the nameidata to LAST_BIND. This makes the open path
+walking routine (do_filp_open) skip doing a lookup against the path
+string and has it just trust the info in the struct path.
 
-Sorry for the late answer.
+The problem here is that this makes that code shortcut any lookup or
+revalidation of the dentry. In general, this isn't a problem -- in most
+cases the dentry is known to be good. It is a problem however for NFSv4.
+If this symlink is followed on an open operation no actual open call
+occurs and the open state isn't properly established. This causes
+problems when we later try to use this file descriptor for actual
+operations.
 
-On Thu, 15 Oct 2009 20:28:31 -0000, Thomas Gleixner wrote:
-> The conversion of fschmd watchdog ioctl to unlocked_ioctl needs to
-> protect the static watchdog_info variable for the WDIOC_GETSUPPORT
-> command.
-> 
-> All other commands are safe w/o BKL as the called watchdog functions
-> are already serialized with watchdog_lock of the sensor.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: lm-sensors@lm-sensors.org
-> ---
->  drivers/hwmon/fschmd.c |    8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6-tip/drivers/hwmon/fschmd.c
-> ===================================================================
-> --- linux-2.6-tip.orig/drivers/hwmon/fschmd.c
-> +++ linux-2.6-tip/drivers/hwmon/fschmd.c
-> @@ -844,8 +844,8 @@ static ssize_t watchdog_write(struct fil
->  	return count;
->  }
->  
-> -static int watchdog_ioctl(struct inode *inode, struct file *filp,
-> -	unsigned int cmd, unsigned long arg)
-> +static long watchdog_ioctl(struct file *filp, unsigned int cmd,
-> +			   unsigned long arg)
->  {
->  	static struct watchdog_info ident = {
->  		.options = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT |
-> @@ -857,11 +857,13 @@ static int watchdog_ioctl(struct inode *
->  
->  	switch (cmd) {
->  	case WDIOC_GETSUPPORT:
-> +		mutex_lock(&watchdog_data_mutex);
->  		ident.firmware_version = data->revision;
->  		if (!nowayout)
->  			ident.options |= WDIOF_MAGICCLOSE;
->  		if (copy_to_user((void __user *)arg, &ident, sizeof(ident)))
->  			ret = -EFAULT;
-> +		mutex_unlock(&watchdog_data_mutex);
->  		break;
+This patch takes a minimalist approach to fixing this by making the
+/proc/pid follow_link routine revalidate the dentry before returning it.
+It seems to fix the reproducer I have for this, but I wonder whether it
+might be better to do this at a higher level, maybe in __do_follow_link
+in case there are other filesystems in the future that return a
+last_type of LAST_BIND. Also, should this dentry be d_invalidated if
+it d_revalidate returns 0?
 
-I'm not sure why we need to hold the mutex here? My understanding is
-that watchdog_data_mutex protects watchdog_data_list and each
-watchdog's kref. And the above code doesn't touch either.
+Comments welcome.
 
-What I am more worried about is why ident is declared static. This
-looks like a bug to me. Instead of abusing watchdog_data_mutex to
-workaround this, I'd rather remove the "static". I guess that the
-current code happens to work because neither data->revision nor
-nowayout can change over time, but this looks needlessly fragile.
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/proc/base.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-Hans, any comment?
-
->  
->  	case WDIOC_GETSTATUS:
-> @@ -921,7 +923,7 @@ static const struct file_operations watc
->  	.open = watchdog_open,
->  	.release = watchdog_release,
->  	.write = watchdog_write,
-> -	.ioctl = watchdog_ioctl,
-> +	.unlocked_ioctl = watchdog_ioctl,
->  };
-
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 837469a..1bd994c 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -1343,7 +1343,7 @@ static int proc_exe_link(struct inode *inode, struct path *exe_path)
+ static void *proc_pid_follow_link(struct dentry *dentry, struct nameidata *nd)
+ {
+ 	struct inode *inode = dentry->d_inode;
+-	int error = -EACCES;
++	int valid = 1, error = -EACCES;
+ 
+ 	/* We don't need a base pointer in the /proc filesystem */
+ 	path_put(&nd->path);
+@@ -1354,6 +1354,18 @@ static void *proc_pid_follow_link(struct dentry *dentry, struct nameidata *nd)
+ 
+ 	error = PROC_I(inode)->op.proc_get_link(inode, &nd->path);
+ 	nd->last_type = LAST_BIND;
++
++	if (error)
++		goto out;
++
++	dentry = nd->path.dentry;
++	if (dentry->d_op && dentry->d_op->d_revalidate)
++		valid = dentry->d_op->d_revalidate(dentry, nd);
++
++	if (valid <= 0) {
++		path_put(&nd->path);
++		error = -ESTALE;
++	}
+ out:
+ 	return ERR_PTR(error);
+ }
 -- 
-Jean Delvare
+1.5.5.6
+
