@@ -1,136 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbZKFSoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbZKFStO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759538AbZKFSoe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 13:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759052AbZKFSoe
+	id S1759583AbZKFStO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 13:49:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbZKFStN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 13:44:34 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58997 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756462AbZKFSod (ORCPT
+	Fri, 6 Nov 2009 13:49:13 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:38466 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759172AbZKFStM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 13:44:33 -0500
-Message-ID: <6aea93183b4d3582d4e3f1550f4695fe.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <alpine.DEB.1.10.0911061220410.5187@V090114053VZO-1>
-References: <20091106175242.6e13ee29.kamezawa.hiroyu@jp.fujitsu.com>
-    <20091106175545.b97ee867.kamezawa.hiroyu@jp.fujitsu.com>
-    <alpine.DEB.1.10.0911061220410.5187@V090114053VZO-1>
-Date: Sat, 7 Nov 2009 03:44:35 +0900 (JST)
-Subject: Re: [PATCH 2/2] memcg : rewrite percpu countings with new
- interfaces
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Christoph Lameter" <cl@linux-foundation.org>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-User-Agent: SquirrelMail/1.4.16
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Fri, 6 Nov 2009 13:49:12 -0500
+Date: Fri, 6 Nov 2009 10:48:51 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Emmanuel Benisty <benisty.e@gmail.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org
+Subject: Re: mmotm 2009-11-01-10-01 uploaded
+Message-Id: <20091106104851.320a97ee.randy.dunlap@oracle.com>
+In-Reply-To: <c1f41c620911060439j42329608u74f937ac9f9ac617@mail.gmail.com>
+References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
+	<alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
+	<661de9470911060338q66746acbr219eedc24e752ca9@mail.gmail.com>
+	<c1f41c620911060439j42329608u74f937ac9f9ac617@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4AF46FA0.0135:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Fri, 6 Nov 2009, KAMEZAWA Hiroyuki wrote:
->> -		__mem_cgroup_stat_reset_safe(cpustat, MEMCG_EVENTS);
->> +		__this_cpu_write(mem->cpustat->count[MEMCG_EVENTS], 0);
->>  		ret = true;
->>  	}
->> -	put_cpu();
->>  	return ret;
->
-> If you want to use the __this_cpu_xx versions then you need to manage
-> preempt on your own.
->
-Ah, I see. I understand I haven't understood.
+On Fri, 6 Nov 2009 19:39:30 +0700 Emmanuel Benisty wrote:
 
-> You need to keep preempt_disable/enable here because otherwise the per
-> cpu variable zeroed may be on a different cpu than the per cpu variable
-> where you got the value from.
->
-Thank you. I think I can do well in the next version.
+> On Fri, Nov 6, 2009 at 6:38 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > On Fri, Nov 6, 2009 at 12:43 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> >> On Sun, 1 Nov 2009, akpm@linux-foundation.org wrote:
+> >>
+> >>> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
+> >>>
+> >>>    http://userweb.kernel.org/~akpm/mmotm/
+> >>>
+> >>> and will soon be available at
+> >>
+> >> Does "soon" mean within this century ?
+> >>
+> >>>    git://git.zen-sources.org/zen/mmotm.git
+> >>
+> >> # git pull git://git.zen-sources.org/zen/mmotm.git master
+> >> git.zen-sources.org[0: 216.98.141.250]: errno=Connection timed out
+> >> git.zen-sources.org[0: 69.72.142.98]: errno=Connection refused
+> >> fatal: unable to connect a socket (Connection refused)
+> >>
+> > I've seen that too, in fact I can't even reach the domain. I've pinged
+> > the owner but not heard back yet.
+> 
+> 
+> FTR, it moved to git://zen-kernel.org/kernel/mmotm.git and the
+> ownership has changed.
 
+Thanks.  so that mmotm.git is now 5 weeks old.
+http://git.zen-kernel.org/?p=kernel/mmotm.git;a=summary
 
->> +static s64 mem_cgroup_read_stat(struct mem_cgroup *mem,
->> +		enum mem_cgroup_stat_index idx)
->> +{
->> +	struct mem_cgroup_stat_cpu *cstat;
->> +	int cpu;
->> +	s64 ret = 0;
->> +
->> +	for_each_possible_cpu(cpu) {
->> +		cstat = per_cpu_ptr(mem->cpustat, cpu);
->> +		ret += cstat->count[idx];
->> +	}
->
-> 	== ret += per_cpu(mem->cpustat->cstat->count[idx], cpu)
->
-Hmm, Hmm. Will use that.
-
->>  static void mem_cgroup_swap_statistics(struct mem_cgroup *mem,
->>  					 bool charge)
->>  {
->>  	int val = (charge) ? 1 : -1;
->> -	struct mem_cgroup_stat *stat = &mem->stat;
->> -	struct mem_cgroup_stat_cpu *cpustat;
->> -	int cpu = get_cpu();
->>
->> -	cpustat = &stat->cpustat[cpu];
->> -	__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_SWAP, val);
->> -	put_cpu();
->> +	__this_cpu_add(mem->cpustat->count[MEMCG_NR_SWAP], val);
->>  }
->
-> You do not disable preempt on your own so you have to use
->
-> 	this_cpu_add()
->
-> There is no difference between __this_cpu_add and this_cpu_add on x86 but
-> they will differ on platforms that do not have atomic per cpu
-> instructions. The fallback for this_cpu_add is to protect the add with
-> preempt_disable()/enable. The fallback fro __this_cpu_add is just to rely
-> on the caller to ensure that preempt is disabled somehow.
->
-Ok.
-
-
->> -	/*
->> -	 * Preemption is already disabled, we don't need get_cpu()
->> -	 */
->> -	cpu = smp_processor_id();
->> -	stat = &mem->stat;
->> -	cpustat = &stat->cpustat[cpu];
->> -
->> -	__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_FILE_MAPPED, val);
->> +	__this_cpu_add(mem->cpustat->count[MEMCG_NR_FILE_MAPPED], val);
->
-> Remove __
->
->
->> @@ -1650,16 +1597,11 @@ static int mem_cgroup_move_account(struc
->>
->>  	page = pc->page;
->>  	if (page_mapped(page) && !PageAnon(page)) {
->> -		cpu = smp_processor_id();
->>  		/* Update mapped_file data for mem_cgroup "from" */
->> -		stat = &from->stat;
->> -		cpustat = &stat->cpustat[cpu];
->> -		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_FILE_MAPPED, -1);
->> +		__this_cpu_dec(from->cpustat->count[MEMCG_NR_FILE_MAPPED]);
->
-> You can keep it here since the context already has preempt disabled it
-> seems.
->
-Thank you for kindly review.
-
-Regards,
--Kame
-
-
-
+---
+~Randy
