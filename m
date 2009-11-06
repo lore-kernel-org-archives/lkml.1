@@ -1,109 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760177AbZKFXuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbZKFX6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760177AbZKFXuQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 18:50:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbZKFXuP
+	id S1760187AbZKFX6H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 18:58:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759052AbZKFX6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 18:50:15 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:42521 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753807AbZKFXuO (ORCPT
+	Fri, 6 Nov 2009 18:58:06 -0500
+Received: from mga01.intel.com ([192.55.52.88]:61293 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754537AbZKFX6G convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 18:50:14 -0500
-Message-ID: <4AF4B636.9010107@canonical.com>
-Date: Fri, 06 Nov 2009 15:50:14 -0800
-From: John Johansen <john.johansen@canonical.com>
-Organization: Canonical
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 6 Nov 2009 18:58:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,696,1249282800"; 
+   d="scan'208";a="744636094"
+From: "Tantilov, Emil S" <emil.s.tantilov@intel.com>
+To: Nix <nix@esperi.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>
+Date: Fri, 6 Nov 2009 16:58:09 -0700
+Subject: RE: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31 (SMP
+	only? MSI?)
+Thread-Topic: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31 (SMP
+	only? MSI?)
+Thread-Index: AcpfKA+FkcyPap9ySF6aivcRYO3zdwAE3kAg
+Message-ID: <EA929A9653AAE14F841771FB1DE5A1365F9923A504@rrsmsx501.amr.corp.intel.com>
+References: <873a4rqu9o.fsf@spindle.srvr.nix>
+In-Reply-To: <873a4rqu9o.fsf@spindle.srvr.nix>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: john.johansen@canonical.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Patch 0/12] AppArmor security module
-References: <1257292099-15802-1-git-send-email-john.johansen@canonical.com> <200911040441.nA44fxms062617@www262.sakura.ne.jp> <4AF25E51.1010609@canonical.com> <200911050549.nA55nQt1094958@www262.sakura.ne.jp>
-In-Reply-To: <200911050549.nA55nQt1094958@www262.sakura.ne.jp>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa wrote:
-> Hello.
-> 
-> I browsed using lxr.
-> 
-> 
-> 
->> static int aa_audit_caps(struct aa_profile *profile, struct aa_audit_caps *sa)
-> ...snipped...
->> 	ent = &get_cpu_var(audit_cache);
->> 	if (sa->base.task == ent->task && cap_raised(ent->caps, sa->cap)) {
-> 
-> 		put_cpu_var(audit_cache); ?
-> 
-yep thanks for the catch
+Nix wrote:
+> Ever since 2.6.31 was released, my gigabit e1000e link has been acting
+> up. Notably, under sufficient load (generally, on this machine, NFS
+> load), packets cease to be transferred, and the (MSI) interrupt count
+> ceases to rise. Pulling the interface down and bringing it back up
+> works, both via ip(8) and by simply yanking the cable and plugging it
+> in again.
 
->> 		if (PROFILE_COMPLAIN(profile))
->> 			return 0;
->> 		return sa->base.error;
->> 	} else {
->> 		ent->task = sa->base.task;
->> 		cap_raise(ent->caps, sa->cap);
->> 	}
->> 	put_cpu_var(audit_cache);
-> ...snipped...
-> 
-> 
-> 
-> Regarding unpack_*(), I'm not sure, but e seems to be no longer used after once
-> unpack_*() failed. If so, we can remove
-> 
->> 	void *pos = e->pos;
-> 
-> and
-> 
->>  fail:
->>  	e->pos = pos;
-> 
-actually it is used sometimes for optional elements.  However this could be
-cleaned up some because optional elements should only ever fail on the
-name or type tags, not the actual data it self.
+Can you please send the output of ethtool -S from the interface after you observe the failure?
 
-It is also used in reporting failure position to user space but that only
-gets the tag location, it might be better to return the true location of
-failure, I'll have a look.
+Also try disabling Tx pause frames:
+ethtool -A fastnet tx off autoneg off
 
-> 
-> 
-> Also, please add comments regarding
-> 
->   memory allocated here is released by ...
-> 
->   refcount obtained here is released by ...
-> 
->   the caller of this function need to hold ... lock
-> 
-will do
+and let me know if that fixes it for you.
 
-> as it is difficult for me to track memleak/refcounter/locking bugs.
-> For example, in function apparmor_dentry_open(), from
-> 
-> 	fcxt->profile = aa_get_profile(profile);
-> 
-> to something like
-> 
-> 	/* released by ... */
-> 	fcxt->profile = aa_get_profile(profile);
-> 
-> (Oh, is it correct to get refcount even if aa_path_perm() failed?)
-> 
-yes as long as the refcount is put, there are several possible reasons for 
-grabbing a refcount, like passing the object to auditing, or just optimizing the success path.
-
-Of course it could also just be a bug or code that could use some cleaning up
-too.
-
-Thanks again Tetsuo
-
-john
+Thanks,
+Emil
