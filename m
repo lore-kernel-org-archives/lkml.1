@@ -1,105 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZKFKuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZKFLFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbZKFKuE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 05:50:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbZKFKt5
+	id S1755398AbZKFLFU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 06:05:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZKFLFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 05:49:57 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:42114 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754951AbZKFKt4 (ORCPT
+	Fri, 6 Nov 2009 06:05:20 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:57773 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbZKFLFT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 05:49:56 -0500
-From: Rodolfo Giometti <giometti@linux.it>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rodolfo Giometti <giometti@linux.it>
-Date: Fri,  6 Nov 2009 11:49:56 +0100
-Message-Id: <1257504596-27781-2-git-send-email-giometti@linux.it>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1257504596-27781-1-git-send-email-giometti@linux.it>
-References: <1257504596-27781-1-git-send-email-giometti@linux.it>
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH] pps: events reporting fix up.
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Fri, 6 Nov 2009 06:05:19 -0500
+Message-ID: <4AF40282.9080402@monstr.eu>
+Date: Fri, 06 Nov 2009 12:03:30 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Steven Rostedt <srostedt@redhat.com>, linux-kernel@vger.kernel.org,
+       John Williams <john.williams@petalogix.com>
+Subject: ftrace - graph tracer for Microblaze
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PPS events must be recorded according to PPS's mode settings.
+Hi Steven,
 
-If a process asks for (i.e.) capture-assert events only, when the PPS
-client calls the pps_event() function to save the current PPS event,
-we should verify the event type and then discard unwanted ones.
+I found the problem in my mcount function. I was Microblaze dependent 
+fault - I had to save all registers which are not saved across function 
+calls.
 
-Also, without this patch userland processes waiting for a specific PPS
-event (assert or clear but not both) may be awakened at wrong time.
+I am getting some problem is irqsoff tracing. Is there any special 
+things which needs to be implemented/changed?
 
-Signed-off-by: Rodolfo Giometti <giometti@linux.it>
-Tested-by: William S. Brasher <billb958@door.net>
-Tested-by: Reg Clemens <clemens@dwf.com>
----
- drivers/pps/kapi.c |   20 +++++++++++++++-----
- 1 files changed, 15 insertions(+), 5 deletions(-)
+I would like to implement ftrace graph support and stack save support.
 
-diff --git a/drivers/pps/kapi.c b/drivers/pps/kapi.c
-index 35a0b19..2d414e2 100644
---- a/drivers/pps/kapi.c
-+++ b/drivers/pps/kapi.c
-@@ -271,6 +271,7 @@ void pps_event(int source, struct pps_ktime *ts, int event, void *data)
- {
- 	struct pps_device *pps;
- 	unsigned long flags;
-+	int captured = 0;
- 
- 	if ((event & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR)) == 0) {
- 		printk(KERN_ERR "pps: unknown event (%x) for source %d\n",
-@@ -293,7 +294,8 @@ void pps_event(int source, struct pps_ktime *ts, int event, void *data)
- 
- 	/* Check the event */
- 	pps->current_mode = pps->params.mode;
--	if (event & PPS_CAPTUREASSERT) {
-+	if ((event & PPS_CAPTUREASSERT) &
-+			(pps->params.mode & PPS_CAPTUREASSERT)) {
- 		/* We have to add an offset? */
- 		if (pps->params.mode & PPS_OFFSETASSERT)
- 			pps_add_offset(ts, &pps->params.assert_off_tu);
-@@ -303,8 +305,11 @@ void pps_event(int source, struct pps_ktime *ts, int event, void *data)
- 		pps->assert_sequence++;
- 		pr_debug("capture assert seq #%u for source %d\n",
- 			pps->assert_sequence, source);
-+
-+		captured = ~0;
- 	}
--	if (event & PPS_CAPTURECLEAR) {
-+	if ((event & PPS_CAPTURECLEAR) &
-+			(pps->params.mode & PPS_CAPTURECLEAR)) {
- 		/* We have to add an offset? */
- 		if (pps->params.mode & PPS_OFFSETCLEAR)
- 			pps_add_offset(ts, &pps->params.clear_off_tu);
-@@ -314,12 +319,17 @@ void pps_event(int source, struct pps_ktime *ts, int event, void *data)
- 		pps->clear_sequence++;
- 		pr_debug("capture clear seq #%u for source %d\n",
- 			pps->clear_sequence, source);
-+
-+		captured = ~0;
- 	}
- 
--	pps->go = ~0;
--	wake_up_interruptible(&pps->queue);
-+	/* Wake up iif captured somthing */
-+	if (captured) {
-+		pps->go = ~0;
-+		wake_up_interruptible(&pps->queue);
- 
--	kill_fasync(&pps->async_queue, SIGIO, POLL_IN);
-+		kill_fasync(&pps->async_queue, SIGIO, POLL_IN);
-+	}
- 
- 	spin_unlock_irqrestore(&pps->lock, flags);
- 
--- 
-1.6.0.4
+I believe that for stack_trace I need just to implement save_stack_trace.
+If I understand correctly that feature should look at current process
+and trace that process back to zero stack size.
+It is just for current task right?
+
+Then output shows which functions are called and size of stack. I found 
+your post which is at http://lkml.org/lkml/2009/8/21/319 but you don't 
+have any zero size stack size. Here is my log which seems to me weird 
+because of zero size values. Is it correct or not?
+
+# echo 1 > /proc/sys/kernel/stack_tracer_enabled
+# cat /debug/tracing/stack_trace
+         Depth    Size   Location    (63 entries)
+         -----    ----   --------
+   0)     2100       0   stack_trace_call+0x12c/0x1d8
+   1)     2100       0   stack_trace_call+0x12c/0x1d8
+   2)     2100       0   _spin_unlock+0x2c/0x3c
+   3)     2100     180   __rcu_process_callbacks+0x3e0/0x460
+   4)     1920     568   end_graph_tracer+0x24/0x2c
+   5)     1352       0   end_graph_tracer+0x24/0x2c
+   6)     1352       0   microblaze_read+0x14/0x4c
+   7)     1352     184   microblaze_read+0x0/0x4c
+...
+  63)      156     156   ktime_add_ns+0x88/0x124
+
+Here is my function -> it is the same as we use for dump stack.
+I look at mips implementation and is the same
+
+void save_stack_trace(struct stack_trace *trace)
+{
+	unsigned int sp;
+	asm("addik %0, r1, 0" : "=r" (sp));
+
+	while (!kstack_end(sp)) {
+		addr = *sp++;
+		if (__kernel_text_address(addr)) {
+			if (trace->skip > 0)
+				trace->skip--;
+			else
+			   trace->entries[trace->nr_entries++] = addr;
+
+			if (trace->nr_entries >= trace->max_entries)
+				break;
+		}
+	}
+}
+
+
+
+The second more important is graph part
+
+I read it in ftrace design.txt and I don't understand how this really works.
+
+
+For function trace without grapth support is calling
+  foo()
+(ret2foo) -> bar()
+    (ret2bar) -> mcount() - I have to save full cpu content
+                   -> ftrace_trace_function (ret2bar, ret2foo)
+			(do some stuff)
+                   <-
+                   restore_whole_content and jump back to bar
+                   after mcount call (mb do jump +8 - mb convention)
+              bar ends -> jump back to foo
+
+
+For graph is flow a little bit different
+  foo()
+(ret2foo) -> bar()
+    (ret2bar) -> mcount() - I have to save full cpu content
+                     ->prepare_ftrace_return(ret2bar, ret2foo)
+
+and here I have to change return address -> Is it mean that from 
+prepare_ftrace_return I have to return back to bar and then at the end 
+of bar jump to return_to_handler which will call 
+ftrace_return_to_handler and then jump back to foo. Is it correct?
+What is the correct calling?
+
+
+
+This is third topic - maybe I should send three separate emails :-(
+
+I found some incompatibility which IMHO could be synchronize.
+There is C implementation for ftrace_graph_entry_stub and ftrace_stub
+is implemented in asm. The purpose of that two functions should be the 
+same that's I think implementation should be too.
+
+Because of my unresolved issue around irqsoff I traced it in code and 
+there is too many tracing_reset_online_cpus() functions. I found one 
+calling in __irqsoff_tracer_init and then in tracer_init function. Is 
+that correct or one calling is enough?
+
+Then I think that there is some things in Kconfig which should be 
+cleared. I found link to /sys/kernel/debug/tracing/profile_branch which 
+I don't have in tracing folder. Is it correct?
+
+Thanks for your help,
+Michal
+
 
