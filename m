@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbZKFWjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932399AbZKFWWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933027AbZKFWjO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:39:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760152AbZKFWWp
+	id S932399AbZKFWWs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:22:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbZKFWWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:22:45 -0500
-Received: from kroah.org ([198.145.64.141]:56783 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:22:46 -0500
+Received: from kroah.org ([198.145.64.141]:56787 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760142AbZKFWWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:43 -0500
+	id S1760146AbZKFWWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:44 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:42 2009
-Message-Id: <20091106221542.455186736@mini.kroah.org>
+Message-Id: <20091106221542.613588302@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:27 -0800
+Date: Fri, 06 Nov 2009 14:14:28 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [29/99] do_mbind(): fix memory leak
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Alan Cox <alan@linux.intel.com>, Michael Reed <mreed10@us.ibm.com>
+Subject: [30/99] 8250_pci: add IBM Saturn serial card
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=do_mbind-fix-memory-leak.patch
+Content-Disposition: inline; filename=8250_pci-add-ibm-saturn-serial-card.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,54 +30,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-commit b05ca7385a2848abdc72051f832722641daed8b0 upstream.
+commit c68d2b1594548cda7f6dbac6a4d9d30a9b01558c upstream.
 
-If migrate_prep is failed, new variable is leaked.  This patch fixes it.
+The IBM Saturn serial card has only one port. Without that fixup,
+the kernel thinks it has two, which confuses userland setup and
+admin tools as well.
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Christoph Lameter <cl@linux-foundation.org>
+[akpm@linux-foundation.org: fix pci-ids.h layout]
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: Alan Cox <alan@linux.intel.com>
+Cc: Michael Reed <mreed10@us.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Acked-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/mempolicy.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/serial/8250_pci.c |   11 +++++++++++
+ include/linux/pci_ids.h   |    3 +++
+ 2 files changed, 14 insertions(+)
 
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -1024,7 +1024,7 @@ static long do_mbind(unsigned long start
- 
- 		err = migrate_prep();
- 		if (err)
--			return err;
-+			goto mpol_out;
- 	}
- 	{
- 		NODEMASK_SCRATCH(scratch);
-@@ -1039,10 +1039,9 @@ static long do_mbind(unsigned long start
- 			err = -ENOMEM;
- 		NODEMASK_SCRATCH_FREE(scratch);
- 	}
--	if (err) {
--		mpol_put(new);
--		return err;
--	}
-+	if (err)
-+		goto mpol_out;
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -1561,6 +1561,7 @@ enum pci_board_num_t {
+ 	pbn_exar_XR17C152,
+ 	pbn_exar_XR17C154,
+ 	pbn_exar_XR17C158,
++	pbn_exar_ibm_saturn,
+ 	pbn_pasemi_1682M,
+ 	pbn_ni8430_2,
+ 	pbn_ni8430_4,
+@@ -2146,6 +2147,13 @@ static struct pciserial_board pci_boards
+ 		.base_baud	= 921600,
+ 		.uart_offset	= 0x200,
+ 	},
++	[pbn_exar_ibm_saturn] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 1,
++		.base_baud	= 921600,
++		.uart_offset	= 0x200,
++	},
 +
- 	vma = check_range(mm, start, end, nmask,
- 			  flags | MPOL_MF_INVERT, &pagelist);
+ 	/*
+ 	 * PA Semi PWRficient PA6T-1682M on-chip UART
+ 	 */
+@@ -2649,6 +2657,9 @@ static struct pci_device_id serial_pci_t
+ 		PCI_SUBVENDOR_ID_CONNECT_TECH,
+ 		PCI_SUBDEVICE_ID_CONNECT_TECH_PCI_UART_8_485, 0, 0,
+ 		pbn_b0_8_1843200_200 },
++	{	PCI_VENDOR_ID_EXAR, PCI_DEVICE_ID_EXAR_XR17C152,
++		PCI_VENDOR_ID_IBM, PCI_SUBDEVICE_ID_IBM_SATURN_SERIAL_ONE_PORT,
++		0, 0, pbn_exar_ibm_saturn },
  
-@@ -1062,6 +1061,7 @@ static long do_mbind(unsigned long start
- 		putback_lru_pages(&pagelist);
+ 	{	PCI_VENDOR_ID_SEALEVEL, PCI_DEVICE_ID_SEALEVEL_U530,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -479,6 +479,9 @@
+ #define PCI_DEVICE_ID_IBM_ICOM_V2_ONE_PORT_RVX_ONE_PORT_MDM_PCIE 0x0361
+ #define PCI_DEVICE_ID_IBM_ICOM_FOUR_PORT_MODEL	0x252
  
- 	up_write(&mm->mmap_sem);
-+ mpol_out:
- 	mpol_put(new);
- 	return err;
- }
++#define PCI_SUBVENDOR_ID_IBM		0x1014
++#define PCI_SUBDEVICE_ID_IBM_SATURN_SERIAL_ONE_PORT	0x03d4
++
+ #define PCI_VENDOR_ID_UNISYS		0x1018
+ #define PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR 0x001C
+ 
 
 
