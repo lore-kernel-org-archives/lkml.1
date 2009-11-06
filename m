@@ -1,43 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759149AbZKFDdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbZKFDek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759149AbZKFDdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 22:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758755AbZKFDdg
+	id S1759201AbZKFDek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 22:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759074AbZKFDej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 22:33:36 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:33251 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757852AbZKFDdf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 22:33:35 -0500
-Date: Thu, 5 Nov 2009 22:33:40 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: More Huawei modem woes
-In-Reply-To: <1257475252.13611.255.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0911052233001.12193-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Nov 2009 22:34:39 -0500
+Received: from sh.osrg.net ([192.16.179.4]:39190 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758755AbZKFDei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 22:34:38 -0500
+Date: Fri, 6 Nov 2009 12:34:22 +0900
+To: alex.williamson@hp.com
+Cc: fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent
+ on	passthrough
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1257477592.2837.94.camel@2710p.home>
+References: <20091104225359.2720.91502.stgit@nehalem.aw>
+	<20091106114130J.fujita.tomonori@lab.ntt.co.jp>
+	<1257477592.2837.94.camel@2710p.home>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20091106123400J.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 06 Nov 2009 12:34:22 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009, Benjamin Herrenschmidt wrote:
+On Thu, 05 Nov 2009 20:19:52 -0700
+Alex Williamson <alex.williamson@hp.com> wrote:
 
-> On Fri, 2009-11-06 at 11:55 +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2009-11-06 at 11:41 +0900, FUJITA Tomonori wrote:
+> > On Wed, 04 Nov 2009 15:59:34 -0700
+> > Alex Williamson <alex.williamson@hp.com> wrote:
+> > > @@ -2582,7 +2582,7 @@ static dma_addr_t __intel_map_single(struct device *hwdev, phys_addr_t paddr,
+> > >  	BUG_ON(dir == DMA_NONE);
+> > >  
+> > >  	if (iommu_no_mapping(hwdev))
+> > > -		return paddr;
+> > > +		return paddr + size > dma_mask ? 0 : paddr;
+> > 
+> > You can use dma_capable(hwdev, paddr, size) here.
 > 
-> > Of course it's always possible that a whole lot of users have been
-> > testing the wrong kernel and thus don't have the fix :-) But that might
-> > also show a different problem with those modems usb storage
-> > implementation.
+> Good thought, however __intel_map_single() gets called with either the
+> dma_mask or the coherent_dma_mask.  dma_capable() only checks dma_mask,
+> so would only work for one of the callers.
+
+Oops, you are right.
+
+
+> > >  	domain = get_valid_domain_for_dev(pdev);
+> > >  	if (!domain)
+> > > @@ -2767,7 +2767,15 @@ static void *intel_alloc_coherent(struct device *hwdev, size_t size,
+> > >  
+> > >  	size = PAGE_ALIGN(size);
+> > >  	order = get_order(size);
+> > > -	flags &= ~(GFP_DMA | GFP_DMA32);
+> > > +
+> > > +	if (!iommu_no_mapping(hwdev))
+> > > +		flags &= ~(GFP_DMA | GFP_DMA32);
+> > > +	else if (hwdev->coherent_dma_mask != DMA_BIT_MASK(64)) {
+> > > +		if (hwdev->coherent_dma_mask < DMA_BIT_MASK(32))
+> > > +			flags |= GFP_DMA;
+> > > +		else
+> > > +			flags |= GFP_DMA32;
+> > > +	}
+> > 
+> > This is fine for 2.6.32 but we'll cleanly fix this by using
+> > swiotlb_dma_ops later, right?
 > 
-> And indeed, the user -does- have the wrong kernel...
+> I'm open to suggestions.  I don't really understand why we dropped
+> swiotlb for passthrough mode in 2.6.32 to start with.  It seems like we
+> now have a couple corner cases where we have to either hope for the best
+> or effectively ignore the request to use passthrough.  Thanks,
 
-And indeed, the log shows exactly the same problem as your modem had.  
-So presumably the same code change will fix it.
-
-Alan Stern
-
+I think that the cleanest solution is setting up swiotlb_dma_ops for
+passthrough devices (and devices not behind pci, etc). Calgary IOMMU
+does the same for years.
