@@ -1,50 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZKFSwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbZKFSzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759609AbZKFSwl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 13:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbZKFSwk
+	id S1759619AbZKFSzD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 13:55:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbZKFSzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 13:52:40 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:35197 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759207AbZKFSwj (ORCPT
+	Fri, 6 Nov 2009 13:55:03 -0500
+Received: from smtp.ultrahosting.com ([74.213.175.253]:52326 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759052AbZKFSzC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 13:52:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=aR/1KmWj35PFPt/BIs201TEHKtwWxLezlYMUD6OKPS3leEikf4BMP4R0QTQ4XE+OZf
-         gGPTSKi6wI9XWuAvCAiOPvcAdDBAUsGneU+50I1jCCkKMbszSYFUrAngIhY10obBsnlc
-         JUPiw8YQzKQwO1WuMwkv0FP+06PdYIlMddZv4=
+	Fri, 6 Nov 2009 13:55:02 -0500
+Date: Fri, 6 Nov 2009 13:53:35 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Andi Kleen <andi@firstfloor.org>
+cc: npiggin@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: [RFC MM] mmap_sem scaling: only scan cpus used by an mm
+In-Reply-To: <20091106073946.GV31511@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0911061352320.22205@V090114053VZO-1>
+References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1> <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1> <87r5sc7kst.fsf@basil.nowhere.org> <alpine.DEB.1.10.0911051558220.7668@V090114053VZO-1> <20091106073946.GV31511@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <4185.1257523499@turing-police.cc.vt.edu>
-References: <1257496614-12052-1-git-send-email-nir.tzachar@gmail.com>
-	 <4185.1257523499@turing-police.cc.vt.edu>
-Date: Fri, 6 Nov 2009 20:52:43 +0200
-Message-ID: <9b2db90b0911061052x55324988i356129ed588ea44a@mail.gmail.com>
-Subject: Re: [PATCH] nconfig v5
-From: Nir Tzachar <nir.tzachar@gmail.com>
-To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, zippel@linux-m68k.org, andi@firstfloor.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/6/09, Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
-> On Fri, 06 Nov 2009 10:36:54 +0200, nir.tzachar@gmail.com said:
-> > Building on menuconfig, this patch implements a more modern look interface using
-> > ncurses and ncurses' satellite libraries (menu, panel, form).
->
-> What is the minimum release of ncurses needed?  Some of us silverbacks have
-> bad memories of twisty little mazes of ncurses releases, all incompatible. ;)
+One way to reduce the cost of the writer lock is to track the cpus used
+and loop over the processors in that bitmap.
 
-I have not considred this. I have used ncurses 5.6 on gentoo and
-successfully compiled on ubuntu karmic koala, though I don't remember
-the exact version ubuntu have.
+---
+ arch/x86/include/asm/mmu_context.h |    1 +
+ include/linux/mm_types.h           |    3 ++-
+ kernel/fork.c                      |    2 ++
+ mm/init-mm.c                       |    1 +
+ 4 files changed, 6 insertions(+), 1 deletion(-)
 
-As I don't have access to any platform other than linux, I cannot test
-other versions. I would gladly appreciate your input if you can try it
-on other platforms.
+Index: linux-2.6/arch/x86/include/asm/mmu_context.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mmu_context.h	2009-11-06 12:26:24.000000000 -0600
++++ linux-2.6/arch/x86/include/asm/mmu_context.h	2009-11-06 12:26:36.000000000 -0600
+@@ -43,6 +43,7 @@ static inline void switch_mm(struct mm_s
+ 		percpu_write(cpu_tlbstate.active_mm, next);
+ #endif
+ 		cpumask_set_cpu(cpu, mm_cpumask(next));
++		cpumask_set_cpu(cpu, &next->cpus_used);
+
+ 		/* Re-load page tables */
+ 		load_cr3(next->pgd);
+Index: linux-2.6/include/linux/mm_types.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm_types.h	2009-11-06 12:26:35.000000000 -0600
++++ linux-2.6/include/linux/mm_types.h	2009-11-06 12:26:36.000000000 -0600
+@@ -241,6 +241,7 @@ struct mm_struct {
+ 	struct linux_binfmt *binfmt;
+
+ 	cpumask_t cpu_vm_mask;
++	cpumask_t cpus_used;
+
+ 	/* Architecture-specific MM context */
+ 	mm_context_t context;
+@@ -291,7 +292,7 @@ static inline int mm_has_reader(struct m
+ {
+ 	int cpu;
+
+-	for_each_possible_cpu(cpu)
++	for_each_cpu(cpu, &mm->cpus_used)
+ 		if (per_cpu(mm->rss->readers, cpu))
+ 			return 1;
+
+Index: linux-2.6/mm/init-mm.c
+===================================================================
+--- linux-2.6.orig/mm/init-mm.c	2009-11-06 12:26:35.000000000 -0600
++++ linux-2.6/mm/init-mm.c	2009-11-06 12:26:36.000000000 -0600
+@@ -19,5 +19,6 @@ struct mm_struct init_mm = {
+ 	.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),
+ 	.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),
+ 	.cpu_vm_mask	= CPU_MASK_ALL,
++	.cpus_used	= CPU_MASK_ALL,
+ 	.rss		= &init_mm_counters,
+ };
+Index: linux-2.6/kernel/fork.c
+===================================================================
+--- linux-2.6.orig/kernel/fork.c	2009-11-06 12:26:35.000000000 -0600
++++ linux-2.6/kernel/fork.c	2009-11-06 12:26:40.000000000 -0600
+@@ -297,6 +297,8 @@ static int dup_mmap(struct mm_struct *mm
+ 	mm->cached_hole_size = ~0UL;
+ 	mm->map_count = 0;
+ 	cpumask_clear(mm_cpumask(mm));
++	cpumask_clear(&mm->cpus_used);
++	cpumask_set_cpu(smp_processor_id(), &mm->cpus_used);
+ 	mm->mm_rb = RB_ROOT;
+ 	rb_link = &mm->mm_rb.rb_node;
+ 	rb_parent = NULL;
+
