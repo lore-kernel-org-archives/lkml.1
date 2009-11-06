@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbZKFQ53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759492AbZKFQ7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbZKFQ53 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 11:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbZKFQ52
+	id S1759492AbZKFQ7y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 11:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759298AbZKFQ7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 11:57:28 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36016 "HELO mail.gmx.net"
+	Fri, 6 Nov 2009 11:59:53 -0500
+Received: from xenotime.net ([72.52.64.118]:46812 "HELO xenotime.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757641AbZKFQ51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 11:57:27 -0500
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       technoboy85@gmail.com
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Fri, 06 Nov 2009 17:57:31 +0100
-From: "Martin Schleier" <drahemmaps@gmx.net>
-In-Reply-To: <20091106155937.11d95279@lxorguk.ukuu.org.uk>
-Message-ID: <20091106165731.26800@gmx.net>
-MIME-Version: 1.0
-References: <20091106154911.29400@gmx.net>
- <20091106155937.11d95279@lxorguk.ukuu.org.uk>
-Subject: Re: i686 quirk for AMD Geode
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-X-Authenticated: #35928486
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX18cyfImIS8c0fzVhQ5PM/pkrchx1tNrqTR+/oQHjX
- C9W1aMZW5y4jL2s/GSN09mVWCcL0+tmRlTVg== 
-Content-Transfer-Encoding: 8bit
-X-GMX-UID: Q2LHfjp4f2IsCfFQSG5ogWB4dWxlc1Yh
-X-FuHaFi: 0.6
+	id S1757834AbZKFQ7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 11:59:52 -0500
+Date: Fri, 6 Nov 2009 08:59:54 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for October 29 (x86 posttest)
+Message-Id: <20091106085954.39eb2789.rdunlap@xenotime.net>
+In-Reply-To: <4AE9C74C.2040309@redhat.com>
+References: <20091029182919.4d6ec52c.sfr@canb.auug.org.au>
+	<20091029090627.7857ed08.rdunlap@xenotime.net>
+	<4AE9C74C.2040309@redhat.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009 15:59:37 Alan Cox wrote:
-> > Looks good? checkpatch.pl has a very different opinion.
+On Thu, 29 Oct 2009 12:48:12 -0400 Masami Hiramatsu wrote:
+
+> Randy Dunlap wrote:
+> > On Thu, 29 Oct 2009 18:29:19 +1100 Stephen Rothwell wrote:
+> >
+> >> Hi all,
+> >>
+> >> [I accidentally deleted my merge log today, so sorry to anyone who
+> >> actually reads them :-), the summary still appears below.]
+> >
+> >
+> > I'm getting this on x86_64:
+> >
+> >    TEST    posttest
+> > Error: ffffffff810299e2:	f2 41 0f 28 52 b0    	repnz movaps -0x50(%r10),%xmm2
+> > Error: objdump says 6 bytes, but insn_get_length() says 4 (attr:0)
+> > make[2]: *** [posttest] Error 2
 > 
-> Firstly please learn to trim your email
-No, this email contained comments regarding the code.
+> Ah, that's should be fixed by AVX support patch which I've posted.
+> http://git.kernel.org/tip/e0e492e99b372c6990a5daca9e4683c341f1330e
 
-If it wasn't riddled with 19 errors (not bad for only 133 lines),
-I would have bothered to remove these irrelevant lines.
+Has that been merged into linux-next?
+I'm still seeing this failure in linux-next-20091106.
 
-So this advises goes right out of the window.
-
-> Secondly Ingo knows how to operate checkpatch and trivial style bits
-> like that are irrelevant to meaningful discussion about code.
-
-Oh, I'm deeply sorry Sir Cox,
-I was unaware of the fact that Ingo is just one of your checkpatch minions!?
-
-There's a document, you should have heard of before,
-Documentation/SubmittingPatches and it states: "
-
-4) Style check your changes.
-
-Check your patch for basic style violations, details of which can be
-found in Documentation/CodingStyle.  Failure to do so simply wastes
-the reviewers time and will get your patch rejected, probably
-without even being read.
-
-At a minimum you should check your patches with the patch style
-checker prior to submission (scripts/checkpatch.pl).  You should
-be able to justify all violations that remain in your patch."
-
-Style checks are indeed part of the job of submitting a patch.
-
-It's supposed to make life easier for the Maintainers, so
-they only need to add the SOB-line. Instead of wasting their
-precious time with really trivia checkpatch.pl fixes.
-
-If you don't like these guidelines,
-I'm sure you can call for one of your other
-minions e.g. linus to change that for your majesty.
 
 ---
-
-
-Anyway, Matteo Croce reacted quickly and posted a followup.
-Well done!
--- 
-GRATIS für alle GMX-Mitglieder: Die maxdome Movie-FLAT!
-Jetzt freischalten unter http://portal.gmx.net/de/go/maxdome01
+~Randy
