@@ -1,51 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbZKFCsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZKFC5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbZKFCsc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 21:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZKFCsb
+	id S1755491AbZKFC5O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 21:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZKFC5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 21:48:31 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59737 "EHLO
+	Thu, 5 Nov 2009 21:57:13 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60180 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbZKFCsa (ORCPT
+	with ESMTP id S1751835AbZKFC5N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 21:48:30 -0500
+	Thu, 5 Nov 2009 21:57:13 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AF38E6B.3000604@jp.fujitsu.com>
-Date: Fri, 06 Nov 2009 11:48:11 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, rdh@east.sun.com,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci/pcie: Avoid unnecessary PCIe link retrains
-References: <19184.41676.262206.134000@gargle.gargle.HOWL> <20091104110321.5e58e112@jbarnes-piketon> <200911041628.17905.bjorn.helgaas@hp.com> <4AF240E7.8050200@jp.fujitsu.com> <20091105191138.GN10555@parisc-linux.org>
-In-Reply-To: <20091105191138.GN10555@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Fri, 6 Nov 2009 11:54:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: npiggin@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: Re: [RFC MM] swap counters
+Message-Id: <20091106115440.2e6ac39f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.10.0911051703320.10180@V090114053VZO-1>
+References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1>
+	<alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1>
+	<alpine.DEB.1.10.0911051703320.10180@V090114053VZO-1>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Thu, Nov 05, 2009 at 12:05:11PM +0900, Kenji Kaneshige wrote:
->> There are a lot of codes that searches PCI express capability offset
->> in the PCI configuration space using pci_find_capability(). Caching it
->> in the struct pci_dev will reduce unncecessary search. This patch adds
->> an additional 'pcie_cap' fields into struct pci_dev, which is
->> initialized at pci device scan time (in set_pcie_port_type()).
+On Thu, 5 Nov 2009 17:05:19 -0500 (EST)
+Christoph Lameter <cl@linux-foundation.org> wrote:
+
+> Kamezawa sans swap counters on top of it all. Now we need no additional
+> atomic ops in VM fast paths.
 > 
-> I think adding this should imply the removal of ->is_pcie.  pcie_cap == 0
-> means !is_pcie.
+Thanks, I'll rewrite mine in this way.
+(As Minchan pointed out, is_migration_entry() is not enough.)
 
-Right.
+I'll post rebased one in reply to this.
 
-But, as you know, we need to change users of is_pcie (including some
-adapter card drivers) before removing it.
+Regards,
+-Kame
 
-Thanks,
-Kenji Kaneshige
 
+> ---
+>  fs/proc/task_mmu.c       |   14 +++++++++++---
+>  include/linux/mm_types.h |    1 +
+>  mm/memory.c              |   17 +++++++++++++----
+>  mm/rmap.c                |    1 +
+>  mm/swapfile.c            |    1 +
+>  5 files changed, 27 insertions(+), 7 deletions(-)
+> 
+> Index: linux-2.6/fs/proc/task_mmu.c
+> ===================================================================
+> --- linux-2.6.orig/fs/proc/task_mmu.c	2009-11-05 15:58:48.000000000 -0600
+> +++ linux-2.6/fs/proc/task_mmu.c	2009-11-05 16:03:12.000000000 -0600
+> @@ -16,8 +16,9 @@
+> 
+>  void task_mem(struct seq_file *m, struct mm_struct *mm)
+>  {
+> -	unsigned long data, text, lib;
+> +	unsigned long data, text, lib, swap;
+>  	unsigned long hiwater_vm, total_vm, hiwater_rss, total_rss;
+> +	int cpu;
+> 
+>  	/*
+>  	 * Note: to minimize their overhead, mm maintains hiwater_vm and
+> @@ -36,6 +37,11 @@ void task_mem(struct seq_file *m, struct
+>  	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
+>  	text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
+>  	lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
+> +
+> +	swap = 0;
+> +	for_each_possible_cpu(cpu)
+> +		swap += per_cpu(mm->rss->swap, cpu);
+> +
+>  	seq_printf(m,
+>  		"VmPeak:\t%8lu kB\n"
+>  		"VmSize:\t%8lu kB\n"
+> @@ -46,7 +52,8 @@ void task_mem(struct seq_file *m, struct
+>  		"VmStk:\t%8lu kB\n"
+>  		"VmExe:\t%8lu kB\n"
+>  		"VmLib:\t%8lu kB\n"
+> -		"VmPTE:\t%8lu kB\n",
+> +		"VmPTE:\t%8lu kB\n"
+> +		"VmSwap:\t%8lu kB\n",
+>  		hiwater_vm << (PAGE_SHIFT-10),
+>  		(total_vm - mm->reserved_vm) << (PAGE_SHIFT-10),
+>  		mm->locked_vm << (PAGE_SHIFT-10),
+> @@ -54,7 +61,8 @@ void task_mem(struct seq_file *m, struct
+>  		total_rss << (PAGE_SHIFT-10),
+>  		data << (PAGE_SHIFT-10),
+>  		mm->stack_vm << (PAGE_SHIFT-10), text, lib,
+> -		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10);
+> +		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10,
+> +		swap << (PAGE_SHIFT - 10));
+>  }
+> 
+>  unsigned long task_vsize(struct mm_struct *mm)
+> Index: linux-2.6/include/linux/mm_types.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/mm_types.h	2009-11-05 15:51:38.000000000 -0600
+> +++ linux-2.6/include/linux/mm_types.h	2009-11-05 15:51:55.000000000 -0600
+> @@ -28,6 +28,7 @@ struct address_space;
+>  struct mm_counter {
+>  	long file;
+>  	long anon;
+> +	long swap;
+>  	long readers;
+>  };
+> 
+> Index: linux-2.6/mm/memory.c
+> ===================================================================
+> --- linux-2.6.orig/mm/memory.c	2009-11-05 15:52:00.000000000 -0600
+> +++ linux-2.6/mm/memory.c	2009-11-05 16:01:48.000000000 -0600
+> @@ -587,7 +587,9 @@ copy_one_pte(struct mm_struct *dst_mm, s
+>  						 &src_mm->mmlist);
+>  				spin_unlock(&mmlist_lock);
+>  			}
+> -			if (is_write_migration_entry(entry) &&
+> +			if (!is_migration_entry(entry))
+> +				__this_cpu_inc(src_mm->rss->swap);
+> +			else if (is_write_migration_entry(entry) &&
+>  					is_cow_mapping(vm_flags)) {
+>  				/*
+>  				 * COW mappings require pages in both parent
+> @@ -864,9 +866,15 @@ static unsigned long zap_pte_range(struc
+>  		if (pte_file(ptent)) {
+>  			if (unlikely(!(vma->vm_flags & VM_NONLINEAR)))
+>  				print_bad_pte(vma, addr, ptent, NULL);
+> -		} else if
+> -		  (unlikely(!free_swap_and_cache(pte_to_swp_entry(ptent))))
+> -			print_bad_pte(vma, addr, ptent, NULL);
+> +		} else {
+> +			swp_entry_t ent = pte_to_swp_entry(ptent);
+> +
+> +			if (!is_migration_entry(ent))
+> +				__this_cpu_dec(mm->rss->swap);
+> +
+> +			if (unlikely(!free_swap_and_cache(ent)))
+> +				print_bad_pte(vma, addr, ptent, NULL);
+> +		}
+>  		pte_clear_not_present_full(mm, addr, pte, tlb->fullmm);
+>  	} while (pte++, addr += PAGE_SIZE, (addr != end && *zap_work > 0));
+> 
+> @@ -2569,6 +2577,7 @@ static int do_swap_page(struct mm_struct
+>  	 */
+> 
+>  	__this_cpu_inc(mm->rss->anon);
+> +	__this_cpu_dec(mm->rss->swap);
+>  	pte = mk_pte(page, vma->vm_page_prot);
+>  	if ((flags & FAULT_FLAG_WRITE) && reuse_swap_page(page)) {
+>  		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
+> Index: linux-2.6/mm/rmap.c
+> ===================================================================
+> --- linux-2.6.orig/mm/rmap.c	2009-11-05 15:57:51.000000000 -0600
+> +++ linux-2.6/mm/rmap.c	2009-11-05 15:58:43.000000000 -0600
+> @@ -830,6 +830,7 @@ static int try_to_unmap_one(struct page
+>  				spin_unlock(&mmlist_lock);
+>  			}
+>  			__this_cpu_dec(mm->rss->anon);
+> +			__this_cpu_inc(mm->rss->swap);
+>  		} else if (PAGE_MIGRATION) {
+>  			/*
+>  			 * Store the pfn of the page in a special migration
+> Index: linux-2.6/mm/swapfile.c
+> ===================================================================
+> --- linux-2.6.orig/mm/swapfile.c	2009-11-05 15:57:15.000000000 -0600
+> +++ linux-2.6/mm/swapfile.c	2009-11-05 15:57:36.000000000 -0600
+> @@ -832,6 +832,7 @@ static int unuse_pte(struct vm_area_stru
+>  	}
+> 
+>  	__this_cpu_inc(vma->vm_mm->rss->anon);
+> +	__this_cpu_dec(vma->vm_mm->rss->swap);
+>  	get_page(page);
+>  	set_pte_at(vma->vm_mm, addr, pte,
+>  		   pte_mkold(mk_pte(page, vma->vm_page_prot)));
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
