@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760193AbZKFWhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbZKFWgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760193AbZKFWhZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:37:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbZKFWWz
+	id S932913AbZKFWgo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760168AbZKFWWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 6 Nov 2009 17:22:55 -0500
-Received: from kroah.org ([198.145.64.141]:56832 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:56842 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932442AbZKFWWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:52 -0500
+	id S932447AbZKFWWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:53 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:44 2009
-Message-Id: <20091106221543.922283323@mini.kroah.org>
+Message-Id: <20091106221544.085690413@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:37 -0800
+Date: Fri, 06 Nov 2009 14:14:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Elina Pasheva <epasheva@sierrawireless.com>
-Subject: [39/99] USB: serial: sierra driver send_setup() autopm fix
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [40/99] USB: option: Patch for Huawei Mobile Broadband E270+ Modem
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=usb-serial-sierra-driver-send_setup-autopm-fix.patch
+Content-Disposition: inline; filename=usb-option-patch-for-huawei-mobile-broadband-e270-modem.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,70 +28,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Elina Pasheva <epasheva@sierrawireless.com>
+From: Ronnie Furuskog <rofu7@hotmail.com>
 
-commit 3c77d5137d3f4ff41721e9b4f4812db56a6065c0 upstream.
+commit 0ee3a33a0481c8f5c9edb7a5a02f3c76496d9551 upstream.
 
-This patch presents a fix for the autosuspend feature implementation in
-sierra usb serial driver for function sierra_send_setup().  Because it
-is possible to call sierra_send_setup() before sierra_open() or after
-sierra_close() we added a get/put interface activity to assure that the
-usb control can happen even when the device is autosuspended.
-
-Signed-off-by: Elina Pasheva <epasheva@sierrawireless.com>
-Tested-by: Matthew Safar <msafar@sierrawireless.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/sierra.c |   23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
+ drivers/usb/serial/option.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/usb/serial/sierra.c
-+++ b/drivers/usb/serial/sierra.c
-@@ -287,6 +287,8 @@ static int sierra_send_setup(struct usb_
- 	struct sierra_port_private *portdata;
- 	__u16 interface = 0;
- 	int val = 0;
-+	int do_send = 0;
-+	int retval;
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -166,6 +166,7 @@ static int  option_resume(struct usb_ser
+ #define HUAWEI_PRODUCT_E143D			0x143D
+ #define HUAWEI_PRODUCT_E143E			0x143E
+ #define HUAWEI_PRODUCT_E143F			0x143F
++#define HUAWEI_PRODUCT_E14AC			0x14AC
  
- 	dev_dbg(&port->dev, "%s\n", __func__);
- 
-@@ -305,10 +307,7 @@ static int sierra_send_setup(struct usb_
- 		 */
- 		if (port->interrupt_in_urb) {
- 			/* send control message */
--			return usb_control_msg(serial->dev,
--				usb_rcvctrlpipe(serial->dev, 0),
--				0x22, 0x21, val, interface,
--				NULL, 0, USB_CTRL_SET_TIMEOUT);
-+			do_send = 1;
- 		}
- 	}
- 
-@@ -320,12 +319,18 @@ static int sierra_send_setup(struct usb_
- 			interface = 1;
- 		else if (port->bulk_out_endpointAddress == 5)
- 			interface = 2;
--		return usb_control_msg(serial->dev,
--			usb_rcvctrlpipe(serial->dev, 0),
--			0x22, 0x21, val, interface,
--			NULL, 0, USB_CTRL_SET_TIMEOUT);
-+
-+		do_send = 1;
- 	}
--	return 0;
-+	if (!do_send)
-+		return 0;
-+
-+	usb_autopm_get_interface(serial->interface);
-+	retval = usb_control_msg(serial->dev, usb_rcvctrlpipe(serial->dev, 0),
-+		0x22, 0x21, val, interface, NULL, 0, USB_CTRL_SET_TIMEOUT);
-+	usb_autopm_put_interface(serial->interface);
-+
-+	return retval;
- }
- 
- static void sierra_set_termios(struct tty_struct *tty,
+ #define QUANTA_VENDOR_ID			0x0408
+ #define QUANTA_PRODUCT_Q101			0xEA02
+@@ -426,6 +427,7 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143D, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143E, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143F, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E14AC) },
+ 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_9508) },
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V640) }, /* Novatel Merlin V640/XV620 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V620) }, /* Novatel Merlin V620/S620 */
 
 
