@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZKFIlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbZKFIo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbZKFIlp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 03:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbZKFIlp
+	id S1755452AbZKFIo7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 03:44:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZKFIo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 03:41:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47813 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbZKFIlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 03:41:44 -0500
-Date: Fri, 6 Nov 2009 09:41:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       linux-s390@vger.kernel.org
-Subject: Re: [patch 0/2] nohz tweaking
-Message-ID: <20091106084138.GB22505@elte.hu>
-References: <20090929122514.693636761@de.ibm.com> <alpine.LFD.2.00.0909301204460.2756@nanos> <20091104144052.0b4e99e1@mschwide.boeblingen.de.ibm.com>
+	Fri, 6 Nov 2009 03:44:58 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51270 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753875AbZKFIo5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 03:44:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=qvDDUs5KA7WDDfKwkv35D/rQna9r5k8iYorGBg6Srtb464OfhNfEQKVzipJUMb6KpU
+         yJymTxE7fNxmmFHgAB5o6cJX8YUP3oIebx10xo5ZbapHAMSmddhtWTqhU8PFuFfoBys4
+         04O+0ox1250QpY6PR4lSORxhodiyj/Vw2klqc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091104144052.0b4e99e1@mschwide.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <4AEB0059.1050400@gmail.com>
+References: <38b2ab8a0909290109m3f82c161j4fb0f1266152877e@mail.gmail.com>
+	 <4AC1D0F5.4050709@gmail.com>
+	 <38b2ab8a0910300144i7a3c190fi9aa3d079c9cdb754@mail.gmail.com>
+	 <4AEACD88.8080108@gmail.com> <4AEB0059.1050400@gmail.com>
+Date: Fri, 6 Nov 2009 09:45:01 +0100
+Message-ID: <38b2ab8a0911060045hb6ebab8p43bf8aa838eabfd3@mail.gmail.com>
+Subject: Re: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct
+From: Francis Moreau <francis.moro@gmail.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 30, 2009 at 4:03 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+[...]
 
-> Moin Thomas,
-> 
-> On Wed, 30 Sep 2009 12:06:42 +0200 (CEST)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > Martin,
-> > 
-> > On Tue, 29 Sep 2009, Martin Schwidefsky wrote:
-> > 
-> > > Greetings,
-> > > the two remainting patches of the nohz performance work I've been
-> > > doing. Both have been sent to the mailing lists before. Ingo had
-> > > a comment about patch #1, but no one but me seems to be interested
-> > > in patch #2. Neverless I would like to get both patches upstream.
-> > > I can create a branch for them on git390 but I feel that they should
-> > > go the path all the other nohz/time/clocksource patches went.
-> > 
-> > Sorry, that's my fault. I forgot them over the watchdog
-> > wreckage. Picking them up now.
-> 
-> I could not find the patches on tip timers/core. Where did you put them ?
+>
+> [PATCH take2] net: fix sk_forward_alloc corruption
+>
 
-these are the currently pending patches in tip:timers/core:
-
-3c5d92a: nohz: Introduce arch_needs_cpu
-eed3b9c: nohz: Reuse ktime in sub-functions of tick_check_idle.
-7bc7d63: time: Remove xtime_cache
-a092ff0: time: Implement logarithmic time accumulation
-
-	Ingo
+With this patch applied 4 days ago, I haven't got any oops so far.
+-- 
+Francis
