@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751176AbZKFFBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbZKFFHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751176AbZKFFBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 00:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbZKFFBS
+	id S1751799AbZKFFHt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 00:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZKFFHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 00:01:18 -0500
-Received: from ozlabs.org ([203.10.76.45]:60127 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750701AbZKFFBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 00:01:17 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCHv7 3/3] vhost_net: a kernel-level virtio server
-Date: Fri, 6 Nov 2009 15:31:20 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com, s.hetze@linux-ag.com
-References: <cover.1257267892.git.mst@redhat.com> <20091104115729.GD8398@redhat.com> <20091104172542.GC6736@linux.vnet.ibm.com>
-In-Reply-To: <20091104172542.GC6736@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Fri, 6 Nov 2009 00:07:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52485
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751702AbZKFFHp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 00:07:45 -0500
+Date: Thu, 05 Nov 2009 21:08:10 -0800 (PST)
+Message-Id: <20091105.210810.124818005.davem@davemloft.net>
+To: ghaskins@novell.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091002141407.30224.54207.stgit@dev.haskins.net>
+References: <20091002141407.30224.54207.stgit@dev.haskins.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911061531.20299.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Nov 2009 03:55:42 am Paul E. McKenney wrote:
-> On Wed, Nov 04, 2009 at 01:57:29PM +0200, Michael S. Tsirkin wrote:
-> > Can you ack this usage please?
+From: Gregory Haskins <ghaskins@novell.com>
+Date: Fri, 02 Oct 2009 10:20:00 -0400
+
+> The following is an RFC for an attempt at addressing a zero-copy solution.
 > 
-> I thought I had done so in my paragraph above, but if you would like
-> something a bit more formal...
+> To be perfectly honest, I have no idea if this is the best solution, or if
+> there is truly a problem with skb->destructor that requires an alternate
+> mechanism.  What I do know is that this patch seems to work, and I would
+> like to see some kind of solution available upstream.  So I thought I would
+> send my hack out as at least a point of discussion.  FWIW: This has been
+> tested heavily in my rig and is technically suitable for inclusion after
+> review as is, if that is decided to be the optimal path forward here.
+> 
+> Thanks for your review and consideration,
 
-<snip verbose super-ack with qualifications>
+I have no fundamental objections, but when you submit this for
+real can you show the code that uses it so we can get a better
+idea about things?
 
-That's great guys.  And yes, this is a kind of read-copy-update.  And no,
-there's nothing wrong with it.
-
-But it's still nasty to use half an API.  If it were a few places I would
-have open-coded it with a comment, or wrapped it.  As it is, I don't think
-that would be a win.
-
-Cheers,
-Rusty.
+Thanks.
