@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbZKFWwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbZKFWyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760004AbZKFWwF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:52:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759935AbZKFWwE
+	id S1760218AbZKFWyd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760177AbZKFWyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:52:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52906 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758577AbZKFWwC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:52:02 -0500
-Date: Fri, 6 Nov 2009 22:51:47 GMT
-From: tip-bot for Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       simon.kagstrom@netinsight.net, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, simon.kagstrom@netinsight.net
-In-Reply-To: <20091106154404.002648d9@marrow.netinsight.se>
-References: <20091106154404.002648d9@marrow.netinsight.se>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Add Phoenix/MSC BIOSes to lowmem corruption list
-Message-ID: <tip-f1b291d4c47440cbfc1a478e88800e2742d60a80@git.kernel.org>
-Git-Commit-ID: f1b291d4c47440cbfc1a478e88800e2742d60a80
-X-Mailer: tip-git-log-daemon
+	Fri, 6 Nov 2009 17:54:31 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51655 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760070AbZKFWy3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:54:29 -0500
+Message-ID: <4AF4A924.5080609@zytor.com>
+Date: Fri, 06 Nov 2009 14:54:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: castet.matthieu@free.fr
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Using x86 segments against NULL pointer deference exploit
+References: <1257512389.4af41dc504e1b@imp.free.fr>
+In-Reply-To: <1257512389.4af41dc504e1b@imp.free.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f1b291d4c47440cbfc1a478e88800e2742d60a80
-Gitweb:     http://git.kernel.org/tip/f1b291d4c47440cbfc1a478e88800e2742d60a80
-Author:     Simon Kagstrom <simon.kagstrom@netinsight.net>
-AuthorDate: Fri, 6 Nov 2009 15:44:04 +0100
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 6 Nov 2009 14:49:39 -0800
+On 11/06/2009 04:59 AM, castet.matthieu@free.fr wrote:
+> Hi,
+> 
+> I am wondering why we can't set the KERNEL_DS data segment to not contain the
+> first page, ie changing it from R/W flat model to R/W expand down from
+> 0xffffffff to 4096.
+> 
+> The modification seems simple : change GDT_ENTRY_KERNEL_DS [1], and some
+> modification for syscall entry point that doesn't support segment (sysenter).
+> 
+> The drawback of this it that the kernel can't access anymore data in the first
+> segment. Is it needed for application like wine or dosemu ?
+> 
 
-x86: Add Phoenix/MSC BIOSes to lowmem corruption list
+Yes, it is.  On 32 bits it is possible to switch around segments and do
+this (in which case you want it to only cover the actual kernel area,
+and use USER_DS for all user-space references.)  This also lets you drop
+nearly all pointer-range checks, since they are now redundant.  However,
+there is a cost -- it pretty much requires a segment register for
+USER_DS (this used to be fs once upon a time, hence set_fs) and probably
+would break Xen and possibly other virtualization solutions.
 
-We have a board with a Phoenix/MSC BIOS which also corrupts the low
-64KB of RAM, so add an entry to the table.
+> PS : why x86_64 segment got access bit set and x86_32 doesn't ?
 
-Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
-LKML-Reference: <20091106154404.002648d9@marrow.netinsight.se>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/setup.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+It is trivially faster to start out with the access bit set -- the
+hardware will set the accessed bit anyway.
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index e09f0e2..2a34f9c 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -660,6 +660,13 @@ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
- 		},
- 	},
- 	{
-+		.callback = dmi_low_memory_corruption,
-+		.ident = "Phoenix/MSC BIOS",
-+		.matches = {
-+			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix/MSC"),
-+		},
-+	},
-+	{
- 	/*
- 	 * AMI BIOS with low memory corruption was found on Intel DG45ID board.
- 	 * It hase different DMI_BIOS_VENDOR = "Intel Corp.", for now we will
+	-hpa
