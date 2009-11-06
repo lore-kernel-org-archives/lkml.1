@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932259AbZKFWM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760014AbZKFWL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932259AbZKFWM1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932242AbZKFWMZ
+	id S1760014AbZKFWL5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932220AbZKFWLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:12:25 -0500
-Received: from kroah.org ([198.145.64.141]:39716 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:11:55 -0500
+Received: from kroah.org ([198.145.64.141]:39719 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759899AbZKFWFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:05:42 -0500
+	id S1759903AbZKFWFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:43 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:50 2009
-Message-Id: <20091106215950.565514514@mini.kroah.org>
+Message-Id: <20091106215950.692406972@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 13:56:07 -0800
+Date: Fri, 06 Nov 2009 13:56:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Alan Cox <alan@linux.intel.com>
-Subject: [04/30] dpt_i2o: Fix typo of EINVAL
+       Stas Sergeev <stsp@aknet.ru>
+Subject: [05/30] Driver core: fix driver_register() return value
 References: <20091106215603.413650799@mini.kroah.org>
-Content-Disposition: inline; filename=dpt_i2o-fix-typo-of-einval.patch
+Content-Disposition: inline; filename=driver-core-fix-driver_register-return-value.patch
 In-Reply-To: <20091106220156.GA13813@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,32 +29,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+From: Stas Sergeev <stsp@aknet.ru>
 
-commit aefba418bfecd1985a08f50a95bd854a119f0153 upstream.
+commit 39acbc12affcaa23ef1d887ba3d197baca8e6e47 upstream.
 
-Commit ef7562b7f28319e6dd1f85dc1af87df2a7a84832 ("dpt_i2o: Fix up
-copy*user") had a silly typo: EINVAL should be -EINVAL.
+In this patch:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=16dc42e018c2868211b4928f20a957c0c216126c
+the check was added for another driver to already claim the same device
+on the same bus. But the returned error code was wrong: to modprobe, the
+-EEXIST means that _this_ driver is already installed. It therefore
+doesn't produce the needed error message when _another_ driver is trying
+to register for the same device.  Returning -EBUSY fixes the problem.
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Stas Sergeev <stsp@aknet.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/dpt_i2o.c |    2 +-
+ drivers/base/driver.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/scsi/dpt_i2o.c
-+++ b/drivers/scsi/dpt_i2o.c
-@@ -1919,7 +1919,7 @@ static int adpt_i2o_passthru(adpt_hba* p
- 		size = size>>16;
- 		size *= 4;
- 		if (size > MAX_MESSAGE_SIZE) {
--			rcode = EINVAL;
-+			rcode = -EINVAL;
- 			goto cleanup;
- 		}
- 		/* Copy in the user's I2O command */
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@ -227,7 +227,7 @@ int driver_register(struct device_driver
+ 		put_driver(other);
+ 		printk(KERN_ERR "Error: Driver '%s' is already registered, "
+ 			"aborting...\n", drv->name);
+-		return -EEXIST;
++		return -EBUSY;
+ 	}
+ 
+ 	ret = bus_add_driver(drv);
 
 
