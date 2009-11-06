@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbZKFWJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbZKFWIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760057AbZKFWJA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:09:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759962AbZKFWI5
+	id S1760054AbZKFWIg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759961AbZKFWF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:08:57 -0500
-Received: from kroah.org ([198.145.64.141]:39779 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:05:57 -0500
+Received: from kroah.org ([198.145.64.141]:39782 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759900AbZKFWFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:05:55 -0500
+	id S1759944AbZKFWF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:56 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:52 2009
-Message-Id: <20091106215952.357515032@mini.kroah.org>
+Message-Id: <20091106215952.485583618@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 13:56:21 -0800
+Date: Fri, 06 Nov 2009 13:56:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Pirko <jpirko@redhat.com>, "David S. Miller" <davem@davemloft.net>,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: [18/30] netlink: fix typo in initialization (CVE-2009-3612)
+       Avi Kivity <avi@redhat.com>, Chuck Ebbert <cebbert@redhat.com>
+Subject: [19/30] KVM: Prevent overflow in KVM_GET_SUPPORTED_CPUID (CVE-2009-3638)
 References: <20091106215603.413650799@mini.kroah.org>
-Content-Disposition: inline; filename=netlink-fix-typo-in-initialization-cve-2009-3612.patch
+Content-Disposition: inline; filename=kvm-prevent-overflow-in-kvm_get_supported_cpuid-cve-2009-3638.patch
 In-Reply-To: <20091106220156.GA13813@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,33 +29,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jiri Pirko <jpirko@redhat.com>
+From: Avi Kivity <avi@redhat.com>
 
-commit ad61df918c44316940404891d5082c63e79c256a upstream.
+commit 6a54435560efdab1a08f429a954df4d6c740bddf upstream.
 
-Commit 9ef1d4c7c7aca1cd436612b6ca785b726ffb8ed8 ("[NETLINK]: Missing
-initializations in dumped data") introduced a typo in
-initialization. This patch fixes this.
+The number of entries is multiplied by the entry size, which can
+overflow on 32-bit hosts.  Bound the entry count instead.
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Reported-by: David Wagner <daw@cs.berkeley.edu>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- net/sched/cls_api.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/net/sched/cls_api.c
-+++ b/net/sched/cls_api.c
-@@ -337,7 +337,7 @@ static int tcf_fill_node(struct sk_buff 
- 	tcm = NLMSG_DATA(nlh);
- 	tcm->tcm_family = AF_UNSPEC;
- 	tcm->tcm__pad1 = 0;
--	tcm->tcm__pad1 = 0;
-+	tcm->tcm__pad2 = 0;
- 	tcm->tcm_ifindex = qdisc_dev(tp->q)->ifindex;
- 	tcm->tcm_parent = tp->classid;
- 	tcm->tcm_info = TC_H_MAKE(tp->prio, tp->protocol);
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1591,6 +1591,8 @@ static int kvm_dev_ioctl_get_supported_cpuid(struct kvm_cpuid2 *cpuid,
+ 
+ 	if (cpuid->nent < 1)
+ 		goto out;
++	if (cpuid->nent > KVM_MAX_CPUID_ENTRIES)
++		cpuid->nent = KVM_MAX_CPUID_ENTRIES;
+ 	r = -ENOMEM;
+ 	cpuid_entries = vmalloc(sizeof(struct kvm_cpuid_entry2) * cpuid->nent);
+ 	if (!cpuid_entries)
 
 
