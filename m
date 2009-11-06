@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZKFI1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZKFI31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbZKFI1I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 03:27:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbZKFI1H
+	id S1754877AbZKFI31 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 03:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbZKFI31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 03:27:07 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44785
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753750AbZKFI1F (ORCPT
+	Fri, 6 Nov 2009 03:29:27 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:42172 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754249AbZKFI30 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 03:27:05 -0500
-Date: Fri, 06 Nov 2009 00:27:31 -0800 (PST)
-Message-Id: <20091106.002731.247254978.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kristoffer@gaisler.com
-Subject: Re: linux-next: sparc tree build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091106.002651.21006753.davem@davemloft.net>
-References: <20091106180248.7a6aa9ba.sfr@canb.auug.org.au>
-	<20091106.001930.121210402.davem@davemloft.net>
-	<20091106.002651.21006753.davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Nov 2009 03:29:26 -0500
+Date: Fri, 6 Nov 2009 09:30:42 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: linux-mips@linux-mips.org, LKML <linux-kernel@vger.kernel.org>,
+       huhb@lemote.com, yanh@lemote.com, Zhang Le <r0bertz@gentoo.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       liujl@lemote.com
+Subject: Re: [PATCH -queue v0 4/6] [loongson] add basic fuloong2f support
+Message-ID: <20091106083042.GA17723@linux-mips.org>
+References: <cover.1257325319.git.wuzhangjin@gmail.com> <0f805f7d12c5a7cbcc125ba4a1b70113ec2047a6.1257325319.git.wuzhangjin@gmail.com> <20091105131603.GA18232@linux-mips.org> <1257485984.2299.21.camel@falcon.domain.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257485984.2299.21.camel@falcon.domain.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Fri, 06 Nov 2009 00:26:51 -0800 (PST)
+On Fri, Nov 06, 2009 at 01:39:44PM +0800, Wu Zhangjin wrote:
 
-> apbuart: Fix build and missing driver unregister.
-> 
-> linux/of_platform.h needs to be included
-> 
-> OF driver needs to be unregistered
-> 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
+> > > +	if ((LOONGSON_INTISR & LOONGSON_INTEN) & LOONGSON_INT_BIT_INT0) {
+> > > +		imr = inb(0x21) | (inb(0xa1) << 8);
+> > > +		isr = inb(0x20) | (inb(0xa0) << 8);
+> > > +		isr &= ~0x4;	/* irq2 for cascade */
+> > > +		isr &= ~imr;
+> > > +		irq = ffs(isr) - 1;
+> > > +	}
+> > 
+> > Any reason why you're not using i8259_irq() from <asm/i8259.h> here?
+> > That function not only gets the locking right, it also minimizes the number
+> > of accesses to the i8259 - which even on modern silicon can be stuningly
+> > slow.
 
-Sorry left out the patch :-)
+> Just asked Yanhua, He told me there is a bug in cs5536, if using the
+> i8259_irq() directly, we can not get the irq. and just tried it, the
+> kernel hang on booting.
 
-Here it is:
+Wonderful.  Even 30 years after it was built there are still new i8259
+bugs :-)
 
-diff --git a/drivers/serial/apbuart.c b/drivers/serial/apbuart.c
-index 5f9dec3..a1e9503 100644
---- a/drivers/serial/apbuart.c
-+++ b/drivers/serial/apbuart.c
-@@ -25,6 +25,7 @@
- #include <linux/device.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-+#include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
- #include <linux/serial_core.h>
-@@ -676,8 +677,7 @@ static int __init grlib_apbuart_init(void)
- 		return ret;
- 	}
- 
--	ret = of_register_driver(&grlib_apbuart_of_driver, &of_platform_bus_type);
--
-+	ret = of_register_platform_driver(&grlib_apbuart_of_driver);
- 	if (ret) {
- 		printk(KERN_ERR
- 		       "%s: of_register_platform_driver failed (%i)\n",
-@@ -698,7 +698,7 @@ static void __exit grlib_apbuart_exit(void)
- 				     &grlib_apbuart_ports[i]);
- 
- 	uart_unregister_driver(&grlib_apbuart_driver);
--
-+	of_unregister_platform_driver(&grlib_apbuart_of_driver);
- }
- 
- module_init(grlib_apbuart_init);
--- 
-1.6.5.2
+This is probably worth a comment in the code.
 
+  Ralf
