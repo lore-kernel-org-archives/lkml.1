@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbZKFNAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbZKFNL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbZKFNAr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 08:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757632AbZKFNAr
+	id S1757331AbZKFNL3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 08:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZKFNL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 08:00:47 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:43930 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757491AbZKFNAq (ORCPT
+	Fri, 6 Nov 2009 08:11:28 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:52991 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752287AbZKFNL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 08:00:46 -0500
-Message-ID: <4AF41DF0.7050002@us.ibm.com>
-Date: Fri, 06 Nov 2009 07:00:32 -0600
-From: Anthony Liguori <aliguori@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Fri, 6 Nov 2009 08:11:28 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 01/11] sysctl: Separate the binary sysctl logic into it's own file.
+Date: Fri, 6 Nov 2009 14:11:19 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <m1tyx8trik.fsf@fess.ebiederm.org> <200911061310.02785.arnd@arndb.de> <m1ljij24p0.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ljij24p0.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Amit Shah <amit.shah@redhat.com>,
-       linux-kernel@vger.kernel.org, virtualization@linux-foundation.org,
-       "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v10 1/1] virtio_console: Add support for multiple ports
- for generic guest and host communication
-References: <1257266319-24300-1-git-send-email-amit.shah@redhat.com> <1257266319-24300-2-git-send-email-amit.shah@redhat.com> <200911061740.03734.rusty@rustcorp.com.au> <200911060900.49923.borntraeger@de.ibm.com>
-In-Reply-To: <200911060900.49923.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911061411.19580.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18lpTwSTTNzRQxC5RQW7roEy80oxeW04OuFSCF
+ iQvpYkwvmjNnaVKu9Hctals2vCyltaYwXDcIsIHI1R76ZZvfUg
+ usKwsmYA9kS8HFyJ4zdsw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Borntraeger wrote:
-> I know that Anthony disagrees, but _If we start over_, I still think we should 
-> use that chance and leave the old virtio console untouched and add a new driver 
-> for the host guest communication. IMHO it turned out that there is only a tiny 
-> bit of commonality. (most code pathes check for use_multiport and  then do two 
-> completely different things).
-> I like simplicity. According to David A. Wheeler's SLOCCount, the old console 
-> has 141 lines of code and the I truly believe that a separate guest-host comm 
-> vehicle would also be a lot simpler if it must not take care of the old 
-> virtio_console interface.
->   
+On Friday 06 November 2009, Eric W. Biederman wrote:
+> The primary proc path already doesn't need the lock_kernel().  My next
+> patch winds up killing the entire binary path and rebuilding on top of
+> /proc/sys.  Which removes that lock_kernel().
+> 
+> Which I think elegantly solves all of the sysctl BKL lock issues.
 
-It's the wrong metrics for evaluating a device ABI.  We should consider 
-device ABIs based on whether they make sense--not about how many lines 
-of code it takes to implement the Linux driver.
+Yes, that sounds like an excellent plan, but I'm not completely sure
+if the lack of the BKL in the procfs case is intentional. As a
+particular case that I stumbled over, 'core_pattern' is read
+with the BKL held to protect against sysctl changing it, but
+it is changed with proc_dostring without the BKL.
 
-Fundamentally speaking, right now, virtio-console is a single stream 
-that acts as an interactive terminal.  What we're looking to add here is 
-to support multiple terminals that can be enumerated in a rationale way.
+Most uses of intvec or string seem to be racy and probably need
+a proper serialization method anyway.
 
-I see no reason why that should be two separate devices.
-
-> On the other hand we all should agree on one driver vs. two drivers before we go 
-> on. Everything else would be unfair to Amit, who had the unpleasant task to 
-> implement conflicting review comments....
->   
-
-I agree and there are multiple maintainers on the qemu side who feel the 
-same way I do.  I'm really strongly opposed to making this separate devices.
-
-If you think it's easier, you can do a check in the virtio_probe 
-function that checks for the feature bits and calls a completely 
-separate virtio initialization routine so it ends up being two separate 
-files in Linux.  But that's a Linux implementation detail.
-
-> Christian
->   
-
-
--- 
-Regards,
-
-Anthony Liguori
-
+	Arnd <><
