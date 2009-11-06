@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbZKFWFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbZKFWLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186AbZKFWFt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:05:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932145AbZKFWFr
+	id S1760122AbZKFWLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbZKFWFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:05:47 -0500
-Received: from kroah.org ([198.145.64.141]:39721 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:05:46 -0500
+Received: from kroah.org ([198.145.64.141]:39725 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759906AbZKFWFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:05:44 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:50 2009
-Message-Id: <20091106215950.827974192@mini.kroah.org>
+	id S1759892AbZKFWFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:45 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:51 2009
+Message-Id: <20091106215950.946752422@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 13:56:09 -0800
+Date: Fri, 06 Nov 2009 13:56:10 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Earl Chew <earl_chew@agilent.com>
-Subject: [06/30] fs: pipe.c null pointer dereference
+       Ben Hutchings <ben@decadent.org.uk>, Eric Sesterhenn <snakebyte@gmx.de>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [07/30] hfsplus: refuse to mount volumes larger than 2TB
 References: <20091106215603.413650799@mini.kroah.org>
-Content-Disposition: inline; filename=fs-pipe.c-null-pointer-dereference.patch
+Content-Disposition: inline; filename=hfsplus-refuse-to-mount-volumes-larger-than-2tb.patch
 In-Reply-To: <20091106220156.GA13813@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,135 +30,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Earl Chew <earl_chew@agilent.com>
+From: Ben Hutchings <ben@decadent.org.uk>
 
-commit ad3960243e55320d74195fb85c975e0a8cc4466c upstream.
+commit 5c36fe3d87b3f0c85894a49193c66096a3d6b26f upstream.
 
-This patch fixes a null pointer exception in pipe_rdwr_open() which
-generates the stack trace:
+As found in <http://bugs.debian.org/550010>, hfsplus is using type u32
+rather than sector_t for some sector number calculations.
 
-> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
->  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
->  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
->  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
->  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
->  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
+In particular, hfsplus_get_block() does:
 
-The failure mode is triggered by an attempt to open an anonymous
-pipe via /proc/pid/fd/* as exemplified by this script:
+        u32 ablock, dblock, mask;
+...
+        map_bh(bh_result, sb, (dblock << HFSPLUS_SB(sb).fs_shift) + HFSPLUS_SB(sb).blockoffset + (iblock & mask));
 
-=============================================================
-while : ; do
-   { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
-   PID=$!
-   OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
-        { read PID REST ; echo $PID; } )
-   OUT="${OUT%% *}"
-   DELAY=$((RANDOM * 1000 / 32768))
-   usleep $((DELAY * 1000 + RANDOM % 1000 ))
-   echo n > /proc/$OUT/fd/1                 # Trigger defect
-done
-=============================================================
+I am not confident that I can find and fix all cases where a sector number
+may be truncated.  For now, avoid data loss by refusing to mount HFS+
+volumes with more than 2^32 sectors (2TB).
 
-Note that the failure window is quite small and I could only
-reliably reproduce the defect by inserting a small delay
-in pipe_rdwr_open(). For example:
-
- static int
- pipe_rdwr_open(struct inode *inode, struct file *filp)
- {
-       msleep(100);
-       mutex_lock(&inode->i_mutex);
-
-Although the defect was observed in pipe_rdwr_open(), I think it
-makes sense to replicate the change through all the pipe_*_open()
-functions.
-
-The core of the change is to verify that inode->i_pipe has not
-been released before attempting to manipulate it. If inode->i_pipe
-is no longer present, return ENOENT to indicate so.
-
-The comment about potentially using atomic_t for i_pipe->readers
-and i_pipe->writers has also been removed because it is no longer
-relevant in this context. The inode->i_mutex lock must be used so
-that inode->i_pipe can be dealt with correctly.
-
-Signed-off-by: Earl Chew <earl_chew@agilent.com>
+[akpm@linux-foundation.org: fix 32 and 64-bit issues]
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Cc: Eric Sesterhenn <snakebyte@gmx.de>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/pipe.c |   41 ++++++++++++++++++++++++++++++-----------
- 1 file changed, 30 insertions(+), 11 deletions(-)
+ fs/hfsplus/wrapper.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -742,36 +742,55 @@ pipe_rdwr_release(struct inode *inode, s
- static int
- pipe_read_open(struct inode *inode, struct file *filp)
- {
--	/* We could have perhaps used atomic_t, but this and friends
--	   below are the only places.  So it doesn't seem worthwhile.  */
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->readers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->readers++;
+--- a/fs/hfsplus/wrapper.c
++++ b/fs/hfsplus/wrapper.c
+@@ -99,6 +99,10 @@ int hfsplus_read_wrapper(struct super_bl
+ 
+ 	if (hfsplus_get_last_session(sb, &part_start, &part_size))
+ 		return -EINVAL;
++	if ((u64)part_start + part_size > 0x100000000ULL) {
++		pr_err("hfs: volumes larger than 2TB are not supported yet\n");
++		return -EINVAL;
 +	}
-+
- 	mutex_unlock(&inode->i_mutex);
- 
--	return 0;
-+	return ret;
- }
- 
- static int
- pipe_write_open(struct inode *inode, struct file *filp)
- {
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->writers++;
-+	}
-+
- 	mutex_unlock(&inode->i_mutex);
- 
--	return 0;
-+	return ret;
- }
- 
- static int
- pipe_rdwr_open(struct inode *inode, struct file *filp)
- {
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	if (filp->f_mode & FMODE_READ)
--		inode->i_pipe->readers++;
--	if (filp->f_mode & FMODE_WRITE)
--		inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		if (filp->f_mode & FMODE_READ)
-+			inode->i_pipe->readers++;
-+		if (filp->f_mode & FMODE_WRITE)
-+			inode->i_pipe->writers++;
-+	}
-+
- 	mutex_unlock(&inode->i_mutex);
- 
--	return 0;
-+	return ret;
- }
- 
- /*
+ 	while (1) {
+ 		bh = sb_bread512(sb, part_start + HFSPLUS_VOLHEAD_SECTOR, vhdr);
+ 		if (!bh)
 
 
