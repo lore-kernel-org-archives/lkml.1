@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760311AbZKFW1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932727AbZKFWXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760311AbZKFW1Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbZKFW1O
+	id S932727AbZKFWXo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:23:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932613AbZKFWXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:27:14 -0500
-Received: from kroah.org ([198.145.64.141]:57150 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:23:39 -0500
+Received: from kroah.org ([198.145.64.141]:57158 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932676AbZKFWXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:23:36 -0500
+	id S932687AbZKFWXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:23:37 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:50 2009
-Message-Id: <20091106221550.653683831@mini.kroah.org>
+Message-Id: <20091106221550.789625190@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:15:23 -0800
+Date: Fri, 06 Nov 2009 14:15:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [85/99] NFSv4: The link() operation should return any delegation on the file
+       Bastian Blank <waldi@debian.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [86/99] powerpc: Remove SMP warning from PowerMac cpufreq
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=nfsv4-the-link-operation-should-return-any-delegation-on-the-file.patch
+Content-Disposition: inline; filename=powerpc-remove-smp-warning-from-powermac-cpufreq.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,29 +30,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Bastian Blank <bastian@waldi.eu.org>
 
-commit 9a3936aac133037f65124fcb2d676a6c201a90a4 upstream.
+commit 6fdc31a2b86cf1f98e3eed896578ad9659eeb0f8 upstream.
 
-Otherwise, we have to wait for the server to recall it.
+On Thu, Aug 13, 2009 at 04:14:58PM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2009-08-11 at 11:39 +0200, Bastian Blank wrote:
+> > This patch just disables this driver on SMP kernels, as it is obviously
+> > not supported.
+> Why not remove the #error instead ? :-) I don't think it's still
+> meaningful, especially since we use the timebase for delays nowadays
+> which doesn't depend on the CPU frequency...
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Your call. Take this one:
+
+The build of a PowerMac 32bit kernel currently fails with
+
+error: #warning "WARNING, CPUFREQ not recommended on SMP kernels"
+
+Thie patch removes the not longer applicable SMP warning from the
+PowerMac cpufreq code.
+
+Signed-off-by: Bastian Blank <waldi@debian.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/dir.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/powermac/cpufreq_32.c |    8 --------
+ 1 file changed, 8 deletions(-)
 
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -1536,6 +1536,8 @@ nfs_link(struct dentry *old_dentry, stru
- 		old_dentry->d_parent->d_name.name, old_dentry->d_name.name,
- 		dentry->d_parent->d_name.name, dentry->d_name.name);
+--- a/arch/powerpc/platforms/powermac/cpufreq_32.c
++++ b/arch/powerpc/platforms/powermac/cpufreq_32.c
+@@ -44,14 +44,6 @@
+  */
+ #undef DEBUG_FREQ
  
-+	nfs_inode_return_delegation(inode);
-+
- 	d_drop(dentry);
- 	error = NFS_PROTO(dir)->link(inode, dir, &dentry->d_name);
- 	if (error == 0) {
+-/*
+- * There is a problem with the core cpufreq code on SMP kernels,
+- * it won't recalculate the Bogomips properly
+- */
+-#ifdef CONFIG_SMP
+-#warning "WARNING, CPUFREQ not recommended on SMP kernels"
+-#endif
+-
+ extern void low_choose_7447a_dfs(int dfs);
+ extern void low_choose_750fx_pll(int pll);
+ extern void low_sleep_handler(void);
 
 
