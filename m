@@ -1,75 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZKFFh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663AbZKFFjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313AbZKFFh7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 00:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZKFFh6
+	id S1755663AbZKFFjp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 00:39:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZKFFjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 00:37:58 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:41744 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbZKFFh5 (ORCPT
+	Fri, 6 Nov 2009 00:39:44 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:35473 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753503AbZKFFjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 00:37:57 -0500
+	Fri, 6 Nov 2009 00:39:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
          :content-transfer-encoding;
-        b=d7g8LWCeB976HH8LLarHoTWmXfjcp83kKEzlP9yn/8lLAE5h8XHXtTgNGYy8h7UDpx
-         jTDZdTj9XovXnci04w4Y4uIVpH5BnWR5FksXTCwaa6M+Pvufy4ZhSOPlcdX66wQ9sDY5
-         mgfpRM8Fn9PPstXsfa7cXPzS5CdhHZhLEz2Zo=
-Message-ID: <4AF3B637.9060002@gmail.com>
-Date: Fri, 06 Nov 2009 06:37:59 +0100
-From: Carmelo Amoroso <carmelo73@gmail.com>
-Reply-To: carmelo73@gmail.com
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-CC: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: Fast LKM symbol resolution
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com>
-In-Reply-To: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+        b=OtQ07kUJxKaBrjszk6uL0XQOMsDqnzeAVTJUt5t5hzVkMzLt42WAm+B2CbTC9bG2ld
+         W9Va6KI4YHBuOpQjZqxPUVZcYL+l9/0lgw+PMlreff3pUPQv3c2NWOQg6PLjBLlDz6Lb
+         4i3tHg27PMPJpiG7xl+o/QqAWzmwD+edcrvyQ=
+Subject: Re: [PATCH -queue v0 4/6] [loongson] add basic fuloong2f support
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, LKML <linux-kernel@vger.kernel.org>,
+       huhb@lemote.com, yanh@lemote.com, Zhang Le <r0bertz@gentoo.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       liujl@lemote.com
+In-Reply-To: <20091105131603.GA18232@linux-mips.org>
+References: <cover.1257325319.git.wuzhangjin@gmail.com>
+	 <0f805f7d12c5a7cbcc125ba4a1b70113ec2047a6.1257325319.git.wuzhangjin@gmail.com>
+	 <20091105131603.GA18232@linux-mips.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Fri, 06 Nov 2009 13:39:44 +0800
+Message-ID: <1257485984.2299.21.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Here's my latest code using binary search for symbol resolution.  This
-> version has benefited from a little more testing (heh), in particular
-> running on a simulated ARM system.
+On Thu, 2009-11-05 at 14:16 +0100, Ralf Baechle wrote:
+> On Wed, Nov 04, 2009 at 05:05:47PM +0800, Wu Zhangjin wrote:
 > 
->     web: <http://github.com/sourcejedi/linux-2.6/commits/module-V2-beta1>
+> > diff --git a/arch/mips/loongson/fuloong-2f/irq.c b/arch/mips/loongson/fuloong-2f/irq.c
+> > new file mode 100644
+> > index 0000000..22c45fd
+> > --- /dev/null
+> > +++ b/arch/mips/loongson/fuloong-2f/irq.c
+> > @@ -0,0 +1,114 @@
+> > +/*
+> > + * Copyright (C) 2007 Lemote Inc.
+> > + * Author: Fuxin Zhang, zhangfx@lemote.com
+> > + *
+> > + *  This program is free software; you can redistribute  it and/or modify it
+> > + *  under  the terms of  the GNU General  Public License as published by the
+> > + *  Free Software Foundation;  either version 2 of the  License, or (at your
+> > + *  option) any later version.
+> > + */
+> > +
+> > +#include <linux/interrupt.h>
+> > +
+> > +#include <asm/irq_cpu.h>
+> > +#include <asm/i8259.h>
+> > +#include <asm/mipsregs.h>
+> > +
+> > +#include <loongson.h>
+> > +#include <machine.h>
+> > +
+> > +#define LOONGSON_TIMER_IRQ	(MIPS_CPU_IRQ_BASE + 7)	/* cpu timer */
+> > +#define LOONGSON_PERFCNT_IRQ	(MIPS_CPU_IRQ_BASE + 6) /* cpu perf counter */
+> > +#define LOONGSON_NORTH_BRIDGE_IRQ	(MIPS_CPU_IRQ_BASE + 6)	/* bonito */
+> > +#define LOONGSON_UART_IRQ	(MIPS_CPU_IRQ_BASE + 3)	/* cpu serial port */
+> > +#define LOONGSON_SOUTH_BRIDGE_IRQ	(MIPS_CPU_IRQ_BASE + 2)	/* i8259 */
+> > +
+> > +#define LOONGSON_INT_BIT_INT0		(1 << 11)
+> > +#define LOONGSON_INT_BIT_INT1		(1 << 12)
+> > +
+> > +static int mach_i8259_irq(void)
+> > +{
+> > +	int irq, isr, imr;
+> > +
+> > +	irq = -1;
+> > +
+> > +	if ((LOONGSON_INTISR & LOONGSON_INTEN) & LOONGSON_INT_BIT_INT0) {
+> > +		imr = inb(0x21) | (inb(0xa1) << 8);
+> > +		isr = inb(0x20) | (inb(0xa0) << 8);
+> > +		isr &= ~0x4;	/* irq2 for cascade */
+> > +		isr &= ~imr;
+> > +		irq = ffs(isr) - 1;
+> > +	}
 > 
->     git clone git://github.com/sourcejedi/linux-2.6.git module-V2-beta1
-> 
-> As before, it saves 0.3s boot time for a modular kernel on my netbook
-> (630 Mhz Celeron M).  On that system it represents something like 90%
-> of the maximum possible speedup.  It is claimed that slower systems
-> would benefit from a further speedup (e.g. using hash tables instead),
-> but we don't have any numbers to illustrate this yet.
-> 
+> Any reason why you're not using i8259_irq() from <asm/i8259.h> here?
+> That function not only gets the locking right, it also minimizes the number
+> of accesses to the i8259 - which even on modern silicon can be stuningly
+> slow.
 > 
 
-Hi Alan,
+Hi, Ralf
 
-I'm going to complete the port of the hash table work against the mainline
-(I had an implementation based on older 2.6.23.17 and 2.6.30).
-I have figures on sh4 arch (2.6.23.17) but I would like to provide you with benchmarks
-using the mainline on x86 too.
-In my implementation there are not arch specific parts.
+Just asked Yanhua, He told me there is a bug in cs5536, if using the
+i8259_irq() directly, we can not get the irq. and just tried it, the
+kernel hang on booting.
 
-I intend to provide this solution as optional for now, so this will force some
-#ifdef in the code that could make it less clean, but if the solution is valuable,
-I could do a code tidy-up later easily.
+Regards,
+	Wu Zhangjin
 
-The work to use GNU hash & bloom filtering is almost completed too, but it needs
-some more tests, so the first patches I'll send are based on the SysV hash table.
-
-Apologies for the delay in providing patches.
-
-Carmelo
