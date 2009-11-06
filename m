@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbZKFStO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZKFSwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759583AbZKFStO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 13:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbZKFStN
+	id S1759609AbZKFSwl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 13:52:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbZKFSwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 13:49:13 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:38466 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759172AbZKFStM convert rfc822-to-8bit (ORCPT
+	Fri, 6 Nov 2009 13:52:40 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:35197 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759207AbZKFSwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 13:49:12 -0500
-Date: Fri, 6 Nov 2009 10:48:51 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Emmanuel Benisty <benisty.e@gmail.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       mm-commits@vger.kernel.org
-Subject: Re: mmotm 2009-11-01-10-01 uploaded
-Message-Id: <20091106104851.320a97ee.randy.dunlap@oracle.com>
-In-Reply-To: <c1f41c620911060439j42329608u74f937ac9f9ac617@mail.gmail.com>
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>
-	<alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
-	<661de9470911060338q66746acbr219eedc24e752ca9@mail.gmail.com>
-	<c1f41c620911060439j42329608u74f937ac9f9ac617@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Fri, 6 Nov 2009 13:52:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=aR/1KmWj35PFPt/BIs201TEHKtwWxLezlYMUD6OKPS3leEikf4BMP4R0QTQ4XE+OZf
+         gGPTSKi6wI9XWuAvCAiOPvcAdDBAUsGneU+50I1jCCkKMbszSYFUrAngIhY10obBsnlc
+         JUPiw8YQzKQwO1WuMwkv0FP+06PdYIlMddZv4=
+MIME-Version: 1.0
+In-Reply-To: <4185.1257523499@turing-police.cc.vt.edu>
+References: <1257496614-12052-1-git-send-email-nir.tzachar@gmail.com>
+	 <4185.1257523499@turing-police.cc.vt.edu>
+Date: Fri, 6 Nov 2009 20:52:43 +0200
+Message-ID: <9b2db90b0911061052x55324988i356129ed588ea44a@mail.gmail.com>
+Subject: Re: [PATCH] nconfig v5
+From: Nir Tzachar <nir.tzachar@gmail.com>
+To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, zippel@linux-m68k.org, andi@firstfloor.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4AF46FA0.0135:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009 19:39:30 +0700 Emmanuel Benisty wrote:
+On 11/6/09, Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
+> On Fri, 06 Nov 2009 10:36:54 +0200, nir.tzachar@gmail.com said:
+> > Building on menuconfig, this patch implements a more modern look interface using
+> > ncurses and ncurses' satellite libraries (menu, panel, form).
+>
+> What is the minimum release of ncurses needed?  Some of us silverbacks have
+> bad memories of twisty little mazes of ncurses releases, all incompatible. ;)
 
-> On Fri, Nov 6, 2009 at 6:38 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > On Fri, Nov 6, 2009 at 12:43 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> >> On Sun, 1 Nov 2009, akpm@linux-foundation.org wrote:
-> >>
-> >>> The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
-> >>>
-> >>>    http://userweb.kernel.org/~akpm/mmotm/
-> >>>
-> >>> and will soon be available at
-> >>
-> >> Does "soon" mean within this century ?
-> >>
-> >>>    git://git.zen-sources.org/zen/mmotm.git
-> >>
-> >> # git pull git://git.zen-sources.org/zen/mmotm.git master
-> >> git.zen-sources.org[0: 216.98.141.250]: errno=Connection timed out
-> >> git.zen-sources.org[0: 69.72.142.98]: errno=Connection refused
-> >> fatal: unable to connect a socket (Connection refused)
-> >>
-> > I've seen that too, in fact I can't even reach the domain. I've pinged
-> > the owner but not heard back yet.
-> 
-> 
-> FTR, it moved to git://zen-kernel.org/kernel/mmotm.git and the
-> ownership has changed.
+I have not considred this. I have used ncurses 5.6 on gentoo and
+successfully compiled on ubuntu karmic koala, though I don't remember
+the exact version ubuntu have.
 
-Thanks.  so that mmotm.git is now 5 weeks old.
-http://git.zen-kernel.org/?p=kernel/mmotm.git;a=summary
-
----
-~Randy
+As I don't have access to any platform other than linux, I cannot test
+other versions. I would gladly appreciate your input if you can try it
+on other platforms.
