@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbZKFSzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbZKFS4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbZKFSzD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 13:55:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbZKFSzD
+	id S1759272AbZKFS4v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 13:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZKFS4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 13:55:03 -0500
-Received: from smtp.ultrahosting.com ([74.213.175.253]:52326 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759052AbZKFSzC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 13:55:02 -0500
-Date: Fri, 6 Nov 2009 13:53:35 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Andi Kleen <andi@firstfloor.org>
-cc: npiggin@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: [RFC MM] mmap_sem scaling: only scan cpus used by an mm
-In-Reply-To: <20091106073946.GV31511@one.firstfloor.org>
-Message-ID: <alpine.DEB.1.10.0911061352320.22205@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1> <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1> <87r5sc7kst.fsf@basil.nowhere.org> <alpine.DEB.1.10.0911051558220.7668@V090114053VZO-1> <20091106073946.GV31511@one.firstfloor.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 6 Nov 2009 13:56:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:31193 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752201AbZKFS4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 13:56:50 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: jens.axboe@oracle.com, LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: Performance regression in IO scheduler still there
+References: <20091026172012.GC7233@duck.suse.cz>
+	<x49zl7020mr.fsf@segfault.boston.devel.redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Fri, 06 Nov 2009 13:56:44 -0500
+In-Reply-To: <x49zl7020mr.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's
+	message of "Thu, 05 Nov 2009 15:10:52 -0500")
+Message-ID: <x49my2zh47n.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One way to reduce the cost of the writer lock is to track the cpus used
-and loop over the processors in that bitmap.
+Jeff Moyer <jmoyer@redhat.com> writes:
 
----
- arch/x86/include/asm/mmu_context.h |    1 +
- include/linux/mm_types.h           |    3 ++-
- kernel/fork.c                      |    2 ++
- mm/init-mm.c                       |    1 +
- 4 files changed, 6 insertions(+), 1 deletion(-)
+> Jan Kara <jack@suse.cz> writes:
+>
+>>   Hi,
+>>
+>>   I took time and remeasured tiobench results on recent kernel. A short
+>> conclusion is that there is still a performance regression which I reported
+>> few months ago. The machine is Intel 2 CPU with 2 GB RAM and plain SATA
+>> drive. tiobench sequential write performance numbers with 16 threads:
+>> 2.6.29:              AVG       STDERR
+>> 37.80 38.54 39.48 -> 38.606667 0.687475
+>>
+>> 2.6.32-rc5:
+>> 37.36 36.41 36.61 -> 36.793333 0.408928 
+>>
+>> So about 5% regression. The regression happened sometime between 2.6.29 and
+>> 2.6.30 and stays the same since then... With deadline scheduler, there's
+>> no regression. Shouldn't we do something about it?
+>
+> Sorry it took so long, but I've been flat out lately.  I ran some
+> numbers against 2.6.29 and 2.6.32-rc5, both with low_latency set to 0
+> and to 1.  Here are the results (average of two runs):
 
-Index: linux-2.6/arch/x86/include/asm/mmu_context.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/mmu_context.h	2009-11-06 12:26:24.000000000 -0600
-+++ linux-2.6/arch/x86/include/asm/mmu_context.h	2009-11-06 12:26:36.000000000 -0600
-@@ -43,6 +43,7 @@ static inline void switch_mm(struct mm_s
- 		percpu_write(cpu_tlbstate.active_mm, next);
- #endif
- 		cpumask_set_cpu(cpu, mm_cpumask(next));
-+		cpumask_set_cpu(cpu, &next->cpus_used);
+I modified the tiobench script to do a drop_caches between runs so I
+could stop fiddling around with the numbers myself.  Extra credit goes
+to anyone who hacks it up to report standard deviation.
 
- 		/* Re-load page tables */
- 		load_cr3(next->pgd);
-Index: linux-2.6/include/linux/mm_types.h
-===================================================================
---- linux-2.6.orig/include/linux/mm_types.h	2009-11-06 12:26:35.000000000 -0600
-+++ linux-2.6/include/linux/mm_types.h	2009-11-06 12:26:36.000000000 -0600
-@@ -241,6 +241,7 @@ struct mm_struct {
- 	struct linux_binfmt *binfmt;
+Anyway, here are the latest results, average of 3 runs each for 2.6.29
+and 2.6.32-rc6 with low_latency set to 0.  Note that there was a fix in
+CFQ that would result in properly preempting the active queue for
+metadata I/O.
 
- 	cpumask_t cpu_vm_mask;
-+	cpumask_t cpus_used;
+                                                            rlat      |     rrlat       |     wlat       |  rwlat
+kernel     | Thr | read  | randr  | write  | randw  |    avg, max     |    avg, max     |   avg, max     | avg,max
+------------------------------------------------------------------------------------------------------------------------
+2.6.29     |  8  | 66.43 |  20.52 | 296.32 | 214.17 | 22.330, 3106.47 | 70.026, 2804.02 | 4.817, 2406.65 | 1.420, 349.44
+           | 16  | 63.28 |  20.45 | 322.65 | 212.77 | 46.457, 5779.14 |137.455, 4982.75 | 8.378, 5408.60 | 2.764, 425.79
+------------------------------------------------------------------------------------------------------------------------
+2.6.32-rc6 |  8  | 87.66 | 115.22 | 324.19 | 222.18 | 16.677, 3065.81 | 11.834,  194.18 | 4.261, 1212.86 | 1.577, 103.20
+low_lat=0  | 16  | 94.06 | 49.65  | 327.06 | 214.74 | 30.318, 5468.20 | 50.947, 1725.15 | 8.271, 1522.95 | 3.064,  89.16
+------------------------------------------------------------------------------------------------------------------------
 
- 	/* Architecture-specific MM context */
- 	mm_context_t context;
-@@ -291,7 +292,7 @@ static inline int mm_has_reader(struct m
- {
- 	int cpu;
+Given those numbers, everything looks ok from a regression perspective.
+More investigation should be done for the random read numbers (given
+that they fluctuate quite a bit), but that's purely an enhancement at
+this point in time.
 
--	for_each_possible_cpu(cpu)
-+	for_each_cpu(cpu, &mm->cpus_used)
- 		if (per_cpu(mm->rss->readers, cpu))
- 			return 1;
+Just to be sure, I'll kick off 10 runs and make sure the averages fall
+out the same way.  If you don't hear from me, though, assume this
+regression is fixed.  The key is to set low_latency to 0 for this
+benchmark.  We should probably add notes about when to switch off
+low_latency to the io scheduler documentation.  Jens, would you mind
+doing that?
 
-Index: linux-2.6/mm/init-mm.c
-===================================================================
---- linux-2.6.orig/mm/init-mm.c	2009-11-06 12:26:35.000000000 -0600
-+++ linux-2.6/mm/init-mm.c	2009-11-06 12:26:36.000000000 -0600
-@@ -19,5 +19,6 @@ struct mm_struct init_mm = {
- 	.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),
- 	.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),
- 	.cpu_vm_mask	= CPU_MASK_ALL,
-+	.cpus_used	= CPU_MASK_ALL,
- 	.rss		= &init_mm_counters,
- };
-Index: linux-2.6/kernel/fork.c
-===================================================================
---- linux-2.6.orig/kernel/fork.c	2009-11-06 12:26:35.000000000 -0600
-+++ linux-2.6/kernel/fork.c	2009-11-06 12:26:40.000000000 -0600
-@@ -297,6 +297,8 @@ static int dup_mmap(struct mm_struct *mm
- 	mm->cached_hole_size = ~0UL;
- 	mm->map_count = 0;
- 	cpumask_clear(mm_cpumask(mm));
-+	cpumask_clear(&mm->cpus_used);
-+	cpumask_set_cpu(smp_processor_id(), &mm->cpus_used);
- 	mm->mm_rb = RB_ROOT;
- 	rb_link = &mm->mm_rb.rb_node;
- 	rb_parent = NULL;
-
+Cheers,
+Jeff
