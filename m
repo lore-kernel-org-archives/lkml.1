@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbZKFWyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760331AbZKFW7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760218AbZKFWyd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760177AbZKFWyb
+	id S1760331AbZKFW7L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbZKFW7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:54:31 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51655 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760070AbZKFWy3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:54:29 -0500
-Message-ID: <4AF4A924.5080609@zytor.com>
-Date: Fri, 06 Nov 2009 14:54:28 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: castet.matthieu@free.fr
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Using x86 segments against NULL pointer deference exploit
-References: <1257512389.4af41dc504e1b@imp.free.fr>
-In-Reply-To: <1257512389.4af41dc504e1b@imp.free.fr>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Nov 2009 17:59:09 -0500
+Received: from gate.crashing.org ([63.228.1.57]:54385 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760223AbZKFW7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:59:09 -0500
+Subject: Re: [patch 09/16] powerpc: Replace old style lock initializer
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20091106223806.762624109@linutronix.de>
+References: <20091106223547.784916750@linutronix.de>
+	 <20091106223806.762624109@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 07 Nov 2009 09:55:44 +1100
+Message-ID: <1257548144.13611.267.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/06/2009 04:59 AM, castet.matthieu@free.fr wrote:
-> Hi,
+On Fri, 2009-11-06 at 22:41 +0000, Thomas Gleixner wrote:
+> plain text document attachment
+> (power-replace-old-style-lock-init.patch)
+> SPIN_LOCK_UNLOCKED is deprecated. Init the lock array at runtime
+> instead.
 > 
-> I am wondering why we can't set the KERNEL_DS data segment to not contain the
-> first page, ie changing it from R/W flat model to R/W expand down from
-> 0xffffffff to 4096.
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linuxppc-dev@ozlabs.org
+> ---
+
+Looks reasonable. But iseries can be a bitch, so we do need to test it
+on monday.
+
+Cheers,
+Ben.
+
+>  arch/powerpc/platforms/iseries/htab.c |    8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
 > 
-> The modification seems simple : change GDT_ENTRY_KERNEL_DS [1], and some
-> modification for syscall entry point that doesn't support segment (sysenter).
+> Index: linux-2.6/arch/powerpc/platforms/iseries/htab.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/iseries/htab.c
+> +++ linux-2.6/arch/powerpc/platforms/iseries/htab.c
+> @@ -19,8 +19,7 @@
+>  
+>  #include "call_hpt.h"
+>  
+> -static spinlock_t iSeries_hlocks[64] __cacheline_aligned_in_smp =
+> -	{ [0 ... 63] = SPIN_LOCK_UNLOCKED};
+> +static spinlock_t iSeries_hlocks[64] __cacheline_aligned_in_smp;
+>  
+>  /*
+>   * Very primitive algorithm for picking up a lock
+> @@ -245,6 +244,11 @@ static void iSeries_hpte_invalidate(unsi
+>  
+>  void __init hpte_init_iSeries(void)
+>  {
+> +	int i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(iSeries_hlocks); i++)
+> +		spin_lock_init(&iSeries_hlocks[i]);
+> +
+>  	ppc_md.hpte_invalidate	= iSeries_hpte_invalidate;
+>  	ppc_md.hpte_updatepp	= iSeries_hpte_updatepp;
+>  	ppc_md.hpte_updateboltedpp = iSeries_hpte_updateboltedpp;
 > 
-> The drawback of this it that the kernel can't access anymore data in the first
-> segment. Is it needed for application like wine or dosemu ?
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Yes, it is.  On 32 bits it is possible to switch around segments and do
-this (in which case you want it to only cover the actual kernel area,
-and use USER_DS for all user-space references.)  This also lets you drop
-nearly all pointer-range checks, since they are now redundant.  However,
-there is a cost -- it pretty much requires a segment register for
-USER_DS (this used to be fs once upon a time, hence set_fs) and probably
-would break Xen and possibly other virtualization solutions.
 
-> PS : why x86_64 segment got access bit set and x86_32 doesn't ?
-
-It is trivially faster to start out with the access bit set -- the
-hardware will set the accessed bit anyway.
-
-	-hpa
