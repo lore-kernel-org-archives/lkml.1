@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbZKFWAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbZKFWFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759827AbZKFWAf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:00:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759769AbZKFWAf
+	id S1759885AbZKFWFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbZKFWFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:00:35 -0500
-Received: from outbound-mail-152.bluehost.com ([67.222.39.32]:58136 "HELO
-	outbound-mail-152.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759691AbZKFWAe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:00:34 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=eI4uKyyWm7JMarVoW+G/bOlCms8ZHAmtYjldszP2EQK1JSSSVTXSBvdW+0UILc9vPdNzw2eis6WjPx9HvsqVpkX6GGVId4QgW9kzabfyCUT7pbMxWO4eIVhyYVmRhrHN;
-Date: Fri, 6 Nov 2009 14:00:42 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Sachin Sant <sachinp@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org
-Subject: Re: linux-next: Tree for November 5
-Message-ID: <20091106140042.1e29d82b@jbarnes-piketon>
-In-Reply-To: <200911051017.12135.bjorn.helgaas@hp.com>
-References: <20091105190426.c9cadada.sfr@canb.auug.org.au>
-	<4AF2AB23.9000907@in.ibm.com>
-	<200911050931.04838.bjorn.helgaas@hp.com>
-	<200911051017.12135.bjorn.helgaas@hp.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Fri, 6 Nov 2009 17:05:38 -0500
+Received: from kroah.org ([198.145.64.141]:39690 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758760AbZKFWFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:37 -0500
+Date: Fri, 6 Nov 2009 14:01:56 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [00/30] 2.6.27.39-stable review
+Message-ID: <20091106220156.GA13813@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Nov 2009 11:17:11 -0600
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+This is the start of the stable review cycle for the 2.6.27.39 release.
+There are 30 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-> On Thursday 05 November 2009 09:31:04 am Bjorn Helgaas wrote:
-> > On Thursday 05 November 2009 03:38:27 am Sachin Sant wrote:
-> > > Today's next tree fails to build on i386 with
-> > > 
-> > > arch/x86/pci/built-in.o: In function `align_resource':
-> > > arch/x86/pci/acpi.c:82: undefined reference to `__udivdi3'
-> > > 
-> > > The code in question was added by commit
-> > > 03db42adfeeabe856dbb6894dd3aaff55838330a.
-> > 
-> > I'll look into this.  I did build and test a 32-bit x86 kernel, but
-> > I built it on an x86_64 box using "linux32 make ...", which looks
-> > like it used gcc 4.3.2.
-> 
-> Can you try the patch below, please?
-> 
-> 
-> commit 00f16f0a2f4826eadec0565e4b454ab8bc7824cc
-> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Date:   Thu Nov 5 10:03:57 2009 -0700
-> 
->     x86/PCI: remove 64-bit division
->     
->     The roundup() caused a build error (undefined reference to
-> `__udivdi3'). We're aligning to power-of-two boundaries, so it's
-> simpler to just use ALIGN() anyway, which avoids the division.
->     
->     Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Responses should be made by November 8, 2009, 20:00:00 UTC.  Anything
+received after that time might be too late.
 
-Applied with Randy's ack.  Thanks.
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.39-rc1.gz
+and the diffstat can be found below.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
+thanks,
+
+greg k-h
+
+------------
+ Makefile                               |    2 +-
+ arch/m68k/Kconfig                      |    6 ++--
+ arch/x86/ia32/ia32entry.S              |    5 +--
+ arch/x86/kernel/amd_iommu_init.c       |   25 ++++++++++++++++-
+ arch/x86/kvm/x86.c                     |    2 +
+ drivers/acpi/scan.c                    |   12 +-------
+ drivers/ata/libata-core.c              |   12 +++++---
+ drivers/base/driver.c                  |    2 +-
+ drivers/char/Kconfig                   |    6 ++--
+ drivers/input/mouse/synaptics.c        |   10 +++++++
+ drivers/net/appletalk/ipddp.c          |    3 +-
+ drivers/net/bonding/bond_main.c        |    2 +-
+ drivers/net/wireless/b43/rfkill.c      |    3 +-
+ drivers/net/wireless/libertas/if_usb.c |    2 +-
+ drivers/net/wireless/ray_cs.c          |    2 +-
+ drivers/scsi/dpt_i2o.c                 |    4 +++
+ drivers/serial/8250_pci.c              |   11 +++++++
+ fs/hfsplus/wrapper.c                   |    4 +++
+ fs/nfs/client.c                        |    2 +-
+ fs/nfs/dir.c                           |    4 ++-
+ fs/nfs/direct.c                        |    1 +
+ fs/nfs/nfs4proc.c                      |   27 +++++++++++++-----
+ fs/nfs/nfs4renewd.c                    |    6 ----
+ fs/nfs/nfs4xdr.c                       |    1 -
+ fs/nfs/super.c                         |    1 -
+ fs/pipe.c                              |   41 ++++++++++++++++++++-------
+ include/linux/kernel.h                 |    4 +++
+ include/linux/pci_ids.h                |    3 ++
+ include/net/irda/irda_device.h         |    4 ++-
+ kernel/printk.c                        |   19 +++++++++++-
+ kernel/time/tick-sched.c               |    2 +-
+ kernel/timer.c                         |    1 +
+ mm/mempolicy.c                         |    3 +-
+ net/appletalk/aarp.c                   |   16 +++++++---
+ net/appletalk/ddp.c                    |   47 ++++++++++++++++---------------
+ net/sched/cls_api.c                    |    2 +-
+ net/unix/af_unix.c                     |    2 +
+ 37 files changed, 204 insertions(+), 95 deletions(-)
