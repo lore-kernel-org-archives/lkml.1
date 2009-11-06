@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760007AbZKFWGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbZKFWGC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760007AbZKFWGG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759993AbZKFWGD
+	id S1759976AbZKFWGC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:06:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759968AbZKFWF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:06:03 -0500
-Received: from kroah.org ([198.145.64.141]:39787 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:05:59 -0500
+Received: from kroah.org ([198.145.64.141]:39792 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759963AbZKFWF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:05:57 -0500
+	id S1758792AbZKFWF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:05:58 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 13:59:52 2009
-Message-Id: <20091106215952.613942748@mini.kroah.org>
+Message-Id: <20091106215952.733588955@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 13:56:23 -0800
+Date: Fri, 06 Nov 2009 13:56:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Samuel Ortiz <samuel@sortiz.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: [20/30] irda: Add irda_skb_cb qdisc related padding
+       Terry Loftin <terry.loftin@hp.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [21/30] nfs: Panic when commit fails
 References: <20091106215603.413650799@mini.kroah.org>
-Content-Disposition: inline; filename=irda-add-irda_skb_cb-qdisc-related-padding.patch
+Content-Disposition: inline; filename=nfs-panic-when-commit-fails.patch
 In-Reply-To: <20091106220156.GA13813@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,39 +30,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Samuel Ortiz <samuel@sortiz.org>
+From: Terry Loftin <terry.loftin@hp.com>
 
-commit 69c30e1e7492192f882a3fc11888b320fde5206a upstream.
+commit a8b40bc7e635831b61c43acc71a86d3a68b2dff0 upstream.
 
-We need to pad irda_skb_cb in order to keep it safe accross dev_queue_xmit()
-calls. This is some ugly and temporary hack triggered by recent qisc code
-changes.
-Even though it fixes bugzilla.kernel.org bug #11795, it will be replaced by a
-proper fix before 2.6.29 is released.
+Actually pass the NFS_FILE_SYNC option to the server to avoid a
+Panic in nfs_direct_write_complete() when a commit fails.
 
-Signed-off-by: Samuel Ortiz <samuel@sortiz.org>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+At the end of an nfs write, if the nfs commit fails, all the writes
+will be rescheduled.  They are supposed to be rescheduled as NFS_FILE_SYNC
+writes, but the rpc_task structure is not completely intialized and so
+the option is not passed.  When the rescheduled writes complete, the
+return indicates that they are NFS_UNSTABLE and we try to do another
+commit.  This leads to a Panic because the commit data structure pointer
+was set to null in the initial (failed) commit attempt.
+
+Signed-off-by: Terry Loftin <terry.loftin@hp.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/irda/irda_device.h |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ fs/nfs/direct.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/include/net/irda/irda_device.h
-+++ b/include/net/irda/irda_device.h
-@@ -135,9 +135,11 @@ struct dongle_reg {
- 
- /* 
-  * Per-packet information we need to hide inside sk_buff 
-- * (must not exceed 48 bytes, check with struct sk_buff) 
-+ * (must not exceed 48 bytes, check with struct sk_buff)
-+ * The default_qdisc_pad field is a temporary hack.
-  */
- struct irda_skb_cb {
-+	unsigned int default_qdisc_pad;
- 	magic_t magic;       /* Be sure that we can trust the information */
- 	__u32   next_speed;  /* The Speed to be set *after* this frame */
- 	__u16   mtt;         /* Minimum turn around time */
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -454,6 +454,7 @@ static void nfs_direct_write_reschedule(
+ 	};
+ 	struct rpc_task_setup task_setup_data = {
+ 		.rpc_client = NFS_CLIENT(inode),
++		.rpc_message = &msg,
+ 		.callback_ops = &nfs_write_direct_ops,
+ 		.workqueue = nfsiod_workqueue,
+ 		.flags = RPC_TASK_ASYNC,
 
 
