@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbZKFWio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932414AbZKFWWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932991AbZKFWio (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:38:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932971AbZKFWim
+	id S932414AbZKFWWv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760159AbZKFWWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:38:42 -0500
-Received: from kroah.org ([198.145.64.141]:56808 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:22:50 -0500
+Received: from kroah.org ([198.145.64.141]:56811 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932382AbZKFWWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:48 -0500
+	id S932405AbZKFWWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:49 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:43 2009
-Message-Id: <20091106221543.125163308@mini.kroah.org>
+Message-Id: <20091106221543.293510879@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:32 -0800
+Date: Fri, 06 Nov 2009 14:14:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stas Sergeev <stsp@aknet.ru>
-Subject: [34/99] Driver core: fix driver_register() return value
+       Alan Cox <alan@linux.intel.com>
+Subject: [35/99] tty: Mark generic_serial users as BROKEN
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=driver-core-fix-driver_register-return-value.patch
+Content-Disposition: inline; filename=tty-mark-generic_serial-users-as-broken.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,35 +29,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Stas Sergeev <stsp@aknet.ru>
+From: Alan Cox <alan@linux.intel.com>
 
-commit 39acbc12affcaa23ef1d887ba3d197baca8e6e47 upstream.
+commit 412145947adfca60a4b5b4893fbae82dffa25edd upstream.
 
-In this patch:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=16dc42e018c2868211b4928f20a957c0c216126c
-the check was added for another driver to already claim the same device
-on the same bus. But the returned error code was wrong: to modprobe, the
--EEXIST means that _this_ driver is already installed. It therefore
-doesn't produce the needed error message when _another_ driver is trying
-to register for the same device.  Returning -EBUSY fixes the problem.
+There isn't much else I can do with these. I can find no hardware for any
+of them and no users. The code is broken.
 
-Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/base/driver.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/m68k/Kconfig    |    6 +++---
+ drivers/char/Kconfig |    6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -236,7 +236,7 @@ int driver_register(struct device_driver
- 		put_driver(other);
- 		printk(KERN_ERR "Error: Driver '%s' is already registered, "
- 			"aborting...\n", drv->name);
--		return -EEXIST;
-+		return -EBUSY;
- 	}
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -555,7 +555,7 @@ config HPAPCI
  
- 	ret = bus_add_driver(drv);
+ config MVME147_SCC
+ 	bool "SCC support for MVME147 serial ports"
+-	depends on MVME147
++	depends on MVME147 && BROKEN
+ 	help
+ 	  This is the driver for the serial ports on the Motorola MVME147
+ 	  boards.  Everyone using one of these boards should say Y here.
+@@ -570,14 +570,14 @@ config SERIAL167
+ 
+ config MVME162_SCC
+ 	bool "SCC support for MVME162 serial ports"
+-	depends on MVME16x
++	depends on MVME16x && BROKEN
+ 	help
+ 	  This is the driver for the serial ports on the Motorola MVME162 and
+ 	  172 boards.  Everyone using one of these boards should say Y here.
+ 
+ config BVME6000_SCC
+ 	bool "SCC support for BVME6000 serial ports"
+-	depends on BVME6000
++	depends on BVME6000 && BROKEN
+ 	help
+ 	  This is the driver for the serial ports on the BVME4000 and BVME6000
+ 	  boards from BVM Ltd.  Everyone using one of these boards should say
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -323,7 +323,7 @@ config SPECIALIX
+ 
+ config SX
+ 	tristate "Specialix SX (and SI) card support"
+-	depends on SERIAL_NONSTANDARD && (PCI || EISA || ISA)
++	depends on SERIAL_NONSTANDARD && (PCI || EISA || ISA) && BROKEN
+ 	help
+ 	  This is a driver for the SX and SI multiport serial cards.
+ 	  Please read the file <file:Documentation/serial/sx.txt> for details.
+@@ -334,7 +334,7 @@ config SX
+ 
+ config RIO
+ 	tristate "Specialix RIO system support"
+-	depends on SERIAL_NONSTANDARD
++	depends on SERIAL_NONSTANDARD && BROKEN
+ 	help
+ 	  This is a driver for the Specialix RIO, a smart serial card which
+ 	  drives an outboard box that can support up to 128 ports.  Product
+@@ -395,7 +395,7 @@ config NOZOMI
+ 
+ config A2232
+ 	tristate "Commodore A2232 serial support (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && ZORRO && BROKEN_ON_SMP
++	depends on EXPERIMENTAL && ZORRO && BROKEN
+ 	---help---
+ 	  This option supports the 2232 7-port serial card shipped with the
+ 	  Amiga 2000 and other Zorro-bus machines, dating from 1989.  At
 
 
