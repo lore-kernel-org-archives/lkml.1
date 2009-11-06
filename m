@@ -1,144 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbZKFBPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759027AbZKFBPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759100AbZKFBPV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 20:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757318AbZKFBPT
+	id S1759027AbZKFBPS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 20:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbZKFBPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 20:15:19 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52158 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757424AbZKFBPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Nov 2009 20:15:17 -0500
-Message-ID: <4AF3789F.8070904@cn.fujitsu.com>
-Date: Fri, 06 Nov 2009 09:15:11 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+Received: from out02.mta.xmission.com ([166.70.13.232]:50375 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757333AbZKFBPP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Nov 2009 20:15:15 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH 09/11] sysctl: x86 Use the compat_sys_sysctl
+References: <m1tyx8trik.fsf@fess.ebiederm.org>
+	<1257468114-6823-9-git-send-email-ebiederm@xmission.com>
+	<4AF37425.9060000@zytor.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 05 Nov 2009 17:15:16 -0800
+In-Reply-To: <4AF37425.9060000@zytor.com> (H. Peter Anvin's message of "Thu\, 05 Nov 2009 16\:56\:05 -0800")
+Message-ID: <m14op8tpwb.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       fweisbec@gmail.com, Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, zhaolei@cn.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH] softirq,tracing: enable to trace softirq raise latency
-References: <4AF284CF.3010407@cn.fujitsu.com> <20091105144349.GA8317@Krystal>
-In-Reply-To: <20091105144349.GA8317@Krystal>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
->> Add a tracepoint for tracing when softirq action is raised.
->>
->> It and the existed tracepoints complete softirq's tracepoints:
->> softirq_raise, softirq_entry and softirq_exit.
->>
->> And when this tracepoint is used in combination with
->> the softirq_entry tracepoint we can determine
->> the softirq raise latency.
->>
-> 
-> Hi Lai,
-> 
-> It generally looks good, we have a similar instrumentation point in the
-> LTTng tree, and it's really useful. It's a good idea to instrument
-> __raise_softirq_irqoff rather than just raise_softirq_irqoff: it
-> includes the HI/TASKLET and HRTIMER softirqs.
-> 
-> There is just a small comment which should probably also be changed,
-> please see below, besides that, you have my
-> 
-> Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> 
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
->> index 75f3f00..b368d5d 100644
->> --- a/include/linux/interrupt.h
->> +++ b/include/linux/interrupt.h
->> @@ -18,6 +18,7 @@
->>  #include <asm/atomic.h>
->>  #include <asm/ptrace.h>
->>  #include <asm/system.h>
->> +#include <trace/events/irq.h>
->>  
->>  /*
->>   * These correspond to the IORESOURCE_IRQ_* defines in
->> @@ -372,7 +373,13 @@ asmlinkage void do_softirq(void);
->>  asmlinkage void __do_softirq(void);
->>  extern void open_softirq(int nr, void (*action)(struct softirq_action *));
->>  extern void softirq_init(void);
->> -#define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
->> +
->> +static inline void __raise_softirq_irqoff(unsigned int nr)
->> +{
->> +	trace_softirq_raise(nr);
->> +	or_softirq_pending(1UL << nr);
->> +}
->> +
->>  extern void raise_softirq_irqoff(unsigned int nr);
->>  extern void raise_softirq(unsigned int nr);
->>  extern void wakeup_softirqd(void);
->> diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
->> index dcfcd44..799af09 100644
->> --- a/include/trace/events/irq.h
->> +++ b/include/trace/events/irq.h
->> @@ -5,7 +5,9 @@
->>  #define _TRACE_IRQ_H
->>  
->>  #include <linux/tracepoint.h>
->> -#include <linux/interrupt.h>
->> +
->> +struct irqaction;
->> +struct softirq_action;
->>  
->>  #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
->>  #define show_softirq_name(val)				\
->> @@ -83,6 +85,32 @@ TRACE_EVENT(irq_handler_exit,
->>  );
->>  
->>  /**
->> + * softirq_raise - called immediately when a softirq is raised
->> + * @nr: softirq vector number
->> + *
->> + * Tracepoint for tracing when softirq action is raised.
->> + * Also, when used in combination with the softirq_entry tracepoint
->> + * we can determine the softirq raise latency.
->> + */
->> +TRACE_EVENT(softirq_raise,
->> +
->> +	TP_PROTO(unsigned int nr),
->> +
->> +	TP_ARGS(nr),
->> +
->> +	TP_STRUCT__entry(
->> +		__field(	unsigned int,	vec		)
->> +	),
->> +
->> +	TP_fast_assign(
->> +		__entry->vec	= nr;
->> +	),
->> +
->> +	TP_printk("vec=%d [action=%s]", __entry->vec,
->> +		  show_softirq_name(__entry->vec))
->> +);
->> +
->> +/**
->>   * softirq_entry - called immediately before the softirq handler
->>   * @h: pointer to struct softirq_action
->>   * @vec: pointer to first struct softirq_action in softirq_vec array
-> 
-> Please change this comment to "@vec: softirq vector number" while you
-> are at it. The same probably needs to be done for softirq_exit. @vec are
-> not pointers: these are offsets.
-> 
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Thank you for you like it and your comment.
+> On 11/05/2009 04:41 PM, Eric W. Biederman wrote:
+>> From: Eric W. Biederman <ebiederm@xmission.com>
+>> 
+>> Now that we have a generic 32bit compatibility implementation
+>> there is no need for x86 to implement it's own.
+>> 
+>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>> Cc: Ingo Molnar <mingo@redhat.com>
+>> Cc: "H. Peter Anvin" <hpa@zytor.com>
+>> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+>
+> Acked-by: H. Peter Anvin <hpa@zytor.com>
+>
+> I'm assuming based on your previous email that you'll hang on to this
+> patch and carry it yourself.
 
-@vec are pointers here. it's softirq_vec. Don't need to change
-these comments.
+That's the plan.
 
-Lai
+Eric
+
