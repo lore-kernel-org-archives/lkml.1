@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbZKFLnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbZKFLox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757085AbZKFLnr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 06:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbZKFLnq
+	id S1757393AbZKFLox (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 06:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756927AbZKFLow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 06:43:46 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46099 "EHLO
+	Fri, 6 Nov 2009 06:44:52 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46103 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756175AbZKFLnp (ORCPT
+	with ESMTP id S1756871AbZKFLow (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 06:43:45 -0500
+	Fri, 6 Nov 2009 06:44:52 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH] slqb: A not quite so trivial warning
-To: mel@csn.ul.fi, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org
-Date: Fri, 06 Nov 2009 11:29:57 +0000
-Message-ID: <20091106112942.14595.29799.stgit@localhost.localdomain>
+Subject: [PATCH] jfs: Fix 32bit build warning
+To: sfrench@usb.ibm.com, linux-kernel@vger.kernel.org
+Date: Fri, 06 Nov 2009 11:31:06 +0000
+Message-ID: <20091106113051.14652.34331.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -23,40 +23,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mm/slqb.c:2773: warning: initialization from incompatible pointer type
-
-Variable scope...
+loff_t is a type that isn't entirely dependant upon 32 v 64bit choice
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- mm/slqb.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ fs/jfs/super.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
-diff --git a/mm/slqb.c b/mm/slqb.c
-index e745d9a..fddcf85 100644
---- a/mm/slqb.c
-+++ b/mm/slqb.c
-@@ -2770,16 +2770,16 @@ static DEFINE_PER_CPU(struct delayed_work, cache_trim_work);
- 
- static void __cpuinit start_cpu_timer(int cpu)
- {
--	struct delayed_work *cache_trim_work = &per_cpu(cache_trim_work, cpu);
-+	struct delayed_work *lcache_trim_work = &per_cpu(cache_trim_work, cpu);
- 
- 	/*
- 	 * When this gets called from do_initcalls via cpucache_init(),
- 	 * init_workqueues() has already run, so keventd will be setup
- 	 * at that time.
+diff --git a/fs/jfs/super.c b/fs/jfs/super.c
+index 2234c73..d929a82 100644
+--- a/fs/jfs/super.c
++++ b/fs/jfs/super.c
+@@ -524,7 +524,7 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	 * Page cache is indexed by long.
+ 	 * I would use MAX_LFS_FILESIZE, but it's only half as big
  	 */
--	if (keventd_up() && cache_trim_work->work.func == NULL) {
--		INIT_DELAYED_WORK(cache_trim_work, cache_trim_worker);
--		schedule_delayed_work_on(cpu, cache_trim_work,
-+	if (keventd_up() && lcache_trim_work->work.func == NULL) {
-+		INIT_DELAYED_WORK(lcache_trim_work, cache_trim_worker);
-+		schedule_delayed_work_on(cpu, lcache_trim_work,
- 					__round_jiffies_relative(HZ, cpu));
- 	}
- }
+-	sb->s_maxbytes = min(((u64) PAGE_CACHE_SIZE << 32) - 1, sb->s_maxbytes);
++	sb->s_maxbytes = min(((u64) PAGE_CACHE_SIZE << 32) - 1, (u64)sb->s_maxbytes);
+ #endif
+ 	sb->s_time_gran = 1;
+ 	return 0;
 
