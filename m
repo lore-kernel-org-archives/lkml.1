@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbZKFU6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759884AbZKFVCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759862AbZKFU6E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 15:58:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759719AbZKFU6D
+	id S1759884AbZKFVCN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 16:02:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759736AbZKFVCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 15:58:03 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:44577 "EHLO mx2.suse.de"
+	Fri, 6 Nov 2009 16:02:13 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:47163 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753407AbZKFU6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 15:58:02 -0500
-Date: Fri, 6 Nov 2009 21:58:05 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: castet.matthieu@free.fr
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Using x86 segments against NULL pointer deference exploit
-In-Reply-To: <1257512389.4af41dc504e1b@imp.free.fr>
-Message-ID: <alpine.LRH.2.00.0911062155250.31913@twin.jikos.cz>
-References: <1257512389.4af41dc504e1b@imp.free.fr>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1759787AbZKFVCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 16:02:12 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: ltp-list@lists.sourceforge.net
+Subject: Re: [LTP] [ANNOUNCE] The Linux Test Project has been Released for OCTOBER 2009
+Date: Fri, 6 Nov 2009 16:03:45 -0500
+User-Agent: KMail/1.12.2 (Linux/2.6.31.4; KDE/4.3.2; x86_64; ; )
+Cc: Andi Kleen <andi@firstfloor.org>, subrata@linux.vnet.ibm.com,
+       "ltp-list" <ltp-list@lists.sf.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <1257167821.4977.41.camel@subratamodak.linux.ibm.com> <87iqdn76jg.fsf@basil.nowhere.org>
+In-Reply-To: <87iqdn76jg.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed;
+  boundary="nextPart2309661.SqQ7l2ASyA";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911061603.47785.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009, castet.matthieu@free.fr wrote:
+--nextPart2309661.SqQ7l2ASyA
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> I am wondering why we can't set the KERNEL_DS data segment to not 
-> contain the first page, ie changing it from R/W flat model to R/W expand 
-> down from 0xffffffff to 4096.
-> The modification seems simple : change GDT_ENTRY_KERNEL_DS [1], and some
-> modification for syscall entry point that doesn't support segment (sysenter).
+On Friday 06 November 2009 15:16:35 Andi Kleen wrote:
+> Subrata Modak <subrata@linux.vnet.ibm.com> writes:
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > OCTOBER 2009 Highlights:
+>=20
+> s/High/Low/
+>=20
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >      1. LTP Makefiles rewrite:(Project started 1.2 years back)
+> >              I. To accommodate correct build/installation practices,
+> >             II. better integrate Autoconf/Automake with tests for safer
+> >                 builds,
+> >            III. better cross-compilation of LTP sources.
+>=20
+> Just as a warning for everyone: that change broke building on most old
+> distributions and there seems to be no interest in fixing that.
 
-The question is -- why bother? We already have mmap_min_addr ... does this 
-pontentially provide any additional advantage?
+clearly as an active developer you should know better.  you dont get people=
+ to=20
+agree with and/or help you by pointlessly antagonizing them.
+=2Dmike
 
-> The drawback of this it that the kernel can't access anymore data in the first
-> segment. Is it needed for application like wine or dosemu ?
-> Regards,
-> 
-> Matthieu
-> 
-> PS : why x86_64 segment got access bit set and x86_32 doesn't ?
-> 
-> [1]
-> something like
-> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-> index cc25c2b..898a569 100644
-> --- a/arch/x86/kernel/cpu/common.c
-> +++ b/arch/x86/kernel/cpu/common.c
-> @@ -101,7 +101,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = {
-> .gdt = {
->  	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xa0fb, 0, 0xfffff),
->  #else
->  	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
-> -	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-> +	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc096, 0, 0x00001),
->  	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
->  	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
->  	/*
+--nextPart2309661.SqQ7l2ASyA
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-It's not that simple for various reasons ... PaX/Grsecurity people already 
-did this in their patchset quite some time ago.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.13 (GNU/Linux)
 
-See http://www.grsecurity.net/~spender/uderef.txt
+iQIcBAABAgAGBQJK9I8zAAoJEEFjO5/oN/WB4EwQAKX83vQLxg2juYpSzTEZhqjq
+SgDGxGnz2hk0rcMOwsxUma+YIga7CnXwVXcn2qdkH8llnMPv0x89Rp4uair8QAg/
+XjaHW+MiAxTgJKp2XFV+MnzApi6eK9tsxEUojypJV9VBHIOHgWqKUWUER8Xq5l7x
+7rFS2EyRRW18dwworPTf8XQxiAmLQzZdlQ7tCiQEmqPcAygYUwmWNBBNtpRZB7rv
+YSXAisAlI7aqhIw4Qc1kb3S9Kh+LxPP8K02Lfh2/tFgqHn51eINOllLicAVr+Prp
+FzLUjOf52uIRWyl5M27oEFb5x5bt3ye24FWeGOL6R6VBHlHxZ6wu1VkcVi43Ynpu
+3zpWdl0kNjMsogYf1qf4oIfKp49m6I4RCHGnRotdKzHP4fQi8bM7uvko0U8XkKao
+5GRwL93zrRxHC+qBxUEE8Khhcerv7VIC/pjXUZBxZKJm3ic8CyZKCpORERVz6nPm
+9r/gMXXAHXVgU5pVwsnDgMmYwFWZ+yVIeAqbKBXJtjhxHp77I5qlvUZHF320Waai
+6zozcSPPJn3HUMNSesZkFqhFCP+Xc1SBLTpa+0aZ347r0LSbKY4o/2lT1nAB3G3W
+D5vgp9eS3F36mhKdhc2bAt3F3LuLsP5i7yVLb5JfpopC8beWTsQnikxNKmKpNATJ
+e4X+YwOgbK5ih38geUva
+=SH/k
+-----END PGP SIGNATURE-----
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+--nextPart2309661.SqQ7l2ASyA--
