@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbZKFGvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbZKFGxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752170AbZKFGvb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 01:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZKFGva
+	id S1752715AbZKFGxK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 01:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZKFGxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 01:51:30 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:51520 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbZKFGva (ORCPT
+	Fri, 6 Nov 2009 01:53:07 -0500
+Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:33574
+	"EHLO mswedge2.sunplus.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752395AbZKFGxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 01:51:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=byN3SUklUaVJiUDLUVeOUj3oz/0/eW0II0ctFgV3R5q482RyZqOIot2xOOaWyp1Sug
-         0x+iNvCi4qRwti7omkL0kxafnndhyHIfIfuxWgO4RV00WB6DuI163SOfo9NZl+7eDR6X
-         NWNrUpY3wh7pKDaDuNMtv67hlqHLa0Fvg7hbc=
+	Fri, 6 Nov 2009 01:53:05 -0500
+In-Reply-To: <200911041028.12098.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg KH <greg@kroah.com>, linux-arch@vger.kernel.org,
+       linux-arch-owner@vger.kernel.org, linux-kernel@vger.kernel.org,
+       liqin.gnu@gmail.com
 MIME-Version: 1.0
-In-Reply-To: <4AF3BD43.1000201@kernel.org>
-References: <2674af740911052200m141e71d5v37d621d23771aa91@mail.gmail.com>
-	 <4AF3BD43.1000201@kernel.org>
-Date: Fri, 6 Nov 2009 14:51:35 +0800
-Message-ID: <2674af740911052251w258821d2ub7e46a4c639371ef@mail.gmail.com>
-Subject: Re: [PATCH] irq: remove __weak early_irq_init()
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH] asm-generic: Fix typo in asm-generic/unistd.h.
+X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
+Message-ID: <OF2B2C42E6.2F1D2BE9-ON48257666.00247A2F-48257666.0025C58F@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Fri, 6 Nov 2009 14:52:05 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/11/06 ?? 02:52:07,
+	Serialize complete at 2009/11/06 ?? 02:52:07
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nA66rM16015322
 
-On Fri, Nov 6, 2009 at 2:08 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> Yong Zhang wrote:
->>>From 86a53664e3f503fe06b166fb248ed64a77212b3d Mon Sep 17 00:00:00 2001
->> From: Yong Zhang <yong.zhang0@gmail.com>
->> Date: Fri, 6 Nov 2009 13:53:30 +0800
->> Subject: [PATCH] irq: remove __weak early_irq_init()
->>
->> impact: cleanup
->>
->> Since commit 12026ea16a618b289fcf457661aed24f57323a20
->> early_irq_init() is always defined in kernel/irq/handle.c
->> So remove the weak definition.
->
-> some arches that do not have GENERIC_HARDIRQS defined need that.
->
+linux-arch-owner@vger.kernel.org Ğ´ÓÚ 2009-11-04 17:28:11:
 
-Thanks for your point. I just notice kernel/irq is determined by
-GENERIC_HARDIRQS.
+> I would recommend to look into this at some point in the future.
+> Unlike the main glibc project, eglibc[1] is specifically there for
+> supporting embedded architectures and already hosts ports for
+> other platforms that are not in glibc itself, while it closely
+> follows the main glibc development. Contributing there unfortunately
+> requires some paperwork for copyright assignment, but it's probably
+> worth it in the end.
+> 
+> You've done the right thing by merging your kernel code into the
+> official Linux tree, porting your glibc code to the lastest 
+> snapshot and submitting it into eglibc is the next big step.
+> 
 
--Yong
+Hi Arnd£¬
 
-> YH
->
+Thank you for the above suggestions and comments,
+We will evaluate your suggestions and continue upgrading.
+to make linux/score platform work better.
+
+Best Regards
+Liqin
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
