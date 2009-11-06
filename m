@@ -1,310 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbZKFPtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbZKFQta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758288AbZKFPtL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 10:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZKFPtK
+	id S1759508AbZKFQta (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 11:49:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759472AbZKFQt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 10:49:10 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34816 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751517AbZKFPtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 10:49:09 -0500
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Fri, 06 Nov 2009 16:49:11 +0100
-From: "Martin Schleier" <drahemmaps@gmx.net>
-Message-ID: <20091106154911.29400@gmx.net>
-MIME-Version: 1.0
-Subject: Re: i686 quirk for AMD Geode
-To: Matteo Croce <technoboy85@gmail.com>, mingo@elte.hu
-X-Authenticated: #35928486
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/Xk2wDAqnXcymJarBT31DsoZNXqRBN5N/sdx5f1u
- zfK0mYto6bEIDKroUrHCt9dn1eQFuFwArCaQ== 
-X-GMX-UID: GSiWHjsrbXB+RsNLFjY29V4iLyUmZchY
-X-FuHaFi: 0.42
+	Fri, 6 Nov 2009 11:49:29 -0500
+Received: from cpe-74-67-89-75.stny.res.rr.com ([74.67.89.75]:38805 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759471AbZKFQt3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 11:49:29 -0500
+X-Greylist: delayed 3192 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Nov 2009 11:49:28 EST
+Subject: Re: ftrace - graph tracer for Microblaze
+From: Steven Rostedt <rostedt@goodmis.org>
+To: monstr@monstr.eu
+Cc: linux-kernel@vger.kernel.org, John Williams <john.williams@petalogix.com>
+In-Reply-To: <4AF40282.9080402@monstr.eu>
+References: <4AF40282.9080402@monstr.eu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 06 Nov 2009 10:54:11 -0500
+Message-Id: <1257522851.31359.40.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009 15:59:16 +0100 Matteo Croce wrote:
-> On Sat, Oct 3, 2009 at 8:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Matteo Croce <technoboy85@gmail.com> wrote:
-[snip]
-> > Looks good, but your signoff line is missing.
-> >
-> >        Ingo
-> >
+On Fri, 2009-11-06 at 12:03 +0100, Michal Simek wrote:
+> Hi Steven,
 > 
-> The AMD Geode LX has an x86 id of 5 (i586) tought it's technically an
-> i686:
+> I found the problem in my mcount function. I was Microblaze dependent 
+> fault - I had to save all registers which are not saved across function 
+> calls.
+
+Yep, that could be an issue.
+
 > 
-> root@alix:~# egrep '^(cpu family|model name|flags)' /proc/cpuinfo
-> cpu family      : 5
-> model name      : Geode(TM) Integrated Processor by AMD PCS
-> flags           : fpu de pse tsc msr cx8 sep pge cmov clflush mmx
-> mmxext 3dnowext 3dnow
+> I am getting some problem is irqsoff tracing. Is there any special 
+> things which needs to be implemented/changed?
+
+It is dependent on TRACE_IRQFLAGS_SUPPORT, which is kind of nasty. This
+is what LOCKDEP uses. If you can successfully implement LOCKDEP you get
+irqsoff tracing for free.
+
+The biggest issue with lockdep implementation is that you need to have a
+hook at every irq disable and enable location. This includes assembly.
+That's what all those TRACE_IRQS_OFF and TRACE_IRQS_ON are in x86's
+entry_*.S.
+
+
 > 
-> indeed it has MMX, MMXEXT and CMOV, just lacks the long NOP instruction
-> (NOPL).
-> This patch adds a quirck to promote the Geode to an i686 and emulates
-> the NOPL in the do_invalid_op trap, so the userspace never notices.
-> Emulating the NOPL has minimum performance loss, emulating a NOPL
-> takes 0.5 usecs
-> and they are rarely used in x86
+> I would like to implement ftrace graph support and stack save support.
 > 
-> Signed-off-by: Matteo Croce <technoboy85@gmail.com>
+> I believe that for stack_trace I need just to implement save_stack_trace.
+> If I understand correctly that feature should look at current process
+> and trace that process back to zero stack size.
+> It is just for current task right?
+
+Yes, just current task is needed.
+
 > 
-> --- a/arch/x86/kernel/Makefile	2009-11-06 15:06:52.246223989 +0100
-> +++ b/arch/x86/kernel/Makefile	2009-11-06 15:07:04.294054613 +0100
-> @@ -89,7 +89,7 @@
->  obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
+> Then output shows which functions are called and size of stack. I found 
+> your post which is at http://lkml.org/lkml/2009/8/21/319 but you don't 
+> have any zero size stack size. Here is my log which seems to me weird 
+> because of zero size values. Is it correct or not?
 > 
->  obj-$(CONFIG_K8_NB)		+= k8.o
-> -obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
-> +obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o nopl_emu.o
->  obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
->  obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
+> # echo 1 > /proc/sys/kernel/stack_tracer_enabled
+> # cat /debug/tracing/stack_trace
+>          Depth    Size   Location    (63 entries)
+>          -----    ----   --------
+>    0)     2100       0   stack_trace_call+0x12c/0x1d8
+>    1)     2100       0   stack_trace_call+0x12c/0x1d8
+>    2)     2100       0   _spin_unlock+0x2c/0x3c
+>    3)     2100     180   __rcu_process_callbacks+0x3e0/0x460
+>    4)     1920     568   end_graph_tracer+0x24/0x2c
+>    5)     1352       0   end_graph_tracer+0x24/0x2c
+>    6)     1352       0   microblaze_read+0x14/0x4c
+>    7)     1352     184   microblaze_read+0x0/0x4c
+> ...
+>   63)      156     156   ktime_add_ns+0x88/0x124
 > 
-> --- a/arch/x86/kernel/cpu/amd.c	2009-11-06 15:06:52.254223805 +0100
-> +++ b/arch/x86/kernel/cpu/amd.c	2009-11-06 15:07:04.294054613 +0100
-> @@ -138,8 +138,10 @@
->  	}
+> Here is my function -> it is the same as we use for dump stack.
+> I look at mips implementation and is the same
 > 
->  	if (c->x86_model == 10) {
-> -		/* AMD Geode LX is model 10 */
-> -		/* placeholder for any needed mods */
-> +		/* Geode only lacks the NOPL instruction to be i686,
-> +		   but we can emulate it in the exception handler
-> +		   and promote it to a class 6 cpu */
-> +		boot_cpu_data.x86 = 6;
->  		return;
->  	}
->  }
-> --- a/arch/x86/kernel/entry_32.S	2009-11-06 15:06:52.258224172 +0100
-> +++ b/arch/x86/kernel/entry_32.S	2009-11-06 15:07:04.306230613 +0100
-> @@ -901,7 +901,11 @@
->  	RING0_INT_FRAME
->  	pushl $0
->  	CFI_ADJUST_CFA_OFFSET 4
-> +#ifdef CONFIG_MGEODE_LX
-> +	pushl $do_nopl_emu
-> +#else
->  	pushl $do_invalid_op
-> +#endif
->  	CFI_ADJUST_CFA_OFFSET 4
->  	jmp error_code
->  	CFI_ENDPROC
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ b/arch/x86/kernel/nopl_emu.c	2009-11-06 15:07:33.537723795 +0100
-> @@ -0,0 +1,102 @@
-> +/*
-> + *  linux/arch/x86/kernel/nopl_emu.c
-> + *
-> + *  Copyright (C) 2002  Willy Tarreau
-> + *  Copyright (C) 2009  Matteo Croce
-> + */
-> +
-> +#include <linux/sched.h>
-> +#include <linux/linkage.h>
-> +#include <linux/preempt.h>
-> +#include <linux/types.h>
-> +
-> +void do_invalid_op(struct pt_regs *regs, long error_code);
-> +
-> +/* This code can be used to allow the AMD Geode to hopefully correctly
-> execute
-> + * some code which was originally compiled for an i686, by emulating
-> NOPL,
-> + * the only missing i686 instruction in the CPU
-> + *
-> + * Willy Tarreau <willy@meta-x.org>
-> + * Matteo Croce <technoboy85@gmail.com>
-> + */
-> +
-> +static inline int do_1f(u8 *ip)
-> +{
-> +	int length = 3;
-> +	switch(*ip) {
-> +		case 0x84:if(!ip[5])
-> +				length++;
-> +			else
-> +				return 0;
-> +		case 0x80:if(!ip[4] && !ip[3])
-> +				length += 2;
-> +			else
-> +				return 0;
-> +		case 0x44:if(!ip[2])
-> +				length++;
-> +			else
-> +				return 0;
-> +		case 0x40:if(!ip[1])
-> +				length++;
-> +			else
-> +				return 0;
-> +		case 0x00:return length;
-> +		default: return 0;
-> +	}
-> +	return length;
-> +}
-> +
-> +static inline int do_0f(u8 *ip)
-> +{
-> +	if(*ip == 0x1f)
-> +		return do_1f(ip + 1);
-> +	return 0;
-> +}
-> +
-> +static inline int do_66(u8 *ip)
-> +{
-> +	if(*ip == 0x90)
-> +		return 2;
-> +	if(*ip == 0x0f) {
-> +		int res = do_0f(ip + 1);
-> +		if(res)
-> +			return res + 1;
-> +		else
-> +			return 0;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static inline int do_start(u8 *ip)
-> +{
-> +	if(*ip == 0x0f)
-> +		return do_0f(ip + 1);
-> +	if(*ip == 0x66)
-> +		return do_66(ip + 1);
-> +	return 0;
-> +}
-> +
-> +/* [do_nopl_emu] is called by exception 6 after an invalid opcode has
-> been
-> + * encountered. It will try to emulate it by doing nothing,
-> + * and will send a SIGILL or SIGSEGV to the process if not possible.
-> + * the NOPL can have variable length opcodes:
-> +
-> +bytes number	opcode
-> +	2	66 90
-> +	3	0f 1f 00
-> +	4	0f 1f 40 00
-> +	5	0f 1f 44 00 00
-> +	6	66 0f 1f 44 00 00
-> +	7	0f 1f 80 00 00 00 00
-> +	8	0f 1f 84 00 00 00 00 00
-> +	9	66 0f 1f 84 00 00 00 00 00
-> +*/
-> +void do_nopl_emu(struct pt_regs *regs, long error_code)
-> +{
-> +	int res = do_start((u8*)regs->ip);
-> +
-> +	if(res)
-> +		regs->ip += res;
-> +	else
-> +		do_invalid_op(regs, error_code);
-> +}
-> --
+> void save_stack_trace(struct stack_trace *trace)
+> {
+> 	unsigned int sp;
+> 	asm("addik %0, r1, 0" : "=r" (sp));
+> 
+> 	while (!kstack_end(sp)) {
+> 		addr = *sp++;
+> 		if (__kernel_text_address(addr)) {
 
-Looks good? checkpatch.pl has a very different opinion.
+Hmm, this does not look too reliable. That is, anytime there's a text
+address in the code you report it, although it may not be a real return
+address.
 
-WARNING: externs should be avoided in .c files
-#56: FILE: arch/x86/kernel/nopl_emu.c:13:
-+void do_invalid_op(struct pt_regs *regs, long error_code);
+Does Microblaze have any kind of frame pointer? Or a way to detect the
+next frame? If so, that would be really helpful here.
 
-ERROR: switch and case should be at the same indent
-#69: FILE: arch/x86/kernel/nopl_emu.c:26:
-+	switch(*ip) {
-+		case 0x84:if(!ip[5])
-[...]
-+		case 0x80:if(!ip[4] && !ip[3])
-[...]
-+		case 0x44:if(!ip[2])
-[...]
-+		case 0x40:if(!ip[1])
-[...]
-+		case 0x00:return length;
-+		default: return 0;
+> 			if (trace->skip > 0)
+> 				trace->skip--;
+> 			else
+> 			   trace->entries[trace->nr_entries++] = addr;
+> 
+> 			if (trace->nr_entries >= trace->max_entries)
+> 				break;
+> 		}
+> 	}
+> }
 
-ERROR: space required before the open parenthesis '('
-#69: FILE: arch/x86/kernel/nopl_emu.c:26:
-+	switch(*ip) {
+The stack tracer is very simple. If you look at the check_stack code in
+kernel/trace/trace_stack.c it shows the implementation.
 
-ERROR: space required before the open parenthesis '('
-#70: FILE: arch/x86/kernel/nopl_emu.c:27:
-+		case 0x84:if(!ip[5])
+Basically what it does is to look at the address local variable in the
+function itself (this_size). It masks it with THREAD_SIZE-1 to get the
+top of the stack.
 
-ERROR: trailing statements should be on next line
-#70: FILE: arch/x86/kernel/nopl_emu.c:27:
-+		case 0x84:if(!ip[5])
+It then starts up the stack looking at the contents to match the
+contents of the report from save_stack_trace(). If it finds a return
+value, it reports the address off of that. If it does not find that
+return value, you will see zero. This is strange since it should have
+found all those that were reported. But perhaps those values were in the
+stack when calling the save_stack_trace function, but not at the level
+of check_stack's stack.
 
-ERROR: space required before the open parenthesis '('
-#74: FILE: arch/x86/kernel/nopl_emu.c:31:
-+		case 0x80:if(!ip[4] && !ip[3])
+> 
+> 
+> 
+> The second more important is graph part
+> 
+> I read it in ftrace design.txt and I don't understand how this really works.
+> 
+> 
+> For function trace without grapth support is calling
+>   foo()
+> (ret2foo) -> bar()
+>     (ret2bar) -> mcount() - I have to save full cpu content
+>                    -> ftrace_trace_function (ret2bar, ret2foo)
+> 			(do some stuff)
+>                    <-
+>                    restore_whole_content and jump back to bar
+>                    after mcount call (mb do jump +8 - mb convention)
+>               bar ends -> jump back to foo
+> 
+> 
+> For graph is flow a little bit different
+>   foo()
+> (ret2foo) -> bar()
+>     (ret2bar) -> mcount() - I have to save full cpu content
+>                      ->prepare_ftrace_return(ret2bar, ret2foo)
+> 
+> and here I have to change return address -> Is it mean that from 
+> prepare_ftrace_return I have to return back to bar and then at the end 
+> of bar jump to return_to_handler which will call 
+> ftrace_return_to_handler and then jump back to foo. Is it correct?
 
-ERROR: trailing statements should be on next line
-#74: FILE: arch/x86/kernel/nopl_emu.c:31:
-+		case 0x80:if(!ip[4] && !ip[3])
+Yes that is correct.
 
-ERROR: space required before the open parenthesis '('
-#78: FILE: arch/x86/kernel/nopl_emu.c:35:
-+		case 0x44:if(!ip[2])
+> What is the correct calling?
 
-ERROR: trailing statements should be on next line
-#78: FILE: arch/x86/kernel/nopl_emu.c:35:
-+		case 0x44:if(!ip[2])
+What you just stated ;-)
 
-ERROR: space required before the open parenthesis '('
-#82: FILE: arch/x86/kernel/nopl_emu.c:39:
-+		case 0x40:if(!ip[1])
+> 
+> 
+> 
+> This is third topic - maybe I should send three separate emails :-(
+> 
+> I found some incompatibility which IMHO could be synchronize.
+> There is C implementation for ftrace_graph_entry_stub and ftrace_stub
+> is implemented in asm. The purpose of that two functions should be the 
+> same that's I think implementation should be too.
 
-ERROR: trailing statements should be on next line
-#82: FILE: arch/x86/kernel/nopl_emu.c:39:
-+		case 0x40:if(!ip[1])
+The two take different arguments. Sure the stubs don't care, but it this
+topic came up in the design. We found issues (I don't remember exactly
+what they were) by having the two the same. That was the original
+design.
 
-ERROR: space required before the open parenthesis '('
-#94: FILE: arch/x86/kernel/nopl_emu.c:51:
-+	if(*ip == 0x1f)
+> 
+> Because of my unresolved issue around irqsoff I traced it in code and 
+> there is too many tracing_reset_online_cpus() functions. I found one 
+> calling in __irqsoff_tracer_init and then in tracer_init function. Is 
+> that correct or one calling is enough?
 
-ERROR: space required before the open parenthesis '('
-#101: FILE: arch/x86/kernel/nopl_emu.c:58:
-+	if(*ip == 0x90)
+Hmm, It may be enough to call it just in tracer_init, but it does seem
+that irqsoff tracer wants it reset it again after it zeros out the
+numbers. I'll look into that. But it should not affect anything, since
+this is only at startup of the tracer.
 
-ERROR: space required before the open parenthesis '('
-#103: FILE: arch/x86/kernel/nopl_emu.c:60:
-+	if(*ip == 0x0f) {
+> 
+> Then I think that there is some things in Kconfig which should be 
+> cleared. I found link to /sys/kernel/debug/tracing/profile_branch which 
+> I don't have in tracing folder. Is it correct?
 
-ERROR: space required before the open parenthesis '('
-#105: FILE: arch/x86/kernel/nopl_emu.c:62:
-+		if(res)
+You enabled TRACE_BRANCH_PROFILING and you don't have that?
 
-ERROR: space required before the open parenthesis '('
-#115: FILE: arch/x86/kernel/nopl_emu.c:72:
-+	if(*ip == 0x0f)
+-- Steve
 
-ERROR: space required before the open parenthesis '('
-#117: FILE: arch/x86/kernel/nopl_emu.c:74:
-+	if(*ip == 0x66)
-
-ERROR: "(foo*)" should be "(foo *)"
-#139: FILE: arch/x86/kernel/nopl_emu.c:96:
-+	int res = do_start((u8*)regs->ip);
-
-ERROR: space required before the open parenthesis '('
-#141: FILE: arch/x86/kernel/nopl_emu.c:98:
-+	if(res)
-
-ERROR: Missing Signed-off-by: line(s)
-
-total: 19 errors, 1 warnings, 133 lines checked
-
-This patch has style problems, please review.
-If any of these errors are false positives report them
-to the maintainer, see CHECKPATCH in MAINTAINERS.
-
--- 
-DSL-Preisknaller: DSL Komplettpakete von GMX schon für 
-16,99 Euro mtl.!* Hier klicken: http://portal.gmx.net/de/go/dsl02
