@@ -1,171 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZKFFL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZKFFNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbZKFFL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 00:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbZKFFL2
+	id S1754199AbZKFFNM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 00:13:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZKFFNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 00:11:28 -0500
-Received: from mail.gmx.net ([213.165.64.20]:54205 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752380AbZKFFL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 00:11:27 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18IXFZr/s0IDMQiwFS9/FQ4KvuiEDZlhMobvtDMkG
-	LMBm8wpOhlYkQz
-Subject: Re: [patch] Re: There is something with scheduler (was Re: [patch]
- Re: [regression bisect -next] BUG: using smp_processor_id() in preemptible
- [00000000] code: rmmod)
-From: Mike Galbraith <efault@gmx.de>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, tglx@linutronix.de
-In-Reply-To: <1257481667.6394.54.camel@marge.simson.net>
-References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
-	 <1256805552.7158.22.camel@marge.simson.net>
-	 <20091029091411.GE22963@elte.hu>
-	 <1256807967.7158.58.camel@marge.simson.net>
-	 <1256813310.7574.3.camel@marge.simson.net> <20091102182808.GA8950@elte.hu>
-	 <1257190811.19608.2.camel@marge.simson.net>
-	 <4AF2AC30.4000003@cn.fujitsu.com>
-	 <1257430388.6437.31.camel@marge.simson.net>
-	 <1257431437.7016.3.camel@marge.simson.net>
-	 <1257462632.6560.8.camel@marge.simson.net>
-	 <4AF38A72.9000900@cn.fujitsu.com>
-	 <1257481667.6394.54.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Fri, 06 Nov 2009 06:11:25 +0100
-Message-Id: <1257484285.6233.5.camel@marge.simson.net>
+	Fri, 6 Nov 2009 00:13:11 -0500
+Received: from waste.org ([173.11.57.241]:56038 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751814AbZKFFNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 00:13:10 -0500
+Subject: Re: netconsole: tulip: possible remote DoS? due to kernel freeze
+ on heavy RX traffic after Order-1 allocation failure
+From: Matt Mackall <mpm@selenic.com>
+To: Tobias Diedrich <ranma@tdiedrich.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20091106032754.GA15429@yumi.tdiedrich.de>
+References: <20091105113106.GA4373@yumi.tdiedrich.de>
+	 <1257450578.2873.609.camel@calx> <20091106032754.GA15429@yumi.tdiedrich.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 23:13:04 -0600
+Message-ID: <1257484384.2873.618.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.42
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-06 at 05:27 +0100, Mike Galbraith wrote:
+On Fri, 2009-11-06 at 04:27 +0100, Tobias Diedrich wrote:
+> Matt Mackall wrote:
+> > > Example from netconsole log:
+> > > |perl: page allocation failure. order:1, mode:0x20
+> > > |Pid: 3541, comm: perl Tainted: G        W  2.6.30.9-tomodachi #16
+> > > |Call Trace:
+> > > | [<c013e56d>] ? __alloc_pages_internal+0x353/0x36f
+> > > | [<c0154f2c>] ? cache_alloc_refill+0x2ab/0x544
+> > > | [<c0355479>] ? dev_alloc_skb+0x11/0x25
+> > > | [<c015526f>] ? __kmalloc_track_caller+0xaa/0xf9
+> > > | [<c0354ae5>] ? __alloc_skb+0x48/0xff
+> > > | [<c0355479>] ? dev_alloc_skb+0x11/0x25
+> > > | [<c02d4ba9>] ? tulip_refill_rx+0x3c/0x115
+> > > | [<c02d4fff>] ? tulip_poll+0x37d/0x416
+> > > | [<c0359763>] ? net_rx_action+0x6b/0x12f
+> > > | [<c0121ad7>] ? __do_softirq+0x4e/0xbf
+> > > | [<c0121a89>] ? __do_softirq+0x0/0xbf
+> > > | <IRQ>  [<c0107700>] ? do_IRQ+0x53/0x63
+> > > | [<c0106610>] ? common_interrupt+0x30/0x38
+> > 
+> > I don't see anything in this trace to implicate netconsole? This is the
+> > normal network receive path running out of input buffers then running
+> > into memory fragmentation.
+> 
+> I'm just thinking the hang might be related to using netconsole.
+> I guess I should try reproducing it without it.
 
-> In fact, now that I think about it more, seems I want to disable preempt
-> across the call to select_task_rq().  Concurrency sounds nice, but when
-> when waker is preempted, the hostage, who may well have earned the right
-> to instant cpu access will wait until the waker returns, and finishes
-> looking for a runqueue.  We want to get wakee onto the runqueue asap.
-> What happens if say a SCHED_IDLE task gets CPU on a busy box long enough
-> to wake kjournald?
+You should, though I'd be surprised if it matters.
 
-So, here's the 6 A.M. no java yet version.  Now to go _make_ some java,
-and settle in for a long test session.
+> Or is it normal that a box will hang if the network receive path runs out of
+> input buffers?
 
+No, it's not normal.
 
-sched: fix runqueue locking buglet.
+> Why does it allocate Order-1 buffers anyway?
 
-Calling set_task_cpu() with the runqueue unlocked is unsafe.  Add cpu_rq_lock()
-locking primitive, and lock the runqueue.  Also, update rq->clock before calling
-set_task_cpu(), as it could be stale.
+Your skbs are allocated via the SLAB allocator, which packs 5 skbs into
+an order-1 buffer rather than 4 into 2 order-0 buffers.
 
-Running netperf UDP_STREAM with two pinned tasks with tip 1b9508f applied emitted
-the thoroughly unbelievable result that ratelimiting newidle could produce twice
-the throughput of the virgin kernel.  Reverting to locking the runqueue prior to
-runqueue selection restored benchmarking sanity, as did this patchlet.
+Running out of order-1 buffers hasn't been a problem for most people
+lately though - is there anything interesting about your workload? Lots
+of threads? NFS? Long network processing latencies?
 
-Before:
-git v2.6.32-rc6-26-g91d3f9b virgin
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
- 65536    4096   60.00     7340005      0    4008.62
- 65536           60.00     7320453           3997.94
-
-git v2.6.32-rc6-26-g91d3f9b with only 1b9508f
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
- 65536    4096   60.00     15018541      0    8202.12
- 65536           60.00     15018232           8201.96
-
-After:
-git v2.6.32-rc6-26-g91d3f9b with only 1b9508f + this patch
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
- 65536    4096   60.00     7780289      0    4249.07
- 65536           60.00     7779832           4248.82
-
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-
----
- kernel/sched.c |   32 +++++++++++++++++++++++++-------
- 1 file changed, 25 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.32.git/kernel/sched.c
-===================================================================
---- linux-2.6.32.git.orig/kernel/sched.c
-+++ linux-2.6.32.git/kernel/sched.c
-@@ -1011,6 +1011,24 @@ static struct rq *this_rq_lock(void)
- 	return rq;
- }
- 
-+/*
-+ * cpu_rq_lock - lock the runqueue a given cpu and disable interrupts.
-+ */
-+static struct rq *cpu_rq_lock(int cpu, unsigned long *flags)
-+	__acquires(rq->lock)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+
-+	spin_lock_irqsave(&rq->lock, *flags);
-+	return rq;
-+}
-+
-+static inline void cpu_rq_unlock(struct rq *rq, unsigned long *flags)
-+	__releases(rq->lock)
-+{
-+	spin_unlock_irqrestore(&rq->lock, *flags);
-+}
-+
- #ifdef CONFIG_SCHED_HRTICK
- /*
-  * Use HR-timers to deliver accurate preemption points.
-@@ -2342,16 +2360,17 @@ static int try_to_wake_up(struct task_st
- 	if (task_contributes_to_load(p))
- 		rq->nr_uninterruptible--;
- 	p->state = TASK_WAKING;
-+	preempt_disable();
- 	task_rq_unlock(rq, &flags);
- 
- 	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
--	if (cpu != orig_cpu)
--		set_task_cpu(p, cpu);
--
--	rq = task_rq_lock(p, &flags);
--
--	if (rq != orig_rq)
-+	if (cpu != orig_cpu) {
-+		rq = cpu_rq_lock(cpu, &flags);
- 		update_rq_clock(rq);
-+		set_task_cpu(p, cpu);
-+	} else
-+		rq = task_rq_lock(p, &flags);
-+	preempt_enable_no_resched();
- 
- 	if (rq->idle_stamp) {
- 		u64 delta = rq->clock - rq->idle_stamp;
-@@ -2365,7 +2384,6 @@ static int try_to_wake_up(struct task_st
- 	}
- 
- 	WARN_ON(p->state != TASK_WAKING);
--	cpu = task_cpu(p);
- 
- #ifdef CONFIG_SCHEDSTATS
- 	schedstat_inc(rq, ttwu_count);
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
 
