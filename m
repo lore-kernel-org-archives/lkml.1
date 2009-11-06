@@ -1,107 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbZKFWKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbZKFWWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760116AbZKFWKz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760095AbZKFWKt
+	id S1759951AbZKFWWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759921AbZKFWWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:10:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15067 "EHLO mx1.redhat.com"
+	Fri, 6 Nov 2009 17:22:17 -0500
+Received: from kroah.org ([198.145.64.141]:56610 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759934AbZKFWKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:10:47 -0500
-Date: Fri, 6 Nov 2009 17:10:19 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 15/20] blkio: Take care of preemptions across groups
-Message-ID: <20091106221019.GA2969@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-16-git-send-email-vgoyal@redhat.com> <4AF3D68E.3050203@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF3D68E.3050203@cn.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1758434AbZKFWWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:17 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:38 2009
+Message-Id: <20091106221538.846686350@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 06 Nov 2009 14:13:59 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Earl Chew <earl_chew@agilent.com>
+Subject: [01/99] fs: pipe.c null pointer dereference
+References: <20091106221358.309857998@mini.kroah.org>
+Content-Disposition: inline; filename=fs-pipe.c-null-pointer-dereference.patch
+In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 06, 2009 at 03:55:58PM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> > o Additional preemption checks for groups where we travel up the hierarchy
-> >   and see if one queue should preempt other or not.
-> > 
-> > o Also prevents preemption across groups in some cases to provide isolation
-> >   between groups.
-> > 
-> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> > ---
-> >  block/cfq-iosched.c |   33 +++++++++++++++++++++++++++++++++
-> >  1 files changed, 33 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > index 87b1799..98dbead 100644
-> > --- a/block/cfq-iosched.c
-> > +++ b/block/cfq-iosched.c
-> > @@ -2636,6 +2636,36 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-> >  	}
-> >  }
-> >  
-> > +static bool cfq_should_preempt_group(struct cfq_data *cfqd,
-> > +		struct cfq_queue *cfqq, struct cfq_queue *new_cfqq)
-> > +{
-> > +	struct cfq_entity *cfqe = &cfqq->entity;
-> > +	struct cfq_entity *new_cfqe = &new_cfqq->entity;
-> > +
-> > +	if (cfqq_to_cfqg(cfqq) != &cfqd->root_group)
-> > +		cfqe = parent_entity(&cfqq->entity);
-> > +
-> > +	if (cfqq_to_cfqg(new_cfqq) != &cfqd->root_group)
-> > +		new_cfqe = parent_entity(&new_cfqq->entity);
-> > +
-> > +	/*
-> > +	 * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
-> > +	 */
-> > +
-> > +	if (new_cfqe->ioprio_class == IOPRIO_CLASS_RT
-> > +	    && cfqe->ioprio_class != IOPRIO_CLASS_RT)
-> > +		return true;
-> > +	/*
-> > +	 * Allow an BE request to pre-empt an ongoing IDLE clas timeslice.
-> > +	 */
-> > +
-> > +	if (new_cfqe->ioprio_class == IOPRIO_CLASS_BE
-> > +	    && cfqe->ioprio_class == IOPRIO_CLASS_IDLE)
-> > +		return true;
-> > +
-> > +	return false;
-> > +}
-> > +
-> >  /*
-> >   * Check if new_cfqq should preempt the currently active queue. Return 0 for
-> >   * no or if we aren't sure, a 1 will cause a preempt.
-> > @@ -2666,6 +2696,9 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
-> >  	if (rq_is_sync(rq) && !cfq_cfqq_sync(cfqq))
-> >  		return true;
-> >  
-> > +	if (cfqq_to_cfqg(new_cfqq) != cfqq_to_cfqg(cfqq))
-> > +		return cfq_should_preempt_group(cfqd, cfqq, new_cfqq);
-> > +
-> 
-> Vivek, why not put cfq_should_preempt_group() at the beginning of cfq_should_preempt()
-> to prevent preemption across groups?
 
-Hi Gui,
+2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
-Currently the checks before the group check were not hurting much, that's
-why.
+------------------
+From: Earl Chew <earl_chew@agilent.com>
 
-The only contentious check will be if a sync IO in one group should
-preempt the async IO in other group or not.
+commit ad3960243e55320d74195fb85c975e0a8cc4466c upstream.
 
-Thanks
-Vivek
+This patch fixes a null pointer exception in pipe_rdwr_open() which
+generates the stack trace:
+
+> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+>  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
+>  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
+>  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
+>  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
+>  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
+
+The failure mode is triggered by an attempt to open an anonymous
+pipe via /proc/pid/fd/* as exemplified by this script:
+
+=============================================================
+while : ; do
+   { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
+   PID=$!
+   OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
+        { read PID REST ; echo $PID; } )
+   OUT="${OUT%% *}"
+   DELAY=$((RANDOM * 1000 / 32768))
+   usleep $((DELAY * 1000 + RANDOM % 1000 ))
+   echo n > /proc/$OUT/fd/1                 # Trigger defect
+done
+=============================================================
+
+Note that the failure window is quite small and I could only
+reliably reproduce the defect by inserting a small delay
+in pipe_rdwr_open(). For example:
+
+ static int
+ pipe_rdwr_open(struct inode *inode, struct file *filp)
+ {
+       msleep(100);
+       mutex_lock(&inode->i_mutex);
+
+Although the defect was observed in pipe_rdwr_open(), I think it
+makes sense to replicate the change through all the pipe_*_open()
+functions.
+
+The core of the change is to verify that inode->i_pipe has not
+been released before attempting to manipulate it. If inode->i_pipe
+is no longer present, return ENOENT to indicate so.
+
+The comment about potentially using atomic_t for i_pipe->readers
+and i_pipe->writers has also been removed because it is no longer
+relevant in this context. The inode->i_mutex lock must be used so
+that inode->i_pipe can be dealt with correctly.
+
+Signed-off-by: Earl Chew <earl_chew@agilent.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/pipe.c |   41 ++++++++++++++++++++++++++++++-----------
+ 1 file changed, 30 insertions(+), 11 deletions(-)
+
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -777,36 +777,55 @@ pipe_rdwr_release(struct inode *inode, s
+ static int
+ pipe_read_open(struct inode *inode, struct file *filp)
+ {
+-	/* We could have perhaps used atomic_t, but this and friends
+-	   below are the only places.  So it doesn't seem worthwhile.  */
++	int ret = -ENOENT;
++
+ 	mutex_lock(&inode->i_mutex);
+-	inode->i_pipe->readers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		inode->i_pipe->readers++;
++	}
++
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int
+ pipe_write_open(struct inode *inode, struct file *filp)
+ {
++	int ret = -ENOENT;
++
+ 	mutex_lock(&inode->i_mutex);
+-	inode->i_pipe->writers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		inode->i_pipe->writers++;
++	}
++
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int
+ pipe_rdwr_open(struct inode *inode, struct file *filp)
+ {
++	int ret = -ENOENT;
++
+ 	mutex_lock(&inode->i_mutex);
+-	if (filp->f_mode & FMODE_READ)
+-		inode->i_pipe->readers++;
+-	if (filp->f_mode & FMODE_WRITE)
+-		inode->i_pipe->writers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		if (filp->f_mode & FMODE_READ)
++			inode->i_pipe->readers++;
++		if (filp->f_mode & FMODE_WRITE)
++			inode->i_pipe->writers++;
++	}
++
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ /*
+
+
