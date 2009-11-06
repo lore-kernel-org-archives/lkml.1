@@ -1,66 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbZKFR4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbZKFR67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759152AbZKFR4J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 12:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbZKFR4J
+	id S1759227AbZKFR67 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 12:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758858AbZKFR65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 12:56:09 -0500
-Received: from smtp.ultrahosting.com ([74.213.175.253]:60393 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758222AbZKFR4I (ORCPT
+	Fri, 6 Nov 2009 12:58:57 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:58910 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754705AbZKFR64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 12:56:08 -0500
-Date: Fri, 6 Nov 2009 12:54:50 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Andi Kleen <andi@firstfloor.org>
-cc: npiggin@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: Re: Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu counter
- instead
-In-Reply-To: <20091106174439.GB819@basil.fritz.box>
-Message-ID: <alpine.DEB.1.10.0911061249170.5187@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1> <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1> <87r5sc7kst.fsf@basil.nowhere.org> <alpine.DEB.1.10.0911051558220.7668@V090114053VZO-1> <20091106073946.GV31511@one.firstfloor.org>
- <alpine.DEB.1.10.0911061208370.5187@V090114053VZO-1> <20091106174439.GB819@basil.fritz.box>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 6 Nov 2009 12:58:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=hVBQ/b43kf0HVLxoHvwQ5sqq3+VZeNGy1jETU7z1cwSGFlgF1sBeB1UQHZ+P0atvoF
+         ILfG0JObgIyYgXzGKGEKOV43cv39NjX6mHnbxIv8/mDwcpbNhYmy8mKEjTzBPP34Qaw5
+         Dbk/GQphThhmiTgRIdukylzhj+UpCQYV5ghNA=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
+Date: Fri, 6 Nov 2009 18:58:56 +0100
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>
+References: <200911031951.05235.bzolnier@gmail.com> <200911042251.23506.IvDoorn@gmail.com> <20091106074643.GA5562@ucw.cz>
+In-Reply-To: <20091106074643.GA5562@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911061858.56816.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009, Andi Kleen wrote:
+Hi,
 
-> On Fri, Nov 06, 2009 at 12:08:54PM -0500, Christoph Lameter wrote:
-> > On Fri, 6 Nov 2009, Andi Kleen wrote:
-> >
-> > > Yes but all the major calls still take mmap_sem, which is not ranged.
-> >
-> > But exactly that issue is addressed by this patch!
->
-> Major calls = mmap, brk, etc.
+> > > Look at the diffstat of Bart's driver:
+> > > 
+> > >    15 files changed, 4036 insertions(+), 7158 deletions(-)
+> > > 
+> > > He reduced your 5.2 KLOC non-working driver into a 1.8 KLOC _working_ 
+> > > driver.
+> > 
+> > Bullshit, read the mails again.
+> 
+> This was uncalled for, right?
 
-Those are rare. More frequently are for faults, get_user_pages and
-the like operations that are frequent.
+The way I said it, yes.
 
-brk depends on process wide settings and has to be
-serialized using a processor wide locks.
+But I was frustrated by Ingo with his comment that the driver was magically fixed,
+while even Bartlomiej indicated that was not the case. With these comments,
+and those were he were his ignorance about the Ralink drivers in the kernel
+was apparent, he managed to get me completely upset because I really
+got the impression I was talking to a wall or something and overreacted.
 
-mmap and other address space local modification may be able to avoid
-taking mmap write lock by taking the read lock and then locking the
-ptls in the page struct relevant to the address space being modified.
+> > > And _still_ your complaint about Bart's series is that he updated the 
+> > > MAINTAINERS entry and added an entry for rt2800? Heck _sure_ he should 
+> > > update it, he is the one doing the hard work of trying to bring it to 
+> > > users, trying to clean up a messy driver space, trying to turn crap into 
+> > > gold.
+> > 
+> > So if I want to focus on something different in the kernel, I just send 1 patch,
+> > and a second to claim the maintainership of it even though there is an active
+> > maintainer available?
+> 
+> What about listing yourself as a maintainer for a start?
 
-This is also enabled by this patchset.
+The rt2x00 project is listed as maintainer for everything in the
+drivers/net/wireless/rt2x00 folder.
 
-> Only for page faults, not for anything that takes it for write.
->
-> Anyways the better reader lock is a step in the right direction, but
-> I have my doubts it's a good idea to make write really slow here.
+> > > The thing is, if you dont have the time or interest to listen to and act 
+> > > upon review feedback, be constructive about it and fix (obvious) 
+> > > structural problems in your rt2800 code, you should just step aside and 
+> > > let Bart maintain what he is apparently more capable of maintaining than 
+> > > you are.
+> > >
+> > > What you are doing here is a thinly veiled land-grab: you did a minimal 
+> > > token driver for rt2800 that doesnt work, kept it in your private tree 
+> > > for _1.5 years_, and the moment someone _else_ came along and did 
+> > > something better and more functional in drivers/staging/, you discovered 
+> > > your sudden interest for it and moved the crappy driver upstream at 
+> > > lightning's speed (it is already in net-next AFAICS, despite negative 
+> > > test and review feedback) - ignoring and throwing away all the work that 
+> > > Bart has done.
+> > 
+> > Get your facts straight, the bullshit level in your mail is staggering.
+> > 
+> > You have no fucking clue who wrote the rt2800 driver which is in
+> > drivers/staging/,
+> 
+> Perhaps you should not be a maintainer if you can't behave yourself?
 
-The bigger the system the larger the problems with mmap. This is one key
-scaling issue important for the VM. We can work on that. I have a patch
-here that restricts the per cpu checks to only those cpus on which the
-process has at some times run before.
+Ok let me explain clearer then:
 
+drivers/net/staging/rt28{6,7}0 was developed by Ralink and I acked
+the merged for those drivers after the asurance that it was only merged
+to please the users so developers could focus on the rt2x00 version of
+the driver.
+
+Anyway, I'll do what John requested and go back into my hole since I
+have absolutely no desire to continue this flamewar.
+
+Ivo
