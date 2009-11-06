@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZKFJMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZKFJO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZKFJMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 04:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZKFJMP
+	id S1755318AbZKFJO1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 04:14:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZKFJO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 04:12:15 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:50605 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752037AbZKFJMN (ORCPT
+	Fri, 6 Nov 2009 04:14:27 -0500
+Received: from server1.wserver.cz ([82.113.45.157]:41041 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754249AbZKFJO0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 04:12:13 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Organization: IBM
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 07/11] sysctl: s390 Use the compat_sys_sysctl
-Date: Fri, 6 Nov 2009 10:12:17 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-self-00026-g91d3f9b; KDE/4.3.2; i686; ; )
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Carsten Otte <cotte@de.ibm.com>
-References: <m1tyx8trik.fsf@fess.ebiederm.org> <1257468114-6823-7-git-send-email-ebiederm@xmission.com>
-In-Reply-To: <1257468114-6823-7-git-send-email-ebiederm@xmission.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911061012.17239.borntraeger@de.ibm.com>
+	Fri, 6 Nov 2009 04:14:26 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] NET: cassini, fix lock imbalance
+Date: Fri,  6 Nov 2009 10:14:29 +0100
+Message-Id: <1257498869-4374-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 06 November 2009 01:41:50 schrieb Eric W. Biederman:
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> Now that we have a generic 32bit compatibility implementation
-> there is no need for s390 to implement it's own.
-> 
-> Cc: Carsten Otte <cotte@de.ibm.com>
-> Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Stanse found that one error path in cas_open omits to unlock pm_mutex.
+Fix that.
 
-You should have CCed Martin & Heiko, since this is cleary not KVM.
-I took a look anyway ;-)
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/net/cassini.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Patch looks good.
+diff --git a/drivers/net/cassini.c b/drivers/net/cassini.c
+index 05916aa..f857afe 100644
+--- a/drivers/net/cassini.c
++++ b/drivers/net/cassini.c
+@@ -4342,11 +4342,11 @@ static int cas_open(struct net_device *dev)
+ 		cas_unlock_all_restore(cp, flags);
+ 	}
+ 
++	err = -ENOMEM;
+ 	if (cas_tx_tiny_alloc(cp) < 0)
+-		return -ENOMEM;
++		goto err_unlock;
+ 
+ 	/* alloc rx descriptors */
+-	err = -ENOMEM;
+ 	if (cas_alloc_rxds(cp) < 0)
+ 		goto err_tx_tiny;
+ 
+@@ -4386,6 +4386,7 @@ err_spare:
+ 	cas_free_rxds(cp);
+ err_tx_tiny:
+ 	cas_tx_tiny_free(cp);
++err_unlock:
+ 	mutex_unlock(&cp->pm_mutex);
+ 	return err;
+ }
+-- 
+1.6.4.2
 
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
