@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933319AbZKFWrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbZKFWW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933319AbZKFWrq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:47:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbZKFWro
+	id S932113AbZKFWW1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760085AbZKFWWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:47:44 -0500
-Received: from kroah.org ([198.145.64.141]:56638 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:22:25 -0500
+Received: from kroah.org ([198.145.64.141]:56643 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760047AbZKFWWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:22 -0500
+	id S1760073AbZKFWWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:23 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:39 2009
-Message-Id: <20091106221539.652424942@mini.kroah.org>
+Message-Id: <20091106221539.777616263@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:05 -0800
+Date: Fri, 06 Nov 2009 14:14:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Marcelo Tosatti <mtosatti@redhat.com>, Avi Kivity <avi@redhat.com>
-Subject: [07/99] KVM: use proper hrtimer function to retrieve expiration time
+       Andre Przywara <andre.przywara@amd.com>, Avi Kivity <avi@redhat.com>
+Subject: [08/99] KVM: ignore reads from AMDs C1E enabled MSR
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-use-proper-hrtimer-function-to-retrieve-expiration-time.patch
+Content-Disposition: inline; filename=kvm-ignore-reads-from-amds-c1e-enabled-msr.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,45 +29,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Marcelo Tosatti <mtosatti@redhat.com>
+From: Andre Przywara <andre.przywara@amd.com>
 
-commit ace1546487a0fe4634e3251067f8a32cb2cdc099 upstream.
+commit 1fdbd48c242db996107f72ae4140ffe8163e26a8 upstream.
 
-hrtimer->base can be temporarily NULL due to racing hrtimer_start.
-See switch_hrtimer_base/lock_hrtimer_base.
+If the Linux kernel detects an C1E capable AMD processor (K8 RevF and
+higher), it will access a certain MSR on every attempt to go to halt.
+Explicitly handle this read and return 0 to let KVM run a Linux guest
+with the native AMD host CPU propagated to the guest.
 
-Use hrtimer_get_remaining which is robust against it.
-
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Andre Przywara <andre.przywara@amd.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kvm/i8254.c |    2 +-
- arch/x86/kvm/lapic.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kvm/x86.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -116,7 +116,7 @@ static s64 __kpit_elapsed(struct kvm *kv
- 	 * itself with the initial count and continues counting
- 	 * from there.
- 	 */
--	remaining = hrtimer_expires_remaining(&ps->pit_timer.timer);
-+	remaining = hrtimer_get_remaining(&ps->pit_timer.timer);
- 	elapsed = ps->pit_timer.period - ktime_to_ns(remaining);
- 	elapsed = mod_64(elapsed, ps->pit_timer.period);
- 
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -464,7 +464,7 @@ static u32 apic_get_tmcct(struct kvm_lap
- 	if (apic_get_reg(apic, APIC_TMICT) == 0)
- 		return 0;
- 
--	remaining = hrtimer_expires_remaining(&apic->lapic_timer.timer);
-+	remaining = hrtimer_get_remaining(&apic->lapic_timer.timer);
- 	if (ktime_to_ns(remaining) < 0)
- 		remaining = ktime_set(0, 0);
- 
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -949,6 +949,7 @@ int kvm_get_msr_common(struct kvm_vcpu *
+ 	case MSR_P6_EVNTSEL0:
+ 	case MSR_P6_EVNTSEL1:
+ 	case MSR_K7_EVNTSEL0:
++	case MSR_K8_INT_PENDING_MSG:
+ 		data = 0;
+ 		break;
+ 	case MSR_MTRRcap:
 
 
