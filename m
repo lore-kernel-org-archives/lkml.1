@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbZKFC3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbZKFC36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759246AbZKFC3W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Nov 2009 21:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759205AbZKFC3U
+	id S1759218AbZKFC36 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Nov 2009 21:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759231AbZKFC3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Nov 2009 21:29:20 -0500
+	Thu, 5 Nov 2009 21:29:21 -0500
 Received: from mail-ew0-f207.google.com ([209.85.219.207]:51442 "EHLO
 	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759201AbZKFC3F (ORCPT
+	with ESMTP id S1759204AbZKFC3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Nov 2009 21:29:05 -0500
+	Thu, 5 Nov 2009 21:29:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=PYBKs2CVNoAiRFKm5mQHU8CXMM/a6lizm3hNm+eBAb+yq4sixpG4MCtKu3pwvSTdyn
-         qWmxLI2O4ouhaPJ/wWN7RVmKwJO6CpnrEKurcRS31vNu1yPbNpXyfyqBDRd0Sjtu/9ER
-         ddp2cL9ZYqIwBjkCMr3Y8+aR0bEZ34YZVc8k8=
+        b=Ug6T/V+F0hxJYH/SMRji9hfXCK+2KrNqVyYHDrUihasDtTfSoYWVd+igUwwXDYQeQP
+         J1Va7ABry6As0Vx5L4dhcGD6HSTLs5bX15MUR0k9gmeg3JjbVRUJfrxFSDAWuWWyX0I/
+         hrtXHTUO5ORbZAgThLtwGZrAZJHJW2/pnNPEk=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -29,10 +29,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 3/7] perf/core: Add a callback to perf events
-Date: Fri,  6 Nov 2009 03:28:58 +0100
-Message-Id: <1257474542-6648-4-git-send-email-fweisbec@gmail.com>
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH 4/7] hw-breakpoint: Move asm-generic/hw_breakpoint.h to linux/hw_breakpoint.h
+Date: Fri,  6 Nov 2009 03:28:59 +0100
+Message-Id: <1257474542-6648-5-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1257474542-6648-1-git-send-email-fweisbec@gmail.com>
 References: <1257474542-6648-1-git-send-email-fweisbec@gmail.com>
@@ -40,121 +40,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A simple callback in a perf event can be used for multiple purposes.
-For example it is useful for triggered based events like hardware
-breakpoints that need a callback to dispatch a triggered breakpoint
-event.
-
-v2: Simplify a bit the callback attribution as suggested by Paul
-    Mackerras
+We plan to make the breakpoints parameters generic among architectures.
+For that it's better to move the asm-generic header to a generic linux
+header.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mundt <lethal@linux-sh.org>
 ---
- include/linux/perf_event.h |    7 ++++++-
- kernel/perf_event.c        |   14 ++++++++++----
- 2 files changed, 16 insertions(+), 5 deletions(-)
+ arch/x86/include/asm/hw_breakpoint.h           |    2 +-
+ include/{asm-generic => linux}/hw_breakpoint.h |    9 +++------
+ 2 files changed, 4 insertions(+), 7 deletions(-)
+ rename include/{asm-generic => linux}/hw_breakpoint.h (96%)
 
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index fa151d4..8d54e6d 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -544,6 +544,8 @@ struct perf_pending_entry {
- 	void (*func)(struct perf_pending_entry *);
+diff --git a/arch/x86/include/asm/hw_breakpoint.h b/arch/x86/include/asm/hw_breakpoint.h
+index 1acb4d4..3cfca8e 100644
+--- a/arch/x86/include/asm/hw_breakpoint.h
++++ b/arch/x86/include/asm/hw_breakpoint.h
+@@ -12,7 +12,7 @@ struct arch_hw_breakpoint {
  };
  
-+typedef void (*perf_callback_t)(struct perf_event *, void *);
-+
- /**
-  * struct perf_event - performance event kernel representation:
-  */
-@@ -639,6 +641,8 @@ struct perf_event {
- 	struct event_filter		*filter;
- #endif
+ #include <linux/kdebug.h>
+-#include <asm-generic/hw_breakpoint.h>
++#include <linux/hw_breakpoint.h>
  
-+	perf_callback_t			callback;
-+
- #endif /* CONFIG_PERF_EVENTS */
- };
+ /* Available HW breakpoint length encodings */
+ #define HW_BREAKPOINT_LEN_1		0x40
+diff --git a/include/asm-generic/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+similarity index 96%
+rename from include/asm-generic/hw_breakpoint.h
+rename to include/linux/hw_breakpoint.h
+index 9bf2d12..61ccc8f 100644
+--- a/include/asm-generic/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -1,9 +1,6 @@
+-#ifndef	_ASM_GENERIC_HW_BREAKPOINT_H
+-#define	_ASM_GENERIC_HW_BREAKPOINT_H
++#ifndef _LINUX_HW_BREAKPOINT_H
++#define _LINUX_HW_BREAKPOINT_H
  
-@@ -748,7 +752,8 @@ extern int perf_event_release_kernel(struct perf_event *event);
- extern struct perf_event *
- perf_event_create_kernel_counter(struct perf_event_attr *attr,
- 				int cpu,
--				pid_t pid);
-+				pid_t pid,
-+				perf_callback_t callback);
- extern u64 perf_event_read_value(struct perf_event *event);
+-#ifndef __ARCH_HW_BREAKPOINT_H
+-#error "Please don't include this file directly"
+-#endif
  
- struct perf_sample_data {
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 02d4ff0..5087125 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -4293,6 +4293,7 @@ perf_event_alloc(struct perf_event_attr *attr,
- 		   struct perf_event_context *ctx,
- 		   struct perf_event *group_leader,
- 		   struct perf_event *parent_event,
-+		   perf_callback_t callback,
- 		   gfp_t gfpflags)
- {
- 	const struct pmu *pmu;
-@@ -4335,6 +4336,11 @@ perf_event_alloc(struct perf_event_attr *attr,
+ #ifdef	__KERNEL__
+ #include <linux/list.h>
+@@ -136,4 +133,4 @@ extern void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
+ extern unsigned int hbp_kernel_pos;
  
- 	event->state		= PERF_EVENT_STATE_INACTIVE;
- 
-+	if (!callback && parent_event)
-+		callback = parent_event->callback;
-+	
-+	event->callback	= callback;
-+
- 	if (attr->disabled)
- 		event->state = PERF_EVENT_STATE_OFF;
- 
-@@ -4611,7 +4617,7 @@ SYSCALL_DEFINE5(perf_event_open,
- 	}
- 
- 	event = perf_event_alloc(&attr, cpu, ctx, group_leader,
--				     NULL, GFP_KERNEL);
-+				     NULL, NULL, GFP_KERNEL);
- 	err = PTR_ERR(event);
- 	if (IS_ERR(event))
- 		goto err_put_context;
-@@ -4668,7 +4674,7 @@ err_put_context:
-  */
- struct perf_event *
- perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
--				 pid_t pid)
-+				 pid_t pid, perf_callback_t callback)
- {
- 	struct perf_event *event;
- 	struct perf_event_context *ctx;
-@@ -4683,7 +4689,7 @@ perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
- 		return NULL ;
- 
- 	event = perf_event_alloc(attr, cpu, ctx, NULL,
--				     NULL, GFP_KERNEL);
-+				     NULL, callback, GFP_KERNEL);
- 	err = PTR_ERR(event);
- 	if (IS_ERR(event))
- 		goto err_put_context;
-@@ -4736,7 +4742,7 @@ inherit_event(struct perf_event *parent_event,
- 	child_event = perf_event_alloc(&parent_event->attr,
- 					   parent_event->cpu, child_ctx,
- 					   group_leader, parent_event,
--					   GFP_KERNEL);
-+					   NULL, GFP_KERNEL);
- 	if (IS_ERR(child_event))
- 		return child_event;
- 	get_ctx(child_ctx);
+ #endif	/* __KERNEL__ */
+-#endif	/* _ASM_GENERIC_HW_BREAKPOINT_H */
++#endif	/* _LINUX_HW_BREAKPOINT_H */
 -- 
 1.6.2.3
 
