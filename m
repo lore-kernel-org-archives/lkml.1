@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932687AbZKFWlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932909AbZKFWk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932687AbZKFWlF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 17:41:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbZKFWlA
+	id S932909AbZKFWk3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 17:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932482AbZKFWkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 17:41:00 -0500
-Received: from kroah.org ([198.145.64.141]:56749 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 17:40:25 -0500
+Received: from kroah.org ([198.145.64.141]:56752 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932339AbZKFWWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 17:22:37 -0500
+	id S932357AbZKFWWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 17:22:38 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Nov  6 14:15:41 2009
-Message-Id: <20091106221541.685797967@mini.kroah.org>
+Message-Id: <20091106221541.821263847@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 06 Nov 2009 14:14:21 -0800
+Date: Fri, 06 Nov 2009 14:14:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Mikulas Patocka <mpatocka@redhat.com>,
        Alasdair G Kergon <agk@redhat.com>
-Subject: [23/99] dm exception store: fix failed set_chunk_size error path
+Subject: [24/99] dm snapshot: lock snapshot while supplying status
 References: <20091106221358.309857998@mini.kroah.org>
-Content-Disposition: inline; filename=dm-exception-store-fix-failed-set_chunk_size-error-path.patch
+Content-Disposition: inline; filename=dm-snapshot-lock-snapshot-while-supplying-status.patch
 In-Reply-To: <20091106221850.GA15408@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,28 +32,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Mikulas Patocka <mpatocka@redhat.com>
 
-commit 0e8c4e4e3ebb15756ddc4170a88149a2cd323cfe upstream.
+commit 4c6fff445d7aa753957856278d4d93bcad6e2c14 upstream.
 
-Properly close the device if failing because of an invalid chunk size.
+This patch locks the snapshot when returning status.  It fixes a race
+when it could return an invalid number of free chunks if someone
+was simultaneously modifying it.
 
 Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-exception-store.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/md/dm-snap.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/drivers/md/dm-exception-store.c
-+++ b/drivers/md/dm-exception-store.c
-@@ -251,7 +251,7 @@ int dm_exception_store_create(struct dm_
+--- a/drivers/md/dm-snap.c
++++ b/drivers/md/dm-snap.c
+@@ -1147,6 +1147,8 @@ static int snapshot_status(struct dm_tar
+ 	unsigned sz = 0;
+ 	struct dm_snapshot *snap = ti->private;
  
- 	r = set_chunk_size(tmp_store, argv[2], &ti->error);
- 	if (r)
--		goto bad_cow;
-+		goto bad_ctr;
++	down_write(&snap->lock);
++
+ 	switch (type) {
+ 	case STATUSTYPE_INFO:
+ 		if (!snap->valid)
+@@ -1178,6 +1180,8 @@ static int snapshot_status(struct dm_tar
+ 		break;
+ 	}
  
- 	r = type->ctr(tmp_store, 0, NULL);
- 	if (r) {
++	up_write(&snap->lock);
++
+ 	return 0;
+ }
+ 
 
 
