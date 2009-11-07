@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbZKGW25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZKGWaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773AbZKGW25 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 17:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZKGW24
+	id S1753790AbZKGWaq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 17:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZKGWaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 17:28:56 -0500
-Received: from mga09.intel.com ([134.134.136.24]:4723 "EHLO mga09.intel.com"
+	Sat, 7 Nov 2009 17:30:46 -0500
+Received: from khc.piap.pl ([195.187.100.11]:36275 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753431AbZKGW24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 17:28:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,701,1249282800"; 
-   d="scan'208";a="465291162"
-Message-ID: <4AF5F47C.5000402@linux.intel.com>
-Date: Sat, 07 Nov 2009 16:28:12 -0600
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1753431AbZKGWap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 17:30:45 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: "Martin Schleier" <drahemmaps@gmx.net>
+Cc: technoboy85@gmail.com, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@canonical.com>
+Subject: Re: SubmittingPatches guidelines (was: Re: i686 quirk for AMD Geode)
+References: <20091106154911.29400@gmx.net>
+	<20091106155937.11d95279@lxorguk.ukuu.org.uk>
+	<20091106165731.26800@gmx.net>
+	<20091106182218.43940287@lxorguk.ukuu.org.uk>
+	<20091106200620.179910@gmx.net> <m3r5sbcl07.fsf@intrepid.localdomain>
+	<20091107000559.166710@gmx.net> <m3vdhmvcw5.fsf@intrepid.localdomain>
+	<20091107134318.4690@gmx.net>
+Date: Sat, 07 Nov 2009 23:30:48 +0100
+In-Reply-To: <20091107134318.4690@gmx.net> (Martin Schleier's message of "Sat,
+	07 Nov 2009 14:43:18 +0100")
+Message-ID: <m34op6c6hz.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>
-CC: "Luis R. Rodriguez" <lrodriguez@atheros.com>, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, mcgrof@gmail.com,
-       Matthew Garrett <mjg@redhat.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Aeolus Yang <Aeolus.Yang@atheros.com>,
-       Amod Bodas <Amod.Bodas@atheros.com>,
-       David Quan <David.Quan@atheros.com>,
-       Kishore Jotwani <Kishore.Jotwani@atheros.com>
-Subject: Re: [PATCH] cpu-freq: add troubleshooting section for FSB changes
-References: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com> <200911072152.57596.trenn@suse.de>
-In-Reply-To: <200911072152.57596.trenn@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Renninger wrote:
+"Martin Schleier" <drahemmaps@gmx.net> writes:
 
-[please cut away the part of the mail you're not responding to; your mail was 90% like that]
+> And now my - head hurts - we need a lawyer to answer if this
+> IS or IS NOT a law before we can bang on with this.
 
-> On Friday 06 November 2009 09:01:00 pm Luis R. Rodriguez wrote:
->> With cpu frequency scaling you may run into some system
->> performance issues when the FSB changes speed due to the
->> throughput constraints this brings on the system.
-> Interesting.
-> Could you be a bit more detailed how and what kind of perfomance issues are
-> seen, please.
-> I expect IO based issues like WLAN package throughput or even lost connections :)
-
-the bus doesn't get THAT slow.....
-in addition, most FSB systems have the memory controller in the chipset, next to the PCI
-logic... so that the FSB bus for DMA transactions only carries the snoop traffic, not the whole data.
-
-
+Good luck. I have no more questions.
+-- 
+Krzysztof Halasa
