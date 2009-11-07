@@ -1,184 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751241AbZKGGp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751303AbZKGGqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751241AbZKGGp5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 01:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbZKGGps
+	id S1751303AbZKGGqd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 01:46:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbZKGGp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 01:45:48 -0500
-Received: from mail.gmx.net ([213.165.64.20]:45113 "HELO mail.gmx.net"
+	Sat, 7 Nov 2009 01:45:57 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45228 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751081AbZKGGpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751084AbZKGGpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 7 Nov 2009 01:45:46 -0500
 X-Authenticated: #154622
-X-Provags-ID: V01U2FsdGVkX1/LTxIcleLLK9YhgjPvA26sjFHX5IIVsuOAHOkEMd
-	ryCuj7FC+KrrhA
+X-Provags-ID: V01U2FsdGVkX19J2Hw4Sp9JrMOOZW1d3rFTDT4oFZPHhCWny7dUOT
+	MbROlsznmkQSgV
 From: Bernhard Kaindl <bernhard.kaindl@gmx.net>
 To: linux-kernel@vger.kernel.org
 Cc: Bernhard Kaindl <bernhard.kaindl@gmx.net>, linux-kbuild@vger.kernel.org
-Subject: [PATCH 1/4] Support loading and saving custom remarks for config symbols
-Date: Sat,  7 Nov 2009 07:45:37 +0100
-Message-Id: <b106dec1237ab723ae6a2404d42601bf20704bf3.1256767265.git.aragorn@Anduril.ringwar.org>
+Subject: [PATCH 2/4] menuconfig: allow editing of remarks for config symbols
+Date: Sat,  7 Nov 2009 07:45:38 +0100
+Message-Id: <617c40ae9e206b4f246998fe075644c752bc0bc3.1256767265.git.aragorn@Anduril.ringwar.org>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <cover.1256767265.git.aragorn@Anduril.ringwar.org>
+In-Reply-To: <b106dec1237ab723ae6a2404d42601bf20704bf3.1256767265.git.aragorn@Anduril.ringwar.org>
 References: <cover.1256767265.git.aragorn@Anduril.ringwar.org>
+ <b106dec1237ab723ae6a2404d42601bf20704bf3.1256767265.git.aragorn@Anduril.ringwar.org>
 In-Reply-To: <cover.1256767265.git.aragorn@Anduril.ringwar.org>
 References: <cover.1256767265.git.aragorn@Anduril.ringwar.org>
 X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the infrastructure to load and save remarks for config symbols
-to the kconfig library functions conf_read() and conf_write()
+Extend menuconfig to allow editing of remarks for config symbols:
 
-This
- - adds sym->remark
- - extends conf_read() to call conf_read_remarks()
- - adds conf_read_remarks() which:
-   -> reads remarks from a file and
-   -> stores them in sym->remark
- - extends conf_write() to save each sym->remark so that
-   conf_read_remarks() will be able to reread them
+Add a new key to lxdialog (currently '<') which, when pressed,
+is forwarded to menuconfig, which handles it similar to the
+search key ('/') which can be used at any time, but passes the
+currently selected menu entry to conf_remark()
 
-To not keep any additional file when no remarks exist, and to stay completely
-out of the way when this feature is not used, conf_write() does not keep
-empty remarks files, so anyone not using this code will see no changes.
+conf_remark() is based on conf_string(), which allows to edit
+a string, but before, it checks if the passed menu entry is a
+config symbol, and if not it displays a short notice saying that
+it currently does not support editing comments for a pure menu
+entries without attached config symbol.
 
-The filename of the remarks file is derived from the used config file
-name and path by appending "-remarks" to the config file name. So the
-default remarks file would be ".config-remarks".
-
-This code supports one-line remarks without newlines. The changes to
-the tools (menuconfig, xconfig, config) also only support one-line
-remarks as they use the existing UI functions for editing strings.
+It then allows to edit a string, which is initialized from the
+sym->remark entry and if the user changed the string, it updates
+sym->remark and sets things up so that menuconfig asks to save
+the config before exiting, so the changed remark is saved in
+that go.
 
 Signed-off-by: Bernhard Kaindl <bernhard.kaindl@gmx.net>
 ---
- scripts/kconfig/confdata.c |   45 +++++++++++++++++++++++++++++++++++++++++--
- scripts/kconfig/expr.h     |    1 +
- 2 files changed, 43 insertions(+), 3 deletions(-)
+ scripts/kconfig/lxdialog/menubox.c |    3 ++
+ scripts/kconfig/mconf.c            |   51 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+), 0 deletions(-)
 
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 797a741..eee2b60 100644
---- a/scripts/kconfig/confdata.c
-+++ b/scripts/kconfig/confdata.c
-@@ -152,6 +152,30 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
- 	return 0;
+diff --git a/scripts/kconfig/lxdialog/menubox.c b/scripts/kconfig/lxdialog/menubox.c
+index fa9d633..6b6bc48 100644
+--- a/scripts/kconfig/lxdialog/menubox.c
++++ b/scripts/kconfig/lxdialog/menubox.c
+@@ -383,6 +383,7 @@ do_resize:
+ 		case 'n':
+ 		case 'm':
+ 		case '/':
++		case '<':
+ 			/* save scroll info */
+ 			*s_scroll = scroll;
+ 			delwin(menu);
+@@ -402,6 +403,8 @@ do_resize:
+ 				return 6;
+ 			case '/':
+ 				return 7;
++			case '<':
++				return 8;
+ 			}
+ 			return 0;
+ 		case 'h':
+diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
+index d829535..50a9b10 100644
+--- a/scripts/kconfig/mconf.c
++++ b/scripts/kconfig/mconf.c
+@@ -276,6 +276,7 @@ static int single_menu_mode;
+ static void conf(struct menu *menu);
+ static void conf_choice(struct menu *menu);
+ static void conf_string(struct menu *menu);
++static void conf_remark(struct menu *menu);
+ static void conf_load(void);
+ static void conf_save(void);
+ static void show_textbox(const char *title, const char *text, int r, int c);
+@@ -619,6 +620,9 @@ static void conf(struct menu *menu)
+ 		case 7:
+ 			search_conf();
+ 			break;
++		case 8:
++			conf_remark(submenu);
++			break;
+ 		}
+ 	}
+ }
+@@ -743,6 +747,53 @@ static void conf_string(struct menu *menu)
+ 	}
  }
  
 +/**
-+ * Read remarks from -remarks file:
++ * Based on conf_string(), this edits the remark for a config symbol
 + */
-+void conf_read_remarks(const char *remfile)
++static void conf_remark(struct menu *menu)
 +{
-+	FILE *in;
-+	char line[1024], *p, *p2;
-+	struct symbol *sym;
++	const char *prompt = menu_get_prompt(menu);
 +
-+	sprintf(line, "%s-remarks", remfile ? remfile : conf_get_configname());
-+	if (!(in = zconf_fopen(line)))
++	if (!prompt || !menu->sym) {
++		show_textbox(NULL,
++			N_("Editing comments for menus without a config symbol\n"
++				"is currently not supported."), 6, 63);
 +		return;
-+	while (fgets(line, sizeof(line), in)) {
-+		if (!(p = strchr(line, ' '))) /* ' ' is our delimiter        */
-+			continue;	      /* skip lines without one      */
-+		*p++ = '\0';		      /* put a \0 there, advance     */
-+		if ((p2 = strchr(p, '\n')))   /* look for \n after remark    */
-+			*p2 = '\0';	      /* remove it, no \n in remarks */
-+		if ((sym = sym_find(line)))   /* find the matching sym       */
-+			sym->remark = strdup(p); /* and register the remark  */
 +	}
-+	fclose(in);
++
++	while (1) {
++		int res;
++		dialog_clear();
++		res = dialog_inputbox(prompt ? _(prompt) : _("Main Menu"),
++				      _("Edit the remark below"), 10, 75,
++				      menu->sym->remark);
++		switch (res) {
++		case 0:
++			if (!dialog_input_result[0] && !menu->sym->remark)
++				return;
++			if (menu->sym->remark) {
++				if (!strcmp(menu->sym->remark, dialog_input_result))
++					return;
++				free(menu->sym->remark);
++			}
++			if (dialog_input_result[0]) {
++				menu->sym->remark = strdup(dialog_input_result);
++			} else {
++				menu->sym->remark = NULL;
++			}
++			/* Write new .config{,-remarks} on exit: */
++			sym_add_change_count(1);
++			sym_clear_all_valid();
++			return;
++		case 1:
++			show_help(menu);
++			break;
++		case KEY_ESC:
++			return;
++		}
++	}
 +}
 +
- int conf_read_simple(const char *name, int def)
+ static void conf_load(void)
  {
- 	FILE *in = NULL;
-@@ -393,16 +417,18 @@ int conf_read(const char *name)
  
- 	sym_add_change_count(conf_warnings || conf_unsaved);
- 
-+	conf_read_remarks(name);
- 	return 0;
- }
- 
- int conf_write(const char *name)
- {
--	FILE *out;
-+	FILE *out, *rem;
-+	struct stat sb;
- 	struct symbol *sym;
- 	struct menu *menu;
- 	const char *basename;
--	char dirname[128], tmpname[128], newname[128];
-+	char dirname[128], tmpname[128], newname[128], tmprem[128], newrem[128];
- 	int type, l;
- 	const char *str;
- 	time_t now;
-@@ -432,15 +458,19 @@ int conf_write(const char *name)
- 		basename = conf_get_configname();
- 
- 	sprintf(newname, "%s%s", dirname, basename);
-+	sprintf(newrem, "%s%s-remarks", dirname, basename);
- 	env = getenv("KCONFIG_OVERWRITECONFIG");
- 	if (!env || !*env) {
- 		sprintf(tmpname, "%s.tmpconfig.%d", dirname, (int)getpid());
- 		out = fopen(tmpname, "w");
-+		sprintf(tmprem, "%s.tmpconfig-remarks.%d", dirname, (int)getpid());
-+		rem = fopen(tmprem, "w");
- 	} else {
- 		*tmpname = 0;
- 		out = fopen(newname, "w");
-+		rem = fopen(newrem, "w");
- 	}
--	if (!out)
-+	if (!out || !rem)
- 		return 1;
- 
- 	sym = sym_lookup("KERNELVERSION", 0);
-@@ -528,6 +558,8 @@ int conf_write(const char *name)
- 		}
- 
- 	next:
-+		if (sym && sym->remark)
-+			fprintf(rem, "%s %s\n", sym->name, sym->remark);
- 		if (menu->list) {
- 			menu = menu->list;
- 			continue;
-@@ -542,6 +574,7 @@ int conf_write(const char *name)
- 		}
- 	}
- 	fclose(out);
-+	fclose(rem);
- 
- 	if (*tmpname) {
- 		strcat(dirname, basename);
-@@ -549,7 +582,13 @@ int conf_write(const char *name)
- 		rename(newname, dirname);
- 		if (rename(tmpname, newname))
- 			return 1;
-+		sprintf(dirname, "%s.old", newrem);
-+		rename(newrem, dirname);
-+		if (rename(tmprem, newrem)) 
-+			conf_warning("moving %s to %s failed!", tmprem, newrem);
- 	}
-+	if (!stat(newrem, &sb) && !sb.st_size)
-+		unlink(newrem);
- 
- 	printf(_("#\n"
- 		 "# configuration written to %s\n"
-diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
-index 6408fef..217e8cb 100644
---- a/scripts/kconfig/expr.h
-+++ b/scripts/kconfig/expr.h
-@@ -77,6 +77,7 @@ enum {
- struct symbol {
- 	struct symbol *next;
- 	char *name;
-+	char *remark;
- 	enum symbol_type type;
- 	struct symbol_value curr;
- 	struct symbol_value def[S_DEF_COUNT];
 -- 
 1.6.0.4
 
