@@ -1,50 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbZKGSmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZKGSu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752692AbZKGSmI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 13:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZKGSmG
+	id S1752722AbZKGSu1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 13:50:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZKGSu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 13:42:06 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41884 "EHLO ogre.sisk.pl"
+	Sat, 7 Nov 2009 13:50:26 -0500
+Received: from mail.perches.com ([173.55.12.10]:1248 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751348AbZKGSmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 13:42:05 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [00/99] 2.6.31.6 stable review
-Date: Sat, 7 Nov 2009 19:43:21 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.31.5-tst; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-References: <20091106221850.GA15408@kroah.com>
-In-Reply-To: <20091106221850.GA15408@kroah.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911071943.21503.rjw@sisk.pl>
+	id S1750887AbZKGSu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 13:50:26 -0500
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] Correct MAINTAINERS git entries
+Date: Sat,  7 Nov 2009 10:50:28 -0800
+Message-Id: <cover.1257618926.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.5.2.153.g6e31f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 November 2009, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.31.6 release.
-> There are 99 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
-> 
-> Responses should be made by November 8, 2009, 20:00:00 UTC.  Anything
-> received after that time might be too late.
-> 
-> The whole patch series can be found in one patch at:
-> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.31.6-rc1.gz
-> and the diffstat can be found below.
+Just a few corrections to the T: git entries
 
-Please also include commit 9905d1b411946fb3fb228e8c6529fd94afda8a92
-(PM / yenta: Split resume into early and late parts (rev. 4)), which fixes a
-regression present in the previous -stable kernel.
+Joe Perches (3):
+  MAINTAINERS: Correct 9P FILE SYSTEM git entry
+  MAINTAINERS: Correct NETFILTER git entry format
+  MAINTAINERS: Correct SECURITY SUBSYSTEM git entry
 
-Thanks,
-Rafael
+ MAINTAINERS |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
