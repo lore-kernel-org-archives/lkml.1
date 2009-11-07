@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbZKGWq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZKGWwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558AbZKGWq7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 17:46:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZKGWq5
+	id S1753671AbZKGWwS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 17:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZKGWwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 17:46:57 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54002 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753164AbZKGWq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 17:46:57 -0500
-From: Thomas Renninger <trenn@suse.de>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH] cpu-freq: add troubleshooting section for FSB changes
-Date: Sat, 7 Nov 2009 23:47:04 +0100
-User-Agent: KMail/1.9.10
-Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, mcgrof@gmail.com,
-       Matthew Garrett <mjg@redhat.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Aeolus Yang <Aeolus.Yang@atheros.com>,
-       Amod Bodas <Amod.Bodas@atheros.com>,
-       David Quan <David.Quan@atheros.com>,
-       Kishore Jotwani <Kishore.Jotwani@atheros.com>
-References: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com> <200911072152.57596.trenn@suse.de> <4AF5F47C.5000402@linux.intel.com>
-In-Reply-To: <4AF5F47C.5000402@linux.intel.com>
+	Sat, 7 Nov 2009 17:52:16 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48746 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbZKGWwQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 17:52:16 -0500
+To: john stultz <johnstul@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
+       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] Allow threads to rename siblings via /proc/pid/tasks/tid/comm
+From: Andi Kleen <andi@firstfloor.org>
+References: <1256347303.5059.26.camel@localhost.localdomain>
+	<1257557918.3298.21.camel@localhost.localdomain>
+Date: Sat, 07 Nov 2009 23:52:20 +0100
+In-Reply-To: <1257557918.3298.21.camel@localhost.localdomain> (john stultz's message of "Fri, 06 Nov 2009 17:38:38 -0800")
+Message-ID: <87aayy6j8b.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911072347.05786.trenn@suse.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 November 2009 11:28:12 pm Arjan van de Ven wrote:
-> Thomas Renninger wrote:
->
-> > On Friday 06 November 2009 09:01:00 pm Luis R. Rodriguez wrote:
-> >> With cpu frequency scaling you may run into some system
-> >> performance issues when the FSB changes speed due to the
-> >> throughput constraints this brings on the system.
-> >
-> > Interesting.
-> > Could you be a bit more detailed how and what kind of perfomance issues
-> > are seen, please.
-> > I expect IO based issues like WLAN package throughput or even lost
-> > connections :)
->
-> the bus doesn't get THAT slow.....
-I expected wireless problems because 5 people with @atheros.com are in CC.
-There is zero information about the problem itself and possibly affected 
-devices/machines.
-> in addition, most FSB systems have the memory controller in the chipset,
-> next to the PCI logic... so that the FSB bus for DMA transactions only
-> carries the snoop traffic, not the whole data.
-So when should people look at this?
+john stultz <johnstul@us.ibm.com> writes:
+> -	strlcpy(tsk->comm, buf, sizeof(tsk->comm));
+> +
+> +	/*
+> +	 * Threads may access current->comm without holding
+> +	 * the task lock, so write the string carefully
+> +	 * to avoid non-terminating reads. Readers without a lock
+> +	 * will get the oldname, the newname or an empty string.
+> +	 */
+> +	tsk->comm[0] = 0;
+> +	wmb();
+> +	strlcpy(tsk->comm+1, buf+1, sizeof(tsk->comm)-1);
+> +	wmb();
+> +	tsk->comm[0] = buf[0];
 
-    Thomas
+Is this really safe? 
+
+reader                    writer
+
+
+read comm[0]
+                         set comm[0] to 0
+                         overwrites comm[1]
+read comm[1]
+read comm[2]
+                         writes comm[2] to 0 
+read comm[3]
+
+...
+goes beyond the end
+                  
+Better way probably is to replace tsk->comm with a pointer
+and exchange that using xchg. Drawback: 4-8 bytes more per task.
+
+Or perhaps make comm one byte longer and make sure the last
+byte is always 0, but the drawback is that a reader can
+read random (but at least safe) junk then.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
