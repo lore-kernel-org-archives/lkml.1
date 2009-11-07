@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbZKGAoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZKGAUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbZKGAoK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 19:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbZKGAoK
+	id S1753018AbZKGAUo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 19:20:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZKGAUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 19:44:10 -0500
-Received: from mga09.intel.com ([134.134.136.24]:1996 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755190AbZKGAoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 19:44:09 -0500
-X-ExtLoop1: 1
-Date: Sat, 7 Nov 2009 08:17:36 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86, therm: Only read the initial value of thermal LVT
-	entry on BSP
-Message-ID: <20091107001736.GA30790@ywang-moblin2.bj.intel.com>
+	Fri, 6 Nov 2009 19:20:44 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:24873 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751538AbZKGAUn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 19:20:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=caNzRTHyzDyTloX3WX+P4Wid7CYXaaPLAmj6aSDbL2VKXGKrs4q15VGza2BmKMTV0+
+         cOtK89WYim5oCX/rkvHWm1b1x0a0h2GfNCML6HDssMMR7QKprJeQCucqw2rHWeJ/69QD
+         EzM/gZU2S9qPVgLDbAaeuAvVIaPlxv9vOgzF0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <a4c8a6d00911061547x3d502de5i8a459385e1a5a9ff@mail.gmail.com>
+References: <1256861066-21954-1-git-send-email-tfransosi@gmail.com>
+	 <20091106224728.GA32205@kroah.com>
+	 <a4c8a6d00911061547x3d502de5i8a459385e1a5a9ff@mail.gmail.com>
+Date: Fri, 6 Nov 2009 22:20:47 -0200
+Message-ID: <a4c8a6d00911061620w6b9a976er2a116c225c848468@mail.gmail.com>
+Subject: Re: [PATCH] staging/otus: trivial, fix sparse warnig.
+From: Thiago Farina <tfransosi@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
+       Luis.Rodriguez@atheros.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only read the initial value of thermal LVT entry on BSP. The initial
-value of thermal LVT entries on all APs always reads 0x10000 because
-APs are woken up by BSP issuing INIT-SIPI-SIPI sequence to them and
-LVT registers are reset to 0s except for mask bits which are set to
-1s when APs receive INIT IPI.
-
-Also restore the value that BIOS has programmed on AP based on BSP's
-info we saved since BIOS is always setting the same value for all
-threads/cores.
-
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Cc: stable <stable@kernel.org>
----
- arch/x86/kernel/cpu/mcheck/therm_throt.c |   20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index b3a1dba..1fd42db 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -259,6 +259,7 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	unsigned int cpu = smp_processor_id();
- 	int tm2 = 0;
- 	u32 l, h;
-+	static u32 lvtthmr;
- 
- 	/* Thermal monitoring depends on ACPI and clock modulation*/
- 	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
-@@ -270,7 +271,24 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	 * since it might be delivered via SMI already:
- 	 */
- 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--	h = apic_read(APIC_LVTTHMR);
-+
-+	/*
-+	 * Only read the initial value of thermal LVT entry on BSP. The
-+	 * initial value of thermal LVT entries on all APs always reads
-+	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
-+	 * sequence to them and LVT registers are reset to 0s except for
-+	 * the mask bits which are set to 1s when APs receive INIT IPI.
-+	 * Also restore the value that BIOS has programmed on AP based on
-+	 * BSP's info we saved since BIOS is always setting the same value
-+	 * for all threads/cores
-+	 */
-+	if (cpu == 0)
-+		lvtthmr = apic_read(APIC_LVTTHMR);
-+	else
-+		apic_write(APIC_LVTTHMR, lvtthmr);
-+
-+	h = lvtthmr;
-+
- 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
- 		printk(KERN_DEBUG
- 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
+On Fri, Nov 6, 2009 at 9:47 PM, Thiago Farina <tfransosi@gmail.com> wrote:
+> Hi Greg,
+>
+> On Fri, Nov 6, 2009 at 8:47 PM, Greg KH <greg@kroah.com> wrote:
+>> The tabs somehow got converted to spaces in your patches, so they can't
+>> be applied :(
+>
+> I can't see spaces instead of tabs in this patch, may be you are
+> talking about other patch?
+Sorry Greg, I think my answer was rude. Please could you tell me if
+this patch has spaces instead of tabs, or is another patch that I
+sent? If so, just point me, then I will make all the corrections.
