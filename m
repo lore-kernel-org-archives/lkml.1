@@ -1,135 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbZKGQiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZKGQsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752431AbZKGQiE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 11:38:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbZKGQiC
+	id S1752542AbZKGQsk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 11:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbZKGQsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 11:38:02 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60217 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752282AbZKGQiA convert rfc822-to-8bit (ORCPT
+	Sat, 7 Nov 2009 11:48:38 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60840 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbZKGQsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 11:38:00 -0500
-Date: Sat, 7 Nov 2009 14:37:57 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: [GIT PATCHES for 2.6.32] V4L/DVB fixes
-Message-ID: <20091107143757.5a9453dc@pedra.chehab.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 7 Nov 2009 11:48:38 -0500
+Date: Sat, 7 Nov 2009 17:48:30 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: InKi Dae <daeinki@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Kyungmin Park <kmpark@infradead.org>
+Subject: Re: [patch] added brightness feature to lcd class.
+Message-ID: <20091107164830.GA1586@ucw.cz>
+References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com> <20091105192725.GE1392@ucw.cz> <90b950fc0911070443s57d2ec5ehcb5c9cf9edcf8d8c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <90b950fc0911070443s57d2ec5ehcb5c9cf9edcf8d8c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sat 2009-11-07 21:43:50, InKi Dae wrote:
+> Thank you for your comments.
+> 
+> using backlight is good way in case of TFT-LCD Panel.
+> because TFT-LCD Panel needs backlight device to light up.
+> 
+> but AMOLED LCD Panel doesn't need backlight device because lighting up itself.
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+I know. So what?
 
-For a couple of fixes:
+User wants to set brightness. Why should userspace know/care if it is
+TFT or AMOLED?
 
-   - v4l-core: fix use-after-free Oops;
-   - Build system: fix build dependency for dib0700 and pt1;
-   - Some fixes for panic and oops conditions, on dib0700 and em28xx;
-   - An old, hard to notice frame order error at bttv driver (noticed only with certain
-     de-interlacing algorithms);
-   - Several fixes on drivers (tda18271, gspca, sh_mobile_ceu_camera, pxa_camera, bttv,
-	smsusb, s2255, firedtv, pxa-camera, ce6230, uvcvideo and saa7134).
+I have this script:
 
-Cheers,
-Mauro.
+#!/bin/bash
+echo $1 > /sys/class/backlight/*/brightness 
 
----
+why should I have to rewrite it just because you decided amoled is
+special?
 
- drivers/media/common/tuners/tda18271-fe.c      |    8 ++--
- drivers/media/dvb/dvb-usb/Kconfig              |    2 +-
- drivers/media/dvb/dvb-usb/ce6230.c             |    2 +-
- drivers/media/dvb/dvb-usb/dib0700_devices.c    |   15 ++++-----
- drivers/media/dvb/firewire/firedtv-avc.c       |   38 ++++++++++++-----------
- drivers/media/dvb/firewire/firedtv-fe.c        |    8 +----
- drivers/media/dvb/frontends/dib0070.h          |    7 ++++-
- drivers/media/dvb/frontends/dib7000p.c         |    5 +++
- drivers/media/dvb/pt1/pt1.c                    |    1 +
- drivers/media/dvb/siano/smsusb.c               |    6 ++++
- drivers/media/video/bt8xx/bttv-driver.c        |   33 +++++++++++++++++---
- drivers/media/video/em28xx/em28xx-audio.c      |    5 +++
- drivers/media/video/gspca/m5602/m5602_s5k4aa.c |   20 ++++++++++++
- drivers/media/video/gspca/mr97310a.c           |    2 +-
- drivers/media/video/gspca/ov519.c              |    2 +-
- drivers/media/video/gspca/stv06xx/stv06xx.c    |    3 +-
- drivers/media/video/pxa_camera.c               |    5 ++-
- drivers/media/video/s2255drv.c                 |    5 ---
- drivers/media/video/saa7134/saa7134-cards.c    |    1 +
- drivers/media/video/saa7134/saa7134-ts.c       |    6 ++-
- drivers/media/video/saa7134/saa7134.h          |    1 +
- drivers/media/video/saa7164/saa7164-cmd.c      |    2 +-
- drivers/media/video/sh_mobile_ceu_camera.c     |    4 +-
- drivers/media/video/soc_camera.c               |   16 +++++----
- drivers/media/video/uvc/uvc_ctrl.c             |    2 +-
- drivers/media/video/uvc/uvc_video.c            |    3 +-
- 26 files changed, 133 insertions(+), 69 deletions(-)
+Kernel is expected to provide hw abstraction...
 
-Devin Heitmueller (1):
-      V4L/DVB (13190): em28xx: fix panic that can occur when starting audio streaming
+									Pavel
 
-Erik Andrén (3):
-      V4L/DVB (13255): gspca - m5602-s5k4aa: Add vflip quirk for the Bruneinit laptop
-      V4L/DVB (13256): gspca - m5602-s5k4aa: Add another MSI GX700 vflip quirk
-      V4L/DVB (13257): gspca - m5602-s5k4aa: Add vflip for Fujitsu Amilo Xi 2528
-
-Guennadi Liakhovetski (3):
-      V4L/DVB (13129): sh_mobile_ceu_camera: fix cropping for scaling clients
-      V4L/DVB (13131): pxa_camera: fix camera pixel format configuration
-      V4L/DVB (13132): fix use-after-free Oops, resulting from a driver-core API change
-
-HIRANO Takahito (1):
-      V4L/DVB (13167): pt1: Fix a compile error on arm
-
-Hans de Goede (1):
-      V4L/DVB (13122): gscpa - stv06xx + ov518: dont discard every other frame
-
-Henrik Kurelid (1):
-      V4L/DVB (13237): firedtv: length field corrupt in ca2host if length>127
-
-Jean Delvare (1):
-      V4L/DVB (13287): ce6230 - saa7164-cmd: Fix wrong sizeof
-
-Jonathan Cameron (1):
-      V4L/DVB (13286): pxa-camera: Fix missing sched.h
-
-Laurent Pinchart (2):
-      V4L/DVB (13309): uvcvideo: Ignore the FIX_BANDWIDTH for compressed video
-      V4L/DVB (13311): uvcvideo: Fix compilation warning with 2.6.32 due to type mismatch with abs()
-
-Martin Samek (1):
-      V4L/DVB (13079): dib0700: fixed xc2028 firmware loading kernel oops
-
-Michael Krufky (5):
-      V4L/DVB (13048): dib0070: fix build dependency when driver is disabled
-      V4L/DVB (13107): tda18271: fix overflow in FM radio frequency calculation
-      V4L/DVB (13202): smsusb: add autodetection support for three additional Hauppauge USB IDs
-      V4L/DVB (13313): saa7134: add support for FORCE_TS_VALID mode for mpeg ts input
-      V4L/DVB (13314): saa7134: set ts_force_val for the Hauppauge WinTV HVR-1150
-
-Mike Isely (3):
-      V4L/DVB (13169): bttv: Fix potential out-of-order field processing
-      V4L/DVB (13170): bttv: Fix reversed polarity error when switching video standard
-      V4L/DVB (13230): s2255drv: Don't conditionalize video buffer completion on waiting processes
-
-Patrick Boettcher (1):
-      V4L/DVB (13050): DIB0700: fix-up USB device ID for Terratec/Leadtek
-
-Seth Barry (1):
-      V4L/DVB (13109): tda18271: fix signedness issue in tda18271_rf_tracking_filters_init
-
-Stefan Richter (1):
-      V4L/DVB (13240): firedtv: fix regression: tuning fails due to bogus error return
-
-Theodore Kilgore (1):
-      V4L/DVB (13264): gspca_mr97310a: Change vstart for CIF sensor type 1 cams
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
+									
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
