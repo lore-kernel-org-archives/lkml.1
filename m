@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751148AbZKGSbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbZKGSmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751148AbZKGSbi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 13:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbZKGSbg
+	id S1752692AbZKGSmI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 13:42:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZKGSmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 13:31:36 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:36700 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZKGSbf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 13:31:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=d+Nl9rMEm035OlSWxy8mDm6Qv9nwanuAho5plFXq8wC6UjqLj9ClgPt9zZk8nr1RlG
-         qoqMfolmBQEsacidc2Y+rOjKFNkh5zsJX+eqo384NI7cxZ1GLCkTg+6BI4qPudR+Gocl
-         mHi65+o01IdSXMX/jho+HOMddcHbEge4Dqfqg=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: Luis Correia <luis.f.correia@gmail.com>
-Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
-Date: Sat, 7 Nov 2009 19:31:36 +0100
-User-Agent: KMail/1.9.10
-Cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>
-References: <200911031951.05235.bzolnier@gmail.com> <20091107173028.GA1932@ucw.cz> <efe7343f0911071012u73317883wc60f5c188bc853e8@mail.gmail.com>
-In-Reply-To: <efe7343f0911071012u73317883wc60f5c188bc853e8@mail.gmail.com>
+	Sat, 7 Nov 2009 13:42:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41884 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751348AbZKGSmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 13:42:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [00/99] 2.6.31.6 stable review
+Date: Sat, 7 Nov 2009 19:43:21 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.31.5-tst; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+References: <20091106221850.GA15408@kroah.com>
+In-Reply-To: <20091106221850.GA15408@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
+Content-Type: Text/Plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200911071931.37165.IvDoorn@gmail.com>
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911071943.21503.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 November 2009, Luis Correia wrote:
-> Pavel,
+On Friday 06 November 2009, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.31.6 release.
+> There are 99 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
 > 
-> On Sat, Nov 7, 2009 at 17:30, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >> > > So if I want to focus on something different in the kernel, I just send 1 patch,
-> >> > > and a second to claim the maintainership of it even though there is an active
-> >> > > maintainer available?
-> >> >
-> >> > What about listing yourself as a maintainer for a start?
-> >>
-> >> The rt2x00 project is listed as maintainer for everything in the
-> >> drivers/net/wireless/rt2x00 folder.
-> >
-> > Yes, but that tells very little. I don't know who the 'rt2x00 project'
-> > is. Perhaps its you? Perhaps its Bart? Maybe its my cat? Please just
-> > list real names of maintainers...                 Pavel
+> Responses should be made by November 8, 2009, 20:00:00 UTC.  Anything
+> received after that time might be too late.
 > 
-> the answer is (and always was available) here:
-> 
-> http://rt2x00.serialmonkey.com/wiki/index.php/Developers
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.31.6-rc1.gz
+> and the diffstat can be found below.
 
-True, but I agree with Pavel that the MAINTAINERS file should
-be instantly clear about who the maintainer is.
+Please also include commit 9905d1b411946fb3fb228e8c6529fd94afda8a92
+(PM / yenta: Split resume into early and late parts (rev. 4)), which fixes a
+regression present in the previous -stable kernel.
 
-I've already send a patch to add update the entry.
-
-Ivo
+Thanks,
+Rafael
