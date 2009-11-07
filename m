@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZKGBpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZKGCHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbZKGBpD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 20:45:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZKGBpB
+	id S1754887AbZKGCHG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 21:07:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbZKGCHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 20:45:01 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:32890 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753476AbZKGBpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 20:45:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=HdjHIv4nU6kOrqbnPUzhiLN5ykfxBJ+XCjpdwanvWDCFlCO1DnidVKxFSUOGOllgMI
-         gFtg+kqrk0UHuDJOKRNwrqaYoFocriMDCR+92vziOrpeEbsGx9XrZDNgwPDEsTllx308
-         UVzgIx2PxuolEuu69vfjDXOOQC1fpLGzw3paE=
+	Fri, 6 Nov 2009 21:07:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37683 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753477AbZKGCHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 21:07:04 -0500
+Message-ID: <4AF4D640.7030101@kernel.org>
+Date: Sat, 07 Nov 2009 11:06:56 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <a4c8a6d00911061723v6017ad7bqf96ba7c905922a45@mail.gmail.com>
-References: <1256861066-21954-1-git-send-email-tfransosi@gmail.com>
-	 <20091106224728.GA32205@kroah.com>
-	 <a4c8a6d00911061547x3d502de5i8a459385e1a5a9ff@mail.gmail.com>
-	 <20091107000749.GA26070@kroah.com>
-	 <a4c8a6d00911061723v6017ad7bqf96ba7c905922a45@mail.gmail.com>
-Date: Fri, 6 Nov 2009 23:45:05 -0200
-Message-ID: <a4c8a6d00911061745s4508d997v684683a1dbad821d@mail.gmail.com>
-Subject: Re: [PATCH v2] staging/otus: trivial, fix sparse warnig.
-From: Thiago Farina <tfransosi@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
-       Luis.Rodriguez@atheros.com
-Content-Type: text/plain; charset=UTF-8
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 09/13] sysfs: Implement sysfs_getattr & sysfs_permission
+References: <m13a4vbz8r.fsf@fess.ebiederm.org> <1257249429-12384-9-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <1257249429-12384-9-git-send-email-ebiederm@xmission.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*apdbg.c: use NULL pointer instead of 0 integer.
+Eric W. Biederman wrote:
+> diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+> index 1137418..c5eff49 100644
+> --- a/fs/sysfs/symlink.c
+> +++ b/fs/sysfs/symlink.c
+> @@ -214,6 +214,9 @@ const struct inode_operations sysfs_symlink_inode_operations = {
+>  	.readlink	= generic_readlink,
+>  	.follow_link	= sysfs_follow_link,
+>  	.put_link	= sysfs_put_link,
+> +	.setattr	= sysfs_setattr,
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- drivers/staging/otus/apdbg.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+It would be nice either to separate addition of setattr to symlinks
+into a separate patch or note it in the description.
 
-diff --git a/drivers/staging/otus/apdbg.c b/drivers/staging/otus/apdbg.c
-index d3e2f62..70a40b8 100644
---- a/drivers/staging/otus/apdbg.c
-+++ b/drivers/staging/otus/apdbg.c
-@@ -109,7 +109,7 @@ int set_ioctl(int sock, struct ifreq *req)
+Thanks.
 
- int read_reg(int sock, struct ifreq *req)
- {
--    struct zdap_ioctl *zdreq = 0;
-+    struct zdap_ioctl *zdreq = NULL;
-
-     if (!set_ioctl(sock, req))
-         return -1;
-@@ -123,7 +123,7 @@ int read_reg(int sock, struct ifreq *req)
-
- int read_mem(int sock, struct ifreq *req)
- {
--    struct zdap_ioctl *zdreq = 0;
-+    struct zdap_ioctl *zdreq = NULL;
-     int i;
-
-     if (!set_ioctl(sock, req))
+-- 
+tejun
