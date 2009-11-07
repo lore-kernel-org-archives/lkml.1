@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbZKGCUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbZKGCVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759358AbZKGCUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 21:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbZKGCUa
+	id S1757834AbZKGCVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 21:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZKGCVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 21:20:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42953 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754378AbZKGCU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 21:20:29 -0500
-Message-ID: <4AF4D968.3040608@kernel.org>
-Date: Sat, 07 Nov 2009 11:20:24 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 12/13] sysfs: Propagate renames to the vfs on demand
-References: <m13a4vbz8r.fsf@fess.ebiederm.org>	<1257249429-12384-12-git-send-email-ebiederm@xmission.com>	<20091104214938.GA21033@us.ibm.com> <m13a4ux86v.fsf@fess.ebiederm.org>	<4AF4D76C.6090008@kernel.org> <m1y6mjw03m.fsf@fess.ebiederm.org>
-In-Reply-To: <m1y6mjw03m.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Nov 2009 21:21:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33748
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750883AbZKGCVu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 21:21:50 -0500
+Date: Fri, 06 Nov 2009 18:22:15 -0800 (PST)
+Message-Id: <20091106.182215.230775367.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-11-06
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091106204034.GI2782@tuxdriver.com>
+References: <20091106204034.GI2782@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Fri, 6 Nov 2009 15:40:34 -0500
 
-Eric W. Biederman wrote:
-> NFS does exactly the same thing I am doing.
+> Three more intended for 2.6.32, two oops fixes and a revert of a patch
+> that traded one bug for another.  One of the oops fixes reorders some
+> cancel_delayed_work_sync calls and the other does some bit testing to
+> avoid scheduling work after a device has been removed.
+> 
+> Please let me know if there are problems!
 
-Oh... well, sysfs directories parenting other filesystems are pretty
-rare and well defined.  Although it's not very pretty, I don't think
-we'll see any actual problem there.  Thanks for the explanation.
-
--- 
-tejun
+Pulled, thanks a lot John.
