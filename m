@@ -1,77 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbZKGEr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbZKGFIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760293AbZKGEr3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 23:47:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760236AbZKGEr2
+	id S1750893AbZKGFIc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 00:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbZKGFIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 23:47:28 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42680
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760071AbZKGEr1 (ORCPT
+	Sat, 7 Nov 2009 00:08:31 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:45948 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbZKGFIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 23:47:27 -0500
-Date: Fri, 06 Nov 2009 20:47:53 -0800 (PST)
-Message-Id: <20091106.204753.223665411.davem@davemloft.net>
-To: arnd@arndb.de
-Cc: linux-kernel@vger.kernel.org, hch@lst.de, netdev@vger.kernel.org
-Subject: Re: [RFC, PATCH 0/7] net, compat_ioctl: move handlers to
- net/socket.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1257530949-9695-1-git-send-email-arnd@arndb.de>
-References: <1257530949-9695-1-git-send-email-arnd@arndb.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Nov 2009 00:08:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=FuZljrBFrQ7Rj29a70+IYe1aRaPMmXO893bR/FtJ0qxLSVnAAmxfm39pj+9vJloT8f
+         faUcWt4WaMTDC1m7d49rEIE0VR2Pp4eqc61LNFIghxFwk9tF6B3k7DGjQx6BsMuIucYT
+         BbOTmcmzd1OxdUVs1cMncgwzXNotS5lYc0TXQ=
+MIME-Version: 1.0
+In-Reply-To: <b9df5fa10911022029q197a0c5dkbbda609f4e41287@mail.gmail.com>
+References: <b9df5fa10911022029q197a0c5dkbbda609f4e41287@mail.gmail.com>
+Date: Sat, 7 Nov 2009 11:08:35 +0600
+Message-ID: <b9df5fa10911062108l2334be64ka0777e89c6dbc17f@mail.gmail.com>
+Subject: Re: [PATCH -mm] char, moxa: Make isabrds variable global.
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jirislaby@gmail.com, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri,  6 Nov 2009 19:09:02 +0100
+On 11/3/09, Rakib Mullick <rakib.mullick@gmail.com> wrote:
+>  When CONFIG_MODULE=n and CONFIG_PCI=n, then variable
+>  isabrds becomes unused variable. So place it outside
+>  moxa_init solves this problem.
+>
+>   We were warned by the following warning:
+>
+>  drivers/char/moxa.c: In function `moxa_init':
+>  drivers/char/moxa.c:1012: warning: unused variable `isabrds'
 
-> This cleans up some of the socket ioctl handling by moving it
-> from fs/compat_ioctl.c to net/socket.c. The code is still untested,
-> so this is an RFC for now. If you're happy with it, I'll do some
-> testing to see if everything still works.
-> 
-> This series is a prerequisite for cleaning up the rest of
-> compat_ioctl.c, saving some 30kb of kernel memory in the end.
-> 
-> The first four patches are probably worthwhile independently,
-> because they fix some bugs in compat_ioctl handling.
-> There is some obvious conflict with the ATM patch I sent
-> independently today. That one should probably be worked out
-> first.
+Hi Andrew, after applying this one, it introduce a new warning:
 
-This looks great, all applied.  Please make the fixups recommended
-to you in the feedback as followon patches.
+drivers/char/moxa.c:1010: warning: 'isabrds' defined but not used
 
-Also, I added the following cure after your patch series:
+And while compiling moxa.c we are also warned by the following warnings:
 
-net: compat: No need to define IFHWADDRLEN and IFNAMSIZ twice.
+drivers/char/moxa.c:81: warning: 'moxa_brdname' defined but not used
+drivers/char/moxa.c:818: warning: 'moxa_init_board' defined but not used
 
-It's defined colloqually in linux/if.h and linux/compat.h
-includes that.
+To fix this warnings we need to properly #ifdef above functions.
+So after applying the following patch - moxa.c compiles cleanly.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- include/linux/compat.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Would you mind check this out, Andrew?
 
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index 8311d2e..224c7a8 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -166,8 +166,6 @@ struct compat_ifmap {
+  Fix compilation warning when CONFIG_PCI=n.
+
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+----
+
+--- linus/drivers/char/moxa.c	2009-11-06 17:12:13.000000000 +0600
++++ rakib/drivers/char/moxa.c	2009-11-06 17:47:18.000000000 +0600
+@@ -78,6 +78,7 @@ enum {
+ 	MOXA_BOARD_CP204J,
  };
- 
- struct compat_ifreq {
--#define IFHWADDRLEN     6
--#define IFNAMSIZ        16
-         union {
-                 char    ifrn_name[IFNAMSIZ];            /* if name, e.g. "en0" */
-         } ifr_ifrn;
--- 
-1.6.5.2
 
++#if defined MODULE || defined CONFIG_PCI
+ static char *moxa_brdname[] =
+ {
+ 	"C218 Turbo PCI series",
+@@ -87,6 +88,9 @@ static char *moxa_brdname[] =
+ 	"CP-204J series",
+ };
+
++static unsigned int __initdata isabrds;
++#endif
++
+ #ifdef CONFIG_PCI
+ static struct pci_device_id moxa_pcibrds[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_MOXA, PCI_DEVICE_ID_MOXA_C218),
+@@ -419,6 +423,7 @@ static DEFINE_SPINLOCK(moxa_lock);
+  * HW init
+  */
+
++#if defined MODULE || defined CONFIG_PCI
+ static int moxa_check_fw_model(struct moxa_board_conf *brd, u8 model)
+ {
+ 	switch (brd->boardType) {
+@@ -878,6 +883,7 @@ err_free:
+ err:
+ 	return ret;
+ }
++#endif
+
+ static void moxa_board_deinit(struct moxa_board_conf *brd)
+ {
+@@ -1009,7 +1015,6 @@ static struct pci_driver moxa_pci_driver
+
+ static int __init moxa_init(void)
+ {
+-	unsigned int isabrds = 0;
+ 	int retval = 0;
+
+ 	printk(KERN_INFO "MOXA Intellio family driver version %s\n",
