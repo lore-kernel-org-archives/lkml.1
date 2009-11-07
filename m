@@ -1,133 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752830AbZKGUwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbZKGUxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752830AbZKGUwz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 15:52:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZKGUwz
+	id S1752913AbZKGUxE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 15:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZKGUxC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 15:52:55 -0500
-Received: from cantor.suse.de ([195.135.220.2]:46402 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750996AbZKGUwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 15:52:54 -0500
-From: Thomas Renninger <trenn@suse.de>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [PATCH] cpu-freq: add troubleshooting section for FSB changes
+	Sat, 7 Nov 2009 15:53:02 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:60633 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbZKGUw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 15:52:59 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 14537] New: missing compat_ioctl on x86_64
 Date: Sat, 7 Nov 2009 21:52:56 +0100
-User-Agent: KMail/1.9.10
-Cc: davej@redhat.com, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mcgrof@gmail.com, Matthew Garrett <mjg@redhat.com>,
-       "Arjan van de Ven\"" <arjan@linux.intel.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Aeolus Yang <Aeolus.Yang@atheros.com>,
-       Amod Bodas <Amod.Bodas@atheros.com>,
-       David Quan <David.Quan@atheros.com>,
-       Kishore Jotwani <Kishore.Jotwani@atheros.com>
-References: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com>
-In-Reply-To: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com>
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thierry Vignaud <tvignaud@mandriva.com>,
+       bugzilla-daemon@bugzilla.kernel.org
+References: <bug-14537-6666@http.bugzilla.kernel.org/> <20091107172038.GA1835@ucw.cz> <200911072006.36904.rjw@sisk.pl>
+In-Reply-To: <200911072006.36904.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911072152.57596.trenn@suse.de>
+Message-Id: <200911072152.56586.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+FRDUCJTCJI7RRUfL/rGXwVs+vjqxIg3gIsdD
+ fduPsaEhr8gx1FuidWiyynlqrtdlQgR+PZl/fpY5VcC2OItGun
+ zq8OAUXKeiRS8iGzQRBvA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 November 2009 09:01:00 pm Luis R. Rodriguez wrote:
-> With cpu frequency scaling you may run into some system
-> performance issues when the FSB changes speed due to the
-> throughput constraints this brings on the system.
-Interesting.
-Could you be a bit more detailed how and what kind of perfomance issues are
-seen, please.
-I expect IO based issues like WLAN package throughput or even lost connections :)
-"wireless" is also a good word to grep for...
-If this gets documented also a bit more info about the HW should get
-added. The problem sounds rather restricted to specific models (atom based, laptop,
-desktop chipsets?)?
-Otherwise everyone adding a 10G network card into his Intel machine will
-start measuring or excluding the lowest freq when reading this.
+On Saturday 07 November 2009, Rafael J. Wysocki wrote:
+> > Actually... it would be nice to fix that one day, if someone submitted
+> > nice patch... :-).   
+> 
+> It must be fixed in s2disk first, but that would probably require us to drop
+> support for older kernels.  Which is not unthinkable, but might hurt some
+> users.
 
-Thanks for the valuable info,
+You don't need to drop support for older kernels if s2disk simply tries the
+new interface first and falls back to the current one if that fails.
 
-      Thomas
-
-> Document how to rule out whether or not FSB changes
-> affect general system issues.
->
-> Cc: Matthew Garrett <mjg@redhat.com>
-> Cc: Arjan van de Ven" <arjan@linux.intel.com>
-> Cc: Reinette Chatre <reinette.chatre@intel.com>
-> Cc: Aeolus Yang <Aeolus.Yang@Atheros.com>
-> Cc: Amod Bodas <Amod.Bodas@Atheros.com>
-> Cc: David Quan <David.Quan@Atheros.com>
-> Cc: Kishore Jotwani <Kishore.Jotwani@Atheros.com>
-> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> ---
->  Documentation/cpu-freq/user-guide.txt |   45
-> +++++++++++++++++++++++++++++++++ 1 files changed, 45 insertions(+), 0
-> deletions(-)
->
-> diff --git a/Documentation/cpu-freq/user-guide.txt
-> b/Documentation/cpu-freq/user-guide.txt index 2a5b850..846729d 100644
-> --- a/Documentation/cpu-freq/user-guide.txt
-> +++ b/Documentation/cpu-freq/user-guide.txt
-> @@ -32,6 +32,7 @@ Contents:
->  3. How to change the CPU cpufreq policy and/or speed
->  3.1 Preferred interface: sysfs
->
-> +4. Troubleshooting
->
->
->  1. Supported Architectures and Processors
-> @@ -211,3 +212,47 @@ scaling_setspeed.		By "echoing" a new frequency into
-> this you can change the speed of the CPU,
->  				but only within the limits of
->  				scaling_min_freq and scaling_max_freq.
-> +
-> +4. Troubleshooting
-> +==================
-> +
-> +If you are not sure if frequency scaling is the culprit to your
-> +issues you can try to disable the feature on the BIOS if possible.
-> +
-> +Alternatively it helps to understand that on some CPUs (Intel)
-> +the Front Side Bus (FSB) speed is changed when you happen to change
-> +the active CPU frequency to the lowest supported frequency, which
-> +happens to be the frequency used on the highest supported P-n state.
-> +The P0 state is the highest Performance state with the highest
-> +CPU frequency and system power. The highest P-n state would be
-> +the one with the lowest supported frequency and power.
-> +
-> +On Intel CPUs the FSB will not be modified with SpeedStep enabled if the
-> +second to last lowest frequency on the available scaling frequencies
-> +is used. Testing this would rule out whether or not the FSB changes
-> +made by SpeedStep would be the main issue.
-> +
-> +Modifying the FSB will alter your general system throughput
-> +on your Northbridge so to prevent general throughput issues
-> +with devices on it you can modify frequency scaling so that
-> +it nevers uses the lowest supported frequency.
-> +
-> +For example:
-> +
-> +cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
-> +1801000 1800000 1200000 800000
-> +1801000 1800000 1200000 800000
-> +
-> +cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq
-> +800000
-> +800000
-> +
-> +To disable changing the FSB select the second to last CPU freq
-> +on the available freq for each CPU and set the scaling_min_freq
-> +for each CPU to that value. For the example output this would be
-> +echo'ing 1200000 to each scaling_min_freq:
-> +
-> +echo 1200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-> +echo 1200000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-> +
-> +The first line is for the 1st CPU, the second line for the second line.
-
-
+	Arnd <><
