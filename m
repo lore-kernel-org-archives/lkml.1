@@ -1,51 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZKGW7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbZKGXpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753729AbZKGW7s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 17:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbZKGW7q
+	id S1753825AbZKGXpM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 18:45:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZKGXpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 17:59:46 -0500
-Received: from mga12.intel.com ([143.182.124.36]:42998 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753460AbZKGW7p (ORCPT
+	Sat, 7 Nov 2009 18:45:10 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:48349 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753685AbZKGXpI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 17:59:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,701,1249282800"; 
-   d="scan'208";a="208893758"
-Message-ID: <4AF5FBC7.9000105@linux.intel.com>
-Date: Sat, 07 Nov 2009 16:59:19 -0600
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sat, 7 Nov 2009 18:45:08 -0500
+Date: Sat, 7 Nov 2009 18:32:05 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH -next] staging/wireless: don't build when NET etc. are
+	not enabled
+Message-ID: <20091107233204.GA26871@tuxdriver.com>
+References: <20091106181330.80bca052.sfr@canb.auug.org.au> <4AF4B2B3.8020109@oracle.com>
 MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>
-CC: "Luis R. Rodriguez" <lrodriguez@atheros.com>, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, mcgrof@gmail.com,
-       Matthew Garrett <mjg@redhat.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Aeolus Yang <Aeolus.Yang@atheros.com>,
-       Amod Bodas <Amod.Bodas@atheros.com>,
-       David Quan <David.Quan@atheros.com>,
-       Kishore Jotwani <Kishore.Jotwani@atheros.com>
-Subject: Re: [PATCH] cpu-freq: add troubleshooting section for FSB changes
-References: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com> <200911072152.57596.trenn@suse.de> <4AF5F47C.5000402@linux.intel.com> <200911072347.05786.trenn@suse.de>
-In-Reply-To: <200911072347.05786.trenn@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF4B2B3.8020109@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> in addition, most FSB systems have the memory controller in the chipset,
->> next to the PCI logic... so that the FSB bus for DMA transactions only
->> carries the snoop traffic, not the whole data.
-> So when should people look at this?
+I'd better take this one...
 
-at this point the atheros folks haven't even confirmed that this is the cause...
+Thanks, Randy!
 
-I'm not saying that the linux behavior is optimal with P states (I have a rather
-sizeable algorithm rewrite in the queue) but to blame anything and everything on
-a half-speed FSB during a very idle system?
-I'm still somewhat skeptical. Again.. the CPU is basically idle here (otherwise
-ondemand would ramp the freq up quickly); at which point the FSB traffic mostly is
-just cache coherency traffic.... much less bandwidth intensive.
+John
+
+On Fri, Nov 06, 2009 at 03:35:15PM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> These wireless drivers in staging could be built when
+> CONFIG_NET=n, CONFIG_NETDEVICES=n, causing this build error:
+> 
+> net/wireless/wext-priv.c: In function 'ioctl_private_call':
+> net/wireless/wext-priv.c:206: error: implicit declaration of function 'call_commit_handler'
+> 
+> due to faulty selects.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  drivers/staging/arlan/Kconfig   |    2 +-
+>  drivers/staging/netwave/Kconfig |    2 +-
+>  drivers/staging/wavelan/Kconfig |    4 ++--
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> --- linux-next-20091106.orig/drivers/staging/arlan/Kconfig
+> +++ linux-next-20091106/drivers/staging/arlan/Kconfig
+> @@ -1,6 +1,6 @@
+>  config ARLAN
+>  	tristate "Aironet Arlan 655 & IC2200 DS support"
+> -	depends on ISA && !64BIT
+> +	depends on ISA && !64BIT && WLAN
+>  	select WIRELESS_EXT
+>  	---help---
+>  	  Aironet makes Arlan, a class of wireless LAN adapters. These use the
+> --- linux-next-20091106.orig/drivers/staging/netwave/Kconfig
+> +++ linux-next-20091106/drivers/staging/netwave/Kconfig
+> @@ -1,6 +1,6 @@
+>  config PCMCIA_NETWAVE
+>  	tristate "Xircom Netwave AirSurfer Pcmcia wireless support"
+> -	depends on PCMCIA
+> +	depends on PCMCIA && WLAN
+>  	select WIRELESS_EXT
+>  	select WEXT_PRIV
+>  	help
+> --- linux-next-20091106.orig/drivers/staging/wavelan/Kconfig
+> +++ linux-next-20091106/drivers/staging/wavelan/Kconfig
+> @@ -1,6 +1,6 @@
+>  config WAVELAN
+>  	tristate "AT&T/Lucent old WaveLAN & DEC RoamAbout DS ISA support"
+> -	depends on ISA
+> +	depends on ISA && WLAN
+>  	select WIRELESS_EXT
+>  	select WEXT_SPY
+>  	select WEXT_PRIV
+> @@ -25,7 +25,7 @@ config WAVELAN
+>  
+>  config PCMCIA_WAVELAN
+>  	tristate "AT&T/Lucent old WaveLAN Pcmcia wireless support"
+> -	depends on PCMCIA
+> +	depends on PCMCIA && WLAN
+>  	select WIRELESS_EXT
+>  	select WEXT_SPY
+>  	select WEXT_PRIV
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
