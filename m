@@ -1,100 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbZKGWAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbZKGV4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753562AbZKGWAr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 17:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbZKGWAq
+	id S1753546AbZKGV4M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 16:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZKGV4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 17:00:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19539 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752920AbZKGWAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 17:00:45 -0500
-Date: Sat, 7 Nov 2009 22:55:47 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: [PATCH] ptrace: copy_process() should disable stepping
-Message-ID: <20091107215547.GA25335@redhat.com>
-References: <20091106211637.GA1696@redhat.com> <20091106212554.BD731CF@magilla.sf.frob.com> <20091106215004.GA2232@redhat.com> <20091106221002.8057DCF@magilla.sf.frob.com>
+	Sat, 7 Nov 2009 16:56:11 -0500
+Received: from smtp201.iad.emailsrvr.com ([207.97.245.201]:43515 "EHLO
+	smtp201.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbZKGV4K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 16:56:10 -0500
+Message-ID: <4AF5ECFD.3000509@librato.com>
+Date: Sat, 07 Nov 2009 16:56:13 -0500
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091106221002.8057DCF@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: Matt Helsley <matthltc@us.ibm.com>, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [v11][PATCH 9/9] Document clone_with_pids() syscall
+References: <20091105053053.GA11289@us.ibm.com>	<20091105054204.GI16142@us.ibm.com>	<20091106183936.GA32531@us.ibm.com>	<20091106201814.GA26614@count0.beaverton.ibm.com>	<20091106214529.GB26614@count0.beaverton.ibm.com> <20091107022612.GA18039@suka>
+In-Reply-To: <20091107022612.GA18039@suka>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the tracee calls fork() after PTRACE_SINGLESTEP, the forked child starts
-with TIF_SINGLESTEP/X86_EFLAGS_TF bits copied from ptraced parent. This is
-not right, especially when the new child is not auto-attaced: in this case
-it is killed by SIGTRAP.
 
-Change copy_process() to call user_disable_single_step() if TIF_SINGLESTEP
-is set. Tested on x86, hopefully this is correct on any architecture.
 
-Test-case:
+Sukadev Bhattiprolu wrote:
+> Matt Helsley [matthltc@us.ibm.com] wrote:
+> | > If userspace passes an array with n pids and there are k namespace levels
+> | > then clone_with_pids() makes sure that the kernel sees a pid array like:
+> | > 
+> | > index	  0     ... k - (n + 1)        ...          k - 1
+> | > 	+-----------------------+-------------------------+
+> | > pid_t	| 0 ..................0 | <copied from userspace> |
+> | > 	+-----------------------+-------------------------+
+> | 
+> | (diagram assumes n != k. If n == k then pids[0] is the pid desired
+> | in the initial namespace..)
+> 
+> True.
+> 
+> Also I was not sure if we should prevent choosing pids in ancestor containers.
+> since a process is not even supposed to know of ancestor namespaces. Is there
+> a need for choosing pids in those namespaces.
 
-	#include <stdio.h>
-	#include <unistd.h>
-	#include <signal.h>
-	#include <sys/ptrace.h>
-	#include <sys/wait.h>
-	#include <assert.h>
+IMHO this is a bit confusing.
 
-	int main(void)
-	{
-		int pid, status;
+A process observes a single namespace - the one in which it "lives".
+There is no such thing as descendant namespaces for that process.
+There may be ancestor namespaces.
 
-		if (!(pid = fork())) {
-			assert(ptrace(PTRACE_TRACEME) == 0);
-			kill(getpid(), SIGSTOP);
+The clone occurs in the context of the process. So the process that
+is forking _must_ indicate pids in _ancestor_ namespaces if it wishes
+to select pids in those (as is the case in c/r).
 
-			if (!fork()) {
-				/* kernel bug: this child will be killed by SIGTRAP */
-				printf("Hello world\n");
-				return 43;
-			}
+> 
+> | 
+> | > 
+> | > So even though the order is different from choosepid() the calling
+> | > task still doesn't need to know its pidns level. Of course, just
+> | > like choosepid(), n <= k or userspace will get EINVAL.
+> | 
+> | Forgot to mention that I prefer the way choosepid orders the pids.
+> | It's not inspired by the way that the kernel implements pid namespaces
+> | and has more to do with the way userspace sees things (IMHO).
+> 
+> Hmm, In general we C/R a descendant container. So the way userspace
+> sees it at that point is "what are the pids of this process in my current
+> and in any descendant namespaces". IOW, the pid of container from which
+> we checkpoint seems more interesting first - right ?  If so, the pids[]
+> are better ordered from older namespace to younger namespace ?
 
-			wait(&status);
-			return WEXITSTATUS(status);
-		}
+When we checkpoint, we use an external process to record the state of
+(current or) descendant namespaces.
 
-		for (;;) {
-			assert(pid == wait(&status));
-			if (WIFEXITED(status))
-				break;
-			assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
-		}
+When we restart, we run in the context of the restarting process, so
+we select a pid in the current and _ancestor_ namespaces.
 
-		assert(WEXITSTATUS(status) == 43);
-		return 0;
-	}
+So the order of pids as it (will) appear in the checkpoint image for
+a given process will be from an ancestor down to descendant namespaces.
+And this is how we (will) hand it over to eclone().
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+> 
+> | I don't know if it makes more sense to change clone_with_pids() or have
+> | [e]glibc wrappers swap the array contents.
 
- kernel/fork.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+I prefer to decide now on an order and stick to it in the kernel and
+in glibc.
 
---- V1/kernel/fork.c~FORK_DISABLE_STEP	2009-10-09 19:52:23.000000000 +0200
-+++ V1/kernel/fork.c	2009-11-07 22:15:15.000000000 +0100
-@@ -1199,10 +1199,14 @@ static struct task_struct *copy_process(
- 		p->sas_ss_sp = p->sas_ss_size = 0;
- 
- 	/*
--	 * Syscall tracing should be turned off in the child regardless
--	 * of CLONE_PTRACE.
-+	 * Syscall tracing and stepping hould be turned off in the
-+	 * child regardless of CLONE_PTRACE.
- 	 */
- 	clear_tsk_thread_flag(p, TIF_SYSCALL_TRACE);
-+#ifdef TIF_SINGLESTEP
-+	if (unlikely(test_tsk_thread_flag(p, TIF_SINGLESTEP)))
-+		user_disable_single_step(p);
-+#endif
- #ifdef TIF_SYSCALL_EMU
- 	clear_tsk_thread_flag(p, TIF_SYSCALL_EMU);
- #endif
+Oren
 
