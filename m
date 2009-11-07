@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbZKGQ5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZKGRS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752583AbZKGQ5I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 11:57:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZKGQ5H
+	id S1752601AbZKGRS6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 12:18:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZKGRS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 11:57:07 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:60142 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbZKGQ5F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 11:57:05 -0500
-Message-ID: <4AF5A6E2.5040306@in.ibm.com>
-Date: Sat, 07 Nov 2009 22:27:06 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Sat, 7 Nov 2009 12:18:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55558 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752429AbZKGRSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 12:18:55 -0500
+Date: Sat, 7 Nov 2009 17:19:00 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.37.7
+Message-ID: <20091107171900.GA18286@hera.kernel.org>
+Reply-To: w@1wt.eu
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       jbarnes@virtuousgeek.org
-Subject: Re: linux-next: Tree for November 5
-References: <20091105190426.c9cadada.sfr@canb.auug.org.au> <200911050931.04838.bjorn.helgaas@hp.com> <200911051017.12135.bjorn.helgaas@hp.com> <200911060856.09405.bjorn.helgaas@hp.com>
-In-Reply-To: <200911060856.09405.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Thursday 05 November 2009 10:17:11 am Bjorn Helgaas wrote:
->   
->> On Thursday 05 November 2009 09:31:04 am Bjorn Helgaas wrote:
->>     
->>> On Thursday 05 November 2009 03:38:27 am Sachin Sant wrote:
->>>       
->>>> Today's next tree fails to build on i386 with
->>>>
->>>> arch/x86/pci/built-in.o: In function `align_resource':
->>>> arch/x86/pci/acpi.c:82: undefined reference to `__udivdi3'
->>>>
->>>> The code in question was added by commit
->>>> 03db42adfeeabe856dbb6894dd3aaff55838330a.
->>>>         
->>> I'll look into this.  I did build and test a 32-bit x86 kernel, but
->>> I built it on an x86_64 box using "linux32 make ...", which looks like
->>> it used gcc 4.3.2.
->>>       
->> Can you try the patch below, please?
->>     
->
-> Sachin, can you please try this patch and report whether it
-> fixes the undefined reference?  I hate to have linux-next
-> broken longer than necessary.
->   
-Sorry was away from office for a day. Yes the patch
-fixed the build break for me. 
 
-Thanks for the patch.
+I've just released Linux 2.4.37.7.
 
-Regards
--Sachin
+It contains various fixes, among which a few null pointer
+dereferences which may become security issues on systems where
+mmap_min_addr is not set.
 
--- 
+Systems with untrusted local users should upgrade, other ones
+may wait.
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.37.7.bz2
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.37.7
+
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.37.y.git
+
+
+Willy
+---
+
+Summary of changes from v2.4.37.6 to v2.4.37.7
+============================================
+
+Alan Cox (1):
+      tty: Mark generic_serial users as BROKEN
+
+Arjan van de Ven (2):
+      net ax25: Fix signed comparison in the sockopt handler
+      net: Make the copy length in af_packet sockopt handler unsigned
+
+Arnaldo Carvalho de Melo (1):
+      appletalk: Fix skb leak when ipddp interface is not loaded
+
+Ben Hutchings (1):
+      drm/r128: Add test for initialisation to all ioctls that require it
+
+Earl Chew (1):
+      fs: pipe.c null pointer dereference
+
+Jaswinder Singh Rajput (2):
+      R8169: Fix compilation error when RTL8169_DEBUG is defined
+      net: Fix 64 bit DMA addressing for 8139cp and r8169
+
+Jiri Bohac (1):
+      bonding: fix a race condition in calls to slave MII ioctls
+
+Jiri Pirko (1):
+      netlink: fix typo in initialization
+
+Stefan Seyfried (1):
+      Fix Kernel 2.4 build with bash 4
+
+Tomoki Sekiyama (1):
+      AF_UNIX: Fix deadlock on connecting to shutdown socket
+
+Willy Tarreau (1):
+      Change VERSION to 2.4.37.7
+
 
