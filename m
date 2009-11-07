@@ -1,92 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbZKGMQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbZKGMWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751773AbZKGMQs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 07:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZKGMQr
+	id S1751811AbZKGMWR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 07:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbZKGMWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 07:16:47 -0500
-Received: from www.tglx.de ([62.245.132.106]:44473 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640AbZKGMQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 07:16:47 -0500
-Date: Sat, 7 Nov 2009 13:16:24 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Miller <davem@davemloft.net>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
-       sparclinux@vger.kernel.org
-Subject: Re: [patch 14/16] sparc: Replace old style lock initializer
-In-Reply-To: <20091106.222032.02604670.davem@davemloft.net>
-Message-ID: <alpine.LFD.2.00.0911071310570.12138@localhost.localdomain>
-References: <20091106223547.784916750@linutronix.de> <20091106223806.973326715@linutronix.de> <20091106.221834.246946954.davem@davemloft.net> <20091106.222032.02604670.davem@davemloft.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 7 Nov 2009 07:22:17 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:46923 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbZKGMWP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 07:22:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=sX3wcKUFyoo8RGlBOGUDyM+oDxIR58JSxtXRtAsiWdFKGi77X6suQkJd0HqcREqinh
+         ftzraA2ymk8+AiUhkzvIhxG4Yyl8kIT/+LmTiVg1lA72FJdl1XMX7eQc39W+9oNMbSFA
+         Pxe/EY/waBIxeSbMdPry86QPr+IZqmmJ0uHvA=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-934661253-1257596187=:12138"
+In-Reply-To: <20091106194626.GC18592@alberich.amd.com>
+References: <1257192496.5941.8.camel@dimm>
+	 <20091105153742.GA18592@alberich.amd.com>
+	 <b647ffbd0911051040r3987f63es1279c87bf349bcf6@mail.gmail.com>
+	 <20091106123403.GB18592@alberich.amd.com>
+	 <b647ffbd0911060456x5c37ebfapdb2ece392428f66@mail.gmail.com>
+	 <20091106194626.GC18592@alberich.amd.com>
+Date: Sat, 7 Nov 2009 13:22:19 +0100
+Message-ID: <b647ffbd0911070422g154c63bbo2fec62ba63c3c106@mail.gmail.com>
+Subject: Re: [ RFC, PATCH - 1/2, v2 ] x86-microcode: refactor microcode output 
+	messages
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Andreas Herrmann <herrmann.der.user@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
+       Jack Steiner <steiner@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+2009/11/6 Andreas Herrmann <herrmann.der.user@googlemail.com>:
+> On Fri, Nov 06, 2009 at 01:56:31PM +0100, Dmitry Adamushko wrote:
+>> 2009/11/6 Andreas Herrmann <herrmann.der.user@googlemail.com>:
+>
+>   <snip>
+>
+>> >> (CPU3 belongs to both sets) unless summarize_cpu_info() is utterly
+>> >> broken.
+>> >
+>> > I didn't check that yet.
+>>
+>> Yeah, this behavior is likely due to a missing cpumask_clear() in
+>> summarize_cpu_info().
+>
+> Yeah, that fixes the wrong messages.
+> The other problem of not-updated CPU microcode after suspend/resume persists.
+>
+>> should be as follows:
+>>
+>>       if (!alloc_cpumask_var(&cpulist, GFP_KERNEL))
+>>               return;
+>>
+>> +    cpumask_clear(cpulist);
+>
+> Better use zalloc_cpumask instead of alloc/clear.
 
---8323328-934661253-1257596187=:12138
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+ok.
 
-On Fri, 6 Nov 2009, David Miller wrote:
+>
+>> >> sure, my test is somewhat limited... anyway, first of all I'd like to
+>> >> get a clear understanding of your logs. Thanks for yout test btw. :-))
+>> >
+>> > I'll send you full logs asap.
+>>
+>> Thanks. Maybe it's something about a particular sequence of actions
+>> that triggers this behavior. Or was it reproducible with the very
+>> first pm-suspend invocation after "modprobe microcode.ko"?
+>
+> The sequence is:
+>
+> 1. loading microcode.ko
+> 2. setting cpu2 offline
+> 3. setting cpu2 online
+> 4. suspend (pm-suspend)
+> 5. resume
+>
+> microcode of CPU2 is not updated:
+>
+>  # for i in `seq 0 3`; do lsmsr -c $i PATCH_LEVEL; done
+>  PATCH_LEVEL          = 0x0000000001000083
+>  PATCH_LEVEL          = 0x0000000001000083
+>  PATCH_LEVEL          = 0x0000000001000065
+>  PATCH_LEVEL          = 0x0000000001000083
+>
+> dmesg attached.
 
-> From: David Miller <davem@davemloft.net>
-> Date: Fri, 06 Nov 2009 22:18:34 -0800 (PST)
-> 
-> > From: Thomas Gleixner <tglx@linutronix.de>
-> > Date: Fri, 06 Nov 2009 22:42:14 -0000
-> > 
-> >> SPIN_LOCK_UNLOCKED is deprecated. Use __SPIN_LOCK_UNLOCKED instead.
-> >> 
-> >> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> > Applied to sparc-next-2.6, thanks.
-> 
-> This breaks the build:
-> 
-> /home/davem/src/GIT/sparc-next-2.6/arch/sparc/include/asm/rwsem.h:39: error: expected identifier or â€˜(â€™ before â€˜{â€™ token
-> /home/davem/src/GIT/sparc-next-2.6/arch/sparc/include/asm/rwsem.h:39: error: expected identifier or â€˜(â€™ before â€˜}â€™ token
-> make[1]: *** [arch/sparc/kernel/asm-offsets.s] Error 1
-> make: *** [prepare0] Error 2
+It looks like the microcode of CPU2 was not updated at step (3) [ and
+not cached in uci->mc so that there was nothing to be loaded at resume
+time later on ].
 
-Darn, I compiled it but the 32bit build does not use that file :)
-Working version below.
+...
+platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+microcode: size 1936, total_size 960
+microcode: CPU2: patch mismatch (processor_rev_id: 1020, equiv_cpu_id: 1022)
+microcode: size 968, total_size 960
+PM: Syncing filesystems ... done.
+...
 
-Thanks,
+These messages are from ->request_microcode_fw() but then there is
+nothing from ->apply_microcode(). I'd expect to see "microcode: CPU%d:
+updated (new patch_level=0x%x)".
 
-	tglx
----
-Subject: sparc: Replace old style lock initializer
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Fri, 06 Nov 2009 22:06:35 +0100
+So either request_fw() -> generic_load_microcode() somehow fails to
+find/cache a ucode (while it could do this at microcode-load time) or
+apply_microcode_on_target() -> smp_call_function_single() fails in
+this context. I made a test (some changes to load a cached ->mc at
+cpu-online time) to verify the latter hypothesis and it didn't reveal
+any problems or it requires some special conditions (also my kernel is
+-rc5+).
 
-SPIN_LOCK_UNLOCKED is deprecated. Use __SPIN_LOCK_UNLOCKED instead.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
----
- arch/sparc/include/asm/rwsem.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> As I've said, that test used to pass with all CPUs updated to new
+> ucode in the past (at least that I think so ;-( -- but in contrast to
+> my previous mail this doesn't seem to be related to your patch. I
+> tested latest mainline and the test fails as well ... seems that I
+> need to do some debugging.
 
-Index: linux-2.6/arch/sparc/include/asm/rwsem.h
-===================================================================
---- linux-2.6.orig/arch/sparc/include/asm/rwsem.h
-+++ linux-2.6/arch/sparc/include/asm/rwsem.h
-@@ -35,8 +35,8 @@ struct rw_semaphore {
- #endif
- 
- #define __RWSEM_INITIALIZER(name) \
--{ RWSEM_UNLOCKED_VALUE, SPIN_LOCK_UNLOCKED, LIST_HEAD_INIT((name).wait_list) \
--  __RWSEM_DEP_MAP_INIT(name) }
-+{ RWSEM_UNLOCKED_VALUE, __SPIN_LOCK_UNLOCKED((name).wait_lock), \
-+  LIST_HEAD_INIT((name).wait_list) __RWSEM_DEP_MAP_INIT(name) }
- 
- #define DECLARE_RWSEM(name) \
- 	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
- 
---8323328-934661253-1257596187=:12138--
+Ok. Then by instrumenting ->request_microcode_fs() and
+apply_microcode_on_target() we would get a hint on what's wrong.
+
+
+>
+>
+> Regards,
+> Andreas
+>
+> PS1: You should remove the needless newline from the patch level string:
+>
+>  static int version_snprintf(char *buf, int len, struct cpu_signature *csig)
+>  {
+> -       return snprintf(buf, len, "patch_level=0x%x\n", csig->rev);
+> +       return snprintf(buf, len, "patch_level=0x%x", csig->rev);
+>  }
+
+ack.
+
+
+
+-- Dmitry
