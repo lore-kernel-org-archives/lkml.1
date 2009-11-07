@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751342AbZKGKho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751567AbZKGKh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751342AbZKGKho (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 05:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZKGKhn
+	id S1751567AbZKGKh7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 05:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZKGKh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sat, 7 Nov 2009 05:37:57 -0500
+Received: from khc.piap.pl ([195.187.100.11]:59432 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973AbZKGKhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 7 Nov 2009 05:37:43 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:43788 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750859AbZKGKhm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 05:37:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=u3Z69YunFZzM1bpS3sDPmn9G1RAxNMWWovPgYiryNtwHxFwNiTelHRbSgrYBRCGMEe
-         XdhjPaIZMRNYnLDhIwritF1p9MO7b3VY7brveTxPbi3Gk2tn6OWeOWjef8d3l9IhmxAo
-         JPX0ThG3ZEGrWShac5VBmujw3DaDBRCHgzG4c=
-To: Luciano Coelho <luciano.coelho@nokia.com>
-Cc: "ext John W. Linville" <linville@tuxdriver.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next\@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless\@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: linux-next: Tree for November 2 (wireless/wl1271)
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
-	<4AEF1E7F.50306@oracle.com> <20091102184449.GJ14046@tuxdriver.com>
-	<20091102184843.GK14046@tuxdriver.com> <4AEF4ACB.5040302@nokia.com>
-	<4AEFC7CF.1020909@nokia.com>
-From: Kalle Valo <kalle.valo@iki.fi>
-Date: Sat, 07 Nov 2009 12:37:43 +0200
-In-Reply-To: <4AEFC7CF.1020909@nokia.com> (Luciano Coelho's message of "Tue\, 03 Nov 2009 08\:03\:59 +0200")
-Message-ID: <87ljiifwnc.fsf@purkki.valot.fi>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: "Martin Schleier" <drahemmaps@gmx.net>
+Cc: linux-kernel@vger.kernel.org, Matteo Croce <technoboy85@gmail.com>
+Subject: Re: i686 quirk for AMD Geode
+References: <20091106154911.29400@gmx.net>
+	<20091106155937.11d95279@lxorguk.ukuu.org.uk>
+	<20091106165731.26800@gmx.net>
+	<20091106182218.43940287@lxorguk.ukuu.org.uk>
+	<20091106200620.179910@gmx.net> <m3r5sbcl07.fsf@intrepid.localdomain>
+	<20091107000559.166710@gmx.net>
+Date: Sat, 07 Nov 2009 11:37:46 +0100
+In-Reply-To: <20091107000559.166710@gmx.net> (Martin Schleier's message of
+	"Sat, 07 Nov 2009 01:05:59 +0100")
+Message-ID: <m3vdhmvcw5.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luciano Coelho <luciano.coelho@nokia.com> writes:
+"Martin Schleier" <drahemmaps@gmx.net> writes:
 
-> Coelho Luciano (Nokia-D/Helsinki) wrote:
->> ext John W. Linville wrote:
->>> Helps if I actually Cc: Luca...
->>
->> Yes, it does. :) I would see this at some point but CCing me speed
->> things up quite a lot.
->
->
-> BTW, I think we need this for wl1251 as well.  CC'ing Kalle too.
+>> Did the patch in question contain such problems?
+> the last point:
+>  - etc... =>
 
-Thanks, but upstream wl1251 doesn't have ARP filter. There is an
-internal patch but I haven't submitted it, yet.
+Yeah.
 
+> "WARNING: externs should be avoided in .c files
+
+Ironically, it's the only "WARNING" while the rest are "ERRORS".
+OTOH I personally believe all output from checkpatch should be labeled
+"WARNING"; it's not for checkpatch to decide. It's only a tool.
+
+> #56: FILE: arch/x86/kernel/nopl_emu.c:13:
+> +void do_invalid_op(struct pt_regs *regs, long error_code);" ?
+> (or do you think that this is a formatting issue?!)
+
+Actually, I think it wasn't any issue at all at this point, when it
+wasn't yet established if the patch makes sense at all.
+
+> It is the job of a Submitter
+> (as described in Documentations/SubmittingPatches section 4)
+> to check and test his patches with tools like checkpatch or sparse
+> before posting them.
+
+You apparently forgot what SubmittingPatches file is all about:
+
+"This text is a collection of suggestions which can greatly increase the
+chances of your change being accepted."
+
+You know, we don't have laws for everything here. And we're not
+androids specialized in producing C code. We are supposed to use some
+common sense first.
+
+> After all this patch is going into /arch/x86 and not /drivers/staging
+> and this sort of "extern declaration" is prone to break one day when
+> void do_invalid_op(struct pt_regs *, long); declaration is modified.
+
+That's true, though it's the same for "staging".
 -- 
-Kalle Valo
+Krzysztof Halasa
