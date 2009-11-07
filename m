@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZKGMnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751939AbZKGNep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751877AbZKGMnt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 07:43:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZKGMnq
+	id S1751939AbZKGNep (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 08:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZKGNem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 07:43:46 -0500
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:44218 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbZKGMnp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 07:43:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fe7DGOCHmNiV1GRaTORNaU9Hi7nfwrJN4WG1jJ4bNZ2XAdunQOsT0elOSkveFHtmRl
-         UKUan1CEUIVt5K0CN5BOkbtipGyOBTs4eAXWAawd9tK+bWAN8UzUl5mznoYeA3iCryUp
-         khBX4MwOYnfaB9qwHoE4/zz9YrpaC7+ZNAydM=
-MIME-Version: 1.0
-In-Reply-To: <20091105192725.GE1392@ucw.cz>
-References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
-	 <20091105192725.GE1392@ucw.cz>
-Date: Sat, 7 Nov 2009 21:43:50 +0900
-Message-ID: <90b950fc0911070443s57d2ec5ehcb5c9cf9edcf8d8c@mail.gmail.com>
-Subject: Re: [patch] added brightness feature to lcd class.
-From: InKi Dae <daeinki@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Kyungmin Park <kmpark@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 7 Nov 2009 08:34:42 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:59343 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751841AbZKGNem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 08:34:42 -0500
+Date: Sat, 7 Nov 2009 14:34:44 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux I2C <linux-i2c@vger.kernel.org>
+Subject: [GIT PULL] i2c fixes for 2.6.32
+Message-ID: <20091107143444.44200912@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your comments.
+Hi Linus,
 
-using backlight is good way in case of TFT-LCD Panel.
-because TFT-LCD Panel needs backlight device to light up.
+Please pull some more i2c subsystem fixes for Linux 2.6.32 from:
 
-but AMOLED LCD Panel doesn't need backlight device because lighting up itself.
-if you try to control brightness of AMOLED LCD Panel and using backlight class
-then you should write fake backlight driver that it has no real device
-for controlling
-and would control brightness through that driver.
+git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git i2c-for-linus
 
-with this reason, I think that it's better to control brightness
-through lcd class in case of AMOLED LCD panel.
-If lcd class has birghtness feature then AMOLED LCD Panel driver would
-become more simple and effective.
+ Documentation/i2c/busses/i2c-piix4 |    2 +-
+ drivers/i2c/busses/Kconfig         |    2 +-
+ drivers/i2c/busses/i2c-piix4.c     |    8 ++++----
+ drivers/net/sfc/sfe4001.c          |    4 ++--
+ include/linux/i2c.h                |   18 ++++++++++++++++++
+ include/linux/pci_ids.h            |    2 +-
+ 6 files changed, 27 insertions(+), 9 deletions(-)
 
-I think it is more generic way that only real device should have
-device driver so I proposed this.
+---------------
 
-Thank you.
+Crane Cai (1):
+      i2c-piix4: Modify code name SB900 to Hudson-2
 
-Best Regards,
-InKi Dae.
+Jean Delvare (1):
+      i2c: Add an interface to lock/unlock an I2C bus segment
 
-2009/11/6 Pavel Machek <pavel@ucw.cz>:
-> On Mon 2009-11-02 17:50:02, InKi Dae wrote:
->> This patch adds brightness feature to lcd class.
->> (kernel/driver/video/backlight/lcd.c)
->>
->> In the past, most of the lcd panels for embedded system was TFT-LCD
->> Panel needing backlight device.
->> But now AMOLED LCD Panel appeared so we should consider brightness
->> control for AMOLED Panel.
->>
->> For the time being, I used backlight fake driver for brightness
->> control of AMOLED LCD Panel.
->> But this way is not good, so I propose to add brightness feature to lcd class.
->>
->
-> Why is it 'not good'? Using backlight driver seems like way to go to
-> me.
->
->                                                                        Pavel
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+Thanks,
+-- 
+Jean Delvare
