@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZKGRwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbZKGR6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677AbZKGRwV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 12:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZKGRwT
+	id S1752696AbZKGR6t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 12:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZKGR6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 12:52:19 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:64188 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752386AbZKGRwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 12:52:19 -0500
-Date: Sat, 7 Nov 2009 18:52:22 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [78/99] hwmon: (it87) Fix VID reading on
- IT8718F/IT8720F
-Message-ID: <20091107185222.18588dfb@hyperion.delvare>
-In-Reply-To: <20091107153741.GB5607@1wt.eu>
-References: <20091106221358.309857998@mini.kroah.org>
-	<20091106221549.637855004@mini.kroah.org>
-	<20091107153741.GB5607@1wt.eu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Nov 2009 12:58:48 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38778 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbZKGR6s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 12:58:48 -0500
+Date: Sat, 7 Nov 2009 18:58:46 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk, dhowells@redhat.com,
+       hch@infradead.org, adilger@sun.com, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org, drepper@gmail.com, jamie@shareable.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 resend] vfs: new O_NODE open flag
+Message-ID: <20091107175846.GA5361@elf.ucw.cz>
+References: <E1N60RV-0002ed-FX@pomaz-ex.szeredi.hu>
+ <20091105131545.72b4e319@lxorguk.ukuu.org.uk>
+ <E1N63Io-000353-KX@pomaz-ex.szeredi.hu>
+ <20091106141742.GA1428@ucw.cz>
+ <m17hu3xtiy.fsf@fess.ebiederm.org>
+ <E1N6g3B-0006UZ-1R@pomaz-ex.szeredi.hu>
+ <m13a4qsiap.fsf@fess.ebiederm.org>
+ <E1N6jWB-0006gu-2u@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1N6jWB-0006gu-2u@pomaz-ex.szeredi.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Salut Willy,
+Hi!
 
-On Sat, 7 Nov 2009 16:37:42 +0100, Willy Tarreau wrote:
-> On Fri, Nov 06, 2009 at 02:15:16PM -0800, Greg KH wrote:
-> > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
+> > > I'm more and more convinced, that the current behavior is the right
+> > > one.
+> > 
+> > I think the 15 or so years we have had the current behavior without
+> > problems is persuasive.
+> > 
+> > I think it is an interesting puzzle on how to get dup instead of
+> > reopen as there are cases where that could be useful behavior as well.
 > 
-> I noticed this one was not merged into 2.6.27.39. I suspect it is
-> just because it did not apply since IT8720F was not present there.
-> However I think the test still needs fixing, though I'm not well
-> qualified to judge about that.
-> 
-> Jean, do you have any opinion on this matter ?
+> Probably doable with ptrace().
 
-You are totally right. I originally wrote: "it won't apply to 2.6.27
-because IT8720F support was added in 2.6.29. I'll send a separate patch
-for 2.6.27." I wrote the patch in question but apparently forgot to
-send it. My bad, I'll do that right now.
-
+Confused, where does ptrace fit the picture?
+									Pavel
 -- 
-Jean Delvare
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
