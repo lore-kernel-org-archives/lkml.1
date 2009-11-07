@@ -1,106 +1,568 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbZKGFIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750887AbZKGFmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750893AbZKGFIc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 00:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbZKGFIb
+	id S1750887AbZKGFmM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 00:42:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZKGFmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 00:08:31 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:45948 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbZKGFIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 00:08:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=FuZljrBFrQ7Rj29a70+IYe1aRaPMmXO893bR/FtJ0qxLSVnAAmxfm39pj+9vJloT8f
-         faUcWt4WaMTDC1m7d49rEIE0VR2Pp4eqc61LNFIghxFwk9tF6B3k7DGjQx6BsMuIucYT
-         BbOTmcmzd1OxdUVs1cMncgwzXNotS5lYc0TXQ=
+	Sat, 7 Nov 2009 00:42:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59245 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795AbZKGFmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 00:42:10 -0500
+Message-ID: <4AF50887.5060509@kernel.org>
+Date: Fri, 06 Nov 2009 21:41:27 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <b9df5fa10911022029q197a0c5dkbbda609f4e41287@mail.gmail.com>
-References: <b9df5fa10911022029q197a0c5dkbbda609f4e41287@mail.gmail.com>
-Date: Sat, 7 Nov 2009 11:08:35 +0600
-Message-ID: <b9df5fa10911062108l2334be64ka0777e89c6dbc17f@mail.gmail.com>
-Subject: Re: [PATCH -mm] char, moxa: Make isabrds variable global.
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jirislaby@gmail.com, LKML <linux-kernel@vger.kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: [PATCH 2/2] pci: pciehp update the slot bridge res to get big range
+ for pcie devices - v10
+References: <4ADEB601.8020200@kernel.org>	<4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org>	<4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org>
+In-Reply-To: <4AF22D26.4070500@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/3/09, Rakib Mullick <rakib.mullick@gmail.com> wrote:
->  When CONFIG_MODULE=n and CONFIG_PCI=n, then variable
->  isabrds becomes unused variable. So place it outside
->  moxa_init solves this problem.
->
->   We were warned by the following warning:
->
->  drivers/char/moxa.c: In function `moxa_init':
->  drivers/char/moxa.c:1012: warning: unused variable `isabrds'
 
-Hi Andrew, after applying this one, it introduce a new warning:
+move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+and at last do them all together one time including slot bridge, to avoid to
+call assign resources several times, when there are several bridges under the
+slot bridge.
 
-drivers/char/moxa.c:1010: warning: 'isabrds' defined but not used
+need to introduce pci_bridge_assign_resources there.
 
-And while compiling moxa.c we are also warned by the following warnings:
+handle the case the slot bridge that doesn't get pre-allocated big enough res
+from FW.
+for example pcie devices need 256M, but the bridge only get preallocated 2M...
 
-drivers/char/moxa.c:81: warning: 'moxa_brdname' defined but not used
-drivers/char/moxa.c:818: warning: 'moxa_init_board' defined but not used
+pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
+update res is not updated to bridge BAR. that is bridge is enabled already for
+port service.
 
-To fix this warnings we need to properly #ifdef above functions.
-So after applying the following patch - moxa.c compiles cleanly.
+v2: address Alex's concern about pci remove/rescan feature about
+    pci_setup_bridge changes.
+v3: Kenji pointed out that pci_config_slot need to be Yinghai Lu wrote:
+> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+> and at last do them all together one time including slot bridge, to avoid to
+> call assign resources several times, when there are several bridges under the
+> slot bridge.
+> 
+> need to introduce pci_bridge_assign_resources there.
+> 
+> handle the case the slot bridge that doesn't get pre-allocated big enough res
+> from FW.
+> for example pcie devices need 256M, but the bridge only get preallocated 2M...
+> 
+> pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
+> update res is not updated to bridge BAR. that is bridge is enabled already for
+> port service.
+> 
+> v2: address Alex's concern about pci remove/rescan feature about
+>     pci_setup_bridge changes.
+> v3: Kenji pointed out that pci_config_slot need to be called before
+>     pci_bus_add_devices()
+> v4: move out pci_is_enabled checkout of pci_setup_bridge()
+> v5: change the applying sequence.
+> v6: change the functions name according to Jesse
+> v8: address Eric's concern, only overwrite leaf bridge resource that is not
+>      big enough
+> v9: refresh to be applied after bjorn's patch, and remove trick about save
+>     size and restore resource second try.
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  drivers/pci/hotplug/pciehp_pci.c |   23 +++++-
+>  drivers/pci/setup-bus.c          |  129 +++++++++++++++++++++++++++++++++++++--
+>  include/linux/pci.h              |    1 
+>  3 files changed, 143 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
+> +++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+> @@ -53,17 +53,15 @@ static int __ref pciehp_add_bridge(struc
+>  		busnr = pci_scan_bridge(parent, dev, busnr, pass);
+>  	if (!dev->subordinate)
+>  		return -1;
+> -	pci_bus_size_bridges(dev->subordinate);
+> -	pci_bus_assign_resources(parent);
+> -	pci_enable_bridges(parent);
+> -	pci_bus_add_devices(parent);
+> +
+>  	return 0;
+>  }
+>  
+>  int pciehp_configure_device(struct slot *p_slot)
+>  {
+>  	struct pci_dev *dev;
+> -	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
+> +	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
+> +	struct pci_bus *parent = bridge->subordinate;
+>  	int num, fn;
+>  	struct controller *ctrl = p_slot->ctrl;
+>  
+> @@ -96,12 +94,25 @@ int pciehp_configure_device(struct slot
+>  				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
+>  			pciehp_add_bridge(dev);
+>  		}
+> +		pci_dev_put(dev);
+> +	}
+> +
+> +	pci_assign_unassigned_bridge_resources(bridge);
+> +
+> +	for (fn = 0; fn < 8; fn++) {
+> +		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
+> +		if (!dev)
+> +			continue;
+> +		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
+> +			pci_dev_put(dev);
+> +			continue;
+> +		}
+>  		pci_configure_slot(dev);
+>  		pci_dev_put(dev);
+>  	}
+>  
+> -	pci_bus_assign_resources(parent);
+>  	pci_bus_add_devices(parent);
+> +
+>  	return 0;
+>  }
+>  
+> Index: linux-2.6/drivers/pci/setup-bus.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/setup-bus.c
+> +++ linux-2.6/drivers/pci/setup-bus.c
+> @@ -68,6 +68,52 @@ static void free_failed_list(struct reso
+>  	head->next = NULL;
+>  }
+>  
+> +static void pdev_assign_resources_sorted(struct pci_dev *dev,
+> +				 struct resource_list *fail_head)
+> +{
+> +	struct resource *res;
+> +	struct resource_list head, *list, *tmp;
+> +	int idx;
+> +	u16 class = dev->class >> 8;
+> +
+> +	head.next = NULL;
+> +
+> +	/* Don't touch classless devices or host bridges or ioapics.  */
+> +	if (class == PCI_CLASS_NOT_DEFINED || class == PCI_CLASS_BRIDGE_HOST)
+> +		return;
+> +
+> +	/* Don't touch ioapic devices already enabled by firmware */
+> +	if (class == PCI_CLASS_SYSTEM_PIC) {
+> +		u16 command;
+> +		pci_read_config_word(dev, PCI_COMMAND, &command);
+> +		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
+> +			return;
+> +	}
+> +
+> +	pdev_sort_resources(dev, &head);
+> +
+> +	for (list = head.next; list;) {
+> +		res = list->res;
+> +		idx = res - &list->dev->resource[0];
+> +		if (pci_assign_resource(list->dev, idx)) {
+> +			if (fail_head && !list->dev->subordinate &&
+> +			    !pci_is_root_bus(list->dev->bus)) {
+> +				/*
+> +				 * device need to keep flags and size
+> +				 * for second try
+> +				 */
+> +				add_to_failed_list(fail_head, list->dev, res);
+> +			} else {
+> +				res->start = 0;
+> +				res->end = 0;
+> +				res->flags = 0;
+> +			}
+> +		}
+> +		tmp = list;
+> +		list = list->next;
+> +		kfree(tmp);
+> +	}
+> +}
+>  static void pbus_assign_resources_sorted(const struct pci_bus *bus,
+>  					 struct resource_list *fail_head)
+>  {
+> @@ -282,9 +328,6 @@ static void __pci_setup_bridge(struct pc
+>  {
+>  	struct pci_dev *bridge = bus->self;
+>  
+> -	if (pci_is_enabled(bridge))
+> -		return;
+> -
+>  	dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
+>  		 bus->secondary, bus->subordinate);
+>  
+> @@ -645,7 +688,8 @@ static void __ref __pci_bus_assign_resou
+>  
+>  		switch (dev->class >> 8) {
+>  		case PCI_CLASS_BRIDGE_PCI:
+> -			pci_setup_bridge(b);
+> +			if (!pci_is_enabled(dev))
+> +				pci_setup_bridge(b);
+>  			break;
+>  
+>  		case PCI_CLASS_BRIDGE_CARDBUS:
+> @@ -666,6 +710,34 @@ void __ref pci_bus_assign_resources(cons
+>  }
+>  EXPORT_SYMBOL(pci_bus_assign_resources);
+>  
+> +static void __ref __pci_bridge_assign_resources(const struct pci_dev *bridge,
+> +					 struct resource_list *fail_head)
+> +{
+> +	struct pci_bus *b;
+> +
+> +	pdev_assign_resources_sorted((struct pci_dev *)bridge, fail_head);
+> +
+> +	b = bridge->subordinate;
+> +	if (!b)
+> +		return;
+> +
+> +	__pci_bus_assign_resources(b, fail_head);
+> +
+> +	switch (bridge->class >> 8) {
+> +	case PCI_CLASS_BRIDGE_PCI:
+> +		pci_setup_bridge(b);
+> +		break;
+> +
+> +	case PCI_CLASS_BRIDGE_CARDBUS:
+> +		pci_setup_cardbus(b);
+> +		break;
+> +
+> +	default:
+> +		dev_info(&bridge->dev, "not setting up bridge for bus "
+> +			 "%04x:%02x\n", pci_domain_nr(b), b->number);
+> +		break;
+> +	}
+> +}
+>  static void release_children_resource(struct resource *r)
+>  {
+>  	struct resource *p;
+> @@ -841,3 +913,52 @@ enable_and_dump:
+>  		pci_bus_dump_resources(bus);
+>  	}
+>  }
+> +
+> +void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge)
+> +{
+> +	struct pci_bus *bus;
+> +	struct pci_bus *parent = bridge->subordinate;
+> +	bool second_tried = false;
+> +	struct resource_list head, *list, *tmp;
+> +	int retval;
+> +	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
+> +				  IORESOURCE_PREFETCH;
+> +
+> +again:
+> +	head.next = NULL;
+> +
+> +	pci_bus_size_bridges(parent);
+> +	pci_clear_master(bridge);
+> +	__pci_bridge_assign_resources(bridge, &head);
+> +	retval = pci_reenable_device(bridge);
+> +	pci_set_master(bridge);
+> +	pci_enable_bridges(parent);
+> +
+> +	/* any device complain? */
+> +	if (!head.next)
+> +		return;
+> +
+> +	if (second_tried) {
+> +		/* still fail, don't want to try more */
+> +		free_failed_list(&head);
+> +		return;
+> +	}
+> +
+> +	second_tried = true;
+> +	printk(KERN_DEBUG "PCI: second try to assign unassigned res\n");
+> +
+> +	/*
+> +	 * Try to release leaf bridge's resources that doesn't fit resource of
+> +	 * child device under that bridge
+> +	 */
+> +	for (list = head.next; list;) {
+> +		bus = list->dev->bus;
+> +		pci_bus_release_unused_bridge_res(bus,
+> +				 list->res->flags & type_mask);
+> +		tmp = list;
+> +		list = list->next;
+> +		kfree(tmp);
+> +	}
+> +
+> +	goto again;
+> +}
+> Index: linux-2.6/include/linux/pci.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/pci.h
+> +++ linux-2.6/include/linux/pci.h
+> @@ -767,6 +767,7 @@ void pci_bus_assign_resources(const stru
+>  void pci_bus_size_bridges(struct pci_bus *bus);
+>  int pci_claim_resource(struct pci_dev *, int);
+>  void pci_assign_unassigned_resources(void);
+> +void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge);
+>  void pdev_enable_device(struct pci_dev *);
+>  void pdev_sort_resources(struct pci_dev *, struct resource_list *);
+>  int pci_enable_resources(struct pci_dev *, int mask);
+> 
 
-Would you mind check this out, Andrew?
+called before
+    pci_bus_add_devices()
+v4: move out pci_is_enabled checkout of pci_setup_bridge()
+v5: change the applying sequence.
+v6: change the functions name according to Jesse
+v8: address Eric's concern, only overwrite leaf bridge resource that is not
+     big enough
+v9: refresh to be applied after bjorn's patch, and remove trick about save
+    size and restore resource second try.
+v10: alex found need to have export for pci_assign_unassigned_bridge_resources
 
-  Fix compilation warning when CONFIG_PCI=n.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-----
+---
+ drivers/pci/hotplug/pciehp_pci.c |   23 +++++-
+ drivers/pci/setup-bus.c          |  130 +++++++++++++++++++++++++++++++++++++--
+ include/linux/pci.h              |    1 
+ 3 files changed, 144 insertions(+), 10 deletions(-)
 
---- linus/drivers/char/moxa.c	2009-11-06 17:12:13.000000000 +0600
-+++ rakib/drivers/char/moxa.c	2009-11-06 17:47:18.000000000 +0600
-@@ -78,6 +78,7 @@ enum {
- 	MOXA_BOARD_CP204J,
- };
-
-+#if defined MODULE || defined CONFIG_PCI
- static char *moxa_brdname[] =
- {
- 	"C218 Turbo PCI series",
-@@ -87,6 +88,9 @@ static char *moxa_brdname[] =
- 	"CP-204J series",
- };
-
-+static unsigned int __initdata isabrds;
-+#endif
+Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
++++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+@@ -53,17 +53,15 @@ static int __ref pciehp_add_bridge(struc
+ 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
+ 	if (!dev->subordinate)
+ 		return -1;
+-	pci_bus_size_bridges(dev->subordinate);
+-	pci_bus_assign_resources(parent);
+-	pci_enable_bridges(parent);
+-	pci_bus_add_devices(parent);
 +
- #ifdef CONFIG_PCI
- static struct pci_device_id moxa_pcibrds[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MOXA, PCI_DEVICE_ID_MOXA_C218),
-@@ -419,6 +423,7 @@ static DEFINE_SPINLOCK(moxa_lock);
-  * HW init
-  */
-
-+#if defined MODULE || defined CONFIG_PCI
- static int moxa_check_fw_model(struct moxa_board_conf *brd, u8 model)
- {
- 	switch (brd->boardType) {
-@@ -878,6 +883,7 @@ err_free:
- err:
- 	return ret;
+ 	return 0;
  }
-+#endif
-
- static void moxa_board_deinit(struct moxa_board_conf *brd)
+ 
+ int pciehp_configure_device(struct slot *p_slot)
  {
-@@ -1009,7 +1015,6 @@ static struct pci_driver moxa_pci_driver
-
- static int __init moxa_init(void)
+ 	struct pci_dev *dev;
+-	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
++	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
++	struct pci_bus *parent = bridge->subordinate;
+ 	int num, fn;
+ 	struct controller *ctrl = p_slot->ctrl;
+ 
+@@ -96,12 +94,25 @@ int pciehp_configure_device(struct slot
+ 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
+ 			pciehp_add_bridge(dev);
+ 		}
++		pci_dev_put(dev);
++	}
++
++	pci_assign_unassigned_bridge_resources(bridge);
++
++	for (fn = 0; fn < 8; fn++) {
++		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
++		if (!dev)
++			continue;
++		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
++			pci_dev_put(dev);
++			continue;
++		}
+ 		pci_configure_slot(dev);
+ 		pci_dev_put(dev);
+ 	}
+ 
+-	pci_bus_assign_resources(parent);
+ 	pci_bus_add_devices(parent);
++
+ 	return 0;
+ }
+ 
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -68,6 +68,52 @@ static void free_failed_list(struct reso
+ 	head->next = NULL;
+ }
+ 
++static void pdev_assign_resources_sorted(struct pci_dev *dev,
++				 struct resource_list *fail_head)
++{
++	struct resource *res;
++	struct resource_list head, *list, *tmp;
++	int idx;
++	u16 class = dev->class >> 8;
++
++	head.next = NULL;
++
++	/* Don't touch classless devices or host bridges or ioapics.  */
++	if (class == PCI_CLASS_NOT_DEFINED || class == PCI_CLASS_BRIDGE_HOST)
++		return;
++
++	/* Don't touch ioapic devices already enabled by firmware */
++	if (class == PCI_CLASS_SYSTEM_PIC) {
++		u16 command;
++		pci_read_config_word(dev, PCI_COMMAND, &command);
++		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
++			return;
++	}
++
++	pdev_sort_resources(dev, &head);
++
++	for (list = head.next; list;) {
++		res = list->res;
++		idx = res - &list->dev->resource[0];
++		if (pci_assign_resource(list->dev, idx)) {
++			if (fail_head && !list->dev->subordinate &&
++			    !pci_is_root_bus(list->dev->bus)) {
++				/*
++				 * device need to keep flags and size
++				 * for second try
++				 */
++				add_to_failed_list(fail_head, list->dev, res);
++			} else {
++				res->start = 0;
++				res->end = 0;
++				res->flags = 0;
++			}
++		}
++		tmp = list;
++		list = list->next;
++		kfree(tmp);
++	}
++}
+ static void pbus_assign_resources_sorted(const struct pci_bus *bus,
+ 					 struct resource_list *fail_head)
  {
--	unsigned int isabrds = 0;
- 	int retval = 0;
-
- 	printk(KERN_INFO "MOXA Intellio family driver version %s\n",
+@@ -282,9 +328,6 @@ static void __pci_setup_bridge(struct pc
+ {
+ 	struct pci_dev *bridge = bus->self;
+ 
+-	if (pci_is_enabled(bridge))
+-		return;
+-
+ 	dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
+ 		 bus->secondary, bus->subordinate);
+ 
+@@ -645,7 +688,8 @@ static void __ref __pci_bus_assign_resou
+ 
+ 		switch (dev->class >> 8) {
+ 		case PCI_CLASS_BRIDGE_PCI:
+-			pci_setup_bridge(b);
++			if (!pci_is_enabled(dev))
++				pci_setup_bridge(b);
+ 			break;
+ 
+ 		case PCI_CLASS_BRIDGE_CARDBUS:
+@@ -666,6 +710,34 @@ void __ref pci_bus_assign_resources(cons
+ }
+ EXPORT_SYMBOL(pci_bus_assign_resources);
+ 
++static void __ref __pci_bridge_assign_resources(const struct pci_dev *bridge,
++					 struct resource_list *fail_head)
++{
++	struct pci_bus *b;
++
++	pdev_assign_resources_sorted((struct pci_dev *)bridge, fail_head);
++
++	b = bridge->subordinate;
++	if (!b)
++		return;
++
++	__pci_bus_assign_resources(b, fail_head);
++
++	switch (bridge->class >> 8) {
++	case PCI_CLASS_BRIDGE_PCI:
++		pci_setup_bridge(b);
++		break;
++
++	case PCI_CLASS_BRIDGE_CARDBUS:
++		pci_setup_cardbus(b);
++		break;
++
++	default:
++		dev_info(&bridge->dev, "not setting up bridge for bus "
++			 "%04x:%02x\n", pci_domain_nr(b), b->number);
++		break;
++	}
++}
+ static void release_children_resource(struct resource *r)
+ {
+ 	struct resource *p;
+@@ -841,3 +913,53 @@ enable_and_dump:
+ 		pci_bus_dump_resources(bus);
+ 	}
+ }
++
++void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge)
++{
++	struct pci_bus *bus;
++	struct pci_bus *parent = bridge->subordinate;
++	bool second_tried = false;
++	struct resource_list head, *list, *tmp;
++	int retval;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++
++again:
++	head.next = NULL;
++
++	pci_bus_size_bridges(parent);
++	pci_clear_master(bridge);
++	__pci_bridge_assign_resources(bridge, &head);
++	retval = pci_reenable_device(bridge);
++	pci_set_master(bridge);
++	pci_enable_bridges(parent);
++
++	/* any device complain? */
++	if (!head.next)
++		return;
++
++	if (second_tried) {
++		/* still fail, don't want to try more */
++		free_failed_list(&head);
++		return;
++	}
++
++	second_tried = true;
++	printk(KERN_DEBUG "PCI: second try to assign unassigned res\n");
++
++	/*
++	 * Try to release leaf bridge's resources that doesn't fit resource of
++	 * child device under that bridge
++	 */
++	for (list = head.next; list;) {
++		bus = list->dev->bus;
++		pci_bus_release_unused_bridge_res(bus,
++				 list->res->flags & type_mask);
++		tmp = list;
++		list = list->next;
++		kfree(tmp);
++	}
++
++	goto again;
++}
++EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -768,6 +768,7 @@ void pci_bus_assign_resources(const stru
+ void pci_bus_size_bridges(struct pci_bus *bus);
+ int pci_claim_resource(struct pci_dev *, int);
+ void pci_assign_unassigned_resources(void);
++void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge);
+ void pdev_enable_device(struct pci_dev *);
+ void pdev_sort_resources(struct pci_dev *, struct resource_list *);
+ int pci_enable_resources(struct pci_dev *, int mask);
