@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751599AbZKGU7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbZKGVEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751599AbZKGU7M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 15:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZKGU7L
+	id S1752652AbZKGVEM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 16:04:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZKGVEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 15:59:11 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:57322 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZKGU7J (ORCPT
+	Sat, 7 Nov 2009 16:04:11 -0500
+Received: from mxout-08.mxes.net ([216.86.168.183]:39896 "EHLO
+	mxout-08.mxes.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbZKGVEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 15:59:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=IfUutwM0wn+F992IsWlfI9v5AblYF9TQypQhYu6eT1+1sLUoDQfm4MMbgu7XCW0hsD
-         DJHxYipgY7wqh1psW/VagSd7TRWpjRrLJsmSh1Nw03LJGfYtEpx0+8n3OTBUUSSwb71O
-         MPJmGuhv6VDxs0cLFudAQWK2ixAVf0KvZh1oY=
-Message-ID: <4AF5DF9F.5020208@tuffmail.co.uk>
-Date: Sat, 07 Nov 2009 20:59:11 +0000
+	Sat, 7 Nov 2009 16:04:10 -0500
 From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, carmelo73@gmail.com,
-       linux-kbuild@vger.kernel.org
-Subject: [PATCH 0/10] module: Speed up symbol resolution during module loading
- (using binary search)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: rusty@rustcorp.com.au
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: [PATCH 01/10] ARM: use unified discard definition in linker script
+Date: Sat,  7 Nov 2009 21:03:52 +0000
+Message-Id: <1257627841-15817-1-git-send-email-alan-jenkins@tuffmail.co.uk>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <4AF5DF9F.5020208@tuffmail.co.uk>
+References: <4AF5DF9F.5020208@tuffmail.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As requested by Mike Frysinger, this version of the series
+Commit 023bf6f "linker script: unify usage of discard definition"
+changed the linker scripts for all architectures except for ARM.
+I can find no discussion about this ommision, so here are the changes
+for ARM.
 
-1) generalizes the use of CONFIG_SYMBOL_PREFIX so that arbitrary symbol 
-prefixes remain possible
-2) uses CONFIG_SYMBOL_PREFIX to implement VMLINUX_SYMBOL() in the 
-generic linker script, instead of relying on arch linker scripts to 
-define it if needed.
+These changes are exactly parallel to the ia64 case.
 
+"ia64 is notable because it first throws away some ia64 specific
+ subsections and then include the rest of the sections into the final
+ image, so those sections must be discarded before the inclusion."
 
-I also changed the position of the patch which implements the above 
-changes.  So it is possible to revert or drop the actual optimizations, 
-without removing the cleanups and annoying Mike (or Rusty, or Tejun Heo, 
-or miscellaneous fans of lib/bsearch.c :).
+Not boot-tested.  In build testing, the modified linker script generated
+an identical vmlinux file.
 
-A clean revert may be useful if hash tables are added in future, to 
-avoid the complexity of keeping hash tables + sorted tables + unsorted 
-tables.  (This current series leaves module symbol tables unsorted).
+[I would like to be able to rely on this unified discard definition.
+ I want to sort the kernel symbol tables to allow faster symbol
+ resolution during module loading. The simplest way appears to be
+ to generate sorted versions from vmlinux.o, link them in to vmlinux,
+ _and discard the original unsorted tables_.
+
+ This work is driven by my x86 netbook, but it is implemented at a
+ generic level. It is possible it will benefit some ARM systems also.]
+
+Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Acked-by-without-testing: Tejun Heo <tj@kernel.org>
+---
+ arch/arm/kernel/vmlinux.lds.S |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
+index aecf87d..ec511d4 100644
+--- a/arch/arm/kernel/vmlinux.lds.S
++++ b/arch/arm/kernel/vmlinux.lds.S
+@@ -79,11 +79,11 @@ SECTIONS
+ #endif
+ 	}
+ 
+-	/DISCARD/ : {			/* Exit code and data		*/
+-		EXIT_TEXT
+-		EXIT_DATA
+-		*(.exitcall.exit)
+-		*(.discard)
++	/*
++	 * unwind exit sections must be discarded before the rest of the
++	 * unwind sections get included.
++	 */
++	/DISCARD/ : {
+ 		*(.ARM.exidx.exit.text)
+ 		*(.ARM.extab.exit.text)
+ #ifndef CONFIG_HOTPLUG_CPU
+@@ -271,6 +271,9 @@ SECTIONS
+ 	.stab.index 0 : { *(.stab.index) }
+ 	.stab.indexstr 0 : { *(.stab.indexstr) }
+ 	.comment 0 : { *(.comment) }
++
++	/* Default discards */
++	DISCARDS
+ }
+ 
+ /*
+-- 
+1.6.3.3
+
