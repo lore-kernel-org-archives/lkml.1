@@ -1,97 +1,447 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZKGBJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbZKGBO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbZKGBJm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 20:09:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757049AbZKGBJl
+	id S1758374AbZKGBO0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 20:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757049AbZKGBOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 20:09:41 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:41452 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755542AbZKGBJk (ORCPT
+	Fri, 6 Nov 2009 20:14:25 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:53186 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754060AbZKGBOY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 20:09:40 -0500
-Date: Fri, 6 Nov 2009 17:07:36 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: nir.tzachar@gmail.com
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, zippel@linux-m68k.org, andi@firstfloor.org
-Subject: Re: [PATCH] nconfig v5
-Message-Id: <20091106170736.6ace81f6.randy.dunlap@oracle.com>
-In-Reply-To: <20091106111232.9534f9f7.randy.dunlap@oracle.com>
-References: <1257496614-12052-1-git-send-email-nir.tzachar@gmail.com>
-	<20091106111232.9534f9f7.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Fri, 6 Nov 2009 20:14:24 -0500
+Date: Sat, 07 Nov 2009 10:14:29 +0900 (JST)
+Message-Id: <20091107.101429.21010532507617430.mitake@dcl.info.waseda.ac.jp>
+To: apw@canonical.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Removing wrong judgement of checkpatch.pl for
+ return as function
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <20091106222828.GC5191@penfold>
+References: <20091103.104932.625281420231629894.mitake@dcl.info.waseda.ac.jp>
+	<20091106222828.GC5191@penfold>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4AF4C8C4.0003:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Nov 2009 11:12:32 -0800 Randy Dunlap wrote:
+From: Andy Whitcroft <apw@canonical.com>
+Subject: Re: [PATCH][RFC] Removing wrong judgement of checkpatch.pl for return as function
+Date: Fri, 6 Nov 2009 22:28:28 +0000
 
-> On Fri,  6 Nov 2009 10:36:54 +0200 nir.tzachar@gmail.com wrote:
+> On Tue, Nov 03, 2009 at 10:49:32AM +0900, Hitoshi Mitake wrote:
+> > 
+> > Hi,
+> > 
+> > I found a strange behaviour of checkpatch.pl.
+> > 
+> > The C statement:
+> > 	return (type)value;
+> > is regarded as return like a function form by checkpatch.pl.
+> > So checkpatch.pl causes "Return is not a function." error
+> > when processing statements like this.
+> > 
+> > I think statements like above are innocence. These are only doing type cast.
+> > This patch removes the behaviour of checkpatch.pl.
+> > 
+> > But I don't have confidence about coding style of Linux kernel.
+> > Is my thought correct? Or the behaviour of current checkpatch.pl is correct?
+> > Request for comment.
+
+Thanks for your reply, Andy.
+
 > 
-> > From: Nir Tzachar <nir.tzachar@gmail.com>
-> > 
-> > This patch was inspired by the kernel projects page, where an ncurses
-> > replacement for menuconfig was mentioned (by Sam Ravnborg).
-> > 
-> > Building on menuconfig, this patch implements a more modern look interface using
-> > ncurses and ncurses' satellite libraries (menu, panel, form). The implementation
-> > does not depend on lxdialog, which is currently distributed with the kernel.
-> > 
-> > Attached is a reworked version of nconfig. The old menuconfig navigation scheme
-> > was dropped, and function keys are used for special choices. Arrows are used in
-> > a more intuitive fashion for menu navigation.
-> > 
-> > 1) The old menuconfig bottom menu was dropped in favor of function keys (which
-> >    are interchangeable with regular numbers).
-> > 2) Arrows are used for navigation, such that <left> always goes back one menu
-> >    and <right> enters a sub-menu.
-> > 3) The exit sequence has been improved, such that it is possible to cancel the
-> >    exit if there are pending changes and resume editing.
-> > 4) All dialog boxes have an <OK> button, which is used to exit the dialog.
-> > 5) A 'show all symbols' option has been added, similarly to xconfig.
-> > 
-> > Please condsider this version as a proper replacement for menuconfig.
-> > Cheers, Nir.
-> > 
-> > Signed-off-by: Nir Tzachar <nir.tzachar@gmail.com>
-
-
-> When I use F7 to exit, the program hangs.  I have to kill it.
-> I don't see any error messages.
-> (I'm testing this on a 2.6.32-rc6 kernel source tree).
+> Do you have a patch example which triggers this?  If I test the current
+> version with this specific fragment I do not get a report.  This one
+> collapses to '1value' which means it shouldn't trigger the report.
 > 
-> ncurses-5.6-41
-> ncurses-devel-5.6-41
+> If you do have a specific patch which triggered this could you email it
+> over, also could you confirm the version of checkpatch which shows this
+> with checkpatch -v.
+> 
 
+Yes, I post the patch triggered the error I mentioned to lkml recently.
+I'm attaching the patch the tail of this mail.
 
-More user/usability/testing comments:
+And the version of checkpatch.pl I used is 0.30.
+% scripts/checkpatch.pl --version
+Usage: checkpatch.pl [OPTION]... [FILE]...
+Version: 0.30
 
-- sometimes nconfig repaints the kconfig menu list, moving it upward or
-  downward.  I find this undersirable.
+Options:
+...
 
-- after F5/Save + filename entered, the OK prompt is difficult to see
-  if the entire screen (window) contains kconfig menu items
+--- below is the patch ---
 
-- make complains with:
+This patch adds bench/sched-messaging.c.
+This benchmark measures performance of scheduler and IPC mechanisms,
+and is based on hackbench by Rusty Russell.
 
- GEN     /local/linsrc/lnx-2632-rc6/zz64/Makefile
-scripts/kconfig/conf -s arch/x86/Kconfig
- Using /local/linsrc/lnx-2632-rc6 as source for kernel
- /local/linsrc/lnx-2632-rc6 is not clean, please run 'make mrproper'
- in the '/local/linsrc/lnx-2632-rc6' directory
+Example of usage:
+% perf bench sched messaging -g 20 -l 1000 -s
+5.432  	  	       	    	    	     # in sec
+% perf bench sched messaging                 # run with default options
+(20 sender and receiver processes per group)
+(10 groups == 400 processes run)
 
-because
-$ make ARCH=x86_64 O=zz64 defconfig
-creates an empty include/config/ directory.
+        Total time:0.308 sec
+% perf bench sched messaging -t -g 20	     # # be multi-thread, with 20 groups
+(20 sender and receiver threads per group)
+(20 groups == 800 threads run)
 
+        Total time:0.582 sec
 
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
 ---
-~Randy
+ tools/perf/bench/sched-messaging.c |  332 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 332 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/bench/sched-messaging.c
+
+diff --git a/tools/perf/bench/sched-messaging.c b/tools/perf/bench/sched-messaging.c
+new file mode 100644
+index 0000000..36b62c5
+--- /dev/null
++++ b/tools/perf/bench/sched-messaging.c
+@@ -0,0 +1,332 @@
++/*
++ *
++ * builtin-bench-messaging.c
++ *
++ * messaging: Benchmark for scheduler and IPC mechanisms
++ *
++ * Based on hackbench by Rusty Russell <rusty@rustcorp.com.au>
++ * Ported to perf by Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
++ *
++ */
++
++#include "../perf.h"
++#include "../util/util.h"
++#include "../util/parse-options.h"
++#include "../builtin.h"
++#include "bench.h"
++
++/* Test groups of 20 processes spraying to 20 receivers */
++#include <pthread.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <errno.h>
++#include <unistd.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <sys/wait.h>
++#include <sys/time.h>
++#include <sys/poll.h>
++#include <limits.h>
++
++#define DATASIZE 100
++
++static int use_pipes = 0;
++static unsigned int loops = 100;
++static unsigned int thread_mode = 0;
++static unsigned int num_groups = 10;
++static int simple = 0;
++
++struct sender_context {
++	unsigned int num_fds;
++	int ready_out;
++	int wakefd;
++	int out_fds[0];
++};
++
++struct receiver_context {
++	unsigned int num_packets;
++	int in_fds[2];
++	int ready_out;
++	int wakefd;
++};
++
++static void barf(const char *msg)
++{
++	fprintf(stderr, "%s (error: %s)\n", msg, strerror(errno));
++	exit(1);
++}
++
++static void fdpair(int fds[2])
++{
++	if (use_pipes) {
++		if (pipe(fds) == 0)
++			return;
++	} else {
++		if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0)
++			return;
++	}
++
++	barf(use_pipes ? "pipe()" : "socketpair()");
++}
++
++/* Block until we're ready to go */
++static void ready(int ready_out, int wakefd)
++{
++	char dummy;
++	struct pollfd pollfd = { .fd = wakefd, .events = POLLIN };
++
++	/* Tell them we're ready. */
++	if (write(ready_out, &dummy, 1) != 1)
++		barf("CLIENT: ready write");
++
++	/* Wait for "GO" signal */
++	if (poll(&pollfd, 1, -1) != 1)
++		barf("poll");
++}
++
++/* Sender sprays loops messages down each file descriptor */
++static void *sender(struct sender_context *ctx)
++{
++	char data[DATASIZE];
++	unsigned int i, j;
++
++	ready(ctx->ready_out, ctx->wakefd);
++
++	/* Now pump to every receiver. */
++	for (i = 0; i < loops; i++) {
++		for (j = 0; j < ctx->num_fds; j++) {
++			int ret, done = 0;
++
++again:
++			ret = write(ctx->out_fds[j], data + done,
++				    sizeof(data)-done);
++			if (ret < 0)
++				barf("SENDER: write");
++			done += ret;
++			if (done < DATASIZE)
++				goto again;
++		}
++	}
++
++	return NULL;
++}
++
++
++/* One receiver per fd */
++static void *receiver(struct receiver_context* ctx)
++{
++	unsigned int i;
++
++	if (!thread_mode)
++		close(ctx->in_fds[1]);
++
++	/* Wait for start... */
++	ready(ctx->ready_out, ctx->wakefd);
++
++	/* Receive them all */
++	for (i = 0; i < ctx->num_packets; i++) {
++		char data[DATASIZE];
++		int ret, done = 0;
++
++again:
++		ret = read(ctx->in_fds[0], data + done, DATASIZE - done);
++		if (ret < 0)
++			barf("SERVER: read");
++		done += ret;
++		if (done < DATASIZE)
++			goto again;
++	}
++
++	return NULL;
++}
++
++static pthread_t create_worker(void *ctx, void *(*func)(void *))
++{
++	pthread_attr_t attr;
++	pthread_t childid;
++	int err;
++
++	if (!thread_mode) {
++		/* process mode */
++		/* Fork the receiver. */
++		switch (fork()) {
++		case -1:
++			barf("fork()");
++			break;
++		case 0:
++			(*func) (ctx);
++			exit(0);
++			break;
++		default:
++			break;
++		}
++
++		return (pthread_t)0;
++	}
++
++	if (pthread_attr_init(&attr) != 0)
++		barf("pthread_attr_init:");
++
++#ifndef __ia64__
++	if (pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN) != 0)
++		barf("pthread_attr_setstacksize");
++#endif
++
++	err = pthread_create(&childid, &attr, func, ctx);
++	if (err != 0) {
++		fprintf(stderr, "pthread_create failed: %s (%d)\n",
++			strerror(err), err);
++		exit(-1);
++	}
++	return childid;
++}
++
++static void reap_worker(pthread_t id)
++{
++	int proc_status;
++	void *thread_status;
++
++	if (!thread_mode) {
++		/* process mode */
++		wait(&proc_status);
++		if (!WIFEXITED(proc_status))
++			exit(1);
++	} else {
++		pthread_join(id, &thread_status);
++	}
++}
++
++/* One group of senders and receivers */
++static unsigned int group(pthread_t *pth,
++		unsigned int num_fds,
++		int ready_out,
++		int wakefd)
++{
++	unsigned int i;
++	struct sender_context *snd_ctx = malloc(sizeof(struct sender_context)
++			+ num_fds * sizeof(int));
++
++	if (!snd_ctx)
++		barf("malloc()");
++
++	for (i = 0; i < num_fds; i++) {
++		int fds[2];
++		struct receiver_context *ctx = malloc(sizeof(*ctx));
++
++		if (!ctx)
++			barf("malloc()");
++
++
++		/* Create the pipe between client and server */
++		fdpair(fds);
++
++		ctx->num_packets = num_fds * loops;
++		ctx->in_fds[0] = fds[0];
++		ctx->in_fds[1] = fds[1];
++		ctx->ready_out = ready_out;
++		ctx->wakefd = wakefd;
++
++		pth[i] = create_worker(ctx, (void *)receiver);
++
++		snd_ctx->out_fds[i] = fds[1];
++		if (!thread_mode)
++			close(fds[0]);
++	}
++
++	/* Now we have all the fds, fork the senders */
++	for (i = 0; i < num_fds; i++) {
++		snd_ctx->ready_out = ready_out;
++		snd_ctx->wakefd = wakefd;
++		snd_ctx->num_fds = num_fds;
++
++		pth[num_fds+i] = create_worker(snd_ctx, (void *)sender);
++	}
++
++	/* Close the fds we have left */
++	if (!thread_mode)
++		for (i = 0; i < num_fds; i++)
++			close(snd_ctx->out_fds[i]);
++
++	/* Return number of children to reap */
++	return num_fds * 2;
++}
++
++static const struct option options[] = {
++	OPT_BOOLEAN('p', "pipe", &use_pipes,
++		    "Use pipe() instead of socketpair()"),
++	OPT_BOOLEAN('t', "thread", &thread_mode,
++		    "Be multi thread instead of multi process"),
++	OPT_INTEGER('g', "group", &num_groups,
++		    "Specify number of groups"),
++	OPT_INTEGER('l', "loop", &loops,
++		    "Specify number of loops"),
++	OPT_BOOLEAN('s', "simple-output", &simple,
++		    "Do simple output (this maybe useful for"
++		    "processing by scripts or graph tools like gnuplot)"),
++	OPT_END()
++};
++
++static const char * const bench_sched_message_usage[] = {
++	"perf bench sched messaging <options>",
++	NULL
++};
++
++int bench_sched_messaging(int argc, const char **argv,
++		    const char *prefix __used)
++{
++	unsigned int i, total_children;
++	struct timeval start, stop, diff;
++	unsigned int num_fds = 20;
++	int readyfds[2], wakefds[2];
++	char dummy;
++	pthread_t *pth_tab;
++
++	argc = parse_options(argc, argv, options,
++			     bench_sched_message_usage, 0);
++
++	pth_tab = malloc(num_fds * 2 * num_groups * sizeof(pthread_t));
++	if (!pth_tab)
++		barf("main:malloc()");
++
++	fdpair(readyfds);
++	fdpair(wakefds);
++
++	total_children = 0;
++	for (i = 0; i < num_groups; i++)
++		total_children += group(pth_tab+total_children, num_fds,
++					readyfds[1], wakefds[0]);
++
++	/* Wait for everyone to be ready */
++	for (i = 0; i < total_children; i++)
++		if (read(readyfds[0], &dummy, 1) != 1)
++			barf("Reading for readyfds");
++
++	gettimeofday(&start, NULL);
++
++	/* Kick them off */
++	if (write(wakefds[1], &dummy, 1) != 1)
++		barf("Writing to start them");
++
++	/* Reap them all */
++	for (i = 0; i < total_children; i++)
++		reap_worker(pth_tab[i]);
++
++	gettimeofday(&stop, NULL);
++
++	timersub(&stop, &start, &diff);
++
++	if (simple)
++		printf("%lu.%03lu\n", diff.tv_sec, diff.tv_usec/1000);
++	else {
++		printf("(%d sender and receiver %s per group)\n",
++		       num_fds, thread_mode ? "threads" : "processes");
++		printf("(%d groups == %d %s run)\n\n",
++		       num_groups, num_groups * 2 * num_fds,
++		       thread_mode ? "threads" : "processes");
++		printf("\tTotal time:%lu.%03lu sec\n",
++		       diff.tv_sec, diff.tv_usec/1000);
++	}
++
++	return 0;
++}
+-- 
+1.6.5.2
+
