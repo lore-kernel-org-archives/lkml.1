@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbZKGBOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbZKGAoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758553AbZKGBOw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Nov 2009 20:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757755AbZKGBOw
+	id S1756180AbZKGAoK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Nov 2009 19:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbZKGAoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Nov 2009 20:14:52 -0500
-Received: from kroah.org ([198.145.64.141]:40734 "EHLO coco.kroah.org"
+	Fri, 6 Nov 2009 19:44:10 -0500
+Received: from mga09.intel.com ([134.134.136.24]:1996 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757742AbZKGBOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Nov 2009 20:14:51 -0500
-Date: Fri, 6 Nov 2009 16:07:49 -0800
-From: Greg KH <greg@kroah.com>
-To: Thiago Farina <tfransosi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
-       Luis.Rodriguez@atheros.com
-Subject: Re: [PATCH] staging/otus: trivial, fix sparse warnig.
-Message-ID: <20091107000749.GA26070@kroah.com>
-References: <1256861066-21954-1-git-send-email-tfransosi@gmail.com>
- <20091106224728.GA32205@kroah.com>
- <a4c8a6d00911061547x3d502de5i8a459385e1a5a9ff@mail.gmail.com>
+	id S1755190AbZKGAoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Nov 2009 19:44:09 -0500
+X-ExtLoop1: 1
+Date: Sat, 7 Nov 2009 08:17:36 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86, therm: Only read the initial value of thermal LVT
+	entry on BSP
+Message-ID: <20091107001736.GA30790@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a4c8a6d00911061547x3d502de5i8a459385e1a5a9ff@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 06, 2009 at 09:47:22PM -0200, Thiago Farina wrote:
-> Hi Greg,
-> 
-> On Fri, Nov 6, 2009 at 8:47 PM, Greg KH <greg@kroah.com> wrote:
-> > The tabs somehow got converted to spaces in your patches, so they can't
-> > be applied :(
-> 
-> I can't see spaces instead of tabs in this patch, may be you are
-> talking about other patch?
+Only read the initial value of thermal LVT entry on BSP. The initial
+value of thermal LVT entries on all APs always reads 0x10000 because
+APs are woken up by BSP issuing INIT-SIPI-SIPI sequence to them and
+LVT registers are reset to 0s except for mask bits which are set to
+1s when APs receive INIT IPI.
 
-Well, for some reason this patch would not apply at all, it looks like
-there are no tabs in it.
+Also restore the value that BIOS has programmed on AP based on BSP's
+info we saved since BIOS is always setting the same value for all
+threads/cores.
 
-> > care to rediff both of them?
-> Sure, but which?
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Cc: stable <stable@kernel.org>
+---
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-This one, and you sent another otus one, right?
-
-thanks,
-
-greg k-h
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index b3a1dba..1fd42db 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -259,6 +259,7 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
+ 	unsigned int cpu = smp_processor_id();
+ 	int tm2 = 0;
+ 	u32 l, h;
++	static u32 lvtthmr;
+ 
+ 	/* Thermal monitoring depends on ACPI and clock modulation*/
+ 	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
+@@ -270,7 +271,24 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
+ 	 * since it might be delivered via SMI already:
+ 	 */
+ 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-	h = apic_read(APIC_LVTTHMR);
++
++	/*
++	 * Only read the initial value of thermal LVT entry on BSP. The
++	 * initial value of thermal LVT entries on all APs always reads
++	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
++	 * sequence to them and LVT registers are reset to 0s except for
++	 * the mask bits which are set to 1s when APs receive INIT IPI.
++	 * Also restore the value that BIOS has programmed on AP based on
++	 * BSP's info we saved since BIOS is always setting the same value
++	 * for all threads/cores
++	 */
++	if (cpu == 0)
++		lvtthmr = apic_read(APIC_LVTTHMR);
++	else
++		apic_write(APIC_LVTTHMR, lvtthmr);
++
++	h = lvtthmr;
++
+ 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
+ 		printk(KERN_DEBUG
+ 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
