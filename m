@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbZKGUJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbZKGTnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752783AbZKGUJZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 15:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZKGUJX
+	id S1752784AbZKGTnt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 14:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZKGTnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 15:09:23 -0500
-Received: from aa.81.b6.static.xlhost.com ([207.182.129.170]:57362 "EHLO
-	wombat.diezmil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752652AbZKGUJX (ORCPT
+	Sat, 7 Nov 2009 14:43:47 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:60487 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752639AbZKGTnq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 15:09:23 -0500
-X-Greylist: delayed 1583 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Nov 2009 15:09:22 EST
-Date: Sat, 7 Nov 2009 14:43:03 -0500
-From: angelo.borsotti@gmail.com
-Reply-To: angelo.borsotti@gmail.com
-To: linux-kernel@vger.kernel.org
-Message-ID: <13000625.11257622983772.JavaMail.root@wombat>
-In-Reply-To: <Pine.LNX.4.64.0607061217320.3869@g5.osdl.org>
-Subject: Re: Re: Strange Linux behaviour with blocking syscalls and stop
-  signals+SIGCONT
+	Sat, 7 Nov 2009 14:43:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Vvhvg0L+RgnyDCh/wI9hrfbFwF11PBoGTwJsphZ3hea3FY3MxJzMIg/T5/3ONUSmrN
+         1NK81Zuyrlu9apL0O9fnSVCuNBeIaXJB9Pg2try3/my2dwdh3u24j4YHszxxLHDq6b90
+         8/eSXODeIVCes8Uv9ZDzjojKW4nR9KH9KSlwk=
 MIME-Version: 1.0
+In-Reply-To: <efe7343f0911071012u73317883wc60f5c188bc853e8@mail.gmail.com>
+References: <200911031951.05235.bzolnier@gmail.com> <200911042251.23506.IvDoorn@gmail.com> 
+	<20091106074643.GA5562@ucw.cz> <200911061858.56816.IvDoorn@gmail.com> 
+	<20091107173028.GA1932@ucw.cz> <efe7343f0911071012u73317883wc60f5c188bc853e8@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Sat, 7 Nov 2009 11:43:32 -0800
+Message-ID: <43e72e890911071143m58eb312ck8e95edc7228ca07f@mail.gmail.com>
+Subject: Re: [announce] new rt2800 drivers for Ralink wireless & project tree
+To: Luis Correia <luis.f.correia@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Ivo van Doorn <ivdoorn@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I would venture to suggest a possible solution. But let's fist see what
-could be a reasoneable goal to achieve. Compatibility with existing
-applications is a must, so, solutions must not break it.
-Easy porting applications written for other Unixes is also a desirable
-feature. Being able to write correct programs that cope with stopping/
-continuing is also a must.
-The very last (correctness) cannot be achieved with the existing API:
-suppose you are implementing a library, and you want to cope with
-stopping (i.e. make the process using the library continue properly
-after having been stopped). You cannot simply restart calls (the 16
-ones that are interrupted by stop signals) because EINTR can be
-returned also when other signals have been catched. You cannot either
-rely on some flags set in a handler for SIGCONT because handlers
-might be already in place when your library functions are called
-(and you cannot change them since they are out of your control).
-A possible solution to consider is to have the kernel store the number
-of the signal that interrupted a call so that user code can decide
-the action that is most appropriate for the signal received.
-Since this adds to the existing API, it cannot break existing programs.
-People that want to port code from other Unixes can do that simply
-writing wrappers for the 16 syscalls that restart them when a stop
-signal is received. People that want to cope with stop signals in new
-code can restart them testing the signal that interrupted the calls
-(it would use a feature that is not in the POSIX standard, but it
-would work).
+On Sat, Nov 7, 2009 at 10:12 AM, Luis Correia <luis.f.correia@gmail.com> wrote:
+> Pavel,
+>
+> On Sat, Nov 7, 2009 at 17:30, Pavel Machek <pavel@ucw.cz> wrote:
+>> Hi!
+>>
+>>> > > So if I want to focus on something different in the kernel, I just send 1 patch,
+>>> > > and a second to claim the maintainership of it even though there is an active
+>>> > > maintainer available?
+>>> >
+>>> > What about listing yourself as a maintainer for a start?
+>>>
+>>> The rt2x00 project is listed as maintainer for everything in the
+>>> drivers/net/wireless/rt2x00 folder.
+>>
+>> Yes, but that tells very little. I don't know who the 'rt2x00 project'
+>> is. Perhaps its you? Perhaps its Bart? Maybe its my cat? Please just
+>> list real names of maintainers...                 Pavel
+>
+> the answer is (and always was available) here:
+>
+> http://rt2x00.serialmonkey.com/wiki/index.php/Developers
+>
+> Luis Correia
+> rt2x00 project admin
 
---
-This message was sent on behalf of angelo.borsotti@gmail.com at openSubscriber.com
-http://www.opensubscriber.com/message/linux-kernel@vger.kernel.org/4393984.html
+BTW is the rt2x00 project a non-profit? If not then that copyright
+notice on the files is pretty pointless as it would have no legal
+backing.
+
+  Luis
