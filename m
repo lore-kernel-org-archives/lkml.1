@@ -1,114 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZKGUtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752830AbZKGUwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbZKGUtB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 15:49:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbZKGUs6
+	id S1752830AbZKGUwz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 15:52:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZKGUwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 15:48:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40681 "EHLO hera.kernel.org"
+	Sat, 7 Nov 2009 15:52:55 -0500
+Received: from cantor.suse.de ([195.135.220.2]:46402 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752792AbZKGUs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 15:48:57 -0500
-Date: Sat, 7 Nov 2009 20:48:48 GMT
-From: tip-bot for Yong Zhang <yong.zhang0@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yong.zhang0@gmail.com, tglx@linutronix.de, prarit@redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, yong.zhang0@gmail.com, prarit@redhat.com
-In-Reply-To: <1257563773-4620-1-git-send-email-yong.zhang0@gmail.com>
-References: <1257563773-4620-1-git-send-email-yong.zhang0@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:irq/urgent] genirq: try_one_irq() must be called with irq disabled
-Message-ID: <tip-e7e7e0c084ef862d5754701108d4a038514d6314@git.kernel.org>
-Git-Commit-ID: e7e7e0c084ef862d5754701108d4a038514d6314
-X-Mailer: tip-git-log-daemon
+	id S1750996AbZKGUwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Nov 2009 15:52:54 -0500
+From: Thomas Renninger <trenn@suse.de>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [PATCH] cpu-freq: add troubleshooting section for FSB changes
+Date: Sat, 7 Nov 2009 21:52:56 +0100
+User-Agent: KMail/1.9.10
+Cc: davej@redhat.com, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mcgrof@gmail.com, Matthew Garrett <mjg@redhat.com>,
+       "Arjan van de Ven\"" <arjan@linux.intel.com>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Aeolus Yang <Aeolus.Yang@atheros.com>,
+       Amod Bodas <Amod.Bodas@atheros.com>,
+       David Quan <David.Quan@atheros.com>,
+       Kishore Jotwani <Kishore.Jotwani@atheros.com>
+References: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com>
+In-Reply-To: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200911072152.57596.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e7e7e0c084ef862d5754701108d4a038514d6314
-Gitweb:     http://git.kernel.org/tip/e7e7e0c084ef862d5754701108d4a038514d6314
-Author:     Yong Zhang <yong.zhang0@gmail.com>
-AuthorDate: Sat, 7 Nov 2009 11:16:13 +0800
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sat, 7 Nov 2009 21:44:45 +0100
+On Friday 06 November 2009 09:01:00 pm Luis R. Rodriguez wrote:
+> With cpu frequency scaling you may run into some system
+> performance issues when the FSB changes speed due to the
+> throughput constraints this brings on the system.
+Interesting.
+Could you be a bit more detailed how and what kind of perfomance issues are
+seen, please.
+I expect IO based issues like WLAN package throughput or even lost connections :)
+"wireless" is also a good word to grep for...
+If this gets documented also a bit more info about the HW should get
+added. The problem sounds rather restricted to specific models (atom based, laptop,
+desktop chipsets?)?
+Otherwise everyone adding a 10G network card into his Intel machine will
+start measuring or excluding the lowest freq when reading this.
 
-genirq: try_one_irq() must be called with irq disabled
+Thanks for the valuable info,
 
-Prarit reported:
-=================================
-[ INFO: inconsistent lock state ]
-2.6.32-rc5 #1
----------------------------------
-inconsistent {IN-HARDIRQ-W} -> {HARDIRQ-ON-W} usage.
-swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
- (&irq_desc_lock_class){?.-...}, at: [<ffffffff810c264e>] try_one_irq+0x32/0x138
-{IN-HARDIRQ-W} state was registered at:
- [<ffffffff81095160>] __lock_acquire+0x2fc/0xd5d
- [<ffffffff81095cb4>] lock_acquire+0xf3/0x12d
- [<ffffffff814cdadd>] _spin_lock+0x40/0x89
- [<ffffffff810c3389>] handle_level_irq+0x30/0x105
- [<ffffffff81014e0e>] handle_irq+0x95/0xb7
- [<ffffffff810141bd>] do_IRQ+0x6a/0xe0
- [<ffffffff81012813>] ret_from_intr+0x0/0x16
-irq event stamp: 195096
-hardirqs last  enabled at (195096): [<ffffffff814cd7f7>] _spin_unlock_irq+0x3a/0x5c
-hardirqs last disabled at (195095): [<ffffffff814cdbdd>] _spin_lock_irq+0x29/0x95
-softirqs last  enabled at (195088): [<ffffffff81068c92>] __do_softirq+0x1c1/0x1ef
-softirqs last disabled at (195093): [<ffffffff8101304c>] call_softirq+0x1c/0x30
+      Thomas
 
-other info that might help us debug this:
-1 lock held by swapper/0:
- #0:  (kernel/irq/spurious.c:21){+.-...}, at: [<ffffffff81070cf2>]
-run_timer_softirq+0x1a9/0x315
+> Document how to rule out whether or not FSB changes
+> affect general system issues.
+>
+> Cc: Matthew Garrett <mjg@redhat.com>
+> Cc: Arjan van de Ven" <arjan@linux.intel.com>
+> Cc: Reinette Chatre <reinette.chatre@intel.com>
+> Cc: Aeolus Yang <Aeolus.Yang@Atheros.com>
+> Cc: Amod Bodas <Amod.Bodas@Atheros.com>
+> Cc: David Quan <David.Quan@Atheros.com>
+> Cc: Kishore Jotwani <Kishore.Jotwani@Atheros.com>
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> ---
+>  Documentation/cpu-freq/user-guide.txt |   45
+> +++++++++++++++++++++++++++++++++ 1 files changed, 45 insertions(+), 0
+> deletions(-)
+>
+> diff --git a/Documentation/cpu-freq/user-guide.txt
+> b/Documentation/cpu-freq/user-guide.txt index 2a5b850..846729d 100644
+> --- a/Documentation/cpu-freq/user-guide.txt
+> +++ b/Documentation/cpu-freq/user-guide.txt
+> @@ -32,6 +32,7 @@ Contents:
+>  3. How to change the CPU cpufreq policy and/or speed
+>  3.1 Preferred interface: sysfs
+>
+> +4. Troubleshooting
+>
+>
+>  1. Supported Architectures and Processors
+> @@ -211,3 +212,47 @@ scaling_setspeed.		By "echoing" a new frequency into
+> this you can change the speed of the CPU,
+>  				but only within the limits of
+>  				scaling_min_freq and scaling_max_freq.
+> +
+> +4. Troubleshooting
+> +==================
+> +
+> +If you are not sure if frequency scaling is the culprit to your
+> +issues you can try to disable the feature on the BIOS if possible.
+> +
+> +Alternatively it helps to understand that on some CPUs (Intel)
+> +the Front Side Bus (FSB) speed is changed when you happen to change
+> +the active CPU frequency to the lowest supported frequency, which
+> +happens to be the frequency used on the highest supported P-n state.
+> +The P0 state is the highest Performance state with the highest
+> +CPU frequency and system power. The highest P-n state would be
+> +the one with the lowest supported frequency and power.
+> +
+> +On Intel CPUs the FSB will not be modified with SpeedStep enabled if the
+> +second to last lowest frequency on the available scaling frequencies
+> +is used. Testing this would rule out whether or not the FSB changes
+> +made by SpeedStep would be the main issue.
+> +
+> +Modifying the FSB will alter your general system throughput
+> +on your Northbridge so to prevent general throughput issues
+> +with devices on it you can modify frequency scaling so that
+> +it nevers uses the lowest supported frequency.
+> +
+> +For example:
+> +
+> +cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
+> +1801000 1800000 1200000 800000
+> +1801000 1800000 1200000 800000
+> +
+> +cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq
+> +800000
+> +800000
+> +
+> +To disable changing the FSB select the second to last CPU freq
+> +on the available freq for each CPU and set the scaling_min_freq
+> +for each CPU to that value. For the example output this would be
+> +echo'ing 1200000 to each scaling_min_freq:
+> +
+> +echo 1200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+> +echo 1200000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+> +
+> +The first line is for the 1st CPU, the second line for the second line.
 
-stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.32-rc5 #1
-Call Trace:
- <IRQ>  [<ffffffff81093e94>] valid_state+0x187/0x1ae
- [<ffffffff81093fe4>] mark_lock+0x129/0x253
- [<ffffffff810951d4>] __lock_acquire+0x370/0xd5d
- [<ffffffff81095cb4>] lock_acquire+0xf3/0x12d
- [<ffffffff814cdadd>] _spin_lock+0x40/0x89
- [<ffffffff810c264e>] try_one_irq+0x32/0x138
- [<ffffffff810c2795>] poll_all_shared_irqs+0x41/0x6d
- [<ffffffff810c27dd>] poll_spurious_irqs+0x1c/0x49
- [<ffffffff81070d82>] run_timer_softirq+0x239/0x315
- [<ffffffff81068bd3>] __do_softirq+0x102/0x1ef
- [<ffffffff8101304c>] call_softirq+0x1c/0x30
- [<ffffffff81014b65>] do_softirq+0x59/0xca
- [<ffffffff810686ad>] irq_exit+0x58/0xae
- [<ffffffff81029b84>] smp_apic_timer_interrupt+0x94/0xba
- [<ffffffff81012a33>] apic_timer_interrupt+0x13/0x20
 
-The reason is that try_one_irq() is called from hardirq context with
-interrupts disabled and from softirq context (poll_all_shared_irqs())
-with interrupts enabled.
-
-Disable interrupts before calling it from poll_all_shared_irqs().
-
-Reported-and-tested-by: Prarit Bhargava <prarit@redhat.com>
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-LKML-Reference: <1257563773-4620-1-git-send-email-yong.zhang0@gmail.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/irq/spurious.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-index 114e704..bd7273e 100644
---- a/kernel/irq/spurious.c
-+++ b/kernel/irq/spurious.c
-@@ -121,7 +121,9 @@ static void poll_all_shared_irqs(void)
- 		if (!(status & IRQ_SPURIOUS_DISABLED))
- 			continue;
- 
-+		local_irq_disable();
- 		try_one_irq(i, desc);
-+		local_irq_enable();
- 	}
- }
- 
