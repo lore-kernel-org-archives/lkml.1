@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbZKGUxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751599AbZKGU7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752913AbZKGUxE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 15:53:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZKGUxC
+	id S1751599AbZKGU7M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 15:59:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZKGU7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 15:53:02 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:60633 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbZKGUw7 (ORCPT
+	Sat, 7 Nov 2009 15:59:11 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:57322 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbZKGU7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 15:52:59 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 14537] New: missing compat_ioctl on x86_64
-Date: Sat, 7 Nov 2009 21:52:56 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thierry Vignaud <tvignaud@mandriva.com>,
-       bugzilla-daemon@bugzilla.kernel.org
-References: <bug-14537-6666@http.bugzilla.kernel.org/> <20091107172038.GA1835@ucw.cz> <200911072006.36904.rjw@sisk.pl>
-In-Reply-To: <200911072006.36904.rjw@sisk.pl>
+	Sat, 7 Nov 2009 15:59:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=IfUutwM0wn+F992IsWlfI9v5AblYF9TQypQhYu6eT1+1sLUoDQfm4MMbgu7XCW0hsD
+         DJHxYipgY7wqh1psW/VagSd7TRWpjRrLJsmSh1Nw03LJGfYtEpx0+8n3OTBUUSSwb71O
+         MPJmGuhv6VDxs0cLFudAQWK2ixAVf0KvZh1oY=
+Message-ID: <4AF5DF9F.5020208@tuffmail.co.uk>
+Date: Sat, 07 Nov 2009 20:59:11 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, carmelo73@gmail.com,
+       linux-kbuild@vger.kernel.org
+Subject: [PATCH 0/10] module: Speed up symbol resolution during module loading
+ (using binary search)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911072152.56586.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+FRDUCJTCJI7RRUfL/rGXwVs+vjqxIg3gIsdD
- fduPsaEhr8gx1FuidWiyynlqrtdlQgR+PZl/fpY5VcC2OItGun
- zq8OAUXKeiRS8iGzQRBvA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 November 2009, Rafael J. Wysocki wrote:
-> > Actually... it would be nice to fix that one day, if someone submitted
-> > nice patch... :-).   
-> 
-> It must be fixed in s2disk first, but that would probably require us to drop
-> support for older kernels.  Which is not unthinkable, but might hurt some
-> users.
+As requested by Mike Frysinger, this version of the series
 
-You don't need to drop support for older kernels if s2disk simply tries the
-new interface first and falls back to the current one if that fails.
+1) generalizes the use of CONFIG_SYMBOL_PREFIX so that arbitrary symbol 
+prefixes remain possible
+2) uses CONFIG_SYMBOL_PREFIX to implement VMLINUX_SYMBOL() in the 
+generic linker script, instead of relying on arch linker scripts to 
+define it if needed.
 
-	Arnd <><
+
+I also changed the position of the patch which implements the above 
+changes.  So it is possible to revert or drop the actual optimizations, 
+without removing the cleanups and annoying Mike (or Rusty, or Tejun Heo, 
+or miscellaneous fans of lib/bsearch.c :).
+
+A clean revert may be useful if hash tables are added in future, to 
+avoid the complexity of keeping hash tables + sorted tables + unsorted 
+tables.  (This current series leaves module symbol tables unsorted).
