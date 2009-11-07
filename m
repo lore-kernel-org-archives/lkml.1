@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbZKGQy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbZKGQ5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562AbZKGQy0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 11:54:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbZKGQyY
+	id S1752583AbZKGQ5I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 11:57:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZKGQ5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 11:54:24 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45280 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbZKGQyX (ORCPT
+	Sat, 7 Nov 2009 11:57:07 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:60142 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbZKGQ5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 11:54:23 -0500
-Date: Sat, 7 Nov 2009 17:54:21 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Dasgupta, Romit" <romit@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
-	threads
-Message-ID: <20091107165421.GA1630@ucw.cz>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
+	Sat, 7 Nov 2009 11:57:05 -0500
+Message-ID: <4AF5A6E2.5040306@in.ibm.com>
+Date: Sat, 07 Nov 2009 22:27:06 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+Subject: Re: linux-next: Tree for November 5
+References: <20091105190426.c9cadada.sfr@canb.auug.org.au> <200911050931.04838.bjorn.helgaas@hp.com> <200911051017.12135.bjorn.helgaas@hp.com> <200911060856.09405.bjorn.helgaas@hp.com>
+In-Reply-To: <200911060856.09405.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Bjorn Helgaas wrote:
+> On Thursday 05 November 2009 10:17:11 am Bjorn Helgaas wrote:
+>   
+>> On Thursday 05 November 2009 09:31:04 am Bjorn Helgaas wrote:
+>>     
+>>> On Thursday 05 November 2009 03:38:27 am Sachin Sant wrote:
+>>>       
+>>>> Today's next tree fails to build on i386 with
+>>>>
+>>>> arch/x86/pci/built-in.o: In function `align_resource':
+>>>> arch/x86/pci/acpi.c:82: undefined reference to `__udivdi3'
+>>>>
+>>>> The code in question was added by commit
+>>>> 03db42adfeeabe856dbb6894dd3aaff55838330a.
+>>>>         
+>>> I'll look into this.  I did build and test a 32-bit x86 kernel, but
+>>> I built it on an x86_64 box using "linux32 make ...", which looks like
+>>> it used gcc 4.3.2.
+>>>       
+>> Can you try the patch below, please?
+>>     
+>
+> Sachin, can you please try this patch and report whether it
+> fixes the undefined reference?  I hate to have linux-next
+> broken longer than necessary.
+>   
+Sorry was away from office for a day. Yes the patch
+fixed the build break for me. 
 
-> Kicks out a frozen thread from the refrigerator when an active thread has
-> invoked kthread_stop on the frozen thread.
-> 
-> Signed-off-by: Romit Dasgupta <romit@ti.com>
-> ---
-> 
-> diff --git a/kernel/freezer.c b/kernel/freezer.c
-> index bd1d42b..c28dbe8 100644
-> --- a/kernel/freezer.c
-> +++ b/kernel/freezer.c
-> @@ -9,6 +9,7 @@
->  #include <linux/module.h>
->  #include <linux/syscalls.h>
->  #include <linux/freezer.h>
-> +#include <linux/kthread.h>
->  
->  /*
->   * freezing is complete, mark current process as frozen
-> @@ -49,7 +50,7 @@ void refrigerator(void)
->  
->  	for (;;) {
->  		set_current_state(TASK_UNINTERRUPTIBLE);
-> -		if (!frozen(current))
-> +		if (!frozen(current) || (!current->mm && kthread_should_stop()))
->  			break;
->  		schedule();
+Thanks for the patch.
 
-Well, what if the thread does some processing before stopping? That
-would break refrigerator assumptions...
-								Pavel
+Regards
+-Sachin
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
+
