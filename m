@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZKHPxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZKHPyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754159AbZKHPxy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 10:53:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbZKHPxx
+	id S1754249AbZKHPyI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 10:54:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZKHPyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 10:53:53 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:27984 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752986AbZKHPxw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 10:53:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=VA8pT98WhzbIfYzX5GeoiRCuYmKp+nngna3WoMpVzVmH55y68I5xHgd78VUgfR/ajd
-         2tPZ+HMcc2BNx5rg/gx/4wMRoqwY3ilNu5vqg32Y45fp+0Re5TNodAyNNMYMWLNnfCTc
-         qMOF/xIWkwrxRAo1as9Zhdz0gGGX0F6PlT6lo=
-Date: Sun, 8 Nov 2009 18:53:56 +0300
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, x86team <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip] x86,apic: Use PAGE_SIZE instead of numbers
-Message-ID: <20091108155356.GB25940@lenovo>
+	Sun, 8 Nov 2009 10:54:07 -0500
+Received: from borg.medozas.de ([188.40.89.202]:37014 "EHLO borg.medozas.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753478AbZKHPyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 10:54:06 -0500
+Date: Sun, 8 Nov 2009 16:54:11 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v4 10/12] string: factorize skip_spaces and export it to
+ be generally available
+In-Reply-To: <c7d3b02b5e28eaa54a5360d57dfd177c44320187.1257602781.git.andre.goddard@gmail.com>
+Message-ID: <alpine.LSU.2.00.0911081651020.26458@obet.zrqbmnf.qr>
+References: <cover.1257602781.git.andre.goddard@gmail.com> <c7d3b02b5e28eaa54a5360d57dfd177c44320187.1257602781.git.andre.goddard@gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The whole page is reserved for IO-APIC fixmap
-due to non-cacheable requirement. So lets note
-this explicitly instead of playing with numbers.
 
-CC: Yinghai Lu <yinghai@kernel.org>
-CC: "Maciej W. Rozycki" <macro@linux-mips.org>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
+On Saturday 2009-11-07 16:16, André Goddard Rosa wrote:
 
-Perhaps I miss something and (4 * 1024) have some special
-meaning?
+> /**
+>+ * skip_spaces - Removes leading whitespace from @s.
+>+ * @s: The string to be stripped.
+>+ *
+>+ * Returns a pointer to the first non-whitespace character in @s.
+>+ */
+>+const char *skip_spaces(const char *str)
+>+{
+>+	while (isspace(*str))
+>+		++str;
+>+	return str;
+>+}
+>+EXPORT_SYMBOL(skip_spaces);
+>+
 
- arch/x86/kernel/apic/io_apic.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I would make this
+	char *skip_spaces(const char *)
 
-Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-@@ -4144,7 +4144,7 @@ fake_ioapic_page:
- 		idx++;
- 
- 		ioapic_res->start = ioapic_phys;
--		ioapic_res->end = ioapic_phys + (4 * 1024) - 1;
-+		ioapic_res->end = ioapic_phys + PAGE_SIZE - 1;
- 		ioapic_res++;
- 	}
- }
+just like most of the stdc functions, so that you do not need
+ugly casts like this (v) in callers of skip_spaces.
+
+>-	while (*s && isspace(*s))
+>-		s++;
+>-
+>-	return s;
+>+	return (char *)skip_spaces(s);
+> }
+> EXPORT_SYMBOL(strstrip);
