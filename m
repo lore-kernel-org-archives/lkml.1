@@ -1,81 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbZKHI1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbZKHI1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752701AbZKHI1b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 03:27:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZKHI1b
+	id S1752826AbZKHI1v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 03:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZKHI1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 03:27:31 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42767 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbZKHI1a (ORCPT
+	Sun, 8 Nov 2009 03:27:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59223
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752432AbZKHI1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 03:27:30 -0500
-Date: Sun, 8 Nov 2009 09:27:27 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Dasgupta, Romit" <romit@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
- threads
-Message-ID: <20091108082727.GC16482@elf.ucw.cz>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
- <20091107165421.GA1630@ucw.cz>
- <B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 8 Nov 2009 03:27:49 -0500
+Date: Sun, 08 Nov 2009 00:28:15 -0800 (PST)
+Message-Id: <20091108.002815.06996631.davem@davemloft.net>
+To: roel.kluin@gmail.com
+Cc: sparclinux@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparc,sparc64: replace parentheses in pmul()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4AF3000C.8080607@gmail.com>
+References: <4AF3000C.8080607@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-11-08 09:52:52, Dasgupta, Romit wrote:
-> > Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
-> > threads
-> > 
-> > Hi!
-> > 
-> > > Kicks out a frozen thread from the refrigerator when an active thread has
-> > > invoked kthread_stop on the frozen thread.
-...
-> > > @@ -49,7 +50,7 @@ void refrigerator(void)
-> > >
-> > >  	for (;;) {
-> > >  		set_current_state(TASK_UNINTERRUPTIBLE);
-> > > -		if (!frozen(current))
-> > > +		if (!frozen(current) || (!current->mm && kthread_should_stop()))
-> > >  			break;
-> > >  		schedule();
-> > 
-> > Well, what if the thread does some processing before stopping? That
-> > would break refrigerator assumptions...
+From: Roel Kluin <roel.kluin@gmail.com>
+Date: Thu, 05 Nov 2009 17:40:44 +0100
+
+> `>>' has a higher precedence than `?' so src2 evaluated to
+> either 16 or 0 dependent on the bits set in rs2.
 > 
-> The suspend thread will block until the 'to be stopped' thread clears up. That is what any call to kthread_stop would boil down to. The target thread would anyway be out of the refrigerator so I am not sure what assumption you mean here. Eventually, the target thread would clear up and wake up the suspend thread and then things would go on as usual.
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  arch/sparc/kernel/visemul.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> I am not 100% sure that the code was incorrect, however, if it
+> was intended I think it is a very strange way to write it.
 
-(Please format to 80 columns).
+Your fix is correct, thanks Roel!
 
-No, I do not get it.
-
-Lets say we have
-
-evil_data_writer thread that needs to be stopped becuase it writes to
-filesystem
-
-nofreeze random_stopper thread
-
-now we create the suspend image, and start writing it out. But that's
-okay, evil_data_writer is stopped so it can't do no harm. But now
-random_stopper decides to thread_stop() the evil_data_writer, and this
-new code allows it to exit the refrigerator, *do some writing*, and
-then stop.
-
-That's bad, right?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I really need to write a testsuite for this VIS emulation code.
