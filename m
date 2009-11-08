@@ -1,80 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751428AbZKHHzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbZKHINT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751428AbZKHHzl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 02:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZKHHzl
+	id S1752036AbZKHINT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 03:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZKHINT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 02:55:41 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39777 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbZKHHzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 02:55:40 -0500
-Date: Sun, 8 Nov 2009 18:55:39 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 09/16] powerpc: Replace old style lock initializer
-Message-Id: <20091108185539.8d09017e.sfr@canb.auug.org.au>
-In-Reply-To: <1257548144.13611.267.camel@pasglop>
-References: <20091106223547.784916750@linutronix.de>
-	<20091106223806.762624109@linutronix.de>
-	<1257548144.13611.267.camel@pasglop>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__8_Nov_2009_18_55_39_+1100_PvVKoR9/uoxSce0J"
+	Sun, 8 Nov 2009 03:13:19 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58845 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbZKHINS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 03:13:18 -0500
+Date: Sun, 8 Nov 2009 09:13:14 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>
+Subject: Re: dream: glue for mmc controller
+Message-ID: <20091108081314.GA16482@elf.ucw.cz>
+References: <20091103105319.GA2492@elf.ucw.cz>
+ <20091103105737.GE20341@fluff.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091103105737.GE20341@fluff.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__8_Nov_2009_18_55_39_+1100_PvVKoR9/uoxSce0J
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi!
 
-Hi Ben,
-
-On Sat, 07 Nov 2009 09:55:44 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> Looks reasonable. But iseries can be a bitch, so we do need to test it
-> on monday.
-
-It should be safe as the spinlocks cannot be access until after the
-following ppc_md pointer initialisations are done (and all this happens
-before the secondary CPUs are started).
-
-But, you are right that there is nothing like actually testing with
-iSeries. :-)
-
-> >  void __init hpte_init_iSeries(void)
-> >  {
-> > +	int i;
+> > Good news is that GPIO support seems to work, and I am able to flash
+> > the keyboard backlight.
+> > 
+> > Does anyone have an idea what is wrong? Do I need some more
+> > infrastructure to set up (DMA transfers or something?)?
+> > 
+> > I'm only setting up one mmc channel; I believe the other one is for
+> > wifi, and it should work like this...?
+> > 								Pavel
+> > 
+> > diff --git a/arch/arm/mach-msm/Makefile b/arch/arm/mach-msm/Makefile
+> > index 91e6f5c..16c0faa 100644
+> > --- a/arch/arm/mach-msm/Makefile
+> > +++ b/arch/arm/mach-msm/Makefile
+> > @@ -6,4 +6,4 @@ obj-y += clock.o clock-7x01a.o
+> >  
+> >  obj-$(CONFIG_MACH_HALIBUT) += board-halibut.o
+> >  
+> > -obj-$(CONFIG_MACH_TROUT) += board-dream.o
+> > +obj-$(CONFIG_MACH_TROUT) += board-dream.o board-dream-mmc.o board-dream-gpio.o generic_gpio.o
+> > diff --git a/arch/arm/mach-msm/board-dream-gpio.c b/arch/arm/mach-msm/board-dream-gpio.c
+> > new file mode 100644
+> > index 0000000..7e86a99
+> > --- /dev/null
+> > +++ b/arch/arm/mach-msm/board-dream-gpio.c
+> > @@ -0,0 +1,301 @@
+> > +/* arch/arm/mach-msm/board-dream-gpio.c
+> > + *
+> > + * Copyright (C) 2008 Google, Inc.
+> > + *
+> > + * This software is licensed under the terms of the GNU General Public
+> > + * License version 2, as published by the Free Software Foundation, and
+> > + * may be copied, distributed, and modified under those terms.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + */
 > > +
-> > +	for (i =3D 0; i < ARRAY_SIZE(iSeries_hlocks); i++)
-> > +		spin_lock_init(&iSeries_hlocks[i]);
+> > +#include <linux/kernel.h>
+> > +#include <linux/errno.h>
+> > +#include <linux/irq.h>
+> > +#include <linux/pm.h>
+> > +#include <linux/sysdev.h>
 > > +
-> >  	ppc_md.hpte_invalidate	=3D iSeries_hpte_invalidate;
-> >  	ppc_md.hpte_updatepp	=3D iSeries_hpte_updatepp;
-> >  	ppc_md.hpte_updateboltedpp =3D iSeries_hpte_updateboltedpp;
+> > +#include <asm/io.h>
+> > +#include <asm/gpio.h>
+> linux/gpio.h
+> linux/io.h
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I got compile errors when trying to use linux/gpio.h:
 
---Signature=_Sun__8_Nov_2009_18_55_39_+1100_PvVKoR9/uoxSce0J
-Content-Type: application/pgp-signature
+arch/arm/mach-msm/board-dream-gpio.c: In function
+'dream_gpio_configure':
+arch/arm/mach-msm/board-dream-gpio.c:109: error: 'GPIOF_OUTPUT_LOW'
+undeclared (first use in this function)
+arch/arm/mach-msm/board-dream-gpio.c:109: error: (Each undeclared
+identifier is reported only once
+arch/arm/mach-msm/board-dream-gpio.c:109: error: for each function it
+appears in.)
+arch/arm/mach-msm/board-dream-gpio.c:109: error: 'GPIOF_OUTPUT_HIGH'
+undeclared (first use in this function)
+arch/arm/mach-msm/board-dream-gpio.c: In function 'dream_init_gpio':
+arch/arm/mach-msm/board-dream-gpio.c:291: error: 'IRQF_TRIGGER_HIGH'
+undeclared (first use in this function)
+arch/arm/mach-msm/board-dream-gpio.c:293: error: implicit declaration
+of function 'set_irq_wake'
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> and why can't use you use gpiolib?
 
-iEYEARECAAYFAkr2eXsACgkQjjKRsyhoI8yplQCePqhkhwE9kOsv222YOeuSMTT+
-v6QAn0aivxcGS4awyXn6SI2G1PYtfuZt
-=kxrY
------END PGP SIGNATURE-----
+This is what I inherited from google. What advantages are there to it?
+I'll eventually take a look.
 
---Signature=_Sun__8_Nov_2009_18_55_39_+1100_PvVKoR9/uoxSce0J--
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
