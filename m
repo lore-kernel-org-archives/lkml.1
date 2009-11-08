@@ -1,96 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbZKHMmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZKHMnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269AbZKHMmq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 07:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZKHMmp
+	id S1754349AbZKHMnb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 07:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZKHMna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 07:42:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55809 "EHLO mx3.mail.elte.hu"
+	Sun, 8 Nov 2009 07:43:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45769 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbZKHMmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 07:42:44 -0500
-Date: Sun, 8 Nov 2009 13:42:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       hare@suse.de, akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Add back _end symbol that is missing from
- Symbol.map
-Message-ID: <20091108124232.GA4205@elte.hu>
-References: <200911041519.nA4FJWEW030164@imap1.linux-foundation.org>
- <tip-d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76@git.kernel.org>
- <20091108113805.GA11847@merkur.ravnborg.org>
- <20091108114829.GQ11372@elte.hu>
- <20091108123825.GA11904@merkur.ravnborg.org>
+	id S1752319AbZKHMn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 07:43:29 -0500
+Message-ID: <4AF6BCE5.3030701@redhat.com>
+Date: Sun, 08 Nov 2009 14:43:17 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091108123825.GA11904@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Ingo Molnar <mingo@elte.hu>
+CC: Gleb Natapov <gleb@redhat.com>, kvm@vger.kernel.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
+References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com> <20091102092214.GB8933@elte.hu> <20091102160410.GF27911@redhat.com> <20091102161248.GB15423@elte.hu> <20091102162234.GH27911@redhat.com> <20091102162941.GC14544@elte.hu> <20091102174208.GJ27911@redhat.com> <20091108113654.GO11372@elte.hu>
+In-Reply-To: <20091108113654.GO11372@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> On Sun, Nov 08, 2009 at 12:48:29PM +0100, Ingo Molnar wrote:
-> > 
-> > * Sam Ravnborg <sam@ravnborg.org> wrote:
-> > 
-> > > On Sun, Nov 08, 2009 at 11:07:12AM +0000, tip-bot for Hannes Reinecke wrote:
-> > > > Commit-ID:  d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76
-> > > > Gitweb:     http://git.kernel.org/tip/d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76
-> > > > Author:     Hannes Reinecke <hare@suse.de>
-> > > > AuthorDate: Wed, 4 Nov 2009 07:19:32 -0800
-> > > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > > CommitDate: Sun, 8 Nov 2009 12:05:03 +0100
-> > > > 
-> > > > x86: Add back _end symbol that is missing from Symbol.map
-> > > > 
-> > > > With 2.6.31 'crash' on x86_64 falls flat on its face as the
-> > > > '_end' symbol is missing from the System.map file.
-> > > > 
-> > > > The culprit is commit 091e52c3551d3031343df24b573b770b4c6c72b6,
-> > > > which moved the '_end' symbol into it's own section.  Apparently
-> > > > this causes kallsyms to not reference it properly.
-> > > > 
-> > > > So do not include _end in it's own section.
-> > > > 
-> > > > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > > > Cc: Sam Ravnborg <sam@ravnborg.org>
-> > > > Cc: <stable@kernel.org> # .31.x
-> > > > LKML-Reference: <200911041519.nA4FJWEW030164@imap1.linux-foundation.org>
-> > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > 
-> > > I'm afraid this will break a RELOCTABLE i386 kernel.
-> > > 
-> > > We fixed this up some time ago where we had to
-> > > move the symbol definition inside a section
-> > > to prevent the symbol being absolute.
-> > 
-> > ah, indeed. So ... the question is then, why did _end disappear from 
-> > System.map?
+On 11/08/2009 01:36 PM, Ingo Molnar wrote:
+>> Three existing callbacks are: kmemcheck, mmiotrace, notifier. Two
+>> of them kmemcheck, mmiotrace are enabled only for debugging, should
+>> not be performance concern. And notifier call sites (two of them)
+>> are deliberately, as explained by comment, not at the function entry,
+>> so can't be unified with others. (And kmemcheck also has two different
+>> call site BTW)
+>>      
+> We want mmiotrace to be generic distro capable so the overhead when the
+> hook is not used is of concern.
 >
-> I think ld discards zero size sections. No need to keep them around if 
-> they are empty.
-> 
-> Following patch should fix it up in a better way.
+>    
 
-thanks Sam, that was fast!
+Maybe we should generalize paravirt-ops patching in case if (x) f() is 
+deemed too expensive.
 
-> I reused most of Hannes changelog.
+-- 
+error compiling committee.c: too many arguments to function
 
-Hannes, if it works for you then please resend the patch with your 
-signoff so we can send it upstream-wards.
-
-Thanks,
-
-	Ingo
