@@ -1,88 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbZKHUo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbZKHVAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbZKHUo0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 15:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZKHUo0
+	id S1755272AbZKHVAW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 16:00:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbZKHVAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 15:44:26 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35629 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755078AbZKHUoZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 15:44:25 -0500
-Date: Sun, 8 Nov 2009 12:45:39 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: john stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
-       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] Allow threads to rename siblings via
- /proc/pid/tasks/tid/comm
-Message-ID: <20091108124539.6f81d351@infradead.org>
-In-Reply-To: <87aayy6j8b.fsf@basil.nowhere.org>
-References: <1256347303.5059.26.camel@localhost.localdomain>
-	<1257557918.3298.21.camel@localhost.localdomain>
-	<87aayy6j8b.fsf@basil.nowhere.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Sun, 8 Nov 2009 16:00:21 -0500
+Received: from gate.crashing.org ([63.228.1.57]:49882 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755078AbZKHVAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 16:00:19 -0500
+Subject: Re: [PATCH 5/6] hw-breakpoints: Arbitrate access to pmu following
+ registers constraints
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Avi Kivity <avi@redhat.com>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <19186.45014.502448.698606@cargo.ozlabs.ibm.com>
+References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com>
+	 <1257275474-5285-6-git-send-email-fweisbec@gmail.com>
+	 <19186.45014.502448.698606@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 07:56:21 +1100
+Message-ID: <1257713781.13611.284.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 07 Nov 2009 23:52:20 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+On Thu, 2009-11-05 at 21:58 +1100, Paul Mackerras wrote:
+> Frederic Weisbecker writes:
+> 
+> > Allow or refuse to build a counter using the breakpoints pmu following
+> > given constraints.
+> 
+> As far as I can see, you assume each CPU has HBP_NUM breakpoint
+> registers which are all interchangeable and can all be used either for
+> data breakpoints or instruction breakpoints.  Is that accurate?
+> 
+> If so, we'll need to extend it a bit for Power since we have some CPUs
+> that have one data breakpoint register and one instruction breakpoint
+> register.  In general on powerpc the instruction and data breakpoint
+> facilities are separate, i.e. we have no registers that can be used
+> for either.
 
-> john stultz <johnstul@us.ibm.com> writes:
-> > -	strlcpy(tsk->comm, buf, sizeof(tsk->comm));
+Additionally, we have more fancy facilities that I don't see exposed at
+all through this interface (we are building an ad-hoc ptrace based
+interface today so that gdb can make use of them) and we have one guy
+with crazy constraints that we don't know yet how to deal with:
+
+Among others features:
+
+ - Pairing of two data or instruction breakpoints to create a ranges
+breakpoint
+ - Data value compare option
+ - Instruction value compare option
+
+And now the crazy constraints:
+
+ - On one embedded core at least we have a case where the core has 4
+threads, but the data (4) and instruction (2) breakpoint registers are
+shared. The 'enable' bits are split so a given data breakpoint can be
+enabled only on some HW threads but that's about it.
+
+I'm not sure if there's a realistic way to handle the later constraint
+though other than just not allowing use of the HW breakpoint function on
+those cores at all.
+
+Ben.
+
+> > +static void toggle_bp_slot(struct perf_event *bp, bool enable)
+> > +{
+> > +	int cpu = bp->cpu;
+> > +	unsigned int *nr;
+> > +	struct task_struct *tsk = bp->ctx->task;
 > > +
-> > +	/*
-> > +	 * Threads may access current->comm without holding
-> > +	 * the task lock, so write the string carefully
-> > +	 * to avoid non-terminating reads. Readers without a lock
-> > +	 * will get the oldname, the newname or an empty string.
-> > +	 */
-> > +	tsk->comm[0] = 0;
-> > +	wmb();
-> > +	strlcpy(tsk->comm+1, buf+1, sizeof(tsk->comm)-1);
-> > +	wmb();
-> > +	tsk->comm[0] = buf[0];
-> 
-> Is this really safe? 
-> 
-> reader                    writer
-> 
-> 
-> read comm[0]
->                          set comm[0] to 0
->                          overwrites comm[1]
-> read comm[1]
-> read comm[2]
->                          writes comm[2] to 0 
-> read comm[3]
+> > +	/* Flexible */
+> > +	if (!bp->attr.pinned) {
+> > +		if (cpu >= 0) {
+> > +			nr = &per_cpu(nr_bp_flexible, cpu);
+> > +			goto toggle;
+> > +		}
+> > +
+> > +		for_each_online_cpu(cpu) {
+> > +			nr = &per_cpu(nr_bp_flexible, cpu);
+> > +			goto toggle;
 > 
 > ...
-> goes beyond the end
->                   
-> Better way probably is to replace tsk->comm with a pointer
-> and exchange that using xchg. Drawback: 4-8 bytes more per task.
 > 
-> Or perhaps make comm one byte longer and make sure the last
-> byte is always 0, but the drawback is that a reader can
-> read random (but at least safe) junk then.
+> > +toggle:
+> > +	*nr = enable ? *nr + 1 : *nr - 1;
+> > +}
+> 
+> This won't do what I think you want.  In the case where
+> !bp->attr.pinned and cpu == -1, it will only update the count for the
+> first online cpu, not all of them.
+> 
+> Paul.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-another option is to memset the whole thing to 0's.
-might sound like overkill, but we're talking 16 bytes here... cheap
-enough to do for such a rare case.
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
