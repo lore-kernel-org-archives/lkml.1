@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbZKHQAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbZKHQIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754430AbZKHQAe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 11:00:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZKHQAd
+	id S1754459AbZKHQIM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 11:08:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZKHQIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 11:00:33 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:60905 "EHLO mail.issp.bas.bg"
+	Sun, 8 Nov 2009 11:08:11 -0500
+Received: from smtp5.welho.com ([213.243.153.39]:44746 "EHLO smtp5.welho.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754108AbZKHQAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 11:00:32 -0500
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH]Use DMA_BIT_MASK(44) instead of deprecated DMA_44BIT_MASK
-Date: Sun, 8 Nov 2009 17:59:27 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.32-rc6; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200911081759.27263.mitov@issp.bas.bg>
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1753206AbZKHQIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 11:08:11 -0500
+X-Greylist: delayed 419 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Nov 2009 11:08:10 EST
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] perf tools: Fix permission checks
+Date: Sun,  8 Nov 2009 18:01:06 +0200
+Message-Id: <1257696066-4046-1-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+The perf_event_open() system call returns EACCES if the user is not root which
+results in a very confusing error message:
 
-Use DMA_BIT_MASK(44) instead of deprecated DMA_44BIT_MASK
+  $ perf record -A -a -f
 
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
+    Error: perfcounter syscall returned with -1 (Permission denied)
 
-=========================================================
---- a/drivers/net/niu.c	2009-11-08 17:09:40.000000000 +0200
-+++ b/drivers/net/niu.c	2009-11-08 17:10:31.000000000 +0200
-@@ -45,10 +45,6 @@
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRV_MODULE_VERSION);
+    Fatal: No CONFIG_PERF_EVENTS=y kernel support configured?
+
+It turns out that's because perf tools are checking only for EPERM. Fix that up
+to get a much better error message:
+
+  $ perf record -A -a -f
+    Fatal: Permission error - are you root?
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ tools/perf/builtin-record.c |    2 +-
+ tools/perf/builtin-top.c    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 3eeef33..a4be453 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -426,7 +426,7 @@ try_again:
+ 	if (fd[nr_cpu][counter] < 0) {
+ 		int err = errno;
  
--#ifndef DMA_44BIT_MASK
--#define DMA_44BIT_MASK	0x00000fffffffffffULL
--#endif
--
- #ifndef readq
- static u64 readq(void __iomem *reg)
- {
-@@ -9915,7 +9911,7 @@
- 		  PCI_EXP_DEVCTL_RELAX_EN);
- 	pci_write_config_word(pdev, pos + PCI_EXP_DEVCTL, val16);
+-		if (err == EPERM)
++		if (err == EPERM || err == EACCES)
+ 			die("Permission error - are you root?\n");
+ 		else if (err ==  ENODEV && profile_cpu != -1)
+ 			die("No such device - did you specify an out-of-range profile CPU?\n");
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index a1b1d10..e23bc74 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -1027,7 +1027,7 @@ try_again:
+ 	if (fd[i][counter] < 0) {
+ 		int err = errno;
  
--	dma_mask = DMA_44BIT_MASK;
-+	dma_mask = DMA_BIT_MASK(44);
- 	err = pci_set_dma_mask(pdev, dma_mask);
- 	if (!err) {
- 		dev->features |= NETIF_F_HIGHDMA;
+-		if (err == EPERM)
++		if (err == EPERM || err == EACCES)
+ 			die("No permission - are you root?\n");
+ 		/*
+ 		 * If it's cycles then fall back to hrtimer
+-- 
+1.6.3.3
+
