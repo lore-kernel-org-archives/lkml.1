@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbZKHOyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZKHOz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752901AbZKHOyM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 09:54:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbZKHOyL
+	id S1753425AbZKHOz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 09:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZKHOz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 09:54:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51612 "EHLO mx3.mail.elte.hu"
+	Sun, 8 Nov 2009 09:55:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51875 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751707AbZKHOyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 09:54:10 -0500
-Date: Sun, 8 Nov 2009 15:53:55 +0100
+	id S1752040AbZKHOz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 09:55:56 -0500
+Date: Sun, 8 Nov 2009 15:55:50 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       sivanich@sgi.com
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/apic] x86/apic: Limit irq affinity
-Message-ID: <20091108145355.GA8432@elte.hu>
-References: <20091021011233.GB32196@sgi.com>
- <tip-683c91f85d7a3e1092d7fa3ec5687af8cd379f02@git.kernel.org>
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       Andreas Herrmann <herrmann.der.user@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>
+Subject: Re: [PATCH 1/2] x86, amd-ucode: Check UCODE_MAGIC before loading the
+ container file
+Message-ID: <20091108145550.GA12290@elte.hu>
+References: <20091029134552.GC30802@alberich.amd.com>
+ <20091108120418.GV11372@elte.hu>
+ <20091108141017.GA9595@liondog.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <tip-683c91f85d7a3e1092d7fa3ec5687af8cd379f02@git.kernel.org>
+In-Reply-To: <20091108141017.GA9595@liondog.tnic>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -36,23 +37,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* tip-bot for Dimitri Sivanich <sivanich@sgi.com> wrote:
+* Borislav Petkov <petkovbb@googlemail.com> wrote:
 
-> Commit-ID:  683c91f85d7a3e1092d7fa3ec5687af8cd379f02
-> Gitweb:     http://git.kernel.org/tip/683c91f85d7a3e1092d7fa3ec5687af8cd379f02
-> Author:     Dimitri Sivanich <sivanich@sgi.com>
-> AuthorDate: Tue, 3 Nov 2009 12:40:37 -0600
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Sun, 8 Nov 2009 13:30:40 +0100
+> Hi Ingo,
 > 
-> x86/apic: Limit irq affinity
+> On Sun, Nov 08, 2009 at 01:04:18PM +0100, Ingo Molnar wrote:
+> > hm, there's no changelog. How was it found,
 > 
-> This patch allows for hard numa restrictions to irq affinity on
-> x86 systems.
+> code staring :)
+> 
+> > what's the significance,
+> 
+> required by design.
+> 
+> > do we want it for .32 - i suspect we want - but we need a better
+> > changelog for that.
+> 
+> Yes. How's that?
+> 
+> --
+> >From f41bced57e05c8adc0d2c13864b6323c191d45d2 Mon Sep 17 00:00:00 2001
+> From: Borislav Petkov <borislav.petkov@amd.com>
+> Date: Thu, 29 Oct 2009 14:00:54 +0100
+> Subject: [PATCH] x86, amd-ucode: Check UCODE_MAGIC before loading the container file
+> 
+> When loading a microcode binary, we should check the microcode magic
+> value embedded in the image before continuing loading. The original
+> check got lost somehow so re-add it to the firmware requesting path.
+> 
+> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+>  arch/x86/kernel/microcode_amd.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
 
--tip testing found a build failure:
-
-arch/x86/kernel/apic/io_apic.c:1438: error: ‘struct irq_desc’ has no member named ‘node’
-arch/x86/kernel/apic/io_apic.c:3286: error: ‘struct irq_desc’ has no member named ‘node’
+Looks good - thanks!
 
 	Ingo
