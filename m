@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbZKHGBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbZKHGBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751707AbZKHGBI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 01:01:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbZKHGBF
+	id S1751870AbZKHGBR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 01:01:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZKHGBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 01:01:05 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:58588 "EHLO
+	Sun, 8 Nov 2009 01:01:15 -0500
+Received: from bhuna.collabora.co.uk ([93.93.128.226]:58592 "EHLO
 	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbZKHGBD (ORCPT
+	with ESMTP id S1751735AbZKHGBM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 01:01:03 -0500
-Date: Sun, 8 Nov 2009 01:00:58 -0500
+	Sun, 8 Nov 2009 01:01:12 -0500
+Date: Sun, 8 Nov 2009 01:01:08 -0500
 From: Andres Salomon <dilinger@collabora.co.uk>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
        cjb@laptop.org, deepak@laptop.org,
        Jordan Crouse <jordan@cosmicpenguin.net>
-Subject: [PATCH 4/6] CS5535: move VSA2 checks into linux/cs5535.h
-Message-ID: <20091108010058.4611c220@mycelium.queued.net>
+Subject: [PATCH 5/6] CS5535: define lxfb/gxfb MSRs in linux/cs5535.h
+Message-ID: <20091108010108.1568ce2a@mycelium.queued.net>
 X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,177 +27,174 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+..and include them in the lxfb/gxfb drivers rather than asm/geode.h (where
+possible).
+
 Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
 ---
- arch/x86/include/asm/geode.h     |   19 -------------------
- arch/x86/kernel/geode_32.c       |   22 ----------------------
- arch/x86/kernel/olpc.c           |    4 ++--
+ arch/x86/include/asm/geode.h     |   13 -------------
  drivers/video/geode/display_gx.c |    2 +-
+ drivers/video/geode/gxfb.h       |    2 +-
+ drivers/video/geode/gxfb_core.c  |    2 +-
+ drivers/video/geode/lxfb.h       |    2 +-
  drivers/video/geode/lxfb_ops.c   |    2 +-
- include/linux/cs5535.h           |   32 ++++++++++++++++++++++++++++++++
- 6 files changed, 36 insertions(+), 45 deletions(-)
+ drivers/video/geode/suspend_gx.c |    2 +-
+ drivers/video/geode/video_gx.c   |    2 +-
+ include/linux/cs5535.h           |   13 +++++++++++++
+ 9 files changed, 20 insertions(+), 20 deletions(-)
 
 diff --git a/arch/x86/include/asm/geode.h b/arch/x86/include/asm/geode.h
-index 976b3f1..df1eaf8 100644
+index df1eaf8..ae104da 100644
 --- a/arch/x86/include/asm/geode.h
 +++ b/arch/x86/include/asm/geode.h
-@@ -95,16 +95,6 @@ extern int geode_get_dev_base(unsigned int dev);
- #define PM_AWKD			0x50
- #define PM_SSC			0x54
+@@ -31,25 +31,12 @@ extern int geode_get_dev_base(unsigned int dev);
  
--/* VSA2 magic values */
--
--#define VSA_VRC_INDEX		0xAC1C
--#define VSA_VRC_DATA		0xAC1E
--#define VSA_VR_UNLOCK		0xFC53	/* unlock virtual register */
--#define VSA_VR_SIGNATURE	0x0003
--#define VSA_VR_MEM_SIZE		0x0200
--#define AMD_VSA_SIG		0x4132	/* signature is ascii 'VSA2' */
--#define GSW_VSA_SIG		0x534d  /* General Software signature */
--
- static inline u32 geode_gpio(unsigned int nr)
- {
- 	BUG_ON(nr > 28);
-@@ -148,15 +138,6 @@ static inline int is_geode(void)
- 	return (is_geode_gx() || is_geode_lx());
- }
+ /* MSRS */
  
--#ifdef CONFIG_MGEODE_LX
--extern int geode_has_vsa2(void);
--#else
--static inline int geode_has_vsa2(void)
--{
--	return 0;
--}
--#endif
+-#define MSR_GLIU_P2D_RO0	0x10000029
 -
- static inline void geode_mfgpt_write(int timer, u16 reg, u16 value)
- {
- 	u32 base = geode_get_dev_base(GEODE_DEV_MFGPT);
-diff --git a/arch/x86/kernel/geode_32.c b/arch/x86/kernel/geode_32.c
-index 9b08e85..9dad6ca 100644
---- a/arch/x86/kernel/geode_32.c
-+++ b/arch/x86/kernel/geode_32.c
-@@ -161,28 +161,6 @@ void geode_gpio_setup_event(unsigned int gpio, int pair, int pme)
- }
- EXPORT_SYMBOL_GPL(geode_gpio_setup_event);
+-#define MSR_LX_GLD_MSR_CONFIG	0x48002001
+-#define MSR_LX_MSR_PADSEL	0x48002011	/* NOT 0x48000011; the data
+-						 * sheet has the wrong value */
+-#define MSR_GLCP_SYS_RSTPLL	0x4C000014
+-#define MSR_GLCP_DOTPLL		0x4C000015
+-
+ #define MSR_LBAR_SMB		0x5140000B
+ #define MSR_LBAR_GPIO		0x5140000C
+ #define MSR_LBAR_MFGPT		0x5140000D
+ #define MSR_LBAR_ACPI		0x5140000E
+ #define MSR_LBAR_PMS		0x5140000F
  
--int geode_has_vsa2(void)
--{
--	static int has_vsa2 = -1;
+-#define MSR_LX_SPARE_MSR	0x80000011	/* DC-specific */
 -
--	if (has_vsa2 == -1) {
--		u16 val;
+-#define MSR_GX_GLD_MSR_CONFIG	0xC0002001
+-#define MSR_GX_MSR_PADSEL	0xC0002011
 -
--		/*
--		 * The VSA has virtual registers that we can query for a
--		 * signature.
--		 */
--		outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
--		outw(VSA_VR_SIGNATURE, VSA_VRC_INDEX);
--
--		val = inw(VSA_VRC_DATA);
--		has_vsa2 = (val == AMD_VSA_SIG || val == GSW_VSA_SIG);
--	}
--
--	return has_vsa2;
--}
--EXPORT_SYMBOL_GPL(geode_has_vsa2);
--
- static int __init geode_southbridge_init(void)
- {
- 	if (!is_geode())
-diff --git a/arch/x86/kernel/olpc.c b/arch/x86/kernel/olpc.c
-index 4006c52..9d1d263 100644
---- a/arch/x86/kernel/olpc.c
-+++ b/arch/x86/kernel/olpc.c
-@@ -212,7 +212,7 @@ static int __init olpc_init(void)
- 	unsigned char *romsig;
+ /* Resource Sizes */
  
- 	/* The ioremap check is dangerous; limit what we run it on */
--	if (!is_geode() || geode_has_vsa2())
-+	if (!is_geode() || cs5535_has_vsa2())
- 		return 0;
- 
- 	spin_lock_init(&ec_lock);
-@@ -244,7 +244,7 @@ static int __init olpc_init(void)
- 			(unsigned char *) &olpc_platform_info.ecver, 1);
- 
- 	/* check to see if the VSA exists */
--	if (geode_has_vsa2())
-+	if (cs5535_has_vsa2())
- 		olpc_platform_info.flags |= OLPC_F_VSA;
- 
- 	printk(KERN_INFO "OLPC board revision %s%X (EC=%x)\n",
+ #define LBAR_GPIO_SIZE		0xFF
 diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
-index e759895..3ddf055 100644
+index 3ddf055..f0af911 100644
 --- a/drivers/video/geode/display_gx.c
 +++ b/drivers/video/geode/display_gx.c
-@@ -25,7 +25,7 @@ unsigned int gx_frame_buffer_size(void)
- {
- 	unsigned int val;
+@@ -17,7 +17,7 @@
+ #include <asm/io.h>
+ #include <asm/div64.h>
+ #include <asm/delay.h>
+-#include <asm/geode.h>
++#include <linux/cs5535.h>
  
--	if (!geode_has_vsa2()) {
-+	if (!cs5535_has_vsa2()) {
- 		uint32_t hi, lo;
+ #include "gxfb.h"
  
- 		/* The number of pages is (PMAX - PMIN)+1 */
+diff --git a/drivers/video/geode/gxfb.h b/drivers/video/geode/gxfb.h
+index 16a96f8..d19e937 100644
+--- a/drivers/video/geode/gxfb.h
++++ b/drivers/video/geode/gxfb.h
+@@ -340,7 +340,7 @@ static inline void write_fp(struct gxfb_par *par, int reg, uint32_t val)
+ }
+ 
+ 
+-/* MSRs are defined in asm/geode.h; their bitfields are here */
++/* MSRs are defined in linux/cs5535.h; their bitfields are here */
+ 
+ #define MSR_GLCP_SYS_RSTPLL_DOTPOSTDIV3	(1 << 3)
+ #define MSR_GLCP_SYS_RSTPLL_DOTPREMULT2	(1 << 2)
+diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
+index 2552cac..b3e639d 100644
+--- a/drivers/video/geode/gxfb_core.c
++++ b/drivers/video/geode/gxfb_core.c
+@@ -32,7 +32,7 @@
+ #include <linux/suspend.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+-#include <asm/geode.h>
++#include <linux/cs5535.h>
+ 
+ #include "gxfb.h"
+ 
+diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
+index 6a51448..fc68a8b 100644
+--- a/drivers/video/geode/lxfb.h
++++ b/drivers/video/geode/lxfb.h
+@@ -409,7 +409,7 @@ static inline void write_fp(struct lxfb_par *par, int reg, uint32_t val)
+ }
+ 
+ 
+-/* MSRs are defined in asm/geode.h; their bitfields are here */
++/* MSRs are defined in linux/cs5535.h; their bitfields are here */
+ 
+ #define MSR_GLCP_DOTPLL_LOCK		(1 << 25)	/* r/o */
+ #define MSR_GLCP_DOTPLL_HALFPIX		(1 << 24)
 diff --git a/drivers/video/geode/lxfb_ops.c b/drivers/video/geode/lxfb_ops.c
-index b1cd49c..fe1ee7c 100644
+index fe1ee7c..0e5d8c7 100644
 --- a/drivers/video/geode/lxfb_ops.c
 +++ b/drivers/video/geode/lxfb_ops.c
-@@ -307,7 +307,7 @@ unsigned int lx_framebuffer_size(void)
- {
- 	unsigned int val;
+@@ -13,7 +13,7 @@
+ #include <linux/fb.h>
+ #include <linux/uaccess.h>
+ #include <linux/delay.h>
+-#include <asm/geode.h>
++#include <linux/cs5535.h>
  
--	if (!geode_has_vsa2()) {
-+	if (!cs5535_has_vsa2()) {
- 		uint32_t hi, lo;
+ #include "lxfb.h"
  
- 		/* The number of pages is (PMAX - PMIN)+1 */
+diff --git a/drivers/video/geode/suspend_gx.c b/drivers/video/geode/suspend_gx.c
+index 9aff32e..1bb043d 100644
+--- a/drivers/video/geode/suspend_gx.c
++++ b/drivers/video/geode/suspend_gx.c
+@@ -10,7 +10,7 @@
+ #include <linux/fb.h>
+ #include <asm/io.h>
+ #include <asm/msr.h>
+-#include <asm/geode.h>
++#include <linux/cs5535.h>
+ #include <asm/delay.h>
+ 
+ #include "gxfb.h"
+diff --git a/drivers/video/geode/video_gx.c b/drivers/video/geode/video_gx.c
+index b8d52a8..6082f65 100644
+--- a/drivers/video/geode/video_gx.c
++++ b/drivers/video/geode/video_gx.c
+@@ -16,7 +16,7 @@
+ #include <asm/io.h>
+ #include <asm/delay.h>
+ #include <asm/msr.h>
+-#include <asm/geode.h>
++#include <linux/cs5535.h>
+ 
+ #include "gxfb.h"
+ 
 diff --git a/include/linux/cs5535.h b/include/linux/cs5535.h
-index 39e93e8..eb34108 100644
+index eb34108..d5a1d48 100644
 --- a/include/linux/cs5535.h
 +++ b/include/linux/cs5535.h
-@@ -36,6 +36,38 @@
- #define LBAR_ACPI_SIZE		0x40
- #define LBAR_PMS_SIZE		0x80
+@@ -12,6 +12,14 @@
+ #define _CS5535_H
  
-+/* VSA2 magic values */
-+#define VSA_VRC_INDEX		0xAC1C
-+#define VSA_VRC_DATA		0xAC1E
-+#define VSA_VR_UNLOCK		0xFC53  /* unlock virtual register */
-+#define VSA_VR_SIGNATURE	0x0003
-+#define VSA_VR_MEM_SIZE		0x0200
-+#define AMD_VSA_SIG		0x4132  /* signature is ascii 'VSA2' */
-+#define GSW_VSA_SIG		0x534d  /* General Software signature */
+ /* MSRs */
++#define MSR_GLIU_P2D_RO0	0x10000029
 +
-+#include <linux/io.h>
++#define MSR_LX_GLD_MSR_CONFIG	0x48002001
++#define MSR_LX_MSR_PADSEL	0x48002011	/* NOT 0x48000011; the data
++						 * sheet has the wrong value */
++#define MSR_GLCP_SYS_RSTPLL	0x4C000014
++#define MSR_GLCP_DOTPLL		0x4C000015
 +
-+static inline int cs5535_has_vsa2(void)
-+{
-+	static int has_vsa2 = -1;
+ #define MSR_LBAR_SMB		0x5140000B
+ #define MSR_LBAR_GPIO		0x5140000C
+ #define MSR_LBAR_MFGPT		0x5140000D
+@@ -30,6 +38,11 @@
+ #define MSR_MFGPT_NR		0x51400029
+ #define MSR_MFGPT_SETUP		0x5140002B
+ 
++#define MSR_LX_SPARE_MSR	0x80000011	/* DC-specific */
 +
-+	if (has_vsa2 == -1) {
-+		uint16_t val;
++#define MSR_GX_GLD_MSR_CONFIG	0xC0002001
++#define MSR_GX_MSR_PADSEL	0xC0002011
 +
-+		/*
-+		 * The VSA has virtual registers that we can query for a
-+		 * signature.
-+		 */
-+		outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
-+		outw(VSA_VR_SIGNATURE, VSA_VRC_INDEX);
-+
-+		val = inw(VSA_VRC_DATA);
-+		has_vsa2 = (val == AMD_VSA_SIG || val == GSW_VSA_SIG);
-+	}
-+
-+	return has_vsa2;
-+}
-+
- /* GPIOs */
- #define GPIO_OUTPUT_VAL		0x00
- #define GPIO_OUTPUT_ENABLE	0x04
+ /* resource sizes */
+ #define LBAR_GPIO_SIZE		0xFF
+ #define LBAR_MFGPT_SIZE		0x40
 -- 
 1.5.6.5
 
