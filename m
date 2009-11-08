@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbZKHI1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbZKHI3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752826AbZKHI1v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 03:27:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZKHI1u
+	id S1752769AbZKHI3G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 03:29:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZKHI3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 03:27:50 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59223
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752432AbZKHI1t (ORCPT
+	Sun, 8 Nov 2009 03:29:05 -0500
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:51471 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751438AbZKHI3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 03:27:49 -0500
-Date: Sun, 08 Nov 2009 00:28:15 -0800 (PST)
-Message-Id: <20091108.002815.06996631.davem@davemloft.net>
-To: roel.kluin@gmail.com
-Cc: sparclinux@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparc,sparc64: replace parentheses in pmul()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4AF3000C.8080607@gmail.com>
-References: <4AF3000C.8080607@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Nov 2009 03:29:05 -0500
+Date: Sun, 8 Nov 2009 19:29:05 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Daniel Pittman <daniel@rimspace.net>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Massive ext4 filesystem corruption after a failed
+	s2disk/ram cycle
+Message-ID: <20091108082905.GA25494@discord.disaster>
+References: <87vdisq7bh.fsf@rimspace.net> <20091007161604.GA28849@infradead.org> <20091104111125.54C3.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104111125.54C3.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <roel.kluin@gmail.com>
-Date: Thu, 05 Nov 2009 17:40:44 +0100
-
-> `>>' has a higher precedence than `?' so src2 evaluated to
-> either 16 or 0 dependent on the bits set in rs2.
+On Wed, Nov 04, 2009 at 11:18:05AM +0900, KOSAKI Motohiro wrote:
+> > On Wed, Oct 07, 2009 at 01:14:10PM +1100, Daniel Pittman wrote:
+> > > For what it is worth, I would also be quite interested to know
+> > > /why/ XFS is bad in this regard.  Is it just the previously
+> > > stated "XFS writes to disk despite freezing kernel threads"
+> > > issue, or something deeper?
+> > 
+> > sync pushes out all data to disk, but in a journaling filesystem
+> > that might just but the log not the "normal" place on disk.  For
+> > a boot loader to deal with it properly it actually needs to do
+> > an replay of the log.  Grub does so for reiserfs but not for XFS
+> > for some reason.  I don't know why problems don't trigger more
+> > often with ext3, though.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  arch/sparc/kernel/visemul.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> I'm sorry for the long delayed and offtopic responce. I discussed
+> this issue with okuji-san (GRUB2 maintainer) at several month ago.
+> He really wish linux implement real sync.
 > 
-> I am not 100% sure that the code was incorrect, however, if it
-> was intended I think it is a very strange way to write it.
+> A bootloader has much constraint than OS (mainly caused by size
+> constraint).  it can't implemnt jornal log replay logic for _all_
+> filesystem.  Why can't we implement storong sync syscall? I don't
+> think this is PM nor bootloader fault.
 
-Your fix is correct, thanks Roel!
+We already have an ioctl that does what you want: FIFREEZE.
 
-I really need to write a testsuite for this VIS emulation code.
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
