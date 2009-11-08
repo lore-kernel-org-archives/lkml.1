@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZKHQ7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZKHQ7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbZKHQ7X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 11:59:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbZKHQ7X
+	id S1754682AbZKHQ7p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 11:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbZKHQ7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 11:59:23 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:60838 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754490AbZKHQ7W convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 11:59:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=hxOgOrDVBRV1BxRnx3H97+IPWhSV9ibXB8M1hl+3hfQEsZXxWDsOMBP7uQGHO8v3l8
-         LEvVP17wNu1hxUxBz+NP2o80Z+vQXwaphtXHxoztEJ4pdTg3A3UM152Wa+vebZjOOi9w
-         66qPzQoakRicbleOLunBDxk0GA0MKUlGTT8Sg=
+	Sun, 8 Nov 2009 11:59:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57456 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754537AbZKHQ7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 11:59:44 -0500
+Date: Sun, 8 Nov 2009 17:59:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Clark Williams <williams@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: perf tools: modify perf routines to use new debugfs routines
+Message-ID: <20091108165941.GA5440@elte.hu>
+References: <20091108090307.0fa25a18@torg>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LSU.2.00.0911081753210.30674@obet.zrqbmnf.qr>
-References: <cover.1257602781.git.andre.goddard@gmail.com> 
-	<c7d3b02b5e28eaa54a5360d57dfd177c44320187.1257602781.git.andre.goddard@gmail.com> 
-	<1257698285.4184.10.camel@mulgrave.site> <alpine.LSU.2.00.0911081753210.30674@obet.zrqbmnf.qr>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sun, 8 Nov 2009 14:59:08 -0200
-Message-ID: <b8bf37780911080859s26c41dfw5a908874e41e1d9b@mail.gmail.com>
-Subject: Re: [PATCH v4 10/12] string: factorize skip_spaces and export it to 
-	be generally available
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091108090307.0fa25a18@torg>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 8, 2009 at 2:54 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
->
-> On Sunday 2009-11-08 17:38, James Bottomley wrote:
->
->>On Sat, 2009-11-07 at 14:23 -0200, André Goddard Rosa wrote:
->>> + * skip_spaces - Removes leading whitespace from @s.
->>> + * @s: The string to be stripped.
->>> + *
->>> + * Returns a pointer to the first non-whitespace character in @s.
->>> + */
->>> +char *skip_spaces(const char *str)
->>
->>OK, so this now becomes a bad interface because it silently promotes
->>const to non const ...
->
-> strchr, etc. all do the same. Do you think they are bad too?
 
-Yeap, I just based on those.
+perf doesnt build with this patch applied:
 
-James, what would you suggest instead?
+perf.o: In function `get_debugfs_mntpt':
+/home/mingo/tip/tools/perf/perf.c:386: undefined reference to 
+`debugfs_find_mountpoint'
+libperf.a(parse-events.o): In function `print_tracepoint_events':
+/home/mingo/tip/tools/perf/util/parse-events.c:782: undefined reference 
+to `debugfs_valid_mountpoint'
+libperf.a(parse-events.o): In function `tracepoint_id_to_path':
+/home/mingo/tip/tools/perf/util/parse-events.c:165: undefined reference 
+to `debugfs_valid_mountpoint'
+libperf.a(parse-events.o): In function `parse_tracepoint_event':
+/home/mingo/tip/tools/perf/util/parse-events.c:504: undefined reference 
+to `debugfs_valid_mountpoint'
+collect2: ld returned 1 exit status
+make: *** [perf] Error 1
 
-Thanks,
-André
+	Ingo
