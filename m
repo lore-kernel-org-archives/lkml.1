@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738AbZKHNqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZKHNcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738AbZKHNqV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZKHNqU
+	id S1752746AbZKHNcC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 08:32:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZKHNcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:46:20 -0500
-Received: from mga10.intel.com ([192.55.52.92]:34457 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753684AbZKHNqT (ORCPT
+	Sun, 8 Nov 2009 08:32:01 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:65328 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752626AbZKHNcA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:46:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,703,1249282800"; 
-   d="scan'208";a="511789868"
-Date: Sun, 8 Nov 2009 21:19:39 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yong Wang <yong.y.wang@linux.intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86, therm: Only read the initial value of thermal LVT
-	entry on BSP
-Message-ID: <20091108131939.GA1005@ywang-moblin2.bj.intel.com>
-References: <20091107001736.GA30790@ywang-moblin2.bj.intel.com> <1257562565.4083.485.camel@sbs-t61.sc.intel.com> <20091108102520.GC7233@elte.hu> <20091108123812.GA877@ywang-moblin2.bj.intel.com> <20091108131655.GA12837@elte.hu>
+	Sun, 8 Nov 2009 08:32:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=MuZEoiyVuOEwxWR/8Qatl559hh5zV1TccB2oyzLziGPa91sLtJGPVK/kQHes3ioKGb
+         TTNvOCsTZyhkCNPKktFQDha92CA8b64SVnkDX2ff+IymZGEN1Fr6m9KRpXWS+T9c5C0W
+         ktjyvcWqa3Mg/Ue2YaBqRbYP9drHwjdZ8ChxU=
+Message-ID: <4AF6C852.8040306@gmail.com>
+Date: Sun, 08 Nov 2009 14:32:02 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091108131655.GA12837@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ben Hutchings <ben@decadent.org.uk>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/75] isicom: declare MODULE_FIRMWARE
+References: <1257630239.15927.389.camel@localhost>
+In-Reply-To: <1257630239.15927.389.camel@localhost>
+X-Enigmail-Version: 0.97b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 02:16:55PM +0100, Ingo Molnar wrote:
-> 
-> * Yong Wang <yong.y.wang@linux.intel.com> wrote:
-> 
-> > On Sun, Nov 08, 2009 at 11:25:21AM +0100, Ingo Molnar wrote:
-> > > 
-> > > i dont disagree with the fix, but could we please do it a bit cleaner, 
-> > > and initialize a proper file-scope lvtthrm_init value from a different 
-> > > boot-CPU-only function? (not intel_init_thermal)
-> > > 
-> > 
-> > Thanks for your comments. Just want to make sure I understand correctly.
-> > By 'file-scope', do you want me to define lvtthrm_init as a static
-> > variable but not to define it in any function?
-> 
-> Correct - i'd suggest to put it next to other file-scope variables at 
-> the top of the .c file. Maybe make it __read_mostly as well.
-> 
+On 11/07/2009 10:43 PM, Ben Hutchings wrote:
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 
-OK, will do.
+Reviewed-by: Jiri Slaby <jirislaby@gmail.com>
 
-> > > that makes it cleaner, and also it will work if we dont boot on 
-> > > cpu==0. (should that ever occur)
-> > > 
-> > 
-> > May I know when will this happen?
+> ---
+>  drivers/char/isicom.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
 > 
-> It's not really expected - we factorize the CPU IDs (which are logical) 
-> so that the boot CPU is 0. But relying on cpu==0 is the boot cpu is not 
-> clean and the resulting code is harder to read.
-> 
+> diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
+> index 426bfdd..1da1372 100644
+> --- a/drivers/char/isicom.c
+> +++ b/drivers/char/isicom.c
+> @@ -1782,3 +1782,8 @@ module_exit(isicom_exit);
+>  MODULE_AUTHOR("MultiTech");
+>  MODULE_DESCRIPTION("Driver for the ISI series of cards by MultiTech");
+>  MODULE_LICENSE("GPL");
+> +MODULE_FIRMWARE("isi608.bin");
+> +MODULE_FIRMWARE("isi608em.bin");
+> +MODULE_FIRMWARE("isi616em.bin");
+> +MODULE_FIRMWARE("isi4608.bin");
+> +MODULE_FIRMWARE("isi4616.bin");
 
-There does not seem to be 'boot-CPU-only function' in that .c file. What
-about changing cpu==0 to cpu==boot_cpu_id? Does that help?
-
-Thanks
--Yong
