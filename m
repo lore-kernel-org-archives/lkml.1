@@ -1,108 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZKHWQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbZKHW3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbZKHWQG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 17:16:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbZKHWQF
+	id S1755594AbZKHW3f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 17:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbZKHW3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 17:16:05 -0500
-Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:54864 "EHLO
-	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755431AbZKHWQE (ORCPT
+	Sun, 8 Nov 2009 17:29:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50983 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755569AbZKHW3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 17:16:04 -0500
-Message-ID: <4AF7431D.9080002@blueyonder.co.uk>
-Date: Sun, 08 Nov 2009 22:15:57 +0000
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4 ThunderBrowse/3.2.6.5
-MIME-Version: 1.0
-To: LKML Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.32-rc6 - 2.6.32-rc6-git3 misinterpreting fstype on boot
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 8 Nov 2009 17:29:33 -0500
+Date: Sun, 8 Nov 2009 14:30:59 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
+       jens.axboe@oracle.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO
+ performance
+Message-ID: <20091108143059.029abf8b@infradead.org>
+In-Reply-To: <4e5e476b0911081359x32d7a6c4x61ee3af92dc0c8a1@mail.gmail.com>
+References: <20090915054259.5282e5ba@infradead.org>
+	<4e5e476b0911040139h1f471627la4262a5fa66abab0@mail.gmail.com>
+	<20091108124035.23d53197@infradead.org>
+	<4e5e476b0911081359x32d7a6c4x61ee3af92dc0c8a1@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-rc5-git4 kernel boots normally, but 2.6.32-rc6 and later exhibit
-strangeness - misinterpreting the xfs partition as reiserfs.
-The .config is the same.
-Under 2.6.32-rc5-git4
-======================
-# mount
-/dev/sda2 on / type xfs (rw) <<======
-proc on /proc type proc (rw)
-sysfs on /sys type sysfs (rw)
-debugfs on /sys/kernel/debug type debugfs (rw)
-udev on /dev type tmpfs (rw)
-devpts on /dev/pts type devpts (rw,mode=0620,gid=5)
-/dev/sda1 on /boot type reiserfs (rw,acl,user_xattr) <<====
-/dev/sdb1 on /home/lancelot/ftp type reiserfs (rw)
-none on /tmp type tmpfs (rw)
-fusectl on /sys/fs/fuse/connections type fusectl (rw)
-none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
-nfsd on /proc/fs/nfsd type nfsd (rw)
-rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
-/proc on /var/lib/ntp/proc type none (ro,bind)
-gvfs-fuse-daemon on /home/lancelot/.gvfs type fuse.gvfs-fuse-daemon
-(rw,nosuid,nodev,user=lancelot)
+On Sun, 8 Nov 2009 22:59:43 +0100
+Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> >
+> > the exit latency is +/- 1 us, the entry latency is similar, and then
+> > you're pretty close to 5 already (esp if you keep in mind that to
+> > break even on energy you also need to be in the C state for a
+> > little bit)...
+> 
+> There are also performance considerations for using C1 (HLT).
+> Quoting from http://www.intel.com/Assets/PDF/manual/248966.pdf (8-19):
+> On processors supporting HT Technology, operating systems should use
+> the HLT instruction if one logical processor is active and the other
+> is not. HLT will allow an idle
+> logical processor to transition to a halted state; this allows the
+> active logical
+> processor to use all the hardware resources in the physical package.
 
- system.firmware.version = 'ASUS CROSSHAIR II FORMULA ACPI BIOS Revision
-1802'
-  system.firmware.release_date = '05/06/2009'
-  system.hardware.vendor = 'System manufacturer'
-  system.hardware.product = 'System Product Name'
-  system.hardware.version = 'System Version'
-  system.chassis.manufacturer = 'Chassis Manufacture'
-  system.board.product = 'CROSSHAIR II FORMULA'
-  system.board.version = '1.XX'
-  system.board.vendor = 'ASUSTeK Computer INC.'
-  system.chassis.type = 'Desktop'
-  system.formfactor = 'desktop'
-CPU is AMD quad core.
+I think we all agree that long term polling is bad ;-)
+(even though we use rep nop in the polling loop which is also a HT
+yield).
+
+There's just the very short sleeps (where short is "single digit usecs")
+where the rules are slightly different.
+
+> > this check is supposed to catch the known timer cases; those
+> > are rather accurate in prediction
+> 
+> Unfortunately, I have seen polling residency times > 1ms, so it must
+> not be so accurate.
+
+well the question is... is this a measurement error or an error in
+when polling is chosen.
+We obviously need to fix it whatever it is, but... first need to chase
+down really which it is.
 
 
-When I try to boot 2.6.32-rc6 and 2.6.32-rc6-git, it thinks /dev/sda2
-is a reiserfs partition it needs to mount as "/root"????.
-Boot up messages
-==================
-fsck from util-linux-ng 2.16
-[/sbin/fsck.reiserfs (1) -- /] fsck.reiserfs -a /dev/sda2
-reiserfs_open: the reiserfs superblock cannot be found on /dev/sda2.
-REISERFS: warning (device sda2): sh-2021 reiserfs_fill_super: can not
-find reiserfs on sda2.
-Failed to open the filesystem
-  If the partition table has not been changed, the partition is valid
-  and really contains a reiserfs  partition, then the superblock is
-  corrupted and you need to run this utility with --rebuild-sb.
-fsck failed. Mounting root device read-only.
-Mounting root /dev/disk/by-id/scsi-SATA_SAMSUNG_HD103UJS13PJDWS258743-part2
-mount -o ro -t reiserfs
-/dev/disk/by-id/scsi-SATA_SAMSUNG_HD103UJS13PJDWS258743-part2 /root
-mount: wrong fstype, bad option, bad superblock on /dev/sda2
-could not mount root filesystem - exiting to /bin/sh
-
-
-No problem on this other box with AMD dual-core and 2.6.32-rc6-git3 running.
-system.firmware.vendor = 'Phoenix Technologies, LTD'
-  system.firmware.version = 'ASUS M2N32-SLI DELUXE ACPI BIOS Revision 1802'
-  system.firmware.release_date = '01/31/2008'
-  system.hardware.vendor = 'System manufacturer'
-  system.hardware.product = 'System Product Name'
-  system.hardware.version = 'System Version'
-  system.chassis.manufacturer = 'Chassis Manufacture'
-  system.board.product = 'M2N32-SLI DELUXE'
-  system.board.version = '1.XX'
-  system.board.vendor = 'ASUSTeK Computer INC.'
-  system.chassis.type = 'Desktop'
-/dev/sda1 on / type xfs (rw)
-/dev/sdb1 on /data1 type btrfs (rw)
-Regards
-Sid.
 -- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
