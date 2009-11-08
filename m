@@ -1,1525 +1,1297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZKHMWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZKHM0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbZKHMWh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 07:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZKHMWg
+	id S1754435AbZKHM0r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 07:26:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZKHM0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 07:22:36 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:59079 "EHLO
+	Sun, 8 Nov 2009 07:26:45 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:59080 "EHLO
 	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753108AbZKHMWZ (ORCPT
+	with ESMTP id S1754000AbZKHMW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 07:22:25 -0500
+	Sun, 8 Nov 2009 07:22:26 -0500
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 05/23] sysctl: Remove dead code from sysctl_check
-Date: Sun,  8 Nov 2009 04:21:52 -0800
-Message-Id: <1257682930-31401-5-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 06/23] sysctl: Remove references to ctl_name and strategy from the generic sysctl table
+Date: Sun,  8 Nov 2009 04:21:53 -0800
+Message-Id: <1257682930-31401-6-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.5.2.143.g8cc62
 In-Reply-To: <m14op5jjo4.fsf@fess.ebiederm.org>
 References: <m14op5jjo4.fsf@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Mail-From: ebiederm@xmission.com
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Now that the sys_sysctl is now a compatibility wrapper around
-/proc/sys we can remove much of sysctl_check and reduce it
-to a few remaining sanity checks.  This completely decouples
-it from the binary sysctl system call.
-
-Little things like ensuring that the sysctl has not already
-been registered are all that remain.
+Now that sys_sysctl is a generic wrapper around /proc/sys  .ctl_name
+and .strategy members of sysctl tables are dead code.  Remove them.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- kernel/sysctl_check.c | 1376 +------------------------------------------------
- lib/Kconfig.debug     |    2 +-
- 2 files changed, 4 insertions(+), 1374 deletions(-)
+ kernel/sysctl.c |  195 ++-----------------------------------------------------
+ 1 files changed, 7 insertions(+), 188 deletions(-)
 
-diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-index b6e7aae..04cdcf7 100644
---- a/kernel/sysctl_check.c
-+++ b/kernel/sysctl_check.c
-@@ -5,1239 +5,6 @@
- #include <linux/string.h>
- #include <net/ip_vs.h>
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index f82e955..f6dacc3 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -205,31 +205,26 @@ extern int lock_stat;
  
--struct trans_ctl_table {
--	int			ctl_name;
--	const char		*procname;
--	const struct trans_ctl_table *child;
--};
--
--static const struct trans_ctl_table trans_random_table[] = {
--	{ RANDOM_POOLSIZE,	"poolsize" },
--	{ RANDOM_ENTROPY_COUNT,	"entropy_avail" },
--	{ RANDOM_READ_THRESH,	"read_wakeup_threshold" },
--	{ RANDOM_WRITE_THRESH,	"write_wakeup_threshold" },
--	{ RANDOM_BOOT_ID,	"boot_id" },
--	{ RANDOM_UUID,		"uuid" },
--	{}
--};
--
--static const struct trans_ctl_table trans_pty_table[] = {
--	{ PTY_MAX,		"max" },
--	{ PTY_NR,		"nr" },
--	{}
--};
--
--static const struct trans_ctl_table trans_kern_table[] = {
--	{ KERN_OSTYPE,			"ostype" },
--	{ KERN_OSRELEASE,		"osrelease" },
--	/* KERN_OSREV not used */
--	{ KERN_VERSION,			"version" },
--	/* KERN_SECUREMASK not used */
--	/* KERN_PROF not used */
--	{ KERN_NODENAME,		"hostname" },
--	{ KERN_DOMAINNAME,		"domainname" },
--
--	{ KERN_PANIC,			"panic" },
--	{ KERN_REALROOTDEV,		"real-root-dev" },
--
--	{ KERN_SPARC_REBOOT,		"reboot-cmd" },
--	{ KERN_CTLALTDEL,		"ctrl-alt-del" },
--	{ KERN_PRINTK,			"printk" },
--
--	/* KERN_NAMETRANS not used */
--	/* KERN_PPC_HTABRECLAIM not used */
--	/* KERN_PPC_ZEROPAGED not used */
--	{ KERN_PPC_POWERSAVE_NAP,	"powersave-nap" },
--
--	{ KERN_MODPROBE,		"modprobe" },
--	{ KERN_SG_BIG_BUFF,		"sg-big-buff" },
--	{ KERN_ACCT,			"acct" },
--	{ KERN_PPC_L2CR,		"l2cr" },
--
--	/* KERN_RTSIGNR not used */
--	/* KERN_RTSIGMAX not used */
--
--	{ KERN_SHMMAX,			"shmmax" },
--	{ KERN_MSGMAX,			"msgmax" },
--	{ KERN_MSGMNB,			"msgmnb" },
--	/* KERN_MSGPOOL not used*/
--	{ KERN_SYSRQ,			"sysrq" },
--	{ KERN_MAX_THREADS,		"threads-max" },
--	{ KERN_RANDOM,			"random",	trans_random_table },
--	{ KERN_SHMALL,			"shmall" },
--	{ KERN_MSGMNI,			"msgmni" },
--	{ KERN_SEM,			"sem" },
--	{ KERN_SPARC_STOP_A,		"stop-a" },
--	{ KERN_SHMMNI,			"shmmni" },
--
--	{ KERN_OVERFLOWUID,		"overflowuid" },
--	{ KERN_OVERFLOWGID,		"overflowgid" },
--
--	{ KERN_HOTPLUG,			"hotplug", },
--	{ KERN_IEEE_EMULATION_WARNINGS,	"ieee_emulation_warnings" },
--
--	{ KERN_S390_USER_DEBUG_LOGGING,	"userprocess_debug" },
--	{ KERN_CORE_USES_PID,		"core_uses_pid" },
--	{ KERN_TAINTED,			"tainted" },
--	{ KERN_CADPID,			"cad_pid" },
--	{ KERN_PIDMAX,			"pid_max" },
--	{ KERN_CORE_PATTERN,		"core_pattern" },
--	{ KERN_PANIC_ON_OOPS,		"panic_on_oops" },
--	{ KERN_HPPA_PWRSW,		"soft-power" },
--	{ KERN_HPPA_UNALIGNED,		"unaligned-trap" },
--
--	{ KERN_PRINTK_RATELIMIT,	"printk_ratelimit" },
--	{ KERN_PRINTK_RATELIMIT_BURST,	"printk_ratelimit_burst" },
--
--	{ KERN_PTY,			"pty",		trans_pty_table },
--	{ KERN_NGROUPS_MAX,		"ngroups_max" },
--	{ KERN_SPARC_SCONS_PWROFF,	"scons-poweroff" },
--	{ KERN_HZ_TIMER,		"hz_timer" },
--	{ KERN_UNKNOWN_NMI_PANIC,	"unknown_nmi_panic" },
--	{ KERN_BOOTLOADER_TYPE,		"bootloader_type" },
--	{ KERN_RANDOMIZE,		"randomize_va_space" },
--
--	{ KERN_SPIN_RETRY,		"spin_retry" },
--	{ KERN_ACPI_VIDEO_FLAGS,	"acpi_video_flags" },
--	{ KERN_IA64_UNALIGNED,		"ignore-unaligned-usertrap" },
--	{ KERN_COMPAT_LOG,		"compat-log" },
--	{ KERN_MAX_LOCK_DEPTH,		"max_lock_depth" },
--	{ KERN_NMI_WATCHDOG,		"nmi_watchdog" },
--	{ KERN_PANIC_ON_NMI,		"panic_on_unrecovered_nmi" },
--	{}
--};
--
--static const struct trans_ctl_table trans_vm_table[] = {
--	{ VM_OVERCOMMIT_MEMORY,		"overcommit_memory" },
--	{ VM_PAGE_CLUSTER,		"page-cluster" },
--	{ VM_DIRTY_BACKGROUND,		"dirty_background_ratio" },
--	{ VM_DIRTY_RATIO,		"dirty_ratio" },
--	{ VM_DIRTY_WB_CS,		"dirty_writeback_centisecs" },
--	{ VM_DIRTY_EXPIRE_CS,		"dirty_expire_centisecs" },
--	{ VM_NR_PDFLUSH_THREADS,	"nr_pdflush_threads" },
--	{ VM_OVERCOMMIT_RATIO,		"overcommit_ratio" },
--	/* VM_PAGEBUF unused */
--	{ VM_HUGETLB_PAGES,		"nr_hugepages" },
--	{ VM_SWAPPINESS,		"swappiness" },
--	{ VM_LOWMEM_RESERVE_RATIO,	"lowmem_reserve_ratio" },
--	{ VM_MIN_FREE_KBYTES,		"min_free_kbytes" },
--	{ VM_MAX_MAP_COUNT,		"max_map_count" },
--	{ VM_LAPTOP_MODE,		"laptop_mode" },
--	{ VM_BLOCK_DUMP,		"block_dump" },
--	{ VM_HUGETLB_GROUP,		"hugetlb_shm_group" },
--	{ VM_VFS_CACHE_PRESSURE,	"vfs_cache_pressure" },
--	{ VM_LEGACY_VA_LAYOUT,		"legacy_va_layout" },
--	/* VM_SWAP_TOKEN_TIMEOUT unused */
--	{ VM_DROP_PAGECACHE,		"drop_caches" },
--	{ VM_PERCPU_PAGELIST_FRACTION,	"percpu_pagelist_fraction" },
--	{ VM_ZONE_RECLAIM_MODE,		"zone_reclaim_mode" },
--	{ VM_MIN_UNMAPPED,		"min_unmapped_ratio" },
--	{ VM_PANIC_ON_OOM,		"panic_on_oom" },
--	{ VM_VDSO_ENABLED,		"vdso_enabled" },
--	{ VM_MIN_SLAB,			"min_slab_ratio" },
--
--	{}
--};
--
--static const struct trans_ctl_table trans_net_core_table[] = {
--	{ NET_CORE_WMEM_MAX,		"wmem_max" },
--	{ NET_CORE_RMEM_MAX,		"rmem_max" },
--	{ NET_CORE_WMEM_DEFAULT,	"wmem_default" },
--	{ NET_CORE_RMEM_DEFAULT,	"rmem_default" },
--	/* NET_CORE_DESTROY_DELAY unused */
--	{ NET_CORE_MAX_BACKLOG,		"netdev_max_backlog" },
--	/* NET_CORE_FASTROUTE unused */
--	{ NET_CORE_MSG_COST,		"message_cost" },
--	{ NET_CORE_MSG_BURST,		"message_burst" },
--	{ NET_CORE_OPTMEM_MAX,		"optmem_max" },
--	/* NET_CORE_HOT_LIST_LENGTH unused */
--	/* NET_CORE_DIVERT_VERSION unused */
--	/* NET_CORE_NO_CONG_THRESH unused */
--	/* NET_CORE_NO_CONG unused */
--	/* NET_CORE_LO_CONG unused */
--	/* NET_CORE_MOD_CONG unused */
--	{ NET_CORE_DEV_WEIGHT,		"dev_weight" },
--	{ NET_CORE_SOMAXCONN,		"somaxconn" },
--	{ NET_CORE_BUDGET,		"netdev_budget" },
--	{ NET_CORE_AEVENT_ETIME,	"xfrm_aevent_etime" },
--	{ NET_CORE_AEVENT_RSEQTH,	"xfrm_aevent_rseqth" },
--	{ NET_CORE_WARNINGS,		"warnings" },
--	{},
--};
--
--static const struct trans_ctl_table trans_net_unix_table[] = {
--	/* NET_UNIX_DESTROY_DELAY unused */
--	/* NET_UNIX_DELETE_DELAY unused */
--	{ NET_UNIX_MAX_DGRAM_QLEN,	"max_dgram_qlen" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv4_route_table[] = {
--	{ NET_IPV4_ROUTE_FLUSH,			"flush" },
--	{ NET_IPV4_ROUTE_MIN_DELAY,		"min_delay" },
--	{ NET_IPV4_ROUTE_MAX_DELAY,		"max_delay" },
--	{ NET_IPV4_ROUTE_GC_THRESH,		"gc_thresh" },
--	{ NET_IPV4_ROUTE_MAX_SIZE,		"max_size" },
--	{ NET_IPV4_ROUTE_GC_MIN_INTERVAL,	"gc_min_interval" },
--	{ NET_IPV4_ROUTE_GC_TIMEOUT,		"gc_timeout" },
--	{ NET_IPV4_ROUTE_GC_INTERVAL,		"gc_interval" },
--	{ NET_IPV4_ROUTE_REDIRECT_LOAD,		"redirect_load" },
--	{ NET_IPV4_ROUTE_REDIRECT_NUMBER,	"redirect_number" },
--	{ NET_IPV4_ROUTE_REDIRECT_SILENCE,	"redirect_silence" },
--	{ NET_IPV4_ROUTE_ERROR_COST,		"error_cost" },
--	{ NET_IPV4_ROUTE_ERROR_BURST,		"error_burst" },
--	{ NET_IPV4_ROUTE_GC_ELASTICITY,		"gc_elasticity" },
--	{ NET_IPV4_ROUTE_MTU_EXPIRES,		"mtu_expires" },
--	{ NET_IPV4_ROUTE_MIN_PMTU,		"min_pmtu" },
--	{ NET_IPV4_ROUTE_MIN_ADVMSS,		"min_adv_mss" },
--	{ NET_IPV4_ROUTE_SECRET_INTERVAL,	"secret_interval" },
--	{ NET_IPV4_ROUTE_GC_MIN_INTERVAL_MS,	"gc_min_interval_ms" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv4_conf_vars_table[] = {
--	{ NET_IPV4_CONF_FORWARDING,		"forwarding" },
--	{ NET_IPV4_CONF_MC_FORWARDING,		"mc_forwarding" },
--
--	{ NET_IPV4_CONF_PROXY_ARP,		"proxy_arp" },
--	{ NET_IPV4_CONF_ACCEPT_REDIRECTS,	"accept_redirects" },
--	{ NET_IPV4_CONF_SECURE_REDIRECTS,	"secure_redirects" },
--	{ NET_IPV4_CONF_SEND_REDIRECTS,		"send_redirects" },
--	{ NET_IPV4_CONF_SHARED_MEDIA,		"shared_media" },
--	{ NET_IPV4_CONF_RP_FILTER,		"rp_filter" },
--	{ NET_IPV4_CONF_ACCEPT_SOURCE_ROUTE,	"accept_source_route" },
--	{ NET_IPV4_CONF_BOOTP_RELAY,		"bootp_relay" },
--	{ NET_IPV4_CONF_LOG_MARTIANS,		"log_martians" },
--	{ NET_IPV4_CONF_TAG,			"tag" },
--	{ NET_IPV4_CONF_ARPFILTER,		"arp_filter" },
--	{ NET_IPV4_CONF_MEDIUM_ID,		"medium_id" },
--	{ NET_IPV4_CONF_NOXFRM,			"disable_xfrm" },
--	{ NET_IPV4_CONF_NOPOLICY,		"disable_policy" },
--	{ NET_IPV4_CONF_FORCE_IGMP_VERSION,	"force_igmp_version" },
--
--	{ NET_IPV4_CONF_ARP_ANNOUNCE,		"arp_announce" },
--	{ NET_IPV4_CONF_ARP_IGNORE,		"arp_ignore" },
--	{ NET_IPV4_CONF_PROMOTE_SECONDARIES,	"promote_secondaries" },
--	{ NET_IPV4_CONF_ARP_ACCEPT,		"arp_accept" },
--	{ NET_IPV4_CONF_ARP_NOTIFY,		"arp_notify" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv4_conf_table[] = {
--	{ NET_PROTO_CONF_ALL,		"all",		trans_net_ipv4_conf_vars_table },
--	{ NET_PROTO_CONF_DEFAULT,	"default",	trans_net_ipv4_conf_vars_table },
--	{ 0, NULL, trans_net_ipv4_conf_vars_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_neigh_vars_table[] = {
--	{ NET_NEIGH_MCAST_SOLICIT,	"mcast_solicit" },
--	{ NET_NEIGH_UCAST_SOLICIT,	"ucast_solicit" },
--	{ NET_NEIGH_APP_SOLICIT,	"app_solicit" },
--	{ NET_NEIGH_RETRANS_TIME,	"retrans_time" },
--	{ NET_NEIGH_REACHABLE_TIME,	"base_reachable_time" },
--	{ NET_NEIGH_DELAY_PROBE_TIME,	"delay_first_probe_time" },
--	{ NET_NEIGH_GC_STALE_TIME,	"gc_stale_time" },
--	{ NET_NEIGH_UNRES_QLEN,		"unres_qlen" },
--	{ NET_NEIGH_PROXY_QLEN,		"proxy_qlen" },
--	{ NET_NEIGH_ANYCAST_DELAY,	"anycast_delay" },
--	{ NET_NEIGH_PROXY_DELAY,	"proxy_delay" },
--	{ NET_NEIGH_LOCKTIME,		"locktime" },
--	{ NET_NEIGH_GC_INTERVAL,	"gc_interval" },
--	{ NET_NEIGH_GC_THRESH1,		"gc_thresh1" },
--	{ NET_NEIGH_GC_THRESH2,		"gc_thresh2" },
--	{ NET_NEIGH_GC_THRESH3,		"gc_thresh3" },
--	{ NET_NEIGH_RETRANS_TIME_MS,	"retrans_time_ms" },
--	{ NET_NEIGH_REACHABLE_TIME_MS,	"base_reachable_time_ms" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_neigh_table[] = {
--	{ NET_PROTO_CONF_DEFAULT, "default", trans_net_neigh_vars_table },
--	{ 0, NULL, trans_net_neigh_vars_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv4_netfilter_table[] = {
--	{ NET_IPV4_NF_CONNTRACK_MAX,				"ip_conntrack_max" },
--
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_SYN_SENT,		"ip_conntrack_tcp_timeout_syn_sent" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_SYN_RECV,		"ip_conntrack_tcp_timeout_syn_recv" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_ESTABLISHED,	"ip_conntrack_tcp_timeout_established" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_FIN_WAIT,		"ip_conntrack_tcp_timeout_fin_wait" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_CLOSE_WAIT,		"ip_conntrack_tcp_timeout_close_wait" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_LAST_ACK,		"ip_conntrack_tcp_timeout_last_ack" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_TIME_WAIT,		"ip_conntrack_tcp_timeout_time_wait" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_CLOSE,		"ip_conntrack_tcp_timeout_close" },
--
--	{ NET_IPV4_NF_CONNTRACK_UDP_TIMEOUT,			"ip_conntrack_udp_timeout" },
--	{ NET_IPV4_NF_CONNTRACK_UDP_TIMEOUT_STREAM,		"ip_conntrack_udp_timeout_stream" },
--	{ NET_IPV4_NF_CONNTRACK_ICMP_TIMEOUT,			"ip_conntrack_icmp_timeout" },
--	{ NET_IPV4_NF_CONNTRACK_GENERIC_TIMEOUT,		"ip_conntrack_generic_timeout" },
--
--	{ NET_IPV4_NF_CONNTRACK_BUCKETS,			"ip_conntrack_buckets" },
--	{ NET_IPV4_NF_CONNTRACK_LOG_INVALID,			"ip_conntrack_log_invalid" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_MAX_RETRANS,	"ip_conntrack_tcp_timeout_max_retrans" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_LOOSE,			"ip_conntrack_tcp_loose" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_BE_LIBERAL,			"ip_conntrack_tcp_be_liberal" },
--	{ NET_IPV4_NF_CONNTRACK_TCP_MAX_RETRANS,		"ip_conntrack_tcp_max_retrans" },
--
--	{ NET_IPV4_NF_CONNTRACK_SCTP_TIMEOUT_CLOSED,		"ip_conntrack_sctp_timeout_closed" },
--	{ NET_IPV4_NF_CONNTRACK_SCTP_TIMEOUT_COOKIE_WAIT,	"ip_conntrack_sctp_timeout_cookie_wait" },
--	{ NET_IPV4_NF_CONNTRACK_SCTP_TIMEOUT_COOKIE_ECHOED,	"ip_conntrack_sctp_timeout_cookie_echoed" },
--	{ NET_IPV4_NF_CONNTRACK_SCTP_TIMEOUT_ESTABLISHED,	"ip_conntrack_sctp_timeout_established" },
--	{ NET_IPV4_NF_CONNTRACK_SCTP_TIMEOUT_SHUTDOWN_SENT,	"ip_conntrack_sctp_timeout_shutdown_sent" },
--	{ NET_IPV4_NF_CONNTRACK_SCTP_TIMEOUT_SHUTDOWN_RECD,	"ip_conntrack_sctp_timeout_shutdown_recd" },
--	{ NET_IPV4_NF_CONNTRACK_SCTP_TIMEOUT_SHUTDOWN_ACK_SENT,	"ip_conntrack_sctp_timeout_shutdown_ack_sent" },
--
--	{ NET_IPV4_NF_CONNTRACK_COUNT,		"ip_conntrack_count" },
--	{ NET_IPV4_NF_CONNTRACK_CHECKSUM,	"ip_conntrack_checksum" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv4_table[] = {
--	{ NET_IPV4_FORWARD,			"ip_forward" },
--	{ NET_IPV4_DYNADDR,			"ip_dynaddr" },
--
--	{ NET_IPV4_CONF,		"conf",		trans_net_ipv4_conf_table },
--	{ NET_IPV4_NEIGH,		"neigh",	trans_net_neigh_table },
--	{ NET_IPV4_ROUTE,		"route",	trans_net_ipv4_route_table },
--	/* NET_IPV4_FIB_HASH unused */
--	{ NET_IPV4_NETFILTER,		"netfilter",	trans_net_ipv4_netfilter_table },
--
--	{ NET_IPV4_TCP_TIMESTAMPS,		"tcp_timestamps" },
--	{ NET_IPV4_TCP_WINDOW_SCALING,		"tcp_window_scaling" },
--	{ NET_IPV4_TCP_SACK,			"tcp_sack" },
--	{ NET_IPV4_TCP_RETRANS_COLLAPSE,	"tcp_retrans_collapse" },
--	{ NET_IPV4_DEFAULT_TTL,			"ip_default_ttl" },
--	/* NET_IPV4_AUTOCONFIG unused */
--	{ NET_IPV4_NO_PMTU_DISC,		"ip_no_pmtu_disc" },
--	{ NET_IPV4_TCP_SYN_RETRIES,		"tcp_syn_retries" },
--	{ NET_IPV4_IPFRAG_HIGH_THRESH,		"ipfrag_high_thresh" },
--	{ NET_IPV4_IPFRAG_LOW_THRESH,		"ipfrag_low_thresh" },
--	{ NET_IPV4_IPFRAG_TIME,			"ipfrag_time" },
--	/* NET_IPV4_TCP_MAX_KA_PROBES unused */
--	{ NET_IPV4_TCP_KEEPALIVE_TIME,		"tcp_keepalive_time" },
--	{ NET_IPV4_TCP_KEEPALIVE_PROBES,	"tcp_keepalive_probes" },
--	{ NET_IPV4_TCP_RETRIES1,		"tcp_retries1" },
--	{ NET_IPV4_TCP_RETRIES2,		"tcp_retries2" },
--	{ NET_IPV4_TCP_FIN_TIMEOUT,		"tcp_fin_timeout" },
--	/* NET_IPV4_IP_MASQ_DEBUG unused */
--	{ NET_TCP_SYNCOOKIES,			"tcp_syncookies" },
--	{ NET_TCP_STDURG,			"tcp_stdurg" },
--	{ NET_TCP_RFC1337,			"tcp_rfc1337" },
--	/* NET_TCP_SYN_TAILDROP unused */
--	{ NET_TCP_MAX_SYN_BACKLOG,		"tcp_max_syn_backlog" },
--	{ NET_IPV4_LOCAL_PORT_RANGE,		"ip_local_port_range" },
--	{ NET_IPV4_ICMP_ECHO_IGNORE_ALL,	"icmp_echo_ignore_all" },
--	{ NET_IPV4_ICMP_ECHO_IGNORE_BROADCASTS,	"icmp_echo_ignore_broadcasts" },
--	/* NET_IPV4_ICMP_SOURCEQUENCH_RATE unused */
--	/* NET_IPV4_ICMP_DESTUNREACH_RATE unused */
--	/* NET_IPV4_ICMP_TIMEEXCEED_RATE unused */
--	/* NET_IPV4_ICMP_PARAMPROB_RATE unused */
--	/* NET_IPV4_ICMP_ECHOREPLY_RATE unused */
--	{ NET_IPV4_ICMP_IGNORE_BOGUS_ERROR_RESPONSES,	"icmp_ignore_bogus_error_responses" },
--	{ NET_IPV4_IGMP_MAX_MEMBERSHIPS,	"igmp_max_memberships" },
--	{ NET_TCP_TW_RECYCLE,			"tcp_tw_recycle" },
--	/* NET_IPV4_ALWAYS_DEFRAG unused */
--	{ NET_IPV4_TCP_KEEPALIVE_INTVL,		"tcp_keepalive_intvl" },
--	{ NET_IPV4_INET_PEER_THRESHOLD,		"inet_peer_threshold" },
--	{ NET_IPV4_INET_PEER_MINTTL,		"inet_peer_minttl" },
--	{ NET_IPV4_INET_PEER_MAXTTL,		"inet_peer_maxttl" },
--	{ NET_IPV4_INET_PEER_GC_MINTIME,	"inet_peer_gc_mintime" },
--	{ NET_IPV4_INET_PEER_GC_MAXTIME,	"inet_peer_gc_maxtime" },
--	{ NET_TCP_ORPHAN_RETRIES,		"tcp_orphan_retries" },
--	{ NET_TCP_ABORT_ON_OVERFLOW,		"tcp_abort_on_overflow" },
--	{ NET_TCP_SYNACK_RETRIES,		"tcp_synack_retries" },
--	{ NET_TCP_MAX_ORPHANS,			"tcp_max_orphans" },
--	{ NET_TCP_MAX_TW_BUCKETS,		"tcp_max_tw_buckets" },
--	{ NET_TCP_FACK,				"tcp_fack" },
--	{ NET_TCP_REORDERING,			"tcp_reordering" },
--	{ NET_TCP_ECN,				"tcp_ecn" },
--	{ NET_TCP_DSACK,			"tcp_dsack" },
--	{ NET_TCP_MEM,				"tcp_mem" },
--	{ NET_TCP_WMEM,				"tcp_wmem" },
--	{ NET_TCP_RMEM,				"tcp_rmem" },
--	{ NET_TCP_APP_WIN,			"tcp_app_win" },
--	{ NET_TCP_ADV_WIN_SCALE,		"tcp_adv_win_scale" },
--	{ NET_IPV4_NONLOCAL_BIND,		"ip_nonlocal_bind" },
--	{ NET_IPV4_ICMP_RATELIMIT,		"icmp_ratelimit" },
--	{ NET_IPV4_ICMP_RATEMASK,		"icmp_ratemask" },
--	{ NET_TCP_TW_REUSE,			"tcp_tw_reuse" },
--	{ NET_TCP_FRTO,				"tcp_frto" },
--	{ NET_TCP_LOW_LATENCY,			"tcp_low_latency" },
--	{ NET_IPV4_IPFRAG_SECRET_INTERVAL,	"ipfrag_secret_interval" },
--	{ NET_IPV4_IGMP_MAX_MSF,		"igmp_max_msf" },
--	{ NET_TCP_NO_METRICS_SAVE,		"tcp_no_metrics_save" },
--	/* NET_TCP_DEFAULT_WIN_SCALE unused */
--	{ NET_TCP_MODERATE_RCVBUF,		"tcp_moderate_rcvbuf" },
--	{ NET_TCP_TSO_WIN_DIVISOR,		"tcp_tso_win_divisor" },
--	/* NET_TCP_BIC_BETA unused */
--	{ NET_IPV4_ICMP_ERRORS_USE_INBOUND_IFADDR,	"icmp_errors_use_inbound_ifaddr" },
--	{ NET_TCP_CONG_CONTROL,			"tcp_congestion_control" },
--	{ NET_TCP_ABC,				"tcp_abc" },
--	{ NET_IPV4_IPFRAG_MAX_DIST,		"ipfrag_max_dist" },
--	{ NET_TCP_MTU_PROBING,			"tcp_mtu_probing" },
--	{ NET_TCP_BASE_MSS,			"tcp_base_mss" },
--	{ NET_IPV4_TCP_WORKAROUND_SIGNED_WINDOWS,	"tcp_workaround_signed_windows" },
--	{ NET_TCP_DMA_COPYBREAK,		"tcp_dma_copybreak" },
--	{ NET_TCP_SLOW_START_AFTER_IDLE,	"tcp_slow_start_after_idle" },
--	{ NET_CIPSOV4_CACHE_ENABLE,		"cipso_cache_enable" },
--	{ NET_CIPSOV4_CACHE_BUCKET_SIZE,	"cipso_cache_bucket_size" },
--	{ NET_CIPSOV4_RBM_OPTFMT,		"cipso_rbm_optfmt" },
--	{ NET_CIPSOV4_RBM_STRICTVALID,		"cipso_rbm_strictvalid" },
--	{ NET_TCP_AVAIL_CONG_CONTROL,		"tcp_available_congestion_control" },
--	{ NET_TCP_ALLOWED_CONG_CONTROL,		"tcp_allowed_congestion_control" },
--	{ NET_TCP_MAX_SSTHRESH,			"tcp_max_ssthresh" },
--	{ NET_TCP_FRTO_RESPONSE,		"tcp_frto_response" },
--	{ 2088 /* NET_IPQ_QMAX */,		"ip_queue_maxlen" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipx_table[] = {
--	{ NET_IPX_PPROP_BROADCASTING,	"ipx_pprop_broadcasting" },
--	/* NET_IPX_FORWARDING unused */
--	{}
--};
--
--static const struct trans_ctl_table trans_net_atalk_table[] = {
--	{ NET_ATALK_AARP_EXPIRY_TIME,		"aarp-expiry-time" },
--	{ NET_ATALK_AARP_TICK_TIME,		"aarp-tick-time" },
--	{ NET_ATALK_AARP_RETRANSMIT_LIMIT,	"aarp-retransmit-limit" },
--	{ NET_ATALK_AARP_RESOLVE_TIME,		"aarp-resolve-time" },
--	{},
--};
--
--static const struct trans_ctl_table trans_net_netrom_table[] = {
--	{ NET_NETROM_DEFAULT_PATH_QUALITY,		"default_path_quality" },
--	{ NET_NETROM_OBSOLESCENCE_COUNT_INITIALISER,	"obsolescence_count_initialiser" },
--	{ NET_NETROM_NETWORK_TTL_INITIALISER,		"network_ttl_initialiser" },
--	{ NET_NETROM_TRANSPORT_TIMEOUT,			"transport_timeout" },
--	{ NET_NETROM_TRANSPORT_MAXIMUM_TRIES,		"transport_maximum_tries" },
--	{ NET_NETROM_TRANSPORT_ACKNOWLEDGE_DELAY,	"transport_acknowledge_delay" },
--	{ NET_NETROM_TRANSPORT_BUSY_DELAY,		"transport_busy_delay" },
--	{ NET_NETROM_TRANSPORT_REQUESTED_WINDOW_SIZE,	"transport_requested_window_size" },
--	{ NET_NETROM_TRANSPORT_NO_ACTIVITY_TIMEOUT,	"transport_no_activity_timeout" },
--	{ NET_NETROM_ROUTING_CONTROL,			"routing_control" },
--	{ NET_NETROM_LINK_FAILS_COUNT,			"link_fails_count" },
--	{ NET_NETROM_RESET,				"reset" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ax25_param_table[] = {
--	{ NET_AX25_IP_DEFAULT_MODE,	"ip_default_mode" },
--	{ NET_AX25_DEFAULT_MODE,	"ax25_default_mode" },
--	{ NET_AX25_BACKOFF_TYPE,	"backoff_type" },
--	{ NET_AX25_CONNECT_MODE,	"connect_mode" },
--	{ NET_AX25_STANDARD_WINDOW,	"standard_window_size" },
--	{ NET_AX25_EXTENDED_WINDOW,	"extended_window_size" },
--	{ NET_AX25_T1_TIMEOUT,		"t1_timeout" },
--	{ NET_AX25_T2_TIMEOUT,		"t2_timeout" },
--	{ NET_AX25_T3_TIMEOUT,		"t3_timeout" },
--	{ NET_AX25_IDLE_TIMEOUT,	"idle_timeout" },
--	{ NET_AX25_N2,			"maximum_retry_count" },
--	{ NET_AX25_PACLEN,		"maximum_packet_length" },
--	{ NET_AX25_PROTOCOL,		"protocol" },
--	{ NET_AX25_DAMA_SLAVE_TIMEOUT,	"dama_slave_timeout" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ax25_table[] = {
--	{ 0, NULL, trans_net_ax25_param_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_bridge_table[] = {
--	{ NET_BRIDGE_NF_CALL_ARPTABLES,		"bridge-nf-call-arptables" },
--	{ NET_BRIDGE_NF_CALL_IPTABLES,		"bridge-nf-call-iptables" },
--	{ NET_BRIDGE_NF_CALL_IP6TABLES,		"bridge-nf-call-ip6tables" },
--	{ NET_BRIDGE_NF_FILTER_VLAN_TAGGED,	"bridge-nf-filter-vlan-tagged" },
--	{ NET_BRIDGE_NF_FILTER_PPPOE_TAGGED,	"bridge-nf-filter-pppoe-tagged" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_rose_table[] = {
--	{ NET_ROSE_RESTART_REQUEST_TIMEOUT,	"restart_request_timeout" },
--	{ NET_ROSE_CALL_REQUEST_TIMEOUT,	"call_request_timeout" },
--	{ NET_ROSE_RESET_REQUEST_TIMEOUT,	"reset_request_timeout" },
--	{ NET_ROSE_CLEAR_REQUEST_TIMEOUT,	"clear_request_timeout" },
--	{ NET_ROSE_ACK_HOLD_BACK_TIMEOUT,	"acknowledge_hold_back_timeout" },
--	{ NET_ROSE_ROUTING_CONTROL,		"routing_control" },
--	{ NET_ROSE_LINK_FAIL_TIMEOUT,		"link_fail_timeout" },
--	{ NET_ROSE_MAX_VCS,			"maximum_virtual_circuits" },
--	{ NET_ROSE_WINDOW_SIZE,			"window_size" },
--	{ NET_ROSE_NO_ACTIVITY_TIMEOUT,		"no_activity_timeout" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv6_conf_var_table[] = {
--	{ NET_IPV6_FORWARDING,			"forwarding" },
--	{ NET_IPV6_HOP_LIMIT,			"hop_limit" },
--	{ NET_IPV6_MTU,				"mtu" },
--	{ NET_IPV6_ACCEPT_RA,			"accept_ra" },
--	{ NET_IPV6_ACCEPT_REDIRECTS,		"accept_redirects" },
--	{ NET_IPV6_AUTOCONF,			"autoconf" },
--	{ NET_IPV6_DAD_TRANSMITS,		"dad_transmits" },
--	{ NET_IPV6_RTR_SOLICITS,		"router_solicitations" },
--	{ NET_IPV6_RTR_SOLICIT_INTERVAL,	"router_solicitation_interval" },
--	{ NET_IPV6_RTR_SOLICIT_DELAY,		"router_solicitation_delay" },
--	{ NET_IPV6_USE_TEMPADDR,		"use_tempaddr" },
--	{ NET_IPV6_TEMP_VALID_LFT,		"temp_valid_lft" },
--	{ NET_IPV6_TEMP_PREFERED_LFT,		"temp_prefered_lft" },
--	{ NET_IPV6_REGEN_MAX_RETRY,		"regen_max_retry" },
--	{ NET_IPV6_MAX_DESYNC_FACTOR,		"max_desync_factor" },
--	{ NET_IPV6_MAX_ADDRESSES,		"max_addresses" },
--	{ NET_IPV6_FORCE_MLD_VERSION,		"force_mld_version" },
--	{ NET_IPV6_ACCEPT_RA_DEFRTR,		"accept_ra_defrtr" },
--	{ NET_IPV6_ACCEPT_RA_PINFO,		"accept_ra_pinfo" },
--	{ NET_IPV6_ACCEPT_RA_RTR_PREF,		"accept_ra_rtr_pref" },
--	{ NET_IPV6_RTR_PROBE_INTERVAL,		"router_probe_interval" },
--	{ NET_IPV6_ACCEPT_RA_RT_INFO_MAX_PLEN,	"accept_ra_rt_info_max_plen" },
--	{ NET_IPV6_PROXY_NDP,			"proxy_ndp" },
--	{ NET_IPV6_ACCEPT_SOURCE_ROUTE,		"accept_source_route" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv6_conf_table[] = {
--	{ NET_PROTO_CONF_ALL,		"all",	trans_net_ipv6_conf_var_table },
--	{ NET_PROTO_CONF_DEFAULT, 	"default", trans_net_ipv6_conf_var_table },
--	{ 0, NULL, trans_net_ipv6_conf_var_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv6_route_table[] = {
--	{ NET_IPV6_ROUTE_FLUSH,			"flush" },
--	{ NET_IPV6_ROUTE_GC_THRESH,		"gc_thresh" },
--	{ NET_IPV6_ROUTE_MAX_SIZE,		"max_size" },
--	{ NET_IPV6_ROUTE_GC_MIN_INTERVAL,	"gc_min_interval" },
--	{ NET_IPV6_ROUTE_GC_TIMEOUT,		"gc_timeout" },
--	{ NET_IPV6_ROUTE_GC_INTERVAL,		"gc_interval" },
--	{ NET_IPV6_ROUTE_GC_ELASTICITY,		"gc_elasticity" },
--	{ NET_IPV6_ROUTE_MTU_EXPIRES,		"mtu_expires" },
--	{ NET_IPV6_ROUTE_MIN_ADVMSS,		"min_adv_mss" },
--	{ NET_IPV6_ROUTE_GC_MIN_INTERVAL_MS,	"gc_min_interval_ms" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv6_icmp_table[] = {
--	{ NET_IPV6_ICMP_RATELIMIT,	"ratelimit" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_ipv6_table[] = {
--	{ NET_IPV6_CONF,		"conf",		trans_net_ipv6_conf_table },
--	{ NET_IPV6_NEIGH,		"neigh",	trans_net_neigh_table },
--	{ NET_IPV6_ROUTE,		"route",	trans_net_ipv6_route_table },
--	{ NET_IPV6_ICMP,		"icmp",		trans_net_ipv6_icmp_table },
--	{ NET_IPV6_BINDV6ONLY,		"bindv6only" },
--	{ NET_IPV6_IP6FRAG_HIGH_THRESH,	"ip6frag_high_thresh" },
--	{ NET_IPV6_IP6FRAG_LOW_THRESH,	"ip6frag_low_thresh" },
--	{ NET_IPV6_IP6FRAG_TIME,	"ip6frag_time" },
--	{ NET_IPV6_IP6FRAG_SECRET_INTERVAL,	"ip6frag_secret_interval" },
--	{ NET_IPV6_MLD_MAX_MSF,		"mld_max_msf" },
--	{ 2088 /* IPQ_QMAX */,		"ip6_queue_maxlen" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_x25_table[] = {
--	{ NET_X25_RESTART_REQUEST_TIMEOUT,	"restart_request_timeout" },
--	{ NET_X25_CALL_REQUEST_TIMEOUT,		"call_request_timeout" },
--	{ NET_X25_RESET_REQUEST_TIMEOUT,	"reset_request_timeout" },
--	{ NET_X25_CLEAR_REQUEST_TIMEOUT,	"clear_request_timeout" },
--	{ NET_X25_ACK_HOLD_BACK_TIMEOUT,	"acknowledgement_hold_back_timeout" },
--	{ NET_X25_FORWARD,			"x25_forward" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_tr_table[] = {
--	{ NET_TR_RIF_TIMEOUT,	"rif_timeout" },
--	{}
--};
--
--
--static const struct trans_ctl_table trans_net_decnet_conf_vars[] = {
--	{ NET_DECNET_CONF_DEV_FORWARDING,	"forwarding" },
--	{ NET_DECNET_CONF_DEV_PRIORITY,		"priority" },
--	{ NET_DECNET_CONF_DEV_T2,		"t2" },
--	{ NET_DECNET_CONF_DEV_T3,		"t3" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_decnet_conf[] = {
--	{ 0, NULL, trans_net_decnet_conf_vars },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_decnet_table[] = {
--	{ NET_DECNET_CONF,		"conf",	trans_net_decnet_conf },
--	{ NET_DECNET_NODE_ADDRESS,	"node_address" },
--	{ NET_DECNET_NODE_NAME,		"node_name" },
--	{ NET_DECNET_DEFAULT_DEVICE,	"default_device" },
--	{ NET_DECNET_TIME_WAIT,		"time_wait" },
--	{ NET_DECNET_DN_COUNT,		"dn_count" },
--	{ NET_DECNET_DI_COUNT,		"di_count" },
--	{ NET_DECNET_DR_COUNT,		"dr_count" },
--	{ NET_DECNET_DST_GC_INTERVAL,	"dst_gc_interval" },
--	{ NET_DECNET_NO_FC_MAX_CWND,	"no_fc_max_cwnd" },
--	{ NET_DECNET_MEM,		"decnet_mem" },
--	{ NET_DECNET_RMEM,		"decnet_rmem" },
--	{ NET_DECNET_WMEM,		"decnet_wmem" },
--	{ NET_DECNET_DEBUG_LEVEL,	"debug" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_sctp_table[] = {
--	{ NET_SCTP_RTO_INITIAL,		"rto_initial" },
--	{ NET_SCTP_RTO_MIN,		"rto_min" },
--	{ NET_SCTP_RTO_MAX,		"rto_max" },
--	{ NET_SCTP_RTO_ALPHA,		"rto_alpha_exp_divisor" },
--	{ NET_SCTP_RTO_BETA,		"rto_beta_exp_divisor" },
--	{ NET_SCTP_VALID_COOKIE_LIFE,	"valid_cookie_life" },
--	{ NET_SCTP_ASSOCIATION_MAX_RETRANS,	"association_max_retrans" },
--	{ NET_SCTP_PATH_MAX_RETRANS,	"path_max_retrans" },
--	{ NET_SCTP_MAX_INIT_RETRANSMITS,	"max_init_retransmits" },
--	{ NET_SCTP_HB_INTERVAL,		"hb_interval" },
--	{ NET_SCTP_PRESERVE_ENABLE,	"cookie_preserve_enable" },
--	{ NET_SCTP_MAX_BURST,		"max_burst" },
--	{ NET_SCTP_ADDIP_ENABLE,	"addip_enable" },
--	{ NET_SCTP_PRSCTP_ENABLE,	"prsctp_enable" },
--	{ NET_SCTP_SNDBUF_POLICY,	"sndbuf_policy" },
--	{ NET_SCTP_SACK_TIMEOUT,	"sack_timeout" },
--	{ NET_SCTP_RCVBUF_POLICY,	"rcvbuf_policy" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_llc_llc2_timeout_table[] = {
--	{ NET_LLC2_ACK_TIMEOUT,		"ack" },
--	{ NET_LLC2_P_TIMEOUT,		"p" },
--	{ NET_LLC2_REJ_TIMEOUT,		"rej" },
--	{ NET_LLC2_BUSY_TIMEOUT,	"busy" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_llc_station_table[] = {
--	{ NET_LLC_STATION_ACK_TIMEOUT,	"ack_timeout" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_llc_llc2_table[] = {
--	{ NET_LLC2,		"timeout",	trans_net_llc_llc2_timeout_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_llc_table[] = {
--	{ NET_LLC2,		"llc2",		trans_net_llc_llc2_table },
--	{ NET_LLC_STATION,	"station",	trans_net_llc_station_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_netfilter_table[] = {
--	{ NET_NF_CONNTRACK_MAX,				"nf_conntrack_max" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_SYN_SENT,	"nf_conntrack_tcp_timeout_syn_sent" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_SYN_RECV,	"nf_conntrack_tcp_timeout_syn_recv" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_ESTABLISHED,	"nf_conntrack_tcp_timeout_established" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_FIN_WAIT,	"nf_conntrack_tcp_timeout_fin_wait" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_CLOSE_WAIT,	"nf_conntrack_tcp_timeout_close_wait" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_LAST_ACK,	"nf_conntrack_tcp_timeout_last_ack" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_TIME_WAIT,	"nf_conntrack_tcp_timeout_time_wait" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_CLOSE,		"nf_conntrack_tcp_timeout_close" },
--	{ NET_NF_CONNTRACK_UDP_TIMEOUT,			"nf_conntrack_udp_timeout" },
--	{ NET_NF_CONNTRACK_UDP_TIMEOUT_STREAM,		"nf_conntrack_udp_timeout_stream" },
--	{ NET_NF_CONNTRACK_ICMP_TIMEOUT,	"nf_conntrack_icmp_timeout" },
--	{ NET_NF_CONNTRACK_GENERIC_TIMEOUT,		"nf_conntrack_generic_timeout" },
--	{ NET_NF_CONNTRACK_BUCKETS,			"nf_conntrack_buckets" },
--	{ NET_NF_CONNTRACK_LOG_INVALID,			"nf_conntrack_log_invalid" },
--	{ NET_NF_CONNTRACK_TCP_TIMEOUT_MAX_RETRANS,	"nf_conntrack_tcp_timeout_max_retrans" },
--	{ NET_NF_CONNTRACK_TCP_LOOSE,			"nf_conntrack_tcp_loose" },
--	{ NET_NF_CONNTRACK_TCP_BE_LIBERAL,		"nf_conntrack_tcp_be_liberal" },
--	{ NET_NF_CONNTRACK_TCP_MAX_RETRANS,		"nf_conntrack_tcp_max_retrans" },
--	{ NET_NF_CONNTRACK_SCTP_TIMEOUT_CLOSED,		"nf_conntrack_sctp_timeout_closed" },
--	{ NET_NF_CONNTRACK_SCTP_TIMEOUT_COOKIE_WAIT,	"nf_conntrack_sctp_timeout_cookie_wait" },
--	{ NET_NF_CONNTRACK_SCTP_TIMEOUT_COOKIE_ECHOED,	"nf_conntrack_sctp_timeout_cookie_echoed" },
--	{ NET_NF_CONNTRACK_SCTP_TIMEOUT_ESTABLISHED,	"nf_conntrack_sctp_timeout_established" },
--	{ NET_NF_CONNTRACK_SCTP_TIMEOUT_SHUTDOWN_SENT,	"nf_conntrack_sctp_timeout_shutdown_sent" },
--	{ NET_NF_CONNTRACK_SCTP_TIMEOUT_SHUTDOWN_RECD,	"nf_conntrack_sctp_timeout_shutdown_recd" },
--	{ NET_NF_CONNTRACK_SCTP_TIMEOUT_SHUTDOWN_ACK_SENT,	"nf_conntrack_sctp_timeout_shutdown_ack_sent" },
--	{ NET_NF_CONNTRACK_COUNT,			"nf_conntrack_count" },
--	{ NET_NF_CONNTRACK_ICMPV6_TIMEOUT,	"nf_conntrack_icmpv6_timeout" },
--	{ NET_NF_CONNTRACK_FRAG6_TIMEOUT,		"nf_conntrack_frag6_timeout" },
--	{ NET_NF_CONNTRACK_FRAG6_LOW_THRESH,		"nf_conntrack_frag6_low_thresh" },
--	{ NET_NF_CONNTRACK_FRAG6_HIGH_THRESH,		"nf_conntrack_frag6_high_thresh" },
--	{ NET_NF_CONNTRACK_CHECKSUM,			"nf_conntrack_checksum" },
--
--	{}
--};
--
--static const struct trans_ctl_table trans_net_dccp_table[] = {
--	{ NET_DCCP_DEFAULT,	"default" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_irda_table[] = {
--	{ NET_IRDA_DISCOVERY,		"discovery" },
--	{ NET_IRDA_DEVNAME,		"devname" },
--	{ NET_IRDA_DEBUG,		"debug" },
--	{ NET_IRDA_FAST_POLL,		"fast_poll_increase" },
--	{ NET_IRDA_DISCOVERY_SLOTS,	"discovery_slots" },
--	{ NET_IRDA_DISCOVERY_TIMEOUT,	"discovery_timeout" },
--	{ NET_IRDA_SLOT_TIMEOUT,	"slot_timeout" },
--	{ NET_IRDA_MAX_BAUD_RATE,	"max_baud_rate" },
--	{ NET_IRDA_MIN_TX_TURN_TIME,	"min_tx_turn_time" },
--	{ NET_IRDA_MAX_TX_DATA_SIZE,	"max_tx_data_size" },
--	{ NET_IRDA_MAX_TX_WINDOW,	"max_tx_window" },
--	{ NET_IRDA_MAX_NOREPLY_TIME,	"max_noreply_time" },
--	{ NET_IRDA_WARN_NOREPLY_TIME,	"warn_noreply_time" },
--	{ NET_IRDA_LAP_KEEPALIVE_TIME,	"lap_keepalive_time" },
--	{}
--};
--
--static const struct trans_ctl_table trans_net_table[] = {
--	{ NET_CORE,		"core",		trans_net_core_table },
--	/* NET_ETHER not used */
--	/* NET_802 not used */
--	{ NET_UNIX,		"unix",		trans_net_unix_table },
--	{ NET_IPV4,		"ipv4",		trans_net_ipv4_table },
--	{ NET_IPX,		"ipx",		trans_net_ipx_table },
--	{ NET_ATALK,		"appletalk",	trans_net_atalk_table },
--	{ NET_NETROM,		"netrom",	trans_net_netrom_table },
--	{ NET_AX25,		"ax25",		trans_net_ax25_table },
--	{ NET_BRIDGE,		"bridge",	trans_net_bridge_table },
--	{ NET_ROSE,		"rose",		trans_net_rose_table },
--	{ NET_IPV6,		"ipv6",		trans_net_ipv6_table },
--	{ NET_X25,		"x25",		trans_net_x25_table },
--	{ NET_TR,		"token-ring",	trans_net_tr_table },
--	{ NET_DECNET,		"decnet",	trans_net_decnet_table },
--	/*  NET_ECONET not used */
--	{ NET_SCTP,		"sctp",		trans_net_sctp_table },
--	{ NET_LLC,		"llc",		trans_net_llc_table },
--	{ NET_NETFILTER,	"netfilter",	trans_net_netfilter_table },
--	{ NET_DCCP,		"dccp",		trans_net_dccp_table },
--	{ NET_IRDA,		"irda",		trans_net_irda_table },
--	{ 2089,			"nf_conntrack_max" },
--	{}
--};
--
--static const struct trans_ctl_table trans_fs_quota_table[] = {
--	{ FS_DQ_LOOKUPS,	"lookups" },
--	{ FS_DQ_DROPS,		"drops" },
--	{ FS_DQ_READS,		"reads" },
--	{ FS_DQ_WRITES,		"writes" },
--	{ FS_DQ_CACHE_HITS,	"cache_hits" },
--	{ FS_DQ_ALLOCATED,	"allocated_dquots" },
--	{ FS_DQ_FREE,		"free_dquots" },
--	{ FS_DQ_SYNCS,		"syncs" },
--	{ FS_DQ_WARNINGS,	"warnings" },
--	{}
--};
--
--static const struct trans_ctl_table trans_fs_xfs_table[] = {
--	{ XFS_SGID_INHERIT,	"irix_sgid_inherit" },
--	{ XFS_SYMLINK_MODE,	"irix_symlink_mode" },
--	{ XFS_PANIC_MASK,	"panic_mask" },
--
--	{ XFS_ERRLEVEL,		"error_level" },
--	{ XFS_SYNCD_TIMER,	"xfssyncd_centisecs" },
--	{ XFS_INHERIT_SYNC,	"inherit_sync" },
--	{ XFS_INHERIT_NODUMP,	"inherit_nodump" },
--	{ XFS_INHERIT_NOATIME,	"inherit_noatime" },
--	{ XFS_BUF_TIMER,	"xfsbufd_centisecs" },
--	{ XFS_BUF_AGE,		"age_buffer_centisecs" },
--	{ XFS_INHERIT_NOSYM,	"inherit_nosymlinks" },
--	{ XFS_ROTORSTEP,	"rotorstep" },
--	{ XFS_INHERIT_NODFRG,	"inherit_nodefrag" },
--	{ XFS_FILESTREAM_TIMER,	"filestream_centisecs" },
--	{ XFS_STATS_CLEAR,	"stats_clear" },
--	{}
--};
--
--static const struct trans_ctl_table trans_fs_ocfs2_nm_table[] = {
--	{ 1, "hb_ctl_path" },
--	{}
--};
--
--static const struct trans_ctl_table trans_fs_ocfs2_table[] = {
--	{ 1,	"nm",	trans_fs_ocfs2_nm_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_inotify_table[] = {
--	{ INOTIFY_MAX_USER_INSTANCES,	"max_user_instances" },
--	{ INOTIFY_MAX_USER_WATCHES,	"max_user_watches" },
--	{ INOTIFY_MAX_QUEUED_EVENTS,	"max_queued_events" },
--	{}
--};
--
--static const struct trans_ctl_table trans_fs_table[] = {
--	{ FS_NRINODE,		"inode-nr" },
--	{ FS_STATINODE,		"inode-state" },
--	/* FS_MAXINODE unused */
--	/* FS_NRDQUOT unused */
--	/* FS_MAXDQUOT unused */
--	{ FS_NRFILE,		"file-nr" },
--	{ FS_MAXFILE,		"file-max" },
--	{ FS_DENTRY,		"dentry-state" },
--	/* FS_NRSUPER unused */
--	/* FS_MAXUPSER unused */
--	{ FS_OVERFLOWUID,	"overflowuid" },
--	{ FS_OVERFLOWGID,	"overflowgid" },
--	{ FS_LEASES,		"leases-enable" },
--	{ FS_DIR_NOTIFY,	"dir-notify-enable" },
--	{ FS_LEASE_TIME,	"lease-break-time" },
--	{ FS_DQSTATS,		"quota",		trans_fs_quota_table },
--	{ FS_XFS,		"xfs",			trans_fs_xfs_table },
--	{ FS_AIO_NR,		"aio-nr" },
--	{ FS_AIO_MAX_NR,	"aio-max-nr" },
--	{ FS_INOTIFY,		"inotify",		trans_inotify_table },
--	{ FS_OCFS2,		"ocfs2",		trans_fs_ocfs2_table },
--	{ KERN_SETUID_DUMPABLE,	"suid_dumpable" },
--	{}
--};
--
--static const struct trans_ctl_table trans_debug_table[] = {
--	{}
--};
--
--static const struct trans_ctl_table trans_cdrom_table[] = {
--	{ DEV_CDROM_INFO,		"info" },
--	{ DEV_CDROM_AUTOCLOSE,		"autoclose" },
--	{ DEV_CDROM_AUTOEJECT,		"autoeject" },
--	{ DEV_CDROM_DEBUG,		"debug" },
--	{ DEV_CDROM_LOCK,		"lock" },
--	{ DEV_CDROM_CHECK_MEDIA,	"check_media" },
--	{}
--};
--
--static const struct trans_ctl_table trans_ipmi_table[] = {
--	{ DEV_IPMI_POWEROFF_POWERCYCLE,	"poweroff_powercycle" },
--	{}
--};
--
--static const struct trans_ctl_table trans_mac_hid_files[] = {
--	/* DEV_MAC_HID_KEYBOARD_SENDS_LINUX_KEYCODES unused */
--	/* DEV_MAC_HID_KEYBOARD_LOCK_KEYCODES unused */
--	{ DEV_MAC_HID_MOUSE_BUTTON_EMULATION,	"mouse_button_emulation" },
--	{ DEV_MAC_HID_MOUSE_BUTTON2_KEYCODE,	"mouse_button2_keycode" },
--	{ DEV_MAC_HID_MOUSE_BUTTON3_KEYCODE,	"mouse_button3_keycode" },
--	/* DEV_MAC_HID_ADB_MOUSE_SENDS_KEYCODES unused */
--	{}
--};
--
--static const struct trans_ctl_table trans_raid_table[] = {
--	{ DEV_RAID_SPEED_LIMIT_MIN,	"speed_limit_min" },
--	{ DEV_RAID_SPEED_LIMIT_MAX,	"speed_limit_max" },
--	{}
--};
--
--static const struct trans_ctl_table trans_scsi_table[] = {
--	{ DEV_SCSI_LOGGING_LEVEL, "logging_level" },
--	{}
--};
--
--static const struct trans_ctl_table trans_parport_default_table[] = {
--	{ DEV_PARPORT_DEFAULT_TIMESLICE,	"timeslice" },
--	{ DEV_PARPORT_DEFAULT_SPINTIME,		"spintime" },
--	{}
--};
--
--static const struct trans_ctl_table trans_parport_device_table[] = {
--	{ DEV_PARPORT_DEVICE_TIMESLICE,		"timeslice" },
--	{}
--};
--
--static const struct trans_ctl_table trans_parport_devices_table[] = {
--	{ DEV_PARPORT_DEVICES_ACTIVE,		"active" },
--	{ 0, NULL, trans_parport_device_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_parport_parport_table[] = {
--	{ DEV_PARPORT_SPINTIME,		"spintime" },
--	{ DEV_PARPORT_BASE_ADDR,	"base-addr" },
--	{ DEV_PARPORT_IRQ,		"irq" },
--	{ DEV_PARPORT_DMA,		"dma" },
--	{ DEV_PARPORT_MODES,		"modes" },
--	{ DEV_PARPORT_DEVICES,		"devices",	trans_parport_devices_table },
--	{ DEV_PARPORT_AUTOPROBE,	"autoprobe" },
--	{ DEV_PARPORT_AUTOPROBE + 1,	"autoprobe0" },
--	{ DEV_PARPORT_AUTOPROBE + 2,	"autoprobe1" },
--	{ DEV_PARPORT_AUTOPROBE + 3,	"autoprobe2" },
--	{ DEV_PARPORT_AUTOPROBE + 4,	"autoprobe3" },
--	{}
--};
--static const struct trans_ctl_table trans_parport_table[] = {
--	{ DEV_PARPORT_DEFAULT,	"default",	trans_parport_default_table },
--	{ 0, NULL, trans_parport_parport_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_dev_table[] = {
--	{ DEV_CDROM,	"cdrom",	trans_cdrom_table },
--	/* DEV_HWMON unused */
--	{ DEV_PARPORT,	"parport",	trans_parport_table },
--	{ DEV_RAID,	"raid",		trans_raid_table },
--	{ DEV_MAC_HID,	"mac_hid",	trans_mac_hid_files },
--	{ DEV_SCSI,	"scsi",		trans_scsi_table },
--	{ DEV_IPMI,	"ipmi",		trans_ipmi_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_bus_isa_table[] = {
--	{ BUS_ISA_MEM_BASE,	"membase" },
--	{ BUS_ISA_PORT_BASE,	"portbase" },
--	{ BUS_ISA_PORT_SHIFT,	"portshift" },
--	{}
--};
--
--static const struct trans_ctl_table trans_bus_table[] = {
--	{ CTL_BUS_ISA,	"isa",	trans_bus_isa_table },
--	{}
--};
--
--static const struct trans_ctl_table trans_arlan_conf_table0[] = {
--	{ 1,	"spreadingCode" },
--	{ 2,	"channelNumber" },
--	{ 3,	"scramblingDisable" },
--	{ 4,	"txAttenuation" },
--	{ 5,	"systemId" },
--	{ 6,	"maxDatagramSize" },
--	{ 7,	"maxFrameSize" },
--	{ 8,	"maxRetries" },
--	{ 9,	"receiveMode" },
--	{ 10,	"priority" },
--	{ 11,	"rootOrRepeater" },
--	{ 12,	"SID" },
--	{ 13,	"registrationMode" },
--	{ 14,	"registrationFill" },
--	{ 15,	"localTalkAddress" },
--	{ 16,	"codeFormat" },
--	{ 17,	"numChannels" },
--	{ 18,	"channel1" },
--	{ 19,	"channel2" },
--	{ 20,	"channel3" },
--	{ 21,	"channel4" },
--	{ 22,	"txClear" },
--	{ 23,	"txRetries" },
--	{ 24,	"txRouting" },
--	{ 25,	"txScrambled" },
--	{ 26,	"rxParameter" },
--	{ 27,	"txTimeoutMs" },
--	{ 28,	"waitCardTimeout" },
--	{ 29,	"channelSet" },
--	{ 30,	"name" },
--	{ 31,	"waitTime" },
--	{ 32,	"lParameter" },
--	{ 33,	"_15" },
--	{ 34,	"headerSize" },
--	{ 36,	"tx_delay_ms" },
--	{ 37,	"retries" },
--	{ 38,	"ReTransmitPacketMaxSize" },
--	{ 39,	"waitReTransmitPacketMaxSize" },
--	{ 40,	"fastReTransCount" },
--	{ 41,	"driverRetransmissions" },
--	{ 42,	"txAckTimeoutMs" },
--	{ 43,	"registrationInterrupts" },
--	{ 44,	"hardwareType" },
--	{ 45,	"radioType" },
--	{ 46,	"writeEEPROM" },
--	{ 47,	"writeRadioType" },
--	{ 48,	"entry_exit_debug" },
--	{ 49,	"debug" },
--	{ 50,	"in_speed" },
--	{ 51,	"out_speed" },
--	{ 52,	"in_speed10" },
--	{ 53,	"out_speed10" },
--	{ 54,	"in_speed_max" },
--	{ 55,	"out_speed_max" },
--	{ 56,	"measure_rate" },
--	{ 57,	"pre_Command_Wait" },
--	{ 58,	"rx_tweak1" },
--	{ 59,	"rx_tweak2" },
--	{ 60,	"tx_queue_len" },
--
--	{ 150,	"arlan0-txRing" },
--	{ 151,	"arlan0-rxRing" },
--	{ 152,	"arlan0-18" },
--	{ 153,	"arlan0-ring" },
--	{ 154,	"arlan0-shm-cpy" },
--	{ 155,	"config0" },
--	{ 156,	"reset0" },
--	{}
--};
--
--static const struct trans_ctl_table trans_arlan_conf_table1[] = {
--	{ 1,	"spreadingCode" },
--	{ 2,	"channelNumber" },
--	{ 3,	"scramblingDisable" },
--	{ 4,	"txAttenuation" },
--	{ 5,	"systemId" },
--	{ 6,	"maxDatagramSize" },
--	{ 7,	"maxFrameSize" },
--	{ 8,	"maxRetries" },
--	{ 9,	"receiveMode" },
--	{ 10,	"priority" },
--	{ 11,	"rootOrRepeater" },
--	{ 12,	"SID" },
--	{ 13,	"registrationMode" },
--	{ 14,	"registrationFill" },
--	{ 15,	"localTalkAddress" },
--	{ 16,	"codeFormat" },
--	{ 17,	"numChannels" },
--	{ 18,	"channel1" },
--	{ 19,	"channel2" },
--	{ 20,	"channel3" },
--	{ 21,	"channel4" },
--	{ 22,	"txClear" },
--	{ 23,	"txRetries" },
--	{ 24,	"txRouting" },
--	{ 25,	"txScrambled" },
--	{ 26,	"rxParameter" },
--	{ 27,	"txTimeoutMs" },
--	{ 28,	"waitCardTimeout" },
--	{ 29,	"channelSet" },
--	{ 30,	"name" },
--	{ 31,	"waitTime" },
--	{ 32,	"lParameter" },
--	{ 33,	"_15" },
--	{ 34,	"headerSize" },
--	{ 36,	"tx_delay_ms" },
--	{ 37,	"retries" },
--	{ 38,	"ReTransmitPacketMaxSize" },
--	{ 39,	"waitReTransmitPacketMaxSize" },
--	{ 40,	"fastReTransCount" },
--	{ 41,	"driverRetransmissions" },
--	{ 42,	"txAckTimeoutMs" },
--	{ 43,	"registrationInterrupts" },
--	{ 44,	"hardwareType" },
--	{ 45,	"radioType" },
--	{ 46,	"writeEEPROM" },
--	{ 47,	"writeRadioType" },
--	{ 48,	"entry_exit_debug" },
--	{ 49,	"debug" },
--	{ 50,	"in_speed" },
--	{ 51,	"out_speed" },
--	{ 52,	"in_speed10" },
--	{ 53,	"out_speed10" },
--	{ 54,	"in_speed_max" },
--	{ 55,	"out_speed_max" },
--	{ 56,	"measure_rate" },
--	{ 57,	"pre_Command_Wait" },
--	{ 58,	"rx_tweak1" },
--	{ 59,	"rx_tweak2" },
--	{ 60,	"tx_queue_len" },
--
--	{ 150,	"arlan1-txRing" },
--	{ 151,	"arlan1-rxRing" },
--	{ 152,	"arlan1-18" },
--	{ 153,	"arlan1-ring" },
--	{ 154,	"arlan1-shm-cpy" },
--	{ 155,	"config1" },
--	{ 156,	"reset1" },
--	{}
--};
--
--static const struct trans_ctl_table trans_arlan_conf_table2[] = {
--	{ 1,	"spreadingCode" },
--	{ 2,	"channelNumber" },
--	{ 3,	"scramblingDisable" },
--	{ 4,	"txAttenuation" },
--	{ 5,	"systemId" },
--	{ 6,	"maxDatagramSize" },
--	{ 7,	"maxFrameSize" },
--	{ 8,	"maxRetries" },
--	{ 9,	"receiveMode" },
--	{ 10,	"priority" },
--	{ 11,	"rootOrRepeater" },
--	{ 12,	"SID" },
--	{ 13,	"registrationMode" },
--	{ 14,	"registrationFill" },
--	{ 15,	"localTalkAddress" },
--	{ 16,	"codeFormat" },
--	{ 17,	"numChannels" },
--	{ 18,	"channel1" },
--	{ 19,	"channel2" },
--	{ 20,	"channel3" },
--	{ 21,	"channel4" },
--	{ 22,	"txClear" },
--	{ 23,	"txRetries" },
--	{ 24,	"txRouting" },
--	{ 25,	"txScrambled" },
--	{ 26,	"rxParameter" },
--	{ 27,	"txTimeoutMs" },
--	{ 28,	"waitCardTimeout" },
--	{ 29,	"channelSet" },
--	{ 30,	"name" },
--	{ 31,	"waitTime" },
--	{ 32,	"lParameter" },
--	{ 33,	"_15" },
--	{ 34,	"headerSize" },
--	{ 36,	"tx_delay_ms" },
--	{ 37,	"retries" },
--	{ 38,	"ReTransmitPacketMaxSize" },
--	{ 39,	"waitReTransmitPacketMaxSize" },
--	{ 40,	"fastReTransCount" },
--	{ 41,	"driverRetransmissions" },
--	{ 42,	"txAckTimeoutMs" },
--	{ 43,	"registrationInterrupts" },
--	{ 44,	"hardwareType" },
--	{ 45,	"radioType" },
--	{ 46,	"writeEEPROM" },
--	{ 47,	"writeRadioType" },
--	{ 48,	"entry_exit_debug" },
--	{ 49,	"debug" },
--	{ 50,	"in_speed" },
--	{ 51,	"out_speed" },
--	{ 52,	"in_speed10" },
--	{ 53,	"out_speed10" },
--	{ 54,	"in_speed_max" },
--	{ 55,	"out_speed_max" },
--	{ 56,	"measure_rate" },
--	{ 57,	"pre_Command_Wait" },
--	{ 58,	"rx_tweak1" },
--	{ 59,	"rx_tweak2" },
--	{ 60,	"tx_queue_len" },
--
--	{ 150,	"arlan2-txRing" },
--	{ 151,	"arlan2-rxRing" },
--	{ 152,	"arlan2-18" },
--	{ 153,	"arlan2-ring" },
--	{ 154,	"arlan2-shm-cpy" },
--	{ 155,	"config2" },
--	{ 156,	"reset2" },
--	{}
--};
--
--static const struct trans_ctl_table trans_arlan_conf_table3[] = {
--	{ 1,	"spreadingCode" },
--	{ 2,	"channelNumber" },
--	{ 3,	"scramblingDisable" },
--	{ 4,	"txAttenuation" },
--	{ 5,	"systemId" },
--	{ 6,	"maxDatagramSize" },
--	{ 7,	"maxFrameSize" },
--	{ 8,	"maxRetries" },
--	{ 9,	"receiveMode" },
--	{ 10,	"priority" },
--	{ 11,	"rootOrRepeater" },
--	{ 12,	"SID" },
--	{ 13,	"registrationMode" },
--	{ 14,	"registrationFill" },
--	{ 15,	"localTalkAddress" },
--	{ 16,	"codeFormat" },
--	{ 17,	"numChannels" },
--	{ 18,	"channel1" },
--	{ 19,	"channel2" },
--	{ 20,	"channel3" },
--	{ 21,	"channel4" },
--	{ 22,	"txClear" },
--	{ 23,	"txRetries" },
--	{ 24,	"txRouting" },
--	{ 25,	"txScrambled" },
--	{ 26,	"rxParameter" },
--	{ 27,	"txTimeoutMs" },
--	{ 28,	"waitCardTimeout" },
--	{ 29,	"channelSet" },
--	{ 30,	"name" },
--	{ 31,	"waitTime" },
--	{ 32,	"lParameter" },
--	{ 33,	"_15" },
--	{ 34,	"headerSize" },
--	{ 36,	"tx_delay_ms" },
--	{ 37,	"retries" },
--	{ 38,	"ReTransmitPacketMaxSize" },
--	{ 39,	"waitReTransmitPacketMaxSize" },
--	{ 40,	"fastReTransCount" },
--	{ 41,	"driverRetransmissions" },
--	{ 42,	"txAckTimeoutMs" },
--	{ 43,	"registrationInterrupts" },
--	{ 44,	"hardwareType" },
--	{ 45,	"radioType" },
--	{ 46,	"writeEEPROM" },
--	{ 47,	"writeRadioType" },
--	{ 48,	"entry_exit_debug" },
--	{ 49,	"debug" },
--	{ 50,	"in_speed" },
--	{ 51,	"out_speed" },
--	{ 52,	"in_speed10" },
--	{ 53,	"out_speed10" },
--	{ 54,	"in_speed_max" },
--	{ 55,	"out_speed_max" },
--	{ 56,	"measure_rate" },
--	{ 57,	"pre_Command_Wait" },
--	{ 58,	"rx_tweak1" },
--	{ 59,	"rx_tweak2" },
--	{ 60,	"tx_queue_len" },
--
--	{ 150,	"arlan3-txRing" },
--	{ 151,	"arlan3-rxRing" },
--	{ 152,	"arlan3-18" },
--	{ 153,	"arlan3-ring" },
--	{ 154,	"arlan3-shm-cpy" },
--	{ 155,	"config3" },
--	{ 156,	"reset3" },
--	{}
--};
--
--static const struct trans_ctl_table trans_arlan_table[] = {
--	{ 1,		"arlan0",	trans_arlan_conf_table0 },
--	{ 2,		"arlan1",	trans_arlan_conf_table1 },
--	{ 3,		"arlan2",	trans_arlan_conf_table2 },
--	{ 4,		"arlan3",	trans_arlan_conf_table3 },
--	{}
--};
--
--static const struct trans_ctl_table trans_s390dbf_table[] = {
--	{ 5678 /* CTL_S390DBF_STOPPABLE */,	"debug_stoppable" },
--	{ 5679 /* CTL_S390DBF_ACTIVE */,	"debug_active" },
--	{}
--};
--
--static const struct trans_ctl_table trans_sunrpc_table[] = {
--	{ CTL_RPCDEBUG,		"rpc_debug" },
--	{ CTL_NFSDEBUG,		"nfs_debug" },
--	{ CTL_NFSDDEBUG,	"nfsd_debug" },
--	{ CTL_NLMDEBUG,		"nlm_debug" },
--	{ CTL_SLOTTABLE_UDP,	"udp_slot_table_entries" },
--	{ CTL_SLOTTABLE_TCP,	"tcp_slot_table_entries" },
--	{ CTL_MIN_RESVPORT,	"min_resvport" },
--	{ CTL_MAX_RESVPORT,	"max_resvport" },
--	{}
--};
--
--static const struct trans_ctl_table trans_pm_table[] = {
--	{ 1 /* CTL_PM_SUSPEND */,	"suspend" },
--	{ 2 /* CTL_PM_CMODE */,		"cmode" },
--	{ 3 /* CTL_PM_P0 */,		"p0" },
--	{ 4 /* CTL_PM_CM */,		"cm" },
--	{}
--};
--
--static const struct trans_ctl_table trans_frv_table[] = {
--	{ 1,	"cache-mode" },
--	{ 2,	"pin-cxnr" },
--	{}
--};
--
--static const struct trans_ctl_table trans_root_table[] = {
--	{ CTL_KERN,	"kernel",	trans_kern_table },
--	{ CTL_VM,	"vm",		trans_vm_table },
--	{ CTL_NET,	"net",		trans_net_table },
--	/* CTL_PROC not used */
--	{ CTL_FS,	"fs",		trans_fs_table },
--	{ CTL_DEBUG,	"debug",	trans_debug_table },
--	{ CTL_DEV,	"dev",		trans_dev_table },
--	{ CTL_BUS,	"bus",		trans_bus_table },
--	{ CTL_ABI,	"abi" },
--	/* CTL_CPU not used */
--	{ CTL_ARLAN,	"arlan",	trans_arlan_table },
--	{ CTL_S390DBF,	"s390dbf",	trans_s390dbf_table },
--	{ CTL_SUNRPC,	"sunrpc",	trans_sunrpc_table },
--	{ CTL_PM,	"pm",		trans_pm_table },
--	{ CTL_FRV,	"frv",		trans_frv_table },
--	{}
--};
--
--
--
+ static struct ctl_table root_table[] = {
+ 	{
+-		.ctl_name	= CTL_KERN,
+ 		.procname	= "kernel",
+ 		.mode		= 0555,
+ 		.child		= kern_table,
+ 	},
+ 	{
+-		.ctl_name	= CTL_VM,
+ 		.procname	= "vm",
+ 		.mode		= 0555,
+ 		.child		= vm_table,
+ 	},
+ 	{
+-		.ctl_name	= CTL_FS,
+ 		.procname	= "fs",
+ 		.mode		= 0555,
+ 		.child		= fs_table,
+ 	},
+ 	{
+-		.ctl_name	= CTL_DEBUG,
+ 		.procname	= "debug",
+ 		.mode		= 0555,
+ 		.child		= debug_table,
+ 	},
+ 	{
+-		.ctl_name	= CTL_DEV,
+ 		.procname	= "dev",
+ 		.mode		= 0555,
+ 		.child		= dev_table,
+@@ -238,7 +233,7 @@ static struct ctl_table root_table[] = {
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
+  */
+-	{ .ctl_name = 0 }
++	{ }
+ };
  
- static int sysctl_depth(struct ctl_table *table)
- {
-@@ -1261,47 +28,6 @@ static struct ctl_table *sysctl_parent(struct ctl_table *table, int n)
- 	return table;
- }
+ #ifdef CONFIG_SCHED_DEBUG
+@@ -250,7 +245,6 @@ static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
  
--static const struct trans_ctl_table *sysctl_binary_lookup(struct ctl_table *table)
--{
--	struct ctl_table *test;
--	const struct trans_ctl_table *ref;
--	int cur_depth;
--
--	cur_depth = sysctl_depth(table);
--
--	ref = trans_root_table;
--repeat:
--	test = sysctl_parent(table, cur_depth);
--	for (; ref->ctl_name || ref->procname || ref->child; ref++) {
--		int match = 0;
--
--		if (cur_depth && !ref->child)
--			continue;
--
--		if (test->procname && ref->procname &&
--			(strcmp(test->procname, ref->procname) == 0))
--			match++;
--
--		if (test->ctl_name && ref->ctl_name &&
--			(test->ctl_name == ref->ctl_name))
--			match++;
--
--		if (!ref->ctl_name && !ref->procname)
--			match++;
--
--		if (match) {
--			if (cur_depth != 0) {
--				cur_depth--;
--				ref = ref->child;
--				goto repeat;
--			}
--			goto out;
--		}
--	}
--	ref = NULL;
--out:
--	return ref;
--}
- 
- static void sysctl_print_path(struct ctl_table *table)
- {
-@@ -1315,26 +41,6 @@ static void sysctl_print_path(struct ctl_table *table)
- 		}
- 	}
- 	printk(" ");
--	if (table->ctl_name) {
--		for (i = depth; i >= 0; i--) {
--			tmp = sysctl_parent(table, i);
--			printk(".%d", tmp->ctl_name);
--		}
--	}
--}
--
--static void sysctl_repair_table(struct ctl_table *table)
--{
--	/* Don't complain about the classic default
--	 * sysctl strategy routine.  Maybe later we
--	 * can get the tables fixed and complain about
--	 * this.
--	 */
--	if (table->ctl_name && table->procname &&
--		(table->proc_handler == proc_dointvec) &&
--		(!table->strategy)) {
--		table->strategy = sysctl_data;
--	}
- }
- 
- static struct ctl_table *sysctl_check_lookup(struct nsproxy *namespaces,
-@@ -1352,7 +58,7 @@ static struct ctl_table *sysctl_check_lookup(struct nsproxy *namespaces,
- 		ref = head->ctl_table;
- repeat:
- 		test = sysctl_parent(table, cur_depth);
--		for (; ref->ctl_name || ref->procname; ref++) {
-+		for (; ref->procname; ref++) {
- 			int match = 0;
- 			if (cur_depth && !ref->child)
- 				continue;
-@@ -1361,10 +67,6 @@ repeat:
- 			    (strcmp(test->procname, ref->procname) == 0))
- 					match++;
- 
--			if (test->ctl_name && ref->ctl_name &&
--			    (test->ctl_name == ref->ctl_name))
--				match++;
--
- 			if (match) {
- 				if (cur_depth != 0) {
- 					cur_depth--;
-@@ -1392,38 +94,6 @@ static void set_fail(const char **fail, struct ctl_table *table, const char *str
- 	*fail = str;
- }
- 
--static int sysctl_check_dir(struct nsproxy *namespaces,
--				struct ctl_table *table)
--{
--	struct ctl_table *ref;
--	int error;
--
--	error = 0;
--	ref = sysctl_check_lookup(namespaces, table);
--	if (ref) {
--		int match = 0;
--		if ((!table->procname && !ref->procname) ||
--		    (table->procname && ref->procname &&
--		     (strcmp(table->procname, ref->procname) == 0)))
--			match++;
--
--		if ((!table->ctl_name && !ref->ctl_name) ||
--		    (table->ctl_name && ref->ctl_name &&
--		     (table->ctl_name == ref->ctl_name)))
--			match++;
--
--		if (match != 2) {
--			printk(KERN_ERR "%s: failed: ", __func__);
--			sysctl_print_path(table);
--			printk(" ref: ");
--			sysctl_print_path(ref);
--			printk("\n");
--			error = -EINVAL;
--		}
--	}
--	return error;
--}
--
- static void sysctl_check_leaf(struct nsproxy *namespaces,
- 				struct ctl_table *table, const char **fail)
- {
-@@ -1434,37 +104,15 @@ static void sysctl_check_leaf(struct nsproxy *namespaces,
- 		set_fail(fail, table, "Sysctl already exists");
- }
- 
--static void sysctl_check_bin_path(struct ctl_table *table, const char **fail)
--{
--	const struct trans_ctl_table *ref;
--
--	ref = sysctl_binary_lookup(table);
--	if (table->ctl_name && !ref)
--		set_fail(fail, table, "Unknown sysctl binary path");
--	if (ref) {
--		if (ref->procname &&
--		    (!table->procname ||
--		     (strcmp(table->procname, ref->procname) != 0)))
--			set_fail(fail, table, "procname does not match binary path procname");
--
--		if (ref->ctl_name && table->ctl_name &&
--		    (table->ctl_name != ref->ctl_name))
--			set_fail(fail, table, "ctl_name does not match binary path ctl_name");
--	}
--}
--
- int sysctl_check_table(struct nsproxy *namespaces, struct ctl_table *table)
- {
- 	int error = 0;
--	for (; table->ctl_name || table->procname; table++) {
-+	for (; table->procname; table++) {
- 		const char *fail = NULL;
- 
--		sysctl_repair_table(table);
- 		if (table->parent) {
- 			if (table->procname && !table->parent->procname)
- 				set_fail(&fail, table, "Parent without procname");
--			if (table->ctl_name && !table->parent->ctl_name)
--				set_fail(&fail, table, "Parent without ctl_name");
- 		}
- 		if (!table->procname)
- 			set_fail(&fail, table, "No procname");
-@@ -1477,21 +125,12 @@ int sysctl_check_table(struct nsproxy *namespaces, struct ctl_table *table)
- 				set_fail(&fail, table, "Writable sysctl directory");
- 			if (table->proc_handler)
- 				set_fail(&fail, table, "Directory with proc_handler");
--			if (table->strategy)
--				set_fail(&fail, table, "Directory with strategy");
- 			if (table->extra1)
- 				set_fail(&fail, table, "Directory with extra1");
- 			if (table->extra2)
- 				set_fail(&fail, table, "Directory with extra2");
--			if (sysctl_check_dir(namespaces, table))
--				set_fail(&fail, table, "Inconsistent directory names");
- 		} else {
--			if ((table->strategy == sysctl_data) ||
--			    (table->strategy == sysctl_string) ||
--			    (table->strategy == sysctl_intvec) ||
--			    (table->strategy == sysctl_jiffies) ||
--			    (table->strategy == sysctl_ms_jiffies) ||
--			    (table->proc_handler == proc_dostring) ||
-+			if ((table->proc_handler == proc_dostring) ||
- 			    (table->proc_handler == proc_dointvec) ||
- 			    (table->proc_handler == proc_dointvec_minmax) ||
- 			    (table->proc_handler == proc_dointvec_jiffies) ||
-@@ -1513,14 +152,6 @@ int sysctl_check_table(struct nsproxy *namespaces, struct ctl_table *table)
- 						set_fail(&fail, table, "No max");
- 				}
- 			}
--#ifdef CONFIG_SYSCTL_SYSCALL
--			if (table->ctl_name && !table->strategy)
--				set_fail(&fail, table, "Missing strategy");
--#endif
--#if 0
--			if (!table->ctl_name && table->strategy)
--				set_fail(&fail, table, "Strategy without ctl_name");
--#endif
- #ifdef CONFIG_PROC_SYSCTL
- 			if (table->procname && !table->proc_handler)
- 				set_fail(&fail, table, "No proc_handler");
-@@ -1531,7 +162,6 @@ int sysctl_check_table(struct nsproxy *namespaces, struct ctl_table *table)
+ static struct ctl_table kern_table[] = {
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_child_runs_first",
+ 		.data		= &sysctl_sched_child_runs_first,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -259,40 +253,33 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #ifdef CONFIG_SCHED_DEBUG
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_min_granularity_ns",
+ 		.data		= &sysctl_sched_min_granularity,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &sched_nr_latency_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &min_sched_granularity_ns,
+ 		.extra2		= &max_sched_granularity_ns,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_latency_ns",
+ 		.data		= &sysctl_sched_latency,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &sched_nr_latency_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &min_sched_granularity_ns,
+ 		.extra2		= &max_sched_granularity_ns,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_wakeup_granularity_ns",
+ 		.data		= &sysctl_sched_wakeup_granularity,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &min_wakeup_granularity_ns,
+ 		.extra2		= &max_wakeup_granularity_ns,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_shares_ratelimit",
+ 		.data		= &sysctl_sched_shares_ratelimit,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -300,17 +287,14 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_shares_thresh",
+ 		.data		= &sysctl_sched_shares_thresh,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_features",
+ 		.data		= &sysctl_sched_features,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -318,7 +302,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_migration_cost",
+ 		.data		= &sysctl_sched_migration_cost,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -326,7 +309,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_nr_migrate",
+ 		.data		= &sysctl_sched_nr_migrate,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -334,7 +316,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_time_avg",
+ 		.data		= &sysctl_sched_time_avg,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -342,19 +323,16 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "timer_migration",
+ 		.data		= &sysctl_timer_migration,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
+ 	},
  #endif
- 			sysctl_check_leaf(namespaces, table, &fail);
- 		}
--		sysctl_check_bin_path(table, &fail);
- 		if (table->mode > 0777)
- 			set_fail(&fail, table, "bogus .mode");
- 		if (fail) {
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 234ceb1..01f2d11 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -912,7 +912,7 @@ config LATENCYTOP
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_rt_period_us",
+ 		.data		= &sysctl_sched_rt_period,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -362,7 +340,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &sched_rt_handler,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_rt_runtime_us",
+ 		.data		= &sysctl_sched_rt_runtime,
+ 		.maxlen		= sizeof(int),
+@@ -370,7 +347,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &sched_rt_handler,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_compat_yield",
+ 		.data		= &sysctl_sched_compat_yield,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -379,7 +355,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #ifdef CONFIG_PROVE_LOCKING
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "prove_locking",
+ 		.data		= &prove_locking,
+ 		.maxlen		= sizeof(int),
+@@ -389,7 +364,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_LOCK_STAT
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "lock_stat",
+ 		.data		= &lock_stat,
+ 		.maxlen		= sizeof(int),
+@@ -398,7 +372,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= KERN_PANIC,
+ 		.procname	= "panic",
+ 		.data		= &panic_timeout,
+ 		.maxlen		= sizeof(int),
+@@ -406,7 +379,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= KERN_CORE_USES_PID,
+ 		.procname	= "core_uses_pid",
+ 		.data		= &core_uses_pid,
+ 		.maxlen		= sizeof(int),
+@@ -414,16 +386,13 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= KERN_CORE_PATTERN,
+ 		.procname	= "core_pattern",
+ 		.data		= core_pattern,
+ 		.maxlen		= CORENAME_MAX_SIZE,
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dostring,
+-		.strategy	= &sysctl_string,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "core_pipe_limit",
+ 		.data		= &core_pipe_limit,
+ 		.maxlen		= sizeof(unsigned int),
+@@ -449,7 +418,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	{
+-		.ctl_name	= KERN_REALROOTDEV,
+ 		.procname	= "real-root-dev",
+ 		.data		= &real_root_dev,
+ 		.maxlen		= sizeof(int),
+@@ -458,7 +426,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "print-fatal-signals",
+ 		.data		= &print_fatal_signals,
+ 		.maxlen		= sizeof(int),
+@@ -467,16 +434,13 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #ifdef CONFIG_SPARC
+ 	{
+-		.ctl_name	= KERN_SPARC_REBOOT,
+ 		.procname	= "reboot-cmd",
+ 		.data		= reboot_command,
+ 		.maxlen		= 256,
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dostring,
+-		.strategy	= &sysctl_string,
+ 	},
+ 	{
+-		.ctl_name	= KERN_SPARC_STOP_A,
+ 		.procname	= "stop-a",
+ 		.data		= &stop_a_enabled,
+ 		.maxlen		= sizeof (int),
+@@ -484,7 +448,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= KERN_SPARC_SCONS_PWROFF,
+ 		.procname	= "scons-poweroff",
+ 		.data		= &scons_pwroff,
+ 		.maxlen		= sizeof (int),
+@@ -494,7 +457,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_SPARC64
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "tsb-ratio",
+ 		.data		= &sysctl_tsb_ratio,
+ 		.maxlen		= sizeof (int),
+@@ -504,7 +466,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef __hppa__
+ 	{
+-		.ctl_name	= KERN_HPPA_PWRSW,
+ 		.procname	= "soft-power",
+ 		.data		= &pwrsw_enabled,
+ 		.maxlen		= sizeof (int),
+@@ -512,7 +473,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= KERN_HPPA_UNALIGNED,
+ 		.procname	= "unaligned-trap",
+ 		.data		= &unaligned_enabled,
+ 		.maxlen		= sizeof (int),
+@@ -521,7 +481,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= KERN_CTLALTDEL,
+ 		.procname	= "ctrl-alt-del",
+ 		.data		= &C_A_D,
+ 		.maxlen		= sizeof(int),
+@@ -530,7 +489,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #ifdef CONFIG_FUNCTION_TRACER
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "ftrace_enabled",
+ 		.data		= &ftrace_enabled,
+ 		.maxlen		= sizeof(int),
+@@ -540,7 +498,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_STACK_TRACER
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "stack_tracer_enabled",
+ 		.data		= &stack_tracer_enabled,
+ 		.maxlen		= sizeof(int),
+@@ -550,7 +507,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_TRACING
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "ftrace_dump_on_oops",
+ 		.data		= &ftrace_dump_on_oops,
+ 		.maxlen		= sizeof(int),
+@@ -560,16 +516,13 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_MODULES
+ 	{
+-		.ctl_name	= KERN_MODPROBE,
+ 		.procname	= "modprobe",
+ 		.data		= &modprobe_path,
+ 		.maxlen		= KMOD_PATH_LEN,
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dostring,
+-		.strategy	= &sysctl_string,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "modules_disabled",
+ 		.data		= &modules_disabled,
+ 		.maxlen		= sizeof(int),
+@@ -582,18 +535,15 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #if defined(CONFIG_HOTPLUG) && defined(CONFIG_NET)
+ 	{
+-		.ctl_name	= KERN_HOTPLUG,
+ 		.procname	= "hotplug",
+ 		.data		= &uevent_helper,
+ 		.maxlen		= UEVENT_HELPER_PATH_LEN,
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dostring,
+-		.strategy	= &sysctl_string,
+ 	},
+ #endif
+ #ifdef CONFIG_CHR_DEV_SG
+ 	{
+-		.ctl_name	= KERN_SG_BIG_BUFF,
+ 		.procname	= "sg-big-buff",
+ 		.data		= &sg_big_buff,
+ 		.maxlen		= sizeof (int),
+@@ -603,7 +553,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_BSD_PROCESS_ACCT
+ 	{
+-		.ctl_name	= KERN_ACCT,
+ 		.procname	= "acct",
+ 		.data		= &acct_parm,
+ 		.maxlen		= 3*sizeof(int),
+@@ -613,7 +562,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_MAGIC_SYSRQ
+ 	{
+-		.ctl_name	= KERN_SYSRQ,
+ 		.procname	= "sysrq",
+ 		.data		= &__sysrq_enabled,
+ 		.maxlen		= sizeof (int),
+@@ -631,7 +579,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= KERN_MAX_THREADS,
+ 		.procname	= "threads-max",
+ 		.data		= &max_threads,
+ 		.maxlen		= sizeof(int),
+@@ -639,37 +586,31 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= KERN_RANDOM,
+ 		.procname	= "random",
+ 		.mode		= 0555,
+ 		.child		= random_table,
+ 	},
+ 	{
+-		.ctl_name	= KERN_OVERFLOWUID,
+ 		.procname	= "overflowuid",
+ 		.data		= &overflowuid,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &minolduid,
+ 		.extra2		= &maxolduid,
+ 	},
+ 	{
+-		.ctl_name	= KERN_OVERFLOWGID,
+ 		.procname	= "overflowgid",
+ 		.data		= &overflowgid,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &minolduid,
+ 		.extra2		= &maxolduid,
+ 	},
+ #ifdef CONFIG_S390
+ #ifdef CONFIG_MATHEMU
+ 	{
+-		.ctl_name	= KERN_IEEE_EMULATION_WARNINGS,
+ 		.procname	= "ieee_emulation_warnings",
+ 		.data		= &sysctl_ieee_emulation_warnings,
+ 		.maxlen		= sizeof(int),
+@@ -678,7 +619,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= KERN_S390_USER_DEBUG_LOGGING,
+ 		.procname	= "userprocess_debug",
+ 		.data		= &sysctl_userprocess_debug,
+ 		.maxlen		= sizeof(int),
+@@ -687,18 +627,15 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= KERN_PIDMAX,
+ 		.procname	= "pid_max",
+ 		.data		= &pid_max,
+ 		.maxlen		= sizeof (int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= sysctl_intvec,
+ 		.extra1		= &pid_max_min,
+ 		.extra2		= &pid_max_max,
+ 	},
+ 	{
+-		.ctl_name	= KERN_PANIC_ON_OOPS,
+ 		.procname	= "panic_on_oops",
+ 		.data		= &panic_on_oops,
+ 		.maxlen		= sizeof(int),
+@@ -707,7 +644,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #if defined CONFIG_PRINTK
+ 	{
+-		.ctl_name	= KERN_PRINTK,
+ 		.procname	= "printk",
+ 		.data		= &console_loglevel,
+ 		.maxlen		= 4*sizeof(int),
+@@ -715,16 +651,13 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= KERN_PRINTK_RATELIMIT,
+ 		.procname	= "printk_ratelimit",
+ 		.data		= &printk_ratelimit_state.interval,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_jiffies,
+-		.strategy	= &sysctl_jiffies,
+ 	},
+ 	{
+-		.ctl_name	= KERN_PRINTK_RATELIMIT_BURST,
+ 		.procname	= "printk_ratelimit_burst",
+ 		.data		= &printk_ratelimit_state.burst,
+ 		.maxlen		= sizeof(int),
+@@ -732,19 +665,16 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "printk_delay",
+ 		.data		= &printk_delay_msec,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &ten_thousand,
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= KERN_NGROUPS_MAX,
+ 		.procname	= "ngroups_max",
+ 		.data		= &ngroups_max,
+ 		.maxlen		= sizeof (int),
+@@ -753,7 +683,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86)
+ 	{
+-		.ctl_name       = KERN_UNKNOWN_NMI_PANIC,
+ 		.procname       = "unknown_nmi_panic",
+ 		.data           = &unknown_nmi_panic,
+ 		.maxlen         = sizeof (int),
+@@ -770,7 +699,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #if defined(CONFIG_X86)
+ 	{
+-		.ctl_name	= KERN_PANIC_ON_NMI,
+ 		.procname	= "panic_on_unrecovered_nmi",
+ 		.data		= &panic_on_unrecovered_nmi,
+ 		.maxlen		= sizeof(int),
+@@ -778,7 +706,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "panic_on_io_nmi",
+ 		.data		= &panic_on_io_nmi,
+ 		.maxlen		= sizeof(int),
+@@ -786,7 +713,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= KERN_BOOTLOADER_TYPE,
+ 		.procname	= "bootloader_type",
+ 		.data		= &bootloader_type,
+ 		.maxlen		= sizeof (int),
+@@ -794,7 +720,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "bootloader_version",
+ 		.data		= &bootloader_version,
+ 		.maxlen		= sizeof (int),
+@@ -802,7 +727,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "kstack_depth_to_print",
+ 		.data		= &kstack_depth_to_print,
+ 		.maxlen		= sizeof(int),
+@@ -810,7 +734,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "io_delay_type",
+ 		.data		= &io_delay_type,
+ 		.maxlen		= sizeof(int),
+@@ -820,7 +743,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #if defined(CONFIG_MMU)
+ 	{
+-		.ctl_name	= KERN_RANDOMIZE,
+ 		.procname	= "randomize_va_space",
+ 		.data		= &randomize_va_space,
+ 		.maxlen		= sizeof(int),
+@@ -830,7 +752,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #if defined(CONFIG_S390) && defined(CONFIG_SMP)
+ 	{
+-		.ctl_name	= KERN_SPIN_RETRY,
+ 		.procname	= "spin_retry",
+ 		.data		= &spin_retry,
+ 		.maxlen		= sizeof (int),
+@@ -849,7 +770,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_IA64
+ 	{
+-		.ctl_name	= KERN_IA64_UNALIGNED,
+ 		.procname	= "ignore-unaligned-usertrap",
+ 		.data		= &no_unaligned_warning,
+ 		.maxlen		= sizeof (int),
+@@ -857,7 +777,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "unaligned-dump-stack",
+ 		.data		= &unaligned_dump_stack,
+ 		.maxlen		= sizeof (int),
+@@ -867,71 +786,58 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "softlockup_panic",
+ 		.data		= &softlockup_panic,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "softlockup_thresh",
+ 		.data		= &softlockup_thresh,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dosoftlockup_thresh,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &neg_one,
+ 		.extra2		= &sixty,
+ 	},
+ #endif
+ #ifdef CONFIG_DETECT_HUNG_TASK
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "hung_task_panic",
+ 		.data		= &sysctl_hung_task_panic,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "hung_task_check_count",
+ 		.data		= &sysctl_hung_task_check_count,
+ 		.maxlen		= sizeof(unsigned long),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_doulongvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "hung_task_timeout_secs",
+ 		.data		= &sysctl_hung_task_timeout_secs,
+ 		.maxlen		= sizeof(unsigned long),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dohung_task_timeout_secs,
+-		.strategy	= &sysctl_intvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "hung_task_warnings",
+ 		.data		= &sysctl_hung_task_warnings,
+ 		.maxlen		= sizeof(unsigned long),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_doulongvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 	},
+ #endif
+ #ifdef CONFIG_COMPAT
+ 	{
+-		.ctl_name	= KERN_COMPAT_LOG,
+ 		.procname	= "compat-log",
+ 		.data		= &compat_log,
+ 		.maxlen		= sizeof (int),
+@@ -941,7 +847,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_RT_MUTEXES
+ 	{
+-		.ctl_name	= KERN_MAX_LOCK_DEPTH,
+ 		.procname	= "max_lock_depth",
+ 		.data		= &max_lock_depth,
+ 		.maxlen		= sizeof(int),
+@@ -950,17 +855,14 @@ static struct ctl_table kern_table[] = {
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "poweroff_cmd",
+ 		.data		= &poweroff_cmd,
+ 		.maxlen		= POWEROFF_CMD_PATH_LEN,
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dostring,
+-		.strategy	= &sysctl_string,
+ 	},
+ #ifdef CONFIG_KEYS
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "keys",
+ 		.mode		= 0555,
+ 		.child		= key_sysctls,
+@@ -968,7 +870,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_RCU_TORTURE_TEST
+ 	{
+-		.ctl_name       = CTL_UNNUMBERED,
+ 		.procname       = "rcutorture_runnable",
+ 		.data           = &rcutorture_runnable,
+ 		.maxlen         = sizeof(int),
+@@ -978,7 +879,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_SLOW_WORK
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "slow-work",
+ 		.mode		= 0555,
+ 		.child		= slow_work_sysctls,
+@@ -986,7 +886,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_PERF_EVENTS
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "perf_event_paranoid",
+ 		.data		= &sysctl_perf_event_paranoid,
+ 		.maxlen		= sizeof(sysctl_perf_event_paranoid),
+@@ -994,7 +893,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "perf_event_mlock_kb",
+ 		.data		= &sysctl_perf_event_mlock,
+ 		.maxlen		= sizeof(sysctl_perf_event_mlock),
+@@ -1002,7 +900,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "perf_event_max_sample_rate",
+ 		.data		= &sysctl_perf_event_sample_rate,
+ 		.maxlen		= sizeof(sysctl_perf_event_sample_rate),
+@@ -1012,7 +909,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_KMEMCHECK
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "kmemcheck",
+ 		.data		= &kmemcheck_enabled,
+ 		.maxlen		= sizeof(int),
+@@ -1022,7 +918,6 @@ static struct ctl_table kern_table[] = {
+ #endif
+ #ifdef CONFIG_BLOCK
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "blk_iopoll",
+ 		.data		= &blk_iopoll_enabled,
+ 		.maxlen		= sizeof(int),
+@@ -1034,12 +929,11 @@ static struct ctl_table kern_table[] = {
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
+  */
+-	{ .ctl_name = 0 }
++	{ }
+ };
  
- config SYSCTL_SYSCALL_CHECK
- 	bool "Sysctl checks"
--	depends on SYSCTL_SYSCALL
-+	depends on SYSCTL
- 	---help---
- 	  sys_sysctl uses binary paths that have been found challenging
- 	  to properly maintain and use. This enables checks that help
+ static struct ctl_table vm_table[] = {
+ 	{
+-		.ctl_name	= VM_OVERCOMMIT_MEMORY,
+ 		.procname	= "overcommit_memory",
+ 		.data		= &sysctl_overcommit_memory,
+ 		.maxlen		= sizeof(sysctl_overcommit_memory),
+@@ -1047,7 +941,6 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= VM_PANIC_ON_OOM,
+ 		.procname	= "panic_on_oom",
+ 		.data		= &sysctl_panic_on_oom,
+ 		.maxlen		= sizeof(sysctl_panic_on_oom),
+@@ -1055,7 +948,6 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "oom_kill_allocating_task",
+ 		.data		= &sysctl_oom_kill_allocating_task,
+ 		.maxlen		= sizeof(sysctl_oom_kill_allocating_task),
+@@ -1063,7 +955,6 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "oom_dump_tasks",
+ 		.data		= &sysctl_oom_dump_tasks,
+ 		.maxlen		= sizeof(sysctl_oom_dump_tasks),
+@@ -1071,7 +962,6 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= VM_OVERCOMMIT_RATIO,
+ 		.procname	= "overcommit_ratio",
+ 		.data		= &sysctl_overcommit_ratio,
+ 		.maxlen		= sizeof(sysctl_overcommit_ratio),
+@@ -1079,7 +969,6 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= VM_PAGE_CLUSTER,
+ 		.procname	= "page-cluster", 
+ 		.data		= &page_cluster,
+ 		.maxlen		= sizeof(int),
+@@ -1087,45 +976,37 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= VM_DIRTY_BACKGROUND,
+ 		.procname	= "dirty_background_ratio",
+ 		.data		= &dirty_background_ratio,
+ 		.maxlen		= sizeof(dirty_background_ratio),
+ 		.mode		= 0644,
+ 		.proc_handler	= &dirty_background_ratio_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one_hundred,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "dirty_background_bytes",
+ 		.data		= &dirty_background_bytes,
+ 		.maxlen		= sizeof(dirty_background_bytes),
+ 		.mode		= 0644,
+ 		.proc_handler	= &dirty_background_bytes_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &one_ul,
+ 	},
+ 	{
+-		.ctl_name	= VM_DIRTY_RATIO,
+ 		.procname	= "dirty_ratio",
+ 		.data		= &vm_dirty_ratio,
+ 		.maxlen		= sizeof(vm_dirty_ratio),
+ 		.mode		= 0644,
+ 		.proc_handler	= &dirty_ratio_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one_hundred,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "dirty_bytes",
+ 		.data		= &vm_dirty_bytes,
+ 		.maxlen		= sizeof(vm_dirty_bytes),
+ 		.mode		= 0644,
+ 		.proc_handler	= &dirty_bytes_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &dirty_bytes_min,
+ 	},
+ 	{
+@@ -1143,7 +1024,6 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= VM_NR_PDFLUSH_THREADS,
+ 		.procname	= "nr_pdflush_threads",
+ 		.data		= &nr_pdflush_threads,
+ 		.maxlen		= sizeof nr_pdflush_threads,
+@@ -1151,13 +1031,11 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= VM_SWAPPINESS,
+ 		.procname	= "swappiness",
+ 		.data		= &vm_swappiness,
+ 		.maxlen		= sizeof(vm_swappiness),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one_hundred,
+ 	},
+@@ -1172,7 +1050,6 @@ static struct ctl_table vm_table[] = {
+ 		.extra2		= (void *)&hugetlb_infinity,
+ 	 },
+ 	 {
+-		.ctl_name	= VM_HUGETLB_GROUP,
+ 		.procname	= "hugetlb_shm_group",
+ 		.data		= &sysctl_hugetlb_shm_group,
+ 		.maxlen		= sizeof(gid_t),
+@@ -1180,7 +1057,6 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	 },
+ 	 {
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "hugepages_treat_as_movable",
+ 		.data		= &hugepages_treat_as_movable,
+ 		.maxlen		= sizeof(int),
+@@ -1188,7 +1064,6 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= &hugetlb_treat_movable_handler,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "nr_overcommit_hugepages",
+ 		.data		= NULL,
+ 		.maxlen		= sizeof(unsigned long),
+@@ -1199,46 +1074,37 @@ static struct ctl_table vm_table[] = {
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= VM_LOWMEM_RESERVE_RATIO,
+ 		.procname	= "lowmem_reserve_ratio",
+ 		.data		= &sysctl_lowmem_reserve_ratio,
+ 		.maxlen		= sizeof(sysctl_lowmem_reserve_ratio),
+ 		.mode		= 0644,
+ 		.proc_handler	= &lowmem_reserve_ratio_sysctl_handler,
+-		.strategy	= &sysctl_intvec,
+ 	},
+ 	{
+-		.ctl_name	= VM_DROP_PAGECACHE,
+ 		.procname	= "drop_caches",
+ 		.data		= &sysctl_drop_caches,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= drop_caches_sysctl_handler,
+-		.strategy	= &sysctl_intvec,
+ 	},
+ 	{
+-		.ctl_name	= VM_MIN_FREE_KBYTES,
+ 		.procname	= "min_free_kbytes",
+ 		.data		= &min_free_kbytes,
+ 		.maxlen		= sizeof(min_free_kbytes),
+ 		.mode		= 0644,
+ 		.proc_handler	= &min_free_kbytes_sysctl_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 	},
+ 	{
+-		.ctl_name	= VM_PERCPU_PAGELIST_FRACTION,
+ 		.procname	= "percpu_pagelist_fraction",
+ 		.data		= &percpu_pagelist_fraction,
+ 		.maxlen		= sizeof(percpu_pagelist_fraction),
+ 		.mode		= 0644,
+ 		.proc_handler	= &percpu_pagelist_fraction_sysctl_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &min_percpu_pagelist_fract,
+ 	},
+ #ifdef CONFIG_MMU
+ 	{
+-		.ctl_name	= VM_MAX_MAP_COUNT,
+ 		.procname	= "max_map_count",
+ 		.data		= &sysctl_max_map_count,
+ 		.maxlen		= sizeof(sysctl_max_map_count),
+@@ -1247,104 +1113,85 @@ static struct ctl_table vm_table[] = {
+ 	},
+ #else
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "nr_trim_pages",
+ 		.data		= &sysctl_nr_trim_pages,
+ 		.maxlen		= sizeof(sysctl_nr_trim_pages),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= VM_LAPTOP_MODE,
+ 		.procname	= "laptop_mode",
+ 		.data		= &laptop_mode,
+ 		.maxlen		= sizeof(laptop_mode),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_jiffies,
+-		.strategy	= &sysctl_jiffies,
+ 	},
+ 	{
+-		.ctl_name	= VM_BLOCK_DUMP,
+ 		.procname	= "block_dump",
+ 		.data		= &block_dump,
+ 		.maxlen		= sizeof(block_dump),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 	},
+ 	{
+-		.ctl_name	= VM_VFS_CACHE_PRESSURE,
+ 		.procname	= "vfs_cache_pressure",
+ 		.data		= &sysctl_vfs_cache_pressure,
+ 		.maxlen		= sizeof(sysctl_vfs_cache_pressure),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 	},
+ #ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
+ 	{
+-		.ctl_name	= VM_LEGACY_VA_LAYOUT,
+ 		.procname	= "legacy_va_layout",
+ 		.data		= &sysctl_legacy_va_layout,
+ 		.maxlen		= sizeof(sysctl_legacy_va_layout),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 	},
+ #endif
+ #ifdef CONFIG_NUMA
+ 	{
+-		.ctl_name	= VM_ZONE_RECLAIM_MODE,
+ 		.procname	= "zone_reclaim_mode",
+ 		.data		= &zone_reclaim_mode,
+ 		.maxlen		= sizeof(zone_reclaim_mode),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 	},
+ 	{
+-		.ctl_name	= VM_MIN_UNMAPPED,
+ 		.procname	= "min_unmapped_ratio",
+ 		.data		= &sysctl_min_unmapped_ratio,
+ 		.maxlen		= sizeof(sysctl_min_unmapped_ratio),
+ 		.mode		= 0644,
+ 		.proc_handler	= &sysctl_min_unmapped_ratio_sysctl_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one_hundred,
+ 	},
+ 	{
+-		.ctl_name	= VM_MIN_SLAB,
+ 		.procname	= "min_slab_ratio",
+ 		.data		= &sysctl_min_slab_ratio,
+ 		.maxlen		= sizeof(sysctl_min_slab_ratio),
+ 		.mode		= 0644,
+ 		.proc_handler	= &sysctl_min_slab_ratio_sysctl_handler,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one_hundred,
+ 	},
+ #endif
+ #ifdef CONFIG_SMP
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "stat_interval",
+ 		.data		= &sysctl_stat_interval,
+ 		.maxlen		= sizeof(sysctl_stat_interval),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_jiffies,
+-		.strategy	= &sysctl_jiffies,
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "mmap_min_addr",
+ 		.data		= &dac_mmap_min_addr,
+ 		.maxlen		= sizeof(unsigned long),
+@@ -1353,43 +1200,36 @@ static struct ctl_table vm_table[] = {
+ 	},
+ #ifdef CONFIG_NUMA
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "numa_zonelist_order",
+ 		.data		= &numa_zonelist_order,
+ 		.maxlen		= NUMA_ZONELIST_ORDER_LEN,
+ 		.mode		= 0644,
+ 		.proc_handler	= &numa_zonelist_order_handler,
+-		.strategy	= &sysctl_string,
+ 	},
+ #endif
+ #if (defined(CONFIG_X86_32) && !defined(CONFIG_UML))|| \
+    (defined(CONFIG_SUPERH) && defined(CONFIG_VSYSCALL))
+ 	{
+-		.ctl_name	= VM_VDSO_ENABLED,
+ 		.procname	= "vdso_enabled",
+ 		.data		= &vdso_enabled,
+ 		.maxlen		= sizeof(vdso_enabled),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 	},
+ #endif
+ #ifdef CONFIG_HIGHMEM
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "highmem_is_dirtyable",
+ 		.data		= &vm_highmem_is_dirtyable,
+ 		.maxlen		= sizeof(vm_highmem_is_dirtyable),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
+ 	},
+ #endif
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "scan_unevictable_pages",
+ 		.data		= &scan_unevictable_pages,
+ 		.maxlen		= sizeof(scan_unevictable_pages),
+@@ -1398,24 +1238,20 @@ static struct ctl_table vm_table[] = {
+ 	},
+ #ifdef CONFIG_MEMORY_FAILURE
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "memory_failure_early_kill",
+ 		.data		= &sysctl_memory_failure_early_kill,
+ 		.maxlen		= sizeof(sysctl_memory_failure_early_kill),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "memory_failure_recovery",
+ 		.data		= &sysctl_memory_failure_recovery,
+ 		.maxlen		= sizeof(sysctl_memory_failure_recovery),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
+ 	},
+@@ -1425,18 +1261,17 @@ static struct ctl_table vm_table[] = {
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
+  */
+-	{ .ctl_name = 0 }
++	{ }
+ };
+ 
+ #if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
+ static struct ctl_table binfmt_misc_table[] = {
+-	{ .ctl_name = 0 }
++	{ }
+ };
+ #endif
+ 
+ static struct ctl_table fs_table[] = {
+ 	{
+-		.ctl_name	= FS_NRINODE,
+ 		.procname	= "inode-nr",
+ 		.data		= &inodes_stat,
+ 		.maxlen		= 2*sizeof(int),
+@@ -1444,7 +1279,6 @@ static struct ctl_table fs_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= FS_STATINODE,
+ 		.procname	= "inode-state",
+ 		.data		= &inodes_stat,
+ 		.maxlen		= 7*sizeof(int),
+@@ -1459,7 +1293,6 @@ static struct ctl_table fs_table[] = {
+ 		.proc_handler	= &proc_nr_files,
+ 	},
+ 	{
+-		.ctl_name	= FS_MAXFILE,
+ 		.procname	= "file-max",
+ 		.data		= &files_stat.max_files,
+ 		.maxlen		= sizeof(int),
+@@ -1467,7 +1300,6 @@ static struct ctl_table fs_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "nr_open",
+ 		.data		= &sysctl_nr_open,
+ 		.maxlen		= sizeof(int),
+@@ -1477,7 +1309,6 @@ static struct ctl_table fs_table[] = {
+ 		.extra2		= &sysctl_nr_open_max,
+ 	},
+ 	{
+-		.ctl_name	= FS_DENTRY,
+ 		.procname	= "dentry-state",
+ 		.data		= &dentry_stat,
+ 		.maxlen		= 6*sizeof(int),
+@@ -1485,30 +1316,25 @@ static struct ctl_table fs_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= FS_OVERFLOWUID,
+ 		.procname	= "overflowuid",
+ 		.data		= &fs_overflowuid,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &minolduid,
+ 		.extra2		= &maxolduid,
+ 	},
+ 	{
+-		.ctl_name	= FS_OVERFLOWGID,
+ 		.procname	= "overflowgid",
+ 		.data		= &fs_overflowgid,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &minolduid,
+ 		.extra2		= &maxolduid,
+ 	},
+ #ifdef CONFIG_FILE_LOCKING
+ 	{
+-		.ctl_name	= FS_LEASES,
+ 		.procname	= "leases-enable",
+ 		.data		= &leases_enable,
+ 		.maxlen		= sizeof(int),
+@@ -1518,7 +1344,6 @@ static struct ctl_table fs_table[] = {
+ #endif
+ #ifdef CONFIG_DNOTIFY
+ 	{
+-		.ctl_name	= FS_DIR_NOTIFY,
+ 		.procname	= "dir-notify-enable",
+ 		.data		= &dir_notify_enable,
+ 		.maxlen		= sizeof(int),
+@@ -1529,7 +1354,6 @@ static struct ctl_table fs_table[] = {
+ #ifdef CONFIG_MMU
+ #ifdef CONFIG_FILE_LOCKING
+ 	{
+-		.ctl_name	= FS_LEASE_TIME,
+ 		.procname	= "lease-break-time",
+ 		.data		= &lease_break_time,
+ 		.maxlen		= sizeof(int),
+@@ -1555,7 +1379,6 @@ static struct ctl_table fs_table[] = {
+ #endif /* CONFIG_AIO */
+ #ifdef CONFIG_INOTIFY_USER
+ 	{
+-		.ctl_name	= FS_INOTIFY,
+ 		.procname	= "inotify",
+ 		.mode		= 0555,
+ 		.child		= inotify_table,
+@@ -1570,19 +1393,16 @@ static struct ctl_table fs_table[] = {
+ #endif
+ #endif
+ 	{
+-		.ctl_name	= KERN_SETUID_DUMPABLE,
+ 		.procname	= "suid_dumpable",
+ 		.data		= &suid_dumpable,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
+-		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &two,
+ 	},
+ #if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "binfmt_misc",
+ 		.mode		= 0555,
+ 		.child		= binfmt_misc_table,
+@@ -1592,13 +1412,12 @@ static struct ctl_table fs_table[] = {
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
+  */
+-	{ .ctl_name = 0 }
++	{ }
+ };
+ 
+ static struct ctl_table debug_table[] = {
+ #if defined(CONFIG_X86) || defined(CONFIG_PPC)
+ 	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "exception-trace",
+ 		.data		= &show_unhandled_signals,
+ 		.maxlen		= sizeof(int),
+@@ -1606,11 +1425,11 @@ static struct ctl_table debug_table[] = {
+ 		.proc_handler	= proc_dointvec
+ 	},
+ #endif
+-	{ .ctl_name = 0 }
++	{ }
+ };
+ 
+ static struct ctl_table dev_table[] = {
+-	{ .ctl_name = 0 }
++	{ }
+ };
+ 
+ static DEFINE_SPINLOCK(sysctl_lock);
 -- 
 1.6.5.2.143.g8cc62
 
