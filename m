@@ -1,37 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbZKHMwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbZKHMzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752696AbZKHMwH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 07:52:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZKHMwG
+	id S1752562AbZKHMzj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 07:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZKHMzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 07:52:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44955 "EHLO mx2.mail.elte.hu"
+	Sun, 8 Nov 2009 07:55:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58702 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbZKHMwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 07:52:04 -0500
-Date: Sun, 8 Nov 2009 13:51:35 +0100
+	id S1751145AbZKHMzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 07:55:38 -0500
+Date: Sun, 8 Nov 2009 13:55:27 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gleb Natapov <gleb@redhat.com>, kvm@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
-Message-ID: <20091108125135.GA13099@elte.hu>
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com>
- <1257076590-29559-3-git-send-email-gleb@redhat.com>
- <20091102092214.GB8933@elte.hu>
- <20091102160410.GF27911@redhat.com>
- <20091102161248.GB15423@elte.hu>
- <20091102162234.GH27911@redhat.com>
- <20091102162941.GC14544@elte.hu>
- <20091102174208.GJ27911@redhat.com>
- <20091108113654.GO11372@elte.hu>
- <4AF6BCE5.3030701@redhat.com>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] RFC x86_64 more accurate KSTK_ESP implementation
+Message-ID: <20091108125527.GA19350@elte.hu>
+References: <1257233486.22553.6.camel@wall-e>
+ <20091103082843.GA27676@elte.hu>
+ <1257239184.4889.15.camel@wall-e>
+ <1257409189.26874.18.camel@wall-e>
+ <20091108113546.GN11372@elte.hu>
+ <1257684666.20579.9.camel@wall-e>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AF6BCE5.3030701@redhat.com>
+In-Reply-To: <1257684666.20579.9.camel@wall-e>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -44,27 +41,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Avi Kivity <avi@redhat.com> wrote:
+* Stefani Seibold <stefani@seibold.net> wrote:
 
-> On 11/08/2009 01:36 PM, Ingo Molnar wrote:
-> >>Three existing callbacks are: kmemcheck, mmiotrace, notifier. Two
-> >>of them kmemcheck, mmiotrace are enabled only for debugging, should
-> >>not be performance concern. And notifier call sites (two of them)
-> >>are deliberately, as explained by comment, not at the function entry,
-> >>so can't be unified with others. (And kmemcheck also has two different
-> >>call site BTW)
-> >
-> > We want mmiotrace to be generic distro capable so the overhead when 
-> > the hook is not used is of concern.
+> > I'd suggest a competely different method: why dont you use an IPI to 
+> > sample the SP whenever someone wants to read it from /proc and we 
+> > see that the task is running on a CPU right now?
 > 
-> Maybe we should generalize paravirt-ops patching in case if (x) f() is 
-> deemed too expensive.
+> Sounds like a challenge, i like the idea. I will have a look on it...
 
-Yes, that's a nice idea. We have quite a number of 'conditional 
-callbacks' in various critical paths that could be made lighter via such 
-a technique.
-
-It would also free new callbacks from the 'it increases overhead even if 
-unused' criticism and made it easier to add them.
+It's not a fastpath, so smp_function_call() ought to do the trick.
 
 	Ingo
