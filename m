@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbZKHTtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZKHTu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755005AbZKHTtg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 14:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbZKHTtg
+	id S1755050AbZKHTu4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 14:50:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZKHTu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 14:49:36 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42560 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752542AbZKHTtf (ORCPT
+	Sun, 8 Nov 2009 14:50:56 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49493 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754407AbZKHTuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 14:49:35 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Michael A. Griffith" <grif@acm.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Please get this committed, _NOW_ (preferrably 5 years ago), thanks.
-From: Andi Kleen <andi@firstfloor.org>
-References: <20091108120008.GA21611@rhlx01.hs-esslingen.de>
-Date: Sun, 08 Nov 2009 20:49:39 +0100
-In-Reply-To: <20091108120008.GA21611@rhlx01.hs-esslingen.de> (Andreas Mohr's message of "Sun, 8 Nov 2009 13:00:08 +0100")
-Message-ID: <871vk87q5o.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Sun, 8 Nov 2009 14:50:55 -0500
+Date: Sun, 8 Nov 2009 20:50:52 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Matteo Croce <technoboy85@gmail.com>
+Cc: Sven-Haegar Koch <haegar@sdinet.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091108195052.GC4186@elf.ucw.cz>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com>
+ <20091003072127.GC21407@elte.hu>
+ <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
+ <4AF4526B.4060101@zytor.com>
+ <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com>
+ <20091108173708.GF1372@ucw.cz>
+ <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com>
+ <20091108181016.GB32364@elf.ucw.cz>
+ <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>
+ <40101cc30911081146p6a72eb88m899dae0bae095f58@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <40101cc30911081146p6a72eb88m899dae0bae095f58@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Mohr <andi@lisas.de> writes:
+> >> > > Teach gcc that geodelx exists? No need to break kernel for that... and
+> >> > > you probably can gain even bigger gains.
+> >
+> > But no standard distribution will be made available in a geode special
+> > version - not enough machines in the marekt. So I think it is better to
+> > be able to use the i686 specific things they already support, like
+> > libc6-686 from debian for example.
+> 
+> That's exactly the patch point
 
-> boy am I angry about this...
+Not quite.
 
-Angry about yourself?
+Your cpu is not 686; stop trying to pretend it is.
 
-> --- linux-2.6.32-rc6/init/main.c.orig	2009-11-08 11:09:51.000000000 +0100
-> +++ linux-2.6.32-rc6/init/main.c	2009-11-08 12:40:11.000000000 +0100
-> @@ -846,7 +846,47 @@ static noinline int init_post(void)
->  	run_init_process("/bin/init");
->  	run_init_process("/bin/sh");
->  
-> -	panic("No init found.  Try passing init= option to kernel.");
-> +	panic("No init found.  Try passing init= option to kernel. "
-> +              "See Linux " __FILE__ " for guidance.");
+Now, maybe it is good idea to run libc6-686 on it. If you can
+guarantee it contains no NOPL, fix whatever code is responsible for
+selecting libc to use libc6-686 to use that. (Bonus points for
+renaming libc6-686 to something more suitable. libc6-cmov?)
 
-That seems like the wrong approach. The kernel can actually distingush
-many of these cases, so it could just tell the user about them directly.
-
-> +/* ok, so you've got this pretty unintuitive message and are wondering
-> + * what the H*** went wrong.
-> + * Some high-level reasons for failure (listed roughly in order of execution)
-> + * to load the init binary are:
-> + * A) Unable to mount root FS
-
-This the kernel knows so it could just say. In fact it's already
-printed usually, but it could be printed again.
-
-> + * B) init binary doesn't exist on rootfs
-
-This is knows also.
-
-> + * C) other requirements not met
-
-No idea what that should be.
-
-> + * D) binary exists but dependencies not available
-
-I think you're refering to shared libraries here. This is actually not correct,
-because if dynamic linking for init fails this will not result in this error message.
-
-> + * E) binary cannot be loaded
-
-This it also knows.
-
-So please just fix the output.
-
--Andi
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
