@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZKHTfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbZKHTgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZKHTfz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 14:35:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZKHTfy
+	id S1754329AbZKHTgZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 14:36:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZKHTgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 14:35:54 -0500
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:39977 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753335AbZKHTfx convert rfc822-to-8bit (ORCPT
+	Sun, 8 Nov 2009 14:36:24 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45301 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753909AbZKHTgX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 14:35:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=k3QmOqtRKPSTYWciDdD7OAye5oN2qowHihBL3uSFfO9Ad4J8reMOGswmOBYPfufFnK
-         14xFC7Uy4OpAA1zrtgMqBLyQYWogxakdRKN/hVFhXdWGW0ANWnlYI5JXrJQ726GQNi5i
-         oE29XJXH6Karj5JhVIXLJU+gDJKMk1r3fiWHg=
+	Sun, 8 Nov 2009 14:36:23 -0500
+Date: Sun, 8 Nov 2009 20:36:19 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Sven-Haegar Koch <haegar@sdinet.de>
+Cc: Matteo Croce <technoboy85@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091108193618.GB4186@elf.ucw.cz>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com>
+ <20091003072127.GC21407@elte.hu>
+ <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
+ <4AF4526B.4060101@zytor.com>
+ <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com>
+ <20091108173708.GF1372@ucw.cz>
+ <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com>
+ <20091108181016.GB32364@elf.ucw.cz>
+ <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>
 MIME-Version: 1.0
-In-Reply-To: <20091105071431.GA14055@elte.hu>
-References: <43e72e890911041540hd1e5f87u8d282d9c95857504@mail.gmail.com> 
-	<alpine.LFD.2.01.0911041551220.31845@localhost.localdomain> 
-	<20091105071431.GA14055@elte.hu>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Sun, 8 Nov 2009 11:35:38 -0800
-Message-ID: <43e72e890911081135q78416ef7ua6c5991b15fb2659@mail.gmail.com>
-Subject: Re: Reverting 5d423 fixes loading of ath9k on Acer Extensa 7630EZ
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Yannick Roehlly <yannick.roehlly@free.fr>,
-       Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jesse.barnes@intel.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "John W. Linville" <linville@tuxdriver.com>, berndl81@gmx.at,
-       Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 4, 2009 at 11:14 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->> On Wed, 4 Nov 2009, Luis R. Rodriguez wrote:
->> >
->> > Can you please consider reviewing this issue and help determine if
->> > this indeed needs to be reverted for 2.6.32 and the next 2.6.31.y.
->> >
->> > I am curious if other devices would work by reverting this as well.
->> > [ ... ] For details please feel free to check:
->> >
->> > http://bugzilla.kernel.org/show_bug.cgi?id=14402
->>
->> That same commit was the cause for
->>
->> Â  Â  Â  http://bugzilla.kernel.org/show_bug.cgi?id=13940
->>
->> and we just increased the rounding to make it go away (see commit
->> 15b812f1). But that was a hack.
->>
->> And if that didn't help the ath9k case, then we should just revert
->> entirely.
->
-> Agreed - below is the combo 15b812f1 + 5d423ccd revert. (Would be nice
-> to get the boot log of the latest post-15b812f1 kernel that Yinghai
-> asked for before we revert, in the hope of better understanding the
-> problem.)
+On Sun 2009-11-08 20:29:55, Sven-Haegar Koch wrote:
+> On Sun, 8 Nov 2009, Pavel Machek wrote:
+> 
+> > On Sun 2009-11-08 18:40:06, Matteo Croce wrote:
+> > > On Sun, Nov 8, 2009 at 6:37 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> > > > On Fri 2009-11-06 23:18:06, Matteo Croce wrote:
+> > > >> On Fri, Nov 6, 2009 at 5:44 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> > > >> > On 11/06/2009 06:59 AM, Matteo Croce wrote:
+> > > >> >> indeed it has MMX, MMXEXT and CMOV, just lacks the long NOP instruction (NOPL).
+> > > >> >
+> > > >> > MMX and MMXEXT are hardly hallmarks of i686, which leaves only cmov.
+> > > >> > I'm somewhat wondering about the general value of this patch; is i686
+> > > >> > code really that much faster on Geode that it's worth it?
+> > > >> >
+> > > >> > ? ? ? ?-hpa
+> > > >> >
+> > > >> > --
+> > > >> > H. Peter Anvin, Intel Open Source Technology Center
+> > > >> > I work for Intel. ?I don't speak on their behalf.
+> > > >> >
+> > > >> >
+> > > >>
+> > > >> yes, I did some test like gzip, bzip2, lame etc and they give more or less
+> > > >> the same results of dhrystone
+> > > >>
+> > > >> root@alix:/usr/src# CFLAGS='-march=i586' ./dry.c
+> > > >> Microseconds for one run through Dhrystone:        1.4
+> > > >> Dhrystones per Second:                          740741
+> > > > ...
+> > > >> root@alix:/usr/src# CFLAGS='-march=i686' ./dry.c
+> > > >> Trying 5000000 runs through Dhrystone:
+> > > >> Microseconds for one run through Dhrystone:        1.2
+> > > >> Dhrystones per Second:                          841751
+> > > >
+> > > > Teach gcc that geodelx exists? No need to break kernel for that... and
+> > > > you probably can gain even bigger gains.
+> 
+> But no standard distribution will be made available in a geode special 
+> version - not enough machines in the marekt. So I think it is better to 
+> be able to use the i686 specific things they already support, like 
+> libc6-686 from debian for example.
 
-Bernhard has confirmed the new patch fixes this issue.
+So hack your distribution to use libc6-686 if you know that it is
+safe... (that is no NOPL usage there). Still no need to break
+/proc/cpuinfo.
+									Pavel
 
-  Luis
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
