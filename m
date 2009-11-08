@@ -1,74 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbZKHOpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbZKHOv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752313AbZKHOpq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 09:45:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZKHOpq
+	id S1752802AbZKHOv7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 09:51:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZKHOv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 09:45:46 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:49167 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbZKHOpp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 09:45:45 -0500
-Date: Sun, 8 Nov 2009 15:45:50 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Andreas Mohr <andi@lisas.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Michael A. Griffith" <grif@acm.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Please get this committed, _NOW_ (preferrably 5 years
-	ago), thanks.
-Message-ID: <20091108144548.GA13429@rhlx01.hs-esslingen.de>
-References: <20091108120008.GA21611@rhlx01.hs-esslingen.de> <20091108142506.GA6240@hack>
+	Sun, 8 Nov 2009 09:51:59 -0500
+Received: from lucidpixels.com ([75.144.35.66]:50480 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751896AbZKHOv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 09:51:58 -0500
+Date: Sun, 8 Nov 2009 09:52:03 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.31.4+Benchmarks: Core i5/7 - No turbo boost, maximum speed is
+ always 2.93 GHz?
+Message-ID: <alpine.DEB.2.00.0911080943400.4571@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091108142506.GA6240@hack>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
 
-On Sun, Nov 08, 2009 at 10:25:06PM +0800, Américo Wang wrote:
-> On Sun, Nov 08, 2009 at 01:00:08PM +0100, Andreas Mohr wrote:
-> >--- linux-2.6.32-rc6/init/main.c.orig	2009-11-08 11:09:51.000000000 +0100
-> >+++ linux-2.6.32-rc6/init/main.c	2009-11-08 12:40:11.000000000 +0100
-> >@@ -846,7 +846,47 @@ static noinline int init_post(void)
-> > 	run_init_process("/bin/init");
-> > 	run_init_process("/bin/sh");
-> > 
-> >-	panic("No init found.  Try passing init= option to kernel.");
-> >+	panic("No init found.  Try passing init= option to kernel. "
-> >+    y          "See Linux " __FILE__ " for guidance.");
-> 
-> 
-> I would like to put those guidelines in a doc file, instead
-> of being a FAT comment in the source code.
+It looks like turbo boost is never activated...
 
-Heh, somehow I fully expected this objection to come up ;)
-(and you're probably right after all)
+[   23.322132] freq-table: target is 0 (2927000 kHz, 0)
+[   23.322133] cpufreq-core: governor: change or update limits
+[   23.322135] cpufreq-core: __cpufreq_governor for CPU 7, event 3
+[   23.322137] cpufreq-core: target for CPU 7: 2927000 kHz, relation 1
+[   23.322138] freq-table: request for target 2927000 kHz (relation: 1) for cpu 7
+[   23.322140] freq-table: target is 0 (2927000 kHz, 0)
 
-So, where to put it?
-Documentation/initrd.txt is related, however I'd create something
-like Documentation/initialization/...
-Or perhaps Documentation/bootup/init.txt ?
+I tried setting it manually as well:
 
-> And, you're explaining the _user space_ reasons that causes
-> this problem, not related with kernel at all.
+cpufreq-set -g ondemand -d 1100000 -u 3600000
 
-That's usually within the responsibility of the one passing control,
-not the one gaining control.
-Just like with children, where it's firmly the parents' job to take care
-of getting their children safely to kindergarden, not the kindergarden's ;)
+# cat /sys/devices/system/cpu/cpu*/cpufreq/*max*
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
+2927000
 
-Plus in my case it _was_ a kernel issue (problematic/non-working serial
-console device). And except for the linker issues of missing libraries,
-many issues (USB functionality etc.) were kernel-related, too.
+--
 
-Thanks,
+Using the latest Intel BIOS on a DP55KG, I have run multiple tests and all
+seem to be within the noise:
 
-Andreas Mohr
+Q6600:
+71.37user 0.56system 1:11.97elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (1major+2002minor)pagefaults 0swaps
+
+i870:
+- SpeedStep Tech: ON
+- C States: ON
+50.14user 0.11system 0:50.27elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+2022minor)pagefaults 0swaps
+50.14user 0.11system 0:50.27elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+2653minor)pagefaults 0swaps
+
+- SpeedStep Tech: OFF
+- C States: ON
+49.63user 0.13system 0:49.81elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (1major+2021minor)pagefaults 0swaps
+49.95user 0.07system 0:50.03elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+2022minor)pagefaults 0swaps
+
+- SpeedStep Tech: OFF
+- C States: OFF
+49.62user 0.11system 0:49.79elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (1major+2021minor)pagefaults 0swaps
+50.12user 0.07system 0:50.20elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+2022minor)pagefaults 0swaps
+
+- SpeedStep Tech: ON
+- C States: ON
+- ACPI_FREQ/KERNEL OPTIONS COMPILED IN - Set to: PERFORMANCE
+
+44.50user 0.12system 0:44.69elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (1major+2022minor)pagefaults 0swaps
+47.13user 0.09system 0:47.27elapsed 99%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+2023minor)pagefaults 0swaps
+
+Still though, something does not seem right, 2.93 GHz -- if the CPU speed
+was really increasing to 3.60 GHz this would be much faster?
+
+File: linux-2.6.31.tar
+Benchmark: /usr/bin/time bzip2 -c -9 *tar > /dev/null
