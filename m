@@ -1,97 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbZKHNQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbZKHNQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752515AbZKHNQq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZKHNQp
+	id S1752881AbZKHNQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 08:16:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZKHNQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:16:45 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:33385 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbZKHNQo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:16:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=b60merupndNZMpvug/ffeqeA5V7m4ZlV970stWctD1PLDS0LgCkZ0XJRIylQaQy/D9
-         rcH4kHpqezNsNERuwg70P5K70vud6PLrvmKyLLnq8d+HLerX1rWdFX9mUDFcSyh254si
-         JmGGMyzPwp6loUV7Ji+VaPXlQZd/IEv0M6EbU=
-Date: Sun, 8 Nov 2009 16:16:45 +0300
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: tip tree build warning
-Message-ID: <20091108131645.GD5300@lenovo>
-References: <20091028181443.50a09dbb.sfr@canb.auug.org.au> <20091028073145.GD6353@elte.hu> <20091028184126.b5f52d1b.sfr@canb.auug.org.au> <20091028184851.504752ef.sfr@canb.auug.org.au> <20091028075012.GD19402@elte.hu>
+	Sun, 8 Nov 2009 08:16:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32954 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752724AbZKHNQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 08:16:58 -0500
+Date: Sun, 8 Nov 2009 14:16:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yong Wang <yong.y.wang@linux.intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86, therm: Only read the initial value of thermal LVT
+ entry on BSP
+Message-ID: <20091108131655.GA12837@elte.hu>
+References: <20091107001736.GA30790@ywang-moblin2.bj.intel.com>
+ <1257562565.4083.485.camel@sbs-t61.sc.intel.com>
+ <20091108102520.GC7233@elte.hu>
+ <20091108123812.GA877@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091028075012.GD19402@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091108123812.GA877@ywang-moblin2.bj.intel.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Wed, Oct 28, 2009 at 08:50:12AM +0100]
-| 
-| * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-| 
-| > Hi all,
-| > 
-| > On Wed, 28 Oct 2009 18:41:26 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-| > >
-| > > static inline physid_mask_t default_apicid_to_cpu_present(int phys_apicid)
-| > > {
-| > >         return physid_mask_of_physid(phys_apicid);
-| > > }
-| > 
-| > I just noticed that this function (default_apicid_to_cpu_present) is 
-| > declared "static inline in a header" but looks like it is only used by 
-| > assigning its address to a function pointer.  Its only use for x86_64 
-| > is in arch/x86/kernel/apic/apic_noop.c ...
-| 
-| yes, that might be a real problem - returning the mask like that is 
-| messy. Thanks, will check.
-| 
-| 	Ingo
-| 
 
-Darn, my fault sorry! Here is an update which fixes the issue.
-(Btw, Stephen could you CC me next time if you get commit id
- with me in authors, so I wouldn't miss problem).
+* Yong Wang <yong.y.wang@linux.intel.com> wrote:
 
-Please review, comments/complains are quite welcome!
+> On Sun, Nov 08, 2009 at 11:25:21AM +0100, Ingo Molnar wrote:
+> > 
+> > i dont disagree with the fix, but could we please do it a bit cleaner, 
+> > and initialize a proper file-scope lvtthrm_init value from a different 
+> > boot-CPU-only function? (not intel_init_thermal)
+> > 
+> 
+> Thanks for your comments. Just want to make sure I understand correctly.
+> By 'file-scope', do you want me to define lvtthrm_init as a static
+> variable but not to define it in any function?
 
-	-- Cyrill
----
-x86,apic: Get rid of apicid_to_cpu_present assign on X86-64
+Correct - i'd suggest to put it next to other file-scope variables at 
+the top of the .c file. Maybe make it __read_mostly as well.
 
-In fact it's never get used on x86-64 (for 64 bit platform
-we use differ technique to enumerate io-units).
+> > that makes it cleaner, and also it will work if we dont boot on 
+> > cpu==0. (should that ever occur)
+> > 
+> 
+> May I know when will this happen?
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/kernel/apic/apic_noop.c |    5 +++++
- 1 file changed, 5 insertions(+)
+It's not really expected - we factorize the CPU IDs (which are logical) 
+so that the boot CPU is 0. But relying on cpu==0 is the boot cpu is not 
+clean and the resulting code is harder to read.
 
-Index: linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/apic_noop.c
-+++ linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
-@@ -162,7 +162,12 @@ struct apic apic_noop = {
- 
- 	.cpu_to_logical_apicid		= noop_cpu_to_logical_apicid,
- 	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
-+
-+#ifdef CONFIG_X86_32
- 	.apicid_to_cpu_present		= default_apicid_to_cpu_present,
-+#else
-+	.apicid_to_cpu_present		= NULL,
-+#endif
- 
- 	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
+	Ingo
