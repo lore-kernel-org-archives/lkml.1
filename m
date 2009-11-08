@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbZKHQvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbZKHQyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbZKHQvJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 11:51:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbZKHQvI
+	id S1754641AbZKHQyJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 11:54:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZKHQyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 11:51:08 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:44363 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753750AbZKHQvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 11:51:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=nkRMMexVi2HK09A5Qcfy1aYFo7Il1W5EaCW3EBnKFN/N6ImEUSbcSOvfx9/4oMY2Mo
-         zIn/InDDa76MNSyja9434OK0IGm0/aHdFoSTw0FHI04xpDeLb40vNXy7jxMfUhld6gWC
-         vvyIwk3mlTVHPEKeNxKlMMeVyLHChoErgsfWw=
+	Sun, 8 Nov 2009 11:54:08 -0500
+Received: from borg.medozas.de ([188.40.89.202]:43741 "EHLO borg.medozas.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752211AbZKHQyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 11:54:08 -0500
+Date: Sun, 8 Nov 2009 17:54:12 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 10/12] string: factorize skip_spaces and export it to
+ be generally available
+In-Reply-To: <1257698285.4184.10.camel@mulgrave.site>
+Message-ID: <alpine.LSU.2.00.0911081753210.30674@obet.zrqbmnf.qr>
+References: <cover.1257602781.git.andre.goddard@gmail.com>  <c7d3b02b5e28eaa54a5360d57dfd177c44320187.1257602781.git.andre.goddard@gmail.com> <1257698285.4184.10.camel@mulgrave.site>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20091108161620.GM8742@kernel.dk>
-References: <200911072237.01807.czoccolo@gmail.com>
-	 <20091108161620.GM8742@kernel.dk>
-Date: Sun, 8 Nov 2009 17:51:12 +0100
-Message-ID: <4e5e476b0911080851h718b1372r3fc3ff57df873de8@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: fix next_rq computation
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 8, 2009 at 5:16 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> Thanks, this is a nice patch! I will apply it to for-2.6.33. Can I added
-> your signed-off-by?
 
-Yes, thanks.
+On Sunday 2009-11-08 17:38, James Bottomley wrote:
 
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+>On Sat, 2009-11-07 at 14:23 -0200, André Goddard Rosa wrote:
+>> + * skip_spaces - Removes leading whitespace from @s.
+>> + * @s: The string to be stripped.
+>> + *
+>> + * Returns a pointer to the first non-whitespace character in @s.
+>> + */
+>> +char *skip_spaces(const char *str)
+>
+>OK, so this now becomes a bad interface because it silently promotes
+>const to non const ...
 
->
-> --
-> Jens Axboe
->
->
+strchr, etc. all do the same. Do you think they are bad too?
