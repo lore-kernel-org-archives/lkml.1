@@ -1,155 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZKHRbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZKHRcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbZKHRbU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 12:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbZKHRbU
+	id S1754796AbZKHRcQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 12:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZKHRcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 12:31:20 -0500
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:48039 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754671AbZKHRbT (ORCPT
+	Sun, 8 Nov 2009 12:32:16 -0500
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:45096 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753750AbZKHRcP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 12:31:19 -0500
-Date: Sun, 8 Nov 2009 23:01:07 +0530
+	Sun, 8 Nov 2009 12:32:15 -0500
+Date: Sun, 8 Nov 2009 23:02:05 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH 5/7] hw-breakpoints: Rewrite the hw-breakpoints layer
+       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Avi Kivity <avi@redhat.com>, Paul Mackerras <paulus@samba.org>,
+       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
 	on top of perf events
-Message-ID: <20091108173107.GB4465@in.ibm.com>
+Message-ID: <20091108173205.GC4465@in.ibm.com>
 Reply-To: prasad@linux.vnet.ibm.com
-References: <1257474542-6648-1-git-send-email-fweisbec@gmail.com> <1257474542-6648-6-git-send-email-fweisbec@gmail.com>
+References: <1257275474-5285-1-git-send-email-fweisbec@gmail.com> <1257275474-5285-5-git-send-email-fweisbec@gmail.com> <20091105153404.GB3229@in.ibm.com> <20091105210652.GF4877@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257474542-6648-6-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <20091105210652.GF4877@nowhere>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  #include <asm/smpboot_hooks.h>
-> @@ -328,7 +327,6 @@ notrace static void __cpuinit start_secondary(void *unused)
->  	x86_cpuinit.setup_percpu_clockev();
+On Thu, Nov 05, 2009 at 10:06:55PM +0100, Frederic Weisbecker wrote:
+> On Thu, Nov 05, 2009 at 09:04:04PM +0530, K.Prasad wrote:
+> > On Tue, Nov 03, 2009 at 08:11:12PM +0100, Frederic Weisbecker wrote:
+> > > +/*
+> > > + * Kernel breakpoints are not associated with any particular thread.
+> > > + */
+> > > +extern struct perf_event *
+> > > +register_wide_hw_breakpoint_cpu(unsigned long addr,
+> > > +				int len,
+> > > +				int type,
+> > > +				perf_callback_t triggered,
+> > > +				int cpu,
+> > 
+> > Can't it be cpumask_t instead of int cpu? Given that per-cpu breakpoints
+> > will be implemented, it should be very different to implement them for a
+> > subset of cpus too.
 > 
->  	wmb();
-> -	load_debug_registers();
->  	cpu_idle();
->  }
->
+> I can't figure out any usecase where we want to only bind to,
+> say, cpu 1 and 3 or any kind of such strange combination.
+> 
+> Either we want a wide breakpoint, or we want to profile
+> a single cpu, but I don't imagine we need a middle case.
+ 
+When we originally had this discussion on LKML, one of the use-cases
+cited was http://lkml.org/lkml/2009/7/29/243. I can't see why such
+need should be restricted to a given CPU only, rather than a subset of
+CPUs (say 'x' is a variable normally read/written-to in the interrupt
+path, and if the said interrupt is has a cpu affinity to a subset of
+cpus only).
 
-So, will the breakpoint values be stored in per-cpu variables and be
-restored when a cpu (from the list of for_each_possible_cpu) eventually
-turns online due to cpu-hotplug or resume from hibernate (as originally
-done by load_debug_registers())?
+Although in the normal case, this feature could be implemented later, in
+case of breakpoints we accept that as input from the user (and hence
+part of the well-defined interface), so it is better to design it for
+a subset of CPUs from start. The logic isn't very different and given that
+there are plenty of helper routines in cpumask.h the implementation is easy too.
 
-A few more observations....
+> 
+> > > -static DEFINE_SPINLOCK(hw_breakpoint_lock);
+> > 
+> > Wouldn't you want to hold this lock while checking for system-wide
+> > availability of debug registers (during rollbacks) to avoid contenders
+> > from checking for the same simultaneously?
+> 
+> 
+> If we want to lock such path, we probably more likely want a mutex.
+> Registering a breakpoint is not a fastpath and also perf does
+> some sleepable things while creating a counter.
+> 
+> The check to register constraints, which is part of this path,
+> is itself a mutex.
+> 
+> But we'll probably need something NMI safe in the future so
+> that it can be used without any problem by kgdb.
+> 
 
-int reserve_bp_slot(struct perf_event *bp)
-{
-...
-....
-	if (!bp->attr.pinned) {
-		/*
-		 * If there are already flexible counters here,
-		 * there is at least one slot reserved for all
-		 * of them. Just join the party.
-		 *
-		 * Otherwise, check there is at least one free slot
-		 */
-		if (!slots.flexible && slots.pinned == HBP_NUM) {
-			ret = -ENOSPC;
-			goto end;
-		}
+I suspect that it will be required for cpu-hotplug handler, where
+previously load_debug_registers() was called from a softirq context.
 
-	/* Flexible counters need to keep at least one slot */
-	} else if (slots.pinned + (!!slots.flexible) == HBP_NUM) {
-		ret = -ENOSPC;
-		goto end;
-	}
-..
-...
-}
+> 
+> > <snipped>
+> > 
+> > > -int register_kernel_hw_breakpoint(struct hw_breakpoint *bp)
+> > > +struct perf_event **
+> > > +register_wide_hw_breakpoint(unsigned long addr,
+> > > +			    int len,
+> > > +			    int type,
+> > > +			    perf_callback_t triggered,
+> > > +			    bool active)
+> > >  {
+> > > -	int rc;
+> > > +	struct perf_event **cpu_events, **pevent, *bp;
+> > > +	long err;
+> > > +	int cpu;
+> > > +
+> > > +	cpu_events = alloc_percpu(typeof(*cpu_events));
+> > > +	if (!cpu_events)
+> > > +		return ERR_PTR(-ENOMEM);
+> > > 
+> > > -	rc = arch_validate_hwbkpt_settings(bp, NULL);
+> > > -	if (rc)
+> > > -		return rc;
+> > > +	for_each_possible_cpu(cpu) {
+> > > +		pevent = per_cpu_ptr(cpu_events, cpu);
+> > > +		bp = register_kernel_hw_breakpoint_cpu(addr, len, type,
+> > > +					triggered, cpu, active);
+> > > 
+> > 
+> > I'm assuming that there'd be an implementation for system-wide
+> > perf-events (and hence breakpoints) in the forthcoming version(s) of
+> > this patchset.
+> 
+> 
+> If that becomes a necessary feature, then yeah.
+> 
+> 
 
-It appears that you're reserving one slot for the non-pinned breakpoint
-requests, which I'm afraid wouldn't play well with PPC64 (having one
-DABR). Even with x86, I can't understand why we should allow the use of
-only 3 registers for ptrace requests (which are all pinned) on every
-system even if perf-events will never be used on them.
-
-
-int __register_perf_hw_breakpoint(struct perf_event *bp)
-{
-..
-...
-	if (!bp->attr.disabled)
-		ret = arch_validate_hwbkpt_settings(bp, bp->ctx->task);
-
-	return ret;
-}
-
-Can't the arch_validate_() check be done unconditionally?
-
-struct perf_event *
-modify_user_hw_breakpoint(struct perf_event *bp,
-			  unsigned long addr,
-			  int len,
-			  int type,
-			  perf_callback_t triggered,
-			  struct task_struct *tsk,
-			  bool active)
-{
-	/*
-	 * FIXME: do it without unregistering
-	 * - We don't want to lose our slot
-	 * - If the new bp is incorrect, don't lose the older one
-	 */
-	unregister_hw_breakpoint(bp);
-
-	return register_user_hw_breakpoint(addr, len, type, triggered,
-					   tsk, active);
-}
-
-Given that modify_user_hw_breakpoint() is used by ptrace, there's a risk
-of breaking/changing ptrace's behaviour i.e. new ptrace failure
-scenarios (while modifying DR0-DR3) which may not be acceptable to
-user-space applications. I presume that you intend to address the FIXME
-during the next few iterations itself...
-
-void arch_uninstall_hw_breakpoint(struct perf_event *bp)
-{
-...
-....
-	dr7 = &__get_cpu_var(dr7);
-	*dr7 &= ~encode_dr7(i, info->len, info->type);
-
-	set_debugreg(*dr7, 7);
-}
-
-The &= ~encode_dr7 would unset the GE flag in DR7 (encoded as
-DR_GLOBAL_SLOWDOWN) which, I think is unintended.
-
-struct pmu perf_ops_bp = {
-        .enable         = arch_install_hw_breakpoint,
-        .disable        = arch_uninstall_hw_breakpoint,
-        .read           = hw_breakpoint_pmu_read,
-        .unthrottle     = hw_breakpoint_pmu_unthrottle
-};
-
-So the enable/disable points to those routines that clear the debug
-register off its breakpoint values but still don't seem to release the
-slot (even temporarily)....i.e. nr_bp_flexible is unchanged
-Will perf-events automatically re-use the disabled slot for breakpoint
-requests from other perf-event instances?
+Apart from the several benefits of having system-wide perf-events,
+implementing them in the first iteration itself will
+help us fully realise the cost of perf-events + hw-breakpoint
+integration! When implemented, perf-events will also be ready to
+accomodate future users (apart from bp and perf-top) having a
+need for system-wide counter.
 
 Thanks,
 K.Prasad
