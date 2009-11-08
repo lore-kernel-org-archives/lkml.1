@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbZKHV16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZKHV27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755048AbZKHV16 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 16:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZKHV15
+	id S1755313AbZKHV27 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 16:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZKHV26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 16:27:57 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:36286 "EHLO
+	Sun, 8 Nov 2009 16:28:58 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36291 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbZKHV15 (ORCPT
+	with ESMTP id S1750845AbZKHV26 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 16:27:57 -0500
+	Sun, 8 Nov 2009 16:28:58 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 8 Nov 2009 22:27:36 +0100 (CET)
+Date: Sun, 8 Nov 2009 22:28:45 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 0/4] DVB: firedtv: port to new firewire driver stack
+Subject: [PATCH 1/4] firedtv: move remote control workqueue handling into rc
+ source file
 To: linux-media@vger.kernel.org
 cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Message-ID: <tkrat.ce889fb60854a648@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.ce889fb60854a648@s5r6.in-berlin.de>
+Message-ID: <tkrat.fb15c3478b505864@s5r6.in-berlin.de>
+References: <tkrat.ce889fb60854a648@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
 Content-Disposition: INLINE
@@ -24,38 +27,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch series adapts the firedtv driver for
-FireWire-attached DVB boxes and cards to the newer firewire-core kernel
-API.  The driver will continue to work with the older ieee1394 kernel
-API as well.  Which of the two IEEE 1394 stacks will be used depends on
-which one was configured at build time.  If both were built, firedtv
-transparently uses the stack which is bound to the FireWire controller.
+Preparation for the port of firedtv to the firewire-core kernel API:
+Canceling of the remote control workqueue job is factored into
+firedtv-rc.c.  Plus trivial whitespace change.
 
-This patch series depends on changes to firewire-core which were merged
-into Linux 2.6.31.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/media/dvb/firewire/firedtv-1394.c |    5 +++--
+ drivers/media/dvb/firewire/firedtv-rc.c   |    2 ++
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-There is some non-essential functionality yet to implement:
-  - Finish FCP support in firewire-core so that more than one AV/C
-    device can be used on the same FireWire bus at the same time.
-  - Enhance firedtv to use firewire-core's channel and bandwidth
-    allocation function for proper cooperation with non-FireDTV AV/C
-    devices on the same bus.
+Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-1394.c
+===================================================================
+--- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv-1394.c
++++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-1394.c
+@@ -212,6 +212,7 @@ static int node_probe(struct device *dev
+ 		goto fail;
+ 
+ 	avc_register_remote_control(fdtv);
++
+ 	return 0;
+ fail:
+ 	spin_lock_irq(&node_list_lock);
+@@ -220,6 +221,7 @@ fail:
+ 	fdtv_unregister_rc(fdtv);
+ fail_free:
+ 	kfree(fdtv);
++
+ 	return err;
+ }
+ 
+@@ -233,10 +235,9 @@ static int node_remove(struct device *de
+ 	list_del(&fdtv->list);
+ 	spin_unlock_irq(&node_list_lock);
+ 
+-	cancel_work_sync(&fdtv->remote_ctrl_work);
+ 	fdtv_unregister_rc(fdtv);
+-
+ 	kfree(fdtv);
++
+ 	return 0;
+ }
+ 
+Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-rc.c
+===================================================================
+--- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv-rc.c
++++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-rc.c
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
++#include <linux/workqueue.h>
+ 
+ #include "firedtv.h"
+ 
+@@ -163,6 +164,7 @@ fail:
+ 
+ void fdtv_unregister_rc(struct firedtv *fdtv)
+ {
++	cancel_work_sync(&fdtv->remote_ctrl_work);
+ 	kfree(fdtv->remote_ctrl_dev->keycode);
+ 	input_unregister_device(fdtv->remote_ctrl_dev);
+ }
 
-Following as reply:
-[PATCH 1/4] firedtv: move remote control workqueue handling into rc source file
-[PATCH 2/4] firedtv: reform lock transaction backend call
-[PATCH 3/4] firedtv: add missing include, rename a constant
-[PATCH 4/4] firedtv: port to new firewire core
-
- drivers/media/dvb/firewire/Kconfig        |    7
- drivers/media/dvb/firewire/Makefile       |    1
- drivers/media/dvb/firewire/firedtv-1394.c |   37 +-
- drivers/media/dvb/firewire/firedtv-avc.c  |   50 +-
- drivers/media/dvb/firewire/firedtv-dvb.c  |   15
- drivers/media/dvb/firewire/firedtv-fw.c   |  385 ++++++++++++++++++++++
- drivers/media/dvb/firewire/firedtv-rc.c   |    2
- drivers/media/dvb/firewire/firedtv.h      |   17
- 8 files changed, 471 insertions(+), 43 deletions(-)
 -- 
 Stefan Richter
 -=====-==--= =-== -=---
