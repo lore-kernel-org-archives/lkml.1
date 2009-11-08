@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZKGXz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658AbZKHAyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbZKGXz7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Nov 2009 18:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZKGXz7
+	id S1751658AbZKHAyy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Nov 2009 19:54:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZKHAyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Nov 2009 18:55:59 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:39511 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753531AbZKGXz6 (ORCPT
+	Sat, 7 Nov 2009 19:54:53 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:46270 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbZKHAyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Nov 2009 18:55:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=hsYuHcCeYyaJdZjqaY1WZrsud+PdNkdH+qeTC+BHPJ5ysIGk8c66vZ9F0YZ19YoO6U
-         oA/C7biP8FUlUsUbfsNwAL+VuHMa598D6jdxEZ7i4fZOqgcTAxaGVrbOmRlhuiQfqGL0
-         W6WrWfPYQAmZysHgKIDYatkxI0sGbXNhPQEd0=
+	Sat, 7 Nov 2009 19:54:52 -0500
+Date: Sun, 8 Nov 2009 00:54:38 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Thomas Renninger <trenn@suse.de>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>, davej@redhat.com,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, mcgrof@gmail.com,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Aeolus Yang <Aeolus.Yang@atheros.com>,
+       Amod Bodas <Amod.Bodas@atheros.com>,
+       David Quan <David.Quan@atheros.com>,
+       Kishore Jotwani <Kishore.Jotwani@atheros.com>
+Subject: Re: [PATCH] cpu-freq: add troubleshooting section for FSB changes
+Message-ID: <20091108005438.GA19638@srcf.ucam.org>
+References: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com> <200911072152.57596.trenn@suse.de> <4AF5F47C.5000402@linux.intel.com> <200911072347.05786.trenn@suse.de> <4AF5FBC7.9000105@linux.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20091107234532.GA29450@linux-mips.org>
-References: <1257616235-7840-1-git-send-email-tfransosi@gmail.com>
-	 <20091107234532.GA29450@linux-mips.org>
-Date: Sat, 7 Nov 2009 21:56:02 -0200
-Message-ID: <a4c8a6d00911071556w6cf6fa5fp5a6de4a35504e422@mail.gmail.com>
-Subject: Re: [PATCH] leds: add exit function to cobalt-raq led.
-From: Thiago Farina <tfransosi@gmail.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net, gregkh@suse.de,
-       yuasa@linux-mips.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF5FBC7.9000105@linux.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 7, 2009 at 9:45 PM, Ralf Baechle <ralf@linux-mips.org> wrote:
-> On Sat, Nov 07, 2009 at 12:50:35PM -0500, Thiago Farina wrote:
->
-> This driver has no exit function because it cannot be built as a module.
-> I've not reviewed the driver in detail but at the very least the
-> LEDS_COBALT_RAQ Kconfig statement for the driver would need to be changed
-> to tristate before this patch makes any sense.
+The described problem was one of significant throughput reduction when 
+speedstep was enabled in the BIOS on a mobile system - the idea here was 
+just to document how to identify whether the issue is down to cpu 
+frequency scaling or some platform side effect.
 
-According to this thread:
-"Therefore, this driver is not tristate."
-http://lkml.org/lkml/2007/9/13/377
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
