@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbZKHM0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbZKHMW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754389AbZKHM0L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 07:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZKHM0J
+	id S1754177AbZKHMW5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 07:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbZKHMWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 07:26:09 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:59088 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754055AbZKHMWd (ORCPT
+	Sun, 8 Nov 2009 07:22:55 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:49545 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835AbZKHMWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 07:22:33 -0500
+	Sun, 8 Nov 2009 07:22:34 -0500
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Howells <dhowells@redhat.com>
-Subject: [PATCH 12/23] sysctl security/keys: Remove dead binary sysctl support
-Date: Sun,  8 Nov 2009 04:21:59 -0800
-Message-Id: <1257682930-31401-12-git-send-email-ebiederm@xmission.com>
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH 13/23] sysctl crypto: Remove dead binary sysctl support
+Date: Sun,  8 Nov 2009 04:22:00 -0800
+Message-Id: <1257682930-31401-13-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.5.2.143.g8cc62
 In-Reply-To: <m14op5jjo4.fsf@fess.ebiederm.org>
 References: <m14op5jjo4.fsf@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,63 +33,47 @@ From: Eric W. Biederman <ebiederm@xmission.com>
 Now that sys_sysctl is a generic wrapper around /proc/sys  .ctl_name
 and .strategy members of sysctl tables are dead code.  Remove them.
 
-Cc: David Howells <dhowells@redhat.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- security/keys/sysctl.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+ crypto/proc.c |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/security/keys/sysctl.c b/security/keys/sysctl.c
-index 5e05dc0..3565e2f 100644
---- a/security/keys/sysctl.c
-+++ b/security/keys/sysctl.c
-@@ -17,7 +17,6 @@ static const int zero, one = 1, max = INT_MAX;
- 
- ctl_table key_sysctls[] = {
+diff --git a/crypto/proc.c b/crypto/proc.c
+index 5dc07e4..fe95975 100644
+--- a/crypto/proc.c
++++ b/crypto/proc.c
+@@ -25,28 +25,22 @@
+ #ifdef CONFIG_CRYPTO_FIPS
+ static struct ctl_table crypto_sysctl_table[] = {
  	{
--		.ctl_name = CTL_UNNUMBERED,
- 		.procname = "maxkeys",
- 		.data = &key_quota_maxkeys,
- 		.maxlen = sizeof(unsigned),
-@@ -27,7 +26,6 @@ ctl_table key_sysctls[] = {
- 		.extra2 = (void *) &max,
+-		.ctl_name       = CTL_UNNUMBERED,
+ 		.procname       = "fips_enabled",
+ 		.data           = &fips_enabled,
+ 		.maxlen         = sizeof(int),
+ 		.mode           = 0444,
+ 		.proc_handler   = &proc_dointvec
  	},
- 	{
--		.ctl_name = CTL_UNNUMBERED,
- 		.procname = "maxbytes",
- 		.data = &key_quota_maxbytes,
- 		.maxlen = sizeof(unsigned),
-@@ -37,7 +35,6 @@ ctl_table key_sysctls[] = {
- 		.extra2 = (void *) &max,
- 	},
- 	{
--		.ctl_name = CTL_UNNUMBERED,
- 		.procname = "root_maxkeys",
- 		.data = &key_quota_root_maxkeys,
- 		.maxlen = sizeof(unsigned),
-@@ -47,7 +44,6 @@ ctl_table key_sysctls[] = {
- 		.extra2 = (void *) &max,
- 	},
- 	{
--		.ctl_name = CTL_UNNUMBERED,
- 		.procname = "root_maxbytes",
- 		.data = &key_quota_root_maxbytes,
- 		.maxlen = sizeof(unsigned),
-@@ -57,7 +53,6 @@ ctl_table key_sysctls[] = {
- 		.extra2 = (void *) &max,
- 	},
- 	{
--		.ctl_name = CTL_UNNUMBERED,
- 		.procname = "gc_delay",
- 		.data = &key_gc_delay,
- 		.maxlen = sizeof(unsigned),
-@@ -66,5 +61,5 @@ ctl_table key_sysctls[] = {
- 		.extra1 = (void *) &zero,
- 		.extra2 = (void *) &max,
- 	},
--	{ .ctl_name = 0 }
-+	{ }
+-	{
+-		.ctl_name = 0,
+-	},
++	{}
  };
+ 
+ static struct ctl_table crypto_dir_table[] = {
+ 	{
+-		.ctl_name       = CTL_UNNUMBERED,
+ 		.procname       = "crypto",
+ 		.mode           = 0555,
+ 		.child          = crypto_sysctl_table
+ 	},
+-	{
+-		.ctl_name = 0,
+-	},
++	{}
+ };
+ 
+ static struct ctl_table_header *crypto_sysctls;
 -- 
 1.6.5.2.143.g8cc62
 
