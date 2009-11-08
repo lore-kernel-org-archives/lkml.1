@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbZKHNi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZKHNij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160AbZKHNi3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZKHNi2
+	id S1753234AbZKHNij (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 08:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZKHNij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:38:28 -0500
+	Sun, 8 Nov 2009 08:38:39 -0500
 Received: from fg-out-1718.google.com ([72.14.220.155]:42928 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbZKHNi2 (ORCPT
+	with ESMTP id S1751707AbZKHNii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:38:28 -0500
+	Sun, 8 Nov 2009 08:38:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=wAzx/u5DnsknRu1V91mCCQj3q6D2a1KR68sF0cg3DydOrKWX2T0rWBIO+KtBuUwfd+
-         7jZkuicguk+UTZWjrb5H5xaAY6X0LWGQK7AQFVHLRDSNWdD/bGihwddlEGwhOAivRKpS
-         mLuykHFKkILHOYaaGzLjrI5e5G4WK3dAAb/40=
-Message-ID: <4AF6C9D7.8060004@gmail.com>
-Date: Sun, 08 Nov 2009 14:38:31 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Z4HNfxpvMScZRS34JQvg0YpaCaKLaOakQFQuUG+lFq90yAxO/tvax/F9ePVeLlenCA
+         NlO9HHnJcjRfHgs5YQHdfRsxW2VjRh380hya7Hsc0a1gtZ2QRfovJtqJBgD6PlaKsoU+
+         TbT907AdKJBDLPkxvll/IUW7tBhSCfcWkfjQc=
 MIME-Version: 1.0
-To: Ben Hutchings <ben@decadent.org.uk>
-CC: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/75] cyclades: declare MODULE_FIRMWARE
-References: <1257630121.15927.383.camel@localhost>
-In-Reply-To: <1257630121.15927.383.camel@localhost>
-X-Enigmail-Version: 0.97b
+In-Reply-To: <0F1B54C89D5F954D8535DB252AF412FA05042B1D@chinexm1.ad.analog.com>
+References: <1257195888-6122-1-git-send-email-tfransosi@gmail.com>
+	 <0F1B54C89D5F954D8535DB252AF412FA05042B1D@chinexm1.ad.analog.com>
+Date: Sun, 8 Nov 2009 11:38:43 -0200
+Message-ID: <a4c8a6d00911080538y3735e6bbq9c1bdc4ba90e2ead@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH] blackfin/trivial: remove 
+	duplicatedMAX macro from stamp.
+From: Thiago Farina <tfransosi@gmail.com>
+To: "Zhang, Sonic" <Sonic.Zhang@analog.com>
+Cc: trivial@kernel.org, vapier@gentoo.org,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       linux-kernel@vger.kernel.org, "Song, Barry" <Barry.Song@analog.com>,
+       uclinux-dist-devel@blackfin.uclinux.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/07/2009 10:42 PM, Ben Hutchings wrote:
-> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Hi Sonic,
 
-Reviewed-by: Jiri Slaby <jirislaby@gmail.com>
+On Fri, Nov 6, 2009 at 1:17 AM, Zhang, Sonic <Sonic.Zhang@analog.com> wrote:
+> Acked-by: Sonic Zhang<sonic.zhang@analog.com>
 
-> ---
->  drivers/char/cyclades.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-> index 4254457..0113574 100644
-> --- a/drivers/char/cyclades.c
-> +++ b/drivers/char/cyclades.c
-> @@ -4208,3 +4208,4 @@ module_exit(cy_cleanup_module);
->  MODULE_LICENSE("GPL");
->  MODULE_VERSION(CY_VERSION);
->  MODULE_ALIAS_CHARDEV_MAJOR(CYCLADES_MAJOR);
-> +MODULE_FIRMWARE("cyzfirm.bin");
-
+Could you apply this to blackfin tree?
