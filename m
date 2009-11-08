@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZKHQQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZKHQfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbZKHQQZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 11:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbZKHQQX
+	id S1754503AbZKHQfX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 11:35:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbZKHQfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 11:16:23 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:41442 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754600AbZKHQQU (ORCPT
+	Sun, 8 Nov 2009 11:35:22 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45356 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbZKHQfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 11:16:20 -0500
-Date: Sun, 8 Nov 2009 17:16:25 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Andreas Mohr <andi@lisas.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Michael A. Griffith" <grif@acm.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Please get this committed, _NOW_ (preferrably 5 years
-	ago), thanks.
-Message-ID: <20091108161625.GA10497@rhlx01.hs-esslingen.de>
-References: <20091108120008.GA21611@rhlx01.hs-esslingen.de> <20091108144548.GA13429@rhlx01.hs-esslingen.de> <20091108151153.GC6240@hack> <200911081630.32926.arnd@arndb.de>
+	Sun, 8 Nov 2009 11:35:22 -0500
+Message-ID: <4AF6F323.5000005@zytor.com>
+Date: Sun, 08 Nov 2009 08:34:43 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200911081630.32926.arnd@arndb.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stefani Seibold <stefani@seibold.net>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] RFC x86_64 more accurate KSTK_ESP implementation
+References: <1257233486.22553.6.camel@wall-e>	 <20091103082843.GA27676@elte.hu> <1257239184.4889.15.camel@wall-e>	 <1257409189.26874.18.camel@wall-e> <20091108113546.GN11372@elte.hu>	 <1257684666.20579.9.camel@wall-e>  <20091108125527.GA19350@elte.hu> <1257688828.23062.0.camel@wall-e>
+In-Reply-To: <1257688828.23062.0.camel@wall-e>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sun, Nov 08, 2009 at 04:30:32PM +0100, Arnd Bergmann wrote:
-> On Sunday 08 November 2009, Américo Wang wrote:
-> > Yeah, I mentioned it to mean it is not suitable to explain
-> > user-space problems in a kernel source file. Putting it into a kernel
-> > doc should be fine.
+On 11/08/2009 06:00 AM, Stefani Seibold wrote:
+> Am Sonntag, den 08.11.2009, 13:55 +0100 schrieb Ingo Molnar:
+>> * Stefani Seibold <stefani@seibold.net> wrote:
+>>
+>>>> I'd suggest a competely different method: why dont you use an IPI to 
+>>>> sample the SP whenever someone wants to read it from /proc and we 
+>>>> see that the task is running on a CPU right now?
+>>>
+>>> Sounds like a challenge, i like the idea. I will have a look on it...
+>>
+>> It's not a fastpath, so smp_function_call() ought to do the trick.
 > 
-> I think it would be best to put it on a wiki page, e.g. on kernelnewbies.org
-> and point to that. That means you will be able to add information to it
-> independent of the kernel version.
+> There is no function smp_function_call()...
+> 
 
-I don't know, personally I think that's way too disconnected.
-A Wiki entry might be down, might get renamed, might get converted to an
-entirely different Wiki etc. Or might sit on a certain (admittedly large ;)
-network that I don't have access to under certain circumstances.
-In general these issues should be treated right where they're being created,
-and that's the kernel.
-And I don't see how "independent of the kernel version" is relevant
-here. If I have such an issue, then I look into that file on a tree I
-have here (which usually is a current version), and if that doesn't
-help, then one could look into the exact version that (tries to) boots.
+smp_call_function().
+
+	-hpa
 
 
-And IMHO what we should perhaps think of is inventing a reference number
-scheme for people to easily look up kernel issues.
-This could then be something like "LKE#1234: No init found." (L_inux
-K_ernel E_rror).
-OTOH this would bloat kernel messages, thus maybe there's a way to
-handle it more intelligently.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Thanks,
-
-Andreas Mohr
