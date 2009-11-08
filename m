@@ -1,101 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbZKHLB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbZKHLCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753877AbZKHLB5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 06:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZKHLB4
+	id S1753881AbZKHLCq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 06:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZKHLCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 06:01:56 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:60050 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118AbZKHLBz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 06:01:55 -0500
-From: "Dasgupta, Romit" <romit@ti.com>
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>
-Date: Sun, 8 Nov 2009 16:30:40 +0530
-Subject: RE: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
- threads
-Thread-Topic: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
- threads
-Thread-Index: AcpgTVaASJDYUgXzQRWGBdLZe30rpgAE+ccw
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE31FD0F@dbde02.ent.ti.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
- <20091107165421.GA1630@ucw.cz>
- <B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
- <20091108082727.GC16482@elf.ucw.cz>
-In-Reply-To: <20091108082727.GC16482@elf.ucw.cz>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sun, 8 Nov 2009 06:02:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59022 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751586AbZKHLCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 06:02:44 -0500
+Date: Sun, 8 Nov 2009 12:02:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andr? Goddard Rosa <andre.goddard@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, laijs@cn.fujitsu.com,
+       davem@davemloft.net, akpm@linux-foundation.org,
+       harvey.harrison@gmail.com, linux list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 1/7] vsprintf: factorize "(null)" string
+Message-ID: <20091108110237.GG11372@elte.hu>
+References: <b8bf37780911040648h7e4bae3dg21ce15c6b0e680d3@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b8bf37780911040648h7e4bae3dg21ce15c6b0e680d3@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Andr? Goddard Rosa <andre.goddard@gmail.com> wrote:
 
-> -----Original Message-----
-> From: Pavel Machek [mailto:pavel@ucw.cz]
-> Sent: Sunday, November 08, 2009 1:57 PM
-> To: Dasgupta, Romit
-> Cc: Rafael J. Wysocki; linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org;
-> linux-pm@lists.linux-foundation.org
-> Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel threads
+> @@ -546,12 +548,12 @@ static char *number(char *buf, char *end,
+> unsigned long long num,
+>  	return buf;
+>  }
 > 
-> On Sun 2009-11-08 09:52:52, Dasgupta, Romit wrote:
-> > > Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
-> > > threads
-> > >
-> > > Hi!
-> > >
-> > > > Kicks out a frozen thread from the refrigerator when an active thread has
-> > > > invoked kthread_stop on the frozen thread.
-> ...
-> > > > @@ -49,7 +50,7 @@ void refrigerator(void)
-> > > >
-> > > >  	for (;;) {
-> > > >  		set_current_state(TASK_UNINTERRUPTIBLE);
-> > > > -		if (!frozen(current))
-> > > > +		if (!frozen(current) || (!current->mm &&
-> kthread_should_stop()))
-> > > >  			break;
-> > > >  		schedule();
-> > >
-> > > Well, what if the thread does some processing before stopping? That
-> > > would break refrigerator assumptions...
-> >
-> > The suspend thread will block until the 'to be stopped' thread clears up. That is
-> what any call to kthread_stop would boil down to. The target thread would
-> anyway be out of the refrigerator so I am not sure what assumption you mean
-> here. Eventually, the target thread would clear up and wake up the suspend
-> thread and then things would go on as usual.
-> 
-> (Please format to 80 columns).
-> 
-> No, I do not get it.
-> 
-> Lets say we have
-> 
-> evil_data_writer thread that needs to be stopped becuase it writes to
-> filesystem
-> 
-> nofreeze random_stopper thread
-> 
-> now we create the suspend image, and start writing it out. But that's
-> okay, evil_data_writer is stopped so it can't do no harm. But now
-> random_stopper decides to thread_stop() the evil_data_writer, and this
-> new code allows it to exit the refrigerator, *do some writing*, and
-> then stop.
-> 
-> That's bad, right?
+> -static char *string(char *buf, char *end, char *s, struct printf_spec spec)
+> +static char *string(char *buf, char *end, const char *s, struct
+> printf_spec spec)
 
-evil_data_writer will enter refrigerator after invoking 'try_to_freeze'. This should be followed by a call to kthread_should_stop. There it decides if it needs to exit the thread (after cleanups if necessary) or not. I have seen that the bdi_writeback_task function is like that. It does not care if there is pending data to be written if it detects that someone have invoked a 'kthread_stop' on it. It simply exits. I have seen some other kernel threads that do not follow this and I think that probably is not right. 
+FYI, your patches have such linewraps, so the patches wont apply:
+
+ patch: **** malformed patch at line 47: unsigned long long num,
+
+See Documentation/email-clients.txt about how to send patches without 
+such problems.
+
+Mind resending with this fixed?
+
+Also, this RFC patch of yours:
+
+  vsprintf: reuse almost identical simple_strtoulX() functions
+
+looks nice too IMO - mind including it in your series?
+
+Thanks,
+
+	Ingo
+
