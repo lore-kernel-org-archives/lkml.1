@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZKHMnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbZKHMvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbZKHMnb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 07:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZKHMna
+	id S1752344AbZKHMvw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 07:51:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZKHMvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 07:43:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45769 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbZKHMn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 07:43:29 -0500
-Message-ID: <4AF6BCE5.3030701@redhat.com>
-Date: Sun, 08 Nov 2009 14:43:17 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
+	Sun, 8 Nov 2009 07:51:51 -0500
+Received: from www84.your-server.de ([213.133.104.84]:54380 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbZKHMvv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 07:51:51 -0500
+Subject: Re: [PATCH] RFC x86_64 more accurate KSTK_ESP implementation
+From: Stefani Seibold <stefani@seibold.net>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Gleb Natapov <gleb@redhat.com>, kvm@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 02/11] Add "handle page fault" PV helper.
-References: <1257076590-29559-1-git-send-email-gleb@redhat.com> <1257076590-29559-3-git-send-email-gleb@redhat.com> <20091102092214.GB8933@elte.hu> <20091102160410.GF27911@redhat.com> <20091102161248.GB15423@elte.hu> <20091102162234.GH27911@redhat.com> <20091102162941.GC14544@elte.hu> <20091102174208.GJ27911@redhat.com> <20091108113654.GO11372@elte.hu>
-In-Reply-To: <20091108113654.GO11372@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <20091108113546.GN11372@elte.hu>
+References: <1257233486.22553.6.camel@wall-e>
+	 <20091103082843.GA27676@elte.hu> <1257239184.4889.15.camel@wall-e>
+	 <1257409189.26874.18.camel@wall-e>  <20091108113546.GN11372@elte.hu>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Sun, 08 Nov 2009 13:51:06 +0100
+Message-ID: <1257684666.20579.9.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/08/2009 01:36 PM, Ingo Molnar wrote:
->> Three existing callbacks are: kmemcheck, mmiotrace, notifier. Two
->> of them kmemcheck, mmiotrace are enabled only for debugging, should
->> not be performance concern. And notifier call sites (two of them)
->> are deliberately, as explained by comment, not at the function entry,
->> so can't be unified with others. (And kmemcheck also has two different
->> call site BTW)
->>      
-> We want mmiotrace to be generic distro capable so the overhead when the
-> hook is not used is of concern.
->
->    
+Am Sonntag, den 08.11.2009, 12:35 +0100 schrieb Ingo Molnar:
+> * Stefani Seibold <stefani@seibold.net> wrote:
+>  
+> > +
+> > +	if (((stkp < stk) || (stkp >= stk + THREAD_SIZE))
+> > +	    && regs->ip < PAGE_OFFSET)
+> > +		percpu_write(old_rsp, stkp);
+> > +}
+> 
+> that check for regs->ip looks imprecise - why dont you use the 
+> user_mode_vm()?
+> 
+> It's true that the value itself is statistical, but still we dont want 
+> to leak a kernel-space regs->sp reason - it's an information leak.
+> 
 
-Maybe we should generalize paravirt-ops patching in case if (x) f() is 
-deemed too expensive.
+Good idea. Much better ;-)
 
--- 
-error compiling committee.c: too many arguments to function
+
+> > --- linux-2.6.32-rc5.old/arch/x86/kernel/irq_64.c	2009-10-16 02:41:50.000000000 +0200
+> > +++ linux-2.6.32-rc5.new/arch/x86/kernel/irq_64.c	2009-11-04 22:29:55.762951577 +0100
+> > @@ -53,6 +53,7 @@
+> >  	struct irq_desc *desc;
+> >  
+> >  	stack_overflow_check(regs);
+> > +	update_usersp(regs);
+> >
+> >  
+> >  	desc = irq_to_desc(irq);
+> >  	if (unlikely(!desc))
+> > --- linux-2.6.32-rc5.old/arch/x86/kernel/apic/apic.c	2009-10-16 02:41:50.000000000 +0200
+> > +++ linux-2.6.32-rc5.new/arch/x86/kernel/apic/apic.c	2009-11-04 23:12:32.805086991 +0100
+> > @@ -831,6 +831,9 @@
+> >  {
+> >  	struct pt_regs *old_regs = set_irq_regs(regs);
+> >  
+> > +#ifndef CONFIG_X86_32
+> > +	update_usersp(regs);
+> > +#endif
+> 
+> Cleanliness: please eliminate this #ifdef by defining update_usersp() on 
+> 32-bit as well, as an empty inline function.
+> 
+> But, i dont like this patch because it adds overhead to the IRQ 
+> fastpath.
+> 
+
+Agree, but i saw no other way.
+ 
+> I'd suggest a competely different method: why dont you use an IPI to 
+> sample the SP whenever someone wants to read it from /proc and we see 
+> that the task is running on a CPU right now?
+> 
+
+Sounds like a challenge, i like the idea. I will have a look on it... 
+
+Stefani
+
 
