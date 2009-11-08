@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbZKHU0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZKHU0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373AbZKHU0F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 15:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZKHU0C
+	id S1755396AbZKHU0N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 15:26:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZKHU0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 15:26:02 -0500
+	Sun, 8 Nov 2009 15:26:09 -0500
 Received: from [190.108.161.231] ([190.108.161.231]:40534 "EHLO
 	localhost.localdomain" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755327AbZKHUZ7 convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1755362AbZKHU0H convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 15:25:59 -0500
-Subject: [PATCH 16/20] scsi/nsp32_debug: No longer use Scsi_Cmd typedef
+	Sun, 8 Nov 2009 15:26:07 -0500
+Subject: [PATCH 17/20] scsi/pas16: No longer use Scsi_Cmd typedef
 From: Davidlohr Bueso <dave@gnu.org>
 Reply-To: dave@gnu.org
 To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       gotom@debian.or.jp
+       drew@colorado.edu
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
-Date: Sun, 08 Nov 2009 17:17:26 -0300
-Message-ID: <1257711446.4759.122.camel@dbueso-pc>
+Date: Sun, 08 Nov 2009 17:17:28 -0300
+Message-ID: <1257711448.4759.123.camel@dbueso-pc>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,23 +30,29 @@ Change Scsi_Cmnd for struct scsi_cmnd.
 Signed-off-by: Davidlohr Bueso <dave@gnu.org>
 
 ---
- drivers/scsi/nsp32_debug.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/scsi/pas16.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/nsp32_debug.c b/drivers/scsi/nsp32_debug.c
-index 2fb3fb5..c03872a 100644
---- a/drivers/scsi/nsp32_debug.c
-+++ b/drivers/scsi/nsp32_debug.c
-@@ -137,7 +137,7 @@ static void print_commandk (unsigned char *command)
- 	printk("\n");
- }
+diff --git a/drivers/scsi/pas16.h b/drivers/scsi/pas16.h
+index 8dc5b1a..dc87366 100644
+--- a/drivers/scsi/pas16.h
++++ b/drivers/scsi/pas16.h
+@@ -114,12 +114,12 @@
  
--static void show_command(Scsi_Cmnd *SCpnt)
-+static void show_command(struct scsi_cmnd *SCpnt)
- {
- 	print_commandk(SCpnt->cmnd);
- }
 
+ #ifndef ASM
+-static int pas16_abort(Scsi_Cmnd *);
++static int pas16_abort(struct scsi_cmnd *);
+ static int pas16_biosparam(struct scsi_device *, struct block_device *,
+ 			   sector_t, int*);
+ static int pas16_detect(struct scsi_host_template *);
+-static int pas16_queue_command(Scsi_Cmnd *, void (*done)(Scsi_Cmnd *));
+-static int pas16_bus_reset(Scsi_Cmnd *);
++static int pas16_queue_command(struct scsi_cmnd *, void (*done)(struct scsi_cmnd *));
++static int pas16_bus_reset(struct scsi_cmnd *);
+ 
+ #ifndef CMD_PER_LUN
+ #define CMD_PER_LUN 2
 
 
 
