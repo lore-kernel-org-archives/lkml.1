@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbZKHNn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZKHNqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753538AbZKHNn6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbZKHNn5
+	id S1753599AbZKHNqL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 08:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZKHNqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:43:57 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:41434 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752802AbZKHNn4 (ORCPT
+	Sun, 8 Nov 2009 08:46:10 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:54913 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753375AbZKHNqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:43:56 -0500
+	Sun, 8 Nov 2009 08:46:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=i2Cg/FM+PeM9LyhAcbLoknMXtrLR1QWnNj5fhdBrb06w9Rd5wzzR0rJmo6xlx1xXaC
-         KXzu8rajTm6qOYxW+xF4k070Ni96lSgg+MFU9L6Byrr2cPhLuEJuyxqUynFDWDGl6kSl
-         wqvwx1Be2nBkbiD6wr5LRWAqkOxTRrikGospk=
-Date: Sun, 8 Nov 2009 16:43:59 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: tip tree build warning
-Message-ID: <20091108134359.GF5300@lenovo>
-References: <20091028181443.50a09dbb.sfr@canb.auug.org.au> <20091028073145.GD6353@elte.hu> <20091028184126.b5f52d1b.sfr@canb.auug.org.au> <20091028184851.504752ef.sfr@canb.auug.org.au> <20091028075012.GD19402@elte.hu> <20091108131645.GD5300@lenovo> <20091108133247.GA14807@elte.hu>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=uxVI5vwZEU85URcKuBL38JR3GDrppcfVPwC1mZcrweigdz6AJ+0ZUK2JA0QNh9HqIV
+         e1VT1VCuJbQutUwwep79GfBQMCs/UOKmipStm9TaVRVDj4urN5A/NR+7MdJIbjwAkK0y
+         XNbO4/Y2nqW/q9XniAlFTIxK2GYSpPUZv+7OI=
+Message-ID: <4AF6CBA2.30304@gmail.com>
+Date: Sun, 08 Nov 2009 14:46:10 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091108133247.GA14807@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Emmanuel Benisty <benisty.e@gmail.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org
+Subject: Re: mmotm 2009-11-01-10-01 uploaded
+References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>	<alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>	<661de9470911060338q66746acbr219eedc24e752ca9@mail.gmail.com>	<c1f41c620911060439j42329608u74f937ac9f9ac617@mail.gmail.com> <20091106104851.320a97ee.randy.dunlap@oracle.com>
+In-Reply-To: <20091106104851.320a97ee.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.97b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Sun, Nov 08, 2009 at 02:32:47PM +0100]
-...
-| 
-| > +
-| > +#ifdef CONFIG_X86_32
-| >  	.apicid_to_cpu_present		= default_apicid_to_cpu_present,
-| > +#else
-| > +	.apicid_to_cpu_present		= NULL,
-| > +#endif
-| 
-| would be better to unify this instead ...
-| 
-| 	Ingo
-| 
+On 11/06/2009 07:48 PM, Randy Dunlap wrote:
+> Thanks.  so that mmotm.git is now 5 weeks old.
+> http://git.zen-kernel.org/?p=kernel/mmotm.git;a=summary
 
-OK, wait a bit.
+How did you find out? Don't get wrong by the topmost commit and tag dates...
 
-	-- Cyrill
+It definitely looks weird, but is the latest :):
+6 weeks ago: 2009-11-01-10-01
+	
