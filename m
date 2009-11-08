@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbZKHJ1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbZKHJf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753781AbZKHJ1M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 04:27:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZKHJ1I
+	id S1753568AbZKHJf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 04:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZKHJf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 04:27:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60147 "EHLO hera.kernel.org"
+	Sun, 8 Nov 2009 04:35:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33171 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753552AbZKHJ1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 04:27:06 -0500
-Date: Sun, 8 Nov 2009 09:26:29 GMT
-From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
-       efault@gmx.de, mitake@dcl.info.waseda.ac.jp, jkosina@suse.cz,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mitake@dcl.info.waseda.ac.jp,
-       jkosina@suse.cz, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1257381097-4743-8-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1257381097-4743-8-git-send-email-mitake@dcl.info.waseda.ac.jp>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/bench] perf bench: Add subcommand 'bench' to the Makefile
-Message-ID: <tip-bfde82ef51e3ea6ab8634d0fdbf5adcdd1b429cb@git.kernel.org>
-Git-Commit-ID: bfde82ef51e3ea6ab8634d0fdbf5adcdd1b429cb
-X-Mailer: tip-git-log-daemon
+	id S1750910AbZKHJf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 04:35:27 -0500
+Date: Sun, 8 Nov 2009 10:35:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Anton Blanchard <anton@samba.org>
+Subject: Re: [GIT PULL] perf_event/tracing/powerpc patches from Anton
+ Blanchard
+Message-ID: <20091108093518.GD21267@elte.hu>
+References: <19176.59441.523075.445864@drongo.ozlabs.ibm.com>
+ <20091029065501.GB12874@elte.hu>
+ <1256882649.6372.65.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1256882649.6372.65.camel@pasglop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0005]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  bfde82ef51e3ea6ab8634d0fdbf5adcdd1b429cb
-Gitweb:     http://git.kernel.org/tip/bfde82ef51e3ea6ab8634d0fdbf5adcdd1b429cb
-Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-AuthorDate: Thu, 5 Nov 2009 09:31:37 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 8 Nov 2009 10:19:20 +0100
 
-perf bench: Add subcommand 'bench' to the Makefile
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-This patch modifies Makefile for new files related to 'bench'
-subcommand. The new code is active from this point on.
+> On Thu, 2009-10-29 at 07:55 +0100, Ingo Molnar wrote:
+> > * Paul Mackerras <paulus@samba.org> wrote:
+> > 
+> > > Here is a series of patches from Anton Blanchard that implement some 
+> > > nice tracing and perf_event features on powerpc.  One of them is 
+> > > generic perf_event stuff (adding software events for alignment faults 
+> > > and instruction emulation faults).
+> > > 
+> > > Since this touches the perf_event and tracing subsystems as well as 
+> > > the powerpc architecture code, I think the best way forward is for 
+> > > both Ingo and Ben to pull it into their trees.  I have based it on the 
+> > > most recent point in Linus' tree that Ingo had pulled into his perf 
+> > > branches (as of yesterday or so).
+> > 
+> > The generic perf bits look good to me - can pull it if Ben OKs the 
+> > PowerPC bits.
+> 
+> Yup. Just went through all of them, they look fine. I also test built on
+> a number of default configs and it seems to pass.
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: fweisbec@gmail.com
-Cc: Jiri Kosina <jkosina@suse.cz>
-LKML-Reference: <1257381097-4743-8-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/Makefile |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+Pulled into tip:perf/powerpc (will keep it in a separate branch for a 
+few days then it can go into perf/core), thanks guys!
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 542b29e..0a25428 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -416,6 +416,13 @@ LIB_OBJS += util/hist.o
- LIB_OBJS += util/data_map.o
- 
- BUILTIN_OBJS += builtin-annotate.o
-+
-+BUILTIN_OBJS += builtin-bench.o
-+
-+# Benchmark modules
-+BUILTIN_OBJS += bench/sched-messaging.o
-+BUILTIN_OBJS += bench/sched-pipe.o
-+
- BUILTIN_OBJS += builtin-help.o
- BUILTIN_OBJS += builtin-sched.o
- BUILTIN_OBJS += builtin-list.o
+	Ingo
