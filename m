@@ -1,125 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZKHV7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbZKHWRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbZKHV7j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 16:59:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbZKHV7i
+	id S1755559AbZKHWRe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 17:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZKHWRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 16:59:38 -0500
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:46056 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbZKHV7i convert rfc822-to-8bit (ORCPT
+	Sun, 8 Nov 2009 17:17:33 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:55148 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755438AbZKHWRd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 16:59:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=guMfIIMFqQvH5HgsK9tUKkrJuBzGBulMPwO9HzeizUqYg5+cxKM0Z9GUk90QViBGAu
-         fb/kLHTJVlDKO8sFfADhIvSqb+xwpDYTno7bGKDHVw/ThePVCru4Ucwnm1KOijFZtc42
-         gC1FApONC5AlFWoHXCpJR20b0gy2H5bM2/Jmw=
+	Sun, 8 Nov 2009 17:17:33 -0500
+Subject: Re: i686 quirk for AMD Geode
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Sun, 08 Nov 2009 14:10:24 -0800
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>
+CC: Matteo Croce <technoboy85@gmail.com>, Sven-Haegar Koch <haegar@sdinet.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Message-ID: <ucic9k3e5xq3s3pl2w4mae7a.1257718224112@email.android.com>
+Content-Type: multipart/mixed; boundary="----X4AW2YHGN9KNP428HSVQ62CQY06EA5"
 MIME-Version: 1.0
-In-Reply-To: <20091108124035.23d53197@infradead.org>
-References: <20090915054259.5282e5ba@infradead.org>
-	 <4e5e476b0911040139h1f471627la4262a5fa66abab0@mail.gmail.com>
-	 <20091108124035.23d53197@infradead.org>
-Date: Sun, 8 Nov 2009 22:59:43 +0100
-Message-ID: <4e5e476b0911081359x32d7a6c4x61ee3af92dc0c8a1@mail.gmail.com>
-Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO performance
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
-       jens.axboe@oracle.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 8, 2009 at 9:40 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Wed, 4 Nov 2009 10:39:13 +0100
-> Corrado Zoccolo <czoccolo@gmail.com> wrote:
->
->> Hi Arjan,
->> On Tue, Sep 15, 2009 at 4:42 AM, Arjan van de Ven
->> <arjan@infradead.org> wrote:
->> > From: Arjan van de Ven <arjan@linux.intel.com>
->> > Subject: cpuidle: Fix the menu governor to boost IO performance
->> >
->> > Fix the menu idle governor which balances power savings, energy
->> > efficiency and performance impact.
->>
->> I've tested this patch on an Atom based netbook with SSD, and I see
->> 10% improvement in latencies for reading a single 4k block from disk.
->
-> great!
->
->>
->> During this test, while looking at powertop, I found that my CPU was
->> sitting in polling mode for milliseconds (percentage was however
->> negligible).
->> I never recalled seeing a non-zero time spent polling, so I looked at
->> the patch and found:
->> > +       /*
->> > +        * We want to default to C1 (hlt), not to busy polling
->> > +        * unless the timer is happening really really soon.
->> > +        */
->> > +       if (data->expected_us > 5)
->> > +               data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
->> Commenting the if, (the previous behaviour), I no longer see the
->> polling, while I still get the performance improvement.
->>
->> I wonder if that '5' is a bit too much. According to my BIOS ACPI
->> table, the Atom latency for C1 is ~ 1us, so there is very little
->> payback in polling on such processors. Should the check use the ACPI
->> declared C1 latency to decide whether we should poll or go to C1?
->
-> the exit latency is +/- 1 us, the entry latency is similar, and then
-> you're pretty close to 5 already (esp if you keep in mind that to break
-> even on energy you also need to be in the C state for a little bit)...
+------X4AW2YHGN9KNP428HSVQ62CQY06EA5
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: base64
 
-There are also performance considerations for using C1 (HLT).
-Quoting from http://www.intel.com/Assets/PDF/manual/248966.pdf (8-19):
-On processors supporting HT Technology, operating systems should use the HLT
-instruction if one logical processor is active and the other is not.
-HLT will allow an idle
-logical processor to transition to a halted state; this allows the
-active logical
-processor to use all the hardware resources in the physical package.
-An operating
-system that does not use this technique must still execute
-instructions on the idle
-logical processor that repeatedly check for work. This “idle loop”
-consumes execution
-resources that could otherwise be used to make progress on the other
-active logical
-processor.
+S2VlcCBpbiBtaW5kIHRoYXQgaWYgd2UgZW5kIHVwIHJ1bm5pbmcgdGhhdCBvbiBjb2RlIHdpdGgg
+YW55IGtpbmQgb2Ygc2lnbmlmaWNhbnQgZnJhY3Rpb24gb2YgQ01PViBpdCB3aWxsIHV0dGVybHkg
+c3Vjay4gIENvdW50IDUwMC1vZGQgY3ljbGVzIHBlciBlbXVsYXRlZCBpbnN0cnVjdGlvbi4gIEl0
+ICppcyogc3RpbGwgdXNlZnVsIGluIHNvbWUgY2FzZXMgLSB3aGljaCBpcyB3aHkgd2UgaGF2ZSB4
+ODcgZW11bGF0aW9uIGFscmVhZHksIGZvciBleGFtcGxlLiAgVGhlIHF1ZXN0aW9uIGlzIG1vc3Rs
+eSB3aGVyZSB0aGUgcG9pbnQgb2YgZGltaW5pc2hpbmcgcmV0dXJucyBnby4gIEluIHRoZW9yeSB3
+ZSBjb3VsZCBwcm92aWRlIGEgZnVsbCB4ODYgaW50ZXJwcmV0ZXIgKHBlcmhhcHMgc2hhcmVkIHdp
+dGggS1ZNPykgd2hpY2ggd291bGQgYWxsb3cgYW55IGluc3RydWN0aW9uIGF0IGFsbCB0byBiZSBl
+eGVjdXRlZC4KCiJBbGFuIENveCIgPGFsYW5AbHhvcmd1ay51a3V1Lm9yZy51az4gd3JvdGU6Cgo+
+PiA+IEJldHRlciB0byBiZSBzdXJlIHRoYXQgYSBOT1BMIHdob3VsZG4ndCBTSUdJTEwgeW91ciBw
+cm9ncmFtLCBpc24ndA0KPj4gPiBpdD8NCj4+IA0KPj4gU0lHSUxMIGlzIGVhc2llciB0byBkZWJ1
+ZyB0aGFuIE5PUEwgbXlzdGVyaW91c2x5IHRha2luZyAxMDB4IHRpbWUgaXQNCj4+IHNob3VsZCwg
+c29ycnkuDQo+DQo+QW5kIGEgd29ya2luZyA2ODYgZGlzdHJpYnV0aW9uIGlzIGEgZ3JlYXQgZGVh
+bCBtb3JlIHVzZWZ1bCB0byBlbmQgdXNlcnMsDQo+d2hvIG91dG51bWJlciB5b3UgYnkgYSBmZXcg
+bWlsbGlvbiB0byBvbmUuIEl0J3MgYSB2ZXJ5IHNlbnNpYmxlIHBhdGNoLCBvcg0KPnBlcmhhcHMg
+eW91J2QgcHJlZmVyIHdlIGRpZG4ndCBzYXkuIEFuZCB5b3UgZm9yZ2V0IHRoZSB1c2VyICJkZWJ1
+ZyIgZm9yDQo+YSBHZW9kZSArIGk2ODYgd2l0aG91dCB0aGlzIHdpbGwgYmUgIml0IGhhbmdzIHdo
+ZW4gSSB0cnkgYW5kIGJvb3QgdGhlDQo+aW5zdGFsbCBDRCINCj4NCj5JdCB3b3VsZCBwcm9iYWJs
+eSBhbHNvIGJlIHdvcnRoIGhhdmluZyBjbW92IGZpeHVwcyBmb3IgdGhlIFZJQSBDMyBhcyB3ZWxs
+Lg0KPg0KPkFsYW4NCgotLQpTZW50IGZyb20gbXkgbW9iaWxlIHBob25lLiBQbGVhc2UgZXhjdXNl
+IGFueSBsYWNrIG9mIGZvcm1hdHRpbmcu
 
->
->>
->> An other consideration is that sometimes, even if we expect to idle
->> for a short time, we end up idling for more (otherwise I would never
->> have seen ms polling, when expecting at most 5us). Should we set up a
->> timer, that would fire when switching to an higher C state would
->> conserve more energy?
->
-> this check is supposed to catch the known timer cases; those
-> are rather accurate in prediction
+------X4AW2YHGN9KNP428HSVQ62CQY06EA5--
 
-Unfortunately, I have seen polling residency times > 1ms, so it must
-not be so accurate.
-Could be that the timer already expired, when we started polling, or
-the wake-up went to an other CPU?
-Having a timer for the specific CPU that is going idle would help in
-such cases, as well as other cases like the governor chosen to go to
-C3, but due to BM restrictions, the driver could only achieve C2.
-
-Corrado
-
->
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
