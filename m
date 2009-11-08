@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZKHNij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbZKHNm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbZKHNij (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZKHNij
+	id S1753448AbZKHNm2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 08:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZKHNm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:38:39 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:42928 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbZKHNii (ORCPT
+	Sun, 8 Nov 2009 08:42:28 -0500
+Received: from ey-out-1920.google.com ([74.125.78.146]:28852 "EHLO
+	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752740AbZKHNm1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:38:38 -0500
+	Sun, 8 Nov 2009 08:42:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Z4HNfxpvMScZRS34JQvg0YpaCaKLaOakQFQuUG+lFq90yAxO/tvax/F9ePVeLlenCA
-         NlO9HHnJcjRfHgs5YQHdfRsxW2VjRh380hya7Hsc0a1gtZ2QRfovJtqJBgD6PlaKsoU+
-         TbT907AdKJBDLPkxvll/IUW7tBhSCfcWkfjQc=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MgXWgH9U9deQCWpuupy6HimOxv1y95N/a4rY2QVQ+Ee3pzOSmWx+gyD5IQH6Rz7upb
+         MLH8X7Kv67TJ7CA8TkOoX2ySWIqfk30fRcIOfKrWZNqWxT0iIEBBH+ZxeYOLdZHwS2Lh
+         4YsVWOC4dcYOgqoH0IuWfKCADIJ0Bd1oNW8Kg=
+Date: Sun, 8 Nov 2009 16:42:30 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yong Wang <yong.y.wang@linux.intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86, therm: Only read the initial value of thermal LVT
+	entry on BSP
+Message-ID: <20091108134230.GE5300@lenovo>
+References: <20091107001736.GA30790@ywang-moblin2.bj.intel.com> <1257562565.4083.485.camel@sbs-t61.sc.intel.com> <20091108102520.GC7233@elte.hu> <20091108123812.GA877@ywang-moblin2.bj.intel.com> <20091108131655.GA12837@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <0F1B54C89D5F954D8535DB252AF412FA05042B1D@chinexm1.ad.analog.com>
-References: <1257195888-6122-1-git-send-email-tfransosi@gmail.com>
-	 <0F1B54C89D5F954D8535DB252AF412FA05042B1D@chinexm1.ad.analog.com>
-Date: Sun, 8 Nov 2009 11:38:43 -0200
-Message-ID: <a4c8a6d00911080538y3735e6bbq9c1bdc4ba90e2ead@mail.gmail.com>
-Subject: Re: [Uclinux-dist-devel] [PATCH] blackfin/trivial: remove 
-	duplicatedMAX macro from stamp.
-From: Thiago Farina <tfransosi@gmail.com>
-To: "Zhang, Sonic" <Sonic.Zhang@analog.com>
-Cc: trivial@kernel.org, vapier@gentoo.org,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       linux-kernel@vger.kernel.org, "Song, Barry" <Barry.Song@analog.com>,
-       uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091108131655.GA12837@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sonic,
+[Ingo Molnar - Sun, Nov 08, 2009 at 02:16:55PM +0100]
+| 
+...
+|
+| > > that makes it cleaner, and also it will work if we dont boot on 
+| > > cpu==0. (should that ever occur)
+| > > 
+| > 
+| > May I know when will this happen?
+| 
+| It's not really expected - we factorize the CPU IDs (which are logical) 
+| so that the boot CPU is 0. But relying on cpu==0 is the boot cpu is not 
+| clean and the resulting code is harder to read.
 
-On Fri, Nov 6, 2009 at 1:17 AM, Zhang, Sonic <Sonic.Zhang@analog.com> wrote:
-> Acked-by: Sonic Zhang<sonic.zhang@analog.com>
+Perhaps we need some is_bsp_cpu() helper? Though to cover all x86 places
+we need some efforts to apply :/
 
-Could you apply this to blackfin tree?
+| 
+| 	Ingo
+| 
+	-- Cyrill
