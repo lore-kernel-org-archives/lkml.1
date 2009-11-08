@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbZKHXe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbZKHXjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562AbZKHXe7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 18:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZKHXe6
+	id S1752687AbZKHXjO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 18:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZKHXjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 18:34:58 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37480 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751501AbZKHXe6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 18:34:58 -0500
-Date: Sun, 8 Nov 2009 23:34:44 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Leo Chen <leochen@broadcom.com>
-Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
-Message-ID: <20091108233444.GC31433@flint.arm.linux.org.uk>
-References: <m14op5jjo4.fsf@fess.ebiederm.org> <1257682930-31401-22-git-send-email-ebiederm@xmission.com> <20091108123422.GA9145@flint.arm.linux.org.uk> <m1pr7siqjz.fsf@fess.ebiederm.org> <20091108225652.GB31433@flint.arm.linux.org.uk> <m1ocnch9v8.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1ocnch9v8.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 8 Nov 2009 18:39:13 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36632 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752304AbZKHXjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 18:39:12 -0500
+Date: Mon, 9 Nov 2009 10:39:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: tip tree build warning
+Message-Id: <20091109103913.3b06914c.sfr@canb.auug.org.au>
+In-Reply-To: <20091108131645.GD5300@lenovo>
+References: <20091028181443.50a09dbb.sfr@canb.auug.org.au>
+	<20091028073145.GD6353@elte.hu>
+	<20091028184126.b5f52d1b.sfr@canb.auug.org.au>
+	<20091028184851.504752ef.sfr@canb.auug.org.au>
+	<20091028075012.GD19402@elte.hu>
+	<20091108131645.GD5300@lenovo>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__9_Nov_2009_10_39_13_+1100_KdNoRR__2T//UX9p"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 03:31:23PM -0800, Eric W. Biederman wrote:
-> There is not a user visible ABI change.  Just a massive implementation change.
-> The only user visible change is that CONFIG_SYS_SYSCALL now depends on
-> CONFIG_PROC_SYSCTL.
-> 
-> The implementation of sys_sysctl in binary_sysctl.c will now read
-> /proc/sys/bus/isa/portbase and using vfs_read convert the text string
-> to a binary integer and return it to glibc in the form sys_sysctl has
-> always used.
+--Signature=_Mon__9_Nov_2009_10_39_13_+1100_KdNoRR__2T//UX9p
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Right, that information was missing from the original patch.  No problem
-then.
+Hi Cyril,
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+On Sun, 8 Nov 2009 16:16:45 +0300 Cyrill Gorcunov <gorcunov@openvz.org> wro=
+te:
+>
+> (Btw, Stephen could you CC me next time if you get commit id
+>  with me in authors, so I wouldn't miss problem).
+
+Yeah, sorry about that - at the time I didn't know if this was caused
+directly by your commit or was just a side effect of some some other tree.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__9_Nov_2009_10_39_13_+1100_KdNoRR__2T//UX9p
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr3VqEACgkQjjKRsyhoI8yPWwCgsIEVeFDksjy5xmNPR8ZjyBG3
+aM4An08ZTd7U0eCvAdvwaM12zgwITPf5
+=y5Hu
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__9_Nov_2009_10_39_13_+1100_KdNoRR__2T//UX9p--
