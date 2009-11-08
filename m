@@ -1,65 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbZKHSDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZKHSEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbZKHSDs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 13:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZKHSDr
+	id S1754668AbZKHSEv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 13:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZKHSEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 13:03:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49954 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752601AbZKHSDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 13:03:46 -0500
-Date: Sun, 8 Nov 2009 19:03:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Yinghai Lu <yinghai@kernel.org>, x86team <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86,apic: Use PAGE_SIZE instead of numbers
-Message-ID: <20091108180335.GA17985@elte.hu>
-References: <20091108155356.GB25940@lenovo>
- <alpine.LFD.2.00.0911081726350.9725@eddie.linux-mips.org>
- <20091108173650.GF25940@lenovo>
+	Sun, 8 Nov 2009 13:04:51 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:47923 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753952AbZKHSEu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 13:04:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Lg0BAMOGHtE104bLqQ9ENSu3jvv26rsL4t5iH3sB3oJtRtoxfgmQkYLTI+nKhVxLMi
+         BlnabIk4eWOvkdBKw+sd5ROaYJM7bIabdfjGGwrY7o1mby3CbBZqfw0lPGmapZLKru4J
+         qMQ1kPrtmyyVHSIoMMuII6wqPMguTr84+fHzY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091108173650.GF25940@lenovo>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091108110512.3cfad100@mycelium.queued.net>
+References: <20091106154911.29400@gmx.net> <20091106155937.11d95279@lxorguk.ukuu.org.uk> 
+	<20091106165731.26800@gmx.net> <20091106182218.43940287@lxorguk.ukuu.org.uk> 
+	<20091106200620.179910@gmx.net> <m3r5sbcl07.fsf@intrepid.localdomain> 
+	<20091107000559.166710@gmx.net> <40101cc30911070311u56035911l5eb50ac4abb73acc@mail.gmail.com> 
+	<20091108110512.3cfad100@mycelium.queued.net>
+From: Matteo Croce <technoboy85@gmail.com>
+Date: Sun, 8 Nov 2009 19:04:35 +0100
+Message-ID: <40101cc30911081004j47f55878h1590140da8369674@mail.gmail.com>
+Subject: Re: i686 quirk for AMD Geode
+To: Andres Salomon <dilinger@collabora.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Nov 8, 2009 at 5:05 PM, Andres Salomon <dilinger@collabora.co.uk> wrote:
+> See comment below.  BTW, how does this affect performance on LXs?
+> Do you have any hard numbers for common tasks?
+>
+> On Sat, 7 Nov 2009 12:11:55 +0100
+> Matteo Croce <technoboy85@gmail.com> wrote:
+> [...]
+>>
+>> --- a/arch/x86/kernel/Makefile        2009-11-06 15:06:52.246223989
+>> +0100 +++ b/arch/x86/kernel/Makefile  2009-11-06
+>> 15:07:04.294054613 +0100 @@ -89,7 +89,7 @@
+>>  obj-$(CONFIG_HPET_TIMER)     += hpet.o
+>>
+>>  obj-$(CONFIG_K8_NB)          += k8.o
+>> -obj-$(CONFIG_MGEODE_LX)              += geode_32.o mfgpt_32.o
+>> +obj-$(CONFIG_MGEODE_LX)              += geode_32.o mfgpt_32.o
+>> nopl_emu.o obj-$(CONFIG_DEBUG_RODATA_TEST)    += test_rodata.o
+>>  obj-$(CONFIG_DEBUG_NX_TEST)  += test_nx.o
+>>
+>> --- a/arch/x86/kernel/cpu/amd.c       2009-11-06 15:06:52.254223805
+>> +0100 +++ b/arch/x86/kernel/cpu/amd.c 2009-11-06
+>> 15:07:04.294054613 +0100 @@ -138,8 +138,10 @@
+>>       }
+>>
+>>       if (c->x86_model == 10) {
+>> -             /* AMD Geode LX is model 10 */
+>> -             /* placeholder for any needed mods */
+>> +             /* Geode only lacks the NOPL instruction to be i686,
+>> +                but we can emulate it in the exception handler
+>> +                and promote it to a class 6 cpu */
+>> +             boot_cpu_data.x86 = 6;
+>>               return;
+>>       }
+>
+> If you're going to update this, you also need to make sure that you're
+> not breaking things that check it.  For example,
+> arch/x86/include/asm/geode.h has an is_geode_lx check that expects
+> boot_cpu_data.x86 to be 5.  Please be sure to update all these places
+> when creating a patch like this.
+>
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+True, but also remove the duplicate function is_geode in the NAND driver
+and use the identical one defined in geode.h:
 
-> [Maciej W. Rozycki - Sun, Nov 08, 2009 at 05:28:05PM +0000]
-> | On Sun, 8 Nov 2009, Cyrill Gorcunov wrote:
-> | 
-> | > The whole page is reserved for IO-APIC fixmap
-> | > due to non-cacheable requirement. So lets note
-> | > this explicitly instead of playing with numbers.
-> | > 
-> | > CC: Yinghai Lu <yinghai@kernel.org>
-> | > CC: "Maciej W. Rozycki" <macro@linux-mips.org>
-> | > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> | > ---
-> | 
-> | Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
-> | 
-> |  Is PAGE_SIZE still always 4kB for the x86 these days?  If so, then your 
-> | change makes sense to me.
-> 
-> Yeah, as far as I know. I didn't find any sign if we going to change 
-> PAGE_SHIFT.
+--- a/drivers/mtd/nand/cs553x_nand.c	2009-11-08 18:58:14.835043214 +0100
++++ b/drivers/mtd/nand/cs553x_nand.c	2009-11-08 19:00:07.914117831 +0100
+@@ -30,6 +30,7 @@
 
-Not in the next 10-20 years or so. (and any prediction beyond that is 
-pointless i suspect)
+ #include <asm/msr.h>
+ #include <asm/io.h>
++#include <asm/geode.h>
 
-	Ingo
+ #define NR_CS553X_CONTROLLERS	4
+
+@@ -260,23 +261,6 @@
+ 	return err;
+ }
+
+-static int is_geode(void)
+-{
+-	/* These are the CPUs which will have a CS553[56] companion chip */
+-	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+-	    boot_cpu_data.x86 == 5 &&
+-	    boot_cpu_data.x86_model == 10)
+-		return 1; /* Geode LX */
+-
+-	if ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC ||
+-	     boot_cpu_data.x86_vendor == X86_VENDOR_CYRIX) &&
+-	    boot_cpu_data.x86 == 5 &&
+-	    boot_cpu_data.x86_model == 5)
+-		return 1; /* Geode GX (née GX2) */
+-
+-	return 0;
+-}
+-
+
+ #ifdef CONFIG_MTD_PARTITIONS
+ static const char *part_probes[] = { "cmdlinepart", NULL };
