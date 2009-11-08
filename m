@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZKHV27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZKHV3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313AbZKHV27 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 16:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZKHV26
+	id S1755384AbZKHV3V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 16:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbZKHV3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 16:28:58 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:36291 "EHLO
+	Sun, 8 Nov 2009 16:29:20 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36294 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbZKHV26 (ORCPT
+	with ESMTP id S1755348AbZKHV3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 16:28:58 -0500
+	Sun, 8 Nov 2009 16:29:19 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 8 Nov 2009 22:28:45 +0100 (CET)
+Date: Sun, 8 Nov 2009 22:29:08 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 1/4] firedtv: move remote control workqueue handling into rc
- source file
+Subject: [PATCH 2/4] firedtv: reform lock transaction backend call
 To: linux-media@vger.kernel.org
 cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 In-Reply-To: <tkrat.ce889fb60854a648@s5r6.in-berlin.de>
-Message-ID: <tkrat.fb15c3478b505864@s5r6.in-berlin.de>
+Message-ID: <tkrat.cb1d50f24d5d7172@s5r6.in-berlin.de>
 References: <tkrat.ce889fb60854a648@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
@@ -28,67 +27,179 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Preparation for the port of firedtv to the firewire-core kernel API:
-Canceling of the remote control workqueue job is factored into
-firedtv-rc.c.  Plus trivial whitespace change.
+The fdtv->backend->lock() hook and thus the CMP code is slightly changed
+to better fit with the new API.
 
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- drivers/media/dvb/firewire/firedtv-1394.c |    5 +++--
- drivers/media/dvb/firewire/firedtv-rc.c   |    2 ++
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/media/dvb/firewire/firedtv-1394.c |   11 ++++-
+ drivers/media/dvb/firewire/firedtv-avc.c  |   50 ++++++++++++----------
+ drivers/media/dvb/firewire/firedtv.h      |    2 
+ 3 files changed, 37 insertions(+), 26 deletions(-)
 
 Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-1394.c
 ===================================================================
 --- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv-1394.c
 +++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-1394.c
-@@ -212,6 +212,7 @@ static int node_probe(struct device *dev
- 		goto fail;
- 
- 	avc_register_remote_control(fdtv);
-+
- 	return 0;
- fail:
- 	spin_lock_irq(&node_list_lock);
-@@ -220,6 +221,7 @@ fail:
- 	fdtv_unregister_rc(fdtv);
- fail_free:
- 	kfree(fdtv);
-+
- 	return err;
+@@ -87,10 +87,15 @@ static inline struct node_entry *node_of
+ 	return container_of(fdtv->device, struct unit_directory, device)->ne;
  }
  
-@@ -233,10 +235,9 @@ static int node_remove(struct device *de
- 	list_del(&fdtv->list);
- 	spin_unlock_irq(&node_list_lock);
- 
--	cancel_work_sync(&fdtv->remote_ctrl_work);
- 	fdtv_unregister_rc(fdtv);
--
- 	kfree(fdtv);
-+
- 	return 0;
- }
- 
-Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-rc.c
-===================================================================
---- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv-rc.c
-+++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-rc.c
-@@ -14,6 +14,7 @@
- #include <linux/kernel.h>
- #include <linux/string.h>
- #include <linux/types.h>
-+#include <linux/workqueue.h>
- 
- #include "firedtv.h"
- 
-@@ -163,6 +164,7 @@ fail:
- 
- void fdtv_unregister_rc(struct firedtv *fdtv)
+-static int node_lock(struct firedtv *fdtv, u64 addr, void *data, __be32 arg)
++static int node_lock(struct firedtv *fdtv, u64 addr, __be32 data[])
  {
-+	cancel_work_sync(&fdtv->remote_ctrl_work);
- 	kfree(fdtv->remote_ctrl_dev->keycode);
- 	input_unregister_device(fdtv->remote_ctrl_dev);
+-	return hpsb_node_lock(node_of(fdtv), addr, EXTCODE_COMPARE_SWAP, data,
+-			      (__force quadlet_t)arg);
++	int ret;
++
++	ret = hpsb_node_lock(node_of(fdtv), addr, EXTCODE_COMPARE_SWAP,
++		(__force quadlet_t *)&data[1], (__force quadlet_t)data[0]);
++	data[0] = data[1];
++
++	return ret;
  }
+ 
+ static int node_read(struct firedtv *fdtv, u64 addr, void *data, size_t len)
+Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-avc.c
+===================================================================
+--- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv-avc.c
++++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-avc.c
+@@ -1255,14 +1255,14 @@ static int cmp_read(struct firedtv *fdtv
+ 	return ret;
+ }
+ 
+-static int cmp_lock(struct firedtv *fdtv, void *data, u64 addr, __be32 arg)
++static int cmp_lock(struct firedtv *fdtv, u64 addr, __be32 data[])
+ {
+ 	int ret;
+ 
+ 	if (mutex_lock_interruptible(&fdtv->avc_mutex))
+ 		return -EINTR;
+ 
+-	ret = fdtv->backend->lock(fdtv, addr, data, arg);
++	ret = fdtv->backend->lock(fdtv, addr, data);
+ 	if (ret < 0)
+ 		dev_err(fdtv->device, "CMP: lock I/O error\n");
+ 
+@@ -1292,25 +1292,25 @@ static inline void set_opcr(__be32 *opcr
+ 
+ int cmp_establish_pp_connection(struct firedtv *fdtv, int plug, int channel)
+ {
+-	__be32 old_opcr, opcr;
++	__be32 old_opcr, opcr[2];
+ 	u64 opcr_address = CMP_OUTPUT_PLUG_CONTROL_REG_0 + (plug << 2);
+ 	int attempts = 0;
+ 	int ret;
+ 
+-	ret = cmp_read(fdtv, &opcr, opcr_address, 4);
++	ret = cmp_read(fdtv, opcr, opcr_address, 4);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ repeat:
+-	if (!get_opcr_online(opcr)) {
++	if (!get_opcr_online(*opcr)) {
+ 		dev_err(fdtv->device, "CMP: output offline\n");
+ 		return -EBUSY;
+ 	}
+ 
+-	old_opcr = opcr;
++	old_opcr = *opcr;
+ 
+-	if (get_opcr_p2p_connections(opcr)) {
+-		if (get_opcr_channel(opcr) != channel) {
++	if (get_opcr_p2p_connections(*opcr)) {
++		if (get_opcr_channel(*opcr) != channel) {
+ 			dev_err(fdtv->device, "CMP: cannot change channel\n");
+ 			return -EBUSY;
+ 		}
+@@ -1318,11 +1318,11 @@ repeat:
+ 
+ 		/* We don't allocate isochronous resources. */
+ 	} else {
+-		set_opcr_channel(&opcr, channel);
+-		set_opcr_data_rate(&opcr, 2); /* S400 */
++		set_opcr_channel(opcr, channel);
++		set_opcr_data_rate(opcr, 2); /* S400 */
+ 
+ 		/* FIXME: this is for the worst case - optimize */
+-		set_opcr_overhead_id(&opcr, 0);
++		set_opcr_overhead_id(opcr, 0);
+ 
+ 		/*
+ 		 * FIXME: allocate isochronous channel and bandwidth at IRM
+@@ -1330,13 +1330,16 @@ repeat:
+ 		 */
+ 	}
+ 
+-	set_opcr_p2p_connections(&opcr, get_opcr_p2p_connections(opcr) + 1);
++	set_opcr_p2p_connections(opcr, get_opcr_p2p_connections(*opcr) + 1);
+ 
+-	ret = cmp_lock(fdtv, &opcr, opcr_address, old_opcr);
++	opcr[1] = *opcr;
++	opcr[0] = old_opcr;
++
++	ret = cmp_lock(fdtv, opcr_address, opcr);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	if (old_opcr != opcr) {
++	if (old_opcr != *opcr) {
+ 		/*
+ 		 * FIXME: if old_opcr.P2P_Connections > 0,
+ 		 * deallocate isochronous channel and bandwidth at IRM
+@@ -1354,27 +1357,30 @@ repeat:
+ 
+ void cmp_break_pp_connection(struct firedtv *fdtv, int plug, int channel)
+ {
+-	__be32 old_opcr, opcr;
++	__be32 old_opcr, opcr[2];
+ 	u64 opcr_address = CMP_OUTPUT_PLUG_CONTROL_REG_0 + (plug << 2);
+ 	int attempts = 0;
+ 
+-	if (cmp_read(fdtv, &opcr, opcr_address, 4) < 0)
++	if (cmp_read(fdtv, opcr, opcr_address, 4) < 0)
+ 		return;
+ 
+ repeat:
+-	if (!get_opcr_online(opcr) || !get_opcr_p2p_connections(opcr) ||
+-	    get_opcr_channel(opcr) != channel) {
++	if (!get_opcr_online(*opcr) || !get_opcr_p2p_connections(*opcr) ||
++	    get_opcr_channel(*opcr) != channel) {
+ 		dev_err(fdtv->device, "CMP: no connection to break\n");
+ 		return;
+ 	}
+ 
+-	old_opcr = opcr;
+-	set_opcr_p2p_connections(&opcr, get_opcr_p2p_connections(opcr) - 1);
++	old_opcr = *opcr;
++	set_opcr_p2p_connections(opcr, get_opcr_p2p_connections(*opcr) - 1);
++
++	opcr[1] = *opcr;
++	opcr[0] = old_opcr;
+ 
+-	if (cmp_lock(fdtv, &opcr, opcr_address, old_opcr) < 0)
++	if (cmp_lock(fdtv, opcr_address, opcr) < 0)
+ 		return;
+ 
+-	if (old_opcr != opcr) {
++	if (old_opcr != *opcr) {
+ 		/*
+ 		 * FIXME: if old_opcr.P2P_Connections == 1, i.e. we were last
+ 		 * owner, deallocate isochronous channel and bandwidth at IRM
+Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv.h
+===================================================================
+--- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv.h
++++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv.h
+@@ -72,7 +72,7 @@ struct input_dev;
+ struct firedtv;
+ 
+ struct firedtv_backend {
+-	int (*lock)(struct firedtv *fdtv, u64 addr, void *data, __be32 arg);
++	int (*lock)(struct firedtv *fdtv, u64 addr, __be32 data[]);
+ 	int (*read)(struct firedtv *fdtv, u64 addr, void *data, size_t len);
+ 	int (*write)(struct firedtv *fdtv, u64 addr, void *data, size_t len);
+ 	int (*start_iso)(struct firedtv *fdtv);
 
 -- 
 Stefan Richter
