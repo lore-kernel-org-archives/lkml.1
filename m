@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbZKHUlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbZKHUoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbZKHUlD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 15:41:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbZKHUlC
+	id S1755263AbZKHUoA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 15:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbZKHUoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 15:41:02 -0500
-Received: from khc.piap.pl ([195.187.100.11]:50035 "EHLO khc.piap.pl"
+	Sun, 8 Nov 2009 15:44:00 -0500
+Received: from gate.crashing.org ([63.228.1.57]:34686 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755125AbZKHUlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 15:41:01 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Sven-Haegar Koch <haegar@sdinet.de>
-Cc: Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com>
-	<20091003072127.GC21407@elte.hu>
-	<40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
-	<4AF4526B.4060101@zytor.com>
-	<40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com>
-	<20091108173708.GF1372@ucw.cz>
-	<40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com>
-	<20091108181016.GB32364@elf.ucw.cz>
-	<alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>
-Date: Sun, 08 Nov 2009 21:41:04 +0100
-In-Reply-To: <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>
-	(Sven-Haegar Koch's message of "Sun, 8 Nov 2009 20:29:55 +0100 (CET)")
-Message-ID: <m3tyx4agwv.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754642AbZKHUn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 15:43:59 -0500
+Subject: Re: [PATCH 19/23] sysctl powerpc: Remove dead binary sysctl support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1257682930-31401-19-git-send-email-ebiederm@xmission.com>
+References: <m14op5jjo4.fsf@fess.ebiederm.org>
+	 <1257682930-31401-19-git-send-email-ebiederm@xmission.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 07:44:00 +1100
+Message-ID: <1257713040.13611.280.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sven-Haegar Koch <haegar@sdinet.de> writes:
+On Sun, 2009-11-08 at 04:22 -0800, Eric W. Biederman wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com>
+> 
+> Now that sys_sysctl is a generic wrapper around /proc/sys  .ctl_name
+> and .strategy members of sysctl tables are dead code.  Remove them.
+> 
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> But no standard distribution will be made available in a geode special 
-> version - not enough machines in the marekt. So I think it is better to 
-> be able to use the i686 specific things they already support, like 
-> libc6-686 from debian for example.
+> Cc: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  arch/powerpc/kernel/idle.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+> index 88d9c1d..cece9e2 100644
+> --- a/arch/powerpc/kernel/idle.c
+> +++ b/arch/powerpc/kernel/idle.c
+> @@ -110,7 +110,6 @@ int powersave_nap;
+>   */
+>  static ctl_table powersave_nap_ctl_table[]={
+>  	{
+> -		.ctl_name	= KERN_PPC_POWERSAVE_NAP,
+>  		.procname	= "powersave-nap",
+>  		.data		= &powersave_nap,
+>  		.maxlen		= sizeof(int),
+> @@ -121,7 +120,6 @@ static ctl_table powersave_nap_ctl_table[]={
+>  };
+>  static ctl_table powersave_nap_sysctl_root[] = {
+>  	{
+> -		.ctl_name	= CTL_KERN,
+>  		.procname	= "kernel",
+>  		.mode		= 0555,
+>  		.child		= powersave_nap_ctl_table,
 
-If it's only libc issue (and maybe of a couple of other packages like
-gzip and bzip2), then I think it would be preferable for distributions
-to provide a version optimized for Geode, without kernel hacks.
-Though I guess the above is not actually the case, is it?
--- 
-Krzysztof Halasa
+
