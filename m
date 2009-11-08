@@ -1,67 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbZKHPJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZKHPLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbZKHPJc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 10:09:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZKHPJb
+	id S1754200AbZKHPLR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 10:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbZKHPLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 10:09:31 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:48648 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbZKHPJa (ORCPT
+	Sun, 8 Nov 2009 10:11:17 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:40770 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753662AbZKHPLQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 10:09:30 -0500
-Date: Sun, 8 Nov 2009 09:09:35 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@librato.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com
-Subject: Re: [v11][PATCH 9/9] Document clone_with_pids() syscall
-Message-ID: <20091108150935.GA14991@us.ibm.com>
-References: <20091105053053.GA11289@us.ibm.com> <20091105054204.GI16142@us.ibm.com> <20091106183936.GA32531@us.ibm.com> <20091106201814.GA26614@count0.beaverton.ibm.com> <20091106214529.GB26614@count0.beaverton.ibm.com> <20091107022612.GA18039@suka> <4AF5ECFD.3000509@librato.com>
+	Sun, 8 Nov 2009 10:11:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=gnVsqXV7PveeoZxmxsELCCJ752jlEVlmKZeu/A7KeWl4J8S0vtxFwDQ8siSXCxYtpt
+         cEb+JLt7RPSqRKrrzo1xEuxk2GwNoviuAbGMu3KsODh3XmVNxXXp2gothmJze3qfB9qt
+         Ro0FZ99rrMmQ7mfgPkQscFM1GK67GEk01Mj9s=
+Date: Sun, 8 Nov 2009 23:11:53 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Andreas Mohr <andi@lisas.de>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Michael A. Griffith" <grif@acm.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Please get this committed, _NOW_ (preferrably 5 years
+	ago), thanks.
+Message-ID: <20091108151153.GC6240@hack>
+References: <20091108120008.GA21611@rhlx01.hs-esslingen.de> <20091108142506.GA6240@hack> <20091108144548.GA13429@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4AF5ECFD.3000509@librato.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091108144548.GA13429@rhlx01.hs-esslingen.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@librato.com):
-> Sukadev Bhattiprolu wrote:
-> > Matt Helsley [matthltc@us.ibm.com] wrote:
-> > | > If userspace passes an array with n pids and there are k namespace levels
-> > | > then clone_with_pids() makes sure that the kernel sees a pid array like:
-> > | > 
-> > | > index	  0     ... k - (n + 1)        ...          k - 1
-> > | > 	+-----------------------+-------------------------+
-> > | > pid_t	| 0 ..................0 | <copied from userspace> |
-> > | > 	+-----------------------+-------------------------+
-> > | 
-> > | (diagram assumes n != k. If n == k then pids[0] is the pid desired
-> > | in the initial namespace..)
-> > 
-> > True.
-> > 
-> > Also I was not sure if we should prevent choosing pids in ancestor containers.
-> > since a process is not even supposed to know of ancestor namespaces. Is there
-> > a need for choosing pids in those namespaces.
+On Sun, Nov 08, 2009 at 03:45:50PM +0100, Andreas Mohr wrote:
+>Hi,
+>
+>On Sun, Nov 08, 2009 at 10:25:06PM +0800, Américo Wang wrote:
+>> On Sun, Nov 08, 2009 at 01:00:08PM +0100, Andreas Mohr wrote:
+>> >--- linux-2.6.32-rc6/init/main.c.orig	2009-11-08 11:09:51.000000000 +0100
+>> >+++ linux-2.6.32-rc6/init/main.c	2009-11-08 12:40:11.000000000 +0100
+>> >@@ -846,7 +846,47 @@ static noinline int init_post(void)
+>> > 	run_init_process("/bin/init");
+>> > 	run_init_process("/bin/sh");
+>> > 
+>> >-	panic("No init found.  Try passing init= option to kernel.");
+>> >+	panic("No init found.  Try passing init= option to kernel. "
+>> >+    y          "See Linux " __FILE__ " for guidance.");
+>> 
+>> 
+>> I would like to put those guidelines in a doc file, instead
+>> of being a FAT comment in the source code.
+>
+>Heh, somehow I fully expected this objection to come up ;)
+>(and you're probably right after all)
+>
+>So, where to put it?
+>Documentation/initrd.txt is related, however I'd create something
+>like Documentation/initialization/...
+>Or perhaps Documentation/bootup/init.txt ?
 
-Yes, that is necessary.
+Personally, I prefer Documentation/init.txt, but adding it to
+initrd.txt also makes sense for me. :)
 
-> > | I don't know if it makes more sense to change clone_with_pids() or have
-> > | [e]glibc wrappers swap the array contents.
-> 
-> I prefer to decide now on an order and stick to it in the kernel and
-> in glibc.
+>
+>> And, you're explaining the _user space_ reasons that causes
+>> this problem, not related with kernel at all.
+>
+>That's usually within the responsibility of the one passing control,
+>not the one gaining control.
+>Just like with children, where it's firmly the parents' job to take care
+>of getting their children safely to kindergarden, not the kindergarden's ;)
+>
+>Plus in my case it _was_ a kernel issue (problematic/non-working serial
+>console device). And except for the linker issues of missing libraries,
+>many issues (USB functionality etc.) were kernel-related, too.
 
-Agreed!
+Yeah, I mentioned it to mean it is not suitable to explain
+user-space problems in a kernel source file. Putting it into a kernel
+doc should be fine.
 
-I'd forgotten that, as Matt said, we can just specify pids to the depth
-that we want, so I guess the current order is fine.
+Thanks.
 
--serge
+
+-- 
+Live like a child, think like the god.
+ 
