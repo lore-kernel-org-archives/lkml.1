@@ -1,39 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbZKHUBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbZKHUFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbZKHUBA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 15:01:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbZKHUA7
+	id S1755106AbZKHUFE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 15:05:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbZKHUFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 15:00:59 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55795 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755108AbZKHUA6 (ORCPT
+	Sun, 8 Nov 2009 15:05:03 -0500
+Received: from khc.piap.pl ([195.187.100.11]:44792 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753396AbZKHUFD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 15:00:58 -0500
-Date: Sun, 8 Nov 2009 20:00:50 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: ata_sff_data_xfer* return value
-Message-ID: <20091108200050.20d96a44@lxorguk.ukuu.org.uk>
-In-Reply-To: <m37hu0bywp.fsf@intrepid.localdomain>
-References: <m37hu0bywp.fsf@intrepid.localdomain>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Nov 2009 15:05:03 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: 16-bit operation of PATA_CS5536?
+Date: Sun, 08 Nov 2009 21:05:05 +0100
+Message-ID: <m33a4obx5a.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 08 Nov 2009 20:27:02 +0100
-Krzysztof Halasa <khc@pm.waw.pl> wrote:
+I wonder why isn't the PATA CS5536 driver using 32-bit ops.
 
-> Hi,
-> 
-> I wonder if this is entirely correct? If so, why?
+Does the following make any sense?
+It seems to work on my IXP425-based router.
 
-It is correct. We return the bytes consumed as it may well not be the
-same as the total bytes requested. In practice we don't currently do a
-great deal with it even with ATAPI but it's useful for doing bug checks.
+Signed-off-by: Krzysztof Hałasa <khc@pm.waw.pl>
 
+--- a/drivers/ata/pata_cs5536.c
++++ b/drivers/ata/pata_cs5536.c
+@@ -232,7 +232,7 @@ static struct scsi_host_template cs5536_sht = {
+ };
+ 
+ static struct ata_port_operations cs5536_port_ops = {
+-	.inherits		= &ata_bmdma_port_ops,
++	.inherits		= &ata_bmdma32_port_ops,
+ 	.cable_detect		= cs5536_cable_detect,
+ 	.set_piomode		= cs5536_set_piomode,
+ 	.set_dmamode		= cs5536_set_dmamode,
