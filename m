@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZKHTwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbZKHTwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbZKHTwD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 14:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZKHTwD
+	id S1755090AbZKHTwa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 14:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZKHTwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 14:52:03 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55859 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754553AbZKHTwC (ORCPT
+	Sun, 8 Nov 2009 14:52:30 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:36261 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754604AbZKHTw3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 14:52:02 -0500
-Date: Sun, 8 Nov 2009 20:51:58 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Matteo Croce <technoboy85@gmail.com>
-Cc: Sven-Haegar Koch <haegar@sdinet.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091108195158.GD4186@elf.ucw.cz>
-References: <20091003072127.GC21407@elte.hu>
- <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
- <4AF4526B.4060101@zytor.com>
- <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com>
- <20091108173708.GF1372@ucw.cz>
- <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com>
- <20091108181016.GB32364@elf.ucw.cz>
- <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>
- <20091108193618.GB4186@elf.ucw.cz>
- <40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com>
+	Sun, 8 Nov 2009 14:52:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TH1D/D4J6y7N/1r670rYUzeJM1Trg+0qRyIcoRQ8N+rBrMF1olW6HFkS2kISIhrl1T
+         JpVhzFUfQajweHpu9htj6GVCjkvVEopQptnKgPVi9v+wNepzZncCclO7YLWF84pdKQ1v
+         +qn3Q+52MnNOS2ehbzRgS1m56qElTAZ6vSFpM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.LFD.2.00.0909260811470.19017@localhost>
+References: <alpine.LFD.2.00.0909260811470.19017@localhost>
+Date: Sun, 8 Nov 2009 17:52:33 -0200
+Message-ID: <a4c8a6d00911081152l71fb61e4geaa7661327594494@mail.gmail.com>
+Subject: Re: how best to report results of my kernel tree scanning scripts?
+From: Thiago Farina <tfransosi@gmail.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> But no standard distribution will be made available in a geode special
-> >> version - not enough machines in the marekt. So I think it is better to
-> >> be able to use the i686 specific things they already support, like
-> >> libc6-686 from debian for example.
-> >
-> > So hack your distribution to use libc6-686 if you know that it is
-> > safe... (that is no NOPL usage there). Still no need to break
-> > /proc/cpuinfo.
-> 
-> Better to be sure that a NOPL whouldn't SIGILL your program, isn't
-> it?
+Hi Robert,
 
-SIGILL is easier to debug than NOPL mysteriously taking 100x time it
-should, sorry.
-									Pavel
+On Sat, Sep 26, 2009 at 10:16 AM, Robert P. J. Day
+<rpjday@crashcourse.ca> wrote:
+>
+>  since the merge window appears to be ready to close fairly soon(?),
+> i'm prepping to run my scanning scripts once again to identify (among
+> other things):
+>   * unused Kconfig CONFIG variables
+>   * references to CONFIG_ variables that don't even exist (both in
+>     source files and Makefiles)
+>   * references to non-existent header files
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'm following your reports from:
+http://www.crashcourse.ca/wiki/index.php/The_style_script, and I'm
+fixing some of them.
+
+I would ask you if you could make those scripts available. So I can
+run them into the latest linux tree.
+
+Thanks in advance for providing this reports.
