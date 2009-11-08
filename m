@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbZKHH3C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbZKHH2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753375AbZKHH3C (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 02:29:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbZKHH1e
+	id S1753439AbZKHH2F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 02:28:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZKHH1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 02:27:34 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:46940 "EHLO
+	Sun, 8 Nov 2009 02:27:38 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:46949 "EHLO
 	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752585AbZKHH1c (ORCPT
+	with ESMTP id S1752645AbZKHH1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 02:27:32 -0500
+	Sun, 8 Nov 2009 02:27:33 -0500
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
@@ -17,88 +17,208 @@ Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
        Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
        Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
        Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Eric W. Biederman" <ebiederm@maxwell.aristanetworks.com>,
        "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: [PATCH 10/15] sysfs: In sysfs_chmod_file lazily propagate the mode change.
-Date: Sat,  7 Nov 2009 23:27:08 -0800
-Message-Id: <1257665233-12468-10-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 11/15] sysfs: Gut sysfs_addrm_start and sysfs_addrm_finish
+Date: Sat,  7 Nov 2009 23:27:09 -0800
+Message-Id: <1257665233-12468-11-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.6.5.2.143.g8cc62
 In-Reply-To: <m1pr7tmqb4.fsf@fess.ebiederm.org>
 References: <m1pr7tmqb4.fsf@fess.ebiederm.org>
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Mail-From: ebiederm@xmission.com
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+From: Eric W. Biederman <ebiederm@maxwell.aristanetworks.com>
 
-Now that sysfs_getattr and sysfs_permission refresh the vfs
-inode there is no need to immediatly push the mode change
-into the vfs cache.  Reducing the amount of work needed and
-simplifying the locking.
+With lazy inode updates and dentry operations bringing everything
+into sync on demand there is no longer any need to immediately
+update the vfs or grab i_mutex to protect those updates as we
+make changes to sysfs.
 
-Acked-by: Tejun Heo <tj@kernel.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 ---
- fs/sysfs/file.c |   31 ++++++++-----------------------
- 1 files changed, 8 insertions(+), 23 deletions(-)
+ fs/sysfs/dir.c   |   91 ++---------------------------------------------------
+ fs/sysfs/sysfs.h |    2 -
+ 2 files changed, 4 insertions(+), 89 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index faa1a80..dc30d9e 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -579,38 +579,23 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_group);
-  */
- int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
- {
--	struct sysfs_dirent *victim_sd = NULL;
--	struct dentry *victim = NULL;
--	struct inode * inode;
-+	struct sysfs_dirent *sd;
- 	struct iattr newattrs;
- 	int rc;
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 25d052a..a05b027 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -386,12 +386,6 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
+ 	return NULL;
+ }
  
--	rc = -ENOENT;
--	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
--	if (!victim_sd)
--		goto out;
-+	mutex_lock(&sysfs_mutex);
- 
--	mutex_lock(&sysfs_rename_mutex);
--	victim = sysfs_get_dentry(victim_sd);
--	mutex_unlock(&sysfs_rename_mutex);
--	if (IS_ERR(victim)) {
--		rc = PTR_ERR(victim);
--		victim = NULL;
-+	rc = -ENOENT;
-+	sd = sysfs_find_dirent(kobj->sd, attr->name);
-+	if (!sd)
- 		goto out;
--	}
+-static int sysfs_ilookup_test(struct inode *inode, void *arg)
+-{
+-	struct sysfs_dirent *sd = arg;
+-	return inode->i_ino == sd->s_ino;
+-}
 -
--	inode = victim->d_inode;
+ /**
+  *	sysfs_addrm_start - prepare for sysfs_dirent add/remove
+  *	@acxt: pointer to sysfs_addrm_cxt to be used
+@@ -399,47 +393,20 @@ static int sysfs_ilookup_test(struct inode *inode, void *arg)
+  *
+  *	This function is called when the caller is about to add or
+  *	remove sysfs_dirent under @parent_sd.  This function acquires
+- *	sysfs_mutex, grabs inode for @parent_sd if available and lock
+- *	i_mutex of it.  @acxt is used to keep and pass context to
++ *	sysfs_mutex.  @acxt is used to keep and pass context to
+  *	other addrm functions.
+  *
+  *	LOCKING:
+  *	Kernel thread context (may sleep).  sysfs_mutex is locked on
+- *	return.  i_mutex of parent inode is locked on return if
+- *	available.
++ *	return.
+  */
+ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+ 		       struct sysfs_dirent *parent_sd)
+ {
+-	struct inode *inode;
+-
+ 	memset(acxt, 0, sizeof(*acxt));
+ 	acxt->parent_sd = parent_sd;
  
+-	/* Lookup parent inode.  inode initialization is protected by
+-	 * sysfs_mutex, so inode existence can be determined by
+-	 * looking up inode while holding sysfs_mutex.
+-	 */
+ 	mutex_lock(&sysfs_mutex);
+-
+-	inode = ilookup5(sysfs_sb, parent_sd->s_ino, sysfs_ilookup_test,
+-			 parent_sd);
+-	if (inode) {
+-		WARN_ON(inode->i_state & I_NEW);
+-
+-		/* parent inode available */
+-		acxt->parent_inode = inode;
+-
+-		/* sysfs_mutex is below i_mutex in lock hierarchy.
+-		 * First, trylock i_mutex.  If fails, unlock
+-		 * sysfs_mutex and lock them in order.
+-		 */
+-		if (!mutex_trylock(&inode->i_mutex)) {
+-			mutex_unlock(&sysfs_mutex);
+-			mutex_lock(&inode->i_mutex);
+-			mutex_lock(&sysfs_mutex);
+-		}
+-	}
+ }
+ 
+ /**
+@@ -471,11 +438,6 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ 
+ 	sd->s_parent = sysfs_get(acxt->parent_sd);
+ 
+-	if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
+-		inc_nlink(acxt->parent_inode);
+-
+-	acxt->cnt++;
+-
+ 	sysfs_link_sibling(sd);
+ 
+ 	/* Update timestamps on the parent */
+@@ -579,40 +541,6 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ 	sd->s_flags |= SYSFS_FLAG_REMOVED;
+ 	sd->s_sibling = acxt->removed;
+ 	acxt->removed = sd;
+-
+-	if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
+-		drop_nlink(acxt->parent_inode);
+-
+-	acxt->cnt++;
+-}
+-
+-/**
+- *	sysfs_dec_nlink - Decrement link count for the specified sysfs_dirent
+- *	@sd: target sysfs_dirent
+- *
+- *	Decrement nlink for @sd.  @sd must have been unlinked from its
+- *	parent on entry to this function such that it can't be looked
+- *	up anymore.
+- */
+-static void sysfs_dec_nlink(struct sysfs_dirent *sd)
+-{
+-	struct inode *inode;
+-
+-	inode = ilookup(sysfs_sb, sd->s_ino);
+-	if (!inode)
+-		return;
+-
+-	/* adjust nlink and update timestamp */
 -	mutex_lock(&inode->i_mutex);
 -
--	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-+	newattrs.ia_mode = (mode & S_IALLUGO) | (sd->s_mode & ~S_IALLUGO);
- 	newattrs.ia_valid = ATTR_MODE;
--	rc = sysfs_setattr(victim, &newattrs);
-+	rc = sysfs_sd_setattr(sd, &newattrs);
- 
+-	inode->i_ctime = CURRENT_TIME;
+-	drop_nlink(inode);
+-	if (sysfs_type(sd) == SYSFS_DIR)
+-		drop_nlink(inode);
+-
 -	mutex_unlock(&inode->i_mutex);
-  out:
--	dput(victim);
--	sysfs_put(victim_sd);
-+	mutex_unlock(&sysfs_mutex);
- 	return rc;
+-
+-	iput(inode);
  }
- EXPORT_SYMBOL_GPL(sysfs_chmod_file);
+ 
+ /**
+@@ -621,25 +549,15 @@ static void sysfs_dec_nlink(struct sysfs_dirent *sd)
+  *
+  *	Finish up sysfs_dirent add/remove.  Resources acquired by
+  *	sysfs_addrm_start() are released and removed sysfs_dirents are
+- *	cleaned up.  Timestamps on the parent inode are updated.
++ *	cleaned up.
+  *
+  *	LOCKING:
+- *	All mutexes acquired by sysfs_addrm_start() are released.
++ *	sysfs_mutex is released.
+  */
+ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
+ {
+ 	/* release resources acquired by sysfs_addrm_start() */
+ 	mutex_unlock(&sysfs_mutex);
+-	if (acxt->parent_inode) {
+-		struct inode *inode = acxt->parent_inode;
+-
+-		/* if added/removed, update timestamps on the parent */
+-		if (acxt->cnt)
+-			inode->i_ctime = inode->i_mtime = CURRENT_TIME;
+-
+-		mutex_unlock(&inode->i_mutex);
+-		iput(inode);
+-	}
+ 
+ 	/* kill removed sysfs_dirents */
+ 	while (acxt->removed) {
+@@ -648,7 +566,6 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
+ 		acxt->removed = sd->s_sibling;
+ 		sd->s_sibling = NULL;
+ 
+-		sysfs_dec_nlink(sd);
+ 		sysfs_deactivate(sd);
+ 		unmap_bin_file(sd);
+ 		sysfs_put(sd);
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 12ccc07..90b3501 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -89,9 +89,7 @@ static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
+  */
+ struct sysfs_addrm_cxt {
+ 	struct sysfs_dirent	*parent_sd;
+-	struct inode		*parent_inode;
+ 	struct sysfs_dirent	*removed;
+-	int			cnt;
+ };
+ 
+ /*
 -- 
 1.6.5.2.143.g8cc62
 
