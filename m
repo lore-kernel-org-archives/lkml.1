@@ -1,76 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZKHQKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbZKHQKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZKHQKE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 11:10:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZKHQKD
+	id S1754529AbZKHQKP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 11:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZKHQKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 11:10:03 -0500
-Received: from lo.gmane.org ([80.91.229.12]:54470 "EHLO lo.gmane.org"
+	Sun, 8 Nov 2009 11:10:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33598 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752040AbZKHQKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 11:10:01 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Andres Salomon <dilinger@collabora.co.uk>
-Subject: Re: i686 quirk for AMD Geode
-Date: Sun, 8 Nov 2009 11:05:12 -0500
-Message-ID: <20091108110512.3cfad100@mycelium.queued.net>
-References: <20091106154911.29400@gmx.net>
-	<20091106155937.11d95279@lxorguk.ukuu.org.uk>
-	<20091106165731.26800@gmx.net>
-	<20091106182218.43940287@lxorguk.ukuu.org.uk>
-	<20091106200620.179910@gmx.net>
-	<m3r5sbcl07.fsf@intrepid.localdomain>
-	<20091107000559.166710@gmx.net>
-	<40101cc30911070311u56035911l5eb50ac4abb73acc@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: wireless.queued.net
-In-Reply-To: <40101cc30911070311u56035911l5eb50ac4abb73acc@mail.gmail.com>
-X-Newsreader: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	id S1752660AbZKHQKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 11:10:07 -0500
+Date: Sun, 8 Nov 2009 16:09:42 GMT
+From: tip-bot for Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       penberg@cs.helsinki.fi, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1257696066-4046-1-git-send-email-penberg@cs.helsinki.fi>
+References: <1257696066-4046-1-git-send-email-penberg@cs.helsinki.fi>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf tools: Fix permission checks
+Message-ID: <tip-c10edee2e1716f8cf217cf52ed01ae4742fcdf3c@git.kernel.org>
+Git-Commit-ID: c10edee2e1716f8cf217cf52ed01ae4742fcdf3c
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-See comment below.  BTW, how does this affect performance on LXs?
-Do you have any hard numbers for common tasks?
+Commit-ID:  c10edee2e1716f8cf217cf52ed01ae4742fcdf3c
+Gitweb:     http://git.kernel.org/tip/c10edee2e1716f8cf217cf52ed01ae4742fcdf3c
+Author:     Pekka Enberg <penberg@cs.helsinki.fi>
+AuthorDate: Sun, 8 Nov 2009 18:01:06 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 8 Nov 2009 17:04:54 +0100
 
-On Sat, 7 Nov 2009 12:11:55 +0100
-Matteo Croce <technoboy85@gmail.com> wrote:
-[...]
-> 
-> --- a/arch/x86/kernel/Makefile	2009-11-06 15:06:52.246223989
-> +0100 +++ b/arch/x86/kernel/Makefile	2009-11-06
-> 15:07:04.294054613 +0100 @@ -89,7 +89,7 @@
->  obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
-> 
->  obj-$(CONFIG_K8_NB)		+= k8.o
-> -obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
-> +obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
-> nopl_emu.o obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
->  obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
-> 
-> --- a/arch/x86/kernel/cpu/amd.c	2009-11-06 15:06:52.254223805
-> +0100 +++ b/arch/x86/kernel/cpu/amd.c	2009-11-06
-> 15:07:04.294054613 +0100 @@ -138,8 +138,10 @@
->  	}
-> 
->  	if (c->x86_model == 10) {
-> -		/* AMD Geode LX is model 10 */
-> -		/* placeholder for any needed mods */
-> +		/* Geode only lacks the NOPL instruction to be i686,
-> +		   but we can emulate it in the exception handler
-> +		   and promote it to a class 6 cpu */
-> +		boot_cpu_data.x86 = 6;
->  		return;
->  	}
+perf tools: Fix permission checks
 
-If you're going to update this, you also need to make sure that you're
-not breaking things that check it.  For example,
-arch/x86/include/asm/geode.h has an is_geode_lx check that expects
-boot_cpu_data.x86 to be 5.  Please be sure to update all these places
-when creating a patch like this.
+The perf_event_open() system call returns EACCES if the user is
+not root which results in a very confusing error message:
 
+  $ perf record -A -a -f
 
+    Error: perfcounter syscall returned with -1 (Permission denied)
+
+    Fatal: No CONFIG_PERF_EVENTS=y kernel support configured?
+
+It turns out that's because perf tools are checking only for
+EPERM. Fix that up to get a much better error message:
+
+  $ perf record -A -a -f
+    Fatal: Permission error - are you root?
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1257696066-4046-1-git-send-email-penberg@cs.helsinki.fi>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/builtin-record.c |    2 +-
+ tools/perf/builtin-top.c    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 3eeef33..a4be453 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -426,7 +426,7 @@ try_again:
+ 	if (fd[nr_cpu][counter] < 0) {
+ 		int err = errno;
+ 
+-		if (err == EPERM)
++		if (err == EPERM || err == EACCES)
+ 			die("Permission error - are you root?\n");
+ 		else if (err ==  ENODEV && profile_cpu != -1)
+ 			die("No such device - did you specify an out-of-range profile CPU?\n");
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index a1b1d10..e23bc74 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -1027,7 +1027,7 @@ try_again:
+ 	if (fd[i][counter] < 0) {
+ 		int err = errno;
+ 
+-		if (err == EPERM)
++		if (err == EPERM || err == EACCES)
+ 			die("No permission - are you root?\n");
+ 		/*
+ 		 * If it's cycles then fall back to hrtimer
