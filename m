@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZKHSta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbZKHTGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbZKHSta (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 13:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbZKHSta
+	id S1754985AbZKHTGY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 14:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZKHTGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 13:49:30 -0500
-Received: from khc.piap.pl ([195.187.100.11]:49743 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754884AbZKHSt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 13:49:29 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: linux-arm-kernel@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>
-Subject: IXP4xx repetitive 16-bit/32-bit I/O macros/inlines.
-Date: Sun, 08 Nov 2009 19:49:33 +0100
-Message-ID: <m3iqdkc0n6.fsf@intrepid.localdomain>
+	Sun, 8 Nov 2009 14:06:24 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:33738 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754973AbZKHTGX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 14:06:23 -0500
+Date: Sun, 8 Nov 2009 19:06:19 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+cc: Ingo Molnar <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "garyhade@us.ibm.com" <garyhade@us.ibm.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "Sankaran, Rajesh" <rajesh.sankaran@intel.com>
+Subject: Re: [tip:x86/apic] x86: Use EOI register in io-apic on intel
+ platforms
+In-Reply-To: <1257578870.2536.52.camel@sbs-t61>
+Message-ID: <alpine.LFD.2.00.0911081814540.9725@eddie.linux-mips.org>
+References: <20091026230001.947855317@sbs-t61.sc.intel.com>  <tip-b3ec0a37a7907813bb4fb85a2d94102c152470b7@git.kernel.org>  <alpine.LFD.2.00.0911040038460.9725@eddie.linux-mips.org>  <1257301490.2668.280.camel@sbs-t61.sc.intel.com> 
+ <1257375875.4716.24.camel@sbs-t61.sc.intel.com>  <alpine.LFD.2.00.0911051415340.9725@eddie.linux-mips.org>  <1257465692.4394.295.camel@sbs-t61.sc.intel.com>  <alpine.LFD.2.00.0911060623390.9725@eddie.linux-mips.org> <1257578870.2536.52.camel@sbs-t61>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anybody using 32-bit PATA/SATA transfers on IXP4xx? :-)
+On Fri, 6 Nov 2009, Suresh Siddha wrote:
 
-Long story, mostly with PCI in mind:
-- readb/readw/readl, writeb/writew/writel macros are value-preserving
-- __raw_* are order-preserving (i.e., strings are preserved)
-but the repetitive versions (outs[wl], ins[wl], ioread*_rep,
-iowrite*_rep) are supposed to preserve order as well (while lacking the
-__raw_ prefix).
+> >  What I mean is if the serial delivery type is used, then an interrupt 
+> > will be acked twice -- once via an EOI message sent from the local APIC 
+> > over the serial bus and then again via the write to the EOI register.  
+> 
+> Maciej, Case where we are doing an explicit EOI to the io-apic (using
+> EOI register) is when the level triggered interrupt gets registered at
+> the cpu as an edge interrupt (in the local apic's trigger mode
+> register).
+> 
+> It will arrive as an edge interrupt for two cases.
+> a) for corner conditions which hit the 82093AA (io-apic version 0x11)
+> erratum
+> b) with my recent patch in -tip, during a cpu offline, when we send an
+> ipi (IPI is always registered as an edge triggered at the cpu) to
+> service the interrupt at the new cpu destination, instead of servicing
+> at it's old destination cpu (as it has already disabled interrupts and
+> going down -- like not being on the cpu_online_map etc).
+> 
+> So we are not acking the io-apic twice in this case, as the eoi to the
+> local apic won't brodcast the eoi to the io-apic (because of the edge
+> mode in trigger mode register of the local apic).
 
-Comments?
+ OK, I see what you mean, but that makes me wonder why you are going 
+through such contortions.  In the case of a CPU going offline I would 
+expect it to be done more or less in such a way:
 
-Is it worth it to change the names to __raw_*, or maybe to some other
-variant like native_*, to avoid confusion? It's really confusing.
-There aren't many users in the tree (I'd also change readl() and friends
-to something like read_le32, but it would be massive, comments welcome).
+1. Write all-zeroes to its local APIC's LDR register and set its TPR to 
+   0xef.  This will take this APIC out from LoPri arbitration and thus 
+   from accepting any I/O APIC interrupts.  Fixed delivery mode IPIs will 
+   still be accepted (if that's not needed then the TPR can be set to 
+   0xff; any received IPIs will be lost).
 
-Or perhaps we should have *_le32, *_be32, _order32? It should be
-something the compiler can optimize out if used with le32_to_cpu etc.
+2. Service any outstanding interrupts that have already been accepted by 
+   the local APIC (you may have to poll on the local IRR register with 
+   interrupts enabled for a short while).
 
+3. Disable the local APIC via the SVR register, mask local interrupts in 
+   the processor's EFLAGS register and start the offline procedure.  This 
+   is the point of no-return, further IPIs won't be accepted and the CPU 
+   has to be put through an INIT-IPI+StartUp-IPI cycle to get in control 
+   again.
 
---- a/arch/arm/mach-ixp4xx/include/mach/io.h
-+++ b/arch/arm/mach-ixp4xx/include/mach/io.h
-@@ -311,7 +311,7 @@ static inline void
- __ixp4xx_outsl(u32 io_addr, const u32 *vaddr, u32 count)
- {
- 	while (count--)
--		outl(*vaddr++, io_addr);
-+		outl(cpu_to_le32(*vaddr++), io_addr);
- }
- 
- static inline u8 
-@@ -366,7 +366,7 @@ static inline void
- __ixp4xx_insl(u32 io_addr, u32 *vaddr, u32 count)
- {
- 	while (count--)
--		*vaddr++ = inl(io_addr);
-+		*vaddr++ = le32_to_cpu(inl(io_addr));
- }
- 
- #define PIO_OFFSET      0x10000UL
--- 
-Krzysztof Halasa
+   If IPI reception was not needed through stage #2 above, then the local 
+   APIC could have been disabled at #1 instead -- interrupts pending in 
+   the local APIC as recorded in the IRR or marked as in-progress in the 
+   ISR are guaranteed to be delivered to the CPU and EOIed (as 
+   appropriate) normally even in the disabled state of the local APIC.
+
+> Do you agree?
+
+ If the scenario I have outlined above cannot be made to work for some 
+reason, then please do me and the others a favour and since with this 
+change you are tying new functionality to code originally meant as a 
+workaround for an obscure erratum only, do write a proper explanation and 
+place it next to the original comment describing previous use of the code. 
+With your change as it is, it is all but obvious what this piece of code 
+is meant to do.
+
+ Your change is OK with me once accompanied with said comment, but please 
+investigate my scenario first -- your approach looks like a horrible hack 
+to me, sorry.
+
+  Maciej
