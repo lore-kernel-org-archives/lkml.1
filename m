@@ -1,111 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbZKHLK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZKHLMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936AbZKHLK4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 06:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbZKHLKz
+	id S1753939AbZKHLMX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 06:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZKHLMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 06:10:55 -0500
-Received: from comal.ext.ti.com ([198.47.26.152]:57736 "EHLO comal.ext.ti.com"
+	Sun, 8 Nov 2009 06:12:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43338 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753901AbZKHLKy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 06:10:54 -0500
-From: "Dasgupta, Romit" <romit@ti.com>
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>
-Date: Sun, 8 Nov 2009 16:40:07 +0530
-Subject: RE: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
- threads
-Thread-Topic: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
- threads
-Thread-Index: AcpgTVaASJDYUgXzQRWGBdLZe30rpgAFqLGA
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE31FD10@dbde02.ent.ti.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
- <20091107165421.GA1630@ucw.cz>
- <B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
- <20091108082727.GC16482@elf.ucw.cz>
-In-Reply-To: <20091108082727.GC16482@elf.ucw.cz>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1752982AbZKHLMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 06:12:21 -0500
+Date: Sun, 8 Nov 2009 12:12:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Takashi Iwai <tiwai@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Jan Beulich <JBeulich@novell.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org
+Subject: [PATCH, v3] x86: Adjust GFP mask handling for coherent allocations
+Message-ID: <20091108111214.GK11372@elte.hu>
+References: <4AF18187020000780001D8AA@vpn.id2.novell.com>
+ <s5hocnfu0ct.wl%tiwai@suse.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hocnfu0ct.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Resending with 80 column restriction) 
 
-> -----Original Message-----
-> From: Pavel Machek [mailto:pavel@ucw.cz] 
-> Sent: Sunday, November 08, 2009 1:57 PM
-> To: Dasgupta, Romit
-> Cc: Rafael J. Wysocki; linux-omap@vger.kernel.org; 
-> linux-kernel@vger.kernel.org; linux-pm@lists.linux-foundation.org
-> Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be 
-> exited kernel threads
-> 
-> On Sun 2009-11-08 09:52:52, Dasgupta, Romit wrote:
-> > > Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be 
-> exited kernel
-> > > threads
-> > > 
-> > > Hi!
-> > > 
-> > > > Kicks out a frozen thread from the refrigerator when an 
-> active thread has
-> > > > invoked kthread_stop on the frozen thread.
-> ...
-> > > > @@ -49,7 +50,7 @@ void refrigerator(void)
-> > > >
-> > > >  	for (;;) {
-> > > >  		set_current_state(TASK_UNINTERRUPTIBLE);
-> > > > -		if (!frozen(current))
-> > > > +		if (!frozen(current) || (!current->mm 
-> && kthread_should_stop()))
-> > > >  			break;
-> > > >  		schedule();
-> > > 
-> > > Well, what if the thread does some processing before 
-> stopping? That
-> > > would break refrigerator assumptions...
+* Takashi Iwai <tiwai@suse.de> wrote:
+
+> At Wed, 04 Nov 2009 12:28:39 +0000,
+> Jan Beulich wrote:
 > > 
-> > The suspend thread will block until the 'to be stopped' 
-> thread clears up. That is what any call to kthread_stop would 
-> boil down to. The target thread would anyway be out of the 
-> refrigerator so I am not sure what assumption you mean here. 
-> Eventually, the target thread would clear up and wake up the 
-> suspend thread and then things would go on as usual.
+> > Rather than forcing GFP flags and DMA mask to be inconsistent, GFP
+> > flags should be determined even for the fallback device through
+> > dma_alloc_coherent_mask()/dma_alloc_coherent_gfp_flags(). This
+> > restores 64-bit behavior as it was prior to commits
+> > 8965eb19386fdf5ccd0ef8b02593eb8560aa3416 and
+> > 4a367f3a9dbf2e7ffcee4702203479809236ee6e (not sure why there are two of
+> > them), where GFP_DMA was forced on for 32-bit, but not for 64-bit, with
+> > the slight adjustment that afaict even 32-bit doesn't need this without
+> > CONFIG_ISA.
+> > 
+> > Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> > Cc: Takashi Iwai <tiwai@suse.de>
 > 
-> (Please format to 80 columns).
-> 
-> No, I do not get it.
-> 
-> Lets say we have
-> 
-> evil_data_writer thread that needs to be stopped becuase it writes to
-> filesystem
-> 
-> nofreeze random_stopper thread
-> 
-> now we create the suspend image, and start writing it out. But that's
-> okay, evil_data_writer is stopped so it can't do no harm. But now
-> random_stopper decides to thread_stop() the evil_data_writer, and this
-> new code allows it to exit the refrigerator, *do some writing*, and
-> then stop.
-> 
-> That's bad, right?
-evil_data_writer will enter refrigerator after invoking 'try_to_freeze'. This 
-should be followed by a call to kthread_should_stop. There it decides if it 
-needs to exit the thread (after cleanups if necessary) or not. I have seen that
-the bdi_writeback_task function is like that. It does not care if there is 
-pending data to be written if it detects that someone have invoked a 
-'kthread_stop' on it. It simply exits. I have seen some other kernel threads 
-that do not follow this and I think that probably is not right. 
+> Acked-by: Takashi Iwai <tiwai@suse.de>
+
+Jesse, mind picking this up for .32?
+
+I've attached below a slightly cleaned up version of the patch, with 
+Takashi's ack added.
+
+Thanks,
+
+	Ingo
+
+------------------>
+Subject: x86: Adjust GFP mask handling for coherent allocations
+From: "Jan Beulich" <JBeulich@novell.com>
+Date: Wed, 04 Nov 2009 12:28:39 +0000
+
+Rather than forcing GFP flags and DMA mask to be inconsistent,
+GFP flags should be determined even for the fallback device
+through dma_alloc_coherent_mask()/dma_alloc_coherent_gfp_flags().
+
+This restores 64-bit behavior as it was prior to commits
+8965eb19386fdf5ccd0ef8b02593eb8560aa3416 and
+4a367f3a9dbf2e7ffcee4702203479809236ee6e (not sure why there are
+two of them), where GFP_DMA was forced on for 32-bit, but not
+for 64-bit, with the slight adjustment that afaict even 32-bit
+doesn't need this without CONFIG_ISA.
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: Takashi Iwai <tiwai@suse.de>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+LKML-Reference: <4AF18187020000780001D8AA@vpn.id2.novell.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/dma-mapping.h |   10 +++++++---
+ arch/x86/kernel/pci-dma.c          |    6 ++----
+ 2 files changed, 9 insertions(+), 7 deletions(-)
+
+Index: tip/arch/x86/include/asm/dma-mapping.h
+===================================================================
+--- tip.orig/arch/x86/include/asm/dma-mapping.h
++++ tip/arch/x86/include/asm/dma-mapping.h
+@@ -14,6 +14,12 @@
+ #include <asm/swiotlb.h>
+ #include <asm-generic/dma-coherent.h>
+ 
++#ifdef CONFIG_ISA
++# define ISA_DMA_BIT_MASK DMA_BIT_MASK(24)
++#else
++# define ISA_DMA_BIT_MASK DMA_BIT_MASK(32)
++#endif
++
+ extern dma_addr_t bad_dma_address;
+ extern int iommu_merge;
+ extern struct device x86_dma_fallback_dev;
+@@ -124,10 +130,8 @@ dma_alloc_coherent(struct device *dev, s
+ 	if (dma_alloc_from_coherent(dev, size, dma_handle, &memory))
+ 		return memory;
+ 
+-	if (!dev) {
++	if (!dev)
+ 		dev = &x86_dma_fallback_dev;
+-		gfp |= GFP_DMA;
+-	}
+ 
+ 	if (!is_device_dma_capable(dev))
+ 		return NULL;
+Index: tip/arch/x86/kernel/pci-dma.c
+===================================================================
+--- tip.orig/arch/x86/kernel/pci-dma.c
++++ tip/arch/x86/kernel/pci-dma.c
+@@ -45,12 +45,10 @@ int iommu_pass_through __read_mostly;
+ dma_addr_t bad_dma_address __read_mostly = 0;
+ EXPORT_SYMBOL(bad_dma_address);
+ 
+-/* Dummy device used for NULL arguments (normally ISA). Better would
+-   be probably a smaller DMA mask, but this is bug-to-bug compatible
+-   to older i386. */
++/* Dummy device used for NULL arguments (normally ISA). */
+ struct device x86_dma_fallback_dev = {
+ 	.init_name = "fallback device",
+-	.coherent_dma_mask = DMA_BIT_MASK(32),
++	.coherent_dma_mask = ISA_DMA_BIT_MASK,
+ 	.dma_mask = &x86_dma_fallback_dev.coherent_dma_mask,
+ };
+ EXPORT_SYMBOL(x86_dma_fallback_dev);
