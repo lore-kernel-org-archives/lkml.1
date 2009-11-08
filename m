@@ -1,75 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZKHLHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbZKHLK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbZKHLHy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 06:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbZKHLHx
+	id S1753936AbZKHLK4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 06:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbZKHLKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 06:07:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42280 "EHLO hera.kernel.org"
+	Sun, 8 Nov 2009 06:10:55 -0500
+Received: from comal.ext.ti.com ([198.47.26.152]:57736 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753811AbZKHLHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 06:07:52 -0500
-Date: Sun, 8 Nov 2009 11:07:12 GMT
-From: tip-bot for Hannes Reinecke <hare@suse.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       sam@ravnborg.org, akpm@linux-foundation.org, hare@suse.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       hare@suse.de, akpm@linux-foundation.org, sam@ravnborg.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <200911041519.nA4FJWEW030164@imap1.linux-foundation.org>
-References: <200911041519.nA4FJWEW030164@imap1.linux-foundation.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Add back _end symbol that is missing from Symbol.map
-Message-ID: <tip-d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76@git.kernel.org>
-Git-Commit-ID: d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76
-X-Mailer: tip-git-log-daemon
+	id S1753901AbZKHLKy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 06:10:54 -0500
+From: "Dasgupta, Romit" <romit@ti.com>
+To: Pavel Machek <pavel@ucw.cz>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>
+Date: Sun, 8 Nov 2009 16:40:07 +0530
+Subject: RE: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
+ threads
+Thread-Topic: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
+ threads
+Thread-Index: AcpgTVaASJDYUgXzQRWGBdLZe30rpgAFqLGA
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE31FD10@dbde02.ent.ti.com>
+References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
+ <20091107165421.GA1630@ucw.cz>
+ <B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
+ <20091108082727.GC16482@elf.ucw.cz>
+In-Reply-To: <20091108082727.GC16482@elf.ucw.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76
-Gitweb:     http://git.kernel.org/tip/d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76
-Author:     Hannes Reinecke <hare@suse.de>
-AuthorDate: Wed, 4 Nov 2009 07:19:32 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 8 Nov 2009 12:05:03 +0100
+(Resending with 80 column restriction) 
 
-x86: Add back _end symbol that is missing from Symbol.map
-
-With 2.6.31 'crash' on x86_64 falls flat on its face as the
-'_end' symbol is missing from the System.map file.
-
-The culprit is commit 091e52c3551d3031343df24b573b770b4c6c72b6,
-which moved the '_end' symbol into it's own section.  Apparently
-this causes kallsyms to not reference it properly.
-
-So do not include _end in it's own section.
-
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: <stable@kernel.org> # .31.x
-LKML-Reference: <200911041519.nA4FJWEW030164@imap1.linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/vmlinux.lds.S |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 3c68fe2..b2f811d 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -291,9 +291,7 @@ SECTIONS
- 		__brk_limit = .;
- 	}
- 
--	.end : AT(ADDR(.end) - LOAD_OFFSET) {
--		_end = .;
--	}
-+	_end = .;
- 
-         STABS_DEBUG
-         DWARF_DEBUG
+> -----Original Message-----
+> From: Pavel Machek [mailto:pavel@ucw.cz] 
+> Sent: Sunday, November 08, 2009 1:57 PM
+> To: Dasgupta, Romit
+> Cc: Rafael J. Wysocki; linux-omap@vger.kernel.org; 
+> linux-kernel@vger.kernel.org; linux-pm@lists.linux-foundation.org
+> Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be 
+> exited kernel threads
+> 
+> On Sun 2009-11-08 09:52:52, Dasgupta, Romit wrote:
+> > > Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be 
+> exited kernel
+> > > threads
+> > > 
+> > > Hi!
+> > > 
+> > > > Kicks out a frozen thread from the refrigerator when an 
+> active thread has
+> > > > invoked kthread_stop on the frozen thread.
+> ...
+> > > > @@ -49,7 +50,7 @@ void refrigerator(void)
+> > > >
+> > > >  	for (;;) {
+> > > >  		set_current_state(TASK_UNINTERRUPTIBLE);
+> > > > -		if (!frozen(current))
+> > > > +		if (!frozen(current) || (!current->mm 
+> && kthread_should_stop()))
+> > > >  			break;
+> > > >  		schedule();
+> > > 
+> > > Well, what if the thread does some processing before 
+> stopping? That
+> > > would break refrigerator assumptions...
+> > 
+> > The suspend thread will block until the 'to be stopped' 
+> thread clears up. That is what any call to kthread_stop would 
+> boil down to. The target thread would anyway be out of the 
+> refrigerator so I am not sure what assumption you mean here. 
+> Eventually, the target thread would clear up and wake up the 
+> suspend thread and then things would go on as usual.
+> 
+> (Please format to 80 columns).
+> 
+> No, I do not get it.
+> 
+> Lets say we have
+> 
+> evil_data_writer thread that needs to be stopped becuase it writes to
+> filesystem
+> 
+> nofreeze random_stopper thread
+> 
+> now we create the suspend image, and start writing it out. But that's
+> okay, evil_data_writer is stopped so it can't do no harm. But now
+> random_stopper decides to thread_stop() the evil_data_writer, and this
+> new code allows it to exit the refrigerator, *do some writing*, and
+> then stop.
+> 
+> That's bad, right?
+evil_data_writer will enter refrigerator after invoking 'try_to_freeze'. This 
+should be followed by a call to kthread_should_stop. There it decides if it 
+needs to exit the thread (after cleanups if necessary) or not. I have seen that
+the bdi_writeback_task function is like that. It does not care if there is 
+pending data to be written if it detects that someone have invoked a 
+'kthread_stop' on it. It simply exits. I have seen some other kernel threads 
+that do not follow this and I think that probably is not right. 
