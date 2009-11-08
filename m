@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZKHJZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZKHJ0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbZKHJZs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 04:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZKHJZr
+	id S1753141AbZKHJ0I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 04:26:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZKHJ0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 04:25:47 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34937 "EHLO hera.kernel.org"
+	Sun, 8 Nov 2009 04:26:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34963 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbZKHJZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 04:25:45 -0500
-Date: Sun, 8 Nov 2009 09:25:03 GMT
+	id S1750853AbZKHJ0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 04:26:04 -0500
+Date: Sun, 8 Nov 2009 09:25:21 GMT
 From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
        mingo@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
@@ -19,12 +19,12 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
        a.p.zijlstra@chello.nl, efault@gmx.de, mitake@dcl.info.waseda.ac.jp,
        jkosina@suse.cz, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1257381097-4743-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1257381097-4743-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <1257381097-4743-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
+References: <1257381097-4743-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/bench] perf bench: Add sched-messaging.c: Benchmark for scheduler and IPC mechanisms based on hackbench
-Message-ID: <tip-e27454cc6352c4226ddc76f5e3a5dedd7dff456a@git.kernel.org>
-Git-Commit-ID: e27454cc6352c4226ddc76f5e3a5dedd7dff456a
+Subject: [tip:perf/bench] perf bench: Add sched-pipe.c: Benchmark for pipe() system call
+Message-ID: <tip-c7d9300f367f480aee4663a0e3695c5b48859a1a@git.kernel.org>
+Git-Commit-ID: c7d9300f367f480aee4663a0e3695c5b48859a1a
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,66 +33,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e27454cc6352c4226ddc76f5e3a5dedd7dff456a
-Gitweb:     http://git.kernel.org/tip/e27454cc6352c4226ddc76f5e3a5dedd7dff456a
+Commit-ID:  c7d9300f367f480aee4663a0e3695c5b48859a1a
+Gitweb:     http://git.kernel.org/tip/c7d9300f367f480aee4663a0e3695c5b48859a1a
 Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-AuthorDate: Thu, 5 Nov 2009 09:31:32 +0900
+AuthorDate: Thu, 5 Nov 2009 09:31:33 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 8 Nov 2009 10:19:17 +0100
+CommitDate: Sun, 8 Nov 2009 10:19:18 +0100
 
-perf bench: Add sched-messaging.c: Benchmark for scheduler and IPC mechanisms based on hackbench
+perf bench: Add sched-pipe.c: Benchmark for pipe() system call
 
-This patch adds bench/sched-messaging.c.
+This patch adds bench/sched-pipe.c.
 
-This benchmark measures performance of scheduler and IPC
-mechanisms, and is based on hackbench by Rusty Russell.
+bench/sched-pipe.c is a benchmark program
+to measure performance of pipe() system call.
+This benchmark is based on pipe-test-1m.c by Ingo Molnar:
 
-Example of usage:
+   http://people.redhat.com/mingo/cfs-scheduler/tools/pipe-test-1m.c
 
-  % perf bench sched messaging -g 20 -l 1000 -s
-  5.432  	  	       	    	    	     # in sec
+Example of use:
 
-  % perf bench sched messaging                 # run with default
-  options (20 sender and receiver processes per group)
-  (10 groups == 400 processes run)
+% perf bench sched pipe
+  (executing 1000000 pipe operations between two tasks)
 
-        Total time:0.308 sec
+          Total time:4.499 sec
+                  4.499179 usecs/op
+                  222262 ops/sec
 
-  % perf bench sched messaging -t -g 20	     # # be multi-thread,
-  with 20 groups (20 sender and receiver threads per group)
-  (20 groups == 800 threads run)
-
-        Total time:0.582 sec
-
-( Rusty is the original author of hackbench.c and he said the code is
-  and was under the GPLv2 so fine to be merged. )
+% perf bench sched pipe -s -l 1000
+0.015
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: fweisbec@gmail.com
 Cc: Jiri Kosina <jkosina@suse.cz>
-LKML-Reference: <1257381097-4743-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+LKML-Reference: <1257381097-4743-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/bench/sched-messaging.c |  332 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 332 insertions(+), 0 deletions(-)
+ tools/perf/bench/sched-pipe.c |  113 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 113 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/bench/sched-messaging.c b/tools/perf/bench/sched-messaging.c
+diff --git a/tools/perf/bench/sched-pipe.c b/tools/perf/bench/sched-pipe.c
 new file mode 100644
-index 0000000..36b62c5
+index 0000000..3214ed2
 --- /dev/null
-+++ b/tools/perf/bench/sched-messaging.c
-@@ -0,0 +1,332 @@
++++ b/tools/perf/bench/sched-pipe.c
+@@ -0,0 +1,113 @@
 +/*
 + *
-+ * builtin-bench-messaging.c
++ * builtin-bench-pipe.c
 + *
-+ * messaging: Benchmark for scheduler and IPC mechanisms
++ * pipe: Benchmark for pipe()
 + *
-+ * Based on hackbench by Rusty Russell <rusty@rustcorp.com.au>
++ * Based on pipe-test-1m.c by Ingo Molnar <mingo@redhat.com>
++ *  http://people.redhat.com/mingo/cfs-scheduler/tools/pipe-test-1m.c
 + * Ported to perf by Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 + *
 + */
@@ -103,250 +99,22 @@ index 0000000..36b62c5
 +#include "../builtin.h"
 +#include "bench.h"
 +
-+/* Test groups of 20 processes spraying to 20 receivers */
-+#include <pthread.h>
++#include <unistd.h>
 +#include <stdio.h>
 +#include <stdlib.h>
++#include <signal.h>
++#include <sys/wait.h>
++#include <linux/unistd.h>
 +#include <string.h>
 +#include <errno.h>
-+#include <unistd.h>
-+#include <sys/types.h>
-+#include <sys/socket.h>
-+#include <sys/wait.h>
++#include <assert.h>
 +#include <sys/time.h>
-+#include <sys/poll.h>
-+#include <limits.h>
 +
-+#define DATASIZE 100
-+
-+static int use_pipes = 0;
-+static unsigned int loops = 100;
-+static unsigned int thread_mode = 0;
-+static unsigned int num_groups = 10;
++#define LOOPS_DEFAULT 1000000
++static int loops = LOOPS_DEFAULT;
 +static int simple = 0;
 +
-+struct sender_context {
-+	unsigned int num_fds;
-+	int ready_out;
-+	int wakefd;
-+	int out_fds[0];
-+};
-+
-+struct receiver_context {
-+	unsigned int num_packets;
-+	int in_fds[2];
-+	int ready_out;
-+	int wakefd;
-+};
-+
-+static void barf(const char *msg)
-+{
-+	fprintf(stderr, "%s (error: %s)\n", msg, strerror(errno));
-+	exit(1);
-+}
-+
-+static void fdpair(int fds[2])
-+{
-+	if (use_pipes) {
-+		if (pipe(fds) == 0)
-+			return;
-+	} else {
-+		if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0)
-+			return;
-+	}
-+
-+	barf(use_pipes ? "pipe()" : "socketpair()");
-+}
-+
-+/* Block until we're ready to go */
-+static void ready(int ready_out, int wakefd)
-+{
-+	char dummy;
-+	struct pollfd pollfd = { .fd = wakefd, .events = POLLIN };
-+
-+	/* Tell them we're ready. */
-+	if (write(ready_out, &dummy, 1) != 1)
-+		barf("CLIENT: ready write");
-+
-+	/* Wait for "GO" signal */
-+	if (poll(&pollfd, 1, -1) != 1)
-+		barf("poll");
-+}
-+
-+/* Sender sprays loops messages down each file descriptor */
-+static void *sender(struct sender_context *ctx)
-+{
-+	char data[DATASIZE];
-+	unsigned int i, j;
-+
-+	ready(ctx->ready_out, ctx->wakefd);
-+
-+	/* Now pump to every receiver. */
-+	for (i = 0; i < loops; i++) {
-+		for (j = 0; j < ctx->num_fds; j++) {
-+			int ret, done = 0;
-+
-+again:
-+			ret = write(ctx->out_fds[j], data + done,
-+				    sizeof(data)-done);
-+			if (ret < 0)
-+				barf("SENDER: write");
-+			done += ret;
-+			if (done < DATASIZE)
-+				goto again;
-+		}
-+	}
-+
-+	return NULL;
-+}
-+
-+
-+/* One receiver per fd */
-+static void *receiver(struct receiver_context* ctx)
-+{
-+	unsigned int i;
-+
-+	if (!thread_mode)
-+		close(ctx->in_fds[1]);
-+
-+	/* Wait for start... */
-+	ready(ctx->ready_out, ctx->wakefd);
-+
-+	/* Receive them all */
-+	for (i = 0; i < ctx->num_packets; i++) {
-+		char data[DATASIZE];
-+		int ret, done = 0;
-+
-+again:
-+		ret = read(ctx->in_fds[0], data + done, DATASIZE - done);
-+		if (ret < 0)
-+			barf("SERVER: read");
-+		done += ret;
-+		if (done < DATASIZE)
-+			goto again;
-+	}
-+
-+	return NULL;
-+}
-+
-+static pthread_t create_worker(void *ctx, void *(*func)(void *))
-+{
-+	pthread_attr_t attr;
-+	pthread_t childid;
-+	int err;
-+
-+	if (!thread_mode) {
-+		/* process mode */
-+		/* Fork the receiver. */
-+		switch (fork()) {
-+		case -1:
-+			barf("fork()");
-+			break;
-+		case 0:
-+			(*func) (ctx);
-+			exit(0);
-+			break;
-+		default:
-+			break;
-+		}
-+
-+		return (pthread_t)0;
-+	}
-+
-+	if (pthread_attr_init(&attr) != 0)
-+		barf("pthread_attr_init:");
-+
-+#ifndef __ia64__
-+	if (pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN) != 0)
-+		barf("pthread_attr_setstacksize");
-+#endif
-+
-+	err = pthread_create(&childid, &attr, func, ctx);
-+	if (err != 0) {
-+		fprintf(stderr, "pthread_create failed: %s (%d)\n",
-+			strerror(err), err);
-+		exit(-1);
-+	}
-+	return childid;
-+}
-+
-+static void reap_worker(pthread_t id)
-+{
-+	int proc_status;
-+	void *thread_status;
-+
-+	if (!thread_mode) {
-+		/* process mode */
-+		wait(&proc_status);
-+		if (!WIFEXITED(proc_status))
-+			exit(1);
-+	} else {
-+		pthread_join(id, &thread_status);
-+	}
-+}
-+
-+/* One group of senders and receivers */
-+static unsigned int group(pthread_t *pth,
-+		unsigned int num_fds,
-+		int ready_out,
-+		int wakefd)
-+{
-+	unsigned int i;
-+	struct sender_context *snd_ctx = malloc(sizeof(struct sender_context)
-+			+ num_fds * sizeof(int));
-+
-+	if (!snd_ctx)
-+		barf("malloc()");
-+
-+	for (i = 0; i < num_fds; i++) {
-+		int fds[2];
-+		struct receiver_context *ctx = malloc(sizeof(*ctx));
-+
-+		if (!ctx)
-+			barf("malloc()");
-+
-+
-+		/* Create the pipe between client and server */
-+		fdpair(fds);
-+
-+		ctx->num_packets = num_fds * loops;
-+		ctx->in_fds[0] = fds[0];
-+		ctx->in_fds[1] = fds[1];
-+		ctx->ready_out = ready_out;
-+		ctx->wakefd = wakefd;
-+
-+		pth[i] = create_worker(ctx, (void *)receiver);
-+
-+		snd_ctx->out_fds[i] = fds[1];
-+		if (!thread_mode)
-+			close(fds[0]);
-+	}
-+
-+	/* Now we have all the fds, fork the senders */
-+	for (i = 0; i < num_fds; i++) {
-+		snd_ctx->ready_out = ready_out;
-+		snd_ctx->wakefd = wakefd;
-+		snd_ctx->num_fds = num_fds;
-+
-+		pth[num_fds+i] = create_worker(snd_ctx, (void *)sender);
-+	}
-+
-+	/* Close the fds we have left */
-+	if (!thread_mode)
-+		for (i = 0; i < num_fds; i++)
-+			close(snd_ctx->out_fds[i]);
-+
-+	/* Return number of children to reap */
-+	return num_fds * 2;
-+}
-+
 +static const struct option options[] = {
-+	OPT_BOOLEAN('p', "pipe", &use_pipes,
-+		    "Use pipe() instead of socketpair()"),
-+	OPT_BOOLEAN('t', "thread", &thread_mode,
-+		    "Be multi thread instead of multi process"),
-+	OPT_INTEGER('g', "group", &num_groups,
-+		    "Specify number of groups"),
 +	OPT_INTEGER('l', "loop", &loops,
 +		    "Specify number of loops"),
 +	OPT_BOOLEAN('s', "simple-output", &simple,
@@ -355,65 +123,73 @@ index 0000000..36b62c5
 +	OPT_END()
 +};
 +
-+static const char * const bench_sched_message_usage[] = {
-+	"perf bench sched messaging <options>",
++static const char * const bench_sched_pipe_usage[] = {
++	"perf bench sched pipe <options>",
 +	NULL
 +};
 +
-+int bench_sched_messaging(int argc, const char **argv,
-+		    const char *prefix __used)
++int bench_sched_pipe(int argc, const char **argv,
++		     const char *prefix __used)
 +{
-+	unsigned int i, total_children;
++	int pipe_1[2], pipe_2[2];
++	int m = 0, i;
 +	struct timeval start, stop, diff;
-+	unsigned int num_fds = 20;
-+	int readyfds[2], wakefds[2];
-+	char dummy;
-+	pthread_t *pth_tab;
++	unsigned long long result_usec = 0;
++
++	/*
++	 * why does "ret" exist?
++	 * discarding returned value of read(), write()
++	 * causes error in building environment for perf
++	 */
++	int ret;
++	pid_t pid;
 +
 +	argc = parse_options(argc, argv, options,
-+			     bench_sched_message_usage, 0);
++			     bench_sched_pipe_usage, 0);
 +
-+	pth_tab = malloc(num_fds * 2 * num_groups * sizeof(pthread_t));
-+	if (!pth_tab)
-+		barf("main:malloc()");
++	assert(!pipe(pipe_1));
++	assert(!pipe(pipe_2));
 +
-+	fdpair(readyfds);
-+	fdpair(wakefds);
-+
-+	total_children = 0;
-+	for (i = 0; i < num_groups; i++)
-+		total_children += group(pth_tab+total_children, num_fds,
-+					readyfds[1], wakefds[0]);
-+
-+	/* Wait for everyone to be ready */
-+	for (i = 0; i < total_children; i++)
-+		if (read(readyfds[0], &dummy, 1) != 1)
-+			barf("Reading for readyfds");
++	pid = fork();
++	assert(pid >= 0);
 +
 +	gettimeofday(&start, NULL);
 +
-+	/* Kick them off */
-+	if (write(wakefds[1], &dummy, 1) != 1)
-+		barf("Writing to start them");
-+
-+	/* Reap them all */
-+	for (i = 0; i < total_children; i++)
-+		reap_worker(pth_tab[i]);
++	if (!pid) {
++		for (i = 0; i < loops; i++) {
++			ret = read(pipe_1[0], &m, sizeof(int));
++			ret = write(pipe_2[1], &m, sizeof(int));
++		}
++	} else {
++		for (i = 0; i < loops; i++) {
++			ret = write(pipe_1[1], &m, sizeof(int));
++			ret = read(pipe_2[0], &m, sizeof(int));
++		}
++	}
 +
 +	gettimeofday(&stop, NULL);
-+
 +	timersub(&stop, &start, &diff);
 +
++	if (pid)
++		return 0;
++
 +	if (simple)
-+		printf("%lu.%03lu\n", diff.tv_sec, diff.tv_usec/1000);
++		printf("%lu.%03lu\n",
++		       diff.tv_sec, diff.tv_usec / 1000);
 +	else {
-+		printf("(%d sender and receiver %s per group)\n",
-+		       num_fds, thread_mode ? "threads" : "processes");
-+		printf("(%d groups == %d %s run)\n\n",
-+		       num_groups, num_groups * 2 * num_fds,
-+		       thread_mode ? "threads" : "processes");
++		printf("(executing %d pipe operations between two tasks)\n\n",
++			loops);
++
++		result_usec = diff.tv_sec * 1000000;
++		result_usec += diff.tv_usec;
++
 +		printf("\tTotal time:%lu.%03lu sec\n",
-+		       diff.tv_sec, diff.tv_usec/1000);
++		       diff.tv_sec, diff.tv_usec / 1000);
++		printf("\t\t%lf usecs/op\n",
++		       (double)result_usec / (double)loops);
++		printf("\t\t%d ops/sec\n",
++		       (int)((double)loops /
++			     ((double)result_usec / (double)1000000)));
 +	}
 +
 +	return 0;
