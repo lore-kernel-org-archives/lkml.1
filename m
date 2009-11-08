@@ -1,600 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbZKHVbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZKHVa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbZKHVbI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 16:31:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbZKHVbG
+	id S1755444AbZKHVa4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 16:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZKHVaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 16:31:06 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:36337 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755456AbZKHVbC (ORCPT
+	Sun, 8 Nov 2009 16:30:55 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:61216 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755401AbZKHVaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 16:31:02 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 8 Nov 2009 22:30:54 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 4/4] firedtv: port to new firewire core
-To: linux-media@vger.kernel.org
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.ce889fb60854a648@s5r6.in-berlin.de>
-Message-ID: <tkrat.98bddb190a0431be@s5r6.in-berlin.de>
-References: <tkrat.ce889fb60854a648@s5r6.in-berlin.de>
+	Sun, 8 Nov 2009 16:30:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vbNxYKG0QfEuN93JyxzMJ2sOeU9NZdqA9bUSw9mO2pE7YK6HS/1pMW2U37+e3DPXEV
+         RvGW+n2cDEGv+9IhdtgGo3neLEVfNWomefvzAox9UvBXJp7/sMsg83IKzm3Zz33d/kCL
+         HiHhkH/Gk0On3VqqPng5j6CaaoJhvchh0J73k=
+Date: Mon, 9 Nov 2009 00:30:55 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: linux-next: tip tree build warning
+Message-ID: <20091108213055.GA13555@lenovo>
+References: <20091028181443.50a09dbb.sfr@canb.auug.org.au> <20091028073145.GD6353@elte.hu> <20091028184126.b5f52d1b.sfr@canb.auug.org.au> <20091028184851.504752ef.sfr@canb.auug.org.au> <20091028075012.GD19402@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091028075012.GD19402@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The firedtv DVB driver will now work not only on top of the old ieee1394
-driver stack but also on the new firewire driver stack.
+[Ingo Molnar - Wed, Oct 28, 2009 at 08:50:12AM +0100]
+| 
+| * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+| 
+| > Hi all,
+| > 
+| > On Wed, 28 Oct 2009 18:41:26 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+| > >
+| > > static inline physid_mask_t default_apicid_to_cpu_present(int phys_apicid)
+| > > {
+| > >         return physid_mask_of_physid(phys_apicid);
+| > > }
+| > 
+| > I just noticed that this function (default_apicid_to_cpu_present) is 
+| > declared "static inline in a header" but looks like it is only used by 
+| > assigning its address to a function pointer.  Its only use for x86_64 
+| > is in arch/x86/kernel/apic/apic_noop.c ...
+| 
+| yes, that might be a real problem - returning the mask like that is 
+| messy. Thanks, will check.
+| 
+| 	Ingo
+|
 
-Alongside to the firedtv-1394.c backend for driver binding and I/O, the
-firedtv-fw.c backend is added.  Depending on which of the two 1394
-stacks is configured, one or the other or both backends will be built
-into the firedtv driver.
+ok, here is what I've just cooked. Please review, I've CC'ed a few
+"knowing-apic-code-quite-well" persons just to be sure.
 
-This has been tested with a DVB-T and a DVB-C box on x86-64 and x86-32
-together with a few different controllers (Agere FW323, a NEC chip, TI
-TSB82AA2, TSB43AB22/A, VIA VT6306).
+Note that we still have a few items in "struct apic" which
+operate with physid_mask_t on stack.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+I think perhaps it's a good idea to touch this data via pointers
+povided by caller:
+
+	physid_mask_t (*ioapic_phys_id_map)(physid_mask_t map);
+
+I didn't manage to cover it today -- will do tomorrow if patch
+approach would be approved.
+
+Also, it's just warning (yet) since we don't use those routines
+in x86-64 so it doesn't harm.
+
+Anyway, please review, comment, complain and etc... would appreciate.
+
+	-- Cyrill
+
+p.s.: i don't have inet access in office so will be able to reply
+at tomorrow evening only.
 ---
- drivers/media/dvb/firewire/Kconfig        |    7 +
- drivers/media/dvb/firewire/Makefile       |    1 +
- drivers/media/dvb/firewire/firedtv-1394.c |    6 
- drivers/media/dvb/firewire/firedtv-dvb.c  |   15 +
- drivers/media/dvb/firewire/firedtv-fw.c   |  385 ++++++++++++++++++++++
- drivers/media/dvb/firewire/firedtv.h      |   15 +
- 6 files changed, 420 insertions(+), 9 deletions(-)
+x86,apic: Do not use stack'ed physid_mask_t in apicid_to_cpu_present
 
-Index: linux-2.6.31.4/drivers/media/dvb/firewire/Kconfig
-===================================================================
---- linux-2.6.31.4.orig/drivers/media/dvb/firewire/Kconfig
-+++ linux-2.6.31.4/drivers/media/dvb/firewire/Kconfig
-@@ -1,6 +1,6 @@
- config DVB_FIREDTV
- 	tristate "FireDTV and FloppyDTV"
--	depends on DVB_CORE && IEEE1394
-+	depends on DVB_CORE && (FIREWIRE || IEEE1394)
- 	help
- 	  Support for DVB receivers from Digital Everywhere
- 	  which are connected via IEEE 1394 (FireWire).
-@@ -13,8 +13,11 @@ config DVB_FIREDTV
- 
- if DVB_FIREDTV
- 
-+config DVB_FIREDTV_FIREWIRE
-+	def_bool FIREWIRE = y || (FIREWIRE = m && DVB_FIREDTV = m)
-+
- config DVB_FIREDTV_IEEE1394
--	def_bool IEEE1394
-+	def_bool IEEE1394 = y || (IEEE1394 = m && DVB_FIREDTV = m)
- 
- config DVB_FIREDTV_INPUT
- 	def_bool INPUT = y || (INPUT = m && DVB_FIREDTV = m)
-Index: linux-2.6.31.4/drivers/media/dvb/firewire/Makefile
-===================================================================
---- linux-2.6.31.4.orig/drivers/media/dvb/firewire/Makefile
-+++ linux-2.6.31.4/drivers/media/dvb/firewire/Makefile
-@@ -1,6 +1,7 @@
- obj-$(CONFIG_DVB_FIREDTV) += firedtv.o
- 
- firedtv-y := firedtv-avc.o firedtv-ci.o firedtv-dvb.o firedtv-fe.o
-+firedtv-$(CONFIG_DVB_FIREDTV_FIREWIRE) += firedtv-fw.o
- firedtv-$(CONFIG_DVB_FIREDTV_IEEE1394) += firedtv-1394.o
- firedtv-$(CONFIG_DVB_FIREDTV_INPUT)    += firedtv-rc.o
- 
-Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-1394.c
-===================================================================
---- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv-1394.c
-+++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-1394.c
-@@ -1,5 +1,5 @@
- /*
-- * FireDTV driver (formerly known as FireSAT)
-+ * FireDTV driver -- ieee1394 I/O backend
-  *
-  * Copyright (C) 2004 Andreas Monitzer <andy@monitzer.com>
-  * Copyright (C) 2007-2008 Ben Backx <ben@bbackx.com>
-@@ -261,6 +261,7 @@ static int node_update(struct unit_direc
- 
- static struct hpsb_protocol_driver fdtv_driver = {
- 	.name		= "firedtv",
-+	.id_table	= fdtv_id_table,
- 	.update		= node_update,
- 	.driver         = {
- 		.probe  = node_probe,
-@@ -273,12 +274,11 @@ static struct hpsb_highlevel fdtv_highle
- 	.fcp_request	= fcp_request,
- };
- 
--int __init fdtv_1394_init(struct ieee1394_device_id id_table[])
-+int __init fdtv_1394_init(void)
- {
- 	int ret;
- 
- 	hpsb_register_highlevel(&fdtv_highlevel);
--	fdtv_driver.id_table = id_table;
- 	ret = hpsb_register_protocol(&fdtv_driver);
- 	if (ret) {
- 		printk(KERN_ERR "firedtv: failed to register protocol\n");
-Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-dvb.c
-===================================================================
---- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv-dvb.c
-+++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-dvb.c
-@@ -297,7 +297,7 @@ struct firedtv *fdtv_alloc(struct device
- #define AVC_UNIT_SPEC_ID_ENTRY	0x00a02d
- #define AVC_SW_VERSION_ENTRY	0x010001
- 
--static struct ieee1394_device_id fdtv_id_table[] = {
-+const struct ieee1394_device_id fdtv_id_table[] = {
- 	{
- 		/* FloppyDTV S/CI and FloppyDTV S2 */
- 		.match_flags	= MATCH_FLAGS,
-@@ -346,12 +346,23 @@ MODULE_DEVICE_TABLE(ieee1394, fdtv_id_ta
- 
- static int __init fdtv_init(void)
- {
--	return fdtv_1394_init(fdtv_id_table);
-+	int ret;
-+
-+	ret = fdtv_fw_init();
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = fdtv_1394_init();
-+	if (ret < 0)
-+		fdtv_fw_exit();
-+
-+	return ret;
- }
- 
- static void __exit fdtv_exit(void)
- {
- 	fdtv_1394_exit();
-+	fdtv_fw_exit();
- }
- 
- module_init(fdtv_init);
-Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-fw.c
-===================================================================
---- /dev/null
-+++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv-fw.c
-@@ -0,0 +1,385 @@
-+/*
-+ * FireDTV driver -- firewire I/O backend
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/errno.h>
-+#include <linux/firewire.h>
-+#include <linux/firewire-constants.h>
-+#include <linux/highmem.h>
-+#include <linux/kernel.h>
-+#include <linux/list.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/types.h>
-+
-+#include <asm/page.h>
-+
-+#include <dvb_demux.h>
-+
-+#include "firedtv.h"
-+
-+static LIST_HEAD(node_list);
-+static DEFINE_SPINLOCK(node_list_lock);
-+
-+static inline struct fw_device *device_of(struct firedtv *fdtv)
-+{
-+	return fw_device(fdtv->device->parent);
-+}
-+
-+static int node_req(struct firedtv *fdtv, u64 addr, void *data, size_t len,
-+		    int tcode)
-+{
-+	struct fw_device *device = device_of(fdtv);
-+	int rcode, generation = device->generation;
-+
-+	smp_rmb(); /* node_id vs. generation */
-+
-+	rcode = fw_run_transaction(device->card, tcode, device->node_id,
-+			generation, device->max_speed, addr, data, len);
-+
-+	return rcode != RCODE_COMPLETE ? -EIO : 0;
-+}
-+
-+static int node_lock(struct firedtv *fdtv, u64 addr, __be32 data[])
-+{
-+	return node_req(fdtv, addr, data, 8, TCODE_LOCK_COMPARE_SWAP);
-+}
-+
-+static int node_read(struct firedtv *fdtv, u64 addr, void *data, size_t len)
-+{
-+	return node_req(fdtv, addr, data, len, len == 4 ?
-+			TCODE_READ_QUADLET_REQUEST : TCODE_READ_BLOCK_REQUEST);
-+}
-+
-+static int node_write(struct firedtv *fdtv, u64 addr, void *data, size_t len)
-+{
-+	return node_req(fdtv, addr, data, len, TCODE_WRITE_BLOCK_REQUEST);
-+}
-+
-+#define ISO_HEADER_SIZE			4
-+#define CIP_HEADER_SIZE			8
-+#define MPEG2_TS_HEADER_SIZE		4
-+#define MPEG2_TS_SOURCE_PACKET_SIZE	(4 + 188)
-+
-+#define MAX_PACKET_SIZE		1024  /* 776, rounded up to 2^n */
-+#define PACKETS_PER_PAGE	(PAGE_SIZE / MAX_PACKET_SIZE)
-+#define N_PACKETS		64    /* buffer size */
-+#define N_PAGES			DIV_ROUND_UP(N_PACKETS, PACKETS_PER_PAGE)
-+#define IRQ_INTERVAL		16
-+
-+struct firedtv_receive_context {
-+	struct fw_iso_context *context;
-+	struct fw_iso_buffer buffer;
-+	int interrupt_packet;
-+	int current_packet;
-+	char *packets[N_PACKETS];
-+};
-+
-+static int queue_iso(struct firedtv_receive_context *ctx, int index)
-+{
-+	struct fw_iso_packet p;
-+	int err;
-+
-+	p.payload_length = MAX_PACKET_SIZE;
-+	p.interrupt = !(ctx->interrupt_packet & (IRQ_INTERVAL - 1));
-+	p.skip = 0;
-+	p.header_length = ISO_HEADER_SIZE;
-+
-+	err = fw_iso_context_queue(ctx->context, &p, &ctx->buffer,
-+				   index * MAX_PACKET_SIZE);
-+	if (!err)
-+		ctx->interrupt_packet++;
-+
-+	return err;
-+}
-+
-+static void handle_iso(struct fw_iso_context *context, u32 cycle,
-+		       size_t header_length, void *header, void *data)
-+{
-+	struct firedtv *fdtv = data;
-+	struct firedtv_receive_context *ctx = fdtv->backend_data;
-+	__be32 *h, *h_end;
-+	int i = ctx->current_packet, length, err;
-+	char *p, *p_end;
-+
-+	for (h = header, h_end = h + header_length / 4; h < h_end; h++) {
-+		length = be32_to_cpup(h) >> 16;
-+		if (unlikely(length > MAX_PACKET_SIZE)) {
-+			dev_err(fdtv->device, "length = %d\n", length);
-+			length = MAX_PACKET_SIZE;
-+		}
-+
-+		p = ctx->packets[i];
-+		p_end = p + length;
-+
-+		for (p += CIP_HEADER_SIZE + MPEG2_TS_HEADER_SIZE; p < p_end;
-+		     p += MPEG2_TS_SOURCE_PACKET_SIZE)
-+			dvb_dmx_swfilter_packets(&fdtv->demux, p, 1);
-+
-+		err = queue_iso(ctx, i);
-+		if (unlikely(err))
-+			dev_err(fdtv->device, "requeue failed\n");
-+
-+		i = (i + 1) & (N_PACKETS - 1);
-+	}
-+	ctx->current_packet = i;
-+}
-+
-+static int start_iso(struct firedtv *fdtv)
-+{
-+	struct firedtv_receive_context *ctx;
-+	struct fw_device *device = device_of(fdtv);
-+	char *p;
-+	int i, j, k, err;
-+
-+	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
-+	ctx->context = fw_iso_context_create(device->card,
-+			FW_ISO_CONTEXT_RECEIVE, fdtv->isochannel,
-+			device->max_speed, ISO_HEADER_SIZE, handle_iso, fdtv);
-+	if (IS_ERR(ctx->context)) {
-+		err = PTR_ERR(ctx->context);
-+		goto fail_free;
-+	}
-+
-+	err = fw_iso_buffer_init(&ctx->buffer, device->card,
-+				 N_PAGES, DMA_FROM_DEVICE);
-+	if (err)
-+		goto fail_context_destroy;
-+
-+	ctx->interrupt_packet = 1;
-+	ctx->current_packet = 0;
-+
-+	for (i = 0, k = 0; k < N_PAGES; k++) {
-+		p = kmap(ctx->buffer.pages[k]);
-+		for (j = 0; j < PACKETS_PER_PAGE && i < N_PACKETS; j++, i++)
-+			ctx->packets[i] = p + j * MAX_PACKET_SIZE;
-+	}
-+
-+	for (i = 0; i < N_PACKETS; i++) {
-+		err = queue_iso(ctx, i);
-+		if (err)
-+			goto fail;
-+	}
-+
-+	err = fw_iso_context_start(ctx->context, -1, 0,
-+				   FW_ISO_CONTEXT_MATCH_ALL_TAGS);
-+	if (err)
-+		goto fail;
-+
-+	fdtv->backend_data = ctx;
-+
-+	return 0;
-+fail:
-+	fw_iso_buffer_destroy(&ctx->buffer, device->card);
-+fail_context_destroy:
-+	fw_iso_context_destroy(ctx->context);
-+fail_free:
-+	kfree(ctx);
-+
-+	return err;
-+}
-+
-+static void stop_iso(struct firedtv *fdtv)
-+{
-+	struct firedtv_receive_context *ctx = fdtv->backend_data;
-+
-+	fw_iso_context_stop(ctx->context);
-+	fw_iso_buffer_destroy(&ctx->buffer, device_of(fdtv)->card);
-+	fw_iso_context_destroy(ctx->context);
-+	kfree(ctx);
-+}
-+
-+static const struct firedtv_backend backend = {
-+	.lock		= node_lock,
-+	.read		= node_read,
-+	.write		= node_write,
-+	.start_iso	= start_iso,
-+	.stop_iso	= stop_iso,
-+};
-+
-+static void handle_fcp(struct fw_card *card, struct fw_request *request,
-+		       int tcode, int destination, int source, int generation,
-+		       int speed, unsigned long long offset,
-+		       void *payload, size_t length, void *callback_data)
-+{
-+	struct firedtv *f, *fdtv = NULL;
-+	struct fw_device *device;
-+	unsigned long flags;
-+	int su;
-+
-+	if ((tcode != TCODE_WRITE_QUADLET_REQUEST &&
-+	     tcode != TCODE_WRITE_BLOCK_REQUEST) ||
-+	    offset != CSR_REGISTER_BASE + CSR_FCP_RESPONSE ||
-+	    length == 0 ||
-+	    (((u8 *)payload)[0] & 0xf0) != 0) {
-+		fw_send_response(card, request, RCODE_TYPE_ERROR);
-+		return;
-+	}
-+
-+	su = ((u8 *)payload)[1] & 0x7;
-+
-+	spin_lock_irqsave(&node_list_lock, flags);
-+	list_for_each_entry(f, &node_list, list) {
-+		device = device_of(f);
-+		if (device->generation != generation)
-+			continue;
-+
-+		smp_rmb(); /* node_id vs. generation */
-+
-+		if (device->card == card &&
-+		    device->node_id == source &&
-+		    (f->subunit == su || (f->subunit == 0 && su == 0x7))) {
-+			fdtv = f;
-+			break;
-+		}
-+	}
-+	spin_unlock_irqrestore(&node_list_lock, flags);
-+
-+	if (fdtv) {
-+		avc_recv(fdtv, payload, length);
-+		fw_send_response(card, request, RCODE_COMPLETE);
-+	}
-+}
-+
-+static struct fw_address_handler fcp_handler = {
-+	.length           = CSR_FCP_END - CSR_FCP_RESPONSE,
-+	.address_callback = handle_fcp,
-+};
-+
-+static const struct fw_address_region fcp_region = {
-+	.start	= CSR_REGISTER_BASE + CSR_FCP_RESPONSE,
-+	.end	= CSR_REGISTER_BASE + CSR_FCP_END,
-+};
-+
-+/* Adjust the template string if models with longer names appear. */
-+#define MAX_MODEL_NAME_LEN ((int)DIV_ROUND_UP(sizeof("FireDTV ????"), 4))
-+
-+static size_t model_name(u32 *directory, __be32 *buffer)
-+{
-+	struct fw_csr_iterator ci;
-+	int i, length, key, value, last_key = 0;
-+	u32 *block = NULL;
-+
-+	fw_csr_iterator_init(&ci, directory);
-+	while (fw_csr_iterator_next(&ci, &key, &value)) {
-+		if (last_key == CSR_MODEL &&
-+		    key == (CSR_DESCRIPTOR | CSR_LEAF))
-+			block = ci.p - 1 + value;
-+		last_key = key;
-+	}
-+
-+	if (block == NULL)
-+		return 0;
-+
-+	length = min((int)(block[0] >> 16) - 2, MAX_MODEL_NAME_LEN);
-+	if (length <= 0)
-+		return 0;
-+
-+	/* fast-forward to text string */
-+	block += 3;
-+
-+	for (i = 0; i < length; i++)
-+		buffer[i] = cpu_to_be32(block[i]);
-+
-+	return length * 4;
-+}
-+
-+static int node_probe(struct device *dev)
-+{
-+	struct firedtv *fdtv;
-+	__be32 name[MAX_MODEL_NAME_LEN];
-+	int name_len, err;
-+
-+	name_len = model_name(fw_unit(dev)->directory, name);
-+
-+	fdtv = fdtv_alloc(dev, &backend, (char *)name, name_len);
-+	if (!fdtv)
-+		return -ENOMEM;
-+
-+	err = fdtv_register_rc(fdtv, dev);
-+	if (err)
-+		goto fail_free;
-+
-+	spin_lock_irq(&node_list_lock);
-+	list_add_tail(&fdtv->list, &node_list);
-+	spin_unlock_irq(&node_list_lock);
-+
-+	err = avc_identify_subunit(fdtv);
-+	if (err)
-+		goto fail;
-+
-+	err = fdtv_dvb_register(fdtv);
-+	if (err)
-+		goto fail;
-+
-+	avc_register_remote_control(fdtv);
-+
-+	return 0;
-+fail:
-+	spin_lock_irq(&node_list_lock);
-+	list_del(&fdtv->list);
-+	spin_unlock_irq(&node_list_lock);
-+	fdtv_unregister_rc(fdtv);
-+fail_free:
-+	kfree(fdtv);
-+
-+	return err;
-+}
-+
-+static int node_remove(struct device *dev)
-+{
-+	struct firedtv *fdtv = dev_get_drvdata(dev);
-+
-+	fdtv_dvb_unregister(fdtv);
-+
-+	spin_lock_irq(&node_list_lock);
-+	list_del(&fdtv->list);
-+	spin_unlock_irq(&node_list_lock);
-+
-+	fdtv_unregister_rc(fdtv);
-+
-+	kfree(fdtv);
-+	return 0;
-+}
-+
-+static void node_update(struct fw_unit *unit)
-+{
-+	struct firedtv *fdtv = dev_get_drvdata(&unit->device);
-+
-+	if (fdtv->isochannel >= 0)
-+		cmp_establish_pp_connection(fdtv, fdtv->subunit,
-+					    fdtv->isochannel);
-+}
-+
-+static struct fw_driver fdtv_driver = {
-+	.driver   = {
-+		.owner  = THIS_MODULE,
-+		.name   = "firedtv",
-+		.bus    = &fw_bus_type,
-+		.probe  = node_probe,
-+		.remove = node_remove,
-+	},
-+	.update   = node_update,
-+	.id_table = fdtv_id_table,
-+};
-+
-+int __init fdtv_fw_init(void)
-+{
-+	int ret;
-+
-+	ret = fw_core_add_address_handler(&fcp_handler, &fcp_region);
-+	if (ret < 0)
-+		return ret;
-+
-+	return driver_register(&fdtv_driver.driver);
-+}
-+
-+void fdtv_fw_exit(void)
-+{
-+	driver_unregister(&fdtv_driver.driver);
-+	fw_core_remove_address_handler(&fcp_handler);
-+}
-Index: linux-2.6.31.4/drivers/media/dvb/firewire/firedtv.h
-===================================================================
---- linux-2.6.31.4.orig/drivers/media/dvb/firewire/firedtv.h
-+++ linux-2.6.31.4/drivers/media/dvb/firewire/firedtv.h
-@@ -16,6 +16,7 @@
- #include <linux/dvb/dmx.h>
- #include <linux/dvb/frontend.h>
- #include <linux/list.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/mutex.h>
- #include <linux/spinlock_types.h>
- #include <linux/types.h>
-@@ -119,10 +120,10 @@ struct firedtv {
- 
- /* firedtv-1394.c */
- #ifdef CONFIG_DVB_FIREDTV_IEEE1394
--int fdtv_1394_init(struct ieee1394_device_id id_table[]);
-+int fdtv_1394_init(void);
- void fdtv_1394_exit(void);
- #else
--static inline int fdtv_1394_init(struct ieee1394_device_id it[]) { return 0; }
-+static inline int fdtv_1394_init(void) { return 0; }
- static inline void fdtv_1394_exit(void) {}
+Stephen Rothwell pointed out that apic-noop (when gets compiled
+in x86-84 environment) potentially may consume too much stack space.
+
+|
+| Hi all,
+|
+| Today's linux-next build (x86_64 allmodconfig) produced this warning:
+|
+| In file included from arch/x86/include/asm/smp.h:13,
+|                 from arch/x86/include/asm/mmzone_64.h:12,
+|                 from arch/x86/include/asm/mmzone.h:4,
+|                 from include/linux/mmzone.h:783,
+|                 from include/linux/gfp.h:4,
+|                 from include/linux/kmod.h:22,
+|                 from include/linux/module.h:13,
+|                 from arch/x86/kernel/apic/apic_noop.c:14:
+| arch/x86/include/asm/apic.h: In function 'default_apicid_to_cpu_present':
+| arch/x86/include/asm/apic.h:591: warning: the frame size of 8192 bytes is larger than 2048 bytes
+|
+| It may not have been caused by the tip tree, but I can't find what
+| changed to cause this and a commit from the tip tree has exposed it
+| (9844ab11c763bfed9f054c82366b19dcda66aca9 "x86, apic: Introduce the NOOP
+| apic driver").
+|
+
+So I would say this is a bug in apic-noop (in fact we don't use
+default_apicid_to_cpu_present if operate in 64bit mode but it's a sign
+that something is wrong with code design). The key problem is that
+physid_mask_t is an array with a size depending on MAX_APICS, which
+in turn is big enough on x86-64 to trigger compiler warning.
+
+So to prevent such a situation in future we should use physid_mask_t
+pointer leaving apic driver with a task to operate over data but not
+allocate it. Caller should instead.
+
+This allow us throw out some code as well since physid_set_mask_of_physid
+already implement the functionality we need.
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ arch/x86/include/asm/apic.h      |    7 +------
+ arch/x86/kernel/apic/apic_noop.c |    2 +-
+ arch/x86/kernel/apic/bigsmp_32.c |    7 +------
+ arch/x86/kernel/apic/es7000_32.c |    8 ++------
+ arch/x86/kernel/apic/io_apic.c   |    4 ++--
+ arch/x86/kernel/apic/numaq_32.c  |    4 ++--
+ arch/x86/kernel/apic/probe_32.c  |    2 +-
+ arch/x86/kernel/apic/summit_32.c |    4 ++--
+ arch/x86/kernel/visws_quirks.c   |    2 +-
+ 9 files changed, 13 insertions(+), 27 deletions(-)
+
+Index: linux-2.6.git/arch/x86/include/asm/apic.h
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/include/asm/apic.h
++++ linux-2.6.git/arch/x86/include/asm/apic.h
+@@ -310,7 +310,7 @@ struct apic {
+ 	int (*apicid_to_node)(int logical_apicid);
+ 	int (*cpu_to_logical_apicid)(int cpu);
+ 	int (*cpu_present_to_apicid)(int mps_cpu);
+-	physid_mask_t (*apicid_to_cpu_present)(int phys_apicid);
++	void (*apicid_to_cpu_present)(int phys_apicid, physid_mask_t *map);
+ 	void (*setup_portio_remap)(void);
+ 	int (*check_phys_apicid_present)(int phys_apicid);
+ 	void (*enable_apic_mode)(void);
+@@ -585,11 +585,6 @@ extern int default_cpu_present_to_apicid
+ extern int default_check_phys_apicid_present(int phys_apicid);
  #endif
  
-@@ -163,10 +164,20 @@ struct firedtv *fdtv_alloc(struct device
- 			   const struct firedtv_backend *backend,
- 			   const char *name, size_t name_len);
- extern const char *fdtv_model_names[];
-+extern const struct ieee1394_device_id fdtv_id_table[];
+-static inline physid_mask_t default_apicid_to_cpu_present(int phys_apicid)
+-{
+-	return physid_mask_of_physid(phys_apicid);
+-}
+-
+ #endif /* CONFIG_X86_LOCAL_APIC */
  
- /* firedtv-fe.c */
- void fdtv_frontend_init(struct firedtv *fdtv);
+ #ifdef CONFIG_X86_32
+Index: linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/apic_noop.c
++++ linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
+@@ -162,7 +162,7 @@ struct apic apic_noop = {
  
-+/* firedtv-fw.c */
-+#ifdef CONFIG_DVB_FIREDTV_FIREWIRE
-+int fdtv_fw_init(void);
-+void fdtv_fw_exit(void);
-+#else
-+static inline int fdtv_fw_init(void) { return 0; }
-+static inline void fdtv_fw_exit(void) {}
-+#endif
-+
- /* firedtv-rc.c */
- #ifdef CONFIG_DVB_FIREDTV_INPUT
- int fdtv_register_rc(struct firedtv *fdtv, struct device *dev);
-
--- 
-Stefan Richter
--=====-==--= =-== -=---
-http://arcgraph.de/sr/
-
+ 	.cpu_to_logical_apicid		= noop_cpu_to_logical_apicid,
+ 	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
+-	.apicid_to_cpu_present		= default_apicid_to_cpu_present,
++	.apicid_to_cpu_present		= physid_set_mask_of_physid,
+ 
+ 	.setup_portio_remap		= NULL,
+ 	.check_phys_apicid_present	= default_check_phys_apicid_present,
+Index: linux-2.6.git/arch/x86/kernel/apic/bigsmp_32.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/bigsmp_32.c
++++ linux-2.6.git/arch/x86/kernel/apic/bigsmp_32.c
+@@ -93,11 +93,6 @@ static int bigsmp_cpu_present_to_apicid(
+ 	return BAD_APICID;
+ }
+ 
+-static physid_mask_t bigsmp_apicid_to_cpu_present(int phys_apicid)
+-{
+-	return physid_mask_of_physid(phys_apicid);
+-}
+-
+ /* Mapping from cpu number to logical apicid */
+ static inline int bigsmp_cpu_to_logical_apicid(int cpu)
+ {
+@@ -230,7 +225,7 @@ struct apic apic_bigsmp = {
+ 	.apicid_to_node			= bigsmp_apicid_to_node,
+ 	.cpu_to_logical_apicid		= bigsmp_cpu_to_logical_apicid,
+ 	.cpu_present_to_apicid		= bigsmp_cpu_present_to_apicid,
+-	.apicid_to_cpu_present		= bigsmp_apicid_to_cpu_present,
++	.apicid_to_cpu_present		= physid_set_mask_of_physid,
+ 	.setup_portio_remap		= NULL,
+ 	.check_phys_apicid_present	= bigsmp_check_phys_apicid_present,
+ 	.enable_apic_mode		= NULL,
+Index: linux-2.6.git/arch/x86/kernel/apic/es7000_32.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/es7000_32.c
++++ linux-2.6.git/arch/x86/kernel/apic/es7000_32.c
+@@ -539,14 +539,10 @@ static int es7000_cpu_present_to_apicid(
+ 
+ static int cpu_id;
+ 
+-static physid_mask_t es7000_apicid_to_cpu_present(int phys_apicid)
++static void es7000_apicid_to_cpu_present(int phys_apicid, physid_mask_t *map)
+ {
+-	physid_mask_t mask;
+-
+-	mask = physid_mask_of_physid(cpu_id);
++	physid_set_mask_of_physid(cpu_id, map);
+ 	++cpu_id;
+-
+-	return mask;
+ }
+ 
+ /* Mapping from cpu number to logical apicid */
+Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
+@@ -2073,7 +2073,7 @@ void __init setup_ioapic_ids_from_mpc(vo
+ 			mp_ioapics[apic_id].apicid = i;
+ 		} else {
+ 			physid_mask_t tmp;
+-			tmp = apic->apicid_to_cpu_present(mp_ioapics[apic_id].apicid);
++			apic->apicid_to_cpu_present(mp_ioapics[apic_id].apicid, &tmp);
+ 			apic_printk(APIC_VERBOSE, "Setting %d in the "
+ 					"phys_id_present_map\n",
+ 					mp_ioapics[apic_id].apicid);
+@@ -3969,7 +3969,7 @@ int __init io_apic_get_unique_id(int ioa
+ 		apic_id = i;
+ 	}
+ 
+-	tmp = apic->apicid_to_cpu_present(apic_id);
++	apic->apicid_to_cpu_present(apic_id, &tmp);
+ 	physids_or(apic_id_map, apic_id_map, tmp);
+ 
+ 	if (reg_00.bits.ID != apic_id) {
+Index: linux-2.6.git/arch/x86/kernel/apic/numaq_32.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/numaq_32.c
++++ linux-2.6.git/arch/x86/kernel/apic/numaq_32.c
+@@ -402,12 +402,12 @@ static inline int numaq_apicid_to_node(i
+ 	return logical_apicid >> 4;
+ }
+ 
+-static inline physid_mask_t numaq_apicid_to_cpu_present(int logical_apicid)
++static void numaq_apicid_to_cpu_present(int logical_apicid, physid_mask_t *map)
+ {
+ 	int node = numaq_apicid_to_node(logical_apicid);
+ 	int cpu = __ffs(logical_apicid & 0xf);
+ 
+-	return physid_mask_of_physid(cpu + 4*node);
++	physid_set_mask_of_physid(cpu + 4*node, map);
+ }
+ 
+ /* Where the IO area was mapped on multiquad, always 0 otherwise */
+Index: linux-2.6.git/arch/x86/kernel/apic/probe_32.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/probe_32.c
++++ linux-2.6.git/arch/x86/kernel/apic/probe_32.c
+@@ -108,7 +108,7 @@ struct apic apic_default = {
+ 	.apicid_to_node			= default_apicid_to_node,
+ 	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
+ 	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
+-	.apicid_to_cpu_present		= default_apicid_to_cpu_present,
++	.apicid_to_cpu_present		= physid_set_mask_of_physid,
+ 	.setup_portio_remap		= NULL,
+ 	.check_phys_apicid_present	= default_check_phys_apicid_present,
+ 	.enable_apic_mode		= NULL,
+Index: linux-2.6.git/arch/x86/kernel/apic/summit_32.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/summit_32.c
++++ linux-2.6.git/arch/x86/kernel/apic/summit_32.c
+@@ -267,9 +267,9 @@ static physid_mask_t summit_ioapic_phys_
+ 	return physids_promote(0x0F);
+ }
+ 
+-static physid_mask_t summit_apicid_to_cpu_present(int apicid)
++static void summit_apicid_to_cpu_present(int apicid, physid_mask_t *map)
+ {
+-	return physid_mask_of_physid(0);
++	physid_set_mask_of_physid(0, map);
+ }
+ 
+ static int summit_check_phys_apicid_present(int physical_apicid)
+Index: linux-2.6.git/arch/x86/kernel/visws_quirks.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/visws_quirks.c
++++ linux-2.6.git/arch/x86/kernel/visws_quirks.c
+@@ -183,7 +183,7 @@ static void __init MP_processor_info(str
+ 		return;
+ 	}
+ 
+-	apic_cpus = apic->apicid_to_cpu_present(m->apicid);
++	apic->apicid_to_cpu_present(m->apicid, &apic_cpus);
+ 	physids_or(phys_cpu_present_map, phys_cpu_present_map, apic_cpus);
+ 	/*
+ 	 * Validate version
