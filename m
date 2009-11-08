@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZKHNqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbZKHN6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753599AbZKHNqL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZKHNqK
+	id S1753842AbZKHN6H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 08:58:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbZKHN6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:46:10 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:54913 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbZKHNqJ (ORCPT
+	Sun, 8 Nov 2009 08:58:06 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:38763 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753790AbZKHN6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:46:09 -0500
+	Sun, 8 Nov 2009 08:58:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=uxVI5vwZEU85URcKuBL38JR3GDrppcfVPwC1mZcrweigdz6AJ+0ZUK2JA0QNh9HqIV
-         e1VT1VCuJbQutUwwep79GfBQMCs/UOKmipStm9TaVRVDj4urN5A/NR+7MdJIbjwAkK0y
-         XNbO4/Y2nqW/q9XniAlFTIxK2GYSpPUZv+7OI=
-Message-ID: <4AF6CBA2.30304@gmail.com>
-Date: Sun, 08 Nov 2009 14:46:10 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=IMO9gCBCsioBAT4YkIreFW5f0F6mH+rmEvvgKLBdpjU4zv0LhK5ne2ZxVdYlyEIahp
+         EF1ZtBL4SYyOcanY9DiDQGu4Ri9EskwqkonFCw6GN+tS9t6meTv4Naq9J89sNSf/uP3f
+         hlJD1gCr+yoaNWoaCRRYIo0AwQrUoHxUhhCfk=
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Emmanuel Benisty <benisty.e@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       mm-commits@vger.kernel.org
-Subject: Re: mmotm 2009-11-01-10-01 uploaded
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org>	<alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>	<661de9470911060338q66746acbr219eedc24e752ca9@mail.gmail.com>	<c1f41c620911060439j42329608u74f937ac9f9ac617@mail.gmail.com> <20091106104851.320a97ee.randy.dunlap@oracle.com>
-In-Reply-To: <20091106104851.320a97ee.randy.dunlap@oracle.com>
-X-Enigmail-Version: 0.97b
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <a4c8a6d00911080538y3735e6bbq9c1bdc4ba90e2ead@mail.gmail.com>
+References: <1257195888-6122-1-git-send-email-tfransosi@gmail.com> 
+	<0F1B54C89D5F954D8535DB252AF412FA05042B1D@chinexm1.ad.analog.com> 
+	<a4c8a6d00911080538y3735e6bbq9c1bdc4ba90e2ead@mail.gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sun, 8 Nov 2009 08:57:51 -0500
+Message-ID: <8bd0f97a0911080557g50acadb6yb1e9da3ab06a196f@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH] blackfin/trivial: remove 
+	duplicatedMAX macro from stamp.
+To: Thiago Farina <tfransosi@gmail.com>
+Cc: "Zhang, Sonic" <Sonic.Zhang@analog.com>, trivial@kernel.org,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       linux-kernel@vger.kernel.org, "Song, Barry" <Barry.Song@analog.com>,
+       uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/06/2009 07:48 PM, Randy Dunlap wrote:
-> Thanks.  so that mmotm.git is now 5 weeks old.
-> http://git.zen-kernel.org/?p=kernel/mmotm.git;a=summary
+On Sun, Nov 8, 2009 at 08:38, Thiago Farina wrote:
+> On Fri, Nov 6, 2009 at 1:17 AM, Zhang, Sonic wrote:
+>> Acked-by: Sonic Zhang<sonic.zhang@analog.com>
+>
+> Could you apply this to blackfin tree?
 
-How did you find out? Don't get wrong by the topmost commit and tag dates...
-
-It definitely looks weird, but is the latest :):
-6 weeks ago: 2009-11-01-10-01
-	
+he has merged it into the svn tree we have.  i havent picked it up in
+the Blackfin git tree yet as ive been busy with some other projects.
+i should be able to get it in before 2.6.32 final though.
+-mike
