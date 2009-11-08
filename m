@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZKHPse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZKHPtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbZKHPse (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 10:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbZKHPsd
+	id S1754058AbZKHPtd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 10:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbZKHPtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 10:48:33 -0500
-Received: from mail.parknet.ad.jp ([210.171.162.6]:46036 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753335AbZKHPsc (ORCPT
+	Sun, 8 Nov 2009 10:49:32 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:61912 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbZKHPtb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 10:48:32 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Paolo Giarrusso <p.giarrusso@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Daylight saving time & FAT
-References: <a4d0c86c0911051222q1ec384a2u724e0c8b1432ddb6@mail.gmail.com>
-Date: Mon, 09 Nov 2009 00:48:33 +0900
-In-Reply-To: <a4d0c86c0911051222q1ec384a2u724e0c8b1432ddb6@mail.gmail.com>
-	(Paolo Giarrusso's message of "Thu, 5 Nov 2009 21:22:45 +0100")
-Message-ID: <873a4p9fvy.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Sun, 8 Nov 2009 10:49:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=mys6ywa9oWuetHof8V8c9OvpRVUtsKqxGUdSB/lLG5ac6m3Rjq5JBr/6b6un+pYyIF
+         XD6z3yu7twjpKWMLdIjZu/HzmcFEjeDJ3vAhGBn6w5I6xrlqeyRFLYJR48+Qagom1Ook
+         kbkLu9Y53REFTSZxcquW33JziZJnTiIH5lRZg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LSU.2.00.0911081630180.26458@obet.zrqbmnf.qr>
+References: <cover.1257602781.git.andre.goddard@gmail.com> 
+	<643e6260a571b533d8985b377a82410aded4ddae.1257602781.git.andre.goddard@gmail.com> 
+	<alpine.LSU.2.00.0911081630180.26458@obet.zrqbmnf.qr>
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Date: Sun, 8 Nov 2009 13:49:17 -0200
+Message-ID: <b8bf37780911080749h578d3a03ve7e08d606b71feca@mail.gmail.com>
+Subject: Re: [PATCH v4 01/12] vsprintf: factorize "(null)" string
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Giarrusso <p.giarrusso@gmail.com> writes:
-
-> When re-rsync'ing two hard drives (one VFAT, one NTFS mounted with
-> ntfs-3g) after a Daylight Saving Time change (I was on CEST, +0200,
-> now I'm on CET, +0100), I discovered a one-hour time difference over
-> all files (on FAT, they are one hour in future).
-> My current understanding is that FAT stores times relative to the
-> current timezone, and that's crappy (see fat_time_fat2unix(), in
-> fs/fat/misc.c). But with the current code, it gets even more crappy -
-> the same file will have a different _UTC_ timestamp depending on my
-> current timezone, since the current offset from UTC is added to the
-> stored timestamp to get the UTC time (I verified the timezone change
-> would perfectly explain, even in sign, the time difference I found).
-> That's why I guess that the FAT timestamps are wrong.
-> I frankly doubt that Windows is so bad.
+On Sun, Nov 8, 2009 at 1:37 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
 >
-> On DOS, they could get away without any conversion at all. But on
-> current Windows systems? Either you find the right time zone at file
-> saving time (too complicated IMHO) or ignore DST when saving/restoring
-> time (i.e. pretend DST is not in effect, and add the shift if needed).
-> I don't know right now what happens.
-> I wrote this mail to discuss what would be the correct solution (the
-> second?), and if it is possible to implement it.
+> Stripping the humongous Cc list for sanity.
+>
+>
+> On Saturday 2009-11-07 16:16, André Goddard Rosa wrote:
+>
+>>Change "<NULL>" to "(null)" and make it a static const char[] hoping that
+>>the compiler will make null_str a label to a read-only area containing it.
+>
+> Hoping? Nah, thanks.
 
-fat_time_{fat2unix,unix2fat}() doesn't handle timezone correctly. It
-just uses timeoffset from sys_tz.tz_minuteswest. But, it is not enough
-for localtime. Because it doesn't handle DST or such complex stuff. (As
-workaround, fat has "tz=UTC" option)
+:) That's just because I don't always trust gcc blindly. :)
 
-To get correct conversion, those functions have to handle timezone
-database (zoneinfo or something).
+>>See:
+>>http://udrepper.livejournal.com/13851.html
+>
+> Ulrich's example already _has_ a variable that is then changed from
+> const char * to const char[]. Of course doing that will save you the
+> extra pointer.
+> But vsprintf.c on the other hand did not have that extra variable to
+> begin with!
 
-I think the issues would be, who (userland or kernel) handle zoneinfo,
-and how handle.
+Correct, of course! Most relevant reference is the first one:
+http://people.redhat.com/drepper/dsohowto.pdf part 2.4.2
 
-Well, so, FWIW, I was thinking make timezone subsystem. userland app
-pass one of zoneinfo to kernel as data via ioctl or sysfs or something
-with name, and subsystem manages the lifetime/etc. of data.  And
-provide utc2local(time, zone name) to convert time correctly.
+The others are just related/akin to the topic; interesting nevertheless.
 
-So, fs would be able to get help of utc2local() to convert to on-disk
-format, and probably, zonename will be specified as mount option.
+> But it is ok nevertheless, and the unification of <NULL> vs
+> (null) is worthwhile.
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Thanks,
+André
