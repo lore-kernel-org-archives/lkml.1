@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZKHPyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZKHPy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754249AbZKHPyI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 10:54:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZKHPyH
+	id S1754356AbZKHPy3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 10:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbZKHPy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 10:54:07 -0500
-Received: from borg.medozas.de ([188.40.89.202]:37014 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753478AbZKHPyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 10:54:06 -0500
-Date: Sun, 8 Nov 2009 16:54:11 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v4 10/12] string: factorize skip_spaces and export it to
- be generally available
-In-Reply-To: <c7d3b02b5e28eaa54a5360d57dfd177c44320187.1257602781.git.andre.goddard@gmail.com>
-Message-ID: <alpine.LSU.2.00.0911081651020.26458@obet.zrqbmnf.qr>
-References: <cover.1257602781.git.andre.goddard@gmail.com> <c7d3b02b5e28eaa54a5360d57dfd177c44320187.1257602781.git.andre.goddard@gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Sun, 8 Nov 2009 10:54:28 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:59912 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753916AbZKHPy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 10:54:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=In4yx779y3RUgGadTMd7twl4bNH0orfTeFSg7+kJxNP2z+Lq40pnvvpj5V7J8CD+EM
+         X6leDgTuqyJviO1auTvvfN+OSNYLAlT82DLEoOAa2M/fPzko+1Qr4XXuMUiVkl/ZNh4e
+         fIral88k9TEx4Ph/G67Wm0qeM1irh33FM8RoE=
+Date: Sun, 8 Nov 2009 18:54:31 +0300
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>,
+       x86team <x86@kernel.org>
+Subject: [PATCH -tip] x86,ioapic: use snrpintf while set names for IO-APIC
+	resourses
+Message-ID: <20091108155431.GC25940@lenovo>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We should be ready that one day MAX_IO_APICS may raise its
+number. To prevent memory overwrite we're to use safe
+snprintf while set IO-APIC resourse name.
 
-On Saturday 2009-11-07 16:16, André Goddard Rosa wrote:
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ arch/x86/kernel/apic/io_apic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> /**
->+ * skip_spaces - Removes leading whitespace from @s.
->+ * @s: The string to be stripped.
->+ *
->+ * Returns a pointer to the first non-whitespace character in @s.
->+ */
->+const char *skip_spaces(const char *str)
->+{
->+	while (isspace(*str))
->+		++str;
->+	return str;
->+}
->+EXPORT_SYMBOL(skip_spaces);
->+
-
-I would make this
-	char *skip_spaces(const char *)
-
-just like most of the stdc functions, so that you do not need
-ugly casts like this (v) in callers of skip_spaces.
-
->-	while (*s && isspace(*s))
->-		s++;
->-
->-	return s;
->+	return (char *)skip_spaces(s);
-> }
-> EXPORT_SYMBOL(strstrip);
+Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
+@@ -4099,7 +4099,7 @@ static struct resource * __init ioapic_s
+ 	for (i = 0; i < nr_ioapics; i++) {
+ 		res[i].name = mem;
+ 		res[i].flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+-		sprintf(mem,  "IOAPIC %u", i);
++		snprintf(mem, IOAPIC_RESOURCE_NAME_SIZE, "IOAPIC %u", i);
+ 		mem += IOAPIC_RESOURCE_NAME_SIZE;
+ 	}
+ 
