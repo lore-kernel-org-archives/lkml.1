@@ -1,64 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZKHNcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZKHNdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbZKHNcX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZKHNcW
+	id S1753042AbZKHNdF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 08:33:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbZKHNdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:32:22 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:65328 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbZKHNcV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:32:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=MHLsWDmZ0Zj6A224kwNLqZD+kcZcqxCF9ARhjEaUl5WNdoLQIO8z34lfjWaFjopoub
-         o1X9odmlos3Ya6t8eRuLR+7vhI+gUzhcQv2qMQc64yz5gX7EzerDHRZnMoCqjcMPjHHJ
-         edf6Qnw1Hfz6GiqOrMVIpghDU25PnqwRDVvw8=
-Message-ID: <4AF6C869.7090309@gmail.com>
-Date: Sun, 08 Nov 2009 14:32:25 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
+	Sun, 8 Nov 2009 08:33:04 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36375 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751501AbZKHNdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 08:33:03 -0500
+Date: Sun, 8 Nov 2009 14:32:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: tip tree build warning
+Message-ID: <20091108133247.GA14807@elte.hu>
+References: <20091028181443.50a09dbb.sfr@canb.auug.org.au>
+ <20091028073145.GD6353@elte.hu>
+ <20091028184126.b5f52d1b.sfr@canb.auug.org.au>
+ <20091028184851.504752ef.sfr@canb.auug.org.au>
+ <20091028075012.GD19402@elte.hu>
+ <20091108131645.GD5300@lenovo>
 MIME-Version: 1.0
-To: Ben Hutchings <ben@decadent.org.uk>
-CC: Greg Kroah-Hartman <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 07/75] moxa: declare MODULE_FIRMWARE
-References: <1257630292.15927.392.camel@localhost>
-In-Reply-To: <1257630292.15927.392.camel@localhost>
-X-Enigmail-Version: 0.97b
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091108131645.GD5300@lenovo>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/07/2009 10:44 PM, Ben Hutchings wrote:
-> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 
-Reviewed-by: Jiri Slaby <jirislaby@gmail.com>
+* Cyrill Gorcunov <gorcunov@openvz.org> wrote:
 
-Thanks.
-
-> ---
->  drivers/char/moxa.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+> [Ingo Molnar - Wed, Oct 28, 2009 at 08:50:12AM +0100]
+> | 
+> | * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> | 
+> | > Hi all,
+> | > 
+> | > On Wed, 28 Oct 2009 18:41:26 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> | > >
+> | > > static inline physid_mask_t default_apicid_to_cpu_present(int phys_apicid)
+> | > > {
+> | > >         return physid_mask_of_physid(phys_apicid);
+> | > > }
+> | > 
+> | > I just noticed that this function (default_apicid_to_cpu_present) is 
+> | > declared "static inline in a header" but looks like it is only used by 
+> | > assigning its address to a function pointer.  Its only use for x86_64 
+> | > is in arch/x86/kernel/apic/apic_noop.c ...
+> | 
+> | yes, that might be a real problem - returning the mask like that is 
+> | messy. Thanks, will check.
+> | 
+> | 	Ingo
+> | 
 > 
-> diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-> index dd0083b..26c9259 100644
-> --- a/drivers/char/moxa.c
-> +++ b/drivers/char/moxa.c
-> @@ -175,6 +175,9 @@ static unsigned int numports[MAX_BOARDS];
->  MODULE_AUTHOR("William Chen");
->  MODULE_DESCRIPTION("MOXA Intellio Family Multiport Board Device Driver");
->  MODULE_LICENSE("GPL");
-> +MODULE_FIRMWARE("c218tunx.cod");
-> +MODULE_FIRMWARE("cp204unx.cod");
-> +MODULE_FIRMWARE("c320tunx.cod");
->  #ifdef MODULE
->  module_param_array(type, uint, NULL, 0);
->  MODULE_PARM_DESC(type, "card type: C218=2, C320=4");
+> Darn, my fault sorry! Here is an update which fixes the issue.
+> (Btw, Stephen could you CC me next time if you get commit id
+>  with me in authors, so I wouldn't miss problem).
+> 
+> Please review, comments/complains are quite welcome!
+> 
+> 	-- Cyrill
+> ---
+> x86,apic: Get rid of apicid_to_cpu_present assign on X86-64
+> 
+> In fact it's never get used on x86-64 (for 64 bit platform
+> we use differ technique to enumerate io-units).
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> ---
+>  arch/x86/kernel/apic/apic_noop.c |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> Index: linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
+> =====================================================================
+> --- linux-2.6.git.orig/arch/x86/kernel/apic/apic_noop.c
+> +++ linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
+> @@ -162,7 +162,12 @@ struct apic apic_noop = {
+>  
+>  	.cpu_to_logical_apicid		= noop_cpu_to_logical_apicid,
+>  	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
+> +
+> +#ifdef CONFIG_X86_32
+>  	.apicid_to_cpu_present		= default_apicid_to_cpu_present,
+> +#else
+> +	.apicid_to_cpu_present		= NULL,
+> +#endif
 
+would be better to unify this instead ...
+
+	Ingo
