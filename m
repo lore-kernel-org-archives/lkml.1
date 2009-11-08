@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZKHU0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbZKHUgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZKHU0W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 15:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbZKHU0N
+	id S1755244AbZKHUgK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 15:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZKHUgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 15:26:13 -0500
-Received: from [190.108.161.231] ([190.108.161.231]:40534 "EHLO
+	Sun, 8 Nov 2009 15:36:09 -0500
+Received: from [190.108.161.231] ([190.108.161.231]:38439 "EHLO
 	localhost.localdomain" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755384AbZKHU0L convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1754554AbZKHUgI convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 15:26:11 -0500
-Subject: [PATCH 08/20] scsi/dtc: No longer use Scsi_Cmd typedef
+	Sun, 8 Nov 2009 15:36:08 -0500
+Subject: [PATCH 09/20] scsi/fd_mcs: No longer use Scsi_Cmd typedef
 From: Davidlohr Bueso <dave@gnu.org>
 Reply-To: dave@gnu.org
-To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       drew@colorado.edu
+To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, faith@cs.unc.edu
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
-Date: Sun, 08 Nov 2009 17:17:12 -0300
-Message-ID: <1257711432.4759.114.camel@dbueso-pc>
+Date: Sun, 08 Nov 2009 17:17:14 -0300
+Message-ID: <1257711434.4759.115.camel@dbueso-pc>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,30 +29,58 @@ Change Scsi_Cmnd for struct scsi_cmnd.
 Signed-off-by: Davidlohr Bueso <dave@gnu.org>
 
 ---
- drivers/scsi/dtc.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/scsi/fd_mcs.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/scsi/dtc.h b/drivers/scsi/dtc.h
-index 0b205f8..524b711 100644
---- a/drivers/scsi/dtc.h
-+++ b/drivers/scsi/dtc.h
-@@ -32,12 +32,12 @@
- #define DTCDEBUG_INIT	0x1
- #define DTCDEBUG_TRANSFER 0x2
+diff --git a/drivers/scsi/fd_mcs.c b/drivers/scsi/fd_mcs.c
+index 85bd54c..29ab1e1 100644
+--- a/drivers/scsi/fd_mcs.c
++++ b/drivers/scsi/fd_mcs.c
+@@ -184,7 +184,7 @@ struct fd_hostdata {
+ 	int _bios_major;
+ 	int _bios_minor;
+ 	volatile int _in_command;
+-	Scsi_Cmnd *_current_SC;
++	struct scsi_cmnd *_current_SC;
+ 	enum chip_type _chip;
+ 	int _adapter_mask;
+ 	int _fifo_count;	/* Number of 512 byte blocks before INTR */
+@@ -1071,7 +1071,7 @@ static int fd_mcs_release(struct Scsi_Host *shpnt)
+ 	return 0;
+ }
  
--static int dtc_abort(Scsi_Cmnd *);
-+static int dtc_abort(struct scsi_cmnd *);
- static int dtc_biosparam(struct scsi_device *, struct block_device *,
- 		         sector_t, int*);
- static int dtc_detect(struct scsi_host_template *);
--static int dtc_queue_command(Scsi_Cmnd *, void (*done)(Scsi_Cmnd *));
--static int dtc_bus_reset(Scsi_Cmnd *);
-+static int dtc_queue_command(struct scsi_cmnd *, void (*done)(struct scsi_cmnd *));
-+static int dtc_bus_reset(struct scsi_cmnd *);
+-static int fd_mcs_queue(Scsi_Cmnd * SCpnt, void (*done) (Scsi_Cmnd *))
++static int fd_mcs_queue(struct scsi_cmnd * SCpnt, void (*done) (struct scsi_cmnd *))
+ {
+ 	struct Scsi_Host *shpnt = SCpnt->device->host;
  
- #ifndef CMD_PER_LUN
- #define CMD_PER_LUN 2
-
+@@ -1122,7 +1122,7 @@ static int fd_mcs_queue(Scsi_Cmnd * SCpnt, void (*done) (Scsi_Cmnd *))
+ }
+ 
+ #if DEBUG_ABORT || DEBUG_RESET
+-static void fd_mcs_print_info(Scsi_Cmnd * SCpnt)
++static void fd_mcs_print_info(struct scsi_cmnd * SCpnt)
+ {
+ 	unsigned int imr;
+ 	unsigned int irr;
+@@ -1193,7 +1193,7 @@ static void fd_mcs_print_info(Scsi_Cmnd * SCpnt)
+ }
+ #endif
+ 
+-static int fd_mcs_abort(Scsi_Cmnd * SCpnt)
++static int fd_mcs_abort(struct scsi_cmnd * SCpnt)
+ {
+ 	struct Scsi_Host *shpnt = SCpnt->device->host;
+ 
+@@ -1229,7 +1229,7 @@ static int fd_mcs_abort(Scsi_Cmnd * SCpnt)
+ 	return SUCCESS;
+ }
+ 
+-static int fd_mcs_bus_reset(Scsi_Cmnd * SCpnt) {
++static int fd_mcs_bus_reset(struct scsi_cmnd * SCpnt) {
+ 	struct Scsi_Host *shpnt = SCpnt->device->host;
+ 	unsigned long flags;
+ 
 
 
 
