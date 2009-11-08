@@ -1,55 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbZKHNEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbZKHMiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752751AbZKHNEw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZKHNEv
+	id S1754152AbZKHMiW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 07:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZKHMiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:04:51 -0500
-Received: from mga05.intel.com ([192.55.52.89]:43258 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751411AbZKHNEv (ORCPT
+	Sun, 8 Nov 2009 07:38:21 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:53622 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753565AbZKHMiU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:04:51 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,703,1249282800"; 
-   d="scan'208";a="744929266"
-Date: Sun, 8 Nov 2009 20:38:12 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
+	Sun, 8 Nov 2009 07:38:20 -0500
+Date: Sun, 8 Nov 2009 13:38:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yong Wang <yong.y.wang@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86, therm: Only read the initial value of thermal LVT
-	entry on BSP
-Message-ID: <20091108123812.GA877@ywang-moblin2.bj.intel.com>
-References: <20091107001736.GA30790@ywang-moblin2.bj.intel.com> <1257562565.4083.485.camel@sbs-t61.sc.intel.com> <20091108102520.GC7233@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       hare@suse.de, akpm@linux-foundation.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86: Add back _end symbol that is missing
+	from Symbol.map
+Message-ID: <20091108123825.GA11904@merkur.ravnborg.org>
+References: <200911041519.nA4FJWEW030164@imap1.linux-foundation.org> <tip-d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76@git.kernel.org> <20091108113805.GA11847@merkur.ravnborg.org> <20091108114829.GQ11372@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091108102520.GC7233@elte.hu>
+In-Reply-To: <20091108114829.GQ11372@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 11:25:21AM +0100, Ingo Molnar wrote:
+On Sun, Nov 08, 2009 at 12:48:29PM +0100, Ingo Molnar wrote:
 > 
-> i dont disagree with the fix, but could we please do it a bit cleaner, 
-> and initialize a proper file-scope lvtthrm_init value from a different 
-> boot-CPU-only function? (not intel_init_thermal)
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-
-Thanks for your comments. Just want to make sure I understand correctly.
-By 'file-scope', do you want me to define lvtthrm_init as a static
-variable but not to define it in any function?
-
-> that makes it cleaner, and also it will work if we dont boot on cpu==0. 
-> (should that ever occur)
+> > On Sun, Nov 08, 2009 at 11:07:12AM +0000, tip-bot for Hannes Reinecke wrote:
+> > > Commit-ID:  d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76
+> > > Gitweb:     http://git.kernel.org/tip/d1e4d37b79e944f6351ae38eb1ca7c9f7b506e76
+> > > Author:     Hannes Reinecke <hare@suse.de>
+> > > AuthorDate: Wed, 4 Nov 2009 07:19:32 -0800
+> > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > CommitDate: Sun, 8 Nov 2009 12:05:03 +0100
+> > > 
+> > > x86: Add back _end symbol that is missing from Symbol.map
+> > > 
+> > > With 2.6.31 'crash' on x86_64 falls flat on its face as the
+> > > '_end' symbol is missing from the System.map file.
+> > > 
+> > > The culprit is commit 091e52c3551d3031343df24b573b770b4c6c72b6,
+> > > which moved the '_end' symbol into it's own section.  Apparently
+> > > this causes kallsyms to not reference it properly.
+> > > 
+> > > So do not include _end in it's own section.
+> > > 
+> > > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > > Cc: Sam Ravnborg <sam@ravnborg.org>
+> > > Cc: <stable@kernel.org> # .31.x
+> > > LKML-Reference: <200911041519.nA4FJWEW030164@imap1.linux-foundation.org>
+> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > I'm afraid this will break a RELOCTABLE i386 kernel.
+> > 
+> > We fixed this up some time ago where we had to
+> > move the symbol definition inside a section
+> > to prevent the symbol being absolute.
 > 
+> ah, indeed. So ... the question is then, why did _end disappear from 
+> System.map?
+I think ld discards zero size sections. No need to keep them around
+if they are empty.
 
-May I know when will this happen?
+Following patch should fix it up in a better way.
+I reused most of Hannes changelog.
 
-Thanks
--Yong
+	Sam
+
+[PATCH] x86: Add back _end symbol that is missing from Symbol.map
+
+With 2.6.31 'crash' on x86_64 falls flat on its face as the
+'_end' symbol is missing from the System.map file.
+
+The culprit is commit 091e52c3551d3031343df24b573b770b4c6c72b6,
+which moved the '_end' symbol into it's own section.
+
+The problem is likely that ld discards empty sections.
+So move the definition of _end into the last section defined.
+
+Cc: Hannes Reinecke <hare@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: <stable@kernel.org> # .31.x
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+
+
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 92929fb..c58a6e3 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -289,9 +289,12 @@ SECTIONS
+ 		. += 64 * 1024;		/* 64k alignment slop space */
+ 		*(.brk_reservation)	/* areas brk users have reserved */
+ 		__brk_limit = .;
+-	}
+ 
+-	.end : AT(ADDR(.end) - LOAD_OFFSET) {
++		/*
++		 * To support RELOCTABLE kernel _end must be inside a section.
++		 * And ld is know to discard empty section so we locate _end in
++		 * last section we define.
++		 */
+ 		_end = .;
+ 	}
+ 
