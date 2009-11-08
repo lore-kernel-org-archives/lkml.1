@@ -1,133 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZKHPqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZKHPse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbZKHPqa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 10:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZKHPqa
+	id S1754018AbZKHPse (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 10:48:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbZKHPsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 10:46:30 -0500
-Received: from mailgw.miraclelinux.com ([122.216.84.157]:35667 "EHLO
-	mailgw.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbZKHPq3 (ORCPT
+	Sun, 8 Nov 2009 10:48:33 -0500
+Received: from mail.parknet.ad.jp ([210.171.162.6]:46036 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753335AbZKHPsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 10:46:29 -0500
-Message-ID: <4AF6E7E2.9080406@miraclelinux.com>
-Date: Mon, 09 Nov 2009 00:46:42 +0900
-From: Naohiro Ooiwa <nooiwa@miraclelinux.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 8 Nov 2009 10:48:32 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Paolo Giarrusso <p.giarrusso@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Daylight saving time & FAT
+References: <a4d0c86c0911051222q1ec384a2u724e0c8b1432ddb6@mail.gmail.com>
+Date: Mon, 09 Nov 2009 00:48:33 +0900
+In-Reply-To: <a4d0c86c0911051222q1ec384a2u724e0c8b1432ddb6@mail.gmail.com>
+	(Paolo Giarrusso's message of "Thu, 5 Nov 2009 21:22:45 +0100")
+Message-ID: <873a4p9fvy.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Roland McGrath <roland@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, oleg@redhat.com
-Subject: [PATCH] extend print_fatal_signals for reached RLIMIT_SIGPENDING
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the system has too many timers or too many aggregate
-queued signals, the EAGAIN error is returned to application
-from kernel, including timer_create().
-It means that exceeded limit of pending signals at all.
-But we can't imagine it.
+Paolo Giarrusso <p.giarrusso@gmail.com> writes:
 
-This patch show the message when reached limit of pending signals
-and enabled print_fatal_signals.
-If you see this message and your system behaved unexpectedly,
-you can run following command.
-   # ulimit -i unlimited
+> When re-rsync'ing two hard drives (one VFAT, one NTFS mounted with
+> ntfs-3g) after a Daylight Saving Time change (I was on CEST, +0200,
+> now I'm on CET, +0100), I discovered a one-hour time difference over
+> all files (on FAT, they are one hour in future).
+> My current understanding is that FAT stores times relative to the
+> current timezone, and that's crappy (see fat_time_fat2unix(), in
+> fs/fat/misc.c). But with the current code, it gets even more crappy -
+> the same file will have a different _UTC_ timestamp depending on my
+> current timezone, since the current offset from UTC is added to the
+> stored timestamp to get the UTC time (I verified the timezone change
+> would perfectly explain, even in sign, the time difference I found).
+> That's why I guess that the FAT timestamps are wrong.
+> I frankly doubt that Windows is so bad.
+>
+> On DOS, they could get away without any conversion at all. But on
+> current Windows systems? Either you find the right time zone at file
+> saving time (too complicated IMHO) or ignore DST when saving/restoring
+> time (i.e. pretend DST is not in effect, and add the shift if needed).
+> I don't know right now what happens.
+> I wrote this mail to discuss what would be the correct solution (the
+> second?), and if it is possible to implement it.
 
-With help from Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>.
+fat_time_{fat2unix,unix2fat}() doesn't handle timezone correctly. It
+just uses timeoffset from sys_tz.tz_minuteswest. But, it is not enough
+for localtime. Because it doesn't handle DST or such complex stuff. (As
+workaround, fat has "tz=UTC" option)
 
+To get correct conversion, those functions have to handle timezone
+database (zoneinfo or something).
 
-Signed-off-by: Naohiro Ooiwa <nooiwa@miraclelinux.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
----
- Documentation/kernel-parameters.txt |   11 +++++++++--
- kernel/signal.c                     |   21 ++++++++++++++++++---
- 2 files changed, 27 insertions(+), 5 deletions(-)
+I think the issues would be, who (userland or kernel) handle zoneinfo,
+and how handle.
 
-diff --git a/Documentation/kernel-parameters.txt
-b/Documentation/kernel-parameters.txt
-index 9107b38..3bbd92f 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2032,8 +2032,15 @@ and is between 256 and 4096 characters. It is defined in
-the file
+Well, so, FWIW, I was thinking make timezone subsystem. userland app
+pass one of zoneinfo to kernel as data via ioctl or sysfs or something
+with name, and subsystem manages the lifetime/etc. of data.  And
+provide utc2local(time, zone name) to convert time correctly.
 
- 	print-fatal-signals=
- 			[KNL] debug: print fatal signals
--			print-fatal-signals=1: print segfault info to
--			the kernel console.
-+
-+			If enabled, warn about various signal handling
-+			related application anomalies: too many signals,
-+			too many POSIX.1 timers, fatal signals causing a
-+			coredump - etc.
-+
-+			If you hit the warning due to signal overflow,
-+			you might want to try "ulimit -i unlimited".
-+
- 			default: off.
+So, fs would be able to get help of utc2local() to convert to on-disk
+format, and probably, zonename will be specified as mount option.
 
- 	printk.time=	Show timing data prefixed to each printk message line
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 6705320..56e9c00 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -41,6 +41,8 @@
-
- static struct kmem_cache *sigqueue_cachep;
-
-+int print_fatal_signals __read_mostly;
-+
- static void __user *sig_handler(struct task_struct *t, int sig)
- {
- 	return t->sighand->action[sig - 1].sa.sa_handler;
-@@ -188,6 +190,17 @@ int next_signal(struct sigpending *pending, sigset_t *mask)
- 	return sig;
- }
-
-+static void show_reach_rlimit_sigpending(void)
-+{
-+	static DEFINE_RATELIMIT_STATE(printk_rl_state, 5 * HZ, 10);
-+
-+	if (!__ratelimit(&printk_rl_state))
-+		return;
-+
-+	printk(KERN_INFO "%s/%d: reached RLIMIT_SIGPENDING.\n",
-+				current->comm, current->pid);
-+}
-+
- /*
-  * allocate a new signal queue record
-  * - this may be called without locks if and only if t == current, otherwise an
-@@ -209,8 +222,12 @@ static struct sigqueue *__sigqueue_alloc(struct task_struct
-*t, gfp_t flags,
- 	atomic_inc(&user->sigpending);
- 	if (override_rlimit ||
- 	    atomic_read(&user->sigpending) <=
--			t->signal->rlim[RLIMIT_SIGPENDING].rlim_cur)
-+			t->signal->rlim[RLIMIT_SIGPENDING].rlim_cur) {
- 		q = kmem_cache_alloc(sigqueue_cachep, flags);
-+	} else {
-+		if (print_fatal_signals)
-+			show_reach_rlimit_sigpending();
-+	}
- 	if (unlikely(q == NULL)) {
- 		atomic_dec(&user->sigpending);
- 		free_uid(user);
-@@ -925,8 +942,6 @@ static int send_signal(int sig, struct siginfo *info, struct
-task_struct *t,
- 	return __send_signal(sig, info, t, group, from_ancestor_ns);
- }
-
--int print_fatal_signals;
--
- static void print_fatal_signal(struct pt_regs *regs, int signr)
- {
- 	printk("%s/%d: potentially unexpected fatal signal %d.\n",
--- 1.5.4.1
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
