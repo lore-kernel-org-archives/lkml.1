@@ -1,79 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbZKHJsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZKHKCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbZKHJsa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 04:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZKHJs2
+	id S1753797AbZKHKCn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 05:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZKHKCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 04:48:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36428 "EHLO mx3.mail.elte.hu"
+	Sun, 8 Nov 2009 05:02:41 -0500
+Received: from gw1.transmode.se ([213.115.205.20]:41293 "EHLO gw1.transmode.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751512AbZKHJs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 04:48:27 -0500
-Date: Sun, 8 Nov 2009 10:48:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: J K Rai <jk.anurag@yahoo.com>, Mike Galbraith <efault@gmx.de>,
-       =?unknown-8bit?B?RnLDqWTDqXJpYw==?= Weisbecker 
-	<fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Instantaneous snapshot of CPU schedule
-Message-ID: <20091108094827.GB2845@elte.hu>
-References: <256042.70547.qm@web94710.mail.in2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <256042.70547.qm@web94710.mail.in2.yahoo.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751333AbZKHKCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 05:02:40 -0500
+X-Greylist: delayed 567 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Nov 2009 05:02:40 EST
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: akpm@linux-foundation.org, Richard Purdie <rpurdie@rpsys.net>,
+       linux-kernel@vger.kernel.org
+Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: [PATCH] zlib: Optimize inffast when copying direct from output
+Date: Sun, 8 Nov 2009 10:53:14 +0100
+Message-Id: <1257673994-23175-1-git-send-email-Joakim.Tjernlund@transmode.se>
+X-Mailer: git-send-email 1.6.4.4
+X-MIMETrack: Itemize by SMTP Server on sesr04/Transmode(Release 8.5 HF964|October 21, 2009) at
+ 2009-11-08 10:53:17,
+	Serialize by Router on sesr04/Transmode(Release 8.5 HF964|October 21, 2009) at
+ 2009-11-08 10:53:17,
+	Serialize complete at 2009-11-08 10:53:17
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+JFFS2 uses lesser compression ratio and inflate always
+ends up in "copy direct from output" case.
+This patch tries to optimize the copy procedure for
+arch's that have CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS defined.
+On my MPC8321 this is about 14% faster on my JFFS2 root FS
+than the original.
 
-* J K Rai <jk.anurag@yahoo.com> wrote:
+Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+---
+ lib/zlib_inflate/inffast.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
-> Hello
-> 
-> Is there any utility using which we can take current (instantaneous) 
-> snapshot of process schedule on the linux based system from user land. 
-> Like use a system call or command to know what is running on each of 
-> the cpus 0..n-1 (assuming n cpus in the system). Output could be like 
-> tuple (pid, cpu_no).
-> 
-> If such utility does not exist then kindly throw some light / ideas so 
-> that it could be implemented.
+diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
+index 8550b0c..0588fbf 100644
+--- a/lib/zlib_inflate/inffast.c
++++ b/lib/zlib_inflate/inffast.c
+@@ -240,6 +240,40 @@ void inflate_fast(z_streamp strm, unsigned start)
+                 }
+                 else {
+                     from = out - dist;          /* copy direct from output */
++#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
++                    /* minimum length is three */
++		    if (dist > 2 ) {
++			unsigned short *sout = (unsigned short *)(out - OFF);
++			unsigned short *sfrom = (unsigned short *)(from - OFF);
++			unsigned long loops = len >> 1;
++
++			do
++			    PUP(sout) = PUP(sfrom);
++			while (--loops);
++			out = (unsigned char *)sout + OFF;
++			from = (unsigned char *)sfrom + OFF;
++			if (len & 1)
++			    PUP(out) = PUP(from);
++		    } else if (dist == 2) {
++			unsigned short *sout = (unsigned short *)(out - OFF);
++			unsigned short pat16;
++			unsigned long loops = len >> 1;
++
++			pat16 = *(sout-2+2*OFF);
++			do
++			    PUP(sout) = pat16;
++			while (--loops);
++			out = (unsigned char *)sout + OFF;
++			if (len & 1)
++			    PUP(out) = PUP(from);
++		    } else {
++			unsigned char pat8 = *(out - 1 + OFF);
++
++			do {
++			    PUP(out) = pat8;
++			} while (--len);
++		    }
++#else
+                     do {                        /* minimum length is three */
+                         PUP(out) = PUP(from);
+                         PUP(out) = PUP(from);
+@@ -251,6 +285,7 @@ void inflate_fast(z_streamp strm, unsigned start)
+                         if (len > 1)
+                             PUP(out) = PUP(from);
+                     }
++#endif
+                 }
+             }
+             else if ((op & 64) == 0) {          /* 2nd level distance code */
+-- 
+1.6.4.4
 
-We have a tool that can record scheduling events and analyze/display 
-them, see:
-
-  perf sched record
-
-  perf sched latency
-  perf sched map
-  perf sched trace
-  perf sched replay
-
-the latest version is in:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-do 'cd tools/perf; make -j install' to get the 'perf' command.
-
-Now, your specific question was 'instantaneous'. I wouldnt mind such an 
-extension to 'perf sched record':
-
-  perf sched record --snapshot
-
-or so. Then 'perf sched map' would show which task is running on which 
-CPU. Other output modes would be possible too.
-
-Would you be interested in extending 'perf sched' in such a fashion?
-
-	Ingo
