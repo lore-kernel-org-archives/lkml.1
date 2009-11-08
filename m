@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZKHHEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZKHHGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbZKHHEF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 02:04:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZKHHEE
+	id S1752005AbZKHHGS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 02:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZKHHGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 02:04:04 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:36064 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbZKHHED (ORCPT
+	Sun, 8 Nov 2009 02:06:17 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:55536 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbZKHHGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 02:04:03 -0500
-To: Tejun Heo <tj@kernel.org>
+	Sun, 8 Nov 2009 02:06:17 -0500
+To: Greg KH <greg@kroah.com>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
        Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 15/13] sysfs: Protect sysfs_refresh_inode with inode mutex.
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>
+Subject: Re: [PATCH 0/13] sysfs lazification.
 References: <m13a4vbz8r.fsf@fess.ebiederm.org>
-	<m1hbta1onf.fsf@fess.ebiederm.org> <4AF4DAEC.5010503@kernel.org>
+	<20091106224857.GB32205@kroah.com>
 From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 07 Nov 2009 23:04:03 -0800
-In-Reply-To: <4AF4DAEC.5010503@kernel.org> (Tejun Heo's message of "Sat\, 07 Nov 2009 11\:26\:52 +0900")
-Message-ID: <m1iqdlo5uk.fsf@fess.ebiederm.org>
+Date: Sat, 07 Nov 2009 23:06:15 -0800
+In-Reply-To: <20091106224857.GB32205@kroah.com> (Greg KH's message of "Fri\, 6 Nov 2009 14\:48\:57 -0800")
+Message-ID: <m1bpjdo5qw.fsf@fess.ebiederm.org>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,32 +34,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+Greg KH <greg@kroah.com> writes:
 
-> Eric W. Biederman wrote:
->> In general everything that writes to vfs inodes holds the
->> inode mutex, so hold the inode mutex over sysfs_refresh_inode.
->> The sysfs data structures don't need this but it looks like the
->> vfs might.
+> On Tue, Nov 03, 2009 at 03:53:56AM -0800, Eric W. Biederman wrote:
 >> 
->> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+>> The sysfs code updates the vfs caches immediately when the sysfs data
+>> structures change causing a lot of unnecessary complications.  The
+>> following patchset untangles that beast.  Allowing for simpler
+>> more straight forward code, the removal of a hack from the vfs
+>> to support sysfs, and human comprehensible locking on sysfs.
+>> 
+>> Most of these patches have already been reviewed and acked from the
+>> last time I had time to work on sysfs.
+>> 
+>> In net the patches look like:
 >
-> Acked-by: Tejun Heo <tj@kernel.org>
->
-> Sidenote: Hmmm... Originally, sysfs completely depended on vfs locking
-> but with sysfs_dirent separation, the tree structure itself and some
-> attributes went under the protection of sysfs_mutex while leaving more
-> vfs oriented fields under vfs locking.  This patchset makes sysfs
-> lazier so it can't depend on any vfs layer locking.  I think you've
-> converted all necessary places while removing dependency on
-> dentry/inode from update operations but it might be a good idea to do
-> a audit pass over how fields are being protected now.
+> Can you resend these based on the review that you just got, with the new
+> acks and changes so that I can apply them?
 
-You raised a good point.  I took a quick second pass through.
-I did not see anything I have missed, and I did not change anything
-else on the vfs path.
-
-So at the very least I don't expect there are any locking related
-regressions.
+Coming in just a minute.  The fixes are the trailing patches.
 
 Eric
