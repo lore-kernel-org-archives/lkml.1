@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZKHNe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbZKHNi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbZKHNe4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 08:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZKHNez
+	id S1753160AbZKHNi3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 08:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZKHNi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 08:34:55 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:39138 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbZKHNey (ORCPT
+	Sun, 8 Nov 2009 08:38:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:42928 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbZKHNi2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 08:34:54 -0500
+	Sun, 8 Nov 2009 08:38:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:message-id
-         :content-type:content-transfer-encoding;
-        b=VQw2teBJL+VyABdnivEqxxp7PgYgxClfkODdLc/avAEx6EeiCJ6bd6VtBXK71SX9XL
-         v0xB+nnPBhRJb/ikdKg2poh6cHo/z85sYLRyYtwDrwsQlp265Ik02rAWYmTWu85aW+6I
-         zS0oqR2xIAAxdKIDwZFpXhvYIwd1DkeuClsHo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-wireless@vger.kernel.org
-Subject: [git patches] rt2800 drivers updates
-Date: Sun, 8 Nov 2009 14:33:31 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Ivo van Doorn <ivdoorn@gmail.com>,
-       Gertjan van Wingerde <gwingerde@gmail.com>,
-       linux-kernel@vger.kernel.org
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=wAzx/u5DnsknRu1V91mCCQj3q6D2a1KR68sF0cg3DydOrKWX2T0rWBIO+KtBuUwfd+
+         7jZkuicguk+UTZWjrb5H5xaAY6X0LWGQK7AQFVHLRDSNWdD/bGihwddlEGwhOAivRKpS
+         mLuykHFKkILHOYaaGzLjrI5e5G4WK3dAAb/40=
+Message-ID: <4AF6C9D7.8060004@gmail.com>
+Date: Sun, 08 Nov 2009 14:38:31 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
 MIME-Version: 1.0
-Message-Id: <200911081433.32005.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Ben Hutchings <ben@decadent.org.uk>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 04/75] cyclades: declare MODULE_FIRMWARE
+References: <1257630121.15927.383.camel@localhost>
+In-Reply-To: <1257630121.15927.383.camel@localhost>
+X-Enigmail-Version: 0.97b
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/07/2009 10:42 PM, Ben Hutchings wrote:
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 
-Hi,
+Reviewed-by: Jiri Slaby <jirislaby@gmail.com>
 
-Another bunch of updates for rt2800 drivers, this time:
+> ---
+>  drivers/char/cyclades.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+> index 4254457..0113574 100644
+> --- a/drivers/char/cyclades.c
+> +++ b/drivers/char/cyclades.c
+> @@ -4208,3 +4208,4 @@ module_exit(cy_cleanup_module);
+>  MODULE_LICENSE("GPL");
+>  MODULE_VERSION(CY_VERSION);
+>  MODULE_ALIAS_CHARDEV_MAJOR(CYCLADES_MAJOR);
+> +MODULE_FIRMWARE("cyzfirm.bin");
 
-- unify rt2800 drivers some more removing another 300 LOC in the process
-  (rt2800pci is down to 1.5 KLOC now)
-
-- add missing RF values to rt2800pci driver
-
-- add eFuse EEPROM support to rt2800usb
-  (needed for RT3070 and maybe some other chips)
-
-- fix RX descriptor naming in rt2800usb
-
-I've also merged recent rt2x00 patches from Gertjan to my tree to not
-waste time on eventually synchronizing rt2x00 / rt2800 trees later.
-
-Oh, there is also an unrelated bonus change to rt2500usb driver present
-(removal of dead link tuning code which kills 130 LOC).
-
-I'll post new patches to linux-wireless for review in few minutes.
-
-
-The following changes since commit 93f65fc385c7cca807826ce7f7a76c7429849331:
-  Bartlomiej Zolnierkiewicz (1):
-        rt2800: add rt2800lib (part four)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git rt2800
-
-Bartlomiej Zolnierkiewicz (10):
-      rt2800: prepare for unification of EEPROM support code
-      rt2800: unify EEPROM support code
-      rt2800pci: add missing RF values to rf_vals table
-      rt2800usb: reorganize code in rt2800usb_probe_hw_mode()
-      rt2800: prepare for rt2800*_probe_hw_mode() unification
-      rt2800: unify rt2800*_probe_hw_mode()
-      rt2800usb: fix RX descriptor naming
-      rt2800: add eFuse EEPROM support code to rt2800lib
-      rt2800usb: add eFuse EEPROM support
-      rt2500usb: remove dead link tuning code
-
-Gertjan van Wingerde (3):
-      rt2x00: Mark rt2800pci as broken.
-      rt2x00: Move interface type assignments to generic code.
-      rt2x00: Add dynamic detection of eFuse EEPROM in rt2800pci.
-
- drivers/net/wireless/rt2x00/Kconfig     |    7 +-
- drivers/net/wireless/rt2x00/rt2500usb.c |  134 ---------
- drivers/net/wireless/rt2x00/rt2800.h    |   29 ++
- drivers/net/wireless/rt2x00/rt2800lib.c |  460 +++++++++++++++++++++++++++++++
- drivers/net/wireless/rt2x00/rt2800lib.h |    6 +
- drivers/net/wireless/rt2x00/rt2800pci.c |  406 ++--------------------------
- drivers/net/wireless/rt2x00/rt2800pci.h |   28 --
- drivers/net/wireless/rt2x00/rt2800usb.c |  411 +--------------------------
- drivers/net/wireless/rt2x00/rt2800usb.h |   40 ++--
- drivers/net/wireless/rt2x00/rt2x00pci.c |    2 +
- drivers/net/wireless/rt2x00/rt2x00soc.c |    5 +
- drivers/net/wireless/rt2x00/rt2x00usb.c |    2 +
- 12 files changed, 556 insertions(+), 974 deletions(-)
