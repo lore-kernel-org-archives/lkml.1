@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZKHVbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZKHVeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461AbZKHVbw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 16:31:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbZKHVbw
+	id S1755512AbZKHVeS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 16:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbZKHVeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 16:31:52 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:50449 "EHLO
+	Sun, 8 Nov 2009 16:34:17 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:60681 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537AbZKHVbv (ORCPT
+	with ESMTP id S1755376AbZKHVeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 16:31:51 -0500
+	Sun, 8 Nov 2009 16:34:17 -0500
 From: Arnd Bergmann <arnd@arndb.de>
 To: David Miller <davem@davemloft.net>
-Subject: Re: [RFC, PATCH 0/7] net, compat_ioctl: move handlers to net/socket.c
-Date: Sun, 8 Nov 2009 22:31:47 +0100
+Subject: [PATCH 1/2] net, compat_ioctl: fix SIOCGMII ioctls
+Date: Sun, 8 Nov 2009 22:34:13 +0100
 User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, hch@lst.de, netdev@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-References: <1257530949-9695-1-git-send-email-arnd@arndb.de> <20091106.204753.223665411.davem@davemloft.net>
-In-Reply-To: <20091106.204753.223665411.davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, hch@lst.de, netdev@vger.kernel.org
+References: <1257530949-9695-1-git-send-email-arnd@arndb.de> <20091106.204753.223665411.davem@davemloft.net> <200911082231.48060.arnd@arndb.de>
+In-Reply-To: <200911082231.48060.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911082231.48060.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+QM+zyzd7AMMlygs2+sRTyjexihgIPmVeV8gq
- CxmbvvTzKoGka1wWvMIAtrw19ZRj/sI0pZGM4LQvP+JySRFyGH
- f0t9JV6w73MojL7G6+JEA==
+Message-Id: <200911082234.14031.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19sdk1iKkn2oOeonQmkIAirFXLf7hPXUu4ZIxo
+ xpui7QJVL0RSmP2eW2EBRcbGwqAJdYRUSCrM42GLFrj0a0xcBz
+ ZhLeURMCAtvcTv449toCw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 November 2009, David Miller wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> Date: Fri,  6 Nov 2009 19:09:02 +0100
-> 
-> > This cleans up some of the socket ioctl handling by moving it
-> > from fs/compat_ioctl.c to net/socket.c. The code is still untested,
-> > so this is an RFC for now. If you're happy with it, I'll do some
-> > testing to see if everything still works.
-> > 
-> > This series is a prerequisite for cleaning up the rest of
-> > compat_ioctl.c, saving some 30kb of kernel memory in the end.
-> > 
-> > The first four patches are probably worthwhile independently,
-> > because they fix some bugs in compat_ioctl handling.
-> > There is some obvious conflict with the ATM patch I sent
-> > independently today. That one should probably be worked out
-> > first.
-> 
-> This looks great, all applied.  Please make the fixups recommended
-> to you in the feedback as followon patches.
+SIOCGMIIPHY and SIOCGMIIREG return data through ifreq,
+so it needs to be converted on the way out as well.
 
-Thanks! Two patches follow.
+SIOCGIFPFLAGS is unused, but has the same problem in theory.
 
-Any opinion on how to proceed with the ATM stuff? From my
-point of view, I'm fine with having moved it out of fs/compat_ioctl.c,
-but it's still a bit silly to have two half-complete implementations.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ net/socket.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-> Also, I added the following cure after your patch series:
-> 
-> net: compat: No need to define IFHWADDRLEN and IFNAMSIZ twice.
-> 
-> It's defined colloqually in linux/if.h and linux/compat.h
-> includes that.
+diff --git a/net/socket.c b/net/socket.c
+index 688de5d..28a0263 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -2587,7 +2587,10 @@ static int dev_ifsioc(struct net *net, struct socket *sock,
+ 		case SIOCGIFBRDADDR:
+ 		case SIOCGIFDSTADDR:
+ 		case SIOCGIFNETMASK:
++		case SIOCGIFPFLAGS:
+ 		case SIOCGIFTXQLEN:
++		case SIOCGMIIPHY:
++		case SIOCGMIIREG:
+ 			if (copy_to_user(uifr32, &ifr, sizeof(*uifr32)))
+ 				return -EFAULT;
+ 			break;
+-- 
+1.6.3.3
 
-ok.
 
-	Arnd <><
+
