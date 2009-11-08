@@ -1,374 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbZKHLjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZKHLhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbZKHLjY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 06:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZKHLjX
+	id S1754009AbZKHLhV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 06:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZKHLhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 06:39:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13890 "EHLO mx1.redhat.com"
+	Sun, 8 Nov 2009 06:37:17 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39467 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753909AbZKHLjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 06:39:17 -0500
-Date: Sun, 8 Nov 2009 13:35:16 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, s.hetze@linux-ag.com,
-       Daniel Walker <dwalker@fifo99.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCHv8 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091108113516.GA19016@redhat.com>
-References: <cover.1257349249.git.mst@redhat.com> <20091104155724.GD32673@redhat.com> <200911061529.17500.rusty@rustcorp.com.au>
+	id S1753856AbZKHLhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 06:37:07 -0500
+Date: Sun, 8 Nov 2009 12:35:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] RFC x86_64 more accurate KSTK_ESP implementation
+Message-ID: <20091108113546.GN11372@elte.hu>
+References: <1257233486.22553.6.camel@wall-e>
+ <20091103082843.GA27676@elte.hu>
+ <1257239184.4889.15.camel@wall-e>
+ <1257409189.26874.18.camel@wall-e>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911061529.17500.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1257409189.26874.18.camel@wall-e>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 06, 2009 at 03:29:17PM +1030, Rusty Russell wrote:
-> On Thu, 5 Nov 2009 02:27:24 am Michael S. Tsirkin wrote:
-> > What it is: vhost net is a character device that can be used to reduce
-> > the number of system calls involved in virtio networking.
+
+* Stefani Seibold <stefani@seibold.net> wrote:
+
+> Hi,
 > 
-> Hi Michael,
+> this is a RFC for a more accurate KSTK_ESP implementation for the x86_64
+> architecture.
 > 
->    Now everyone else has finally kicked all the tires and it seems to pass,
-> I've done a fairly complete review.  Generally, it's really nice; just one
-> bug and a few minor suggestions for polishing.
-
-Thanks for the review! I'll add more polishing and repost.
-Answers to some questions below.
-
-> > +/* Caller must have TX VQ lock */
-> > +static void tx_poll_stop(struct vhost_net *net)
-> > +{
-> > +	if (likely(net->tx_poll_state != VHOST_NET_POLL_STARTED))
-> > +		return;
+> Because the usersp will be only updated by a context switch this value
+> is most of the time outdated. This patch update the per CPU variable
+> old_rsp in the device and timer interrupt too.  
 > 
-> likely?  Really?
-
-Hmm ... yes. tx poll stop is called on each packet (as long as we do not
-fill up 1/2 backend queue), the first call will stop polling
-the rest checks state and does nothing.
-
-This is because we normally do not care when the message has left the
-queue in backend device: we tell backend to send it and forget. We only
-start polling when backend tx queue fills up.
-
-Makes sense?
-
-> > +	for (;;) {
-> > +		head = vhost_get_vq_desc(&net->dev, vq, vq->iov, &out, &in,
-> > +					 NULL, NULL);
+> In my opinion this can be save done if the current stack pointer is
+> outside the kernel stack of the current task and the instruction pointer
+> is not inside the kernel.
 > 
-> Danger!  You need an arg to vhost_get_vq_desc to tell it the max desc size
-> you can handle.  Otherwise, it's only limited by ring size, and a malicious
-> guest can overflow you here, and below:
-
-In fact, I think this is not a bug.  This happens to work correctly
-(even with malicious guests) because vhost_get_vq_desc is hard-coded to
-check VHOST_NET_MAX_SG, so in fact no overflow is possible.  I agree
-that it's mich nicer to pass iovec size to vhost_get_vq_desc.
-
+> The old_rsp value will be stored in usersp in case of a context switch.
 > 
-> > +		/* Skip header. TODO: support TSO. */
-> > +		s = move_iovec_hdr(vq->iov, vq->hdr, hdr_size, out);
-> ...
-> > +
-> > +	use_mm(net->dev.mm);
-> > +	mutex_lock(&vq->mutex);
-> > +	vhost_no_notify(vq);
+> The KSTK_ESP will get the value from old_rsp in case the task is the
+> current task, otherwise it will read usersp.
 > 
-> I prefer a name like "vhost_disable_notify()".
-
-Good idea.
-
-> > +		/* OK, now we need to know about added descriptors. */
-> > +		if (head == vq->num && vhost_notify(vq))
-> > +			/* They could have slipped one in as we were doing that:
-> > +			 * check again. */
-> > +			continue;
-> > +		/* Nothing new?  Wait for eventfd to tell us they refilled. */
-> > +		if (head == vq->num)
-> > +			break;
-> > +		/* We don't need to be notified again. */
-> > +		vhost_no_notify(vq);
+> I know about the performance coast, so this is why i ask for comments.
 > 
-> Similarly, vhost_enable_notify.  This one is particularly misleading since
-> it doesn't actually notify anything!
-
-Good idea.
-
-
+> Stefani
 > 
-> In particular, this code would be neater as:
+> Signed-off-by: Stefani Seibold <stefani@seibold.net>
 > 
-> 	if (head == vq->num) {
-> 		if (vhost_enable_notify(vq)) {
-> 			/* Try again, they could have slipped one in. */
-> 			continue;
-> 		}
-> 		/* Nothing more to do. */
-> 		break;
-> 	}
-> 	vhost_disable_notify(vq);
+>  include/asm/processor.h |    4 +++-
+>  kernel/apic/apic.c      |    3 +++
+>  kernel/irq_64.c         |    1 +
+>  kernel/process_64.c     |   20 ++++++++++++++++++++
+>  4 files changed, 27 insertions(+), 1 deletion(-)
 > 
-> Now, AFAICT vhost_notify()/enable_notify() would be better rewritten to
-> return true only when there's more pending.  Saves a loop around here most
-> of the time.
+> --- linux-2.6.32-rc5.old/arch/x86/include/asm/processor.h	2009-10-16 02:41:50.000000000 +0200
+> +++ linux-2.6.32-rc5.new/arch/x86/include/asm/processor.h	2009-11-05 08:28:23.765300812 +0100
+> @@ -1000,7 +1000,7 @@
+>  #define thread_saved_pc(t)	(*(unsigned long *)((t)->thread.sp - 8))
+>  
+>  #define task_pt_regs(tsk)	((struct pt_regs *)(tsk)->thread.sp0 - 1)
+> -#define KSTK_ESP(tsk)		-1 /* sorry. doesn't work for syscall. */
+> +extern unsigned long KSTK_ESP(struct task_struct *task);
+>  #endif /* CONFIG_X86_64 */
+>  
+>  extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
+> @@ -1052,4 +1052,6 @@
+>  	return ratio;
+>  }
+>  
+> +extern void update_usersp(struct pt_regs *regs);
+> +
+>  #endif /* _ASM_X86_PROCESSOR_H */
+> --- linux-2.6.32-rc5.old/arch/x86/kernel/process_64.c	2009-10-16 02:41:50.000000000 +0200
+> +++ linux-2.6.32-rc5.new/arch/x86/kernel/process_64.c	2009-11-05 08:52:39.965227285 +0100
+> @@ -664,3 +664,23 @@
+>  	return do_arch_prctl(current, code, addr);
+>  }
+>  
+> +void update_usersp(struct pt_regs *regs)
+> +{
+> +	unsigned long stk = (unsigned long)task_stack_page(current);
+> +	unsigned long stkp = (regs)->sp; 
 
-OKay, I'll look into this. It kind of annoys me that we would do
-get_user for the same value twice: once in vhost_enable_notify and once
-in vhost_get_vq_desc.  OTOH, all the loop does is call vhost_get_vq_desc
-again.
+Cleanliness: no need for that parenthesis.
 
->  Also, the vhost_no_notify/vhost_disable_notify() can be moved
-> out of the loop entirely.
+> +
+> +	if (((stkp < stk) || (stkp >= stk + THREAD_SIZE))
+> +	    && regs->ip < PAGE_OFFSET)
+> +		percpu_write(old_rsp, stkp);
+> +}
 
-I don't think it can, if we enabled notification and then see more
-descriptors in queue, we want to disable notification again. But it can
-be
->  (It could be under an if (unlikely(enabled)), not
-> sure if it's worth it).
+that check for regs->ip looks imprecise - why dont you use the 
+user_mode_vm()?
 
- 		if (unlikely(vhost_enable_notify(vq))) {
- 			/* Try again, they have slipped one in. */
- 			vhost_disable_notify(vq);
- 			continue;
- 		}
+It's true that the value itself is statistical, but still we dont want 
+to leak a kernel-space regs->sp reason - it's an information leak.
 
-> 
-> > +		len = err;
-> > +		err = memcpy_toiovec(vq->hdr, (unsigned char *)&hdr, hdr_size);
-> 
-> That unsigned char * arg to memcpy_toiovec is annoying.  A patch might be
-> nice, separate from this effort.
+> +
+> +unsigned long KSTK_ESP(struct task_struct *task)
+> +{
+> +	if (test_tsk_thread_flag(task, TIF_IA32)) 
+> +		return task_pt_regs(task)->sp;
+> +
+> +	if (task != current)
+> +		return task->thread.usersp;
+> +
+> +	return percpu_read(old_rsp);
+> +}
+> --- linux-2.6.32-rc5.old/arch/x86/kernel/irq_64.c	2009-10-16 02:41:50.000000000 +0200
+> +++ linux-2.6.32-rc5.new/arch/x86/kernel/irq_64.c	2009-11-04 22:29:55.762951577 +0100
+> @@ -53,6 +53,7 @@
+>  	struct irq_desc *desc;
+>  
+>  	stack_overflow_check(regs);
+> +	update_usersp(regs);
+>
+>  
+>  	desc = irq_to_desc(irq);
+>  	if (unlikely(!desc))
+> --- linux-2.6.32-rc5.old/arch/x86/kernel/apic/apic.c	2009-10-16 02:41:50.000000000 +0200
+> +++ linux-2.6.32-rc5.new/arch/x86/kernel/apic/apic.c	2009-11-04 23:12:32.805086991 +0100
+> @@ -831,6 +831,9 @@
+>  {
+>  	struct pt_regs *old_regs = set_irq_regs(regs);
+>  
+> +#ifndef CONFIG_X86_32
+> +	update_usersp(regs);
+> +#endif
 
-Sounds good.
+Cleanliness: please eliminate this #ifdef by defining update_usersp() on 
+32-bit as well, as an empty inline function.
 
-> > +static int vhost_net_open(struct inode *inode, struct file *f)
-> > +{
-> > +	struct vhost_net *n = kzalloc(sizeof *n, GFP_KERNEL);
-> > +	int r;
-> > +	if (!n)
-> > +		return -ENOMEM;
-> > +	f->private_data = n;
-> > +	n->vqs[VHOST_NET_VQ_TX].handle_kick = handle_tx_kick;
-> > +	n->vqs[VHOST_NET_VQ_RX].handle_kick = handle_rx_kick;
-> 
-> I have a personal dislike of calloc for structures.
+But, i dont like this patch because it adds overhead to the IRQ 
+fastpath.
 
-You mean zalloc?
+I'd suggest a competely different method: why dont you use an IPI to 
+sample the SP whenever someone wants to read it from /proc and we see 
+that the task is running on a CPU right now?
 
-> In userspace, it's because valgrind can't spot uninitialized fields.
-> These days a similar argument applies in the kernel, because we have
-> KMEMCHECK now.  If someone adds a field to the struct and forgets to
-> initialize it, we can spot it.
-
-OK.
-
-> > +static void vhost_net_enable_vq(struct vhost_net *n, int index)
-> > +{
-> > +	struct socket *sock = n->vqs[index].private_data;
-> 
-> OK, I can't help but this that presenting the vqs as an array doesn't buy
-> us very much.  Esp. if you change vhost_dev_init to take a NULL-terminated
-> varargs.  I think readability would improve.  It means passing a vq around
-> rather than an index.
-> 
-> Not completely sure it'll be a win tho.
-
-Hmm, varargs sounds a bit complex. But I agree readability for
-vhost_net_enable_vq and friends would benefit from passing a vq around
-rather than an index.  I'll try it out and do it if it's a win.
-
-> > +static long vhost_net_set_backend(struct vhost_net *n, unsigned index, int fd)
-> > +{
-> > +	struct socket *sock, *oldsock = NULL;
-> ...
-> > +	sock = get_socket(fd);
-> > +	if (IS_ERR(sock)) {
-> > +		r = PTR_ERR(sock);
-> > +		goto done;
-> > +	}
-> > +
-> > +	/* start polling new socket */
-> > +	oldsock = vq->private_data;
-> ...
-> > +done:
-> > +	mutex_unlock(&n->dev.mutex);
-> > +	if (oldsock) {
-> > +		vhost_net_flush_vq(n, index);
-> > +		fput(oldsock->file);
-> 
-> I dislike this style; I prefer multiple different goto points, one for when
-> oldsock is set, and one for when it's not.
-> 
-> That way, gcc warns us about uninitialized variables if we get it wrong.
-
-OK.
-
-> > +static long vhost_net_reset_owner(struct vhost_net *n)
-> > +{
-> > +	struct socket *tx_sock = NULL;
-> > +	struct socket *rx_sock = NULL;
-> > +	long r;
-> 
-> This should be called "err", since that's what it is.
-
-OK.
-
-> > +static void vhost_net_set_features(struct vhost_net *n, u64 features)
-> > +{
-> > +	size_t hdr_size = features & (1 << VHOST_NET_F_VIRTIO_NET_HDR) ?
-> > +		sizeof(struct virtio_net_hdr) : 0;
-> > +	int i;
-> > +	mutex_lock(&n->dev.mutex);
-> > +	n->dev.acked_features = features;
-> 
-> Why is this called "acked_features"?  Not just "features"?  I expected
-> to see code which exposed these back to userspace, and didn't.
-
-Not sure how do you mean. Userspace sets them, why
-does it want to get them exposed back?
-
-> > +	case VHOST_GET_FEATURES:
-> > +		features = VHOST_FEATURES;
-> > +		return put_user(features, featurep);
-> > +	case VHOST_ACK_FEATURES:
-> > +		r = get_user(features, featurep);
-> > +		/* No features for now */
-> > +		if (r < 0)
-> > +			return r;
-> > +		if (features & ~VHOST_FEATURES)
-> > +			return -EOPNOTSUPP;
-> > +		vhost_net_set_features(n, features);
-> 
-> OK, from the userspace POV it's "get features" then "ack features".  But
-> I think "VHOST_SET_FEATURES" is more consistent, despite this usage.
-
-OK.
-
-> > +	switch (ioctl) {
-> > +	case VHOST_SET_VRING_NUM:
-> 
-> I haven't looked at your userspace implementation, but does a generic
-> VHOST_SET_VRING_STATE & VHOST_GET_VRING_STATE with a struct make more
-> sense?  It'd be simpler here,
-
-Not by much though, right?
-
-> but not sure if it'd be simpler to use?
-
-The problem is with VHOST_SET_VRING_BASE as well. I want it to be
-separate because I want to make it possible to relocate e.g. used ring
-to another address while ring is running. This would be a good debugging
-tool (you look at kernel's used ring, check descriptor, then update
-guest's used ring) and also possibly an extra way to do migration.  And
-it's nicer to have vring size separate as well, because it is
-initialized by host and never changed, right?
-
-We could merge DESC, AVAIL, USED, and it will reduce the amount of code
-in userspace. With both base, size and fds separate, it seemed a bit
-more symmetrical to have desc/avail/used separate as well.
-What's your opinion?
-
-
-> (Not the fd-setting ioctls of course)
-> 
-> > +	case VHOST_SET_VRING_LOG:
-> > +		r = copy_from_user(&a, argp, sizeof a);
-> > +		if (r < 0)
-> > +			break;
-> > +		if (a.padding) {
-> > +			r = -EOPNOTSUPP;
-> > +			break;
-> > +		}
-> > +		if (a.user_addr == VHOST_VRING_LOG_DISABLE) {
-> > +			vq->log_used = false;
-> > +			break;
-> > +		}
-> > +		if (a.user_addr & (sizeof *vq->used->ring - 1)) {
-> > +			r = -EINVAL;
-> > +			break;
-> > +		}
-> > +		vq->log_used = true;
-> > +		vq->log_addr = a.user_addr;
-> > +		break;
-> 
-> For future reference, this is *exactly* the kind of thing which would have
-> been nice as a followup patch.  Easy to separate, easy to review, not critical
-> to the core.
-
-Yes. It's not too late to split it out though: should I do it yet?
-
-> > +/* TODO: This is really inefficient.  We need something like get_user()
-> > + * (instruction directly accesses the data, with an exception table entry
-> > + * returning -EFAULT). See Documentation/x86/exception-tables.txt.
-> > + */
-> > +static int set_bit_to_user(int nr, void __user *addr)
-> > +{
-> 
-> I guess we won't be dealing with many contiguous pages, otherwise we could
-> get a cheap speedup making this set_bits_to_user(int nr, int num_bits...).
-
-No idea. Let's keep it as simple as possible for now?
-
-> > +/* Each buffer in the virtqueues is actually a chain of descriptors.  This
-> > + * function returns the next descriptor in the chain,
-> > + * or -1 if we're at the end. */
-> > +static unsigned next_desc(struct vring_desc *desc)
-> > +{
-> > +	unsigned int next;
-> > +
-> > +	/* If this descriptor says it doesn't chain, we're done. */
-> > +	if (!(desc->flags & VRING_DESC_F_NEXT))
-> > +		return -1;
-> 
-> Hmm, prefer s/-1/-1U/ in comment, here, and below.  Clarifies a bit.
-
-Good idea.
-
-> > +/* After we've used one of their buffers, we tell them about it.  We'll then
-> > + * want to send them an interrupt, using vq->call. */
-> 
-> This comment has too much cut & paste:
-
-I tried to cut and paste as many comments as possible, this
-made it easy to audit the code by comparing it with lguest,
-and made them much more witty. But yes, this is definitely going
-overboard as we do not have vq->call at all :)
-
-> 	... want to notify the guest, using the eventfd */
-> 
-> > +/* This actually sends the interrupt for this virtqueue */
-> > +void vhost_trigger_irq(struct vhost_dev *dev, struct vhost_virtqueue *vq)
-> > +{
-> 
-> Rename vhost_notify_eventfd() or something, and fix comments?
-
-Sounds good. Since I'm renaming vhost_notify to vhost_enable_notify,
-this one can just become vhost_notify.
-
-> > +enum {
-> > +	VHOST_NET_MAX_SG = MAX_SKB_FRAGS + 2,
-> 
-> +2?  Believable, but is it correct?
-
-+ 1 is for skb head, + 1 is for virtio net header.
-I'll add a comment.
-
-> > +/* Poll a file (eventfd or socket) */
-> > +/* Note: there's nothing vhost specific about this structure. */
-> > +struct vhost_poll {
-> 
-> This comment really helped while reading the code.  Kudos!
-> 
-> Thanks!
-> Rusty.
+	Ingo
