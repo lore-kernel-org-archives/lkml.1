@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZKHJVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZKHJZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbZKHJVj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 04:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZKHJVi
+	id S1751877AbZKHJZf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 04:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZKHJZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 04:21:38 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46162 "EHLO mx3.mail.elte.hu"
+	Sun, 8 Nov 2009 04:25:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34927 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752445AbZKHJVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 04:21:33 -0500
-Date: Sun, 8 Nov 2009 10:21:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, fweisbec@gmail.com,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH v5 0/7] Adding general performance benchmarking
- subcommand to perf.
-Message-ID: <20091108092121.GB21267@elte.hu>
-References: <1257381097-4743-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	id S1750853AbZKHJZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 04:25:32 -0500
+Date: Sun, 8 Nov 2009 09:24:45 GMT
+From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
+       efault@gmx.de, mitake@dcl.info.waseda.ac.jp, jkosina@suse.cz,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mitake@dcl.info.waseda.ac.jp,
+       jkosina@suse.cz, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1257381097-4743-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+References: <1257381097-4743-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/bench] perf bench: Add new directory and header for new subcommand 'bench'
+Message-ID: <tip-c426bba069e65ea438880a04aa4e7c5b880e1728@git.kernel.org>
+Git-Commit-ID: c426bba069e65ea438880a04aa4e7c5b880e1728
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1257381097-4743-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  c426bba069e65ea438880a04aa4e7c5b880e1728
+Gitweb:     http://git.kernel.org/tip/c426bba069e65ea438880a04aa4e7c5b880e1728
+Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+AuthorDate: Thu, 5 Nov 2009 09:31:31 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 8 Nov 2009 10:19:15 +0100
 
-* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+perf bench: Add new directory and header for new subcommand 'bench'
 
-> This patch series add general benchmark subcommand to perf.
-> 
-> The subcommand will unify the benchmarking programs
-> and provide these in standardized way.
-> 
-> I fixed this series for latest tip tree.
-> My previous patch series conflicts with cmd_probe().
-> So please discard v4 and use this v5.
-> 
-> Hitoshi Mitake (7):
->   Adding new directory and header for new subcommand 'bench'
->   sched-messaging.c: benchmark for scheduler and IPC mechanisms based
->     on hackbench
->   sched-pipe.c: benchmark for pipe() system call
->   builtin-bench.c: General framework for benchmark suites
->   Modifying builtin.h for new prototype
->   Modyfing perf.c for subcommand 'bench'
->   Modyfing Makefile to build subcommand 'bench'
-> 
->  tools/perf/Makefile                |    6 +
->  tools/perf/bench/bench.h           |    9 +
->  tools/perf/bench/sched-messaging.c |  332 ++++++++++++++++++++++++++++++++++++
->  tools/perf/bench/sched-pipe.c      |  113 ++++++++++++
->  tools/perf/builtin-bench.c         |  128 ++++++++++++++
->  tools/perf/builtin.h               |    1 +
->  tools/perf/perf.c                  |    1 +
->  7 files changed, 590 insertions(+), 0 deletions(-)
->  create mode 100644 tools/perf/bench/bench.h
->  create mode 100644 tools/perf/bench/sched-messaging.c
->  create mode 100644 tools/perf/bench/sched-pipe.c
->  create mode 100644 tools/perf/builtin-bench.c
+This patch adds bench/ directory and bench/bench.h.
 
-Looks good - i've applied the patches to tip:perf/bench, thanks!
+bench/ directory will contain modules for bench subcommand.
+bench/bench.h is for listing prototypes of module functions.
 
-There's one small bug i noticed:
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: fweisbec@gmail.com
+Cc: Jiri Kosina <jkosina@suse.cz>
+LKML-Reference: <1257381097-4743-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/bench/bench.h |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-$ ./perf bench sched pipe
-(executing 1000000 pipe operations between two tasks)
-
-	Total time:4.898 sec
-$ 		4.898586 usecs/op
-		204140 ops/sec
-
-
-the shell prompt came back before the usecs/op and ops/sec line was 
-printed. Process teardown race, lack of wait() or so?
-
-	Ingo
+diff --git a/tools/perf/bench/bench.h b/tools/perf/bench/bench.h
+new file mode 100644
+index 0000000..59adb27
+--- /dev/null
++++ b/tools/perf/bench/bench.h
+@@ -0,0 +1,9 @@
++#ifndef BENCH_H
++#define BENCH_H
++
++extern int bench_sched_messaging(int argc, const char **argv,
++				 const char *prefix);
++extern int bench_sched_pipe(int argc, const char **argv,
++			    const char *prefix);
++
++#endif
