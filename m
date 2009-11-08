@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbZKHQQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZKHQQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbZKHQQR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 11:16:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZKHQQQ
+	id S1754622AbZKHQQZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 11:16:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbZKHQQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 11:16:16 -0500
-Received: from [95.166.99.235] ([95.166.99.235]:43086 "EHLO kernel.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752601AbZKHQQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 11:16:16 -0500
-Date: Sun, 8 Nov 2009 17:16:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: [PATCH] cfq-iosched: fix next_rq computation
-Message-ID: <20091108161620.GM8742@kernel.dk>
-References: <200911072237.01807.czoccolo@gmail.com>
+	Sun, 8 Nov 2009 11:16:23 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:41442 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754600AbZKHQQU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 11:16:20 -0500
+Date: Sun, 8 Nov 2009 17:16:25 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Andreas Mohr <andi@lisas.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Michael A. Griffith" <grif@acm.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Please get this committed, _NOW_ (preferrably 5 years
+	ago), thanks.
+Message-ID: <20091108161625.GA10497@rhlx01.hs-esslingen.de>
+References: <20091108120008.GA21611@rhlx01.hs-esslingen.de> <20091108144548.GA13429@rhlx01.hs-esslingen.de> <20091108151153.GC6240@hack> <200911081630.32926.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200911072237.01807.czoccolo@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200911081630.32926.arnd@arndb.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 07 2009, Corrado Zoccolo wrote:
-> Cfq has a bug in computation of next_rq, that affects transition
-> between multiple sequential request streams in a single queue
-> (e.g.: two sequential buffered writers of the same priority),
-> causing the alternation between the two streams for a transient period.
-> 
->   8,0    1    18737     0.260400660  5312  D   W 141653311 + 256
->   8,0    1    20839     0.273239461  5400  D   W 141653567 + 256
->   8,0    1    20841     0.276343885  5394  D   W 142803919 + 256
->   8,0    1    20843     0.279490878  5394  D   W 141668927 + 256
->   8,0    1    20845     0.292459993  5400  D   W 142804175 + 256
->   8,0    1    20847     0.295537247  5400  D   W 141668671 + 256
->   8,0    1    20849     0.298656337  5400  D   W 142804431 + 256
->   8,0    1    20851     0.311481148  5394  D   W 141668415 + 256
->   8,0    1    20853     0.314421305  5394  D   W 142804687 + 256
->   8,0    1    20855     0.318960112  5400  D   W 142804943 + 256
-> 
-> The fix makes sure that the next_rq is computed from the last
-> dispatched request, and not affected by merging.
-> 
->   8,0    1    37776     4.305161306     0  D   W 141738087 + 256
->   8,0    1    37778     4.308298091     0  D   W 141738343 + 256
->   8,0    1    37780     4.312885190     0  D   W 141738599 + 256
->   8,0    1    37782     4.315933291     0  D   W 141738855 + 256
->   8,0    1    37784     4.319064459     0  D   W 141739111 + 256
->   8,0    1    37786     4.331918431  5672  D   W 142803007 + 256
->   8,0    1    37788     4.334930332  5672  D   W 142803263 + 256
->   8,0    1    37790     4.337902723  5672  D   W 142803519 + 256
->   8,0    1    37792     4.342359774  5672  D   W 142803775 + 256
->   8,0    1    37794     4.345318286     0  D   W 142804031 + 256
+Hi,
 
-Thanks, this is a nice patch! I will apply it to for-2.6.33. Can I added
-your signed-off-by?
+On Sun, Nov 08, 2009 at 04:30:32PM +0100, Arnd Bergmann wrote:
+> On Sunday 08 November 2009, Américo Wang wrote:
+> > Yeah, I mentioned it to mean it is not suitable to explain
+> > user-space problems in a kernel source file. Putting it into a kernel
+> > doc should be fine.
+> 
+> I think it would be best to put it on a wiki page, e.g. on kernelnewbies.org
+> and point to that. That means you will be able to add information to it
+> independent of the kernel version.
 
--- 
-Jens Axboe
+I don't know, personally I think that's way too disconnected.
+A Wiki entry might be down, might get renamed, might get converted to an
+entirely different Wiki etc. Or might sit on a certain (admittedly large ;)
+network that I don't have access to under certain circumstances.
+In general these issues should be treated right where they're being created,
+and that's the kernel.
+And I don't see how "independent of the kernel version" is relevant
+here. If I have such an issue, then I look into that file on a tree I
+have here (which usually is a current version), and if that doesn't
+help, then one could look into the exact version that (tries to) boots.
 
+
+And IMHO what we should perhaps think of is inventing a reference number
+scheme for people to easily look up kernel issues.
+This could then be something like "LKE#1234: No init found." (L_inux
+K_ernel E_rror).
+OTOH this would bloat kernel messages, thus maybe there's a way to
+handle it more intelligently.
+
+Thanks,
+
+Andreas Mohr
