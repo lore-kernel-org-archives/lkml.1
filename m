@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216AbZKHLxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbZKHL6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752216AbZKHLxD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 06:53:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZKHLxC
+	id S1752803AbZKHL6J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 06:58:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZKHL6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 06:53:02 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47446 "EHLO mx3.mail.elte.hu"
+	Sun, 8 Nov 2009 06:58:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52706 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751470AbZKHLxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 06:53:01 -0500
-Date: Sun, 8 Nov 2009 12:52:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ralf R??sch <ralf.roesch@rw-gmbh.de>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: sched: fix for non SMP systems in sched.h
-Message-ID: <20091108115256.GR11372@elte.hu>
-References: <4AEAF987.2080809@rw-gmbh.de>
+	id S1751869AbZKHL6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 06:58:07 -0500
+Date: Sun, 8 Nov 2009 11:57:36 GMT
+From: tip-bot for Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       sfr@canb.auug.org.au, tglx@linutronix.de, rientjes@google.com,
+       randy.dunlap@oracle.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, sfr@canb.auug.org.au, randy.dunlap@oracle.com,
+       rientjes@google.com, mingo@elte.hu
+In-Reply-To: <20091028160955.d27ccb16.randy.dunlap@oracle.com>
+References: <20091028160955.d27ccb16.randy.dunlap@oracle.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/mm] x86: k8.h: Add struct bootnode
+Message-ID: <tip-0420101c075530c65ba00b6fe7291b126fbfc5d2@git.kernel.org>
+Git-Commit-ID: 0420101c075530c65ba00b6fe7291b126fbfc5d2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4AEAF987.2080809@rw-gmbh.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  0420101c075530c65ba00b6fe7291b126fbfc5d2
+Gitweb:     http://git.kernel.org/tip/0420101c075530c65ba00b6fe7291b126fbfc5d2
+Author:     Randy Dunlap <randy.dunlap@oracle.com>
+AuthorDate: Wed, 28 Oct 2009 16:09:55 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 8 Nov 2009 12:55:38 +0100
 
-* Ralf R??sch <ralf.roesch@rw-gmbh.de> wrote:
+x86: k8.h: Add struct bootnode
 
-> commit d65d153bc23b84e4709a49137a9a03ae139d51a0 introduced
-> two new prototypes: default_scale_freq_power and default_scale_smt_power.
-> Both of them use struct sched_domain which is not defined on non SMP
-> systems.
-> Just moved the prototypes to the correct place.
-> 
-> Signed-off-by: Ralf Roesch <ralf.roesch@rw-gmbh.de>
-> ---
-> include/linux/sched.h |    7 +++----
-> 1 files changed, 3 insertions(+), 4 deletions(-)
-> mode change 100644 => 100755 include/linux/sched.h
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> old mode 100644
-> new mode 100755
-> index c231a24..b633308
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1036,6 +1036,9 @@ static inline int test_sd_parent(struct
-> sched_domain *sd, int flag)
->     return 0;
-> }
-> 
-> +unsigned long default_scale_freq_power(struct sched_domain *sd, int cpu);
-> +unsigned long default_scale_smt_power(struct sched_domain *sd, int cpu);
-> +
-> #else /* CONFIG_SMP */
-> 
-> struct sched_domain_attr;
-> @@ -1047,10 +1050,6 @@ partition_sched_domains(int ndoms_new, struct
-> cpumask *doms_new,
-> }
-> #endif    /* !CONFIG_SMP */
-> 
-> -
-> -unsigned long default_scale_freq_power(struct sched_domain *sd, int cpu);
-> -unsigned long default_scale_smt_power(struct sched_domain *sd, int cpu);
-> -
-> struct io_context;            /* See blkdev.h */
+k8.h uses struct bootnode but does not #include a header file
+for it, so provide a simple declaration for it.
 
-FYI, your patch has tabs converted to spaces (and line-wrap problems), 
-so it wont apply cleanly.
+  arch/x86/include/asm/k8.h:13: warning: 'struct bootnode'
+  declared inside parameter list arch/x86/include/asm/k8.h:13:
+  warning: its scope is only this definition or declaration, which is probably not what you want
 
-See Documentation/email-clients.txt about how to send patches without
-such problems.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: David Rientjes <rientjes@google.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+LKML-Reference: <20091028160955.d27ccb16.randy.dunlap@oracle.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/k8.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Thanks,
-
-	Ingo
+diff --git a/arch/x86/include/asm/k8.h b/arch/x86/include/asm/k8.h
+index c092f72..f70e600 100644
+--- a/arch/x86/include/asm/k8.h
++++ b/arch/x86/include/asm/k8.h
+@@ -4,6 +4,7 @@
+ #include <linux/pci.h>
+ 
+ extern struct pci_device_id k8_nb_ids[];
++struct bootnode;
+ 
+ extern int early_is_k8_nb(u32 value);
+ extern struct pci_dev **k8_northbridges;
