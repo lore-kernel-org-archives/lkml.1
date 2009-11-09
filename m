@@ -1,164 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbZKJO2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZKIOZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756476AbZKJO2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 09:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbZKJO2h
+	id S1755926AbZKIOZa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 09:25:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbZKIOZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 09:28:37 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:35975 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756412AbZKJO2f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 09:28:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :mime-version:content-type:content-transfer-encoding;
-        b=pp9xapA9M2RuUAY8YBgjpeSaMbGQxnHnPnqsJ5KTA/VIAoTFOc1M/P6rsCCbo5zYRZ
-         QaUfqGgXqrrapbm6R491tjSW/Q2sSvZHgWP6lf4hW2eEVFLDerGEclQV9BO8gdDbQcj+
-         l/CmOzSA6u77zVoHHzu92UsUvZOY6c2d9NHG8=
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-To: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Subject: [PATCH 2/2] bsearch: prevent overflow when computing middle comparison element
-Date: Mon,  9 Nov 2009 12:26:46 -0200
-Message-Id: <667778c0d0e6d27e8050cabb17cf9e3e790715d5.1257776095.git.andre.goddard@gmail.com>
-X-Mailer: git-send-email 1.6.5.2.153.g6e31f.dirty
-In-Reply-To: <cover.1257776095.git.andre.goddard@gmail.com>
-References: <cover.1257776095.git.andre.goddard@gmail.com>
+	Mon, 9 Nov 2009 09:25:29 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50722 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbZKIOZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 09:25:29 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to preempt_count leakage in keventd
+Date: Mon, 9 Nov 2009 15:27:12 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.31.5-tst; KDE/4.3.1; x86_64; ; )
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <200911091250.31626.rjw@sisk.pl> <alpine.LFD.2.00.0911091452300.2725@localhost.localdomain> <1257776176.6365.8.camel@marge.simson.net>
+In-Reply-To: <1257776176.6365.8.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911091527.12249.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's really difficult to occur in practice because the sum of the lower
-and higher limits must overflow an int variable, but it can occur when
-working with large arrays. We'd better safe than sorry by avoiding this
-overflow situation when computing the middle element for comparison.
+On Monday 09 November 2009, Mike Galbraith wrote:
+> On Mon, 2009-11-09 at 15:02 +0100, Thomas Gleixner wrote:
+> > On Mon, 9 Nov 2009, Ingo Molnar wrote:
+> > > 
+> 
+> > > ok, then my observation should not apply.
+> > 
+> > I think it _IS_ releated because the worker_thread is CPU affine and
+> > the debug_smp_processor_id() check does:
+> > 
+> >     if (cpumask_equal(&current->cpus_allowed, cpumask_of(this_cpu)))
+> > 
+> > which prevents that usage of smp_processor_id() in ksoftirqd and
+> > keventd in preempt enabled regions is warned on.
+> > 
+> > We saw exaclty the same back trace with fd21073 (sched: Fix affinity
+> > logic in select_task_rq_fair()).
+> > 
+> > Rafael, can you please add a printk to debug_smp_processor_id() so we
+> > can see on which CPU we are running ? I suspect we are on the wrong
+> > one.
+> 
+> I wonder if that's not intimately related to the problem I had, namely
+> newidle balancing offline CPUs as they're coming up, making a mess of
+> cpu enumeration.
 
-See:
-http://googleresearch.blogspot.com/2006/06/extra-extra-read-all-about-it-nearly.html
-http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5045582
+Very likely.  What did you do to fix it?
 
-The program below demonstrates the issue:
-
-$ ./a.out
-(glibc)         Element is at the last position
-(patched)       Element is at the last position
-Segmentation fault
-
-===
-#include <search.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-/* A number that when doubled will be bigger than 2^31 - 1 */
-#define BIG_NUMBER_TO_OVERFLOW_INT	(1100000000)
-
-static int cmp_char(const void *p1, const void *p2)
-{
-	char v1 = (*(char *)p1);
-	char v2 = (*(char *)p2);
-
-	if (v1 < v2)
-		return -1;
-	else if (v1 > v2)
-		return 1;
-	else
-		return 0;
-}
-
-void *lib_bsearch(const void *key, const void *base, size_t num, size_t size
-	, int (*cmp)(const void *key, const void *elt))
-{
-	int start = 0, end = num - 1, mid, result;
-
-	while (start <= end) {
-		mid = (start + end) / 2;
-		result = cmp(key, base + mid * size);
-		if (result < 0)
-			end = mid - 1;
-		else if (result > 0)
-			start = mid + 1;
-		else
-			return (void *)base + mid * size;
-	}
-
-	return NULL;
-}
-
-void *patch_lib_bsearch(const void *key, const void *base, size_t num, size_t size
-	, int (*cmp)(const void *key, const void *elt))
-{
-	size_t start = 0, end = num, mid;
-	int result;
-
-	while (start < end) {
-		mid = (start + end) / 2;
-		result = cmp(key, base + mid * size);
-		if (result < 0)
-			end = mid - 1;
-		else if (result > 0)
-			start = mid + 1;
-		else
-			return (void *)base + mid * size;
-	}
-
-	return NULL;
-}
-
-int main(void)
-{
-	char key = 1;
-	char *array = calloc(BIG_NUMBER_TO_OVERFLOW_INT, sizeof(char));
-	void *ptr;
-
-	if (!array)
-	{
-		printf("%s\n", "no memory");
-		return EXIT_FAILURE;
-	}
-	array[BIG_NUMBER_TO_OVERFLOW_INT - 1] = 1;
-
-	ptr = bsearch(&key, array, BIG_NUMBER_TO_OVERFLOW_INT, sizeof(char), cmp_char);
-	printf("(glibc) Element is%sat the last position\n"
-		, (ptr == &array[BIG_NUMBER_TO_OVERFLOW_INT - 1]) ? " " : " NOT ");
-
-	ptr = patch_lib_bsearch(&key, array, BIG_NUMBER_TO_OVERFLOW_INT, sizeof(char), cmp_char);
-	printf("(patched) Element is%sat the last position\n"
-		, (ptr == &array[BIG_NUMBER_TO_OVERFLOW_INT - 1]) ? " " : " NOT ");
-
-	ptr = lib_bsearch(&key, array, BIG_NUMBER_TO_OVERFLOW_INT, sizeof(char), cmp_char);
-	printf("(unpatched) Element is%sat the last position\n"
-		, (ptr == &array[BIG_NUMBER_TO_OVERFLOW_INT - 1]) ? " " : " NOT ");
-
-	free(array);
-
-	return EXIT_SUCCESS;
-}
-
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
----
- lib/bsearch.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/lib/bsearch.c b/lib/bsearch.c
-index f71ac89..f1aa361 100644
---- a/lib/bsearch.c
-+++ b/lib/bsearch.c
-@@ -33,7 +33,8 @@
- void *bsearch(const void *key, const void *base, size_t num, size_t size,
- 	      int (*cmp)(const void *key, const void *elt))
- {
--	int start = 0, end = num, mid, result;
-+	size_t start = 0, end = num, mid;
-+	int result;
- 
- 	while (start < end) {
- 		mid = (start + end) / 2;
--- 
-1.6.5.2.153.g6e31f.dirty
-
+Rafael
