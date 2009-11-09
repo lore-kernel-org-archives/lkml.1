@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbZKIFPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751107AbZKIFaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750999AbZKIFPC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 00:15:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZKIFPB
+	id S1751107AbZKIFaa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 00:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbZKIFaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 00:15:01 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58695 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbZKIFPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 00:15:01 -0500
-Date: Mon, 9 Nov 2009 16:15:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [patch 09/16] powerpc: Replace old style lock initializer
-Message-Id: <20091109161502.ab064092.sfr@canb.auug.org.au>
-In-Reply-To: <1257548144.13611.267.camel@pasglop>
-References: <20091106223547.784916750@linutronix.de>
-	<20091106223806.762624109@linutronix.de>
-	<1257548144.13611.267.camel@pasglop>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Mon, 9 Nov 2009 00:30:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34336
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750739AbZKIFa3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 00:30:29 -0500
+Date: Sun, 08 Nov 2009 21:30:55 -0800 (PST)
+Message-Id: <20091108.213055.54434626.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: IDE
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__9_Nov_2009_16_15_02_+1100_VXaAjp_Frxudoo9n"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__9_Nov_2009_16_15_02_+1100_VXaAjp_Frxudoo9n
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Thomas,
+The revert we thought we didn't need, we really do need still, even
+with Bart Z.'s fix.
 
-On Sat, 07 Nov 2009 09:55:44 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> On Fri, 2009-11-06 at 22:41 +0000, Thomas Gleixner wrote:
-> > plain text document attachment
-> > (power-replace-old-style-lock-init.patch)
-> > SPIN_LOCK_UNLOCKED is deprecated. Init the lock array at runtime
-> > instead.
-> >=20
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: linuxppc-dev@ozlabs.org
-> > ---
->=20
-> Looks reasonable. But iseries can be a bitch, so we do need to test it
-> on monday.
+The issue is that we are doing these PIO setting calls before we did
+the device probe and therefore we don't yet know the media type.
 
-Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Yet the ->set_pio_mode() of some drivers key off of the media type to
+determine whether to turn prefetching etc. on so it can't possibly
+work properly.
 
---Signature=_Mon__9_Nov_2009_16_15_02_+1100_VXaAjp_Frxudoo9n
-Content-Type: application/pgp-signature
+Please pull, thanks!
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+The following changes since commit 7c9abfb884b8737f0afdc8a88bcea77526f0da87:
+  Linus Torvalds (1):
+        Merge branch 'kvm-updates/2.6.32' of git://git.kernel.org/pub/scm/virt/kvm/kvm
 
-iEYEARECAAYFAkr3pVYACgkQjjKRsyhoI8xGQwCgnRc8jgHeGJFueccVWDyc4HFd
-ShUAniFJkr80jd342IXlM8QZOF+zBsdI
-=QbRQ
------END PGP SIGNATURE-----
+are available in the git repository at:
 
---Signature=_Mon__9_Nov_2009_16_15_02_+1100_VXaAjp_Frxudoo9n--
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-2.6.git master
+
+David S. Miller (1):
+      Revert "ide: try to use PIO Mode 0 during probe if possible"
+
+ drivers/ide/ide-probe.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
