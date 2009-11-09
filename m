@@ -1,898 +1,1369 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZKIN5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZKIS1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbZKIN5Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 08:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZKIN5Z
+	id S1753019AbZKIS1x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 13:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZKIS1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 08:57:25 -0500
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:37866 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755871AbZKIN5X (ORCPT
+	Mon, 9 Nov 2009 13:27:52 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54649 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbZKIS1v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 08:57:23 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4AF81FE5.5080102@cam.ac.uk>
-Date: Mon, 09 Nov 2009 13:57:57 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
+	Mon, 9 Nov 2009 13:27:51 -0500
+Date: Mon, 9 Nov 2009 14:58:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: zaurus-devel@www.linuxtogo.org
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz
+Subject: spitz battery driver
+Message-ID: <20091109135813.GA1385@ucw.cz>
 MIME-Version: 1.0
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-CC: List Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-omap@vger.kernel.org
-Subject: Re: [PATCH 1/2] staging: iio: tsl2563 ambient light sensor driver
-References: <1257772468-4004-1-git-send-email-amit.kucheria@verdurent.com>
-In-Reply-To: <1257772468-4004-1-git-send-email-amit.kucheria@verdurent.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amit,
+Hi!
 
-Normally I'd welcome this in IIO, except that all ambient light sensors are in the
-process of moving to the new ALS subsystem.  There are still some issues to resolve
-in that subsystem (mainly to do with naming conventions) but hopefully we will
-get them sorted out shortly.
+This introduces battery driver for spitz. For now it is
+monitoring&debug-only.
 
-I'll take a close look at this sometime over the next few days though.  On a quick
-glance at the data sheet, it looks very similar to the tsl2561.  Perhaps we can merge
-the drivers? Yours is certainly more complete than the tsl2561 version in IIO so it
-would make sense to lift the functional elements in to the code I have for an ALS
-driver. I hadn't posted that previously as I hadn't quite worked out how to handle
-the various gain related settings. What you have done seems to make sense (from a very
-quick look.)
+Signed-off-by: Pavel Machek <pavel@ucw.cz> (but not meant for merge)
 
-Thanks,
+--- ./drivers/power.ofic/Makefile	2009-10-06 13:51:29.000000000 +0200
++++ ./drivers/power/Makefile	2009-10-11 16:12:09.000000000 +0200
+@@ -24,6 +24,7 @@
+ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
+ obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
+ obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
++obj-m	+= spitz_battery.o
+ obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
+ obj-$(CONFIG_BATTERY_BQ27x00)	+= bq27x00_battery.o
+ obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
+diff -ur ./drivers/power.ofic/power_supply_sysfs.c ./drivers/power/power_supply_sysfs.c
+--- ./drivers/power.ofic/power_supply_sysfs.c	2009-10-06 13:51:29.000000000 +0200
++++ ./drivers/power/power_supply_sysfs.c	2009-10-15 05:45:46.000000000 +0200
+@@ -39,7 +39,8 @@
+ 
+ static ssize_t power_supply_show_property(struct device *dev,
+ 					  struct device_attribute *attr,
+-					  char *buf) {
++					  char *buf)
++{
+ 	static char *status_text[] = {
+ 		"Unknown", "Charging", "Discharging", "Not charging", "Full"
+ 	};
+@@ -135,7 +136,8 @@
+ 
+ static ssize_t power_supply_show_static_attrs(struct device *dev,
+ 					      struct device_attribute *attr,
+-					      char *buf) {
++					      char *buf)
++{
+ 	static char *type_text[] = { "Battery", "UPS", "Mains", "USB" };
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 
+diff -ur ./drivers/power.ofic/spitz_battery.c ./drivers/power/spitz_battery.c
+--- ./drivers/power.ofic/spitz_battery.c	2009-10-11 16:14:11.000000000 +0200
++++ ./drivers/power/spitz_battery.c	2009-10-22 07:27:52.000000000 +0200
+@@ -0,0 +1,430 @@
++/*
++ * Battery and Power Management code for the Sharp SL-3000c
++ *
++ * Copyright (c) 2009 Pavel Machek <pavel@ucw.cz>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Li-ion batteries are angry beasts, and they like to explode.
++ * If angry lithium comes your way, the hw was misdesigned.
++ *
++ */
++#include <linux/platform_device.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/power_supply.h>
++#include <linux/delay.h>
++#include <linux/spinlock.h>
++#include <linux/interrupt.h>
++#include <linux/gpio.h>
++
++#include <asm/mach-types.h>
++#include <mach/spitz.h>
++#include <mach/sharpsl.h>
++#include <mach/sharpsl_pm.h>
++
++#include "../../arch/arm/mach-pxa/sharpsl.h"
++
++extern struct sharpsl_pm_status sharpsl_pm;
++
++
++struct spitz_bat {
++	struct power_supply psy;
++
++	bool (*is_present)(struct spitz_bat *bat);
++};
++
++static struct spitz_bat spitz_bat_main, spitz_ac;
++
++extern int sharpsl_pm_pxa_read_max1111(int channel);
++
++int basic_current = 125; /* miliAmp */
++int battery_resistance = 422; /* miliOhm */
++
++/* 422 seems to be suitable for very old, 1Ah battery.
++   2Ah battery probably has better resistance */
++
++/* Unfortunately, resistance depends on state of charge, current
++ * direction and temperature.
++ *
++ * Ouch, and dependency is actually _not_ too simple. It is lowest
++ * at 3.55V, very slowly rises at 4V (approximately linear dependency),
++ * and quickly rises towards 3.2V (in something exponential-looking).
++ *
++ * It is about same at 25Celsius and 40Celsius, and about 2.5x the value
++ * on 0Celsius, rising _very_ sharply.
++ *
++ * Li-ion should only be charged between 0 and 45 Celsius, and discharged
++ * between -20 and 60 celsius.
++ */
++
++extern int backlight_current;
++
++int battery_current(void)
++{
++	int intensity = sharpsl_pm.machinfo->backlight_get_status ? sharpsl_pm.machinfo->backlight_get_status() : 0;
++
++	return basic_current + backlight_current;
++}
++
++int liion_internal_voltage(int voltage, int current_ma)
++{
++	return voltage + (battery_resistance * current_ma / 1000);
++}
++
++int liion_expected_voltage(int internal_voltage, int current_ma)
++{       
++	return internal_voltage - (battery_resistance * current_ma / 1000);
++}
++
++/* returns mV */
++int liion_voltage(void)
++{
++	/* Thanks to Stanislav B. ADC has 3.3V as reference,
++	   is connected to battery over 47kOhm,
++	   and to ground over 100kOhm. */
++	return (sharpsl_pm.machinfo->read_devdata(SHARPSL_BATT_VOLT) * 147 * 33)/256;
++}
++
++/* See for example http://www.kokam.com/english/biz/rc.html for
++ * voltage/capacity characteristic. I assume it is going to be
++ * reasonably similar to li-ion used in collie.
++ *
++ */
++
++/*
++ { 420, 100 },
++ { 417, 95 }, means it will report 100% between 418 and 420
++ */
++
++struct battery_thresh battery_levels[] = {
++	{ 3980, 100 },
++	{ 3900, 95 },
++	{ 3860, 90 },
++	{ 3800, 85 },
++	{ 3760, 80 },
++	{ 3720, 74 },
++	{ 3680, 69 },
++	{ 3620, 65 },
++	{ 3570, 59 },
++	{ 3560, 55 },
++	{ 3550, 48 },
++	{ 3530, 45 },
++	{ 3510, 39 },
++	{ 3490, 33 },
++	{ 3470, 29 },
++	{ 3450, 23 },
++	{ 3410, 16 },
++	{    0, 0 },
++};
++
++int get_percentage(void)
++{
++	int i = ARRAY_SIZE(battery_levels);
++	struct battery_thresh *thresh;
++	int voltage = liion_internal_voltage(liion_voltage(), battery_current());
++
++	thresh = battery_levels;
++
++	while (i > 0 && (voltage > thresh[i].voltage))
++		i--;
++
++	return thresh[i].percentage;
++}
++
++static int spitz_bat_get_property(struct power_supply *psy,
++			    enum power_supply_property psp,
++			    union power_supply_propval *val)
++{
++	int ret = 0;
++	struct spitz_bat *bat = container_of(psy, struct spitz_bat, psy);
++
++	val->intval = 0;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_HEALTH:
++		/* POWER_SUPPLY_HEALTH_OVERHEAT , POWER_SUPPLY_HEALTH_COLD,
++		   POWER_SUPPLY_HEALTH_OVERVOLTAGE, POWER_SUPPLY_HEALTH_UNSPEC_FAILURE, POWER_SUPPLY_HEALTH_GOOD
++		 */
++		return 0;
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
++	  	if (gpio_get_value(SPITZ_GPIO_CHRG_ON) == 0) {
++			if (gpio_get_value(SPITZ_GPIO_JK_B) == 1)
++				val->intval = POWER_SUPPLY_CHARGE_TYPE_FAST;
++			else
++				val->intval = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
++		}
++		return 0;
++	case POWER_SUPPLY_PROP_STATUS:
++	  {
++		int status = 0;
++
++	  	if (gpio_get_value(SPITZ_GPIO_CHRG_ON) == 0)
++			printk("Chrg bit on. ");
++	  	if (gpio_get_value(SPITZ_GPIO_JK_B) == 0)
++			printk("Slow charge bit on. ");
++
++		val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
++
++		if (!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_ACIN))
++			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
++		else {
++			if (gpio_get_value(SPITZ_GPIO_CHRG_ON) == 0)
++				val->intval = POWER_SUPPLY_STATUS_CHARGING;
++			if (sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_CHRGFULL))
++				val->intval = POWER_SUPPLY_STATUS_FULL;
++		}
++
++		printk("ACIN: %d ", sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_ACIN));
++		printk("Chrgfull: %d  ", sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_CHRGFULL));
++		printk("Fatal: %d  ", sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_FATAL));
++		printk("ACIN_volt: %d\n", sharpsl_pm.machinfo->read_devdata(SHARPSL_ACIN_VOLT));
++
++		return 0;
++	  }
++	case POWER_SUPPLY_PROP_TECHNOLOGY:
++		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
++		return 0;
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		val->intval = liion_voltage()*1000;
++		return 0;
++	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
++		val->intval = 4200000;
++		return 0;
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
++		val->intval = 3400000;
++		return 0;
++	case POWER_SUPPLY_PROP_TEMP:
++		mdelay(SHARPSL_CHECK_BATTERY_WAIT_TIME_TEMP);
++		sharpsl_pm.machinfo->measure_temp(1);
++		mdelay(SHARPSL_CHECK_BATTERY_WAIT_TIME_TEMP);
++		val->intval = sharpsl_pm.machinfo->read_devdata(SHARPSL_BATT_TEMP);
++		sharpsl_pm.machinfo->measure_temp(0);
++		/* 121: battery finished charging in 22C room */
++		/* 141: outside at 6C */
++		return 0;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval = "spitz-battery";
++		return 0;
++	case POWER_SUPPLY_PROP_PRESENT:
++		val->intval = 1;
++		return 0;
++		/* add these */
++	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
++		val->intval = 2000000;
++		return 0;
++	case POWER_SUPPLY_PROP_CAPACITY:
++		val->intval = get_percentage();
++		return 0;
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++		val->intval = liion_internal_voltage(liion_voltage(), battery_current())*1000;
++		return 0;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		val->intval = battery_current() * 1000;
++		return 0;
++	default:
++		return -EINVAL;
++	}
++	return -EINVAL;
++}
++
++static int spitz_ac_get_property(struct power_supply *psy,
++			    enum power_supply_property psp,
++			    union power_supply_propval *val)
++{
++	int ret = 0;
++	struct spitz_bat *bat = container_of(psy, struct spitz_bat, psy);
++
++	val->intval = 0;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
++		return 0;
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		/* Thanks to Stanislav B. ADC has 3.3V as reference,
++		   is connected to acin over 2kOhm,
++		   and to ground over 1kOhm. */
++		val->intval = (sharpsl_pm.machinfo->read_devdata(SHARPSL_ACIN_VOLT) * 3000 * 3300)/256;
++		return 0;
++	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
++		val->intval = 5250000;
++		return 0;
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
++		val->intval = 4750000;
++		return 0;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval = "spitz-power-supply";
++		return 0;
++	case POWER_SUPPLY_PROP_PRESENT:
++		val->intval = sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_ACIN);
++		return 0;
++	default:
++		return -EINVAL;
++	}
++	return -EINVAL;
++}
++
++static void spitz_bat_external_power_changed(struct power_supply *psy)
++{
++}
++
++
++static enum power_supply_property spitz_bat_main_props[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_TECHNOLOGY,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_VOLTAGE_AVG,
++	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
++	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
++	POWER_SUPPLY_PROP_TEMP,
++	POWER_SUPPLY_PROP_PRESENT,
++	POWER_SUPPLY_PROP_CHARGE_TYPE,
++	POWER_SUPPLY_PROP_HEALTH,
++	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_CAPACITY,
++};
++
++static struct spitz_bat spitz_bat_main = {
++	.psy = {
++		.name		= "main-battery",
++		.type		= POWER_SUPPLY_TYPE_BATTERY,
++		.properties	= spitz_bat_main_props,
++		.num_properties	= ARRAY_SIZE(spitz_bat_main_props),
++		.get_property	= spitz_bat_get_property,
++		.external_power_changed = spitz_bat_external_power_changed,
++		.use_for_apm	= 1,
++	},
++};
++
++static enum power_supply_property spitz_ac_props[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
++	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
++	POWER_SUPPLY_PROP_PRESENT,
++};
++
++static struct spitz_bat spitz_ac = {
++	.psy = {
++		.name		= "ac",
++		.type		= POWER_SUPPLY_TYPE_MAINS,
++		.properties	= spitz_ac_props,
++		.num_properties	= ARRAY_SIZE(spitz_ac_props),
++		.get_property	= spitz_ac_get_property,
++	},
++};
++
++#ifdef CONFIG_PM
++static int spitz_bat_suspend(struct platform_device *dev, pm_message_t state)
++{
++	return 0;
++}
++
++static int spitz_bat_resume(struct platform_device *dev)
++{
++	return 0;
++}
++#else
++#define spitz_bat_suspend NULL
++#define spitz_bat_resume NULL
++#endif
++
++
++static ssize_t spitz_bat_limit_show(struct device *dev,
++				    struct device_attribute *attr,
++				    char *buf)
++{
++	sprintf(buf, "Hello :-)");
++	return 9;
++}
++
++static ssize_t spitz_bat_limit_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	if (!strncmp(buf, "fastcharge", 10)) {
++		gpio_set_value(SPITZ_GPIO_JK_B, 1);
++		gpio_set_value(SPITZ_GPIO_CHRG_ON, 0);
++		return 10;
++	}
++	if (!strncmp(buf, "slowcharge", 10)) {
++		gpio_set_value(SPITZ_GPIO_JK_B, 0);
++		gpio_set_value(SPITZ_GPIO_CHRG_ON, 0);
++		return 10;
++	}
++	if (!strncmp(buf, "nonecharge", 10)) {
++		gpio_set_value(SPITZ_GPIO_JK_B, 0);
++		gpio_set_value(SPITZ_GPIO_CHRG_ON, 1);
++		return 10;
++	}
++	return -EINVAL;
++}
++
++
++static DEVICE_ATTR(limit, S_IRUGO | S_IWUSR, spitz_bat_limit_show, spitz_bat_limit_store);
++#if 0
++static struct device_attribute dev_attr_limit = {
++        .attr = { .name = "limit", .mode = 0644 },
++        .show = spitz_bat_limit_show,
++        .store = spitz_bat_limit_store,
++};
++#endif
++
++static int __devinit spitz_bat_probe(struct platform_device *dev)
++{
++	int ret;
++	int i;
++
++	if (!machine_is_spitz())
++		return -ENODEV;
++
++	printk("spitz_bat_probe: register\n");
++	power_supply_register(&dev->dev, &spitz_bat_main.psy);
++	power_supply_register(&dev->dev, &spitz_ac.psy);
++	device_create_file(&dev->dev, &dev_attr_limit);
++
++	return 0;
++}
++
++static int __devexit spitz_bat_remove(struct platform_device *dev)
++{
++	int i;
++
++	device_remove_file(&dev->dev, &dev_attr_limit);
++	power_supply_unregister(&spitz_bat_main.psy);
++	power_supply_unregister(&spitz_ac.psy);
++	return 0;
++}
++
++
++static struct platform_driver spitz_bat_driver = {
++	.driver.name	= "spitz-battery",
++	.driver.owner	= THIS_MODULE,
++	.probe		= spitz_bat_probe,
++	.remove		= __devexit_p(spitz_bat_remove),
++	.suspend	= spitz_bat_suspend,
++	.resume		= spitz_bat_resume,
++};
++
++static int __init spitz_bat_init(void)
++{
++	return platform_driver_register(&spitz_bat_driver);
++}
++
++static void __exit spitz_bat_exit(void)
++{
++	platform_driver_unregister(&spitz_bat_driver);
++}
++
++module_init(spitz_bat_init);
++module_exit(spitz_bat_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Pavel Machek");
++MODULE_DESCRIPTION("Spitz battery driver");
++MODULE_ALIAS("platform:spitz-battery");
+diff -ur ./drivers/video/backlight.ofic/corgi_lcd.c ./drivers/video/backlight/corgi_lcd.c
+--- ./drivers/video/backlight.ofic/corgi_lcd.c	2009-10-18 18:11:36.000000000 +0200
++++ ./drivers/video/backlight/corgi_lcd.c	2009-10-18 18:37:09.000000000 +0200
+@@ -388,17 +388,33 @@
+ 	.set_mode	= corgi_lcd_set_mode,
+ };
+ 
+-static int corgi_bl_get_intensity(struct backlight_device *bd)
++int corgi_bl_get_intensity(struct backlight_device *bd)
+ {
+ 	struct corgi_lcd *lcd = dev_get_drvdata(&bd->dev);
+ 
+ 	return lcd->intensity;
+ }
++EXPORT_SYMBOL(corgi_bl_get_intensity);
++
++int backlight_current;
++EXPORT_SYMBOL(backlight_current);
+ 
+ static int corgi_bl_set_intensity(struct corgi_lcd *lcd, int intensity)
+ {
+ 	int cont;
+ 
++	backlight_current = 0;
++	if (intensity > 0)
++		backlight_current = 55;
++	if (intensity > 10)
++		backlight_current = 115;
++	if (intensity > 20)
++		backlight_current = 140;
++	if (intensity > 30)
++		backlight_current = 180;
++	if (intensity > 45)
++		backlight_current = 245;
++
+ 	if (intensity > 0x10)
+ 		intensity += 0x10;
+ 
+@@ -433,8 +449,9 @@
+ 
+ 	if (corgibl_flags & CORGIBL_SUSPENDED)
+ 		intensity = 0;
+-	if (corgibl_flags & CORGIBL_BATTLOW)
+-		intensity &= lcd->limit_mask;
++
++	if ((corgibl_flags & CORGIBL_BATTLOW) && intensity > lcd->limit_mask)
++		intensity = lcd->limit_mask;
+ 
+ 	return corgi_bl_set_intensity(lcd, intensity);
+ }
+diff -ur ./arch/arm.ofic/mach-pxa/corgi_pm.c ./arch/arm/mach-pxa/corgi_pm.c
+--- ./arch/arm.ofic/mach-pxa/corgi_pm.c	2009-09-10 00:13:59.000000000 +0200
++++ ./arch/arm/mach-pxa/corgi_pm.c	2009-10-22 19:19:02.000000000 +0200
+@@ -35,6 +35,92 @@
+ #define SHARPSL_FATAL_ACIN_VOLT        182   /* 3.45V */
+ #define SHARPSL_FATAL_NOACIN_VOLT      170   /* 3.40V */
+ 
++static const struct battery_thresh corgi_battery_levels_acin[] = {
++	{ 213, 100},
++	{ 212,  98},
++	{ 211,  95},
++	{ 210,  93},
++	{ 209,  90},
++	{ 208,  88},
++	{ 207,  85},
++	{ 206,  83},
++	{ 205,  80},
++	{ 204,  78},
++	{ 203,  75},
++	{ 202,  73},
++	{ 201,  70},
++	{ 200,  68},
++	{ 199,  65},
++	{ 198,  63},
++	{ 197,  60},
++	{ 196,  58},
++	{ 195,  55},
++	{ 194,  53},
++	{ 193,  50},
++	{ 192,  48},
++	{ 192,  45},
++	{ 191,  43},
++	{ 191,  40},
++	{ 190,  38},
++	{ 190,  35},
++	{ 189,  33},
++	{ 188,  30},
++	{ 187,  28},
++	{ 186,  25},
++	{ 185,  23},
++	{ 184,  20},
++	{ 183,  18},
++	{ 182,  15},
++	{ 181,  13},
++	{ 180,  10},
++	{ 179,   8},
++	{ 178,   5},
++	{   0,   0},
++};
++
++static const struct battery_thresh  corgi_battery_levels_noac[] = {
++	{ 213, 100},
++	{ 212,  98},
++	{ 211,  95},
++	{ 210,  93},
++	{ 209,  90},
++	{ 208,  88},
++	{ 207,  85},
++	{ 206,  83},
++	{ 205,  80},
++	{ 204,  78},
++	{ 203,  75},
++	{ 202,  73},
++	{ 201,  70},
++	{ 200,  68},
++	{ 199,  65},
++	{ 198,  63},
++	{ 197,  60},
++	{ 196,  58},
++	{ 195,  55},
++	{ 194,  53},
++	{ 193,  50},
++	{ 192,  48},
++	{ 191,  45},
++	{ 190,  43},
++	{ 189,  40},
++	{ 188,  38},
++	{ 187,  35},
++	{ 186,  33},
++	{ 185,  30},
++	{ 184,  28},
++	{ 183,  25},
++	{ 182,  23},
++	{ 181,  20},
++	{ 180,  18},
++	{ 179,  15},
++	{ 178,  13},
++	{ 177,  10},
++	{ 176,   8},
++	{ 175,   5},
++	{   0,   0},
++};
++
+ static void corgi_charger_init(void)
+ {
+ 	pxa_gpio_mode(CORGI_GPIO_ADC_TEMP_ON | GPIO_OUT);
+@@ -214,8 +300,8 @@
+ 	.fatal_acin_volt  = SHARPSL_FATAL_ACIN_VOLT,
+ 	.fatal_noacin_volt= SHARPSL_FATAL_NOACIN_VOLT,
+ 	.bat_levels       = 40,
+-	.bat_levels_noac  = spitz_battery_levels_noac,
+-	.bat_levels_acin  = spitz_battery_levels_acin,
++	.bat_levels_noac  = corgi_battery_levels_noac,
++	.bat_levels_acin  = corgi_battery_levels_acin,
+ 	.status_high_acin = 188,
+ 	.status_low_acin  = 178,
+ 	.status_high_noac = 185,
+diff -ur ./arch/arm.ofic/mach-pxa/sharpsl.h ./arch/arm/mach-pxa/sharpsl.h
+--- ./arch/arm.ofic/mach-pxa/sharpsl.h	2009-09-10 00:13:59.000000000 +0200
++++ ./arch/arm/mach-pxa/sharpsl.h	2009-10-14 12:12:13.000000000 +0200
+@@ -42,8 +42,23 @@
+ #define MAX1111_BATT_TEMP   2u
+ #define MAX1111_ACIN_VOLT   6u
+ 
+-extern struct battery_thresh spitz_battery_levels_acin[];
+-extern struct battery_thresh spitz_battery_levels_noac[];
+ int sharpsl_pm_pxa_read_max1111(int channel);
+ 
+ 
++/*
++ * Constants
++ */
++#define SHARPSL_CHARGE_ON_TIME_INTERVAL        (msecs_to_jiffies(1*60*1000))  /* 1 min */
++#define SHARPSL_CHARGE_FINISH_TIME             (msecs_to_jiffies(10*60*1000)) /* 10 min */
++#define SHARPSL_BATCHK_TIME                    (msecs_to_jiffies(15*1000))    /* 15 sec */
++#define SHARPSL_BATCHK_TIME_SUSPEND            (60*10)                        /* 10 min */
++
++#define SHARPSL_WAIT_CO_TIME                   15  /* 15 sec */
++#define SHARPSL_WAIT_DISCHARGE_ON              100 /* 100 msec */
++#define SHARPSL_CHECK_BATTERY_WAIT_TIME_TEMP   10  /* 10 msec */
++#define SHARPSL_CHECK_BATTERY_WAIT_TIME_VOLT   10  /* 10 msec */
++#define SHARPSL_CHECK_BATTERY_WAIT_TIME_ACIN   10  /* 10 msec */
++#define SHARPSL_CHARGE_WAIT_TIME               15  /* 15 msec */
++#define SHARPSL_CHARGE_CO_CHECK_TIME           5   /* 5 msec */
++#define SHARPSL_CHARGE_RETRY_CNT               1   /* eqv. 10 min */
++
+Only in ./arch/arm/mach-pxa: sharpsl.h~
+diff -ur ./arch/arm.ofic/mach-pxa/sharpsl_pm.c ./arch/arm/mach-pxa/sharpsl_pm.c
+--- ./arch/arm.ofic/mach-pxa/sharpsl_pm.c	2009-10-06 13:48:07.000000000 +0200
++++ ./arch/arm/mach-pxa/sharpsl_pm.c	2009-10-14 12:12:05.000000000 +0200
+@@ -32,25 +32,10 @@
+ #include <mach/regs-rtc.h>
+ #include <mach/sharpsl.h>
+ #include <mach/sharpsl_pm.h>
++#include <mach/spitz.h>
+ 
+ #include "sharpsl.h"
+ 
+-/*
+- * Constants
+- */
+-#define SHARPSL_CHARGE_ON_TIME_INTERVAL        (msecs_to_jiffies(1*60*1000))  /* 1 min */
+-#define SHARPSL_CHARGE_FINISH_TIME             (msecs_to_jiffies(10*60*1000)) /* 10 min */
+-#define SHARPSL_BATCHK_TIME                    (msecs_to_jiffies(15*1000))    /* 15 sec */
+-#define SHARPSL_BATCHK_TIME_SUSPEND            (60*10)                        /* 10 min */
+-
+-#define SHARPSL_WAIT_CO_TIME                   15  /* 15 sec */
+-#define SHARPSL_WAIT_DISCHARGE_ON              100 /* 100 msec */
+-#define SHARPSL_CHECK_BATTERY_WAIT_TIME_TEMP   10  /* 10 msec */
+-#define SHARPSL_CHECK_BATTERY_WAIT_TIME_VOLT   10  /* 10 msec */
+-#define SHARPSL_CHECK_BATTERY_WAIT_TIME_ACIN   10  /* 10 msec */
+-#define SHARPSL_CHARGE_WAIT_TIME               15  /* 15 msec */
+-#define SHARPSL_CHARGE_CO_CHECK_TIME           5   /* 5 msec */
+-#define SHARPSL_CHARGE_RETRY_CNT               1   /* eqv. 10 min */
+ 
+ /*
+  * Prototypes
+@@ -72,112 +57,28 @@
+  * Variables
+  */
+ struct sharpsl_pm_status sharpsl_pm;
++EXPORT_SYMBOL(sharpsl_pm);
+ static DECLARE_DELAYED_WORK(toggle_charger, sharpsl_charge_toggle);
+ static DECLARE_DELAYED_WORK(sharpsl_bat, sharpsl_battery_thread);
+ DEFINE_LED_TRIGGER(sharpsl_charge_led_trigger);
+ 
+ 
+ 
+-struct battery_thresh spitz_battery_levels_acin[] = {
+-	{ 213, 100},
+-	{ 212,  98},
+-	{ 211,  95},
+-	{ 210,  93},
+-	{ 209,  90},
+-	{ 208,  88},
+-	{ 207,  85},
+-	{ 206,  83},
+-	{ 205,  80},
+-	{ 204,  78},
+-	{ 203,  75},
+-	{ 202,  73},
+-	{ 201,  70},
+-	{ 200,  68},
+-	{ 199,  65},
+-	{ 198,  63},
+-	{ 197,  60},
+-	{ 196,  58},
+-	{ 195,  55},
+-	{ 194,  53},
+-	{ 193,  50},
+-	{ 192,  48},
+-	{ 192,  45},
+-	{ 191,  43},
+-	{ 191,  40},
+-	{ 190,  38},
+-	{ 190,  35},
+-	{ 189,  33},
+-	{ 188,  30},
+-	{ 187,  28},
+-	{ 186,  25},
+-	{ 185,  23},
+-	{ 184,  20},
+-	{ 183,  18},
+-	{ 182,  15},
+-	{ 181,  13},
+-	{ 180,  10},
+-	{ 179,   8},
+-	{ 178,   5},
+-	{   0,   0},
+-};
+-
+-struct battery_thresh  spitz_battery_levels_noac[] = {
+-	{ 213, 100},
+-	{ 212,  98},
+-	{ 211,  95},
+-	{ 210,  93},
+-	{ 209,  90},
+-	{ 208,  88},
+-	{ 207,  85},
+-	{ 206,  83},
+-	{ 205,  80},
+-	{ 204,  78},
+-	{ 203,  75},
+-	{ 202,  73},
+-	{ 201,  70},
+-	{ 200,  68},
+-	{ 199,  65},
+-	{ 198,  63},
+-	{ 197,  60},
+-	{ 196,  58},
+-	{ 195,  55},
+-	{ 194,  53},
+-	{ 193,  50},
+-	{ 192,  48},
+-	{ 191,  45},
+-	{ 190,  43},
+-	{ 189,  40},
+-	{ 188,  38},
+-	{ 187,  35},
+-	{ 186,  33},
+-	{ 185,  30},
+-	{ 184,  28},
+-	{ 183,  25},
+-	{ 182,  23},
+-	{ 181,  20},
+-	{ 180,  18},
+-	{ 179,  15},
+-	{ 178,  13},
+-	{ 177,  10},
+-	{ 176,   8},
+-	{ 175,   5},
+-	{   0,   0},
+-};
+-
+ /* MAX1111 Commands */
+-#define MAXCTRL_PD0      1u << 0
+-#define MAXCTRL_PD1      1u << 1
+-#define MAXCTRL_SGL      1u << 2
+-#define MAXCTRL_UNI      1u << 3
++#define MAXCTRL_PD0      (1u << 0)
++#define MAXCTRL_PD1      (1u << 1)
++#define MAXCTRL_SGL      (1u << 2)
++#define MAXCTRL_UNI      (1u << 3)
+ #define MAXCTRL_SEL_SH   4
+-#define MAXCTRL_STR      1u << 7
++#define MAXCTRL_STR      (1u << 7)
+ 
+ /*
+  * Read MAX1111 ADC
+  */
+ int sharpsl_pm_pxa_read_max1111(int channel)
+ {
+-	if (machine_is_tosa()) // Ugly, better move this function into another module
++	/* Ugly, better move this function into another module */
++	if (machine_is_tosa())
+ 	    return 0;
+ 
+ #ifdef CONFIG_CORGI_SSP_DEPRECATED
+@@ -193,7 +94,7 @@
+ #endif
+ }
+ 
+-static int get_percentage(int voltage)
++int get_percentage(int voltage)
+ {
+ 	int i = sharpsl_pm.machinfo->bat_levels - 1;
+ 	int bl_status = sharpsl_pm.machinfo->backlight_get_status ? sharpsl_pm.machinfo->backlight_get_status() : 0;
+@@ -209,6 +110,7 @@
+ 
+ 	return thresh[i].percentage;
+ }
++EXPORT_SYMBOL(get_percentage);
+ 
+ static int get_apm_status(int voltage)
+ {
+@@ -238,7 +140,7 @@
+ 
+ static void sharpsl_battery_thread(struct work_struct *private_)
+ {
+-	int voltage, percent, apm_status, i = 0;
++	int voltage, percent, apm_status, i;
+ 
+ 	if (!sharpsl_pm.machinfo)
+ 		return;
+@@ -250,15 +152,14 @@
+ 			&& time_after(jiffies, sharpsl_pm.charge_start_time +  SHARPSL_CHARGE_ON_TIME_INTERVAL))
+ 		schedule_delayed_work(&toggle_charger, 0);
+ 
+-	while(1) {
++	for (i = 0; i < 5; i++) {
+ 		voltage = sharpsl_pm.machinfo->read_devdata(SHARPSL_BATT_VOLT);
+-
+-		if (voltage > 0) break;
+-		if (i++ > 5) {
+-			voltage = sharpsl_pm.machinfo->bat_levels_noac[0].voltage;
+-			dev_warn(sharpsl_pm.dev, "Warning: Cannot read main battery!\n");
++		if (voltage > 0)
+ 			break;
+-		}
++	}
++	if (voltage <= 0) {
++		voltage = sharpsl_pm.machinfo->bat_levels_noac[0].voltage;
++		dev_warn(sharpsl_pm.dev, "Warning: Cannot read main battery!\n");
+ 	}
+ 
+ 	voltage = sharpsl_average_value(voltage);
+@@ -266,8 +167,10 @@
+ 	percent = get_percentage(voltage);
+ 
+ 	/* At low battery voltages, the voltage has a tendency to start
+-           creeping back up so we try to avoid this here */
+-	if ((sharpsl_pm.battstat.ac_status == APM_AC_ONLINE) || (apm_status == APM_BATTERY_STATUS_HIGH) ||  percent <= sharpsl_pm.battstat.mainbat_percent) {
++	   creeping back up so we try to avoid this here */
++	if ((sharpsl_pm.battstat.ac_status == APM_AC_ONLINE)
++	    || (apm_status == APM_BATTERY_STATUS_HIGH)
++	    || percent <= sharpsl_pm.battstat.mainbat_percent) {
+ 		sharpsl_pm.battstat.mainbat_voltage = voltage;
+ 		sharpsl_pm.battstat.mainbat_status = apm_status;
+ 		sharpsl_pm.battstat.mainbat_percent = percent;
+@@ -279,8 +182,8 @@
+ #ifdef CONFIG_BACKLIGHT_CORGI
+ 	/* If battery is low. limit backlight intensity to save power. */
+ 	if ((sharpsl_pm.battstat.ac_status != APM_AC_ONLINE)
+-			&& ((sharpsl_pm.battstat.mainbat_status == APM_BATTERY_STATUS_LOW) ||
+-			(sharpsl_pm.battstat.mainbat_status == APM_BATTERY_STATUS_CRITICAL))) {
++	    && ((sharpsl_pm.battstat.mainbat_status == APM_BATTERY_STATUS_LOW)
++	    || (sharpsl_pm.battstat.mainbat_status == APM_BATTERY_STATUS_CRITICAL))) {
+ 		if (!(sharpsl_pm.flags & SHARPSL_BL_LIMIT)) {
+ 			sharpsl_pm.machinfo->backlight_limit(1);
+ 			sharpsl_pm.flags |= SHARPSL_BL_LIMIT;
+@@ -293,8 +196,8 @@
+ 
+ 	/* Suspend if critical battery level */
+ 	if ((sharpsl_pm.battstat.ac_status != APM_AC_ONLINE)
+-			&& (sharpsl_pm.battstat.mainbat_status == APM_BATTERY_STATUS_CRITICAL)
+-			&& !(sharpsl_pm.flags & SHARPSL_APM_QUEUED)) {
++	     && (sharpsl_pm.battstat.mainbat_status == APM_BATTERY_STATUS_CRITICAL)
++	     && !(sharpsl_pm.flags & SHARPSL_APM_QUEUED)) {
+ 		sharpsl_pm.flags |= SHARPSL_APM_QUEUED;
+ 		dev_err(sharpsl_pm.dev, "Fatal Off\n");
+ 		apm_queue_event(APM_CRITICAL_SUSPEND);
+@@ -339,6 +242,8 @@
+ 
+ static void sharpsl_charge_error(void)
+ {
++	dev_warn(sharpsl_pm.dev, "Charger Error\n");
++
+ 	sharpsl_pm_led(SHARPSL_LED_ERROR);
+ 	sharpsl_pm.machinfo->charge(0);
+ 	sharpsl_pm.charge_mode = CHRG_ERROR;
+@@ -346,7 +251,7 @@
+ 
+ static void sharpsl_charge_toggle(struct work_struct *private_)
+ {
+-	dev_dbg(sharpsl_pm.dev, "Toogling Charger at time: %lx\n", jiffies);
++	dev_dbg(sharpsl_pm.dev, "Toggling Charger at time: %lx\n", jiffies);
+ 
+ 	if (!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_ACIN)) {
+ 		sharpsl_charge_off();
+@@ -368,7 +273,7 @@
+ {
+ 	int acin = sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_ACIN);
+ 
+-	dev_dbg(sharpsl_pm.dev, "AC Status: %d\n",acin);
++	dev_dbg(sharpsl_pm.dev, "AC Status: %d\n", acin);
+ 
+ 	sharpsl_average_clear();
+ 	if (acin && (sharpsl_pm.charge_mode != CHRG_ON))
+@@ -472,14 +377,14 @@
+ 	sharpsl_ad[sharpsl_ad_index] = ad;
+ 	sharpsl_ad_index++;
+ 	if (sharpsl_ad_index >= SHARPSL_CNV_VALUE_NUM) {
+-		for (i=0; i < (SHARPSL_CNV_VALUE_NUM-1); i++)
++		for (i = 0; i < (SHARPSL_CNV_VALUE_NUM-1); i++)
+ 			sharpsl_ad[i] = sharpsl_ad[i+1];
+ 		sharpsl_ad_index = SHARPSL_CNV_VALUE_NUM - 1;
+ 	}
+-	for (i=0; i < sharpsl_ad_index; i++)
++	for (i = 0; i < sharpsl_ad_index; i++)
+ 		ad_val += sharpsl_ad[i];
+ 
+-	return (ad_val / sharpsl_ad_index);
++	return ad_val / sharpsl_ad_index;
+ }
+ 
+ /*
+@@ -492,8 +397,8 @@
+ 
+ 	/* Find MAX val */
+ 	temp = val[0];
+-	j=0;
+-	for (i=1; i<5; i++) {
++	j = 0;
++	for (i = 1; i < 5; i++) {
+ 		if (temp < val[i]) {
+ 			temp = val[i];
+ 			j = i;
+@@ -502,21 +407,21 @@
+ 
+ 	/* Find MIN val */
+ 	temp = val[4];
+-	k=4;
+-	for (i=3; i>=0; i--) {
++	k = 4;
++	for (i = 3; i >= 0; i--) {
+ 		if (temp > val[i]) {
+ 			temp = val[i];
+ 			k = i;
+ 		}
+ 	}
+ 
+-	for (i=0; i<5; i++)
+-		if (i != j && i != k )
++	for (i = 0; i < 5; i++)
++		if (i != j && i != k)
+ 			sum += val[i];
+ 
+ 	dev_dbg(sharpsl_pm.dev, "Average: %d from values: %d, %d, %d, %d, %d\n", sum/3, val[0], val[1], val[2], val[3], val[4]);
+ 
+-	return (sum/3);
++	return sum/3;
+ }
+ 
+ static int sharpsl_check_battery_temp(void)
+@@ -524,7 +429,7 @@
+ 	int val, i, buff[5];
+ 
+ 	/* Check battery temperature */
+-	for (i=0; i<5; i++) {
++	for (i = 0; i < 5; i++) {
+ 		mdelay(SHARPSL_CHECK_BATTERY_WAIT_TIME_TEMP);
+ 		sharpsl_pm.machinfo->measure_temp(1);
+ 		mdelay(SHARPSL_CHECK_BATTERY_WAIT_TIME_TEMP);
+@@ -535,8 +440,10 @@
+ 	val = get_select_val(buff);
+ 
+ 	dev_dbg(sharpsl_pm.dev, "Temperature: %d\n", val);
+-	if (val > sharpsl_pm.machinfo->charge_on_temp) {
+-		printk(KERN_WARNING "Not charging: temperature out of limits.\n");
++	/* FIXME: this should catch battery read errors, but we should
++	   probably avoid charging in <0C temperatures, too. */
++	if ((val < 0) || (val > sharpsl_pm.machinfo->charge_on_temp)) {
++		dev_warn(sharpsl_pm.dev, "Not charging: temperature %d out of limits.\n", val);
+ 		return -1;
+ 	}
+ 
+@@ -557,7 +464,7 @@
+ 		sharpsl_pm.machinfo->discharge1(1);
+ 
+ 	/* Check battery voltage */
+-	for (i=0; i<5; i++) {
++	for (i = 0; i < 5; i++) {
+ 		buff[i] = sharpsl_pm.machinfo->read_devdata(SHARPSL_BATT_VOLT);
+ 		mdelay(SHARPSL_CHECK_BATTERY_WAIT_TIME_VOLT);
+ 	}
+@@ -581,16 +488,16 @@
+ {
+ 	int temp, i, buff[5];
+ 
+-	for (i=0; i<5; i++) {
++	for (i = 0; i < 5; i++) {
+ 		buff[i] = sharpsl_pm.machinfo->read_devdata(SHARPSL_ACIN_VOLT);
+ 		mdelay(SHARPSL_CHECK_BATTERY_WAIT_TIME_ACIN);
+ 	}
+ 
+ 	temp = get_select_val(buff);
+-	dev_dbg(sharpsl_pm.dev, "AC Voltage: %d\n",temp);
++	dev_dbg(sharpsl_pm.dev, "AC Voltage: %d\n", temp);
+ 
+ 	if ((temp > sharpsl_pm.machinfo->charge_acin_high) || (temp < sharpsl_pm.machinfo->charge_acin_low)) {
+-		dev_err(sharpsl_pm.dev, "Error: AC check failed.\n");
++		dev_err(sharpsl_pm.dev, "Error: AC check failed: voltage %d.\n", temp);
+ 		return -1;
+ 	}
+ 
+@@ -624,9 +531,9 @@
+ 
+ static void corgi_goto_sleep(unsigned long alarm_time, unsigned int alarm_enable, suspend_state_t state)
+ {
+-	dev_dbg(sharpsl_pm.dev, "Time is: %08x\n",RCNR);
++	dev_dbg(sharpsl_pm.dev, "Time is: %08x\n", RCNR);
+ 
+-	dev_dbg(sharpsl_pm.dev, "Offline Charge Activate = %d\n",sharpsl_pm.flags & SHARPSL_DO_OFFLINE_CHRG);
++	dev_dbg(sharpsl_pm.dev, "Offline Charge Activate = %d\n", sharpsl_pm.flags & SHARPSL_DO_OFFLINE_CHRG);
+ 	/* not charging and AC-IN! */
+ 
+ 	if ((sharpsl_pm.flags & SHARPSL_DO_OFFLINE_CHRG) && (sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_ACIN))) {
+@@ -644,12 +551,12 @@
+ 	if ((sharpsl_pm.charge_mode == CHRG_ON) && ((alarm_enable && ((alarm_time - RCNR) > (SHARPSL_BATCHK_TIME_SUSPEND + 30))) || !alarm_enable)) {
+ 		RTSR &= RTSR_ALE;
+ 		RTAR = RCNR + SHARPSL_BATCHK_TIME_SUSPEND;
+-		dev_dbg(sharpsl_pm.dev, "Charging alarm at: %08x\n",RTAR);
++		dev_dbg(sharpsl_pm.dev, "Charging alarm at: %08x\n", RTAR);
+ 		sharpsl_pm.flags |= SHARPSL_ALARM_ACTIVE;
+ 	} else if (alarm_enable) {
+ 		RTSR &= RTSR_ALE;
+ 		RTAR = alarm_time;
+-		dev_dbg(sharpsl_pm.dev, "User alarm at: %08x\n",RTAR);
++		dev_dbg(sharpsl_pm.dev, "User alarm at: %08x\n", RTAR);
+ 	} else {
+ 		dev_dbg(sharpsl_pm.dev, "No alarms set.\n");
+ 	}
+@@ -658,19 +565,20 @@
+ 
+ 	sharpsl_pm.machinfo->postsuspend();
+ 
+-	dev_dbg(sharpsl_pm.dev, "Corgi woken up from suspend: %08x\n",PEDR);
++
++	dev_dbg(sharpsl_pm.dev, "Corgi woken up from suspend: %08x\n", PEDR);
+ }
+ 
+ static int corgi_enter_suspend(unsigned long alarm_time, unsigned int alarm_enable, suspend_state_t state)
+ {
+-	if (!sharpsl_pm.machinfo->should_wakeup(!(sharpsl_pm.flags & SHARPSL_ALARM_ACTIVE) && alarm_enable) )
+-	{
++  return 0;
++	if (!sharpsl_pm.machinfo->should_wakeup(!(sharpsl_pm.flags & SHARPSL_ALARM_ACTIVE) && alarm_enable)) {
+ 		if (!(sharpsl_pm.flags & SHARPSL_ALARM_ACTIVE)) {
+ 			dev_dbg(sharpsl_pm.dev, "No user triggered wakeup events and not charging. Strange. Suspend.\n");
+ 			corgi_goto_sleep(alarm_time, alarm_enable, state);
+ 			return 1;
+ 		}
+-		if(sharpsl_off_charge_battery()) {
++		if (sharpsl_off_charge_battery()) {
+ 			dev_dbg(sharpsl_pm.dev, "Charging. Suspend...\n");
+ 			corgi_goto_sleep(alarm_time, alarm_enable, state);
+ 			return 1;
+@@ -697,7 +605,7 @@
+ 
+ 	corgi_goto_sleep(alarm_time, alarm_status, state);
+ 
+-	while (corgi_enter_suspend(alarm_time,alarm_status,state))
++	while (corgi_enter_suspend(alarm_time, alarm_status, state))
+ 		{}
+ 
+ 	if (sharpsl_pm.machinfo->earlyresume)
+@@ -732,7 +640,7 @@
+ 		sharpsl_pm.machinfo->discharge1(1);
+ 
+ 	/* Check battery : check inserting battery ? */
+-	for (i=0; i<5; i++) {
++	for (i = 0; i < 5; i++) {
+ 		buff[i] = sharpsl_pm.machinfo->read_devdata(SHARPSL_BATT_VOLT);
+ 		mdelay(SHARPSL_CHECK_BATTERY_WAIT_TIME_VOLT);
+ 	}
+@@ -812,7 +720,7 @@
+ 		mdelay(SHARPSL_CHARGE_CO_CHECK_TIME);
+ 
+ 		time = RCNR;
+-		while(1) {
++		while (1) {
+ 			/* Check if any wakeup event had occurred */
+ 			if (sharpsl_pm.machinfo->charger_wakeup() != 0)
+ 				return 0;
+@@ -835,9 +743,9 @@
+ 	mdelay(SHARPSL_CHARGE_CO_CHECK_TIME);
+ 
+ 	time = RCNR;
+-	while(1) {
++	while (1) {
+ 		/* Check if any wakeup event had occurred */
+-		if (sharpsl_pm.machinfo->charger_wakeup() != 0)
++		if (sharpsl_pm.machinfo->charger_wakeup())
+ 			return 0;
+ 		/* Check for timeout */
+ 		if ((RCNR-time) > SHARPSL_WAIT_CO_TIME) {
+@@ -864,12 +772,12 @@
+ 
+ static ssize_t battery_percentage_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(buf, "%d\n",sharpsl_pm.battstat.mainbat_percent);
++	return sprintf(buf, "%d\n", sharpsl_pm.battstat.mainbat_percent);
+ }
+ 
+ static ssize_t battery_voltage_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(buf, "%d\n",sharpsl_pm.battstat.mainbat_voltage);
++	return sprintf(buf, "%d\n", sharpsl_pm.battstat.mainbat_voltage);
+ }
+ 
+ static DEVICE_ATTR(battery_percentage, 0444, battery_percentage_show, NULL);
+@@ -943,7 +851,6 @@
+ 		}
+ 	}
+ 
+-	if (sharpsl_pm.machinfo->batfull_irq)
+-	{
++	if (sharpsl_pm.machinfo->batfull_irq) {
+ 		/* Register interrupt handler. */
+ 		if (request_irq(IRQ_GPIO(sharpsl_pm.machinfo->gpio_batfull), sharpsl_chrg_full_isr, IRQF_DISABLED | IRQF_TRIGGER_RISING, "CO", sharpsl_chrg_full_isr)) {
+diff -ur ./arch/arm.ofic/mach-pxa/spitz.c ./arch/arm/mach-pxa/spitz.c
+--- ./arch/arm.ofic/mach-pxa/spitz.c	2009-10-06 13:48:07.000000000 +0200
++++ ./arch/arm/mach-pxa/spitz.c	2009-10-14 11:01:36.000000000 +0200
+@@ -686,12 +733,19 @@
+ 	.dev.platform_data = &sharpsl_rom_data,
+ };
+ 
++static struct platform_device spitz_battery_device = {
++	.name	= "spitz-battery",
++	.id	= -1,
++};
++
++
+ static struct platform_device *devices[] __initdata = {
+ 	&spitzscoop_device,
+ 	&spitzkbd_device,
+ 	&spitzled_device,
+ 	&sharpsl_nand_device,
+ 	&sharpsl_rom_device,
++	&spitz_battery_device,
+ };
+ 
+ static void spitz_poweroff(void)
+--- ./arch/arm.ofic/mach-pxa/spitz_pm.c	2009-09-10 00:13:59.000000000 +0200
++++ ./arch/arm/mach-pxa/spitz_pm.c	2009-10-19 07:28:42.000000000 +0200
+@@ -37,6 +37,93 @@
+ 
+ static int spitz_last_ac_status;
+ 
++static const struct battery_thresh spitz_battery_levels_acin[] = {
++	{ 213, 100},
++	{ 212,  98},
++	{ 211,  95},
++	{ 210,  93},
++	{ 209,  90},
++	{ 208,  88},
++	{ 207,  85},
++	{ 206,  83},
++	{ 205,  80},
++	{ 204,  78},
++	{ 203,  75},
++	{ 202,  73},
++	{ 201,  70},
++	{ 200,  68},
++	{ 199,  65},
++	{ 198,  63},
++	{ 197,  60},
++	{ 196,  58},
++	{ 195,  55},
++	{ 194,  53},
++	{ 193,  50},
++	{ 192,  48},
++	{ 192,  45},
++	{ 191,  43},
++	{ 191,  40},
++	{ 190,  38},
++	{ 190,  35},
++	{ 189,  33},
++	{ 188,  30},
++	{ 187,  28},
++	{ 186,  25},
++	{ 185,  23},
++	{ 184,  20},
++	{ 183,  18},
++	{ 182,  15},
++	{ 181,  13},
++	{ 180,  10},
++	{ 179,   8},
++	{ 178,   5},
++	{   0,   0},
++};
++
++static const struct battery_thresh  spitz_battery_levels_noac[] = {
++	{ 213, 100},
++	{ 212,  98},
++	{ 211,  95},
++	{ 210,  93},
++	{ 209,  90},
++	{ 208,  88},
++	{ 207,  85},
++	{ 206,  83},
++	{ 205,  80},
++	{ 204,  78},
++	{ 203,  75},
++	{ 202,  73},
++	{ 201,  70},
++	{ 200,  68},
++	{ 199,  65},
++	{ 198,  63},
++	{ 197,  60},
++	{ 196,  58},
++	{ 195,  55},
++	{ 194,  53},
++	{ 193,  50},
++	{ 192,  48},
++	{ 191,  45},
++	{ 190,  43},
++	{ 189,  40},
++	{ 188,  38},
++	{ 187,  35},
++	{ 186,  33},
++	{ 185,  30},
++	{ 184,  28},
++	{ 183,  25},
++	{ 182,  23},
++	{ 181,  20},
++	{ 180,  18},
++	{ 179,  15},
++	{ 178,  13},
++	{ 177,  10},
++	{ 176,   8},
++	{ 175,   5},
++	{   0,   0},
++};
++
++
+ static void spitz_charger_init(void)
+ {
+ 	pxa_gpio_mode(SPITZ_GPIO_KEY_INT | GPIO_IN);
+@@ -103,7 +190,7 @@
+ 	PFER = GPIO_bit(SPITZ_GPIO_KEY_INT) | GPIO_bit(SPITZ_GPIO_RESET);
+ 	PWER = GPIO_bit(SPITZ_GPIO_KEY_INT) | GPIO_bit(SPITZ_GPIO_RESET) | PWER_RTC;
+ 	PKWR = GPIO_bit(SPITZ_GPIO_SYNC) | GPIO_bit(SPITZ_GPIO_KEY_INT) | GPIO_bit(SPITZ_GPIO_RESET);
+-	PKSR = 0xffffffff; // clear
++	PKSR = 0xffffffff; /* clear */
+ 
+ 	/* nRESET_OUT Disable */
+ 	PSLR |= PSLR_SL_ROD;
+@@ -149,7 +236,7 @@
+ 	if (resume_on_alarm && (PEDR & PWER_RTC))
+ 		is_resume |= PWER_RTC;
+ 
+-	dev_dbg(sharpsl_pm.dev, "is_resume: %x\n",is_resume);
++	dev_dbg(sharpsl_pm.dev, "is_resume: %x\n", is_resume);
+ 	return is_resume;
+ }
+ 
+@@ -160,15 +247,15 @@
+ 
+ unsigned long spitzpm_read_devdata(int type)
+ {
+-	switch(type) {
++	switch (type) {
+ 	case SHARPSL_STATUS_ACIN:
+ 		return (((~GPLR(SPITZ_GPIO_AC_IN)) & GPIO_bit(SPITZ_GPIO_AC_IN)) != 0);
+ 	case SHARPSL_STATUS_LOCK:
+-		return READ_GPIO_BIT(sharpsl_pm.machinfo->gpio_batlock);
++		return !!READ_GPIO_BIT(sharpsl_pm.machinfo->gpio_batlock);
+ 	case SHARPSL_STATUS_CHRGFULL:
+-		return READ_GPIO_BIT(sharpsl_pm.machinfo->gpio_batfull);
++		return !!READ_GPIO_BIT(sharpsl_pm.machinfo->gpio_batfull);
+ 	case SHARPSL_STATUS_FATAL:
+-		return READ_GPIO_BIT(sharpsl_pm.machinfo->gpio_fatal);
++		return !!READ_GPIO_BIT(sharpsl_pm.machinfo->gpio_fatal);
+ 	case SHARPSL_ACIN_VOLT:
+ 		return sharpsl_pm_pxa_read_max1111(MAX1111_ACIN_VOLT);
+ 	case SHARPSL_BATT_TEMP:
+@@ -179,6 +266,11 @@
+ 	}
+ }
+ 
++int backlight_get_status(void)
++{
++	return 0;
++}
++
+ struct sharpsl_charger_machinfo spitz_pm_machinfo = {
+ 	.init             = spitz_charger_init,
+ 	.exit             = NULL,
+@@ -199,8 +291,9 @@
+ #if defined(CONFIG_LCD_CORGI)
+ 	.backlight_limit = corgi_lcd_limit_intensity,
+ #elif defined(CONFIG_BACKLIGHT_CORGI)
+-        .backlight_limit  = corgibl_limit_intensity,
++	.backlight_limit  = corgibl_limit_intensity,
+ #endif
++//	.backlight_get_status = backlight_get_status,
+ 	.charge_on_volt	  = SHARPSL_CHARGE_ON_VOLT,
+ 	.charge_on_temp	  = SHARPSL_CHARGE_ON_TEMP,
+ 	.charge_acin_high = SHARPSL_CHARGE_ON_ACIN_HIGH,
+@@ -241,7 +334,7 @@
+ 
+ static void spitzpm_exit(void)
+ {
+- 	platform_device_unregister(spitzpm_device);
++	platform_device_unregister(spitzpm_device);
+ }
+ 
+ module_init(spitzpm_init);
 
-Jonathan
 
-
-
-
-> Add driver support for the tsl2563 TAOS ambient light sensor. After looking at
-> discussions on LKML, the driver was modified from a 'hwmon' driver to an 'iio'
-> driver. The sysfs interfaces have been tested on an RX51 (N900) to see if it
-> responds to changing light conditions.
-> 
-> The only real reason for submitting this to staging is that it is dependent on
-> the IIO subsystem.
-> 
-> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> Cc: Jonathan Cameron <jic23@cam.ac.uk>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: linux-omap@vger.kernel.org
-> ---
->  drivers/staging/iio/light/Kconfig   |   11 +
->  drivers/staging/iio/light/Makefile  |    1 +
->  drivers/staging/iio/light/tsl2563.c |  772 +++++++++++++++++++++++++++++++++++
->  drivers/staging/iio/light/tsl2563.h |    9 +
->  4 files changed, 793 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/staging/iio/light/tsl2563.c
->  create mode 100644 drivers/staging/iio/light/tsl2563.h
-> 
-> diff --git a/drivers/staging/iio/light/Kconfig b/drivers/staging/iio/light/Kconfig
-> index 12af0c4..cf0d0d6 100644
-> --- a/drivers/staging/iio/light/Kconfig
-> +++ b/drivers/staging/iio/light/Kconfig
-> @@ -11,3 +11,14 @@ config TSL2561
->  	convertor.  This chip has two light sensors. One is broadband
->  	including infrared whilst the other measures only infrared.
->  	Provides direct access via sysfs.
-> +
-> +config SENSORS_TSL2563
-> +	tristate "TAOS TSL2563 ambient light sensor"
-> +	depends on I2C
-> +	help
-> +	 If you say yes here you get support for the Taos TSL2563
-> +	 ambient light sensor (found in N900).
-> +
-> +	 This driver can also be built as a module.  If so, the module
-> +	 will be called tsl2563.
-> +
-> diff --git a/drivers/staging/iio/light/Makefile b/drivers/staging/iio/light/Makefile
-> index ccff151..30dbfb1 100644
-> --- a/drivers/staging/iio/light/Makefile
-> +++ b/drivers/staging/iio/light/Makefile
-> @@ -3,3 +3,4 @@
->  #
->  
->  obj-$(CONFIG_TSL2561)   += tsl2561.o
-> +obj-$(CONFIG_SENSORS_TSL2563)	+= tsl2563.o
-> diff --git a/drivers/staging/iio/light/tsl2563.c b/drivers/staging/iio/light/tsl2563.c
-> new file mode 100644
-> index 0000000..3e812b2
-> --- /dev/null
-> +++ b/drivers/staging/iio/light/tsl2563.c
-> @@ -0,0 +1,772 @@
-> +/*
-> + * drivers/i2c/chips/tsl2563.c
-> + *
-> + * Copyright (C) 2008 Nokia Corporation
-> + *
-> + * Written by Timo O. Karjalainen <timo.o.karjalainen@nokia.com>
-> + * Contact: Amit Kucheria <amit.kucheria@verdurent.com>
-> + *
-> + * Converted to IIO driver
-> + * Amit Kucheria <amit.kucheria@verdurent.com>
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-> + * 02110-1301 USA
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/i2c.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/sched.h>
-> +#include <linux/mutex.h>
-> +#include <linux/delay.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm.h>
-> +#include <linux/hwmon.h>
-> +#include <linux/err.h>
-> +
-> +#include "../iio.h"
-> +#include "tsl2563.h"
-> +
-> +#define DRIVER_NAME  "tsl2563"
-> +
-> +/* Use this many bits for fraction part. */
-> +#define ADC_FRAC_BITS		(14)
-> +
-> +/* Given number of 1/10000's in ADC_FRAC_BITS precision. */
-> +#define FRAC10K(f)		(((f) * (1L << (ADC_FRAC_BITS))) / (10000))
-> +
-> +/* Bits used for fraction in calibration coefficients.*/
-> +#define CALIB_FRAC_BITS		(10)
-> +/* 0.5 in CALIB_FRAC_BITS precision */
-> +#define CALIB_FRAC_HALF		(1 << (CALIB_FRAC_BITS - 1))
-> +/* Make a fraction from a number n that was multiplied with b. */
-> +#define CALIB_FRAC(n, b)	(((n) << CALIB_FRAC_BITS) / (b))
-> +/* Decimal 10^(digits in sysfs presentation) */
-> +#define CALIB_BASE_SYSFS	(1000)
-> +
-> +#define TSL2563_CMD		(0x80)
-> +#define TSL2563_CLEARINT	(0x40)
-> +
-> +#define TSL2563_REG_CTRL	(0x00)
-> +#define TSL2563_REG_TIMING	(0x01)
-> +#define TSL2563_REG_LOWLOW	(0x02) /* data0 low threshold, 2 bytes */
-> +#define TSL2563_REG_LOWHIGH	(0x03)
-> +#define TSL2563_REG_HIGHLOW	(0x04) /* data0 high threshold, 2 bytes */
-> +#define TSL2563_REG_HIGHHIGH	(0x05)
-> +#define TSL2563_REG_INT		(0x06)
-> +#define TSL2563_REG_ID		(0x0a)
-> +#define TSL2563_REG_DATA0LOW	(0x0c) /* broadband sensor value, 2 bytes */
-> +#define TSL2563_REG_DATA0HIGH	(0x0d)
-> +#define TSL2563_REG_DATA1LOW	(0x0e) /* infrared sensor value, 2 bytes */
-> +#define TSL2563_REG_DATA1HIGH	(0x0f)
-> +
-> +#define TSL2563_CMD_POWER_ON	(0x03)
-> +#define TSL2563_CMD_POWER_OFF	(0x00)
-> +#define TSL2563_CTRL_POWER_MASK	(0x03)
-> +
-> +#define TSL2563_TIMING_13MS	(0x00)
-> +#define TSL2563_TIMING_100MS	(0x01)
-> +#define TSL2563_TIMING_400MS	(0x02)
-> +#define TSL2563_TIMING_MASK	(0x03)
-> +#define TSL2563_TIMING_GAIN16	(0x10)
-> +#define TSL2563_TIMING_GAIN1	(0x00)
-> +
-> +#define TSL2563_INT_DISBLED	(0x00)
-> +#define TSL2563_INT_LEVEL	(0x10)
-> +#define TSL2563_INT_PERSIST(n)	((n) & 0x0F)
-> +
-> +struct tsl2563_gainlevel_coeff {
-> +	u8 gaintime;
-> +	u16 min;
-> +	u16 max;
-> +};
-> +
-> +static struct tsl2563_gainlevel_coeff tsl2563_gainlevel_table[] = {
-> +	{
-> +		.gaintime	= TSL2563_TIMING_400MS | TSL2563_TIMING_GAIN16,
-> +		.min		= 0,
-> +		.max		= 65534,
-> +	}, {
-> +		.gaintime	= TSL2563_TIMING_400MS | TSL2563_TIMING_GAIN1,
-> +		.min		= 2048,
-> +		.max		= 65534,
-> +	}, {
-> +		.gaintime	= TSL2563_TIMING_100MS | TSL2563_TIMING_GAIN1,
-> +		.min		= 4095,
-> +		.max		= 37177,
-> +	}, {
-> +		.gaintime	= TSL2563_TIMING_13MS | TSL2563_TIMING_GAIN1,
-> +		.min		= 3000,
-> +		.max		= 65535,
-> +	},
-> +};
-> +
-> +struct tsl2563_chip {
-> +	struct mutex		lock;
-> +	struct i2c_client	*client;
-> +	struct iio_dev		*indio_dev;
-> +	struct delayed_work	poweroff_work;
-> +
-> +	/* Remember state for suspend and resume functions */
-> +	pm_message_t		state;
-> +
-> +	struct tsl2563_gainlevel_coeff *gainlevel;
-> +
-> +	/* Thresholds are in lux */
-> +	u16			low_thres;
-> +	u16			high_thres;
-> +	u8			intr;
-> +
-> +	/* Calibration coefficients */
-> +	u32			calib0;
-> +	u32			calib1;
-> +	int			cover_comp_gain;
-> +
-> +	/* Cache current values, to be returned while suspended */
-> +	u32			data0;
-> +	u32			data1;
-> +};
-> +
-> +static int tsl2563_write(struct i2c_client *client, u8 reg, u8 value)
-> +{
-> +	int ret;
-> +	u8 buf[2];
-> +
-> +	buf[0] = TSL2563_CMD | reg;
-> +	buf[1] = value;
-> +
-> +	ret = i2c_master_send(client, buf, sizeof(buf));
-> +	return (ret == sizeof(buf)) ? 0 : ret;
-> +}
-> +
-> +static int tsl2563_read(struct i2c_client *client, u8 reg, void *buf, int len)
-> +{
-> +	int ret;
-> +	u8 cmd = TSL2563_CMD | reg;
-> +
-> +	ret = i2c_master_send(client, &cmd, sizeof(cmd));
-> +	if (ret != sizeof(cmd))
-> +		return ret;
-> +
-> +	return i2c_master_recv(client, buf, len);
-> +}
-> +
-> +static int tsl2563_set_power(struct tsl2563_chip *chip, int on)
-> +{
-> +	struct i2c_client *client = chip->client;
-> +	u8 cmd;
-> +
-> +	cmd = on ? TSL2563_CMD_POWER_ON : TSL2563_CMD_POWER_OFF;
-> +	return tsl2563_write(client, TSL2563_REG_CTRL, cmd);
-> +}
-> +
-> +/*
-> + * Return value is 0 for off, 1 for on, or a negative error
-> + * code if reading failed.
-> + */
-> +static int tsl2563_get_power(struct tsl2563_chip *chip)
-> +{
-> +	struct i2c_client *client = chip->client;
-> +	int ret;
-> +	u8 val;
-> +
-> +	ret = tsl2563_read(client, TSL2563_REG_CTRL, &val, sizeof(val));
-> +	if (ret != sizeof(val))
-> +		return ret;
-> +
-> +	return (val & TSL2563_CTRL_POWER_MASK) == TSL2563_CMD_POWER_ON;
-> +}
-> +
-> +static int tsl2563_configure(struct tsl2563_chip *chip)
-> +{
-> +	struct i2c_client *client = chip->client;
-> +	int ret;
-> +
-> +	ret = tsl2563_write(client, TSL2563_REG_TIMING,
-> +			chip->gainlevel->gaintime);
-> +	if (ret)
-> +		goto out;
-> +
-> +	ret = tsl2563_write(client, TSL2563_REG_INT, chip->intr);
-> +
-> +out:
-> +	return ret;
-> +}
-> +
-> +static void tsl2563_poweroff_work(struct work_struct *work)
-> +{
-> +	struct tsl2563_chip *chip =
-> +		container_of(work, struct tsl2563_chip, poweroff_work.work);
-> +	tsl2563_set_power(chip, 0);
-> +}
-> +
-> +static int tsl2563_detect(struct tsl2563_chip *chip)
-> +{
-> +	int ret;
-> +
-> +	ret = tsl2563_set_power(chip, 1);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = tsl2563_get_power(chip);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return ret ? 0 : -ENODEV;
-> +}
-> +
-> +static int tsl2563_read_id(struct tsl2563_chip *chip, u8 *id)
-> +{
-> +	struct i2c_client *client = chip->client;
-> +	int ret;
-> +
-> +	ret = tsl2563_read(client, TSL2563_REG_ID, id, sizeof(*id));
-> +	if (ret != sizeof(*id))
-> +		return ret;
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * "Normalized" ADC value is one obtained with 400ms of integration time and
-> + * 16x gain. This function returns the number of bits of shift needed to
-> + * convert between normalized values and HW values obtained using given
-> + * timing and gain settings.
-> + */
-> +static int adc_shiftbits(u8 timing)
-> +{
-> +	int shift = 0;
-> +
-> +	switch (timing & TSL2563_TIMING_MASK) {
-> +	case TSL2563_TIMING_13MS:
-> +		shift += 5;
-> +		break;
-> +	case TSL2563_TIMING_100MS:
-> +		shift += 2;
-> +		break;
-> +	case TSL2563_TIMING_400MS:
-> +		/* no-op */
-> +		break;
-> +	}
-> +
-> +	if (!(timing & TSL2563_TIMING_GAIN16))
-> +		shift += 4;
-> +
-> +	return shift;
-> +}
-> +
-> +/* Convert a HW ADC value to normalized scale. */
-> +static u32 normalize_adc(u16 adc, u8 timing)
-> +{
-> +	return adc << adc_shiftbits(timing);
-> +}
-> +
-> +static void tsl2563_wait_adc(struct tsl2563_chip *chip)
-> +{
-> +	unsigned int delay;
-> +
-> +	switch (chip->gainlevel->gaintime & TSL2563_TIMING_MASK) {
-> +	case TSL2563_TIMING_13MS:
-> +		delay = 14;
-> +		break;
-> +	case TSL2563_TIMING_100MS:
-> +		delay = 101;
-> +		break;
-> +	default:
-> +		delay = 402;
-> +	}
-> +	/*
-> +	 * TODO: Make sure that we wait at least required delay but why we
-> +	 * have to extend it one tick more?
-> +	 */
-> +	schedule_timeout_interruptible(msecs_to_jiffies(delay) + 2);
-> +}
-> +
-> +static int tsl2563_adjust_gainlevel(struct tsl2563_chip *chip, u16 adc)
-> +{
-> +	struct i2c_client *client = chip->client;
-> +
-> +	if (adc > chip->gainlevel->max || adc < chip->gainlevel->min) {
-> +
-> +		(adc > chip->gainlevel->max) ?
-> +			chip->gainlevel++ : chip->gainlevel--;
-> +
-> +		tsl2563_write(client, TSL2563_REG_TIMING,
-> +			      chip->gainlevel->gaintime);
-> +
-> +		tsl2563_wait_adc(chip);
-> +		tsl2563_wait_adc(chip);
-> +
-> +		return 1;
-> +	} else
-> +		return 0;
-> +}
-> +
-> +static int tsl2563_get_adc(struct tsl2563_chip *chip)
-> +{
-> +	struct i2c_client *client = chip->client;
-> +	u8 buf0[2], buf1[2];
-> +	u16 adc0, adc1;
-> +	int retry = 1;
-> +	int ret = 0;
-> +
-> +	if (chip->state.event != PM_EVENT_ON)
-> +		goto out;
-> +
-> +	cancel_delayed_work(&chip->poweroff_work);
-> +
-> +	if (!tsl2563_get_power(chip)) {
-> +		ret = tsl2563_set_power(chip, 1);
-> +		if (ret)
-> +			goto out;
-> +		ret = tsl2563_configure(chip);
-> +		if (ret)
-> +			goto out;
-> +		tsl2563_wait_adc(chip);
-> +	}
-> +
-> +	while (retry) {
-> +		ret = tsl2563_read(client,
-> +				   TSL2563_REG_DATA0LOW | TSL2563_CLEARINT,
-> +				   buf0, sizeof(buf0));
-> +		if (ret != sizeof(buf0))
-> +			goto out;
-> +
-> +		ret = tsl2563_read(client, TSL2563_REG_DATA1LOW,
-> +				   buf1, sizeof(buf1));
-> +		if (ret != sizeof(buf1))
-> +			goto out;
-> +
-> +		adc0 = (buf0[1] << 8) + buf0[0];
-> +		adc1 = (buf1[1] << 8) + buf1[0];
-> +
-> +		retry = tsl2563_adjust_gainlevel(chip, adc0);
-> +	}
-> +
-> +	chip->data0 = normalize_adc(adc0, chip->gainlevel->gaintime);
-> +	chip->data1 = normalize_adc(adc1, chip->gainlevel->gaintime);
-> +
-> +	schedule_delayed_work(&chip->poweroff_work, 5 * HZ);
-> +
-> +	ret = 0;
-> +out:
-> +	return ret;
-> +}
-> +
-> +static inline int calib_to_sysfs(u32 calib)
-> +{
-> +	return (int) (((calib * CALIB_BASE_SYSFS) +
-> +		       CALIB_FRAC_HALF) >> CALIB_FRAC_BITS);
-> +}
-> +
-> +static inline u32 calib_from_sysfs(int value)
-> +{
-> +	return (((u32) value) << CALIB_FRAC_BITS) / CALIB_BASE_SYSFS;
-> +}
-> +
-> +/*
-> + * Conversions between lux and ADC values.
-> + *
-> + * The basic formula is lux = c0 * adc0 - c1 * adc1, where c0 and c1 are
-> + * appropriate constants. Different constants are needed for different
-> + * kinds of light, determined by the ratio adc1/adc0 (basically the ratio
-> + * of the intensities in infrared and visible wavelengths). lux_table below
-> + * lists the upper threshold of the adc1/adc0 ratio and the corresponding
-> + * constants.
-> + */
-> +
-> +struct tsl2563_lux_coeff {
-> +	unsigned long ch_ratio;
-> +	unsigned long ch0_coeff;
-> +	unsigned long ch1_coeff;
-> +};
-> +
-> +static const struct tsl2563_lux_coeff lux_table[] = {
-> +	{
-> +		.ch_ratio	= FRAC10K(1300),
-> +		.ch0_coeff	= FRAC10K(315),
-> +		.ch1_coeff	= FRAC10K(262),
-> +	}, {
-> +		.ch_ratio	= FRAC10K(2600),
-> +		.ch0_coeff	= FRAC10K(337),
-> +		.ch1_coeff	= FRAC10K(430),
-> +	}, {
-> +		.ch_ratio	= FRAC10K(3900),
-> +		.ch0_coeff	= FRAC10K(363),
-> +		.ch1_coeff	= FRAC10K(529),
-> +	}, {
-> +		.ch_ratio	= FRAC10K(5200),
-> +		.ch0_coeff	= FRAC10K(392),
-> +		.ch1_coeff	= FRAC10K(605),
-> +	}, {
-> +		.ch_ratio	= FRAC10K(6500),
-> +		.ch0_coeff	= FRAC10K(229),
-> +		.ch1_coeff	= FRAC10K(291),
-> +	}, {
-> +		.ch_ratio	= FRAC10K(8000),
-> +		.ch0_coeff	= FRAC10K(157),
-> +		.ch1_coeff	= FRAC10K(180),
-> +	}, {
-> +		.ch_ratio	= FRAC10K(13000),
-> +		.ch0_coeff	= FRAC10K(34),
-> +		.ch1_coeff	= FRAC10K(26),
-> +	}, {
-> +		.ch_ratio	= ULONG_MAX,
-> +		.ch0_coeff	= 0,
-> +		.ch1_coeff	= 0,
-> +	},
-> +};
-> +
-> +/*
-> + * Convert normalized, scaled ADC values to lux.
-> + */
-> +static unsigned int adc_to_lux(u32 adc0, u32 adc1)
-> +{
-> +	const struct tsl2563_lux_coeff *lp = lux_table;
-> +	unsigned long ratio, lux, ch0 = adc0, ch1 = adc1;
-> +
-> +	ratio = ch0 ? ((ch1 << ADC_FRAC_BITS) / ch0) : ULONG_MAX;
-> +
-> +	while (lp->ch_ratio < ratio)
-> +		lp++;
-> +
-> +	lux = ch0 * lp->ch0_coeff - ch1 * lp->ch1_coeff;
-> +
-> +	return (unsigned int) (lux >> ADC_FRAC_BITS);
-> +}
-> +
-> +/*--------------------------------------------------------------*/
-> +/*                      Sysfs interface                         */
-> +/*--------------------------------------------------------------*/
-> +
-> +static ssize_t tsl2563_adc0_show(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	struct iio_dev *indio_dev = dev_get_drvdata(dev);
-> +	struct tsl2563_chip *chip = indio_dev->dev_data;
-> +	int ret;
-> +
-> +	mutex_lock(&chip->lock);
-> +
-> +	ret = tsl2563_get_adc(chip);
-> +	if (ret)
-> +		goto out;
-> +
-> +	ret = snprintf(buf, PAGE_SIZE, "%d\n", chip->data0);
-> +out:
-> +	mutex_unlock(&chip->lock);
-> +	return ret;
-> +}
-> +
-> +static ssize_t tsl2563_adc1_show(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	struct iio_dev *indio_dev = dev_get_drvdata(dev);
-> +	struct tsl2563_chip *chip = indio_dev->dev_data;
-> +	int ret;
-> +
-> +	mutex_lock(&chip->lock);
-> +
-> +	ret = tsl2563_get_adc(chip);
-> +	if (ret)
-> +		goto out;
-> +
-> +	ret = snprintf(buf, PAGE_SIZE, "%d\n", chip->data1);
-> +out:
-> +	mutex_unlock(&chip->lock);
-> +	return ret;
-> +}
-> +
-> +/* Apply calibration coefficient to ADC count. */
-> +static u32 calib_adc(u32 adc, u32 calib)
-> +{
-> +	unsigned long scaled = adc;
-> +
-> +	scaled *= calib;
-> +	scaled >>= CALIB_FRAC_BITS;
-> +
-> +	return (u32) scaled;
-> +}
-> +
-> +static ssize_t tsl2563_lux_show(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	struct iio_dev *indio_dev = dev_get_drvdata(dev);
-> +	struct tsl2563_chip *chip = indio_dev->dev_data;
-> +	u32 calib0, calib1;
-> +	int ret;
-> +
-> +	mutex_lock(&chip->lock);
-> +
-> +	ret = tsl2563_get_adc(chip);
-> +	if (ret)
-> +		goto out;
-> +
-> +	calib0 = calib_adc(chip->data0, chip->calib0) * chip->cover_comp_gain;
-> +	calib1 = calib_adc(chip->data1, chip->calib1) * chip->cover_comp_gain;
-> +
-> +	ret = snprintf(buf, PAGE_SIZE, "%d\n", adc_to_lux(calib0, calib1));
-> +
-> +out:
-> +	mutex_unlock(&chip->lock);
-> +	return ret;
-> +}
-> +
-> +static ssize_t format_calib(char *buf, int len, u32 calib)
-> +{
-> +	return snprintf(buf, PAGE_SIZE, "%d\n", calib_to_sysfs(calib));
-> +}
-> +
-> +static ssize_t tsl2563_calib0_show(struct device *dev,
-> +				   struct device_attribute *attr, char *buf)
-> +{
-> +	struct iio_dev *indio_dev = dev_get_drvdata(dev);
-> +	struct tsl2563_chip *chip = indio_dev->dev_data;
-> +	int ret;
-> +
-> +	mutex_lock(&chip->lock);
-> +	ret = format_calib(buf, PAGE_SIZE, chip->calib0);
-> +	mutex_unlock(&chip->lock);
-> +	return ret;
-> +}
-> +
-> +static ssize_t tsl2563_calib1_show(struct device *dev,
-> +				   struct device_attribute *attr, char *buf)
-> +{
-> +	struct iio_dev *indio_dev = dev_get_drvdata(dev);
-> +	struct tsl2563_chip *chip = indio_dev->dev_data;
-> +	int ret;
-> +
-> +	mutex_lock(&chip->lock);
-> +	ret = format_calib(buf, PAGE_SIZE, chip->calib1);
-> +	mutex_unlock(&chip->lock);
-> +	return ret;
-> +}
-> +
-> +static int do_calib_store(struct device *dev, const char *buf, size_t len,
-> +			  int ch)
-> +{
-> +	struct iio_dev *indio_dev = dev_get_drvdata(dev);
-> +	struct tsl2563_chip *chip = indio_dev->dev_data;
-> +	int value;
-> +	u32 calib;
-> +
-> +	if (1 != sscanf(buf, "%d", &value))
-> +		return -EINVAL;
-> +
-> +	calib = calib_from_sysfs(value);
-> +
-> +	if (ch)
-> +		chip->calib1 = calib;
-> +	else
-> +		chip->calib0 = calib;
-> +
-> +	return len;
-> +}
-> +
-> +static ssize_t tsl2563_calib0_store(struct device *dev,
-> +				    struct device_attribute *attr,
-> +				    const char *buf, size_t len)
-> +{
-> +	return do_calib_store(dev, buf, len, 0);
-> +}
-> +
-> +static ssize_t tsl2563_calib1_store(struct device *dev,
-> +				    struct device_attribute *attr,
-> +				    const char *buf, size_t len)
-> +{
-> +	return do_calib_store(dev, buf, len, 1);
-> +}
-> +
-> +/* AmitXXXX: Convert to IIO_DEV_ATTR_LIGHT* as in tsl2561
-> + * once I understand what they mean */
-> +static DEVICE_ATTR(adc0, S_IRUGO, tsl2563_adc0_show, NULL);
-> +static DEVICE_ATTR(adc1, S_IRUGO, tsl2563_adc1_show, NULL);
-> +static DEVICE_ATTR(lux, S_IRUGO, tsl2563_lux_show, NULL);
-> +static DEVICE_ATTR(calib0, S_IRUGO | S_IWUSR,
-> +		   tsl2563_calib0_show, tsl2563_calib0_store);
-> +static DEVICE_ATTR(calib1, S_IRUGO | S_IWUSR,
-> +		   tsl2563_calib1_show, tsl2563_calib1_store);
-> +
-> +static struct attribute *tsl2563_attributes[] = {
-> +	&dev_attr_adc0.attr,
-> +	&dev_attr_adc1.attr,
-> +	&dev_attr_lux.attr,
-> +	&dev_attr_calib0.attr,
-> +	&dev_attr_calib1.attr,
-> +	NULL
-> +};
-> +
-> +static const struct attribute_group tsl2563_group = {
-> +	.attrs = tsl2563_attributes,
-> +};
-> +
-> +/*--------------------------------------------------------------*/
-> +/*                      Probe, Attach, Remove                   */
-> +/*--------------------------------------------------------------*/
-> +static struct i2c_driver tsl2563_i2c_driver;
-> +
-> +static int __devinit tsl2563_probe(struct i2c_client *client,
-> +				const struct i2c_device_id *device_id)
-> +{
-> +	struct tsl2563_chip *chip;
-> +	struct tsl2563_platform_data *pdata = client->dev.platform_data;
-> +	int err = 0;
-> +	int ret;
-> +	u8 id;
-> +
-> +	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-> +	if (!chip)
-> +		return -ENOMEM;
-> +
-> +	i2c_set_clientdata(client, chip);
-> +	chip->client = client;
-> +
-> +	err = tsl2563_detect(chip);
-> +	if (err) {
-> +		dev_err(&client->dev, "device not found, error %d \n", -err);
-> +		goto fail1;
-> +	}
-> +
-> +	err = tsl2563_read_id(chip, &id);
-> +	if (err)
-> +		goto fail1;
-> +
-> +	mutex_init(&chip->lock);
-> +
-> +	/* Default values used until userspace says otherwise */
-> +	chip->low_thres = 0x0;
-> +	chip->high_thres = 0xffff;
-> +	chip->gainlevel = tsl2563_gainlevel_table;
-> +	chip->intr = TSL2563_INT_PERSIST(4);
-> +	chip->calib0 = calib_from_sysfs(CALIB_BASE_SYSFS);
-> +	chip->calib1 = calib_from_sysfs(CALIB_BASE_SYSFS);
-> +
-> +	if (pdata)
-> +		chip->cover_comp_gain = pdata->cover_comp_gain;
-> +	else
-> +		chip->cover_comp_gain = 1;
-> +
-> +	dev_info(&client->dev, "model %d, rev. %d\n", id >> 4, id & 0x0f);
-> +
-> +	chip->indio_dev = iio_allocate_device();
-> +	if (!chip->indio_dev)
-> +		goto fail1;
-> +	chip->indio_dev->attrs = &tsl2563_group;
-> +	chip->indio_dev->dev.parent = &client->dev;
-> +	chip->indio_dev->dev_data = (void *)(chip);
-> +	chip->indio_dev->driver_module = THIS_MODULE;
-> +	chip->indio_dev->modes = INDIO_DIRECT_MODE;
-> +	ret = iio_device_register(chip->indio_dev);
-> +	if (ret)
-> +		goto fail1;
-> +
-> +	err = tsl2563_configure(chip);
-> +	if (err)
-> +		goto fail2;
-> +
-> +	INIT_DELAYED_WORK(&chip->poweroff_work, tsl2563_poweroff_work);
-> +	schedule_delayed_work(&chip->poweroff_work, 5 * HZ);
-> +
-> +	return 0;
-> +fail2:
-> +	iio_device_unregister(chip->indio_dev);
-> +fail1:
-> +	kfree(chip);
-> +	return err;
-> +}
-> +
-> +static int tsl2563_remove(struct i2c_client *client)
-> +{
-> +	struct tsl2563_chip *chip = i2c_get_clientdata(client);
-> +
-> +	iio_device_unregister(chip->indio_dev);
-> +
-> +	kfree(chip);
-> +	return 0;
-> +}
-> +
-> +static int tsl2563_suspend(struct i2c_client *client, pm_message_t state)
-> +{
-> +	struct tsl2563_chip *chip = i2c_get_clientdata(client);
-> +	int ret;
-> +
-> +	mutex_lock(&chip->lock);
-> +
-> +	ret = tsl2563_set_power(chip, 0);
-> +	if (ret)
-> +		goto out;
-> +
-> +	chip->state = state;
-> +
-> +out:
-> +	mutex_unlock(&chip->lock);
-> +	return ret;
-> +}
-> +
-> +static int tsl2563_resume(struct i2c_client *client)
-> +{
-> +	struct tsl2563_chip *chip = i2c_get_clientdata(client);
-> +	int ret;
-> +
-> +	mutex_lock(&chip->lock);
-> +
-> +	ret = tsl2563_set_power(chip, 1);
-> +	if (ret)
-> +		goto out;
-> +
-> +	ret = tsl2563_configure(chip);
-> +	if (ret)
-> +		goto out;
-> +
-> +	chip->state.event = PM_EVENT_ON;
-> +
-> +out:
-> +	mutex_unlock(&chip->lock);
-> +	return ret;
-> +}
-> +
-> +static const struct i2c_device_id tsl2563_id[] = {
-> +	{ DRIVER_NAME, 0 },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(i2c, tsl2563_id);
-> +
-> +static struct i2c_driver tsl2563_i2c_driver = {
-> +	.driver = {
-> +		.name	 = DRIVER_NAME,
-> +	},
-> +	.suspend	= tsl2563_suspend,
-> +	.resume		= tsl2563_resume,
-> +	.probe		= tsl2563_probe,
-> +	.remove		= __devexit_p(tsl2563_remove),
-> +	.id_table	= tsl2563_id,
-> +};
-> +
-> +static int __init tsl2563_init(void)
-> +{
-> +	return i2c_add_driver(&tsl2563_i2c_driver);
-> +}
-> +
-> +static void __exit tsl2563_exit(void)
-> +{
-> +	i2c_del_driver(&tsl2563_i2c_driver);
-> +}
-> +
-> +MODULE_AUTHOR("Nokia Corporation");
-> +MODULE_DESCRIPTION("tsl2563 light sensor driver");
-> +MODULE_LICENSE("GPL");
-> +
-> +module_init(tsl2563_init);
-> +module_exit(tsl2563_exit);
-> diff --git a/drivers/staging/iio/light/tsl2563.h b/drivers/staging/iio/light/tsl2563.h
-> new file mode 100644
-> index 0000000..b97368b
-> --- /dev/null
-> +++ b/drivers/staging/iio/light/tsl2563.h
-> @@ -0,0 +1,9 @@
-> +#ifndef __LINUX_TSL2563_H
-> +#define __LINUX_TSL2563_H
-> +
-> +struct tsl2563_platform_data {
-> +	int cover_comp_gain;
-> +};
-> +
-> +#endif /* __LINUX_TSL2563_H */
-> +
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
