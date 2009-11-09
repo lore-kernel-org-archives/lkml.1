@@ -1,65 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbZKIAMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752635AbZKIAUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752670AbZKIAMO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 19:12:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZKIAMN
+	id S1752635AbZKIAUx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 19:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZKIAUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 19:12:13 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:50203 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbZKIAMM (ORCPT
+	Sun, 8 Nov 2009 19:20:52 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38225 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750851AbZKIAUw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 19:12:12 -0500
-Message-Id: <200911090012.nA90CF2i016994@www262.sakura.ne.jp>
-Subject: Re: [PATCH 00/23] Removal of binary sysctl support
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: ebiederm@xmission.com
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Sun, 8 Nov 2009 19:20:52 -0500
+Date: Mon, 9 Nov 2009 00:22:32 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091109002232.587c569a@lxorguk.ukuu.org.uk>
+In-Reply-To: <ucic9k3e5xq3s3pl2w4mae7a.1257718224112@email.android.com>
+References: <ucic9k3e5xq3s3pl2w4mae7a.1257718224112@email.android.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Mon, 09 Nov 2009 09:12:15 +0900
-References: <m13a4pjjh9.fsf@fess.ebiederm.org> <200911082215.HGJ57827.SJOVFFOHMOLFQt@I-love.SAKURA.ne.jp> <m1bpjch9hy.fsf@fess.ebiederm.org>
-In-Reply-To: <m1bpjch9hy.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 08112009 #2944260, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> There has been a gradual transition from the assumption that the table ends with
-> !ctl_name to the assumption that procname == NULL.  There is no sysctl entry
-> with a valid ctl_name without a valid procname.
+On Sun, 08 Nov 2009 14:10:24 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-I see. Then, please add below one to your patchset.
+> Keep in mind that if we end up running that on code with any kind of significant fraction of CMOV it will utterly suck.  
 
-Regards.
-----------
-[PATCH] sysctl security/tomoyo: Don't look at ctl_name
-
-ctl_name field was removed. Always use procname field.
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- security/tomoyo/tomoyo.c |   10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
-
---- security-testing-2.6.orig/security/tomoyo/tomoyo.c
-+++ security-testing-2.6/security/tomoyo/tomoyo.c
-@@ -122,15 +122,7 @@ static char *tomoyo_sysctl_path(struct c
- 	*--end = '\0';
- 	buflen--;
- 	while (table) {
--		char num[32];
--		const char *sp = table->procname;
--
--		if (!sp) {
--			memset(num, 0, sizeof(num));
--			snprintf(num, sizeof(num) - 1, "=%d=", table->ctl_name);
--			sp = num;
--		}
--		if (tomoyo_prepend(&end, &buflen, sp) ||
-+		if (tomoyo_prepend(&end, &buflen, table->procname) ||
- 		    tomoyo_prepend(&end, &buflen, "/"))
- 			goto out;
- 		table = table->parent;
+cmov is pretty useless anyway and not a good scheduling choice generally
+speaking on a real CPU - so in fact gcc generates very few of them, but a
+few is enough to make 686 break on C3
