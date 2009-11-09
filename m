@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbZKIQlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZKIQtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbZKIQlx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 11:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZKIQlw
+	id S1754085AbZKIQtr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 11:49:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbZKIQtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 11:41:52 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53127 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753176AbZKIQlw (ORCPT
+	Mon, 9 Nov 2009 11:49:47 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:51862 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753642AbZKIQtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 11:41:52 -0500
-Message-ID: <4AF84640.7010705@zytor.com>
-Date: Mon, 09 Nov 2009 08:41:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 9 Nov 2009 11:49:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=nqhXJEEvLpQHT+r7PR1lkE6PnzxNMONfeGr5qfXVC03LXNF7vzKCQOAGEcD/wyBGtS
+         MZBZnGKvhr5sXFWFGT2DoDT/QqkYPH5HZmJY5/tLdx6baaa6w24gVHVik+DlFrq489s8
+         Ib0sRSl3FCtx0KkDwO6+wjfb26HWIi2bm3cR4=
+Message-ID: <4AF84828.7070807@lwfinger.net>
+Date: Mon, 09 Nov 2009 10:49:44 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: "Ma, Ling" <ling.ma@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
- fast string.
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>	<4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com>	<8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>	<4AF7C66C.6000009@zytor.com> <87ws2059s9.fsf@basil.nowhere.org>
-In-Reply-To: <87ws2059s9.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=UTF-8
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Greg KH <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       Bernhard Schiffner <bernhard@schiffner-limbach.de>
+Subject: Re: [PATCH] Staging: remove rtl8187se driver because of lack of development
+ activities
+References: <200911091731.36861.bzolnier@gmail.com>
+In-Reply-To: <200911091731.36861.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/09/2009 01:26 AM, Andi Kleen wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
->>
->> My personal opinion is that if we can show no significant slowdown on
->> P4, K8, P-M/Core 1, Core 2, and Nehalem then we can simply use this code
+On 11/09/2009 10:31 AM, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] Staging: remove rtl8187se driver because of lack of development activities
 > 
-> The issue is Core 2.
+> This driver hasn't seen any real development activities since early July:
 > 
-> P4 uses a different path, and Core 1 doesn't use the 64bit code.
+>    257bc86   Staging: rtl8187se: remove unused #include <linu
+>    2035beb   param:remove-useless-writable-charp
+>    305409a   tree-wide: fix some typos and punctuation in com
+>    b881c6c   Staging: fix wireless drivers depends
+>    a010a33   Staging: rtl8187se/rtl8192e/rtl8192su: allow mod
+>    125b181   staging: Add proper selection of WIRELESS_EXT an
+>    b3184e1   Staging: rtl8187se: Fix comment-out-typo
+>    b6ac161   Staging: ARRAY_SIZE changes
 > 
+> so remove it for now.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Ling's numbers didn't seem to show a significant slowdown on Core 2 (it
-was something like 0.95x baseline in the worst case, and most of the
-cases were positive) so Core 2 doesn't seem to have a problem.
+NACK. I am currently using this driver as a template for the development of a
+mainline rtl8187se driver. Removing the staging version would not matter to me,
+but it would complicate matters for my tester (Bernhard Schiffner
+<bernhard@schiffner-limbach.de>). I do not have the hardware, thus I rely on his
+help.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Larry
 
