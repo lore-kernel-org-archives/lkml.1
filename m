@@ -1,149 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbZKILHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbZKIKc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754371AbZKILHS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 06:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZKILHS
+	id S1751690AbZKIKc4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 05:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZKIKc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 06:07:18 -0500
-Received: from nn7.de ([85.214.94.156]:35888 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751569AbZKILHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 06:07:16 -0500
-Subject: [PATCH] mouse button 1 emulation for mac_hid
-From: Soeren Sonnenburg <sonne@debian.org>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, olh@suse.de,
-       Jiri Slaby <jirislaby@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-ql1mhDvsuNY0WoUddaAu"
-Date: Mon, 09 Nov 2009 11:28:51 +0100
-Message-ID: <1257762531.7245.23.camel@no>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 9 Nov 2009 05:32:56 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:1245 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750985AbZKIKcz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 05:32:55 -0500
+X-Trace: 286942360/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.118.106/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.118.106
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEADN+90pQKXZq/2dsb2JhbACBTtlkhD4E
+X-IronPort-AV: E=Sophos;i="4.44,707,1249254000"; 
+   d="scan'208";a="286942360"
+Date: Mon, 9 Nov 2009 10:32:52 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andi Kleen <andi@firstfloor.org>
+cc: Mark Veltzer <mark.veltzer@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: get_user_pages question
+In-Reply-To: <87skco59jl.fsf@basil.nowhere.org>
+Message-ID: <Pine.LNX.4.64.0911091031460.15199@sister.anvils>
+References: <200911090850.26724.mark.veltzer@gmail.com> <87skco59jl.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 9 Nov 2009, Andi Kleen wrote:
+> Mark Veltzer <mark.veltzer@gmail.com> writes:
+> >
+> > I am testing this kernel module with several buffers from user space allocated 
+> > in several different ways. heap, data segment, static variable in function and 
+> > stack. All scenarious work EXCEPT the stack one. When passing the stack buffer 
+> > the kernel sees one thing while user space sees another.
+> 
+> In theory it should work, stack is no different from any other pages.
+> First thought was that you used some platform with incoherent caches,
+> but that doesn't seem to be the case if it's standard x86.
 
---=-ql1mhDvsuNY0WoUddaAu
-Content-Type: multipart/mixed; boundary="=-d/4RUOEtsUxjSEULL9ef"
+It may be irrelevant to Mark's stack case, but it is worth mentioning
+the fork problem: how a process does get_user_pages to pin down a buffer
+somewhere in anonymous memory, a thread forks (write protecting anonymous
+memory shared between parent and child), child userspace writes to a
+location in the same page as that buffer, causing copy-on-write which
+breaks the connection between the get_user_pages buffer and what child
+userspace sees there afterwards.
 
-
---=-d/4RUOEtsUxjSEULL9ef
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: quoted-printable
-
-(this is a resent with all the people included in the CC that git
-         blame'd they are the authors).
-
-Dear all,
-
-I am not sure what the future of mac_hid is (the source says will be
-removed, but since 9 years). In case it stays in kernel the attached
-patch adds support for mouse button 1 emulation. If this driver stays in
-the kernel I would also suggest to rename it - it is not mac specific (I
-am using this on a netbook).
-
-Rationale? Broken touchpads, within linux unsupported (multi-)touchpads
-where click and hold + moving the mouse does not work (yet?).
-
-I am using this for over a week now with about that uptime - so it
-should be safe.
-
-Soeren
---=20
-For the one fact about the future of which we can be certain is that it
-will be utterly fantastic. -- Arthur C. Clarke, 1962
-
-
---=-d/4RUOEtsUxjSEULL9ef
-Content-Disposition: attachment; filename="mac_hid_lmb.diff"
-Content-Type: text/x-patch; name="mac_hid_lmb.diff"; charset="ISO-8859-15"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWFjaW50b3NoL21hY19oaWQuYyBiL2RyaXZlcnMvbWFjaW50
-b3NoL21hY19oaWQuYw0KaW5kZXggY2M5ZjI3NS4uM2FhYzkwZiAxMDA2NDQNCi0tLSBhL2RyaXZl
-cnMvbWFjaW50b3NoL21hY19oaWQuYw0KKysrIGIvZHJpdmVycy9tYWNpbnRvc2gvbWFjX2hpZC5j
-DQpAQCAtMTksNiArMTksNyBAQA0KIHN0YXRpYyBzdHJ1Y3QgaW5wdXRfZGV2ICplbXVtb3VzZWJ0
-bjsNCiBzdGF0aWMgaW50IGVtdW1vdXNlYnRuX2lucHV0X3JlZ2lzdGVyKHZvaWQpOw0KIHN0YXRp
-YyBpbnQgbW91c2VfZW11bGF0ZV9idXR0b25zOw0KK3N0YXRpYyBpbnQgbW91c2VfYnV0dG9uMV9r
-ZXljb2RlID0gS0VZX1JJR0hUU0hJRlQ7CS8qIHJpZ2h0IHNoaWZ0IGtleSAqLw0KIHN0YXRpYyBp
-bnQgbW91c2VfYnV0dG9uMl9rZXljb2RlID0gS0VZX1JJR0hUQ1RSTDsJLyogcmlnaHQgY29udHJv
-bCBrZXkgKi8NCiBzdGF0aWMgaW50IG1vdXNlX2J1dHRvbjNfa2V5Y29kZSA9IEtFWV9SSUdIVEFM
-VDsJLyogcmlnaHQgb3B0aW9uIGtleSAqLw0KIHN0YXRpYyBpbnQgbW91c2VfbGFzdF9rZXljb2Rl
-Ow0KQEAgLTM1LDYgKzM2LDE0IEBAIHN0YXRpYyBjdGxfdGFibGUgbWFjX2hpZF9maWxlc1tdID0g
-ew0KIAkJLnByb2NfaGFuZGxlcgk9ICZwcm9jX2RvaW50dmVjLA0KIAl9LA0KIAl7DQorCQkuY3Rs
-X25hbWUJPSBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT04xX0tFWUNPREUsDQorCQkucHJvY25hbWUJ
-PSAibW91c2VfYnV0dG9uMV9rZXljb2RlIiwNCisJCS5kYXRhCQk9ICZtb3VzZV9idXR0b24xX2tl
-eWNvZGUsDQorCQkubWF4bGVuCQk9IHNpemVvZihpbnQpLA0KKwkJLm1vZGUJCT0gMDY0NCwNCisJ
-CS5wcm9jX2hhbmRsZXIJPSAmcHJvY19kb2ludHZlYywNCisJfSwNCisJew0KIAkJLmN0bF9uYW1l
-CT0gREVWX01BQ19ISURfTU9VU0VfQlVUVE9OMl9LRVlDT0RFLA0KIAkJLnByb2NuYW1lCT0gIm1v
-dXNlX2J1dHRvbjJfa2V5Y29kZSIsDQogCQkuZGF0YQkJPSAmbW91c2VfYnV0dG9uMl9rZXljb2Rl
-LA0KQEAgLTgzLDE2ICs5MiwyNCBAQCBzdGF0aWMgc3RydWN0IGN0bF90YWJsZV9oZWFkZXIgKm1h
-Y19oaWRfc3lzY3RsX2hlYWRlcjsNCiANCiBpbnQgbWFjX2hpZF9tb3VzZV9lbXVsYXRlX2J1dHRv
-bnMoaW50IGNhbGxlciwgdW5zaWduZWQgaW50IGtleWNvZGUsIGludCBkb3duKQ0KIHsNCisJdW5z
-aWduZWQgaW50IHJlcG9ydGNvZGU7DQorDQogCXN3aXRjaCAoY2FsbGVyKSB7DQogCWNhc2UgMToN
-CiAJCS8qIENhbGxlZCBmcm9tIGtleWJvYXJkLmMgKi8NCiAJCWlmIChtb3VzZV9lbXVsYXRlX2J1
-dHRvbnMNCi0JCSAgICAmJiAoa2V5Y29kZSA9PSBtb3VzZV9idXR0b24yX2tleWNvZGUNCi0JCQl8
-fCBrZXljb2RlID09IG1vdXNlX2J1dHRvbjNfa2V5Y29kZSkpIHsNCisJCSAgICAmJiAoa2V5Y29k
-ZSA9PSBtb3VzZV9idXR0b24xX2tleWNvZGUgfHwNCisJCQkJa2V5Y29kZSA9PSBtb3VzZV9idXR0
-b24yX2tleWNvZGUgfHwNCisJCQkJa2V5Y29kZSA9PSBtb3VzZV9idXR0b24zX2tleWNvZGUpKSB7
-DQogCQkJaWYgKG1vdXNlX2VtdWxhdGVfYnV0dG9ucyA9PSAxKSB7DQotCQkJCWlucHV0X3JlcG9y
-dF9rZXkoZW11bW91c2VidG4sDQotCQkJCQkJIGtleWNvZGUgPT0gbW91c2VfYnV0dG9uMl9rZXlj
-b2RlID8gQlROX01JRERMRSA6IEJUTl9SSUdIVCwNCi0JCQkJCQkgZG93bik7DQorCQkJCWlmIChr
-ZXljb2RlPT1tb3VzZV9idXR0b24xX2tleWNvZGUpDQorCQkJCQlyZXBvcnRjb2RlPUJUTl9MRUZU
-Ow0KKwkJCQllbHNlIGlmIChrZXljb2RlPT1tb3VzZV9idXR0b24yX2tleWNvZGUpDQorCQkJCQly
-ZXBvcnRjb2RlPUJUTl9NSURETEU7DQorCQkJCWVsc2UNCisJCQkJCXJlcG9ydGNvZGU9QlROX1JJ
-R0hUOw0KKw0KKwkJCQlpbnB1dF9yZXBvcnRfa2V5KGVtdW1vdXNlYnRuLCByZXBvcnRjb2RlLCBk
-b3duKTsNCiAJCQkJaW5wdXRfc3luYyhlbXVtb3VzZWJ0bik7DQogCQkJCXJldHVybiAxOw0KIAkJ
-CX0NCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3N5c2N0bC5oIGIvaW5jbHVkZS9saW51eC9z
-eXNjdGwuaA0KaW5kZXggMWU0NzQzZS4uZDM4ZjVhMCAxMDA2NDQNCi0tLSBhL2luY2x1ZGUvbGlu
-dXgvc3lzY3RsLmgNCisrKyBiL2luY2x1ZGUvbGludXgvc3lzY3RsLmgNCkBAIC05MTMsOSArOTEz
-LDEwIEBAIGVudW0gew0KIAlERVZfTUFDX0hJRF9LRVlCT0FSRF9TRU5EU19MSU5VWF9LRVlDT0RF
-Uz0xLA0KIAlERVZfTUFDX0hJRF9LRVlCT0FSRF9MT0NLX0tFWUNPREVTPTIsDQogCURFVl9NQUNf
-SElEX01PVVNFX0JVVFRPTl9FTVVMQVRJT049MywNCi0JREVWX01BQ19ISURfTU9VU0VfQlVUVE9O
-Ml9LRVlDT0RFPTQsDQotCURFVl9NQUNfSElEX01PVVNFX0JVVFRPTjNfS0VZQ09ERT01LA0KLQlE
-RVZfTUFDX0hJRF9BREJfTU9VU0VfU0VORFNfS0VZQ09ERVM9Ng0KKwlERVZfTUFDX0hJRF9NT1VT
-RV9CVVRUT04xX0tFWUNPREU9NCwNCisJREVWX01BQ19ISURfTU9VU0VfQlVUVE9OMl9LRVlDT0RF
-PTUsDQorCURFVl9NQUNfSElEX01PVVNFX0JVVFRPTjNfS0VZQ09ERT02LA0KKwlERVZfTUFDX0hJ
-RF9BREJfTU9VU0VfU0VORFNfS0VZQ09ERVM9Nw0KIH07DQogDQogLyogL3Byb2Mvc3lzL2Rldi9z
-Y3NpICovDQpkaWZmIC0tZ2l0IGEva2VybmVsL3N5c2N0bF9jaGVjay5jIGIva2VybmVsL3N5c2N0
-bF9jaGVjay5jDQppbmRleCBiNmU3YWFlLi42MGZhN2ZlIDEwMDY0NA0KLS0tIGEva2VybmVsL3N5
-c2N0bF9jaGVjay5jDQorKysgYi9rZXJuZWwvc3lzY3RsX2NoZWNrLmMNCkBAIC04MTYsNiArODE2
-LDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCB0cmFuc19jdGxfdGFibGUgdHJhbnNfbWFjX2hpZF9m
-aWxlc1tdID0gew0KIAkvKiBERVZfTUFDX0hJRF9LRVlCT0FSRF9TRU5EU19MSU5VWF9LRVlDT0RF
-UyB1bnVzZWQgKi8NCiAJLyogREVWX01BQ19ISURfS0VZQk9BUkRfTE9DS19LRVlDT0RFUyB1bnVz
-ZWQgKi8NCiAJeyBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT05fRU1VTEFUSU9OLAkibW91c2VfYnV0
-dG9uX2VtdWxhdGlvbiIgfSwNCisJeyBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT04xX0tFWUNPREUs
-CSJtb3VzZV9idXR0b24xX2tleWNvZGUiIH0sDQogCXsgREVWX01BQ19ISURfTU9VU0VfQlVUVE9O
-Ml9LRVlDT0RFLAkibW91c2VfYnV0dG9uMl9rZXljb2RlIiB9LA0KIAl7IERFVl9NQUNfSElEX01P
-VVNFX0JVVFRPTjNfS0VZQ09ERSwJIm1vdXNlX2J1dHRvbjNfa2V5Y29kZSIgfSwNCiAJLyogREVW
-X01BQ19ISURfQURCX01PVVNFX1NFTkRTX0tFWUNPREVTIHVudXNlZCAqLw0K
-
-
---=-d/4RUOEtsUxjSEULL9ef--
-
---=-ql1mhDvsuNY0WoUddaAu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABAgAGBQJK9+7iAAoJEH82z1Wqh6p3PZYP/2fnUOQwIWSzO3/HjiK3ZeUw
-9i29PMM57l/Yb8Uj9sh6Vg8gXZtfACc2uvuhvFvNqcdIPvl8nH9ExHbggJdXDrHq
-jjsXjUPm9TAtlK+pnim86FVdEahSCULCOZ9uGxNTkxsiW61zTJWl8rVoYuh9dx2Q
-juJGO6kHaIMmkag4OahSYP8k31dYVs1i4n5EGpbnp6gKi7GRyq9ALlXhF8Zjfoky
-GmuZlai9piiZy9X05UmwiHmT3LNrX5fJH/Vs68DSllErJ05OIer8Ud4qMHqawLNJ
-13heaLH11RF0C/Z/vv9hLqIMV1uxib2kWOj6Aq7R1XqAj7rBf4HpRyJG6R0fvkml
-89yBqTxNZMEql0Mv+yDYDYj8cPGvGGkd7kl+ebISvcm7gocJqvvtAxIXviilpbt5
-AcqMUFTox+hpRzca4gZnVRiegwOq3DlhY6gayKppD01EaWSVcOvi3FU9wJ03kxkT
-M1lK1aMZCIbjdvmI7NUyuGkR/r4b81RTCC5GqvC15+sdOc+E7ZXw+Ru11RKz6DQY
-qjK9pXY+XcL3hBg/6UXcHfyK+DuF36AArVzGbhalkCKWqgpySZ5emTVea3QbgIZy
-wSdqIQ6Ne7XC8LT/R/RcYKhZ8xaRmGyx7Rit0PlN6EvwjUOt02PenEie9mj1xLi6
-UIwow9VWYRY3enaV8kQL
-=21sF
------END PGP SIGNATURE-----
-
---=-ql1mhDvsuNY0WoUddaAu--
+Hugh
