@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZKIUQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZKIUVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbZKIUQF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 15:16:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZKIUQE
+	id S1754259AbZKIUVp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 15:21:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZKIUVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 15:16:04 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:38441 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754388AbZKIUQD (ORCPT
+	Mon, 9 Nov 2009 15:21:44 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:58335 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbZKIUVo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 15:16:03 -0500
-Date: Mon, 9 Nov 2009 20:16:08 +0000
-To: Matteo Croce <technoboy85@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
-References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> <20091003072127.GC21407@elte.hu> <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com> <4AF4526B.4060101@zytor.com> <40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com>
+	Mon, 9 Nov 2009 15:21:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=GM5Hwi/pRRqDfb1bTdVN49FKXm/ysUeJEq/JZlr9FvJrqZwIQWfFXFU0/fKLlA/bbz
+         UlVheaULzw4pvEJ7Tg+zLwUjOznUFECTQKb8nVv8LYVnIDe5U+ZY6mAu8dxzUkCpM85r
+         MGDrvoQ1ijcakHgUxYqlCJiwIyYz4JUGvWI4A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <84144f020911091213j393a9761pe13808d1e091e169@mail.gmail.com>
+References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <84144f020911091213j393a9761pe13808d1e091e169@mail.gmail.com>
+Date: Mon, 9 Nov 2009 22:21:48 +0200
+X-Google-Sender-Auth: d3e4baa0ca559151
+Message-ID: <84144f020911091221n1d025d9bv3915751bf474b47a@mail.gmail.com>
+Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
+       joerg.roedel@amd.com, mingo@elte.hu,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Tejun Heo <tj@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 07:42:48PM +0100, Matteo Croce wrote:
-> There is a small advantage, but considering that GCC isn't much geode aware yet
-> there is stil room for improvement IMHO:
+On Mon, Nov 9, 2009 at 10:13 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>>        for (cursor = start; cursor < end; cursor += BITS_PER_LONG) {
+>> -               unsigned long idx, vec;
+>> +               unsigned long vec;
+>>
+>> -               idx = cursor - start;
+>> -               vec = ~map[idx / BITS_PER_LONG];
+>> +               if (map) {
+>> +                       unsigned long idx = cursor - start;
+>> +                       vec = ~map[idx / BITS_PER_LONG];
+>> +               } else {
+>> +                       if (end - cursor >= BITS_PER_LONG)
+>> +                               vec = ~0UL;
+>
+> Why do we need the above?
 
-Perhaps gcc considers geode to mean geode GX[m12] not geode LX (which is
-newer and the one in question here).
+OK, I figured that out. I'm not sure why you want to play tricks with
+"vec" when you could just add a new helper that calls
+__free_pages_bootmem() for the full contiguous page range.
 
-The Geode GX line prefers i486 code to i586 code (which appears to be
-what -march=geode is for).  I am using i486 at the moment when I build
-for this one.
-
-The Geode LX is what is being discussed which is in fact mostly a K6 as
-far as I understand things.  It seems to like i686 code, other than
-apparently those NOP instructions.  I wonder if the K6 has those noop
-instructions and if not, perhaps gcc 4.4's -march=k6-3 would be the
-right choice.  I have always suspected the LX was really a K6-3 based
-design (the cache sizes are a bit different, but clock speeds and
-instruction sets seem to match).
-
-The Geode NX (which no one has mentioned yet) is an Athlon derived chip.
-
-> root@alix:/usr/src/dist# ll
-> totale 257M
-> -rwxr-xr-x 1 1000 src  93K  8 nov  2009 bzip2-i586
-> -rwxr-xr-x 1 1000 src  93K  8 nov  2009 bzip2-i686
-> -rwxr-xr-x 1 1000 src  60K  8 nov  2009 gzip-i586
-> -rwxr-xr-x 1 1000 src  60K  8 nov  2009 gzip-i686
-> -rw-r--r-- 1 1000 src 256M  8 nov  2009 linux-2.6.31.5.tar
-> -rwxr-xr-x 1 1000 src  90K  8 nov  2009 lzma-i586
-> -rwxr-xr-x 1 1000 src  94K  8 nov  2009 lzma-i686
-> root@alix:/usr/src/dist# time cat linux-2.6.31.5.tar >/dev/null
-> 
-> real    0m10.168s
-> user    0m0.030s
-> sys     0m1.390s
-> root@alix:/usr/src/dist# time ./gzip-i586 -9 < linux-2.6.31.5.tar >/dev/null
-> 
-> real    5m22.331s
-> user    5m10.820s
-> sys     0m11.170s
-> root@alix:/usr/src/dist# time ./gzip-i686 -9 < linux-2.6.31.5.tar >/dev/null
-> 
-> real    5m3.737s
-> user    4m51.880s
-> sys     0m11.510s
-> root@alix:/usr/src/dist# time ./bzip2-i586 -9 < linux-2.6.31.5.tar >/dev/null
-> 
-> real    9m16.539s
-> user    9m4.410s
-> sys     0m11.760s
-> root@alix:/usr/src/dist# time ./bzip2-i686 -9 < linux-2.6.31.5.tar >/dev/null
-> 
-> real    8m48.682s
-> user    8m34.950s
-> sys     0m13.260s
-
--- 
-Len Sorensen
+                                Pekka
