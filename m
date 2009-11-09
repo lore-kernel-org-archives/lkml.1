@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbZKINMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZKINNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbZKINMy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 08:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbZKINMx
+	id S1755872AbZKINNn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 08:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbZKINNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 08:12:53 -0500
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:56403 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755826AbZKINMx (ORCPT
+	Mon, 9 Nov 2009 08:13:43 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50730 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755828AbZKINNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 08:12:53 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4AF81577.1070803@cam.ac.uk>
-Date: Mon, 09 Nov 2009 13:13:27 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
+	Mon, 9 Nov 2009 08:13:42 -0500
+Date: Mon, 9 Nov 2009 14:13:41 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Brian Swetland <swetland@google.com>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: dream: fastboot getting protocol errors
+Message-ID: <20091109131340.GB23292@elf.ucw.cz>
+References: <20091109103602.GC2207@elf.ucw.cz>
+ <a55d774e0911090459q2e373b5bw9f4fafe71e631c70@mail.gmail.com>
 MIME-Version: 1.0
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-CC: List Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 1/3] staging: iio: Fix typos in documentation
-References: <1257772215-1396-1-git-send-email-amit.kucheria@verdurent.com>
-In-Reply-To: <1257772215-1396-1-git-send-email-amit.kucheria@verdurent.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a55d774e0911090459q2e373b5bw9f4fafe71e631c70@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All look good to me.  Thanks,
-
-Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
-> Spell-check wouln't catch these :)
+On Mon 2009-11-09 04:59:10, Brian Swetland wrote:
+> On Mon, Nov 9, 2009 at 2:36 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> > I'm still fighting with porting MMC support to current mainline.
+> >
+> > Meanwhile: I'm getting this *way* too often -- with the htcUSB  to
+> > 2xUSB reduction. Any ideas?
+> >
+> > root@amd:/data/l/android# ./fastboot -c "console=tty0
+> > root=/dev/mmcblk0p1 rootdelay=5 fbcon=rotate:1" boot
+> > /data/l/linux-msm/arch/arm/boot/zImage
+> > creating boot image...
+> > creating boot image - 1667072 bytes
+> > downloading 'boot.img'... FAILED (command write failed (Protocol
+> > error))
+> > root@amd:/data/l/android#
+> >
+> > ...and then it just goes away after powercycling the phone...
 > 
-> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> Cc: Jonathan Cameron <jic23@cam.ac.uk>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  drivers/staging/iio/Documentation/device.txt   |    4 ++--
->  drivers/staging/iio/Documentation/overview.txt |    9 +++++----
->  2 files changed, 7 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/staging/iio/Documentation/device.txt b/drivers/staging/iio/Documentation/device.txt
-> index 6916cd3..69d9570 100644
-> --- a/drivers/staging/iio/Documentation/device.txt
-> +++ b/drivers/staging/iio/Documentation/device.txt
-> @@ -10,7 +10,7 @@ First allocate one using:
->  
->  struct iio_dev *indio_dev = iio_allocate_device();
->  
-> -The fill in the following.
-> +Then fill in the following:
->  
->  indio_dev->dev.parent
->    the struct device associated with the underlying hardware.
-> @@ -45,5 +45,5 @@ allocated prior to registering the device with the iio-core, but must
->  be registered afterwards (otherwise the whole parentage of devices
->  gets confused)
->  
-> -On remove iio_device_unregister(indio_dev) will remove the device from
-> +On remove, iio_device_unregister(indio_dev) will remove the device from
->  the core, and iio_free_device will clean up.
-> diff --git a/drivers/staging/iio/Documentation/overview.txt b/drivers/staging/iio/Documentation/overview.txt
-> index 64584ad..e39dfc1 100644
-> --- a/drivers/staging/iio/Documentation/overview.txt
-> +++ b/drivers/staging/iio/Documentation/overview.txt
-> @@ -24,11 +24,12 @@ hwmon with simple polled access to device channels via sysfs.
->  * Event chrdevs.  These are similar to input in that they provide a
->  route to user space for hardware triggered events. Such events include
->  threshold detectors, free-fall detectors and more complex action
-> -detection.  They events themselves are currently very simple with
-> +detection.  The events themselves are currently very simple with
->  merely an event code and a timestamp.  Any data associated with the
-> -event must be accessed via polling. Note a given device may have one
-> -or more event channel.  These events are turned on or off (if possible)
-> -via sysfs interfaces.
-> +event must be accessed via polling.
-> +
-> +Note: A given device may have one or more event channel.  These events are
-> +turned on or off (if possible) via sysfs interfaces.
->  
->  * Hardware ring buffer support.  Some recent sensors have included
->  fifo / ring buffers on the sensor chip.  These greatly reduce the load
+> Unfortunately, I think that's just flakies in the htc bootloader.  I'm
+> not aware of any simple workaround.  Do you not see it fail if you use
+> a straight USB A->miniB cable?
 
+No, that seems to work reliably.
+
+> I think that bootloader will still honor a secondstage bootloader
+> embedded in the boot.img (mkbootimg --second foo), or you could
+> replace the zimage in the boot.img with a second stage bootloader.
+> Either way, dunno if you want to dig into bootloader hackery to try to
+> resolve usb issues.
+
+Ok, so its time to simply retry until it works...
+
+Thanks for info!
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
