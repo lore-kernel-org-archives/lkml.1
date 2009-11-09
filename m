@@ -1,93 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZKIRZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZKIRYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755930AbZKIRZo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 12:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZKIRZl
+	id S1755303AbZKIRYw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 12:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZKIRYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 12:25:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17069 "EHLO mx1.redhat.com"
+	Mon, 9 Nov 2009 12:24:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17084 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755768AbZKIRZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 12:25:38 -0500
-Date: Mon, 9 Nov 2009 18:20:20 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: utime/stime decreasing on thread exit
-Message-ID: <20091109172020.GA7751@redhat.com>
-References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com> <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop>
+	id S1754491AbZKIRYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 12:24:50 -0500
+Date: Mon, 9 Nov 2009 19:21:58 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com, Daniel Walker <dwalker@fifo99.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: [PATCHv9 0/3] vhost: a kernel-level virtio server
+Message-ID: <20091109172158.GA4724@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257778154.4108.341.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/09, Peter Zijlstra wrote:
->
-> On Thu, 2009-11-05 at 14:24 +0900, Hidetoshi Seto wrote:
->
-> > Problem [1]:
-> >   thread_group_cputime() vs exit
-> >
-> > +void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
-> > +{
-> > +       struct sighand_struct *sighand;
-> > +       struct signal_struct *sig;
-> > +       struct task_struct *t;
-> > +
-> > +       *times = INIT_CPUTIME;
-> > +
-> > +       rcu_read_lock();
-> > +       sighand = rcu_dereference(tsk->sighand);
-> > +       if (!sighand)
-> > +               goto out;
-> > +
-> > +       sig = tsk->signal;
-> > +
-> > +       t = tsk;
-> > +       do {
-> > +               times->utime = cputime_add(times->utime, t->utime);
-> > +               times->stime = cputime_add(times->stime, t->stime);
-> > +               times->sum_exec_runtime += t->se.sum_exec_runtime;
-> > +
-> > +               t = next_thread(t);
-> > +       } while (t != tsk);
-> > +
-> > +       times->utime = cputime_add(times->utime, sig->utime);
-> > +       times->stime = cputime_add(times->stime, sig->stime);
-> > +       times->sum_exec_runtime += sig->sum_sched_runtime;
-> > +out:
-> > +       rcu_read_unlock();
-> > +}
-> >
-> > If one of (thousands) threads do exit while a thread is doing do-while
-> > above, the s/utime of exited thread can be accounted twice, at do-while
-> > (before exit) and at cputime_add() at last (after exit).
-> >
-> > I suppose this is hard to fix: Taking lock on signal would solve this
-> > problem, but it could block all other threads long and cause serious
-> > performance issue and so on...
->
-> I just checked .22 and there we seem to hold p->sighand->siglock over
-> the full task iteration.
+Ok, I think I've addressed all comments so far here, and it still seems
+to work :).  Please take a look.  I basically ended up accepting all
+Rusty's suggestions, except I did not get rid of avail_idx field in vq:
+I don't (yet?) understand what's wrong with it, if any, and it seems
+required for correct implementation of notify on empty. I tried
+adding comment where it's changed to clarify the intent.
 
-Yes. Then thread_group_cputime() was changed so that it didn't itearate
-over sub-threads, then this callsite was move outside of ->siglock, now
-it does while_each_thread() again.
+Rusty, thanks very much for the review.  I didn't split the logging code
+out as you indicated that it's not necessary at this point.
 
-> So we might as well revert back to that if
-> people really mind counting things twice :-)
+---
 
-Stanislaw has already sent the patch, but I don't know what happened
-with this patch:
+This implements vhost: a kernel-level backend for virtio,
+The main motivation for this work is to reduce virtualization
+overhead for virtio by removing system calls on data path,
+without guest changes. For virtio-net, this removes up to
+4 system calls per packet: vm exit for kick, reentry for kick,
+iothread wakeup for packet, interrupt injection for packet.
 
-	[PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with __exit_signal()
-	http://marc.info/?l=linux-kernel&m=124505545131145
+This driver is pretty minimal, but it's fully functional (including
+migration support interfaces), and already shows performance (especially
+latency) improvement over userspace.
 
-Oleg.
+Some more detailed description attached to the patch itself.
 
+The patches apply to both 2.6.32-rc6 and kvm.git.  I'd like them to go
+into linux-next if possible.  Please comment.
+
+Changelog from v8:
+- typo in error message
+- more checks for vq size (must be power of 2)
+
+  From Rusty's review:
+- don't hardcode iov size
+- rename no_notify disable_notify
+- rearrange loop
+- convert irq trigger language to signal eventfd
+- make vhost_enable_notify return status
+- -1 -> -1U
+- get rid of kzalloc
+- better comment on vail_idx
+- convert vq index to vq usage
+- rename ACK->SET
+- merge vring addresses into a single struct
+- some comments and cosmetic changes
+
+Changelog from v7:
+- Add note on RCU usage, mirroring this in vhost/vhost.h
+- Fix locking typo noted by Eric Dumazet
+- Fix warnings on 32 bit
+
+Changelog from v6:
+- review comments by Daniel Walker addressed
+- checkpatch cleanup
+- fix build on 32 bit
+- maintainers entry corrected
+
+Changelog from v5:
+- tun support
+- backends with virtio net header support (enables GSO, checksum etc)
+- 32 bit compat fixed
+- support indirect buffers, tx exit mitigation,
+  tx interrupt mitigation
+- support write logging (allows migration without virtio ring code in userspace)
+
+Changelog from v4:
+- disable rx notification when have rx buffers
+- addressed all comments from Rusty's review
+- copy bugfixes from lguest commits:
+	ebf9a5a99c1a464afe0b4dfa64416fc8b273bc5c
+	e606490c440900e50ccf73a54f6fc6150ff40815
+
+Changelog from v3:
+- checkpatch fixes
+
+Changelog from v2:
+- Comments on RCU usage
+- Compat ioctl support
+- Make variable static
+- Copied more idiomatic english from Rusty
+
+Changes from v1:
+- Move use_mm/unuse_mm from fs/aio.c to mm instead of copying.
+- Reorder code to avoid need for forward declarations
+- Kill a couple of debugging printks
+
+Michael S. Tsirkin (3):
+  tun: export underlying socket
+  mm: export use_mm/unuse_mm to modules
+  vhost_net: a kernel-level virtio server
+
+ MAINTAINERS                |    9 +
+ arch/x86/kvm/Kconfig       |    1 +
+ drivers/Makefile           |    1 +
+ drivers/net/tun.c          |  101 ++++-
+ drivers/vhost/Kconfig      |   11 +
+ drivers/vhost/Makefile     |    2 +
+ drivers/vhost/net.c        |  648 +++++++++++++++++++++++++++++
+ drivers/vhost/vhost.c      |  965 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/vhost/vhost.h      |  159 ++++++++
+ include/linux/Kbuild       |    1 +
+ include/linux/if_tun.h     |   14 +
+ include/linux/miscdevice.h |    1 +
+ include/linux/vhost.h      |  130 ++++++
+ mm/mmu_context.c           |    3 +
+ 14 files changed, 2027 insertions(+), 19 deletions(-)
+ create mode 100644 drivers/vhost/Kconfig
+ create mode 100644 drivers/vhost/Makefile
+ create mode 100644 drivers/vhost/net.c
+ create mode 100644 drivers/vhost/vhost.c
+ create mode 100644 drivers/vhost/vhost.h
+ create mode 100644 include/linux/vhost.h
