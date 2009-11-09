@@ -1,129 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbZKIXik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZKIXlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbZKIXik (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 18:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbZKIXij
+	id S1755301AbZKIXlR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 18:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZKIXlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 18:38:39 -0500
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:35988 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752810AbZKIXii convert rfc822-to-8bit (ORCPT
+	Mon, 9 Nov 2009 18:41:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36470 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753872AbZKIXlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 18:38:38 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjkFAC42+EpGGN1W/2dsb2JhbACBTtwdhD4EgWg
-Date: Mon, 9 Nov 2009 18:38:42 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ian Lance Taylor <iant@google.com>, gcc-help@gcc.gnu.org
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Userspace Tracepoints, -fPIC -m32 question
-Message-ID: <20091109233842.GA4683@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 18:27:47 up 83 days, 10:17,  4 users,  load average: 0.52, 0.30,
-	0.26
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 9 Nov 2009 18:41:16 -0500
+Date: Mon, 9 Nov 2009 15:40:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: linux-kernel@vger.kernel.org, device@lanana.org, rubini@vision.unipv.it,
+       gregkh@suse.de, cluster-devel@redhat.com
+Subject: Re: [PATCH] misc: use a proper range for minor number dynamic
+ allocation
+Message-Id: <20091109154041.509ab3f1.akpm@linux-foundation.org>
+In-Reply-To: <20091109232922.GF12217@vespa.holoscopio.com>
+References: <1256340497-19320-1-git-send-email-cascardo@holoscopio.com>
+	<20091109132836.6cf7f559.akpm@linux-foundation.org>
+	<20091109220257.GD12217@vespa.holoscopio.com>
+	<20091109232922.GF12217@vespa.holoscopio.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 9 Nov 2009 21:29:25 -0200
+Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote:
 
-I've been looking into the problem explained below for a while, and have
-a hard time figuring out if it is actually possible to pass a C pointer
-as gcc inline assembly immediate operand in a way that works with -fPIC
-on 32-bit i386. It works fine for x86_64 (both with and w/o -fPIC) and
-with 32-bit i386 w/o fPIC.
+> On Mon, Nov 09, 2009 at 08:02:57PM -0200, Thadeu Lima de Souza Cascardo wrote:
+> > > 
+> > > Is that a bugfix for the existing code?
+> > > 
+> > > If so, please split that out into a separate patch which we can review
+> > > and apply promptly while we consider the broader problem which you've
+> > > identified.
+> > 
+> > We could consider buggy the caller which asks for the same device name
+> > more than once, without unregistering the first device. But better safe
+> > than sorry: we should protect the correct drivers from the buggy ones
+> > and avoid a depletion of the minor numbers. And, in case the driver core
+> > returns another error for another reason (from device_create), we do the
+> > right thing.
+> > 
+> > I will send it right now.
+> > 
+> > Regards,
+> > Cascardo.
+> 
+> I've just tried to create a single and separate patch, but that would
+> let lots of related bugs around.
+> 
+> First of all, the current code does not use the bitmap idiom. Should I
+> use it on my fix and let all the other bitmap manipulations as is, or
+> should I use the current and less readable style?
 
-The problem on 32-bit i386 with fPIC is that the assembly generated
-should contain a GOTOFF relocation because the address seems to be
-treated as a global symbol. e.g., using a "m" (var) operand turns the
-code presented in the forwarded message (below) into:
+If you think that the fix is needed in 2.6.32 and perhaps -stable then
+yes please, something minimal is desired.
 
-        .long var.1195@GOTOFF(%ecx), (1f)
+If you think that the bug is sufficiently minor that that the fix xcan
+be deferred into 2.6.33 then no intermediate patch is needed.  Bear in
+mind that others might disagree with your designation of the priority,
+and they might want a fix which they can backport into their
+2.6.29/2.6.30/etc kernels.
 
-Ideas and comments would be very welcome.
+> Second, this single fix would match the same test currently in
+> misc_deregister, which is broken, since it does not test for the 0
+> minor.
 
-Thanks,
+I don't know what that means.
 
-Mathieu
+> Thus, I am sending a patch which fixes those two issues using the
+> current style, a fix for the style itself, and a change from the current
+> range to something that could have its range easily fixed.
 
------ Forwarded message from Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca> -----
+Sounds good.
 
-Date: Mon, 09 Nov 2009 16:23:10 -0500
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-From: Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Subject: Questions about position-independent  code
+> However,
+> regarding that last change, it will still use bitmaps, which may not be
+> appropriate for large ranges.
+> 
+> Perhaps, using a idr instead of the list and bitmap couple, may be
+> sensible. What do you think about it?
 
-Hi Mathieu,
-
-Perhaps you can help with an issue I have concerning
-position-independent code on x86. Or maybe you know someone who could help.
-
-Consider the code below. It compiles perfectly well on x86-64 with or
-without -fPIC.
-
-However, on x86-32, it compiles only when the -fPIC option is not
-specified. Otherwise, gcc gives the following error:
-
-immprob.c: In function 'func':
-immprob.c:15: warning: asm operand 0 probably doesn't match constraints
-immprob.c:15: error: impossible constraint in 'asm'
-
-
-My questions:
-- Is it important to generated PIC code for libraries on x86-32? It
-seems to work perfectly well to make them as non-PIC. Libtool on my
-system does however put the -fPIC flag to gcc when building libraries on
-x86-32.
-
-- Assuming it is important to make PIC libraries on x86-32, can I get
-the address of "var" to be but statically in the __my_section section on
-this architecture?
-
-Thanks
-
-pmf
-
----
-
-#if x86_64
-#define _ASM_PTR ".quad "
-#else
-#define _ASM_PTR ".long "
-#endif
-
-struct mystruct {
-	int myint;
-};
-
-int func()
-{
-        static struct mystruct var __attribute__((section("mysec2")))
-		= { 0 };
-
-        asm (".section __my_section,\"aw\",@progbits\n\t"
-             _ASM_PTR "%c[addr], (1f)\n\t"
-             ".previous\n\t"
-             "1:\n\t"
-             :: [addr] "i" (&var)
-        );
-
-        return 0;
-}
-
-	
-
------ End forwarded message -----
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+miscdev registration/deregistration is hardly a high-frequency
+operation.  I'd opt for simplicity and compactness over speed here.
