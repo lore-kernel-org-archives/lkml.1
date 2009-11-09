@@ -1,336 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbZKIPWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbZKIPYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756066AbZKIPWH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 10:22:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbZKIPWF
+	id S1756047AbZKIPYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 10:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZKIPYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 10:22:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:49364 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753613AbZKIPWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 10:22:03 -0500
-Message-Id: <20091109151428.548614772@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Mon, 09 Nov 2009 15:21:41 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-arch@vger.kernel.org
-Subject: [patch 2/2] locking: Reduce ifdefs in kernel/spinlock.c
-References: <20091109150033.125758935@linutronix.de>
-Content-Disposition: inline; filename=locking-simplify-spinlock-c.patch
+	Mon, 9 Nov 2009 10:24:53 -0500
+Received: from mail-forward1.uio.no ([129.240.10.70]:38080 "EHLO
+	mail-forward1.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753613AbZKIPYw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 10:24:52 -0500
+Message-ID: <4AF83444.9090208@simula.no>
+Date: Mon, 09 Nov 2009 16:24:52 +0100
+From: Andreas Petlund <apetlund@simula.no>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+CC: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       William Allen Simpson <william.allen.simpson@gmail.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       "davem@davemloft.net" <davem@davemloft.net>
+Subject: Re: [PATCH 1/3] net: TCP thin-stream detection
+References: <f7b4caf3a5b5c906cb8d508239455322.squirrel@webmail.uio.no> <4AEB0512.4010804@nets.rwth-aachen.de> <4AF2D47F.4030701@simula.no> <alpine.DEB.2.00.0911051536200.7024@wel-95.cs.helsinki.fi>
+In-Reply-To: <alpine.DEB.2.00.0911051536200.7024@wel-95.cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-UiO-Ratelimit-Test: rcpts/h 18 msgs/h 3 sum rcpts/h 21 sum msgs/h 3 total rcpts 540 max rcpts/h 37 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: B40AAB59A7CF3568569377818CCD111B823CB0AC
+X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 5 total 5917 max/h 49 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the Kconfig based inline decisions we can remove extra ifdefs in
-kernel/spinlock.c by creating the complex lockbreak functions as
-inlines which are inserted into the non inlined lock functions.
+Ilpo Järvinen wrote:
+> On Thu, 5 Nov 2009, Andreas Petlund wrote:
+> 
+>> Arnd Hannemann wrote:
+>>> One example: Consider standard NewReno non-SACK enabled flow:
+>>> For some reasons two data packets get reordered.
+>>> The TCP sender will produce a dupACK and an ACK.
+>>> The dupACK will trigger (because of your logic) a spurious retransmit.
+>>> The spurious retransmit will trigger a dupACK.
+>>> This dupACK will again trigger a spurious retransmit.
+>>> And this game will continue, unless a packet is dropped by coincidence.
+>> Such an effect will be extremely rare. It will depend on the application 
+>> producing an extremely even flow of packets with just the right 
+>> interarrival time, and also on reordering of data (which also will 
+>> happen very seldom when the number of packets in flight are so low). 
+>> Even though it can happen, the data flow will progress (with spurious 
+>> retransmissions). The effect will stop as soon as the application sends 
+>> more than 4 segments in an RTT (which will disable the thin-stream 
+>> modifications) or less than 1 (which will cause all segments to be 
+>> successfully ACKed), or if, as you say, a packet is dropped.
+> 
+> I'd simply workaround this problem by requiring SACK to be enabled for 
+> such a connection. This is reinforced by the fact that small windowed 
+> transfers want it certainly to be on anyway to get the best out of ACK 
+> flow even if there were some ACK losses.
+> 
 
-No functional change.
+Thanks. I will revise the patches based on all the feedback I have gotten
+and get back to the list with a new version when I have done some more
+testing.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-arch@vger.kernel.org
----
- kernel/spinlock.c |  260 ++++++++++++++++++++++++++----------------------------
- 1 file changed, 128 insertions(+), 132 deletions(-)
+Best regards,
+Andreas
 
-Index: linux-2.6/kernel/spinlock.c
-===================================================================
---- linux-2.6.orig/kernel/spinlock.c
-+++ linux-2.6/kernel/spinlock.c
-@@ -21,6 +21,133 @@
- #include <linux/debug_locks.h>
- #include <linux/module.h>
- 
-+/*
-+ * If lockdep is enabled then we use the non-preemption spin-ops
-+ * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
-+ * not re-enabled during lock-acquire (which the preempt-spin-ops do):
-+ */
-+#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
-+/*
-+ * The __lock_function inlines are taken from
-+ * include/linux/spinlock_api_smp.h
-+ */
-+#else
-+/*
-+ * We build the __lock_function inlines here. They are too large for
-+ * inlining all over the place, but here is only one user per function
-+ * which embedds them into the calling _lock_function below.
-+ *
-+ * This could be a long-held lock. We both prepare to spin for a long
-+ * time (making _this_ CPU preemptable if possible), and we also signal
-+ * towards that other CPU that it should break the lock ASAP.
-+ */
-+#define BUILD_LOCK_OPS(op, locktype)					\
-+void __lockfunc __##op##_lock(locktype##_t *lock)			\
-+{									\
-+	for (;;) {							\
-+		preempt_disable();					\
-+		if (likely(_raw_##op##_trylock(lock)))			\
-+			break;						\
-+		preempt_enable();					\
-+									\
-+		if (!(lock)->break_lock)				\
-+			(lock)->break_lock = 1;				\
-+		while (!op##_can_lock(lock) && (lock)->break_lock)	\
-+			_raw_##op##_relax(&lock->raw_lock);		\
-+	}								\
-+	(lock)->break_lock = 0;						\
-+}									\
-+									\
-+unsigned long __lockfunc __##op##_lock_irqsave(locktype##_t *lock)	\
-+{									\
-+	unsigned long flags;						\
-+									\
-+	for (;;) {							\
-+		preempt_disable();					\
-+		local_irq_save(flags);					\
-+		if (likely(_raw_##op##_trylock(lock)))			\
-+			break;						\
-+		local_irq_restore(flags);				\
-+		preempt_enable();					\
-+									\
-+		if (!(lock)->break_lock)				\
-+			(lock)->break_lock = 1;				\
-+		while (!op##_can_lock(lock) && (lock)->break_lock)	\
-+			_raw_##op##_relax(&lock->raw_lock);		\
-+	}								\
-+	(lock)->break_lock = 0;						\
-+	return flags;							\
-+}									\
-+									\
-+void __lockfunc __##op##_lock_irq(locktype##_t *lock)			\
-+{									\
-+	_##op##_lock_irqsave(lock);					\
-+}									\
-+									\
-+void __lockfunc __##op##_lock_bh(locktype##_t *lock)			\
-+{									\
-+	unsigned long flags;						\
-+									\
-+	/*							*/	\
-+	/* Careful: we must exclude softirqs too, hence the	*/	\
-+	/* irq-disabling. We use the generic preemption-aware	*/	\
-+	/* function:						*/	\
-+	/**/								\
-+	flags = _##op##_lock_irqsave(lock);				\
-+	local_bh_disable();						\
-+	local_irq_restore(flags);					\
-+}									\
-+
-+/*
-+ * Build preemption-friendly versions of the following
-+ * lock-spinning functions:
-+ *
-+ *         __[spin|read|write]_lock()
-+ *         __[spin|read|write]_lock_irq()
-+ *         __[spin|read|write]_lock_irqsave()
-+ *         __[spin|read|write]_lock_bh()
-+ */
-+BUILD_LOCK_OPS(spin, spinlock);
-+BUILD_LOCK_OPS(read, rwlock);
-+BUILD_LOCK_OPS(write, rwlock);
-+
-+#endif
-+
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+
-+void __lockfunc _spin_lock_nested(spinlock_t *lock, int subclass)
-+{
-+	preempt_disable();
-+	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
-+	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
-+}
-+EXPORT_SYMBOL(_spin_lock_nested);
-+
-+unsigned long __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock,
-+						   int subclass)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	preempt_disable();
-+	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
-+	LOCK_CONTENDED_FLAGS(lock, _raw_spin_trylock, _raw_spin_lock,
-+				_raw_spin_lock_flags, &flags);
-+	return flags;
-+}
-+EXPORT_SYMBOL(_spin_lock_irqsave_nested);
-+
-+void __lockfunc _spin_lock_nest_lock(spinlock_t *lock,
-+				     struct lockdep_map *nest_lock)
-+{
-+	preempt_disable();
-+	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
-+	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
-+}
-+EXPORT_SYMBOL(_spin_lock_nest_lock);
-+
-+#endif
-+
- #ifndef CONFIG_INLINE_SPIN_TRYLOCK
- int __lockfunc _spin_trylock(spinlock_t *lock)
- {
-@@ -45,13 +172,6 @@ int __lockfunc _write_trylock(rwlock_t *
- EXPORT_SYMBOL(_write_trylock);
- #endif
- 
--/*
-- * If lockdep is enabled then we use the non-preemption spin-ops
-- * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
-- * not re-enabled during lock-acquire (which the preempt-spin-ops do):
-- */
--#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
--
- #ifndef CONFIG_INLINE_READ_LOCK
- void __lockfunc _read_lock(rwlock_t *lock)
- {
-@@ -148,130 +268,6 @@ void __lockfunc _write_lock(rwlock_t *lo
- EXPORT_SYMBOL(_write_lock);
- #endif
- 
--#else /* CONFIG_PREEMPT: */
--
--/*
-- * This could be a long-held lock. We both prepare to spin for a long
-- * time (making _this_ CPU preemptable if possible), and we also signal
-- * towards that other CPU that it should break the lock ASAP.
-- *
-- * (We do this in a function because inlining it would be excessive.)
-- */
--
--#define BUILD_LOCK_OPS(op, locktype)					\
--void __lockfunc _##op##_lock(locktype##_t *lock)			\
--{									\
--	for (;;) {							\
--		preempt_disable();					\
--		if (likely(_raw_##op##_trylock(lock)))			\
--			break;						\
--		preempt_enable();					\
--									\
--		if (!(lock)->break_lock)				\
--			(lock)->break_lock = 1;				\
--		while (!op##_can_lock(lock) && (lock)->break_lock)	\
--			_raw_##op##_relax(&lock->raw_lock);		\
--	}								\
--	(lock)->break_lock = 0;						\
--}									\
--									\
--EXPORT_SYMBOL(_##op##_lock);						\
--									\
--unsigned long __lockfunc _##op##_lock_irqsave(locktype##_t *lock)	\
--{									\
--	unsigned long flags;						\
--									\
--	for (;;) {							\
--		preempt_disable();					\
--		local_irq_save(flags);					\
--		if (likely(_raw_##op##_trylock(lock)))			\
--			break;						\
--		local_irq_restore(flags);				\
--		preempt_enable();					\
--									\
--		if (!(lock)->break_lock)				\
--			(lock)->break_lock = 1;				\
--		while (!op##_can_lock(lock) && (lock)->break_lock)	\
--			_raw_##op##_relax(&lock->raw_lock);		\
--	}								\
--	(lock)->break_lock = 0;						\
--	return flags;							\
--}									\
--									\
--EXPORT_SYMBOL(_##op##_lock_irqsave);					\
--									\
--void __lockfunc _##op##_lock_irq(locktype##_t *lock)			\
--{									\
--	_##op##_lock_irqsave(lock);					\
--}									\
--									\
--EXPORT_SYMBOL(_##op##_lock_irq);					\
--									\
--void __lockfunc _##op##_lock_bh(locktype##_t *lock)			\
--{									\
--	unsigned long flags;						\
--									\
--	/*							*/	\
--	/* Careful: we must exclude softirqs too, hence the	*/	\
--	/* irq-disabling. We use the generic preemption-aware	*/	\
--	/* function:						*/	\
--	/**/								\
--	flags = _##op##_lock_irqsave(lock);				\
--	local_bh_disable();						\
--	local_irq_restore(flags);					\
--}									\
--									\
--EXPORT_SYMBOL(_##op##_lock_bh)
--
--/*
-- * Build preemption-friendly versions of the following
-- * lock-spinning functions:
-- *
-- *         _[spin|read|write]_lock()
-- *         _[spin|read|write]_lock_irq()
-- *         _[spin|read|write]_lock_irqsave()
-- *         _[spin|read|write]_lock_bh()
-- */
--BUILD_LOCK_OPS(spin, spinlock);
--BUILD_LOCK_OPS(read, rwlock);
--BUILD_LOCK_OPS(write, rwlock);
--
--#endif /* CONFIG_PREEMPT */
--
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--
--void __lockfunc _spin_lock_nested(spinlock_t *lock, int subclass)
--{
--	preempt_disable();
--	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
--	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
--}
--EXPORT_SYMBOL(_spin_lock_nested);
--
--unsigned long __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock, int subclass)
--{
--	unsigned long flags;
--
--	local_irq_save(flags);
--	preempt_disable();
--	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
--	LOCK_CONTENDED_FLAGS(lock, _raw_spin_trylock, _raw_spin_lock,
--				_raw_spin_lock_flags, &flags);
--	return flags;
--}
--EXPORT_SYMBOL(_spin_lock_irqsave_nested);
--
--void __lockfunc _spin_lock_nest_lock(spinlock_t *lock,
--				     struct lockdep_map *nest_lock)
--{
--	preempt_disable();
--	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
--	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
--}
--EXPORT_SYMBOL(_spin_lock_nest_lock);
--
--#endif
--
- #ifndef CONFIG_INLINE_SPIN_UNLOCK
- void __lockfunc _spin_unlock(spinlock_t *lock)
- {
-@@ -296,7 +292,7 @@ void __lockfunc _read_unlock(rwlock_t *l
- EXPORT_SYMBOL(_read_unlock);
- #endif
- 
--#ifndef CONFIG_INLINE_SPIN_UNLOCK_IRQRESTORE
-+#ifndef CONFIG_INLINE_SPIN_UNLOCK_RESTORE
- void __lockfunc _spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
- {
- 	__spin_unlock_irqrestore(lock, flags);
 
 
