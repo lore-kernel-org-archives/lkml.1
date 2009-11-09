@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbZKIS44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZKIS4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753108AbZKIS44 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:56:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbZKIS4z
+	id S1752937AbZKIS4l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 13:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZKIS4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:56:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:42632 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbZKIS4z (ORCPT
+	Mon, 9 Nov 2009 13:56:39 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:51695 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752157AbZKIS4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:56:55 -0500
-Subject: Re: [RFC,PATCH] mutex: mutex_is_owner() helper
-From: Peter Zijlstra <peterz@infradead.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <4AF1B7A7.6030902@gmail.com>
-References: <4AF19D06.3060401@gmail.com> <20091104154015.GA32567@elte.hu>
-	 <4AF1B7A7.6030902@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Nov 2009 19:56:27 +0100
-Message-ID: <1257792987.4108.364.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Nov 2009 13:56:39 -0500
+Date: Mon, 9 Nov 2009 18:56:44 +0000
+To: linux-kernel@vger.kernel.org
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       Len Sorensen <lsorense@csclub.uwaterloo.ca>, netdev@vger.kernel.org
+Subject: Fix syntax of mdio.txt to match actual syntax.
+Message-ID: <20091109185644.GA15159@caffeine.csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-04 at 18:19 +0100, Eric Dumazet wrote:
-> 
-> BTW, I was thinking of a mutex_yield() implementation, but could not
-> cook it without hard thinking, maybe you already have some nice
-> implementation ?
+The syntax in Documentation/powerpc/dts-bindings/gpio/mdio.txt is not
+up to date and no longer works.  Fix this as well as actually show how
+to represent a PHY on the gpio-bitbang bus.
 
-Why? Yield sets off alarm bells, since 99.9%, and possibly more, of its
-uses are wrong.
+Tested with 2.6.31 on a RuggedCom RX5000 (mpc8360e based).
 
-> int mutex_yield(struct mutex *lock)
-> {
->         int ret = 0;
-> 
->         if (mutex_needbreak(lock) || should_resched()) {
->                 mutex_unlock(lock); 
->                 __cond_resched();
->                 mutex_lock(lock);
->                 ret = 1;
->         }
->         return ret;
-> } 
+Signed-off-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
 
-That reads like it should be called cond_resched_mutex(), except that
-the should_resched() thing seems daft (but maybe it makes sense for
-silly preemption modes like voluntary).
-
-iirc we actually have something similar in -rt in order to implement the
-lock-break for the rt-mutex based spinlocks, we set ->needbreak when a
-higher priority task contends -- a policy for regular mutexes might be
-'interesting' though.
-
-As to your 'debug' helper that started this thread, doesn't
-lockdep_assert_held() work for you?
-
+diff --git a/Documentation/powerpc/dts-bindings/gpio/mdio.txt b/Documentation/powerpc/dts-bindings/gpio/mdio.txt
+index bc95495..7a84f25 100644
+--- a/Documentation/powerpc/dts-bindings/gpio/mdio.txt
++++ b/Documentation/powerpc/dts-bindings/gpio/mdio.txt
+@@ -14,6 +14,15 @@ mdio {
+ 	compatible = "virtual,mdio-gpio";
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+-	gpios = <&qe_pio_a 11
+-		 &qe_pio_c 6>;
++	gpios = <&qe_pio_a 11 0
++		 &qe_pio_c 6 0>;
++
++	phy0: ethernet-phy@00 {
++		reg = <0x18>;
++		device_type = "ethernet-phy";
++	};
++	phy1: ethernet-phy@01 {
++		reg = <0x0f>;
++		device_type = "ethernet-phy";
++	};
+ };
