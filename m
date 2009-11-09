@@ -1,51 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZKIUq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbZKIVDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbZKIUq2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 15:46:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZKIUq1
+	id S1754443AbZKIVDz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 16:03:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZKIVDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 15:46:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52501 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754706AbZKIUqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 15:46:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Help needed: Resume problems in 2.6.32-rc, perhaps related to preempt_count leakage in keventd
-Date: Mon, 9 Nov 2009 21:48:03 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.31.5-tst; KDE/4.3.1; x86_64; ; )
-Cc: Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0911091527390.2858-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911091527390.2858-100000@iolanthe.rowland.org>
+	Mon, 9 Nov 2009 16:03:54 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:39946 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754085AbZKIVDx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 16:03:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=jbuQSR2k6xwDP9OJ2LgsLcevyyOu1nLc7f27PIlBykETxHQFlP/1zG9uKLiNIoAXo+
+         LkZyuEk4AGbTHdjNxpQjeYnS6FY5ev3jEpcYklXL0D26wgfF1qTB0inz35Z44sp8m/XB
+         Yp7OvqZ11tlqiUQOjZ67EBwpXqZxNIzibAqSU=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911092148.03815.rjw@sisk.pl>
+In-Reply-To: <20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 
+	<20091003072127.GC21407@elte.hu> <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com> 
+	<4AF4526B.4060101@zytor.com> <40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com> 
+	<20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
+From: Matteo Croce <technoboy85@gmail.com>
+Date: Mon, 9 Nov 2009 22:03:35 +0100
+Message-ID: <40101cc30911091303v23b0d336u982ce70be4a0b66e@mail.gmail.com>
+Subject: Re: i686 quirk for AMD Geode
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 November 2009, Alan Stern wrote:
-> On Mon, 9 Nov 2009, Rafael J. Wysocki wrote:
-> 
-> > Still, RIP always points to list_del_init(cwq->worklist.next); in
-> > run_workqueue().
-> 
-> Use a big hammer: Create a new global variable, set it to 1 while
-> resuming and back to 0 after the tasks have been thawed.  While the
-> variable is nonzero, print in the log the list pointers in
-> cwq->worklist just before executing the list_del_init().  Maybe also 
-> print some other interesting information about cwq.
+On Mon, Nov 9, 2009 at 9:16 PM, Lennart Sorensen
+<lsorense@csclub.uwaterloo.ca> wrote:
+> On Sun, Nov 08, 2009 at 07:42:48PM +0100, Matteo Croce wrote:
+>> There is a small advantage, but considering that GCC isn't much geode aware yet
+>> there is stil room for improvement IMHO:
+>
+> Perhaps gcc considers geode to mean geode GX[m12] not geode LX (which is
+> newer and the one in question here).
+>
+> The Geode GX line prefers i486 code to i586 code (which appears to be
+> what -march=geode is for).  I am using i486 at the moment when I build
+> for this one.
+>
+> The Geode LX is what is being discussed which is in fact mostly a K6 as
+> far as I understand things.  It seems to like i686 code, other than
+> apparently those NOP instructions.  I wonder if the K6 has those noop
+> instructions and if not, perhaps gcc 4.4's -march=k6-3 would be the
+> right choice.  I have always suspected the LX was really a K6-3 based
+> design (the cache sizes are a bit different, but clock speeds and
+> instruction sets seem to match).
+>
+> The Geode NX (which no one has mentioned yet) is an Athlon derived chip.
+>
+>> root@alix:/usr/src/dist# ll
+>> totale 257M
+>> -rwxr-xr-x 1 1000 src  93K  8 nov  2009 bzip2-i586
+>> -rwxr-xr-x 1 1000 src  93K  8 nov  2009 bzip2-i686
+>> -rwxr-xr-x 1 1000 src  60K  8 nov  2009 gzip-i586
+>> -rwxr-xr-x 1 1000 src  60K  8 nov  2009 gzip-i686
+>> -rw-r--r-- 1 1000 src 256M  8 nov  2009 linux-2.6.31.5.tar
+>> -rwxr-xr-x 1 1000 src  90K  8 nov  2009 lzma-i586
+>> -rwxr-xr-x 1 1000 src  94K  8 nov  2009 lzma-i686
+>> root@alix:/usr/src/dist# time cat linux-2.6.31.5.tar >/dev/null
+>>
+>> real    0m10.168s
+>> user    0m0.030s
+>> sys     0m1.390s
+>> root@alix:/usr/src/dist# time ./gzip-i586 -9 < linux-2.6.31.5.tar >/dev/null
+>>
+>> real    5m22.331s
+>> user    5m10.820s
+>> sys     0m11.170s
+>> root@alix:/usr/src/dist# time ./gzip-i686 -9 < linux-2.6.31.5.tar >/dev/null
+>>
+>> real    5m3.737s
+>> user    4m51.880s
+>> sys     0m11.510s
+>> root@alix:/usr/src/dist# time ./bzip2-i586 -9 < linux-2.6.31.5.tar >/dev/null
+>>
+>> real    9m16.539s
+>> user    9m4.410s
+>> sys     0m11.760s
+>> root@alix:/usr/src/dist# time ./bzip2-i686 -9 < linux-2.6.31.5.tar >/dev/null
+>>
+>> real    8m48.682s
+>> user    8m34.950s
+>> sys     0m13.260s
+>
+> --
+> Len Sorensen
+>
 
-I've just sent a message containing full call trace.
-
-It shows the problem is a general protection fault that happens _after_ we've
-thawed tasks.
-
-Thanks,
-Rafael
+You're right, indeed this is being discussed here:
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=41989
