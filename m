@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZKIJiD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZKIJk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbZKIJiD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 04:38:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbZKIJiC
+	id S1754799AbZKIJk5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 04:40:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZKIJk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 04:38:02 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45916 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754750AbZKIJiB (ORCPT
+	Mon, 9 Nov 2009 04:40:56 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:42475 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753910AbZKIJkz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 04:38:01 -0500
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
-From: Andi Kleen <andi@firstfloor.org>
-References: <m14op5jjo4.fsf@fess.ebiederm.org>
-	<1257682930-31401-22-git-send-email-ebiederm@xmission.com>
-	<20091108123422.GA9145@flint.arm.linux.org.uk>
-	<m1pr7siqjz.fsf@fess.ebiederm.org> <m1hbt4ipni.fsf@fess.ebiederm.org>
-	<20091108164855.595ec70d@infradead.org>
-	<m1tyx49y44.fsf@fess.ebiederm.org>
-	<20091108205725.28778016@infradead.org>
-	<m1hbt45kcp.fsf@fess.ebiederm.org>
-Date: Mon, 09 Nov 2009 10:38:05 +0100
-In-Reply-To: <m1hbt45kcp.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Sun, 08 Nov 2009 21:37:58 -0800")
-Message-ID: <87ocnc598i.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Nov 2009 04:40:55 -0500
+Subject: Re: [PATCH] txx9ndfmc: Use nand_release() to free resources
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1257172848-6282-1-git-send-email-anemo@mba.ocn.ne.jp>
+References: <1257172848-6282-1-git-send-email-anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 11:40:38 +0200
+Message-Id: <1257759638.21596.233.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 09 Nov 2009 09:40:42.0577 (UTC) FILETIME=[B4549410:01CA6120]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
->
-> The glibc pthread code that uses sysctl has no problems if sys_sysctl
-> is gone.  It both falls back to reading /proc/sys and it just controls
-> an optimization and the code works with either result.  Been there,
-> done that.
+On Mon, 2009-11-02 at 23:40 +0900, Atsushi Nemoto wrote:
+> This patch fixes memory leak on chip->bbt and chip->buffers.
+> 
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
+>  drivers/mtd/nand/txx9ndfmc.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
 
-/proc/sys is much slower than sysctl though. So you made program startup
-slower.
-
-Also I agree with Arjan that breaking such a common ABI is not
-really a good idea. But I think it's enough to only handle
-common sysctls that are actually used, which are very few.
-
-It would be better to simply keep the commonly used binary sysctls
-as emulation around always (commonly = used by glibc and perhaps
-added by user printk feedback) That's very cheap because it's just
-a simple translation and can be done internally cheaper than going
-through the VFS with a bazillion of locks.
-
-
--Andi
+Taken to the l2-mtd-2.6 tree, thanks. 
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
+
