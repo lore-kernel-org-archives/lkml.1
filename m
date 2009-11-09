@@ -1,164 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZKIOtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZKIOu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbZKIOtS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 09:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZKIOtS
+	id S1755303AbZKIOu7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 09:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZKIOu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 09:49:18 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50863 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbZKIOtR (ORCPT
+	Mon, 9 Nov 2009 09:50:59 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:60835 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753780AbZKIOu6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 09:49:17 -0500
-Subject: Re: utime/stime decreasing on thread exit
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <4AF26176.4080307@jp.fujitsu.com>
-References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com>
-	 <4AF26176.4080307@jp.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Nov 2009 15:49:14 +0100
-Message-ID: <1257778154.4108.341.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Nov 2009 09:50:58 -0500
+Date: Mon, 9 Nov 2009 15:50:56 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Clemens Ladisch <clemens@ladisch.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vt: make the default cursor shape configurable
+Message-ID: <20091109145056.GB14091@buzzloop.caiaq.de>
+References: <4AF7D439.4030305@ladisch.de>
+ <20091109091044.GX29442@buzzloop.caiaq.de>
+ <4AF7DDC1.4090006@ladisch.de>
+ <20091109095316.6283fbd6@lxorguk.ukuu.org.uk>
+ <4AF7FC64.6030904@ladisch.de>
+ <20091109114600.4d91b90e@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091109114600.4d91b90e@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-05 at 14:24 +0900, Hidetoshi Seto wrote:
+On Mon, Nov 09, 2009 at 11:46:00AM +0000, Alan Cox wrote:
+> > The justification from Daniel's original patch was:
+> > | For embedded systems, the blinking cursor at startup time can be
+> > | annoying and unintended.
+> > 
+> > Would a simple "Disable cursor by default" switch more acceptable?
+> 
+> Well I guess you could just make the default cursor define a variable and
+> mark it MODULE_PARAM ?
 
-> Problem [1]:
->   thread_group_cputime() vs exit
-> 
-> +void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
-> +{
-> +       struct sighand_struct *sighand;
-> +       struct signal_struct *sig;
-> +       struct task_struct *t;
-> +
-> +       *times = INIT_CPUTIME;
-> +
-> +       rcu_read_lock();
-> +       sighand = rcu_dereference(tsk->sighand);
-> +       if (!sighand)
-> +               goto out;
-> +
-> +       sig = tsk->signal;
-> +
-> +       t = tsk;
-> +       do {
-> +               times->utime = cputime_add(times->utime, t->utime);
-> +               times->stime = cputime_add(times->stime, t->stime);
-> +               times->sum_exec_runtime += t->se.sum_exec_runtime;
-> +
-> +               t = next_thread(t);
-> +       } while (t != tsk);
-> +
-> +       times->utime = cputime_add(times->utime, sig->utime);
-> +       times->stime = cputime_add(times->stime, sig->stime);
-> +       times->sum_exec_runtime += sig->sum_sched_runtime;
-> +out:
-> +       rcu_read_unlock();
-> +}
-> 
-> If one of (thousands) threads do exit while a thread is doing do-while
-> above, the s/utime of exited thread can be accounted twice, at do-while
-> (before exit) and at cputime_add() at last (after exit).
-> 
-> I suppose this is hard to fix: Taking lock on signal would solve this
-> problem, but it could block all other threads long and cause serious
-> performance issue and so on...
+I had that previously and the response was that there is no reason to
+define that setting per-boot process, as it is rather unlikely that you
+want to change it from one boot to the next. Hence, it should be set at
+compile time.
 
-I just checked .22 and there we seem to hold p->sighand->siglock over
-the full task iteration. So we might as well revert back to that if
-people really mind counting things twice :-)
+And even if the cursor behaviour is changable at runtime, I don't see
+why it shouldn't have a selectable compile time default. Which is what
+the patch adds.
 
-FWIW getrusage() also takes siglock over the task iteration.
-
-Alternatively, we could try reading the sig->[us]time before doing the
-loop, but I guess that's still racy in that we can then miss someone
-altogether.
-
-> Problem [2]:
->   use of task_s/utime()
-> 
-> I modified the test program more, to take times() 6 times and print them
-> if utime decreased between 3rd and 4th.
-> I noticed that I cannot explain that if the problem [1] was the root cause
-> then why results show decreased value continuously, instead of an increased
-> value at a point (like (v)(v)(V)(v)(v)(v)) which is expected.
-> 
->  :
-> times decreased : (104 984) (104 984) (104 984) (105 983) (105 983) (105 983)
-> times decreased : (115 981) (116 980) (116 978) (117 977) (117 977) (119 979)
-> times decreased : (116 980) (117 980) (117 980) (117 977) (118 979) (118 977)
->  :
-> 
-> And it seems that the more thread exits the more utime decreases.
-> 
-> Soon I found:
-> 
-> [kernel/exit.c]
-> +               sig->utime = cputime_add(sig->utime, task_utime(tsk));
-> +               sig->stime = cputime_add(sig->stime, task_stime(tsk));
-> 
-> While the thread_group_cputime() accumulates raw s/utime in do-while loop,
-> the signal struct accumulates adjusted s/utime of exited threads.
-> 
-> I'm not sure how this adjustment works but applying the following patch
-> makes the result little bit better:
-> 
->  :
-> times decreased : (436 741) (436 741) (437 744) (436 742) (436 742) (436 742)
-> times decreased : (454 792) (454 792) (455 794) (454 792) (454 792) (454 792)
-> times decreased : (503 941) (503 941) (504 943) (503 941) (503 941) (503 941)
->  :
-> 
-> But still decreasing(or increasing) continues, because there is a problem [1]
-> at least.
-> 
-> I think I couldn't handle this problem any more... Anybody can help?
-
-Stick in a few trace_printk()s and see what happens?
-
-> Subject: [PATCH] thread_group_cputime() should use task_s/utime()
-> 
-> The signal struct accumulates adjusted cputime of exited threads,
-> so thread_group_cputime() should use task_s/utime() instead of raw
-> task->s/utime, to accumulate adjusted cputime of live threads.
-> 
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> ---
->  kernel/posix-cpu-timers.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-> index 5c9dc22..e065b8a 100644
-> --- a/kernel/posix-cpu-timers.c
-> +++ b/kernel/posix-cpu-timers.c
-> @@ -248,8 +248,8 @@ void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
->  
->  	t = tsk;
->  	do {
-> -		times->utime = cputime_add(times->utime, t->utime);
-> -		times->stime = cputime_add(times->stime, t->stime);
-> +		times->utime = cputime_add(times->utime, task_utime(t));
-> +		times->stime = cputime_add(times->stime, task_stime(t));
->  		times->sum_exec_runtime += t->se.sum_exec_runtime;
->  
->  		t = next_thread(t);
-
-So what you're trying to say is that because __exit_signal() uses
-task_[usg]time() to accumulate sig->[usg]time, we should use it too in
-the loop over the live threads?
-
-I'm thinking its the task_[usg]time() usage in __exit_signal() that's
-the issue.
-
-I tried running the modified test.c on a current -tip kernel but could
-not observe the problem (dual-core opteron).
-
-
+Daniel
