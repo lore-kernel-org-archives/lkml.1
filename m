@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbZKIAKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbZKIAMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752533AbZKIAKU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 19:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbZKIAKU
+	id S1752670AbZKIAMO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 19:12:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZKIAMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 19:10:20 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:44152 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbZKIAKT (ORCPT
+	Sun, 8 Nov 2009 19:12:13 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:50203 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751897AbZKIAMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 19:10:19 -0500
-Date: Sun, 8 Nov 2009 19:10:03 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
-	external to a process (v7)
-Message-ID: <20091109001003.GA4129@localhost.localdomain>
-References: <20091020005214.GA8886@localhost.localdomain> <20091102152520.GG23776@elte.hu> <20091102175407.GE4075@hmsreliant.think-freely.org> <20091102185137.GA28803@elte.hu> <20091103002355.GB19891@localhost.localdomain> <20091104112632.GA9243@elte.hu> <20091105204843.GA2980@hmsreliant.think-freely.org> <20091106092600.GC22505@elte.hu> <4AF3F3CF.5080503@gmail.com> <20091108103629.GA11372@elte.hu>
+	Sun, 8 Nov 2009 19:12:12 -0500
+Message-Id: <200911090012.nA90CF2i016994@www262.sakura.ne.jp>
+Subject: Re: [PATCH 00/23] Removal of binary sysctl support
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: ebiederm@xmission.com
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091108103629.GA11372@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -4.8 (----)
+Content-Transfer-Encoding: 7bit
+Date: Mon, 09 Nov 2009 09:12:15 +0900
+References: <m13a4pjjh9.fsf@fess.ebiederm.org> <200911082215.HGJ57827.SJOVFFOHMOLFQt@I-love.SAKURA.ne.jp> <m1bpjch9hy.fsf@fess.ebiederm.org>
+In-Reply-To: <m1bpjch9hy.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 08112009 #2944260, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 11:36:29AM +0100, Ingo Molnar wrote:
-> 
-> * Jiri Slaby <jirislaby@gmail.com> wrote:
-> 
-> > On 11/06/2009 10:26 AM, Ingo Molnar wrote:
-> > > Jiri, i think your patches are incomplete for the same reasons i 
-> > > outlined to Neil.
-> > 
-> > I'll examine that. Thanks for pointing out.
-> > 
-> > > Also, the locking there looks messy:
-> > > 
-> > > +       /* optimization: 'current' doesn't need locking, e.g. setrlimit */
-> > > +       if (tsk != current) {
-> > > +               /* protect tsk->signal and tsk->sighand from disappearing */
-> > > +               read_lock(&tasklist_lock);
-> > > +               if (!tsk->sighand) {
-> > > +                       retval = -ESRCH;
-> > > +                       goto out;
-> > > +               }
-> > >         }
-> > > 
-> > > Neil's splitup into a helper function looks _far_ cleaner.
-> > 
-> > Then, I think, we should join our efforts.
-> 
-> i think your commits could be enhanced to include Neil's splitup (and 
-> keeping your write extension for /proc/*/limits), and the new syscall 
-> (with a security check), hm?
-> 
-> Without dropping your current commits - they already have testing value.
-> 
-That seems like a reasonable approach to me.  Jiri, would you like to do that or
-shall I?  I'm happy to but it will take me a few days (I've got a bug I need to
-focus on first).
+Eric W. Biederman wrote:
+> There has been a gradual transition from the assumption that the table ends with
+> !ctl_name to the assumption that procname == NULL.  There is no sysctl entry
+> with a valid ctl_name without a valid procname.
 
-Regards
-Neil
+I see. Then, please add below one to your patchset.
 
+Regards.
+----------
+[PATCH] sysctl security/tomoyo: Don't look at ctl_name
+
+ctl_name field was removed. Always use procname field.
+
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ security/tomoyo/tomoyo.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+--- security-testing-2.6.orig/security/tomoyo/tomoyo.c
++++ security-testing-2.6/security/tomoyo/tomoyo.c
+@@ -122,15 +122,7 @@ static char *tomoyo_sysctl_path(struct c
+ 	*--end = '\0';
+ 	buflen--;
+ 	while (table) {
+-		char num[32];
+-		const char *sp = table->procname;
+-
+-		if (!sp) {
+-			memset(num, 0, sizeof(num));
+-			snprintf(num, sizeof(num) - 1, "=%d=", table->ctl_name);
+-			sp = num;
+-		}
+-		if (tomoyo_prepend(&end, &buflen, sp) ||
++		if (tomoyo_prepend(&end, &buflen, table->procname) ||
+ 		    tomoyo_prepend(&end, &buflen, "/"))
+ 			goto out;
+ 		table = table->parent;
