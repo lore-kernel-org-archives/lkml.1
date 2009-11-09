@@ -1,110 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZKIXN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZKIXUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbZKIXN0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 18:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbZKIXNZ
+	id S1755384AbZKIXUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 18:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbZKIXUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 18:13:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55738 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754583AbZKIXNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 18:13:25 -0500
-Date: Mon, 9 Nov 2009 18:12:57 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [RFC] Workload type Vs Groups (Was: Re: [PATCH 02/20] blkio:
-	Change CFQ to use CFS like queue time stamps)
-Message-ID: <20091109231257.GG22860@redhat.com>
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-3-git-send-email-vgoyal@redhat.com> <4e5e476b0911041318w68bd774qf110d1abd7f946e4@mail.gmail.com> <20091106222257.GB2969@redhat.com> <4e5e476b0911091347t60e4d572kef2e632800fbf849@mail.gmail.com>
+	Mon, 9 Nov 2009 18:20:22 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53659 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755011AbZKIXUR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 18:20:17 -0500
+Message-ID: <4AF8A2C0.5080700@zytor.com>
+Date: Mon, 09 Nov 2009 15:16:16 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0911091347t60e4d572kef2e632800fbf849@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Kees Cook <kees.cook@canonical.com>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
+References: <4ADD1E03.4070200@zytor.com> <20091020045513.GU5394@outflux.net> <20091109221015.GB5129@outflux.net>
+In-Reply-To: <20091109221015.GB5129@outflux.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2009 at 10:47:48PM +0100, Corrado Zoccolo wrote:
-> On Fri, Nov 6, 2009 at 11:22 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > Hi All,
-> >
-> > I am now rebasing my patches to for-2.6.33 branch. There are significant
-> > number of changes in that branch, especially changes from corrado bring
-> > in an interesting question.
-> >
-> > Currently corrado has introduced the functinality of kind of grouping the
-> > cfq queues based on workload type and gives the time slots to these sub
-> > groups (sync-idle, sync-noidle, async).
-> >
-> > I was thinking of placing groups on top of this model, so that we select
-> > the group first and then select the type of workload and then finally
-> > the queue to run.
-> >
-> > Corrodo came up with an interesting suggestion (in a private mail), that
-> > what if we implement workload type at top and divide the share among
-> > groups with-in workoad type.
-> >
-> > So one would first select the workload to run and then select group
-> > with-in workload and then cfq queue with-in group.
-> >
-> > The advantage of this approach are.
-> >
-> > - for sync-noidle group, we will not idle per group. We will idle only
-> >  only at root level. (Well if we don't idle on the group once it becomes
-> >  empty, we will not see fairness for group. So it will be fairness vs
-> >  throughput call).
-> >
-> > - It allows us to limit system wide share of workload type. So for
-> >  example, one can kind of fix system wide share of async queues.
-> >  Generally it might not be very prudent to allocate a group 50% of
-> >  disk share and then that group decides to just do async IO and sync
-> >  IO in rest of the groups suffer.
-> >
-> > Disadvantage
-> >
-> > - The definition of fairness becomes bit murkier. Now fairness will be
-> >  achieved for a group with-in the workload type. So if a group is doing
-> >  IO of type sync-idle as well as sync-noidle and other group is doing
-> >  IO of type only sync-noidle, then first group will get overall more
-> >  disk time even if both the groups have same weight.
+On 11/09/2009 02:10 PM, Kees Cook wrote:
+> It is possible for x86_64 systems to lack the NX bit (see check_efer())
+> either due to the hardware lacking support or the BIOS having turned
+> off the CPU capability, so NX status should be reported.  Additionally,
+> anyone booting NX-capable CPUs in 32bit mode without PAE will lack NX
+> functionality, so this change provides feedback for that case as well.
 > 
-> The fairness definition was always debated (disk time vs data transferred).
-> I think that the two have both some reason to exist.
-> Namely, disk time is good for sync-idle workloads, like sequential readers,
-> while data transferred is good for sync-noidle workloads, like random readers.
+> v2: use "Alert:" instead of "Warning:" to avoid confusion with WARN_ON()
+> v3: use "Notice:" instead of "Alert:" to avoid confusion with KERN_ALERT,
+>     and switch to KERN_NOTICE, in keeping with its use for "normal but
+>     significant condition" messages.
+> v4: check that _NX_PAGE is non-zero to avoid setting nx_enabled accidentally.
+> 
+> Signed-off-by: Kees Cook <kees.cook@canonical.com>
+> ---
+>  arch/x86/mm/init.c     |   10 ++++++++++
+>  arch/x86/mm/setup_nx.c |    3 +++
+>  2 files changed, 13 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+> index 73ffd55..d98b43a 100644
+> --- a/arch/x86/mm/init.c
+> +++ b/arch/x86/mm/init.c
+> @@ -149,6 +149,16 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+>  	set_nx();
+>  	if (nx_enabled)
+>  		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
+> +	else if (cpu_has_pae)
+> +#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+> +		/* PAE kernel, PAE CPU, without NX */
+> +		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
+> +		       "missing in CPU or disabled in BIOS!\n");
+> +#else
+> +		/* 32bit non-PAE kernel, PAE CPU */
+> +		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
+> +		       "cannot be enabled: non-PAE kernel!\n");
+> +#endif
+>  
+>  	/* Enable PSE if available */
+>  	if (cpu_has_pse)
+> diff --git a/arch/x86/mm/setup_nx.c b/arch/x86/mm/setup_nx.c
+> index 513d8ed..1b93231 100644
+> --- a/arch/x86/mm/setup_nx.c
+> +++ b/arch/x86/mm/setup_nx.c
+> @@ -53,6 +53,9 @@ void __init set_nx(void)
+>  #else
+>  void set_nx(void)
+>  {
+> +	/* notice if _PAGE_NX exists and was removed during check_efer() */
+> +	if (_PAGE_NX && ((__supported_pte_mask & _PAGE_NX) == _PAGE_NX))
+> +		nx_enabled = 1;
+>  }
+>  #endif
+>  
 
-I thought it was reverse. For sync-noidle workoads (typically seeky), we
-do lot less IO and size of IO is not the right measure otherwise most of
-the disk time we will be giving to this sync-noidle queue/group and
-sync-idle queues will be heavily punished in other groups.
+The second clause can only get executed if CONFIG_X86_PAE is unset,
+which in turn means _PAGE_NX == 0... so that piece of code is meaningless.
 
-time based fairness generally should work better on seeky media. As the
-seek cost starts to come down, size of IO also starts making sense.
+It also looks to me that there is no message distinguishing the case
+when nx_enabled == 1 but disable_nx == 1, and instead we say NX is
+"active" when in fact it is disabled in the kernel.
 
-In fact on SSD, we do queue switching so fast and don't idle on the queue,
-doing time accounting and providing fairness in terms of time is hard, for
-the groups which are not continuously backlogged.
-
-> Unfortunately, the two measures seems not comparable, so we seem
-> obliged to schedule independently the two kinds of workloads.
-> Actually, I think we can compute a feedback from each scheduling turn,
-> that can be used to temporary alter weights in next turn, in order to
-> reach long term fairness.
-
-As one simple solution, I thought that on SSDs, one can think of using
-higher level IO controlling policy instead of CFQ group scheduling.
-
-Or, we bring in some measuer in CFQ for fairness based on size/amount of
-IO.
-
-Thanks
-Vivek
+	-hpa
