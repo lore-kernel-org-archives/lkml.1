@@ -1,363 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZKIJKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZKIJKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbZKIJKl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 04:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbZKIJKl
+	id S1754860AbZKIJKv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 04:10:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZKIJKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 04:10:41 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:47320 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754777AbZKIJKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 04:10:38 -0500
-Date: Mon, 9 Nov 2009 14:40:38 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: [RFC v3 PATCH 3/7] sched: Enforce hard limits by throttling
-Message-ID: <20091109091038.GG23472@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20091109090838.GD23472@in.ibm.com>
+	Mon, 9 Nov 2009 04:10:48 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:39536 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754836AbZKIJKo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 04:10:44 -0500
+Date: Mon, 9 Nov 2009 10:10:44 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: Andrea Righi <righi.andrea@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH] fbcon: make cursor display conditional
+Message-ID: <20091109091044.GX29442@buzzloop.caiaq.de>
+References: <4AF7D439.4030305@ladisch.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091109090838.GD23472@in.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4AF7D439.4030305@ladisch.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: Enforce hard limits by throttling.
+On Mon, Nov 09, 2009 at 09:35:05AM +0100, Clemens Ladisch wrote:
+> Daniel Mack wrote:
+> > > On Fri, Nov 06, 2009 at 09:16:44AM +0100, Clemens Ladisch wrote:
+> > > > Wouldn't it be more useful to change the CUR_DEFAULT symbol (see the
+> > > > end of <linux/console_struct.h>) into a kernel parameter, instead of
+> > > > adding a new flag?
+> > 
+> > Ok, much better idea, I agree. See the patch below.
+> > 
+> > Subject: [PATCH] char/console: make default cursor type configurable
+> > 
+> > --- a/drivers/char/vt.c
+> > +++ b/drivers/char/vt.c
+> > +#if defined(CONFIG_CONSOLE_DEF_CUR_NONE)
+> > +#define CUR_DEFAULT CUR_NONE
+> > +
+> > +#elif defined(CONFIG_CONSOLE_DEF_CUR_UNDERLINE)
+> > +#define CUR_DEFAULT CUR_UNDERLINE
+> > +...
+> 
+> With a separate Kconfig variable, we can avoid having to put the
+> parallel list into vt.c.
+> 
+> Furthermore, we can add options for the software cursor while we're
+> at it; something like this:
+> 
+> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Wonderful, thank you. For my bits, you can add my Signed-off-by if
+that's appropriate.
 
-Throttle the task-groups which exceed the runtime allocated to them.
-Throttled group entities are removed from the run queue.
+Daniel
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
- kernel/sched.c      |   13 ++++
- kernel/sched_fair.c |  164 +++++++++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 163 insertions(+), 14 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 1d46fdc..5d2e5e5 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1631,6 +1631,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
- 	}
- }
- 
-+static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq);
- /*
-  * Re-compute the task group their per cpu shares over the given domain.
-  * This needs to be done in a bottom-up fashion because the rq weight of a
-@@ -1658,8 +1659,10 @@ static int tg_shares_up(struct task_group *tg, void *data)
- 		 * If there are currently no tasks on the cpu pretend there
- 		 * is one of average load so that when a new task gets to
- 		 * run here it will not get delayed by group starvation.
-+		 * Also if the group is throttled on this cpu, pretend that
-+		 * it has no tasks.
- 		 */
--		if (!weight)
-+		if (!weight || cfs_rq_throttled(tg->cfs_rq[i]))
- 			weight = NICE_0_LOAD;
- 
- 		rq_weight += weight;
-@@ -1684,6 +1687,7 @@ static int tg_shares_up(struct task_group *tg, void *data)
-  * Compute the cpu's hierarchical load factor for each task group.
-  * This needs to be done in a top-down fashion because the load of a child
-  * group is a fraction of its parents load.
-+ * A throttled group's h_load is set to 0.
-  */
- static int tg_load_down(struct task_group *tg, void *data)
- {
-@@ -1692,6 +1696,8 @@ static int tg_load_down(struct task_group *tg, void *data)
- 
- 	if (!tg->parent) {
- 		load = cpu_rq(cpu)->load.weight;
-+	} else if (cfs_rq_throttled(tg->cfs_rq[cpu])) {
-+		load = 0;
- 	} else {
- 		load = tg->parent->cfs_rq[cpu]->h_load;
- 		load *= tg->cfs_rq[cpu]->shares;
-@@ -1994,6 +2000,11 @@ static inline void cfs_rq_runtime_unlock(struct cfs_rq *cfs_rq)
- 	return;
- }
- 
-+static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_FAIR_GROUP_SCHED */
- 
- #include "sched_stats.h"
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index c32c3e6..b83ff7d 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -189,7 +189,54 @@ find_matching_se(struct sched_entity **se, struct sched_entity **pse)
- 	}
- }
- 
--#else	/* !CONFIG_FAIR_GROUP_SCHED */
-+#ifdef CONFIG_CFS_HARD_LIMITS
-+
-+static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
-+{
-+	return cfs_rq->cfs_throttled;
-+}
-+
-+/*
-+ * Check if group entity exceeded its runtime. If so, mark the cfs_rq as
-+ * throttled mark the current task for reschedling.
-+ */
-+static void sched_cfs_runtime_exceeded(struct sched_entity *se,
-+	struct task_struct *tsk_curr, unsigned long delta_exec)
-+{
-+	struct cfs_rq *cfs_rq;
-+
-+	cfs_rq = group_cfs_rq(se);
-+
-+	if (cfs_rq->cfs_runtime == RUNTIME_INF)
-+		return;
-+
-+	cfs_rq->cfs_time += delta_exec;
-+
-+	if (cfs_rq_throttled(cfs_rq))
-+		return;
-+
-+	if (cfs_rq->cfs_time > cfs_rq->cfs_runtime) {
-+		cfs_rq->cfs_throttled = 1;
-+		resched_task(tsk_curr);
-+	}
-+}
-+
-+#else
-+
-+static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
-+{
-+	return 0;
-+}
-+
-+static void sched_cfs_runtime_exceeded(struct sched_entity *se,
-+	struct task_struct *tsk_curr, unsigned long delta_exec)
-+{
-+	return;
-+}
-+
-+#endif /* CONFIG_CFS_HARD_LIMITS */
-+
-+#else	/* CONFIG_FAIR_GROUP_SCHED */
- 
- static inline struct task_struct *task_of(struct sched_entity *se)
- {
-@@ -249,6 +296,12 @@ find_matching_se(struct sched_entity **se, struct sched_entity **pse)
- {
- }
- 
-+static void sched_cfs_runtime_exceeded(struct sched_entity *se,
-+	struct task_struct *tsk_curr, unsigned long delta_exec)
-+{
-+	return;
-+}
-+
- #endif	/* CONFIG_FAIR_GROUP_SCHED */
- 
- 
-@@ -489,10 +542,12 @@ __update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
- 	update_min_vruntime(cfs_rq);
- }
- 
--static void update_curr(struct cfs_rq *cfs_rq)
-+static void update_curr_common(struct cfs_rq *cfs_rq, int locked)
- {
- 	struct sched_entity *curr = cfs_rq->curr;
--	u64 now = rq_of(cfs_rq)->clock;
-+	struct rq *rq = rq_of(cfs_rq);
-+	struct task_struct *tsk_curr = rq->curr;
-+	u64 now = rq->clock;
- 	unsigned long delta_exec;
- 
- 	if (unlikely(!curr))
-@@ -516,9 +571,26 @@ static void update_curr(struct cfs_rq *cfs_rq)
- 		trace_sched_stat_runtime(curtask, delta_exec, curr->vruntime);
- 		cpuacct_charge(curtask, delta_exec);
- 		account_group_exec_runtime(curtask, delta_exec);
-+	} else {
-+		 /* TODO: (Un)locking this way is ugly, find an alterntive. */
-+		if (!locked)
-+			cfs_rq_runtime_lock(group_cfs_rq(curr));
-+		sched_cfs_runtime_exceeded(curr, tsk_curr, delta_exec);
-+		if (!locked)
-+			cfs_rq_runtime_unlock(group_cfs_rq(curr));
- 	}
- }
- 
-+static inline void update_curr(struct cfs_rq *cfs_rq)
-+{
-+	update_curr_common(cfs_rq, 0);
-+}
-+
-+static inline void update_curr_locked(struct cfs_rq *cfs_rq)
-+{
-+	update_curr_common(cfs_rq, 1);
-+}
-+
- static inline void
- update_stats_wait_start(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
-@@ -740,13 +812,9 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
- 	se->vruntime = vruntime;
- }
- 
--static void
--enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
-+static void enqueue_entity_common(struct cfs_rq *cfs_rq,
-+		struct sched_entity *se, int wakeup)
- {
--	/*
--	 * Update run-time statistics of the 'current'.
--	 */
--	update_curr(cfs_rq);
- 	account_entity_enqueue(cfs_rq, se);
- 
- 	if (wakeup) {
-@@ -760,6 +828,26 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
- 		__enqueue_entity(cfs_rq, se);
- }
- 
-+static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
-+		int wakeup)
-+{
-+	/*
-+	 * Update run-time statistics of the 'current'.
-+	 */
-+	update_curr(cfs_rq);
-+	enqueue_entity_common(cfs_rq, se, wakeup);
-+}
-+
-+static void enqueue_entity_locked(struct cfs_rq *cfs_rq,
-+		struct sched_entity *se, int wakeup)
-+{
-+	/*
-+	 * Update run-time statistics of the 'current'.
-+	 */
-+	update_curr_locked(cfs_rq);
-+	enqueue_entity_common(cfs_rq, se, wakeup);
-+}
-+
- static void __clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
- 	if (!se || cfs_rq->last == se)
-@@ -880,6 +968,32 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
- 	return se;
- }
- 
-+/*
-+ * Called from put_prev_entity()
-+ * If a group entity (@se) is found to be throttled, it will not be put back
-+ * on @cfs_rq, which is equivalent to dequeing it.
-+ */
-+static int dequeue_throttled_entity(struct cfs_rq *cfs_rq,
-+		struct sched_entity *se)
-+{
-+	struct cfs_rq *gcfs_rq = group_cfs_rq(se);
-+
-+	if (entity_is_task(se))
-+		return 0;
-+
-+	cfs_rq_runtime_lock(gcfs_rq);
-+	if (!cfs_rq_throttled(gcfs_rq) && gcfs_rq->nr_running) {
-+		cfs_rq_runtime_unlock(gcfs_rq);
-+		return 0;
-+	}
-+
-+	__clear_buddies(cfs_rq, se);
-+	account_entity_dequeue(cfs_rq, se);
-+	cfs_rq->curr = NULL;
-+	cfs_rq_runtime_unlock(gcfs_rq);
-+	return 1;
-+}
-+
- static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
- {
- 	/*
-@@ -891,6 +1005,8 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
- 
- 	check_spread(cfs_rq, prev);
- 	if (prev->on_rq) {
-+		if (dequeue_throttled_entity(cfs_rq, prev))
-+			return;
- 		update_stats_wait_start(cfs_rq, prev);
- 		/* Put 'current' back into the tree. */
- 		__enqueue_entity(cfs_rq, prev);
-@@ -987,10 +1103,28 @@ static inline void hrtick_update(struct rq *rq)
- }
- #endif
- 
-+static int enqueue_group_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
-+		 int wakeup)
-+{
-+	struct cfs_rq *gcfs_rq = group_cfs_rq(se);
-+	int ret = 0;
-+
-+	cfs_rq_runtime_lock(gcfs_rq);
-+	if (cfs_rq_throttled(gcfs_rq)) {
-+		ret = 1;
-+		goto out;
-+	}
-+	enqueue_entity_locked(cfs_rq, se, wakeup);
-+out:
-+	cfs_rq_runtime_unlock(gcfs_rq);
-+	return ret;
-+}
-+
- /*
-  * The enqueue_task method is called before nr_running is
-  * increased. Here we update the fair scheduling stats and
-  * then put the task into the rbtree:
-+ * Don't enqueue a throttled entity further into the hierarchy.
-  */
- static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int wakeup)
- {
-@@ -1000,11 +1134,15 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int wakeup)
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
- 			break;
-+
- 		cfs_rq = cfs_rq_of(se);
--		enqueue_entity(cfs_rq, se, wakeup);
-+		if (entity_is_task(se))
-+			enqueue_entity(cfs_rq, se, wakeup);
-+		else
-+			if (enqueue_group_entity(cfs_rq, se, wakeup))
-+				break;
- 		wakeup = 1;
- 	}
--
- 	hrtick_update(rq);
- }
- 
-@@ -1767,9 +1905,9 @@ load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
- 		u64 rem_load, moved_load;
- 
- 		/*
--		 * empty group
-+		 * empty group or a group with no h_load (throttled)
- 		 */
--		if (!busiest_cfs_rq->task_weight)
-+		if (!busiest_cfs_rq->task_weight || !busiest_h_load)
- 			continue;
- 
- 		rem_load = (u64)rem_load_move * busiest_weight;
+> --- linux-2.6/include/linux/console_struct.h
+> +++ linux-2.6/include/linux/console_struct.h
+> @@ -130,8 +130,6 @@ extern void vc_SAK(struct work_struct *w
+>  #define CUR_HWMASK	0x0f
+>  #define CUR_SWMASK	0xfff0
+>  
+> -#define CUR_DEFAULT CUR_UNDERLINE
+> -
+>  #define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp)
+>  
+>  #endif /* _LINUX_CONSOLE_STRUCT_H */
+> --- linux-2.6/drivers/char/vt.c
+> +++ linux-2.6/drivers/char/vt.c
+> @@ -138,6 +138,11 @@ const struct consw *conswitchp;
+>  #define DEFAULT_BELL_PITCH	750
+>  #define DEFAULT_BELL_DURATION	(HZ/8)
+>  
+> +#define CUR_DEFAULT (CONFIG_CUR_DEFAULT_HW | \
+> +		     CONFIG_CUR_DEFAULT_SW_FLAGS | \
+> +		     (CONFIG_CUR_DEFAULT_SW_ATTR_XOR << 8) | \
+> +		     (CONFIG_CUR_DEFAULT_SW_ATTR_SET << 16))
+> +
+>  struct vc vc_cons [MAX_NR_CONSOLES];
+>  
+>  #ifndef VT_SINGLE_DRIVER
+> --- linux-2.6/drivers/char/Kconfig
+> +++ linux-2.6/drivers/char/Kconfig
+> @@ -88,6 +88,104 @@ config VT_HW_CONSOLE_BINDING
+>  	 information. For framebuffer console users, please refer to
+>  	 <file:Documentation/fb/fbcon.txt>.
+>  
+> +choice
+> +	prompt "Default hardware cursor shape"
+> +	depends on HW_CONSOLE
+> +	default CUR_DEFAULT_UNDERLINE
+> +	help
+> +	  Select the default shape of the blinking hardware cursor.
+> +
+> +	config CUR_DEFAULT_DEF
+> +		bool "Default"
+> +	config CUR_DEFAULT_NONE
+> +		bool "None"
+> +	config CUR_DEFAULT_UNDERLINE
+> +		bool "Underline"
+> +	config CUR_DEFAULT_LOWER_THIRD
+> +		bool "Lower third"
+> +	config CUR_DEFAULT_LOWER_HALF
+> +		bool "Lower half"
+> +	config CUR_DEFAULT_TWO_THIRDS
+> +		bool "Two thirds"
+> +	config CUR_DEFAULT_BLOCK
+> +		bool "Block"
+> +endchoice
+> +
+> +config CUR_DEFAULT_HW
+> +	depends on HW_CONSOLE
+> +	int
+> +	default 0 if CUR_DEFAULT_DEF
+> +	default 1 if CUR_DEFAULT_NONE
+> +	default 2 if CUR_DEFAULT_UNDERLINE
+> +	default 3 if CUR_DEFAULT_LOWER_THIRD
+> +	default 4 if CUR_DEFAULT_LOWER_HALF
+> +	default 5 if CUR_DEFAULT_TWO_THIRDS
+> +	default 6 if CUR_DEFAULT_BLOCK
+> +
+> +config CUR_DEFAULT_SW
+> +	bool "Use software cursor by default"
+> +	depends on HW_CONSOLE
+> +	default n
+> +	help
+> +	  The software cursor allows you to customize the appearance of the
+> +	  cursor; this is done by changing the attributes (the color) of the
+> +	  character under the cursor.
+> +
+> +	  See <file:Documentation/VGA-softcursor.txt> for more information.
+> +
+> +config CUR_DEFAULT_SW_ATTR_XOR
+> +	depends on HW_CONSOLE
+> +	prompt "Software cursor changed attribute bits" if CUR_DEFAULT_SW
+> +	int
+> +	range 0 255
+> +	default 0
+> +	help
+> +	  Enter the character attribute bits that are changed by the
+> +	  software cursor. This is equivalent to the second parameter
+> +	  of the <ESC>[?1;2;3c escape sequence; for more information,
+> +	  see <file:Documentation/VGA-softcursor.txt>.
+> +
+> +config CUR_DEFAULT_SW_ATTR_SET
+> +	depends on HW_CONSOLE
+> +	prompt "Software cursor set attribute bits" if CUR_DEFAULT_SW
+> +	int
+> +	range 0 255
+> +	default 0
+> +	help
+> +	  Enter the character attribute bits that are set by the
+> +	  software cursor. This is equivalent to the third parameter
+> +	  of the <ESC>[?1;2;3c escape sequence; for more information,
+> +	  see <file:Documentation/VGA-softcursor.txt>.
+> +
+> +config CUR_DEFAULT_SW_CHANGE_BKGND
+> +	bool "Software cursor always changes background"
+> +	depends on CUR_DEFAULT_SW
+> +	default y
+> +	help
+> +	  If you say Y here, the software cursor will ensure that the
+> +	  background color of the character under the cursor is changed,
+> +	  even if the cursor color is the same as the original character's
+> +	  color.
+> +
+> +config CUR_DEFAULT_SW_BKGND_DIFFERENT
+> +	bool "Software cursor makes foreground color different from background"
+> +	depends on CUR_DEFAULT_SW
+> +	default y
+> +	help
+> +	  If you say Y here, the software cursor will ensure that the
+> +	  foreground color of the character under the cursor is different
+> +	  from the background color.
+> +
+> +config CUR_DEFAULT_SW_FLAGS
+> +	depends on HW_CONSOLE
+> +	int
+> +	default 0 if !CUR_DEFAULT_SW
+> +	# 16 + (32 if CHANGE_BKGND) + (64 if BKGND_DIFFERENT):
+> +	default 16 if !CUR_DEFAULT_SW_CHANGE_BKGND && !CUR_DEFAULT_SW_BKGND_DIFFERENT
+> +	default 48 if CUR_DEFAULT_SW_CHANGE_BKGND && !CUR_DEFAULT_SW_BKGND_DIFFERENT
+> +	default 80 if !CUR_DEFAULT_SW_CHANGE_BKGND && CUR_DEFAULT_SW_BKGND_DIFFERENT
+> +	default 112 if CUR_DEFAULT_SW_CHANGE_BKGND && CUR_DEFAULT_SW_BKGND_DIFFERENT
+> +
+>  config DEVKMEM
+>  	bool "/dev/kmem virtual device support"
+>  	default y
