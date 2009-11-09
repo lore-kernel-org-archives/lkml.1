@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbZKISxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZKISyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752515AbZKISxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZKISxW
+	id S1752677AbZKISyb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 13:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbZKISya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:53:22 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:45802 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751067AbZKISxV (ORCPT
+	Mon, 9 Nov 2009 13:54:30 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58559 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbZKISya (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:53:21 -0500
-Date: Mon, 9 Nov 2009 13:52:59 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Huang Ying <ying.huang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [PATCH 1/2] x86, crypto, Generate .byte code for some new
-	instructions via gas macro
-Message-ID: <20091109185259.GA9588@gondor.apana.org.au>
-References: <1257403455.22519.249.camel@yhuang-dev.sh.intel.com> <20091105142336.GB1910@gondor.apana.org.au> <4AF30447.2030705@zytor.com> <20091108105619.GF11372@elte.hu>
+	Mon, 9 Nov 2009 13:54:30 -0500
+Date: Mon, 9 Nov 2009 19:54:34 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "Ma, Ling" <ling.ma@intel.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+	fast string.
+Message-ID: <20091109185434.GH26740@basil.fritz.box>
+References: <1257500482-16182-1-git-send-email-ling.ma@intel.com> <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com> <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com> <4AF7C66C.6000009@zytor.com> <87ws2059s9.fsf@basil.nowhere.org> <4AF84640.7010705@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091108105619.GF11372@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4AF84640.7010705@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 11:56:19AM +0100, Ingo Molnar wrote:
->
-> > I'm not Ingo, but:
-> > 
-> > Acked-by: H. Peter Anvin <hpa@zytor.com>
-> 
-> Fine to me too and for future variations thereof.
+> Ling's numbers didn't seem to show a significant slowdown on Core 2 (it
+> was something like 0.95x baseline in the worst case, and most of the
+> cases were positive) so Core 2 doesn't seem to have a problem.
 
-Thanks guys I'll put this into cryptodev now.
+I ran quite a lot of micro benchmarks with various alignments and sizes
+the 'q' variant was not always a win. I haven't checked that particular
+version though.
+
+There's also K8 of course.
+
+-Andi
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+ak@linux.intel.com -- Speaking for myself only.
