@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbZKIN23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbZKIN3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755886AbZKIN23 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 08:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbZKIN23
+	id S1755893AbZKIN3O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 08:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbZKIN3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 08:28:29 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:46255 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755805AbZKIN22 (ORCPT
+	Mon, 9 Nov 2009 08:29:14 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:42334 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755582AbZKIN3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 08:28:28 -0500
-Date: Mon, 9 Nov 2009 14:28:30 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
-Message-ID: <20091109132830.GF26740@basil.fritz.box>
-References: <m1pr7siqjz.fsf@fess.ebiederm.org> <m1hbt4ipni.fsf@fess.ebiederm.org> <20091108164855.595ec70d@infradead.org> <m1tyx49y44.fsf@fess.ebiederm.org> <20091108205725.28778016@infradead.org> <m1hbt45kcp.fsf@fess.ebiederm.org> <87ocnc598i.fsf@basil.nowhere.org> <m1my2vyla5.fsf@fess.ebiederm.org> <20091109120445.GC26740@basil.fritz.box> <m1zl6vvpiv.fsf@fess.ebiederm.org>
+	Mon, 9 Nov 2009 08:29:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=hHtGWbGwCRhN579QCMi/Id7FMgUsbMmVVy7/h+K9IE6H7QuGzAc2P9udHnjcV2sQdb
+         QxfeCt6xfAWIObxqenU7j4qtIx5tnVxs2JLTHefoQX5X0CBUz3yVb12Pw+sv0rF1eNPm
+         t0U3oc8RkagGkfG1Srn7cRZa4ni8c/p7Y6Ek8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1zl6vvpiv.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20091108143059.029abf8b@infradead.org>
+References: <20090915054259.5282e5ba@infradead.org>
+	 <4e5e476b0911040139h1f471627la4262a5fa66abab0@mail.gmail.com>
+	 <20091108124035.23d53197@infradead.org>
+	 <4e5e476b0911081359x32d7a6c4x61ee3af92dc0c8a1@mail.gmail.com>
+	 <20091108143059.029abf8b@infradead.org>
+Date: Mon, 9 Nov 2009 14:29:17 +0100
+Message-ID: <4e5e476b0911090529g6ba93a9o91cfc1b15d7497d1@mail.gmail.com>
+Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO performance
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
+       jens.axboe@oracle.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2009 at 04:41:44AM -0800, Eric W. Biederman wrote:
-> >> >> The glibc pthread code that uses sysctl has no problems if sys_sysctl
-> >> >> is gone.  It both falls back to reading /proc/sys and it just controls
-> >> >> an optimization and the code works with either result.  Been there,
-> >> >> done that.
-> >> >
-> >> > /proc/sys is much slower than sysctl though. So you made program startup
-> >> > slower.
-> >> 
-> >> Not much slower, but slower. I just measured it in a case that favors
-> >> sysctl and the ration is about 5:2.  Or sysctl is about 2.5x faster.
-> >> About 49usec for open/read/close on proc and 19usec for sysctl.
-> >> In my emulation it is a bit slower than that.
-> >
-> > That's not good.
-> 
-> Why?
+On Sun, Nov 8, 2009 at 11:30 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Sun, 8 Nov 2009 22:59:43 +0100
+> I think we all agree that long term polling is bad ;-)
+> (even though we use rep nop in the polling loop which is also a HT
+> yield).
+>
+> There's just the very short sleeps (where short is "single digit usecs")
+> where the rules are slightly different.
+>
+>> > this check is supposed to catch the known timer cases; those
+>> > are rather accurate in prediction
+>>
+>> Unfortunately, I have seen polling residency times > 1ms, so it must
+>> not be so accurate.
+>
+> well the question is... is this a measurement error or an error in
+> when polling is chosen.
+> We obviously need to fix it whatever it is, but... first need to chase
+> down really which it is.
 
-Because it slows down a very common path.
+Any suggestion on how to check?
+Clocksource is hpet, and I have CONFIG_SCHED_HRTICK=y, so the
+granularity should not be a problem.
 
-> >
-> > a) all
-> > b) common ones used by glibc and perhaps a few others only
-> > c) none
-> >
-> > I suspect most users would use (b), in fact (c) might be redundant
-> > if (b) is cheap enough (which it should be)
-> 
-> Next year I expect b == c.
-
-Only if you ignore ABI compatibility.
-
-> 
-> If you think we need something better additional patches to sysctl_binary.c
-> are welcome.  Just add your custom fast path before the through the
-> VFS.
-
-I think sysctl_binary should be just stripped down for common sysctls
-(at least with a CONFIG)
-
-> > Hmm? There's plenty of glibc code that uses the binary sysctl.
-> 
-> Where?  I grepped glibc today.  The only use in a recent glibc is
-> in glibc-ports for the support of arm inb/outb.  The only other
-> use in older glibc was checking to see if we ran on an SMP kernel.
-
-That older glibc is widely deployed. And it won't go away next year.
-
-> >> Ultimately what drives me most is that people are still accidentally
-> >> adding binary sysctls, which no one uses or tests.  For a recent
-> >> example see:
-> >
-> > Yes I agree new binary sysctls should just be deprecated right now.
-> 
-> Good.  The only way to keep new ones from showing up is to that I know
-> of is to move everything into an emulation layer.  I have done the heavy
-> lifting there and everything is emulated using the exact same code.
-
-I agree with that.
-
-I just think you should have two flavours of emulation layer:
-full and "common sysctls". This can be probably done with the same
-code and some strategic ifdefs.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Corrado
