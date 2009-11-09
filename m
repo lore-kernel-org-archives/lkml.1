@@ -1,307 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZKIHX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbZKIHZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232AbZKIHX6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 02:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZKIHX6
+	id S1754409AbZKIHZR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 02:25:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbZKIHZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 02:23:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41110 "EHLO mx1.redhat.com"
+	Mon, 9 Nov 2009 02:25:16 -0500
+Received: from mga09.intel.com ([134.134.136.24]:58675 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752860AbZKIHX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 02:23:56 -0500
-Date: Mon, 9 Nov 2009 09:20:50 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, s.hetze@linux-ag.com,
-       Daniel Walker <dwalker@fifo99.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCHv8 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091109072050.GA30494@redhat.com>
-References: <cover.1257349249.git.mst@redhat.com> <200911061529.17500.rusty@rustcorp.com.au> <20091108113516.GA19016@redhat.com> <200911091647.29655.rusty@rustcorp.com.au>
+	id S1754136AbZKIHZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 02:25:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,706,1249282800"; 
+   d="scan'208";a="567754381"
+From: "Ma, Ling" <ling.ma@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 9 Nov 2009 15:24:03 +0800
+Subject: RE: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast string.
+Thread-Topic: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast string.
+Thread-Index: AcpfFwWFVW21tSn5RPCLKjSQpfYIngB8abOw
+Message-ID: <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
+References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
+ <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com>
+In-Reply-To: <4AF4784C.5090800@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911091647.29655.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nA97PU16000505
 
-On Mon, Nov 09, 2009 at 04:47:29PM +1030, Rusty Russell wrote:
-> On Sun, 8 Nov 2009 10:05:16 pm Michael S. Tsirkin wrote:
-> > On Fri, Nov 06, 2009 at 03:29:17PM +1030, Rusty Russell wrote:
-> > > > +/* Caller must have TX VQ lock */
-> > > > +static void tx_poll_stop(struct vhost_net *net)
-> > > > +{
-> > > > +	if (likely(net->tx_poll_state != VHOST_NET_POLL_STARTED))
-> > > > +		return;
-> > > 
-> > > likely?  Really?
-> > 
-> > Hmm ... yes. tx poll stop is called on each packet (as long as we do not
-> > fill up 1/2 backend queue), the first call will stop polling
-> > the rest checks state and does nothing.
-> > 
-> > This is because we normally do not care when the message has left the
-> > queue in backend device: we tell backend to send it and forget. We only
-> > start polling when backend tx queue fills up.
-> 
-> OK, good.
-> 
-> > > > +static void vhost_net_set_features(struct vhost_net *n, u64 features)
-> > > > +{
-> > > > +	size_t hdr_size = features & (1 << VHOST_NET_F_VIRTIO_NET_HDR) ?
-> > > > +		sizeof(struct virtio_net_hdr) : 0;
-> > > > +	int i;
-> > > > +	mutex_lock(&n->dev.mutex);
-> > > > +	n->dev.acked_features = features;
-> > > 
-> > > Why is this called "acked_features"?  Not just "features"?  I expected
-> > > to see code which exposed these back to userspace, and didn't.
-> > 
-> > Not sure how do you mean. Userspace sets them, why
-> > does it want to get them exposed back?
-> 
-> There's something about the 'acked' which rubs me the wrong way.
-> "enabled_features" is perhaps a better term than "acked_features"; "acked"
-> seems more a user point-of-view, "enabled" seems more driver POV?
-> 
-> set_features matches your ioctl names, but it sounds like a fn name :(
+Hi All
 
-Hmm. Are you happy with the ioctl name? If yes I think being consistent
-with that is important.
+Today we run our benchmark on Core2 and Sandy Bridge:
 
-> It's marginal.  And 'features' is shorter than both.
+1. Retrieve result on Core2
+Speedup on Core2
+   Len        Alignement             Speedup
+  1024,       0/ 0:                 0.95x 
+  2048,       0/ 0:                 1.03x 
+  3072,       0/ 0:                 1.02x 
+  4096,       0/ 0:                 1.09x 
+  5120,       0/ 0:                 1.13x 
+  6144,       0/ 0:                 1.13x 
+  7168,       0/ 0:                 1.14x 
+  8192,       0/ 0:                 1.13x 
+  9216,       0/ 0:                 1.14x 
+  10240,      0/ 0:                 0.99x 
+  11264,      0/ 0:                 1.14x 
+  12288,      0/ 0:                 1.14x 
+  13312,      0/ 0:                 1.10x 
+  14336,      0/ 0:                 1.10x 
+  15360,      0/ 0:                 1.13x
+Application run through perf
+For (i= 1024; i < 1024 * 16; i = i + 64)
+	do_memcpy(0, 0, i);
+Run application by 'perf stat --repeat 10 ./static_orig/new'
+Before the patch:
+Performance counter stats for './static_orig' (10 runs):
 
-I started with this but I was always getting confused whether this
-includes all features or just acked features.  I'll go with
-enabled_features.
+    3323.041832  task-clock-msecs         #      0.998 CPUs  ( +-   0.016% )
+             22  context-switches         #      0.000 M/sec ( +-  31.913% )
+              0  CPU-migrations           #      0.000 M/sec ( +-     nan% )
+           4428  page-faults              #      0.001 M/sec ( +-   0.003% )
+     9921549804  cycles                   #   2985.683 M/sec ( +-   0.016% )
+    10863809359  instructions             #      1.095 IPC   ( +-   0.000% )
+      972283451  cache-references         #    292.588 M/sec ( +-   0.018% )
+          17703  cache-misses             #      0.005 M/sec ( +-   4.304% )
 
-> > > > +	switch (ioctl) {
-> > > > +	case VHOST_SET_VRING_NUM:
-> > > 
-> > > I haven't looked at your userspace implementation, but does a generic
-> > > VHOST_SET_VRING_STATE & VHOST_GET_VRING_STATE with a struct make more
-> > > sense?  It'd be simpler here,
-> > 
-> > Not by much though, right?
-> > 
-> > > but not sure if it'd be simpler to use?
-> > 
-> > The problem is with VHOST_SET_VRING_BASE as well. I want it to be
-> > separate because I want to make it possible to relocate e.g. used ring
-> > to another address while ring is running. This would be a good debugging
-> > tool (you look at kernel's used ring, check descriptor, then update
-> > guest's used ring) and also possibly an extra way to do migration.  And
-> > it's nicer to have vring size separate as well, because it is
-> > initialized by host and never changed, right?
-> 
-> Actually, this looks wrong to me:
-> 
-> +	case VHOST_SET_VRING_BASE:
-> ...
-> +		vq->avail_idx = vq->last_avail_idx = s.num;
-> 
-> The last_avail_idx is part of the state of the driver.  It needs to be saved
-> and restored over susp/resume.
+    3.330714469  seconds time elapsed   ( +-   0.021% )
+After the patch:
+Performance counter stats for './static_new' (10 runs):
+    3392.902871  task-clock-msecs         #      0.998 CPUs ( +-   0.226% )
+             21  context-switches         #      0.000 M/sec ( +-  30.982% )
+              0  CPU-migrations           #      0.000 M/sec ( +-     nan% )
+           4428  page-faults              #      0.001 M/sec ( +-   0.003% )
+    10130188030  cycles                   #   2985.699 M/sec ( +-   0.227% )
+      391981414  instructions             #      0.039 IPC   ( +-   0.013% )
+      874161826  cache-references         #    257.644 M/sec ( +-   3.034% )
+          17628  cache-misses             #      0.005 M/sec ( +-   4.577% )
 
-Exactly. That's what VHOST_GET/SET_VRING_BASE does.  avail_idx is just a
-cached value for notify on empty, so what this does is clear the value.
-What exactly do you refer to when you say "this looks wrong"?
-This could trigger an extra notification if I ever called
-trigger_irq without get first. As I don't, it in fact has no effect.
+    3.400681174  seconds time elapsed   ( +-   0.219% )
 
->  The only reason it's not in the ring itself
-> is because I figured the other side doesn't need to see it (which is true, but
-> missed debugging opportunities as well as man-in-the-middle issues like this
-> one).  I had a patch which put this field at the end of the ring, I might
-> resurrect it to avoid this problem.  This is backwards compatible with all
-> implementations.  See patch at end.
+2. Retrieve result on Sandy Bridge
+  Speedup on Sandy Bridge
+  Len        Alignement            Speedup
+  1024,       0/ 0:                1.08x 
+  2048,       0/ 0:                1.42x 
+  3072,       0/ 0:                1.51x 
+  4096,       0/ 0:                1.63x 
+  5120,       0/ 0:                1.67x 
+  6144,       0/ 0:                1.72x 
+  7168,       0/ 0:                1.75x 
+  8192,       0/ 0:                1.77x 
+  9216,       0/ 0:                1.80x 
+  10240,      0/ 0:                1.80x 
+  11264,      0/ 0:                1.82x 
+  12288,      0/ 0:                1.85x 
+  13312,      0/ 0:                1.85x 
+  14336,      0/ 0:                1.88x 
+  15360,      0/ 0:                1.88x 
+                                  
+Application run through perf
+For (i= 1024; i < 1024 * 16; i = i + 64)
+	do_memcpy(0, 0, i);
+Run application by 'perf stat --repeat 10 ./static_orig/new'
+Before the patch:
+Performance counter stats for './static_orig' (10 runs):
 
-Yes, I remember that patch. There seems to be little point though, at
-this stage.
+    3787.441240  task-clock-msecs         #      0.995 CPUs  ( +-   0.140% )
+              8  context-switches         #      0.000 M/sec ( +-  22.602% )
+              0  CPU-migrations           #      0.000 M/sec ( +-     nan% )
+           4428  page-faults              #      0.001 M/sec ( +-   0.003% )
+     6053487926  cycles                   #   1598.305 M/sec ( +-   0.140% )
+    10861025194  instructions             #      1.794 IPC   ( +-   0.001% )
+        2823963  cache-references         #      0.746 M/sec ( +-  69.345% )
+         266000  cache-misses             #      0.070 M/sec ( +-   0.980% )
 
-> 
-> I would drop avail_idx altogether: get_user is basically free, and
-> simplifies a lot.  As most state is in the ring, all you need is an
-> ioctl to save/restore the last_avail_idx.
+    3.805400837  seconds time elapsed   ( +-   0.139% )
+After the patch:
+Performance counter stats for './static_new' (10 runs):
 
-avail_idx is there for notify on empty: I had this thought that it's
-better to leave the avail cache line alone when we are triggering
-interrupt to avoid bouncing it around if guest is updating it meanwhile
-on another CPU, and I think my testing showed that it helped
-performance, but could be a mistake.  You don't believe this can help?
+    2879.424879  task-clock-msecs         #      0.995 CPUs  ( +-   0.076% )
+             10  context-switches         #      0.000 M/sec ( +-  24.761% )
+              0  CPU-migrations           #      0.000 M/sec ( +-     nan% )
+           4428  page-faults              #      0.002 M/sec ( +-   0.003% )
+     4602155158  cycles                   #   1598.290 M/sec ( +-   0.076% )
+      386146993  instructions             #      0.084 IPC   ( +-   0.005% )
+         520008  cache-references         #      0.181 M/sec ( +-   8.077% )
+         267345  cache-misses             #      0.093 M/sec ( +-   0.792% )
 
-> > We could merge DESC, AVAIL, USED, and it will reduce the amount of code
-> > in userspace. With both base, size and fds separate, it seemed a bit
-> > more symmetrical to have desc/avail/used separate as well.
-> > What's your opinion?
-> 
-> Well, DESC, AVAIL, and USED could easily be turned into SET/GET_LAYOUT.
+    2.893813235  seconds time elapsed   ( +-   0.085% )
 
-OK, I'll do this.
+Thanks
+Ling
 
-> > > For future reference, this is *exactly* the kind of thing which would have
-> > > been nice as a followup patch.  Easy to separate, easy to review, not critical
-> > > to the core.
-> > 
-> > Yes. It's not too late to split it out though: should I do it yet?
-> 
-> Only if you're feeling enthused.  It's lightly reviewed now.
-
-Not really :) I'll keep this in mind for the future.
-Thanks!
-
-> Cheers,
-> Rusty.
-> 
-> virtio: put last_used and last_avail index into ring itself.
-> 
-> Generally, the other end of the virtio ring doesn't need to see where
-> you're up to in consuming the ring.  However, to completely understand
-> what's going on from the outside, this information must be exposed.
-> For example, if you want to save and restore a virtio_ring, but you're
-> not the consumer because the kernel is using it directly.
-> 
-> Fortunately, we have room to expand: the ring is always a whole number
-> of pages and there's hundreds of bytes of padding after the avail ring
-> and the used ring, whatever the number of descriptors (which must be a
-> power of 2).
-> 
-> We add a feature bit so the guest can tell the host that it's writing
-> out the current value there, if it wants to use that.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  drivers/virtio/virtio_ring.c |   23 +++++++++++++++--------
->  include/linux/virtio_ring.h  |   12 +++++++++++-
->  2 files changed, 26 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-> --- a/drivers/virtio/virtio_ring.c
-> +++ b/drivers/virtio/virtio_ring.c
-> @@ -71,9 +71,6 @@ struct vring_virtqueue
->  	/* Number we've added since last sync. */
->  	unsigned int num_added;
->  
-> -	/* Last used index we've seen. */
-> -	u16 last_used_idx;
-> -
->  	/* How to notify other side. FIXME: commonalize hcalls! */
->  	void (*notify)(struct virtqueue *vq);
->  
-> @@ -278,12 +275,13 @@ static void detach_buf(struct vring_virt
->  
->  static inline bool more_used(const struct vring_virtqueue *vq)
->  {
-> -	return vq->last_used_idx != vq->vring.used->idx;
-> +	return vring_last_used(&vq->vring) != vq->vring.used->idx;
->  }
->  
->  static void *vring_get_buf(struct virtqueue *_vq, unsigned int *len)
->  {
->  	struct vring_virtqueue *vq = to_vvq(_vq);
-> +	struct vring_used_elem *u;
->  	void *ret;
->  	unsigned int i;
->  
-> @@ -300,8 +298,11 @@ static void *vring_get_buf(struct virtqu
->  		return NULL;
->  	}
->  
-> -	i = vq->vring.used->ring[vq->last_used_idx%vq->vring.num].id;
-> -	*len = vq->vring.used->ring[vq->last_used_idx%vq->vring.num].len;
-> +	u = &vq->vring.used->ring[vring_last_used(&vq->vring) % vq->vring.num];
-> +	i = u->id;
-> +	*len = u->len;
-> +	/* Make sure we don't reload i after doing checks. */
-> +	rmb();
->  
->  	if (unlikely(i >= vq->vring.num)) {
->  		BAD_RING(vq, "id %u out of range\n", i);
-> @@ -315,7 +316,8 @@ static void *vring_get_buf(struct virtqu
->  	/* detach_buf clears data, so grab it now. */
->  	ret = vq->data[i];
->  	detach_buf(vq, i);
-> -	vq->last_used_idx++;
-> +	vring_last_used(&vq->vring)++;
-> +
->  	END_USE(vq);
->  	return ret;
->  }
-> @@ -402,7 +404,6 @@ struct virtqueue *vring_new_virtqueue(un
->  	vq->vq.name = name;
->  	vq->notify = notify;
->  	vq->broken = false;
-> -	vq->last_used_idx = 0;
->  	vq->num_added = 0;
->  	list_add_tail(&vq->vq.list, &vdev->vqs);
->  #ifdef DEBUG
-> @@ -413,6 +414,10 @@ struct virtqueue *vring_new_virtqueue(un
->  
->  	vq->indirect = virtio_has_feature(vdev, VIRTIO_RING_F_INDIRECT_DESC);
->  
-> +	/* We publish indices whether they offer it or not: if not, it's junk
-> +	 * space anyway.  But calling this acknowledges the feature. */
-> +	virtio_has_feature(vdev, VIRTIO_RING_F_PUBLISH_INDICES);
-> +
->  	/* No callback?  Tell other side not to bother us. */
->  	if (!callback)
->  		vq->vring.avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
-> @@ -443,6 +448,8 @@ void vring_transport_features(struct vir
->  		switch (i) {
->  		case VIRTIO_RING_F_INDIRECT_DESC:
->  			break;
-> +		case VIRTIO_RING_F_PUBLISH_INDICES:
-> +			break;
->  		default:
->  			/* We don't understand this bit. */
->  			clear_bit(i, vdev->features);
-> diff --git a/include/linux/virtio_ring.h b/include/linux/virtio_ring.h
-> --- a/include/linux/virtio_ring.h
-> +++ b/include/linux/virtio_ring.h
-> @@ -29,6 +29,9 @@
->  /* We support indirect buffer descriptors */
->  #define VIRTIO_RING_F_INDIRECT_DESC	28
->  
-> +/* We publish our last-seen used index at the end of the avail ring. */
-> +#define VIRTIO_RING_F_PUBLISH_INDICES	29
-> +
->  /* Virtio ring descriptors: 16 bytes.  These can chain together via "next". */
->  struct vring_desc
->  {
-> @@ -87,6 +90,7 @@ struct vring {
->   *	__u16 avail_flags;
->   *	__u16 avail_idx;
->   *	__u16 available[num];
-> + *	__u16 last_used_idx;
->   *
->   *	// Padding to the next align boundary.
->   *	char pad[];
-> @@ -95,6 +99,7 @@ struct vring {
->   *	__u16 used_flags;
->   *	__u16 used_idx;
->   *	struct vring_used_elem used[num];
-> + *	__u16 last_avail_idx;
->   * };
->   */
->  static inline void vring_init(struct vring *vr, unsigned int num, void *p,
-> @@ -111,9 +116,14 @@ static inline unsigned vring_size(unsign
->  {
->  	return ((sizeof(struct vring_desc) * num + sizeof(__u16) * (2 + num)
->  		 + align - 1) & ~(align - 1))
-> -		+ sizeof(__u16) * 2 + sizeof(struct vring_used_elem) * num;
-> +		+ sizeof(__u16) * 2 + sizeof(struct vring_used_elem) * num + 2;
->  }
->  
-> +/* We publish the last-seen used index at the end of the available ring, and
-> + * vice-versa.  These are at the end for backwards compatibility. */
-> +#define vring_last_used(vr) ((vr)->avail->ring[(vr)->num])
-> +#define vring_last_avail(vr) (*(__u16 *)&(vr)->used->ring[(vr)->num])
-> +
->  #ifdef __KERNEL__
->  #include <linux/irqreturn.h>
->  struct virtio_device;
+>-----Original Message-----
+>From: H. Peter Anvin [mailto:hpa@zytor.com]
+>Sent: 2009ƒÍ11‘¬7»’ 3:26
+>To: Ma, Ling
+>Cc: mingo@elte.hu; tglx@linutronix.de; linux-kernel@vger.kernel.org
+>Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by fast
+>string.
+>
+>On 11/06/2009 09:07 AM, H. Peter Anvin wrote:
+>>
+>> Where did the 1024 byte threshold come from?  It seems a bit high to me,
+>> and is at the very best a CPU-specific tuning factor.
+>>
+>> Andi is of course correct that older CPUs might suffer (sadly enough),
+>> which is why we'd at the very least need some idea of what the
+>> performance impact on those older CPUs would look like -- at that point
+>> we can make a decision to just unconditionally do the rep movs or
+>> consider some system where we point at different implementations for
+>> different processors -- memcpy is probably one of the very few
+>> operations for which something like that would make sense.
+>>
+>
+>To be expicit: Ling, would you be willing to run some benchmarks across
+>processors to see how this performs on non-Nehalem CPUs?
+>
+>	-hpa
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
