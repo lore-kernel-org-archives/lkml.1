@@ -1,92 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZKIX3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZKIXc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbZKIX3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 18:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZKIX3i
+	id S1755333AbZKIXc4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 18:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZKIXcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 18:29:38 -0500
-Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:50688
-	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754054AbZKIX3h (ORCPT
+	Mon, 9 Nov 2009 18:32:55 -0500
+Received: from g6t0187.atlanta.hp.com ([15.193.32.64]:44234 "EHLO
+	g6t0187.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZKIXcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 18:29:37 -0500
-Date: Mon, 9 Nov 2009 21:29:25 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, device@lanana.org, rubini@vision.unipv.it,
-       gregkh@suse.de, cluster-devel@redhat.com
-Subject: Re: [PATCH] misc: use a proper range for minor number dynamic
-	allocation
-Message-ID: <20091109232922.GF12217@vespa.holoscopio.com>
-References: <1256340497-19320-1-git-send-email-cascardo@holoscopio.com> <20091109132836.6cf7f559.akpm@linux-foundation.org> <20091109220257.GD12217@vespa.holoscopio.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="JBi0ZxuS5uaEhkUZ"
-Content-Disposition: inline
-In-Reply-To: <20091109220257.GD12217@vespa.holoscopio.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 9 Nov 2009 18:32:55 -0500
+Subject: Re: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent
+ on	passthrough
+From: Alex Williamson <alex.williamson@hp.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Chris Wright <chrisw@sous-sol.org>,
+       "Miller, Mike (OS Dev)" <mike.miller@hp.com>
+In-Reply-To: <1257807747.25961.852.camel@macbook.infradead.org>
+References: <20091104225359.2720.91502.stgit@nehalem.aw>
+	 <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
+	 <1257807747.25961.852.camel@macbook.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: HP OSLO R&D
+Date: Mon, 09 Nov 2009 16:32:04 -0700
+Message-ID: <1257809524.24450.64.camel@8530w.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-11-09 at 23:02 +0000, David Woodhouse wrote:
+> On Fri, 2009-11-06 at 11:41 +0900, FUJITA Tomonori wrote:
+> > This is fine for 2.6.32 but we'll cleanly fix this by using
+> > swiotlb_dma_ops later, right?
+> 
+> Well, the idea was that with 'iommu=pt' we'd have passthrough mode for
+> _decent_ devices, but the crappy devices without 64-bit DMA would just
+> have the IOMMU enabled instead.
+> 
+> We can see this as a simple classification bug -- we should be checking
+> pdev->coherent_dma_mask as well as pdev->dma_mask:
+> 
+> --- a/drivers/pci/intel-iommu.c
+> +++ b/drivers/pci/intel-iommu.c
+> @@ -2196,7 +2196,8 @@ static int iommu_should_identity_map(struct pci_dev *pdev, int startup)
+>  	 * take them out of the 1:1 domain later.
+>  	 */
+>  	if (!startup)
+> -		return pdev->dma_mask > DMA_BIT_MASK(32);
+> +		return (pdev->dma_mask & pdev->coherent_dma_mask) < 
+> +			dma_get_required_mask();
+>  
+>  	return 1;
+>  }
+> 
+> That fixes the case of a 32-bit coherent_dma_mask as it was intended to
+> be fixed.
+> 
+> Unfortunately, Alex's hardware is more broken than that. It also likes
+> to do stray reads from unmapped addresses -- addresses which used to be
+> mapped at some time in the past. So he really _does_ want the IOMMU
+> disabled, or in passthrough mode.
+> 
+> But I think that's a special case and needs to be handled with a quirk,
+> while the above patch actually addresses the problem we claimed we were
+> trying to address.
 
---JBi0ZxuS5uaEhkUZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm not sure what this quirk looks like, do you have something in mind?
 
-On Mon, Nov 09, 2009 at 08:02:57PM -0200, Thadeu Lima de Souza Cascardo wro=
-te:
-> >=20
-> > Is that a bugfix for the existing code?
-> >=20
-> > If so, please split that out into a separate patch which we can review
-> > and apply promptly while we consider the broader problem which you've
-> > identified.
->=20
-> We could consider buggy the caller which asks for the same device name
-> more than once, without unregistering the first device. But better safe
-> than sorry: we should protect the correct drivers from the buggy ones
-> and avoid a depletion of the minor numbers. And, in case the driver core
-> returns another error for another reason (from device_create), we do the
-> right thing.
->=20
-> I will send it right now.
->=20
-> Regards,
-> Cascardo.
+> Handling Alex's broken hardware probably wants to be done with
+> 'iommu=off' for now, and then when Chris's swiotlb fallback patches are
+> done we can perhaps do something more cunning.
 
-I've just tried to create a single and separate patch, but that would
-let lots of related bugs around.
+iommu=off means a feature regression from 2.6.31 and kills support for
+being able to use VT-d for virtualization for a large percentage of
+servers from a major vendor.  I don't think Chris' patches actually
+address this since we don't actually know what the DMA mask is for a
+device until the driver claims it.  How long do we wait before we drop
+the swiotlb?  I think his patch is really intended for the "oops, the
+DMAR is broken, the hardware is bad, I can't init the hardware IOMMU,
+whew we can fallback to swiotlb".
 
-First of all, the current code does not use the bitmap idiom. Should I
-use it on my fix and let all the other bitmap manipulations as is, or
-should I use the current and less readable style?
+> I'm slightly reluctant to put the half-arsed 'try to allocate in the
+> right region for broken devices but without full swiotlb support' option
+> into 2.6.32.
 
-Second, this single fix would match the same test currently in
-misc_deregister, which is broken, since it does not test for the 0
-minor.
+Since the device also makes use of RMRRs, once we have it in the
+si_domain, we're stuck.  I think that means we needs swiotlb anytime
+we're in passthrough mode.  That's what 2.6.31, can we get it back for
+2.6.32?  Thanks,
 
-Thus, I am sending a patch which fixes those two issues using the
-current style, a fix for the style itself, and a change from the current
-range to something that could have its range easily fixed. However,
-regarding that last change, it will still use bitmaps, which may not be
-appropriate for large ranges.
+Alex
 
-Perhaps, using a idr instead of the list and bitmap couple, may be
-sensible. What do you think about it?
 
---JBi0ZxuS5uaEhkUZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEUEARECAAYFAkr4pdIACgkQyTpryRcqtS3hggCfRuSs+xQPTmsoKY5tn8H9Ky1v
-3N8AmLV+BeJmvGzQwxRouWGZuXei744=
-=n5F/
------END PGP SIGNATURE-----
-
---JBi0ZxuS5uaEhkUZ--
