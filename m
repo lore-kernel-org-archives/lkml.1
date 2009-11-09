@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZKIN3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbZKINbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbZKIN3n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 08:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZKIN3m
+	id S1755912AbZKINbh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 08:31:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbZKINbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 08:29:42 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:50101 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755861AbZKIN3l (ORCPT
+	Mon, 9 Nov 2009 08:31:36 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:35864 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755864AbZKINbf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 08:29:41 -0500
-Message-ID: <4AF8193A.70505@nokia.com>
-Date: Mon, 09 Nov 2009 15:29:30 +0200
-From: Aaro Koskinen <aaro.koskinen@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 9 Nov 2009 08:31:35 -0500
+Date: Mon, 9 Nov 2009 13:31:36 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Kuninori Morimoto <morimoto.kuninori@renesas.com>
+Cc: alsa-devel@alsa-project.org, Magnus Damm <damm@opensource.se>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [alsa-devel] [PATCH 1/2 v2] ASoC: sh: fsi: Add runtime PM
+	support
+Message-ID: <20091109133136.GC1245@sirena.org.uk>
+References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com> <20091109105858.GB1245@sirena.org.uk>
 MIME-Version: 1.0
-To: ext Kalle Valo <kalle.valo@iki.fi>
-CC: "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>,
-       "tony@atomide.com" <tony@atomide.com>
-Subject: Re: [PATCH v2 2/2] omap: RX-51: enable tsc2005
-References: <1257340982-22814-1-git-send-email-aaro.koskinen@nokia.com>	<1257340982-22814-2-git-send-email-aaro.koskinen@nokia.com> <87d43ufih0.fsf@purkki.valot.fi>
-In-Reply-To: <87d43ufih0.fsf@purkki.valot.fi>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Nov 2009 13:29:35.0671 (UTC) FILETIME=[ADE46C70:01CA6140]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091109105858.GB1245@sirena.org.uk>
+X-Cookie: This bag is recyclable.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Nov 09, 2009 at 10:58:58AM +0000, Mark Brown wrote:
 
-ext Kalle Valo wrote:
-> Aaro Koskinen <aaro.koskinen@nokia.com> writes:
-> 
->> Enable tsc2005 touchscreen driver on the RX-51 board.
->>
->> Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
->> ---
->>
->> The patch is for 2.6.32-rc6.
-> 
-> [...]
-> 
->> +static struct spi_board_info rx51_peripherals_spi_board_info[] = {
->> +	[0] = {
->> +		.modalias		= "tsc2005",
->> +		.bus_num		= 1,
->> +		.chip_select		= 0,
->> +		.irq			= OMAP_GPIO_IRQ(RX51_TSC2005_IRQ_GPIO),
->> +		.max_speed_hz		= 6000000,
->> +		.controller_data	= &tsc2005_mcspi_config,
->> +		.platform_data		= &tsc2005_config,
->> +	},
->> +};
-> 
-> I sent a wl1251 patch which adds spi_board_info and conflicts with
-> this patch:
-> 
-> http://www.mail-archive.com/linux-omap@vger.kernel.org/msg17604.html
-> 
-> How do we handle this?
+Adding in an address for Magnus which hopefully won't bounce and also
+the linux-pm list which get_maintainers didn't find.
 
-I can resend/rebase this patch once the wl1251 patch is integrated.
+> On Mon, Nov 09, 2009 at 11:54:47AM +0900, Kuninori Morimoto wrote:
+> > This patch add support runtime PM.
+> > Driver callbacks for Runtime PM are empty because
+> > the device registers are always re-initialized after
+> > pm_runtime_get_sync(). The Runtime PM functions replaces the
+> > clock framework module stop bit handling in this driver.
+> 
+> > Signed-off-by: Kuninori Morimoto <morimoto.kuninori@renesas.com>
+> 
+> Hrm.  I'll have to see how this plays with ASoC core pm_runtime support
+> when that appears.  It should be OK as-is, I think.
+> 
+> > +	pm_suspend_ignore_children(&pdev->dev, true);
+> > +	pm_runtime_enable(&pdev->dev);
+> > +	pm_runtime_resume(&pdev->dev);
+> 
+> Why pm_suspend_ignore_all_children()?  I'd not expect the device to have
+> any children and if it did it doesn't seem like an entirely safe
+> assumption.
+> 
+> > +static int fsi_runtime_nop(struct device *dev)
+> > +{
+> > +	/* Runtime PM callback shared between ->runtime_suspend()
+> > +	 * and ->runtime_resume(). Simply returns success.
+> > +	 *
+> > +	 * This driver re-initializes all registers after
+> > +	 * pm_runtime_get_sync() anyway so there is no need
+> > +	 * to save and restore registers here.
+> > +	 */
+> > +	return 0;
+> > +}
+> 
+> This sets off alarm bells but it's perfectly reasonable, especially with
+> platforms able to put things into a low power state with no explicit
+> driver code now they can do power domain style things like SH.  I've
+> CCed in the PM folks since this seems like a perfectly reasonable use
+> case which ought to be handled more nicely.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-BTW, check the comment from Tommi Rantala - spi_board_info can be marked
-with __initdata.
-
-A.
+-- 
+"You grabbed my hand and we fell into it, like a daydream - or a fever."
