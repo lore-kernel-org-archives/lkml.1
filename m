@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbZKICOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZKICVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbZKICOk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 21:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZKICOk
+	id S1753502AbZKICVs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 21:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZKICVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 21:14:40 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:51327 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbZKICOj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 21:14:39 -0500
-MIME-Version: 1.0
-In-Reply-To: <20091108091009.GB20529@n2100.arm.linux.org.uk>
-References: <20091103105319.GA2492@elf.ucw.cz>
-	 <20091103105737.GE20341@fluff.org.uk>
-	 <20091108081314.GA16482@elf.ucw.cz>
-	 <20091108091009.GB20529@n2100.arm.linux.org.uk>
-Date: Sun, 8 Nov 2009 18:14:45 -0800
-Message-ID: <d6200be20911081814y286d58d2yf3d9eb7e6ddffa5b@mail.gmail.com>
-Subject: Re: dream: glue for mmc controller
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, Ben Dooks <ben-linux@fluff.org>,
-       Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 8 Nov 2009 21:21:47 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36862 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753165AbZKICVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 21:21:46 -0500
+Date: Mon, 9 Nov 2009 13:21:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: linux-next: net tree build failure
+Message-Id: <20091109132151.0e0ec7bc.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 8, 2009 at 1:10 AM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Sun, Nov 08, 2009 at 09:13:14AM +0100, Pavel Machek wrote:
->> > > +#include <asm/io.h>
->> > > +#include <asm/gpio.h>
->> > linux/gpio.h
->> > linux/io.h
->>
->> I got compile errors when trying to use linux/gpio.h:
->>
->> arch/arm/mach-msm/board-dream-gpio.c: In function
->> 'dream_gpio_configure':
->> arch/arm/mach-msm/board-dream-gpio.c:109: error: 'GPIOF_OUTPUT_LOW'
->> undeclared (first use in this function)
->
-> This means it's abusing the gpio header files - which are intended for
-> the generic GPIO support, but are being used for this platforms private
-> non-generic GPIO based stuff.
->
+Hi all,
 
-It also means that CONFIG_GENERIC_GPIO is not set, so linux/gpio.h
-stubbed out all the gpio functions.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
+
+net/appletalk/ddp.c: In function 'atalk_compat_ioctl':
+net/appletalk/ddp.c:1866: error: implicit declaration of function 'compat_ptr'
+
+Caused by commit 206602217747382488fcae68351673cc9103debc
+("appletalk:Â handle SIOCATALKDIFADDR compat ioctl").
+
+I applied this patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 9 Nov 2009 13:11:26 +1100
+Subject: [PATCH] net/appletalk: using compat_ptr needs inclusion of linux/compat.h
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ net/appletalk/ddp.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
+index b631cc7..73ca4d5 100644
+--- a/net/appletalk/ddp.c
++++ b/net/appletalk/ddp.c
+@@ -56,6 +56,7 @@
+ #include <linux/if_arp.h>
+ #include <linux/smp_lock.h>
+ #include <linux/termios.h>	/* For TIOCOUTQ/INQ */
++#include <linux/compat.h>
+ #include <net/datalink.h>
+ #include <net/psnap.h>
+ #include <net/sock.h>
+-- 
+1.6.5.2
+
 
 -- 
-Arve Hjønnevåg
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
