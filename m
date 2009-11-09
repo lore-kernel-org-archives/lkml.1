@@ -1,93 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbZKIHkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbZKIHoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752826AbZKIHkp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 02:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZKIHko
+	id S1753180AbZKIHoy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 02:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbZKIHoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 02:40:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45708 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbZKIHko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 02:40:44 -0500
-Date: Mon, 9 Nov 2009 18:40:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: rr tree build warnings
-Message-Id: <20091109184046.2a802372.sfr@canb.auug.org.au>
-In-Reply-To: <20091109183104.2bf7add6.sfr@canb.auug.org.au>
-References: <20091109183104.2bf7add6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__9_Nov_2009_18_40_46_+1100_BTVQl9ptSjXaTqLq"
+	Mon, 9 Nov 2009 02:44:54 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63429 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750941AbZKIHox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 02:44:53 -0500
+Message-ID: <4AF7C793.5040706@cn.fujitsu.com>
+Date: Mon, 09 Nov 2009 15:41:07 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 15/20] blkio: Take care of preemptions across groups
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-16-git-send-email-vgoyal@redhat.com> <4AF3D68E.3050203@cn.fujitsu.com> <20091106221019.GA2969@redhat.com>
+In-Reply-To: <20091106221019.GA2969@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__9_Nov_2009_18_40_46_+1100_BTVQl9ptSjXaTqLq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Vivek Goyal wrote:
+> On Fri, Nov 06, 2009 at 03:55:58PM +0800, Gui Jianfeng wrote:
+>> Vivek Goyal wrote:
+>>> o Additional preemption checks for groups where we travel up the hierarchy
+>>>   and see if one queue should preempt other or not.
+>>>
+>>> o Also prevents preemption across groups in some cases to provide isolation
+>>>   between groups.
+>>>
+>>> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+>>> ---
+>>>  block/cfq-iosched.c |   33 +++++++++++++++++++++++++++++++++
+>>>  1 files changed, 33 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>>> index 87b1799..98dbead 100644
+>>> --- a/block/cfq-iosched.c
+>>> +++ b/block/cfq-iosched.c
+>>> @@ -2636,6 +2636,36 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>>>  	}
+>>>  }
+>>>  
+>>> +static bool cfq_should_preempt_group(struct cfq_data *cfqd,
+>>> +		struct cfq_queue *cfqq, struct cfq_queue *new_cfqq)
+>>> +{
+>>> +	struct cfq_entity *cfqe = &cfqq->entity;
+>>> +	struct cfq_entity *new_cfqe = &new_cfqq->entity;
+>>> +
+>>> +	if (cfqq_to_cfqg(cfqq) != &cfqd->root_group)
+>>> +		cfqe = parent_entity(&cfqq->entity);
+>>> +
+>>> +	if (cfqq_to_cfqg(new_cfqq) != &cfqd->root_group)
+>>> +		new_cfqe = parent_entity(&new_cfqq->entity);
+>>> +
+>>> +	/*
+>>> +	 * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
+>>> +	 */
+>>> +
+>>> +	if (new_cfqe->ioprio_class == IOPRIO_CLASS_RT
+>>> +	    && cfqe->ioprio_class != IOPRIO_CLASS_RT)
+>>> +		return true;
+>>> +	/*
+>>> +	 * Allow an BE request to pre-empt an ongoing IDLE clas timeslice.
+>>> +	 */
+>>> +
+>>> +	if (new_cfqe->ioprio_class == IOPRIO_CLASS_BE
+>>> +	    && cfqe->ioprio_class == IOPRIO_CLASS_IDLE)
+>>> +		return true;
+>>> +
+>>> +	return false;
+>>> +}
+>>> +
+>>>  /*
+>>>   * Check if new_cfqq should preempt the currently active queue. Return 0 for
+>>>   * no or if we aren't sure, a 1 will cause a preempt.
+>>> @@ -2666,6 +2696,9 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+>>>  	if (rq_is_sync(rq) && !cfq_cfqq_sync(cfqq))
+>>>  		return true;
+>>>  
+>>> +	if (cfqq_to_cfqg(new_cfqq) != cfqq_to_cfqg(cfqq))
+>>> +		return cfq_should_preempt_group(cfqd, cfqq, new_cfqq);
+>>> +
+>> Vivek, why not put cfq_should_preempt_group() at the beginning of cfq_should_preempt()
+>> to prevent preemption across groups?
+> 
+> Hi Gui,
+> 
+> Currently the checks before the group check were not hurting much, that's
+> why.
+> 
+> The only contentious check will be if a sync IO in one group should
+> preempt the async IO in other group or not.
 
-Hi Rusty,
+  In my opinion, sync IO should not preempt async one in other group from the fairness point
+  of view.
 
-On Mon, 9 Nov 2009 18:31:04 +1100 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> Today's linux-next build (x86_64 allmodconfig) produced these warnings:
->=20
-> drivers/usb/storage/libusual.c:239: warning: passing argument 1 of '__che=
-ck_old_set_param' from incompatible pointer type
-> include/linux/moduleparam.h:165: note: expected 'int (*)(const char *, st=
-ruct kernel_param *)' but argument is of type 'int (*)(const char *, const =
-struct kernel_param *)'
-> drivers/usb/storage/libusual.c:239: warning: passing argument 1 of '__che=
-ck_old_set_param' from incompatible pointer type
-> include/linux/moduleparam.h:165: note: expected 'int (*)(const char *, st=
-ruct kernel_param *)' but argument is of type 'int (*)(const char *, const =
-struct kernel_param *)'
-> drivers/usb/storage/libusual.c:239: warning: passing argument 1 of '__che=
-ck_old_set_param' from incompatible pointer type
-> include/linux/moduleparam.h:165: note: expected 'int (*)(const char *, st=
-ruct kernel_param *)' but argument is of type 'int (*)(const char *, const =
-struct kernel_param *)'
-> drivers/usb/storage/libusual.c:239: warning: passing argument 1 of '__che=
-ck_old_set_param' from incompatible pointer type
-> include/linux/moduleparam.h:165: note: expected 'int (*)(const char *, st=
-ruct kernel_param *)' but argument is of type 'int (*)(const char *, const =
-struct kernel_param *)'
->=20
-> Introduced by commit 9f94999724555729819ea0143eab1d0529c029d1
-> ("param:param_ops").
+Thanks
+Gui
 
-I am also getting some section mismatch warnings like this:
 
-WARNING: drivers/mtd/ubi/ubi.o(.data+0x1c0): Section mismatch in reference =
-from the variable __ops_mtd to the function .init.text:ubi_mtd_param_parse()
-The variable __ops_mtd references
-the function __init ubi_mtd_param_parse()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console=
-,=20
-
-Which are probably also related to the above change.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__9_Nov_2009_18_40_46_+1100_BTVQl9ptSjXaTqLq
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkr3x34ACgkQjjKRsyhoI8yWngCfQtKEgW1tSmzJaO/nX9AwP3XT
-5hkAnj7PNoHvoL7ZHn+hF92wzJriLsDI
-=UywA
------END PGP SIGNATURE-----
-
---Signature=_Mon__9_Nov_2009_18_40_46_+1100_BTVQl9ptSjXaTqLq--
