@@ -1,48 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZKIP0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZKIP1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbZKIP0d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 10:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbZKIP0d
+	id S1756112AbZKIP1J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 10:27:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbZKIP1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 10:26:33 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50093 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755057AbZKIP0c (ORCPT
+	Mon, 9 Nov 2009 10:27:08 -0500
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:47568 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756034AbZKIP1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 10:26:32 -0500
-Subject: Re: Likley stupid question on "throttle_vm_writeout"
-From: Peter Zijlstra <peterz@infradead.org>
-To: Martin Knoblauch <spamtrap@knobisoft.de>
-Cc: linux-kernel@vger.kernel.org, Fengguang Wu <wfg@mail.ustc.edu.cn>
-In-Reply-To: <799070.68490.qm@web32608.mail.mud.yahoo.com>
-References: <799070.68490.qm@web32608.mail.mud.yahoo.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Nov 2009 16:26:33 +0100
-Message-ID: <1257780393.4108.343.camel@laptop>
+	Mon, 9 Nov 2009 10:27:07 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAM/D90pGGN1W/2dsb2JhbACBTtwpgjuCAwQ
+Date: Mon, 9 Nov 2009 10:27:11 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: ltt-dev@lists.casi.polymtl.ca
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: LTTng 0.166 for 2.6.31.5 : refactoring/cleanup - 32-bit fix
+Message-ID: <20091109152711.GA27475@Krystal>
+References: <20091103061753.GA5815@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091103061753.GA5815@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 10:24:32 up 83 days,  2:14,  2 users,  load average: 0.88, 0.61,
+	0.40
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-09 at 07:15 -0800, Martin Knoblauch wrote:
-> Hi, (please CC me on replies)
+Hi,
+
+A little word to tell about the updated LTTng 0.166, which fixes a trace
+session destruction type-size problem on 32-bit machines introduced in
+0.165. A simple printk() expecting a size_t rather than an unsigned long
+caused this.
+
+Mathieu
+
+
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> Hi,
 > 
->  I have a likely stupid question on the function "throttle_vm_writeout". Looking at the code I find:
+> I just finished testing the LTTng refactoring. It consists of:
 > 
->                 if (global_page_state(NR_UNSTABLE_NFS) +
->                         global_page_state(NR_WRITEBACK) <= dirty_thresh)
->                                 break;
->                 congestion_wait(WRITE, HZ/10);
+> - Change design to inheritance for channels and buffers.
+>   - Eliminate structure duplication for locking/allocation level of buffer and
+>     channel.
+>   - Remove now unnecessary krefs.
+> - Fix cpu hotplug for timers.
+> - Cleanups.
 > 
-> Shouldn't the NR_FILE_DIRTY pages be considered as well?
+> Impact:
+> - Cleaner code.
+> - Simpler structures for channel/buffers.
+> - Smaller d-cache footprint.
+> 
+> It also permits to change the license of all LTTng modules needed both
+> for kernel and user-space tracing to dual LGPL/GPL license.
+> 
+> Due to the size of this change, review and testing would be very
+> welcome. I decided to do it in a separate patch on top of the tree
+> rather than rebasing. Considering the size of this modification, going
+> over the modified code on a file by file basis rather than looking at
+> the patch itself is probably easier.
+> 
+> I decided to mark the "locked" and "irqoff" locking schemes as "BROKEN"
+> for now and focus on the lockless scheme. We could re-create them if
+> needed by deriving from the lockless code-base.
+> 
+> Thanks,
+> 
+> Mathieu
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
-Ha, you just trod onto a piece of ugly I'd totally forgotten about ;-)
-
-The intent of throttle_vm_writeout() is to limit the total pages in
-writeout and to wait for them to go-away.
-
-Everybody hates the function, nobody managed to actually come up with
-anything better.
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
