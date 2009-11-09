@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZKILur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbZKILu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbZKILur (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 06:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbZKILul
+	id S1755525AbZKILu4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 06:50:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZKILuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 06:50:41 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:58534 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705AbZKILqQ (ORCPT
+	Mon, 9 Nov 2009 06:50:52 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:41555 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754780AbZKILqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 06:46:16 -0500
+	Mon, 9 Nov 2009 06:46:15 -0500
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
        Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: [PATCH 07/19] OMAP: DSS2: Display Subsystem Driver core
-Date: Mon,  9 Nov 2009 13:45:14 +0200
-Message-Id: <1257767126-12059-8-git-send-email-tomi.valkeinen@nokia.com>
+Subject: [PATCH 08/19] OMAP: DSS2: Add more core files
+Date: Mon,  9 Nov 2009 13:45:15 +0200
+Message-Id: <1257767126-12059-9-git-send-email-tomi.valkeinen@nokia.com>
 X-Mailer: git-send-email 1.6.5.1
-In-Reply-To: <1257767126-12059-7-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1257767126-12059-8-git-send-email-tomi.valkeinen@nokia.com>
 References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
  <1257767126-12059-2-git-send-email-tomi.valkeinen@nokia.com>
  <1257767126-12059-3-git-send-email-tomi.valkeinen@nokia.com>
@@ -26,46 +26,39 @@ References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
  <1257767126-12059-5-git-send-email-tomi.valkeinen@nokia.com>
  <1257767126-12059-6-git-send-email-tomi.valkeinen@nokia.com>
  <1257767126-12059-7-git-send-email-tomi.valkeinen@nokia.com>
-X-OriginalArrivalTime: 09 Nov 2009 11:46:01.0373 (UTC) FILETIME=[35E1CCD0:01CA6132]
+ <1257767126-12059-8-git-send-email-tomi.valkeinen@nokia.com>
+X-OriginalArrivalTime: 09 Nov 2009 11:46:03.0029 (UTC) FILETIME=[36DE7C50:01CA6132]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The core files of DSS2. DSS2 commits are split a bit artificially to
-make the individual commits smaller, and DSS2 doesn't compile properly
-without the rest of the core commits. This shouldn't be a problem, as no
-configuration uses DSS2 yet.
+Add more core files to DSS2.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- arch/arm/plat-omap/include/plat/display.h |  575 ++++++++++++++++++
- drivers/video/omap2/Kconfig               |    2 +
- drivers/video/omap2/Makefile              |    2 +
- drivers/video/omap2/dss/Kconfig           |   89 +++
- drivers/video/omap2/dss/Makefile          |    6 +
- drivers/video/omap2/dss/core.c            |  919 +++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.c             |  596 +++++++++++++++++++
- drivers/video/omap2/dss/dss.h             |  370 ++++++++++++
- 8 files changed, 2559 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/plat-omap/include/plat/display.h
- create mode 100644 drivers/video/omap2/dss/Kconfig
- create mode 100644 drivers/video/omap2/dss/Makefile
- create mode 100644 drivers/video/omap2/dss/core.c
- create mode 100644 drivers/video/omap2/dss/dss.c
- create mode 100644 drivers/video/omap2/dss/dss.h
+ drivers/video/omap2/dss/display.c |  671 +++++++++++++++++
+ drivers/video/omap2/dss/manager.c | 1487 +++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/overlay.c |  680 +++++++++++++++++
+ 3 files changed, 2838 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/display.c
+ create mode 100644 drivers/video/omap2/dss/manager.c
+ create mode 100644 drivers/video/omap2/dss/overlay.c
 
-diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
 new file mode 100644
-index 0000000..c66e464
+index 0000000..3b92b84
 --- /dev/null
-+++ b/arch/arm/plat-omap/include/plat/display.h
-@@ -0,0 +1,575 @@
++++ b/drivers/video/omap2/dss/display.c
+@@ -0,0 +1,671 @@
 +/*
-+ * linux/include/asm-arm/arch-omap/display.h
++ * linux/drivers/video/omap2/dss/display.c
 + *
-+ * Copyright (C) 2008 Nokia Corporation
++ * Copyright (C) 2009 Nokia Corporation
 + * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
++ *
++ * Some code and ideas taken from drivers/video/omap/ driver
++ * by Imre Deak.
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
@@ -80,267 +73,1050 @@ index 0000000..c66e464
 + * this program.  If not, see <http://www.gnu.org/licenses/>.
 + */
 +
-+#ifndef __ASM_ARCH_OMAP_DISPLAY_H
-+#define __ASM_ARCH_OMAP_DISPLAY_H
++#define DSS_SUBSYS_NAME "DISPLAY"
 +
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/jiffies.h>
 +#include <linux/list.h>
-+#include <linux/kobject.h>
-+#include <linux/device.h>
-+#include <asm/atomic.h>
++#include <linux/platform_device.h>
 +
-+#define DISPC_IRQ_FRAMEDONE		(1 << 0)
-+#define DISPC_IRQ_VSYNC			(1 << 1)
-+#define DISPC_IRQ_EVSYNC_EVEN		(1 << 2)
-+#define DISPC_IRQ_EVSYNC_ODD		(1 << 3)
-+#define DISPC_IRQ_ACBIAS_COUNT_STAT	(1 << 4)
-+#define DISPC_IRQ_PROG_LINE_NUM		(1 << 5)
-+#define DISPC_IRQ_GFX_FIFO_UNDERFLOW	(1 << 6)
-+#define DISPC_IRQ_GFX_END_WIN		(1 << 7)
-+#define DISPC_IRQ_PAL_GAMMA_MASK	(1 << 8)
-+#define DISPC_IRQ_OCP_ERR		(1 << 9)
-+#define DISPC_IRQ_VID1_FIFO_UNDERFLOW	(1 << 10)
-+#define DISPC_IRQ_VID1_END_WIN		(1 << 11)
-+#define DISPC_IRQ_VID2_FIFO_UNDERFLOW	(1 << 12)
-+#define DISPC_IRQ_VID2_END_WIN		(1 << 13)
-+#define DISPC_IRQ_SYNC_LOST		(1 << 14)
-+#define DISPC_IRQ_SYNC_LOST_DIGIT	(1 << 15)
-+#define DISPC_IRQ_WAKEUP		(1 << 16)
++#include <plat/display.h>
++#include "dss.h"
 +
-+struct omap_dss_device;
-+struct omap_overlay_manager;
++static LIST_HEAD(display_list);
 +
-+enum omap_display_type {
-+	OMAP_DISPLAY_TYPE_NONE		= 0,
-+	OMAP_DISPLAY_TYPE_DPI		= 1 << 0,
-+	OMAP_DISPLAY_TYPE_DBI		= 1 << 1,
-+	OMAP_DISPLAY_TYPE_SDI		= 1 << 2,
-+	OMAP_DISPLAY_TYPE_DSI		= 1 << 3,
-+	OMAP_DISPLAY_TYPE_VENC		= 1 << 4,
-+};
++static ssize_t display_enabled_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	bool enabled = dssdev->state != OMAP_DSS_DISPLAY_DISABLED;
 +
-+enum omap_plane {
-+	OMAP_DSS_GFX	= 0,
-+	OMAP_DSS_VIDEO1	= 1,
-+	OMAP_DSS_VIDEO2	= 2
-+};
++	return snprintf(buf, PAGE_SIZE, "%d\n", enabled);
++}
 +
-+enum omap_channel {
-+	OMAP_DSS_CHANNEL_LCD	= 0,
-+	OMAP_DSS_CHANNEL_DIGIT	= 1,
-+};
++static ssize_t display_enabled_store(struct device *dev,
++		struct device_attribute *attr,
++		const char *buf, size_t size)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	bool enabled, r;
 +
-+enum omap_color_mode {
-+	OMAP_DSS_COLOR_CLUT1	= 1 << 0,  /* BITMAP 1 */
-+	OMAP_DSS_COLOR_CLUT2	= 1 << 1,  /* BITMAP 2 */
-+	OMAP_DSS_COLOR_CLUT4	= 1 << 2,  /* BITMAP 4 */
-+	OMAP_DSS_COLOR_CLUT8	= 1 << 3,  /* BITMAP 8 */
-+	OMAP_DSS_COLOR_RGB12U	= 1 << 4,  /* RGB12, 16-bit container */
-+	OMAP_DSS_COLOR_ARGB16	= 1 << 5,  /* ARGB16 */
-+	OMAP_DSS_COLOR_RGB16	= 1 << 6,  /* RGB16 */
-+	OMAP_DSS_COLOR_RGB24U	= 1 << 7,  /* RGB24, 32-bit container */
-+	OMAP_DSS_COLOR_RGB24P	= 1 << 8,  /* RGB24, 24-bit container */
-+	OMAP_DSS_COLOR_YUV2	= 1 << 9,  /* YUV2 4:2:2 co-sited */
-+	OMAP_DSS_COLOR_UYVY	= 1 << 10, /* UYVY 4:2:2 co-sited */
-+	OMAP_DSS_COLOR_ARGB32	= 1 << 11, /* ARGB32 */
-+	OMAP_DSS_COLOR_RGBA32	= 1 << 12, /* RGBA32 */
-+	OMAP_DSS_COLOR_RGBX32	= 1 << 13, /* RGBx32 */
++	enabled = simple_strtoul(buf, NULL, 10);
 +
-+	OMAP_DSS_COLOR_GFX_OMAP2 =
-+		OMAP_DSS_COLOR_CLUT1 | OMAP_DSS_COLOR_CLUT2 |
-+		OMAP_DSS_COLOR_CLUT4 | OMAP_DSS_COLOR_CLUT8 |
-+		OMAP_DSS_COLOR_RGB12U | OMAP_DSS_COLOR_RGB16 |
-+		OMAP_DSS_COLOR_RGB24U | OMAP_DSS_COLOR_RGB24P,
++	if (enabled != (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)) {
++		if (enabled) {
++			r = dssdev->enable(dssdev);
++			if (r)
++				return r;
++		} else {
++			dssdev->disable(dssdev);
++		}
++	}
 +
-+	OMAP_DSS_COLOR_VID_OMAP2 =
-+		OMAP_DSS_COLOR_RGB16 | OMAP_DSS_COLOR_RGB24U |
-+		OMAP_DSS_COLOR_RGB24P | OMAP_DSS_COLOR_YUV2 |
-+		OMAP_DSS_COLOR_UYVY,
++	return size;
++}
 +
-+	OMAP_DSS_COLOR_GFX_OMAP3 =
-+		OMAP_DSS_COLOR_CLUT1 | OMAP_DSS_COLOR_CLUT2 |
-+		OMAP_DSS_COLOR_CLUT4 | OMAP_DSS_COLOR_CLUT8 |
-+		OMAP_DSS_COLOR_RGB12U | OMAP_DSS_COLOR_ARGB16 |
-+		OMAP_DSS_COLOR_RGB16 | OMAP_DSS_COLOR_RGB24U |
-+		OMAP_DSS_COLOR_RGB24P | OMAP_DSS_COLOR_ARGB32 |
-+		OMAP_DSS_COLOR_RGBA32 | OMAP_DSS_COLOR_RGBX32,
++static ssize_t display_upd_mode_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	enum omap_dss_update_mode mode = OMAP_DSS_UPDATE_AUTO;
++	if (dssdev->get_update_mode)
++		mode = dssdev->get_update_mode(dssdev);
++	return snprintf(buf, PAGE_SIZE, "%d\n", mode);
++}
 +
-+	OMAP_DSS_COLOR_VID1_OMAP3 =
-+		OMAP_DSS_COLOR_RGB12U | OMAP_DSS_COLOR_RGB16 |
-+		OMAP_DSS_COLOR_RGB24U | OMAP_DSS_COLOR_RGB24P |
-+		OMAP_DSS_COLOR_YUV2 | OMAP_DSS_COLOR_UYVY,
++static ssize_t display_upd_mode_store(struct device *dev,
++		struct device_attribute *attr,
++		const char *buf, size_t size)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	int val, r;
++	enum omap_dss_update_mode mode;
 +
-+	OMAP_DSS_COLOR_VID2_OMAP3 =
-+		OMAP_DSS_COLOR_RGB12U | OMAP_DSS_COLOR_ARGB16 |
-+		OMAP_DSS_COLOR_RGB16 | OMAP_DSS_COLOR_RGB24U |
-+		OMAP_DSS_COLOR_RGB24P | OMAP_DSS_COLOR_YUV2 |
-+		OMAP_DSS_COLOR_UYVY | OMAP_DSS_COLOR_ARGB32 |
-+		OMAP_DSS_COLOR_RGBA32 | OMAP_DSS_COLOR_RGBX32,
-+};
++	val = simple_strtoul(buf, NULL, 10);
 +
-+enum omap_lcd_display_type {
-+	OMAP_DSS_LCD_DISPLAY_STN,
-+	OMAP_DSS_LCD_DISPLAY_TFT,
-+};
++	switch (val) {
++	case OMAP_DSS_UPDATE_DISABLED:
++	case OMAP_DSS_UPDATE_AUTO:
++	case OMAP_DSS_UPDATE_MANUAL:
++		mode = (enum omap_dss_update_mode)val;
++		break;
++	default:
++		return -EINVAL;
++	}
 +
-+enum omap_dss_load_mode {
-+	OMAP_DSS_LOAD_CLUT_AND_FRAME	= 0,
-+	OMAP_DSS_LOAD_CLUT_ONLY		= 1,
-+	OMAP_DSS_LOAD_FRAME_ONLY	= 2,
-+	OMAP_DSS_LOAD_CLUT_ONCE_FRAME	= 3,
-+};
++	r = dssdev->set_update_mode(dssdev, mode);
++	if (r)
++		return r;
 +
-+enum omap_dss_trans_key_type {
-+	OMAP_DSS_COLOR_KEY_GFX_DST = 0,
-+	OMAP_DSS_COLOR_KEY_VID_SRC = 1,
-+};
++	return size;
++}
 +
-+enum omap_rfbi_te_mode {
-+	OMAP_DSS_RFBI_TE_MODE_1 = 1,
-+	OMAP_DSS_RFBI_TE_MODE_2 = 2,
-+};
++static ssize_t display_tear_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	return snprintf(buf, PAGE_SIZE, "%d\n",
++			dssdev->get_te ? dssdev->get_te(dssdev) : 0);
++}
 +
-+enum omap_panel_config {
-+	OMAP_DSS_LCD_IVS		= 1<<0,
-+	OMAP_DSS_LCD_IHS		= 1<<1,
-+	OMAP_DSS_LCD_IPC		= 1<<2,
-+	OMAP_DSS_LCD_IEO		= 1<<3,
-+	OMAP_DSS_LCD_RF			= 1<<4,
-+	OMAP_DSS_LCD_ONOFF		= 1<<5,
++static ssize_t display_tear_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	unsigned long te;
++	int r;
 +
-+	OMAP_DSS_LCD_TFT		= 1<<20,
-+};
++	if (!dssdev->enable_te || !dssdev->get_te)
++		return -ENOENT;
 +
-+enum omap_dss_venc_type {
-+	OMAP_DSS_VENC_TYPE_COMPOSITE,
-+	OMAP_DSS_VENC_TYPE_SVIDEO,
-+};
++	te = simple_strtoul(buf, NULL, 0);
 +
-+enum omap_display_caps {
-+	OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE	= 1 << 0,
-+	OMAP_DSS_DISPLAY_CAP_TEAR_ELIM		= 1 << 1,
-+};
++	r = dssdev->enable_te(dssdev, te);
++	if (r)
++		return r;
 +
-+enum omap_dss_update_mode {
-+	OMAP_DSS_UPDATE_DISABLED = 0,
-+	OMAP_DSS_UPDATE_AUTO,
-+	OMAP_DSS_UPDATE_MANUAL,
-+};
++	return size;
++}
 +
-+enum omap_dss_display_state {
-+	OMAP_DSS_DISPLAY_DISABLED = 0,
-+	OMAP_DSS_DISPLAY_ACTIVE,
-+	OMAP_DSS_DISPLAY_SUSPENDED,
-+};
++static ssize_t display_timings_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_video_timings t;
 +
-+/* XXX perhaps this should be removed */
-+enum omap_dss_overlay_managers {
-+	OMAP_DSS_OVL_MGR_LCD,
-+	OMAP_DSS_OVL_MGR_TV,
-+};
++	if (!dssdev->get_timings)
++		return -ENOENT;
 +
-+enum omap_dss_rotation_type {
-+	OMAP_DSS_ROT_DMA = 0,
-+	OMAP_DSS_ROT_VRFB = 1,
-+};
++	dssdev->get_timings(dssdev, &t);
 +
-+/* clockwise rotation angle */
-+enum omap_dss_rotation_angle {
-+	OMAP_DSS_ROT_0   = 0,
-+	OMAP_DSS_ROT_90  = 1,
-+	OMAP_DSS_ROT_180 = 2,
-+	OMAP_DSS_ROT_270 = 3,
-+};
++	return snprintf(buf, PAGE_SIZE, "%u,%u/%u/%u/%u,%u/%u/%u/%u\n",
++			t.pixel_clock,
++			t.x_res, t.hfp, t.hbp, t.hsw,
++			t.y_res, t.vfp, t.vbp, t.vsw);
++}
 +
-+enum omap_overlay_caps {
-+	OMAP_DSS_OVL_CAP_SCALE = 1 << 0,
-+	OMAP_DSS_OVL_CAP_DISPC = 1 << 1,
-+};
++static ssize_t display_timings_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_video_timings t;
++	int r, found;
 +
-+enum omap_overlay_manager_caps {
-+	OMAP_DSS_OVL_MGR_CAP_DISPC = 1 << 0,
-+};
++	if (!dssdev->set_timings || !dssdev->check_timings)
++		return -ENOENT;
 +
-+/* RFBI */
-+
-+struct rfbi_timings {
-+	int cs_on_time;
-+	int cs_off_time;
-+	int we_on_time;
-+	int we_off_time;
-+	int re_on_time;
-+	int re_off_time;
-+	int we_cycle_time;
-+	int re_cycle_time;
-+	int cs_pulse_width;
-+	int access_time;
-+
-+	int clk_div;
-+
-+	u32 tim[5];             /* set by rfbi_convert_timings() */
-+
-+	int converted;
-+};
-+
-+void omap_rfbi_write_command(const void *buf, u32 len);
-+void omap_rfbi_read_data(void *buf, u32 len);
-+void omap_rfbi_write_data(const void *buf, u32 len);
-+void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
-+		u16 x, u16 y,
-+		u16 w, u16 h);
-+int omap_rfbi_enable_te(bool enable, unsigned line);
-+int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
-+			     unsigned hs_pulse_time, unsigned vs_pulse_time,
-+			     int hs_pol_inv, int vs_pol_inv, int extif_div);
-+
-+/* DSI */
-+void dsi_bus_lock(void);
-+void dsi_bus_unlock(void);
-+int dsi_vc_dcs_write(int channel, u8 *data, int len);
-+int dsi_vc_dcs_write_nosync(int channel, u8 *data, int len);
-+int dsi_vc_dcs_read(int channel, u8 dcs_cmd, u8 *buf, int buflen);
-+int dsi_vc_set_max_rx_packet_size(int channel, u16 len);
-+int dsi_vc_send_null(int channel);
-+int dsi_vc_send_bta_sync(int channel);
-+
-+/* Board specific data */
-+struct omap_dss_board_info {
-+	int (*get_last_off_on_transaction_id)(struct device *dev);
-+	int num_devices;
-+	struct omap_dss_device **devices;
-+	struct omap_dss_device *default_device;
-+};
-+
-+struct omap_video_timings {
-+	/* Unit: pixels */
-+	u16 x_res;
-+	/* Unit: pixels */
-+	u16 y_res;
-+	/* Unit: KHz */
-+	u32 pixel_clock;
-+	/* Unit: pixel clocks */
-+	u16 hsw;	/* Horizontal synchronization pulse width */
-+	/* Unit: pixel clocks */
-+	u16 hfp;	/* Horizontal front porch */
-+	/* Unit: pixel clocks */
-+	u16 hbp;	/* Horizontal back porch */
-+	/* Unit: line clocks */
-+	u16 vsw;	/* Vertical synchronization pulse width */
-+	/* Unit: line clocks */
-+	u16 vfp;	/* Vertical front porch */
-+	/* Unit: line clocks */
-+	u16 vbp;	/* Vertical back porch */
-+};
-+
++	found = 0;
 +#ifdef CONFIG_OMAP2_DSS_VENC
-+/* Hardcoded timings for tv modes. Venc only uses these to
-+ * identify the mode, and does not actually use the configs
-+ * itself. However, the configs should be something that
-+ * a normal monitor can also show */
-+const extern struct omap_video_timings omap_dss_pal_timings;
-+const extern struct omap_video_timings omap_dss_ntsc_timings;
++	if (strncmp("pal", buf, 3) == 0) {
++		t = omap_dss_pal_timings;
++		found = 1;
++	} else if (strncmp("ntsc", buf, 4) == 0) {
++		t = omap_dss_ntsc_timings;
++		found = 1;
++	}
 +#endif
++	if (!found && sscanf(buf, "%u,%hu/%hu/%hu/%hu,%hu/%hu/%hu/%hu",
++				&t.pixel_clock,
++				&t.x_res, &t.hfp, &t.hbp, &t.hsw,
++				&t.y_res, &t.vfp, &t.vbp, &t.vsw) != 9)
++		return -EINVAL;
 +
-+struct omap_overlay_info {
++	r = dssdev->check_timings(dssdev, &t);
++	if (r)
++		return r;
++
++	dssdev->set_timings(dssdev, &t);
++
++	return size;
++}
++
++static ssize_t display_rotate_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	int rotate;
++	if (!dssdev->get_rotate)
++		return -ENOENT;
++	rotate = dssdev->get_rotate(dssdev);
++	return snprintf(buf, PAGE_SIZE, "%u\n", rotate);
++}
++
++static ssize_t display_rotate_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	unsigned long rot;
++	int r;
++
++	if (!dssdev->set_rotate || !dssdev->get_rotate)
++		return -ENOENT;
++
++	rot = simple_strtoul(buf, NULL, 0);
++
++	r = dssdev->set_rotate(dssdev, rot);
++	if (r)
++		return r;
++
++	return size;
++}
++
++static ssize_t display_mirror_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	int mirror;
++	if (!dssdev->get_mirror)
++		return -ENOENT;
++	mirror = dssdev->get_mirror(dssdev);
++	return snprintf(buf, PAGE_SIZE, "%u\n", mirror);
++}
++
++static ssize_t display_mirror_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	unsigned long mirror;
++	int r;
++
++	if (!dssdev->set_mirror || !dssdev->get_mirror)
++		return -ENOENT;
++
++	mirror = simple_strtoul(buf, NULL, 0);
++
++	r = dssdev->set_mirror(dssdev, mirror);
++	if (r)
++		return r;
++
++	return size;
++}
++
++static ssize_t display_wss_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	unsigned int wss;
++
++	if (!dssdev->get_wss)
++		return -ENOENT;
++
++	wss = dssdev->get_wss(dssdev);
++
++	return snprintf(buf, PAGE_SIZE, "0x%05x\n", wss);
++}
++
++static ssize_t display_wss_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	unsigned long wss;
++	int r;
++
++	if (!dssdev->get_wss || !dssdev->set_wss)
++		return -ENOENT;
++
++	if (strict_strtoul(buf, 0, &wss))
++		return -EINVAL;
++
++	if (wss > 0xfffff)
++		return -EINVAL;
++
++	r = dssdev->set_wss(dssdev, wss);
++	if (r)
++		return r;
++
++	return size;
++}
++
++static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
++		display_enabled_show, display_enabled_store);
++static DEVICE_ATTR(update_mode, S_IRUGO|S_IWUSR,
++		display_upd_mode_show, display_upd_mode_store);
++static DEVICE_ATTR(tear_elim, S_IRUGO|S_IWUSR,
++		display_tear_show, display_tear_store);
++static DEVICE_ATTR(timings, S_IRUGO|S_IWUSR,
++		display_timings_show, display_timings_store);
++static DEVICE_ATTR(rotate, S_IRUGO|S_IWUSR,
++		display_rotate_show, display_rotate_store);
++static DEVICE_ATTR(mirror, S_IRUGO|S_IWUSR,
++		display_mirror_show, display_mirror_store);
++static DEVICE_ATTR(wss, S_IRUGO|S_IWUSR,
++		display_wss_show, display_wss_store);
++
++static struct device_attribute *display_sysfs_attrs[] = {
++	&dev_attr_enabled,
++	&dev_attr_update_mode,
++	&dev_attr_tear_elim,
++	&dev_attr_timings,
++	&dev_attr_rotate,
++	&dev_attr_mirror,
++	&dev_attr_wss,
++	NULL
++};
++
++static void default_get_resolution(struct omap_dss_device *dssdev,
++			u16 *xres, u16 *yres)
++{
++	*xres = dssdev->panel.timings.x_res;
++	*yres = dssdev->panel.timings.y_res;
++}
++
++void default_get_overlay_fifo_thresholds(enum omap_plane plane,
++		u32 fifo_size, enum omap_burst_size *burst_size,
++		u32 *fifo_low, u32 *fifo_high)
++{
++	unsigned burst_size_bytes;
++
++	*burst_size = OMAP_DSS_BURST_16x32;
++	burst_size_bytes = 16 * 32 / 8;
++
++	*fifo_high = fifo_size - 1;
++	*fifo_low = fifo_size - burst_size_bytes;
++}
++
++static int default_wait_vsync(struct omap_dss_device *dssdev)
++{
++	unsigned long timeout = msecs_to_jiffies(500);
++	u32 irq;
++
++	if (dssdev->type == OMAP_DISPLAY_TYPE_VENC)
++		irq = DISPC_IRQ_EVSYNC_ODD;
++	else
++		irq = DISPC_IRQ_VSYNC;
++
++	return omap_dispc_wait_for_irq_interruptible_timeout(irq, timeout);
++}
++
++static int default_get_recommended_bpp(struct omap_dss_device *dssdev)
++{
++	if (dssdev->panel.recommended_bpp)
++		return dssdev->panel.recommended_bpp;
++
++	switch (dssdev->type) {
++	case OMAP_DISPLAY_TYPE_DPI:
++		if (dssdev->phy.dpi.data_lines == 24)
++			return 24;
++		else
++			return 16;
++
++	case OMAP_DISPLAY_TYPE_DBI:
++	case OMAP_DISPLAY_TYPE_DSI:
++		if (dssdev->ctrl.pixel_size == 24)
++			return 24;
++		else
++			return 16;
++	case OMAP_DISPLAY_TYPE_VENC:
++	case OMAP_DISPLAY_TYPE_SDI:
++		return 24;
++		return 24;
++	default:
++		BUG();
++	}
++}
++
++/* Checks if replication logic should be used. Only use for active matrix,
++ * when overlay is in RGB12U or RGB16 mode, and LCD interface is
++ * 18bpp or 24bpp */
++bool dss_use_replication(struct omap_dss_device *dssdev,
++		enum omap_color_mode mode)
++{
++	int bpp;
++
++	if (mode != OMAP_DSS_COLOR_RGB12U && mode != OMAP_DSS_COLOR_RGB16)
++		return false;
++
++	if (dssdev->type == OMAP_DISPLAY_TYPE_DPI &&
++			(dssdev->panel.config & OMAP_DSS_LCD_TFT) == 0)
++		return false;
++
++	switch (dssdev->type) {
++	case OMAP_DISPLAY_TYPE_DPI:
++		bpp = dssdev->phy.dpi.data_lines;
++		break;
++	case OMAP_DISPLAY_TYPE_VENC:
++	case OMAP_DISPLAY_TYPE_SDI:
++		bpp = 24;
++		break;
++	case OMAP_DISPLAY_TYPE_DBI:
++	case OMAP_DISPLAY_TYPE_DSI:
++		bpp = dssdev->ctrl.pixel_size;
++		break;
++	default:
++		BUG();
++	}
++
++	return bpp > 16;
++}
++
++void dss_init_device(struct platform_device *pdev,
++		struct omap_dss_device *dssdev)
++{
++	struct device_attribute *attr;
++	int i;
++	int r;
++
++	switch (dssdev->type) {
++	case OMAP_DISPLAY_TYPE_DPI:
++#ifdef CONFIG_OMAP2_DSS_RFBI
++	case OMAP_DISPLAY_TYPE_DBI:
++#endif
++#ifdef CONFIG_OMAP2_DSS_SDI
++	case OMAP_DISPLAY_TYPE_SDI:
++#endif
++#ifdef CONFIG_OMAP2_DSS_DSI
++	case OMAP_DISPLAY_TYPE_DSI:
++#endif
++#ifdef CONFIG_OMAP2_DSS_VENC
++	case OMAP_DISPLAY_TYPE_VENC:
++#endif
++		break;
++	default:
++		DSSERR("Support for display '%s' not compiled in.\n",
++				dssdev->name);
++		return;
++	}
++
++	dssdev->get_resolution = default_get_resolution;
++	dssdev->get_recommended_bpp = default_get_recommended_bpp;
++	dssdev->wait_vsync = default_wait_vsync;
++
++	switch (dssdev->type) {
++	case OMAP_DISPLAY_TYPE_DPI:
++		r = dpi_init_display(dssdev);
++		break;
++#ifdef CONFIG_OMAP2_DSS_RFBI
++	case OMAP_DISPLAY_TYPE_DBI:
++		r = rfbi_init_display(dssdev);
++		break;
++#endif
++#ifdef CONFIG_OMAP2_DSS_VENC
++	case OMAP_DISPLAY_TYPE_VENC:
++		r = venc_init_display(dssdev);
++		break;
++#endif
++#ifdef CONFIG_OMAP2_DSS_SDI
++	case OMAP_DISPLAY_TYPE_SDI:
++		r = sdi_init_display(dssdev);
++		break;
++#endif
++#ifdef CONFIG_OMAP2_DSS_DSI
++	case OMAP_DISPLAY_TYPE_DSI:
++		r = dsi_init_display(dssdev);
++		break;
++#endif
++	default:
++		BUG();
++	}
++
++	if (r) {
++		DSSERR("failed to init display %s\n", dssdev->name);
++		return;
++	}
++
++	/* create device sysfs files */
++	i = 0;
++	while ((attr = display_sysfs_attrs[i++]) != NULL) {
++		r = device_create_file(&dssdev->dev, attr);
++		if (r)
++			DSSERR("failed to create sysfs file\n");
++	}
++
++	/* create display? sysfs links */
++	r = sysfs_create_link(&pdev->dev.kobj, &dssdev->dev.kobj,
++			dev_name(&dssdev->dev));
++	if (r)
++		DSSERR("failed to create sysfs display link\n");
++}
++
++void dss_uninit_device(struct platform_device *pdev,
++		struct omap_dss_device *dssdev)
++{
++	struct device_attribute *attr;
++	int i = 0;
++
++	sysfs_remove_link(&pdev->dev.kobj, dev_name(&dssdev->dev));
++
++	while ((attr = display_sysfs_attrs[i++]) != NULL)
++		device_remove_file(&dssdev->dev, attr);
++
++	if (dssdev->manager)
++		dssdev->manager->unset_device(dssdev->manager);
++}
++
++static int dss_suspend_device(struct device *dev, void *data)
++{
++	int r;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++
++	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
++		dssdev->activate_after_resume = false;
++		return 0;
++	}
++
++	if (!dssdev->suspend) {
++		DSSERR("display '%s' doesn't implement suspend\n",
++				dssdev->name);
++		return -ENOSYS;
++	}
++
++	r = dssdev->suspend(dssdev);
++	if (r)
++		return r;
++
++	dssdev->activate_after_resume = true;
++
++	return 0;
++}
++
++int dss_suspend_all_devices(void)
++{
++	int r;
++	struct bus_type *bus = dss_get_bus();
++
++	r = bus_for_each_dev(bus, NULL, NULL, dss_suspend_device);
++	if (r) {
++		/* resume all displays that were suspended */
++		dss_resume_all_devices();
++		return r;
++	}
++
++	return 0;
++}
++
++static int dss_resume_device(struct device *dev, void *data)
++{
++	int r;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++
++	if (dssdev->activate_after_resume && dssdev->resume) {
++		r = dssdev->resume(dssdev);
++		if (r)
++			return r;
++	}
++
++	dssdev->activate_after_resume = false;
++
++	return 0;
++}
++
++int dss_resume_all_devices(void)
++{
++	struct bus_type *bus = dss_get_bus();
++
++	return bus_for_each_dev(bus, NULL, NULL, dss_resume_device);
++}
++
++static int dss_disable_device(struct device *dev, void *data)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	dssdev->disable(dssdev);
++	return 0;
++}
++
++void dss_disable_all_devices(void)
++{
++	struct bus_type *bus = dss_get_bus();
++	bus_for_each_dev(bus, NULL, NULL, dss_disable_device);
++}
++
++
++void omap_dss_get_device(struct omap_dss_device *dssdev)
++{
++	get_device(&dssdev->dev);
++}
++EXPORT_SYMBOL(omap_dss_get_device);
++
++void omap_dss_put_device(struct omap_dss_device *dssdev)
++{
++	put_device(&dssdev->dev);
++}
++EXPORT_SYMBOL(omap_dss_put_device);
++
++/* ref count of the found device is incremented. ref count
++ * of from-device is decremented. */
++struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from)
++{
++	struct device *dev;
++	struct device *dev_start = NULL;
++	struct omap_dss_device *dssdev = NULL;
++
++	int match(struct device *dev, void *data)
++	{
++		/* skip panels connected to controllers */
++		if (to_dss_device(dev)->panel.ctrl)
++			return 0;
++
++		return 1;
++	}
++
++	if (from)
++		dev_start = &from->dev;
++	dev = bus_find_device(dss_get_bus(), dev_start, NULL, match);
++	if (dev)
++		dssdev = to_dss_device(dev);
++	if (from)
++		put_device(&from->dev);
++
++	return dssdev;
++}
++EXPORT_SYMBOL(omap_dss_get_next_device);
++
++struct omap_dss_device *omap_dss_find_device(void *data,
++		int (*match)(struct omap_dss_device *dssdev, void *data))
++{
++	struct omap_dss_device *dssdev = NULL;
++
++	while ((dssdev = omap_dss_get_next_device(dssdev)) != NULL) {
++		if (match(dssdev, data))
++			return dssdev;
++	}
++
++	return NULL;
++}
++EXPORT_SYMBOL(omap_dss_find_device);
++
++int omap_dss_start_device(struct omap_dss_device *dssdev)
++{
++	int r;
++
++	if (!dssdev->driver) {
++		DSSDBG("no driver\n");
++		r = -ENODEV;
++		goto err0;
++	}
++
++	if (dssdev->ctrl.panel && !dssdev->ctrl.panel->driver) {
++		DSSDBG("no panel driver\n");
++		r = -ENODEV;
++		goto err0;
++	}
++
++	if (!try_module_get(dssdev->dev.driver->owner)) {
++		r = -ENODEV;
++		goto err0;
++	}
++
++	if (dssdev->ctrl.panel) {
++		if (!try_module_get(dssdev->ctrl.panel->dev.driver->owner)) {
++			r = -ENODEV;
++			goto err1;
++		}
++	}
++
++	return 0;
++err1:
++	module_put(dssdev->dev.driver->owner);
++err0:
++	return r;
++}
++EXPORT_SYMBOL(omap_dss_start_device);
++
++void omap_dss_stop_device(struct omap_dss_device *dssdev)
++{
++	if (dssdev->ctrl.panel)
++		module_put(dssdev->ctrl.panel->dev.driver->owner);
++
++	module_put(dssdev->dev.driver->owner);
++}
++EXPORT_SYMBOL(omap_dss_stop_device);
++
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+new file mode 100644
+index 0000000..27d9c46
+--- /dev/null
++++ b/drivers/video/omap2/dss/manager.c
+@@ -0,0 +1,1487 @@
++/*
++ * linux/drivers/video/omap2/dss/manager.c
++ *
++ * Copyright (C) 2009 Nokia Corporation
++ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
++ *
++ * Some code and ideas taken from drivers/video/omap/ driver
++ * by Imre Deak.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#define DSS_SUBSYS_NAME "MANAGER"
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/spinlock.h>
++#include <linux/jiffies.h>
++
++#include <plat/display.h>
++#include <plat/cpu.h>
++
++#include "dss.h"
++
++static int num_managers;
++static struct list_head manager_list;
++
++static ssize_t manager_name_show(struct omap_overlay_manager *mgr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%s\n", mgr->name);
++}
++
++static ssize_t manager_display_show(struct omap_overlay_manager *mgr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%s\n",
++			mgr->device ? mgr->device->name : "<none>");
++}
++
++static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
++		const char *buf, size_t size)
++{
++	int r = 0;
++	size_t len = size;
++	struct omap_dss_device *dssdev = NULL;
++
++	int match(struct omap_dss_device *dssdev, void *data)
++	{
++		const char *str = data;
++		return sysfs_streq(dssdev->name, str);
++	}
++
++	if (buf[size-1] == '\n')
++		--len;
++
++	if (len > 0)
++		dssdev = omap_dss_find_device((void *)buf, match);
++
++	if (len > 0 && dssdev == NULL)
++		return -EINVAL;
++
++	if (dssdev)
++		DSSDBG("display %s found\n", dssdev->name);
++
++	if (mgr->device) {
++		r = mgr->unset_device(mgr);
++		if (r) {
++			DSSERR("failed to unset display\n");
++			goto put_device;
++		}
++	}
++
++	if (dssdev) {
++		r = mgr->set_device(mgr, dssdev);
++		if (r) {
++			DSSERR("failed to set manager\n");
++			goto put_device;
++		}
++
++		r = mgr->apply(mgr);
++		if (r) {
++			DSSERR("failed to apply dispc config\n");
++			goto put_device;
++		}
++	}
++
++put_device:
++	if (dssdev)
++		omap_dss_put_device(dssdev);
++
++	return r ? r : size;
++}
++
++static ssize_t manager_default_color_show(struct omap_overlay_manager *mgr,
++					  char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", mgr->info.default_color);
++}
++
++static ssize_t manager_default_color_store(struct omap_overlay_manager *mgr,
++					   const char *buf, size_t size)
++{
++	struct omap_overlay_manager_info info;
++	u32 color;
++	int r;
++
++	if (sscanf(buf, "%d", &color) != 1)
++		return -EINVAL;
++
++	mgr->get_manager_info(mgr, &info);
++
++	info.default_color = color;
++
++	r = mgr->set_manager_info(mgr, &info);
++	if (r)
++		return r;
++
++	r = mgr->apply(mgr);
++	if (r)
++		return r;
++
++	return size;
++}
++
++static const char *trans_key_type_str[] = {
++	"gfx-destination",
++	"video-source",
++};
++
++static ssize_t manager_trans_key_type_show(struct omap_overlay_manager *mgr,
++					   char *buf)
++{
++	enum omap_dss_trans_key_type key_type;
++
++	key_type = mgr->info.trans_key_type;
++	BUG_ON(key_type >= ARRAY_SIZE(trans_key_type_str));
++
++	return snprintf(buf, PAGE_SIZE, "%s\n", trans_key_type_str[key_type]);
++}
++
++static ssize_t manager_trans_key_type_store(struct omap_overlay_manager *mgr,
++					    const char *buf, size_t size)
++{
++	enum omap_dss_trans_key_type key_type;
++	struct omap_overlay_manager_info info;
++	int r;
++
++	for (key_type = OMAP_DSS_COLOR_KEY_GFX_DST;
++			key_type < ARRAY_SIZE(trans_key_type_str); key_type++) {
++		if (sysfs_streq(buf, trans_key_type_str[key_type]))
++			break;
++	}
++
++	if (key_type == ARRAY_SIZE(trans_key_type_str))
++		return -EINVAL;
++
++	mgr->get_manager_info(mgr, &info);
++
++	info.trans_key_type = key_type;
++
++	r = mgr->set_manager_info(mgr, &info);
++	if (r)
++		return r;
++
++	r = mgr->apply(mgr);
++	if (r)
++		return r;
++
++	return size;
++}
++
++static ssize_t manager_trans_key_value_show(struct omap_overlay_manager *mgr,
++					    char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", mgr->info.trans_key);
++}
++
++static ssize_t manager_trans_key_value_store(struct omap_overlay_manager *mgr,
++					     const char *buf, size_t size)
++{
++	struct omap_overlay_manager_info info;
++	u32 key_value;
++	int r;
++
++	if (sscanf(buf, "%d", &key_value) != 1)
++		return -EINVAL;
++
++	mgr->get_manager_info(mgr, &info);
++
++	info.trans_key = key_value;
++
++	r = mgr->set_manager_info(mgr, &info);
++	if (r)
++		return r;
++
++	r = mgr->apply(mgr);
++	if (r)
++		return r;
++
++	return size;
++}
++
++static ssize_t manager_trans_key_enabled_show(struct omap_overlay_manager *mgr,
++					      char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", mgr->info.trans_enabled);
++}
++
++static ssize_t manager_trans_key_enabled_store(struct omap_overlay_manager *mgr,
++					       const char *buf, size_t size)
++{
++	struct omap_overlay_manager_info info;
++	int enable;
++	int r;
++
++	if (sscanf(buf, "%d", &enable) != 1)
++		return -EINVAL;
++
++	mgr->get_manager_info(mgr, &info);
++
++	info.trans_enabled = enable ? true : false;
++
++	r = mgr->set_manager_info(mgr, &info);
++	if (r)
++		return r;
++
++	r = mgr->apply(mgr);
++	if (r)
++		return r;
++
++	return size;
++}
++
++static ssize_t manager_alpha_blending_enabled_show(
++		struct omap_overlay_manager *mgr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", mgr->info.alpha_enabled);
++}
++
++static ssize_t manager_alpha_blending_enabled_store(
++		struct omap_overlay_manager *mgr,
++		const char *buf, size_t size)
++{
++	struct omap_overlay_manager_info info;
++	int enable;
++	int r;
++
++	if (sscanf(buf, "%d", &enable) != 1)
++		return -EINVAL;
++
++	mgr->get_manager_info(mgr, &info);
++
++	info.alpha_enabled = enable ? true : false;
++
++	r = mgr->set_manager_info(mgr, &info);
++	if (r)
++		return r;
++
++	r = mgr->apply(mgr);
++	if (r)
++		return r;
++
++	return size;
++}
++
++struct manager_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct omap_overlay_manager *, char *);
++	ssize_t	(*store)(struct omap_overlay_manager *, const char *, size_t);
++};
++
++#define MANAGER_ATTR(_name, _mode, _show, _store) \
++	struct manager_attribute manager_attr_##_name = \
++	__ATTR(_name, _mode, _show, _store)
++
++static MANAGER_ATTR(name, S_IRUGO, manager_name_show, NULL);
++static MANAGER_ATTR(display, S_IRUGO|S_IWUSR,
++		manager_display_show, manager_display_store);
++static MANAGER_ATTR(default_color, S_IRUGO|S_IWUSR,
++		manager_default_color_show, manager_default_color_store);
++static MANAGER_ATTR(trans_key_type, S_IRUGO|S_IWUSR,
++		manager_trans_key_type_show, manager_trans_key_type_store);
++static MANAGER_ATTR(trans_key_value, S_IRUGO|S_IWUSR,
++		manager_trans_key_value_show, manager_trans_key_value_store);
++static MANAGER_ATTR(trans_key_enabled, S_IRUGO|S_IWUSR,
++		manager_trans_key_enabled_show,
++		manager_trans_key_enabled_store);
++static MANAGER_ATTR(alpha_blending_enabled, S_IRUGO|S_IWUSR,
++		manager_alpha_blending_enabled_show,
++		manager_alpha_blending_enabled_store);
++
++
++static struct attribute *manager_sysfs_attrs[] = {
++	&manager_attr_name.attr,
++	&manager_attr_display.attr,
++	&manager_attr_default_color.attr,
++	&manager_attr_trans_key_type.attr,
++	&manager_attr_trans_key_value.attr,
++	&manager_attr_trans_key_enabled.attr,
++	&manager_attr_alpha_blending_enabled.attr,
++	NULL
++};
++
++static ssize_t manager_attr_show(struct kobject *kobj, struct attribute *attr,
++		char *buf)
++{
++	struct omap_overlay_manager *manager;
++	struct manager_attribute *manager_attr;
++
++	manager = container_of(kobj, struct omap_overlay_manager, kobj);
++	manager_attr = container_of(attr, struct manager_attribute, attr);
++
++	if (!manager_attr->show)
++		return -ENOENT;
++
++	return manager_attr->show(manager, buf);
++}
++
++static ssize_t manager_attr_store(struct kobject *kobj, struct attribute *attr,
++		const char *buf, size_t size)
++{
++	struct omap_overlay_manager *manager;
++	struct manager_attribute *manager_attr;
++
++	manager = container_of(kobj, struct omap_overlay_manager, kobj);
++	manager_attr = container_of(attr, struct manager_attribute, attr);
++
++	if (!manager_attr->store)
++		return -ENOENT;
++
++	return manager_attr->store(manager, buf, size);
++}
++
++static struct sysfs_ops manager_sysfs_ops = {
++	.show = manager_attr_show,
++	.store = manager_attr_store,
++};
++
++static struct kobj_type manager_ktype = {
++	.sysfs_ops = &manager_sysfs_ops,
++	.default_attrs = manager_sysfs_attrs,
++};
++
++/*
++ * We have 4 levels of cache for the dispc settings. First two are in SW and
++ * the latter two in HW.
++ *
++ * +--------------------+
++ * |overlay/manager_info|
++ * +--------------------+
++ *          v
++ *        apply()
++ *          v
++ * +--------------------+
++ * |     dss_cache      |
++ * +--------------------+
++ *          v
++ *      configure()
++ *          v
++ * +--------------------+
++ * |  shadow registers  |
++ * +--------------------+
++ *          v
++ * VFP or lcd/digit_enable
++ *          v
++ * +--------------------+
++ * |      registers     |
++ * +--------------------+
++ */
++
++struct overlay_cache_data {
++	/* If true, cache changed, but not written to shadow registers. Set
++	 * in apply(), cleared when registers written. */
++	bool dirty;
++	/* If true, shadow registers contain changed values not yet in real
++	 * registers. Set when writing to shadow registers, cleared at
++	 * VSYNC/EVSYNC */
++	bool shadow_dirty;
++
 +	bool enabled;
 +
 +	u32 paddr;
@@ -358,38 +1134,27 @@ index 0000000..c66e464
 +	u16 out_width;	/* if 0, out_width == width */
 +	u16 out_height;	/* if 0, out_height == height */
 +	u8 global_alpha;
++
++	enum omap_channel channel;
++	bool replication;
++	bool ilace;
++
++	enum omap_burst_size burst_size;
++	u32 fifo_low;
++	u32 fifo_high;
++
++	bool manual_update;
 +};
 +
-+struct omap_overlay {
-+	struct kobject kobj;
-+	struct list_head list;
++struct manager_cache_data {
++	/* If true, cache changed, but not written to shadow registers. Set
++	 * in apply(), cleared when registers written. */
++	bool dirty;
++	/* If true, shadow registers contain changed values not yet in real
++	 * registers. Set when writing to shadow registers, cleared at
++	 * VSYNC/EVSYNC */
++	bool shadow_dirty;
 +
-+	/* static fields */
-+	const char *name;
-+	int id;
-+	enum omap_color_mode supported_modes;
-+	enum omap_overlay_caps caps;
-+
-+	/* dynamic fields */
-+	struct omap_overlay_manager *manager;
-+	struct omap_overlay_info info;
-+
-+	/* if true, info has been changed, but not applied() yet */
-+	bool info_dirty;
-+
-+	int (*set_manager)(struct omap_overlay *ovl,
-+		struct omap_overlay_manager *mgr);
-+	int (*unset_manager)(struct omap_overlay *ovl);
-+
-+	int (*set_overlay_info)(struct omap_overlay *ovl,
-+			struct omap_overlay_info *info);
-+	void (*get_overlay_info)(struct omap_overlay *ovl,
-+			struct omap_overlay_info *info);
-+
-+	int (*wait_for_go)(struct omap_overlay *ovl);
-+};
-+
-+struct omap_overlay_manager_info {
 +	u32 default_color;
 +
 +	enum omap_dss_trans_key_type trans_key_type;
@@ -397,379 +1162,1067 @@ index 0000000..c66e464
 +	bool trans_enabled;
 +
 +	bool alpha_enabled;
++
++	bool manual_upd_display;
++	bool manual_update;
++	bool do_manual_update;
++
++	/* manual update region */
++	u16 x, y, w, h;
 +};
 +
-+struct omap_overlay_manager {
-+	struct kobject kobj;
-+	struct list_head list;
++static struct {
++	spinlock_t lock;
++	struct overlay_cache_data overlay_cache[3];
++	struct manager_cache_data manager_cache[2];
 +
-+	/* static fields */
-+	const char *name;
-+	int id;
-+	enum omap_overlay_manager_caps caps;
-+	int num_overlays;
-+	struct omap_overlay **overlays;
-+	enum omap_display_type supported_displays;
++	bool irq_enabled;
++} dss_cache;
 +
-+	/* dynamic fields */
-+	struct omap_dss_device *device;
-+	struct omap_overlay_manager_info info;
 +
-+	bool device_changed;
-+	/* if true, info has been changed but not applied() yet */
-+	bool info_dirty;
 +
-+	int (*set_device)(struct omap_overlay_manager *mgr,
-+		struct omap_dss_device *dssdev);
-+	int (*unset_device)(struct omap_overlay_manager *mgr);
++static int omap_dss_set_device(struct omap_overlay_manager *mgr,
++		struct omap_dss_device *dssdev)
++{
++	int i;
++	int r;
 +
-+	int (*set_manager_info)(struct omap_overlay_manager *mgr,
-+			struct omap_overlay_manager_info *info);
-+	void (*get_manager_info)(struct omap_overlay_manager *mgr,
-+			struct omap_overlay_manager_info *info);
++	if (dssdev->manager) {
++		DSSERR("display '%s' already has a manager '%s'\n",
++			       dssdev->name, dssdev->manager->name);
++		return -EINVAL;
++	}
 +
-+	int (*apply)(struct omap_overlay_manager *mgr);
-+	int (*wait_for_go)(struct omap_overlay_manager *mgr);
-+};
++	if ((mgr->supported_displays & dssdev->type) == 0) {
++		DSSERR("display '%s' does not support manager '%s'\n",
++			       dssdev->name, mgr->name);
++		return -EINVAL;
++	}
 +
-+struct omap_dss_device {
-+	struct device dev;
++	for (i = 0; i < mgr->num_overlays; i++) {
++		struct omap_overlay *ovl = mgr->overlays[i];
 +
-+	enum omap_display_type type;
++		if (ovl->manager != mgr || !ovl->info.enabled)
++			continue;
 +
-+	union {
-+		struct {
-+			u8 data_lines;
-+		} dpi;
++		r = dss_check_overlay(ovl, dssdev);
++		if (r)
++			return r;
++	}
 +
-+		struct {
-+			u8 channel;
-+			u8 data_lines;
-+		} rfbi;
++	dssdev->manager = mgr;
++	mgr->device = dssdev;
++	mgr->device_changed = true;
 +
-+		struct {
-+			u8 datapairs;
-+		} sdi;
++	return 0;
++}
 +
-+		struct {
-+			u8 clk_lane;
-+			u8 clk_pol;
-+			u8 data1_lane;
-+			u8 data1_pol;
-+			u8 data2_lane;
-+			u8 data2_pol;
++static int omap_dss_unset_device(struct omap_overlay_manager *mgr)
++{
++	if (!mgr->device) {
++		DSSERR("failed to unset display, display not set.\n");
++		return -EINVAL;
++	}
 +
-+			struct {
-+				u16 regn;
-+				u16 regm;
-+				u16 regm3;
-+				u16 regm4;
++	mgr->device->manager = NULL;
++	mgr->device = NULL;
++	mgr->device_changed = true;
 +
-+				u16 lp_clk_div;
++	return 0;
++}
 +
-+				u16 lck_div;
-+				u16 pck_div;
-+			} div;
++static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
++{
++	unsigned long timeout = msecs_to_jiffies(500);
++	struct manager_cache_data *mc;
++	enum omap_channel channel;
++	u32 irq;
++	int r;
++	int i;
 +
-+			bool ext_te;
-+			u8 ext_te_gpio;
-+		} dsi;
++	if (!mgr->device)
++		return 0;
 +
-+		struct {
-+			enum omap_dss_venc_type type;
-+			bool invert_polarity;
-+		} venc;
-+	} phy;
++	if (mgr->device->type == OMAP_DISPLAY_TYPE_VENC) {
++		irq = DISPC_IRQ_EVSYNC_ODD | DISPC_IRQ_EVSYNC_EVEN;
++		channel = OMAP_DSS_CHANNEL_DIGIT;
++	} else {
++		if (mgr->device->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE) {
++			enum omap_dss_update_mode mode;
++			mode = mgr->device->get_update_mode(mgr->device);
++			if (mode != OMAP_DSS_UPDATE_AUTO)
++				return 0;
 +
-+	struct {
-+		struct omap_video_timings timings;
++			irq = DISPC_IRQ_FRAMEDONE;
++		} else {
++			irq = DISPC_IRQ_VSYNC;
++		}
++		channel = OMAP_DSS_CHANNEL_LCD;
++	}
 +
-+		int acbi;	/* ac-bias pin transitions per interrupt */
-+		/* Unit: line clocks */
-+		int acb;	/* ac-bias pin frequency */
++	mc = &dss_cache.manager_cache[mgr->id];
++	i = 0;
++	while (1) {
++		unsigned long flags;
++		bool shadow_dirty, dirty;
 +
-+		enum omap_panel_config config;
++		spin_lock_irqsave(&dss_cache.lock, flags);
++		dirty = mc->dirty;
++		shadow_dirty = mc->shadow_dirty;
++		spin_unlock_irqrestore(&dss_cache.lock, flags);
 +
-+		u8 recommended_bpp;
++		if (!dirty && !shadow_dirty) {
++			r = 0;
++			break;
++		}
 +
-+		struct omap_dss_device *ctrl;
-+	} panel;
++		/* 4 iterations is the worst case:
++		 * 1 - initial iteration, dirty = true (between VFP and VSYNC)
++		 * 2 - first VSYNC, dirty = true
++		 * 3 - dirty = false, shadow_dirty = true
++		 * 4 - shadow_dirty = false */
++		if (i++ == 3) {
++			DSSERR("mgr(%d)->wait_for_go() not finishing\n",
++					mgr->id);
++			r = 0;
++			break;
++		}
 +
-+	struct {
-+		u8 pixel_size;
-+		struct rfbi_timings rfbi_timings;
-+		struct omap_dss_device *panel;
-+	} ctrl;
++		r = omap_dispc_wait_for_irq_interruptible_timeout(irq, timeout);
++		if (r == -ERESTARTSYS)
++			break;
 +
-+	int reset_gpio;
++		if (r) {
++			DSSERR("mgr(%d)->wait_for_go() timeout\n", mgr->id);
++			break;
++		}
++	}
 +
-+	int max_backlight_level;
++	return r;
++}
 +
-+	const char *name;
++int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
++{
++	unsigned long timeout = msecs_to_jiffies(500);
++	enum omap_channel channel;
++	struct overlay_cache_data *oc;
++	struct omap_dss_device *dssdev;
++	u32 irq;
++	int r;
++	int i;
 +
-+	/* used to match device to driver */
-+	const char *driver_name;
++	if (!ovl->manager || !ovl->manager->device)
++		return 0;
 +
-+	void *data;
++	dssdev = ovl->manager->device;
 +
-+	struct omap_dss_driver *driver;
++	if (dssdev->type == OMAP_DISPLAY_TYPE_VENC) {
++		irq = DISPC_IRQ_EVSYNC_ODD | DISPC_IRQ_EVSYNC_EVEN;
++		channel = OMAP_DSS_CHANNEL_DIGIT;
++	} else {
++		if (dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE) {
++			enum omap_dss_update_mode mode;
++			mode = dssdev->get_update_mode(dssdev);
++			if (mode != OMAP_DSS_UPDATE_AUTO)
++				return 0;
 +
-+	/* helper variable for driver suspend/resume */
-+	bool activate_after_resume;
++			irq = DISPC_IRQ_FRAMEDONE;
++		} else {
++			irq = DISPC_IRQ_VSYNC;
++		}
++		channel = OMAP_DSS_CHANNEL_LCD;
++	}
 +
-+	enum omap_display_caps caps;
++	oc = &dss_cache.overlay_cache[ovl->id];
++	i = 0;
++	while (1) {
++		unsigned long flags;
++		bool shadow_dirty, dirty;
 +
-+	struct omap_overlay_manager *manager;
++		spin_lock_irqsave(&dss_cache.lock, flags);
++		dirty = oc->dirty;
++		shadow_dirty = oc->shadow_dirty;
++		spin_unlock_irqrestore(&dss_cache.lock, flags);
 +
-+	enum omap_dss_display_state state;
++		if (!dirty && !shadow_dirty) {
++			r = 0;
++			break;
++		}
 +
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
++		/* 4 iterations is the worst case:
++		 * 1 - initial iteration, dirty = true (between VFP and VSYNC)
++		 * 2 - first VSYNC, dirty = true
++		 * 3 - dirty = false, shadow_dirty = true
++		 * 4 - shadow_dirty = false */
++		if (i++ == 3) {
++			DSSERR("ovl(%d)->wait_for_go() not finishing\n",
++					ovl->id);
++			r = 0;
++			break;
++		}
 +
-+	int (*suspend)(struct omap_dss_device *dssdev);
-+	int (*resume)(struct omap_dss_device *dssdev);
++		r = omap_dispc_wait_for_irq_interruptible_timeout(irq, timeout);
++		if (r == -ERESTARTSYS)
++			break;
 +
-+	void (*get_resolution)(struct omap_dss_device *dssdev,
-+			u16 *xres, u16 *yres);
-+	int (*get_recommended_bpp)(struct omap_dss_device *dssdev);
++		if (r) {
++			DSSERR("ovl(%d)->wait_for_go() timeout\n", ovl->id);
++			break;
++		}
++	}
 +
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	int (*update)(struct omap_dss_device *dssdev,
-+			       u16 x, u16 y, u16 w, u16 h);
-+	int (*sync)(struct omap_dss_device *dssdev);
-+	int (*wait_vsync)(struct omap_dss_device *dssdev);
++	return r;
++}
 +
-+	int (*set_update_mode)(struct omap_dss_device *dssdev,
-+			enum omap_dss_update_mode);
-+	enum omap_dss_update_mode (*get_update_mode)
-+		(struct omap_dss_device *dssdev);
++static int overlay_enabled(struct omap_overlay *ovl)
++{
++	return ovl->info.enabled && ovl->manager && ovl->manager->device;
++}
 +
-+	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
-+	int (*get_te)(struct omap_dss_device *dssdev);
++/* Is rect1 a subset of rect2? */
++static bool rectangle_subset(int x1, int y1, int w1, int h1,
++		int x2, int y2, int w2, int h2)
++{
++	if (x1 < x2 || y1 < y2)
++		return false;
 +
-+	u8 (*get_rotate)(struct omap_dss_device *dssdev);
-+	int (*set_rotate)(struct omap_dss_device *dssdev, u8 rotate);
++	if (x1 + w1 > x2 + w2)
++		return false;
 +
-+	bool (*get_mirror)(struct omap_dss_device *dssdev);
-+	int (*set_mirror)(struct omap_dss_device *dssdev, bool enable);
++	if (y1 + h1 > y2 + h2)
++		return false;
 +
-+	int (*run_test)(struct omap_dss_device *dssdev, int test);
-+	int (*memory_read)(struct omap_dss_device *dssdev,
-+			void *buf, size_t size,
-+			u16 x, u16 y, u16 w, u16 h);
++	return true;
++}
 +
-+	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
-+	u32 (*get_wss)(struct omap_dss_device *dssdev);
++/* Do rect1 and rect2 overlap? */
++static bool rectangle_intersects(int x1, int y1, int w1, int h1,
++		int x2, int y2, int w2, int h2)
++{
++	if (x1 >= x2 + w2)
++		return false;
 +
-+	/* platform specific  */
-+	int (*platform_enable)(struct omap_dss_device *dssdev);
-+	void (*platform_disable)(struct omap_dss_device *dssdev);
-+	int (*set_backlight)(struct omap_dss_device *dssdev, int level);
-+	int (*get_backlight)(struct omap_dss_device *dssdev);
-+};
++	if (x2 >= x1 + w1)
++		return false;
 +
-+struct omap_dss_driver {
-+	struct device_driver driver;
++	if (y1 >= y2 + h2)
++		return false;
 +
-+	int (*probe)(struct omap_dss_device *);
-+	void (*remove)(struct omap_dss_device *);
++	if (y2 >= y1 + h1)
++		return false;
 +
-+	int (*enable)(struct omap_dss_device *display);
-+	void (*disable)(struct omap_dss_device *display);
-+	int (*suspend)(struct omap_dss_device *display);
-+	int (*resume)(struct omap_dss_device *display);
-+	int (*run_test)(struct omap_dss_device *display, int test);
++	return true;
++}
 +
-+	void (*setup_update)(struct omap_dss_device *dssdev,
-+			u16 x, u16 y, u16 w, u16 h);
++static bool dispc_is_overlay_scaled(struct overlay_cache_data *oc)
++{
++	if (oc->out_width != 0 && oc->width != oc->out_width)
++		return true;
 +
-+	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
-+	int (*wait_for_te)(struct omap_dss_device *dssdev);
++	if (oc->out_height != 0 && oc->height != oc->out_height)
++		return true;
 +
-+	u8 (*get_rotate)(struct omap_dss_device *dssdev);
-+	int (*set_rotate)(struct omap_dss_device *dssdev, u8 rotate);
++	return false;
++}
 +
-+	bool (*get_mirror)(struct omap_dss_device *dssdev);
-+	int (*set_mirror)(struct omap_dss_device *dssdev, bool enable);
++static int configure_overlay(enum omap_plane plane)
++{
++	struct overlay_cache_data *c;
++	struct manager_cache_data *mc;
++	u16 outw, outh;
++	u16 x, y, w, h;
++	u32 paddr;
++	int r;
 +
-+	int (*memory_read)(struct omap_dss_device *dssdev,
-+			void *buf, size_t size,
-+			u16 x, u16 y, u16 w, u16 h);
-+};
++	DSSDBGF("%d", plane);
 +
-+int omap_dss_register_driver(struct omap_dss_driver *);
-+void omap_dss_unregister_driver(struct omap_dss_driver *);
++	c = &dss_cache.overlay_cache[plane];
 +
-+int omap_dss_register_device(struct omap_dss_device *);
-+void omap_dss_unregister_device(struct omap_dss_device *);
++	if (!c->enabled) {
++		dispc_enable_plane(plane, 0);
++		return 0;
++	}
 +
-+void omap_dss_get_device(struct omap_dss_device *dssdev);
-+void omap_dss_put_device(struct omap_dss_device *dssdev);
-+#define for_each_dss_dev(d) while ((d = omap_dss_get_next_device(d)) != NULL)
-+struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from);
-+struct omap_dss_device *omap_dss_find_device(void *data,
-+		int (*match)(struct omap_dss_device *dssdev, void *data));
++	mc = &dss_cache.manager_cache[c->channel];
 +
-+int omap_dss_start_device(struct omap_dss_device *dssdev);
-+void omap_dss_stop_device(struct omap_dss_device *dssdev);
++	x = c->pos_x;
++	y = c->pos_y;
++	w = c->width;
++	h = c->height;
++	outw = c->out_width == 0 ? c->width : c->out_width;
++	outh = c->out_height == 0 ? c->height : c->out_height;
++	paddr = c->paddr;
 +
-+int omap_dss_get_num_overlay_managers(void);
-+struct omap_overlay_manager *omap_dss_get_overlay_manager(int num);
++	if (c->manual_update && mc->do_manual_update) {
++		unsigned bpp;
++		/* If the overlay is outside the update region, disable it */
++		if (!rectangle_intersects(mc->x, mc->y, mc->w, mc->h,
++					x, y, outw, outh)) {
++			dispc_enable_plane(plane, 0);
++			return 0;
++		}
 +
-+int omap_dss_get_num_overlays(void);
-+struct omap_overlay *omap_dss_get_overlay(int num);
++		switch (c->color_mode) {
++		case OMAP_DSS_COLOR_RGB16:
++		case OMAP_DSS_COLOR_ARGB16:
++		case OMAP_DSS_COLOR_YUV2:
++		case OMAP_DSS_COLOR_UYVY:
++			bpp = 16;
++			break;
 +
-+typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
-+int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
-+int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
++		case OMAP_DSS_COLOR_RGB24P:
++			bpp = 24;
++			break;
 +
-+int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout);
-+int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
-+		unsigned long timeout);
++		case OMAP_DSS_COLOR_RGB24U:
++		case OMAP_DSS_COLOR_ARGB32:
++		case OMAP_DSS_COLOR_RGBA32:
++		case OMAP_DSS_COLOR_RGBX32:
++			bpp = 32;
++			break;
 +
-+#define to_dss_driver(x) container_of((x), struct omap_dss_driver, driver)
-+#define to_dss_device(x) container_of((x), struct omap_dss_device, dev)
++		default:
++			BUG();
++		}
 +
++		if (dispc_is_overlay_scaled(c)) {
++			/* If the overlay is scaled, the update area has
++			 * already been enlarged to cover the whole overlay. We
++			 * only need to adjust x/y here */
++			x = c->pos_x - mc->x;
++			y = c->pos_y - mc->y;
++		} else {
++			if (mc->x > c->pos_x) {
++				x = 0;
++				w -= (mc->x - c->pos_x);
++				paddr += (mc->x - c->pos_x) * bpp / 8;
++			} else {
++				x = c->pos_x - mc->x;
++			}
++
++			if (mc->y > c->pos_y) {
++				y = 0;
++				h -= (mc->y - c->pos_y);
++				paddr += (mc->y - c->pos_y) * c->screen_width *
++					bpp / 8;
++			} else {
++				y = c->pos_y - mc->y;
++			}
++
++			if (mc->w < (x+w))
++				w -= (x+w) - (mc->w);
++
++			if (mc->h < (y+h))
++				h -= (y+h) - (mc->h);
++
++			outw = w;
++			outh = h;
++		}
++	}
++
++	r = dispc_setup_plane(plane,
++			paddr,
++			c->screen_width,
++			x, y,
++			w, h,
++			outw, outh,
++			c->color_mode,
++			c->ilace,
++			c->rotation_type,
++			c->rotation,
++			c->mirror,
++			c->global_alpha);
++
++	if (r) {
++		/* this shouldn't happen */
++		DSSERR("dispc_setup_plane failed for ovl %d\n", plane);
++		dispc_enable_plane(plane, 0);
++		return r;
++	}
++
++	dispc_enable_replication(plane, c->replication);
++
++	dispc_set_burst_size(plane, c->burst_size);
++	dispc_setup_plane_fifo(plane, c->fifo_low, c->fifo_high);
++
++	dispc_enable_plane(plane, 1);
++
++	return 0;
++}
++
++static void configure_manager(enum omap_channel channel)
++{
++	struct manager_cache_data *c;
++
++	DSSDBGF("%d", channel);
++
++	c = &dss_cache.manager_cache[channel];
++
++	dispc_set_trans_key(channel, c->trans_key_type, c->trans_key);
++	dispc_enable_trans_key(channel, c->trans_enabled);
++	dispc_enable_alpha_blending(channel, c->alpha_enabled);
++}
++
++/* configure_dispc() tries to write values from cache to shadow registers.
++ * It writes only to those managers/overlays that are not busy.
++ * returns 0 if everything could be written to shadow registers.
++ * returns 1 if not everything could be written to shadow registers. */
++static int configure_dispc(void)
++{
++	struct overlay_cache_data *oc;
++	struct manager_cache_data *mc;
++	const int num_ovls = ARRAY_SIZE(dss_cache.overlay_cache);
++	const int num_mgrs = ARRAY_SIZE(dss_cache.manager_cache);
++	int i;
++	int r;
++	bool mgr_busy[2];
++	bool mgr_go[2];
++	bool busy;
++
++	r = 0;
++	busy = false;
++
++	mgr_busy[0] = dispc_go_busy(0);
++	mgr_busy[1] = dispc_go_busy(1);
++	mgr_go[0] = false;
++	mgr_go[1] = false;
++
++	/* Commit overlay settings */
++	for (i = 0; i < num_ovls; ++i) {
++		oc = &dss_cache.overlay_cache[i];
++		mc = &dss_cache.manager_cache[oc->channel];
++
++		if (!oc->dirty)
++			continue;
++
++		if (oc->manual_update && !mc->do_manual_update)
++			continue;
++
++		if (mgr_busy[oc->channel]) {
++			busy = true;
++			continue;
++		}
++
++		r = configure_overlay(i);
++		if (r)
++			DSSERR("configure_overlay %d failed\n", i);
++
++		oc->dirty = false;
++		oc->shadow_dirty = true;
++		mgr_go[oc->channel] = true;
++	}
++
++	/* Commit manager settings */
++	for (i = 0; i < num_mgrs; ++i) {
++		mc = &dss_cache.manager_cache[i];
++
++		if (!mc->dirty)
++			continue;
++
++		if (mc->manual_update && !mc->do_manual_update)
++			continue;
++
++		if (mgr_busy[i]) {
++			busy = true;
++			continue;
++		}
++
++		configure_manager(i);
++		mc->dirty = false;
++		mc->shadow_dirty = true;
++		mgr_go[i] = true;
++	}
++
++	/* set GO */
++	for (i = 0; i < num_mgrs; ++i) {
++		mc = &dss_cache.manager_cache[i];
++
++		if (!mgr_go[i])
++			continue;
++
++		/* We don't need GO with manual update display. LCD iface will
++		 * always be turned off after frame, and new settings will be
++		 * taken in to use at next update */
++		if (!mc->manual_upd_display)
++			dispc_go(i);
++	}
++
++	if (busy)
++		r = 1;
++	else
++		r = 0;
++
++	return r;
++}
++
++/* Configure dispc for partial update. Return possibly modified update
++ * area */
++void dss_setup_partial_planes(struct omap_dss_device *dssdev,
++		u16 *xi, u16 *yi, u16 *wi, u16 *hi)
++{
++	struct overlay_cache_data *oc;
++	struct manager_cache_data *mc;
++	const int num_ovls = ARRAY_SIZE(dss_cache.overlay_cache);
++	struct omap_overlay_manager *mgr;
++	int i;
++	u16 x, y, w, h;
++	unsigned long flags;
++
++	x = *xi;
++	y = *yi;
++	w = *wi;
++	h = *hi;
++
++	DSSDBG("dispc_setup_partial_planes %d,%d %dx%d\n",
++		*xi, *yi, *wi, *hi);
++
++	mgr = dssdev->manager;
++
++	if (!mgr) {
++		DSSDBG("no manager\n");
++		return;
++	}
++
++	spin_lock_irqsave(&dss_cache.lock, flags);
++
++	/* We need to show the whole overlay if it is scaled. So look for
++	 * those, and make the update area larger if found.
++	 * Also mark the overlay cache dirty */
++	for (i = 0; i < num_ovls; ++i) {
++		unsigned x1, y1, x2, y2;
++		unsigned outw, outh;
++
++		oc = &dss_cache.overlay_cache[i];
++
++		if (oc->channel != mgr->id)
++			continue;
++
++		oc->dirty = true;
++
++		if (!oc->enabled)
++			continue;
++
++		if (!dispc_is_overlay_scaled(oc))
++			continue;
++
++		outw = oc->out_width == 0 ? oc->width : oc->out_width;
++		outh = oc->out_height == 0 ? oc->height : oc->out_height;
++
++		/* is the overlay outside the update region? */
++		if (!rectangle_intersects(x, y, w, h,
++					oc->pos_x, oc->pos_y,
++					outw, outh))
++			continue;
++
++		/* if the overlay totally inside the update region? */
++		if (rectangle_subset(oc->pos_x, oc->pos_y, outw, outh,
++					x, y, w, h))
++			continue;
++
++		if (x > oc->pos_x)
++			x1 = oc->pos_x;
++		else
++			x1 = x;
++
++		if (y > oc->pos_y)
++			y1 = oc->pos_y;
++		else
++			y1 = y;
++
++		if ((x + w) < (oc->pos_x + outw))
++			x2 = oc->pos_x + outw;
++		else
++			x2 = x + w;
++
++		if ((y + h) < (oc->pos_y + outh))
++			y2 = oc->pos_y + outh;
++		else
++			y2 = y + h;
++
++		x = x1;
++		y = y1;
++		w = x2 - x1;
++		h = y2 - y1;
++
++		DSSDBG("changing upd area due to ovl(%d) scaling %d,%d %dx%d\n",
++				i, x, y, w, h);
++	}
++
++	mc = &dss_cache.manager_cache[mgr->id];
++	mc->do_manual_update = true;
++	mc->x = x;
++	mc->y = y;
++	mc->w = w;
++	mc->h = h;
++
++	configure_dispc();
++
++	mc->do_manual_update = false;
++
++	spin_unlock_irqrestore(&dss_cache.lock, flags);
++
++	*xi = x;
++	*yi = y;
++	*wi = w;
++	*hi = h;
++}
++
++void dss_start_update(struct omap_dss_device *dssdev)
++{
++	struct manager_cache_data *mc;
++	struct overlay_cache_data *oc;
++	const int num_ovls = ARRAY_SIZE(dss_cache.overlay_cache);
++	const int num_mgrs = ARRAY_SIZE(dss_cache.manager_cache);
++	struct omap_overlay_manager *mgr;
++	int i;
++
++	mgr = dssdev->manager;
++
++	for (i = 0; i < num_ovls; ++i) {
++		oc = &dss_cache.overlay_cache[i];
++		if (oc->channel != mgr->id)
++			continue;
++
++		oc->shadow_dirty = false;
++	}
++
++	for (i = 0; i < num_mgrs; ++i) {
++		mc = &dss_cache.manager_cache[i];
++		if (mgr->id != i)
++			continue;
++
++		mc->shadow_dirty = false;
++	}
++
++	dispc_enable_lcd_out(1);
++}
++
++static void dss_apply_irq_handler(void *data, u32 mask)
++{
++	struct manager_cache_data *mc;
++	struct overlay_cache_data *oc;
++	const int num_ovls = ARRAY_SIZE(dss_cache.overlay_cache);
++	const int num_mgrs = ARRAY_SIZE(dss_cache.manager_cache);
++	int i, r;
++	bool mgr_busy[2];
++
++	mgr_busy[0] = dispc_go_busy(0);
++	mgr_busy[1] = dispc_go_busy(1);
++
++	spin_lock(&dss_cache.lock);
++
++	for (i = 0; i < num_ovls; ++i) {
++		oc = &dss_cache.overlay_cache[i];
++		if (!mgr_busy[oc->channel])
++			oc->shadow_dirty = false;
++	}
++
++	for (i = 0; i < num_mgrs; ++i) {
++		mc = &dss_cache.manager_cache[i];
++		if (!mgr_busy[i])
++			mc->shadow_dirty = false;
++	}
++
++	r = configure_dispc();
++	if (r == 1)
++		goto end;
++
++	/* re-read busy flags */
++	mgr_busy[0] = dispc_go_busy(0);
++	mgr_busy[1] = dispc_go_busy(1);
++
++	/* keep running as long as there are busy managers, so that
++	 * we can collect overlay-applied information */
++	for (i = 0; i < num_mgrs; ++i) {
++		if (mgr_busy[i])
++			goto end;
++	}
++
++	omap_dispc_unregister_isr(dss_apply_irq_handler, NULL,
++			DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
++			DISPC_IRQ_EVSYNC_EVEN);
++	dss_cache.irq_enabled = false;
++
++end:
++	spin_unlock(&dss_cache.lock);
++}
++
++static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
++{
++	struct overlay_cache_data *oc;
++	struct manager_cache_data *mc;
++	int i;
++	struct omap_overlay *ovl;
++	int num_planes_enabled = 0;
++	bool use_fifomerge;
++	unsigned long flags;
++	int r;
++
++	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
++
++	spin_lock_irqsave(&dss_cache.lock, flags);
++
++	/* Configure overlays */
++	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
++		struct omap_dss_device *dssdev;
++
++		ovl = omap_dss_get_overlay(i);
++
++		if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
++			continue;
++
++		oc = &dss_cache.overlay_cache[ovl->id];
++
++		if (!overlay_enabled(ovl)) {
++			if (oc->enabled) {
++				oc->enabled = false;
++				oc->dirty = true;
++			}
++			continue;
++		}
++
++		if (!ovl->info_dirty) {
++			if (oc->enabled)
++				++num_planes_enabled;
++			continue;
++		}
++
++		dssdev = ovl->manager->device;
++
++		if (dss_check_overlay(ovl, dssdev)) {
++			if (oc->enabled) {
++				oc->enabled = false;
++				oc->dirty = true;
++			}
++			continue;
++		}
++
++		ovl->info_dirty = false;
++		oc->dirty = true;
++
++		oc->paddr = ovl->info.paddr;
++		oc->vaddr = ovl->info.vaddr;
++		oc->screen_width = ovl->info.screen_width;
++		oc->width = ovl->info.width;
++		oc->height = ovl->info.height;
++		oc->color_mode = ovl->info.color_mode;
++		oc->rotation = ovl->info.rotation;
++		oc->rotation_type = ovl->info.rotation_type;
++		oc->mirror = ovl->info.mirror;
++		oc->pos_x = ovl->info.pos_x;
++		oc->pos_y = ovl->info.pos_y;
++		oc->out_width = ovl->info.out_width;
++		oc->out_height = ovl->info.out_height;
++		oc->global_alpha = ovl->info.global_alpha;
++
++		oc->replication =
++			dss_use_replication(dssdev, ovl->info.color_mode);
++
++		oc->ilace = dssdev->type == OMAP_DISPLAY_TYPE_VENC;
++
++		oc->channel = ovl->manager->id;
++
++		oc->enabled = true;
++
++		oc->manual_update =
++			dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE &&
++			dssdev->get_update_mode(dssdev) != OMAP_DSS_UPDATE_AUTO;
++
++		++num_planes_enabled;
++	}
++
++	/* Configure managers */
++	list_for_each_entry(mgr, &manager_list, list) {
++		struct omap_dss_device *dssdev;
++
++		if (!(mgr->caps & OMAP_DSS_OVL_MGR_CAP_DISPC))
++			continue;
++
++		mc = &dss_cache.manager_cache[mgr->id];
++
++		if (mgr->device_changed) {
++			mgr->device_changed = false;
++			mgr->info_dirty  = true;
++		}
++
++		if (!mgr->info_dirty)
++			continue;
++
++		if (!mgr->device)
++			continue;
++
++		dssdev = mgr->device;
++
++		mgr->info_dirty = false;
++		mc->dirty = true;
++
++		mc->default_color = mgr->info.default_color;
++		mc->trans_key_type = mgr->info.trans_key_type;
++		mc->trans_key = mgr->info.trans_key;
++		mc->trans_enabled = mgr->info.trans_enabled;
++		mc->alpha_enabled = mgr->info.alpha_enabled;
++
++		mc->manual_upd_display =
++			dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
++
++		mc->manual_update =
++			dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE &&
++			dssdev->get_update_mode(dssdev) != OMAP_DSS_UPDATE_AUTO;
++	}
++
++	/* XXX TODO: Try to get fifomerge working. The problem is that it
++	 * affects both managers, not individually but at the same time. This
++	 * means the change has to be well synchronized. I guess the proper way
++	 * is to have a two step process for fifo merge:
++	 *        fifomerge enable:
++	 *             1. disable other planes, leaving one plane enabled
++	 *             2. wait until the planes are disabled on HW
++	 *             3. config merged fifo thresholds, enable fifomerge
++	 *        fifomerge disable:
++	 *             1. config unmerged fifo thresholds, disable fifomerge
++	 *             2. wait until fifo changes are in HW
++	 *             3. enable planes
++	 */
++	use_fifomerge = false;
++
++	/* Configure overlay fifos */
++	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
++		struct omap_dss_device *dssdev;
++		u32 size;
++
++		ovl = omap_dss_get_overlay(i);
++
++		if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
++			continue;
++
++		oc = &dss_cache.overlay_cache[ovl->id];
++
++		if (!oc->enabled)
++			continue;
++
++		dssdev = ovl->manager->device;
++
++		size = dispc_get_plane_fifo_size(ovl->id);
++		if (use_fifomerge)
++			size *= 3;
++
++		switch (dssdev->type) {
++		case OMAP_DISPLAY_TYPE_DPI:
++		case OMAP_DISPLAY_TYPE_DBI:
++		case OMAP_DISPLAY_TYPE_SDI:
++		case OMAP_DISPLAY_TYPE_VENC:
++			default_get_overlay_fifo_thresholds(ovl->id, size,
++					&oc->burst_size, &oc->fifo_low,
++					&oc->fifo_high);
++			break;
++#ifdef CONFIG_OMAP2_DSS_DSI
++		case OMAP_DISPLAY_TYPE_DSI:
++			dsi_get_overlay_fifo_thresholds(ovl->id, size,
++					&oc->burst_size, &oc->fifo_low,
++					&oc->fifo_high);
++			break;
 +#endif
-diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
-index ac8b650..55b4c42 100644
---- a/drivers/video/omap2/Kconfig
-+++ b/drivers/video/omap2/Kconfig
-@@ -3,3 +3,5 @@ config OMAP2_VRAM
- 
- config OMAP2_VRFB
- 	bool
++		default:
++			BUG();
++		}
++	}
 +
-+source "drivers/video/omap2/dss/Kconfig"
-diff --git a/drivers/video/omap2/Makefile b/drivers/video/omap2/Makefile
-index aa3751b..ee0644f 100644
---- a/drivers/video/omap2/Makefile
-+++ b/drivers/video/omap2/Makefile
-@@ -1,2 +1,4 @@
- obj-$(CONFIG_OMAP2_VRAM) += vram.o
- obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
++	r = 0;
++	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
++	if (!dss_cache.irq_enabled) {
++		r = omap_dispc_register_isr(dss_apply_irq_handler, NULL,
++				DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
++				DISPC_IRQ_EVSYNC_EVEN);
++		dss_cache.irq_enabled = true;
++	}
++	configure_dispc();
++	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
 +
-+obj-y += dss/
-diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
++	spin_unlock_irqrestore(&dss_cache.lock, flags);
++
++	return r;
++}
++
++static int dss_check_manager(struct omap_overlay_manager *mgr)
++{
++	/* OMAP supports only graphics source transparency color key and alpha
++	 * blending simultaneously. See TRM 15.4.2.4.2.2 Alpha Mode */
++
++	if (mgr->info.alpha_enabled && mgr->info.trans_enabled &&
++			mgr->info.trans_key_type != OMAP_DSS_COLOR_KEY_GFX_DST)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int omap_dss_mgr_set_info(struct omap_overlay_manager *mgr,
++		struct omap_overlay_manager_info *info)
++{
++	int r;
++	struct omap_overlay_manager_info old_info;
++
++	old_info = mgr->info;
++	mgr->info = *info;
++
++	r = dss_check_manager(mgr);
++	if (r) {
++		mgr->info = old_info;
++		return r;
++	}
++
++	mgr->info_dirty = true;
++
++	return 0;
++}
++
++static void omap_dss_mgr_get_info(struct omap_overlay_manager *mgr,
++		struct omap_overlay_manager_info *info)
++{
++	*info = mgr->info;
++}
++
++static void omap_dss_add_overlay_manager(struct omap_overlay_manager *manager)
++{
++	++num_managers;
++	list_add_tail(&manager->list, &manager_list);
++}
++
++int dss_init_overlay_managers(struct platform_device *pdev)
++{
++	int i, r;
++
++	spin_lock_init(&dss_cache.lock);
++
++	INIT_LIST_HEAD(&manager_list);
++
++	num_managers = 0;
++
++	for (i = 0; i < 2; ++i) {
++		struct omap_overlay_manager *mgr;
++		mgr = kzalloc(sizeof(*mgr), GFP_KERNEL);
++
++		BUG_ON(mgr == NULL);
++
++		switch (i) {
++		case 0:
++			mgr->name = "lcd";
++			mgr->id = OMAP_DSS_CHANNEL_LCD;
++			mgr->supported_displays =
++				OMAP_DISPLAY_TYPE_DPI | OMAP_DISPLAY_TYPE_DBI |
++				OMAP_DISPLAY_TYPE_SDI | OMAP_DISPLAY_TYPE_DSI;
++			break;
++		case 1:
++			mgr->name = "tv";
++			mgr->id = OMAP_DSS_CHANNEL_DIGIT;
++			mgr->supported_displays = OMAP_DISPLAY_TYPE_VENC;
++			break;
++		}
++
++		mgr->set_device = &omap_dss_set_device;
++		mgr->unset_device = &omap_dss_unset_device;
++		mgr->apply = &omap_dss_mgr_apply;
++		mgr->set_manager_info = &omap_dss_mgr_set_info;
++		mgr->get_manager_info = &omap_dss_mgr_get_info;
++		mgr->wait_for_go = &dss_mgr_wait_for_go;
++
++		mgr->caps = OMAP_DSS_OVL_MGR_CAP_DISPC;
++
++		dss_overlay_setup_dispc_manager(mgr);
++
++		omap_dss_add_overlay_manager(mgr);
++
++		r = kobject_init_and_add(&mgr->kobj, &manager_ktype,
++				&pdev->dev.kobj, "manager%d", i);
++
++		if (r) {
++			DSSERR("failed to create sysfs file\n");
++			continue;
++		}
++	}
++
++#ifdef L4_EXAMPLE
++	{
++		int omap_dss_mgr_apply_l4(struct omap_overlay_manager *mgr)
++		{
++			DSSDBG("omap_dss_mgr_apply_l4(%s)\n", mgr->name);
++
++			return 0;
++		}
++
++		struct omap_overlay_manager *mgr;
++		mgr = kzalloc(sizeof(*mgr), GFP_KERNEL);
++
++		BUG_ON(mgr == NULL);
++
++		mgr->name = "l4";
++		mgr->supported_displays =
++			OMAP_DISPLAY_TYPE_DBI | OMAP_DISPLAY_TYPE_DSI;
++
++		mgr->set_device = &omap_dss_set_device;
++		mgr->unset_device = &omap_dss_unset_device;
++		mgr->apply = &omap_dss_mgr_apply_l4;
++		mgr->set_manager_info = &omap_dss_mgr_set_info;
++		mgr->get_manager_info = &omap_dss_mgr_get_info;
++
++		dss_overlay_setup_l4_manager(mgr);
++
++		omap_dss_add_overlay_manager(mgr);
++
++		r = kobject_init_and_add(&mgr->kobj, &manager_ktype,
++				&pdev->dev.kobj, "managerl4");
++
++		if (r)
++			DSSERR("failed to create sysfs file\n");
++	}
++#endif
++
++	return 0;
++}
++
++void dss_uninit_overlay_managers(struct platform_device *pdev)
++{
++	struct omap_overlay_manager *mgr;
++
++	while (!list_empty(&manager_list)) {
++		mgr = list_first_entry(&manager_list,
++				struct omap_overlay_manager, list);
++		list_del(&mgr->list);
++		kobject_del(&mgr->kobj);
++		kobject_put(&mgr->kobj);
++		kfree(mgr);
++	}
++
++	num_managers = 0;
++}
++
++int omap_dss_get_num_overlay_managers(void)
++{
++	return num_managers;
++}
++EXPORT_SYMBOL(omap_dss_get_num_overlay_managers);
++
++struct omap_overlay_manager *omap_dss_get_overlay_manager(int num)
++{
++	int i = 0;
++	struct omap_overlay_manager *mgr;
++
++	list_for_each_entry(mgr, &manager_list, list) {
++		if (i++ == num)
++			return mgr;
++	}
++
++	return NULL;
++}
++EXPORT_SYMBOL(omap_dss_get_overlay_manager);
++
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
 new file mode 100644
-index 0000000..71d8dec
+index 0000000..b7f9a73
 --- /dev/null
-+++ b/drivers/video/omap2/dss/Kconfig
-@@ -0,0 +1,89 @@
-+menuconfig OMAP2_DSS
-+        tristate "OMAP2/3 Display Subsystem support (EXPERIMENTAL)"
-+        depends on ARCH_OMAP2 || ARCH_OMAP3
-+        help
-+          OMAP2/3 Display Subsystem support.
-+
-+if OMAP2_DSS
-+
-+config OMAP2_VRAM_SIZE
-+	int "VRAM size (MB)"
-+	range 0 32
-+	default 0
-+	help
-+	  The amount of SDRAM to reserve at boot time for video RAM use.
-+	  This VRAM will be used by omapfb and other drivers that need
-+	  large continuous RAM area for video use.
-+
-+	  You can also set this with "vram=<bytes>" kernel argument, or
-+	  in the board file.
-+
-+config OMAP2_DSS_DEBUG_SUPPORT
-+        bool "Debug support"
-+	default y
-+	help
-+	  This enables debug messages. You need to enable printing
-+	  with 'debug' module parameter.
-+
-+config OMAP2_DSS_RFBI
-+	bool "RFBI support"
-+        default n
-+	help
-+	  MIPI DBI, or RFBI (Remote Framebuffer Interface), support.
-+
-+config OMAP2_DSS_VENC
-+	bool "VENC support"
-+        default y
-+	help
-+	  OMAP Video Encoder support.
-+
-+config OMAP2_DSS_SDI
-+	bool "SDI support"
-+	depends on ARCH_OMAP3
-+        default n
-+	help
-+	  SDI (Serial Display Interface) support.
-+
-+config OMAP2_DSS_DSI
-+	bool "DSI support"
-+	depends on ARCH_OMAP3
-+        default n
-+	help
-+	  MIPI DSI support.
-+
-+config OMAP2_DSS_USE_DSI_PLL
-+	bool "Use DSI PLL for PCLK (EXPERIMENTAL)"
-+	default n
-+	depends on OMAP2_DSS_DSI
-+	help
-+	  Use DSI PLL to generate pixel clock.  Currently only for DPI output.
-+	  DSI PLL can be used to generate higher and more precise pixel clocks.
-+
-+config OMAP2_DSS_FAKE_VSYNC
-+	bool "Fake VSYNC irq from manual update displays"
-+	default n
-+	help
-+	  If this is selected, DSI will generate a fake DISPC VSYNC interrupt
-+	  when DSI has sent a frame. This is only needed with DSI or RFBI
-+	  displays using manual mode, and you want VSYNC to, for example,
-+	  time animation.
-+
-+config OMAP2_DSS_MIN_FCK_PER_PCK
-+	int "Minimum FCK/PCK ratio (for scaling)"
-+	range 0 32
-+	default 0
-+	help
-+	  This can be used to adjust the minimum FCK/PCK ratio.
-+
-+	  With this you can make sure that DISPC FCK is at least
-+	  n x PCK. Video plane scaling requires higher FCK than
-+	  normally.
-+
-+	  If this is set to 0, there's no extra constraint on the
-+	  DISPC FCK. However, the FCK will at minimum be
-+	  2xPCK (if active matrix) or 3xPCK (if passive matrix).
-+
-+	  Max FCK is 173MHz, so this doesn't work if your PCK
-+	  is very high.
-+
-+endif
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-new file mode 100644
-index 0000000..980c72c
---- /dev/null
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -0,0 +1,6 @@
-+obj-$(CONFIG_OMAP2_DSS) += omapdss.o
-+omapdss-y := core.o dss.o dispc.o dpi.o display.o manager.o overlay.o
-+omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
-+omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
-+omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
-+omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-new file mode 100644
-index 0000000..29497a0
---- /dev/null
-+++ b/drivers/video/omap2/dss/core.c
-@@ -0,0 +1,919 @@
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -0,0 +1,680 @@
 +/*
-+ * linux/drivers/video/omap2/dss/core.c
++ * linux/drivers/video/omap2/dss/overlay.c
 + *
 + * Copyright (C) 2009 Nokia Corporation
 + * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
@@ -790,1881 +2243,664 @@ index 0000000..29497a0
 + * this program.  If not, see <http://www.gnu.org/licenses/>.
 + */
 +
-+#define DSS_SUBSYS_NAME "CORE"
++#define DSS_SUBSYS_NAME "OVERLAY"
 +
 +#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/clk.h>
 +#include <linux/err.h>
++#include <linux/sysfs.h>
++#include <linux/kobject.h>
 +#include <linux/platform_device.h>
-+#include <linux/seq_file.h>
-+#include <linux/debugfs.h>
-+#include <linux/io.h>
-+#include <linux/device.h>
-+
-+#include <plat/display.h>
-+#include <plat/clock.h>
-+
-+#include "dss.h"
-+
-+static struct {
-+	struct platform_device *pdev;
-+	int		ctx_id;
-+
-+	struct clk      *dss_ick;
-+	struct clk	*dss1_fck;
-+	struct clk	*dss2_fck;
-+	struct clk      *dss_54m_fck;
-+	struct clk	*dss_96m_fck;
-+	unsigned	num_clks_enabled;
-+} core;
-+
-+static void dss_clk_enable_all_no_ctx(void);
-+static void dss_clk_disable_all_no_ctx(void);
-+static void dss_clk_enable_no_ctx(enum dss_clock clks);
-+static void dss_clk_disable_no_ctx(enum dss_clock clks);
-+
-+static char *def_disp_name;
-+module_param_named(def_disp, def_disp_name, charp, 0);
-+MODULE_PARM_DESC(def_disp_name, "default display name");
-+
-+#ifdef DEBUG
-+unsigned int dss_debug;
-+module_param_named(debug, dss_debug, bool, 0644);
-+#endif
-+
-+/* CONTEXT */
-+static int dss_get_ctx_id(void)
-+{
-+	struct omap_dss_board_info *pdata = core.pdev->dev.platform_data;
-+	int r;
-+
-+	if (!pdata->get_last_off_on_transaction_id)
-+		return 0;
-+	r = pdata->get_last_off_on_transaction_id(&core.pdev->dev);
-+	if (r < 0) {
-+		dev_err(&core.pdev->dev, "getting transaction ID failed, "
-+				"will force context restore\n");
-+		r = -1;
-+	}
-+	return r;
-+}
-+
-+int dss_need_ctx_restore(void)
-+{
-+	int id = dss_get_ctx_id();
-+
-+	if (id < 0 || id != core.ctx_id) {
-+		DSSDBG("ctx id %d -> id %d\n",
-+				core.ctx_id, id);
-+		core.ctx_id = id;
-+		return 1;
-+	} else {
-+		return 0;
-+	}
-+}
-+
-+static void save_all_ctx(void)
-+{
-+	DSSDBG("save context\n");
-+
-+	dss_clk_enable_no_ctx(DSS_CLK_ICK | DSS_CLK_FCK1);
-+
-+	dss_save_context();
-+	dispc_save_context();
-+#ifdef CONFIG_OMAP2_DSS_DSI
-+	dsi_save_context();
-+#endif
-+
-+	dss_clk_disable_no_ctx(DSS_CLK_ICK | DSS_CLK_FCK1);
-+}
-+
-+static void restore_all_ctx(void)
-+{
-+	DSSDBG("restore context\n");
-+
-+	dss_clk_enable_all_no_ctx();
-+
-+	dss_restore_context();
-+	dispc_restore_context();
-+#ifdef CONFIG_OMAP2_DSS_DSI
-+	dsi_restore_context();
-+#endif
-+
-+	dss_clk_disable_all_no_ctx();
-+}
-+
-+/* CLOCKS */
-+static void core_dump_clocks(struct seq_file *s)
-+{
-+	int i;
-+	struct clk *clocks[5] = {
-+		core.dss_ick,
-+		core.dss1_fck,
-+		core.dss2_fck,
-+		core.dss_54m_fck,
-+		core.dss_96m_fck
-+	};
-+
-+	seq_printf(s, "- CORE -\n");
-+
-+	seq_printf(s, "internal clk count\t\t%u\n", core.num_clks_enabled);
-+
-+	for (i = 0; i < 5; i++) {
-+		if (!clocks[i])
-+			continue;
-+		seq_printf(s, "%-15s\t%lu\t%d\n",
-+				clocks[i]->name,
-+				clk_get_rate(clocks[i]),
-+				clocks[i]->usecount);
-+	}
-+}
-+
-+static int dss_get_clock(struct clk **clock, const char *clk_name)
-+{
-+	struct clk *clk;
-+
-+	clk = clk_get(&core.pdev->dev, clk_name);
-+
-+	if (IS_ERR(clk)) {
-+		DSSERR("can't get clock %s", clk_name);
-+		return PTR_ERR(clk);
-+	}
-+
-+	*clock = clk;
-+
-+	DSSDBG("clk %s, rate %ld\n", clk_name, clk_get_rate(clk));
-+
-+	return 0;
-+}
-+
-+static int dss_get_clocks(void)
-+{
-+	int r;
-+
-+	core.dss_ick = NULL;
-+	core.dss1_fck = NULL;
-+	core.dss2_fck = NULL;
-+	core.dss_54m_fck = NULL;
-+	core.dss_96m_fck = NULL;
-+
-+	r = dss_get_clock(&core.dss_ick, "ick");
-+	if (r)
-+		goto err;
-+
-+	r = dss_get_clock(&core.dss1_fck, "dss1_fck");
-+	if (r)
-+		goto err;
-+
-+	r = dss_get_clock(&core.dss2_fck, "dss2_fck");
-+	if (r)
-+		goto err;
-+
-+	r = dss_get_clock(&core.dss_54m_fck, "tv_fck");
-+	if (r)
-+		goto err;
-+
-+	r = dss_get_clock(&core.dss_96m_fck, "video_fck");
-+	if (r)
-+		goto err;
-+
-+	return 0;
-+
-+err:
-+	if (core.dss_ick)
-+		clk_put(core.dss_ick);
-+	if (core.dss1_fck)
-+		clk_put(core.dss1_fck);
-+	if (core.dss2_fck)
-+		clk_put(core.dss2_fck);
-+	if (core.dss_54m_fck)
-+		clk_put(core.dss_54m_fck);
-+	if (core.dss_96m_fck)
-+		clk_put(core.dss_96m_fck);
-+
-+	return r;
-+}
-+
-+static void dss_put_clocks(void)
-+{
-+	if (core.dss_96m_fck)
-+		clk_put(core.dss_96m_fck);
-+	clk_put(core.dss_54m_fck);
-+	clk_put(core.dss1_fck);
-+	clk_put(core.dss2_fck);
-+	clk_put(core.dss_ick);
-+}
-+
-+unsigned long dss_clk_get_rate(enum dss_clock clk)
-+{
-+	switch (clk) {
-+	case DSS_CLK_ICK:
-+		return clk_get_rate(core.dss_ick);
-+	case DSS_CLK_FCK1:
-+		return clk_get_rate(core.dss1_fck);
-+	case DSS_CLK_FCK2:
-+		return clk_get_rate(core.dss2_fck);
-+	case DSS_CLK_54M:
-+		return clk_get_rate(core.dss_54m_fck);
-+	case DSS_CLK_96M:
-+		return clk_get_rate(core.dss_96m_fck);
-+	}
-+
-+	BUG();
-+	return 0;
-+}
-+
-+static unsigned count_clk_bits(enum dss_clock clks)
-+{
-+	unsigned num_clks = 0;
-+
-+	if (clks & DSS_CLK_ICK)
-+		++num_clks;
-+	if (clks & DSS_CLK_FCK1)
-+		++num_clks;
-+	if (clks & DSS_CLK_FCK2)
-+		++num_clks;
-+	if (clks & DSS_CLK_54M)
-+		++num_clks;
-+	if (clks & DSS_CLK_96M)
-+		++num_clks;
-+
-+	return num_clks;
-+}
-+
-+static void dss_clk_enable_no_ctx(enum dss_clock clks)
-+{
-+	unsigned num_clks = count_clk_bits(clks);
-+
-+	if (clks & DSS_CLK_ICK)
-+		clk_enable(core.dss_ick);
-+	if (clks & DSS_CLK_FCK1)
-+		clk_enable(core.dss1_fck);
-+	if (clks & DSS_CLK_FCK2)
-+		clk_enable(core.dss2_fck);
-+	if (clks & DSS_CLK_54M)
-+		clk_enable(core.dss_54m_fck);
-+	if (clks & DSS_CLK_96M)
-+		clk_enable(core.dss_96m_fck);
-+
-+	core.num_clks_enabled += num_clks;
-+}
-+
-+void dss_clk_enable(enum dss_clock clks)
-+{
-+	dss_clk_enable_no_ctx(clks);
-+
-+	if (cpu_is_omap34xx() && dss_need_ctx_restore())
-+		restore_all_ctx();
-+}
-+
-+static void dss_clk_disable_no_ctx(enum dss_clock clks)
-+{
-+	unsigned num_clks = count_clk_bits(clks);
-+
-+	if (clks & DSS_CLK_ICK)
-+		clk_disable(core.dss_ick);
-+	if (clks & DSS_CLK_FCK1)
-+		clk_disable(core.dss1_fck);
-+	if (clks & DSS_CLK_FCK2)
-+		clk_disable(core.dss2_fck);
-+	if (clks & DSS_CLK_54M)
-+		clk_disable(core.dss_54m_fck);
-+	if (clks & DSS_CLK_96M)
-+		clk_disable(core.dss_96m_fck);
-+
-+	core.num_clks_enabled -= num_clks;
-+}
-+
-+void dss_clk_disable(enum dss_clock clks)
-+{
-+	if (cpu_is_omap34xx()) {
-+		unsigned num_clks = count_clk_bits(clks);
-+
-+		BUG_ON(core.num_clks_enabled < num_clks);
-+
-+		if (core.num_clks_enabled == num_clks)
-+			save_all_ctx();
-+	}
-+
-+	dss_clk_disable_no_ctx(clks);
-+}
-+
-+static void dss_clk_enable_all_no_ctx(void)
-+{
-+	enum dss_clock clks;
-+
-+	clks = DSS_CLK_ICK | DSS_CLK_FCK1 | DSS_CLK_FCK2 | DSS_CLK_54M;
-+	if (cpu_is_omap34xx())
-+		clks |= DSS_CLK_96M;
-+	dss_clk_enable_no_ctx(clks);
-+}
-+
-+static void dss_clk_disable_all_no_ctx(void)
-+{
-+	enum dss_clock clks;
-+
-+	clks = DSS_CLK_ICK | DSS_CLK_FCK1 | DSS_CLK_FCK2 | DSS_CLK_54M;
-+	if (cpu_is_omap34xx())
-+		clks |= DSS_CLK_96M;
-+	dss_clk_disable_no_ctx(clks);
-+}
-+
-+static void dss_clk_disable_all(void)
-+{
-+	enum dss_clock clks;
-+
-+	clks = DSS_CLK_ICK | DSS_CLK_FCK1 | DSS_CLK_FCK2 | DSS_CLK_54M;
-+	if (cpu_is_omap34xx())
-+		clks |= DSS_CLK_96M;
-+	dss_clk_disable(clks);
-+}
-+
-+/* DEBUGFS */
-+#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-+static void dss_debug_dump_clocks(struct seq_file *s)
-+{
-+	core_dump_clocks(s);
-+	dss_dump_clocks(s);
-+	dispc_dump_clocks(s);
-+#ifdef CONFIG_OMAP2_DSS_DSI
-+	dsi_dump_clocks(s);
-+#endif
-+}
-+
-+static int dss_debug_show(struct seq_file *s, void *unused)
-+{
-+	void (*func)(struct seq_file *) = s->private;
-+	func(s);
-+	return 0;
-+}
-+
-+static int dss_debug_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, dss_debug_show, inode->i_private);
-+}
-+
-+static const struct file_operations dss_debug_fops = {
-+	.open           = dss_debug_open,
-+	.read           = seq_read,
-+	.llseek         = seq_lseek,
-+	.release        = single_release,
-+};
-+
-+static struct dentry *dss_debugfs_dir;
-+
-+static int dss_initialize_debugfs(void)
-+{
-+	dss_debugfs_dir = debugfs_create_dir("omapdss", NULL);
-+	if (IS_ERR(dss_debugfs_dir)) {
-+		int err = PTR_ERR(dss_debugfs_dir);
-+		dss_debugfs_dir = NULL;
-+		return err;
-+	}
-+
-+	debugfs_create_file("clk", S_IRUGO, dss_debugfs_dir,
-+			&dss_debug_dump_clocks, &dss_debug_fops);
-+
-+	debugfs_create_file("dss", S_IRUGO, dss_debugfs_dir,
-+			&dss_dump_regs, &dss_debug_fops);
-+	debugfs_create_file("dispc", S_IRUGO, dss_debugfs_dir,
-+			&dispc_dump_regs, &dss_debug_fops);
-+#ifdef CONFIG_OMAP2_DSS_RFBI
-+	debugfs_create_file("rfbi", S_IRUGO, dss_debugfs_dir,
-+			&rfbi_dump_regs, &dss_debug_fops);
-+#endif
-+#ifdef CONFIG_OMAP2_DSS_DSI
-+	debugfs_create_file("dsi", S_IRUGO, dss_debugfs_dir,
-+			&dsi_dump_regs, &dss_debug_fops);
-+#endif
-+#ifdef CONFIG_OMAP2_DSS_VENC
-+	debugfs_create_file("venc", S_IRUGO, dss_debugfs_dir,
-+			&venc_dump_regs, &dss_debug_fops);
-+#endif
-+	return 0;
-+}
-+
-+static void dss_uninitialize_debugfs(void)
-+{
-+	if (dss_debugfs_dir)
-+		debugfs_remove_recursive(dss_debugfs_dir);
-+}
-+#endif /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
-+
-+/* PLATFORM DEVICE */
-+static int omap_dss_probe(struct platform_device *pdev)
-+{
-+	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
-+	int skip_init = 0;
-+	int r;
-+	int i;
-+
-+	core.pdev = pdev;
-+
-+	dss_init_overlay_managers(pdev);
-+	dss_init_overlays(pdev);
-+
-+	r = dss_get_clocks();
-+	if (r)
-+		goto fail0;
-+
-+	dss_clk_enable_all_no_ctx();
-+
-+	core.ctx_id = dss_get_ctx_id();
-+	DSSDBG("initial ctx id %u\n", core.ctx_id);
-+
-+#ifdef CONFIG_FB_OMAP_BOOTLOADER_INIT
-+	/* DISPC_CONTROL */
-+	if (omap_readl(0x48050440) & 1)	/* LCD enabled? */
-+		skip_init = 1;
-+#endif
-+
-+	r = dss_init(skip_init);
-+	if (r) {
-+		DSSERR("Failed to initialize DSS\n");
-+		goto fail0;
-+	}
-+
-+#ifdef CONFIG_OMAP2_DSS_RFBI
-+	r = rfbi_init();
-+	if (r) {
-+		DSSERR("Failed to initialize rfbi\n");
-+		goto fail0;
-+	}
-+#endif
-+
-+	r = dpi_init();
-+	if (r) {
-+		DSSERR("Failed to initialize dpi\n");
-+		goto fail0;
-+	}
-+
-+	r = dispc_init();
-+	if (r) {
-+		DSSERR("Failed to initialize dispc\n");
-+		goto fail0;
-+	}
-+#ifdef CONFIG_OMAP2_DSS_VENC
-+	r = venc_init(pdev);
-+	if (r) {
-+		DSSERR("Failed to initialize venc\n");
-+		goto fail0;
-+	}
-+#endif
-+	if (cpu_is_omap34xx()) {
-+#ifdef CONFIG_OMAP2_DSS_SDI
-+		r = sdi_init(skip_init);
-+		if (r) {
-+			DSSERR("Failed to initialize SDI\n");
-+			goto fail0;
-+		}
-+#endif
-+#ifdef CONFIG_OMAP2_DSS_DSI
-+		r = dsi_init(pdev);
-+		if (r) {
-+			DSSERR("Failed to initialize DSI\n");
-+			goto fail0;
-+		}
-+#endif
-+	}
-+
-+#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-+	r = dss_initialize_debugfs();
-+	if (r)
-+		goto fail0;
-+#endif
-+
-+	for (i = 0; i < pdata->num_devices; ++i) {
-+		struct omap_dss_device *dssdev = pdata->devices[i];
-+
-+		r = omap_dss_register_device(dssdev);
-+		if (r)
-+			DSSERR("device reg failed %d\n", i);
-+
-+		if (def_disp_name && strcmp(def_disp_name, dssdev->name) == 0)
-+			pdata->default_device = dssdev;
-+	}
-+
-+	dss_clk_disable_all();
-+
-+	return 0;
-+
-+	/* XXX fail correctly */
-+fail0:
-+	return r;
-+}
-+
-+static int omap_dss_remove(struct platform_device *pdev)
-+{
-+	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
-+	int i;
-+	int c;
-+
-+#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-+	dss_uninitialize_debugfs();
-+#endif
-+
-+#ifdef CONFIG_OMAP2_DSS_VENC
-+	venc_exit();
-+#endif
-+	dispc_exit();
-+	dpi_exit();
-+#ifdef CONFIG_OMAP2_DSS_RFBI
-+	rfbi_exit();
-+#endif
-+	if (cpu_is_omap34xx()) {
-+#ifdef CONFIG_OMAP2_DSS_DSI
-+		dsi_exit();
-+#endif
-+#ifdef CONFIG_OMAP2_DSS_SDI
-+		sdi_exit();
-+#endif
-+	}
-+
-+	dss_exit();
-+
-+	/* these should be removed at some point */
-+	c = core.dss_ick->usecount;
-+	if (c > 0) {
-+		DSSERR("warning: dss_ick usecount %d, disabling\n", c);
-+		while (c-- > 0)
-+			clk_disable(core.dss_ick);
-+	}
-+
-+	c = core.dss1_fck->usecount;
-+	if (c > 0) {
-+		DSSERR("warning: dss1_fck usecount %d, disabling\n", c);
-+		while (c-- > 0)
-+			clk_disable(core.dss1_fck);
-+	}
-+
-+	c = core.dss2_fck->usecount;
-+	if (c > 0) {
-+		DSSERR("warning: dss2_fck usecount %d, disabling\n", c);
-+		while (c-- > 0)
-+			clk_disable(core.dss2_fck);
-+	}
-+
-+	c = core.dss_54m_fck->usecount;
-+	if (c > 0) {
-+		DSSERR("warning: dss_54m_fck usecount %d, disabling\n", c);
-+		while (c-- > 0)
-+			clk_disable(core.dss_54m_fck);
-+	}
-+
-+	if (core.dss_96m_fck) {
-+		c = core.dss_96m_fck->usecount;
-+		if (c > 0) {
-+			DSSERR("warning: dss_96m_fck usecount %d, disabling\n",
-+					c);
-+			while (c-- > 0)
-+				clk_disable(core.dss_96m_fck);
-+		}
-+	}
-+
-+	dss_put_clocks();
-+
-+	dss_uninit_overlays(pdev);
-+	dss_uninit_overlay_managers(pdev);
-+
-+	for (i = 0; i < pdata->num_devices; ++i)
-+		omap_dss_unregister_device(pdata->devices[i]);
-+
-+	return 0;
-+}
-+
-+static void omap_dss_shutdown(struct platform_device *pdev)
-+{
-+	DSSDBG("shutdown\n");
-+	dss_disable_all_devices();
-+}
-+
-+static int omap_dss_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	DSSDBG("suspend %d\n", state.event);
-+
-+	return dss_suspend_all_devices();
-+}
-+
-+static int omap_dss_resume(struct platform_device *pdev)
-+{
-+	DSSDBG("resume\n");
-+
-+	return dss_resume_all_devices();
-+}
-+
-+static struct platform_driver omap_dss_driver = {
-+	.probe          = omap_dss_probe,
-+	.remove         = omap_dss_remove,
-+	.shutdown	= omap_dss_shutdown,
-+	.suspend	= omap_dss_suspend,
-+	.resume		= omap_dss_resume,
-+	.driver         = {
-+		.name   = "omapdss",
-+		.owner  = THIS_MODULE,
-+	},
-+};
-+
-+/* BUS */
-+static int dss_bus_match(struct device *dev, struct device_driver *driver)
-+{
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+
-+	DSSDBG("bus_match. dev %s/%s, drv %s\n",
-+			dev_name(dev), dssdev->driver_name, driver->name);
-+
-+	return strcmp(dssdev->driver_name, driver->name) == 0;
-+}
-+
-+static ssize_t device_name_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	return snprintf(buf, PAGE_SIZE, "%s\n",
-+			dssdev->name ?
-+			dssdev->name : "");
-+}
-+
-+static struct device_attribute default_dev_attrs[] = {
-+	__ATTR(name, S_IRUGO, device_name_show, NULL),
-+	__ATTR_NULL,
-+};
-+
-+static ssize_t driver_name_show(struct device_driver *drv, char *buf)
-+{
-+	struct omap_dss_driver *dssdrv = to_dss_driver(drv);
-+	return snprintf(buf, PAGE_SIZE, "%s\n",
-+			dssdrv->driver.name ?
-+			dssdrv->driver.name : "");
-+}
-+static struct driver_attribute default_drv_attrs[] = {
-+	__ATTR(name, S_IRUGO, driver_name_show, NULL),
-+	__ATTR_NULL,
-+};
-+
-+static struct bus_type dss_bus_type = {
-+	.name = "omapdss",
-+	.match = dss_bus_match,
-+	.dev_attrs = default_dev_attrs,
-+	.drv_attrs = default_drv_attrs,
-+};
-+
-+static void dss_bus_release(struct device *dev)
-+{
-+	DSSDBG("bus_release\n");
-+}
-+
-+static struct device dss_bus = {
-+	.release = dss_bus_release,
-+};
-+
-+struct bus_type *dss_get_bus(void)
-+{
-+	return &dss_bus_type;
-+}
-+
-+/* DRIVER */
-+static int dss_driver_probe(struct device *dev)
-+{
-+	int r;
-+	struct omap_dss_driver *dssdrv = to_dss_driver(dev->driver);
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_board_info *pdata = core.pdev->dev.platform_data;
-+	bool force;
-+
-+	DSSDBG("driver_probe: dev %s/%s, drv %s\n",
-+				dev_name(dev), dssdev->driver_name,
-+				dssdrv->driver.name);
-+
-+	dss_init_device(core.pdev, dssdev);
-+
-+	/* skip this if the device is behind a ctrl */
-+	if (!dssdev->panel.ctrl) {
-+		force = pdata->default_device == dssdev;
-+		dss_recheck_connections(dssdev, force);
-+	}
-+
-+	r = dssdrv->probe(dssdev);
-+
-+	if (r) {
-+		DSSERR("driver probe failed: %d\n", r);
-+		return r;
-+	}
-+
-+	DSSDBG("probe done for device %s\n", dev_name(dev));
-+
-+	dssdev->driver = dssdrv;
-+
-+	return 0;
-+}
-+
-+static int dss_driver_remove(struct device *dev)
-+{
-+	struct omap_dss_driver *dssdrv = to_dss_driver(dev->driver);
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+
-+	DSSDBG("driver_remove: dev %s/%s\n", dev_name(dev),
-+			dssdev->driver_name);
-+
-+	dssdrv->remove(dssdev);
-+
-+	dss_uninit_device(core.pdev, dssdev);
-+
-+	dssdev->driver = NULL;
-+
-+	return 0;
-+}
-+
-+int omap_dss_register_driver(struct omap_dss_driver *dssdriver)
-+{
-+	dssdriver->driver.bus = &dss_bus_type;
-+	dssdriver->driver.probe = dss_driver_probe;
-+	dssdriver->driver.remove = dss_driver_remove;
-+	return driver_register(&dssdriver->driver);
-+}
-+EXPORT_SYMBOL(omap_dss_register_driver);
-+
-+void omap_dss_unregister_driver(struct omap_dss_driver *dssdriver)
-+{
-+	driver_unregister(&dssdriver->driver);
-+}
-+EXPORT_SYMBOL(omap_dss_unregister_driver);
-+
-+/* DEVICE */
-+static void reset_device(struct device *dev, int check)
-+{
-+	u8 *dev_p = (u8 *)dev;
-+	u8 *dev_end = dev_p + sizeof(*dev);
-+	void *saved_pdata;
-+
-+	saved_pdata = dev->platform_data;
-+	if (check) {
-+		/*
-+		 * Check if there is any other setting than platform_data
-+		 * in struct device; warn that these will be reset by our
-+		 * init.
-+		 */
-+		dev->platform_data = NULL;
-+		while (dev_p < dev_end) {
-+			if (*dev_p) {
-+				WARN("%s: struct device fields will be "
-+						"discarded\n",
-+				     __func__);
-+				break;
-+			}
-+			dev_p++;
-+		}
-+	}
-+	memset(dev, 0, sizeof(*dev));
-+	dev->platform_data = saved_pdata;
-+}
-+
-+
-+static void omap_dss_dev_release(struct device *dev)
-+{
-+	reset_device(dev, 0);
-+}
-+
-+int omap_dss_register_device(struct omap_dss_device *dssdev)
-+{
-+	static int dev_num;
-+	static int panel_num;
-+	int r;
-+
-+	WARN_ON(!dssdev->driver_name);
-+
-+	reset_device(&dssdev->dev, 1);
-+	dssdev->dev.bus = &dss_bus_type;
-+	dssdev->dev.parent = &dss_bus;
-+	dssdev->dev.release = omap_dss_dev_release;
-+	dev_set_name(&dssdev->dev, "display%d", dev_num++);
-+	r = device_register(&dssdev->dev);
-+	if (r)
-+		return r;
-+
-+	if (dssdev->ctrl.panel) {
-+		struct omap_dss_device *panel = dssdev->ctrl.panel;
-+
-+		panel->panel.ctrl = dssdev;
-+
-+		reset_device(&panel->dev, 1);
-+		panel->dev.bus = &dss_bus_type;
-+		panel->dev.parent = &dssdev->dev;
-+		panel->dev.release = omap_dss_dev_release;
-+		dev_set_name(&panel->dev, "panel%d", panel_num++);
-+		r = device_register(&panel->dev);
-+		if (r)
-+			return r;
-+	}
-+
-+	return 0;
-+}
-+
-+void omap_dss_unregister_device(struct omap_dss_device *dssdev)
-+{
-+	device_unregister(&dssdev->dev);
-+
-+	if (dssdev->ctrl.panel) {
-+		struct omap_dss_device *panel = dssdev->ctrl.panel;
-+		device_unregister(&panel->dev);
-+	}
-+}
-+
-+/* BUS */
-+static int omap_dss_bus_register(void)
-+{
-+	int r;
-+
-+	r = bus_register(&dss_bus_type);
-+	if (r) {
-+		DSSERR("bus register failed\n");
-+		return r;
-+	}
-+
-+	dev_set_name(&dss_bus, "omapdss");
-+	r = device_register(&dss_bus);
-+	if (r) {
-+		DSSERR("bus driver register failed\n");
-+		bus_unregister(&dss_bus_type);
-+		return r;
-+	}
-+
-+	return 0;
-+}
-+
-+/* INIT */
-+
-+#ifdef CONFIG_OMAP2_DSS_MODULE
-+static void omap_dss_bus_unregister(void)
-+{
-+	device_unregister(&dss_bus);
-+
-+	bus_unregister(&dss_bus_type);
-+}
-+
-+static int __init omap_dss_init(void)
-+{
-+	int r;
-+
-+	r = omap_dss_bus_register();
-+	if (r)
-+		return r;
-+
-+	r = platform_driver_register(&omap_dss_driver);
-+	if (r) {
-+		omap_dss_bus_unregister();
-+		return r;
-+	}
-+
-+	return 0;
-+}
-+
-+static void __exit omap_dss_exit(void)
-+{
-+	platform_driver_unregister(&omap_dss_driver);
-+
-+	omap_dss_bus_unregister();
-+}
-+
-+module_init(omap_dss_init);
-+module_exit(omap_dss_exit);
-+#else
-+static int __init omap_dss_init(void)
-+{
-+	return omap_dss_bus_register();
-+}
-+
-+static int __init omap_dss_init2(void)
-+{
-+	return platform_driver_register(&omap_dss_driver);
-+}
-+
-+core_initcall(omap_dss_init);
-+device_initcall(omap_dss_init2);
-+#endif
-+
-+MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@nokia.com>");
-+MODULE_DESCRIPTION("OMAP2/3 Display Subsystem");
-+MODULE_LICENSE("GPL v2");
-+
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-new file mode 100644
-index 0000000..9b05ee6
---- /dev/null
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -0,0 +1,596 @@
-+/*
-+ * linux/drivers/video/omap2/dss/dss.c
-+ *
-+ * Copyright (C) 2009 Nokia Corporation
-+ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-+ *
-+ * Some code and ideas taken from drivers/video/omap/ driver
-+ * by Imre Deak.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#define DSS_SUBSYS_NAME "DSS"
-+
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/err.h>
 +#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/seq_file.h>
-+#include <linux/clk.h>
 +
 +#include <plat/display.h>
++#include <plat/cpu.h>
++
 +#include "dss.h"
 +
-+#define DSS_BASE			0x48050000
++static int num_overlays;
++static struct list_head overlay_list;
 +
-+#define DSS_SZ_REGS			SZ_512
-+
-+struct dss_reg {
-+	u16 idx;
-+};
-+
-+#define DSS_REG(idx)			((const struct dss_reg) { idx })
-+
-+#define DSS_REVISION			DSS_REG(0x0000)
-+#define DSS_SYSCONFIG			DSS_REG(0x0010)
-+#define DSS_SYSSTATUS			DSS_REG(0x0014)
-+#define DSS_IRQSTATUS			DSS_REG(0x0018)
-+#define DSS_CONTROL			DSS_REG(0x0040)
-+#define DSS_SDI_CONTROL			DSS_REG(0x0044)
-+#define DSS_PLL_CONTROL			DSS_REG(0x0048)
-+#define DSS_SDI_STATUS			DSS_REG(0x005C)
-+
-+#define REG_GET(idx, start, end) \
-+	FLD_GET(dss_read_reg(idx), start, end)
-+
-+#define REG_FLD_MOD(idx, val, start, end) \
-+	dss_write_reg(idx, FLD_MOD(dss_read_reg(idx), val, start, end))
-+
-+static struct {
-+	void __iomem    *base;
-+
-+	struct clk	*dpll4_m4_ck;
-+
-+	unsigned long	cache_req_pck;
-+	unsigned long	cache_prate;
-+	struct dss_clock_info cache_dss_cinfo;
-+	struct dispc_clock_info cache_dispc_cinfo;
-+
-+	u32		ctx[DSS_SZ_REGS / sizeof(u32)];
-+} dss;
-+
-+static int _omap_dss_wait_reset(void);
-+
-+static inline void dss_write_reg(const struct dss_reg idx, u32 val)
++static ssize_t overlay_name_show(struct omap_overlay *ovl, char *buf)
 +{
-+	__raw_writel(val, dss.base + idx.idx);
++	return snprintf(buf, PAGE_SIZE, "%s\n", ovl->name);
 +}
 +
-+static inline u32 dss_read_reg(const struct dss_reg idx)
++static ssize_t overlay_manager_show(struct omap_overlay *ovl, char *buf)
 +{
-+	return __raw_readl(dss.base + idx.idx);
++	return snprintf(buf, PAGE_SIZE, "%s\n",
++			ovl->manager ? ovl->manager->name : "<none>");
 +}
 +
-+#define SR(reg) \
-+	dss.ctx[(DSS_##reg).idx / sizeof(u32)] = dss_read_reg(DSS_##reg)
-+#define RR(reg) \
-+	dss_write_reg(DSS_##reg, dss.ctx[(DSS_##reg).idx / sizeof(u32)])
-+
-+void dss_save_context(void)
++static ssize_t overlay_manager_store(struct omap_overlay *ovl, const char *buf,
++		size_t size)
 +{
-+	if (cpu_is_omap24xx())
-+		return;
++	int i, r;
++	struct omap_overlay_manager *mgr = NULL;
++	struct omap_overlay_manager *old_mgr;
++	int len = size;
 +
-+	SR(SYSCONFIG);
-+	SR(CONTROL);
++	if (buf[size-1] == '\n')
++		--len;
 +
-+#ifdef CONFIG_OMAP2_DSS_SDI
-+	SR(SDI_CONTROL);
-+	SR(PLL_CONTROL);
-+#endif
-+}
++	if (len > 0) {
++		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
++			mgr = omap_dss_get_overlay_manager(i);
 +
-+void dss_restore_context(void)
-+{
-+	if (_omap_dss_wait_reset())
-+		DSSERR("DSS not coming out of reset after sleep\n");
++			if (strncmp(buf, mgr->name, len) == 0)
++				break;
 +
-+	RR(SYSCONFIG);
-+	RR(CONTROL);
-+
-+#ifdef CONFIG_OMAP2_DSS_SDI
-+	RR(SDI_CONTROL);
-+	RR(PLL_CONTROL);
-+#endif
-+}
-+
-+#undef SR
-+#undef RR
-+
-+void dss_sdi_init(u8 datapairs)
-+{
-+	u32 l;
-+
-+	BUG_ON(datapairs > 3 || datapairs < 1);
-+
-+	l = dss_read_reg(DSS_SDI_CONTROL);
-+	l = FLD_MOD(l, 0xf, 19, 15);		/* SDI_PDIV */
-+	l = FLD_MOD(l, datapairs-1, 3, 2);	/* SDI_PRSEL */
-+	l = FLD_MOD(l, 2, 1, 0);		/* SDI_BWSEL */
-+	dss_write_reg(DSS_SDI_CONTROL, l);
-+
-+	l = dss_read_reg(DSS_PLL_CONTROL);
-+	l = FLD_MOD(l, 0x7, 25, 22);	/* SDI_PLL_FREQSEL */
-+	l = FLD_MOD(l, 0xb, 16, 11);	/* SDI_PLL_REGN */
-+	l = FLD_MOD(l, 0xb4, 10, 1);	/* SDI_PLL_REGM */
-+	dss_write_reg(DSS_PLL_CONTROL, l);
-+}
-+
-+int dss_sdi_enable(void)
-+{
-+	unsigned long timeout;
-+
-+	dispc_pck_free_enable(1);
-+
-+	/* Reset SDI PLL */
-+	REG_FLD_MOD(DSS_PLL_CONTROL, 1, 18, 18); /* SDI_PLL_SYSRESET */
-+	udelay(1);	/* wait 2x PCLK */
-+
-+	/* Lock SDI PLL */
-+	REG_FLD_MOD(DSS_PLL_CONTROL, 1, 28, 28); /* SDI_PLL_GOBIT */
-+
-+	/* Waiting for PLL lock request to complete */
-+	timeout = jiffies + msecs_to_jiffies(500);
-+	while (dss_read_reg(DSS_SDI_STATUS) & (1 << 6)) {
-+		if (time_after_eq(jiffies, timeout)) {
-+			DSSERR("PLL lock request timed out\n");
-+			goto err1;
++			mgr = NULL;
 +		}
 +	}
 +
-+	/* Clearing PLL_GO bit */
-+	REG_FLD_MOD(DSS_PLL_CONTROL, 0, 28, 28);
-+
-+	/* Waiting for PLL to lock */
-+	timeout = jiffies + msecs_to_jiffies(500);
-+	while (!(dss_read_reg(DSS_SDI_STATUS) & (1 << 5))) {
-+		if (time_after_eq(jiffies, timeout)) {
-+			DSSERR("PLL lock timed out\n");
-+			goto err1;
-+		}
-+	}
-+
-+	dispc_lcd_enable_signal(1);
-+
-+	/* Waiting for SDI reset to complete */
-+	timeout = jiffies + msecs_to_jiffies(500);
-+	while (!(dss_read_reg(DSS_SDI_STATUS) & (1 << 2))) {
-+		if (time_after_eq(jiffies, timeout)) {
-+			DSSERR("SDI reset timed out\n");
-+			goto err2;
-+		}
-+	}
-+
-+	return 0;
-+
-+ err2:
-+	dispc_lcd_enable_signal(0);
-+ err1:
-+	/* Reset SDI PLL */
-+	REG_FLD_MOD(DSS_PLL_CONTROL, 0, 18, 18); /* SDI_PLL_SYSRESET */
-+
-+	dispc_pck_free_enable(0);
-+
-+	return -ETIMEDOUT;
-+}
-+
-+void dss_sdi_disable(void)
-+{
-+	dispc_lcd_enable_signal(0);
-+
-+	dispc_pck_free_enable(0);
-+
-+	/* Reset SDI PLL */
-+	REG_FLD_MOD(DSS_PLL_CONTROL, 0, 18, 18); /* SDI_PLL_SYSRESET */
-+}
-+
-+void dss_dump_clocks(struct seq_file *s)
-+{
-+	unsigned long dpll4_ck_rate;
-+	unsigned long dpll4_m4_ck_rate;
-+
-+	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+
-+	dpll4_ck_rate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
-+	dpll4_m4_ck_rate = clk_get_rate(dss.dpll4_m4_ck);
-+
-+	seq_printf(s, "- DSS -\n");
-+
-+	seq_printf(s, "dpll4_ck %lu\n", dpll4_ck_rate);
-+
-+	seq_printf(s, "dss1_alwon_fclk = %lu / %lu * 2 = %lu\n",
-+			dpll4_ck_rate,
-+			dpll4_ck_rate / dpll4_m4_ck_rate,
-+			dss_clk_get_rate(DSS_CLK_FCK1));
-+
-+	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+}
-+
-+void dss_dump_regs(struct seq_file *s)
-+{
-+#define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, dss_read_reg(r))
-+
-+	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+
-+	DUMPREG(DSS_REVISION);
-+	DUMPREG(DSS_SYSCONFIG);
-+	DUMPREG(DSS_SYSSTATUS);
-+	DUMPREG(DSS_IRQSTATUS);
-+	DUMPREG(DSS_CONTROL);
-+	DUMPREG(DSS_SDI_CONTROL);
-+	DUMPREG(DSS_PLL_CONTROL);
-+	DUMPREG(DSS_SDI_STATUS);
-+
-+	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+#undef DUMPREG
-+}
-+
-+void dss_select_clk_source(bool dsi, bool dispc)
-+{
-+	u32 r;
-+	r = dss_read_reg(DSS_CONTROL);
-+	r = FLD_MOD(r, dsi, 1, 1);	/* DSI_CLK_SWITCH */
-+	r = FLD_MOD(r, dispc, 0, 0);	/* DISPC_CLK_SWITCH */
-+	dss_write_reg(DSS_CONTROL, r);
-+}
-+
-+int dss_get_dsi_clk_source(void)
-+{
-+	return FLD_GET(dss_read_reg(DSS_CONTROL), 1, 1);
-+}
-+
-+int dss_get_dispc_clk_source(void)
-+{
-+	return FLD_GET(dss_read_reg(DSS_CONTROL), 0, 0);
-+}
-+
-+/* calculate clock rates using dividers in cinfo */
-+int dss_calc_clock_rates(struct dss_clock_info *cinfo)
-+{
-+	unsigned long prate;
-+
-+	if (cinfo->fck_div > 16 || cinfo->fck_div == 0)
++	if (len > 0 && mgr == NULL)
 +		return -EINVAL;
 +
-+	prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
++	if (mgr)
++		DSSDBG("manager %s found\n", mgr->name);
 +
-+	cinfo->fck = prate / cinfo->fck_div;
++	if (mgr == ovl->manager)
++		return size;
 +
-+	return 0;
-+}
++	old_mgr = ovl->manager;
 +
-+int dss_set_clock_div(struct dss_clock_info *cinfo)
-+{
-+	unsigned long prate;
-+	int r;
++	/* detach old manager */
++	if (old_mgr) {
++		r = ovl->unset_manager(ovl);
++		if (r) {
++			DSSERR("detach failed\n");
++			return r;
++		}
 +
-+	if (cpu_is_omap34xx()) {
-+		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
-+		DSSDBG("dpll4_m4 = %ld\n", prate);
-+
-+		r = clk_set_rate(dss.dpll4_m4_ck, prate / cinfo->fck_div);
++		r = old_mgr->apply(old_mgr);
 +		if (r)
 +			return r;
 +	}
 +
-+	DSSDBG("fck = %ld (%d)\n", cinfo->fck, cinfo->fck_div);
++	if (mgr) {
++		r = ovl->set_manager(ovl, mgr);
++		if (r) {
++			DSSERR("Failed to attach overlay\n");
++			return r;
++		}
 +
-+	return 0;
-+}
-+
-+int dss_get_clock_div(struct dss_clock_info *cinfo)
-+{
-+	cinfo->fck = dss_clk_get_rate(DSS_CLK_FCK1);
-+
-+	if (cpu_is_omap34xx()) {
-+		unsigned long prate;
-+		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
-+		cinfo->fck_div = prate / (cinfo->fck / 2);
-+	} else {
-+		cinfo->fck_div = 0;
++		r = mgr->apply(mgr);
++		if (r)
++			return r;
 +	}
 +
-+	return 0;
++	return size;
 +}
 +
-+unsigned long dss_get_dpll4_rate(void)
++static ssize_t overlay_input_size_show(struct omap_overlay *ovl, char *buf)
 +{
-+	if (cpu_is_omap34xx())
-+		return clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
++	return snprintf(buf, PAGE_SIZE, "%d,%d\n",
++			ovl->info.width, ovl->info.height);
++}
++
++static ssize_t overlay_screen_width_show(struct omap_overlay *ovl, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", ovl->info.screen_width);
++}
++
++static ssize_t overlay_position_show(struct omap_overlay *ovl, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d,%d\n",
++			ovl->info.pos_x, ovl->info.pos_y);
++}
++
++static ssize_t overlay_position_store(struct omap_overlay *ovl,
++		const char *buf, size_t size)
++{
++	int r;
++	char *last;
++	struct omap_overlay_info info;
++
++	ovl->get_overlay_info(ovl, &info);
++
++	info.pos_x = simple_strtoul(buf, &last, 10);
++	++last;
++	if (last - buf >= size)
++		return -EINVAL;
++
++	info.pos_y = simple_strtoul(last, &last, 10);
++
++	r = ovl->set_overlay_info(ovl, &info);
++	if (r)
++		return r;
++
++	if (ovl->manager) {
++		r = ovl->manager->apply(ovl->manager);
++		if (r)
++			return r;
++	}
++
++	return size;
++}
++
++static ssize_t overlay_output_size_show(struct omap_overlay *ovl, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d,%d\n",
++			ovl->info.out_width, ovl->info.out_height);
++}
++
++static ssize_t overlay_output_size_store(struct omap_overlay *ovl,
++		const char *buf, size_t size)
++{
++	int r;
++	char *last;
++	struct omap_overlay_info info;
++
++	ovl->get_overlay_info(ovl, &info);
++
++	info.out_width = simple_strtoul(buf, &last, 10);
++	++last;
++	if (last - buf >= size)
++		return -EINVAL;
++
++	info.out_height = simple_strtoul(last, &last, 10);
++
++	r = ovl->set_overlay_info(ovl, &info);
++	if (r)
++		return r;
++
++	if (ovl->manager) {
++		r = ovl->manager->apply(ovl->manager);
++		if (r)
++			return r;
++	}
++
++	return size;
++}
++
++static ssize_t overlay_enabled_show(struct omap_overlay *ovl, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", ovl->info.enabled);
++}
++
++static ssize_t overlay_enabled_store(struct omap_overlay *ovl, const char *buf,
++		size_t size)
++{
++	int r;
++	struct omap_overlay_info info;
++
++	ovl->get_overlay_info(ovl, &info);
++
++	info.enabled = simple_strtoul(buf, NULL, 10);
++
++	r = ovl->set_overlay_info(ovl, &info);
++	if (r)
++		return r;
++
++	if (ovl->manager) {
++		r = ovl->manager->apply(ovl->manager);
++		if (r)
++			return r;
++	}
++
++	return size;
++}
++
++static ssize_t overlay_global_alpha_show(struct omap_overlay *ovl, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n",
++			ovl->info.global_alpha);
++}
++
++static ssize_t overlay_global_alpha_store(struct omap_overlay *ovl,
++		const char *buf, size_t size)
++{
++	int r;
++	struct omap_overlay_info info;
++
++	ovl->get_overlay_info(ovl, &info);
++
++	/* Video1 plane does not support global alpha
++	 * to always make it 255 completely opaque
++	 */
++	if (ovl->id == OMAP_DSS_VIDEO1)
++		info.global_alpha = 255;
 +	else
-+		return 0;
++		info.global_alpha = simple_strtoul(buf, NULL, 10);
++
++	r = ovl->set_overlay_info(ovl, &info);
++	if (r)
++		return r;
++
++	if (ovl->manager) {
++		r = ovl->manager->apply(ovl->manager);
++		if (r)
++			return r;
++	}
++
++	return size;
 +}
 +
-+int dss_calc_clock_div(bool is_tft, unsigned long req_pck,
-+		struct dss_clock_info *dss_cinfo,
-+		struct dispc_clock_info *dispc_cinfo)
++struct overlay_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct omap_overlay *, char *);
++	ssize_t	(*store)(struct omap_overlay *, const char *, size_t);
++};
++
++#define OVERLAY_ATTR(_name, _mode, _show, _store) \
++	struct overlay_attribute overlay_attr_##_name = \
++	__ATTR(_name, _mode, _show, _store)
++
++static OVERLAY_ATTR(name, S_IRUGO, overlay_name_show, NULL);
++static OVERLAY_ATTR(manager, S_IRUGO|S_IWUSR,
++		overlay_manager_show, overlay_manager_store);
++static OVERLAY_ATTR(input_size, S_IRUGO, overlay_input_size_show, NULL);
++static OVERLAY_ATTR(screen_width, S_IRUGO, overlay_screen_width_show, NULL);
++static OVERLAY_ATTR(position, S_IRUGO|S_IWUSR,
++		overlay_position_show, overlay_position_store);
++static OVERLAY_ATTR(output_size, S_IRUGO|S_IWUSR,
++		overlay_output_size_show, overlay_output_size_store);
++static OVERLAY_ATTR(enabled, S_IRUGO|S_IWUSR,
++		overlay_enabled_show, overlay_enabled_store);
++static OVERLAY_ATTR(global_alpha, S_IRUGO|S_IWUSR,
++		overlay_global_alpha_show, overlay_global_alpha_store);
++
++static struct attribute *overlay_sysfs_attrs[] = {
++	&overlay_attr_name.attr,
++	&overlay_attr_manager.attr,
++	&overlay_attr_input_size.attr,
++	&overlay_attr_screen_width.attr,
++	&overlay_attr_position.attr,
++	&overlay_attr_output_size.attr,
++	&overlay_attr_enabled.attr,
++	&overlay_attr_global_alpha.attr,
++	NULL
++};
++
++static ssize_t overlay_attr_show(struct kobject *kobj, struct attribute *attr,
++		char *buf)
 +{
-+	unsigned long prate;
-+	struct dss_clock_info best_dss;
-+	struct dispc_clock_info best_dispc;
++	struct omap_overlay *overlay;
++	struct overlay_attribute *overlay_attr;
 +
-+	unsigned long fck;
++	overlay = container_of(kobj, struct omap_overlay, kobj);
++	overlay_attr = container_of(attr, struct overlay_attribute, attr);
 +
-+	u16 fck_div;
++	if (!overlay_attr->show)
++		return -ENOENT;
 +
-+	int match = 0;
-+	int min_fck_per_pck;
++	return overlay_attr->show(overlay, buf);
++}
 +
-+	prate = dss_get_dpll4_rate();
++static ssize_t overlay_attr_store(struct kobject *kobj, struct attribute *attr,
++		const char *buf, size_t size)
++{
++	struct omap_overlay *overlay;
++	struct overlay_attribute *overlay_attr;
 +
-+	fck = dss_clk_get_rate(DSS_CLK_FCK1);
-+	if (req_pck == dss.cache_req_pck &&
-+			((cpu_is_omap34xx() && prate == dss.cache_prate) ||
-+			 dss.cache_dss_cinfo.fck == fck)) {
-+		DSSDBG("dispc clock info found from cache.\n");
-+		*dss_cinfo = dss.cache_dss_cinfo;
-+		*dispc_cinfo = dss.cache_dispc_cinfo;
++	overlay = container_of(kobj, struct omap_overlay, kobj);
++	overlay_attr = container_of(attr, struct overlay_attribute, attr);
++
++	if (!overlay_attr->store)
++		return -ENOENT;
++
++	return overlay_attr->store(overlay, buf, size);
++}
++
++static struct sysfs_ops overlay_sysfs_ops = {
++	.show = overlay_attr_show,
++	.store = overlay_attr_store,
++};
++
++static struct kobj_type overlay_ktype = {
++	.sysfs_ops = &overlay_sysfs_ops,
++	.default_attrs = overlay_sysfs_attrs,
++};
++
++/* Check if overlay parameters are compatible with display */
++int dss_check_overlay(struct omap_overlay *ovl, struct omap_dss_device *dssdev)
++{
++	struct omap_overlay_info *info;
++	u16 outw, outh;
++	u16 dw, dh;
++
++	if (!dssdev)
 +		return 0;
-+	}
 +
-+	min_fck_per_pck = CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK;
++	if (!ovl->info.enabled)
++		return 0;
 +
-+	if (min_fck_per_pck &&
-+		req_pck * min_fck_per_pck > DISPC_MAX_FCK) {
-+		DSSERR("Requested pixel clock not possible with the current "
-+				"OMAP2_DSS_MIN_FCK_PER_PCK setting. Turning "
-+				"the constraint off.\n");
-+		min_fck_per_pck = 0;
-+	}
++	info = &ovl->info;
 +
-+retry:
-+	memset(&best_dss, 0, sizeof(best_dss));
-+	memset(&best_dispc, 0, sizeof(best_dispc));
-+
-+	if (cpu_is_omap24xx()) {
-+		struct dispc_clock_info cur_dispc;
-+		/* XXX can we change the clock on omap2? */
-+		fck = dss_clk_get_rate(DSS_CLK_FCK1);
-+		fck_div = 1;
-+
-+		dispc_find_clk_divs(is_tft, req_pck, fck, &cur_dispc);
-+		match = 1;
-+
-+		best_dss.fck = fck;
-+		best_dss.fck_div = fck_div;
-+
-+		best_dispc = cur_dispc;
-+
-+		goto found;
-+	} else if (cpu_is_omap34xx()) {
-+		for (fck_div = 16; fck_div > 0; --fck_div) {
-+			struct dispc_clock_info cur_dispc;
-+
-+			fck = prate / fck_div * 2;
-+
-+			if (fck > DISPC_MAX_FCK)
-+				continue;
-+
-+			if (min_fck_per_pck &&
-+					fck < req_pck * min_fck_per_pck)
-+				continue;
-+
-+			match = 1;
-+
-+			dispc_find_clk_divs(is_tft, req_pck, fck, &cur_dispc);
-+
-+			if (abs(cur_dispc.pck - req_pck) <
-+					abs(best_dispc.pck - req_pck)) {
-+
-+				best_dss.fck = fck;
-+				best_dss.fck_div = fck_div;
-+
-+				best_dispc = cur_dispc;
-+
-+				if (cur_dispc.pck == req_pck)
-+					goto found;
-+			}
-+		}
-+	} else {
-+		BUG();
-+	}
-+
-+found:
-+	if (!match) {
-+		if (min_fck_per_pck) {
-+			DSSERR("Could not find suitable clock settings.\n"
-+					"Turning FCK/PCK constraint off and"
-+					"trying again.\n");
-+			min_fck_per_pck = 0;
-+			goto retry;
-+		}
-+
-+		DSSERR("Could not find suitable clock settings.\n");
-+
++	if (info->paddr == 0) {
++		DSSDBG("check_overlay failed: paddr 0\n");
 +		return -EINVAL;
 +	}
 +
-+	if (dss_cinfo)
-+		*dss_cinfo = best_dss;
-+	if (dispc_cinfo)
-+		*dispc_cinfo = best_dispc;
++	dssdev->get_resolution(dssdev, &dw, &dh);
 +
-+	dss.cache_req_pck = req_pck;
-+	dss.cache_prate = prate;
-+	dss.cache_dss_cinfo = best_dss;
-+	dss.cache_dispc_cinfo = best_dispc;
++	DSSDBG("check_overlay %d: (%d,%d %dx%d -> %dx%d) disp (%dx%d)\n",
++			ovl->id,
++			info->pos_x, info->pos_y,
++			info->width, info->height,
++			info->out_width, info->out_height,
++			dw, dh);
 +
-+	return 0;
-+}
++	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) == 0) {
++		outw = info->width;
++		outh = info->height;
++	} else {
++		if (info->out_width == 0)
++			outw = info->width;
++		else
++			outw = info->out_width;
 +
++		if (info->out_height == 0)
++			outh = info->height;
++		else
++			outh = info->out_height;
++	}
 +
++	if (dw < info->pos_x + outw) {
++		DSSDBG("check_overlay failed 1: %d < %d + %d\n",
++				dw, info->pos_x, outw);
++		return -EINVAL;
++	}
 +
-+static irqreturn_t dss_irq_handler_omap2(int irq, void *arg)
-+{
-+	dispc_irq_handler();
++	if (dh < info->pos_y + outh) {
++		DSSDBG("check_overlay failed 2: %d < %d + %d\n",
++				dh, info->pos_y, outh);
++		return -EINVAL;
++	}
 +
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t dss_irq_handler_omap3(int irq, void *arg)
-+{
-+	u32 irqstatus;
-+
-+	irqstatus = dss_read_reg(DSS_IRQSTATUS);
-+
-+	if (irqstatus & (1<<0))	/* DISPC_IRQ */
-+		dispc_irq_handler();
-+#ifdef CONFIG_OMAP2_DSS_DSI
-+	if (irqstatus & (1<<1))	/* DSI_IRQ */
-+		dsi_irq_handler();
-+#endif
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int _omap_dss_wait_reset(void)
-+{
-+	unsigned timeout = 1000;
-+
-+	while (REG_GET(DSS_SYSSTATUS, 0, 0) == 0) {
-+		udelay(1);
-+		if (!--timeout) {
-+			DSSERR("soft reset failed\n");
-+			return -ENODEV;
-+		}
++	if ((ovl->supported_modes & info->color_mode) == 0) {
++		DSSERR("overlay doesn't support mode %d\n", info->color_mode);
++		return -EINVAL;
 +	}
 +
 +	return 0;
 +}
 +
-+static int _omap_dss_reset(void)
-+{
-+	/* Soft reset */
-+	REG_FLD_MOD(DSS_SYSCONFIG, 1, 1, 1);
-+	return _omap_dss_wait_reset();
-+}
-+
-+void dss_set_venc_output(enum omap_dss_venc_type type)
-+{
-+	int l = 0;
-+
-+	if (type == OMAP_DSS_VENC_TYPE_COMPOSITE)
-+		l = 0;
-+	else if (type == OMAP_DSS_VENC_TYPE_SVIDEO)
-+		l = 1;
-+	else
-+		BUG();
-+
-+	/* venc out selection. 0 = comp, 1 = svideo */
-+	REG_FLD_MOD(DSS_CONTROL, l, 6, 6);
-+}
-+
-+void dss_set_dac_pwrdn_bgz(bool enable)
-+{
-+	REG_FLD_MOD(DSS_CONTROL, enable, 5, 5);	/* DAC Power-Down Control */
-+}
-+
-+int dss_init(bool skip_init)
++static int dss_ovl_set_overlay_info(struct omap_overlay *ovl,
++		struct omap_overlay_info *info)
 +{
 +	int r;
-+	u32 rev;
++	struct omap_overlay_info old_info;
 +
-+	dss.base = ioremap(DSS_BASE, DSS_SZ_REGS);
-+	if (!dss.base) {
-+		DSSERR("can't ioremap DSS\n");
-+		r = -ENOMEM;
-+		goto fail0;
-+	}
++	old_info = ovl->info;
++	ovl->info = *info;
 +
-+	if (!skip_init) {
-+		/* disable LCD and DIGIT output. This seems to fix the synclost
-+		 * problem that we get, if the bootloader starts the DSS and
-+		 * the kernel resets it */
-+		omap_writel(omap_readl(0x48050440) & ~0x3, 0x48050440);
-+
-+		/* We need to wait here a bit, otherwise we sometimes start to
-+		 * get synclost errors, and after that only power cycle will
-+		 * restore DSS functionality. I have no idea why this happens.
-+		 * And we have to wait _before_ resetting the DSS, but after
-+		 * enabling clocks.
-+		 */
-+		msleep(50);
-+
-+		_omap_dss_reset();
-+	}
-+
-+	/* autoidle */
-+	REG_FLD_MOD(DSS_SYSCONFIG, 1, 0, 0);
-+
-+	/* Select DPLL */
-+	REG_FLD_MOD(DSS_CONTROL, 0, 0, 0);
-+
-+#ifdef CONFIG_OMAP2_DSS_VENC
-+	REG_FLD_MOD(DSS_CONTROL, 1, 4, 4);	/* venc dac demen */
-+	REG_FLD_MOD(DSS_CONTROL, 1, 3, 3);	/* venc clock 4x enable */
-+	REG_FLD_MOD(DSS_CONTROL, 0, 2, 2);	/* venc clock mode = normal */
-+#endif
-+
-+	r = request_irq(INT_24XX_DSS_IRQ,
-+			cpu_is_omap24xx()
-+			? dss_irq_handler_omap2
-+			: dss_irq_handler_omap3,
-+			0, "OMAP DSS", NULL);
-+
-+	if (r < 0) {
-+		DSSERR("omap2 dss: request_irq failed\n");
-+		goto fail1;
-+	}
-+
-+	if (cpu_is_omap34xx()) {
-+		dss.dpll4_m4_ck = clk_get(NULL, "dpll4_m4_ck");
-+		if (IS_ERR(dss.dpll4_m4_ck)) {
-+			DSSERR("Failed to get dpll4_m4_ck\n");
-+			r = PTR_ERR(dss.dpll4_m4_ck);
-+			goto fail2;
++	if (ovl->manager) {
++		r = dss_check_overlay(ovl, ovl->manager->device);
++		if (r) {
++			ovl->info = old_info;
++			return r;
 +		}
 +	}
 +
-+	dss_save_context();
-+
-+	rev = dss_read_reg(DSS_REVISION);
-+	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
-+			FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
++	ovl->info_dirty = true;
 +
 +	return 0;
-+
-+fail2:
-+	free_irq(INT_24XX_DSS_IRQ, NULL);
-+fail1:
-+	iounmap(dss.base);
-+fail0:
-+	return r;
 +}
 +
-+void dss_exit(void)
++static void dss_ovl_get_overlay_info(struct omap_overlay *ovl,
++		struct omap_overlay_info *info)
 +{
-+	if (cpu_is_omap34xx())
-+		clk_put(dss.dpll4_m4_ck);
-+
-+	free_irq(INT_24XX_DSS_IRQ, NULL);
-+
-+	iounmap(dss.base);
++	*info = ovl->info;
 +}
 +
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-new file mode 100644
-index 0000000..8da5ac4
---- /dev/null
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -0,0 +1,370 @@
-+/*
-+ * linux/drivers/video/omap2/dss/dss.h
-+ *
-+ * Copyright (C) 2009 Nokia Corporation
-+ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-+ *
-+ * Some code and ideas taken from drivers/video/omap/ driver
-+ * by Imre Deak.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
++static int dss_ovl_wait_for_go(struct omap_overlay *ovl)
++{
++	return dss_mgr_wait_for_go_ovl(ovl);
++}
 +
-+#ifndef __OMAP2_DSS_H
-+#define __OMAP2_DSS_H
++static int omap_dss_set_manager(struct omap_overlay *ovl,
++		struct omap_overlay_manager *mgr)
++{
++	if (!mgr)
++		return -EINVAL;
 +
-+#ifdef CONFIG_OMAP2_DSS_DEBUG_SUPPORT
-+#define DEBUG
-+#endif
++	if (ovl->manager) {
++		DSSERR("overlay '%s' already has a manager '%s'\n",
++				ovl->name, ovl->manager->name);
++		return -EINVAL;
++	}
 +
-+#ifdef DEBUG
-+extern unsigned int dss_debug;
-+#ifdef DSS_SUBSYS_NAME
-+#define DSSDBG(format, ...) \
-+	if (dss_debug) \
-+		printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME ": " format, \
-+		## __VA_ARGS__)
-+#else
-+#define DSSDBG(format, ...) \
-+	if (dss_debug) \
-+		printk(KERN_DEBUG "omapdss: " format, ## __VA_ARGS__)
-+#endif
++	if (ovl->info.enabled) {
++		DSSERR("overlay has to be disabled to change the manager\n");
++		return -EINVAL;
++	}
 +
-+#ifdef DSS_SUBSYS_NAME
-+#define DSSDBGF(format, ...) \
-+	if (dss_debug) \
-+		printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME \
-+				": %s(" format ")\n", \
-+				__func__, \
-+				## __VA_ARGS__)
-+#else
-+#define DSSDBGF(format, ...) \
-+	if (dss_debug) \
-+		printk(KERN_DEBUG "omapdss: " \
-+				": %s(" format ")\n", \
-+				__func__, \
-+				## __VA_ARGS__)
-+#endif
++	ovl->manager = mgr;
 +
-+#else /* DEBUG */
-+#define DSSDBG(format, ...)
-+#define DSSDBGF(format, ...)
-+#endif
++	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
++	/* XXX: on manual update display, in auto update mode, a bug happens
++	 * here. When an overlay is first enabled on LCD, then it's disabled,
++	 * and the manager is changed to TV, we sometimes get SYNC_LOST_DIGIT
++	 * errors. Waiting before changing the channel_out fixes it. I'm
++	 * guessing that the overlay is still somehow being used for the LCD,
++	 * but I don't understand how or why. */
++	msleep(40);
++	dispc_set_channel_out(ovl->id, mgr->id);
++	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
 +
++	return 0;
++}
 +
-+#ifdef DSS_SUBSYS_NAME
-+#define DSSERR(format, ...) \
-+	printk(KERN_ERR "omapdss " DSS_SUBSYS_NAME " error: " format, \
-+	## __VA_ARGS__)
-+#else
-+#define DSSERR(format, ...) \
-+	printk(KERN_ERR "omapdss error: " format, ## __VA_ARGS__)
-+#endif
++static int omap_dss_unset_manager(struct omap_overlay *ovl)
++{
++	int r;
 +
-+#ifdef DSS_SUBSYS_NAME
-+#define DSSINFO(format, ...) \
-+	printk(KERN_INFO "omapdss " DSS_SUBSYS_NAME ": " format, \
-+	## __VA_ARGS__)
-+#else
-+#define DSSINFO(format, ...) \
-+	printk(KERN_INFO "omapdss: " format, ## __VA_ARGS__)
-+#endif
++	if (!ovl->manager) {
++		DSSERR("failed to detach overlay: manager not set\n");
++		return -EINVAL;
++	}
 +
-+#ifdef DSS_SUBSYS_NAME
-+#define DSSWARN(format, ...) \
-+	printk(KERN_WARNING "omapdss " DSS_SUBSYS_NAME ": " format, \
-+	## __VA_ARGS__)
-+#else
-+#define DSSWARN(format, ...) \
-+	printk(KERN_WARNING "omapdss: " format, ## __VA_ARGS__)
-+#endif
++	if (ovl->info.enabled) {
++		DSSERR("overlay has to be disabled to unset the manager\n");
++		return -EINVAL;
++	}
 +
-+/* OMAP TRM gives bitfields as start:end, where start is the higher bit
-+   number. For example 7:0 */
-+#define FLD_MASK(start, end)	(((1 << ((start) - (end) + 1)) - 1) << (end))
-+#define FLD_VAL(val, start, end) (((val) << (end)) & FLD_MASK(start, end))
-+#define FLD_GET(val, start, end) (((val) & FLD_MASK(start, end)) >> (end))
-+#define FLD_MOD(orig, val, start, end) \
-+	(((orig) & ~FLD_MASK(start, end)) | FLD_VAL(val, start, end))
++	r = ovl->wait_for_go(ovl);
++	if (r)
++		return r;
 +
-+#define DISPC_MAX_FCK 173000000
++	ovl->manager = NULL;
 +
-+enum omap_burst_size {
-+	OMAP_DSS_BURST_4x32 = 0,
-+	OMAP_DSS_BURST_8x32 = 1,
-+	OMAP_DSS_BURST_16x32 = 2,
-+};
++	return 0;
++}
 +
-+enum omap_parallel_interface_mode {
-+	OMAP_DSS_PARALLELMODE_BYPASS,		/* MIPI DPI */
-+	OMAP_DSS_PARALLELMODE_RFBI,		/* MIPI DBI */
-+	OMAP_DSS_PARALLELMODE_DSI,
-+};
++int omap_dss_get_num_overlays(void)
++{
++	return num_overlays;
++}
++EXPORT_SYMBOL(omap_dss_get_num_overlays);
 +
-+enum dss_clock {
-+	DSS_CLK_ICK	= 1 << 0,
-+	DSS_CLK_FCK1	= 1 << 1,
-+	DSS_CLK_FCK2	= 1 << 2,
-+	DSS_CLK_54M	= 1 << 3,
-+	DSS_CLK_96M	= 1 << 4,
-+};
++struct omap_overlay *omap_dss_get_overlay(int num)
++{
++	int i = 0;
++	struct omap_overlay *ovl;
 +
-+struct dss_clock_info {
-+	/* rates that we get with dividers below */
-+	unsigned long fck;
++	list_for_each_entry(ovl, &overlay_list, list) {
++		if (i++ == num)
++			return ovl;
++	}
 +
-+	/* dividers */
-+	u16 fck_div;
-+};
++	return NULL;
++}
++EXPORT_SYMBOL(omap_dss_get_overlay);
 +
-+struct dispc_clock_info {
-+	/* rates that we get with dividers below */
-+	unsigned long lck;
-+	unsigned long pck;
++static void omap_dss_add_overlay(struct omap_overlay *overlay)
++{
++	++num_overlays;
++	list_add_tail(&overlay->list, &overlay_list);
++}
 +
-+	/* dividers */
-+	u16 lck_div;
-+	u16 pck_div;
-+};
++static struct omap_overlay *dispc_overlays[3];
 +
-+struct dsi_clock_info {
-+	/* rates that we get with dividers below */
-+	unsigned long fint;
-+	unsigned long clkin4ddr;
-+	unsigned long clkin;
-+	unsigned long dsi1_pll_fclk;
-+	unsigned long dsi2_pll_fclk;
++void dss_overlay_setup_dispc_manager(struct omap_overlay_manager *mgr)
++{
++	mgr->num_overlays = 3;
++	mgr->overlays = dispc_overlays;
++}
 +
-+	unsigned long lp_clk;
-+
-+	/* dividers */
-+	u16 regn;
-+	u16 regm;
-+	u16 regm3;
-+	u16 regm4;
-+
-+	u16 lp_clk_div;
-+
-+	u8 highfreq;
-+	bool use_dss2_fck;
-+};
-+
-+struct seq_file;
-+struct platform_device;
-+
-+/* core */
-+void dss_clk_enable(enum dss_clock clks);
-+void dss_clk_disable(enum dss_clock clks);
-+unsigned long dss_clk_get_rate(enum dss_clock clk);
-+int dss_need_ctx_restore(void);
-+void dss_dump_clocks(struct seq_file *s);
-+struct bus_type *dss_get_bus(void);
-+
-+/* display */
-+int dss_suspend_all_devices(void);
-+int dss_resume_all_devices(void);
-+void dss_disable_all_devices(void);
-+
-+void dss_init_device(struct platform_device *pdev,
-+		struct omap_dss_device *dssdev);
-+void dss_uninit_device(struct platform_device *pdev,
-+		struct omap_dss_device *dssdev);
-+bool dss_use_replication(struct omap_dss_device *dssdev,
-+		enum omap_color_mode mode);
-+void default_get_overlay_fifo_thresholds(enum omap_plane plane,
-+		u32 fifo_size, enum omap_burst_size *burst_size,
-+		u32 *fifo_low, u32 *fifo_high);
-+
-+/* manager */
-+int dss_init_overlay_managers(struct platform_device *pdev);
-+void dss_uninit_overlay_managers(struct platform_device *pdev);
-+int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl);
-+void dss_setup_partial_planes(struct omap_dss_device *dssdev,
-+				u16 *x, u16 *y, u16 *w, u16 *h);
-+void dss_start_update(struct omap_dss_device *dssdev);
-+
-+/* overlay */
-+void dss_init_overlays(struct platform_device *pdev);
-+void dss_uninit_overlays(struct platform_device *pdev);
-+int dss_check_overlay(struct omap_overlay *ovl, struct omap_dss_device *dssdev);
-+void dss_overlay_setup_dispc_manager(struct omap_overlay_manager *mgr);
 +#ifdef L4_EXAMPLE
-+void dss_overlay_setup_l4_manager(struct omap_overlay_manager *mgr);
++static struct omap_overlay *l4_overlays[1];
++void dss_overlay_setup_l4_manager(struct omap_overlay_manager *mgr)
++{
++	mgr->num_overlays = 1;
++	mgr->overlays = l4_overlays;
++}
 +#endif
-+void dss_recheck_connections(struct omap_dss_device *dssdev, bool force);
 +
-+/* DSS */
-+int dss_init(bool skip_init);
-+void dss_exit(void);
++void dss_init_overlays(struct platform_device *pdev)
++{
++	int i, r;
 +
-+void dss_save_context(void);
-+void dss_restore_context(void);
++	INIT_LIST_HEAD(&overlay_list);
 +
-+void dss_dump_regs(struct seq_file *s);
++	num_overlays = 0;
 +
-+void dss_sdi_init(u8 datapairs);
-+int dss_sdi_enable(void);
-+void dss_sdi_disable(void);
++	for (i = 0; i < 3; ++i) {
++		struct omap_overlay *ovl;
++		ovl = kzalloc(sizeof(*ovl), GFP_KERNEL);
 +
-+void dss_select_clk_source(bool dsi, bool dispc);
-+int dss_get_dsi_clk_source(void);
-+int dss_get_dispc_clk_source(void);
-+void dss_set_venc_output(enum omap_dss_venc_type type);
-+void dss_set_dac_pwrdn_bgz(bool enable);
++		BUG_ON(ovl == NULL);
 +
-+unsigned long dss_get_dpll4_rate(void);
-+int dss_calc_clock_rates(struct dss_clock_info *cinfo);
-+int dss_set_clock_div(struct dss_clock_info *cinfo);
-+int dss_get_clock_div(struct dss_clock_info *cinfo);
-+int dss_calc_clock_div(bool is_tft, unsigned long req_pck,
-+		struct dss_clock_info *dss_cinfo,
-+		struct dispc_clock_info *dispc_cinfo);
++		switch (i) {
++		case 0:
++			ovl->name = "gfx";
++			ovl->id = OMAP_DSS_GFX;
++			ovl->supported_modes = cpu_is_omap34xx() ?
++				OMAP_DSS_COLOR_GFX_OMAP3 :
++				OMAP_DSS_COLOR_GFX_OMAP2;
++			ovl->caps = OMAP_DSS_OVL_CAP_DISPC;
++			ovl->info.global_alpha = 255;
++			break;
++		case 1:
++			ovl->name = "vid1";
++			ovl->id = OMAP_DSS_VIDEO1;
++			ovl->supported_modes = cpu_is_omap34xx() ?
++				OMAP_DSS_COLOR_VID1_OMAP3 :
++				OMAP_DSS_COLOR_VID_OMAP2;
++			ovl->caps = OMAP_DSS_OVL_CAP_SCALE |
++				OMAP_DSS_OVL_CAP_DISPC;
++			ovl->info.global_alpha = 255;
++			break;
++		case 2:
++			ovl->name = "vid2";
++			ovl->id = OMAP_DSS_VIDEO2;
++			ovl->supported_modes = cpu_is_omap34xx() ?
++				OMAP_DSS_COLOR_VID2_OMAP3 :
++				OMAP_DSS_COLOR_VID_OMAP2;
++			ovl->caps = OMAP_DSS_OVL_CAP_SCALE |
++				OMAP_DSS_OVL_CAP_DISPC;
++			ovl->info.global_alpha = 255;
++			break;
++		}
 +
-+/* SDI */
-+int sdi_init(bool skip_init);
-+void sdi_exit(void);
-+int sdi_init_display(struct omap_dss_device *display);
++		ovl->set_manager = &omap_dss_set_manager;
++		ovl->unset_manager = &omap_dss_unset_manager;
++		ovl->set_overlay_info = &dss_ovl_set_overlay_info;
++		ovl->get_overlay_info = &dss_ovl_get_overlay_info;
++		ovl->wait_for_go = &dss_ovl_wait_for_go;
 +
-+/* DSI */
-+int dsi_init(struct platform_device *pdev);
-+void dsi_exit(void);
++		omap_dss_add_overlay(ovl);
 +
-+void dsi_dump_clocks(struct seq_file *s);
-+void dsi_dump_regs(struct seq_file *s);
++		r = kobject_init_and_add(&ovl->kobj, &overlay_ktype,
++				&pdev->dev.kobj, "overlay%d", i);
 +
-+void dsi_save_context(void);
-+void dsi_restore_context(void);
++		if (r) {
++			DSSERR("failed to create sysfs file\n");
++			continue;
++		}
 +
-+int dsi_init_display(struct omap_dss_device *display);
-+void dsi_irq_handler(void);
-+unsigned long dsi_get_dsi1_pll_rate(void);
-+int dsi_pll_set_clock_div(struct dsi_clock_info *cinfo);
-+int dsi_pll_calc_clock_div_pck(bool is_tft, unsigned long req_pck,
-+		struct dsi_clock_info *cinfo,
-+		struct dispc_clock_info *dispc_cinfo);
-+int dsi_pll_init(struct omap_dss_device *dssdev, bool enable_hsclk,
-+		bool enable_hsdiv);
-+void dsi_pll_uninit(void);
-+void dsi_get_overlay_fifo_thresholds(enum omap_plane plane,
-+		u32 fifo_size, enum omap_burst_size *burst_size,
-+		u32 *fifo_low, u32 *fifo_high);
++		dispc_overlays[i] = ovl;
++	}
 +
-+/* DPI */
-+int dpi_init(void);
-+void dpi_exit(void);
-+int dpi_init_display(struct omap_dss_device *dssdev);
++#ifdef L4_EXAMPLE
++	{
++		struct omap_overlay *ovl;
++		ovl = kzalloc(sizeof(*ovl), GFP_KERNEL);
 +
-+/* DISPC */
-+int dispc_init(void);
-+void dispc_exit(void);
-+void dispc_dump_clocks(struct seq_file *s);
-+void dispc_dump_regs(struct seq_file *s);
-+void dispc_irq_handler(void);
-+void dispc_fake_vsync_irq(void);
++		BUG_ON(ovl == NULL);
 +
-+void dispc_save_context(void);
-+void dispc_restore_context(void);
++		ovl->name = "l4";
++		ovl->supported_modes = OMAP_DSS_COLOR_RGB24U;
 +
-+void dispc_enable_sidle(void);
-+void dispc_disable_sidle(void);
++		ovl->set_manager = &omap_dss_set_manager;
++		ovl->unset_manager = &omap_dss_unset_manager;
++		ovl->set_overlay_info = &dss_ovl_set_overlay_info;
++		ovl->get_overlay_info = &dss_ovl_get_overlay_info;
 +
-+void dispc_lcd_enable_signal_polarity(bool act_high);
-+void dispc_lcd_enable_signal(bool enable);
-+void dispc_pck_free_enable(bool enable);
-+void dispc_enable_fifohandcheck(bool enable);
++		omap_dss_add_overlay(ovl);
 +
-+void dispc_set_lcd_size(u16 width, u16 height);
-+void dispc_set_digit_size(u16 width, u16 height);
-+u32 dispc_get_plane_fifo_size(enum omap_plane plane);
-+void dispc_setup_plane_fifo(enum omap_plane plane, u32 low, u32 high);
-+void dispc_enable_fifomerge(bool enable);
-+void dispc_set_burst_size(enum omap_plane plane,
-+		enum omap_burst_size burst_size);
++		r = kobject_init_and_add(&ovl->kobj, &overlay_ktype,
++				&pdev->dev.kobj, "overlayl4");
 +
-+void dispc_set_plane_ba0(enum omap_plane plane, u32 paddr);
-+void dispc_set_plane_ba1(enum omap_plane plane, u32 paddr);
-+void dispc_set_plane_pos(enum omap_plane plane, u16 x, u16 y);
-+void dispc_set_plane_size(enum omap_plane plane, u16 width, u16 height);
-+void dispc_set_channel_out(enum omap_plane plane,
-+		enum omap_channel channel_out);
++		if (r)
++			DSSERR("failed to create sysfs file\n");
 +
-+int dispc_setup_plane(enum omap_plane plane,
-+		      u32 paddr, u16 screen_width,
-+		      u16 pos_x, u16 pos_y,
-+		      u16 width, u16 height,
-+		      u16 out_width, u16 out_height,
-+		      enum omap_color_mode color_mode,
-+		      bool ilace,
-+		      enum omap_dss_rotation_type rotation_type,
-+		      u8 rotation, bool mirror,
-+		      u8 global_alpha);
-+
-+bool dispc_go_busy(enum omap_channel channel);
-+void dispc_go(enum omap_channel channel);
-+void dispc_enable_lcd_out(bool enable);
-+void dispc_enable_digit_out(bool enable);
-+int dispc_enable_plane(enum omap_plane plane, bool enable);
-+void dispc_enable_replication(enum omap_plane plane, bool enable);
-+
-+void dispc_set_parallel_interface_mode(enum omap_parallel_interface_mode mode);
-+void dispc_set_tft_data_lines(u8 data_lines);
-+void dispc_set_lcd_display_type(enum omap_lcd_display_type type);
-+void dispc_set_loadmode(enum omap_dss_load_mode mode);
-+
-+void dispc_set_default_color(enum omap_channel channel, u32 color);
-+u32 dispc_get_default_color(enum omap_channel channel);
-+void dispc_set_trans_key(enum omap_channel ch,
-+		enum omap_dss_trans_key_type type,
-+		u32 trans_key);
-+void dispc_get_trans_key(enum omap_channel ch,
-+		enum omap_dss_trans_key_type *type,
-+		u32 *trans_key);
-+void dispc_enable_trans_key(enum omap_channel ch, bool enable);
-+void dispc_enable_alpha_blending(enum omap_channel ch, bool enable);
-+bool dispc_trans_key_enabled(enum omap_channel ch);
-+bool dispc_alpha_blending_enabled(enum omap_channel ch);
-+
-+bool dispc_lcd_timings_ok(struct omap_video_timings *timings);
-+void dispc_set_lcd_timings(struct omap_video_timings *timings);
-+unsigned long dispc_fclk_rate(void);
-+unsigned long dispc_lclk_rate(void);
-+unsigned long dispc_pclk_rate(void);
-+void dispc_set_pol_freq(enum omap_panel_config config, u8 acbi, u8 acb);
-+void dispc_find_clk_divs(bool is_tft, unsigned long req_pck, unsigned long fck,
-+		struct dispc_clock_info *cinfo);
-+int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
-+		struct dispc_clock_info *cinfo);
-+int dispc_set_clock_div(struct dispc_clock_info *cinfo);
-+int dispc_get_clock_div(struct dispc_clock_info *cinfo);
-+
-+
-+/* VENC */
-+int venc_init(struct platform_device *pdev);
-+void venc_exit(void);
-+void venc_dump_regs(struct seq_file *s);
-+int venc_init_display(struct omap_dss_device *display);
-+
-+/* RFBI */
-+int rfbi_init(void);
-+void rfbi_exit(void);
-+void rfbi_dump_regs(struct seq_file *s);
-+
-+int rfbi_configure(int rfbi_module, int bpp, int lines);
-+void rfbi_enable_rfbi(bool enable);
-+void rfbi_transfer_area(u16 width, u16 height,
-+			     void (callback)(void *data), void *data);
-+void rfbi_set_timings(int rfbi_module, struct rfbi_timings *t);
-+unsigned long rfbi_get_max_tx_rate(void);
-+int rfbi_init_display(struct omap_dss_device *display);
-+
++		l4_overlays[0] = ovl;
++	}
 +#endif
++}
++
++/* connect overlays to the new device, if not already connected. if force
++ * selected, connect always. */
++void dss_recheck_connections(struct omap_dss_device *dssdev, bool force)
++{
++	int i;
++	struct omap_overlay_manager *lcd_mgr;
++	struct omap_overlay_manager *tv_mgr;
++	struct omap_overlay_manager *mgr = NULL;
++
++	lcd_mgr = omap_dss_get_overlay_manager(OMAP_DSS_OVL_MGR_LCD);
++	tv_mgr = omap_dss_get_overlay_manager(OMAP_DSS_OVL_MGR_TV);
++
++	if (dssdev->type != OMAP_DISPLAY_TYPE_VENC) {
++		if (!lcd_mgr->device || force) {
++			if (lcd_mgr->device)
++				lcd_mgr->unset_device(lcd_mgr);
++			lcd_mgr->set_device(lcd_mgr, dssdev);
++			mgr = lcd_mgr;
++		}
++	}
++
++	if (dssdev->type == OMAP_DISPLAY_TYPE_VENC) {
++		if (!tv_mgr->device || force) {
++			if (tv_mgr->device)
++				tv_mgr->unset_device(tv_mgr);
++			tv_mgr->set_device(tv_mgr, dssdev);
++			mgr = tv_mgr;
++		}
++	}
++
++	if (mgr) {
++		for (i = 0; i < 3; i++) {
++			struct omap_overlay *ovl;
++			ovl = omap_dss_get_overlay(i);
++			if (!ovl->manager || force) {
++				if (ovl->manager)
++					omap_dss_unset_manager(ovl);
++				omap_dss_set_manager(ovl, mgr);
++			}
++		}
++	}
++}
++
++void dss_uninit_overlays(struct platform_device *pdev)
++{
++	struct omap_overlay *ovl;
++
++	while (!list_empty(&overlay_list)) {
++		ovl = list_first_entry(&overlay_list,
++				struct omap_overlay, list);
++		list_del(&ovl->list);
++		kobject_del(&ovl->kobj);
++		kobject_put(&ovl->kobj);
++		kfree(ovl);
++	}
++
++	num_overlays = 0;
++}
++
 -- 
 1.6.5.1
 
