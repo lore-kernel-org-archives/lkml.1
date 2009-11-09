@@ -1,215 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbZKIQCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbZKIQcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbZKIQCN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 11:02:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbZKIQCM
+	id S1756155AbZKIQcb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 11:32:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZKIQca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 11:02:12 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:60975 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756387AbZKIQCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 11:02:11 -0500
-Date: Mon, 9 Nov 2009 10:02:15 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, suresh.b.siddha@intel.com, tglx@linutronix.de
-Subject: Re: [tip:x86/apic] x86/apic: Limit irq affinity
-Message-ID: <20091109160215.GA14718@sgi.com>
-References: <20091021011233.GB32196@sgi.com> <tip-683c91f85d7a3e1092d7fa3ec5687af8cd379f02@git.kernel.org> <20091108145355.GA8432@elte.hu>
+	Mon, 9 Nov 2009 11:32:30 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:42755 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbZKIQc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 11:32:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=khEN6fPSy7GoRUyFP/TbBfEJXamM3Fvjl5tFMKF7o7DxZZbA0xY466afGVIUZBsT1K
+         LvWI0gY/5S4gQdrqJisWWF0DRZoXnoOu1+O6lk2Ute1Uvd4mxyzREc5q2LASoiaLz4V0
+         CcxM7/TlF8s890IX4q2srlsgvan/HFeuUVdbk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] Staging: update TODO files
+Date: Mon, 9 Nov 2009 17:15:49 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+References: <200910211442.11785.bzolnier@gmail.com>
+In-Reply-To: <200910211442.11785.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091108145355.GA8432@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200911091715.49814.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 03:53:55PM +0100, Ingo Molnar wrote:
+On Wednesday 21 October 2009 14:42:11 Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] Staging: update TODO files
 > 
-> * tip-bot for Dimitri Sivanich <sivanich@sgi.com> wrote:
+> Remove my mail address.
 > 
-> > Commit-ID:  683c91f85d7a3e1092d7fa3ec5687af8cd379f02
-> > Gitweb:     http://git.kernel.org/tip/683c91f85d7a3e1092d7fa3ec5687af8cd379f02
-> > Author:     Dimitri Sivanich <sivanich@sgi.com>
-> > AuthorDate: Tue, 3 Nov 2009 12:40:37 -0600
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Sun, 8 Nov 2009 13:30:40 +0100
-> > 
-> > x86/apic: Limit irq affinity
-> > 
-> > This patch allows for hard numa restrictions to irq affinity on
-> > x86 systems.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+ping.  Could you please apply it?
+
+> ---
+>  drivers/staging/rtl8187se/TODO |    3 +--
+>  drivers/staging/rtl8192su/TODO |    3 +--
+>  drivers/staging/vt6655/TODO    |    5 ++---
+>  drivers/staging/vt6656/TODO    |    5 ++---
+>  4 files changed, 6 insertions(+), 10 deletions(-)
 > 
-> -tip testing found a build failure:
-> 
-> arch/x86/kernel/apic/io_apic.c:1438: error: ‘struct irq_desc’ has no member named ‘node’
-> arch/x86/kernel/apic/io_apic.c:3286: error: ‘struct irq_desc’ has no member named ‘node’
->
-
-In the interest of doing some ifdef cleanup as well as fixing the build problem,
-can I suggest that we remove the 'ifdef CONFIG_SMP' from the irq_desc?
-
-Here's my suggested patch.
-
-
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-
----
-
- include/linux/irq.h |   70 +++++++++++++++++++-----------------------------
- kernel/irq/chip.c   |    2 -
- kernel/irq/handle.c |    4 --
- 3 files changed, 29 insertions(+), 47 deletions(-)
-
-Index: linux/include/linux/irq.h
-===================================================================
---- linux.orig/include/linux/irq.h	2009-11-09 09:18:32.000000000 -0600
-+++ linux/include/linux/irq.h	2009-11-09 09:19:50.000000000 -0600
-@@ -193,13 +193,11 @@ struct irq_desc {
- 	unsigned long		last_unhandled;	/* Aging timer for unhandled count */
- 	unsigned int		irqs_unhandled;
- 	spinlock_t		lock;
--#ifdef CONFIG_SMP
- 	cpumask_var_t		affinity;
- 	unsigned int		node;
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	cpumask_var_t		pending_mask;
- #endif
--#endif
- 	atomic_t		threads_active;
- 	wait_queue_head_t       wait_for_threads;
- #ifdef CONFIG_PROC_FS
-@@ -423,6 +421,35 @@ extern int set_irq_msi(unsigned int irq,
- 
- #endif /* !CONFIG_S390 */
- 
-+static inline void init_desc_masks(struct irq_desc *desc)
-+{
-+	cpumask_setall(desc->affinity);
-+#ifdef CONFIG_GENERIC_PENDING_IRQ
-+	cpumask_clear(desc->pending_mask);
-+#endif
-+}
-+
-+/**
-+ * init_copy_desc_masks - copy cpumasks for irq_desc
-+ * @old_desc:	pointer to old irq_desc struct
-+ * @new_desc:	pointer to new irq_desc struct
-+ *
-+ * Insures affinity and pending_masks are copied to new irq_desc.
-+ * If !CONFIG_CPUMASKS_OFFSTACK the cpumasks are embedded in the
-+ * irq_desc struct so the copy is redundant.
-+ */
-+static inline void init_copy_desc_masks(struct irq_desc *old_desc,
-+					struct irq_desc *new_desc)
-+{
-+#ifdef CONFIG_CPUMASK_OFFSTACK
-+	cpumask_copy(new_desc->affinity, old_desc->affinity);
-+
-+#ifdef CONFIG_GENERIC_PENDING_IRQ
-+	cpumask_copy(new_desc->pending_mask, old_desc->pending_mask);
-+#endif
-+#endif
-+}
-+
- #ifdef CONFIG_SMP
- /**
-  * alloc_desc_masks - allocate cpumasks for irq_desc
-@@ -455,36 +482,6 @@ static inline bool alloc_desc_masks(stru
- 	return true;
- }
- 
--static inline void init_desc_masks(struct irq_desc *desc)
--{
--	cpumask_setall(desc->affinity);
--#ifdef CONFIG_GENERIC_PENDING_IRQ
--	cpumask_clear(desc->pending_mask);
--#endif
--}
--
--/**
-- * init_copy_desc_masks - copy cpumasks for irq_desc
-- * @old_desc:	pointer to old irq_desc struct
-- * @new_desc:	pointer to new irq_desc struct
-- *
-- * Insures affinity and pending_masks are copied to new irq_desc.
-- * If !CONFIG_CPUMASKS_OFFSTACK the cpumasks are embedded in the
-- * irq_desc struct so the copy is redundant.
-- */
--
--static inline void init_copy_desc_masks(struct irq_desc *old_desc,
--					struct irq_desc *new_desc)
--{
--#ifdef CONFIG_CPUMASK_OFFSTACK
--	cpumask_copy(new_desc->affinity, old_desc->affinity);
--
--#ifdef CONFIG_GENERIC_PENDING_IRQ
--	cpumask_copy(new_desc->pending_mask, old_desc->pending_mask);
--#endif
--#endif
--}
--
- static inline void free_desc_masks(struct irq_desc *old_desc,
- 				   struct irq_desc *new_desc)
- {
-@@ -503,15 +500,6 @@ static inline bool alloc_desc_masks(stru
- 	return true;
- }
- 
--static inline void init_desc_masks(struct irq_desc *desc)
--{
--}
--
--static inline void init_copy_desc_masks(struct irq_desc *old_desc,
--					struct irq_desc *new_desc)
--{
--}
--
- static inline void free_desc_masks(struct irq_desc *old_desc,
- 				   struct irq_desc *new_desc)
- {
-Index: linux/kernel/irq/handle.c
-===================================================================
---- linux.orig/kernel/irq/handle.c	2009-11-09 09:18:32.000000000 -0600
-+++ linux/kernel/irq/handle.c	2009-11-09 09:19:50.000000000 -0600
-@@ -110,9 +110,7 @@ static void init_one_irq_desc(int irq, s
- 
- 	spin_lock_init(&desc->lock);
- 	desc->irq = irq;
--#ifdef CONFIG_SMP
- 	desc->node = node;
--#endif
- 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
- 	init_kstat_irqs(desc, node, nr_cpu_ids);
- 	if (!desc->kstat_irqs) {
-@@ -173,9 +171,7 @@ int __init early_irq_init(void)
- 
- 	for (i = 0; i < legacy_count; i++) {
- 		desc[i].irq = i;
--#ifdef CONFIG_SMP
- 		desc[i].node = node;
--#endif
- 		desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
- 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
- 		alloc_desc_masks(&desc[i], node, true);
-Index: linux/kernel/irq/chip.c
-===================================================================
---- linux.orig/kernel/irq/chip.c	2009-11-09 09:18:32.000000000 -0600
-+++ linux/kernel/irq/chip.c	2009-11-09 09:19:50.000000000 -0600
-@@ -45,12 +45,10 @@ void dynamic_irq_init(unsigned int irq)
- 	desc->action = NULL;
- 	desc->irq_count = 0;
- 	desc->irqs_unhandled = 0;
--#ifdef CONFIG_SMP
- 	cpumask_setall(desc->affinity);
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	cpumask_clear(desc->pending_mask);
- #endif
--#endif
- 	spin_unlock_irqrestore(&desc->lock, flags);
- }
- 
- 
+> Index: b/drivers/staging/rtl8187se/TODO
+> ===================================================================
+> --- a/drivers/staging/rtl8187se/TODO
+> +++ b/drivers/staging/rtl8187se/TODO
+> @@ -11,5 +11,4 @@ TODO:
+>  - sparse fixes
+>  - integrate with drivers/net/wireless/rtl818x
+>  
+> -Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
+> -Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>.
+> +Please send any patches to Greg Kroah-Hartman <greg@kroah.com>.
+> Index: b/drivers/staging/rtl8192su/TODO
+> ===================================================================
+> --- a/drivers/staging/rtl8192su/TODO
+> +++ b/drivers/staging/rtl8192su/TODO
+> @@ -14,5 +14,4 @@ TODO:
+>  - sparse fixes
+>  - integrate with drivers/net/wireless/rtl818x
+>  
+> -Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
+> -Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>.
+> +Please send any patches to Greg Kroah-Hartman <greg@kroah.com>.
+> Index: b/drivers/staging/vt6655/TODO
+> ===================================================================
+> --- a/drivers/staging/vt6655/TODO
+> +++ b/drivers/staging/vt6655/TODO
+> @@ -16,6 +16,5 @@ TODO:
+>  - sparse fixes
+>  - integrate with drivers/net/wireless
+>  
+> -Please send any patches to Greg Kroah-Hartman <greg@kroah.com>,
+> -Forest Bond <forest@alittletooquiet.net> and Bartlomiej Zolnierkiewicz
+> -<bzolnier@gmail.com>.
+> +Please send any patches to Greg Kroah-Hartman <greg@kroah.com>
+> +and Forest Bond <forest@alittletooquiet.net>.
+> Index: b/drivers/staging/vt6656/TODO
+> ===================================================================
+> --- a/drivers/staging/vt6656/TODO
+> +++ b/drivers/staging/vt6656/TODO
+> @@ -15,6 +15,5 @@ TODO:
+>  - sparse fixes
+>  - integrate with drivers/net/wireless
+>  
+> -Please send any patches to Greg Kroah-Hartman <greg@kroah.com>,
+> -Forest Bond <forest@alittletooquiet.net> and Bartlomiej Zolnierkiewicz
+> -<bzolnier@gmail.com>.
+> +Please send any patches to Greg Kroah-Hartman <greg@kroah.com>
+> +and Forest Bond <forest@alittletooquiet.net>.
