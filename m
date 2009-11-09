@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbZKJOzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbZKJOzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756602AbZKJOzY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 09:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756533AbZKJOzX
+	id S1756640AbZKJOzc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 09:55:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbZKJOzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 09:55:23 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:64848 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbZKJOzV (ORCPT
+	Tue, 10 Nov 2009 09:55:31 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:40952 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756618AbZKJOzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 09:55:21 -0500
+	Tue, 10 Nov 2009 09:55:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=o54DEyL0CDIgqUIraIPUXClzEbBhYyDrVo9XG/T0oZuLaI3fFVvRIsBLA+/9QVWcnn
-         S0Vb8ODsb1CNspocmhtNhPAtBHIOpg78X52OMDjdpp546ED+8NOb1F3UT4AZGysBfJLh
-         ULeIu5XiWhuQ32fhNlXihLf/Mb9ZccO8s90/Q=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :mime-version:content-type:content-transfer-encoding;
+        b=AHFimilkK25BiOjKcwd1YI4ujJbJOt3myL3p6UHuwH4wCRF3PEDVqjSU7qmCMnAVQ2
+         j/zYDGEcJ6PUNFmfeZk7MAIhIxjExjumkjHYDu4kANnbFZAOt48CcaLfN05GWs2vUHSe
+         S3A71RpOd6ZUpn48xOtg7WaVmIdadnzFuX6fU=
 From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
 To: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk, rusty@rustcorp.com.au,
        linux-kernel@vger.kernel.org
 Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Subject: [PATCH v2 0/2] bsearch: fix overflow and avoid unnecessary calculation
-Date: Mon,  9 Nov 2009 12:53:47 -0200
-Message-Id: <cover.1257778258.git.andre.goddard@gmail.com>
+Subject: [PATCH v2 1/2] bsearch: avoid unneeded decrement arithmetic
+Date: Mon,  9 Nov 2009 12:53:48 -0200
+Message-Id: <28b3abe6d9a03d4251c0b42a3505c8bc5f861e69.1257778258.git.andre.goddard@gmail.com>
 X-Mailer: git-send-email 1.6.5.2.153.g6e31f.dirty
+In-Reply-To: <cover.1257778258.git.andre.goddard@gmail.com>
+References: <cover.1257778258.git.andre.goddard@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -32,17 +34,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a rare overflow situation which can occur when working with large arrays.
-Also, remove an unneeded calculation.
+Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+---
+ lib/bsearch.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-changelog:
-    v2: fix a bug introduced into 00/01 of the v1 patch
-    v1: initial submission
-
-André Goddard Rosa (2):
-  bsearch: avoid unneeded decrement arithmetic
-  bsearch: prevent overflow when computing middle comparison element
-
- lib/bsearch.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+diff --git a/lib/bsearch.c b/lib/bsearch.c
+index 2e70664..33cbba6 100644
+--- a/lib/bsearch.c
++++ b/lib/bsearch.c
+@@ -33,13 +33,13 @@
+ void *bsearch(const void *key, const void *base, size_t num, size_t size,
+ 	      int (*cmp)(const void *key, const void *elt))
+ {
+-	int start = 0, end = num - 1, mid, result;
++	int start = 0, end = num, mid, result;
+ 
+-	while (start <= end) {
++	while (start < end) {
+ 		mid = (start + end) / 2;
+ 		result = cmp(key, base + mid * size);
+ 		if (result < 0)
+-			end = mid - 1;
++			end = mid;
+ 		else if (result > 0)
+ 			start = mid + 1;
+ 		else
+-- 
+1.6.5.2.153.g6e31f.dirty
 
