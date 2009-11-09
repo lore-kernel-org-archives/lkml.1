@@ -1,44 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752186AbZKITRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752673AbZKITZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752186AbZKITRM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 14:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZKITRM
+	id S1752673AbZKITZL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 14:25:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZKITZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 14:17:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44099 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbZKITRL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 14:17:11 -0500
-Subject: Re: [patch 1/2] locking: Make inlining decision Kconfig based
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20091109151428.504477141@linutronix.de>
-References: <20091109150033.125758935@linutronix.de>
-	 <20091109151428.504477141@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Nov 2009 20:16:56 +0100
-Message-ID: <1257794216.4108.372.camel@laptop>
+	Mon, 9 Nov 2009 14:25:11 -0500
+Received: from sh.osrg.net ([192.16.179.4]:51936 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbZKITZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 14:25:10 -0500
+Date: Tue, 10 Nov 2009 04:22:46 +0900
+To: mingo@elte.hu
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, dwmw2@infradead.org, joerg.roedel@amd.com,
+       akpm@linux-foundation.org, yinghai@kernel.org,
+       torvalds@linux-foundation.org, tj@kernel.org, a.p.zijlstra@chello.nl,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, hpa@zytor.com,
+       tglx@linutronix.de, hannes@cmpxchg.org
+Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091108100029.GD2845@elte.hu>
+References: <20091028074832.GC19402@elte.hu>
+	<20091106104931W.fujita.tomonori@lab.ntt.co.jp>
+	<20091108100029.GD2845@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20091110042204M.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 10 Nov 2009 04:22:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-09 at 15:21 +0000, Thomas Gleixner wrote:
->  6 files changed, 284 insertions(+), 104 deletions(-)
+On Sun, 8 Nov 2009 11:00:29 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Bloats the code a bit, and the Kconfig expressions are a pain to look
-at, but I guess having a clear and unambiguous CONFIG_ symbol in the end
-is a win.
+> 
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > On Wed, 28 Oct 2009 08:48:32 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > 
+> > > > From: Chris Wright <chrisw@sous-sol.org>
+> > > > 
+> > > > Add a new function for freeing bootmem after the bootmem allocator has
+> > > > been released and the unreserved pages given to the page allocator.
+> > > > This allows us to reserve bootmem and then release it if we later
+> > > > discover it was not needed.
+> > > > 
+> > > > Reviewed-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > > Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+> > > > ---
+> > > >  include/linux/bootmem.h |    1 +
+> > > >  mm/bootmem.c            |   43 ++++++++++++++++++++++++++++++++++++++-----
+> > > >  2 files changed, 39 insertions(+), 5 deletions(-)
+> > > 
+> > > Hm, we are now further complicating the bootmem model.
+> > 
+> > Yeah, agreed. But reorganizing the allocator during boot is not easy. 
+> > I'll investigate it later on but VT-d people want to fix this IOMMU 
+> > issue now. Can we accept this for now?
+> 
+> Since the patchset weighs heavily towards the iommu and x86 side i can 
+> do that in tip:core/iommu tree, if there's an Acked-by for this 
+> bootmem.c patch from at least one of these gents:
 
-If you fix up that floating hunk in the second patch, I guess I'm ok
-with it..
+ok
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>  Johannes Weiner <hannes@cmpxchg.org>
+>  Pekka Enberg <penberg@cs.helsinki.fi>
+>  Andrew Morton <akpm@linux-foundation.org>
+>  Tejun Heo <tj@kernel.org>
 
+Can you give ACKs?
+
+
+Thanks,
