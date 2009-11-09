@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbZKIJ0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbZKIJ20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755080AbZKIJ0q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 04:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbZKIJ0p
+	id S1754628AbZKIJ20 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 04:28:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZKIJ2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 04:26:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49828 "EHLO mx3.mail.elte.hu"
+	Mon, 9 Nov 2009 04:28:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46893 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755001AbZKIJ0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 04:26:44 -0500
-Date: Mon, 9 Nov 2009 10:26:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Neil Horman <nhorman@tuxdriver.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
- external to a process (v7)
-Message-ID: <20091109092629.GA26890@elte.hu>
-References: <20091102152520.GG23776@elte.hu>
- <20091102175407.GE4075@hmsreliant.think-freely.org>
- <20091102185137.GA28803@elte.hu>
- <20091103002355.GB19891@localhost.localdomain>
- <20091104112632.GA9243@elte.hu>
- <20091105204843.GA2980@hmsreliant.think-freely.org>
- <20091106092600.GC22505@elte.hu>
- <4AF7D8C2.60807@gmail.com>
- <20091109090143.GB24020@elte.hu>
- <4AF7DF41.5080100@gmail.com>
+	id S1750985AbZKIJ2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 04:28:24 -0500
+Date: Mon, 9 Nov 2009 09:27:44 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, peterz@infradead.org, sfr@canb.auug.org.au,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, peterz@infradead.org, tglx@linutronix.de,
+       sfr@canb.auug.org.au, mingo@elte.hu
+In-Reply-To: <20091108131645.GD5300@lenovo>
+References: <20091108131645.GD5300@lenovo>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/apic] x86, apic: Get rid of apicid_to_cpu_present assign on 64-bit
+Message-ID: <tip-f4a70c55376683213229af7266dc57ad81aee354@git.kernel.org>
+Git-Commit-ID: f4a70c55376683213229af7266dc57ad81aee354
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4AF7DF41.5080100@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  f4a70c55376683213229af7266dc57ad81aee354
+Gitweb:     http://git.kernel.org/tip/f4a70c55376683213229af7266dc57ad81aee354
+Author:     Cyrill Gorcunov <gorcunov@openvz.org>
+AuthorDate: Sun, 8 Nov 2009 16:16:45 +0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 8 Nov 2009 19:46:17 +0100
 
-* Jiri Slaby <jirislaby@gmail.com> wrote:
+x86, apic: Get rid of apicid_to_cpu_present assign on 64-bit
 
-> On 11/09/2009 10:01 AM, Ingo Molnar wrote:
-> > So i guess renaming setrlimit to do_setrlimit and adding the syscall 
-> > from Neil's patch should bring the two series into sync, right?
-> 
-> Looks like that. I have a nit, 32-bit programs on 64-bit x86 won't 
-> work. I think we should add compat handlers for ia32 emulation too?
+In fact it's never get used on x86-64 (for 64 bit platform
+we use differ technique to enumerate io-units).
 
-Yeah.
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <20091108131645.GD5300@lenovo>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/apic/apic_noop.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-	Ingo
+diff --git a/arch/x86/kernel/apic/apic_noop.c b/arch/x86/kernel/apic/apic_noop.c
+index 9ab6ffb..89629f6 100644
+--- a/arch/x86/kernel/apic/apic_noop.c
++++ b/arch/x86/kernel/apic/apic_noop.c
+@@ -162,7 +162,12 @@ struct apic apic_noop = {
+ 
+ 	.cpu_to_logical_apicid		= noop_cpu_to_logical_apicid,
+ 	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
++
++#ifdef CONFIG_X86_32
+ 	.apicid_to_cpu_present		= default_apicid_to_cpu_present,
++#else
++	.apicid_to_cpu_present		= NULL,
++#endif
+ 
+ 	.setup_portio_remap		= NULL,
+ 	.check_phys_apicid_present	= default_check_phys_apicid_present,
