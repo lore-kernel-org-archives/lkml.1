@@ -1,46 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbZKIMKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZKIMhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755376AbZKIMKZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 07:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbZKIMKZ
+	id S1755070AbZKIMhD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 07:37:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZKIMhC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 07:10:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62611 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755219AbZKIMKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 07:10:24 -0500
-Date: Mon, 9 Nov 2009 17:39:26 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       virtualization@linux-foundation.org
-Subject: Re: [PATCH v10 1/1] virtio_console: Add support for multiple ports
-	for generic guest and host communication
-Message-ID: <20091109120926.GB11256@amit-x200.redhat.com>
-References: <1257266319-24300-1-git-send-email-amit.shah@redhat.com> <1257266319-24300-2-git-send-email-amit.shah@redhat.com> <200911060843.05934.borntraeger@de.ibm.com>
+	Mon, 9 Nov 2009 07:37:02 -0500
+Received: from mga06.intel.com ([134.134.136.21]:26851 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754930AbZKIMhB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 07:37:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,708,1249282800"; 
+   d="scan'208";a="567819742"
+Date: Mon, 9 Nov 2009 20:10:05 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] x86: under bios control, restore AP's APIC_LVTTHMR
+	to the BSP value
+Message-ID: <20091109121005.GB3896@ywang-moblin2.bj.intel.com>
+References: <20091109114752.GA3896@ywang-moblin2.bj.intel.com> <20091109122919.GA32321@aftab>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911060843.05934.borntraeger@de.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091109122919.GA32321@aftab>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Fri) Nov 06 2009 [08:43:05], Christian Borntraeger wrote:
-> Am Dienstag 03 November 2009 17:38:39 schrieb Amit Shah:
+On Mon, Nov 09, 2009 at 01:29:19PM +0100, Borislav Petkov wrote:
+> On Mon, Nov 09, 2009 at 07:47:52PM +0800, Yong Wang wrote:
 > 
-> > drivers/char/Kconfig           |    6 +
-> > drivers/char/virtio_console.c  | 1412 ++++++++++++++++++++++++++++++++++++----
-> > include/linux/virtio_console.h |   50 ++-
-> > 3 files changed, 1332 insertions(+), 136 deletions(-)
+> [..]
 > 
-> I have not looked at your last two versions of the patch  since you did not add 
-> a changelog to your patch description. I thought you only did minor changes.
-> Turned out you added/changed several places. (e.g. VIRTIO_CONSOLE_CACHE_BUFFERS, 
-> VIRTIO_CONSOLE_THROTTLE_PORT  and VIRTIO_CONSOLE_BUFFER_LIMIT  are all new)
+> > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> > index 0a64353..e6f0ef9 100644
+> > --- a/arch/x86/kernel/setup.c
+> > +++ b/arch/x86/kernel/setup.c
+> > @@ -110,6 +110,7 @@
+> >  #ifdef CONFIG_X86_64
+> >  #include <asm/numa_64.h>
+> >  #endif
+> > +#include <asm/mce.h>
+> >  
+> >  /*
+> >   * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
+> > @@ -1040,6 +1041,8 @@ void __init setup_arch(char **cmdline_p)
+> >  #endif
+> >  #endif
+> >  	x86_init.oem.banner();
+> > +
+> > +	mcheck_init();
+> 
+> I think you need
+> 
+> #ifdef CONFIG_X86_MCE
+> ...
+> #endif
+> 
+> here for cases where mcheck is config-disabled, no?
+> 
 
-I see v8 slipped out without a changelog; sorry for that. v9, v10 had
-the changelogs but v8 had included the caching and throttling support.
+Petkov, thanks for the review. Part of my patch is as below. Does this
+resolve your concern?
 
-		Amit
+diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
+index 161485d..41d8e42 100644
+--- a/arch/x86/include/asm/mce.h
++++ b/arch/x86/include/asm/mce.h
+@@ -120,8 +120,10 @@ extern int mce_disabled;
+ extern int mce_p5_enabled;
+
+ #ifdef CONFIG_X86_MCE
++int mcheck_init(void);
+ void mcheck_cpu_init(struct cpuinfo_x86 *c);
+ #else
++static int mcheck_init(void) { return 0; }
+ static inline void mcheck_cpu_init(struct cpuinfo_x86 *c) {}
+ #endif
+
+Thanks
+-Yong
