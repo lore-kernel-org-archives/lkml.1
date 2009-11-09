@@ -1,72 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbZKISHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbZKISI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147AbZKISHS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZKISHS
+	id S1753194AbZKISI0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 13:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZKISIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:07:18 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:35104 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752799AbZKISHR (ORCPT
+	Mon, 9 Nov 2009 13:08:25 -0500
+Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:33728 "EHLO
+	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZKISIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:07:17 -0500
-Date: Mon, 9 Nov 2009 19:07:17 +0100
-From: Daniel Mack <daniel@caiaq.de>
-To: David Newall <davidn@davidnewall.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Clemens Ladisch <clemens@ladisch.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vt: make the default cursor shape configurable
-Message-ID: <20091109180717.GD14091@buzzloop.caiaq.de>
-References: <4AF7D439.4030305@ladisch.de>
- <20091109091044.GX29442@buzzloop.caiaq.de>
- <4AF7DDC1.4090006@ladisch.de>
- <20091109095316.6283fbd6@lxorguk.ukuu.org.uk>
- <4AF7FC64.6030904@ladisch.de>
- <20091109114600.4d91b90e@lxorguk.ukuu.org.uk>
- <20091109145056.GB14091@buzzloop.caiaq.de>
- <4AF8582B.2000403@davidnewall.com>
+	Mon, 9 Nov 2009 13:08:25 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4AF85ABB.7060406@cam.ac.uk>
+Date: Mon, 09 Nov 2009 18:08:59 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF8582B.2000403@davidnewall.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jonathan Cameron <jic23@cam.ac.uk>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-omap@vger.kernel.org
+CC: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2] staging: iio: tsl2563 ambient light sensor driver
+References: <1257772468-4004-1-git-send-email-amit.kucheria@verdurent.com> <4AF81FE5.5080102@cam.ac.uk> <20091109142430.GZ1773@smtp.gmail.com>
+In-Reply-To: <20091109142430.GZ1773@smtp.gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 04:28:03AM +1030, David Newall wrote:
-> Daniel Mack wrote:
-> > I had that previously and the response was that there is no reason to
-> > define that setting per-boot process, as it is rather unlikely that you
-> > want to change it from one boot to the next. Hence, it should be set at
-> > compile time.
-> >   
+Amit Kucheria wrote:
+> On 09 Nov 09, Jonathan Cameron wrote:
+>> Hi Amit,
+>>
+>> Normally I'd welcome this in IIO, except that all ambient light sensors are in the
+>> process of moving to the new ALS subsystem.  There are still some issues to resolve
+>> in that subsystem (mainly to do with naming conventions) but hopefully we will
+>> get them sorted out shortly.
 > 
-> It should be set as a boot parameter, since this is fixed at system
-> installation and then left untouched.
+> Groan! :)
+You have my sympathies on this! Typical that the first other developer to put
+forward a patch for IIO picks the one type of device we are moving out.
+If you do have any comments on IIO as a result of using it please send them
+on.
+> Who will be the subsystem maintainer and is there already a public git
+> tree?
+No git tree as far as I know.  Maintainer is Zhang Rui (Cc'd)
+Zhang, what are your plans wrt to that?  I guess I can put one up with the current
+patches if it is helpful?  We really need to sort out the naming issue as the one
+thing that people have come out against. 
 
-I'd be fine with either way. As long as it disables the blinking cursor.
+After that I'm guessing ping Andrew Morton to see if he is willing to handle the push
+to Linus? Or does Zhang want to try doing one directly?
 
-> It seems like adding cruft to the kernel that is just as effectively
-> available at run-time. Where does it end? Do we eventually add bash to
-> the kernel?
+>> I'll take a close look at this sometime over the next few days though.  On a quick
+>> glance at the data sheet, it looks very similar to the tsl2561.  Perhaps we can merge
+>> the drivers? Yours is certainly more complete than the tsl2561 version in IIO so it
+>> would make sense to lift the functional elements in to the code I have for an ALS
+>> driver. I hadn't posted that previously as I hadn't quite worked out how to handle
+>> the various gain related settings. What you have done seems to make sense (from a very
+>> quick look.)
+> 
+> I've got no problem merging the tsl2563 with 2561. I don't have any 2561
+> hardware to check a merged driver though.
 
-Well, all I need is a way to disable the cursor at boot time, as we
-don't want it to be in our boot screen on a embedded system. It is not
-only ruin the aesthetics but also gives the wrong assumption that the
-system awaits input. There is no userspace at this point, so that's no
-option.
+On a reasonably thorough review of data sheets I think the only difference is the
+input voltage range and a few timing parameters.  These two chips even use the same
+addresses.  I'll actually test your driver against the tsl2561 sometime later in the
+week to be sure.  So the merge looks like adding a few more lines to the i2c_device_id
+table.  As a quick comment you would ideally have the tsl2563 and tsl2562 in there
+already.
+> 
+> 
+> Do you think the ALS framework will be finalised before the 2.6.33 merge
+> window (in a few weeks)? If not, I wonder if Greg would take this driver to
+> staging to begin with and I'll modify it to use the ALS subsystem when it
+> settles down.
+I'm certainly happy with that as an option if Greg is willing. In fact,
+adding this with tsl2560-> tsl2563 support and removing the current tsl2561 driver would
+be great (post any reviews over the next couple of days).
 
-My first approach was adding a __setup variable to select that, but it
-wasn't beloved by the people get_maintainer.pl spit out. So I made it
-compile-time definable, and Clemens extended that to a more powerful
-interface of settings.
+Thanks,
 
-I don't really have a strong opinion on which way to go, all I need is a
-cursor-free system startup :) And I would of course prefer that patch to
-be in mainline.
-
-Daniel
-
+Jonathan
