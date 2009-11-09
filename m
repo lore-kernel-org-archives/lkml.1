@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752673AbZKITZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbZKIT3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752673AbZKITZL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 14:25:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZKITZL
+	id S1753682AbZKIT3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 14:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbZKIT3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 14:25:11 -0500
-Received: from sh.osrg.net ([192.16.179.4]:51936 "EHLO sh.osrg.net"
+	Mon, 9 Nov 2009 14:29:18 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:5104 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbZKITZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 14:25:10 -0500
-Date: Tue, 10 Nov 2009 04:22:46 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       chrisw@sous-sol.org, dwmw2@infradead.org, joerg.roedel@amd.com,
-       akpm@linux-foundation.org, yinghai@kernel.org,
-       torvalds@linux-foundation.org, tj@kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, hpa@zytor.com,
-       tglx@linutronix.de, hannes@cmpxchg.org
-Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091108100029.GD2845@elte.hu>
-References: <20091028074832.GC19402@elte.hu>
-	<20091106104931W.fujita.tomonori@lab.ntt.co.jp>
-	<20091108100029.GD2845@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091110042204M.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 10 Nov 2009 04:22:51 +0900 (JST)
+	id S1752856AbZKIT3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 14:29:17 -0500
+Date: Mon, 9 Nov 2009 20:23:55 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Stanislaw Gruszka <sgruszka@redhat.com>
+Subject: Re: utime/stime decreasing on thread exit
+Message-ID: <20091109192355.GA13724@redhat.com>
+References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com> <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop> <20091109172020.GA7751@redhat.com> <1257787903.4108.345.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257787903.4108.345.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Nov 2009 11:00:29 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On 11/09, Peter Zijlstra wrote:
+>
+> On Mon, 2009-11-09 at 18:20 +0100, Oleg Nesterov wrote:
+>
+> > Stanislaw has already sent the patch, but I don't know what happened
+> > with this patch:
+> >
+> > 	[PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with __exit_signal()
+> > 	http://marc.info/?l=linux-kernel&m=124505545131145
+>
+> That patch has the siglock in the function calling
+> thread_group_cputime(), the 22 code had it near the loop proper, which
+> to me seems a more sensible thing, since there could be more callers,
+> no?
 
-> 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > On Wed, 28 Oct 2009 08:48:32 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > > 
-> > > > From: Chris Wright <chrisw@sous-sol.org>
-> > > > 
-> > > > Add a new function for freeing bootmem after the bootmem allocator has
-> > > > been released and the unreserved pages given to the page allocator.
-> > > > This allows us to reserve bootmem and then release it if we later
-> > > > discover it was not needed.
-> > > > 
-> > > > Reviewed-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-> > > > ---
-> > > >  include/linux/bootmem.h |    1 +
-> > > >  mm/bootmem.c            |   43 ++++++++++++++++++++++++++++++++++++++-----
-> > > >  2 files changed, 39 insertions(+), 5 deletions(-)
-> > > 
-> > > Hm, we are now further complicating the bootmem model.
-> > 
-> > Yeah, agreed. But reorganizing the allocator during boot is not easy. 
-> > I'll investigate it later on but VT-d people want to fix this IOMMU 
-> > issue now. Can we accept this for now?
-> 
-> Since the patchset weighs heavily towards the iommu and x86 side i can 
-> do that in tip:core/iommu tree, if there's an Acked-by for this 
-> bootmem.c patch from at least one of these gents:
+Well, we can't take ->siglock in thread_group_cputime(), sometimes it
+is called under ->siglock. do_task_stat(), get_cpu_itimer() at least.
 
-ok
+IIRC, Stanislaw verified other callers have no problems with this helper.
 
->  Johannes Weiner <hannes@cmpxchg.org>
->  Pekka Enberg <penberg@cs.helsinki.fi>
->  Andrew Morton <akpm@linux-foundation.org>
->  Tejun Heo <tj@kernel.org>
+Oleg.
 
-Can you give ACKs?
-
-
-Thanks,
