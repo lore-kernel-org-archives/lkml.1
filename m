@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZKIEzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbZKIE4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZKIEzW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 23:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZKIEzV
+	id S1754246AbZKIE4J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 23:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbZKIE4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 23:55:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51249
+	Sun, 8 Nov 2009 23:56:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51255
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753752AbZKIEzU (ORCPT
+	by vger.kernel.org with ESMTP id S1754173AbZKIE4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 23:55:20 -0500
-Date: Sun, 08 Nov 2009 20:55:46 -0800 (PST)
-Message-Id: <20091108.205546.141103466.davem@davemloft.net>
+	Sun, 8 Nov 2009 23:56:04 -0500
+Date: Sun, 08 Nov 2009 20:56:30 -0800 (PST)
+Message-Id: <20091108.205630.190896806.davem@davemloft.net>
 To: arnd@arndb.de
-Cc: linux-kernel@vger.kernel.org, hch@lst.de, netdev@vger.kernel.org,
-       dwmw2@infradead.org
-Subject: Re: [RFC, PATCH 0/7] net, compat_ioctl: move handlers to
- net/socket.c
+Cc: linux-kernel@vger.kernel.org, hch@lst.de, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] net, compat_ioctl: fix SIOCGMII ioctls
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200911082231.48060.arnd@arndb.de>
-References: <1257530949-9695-1-git-send-email-arnd@arndb.de>
-	<20091106.204753.223665411.davem@davemloft.net>
+In-Reply-To: <200911082234.14031.arnd@arndb.de>
+References: <20091106.204753.223665411.davem@davemloft.net>
 	<200911082231.48060.arnd@arndb.de>
+	<200911082234.14031.arnd@arndb.de>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -31,11 +29,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Sun, 8 Nov 2009 22:31:47 +0100
+Date: Sun, 8 Nov 2009 22:34:13 +0100
 
-> Any opinion on how to proceed with the ATM stuff? From my
-> point of view, I'm fine with having moved it out of fs/compat_ioctl.c,
-> but it's still a bit silly to have two half-complete implementations.
+> SIOCGMIIPHY and SIOCGMIIREG return data through ifreq,
+> so it needs to be converted on the way out as well.
+> 
+> SIOCGIFPFLAGS is unused, but has the same problem in theory.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-I haven't looked at that stuff yes, you can be sure it's in
-my queue :-)
+Applied.
