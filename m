@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZKIJmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbZKIJnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755113AbZKIJmv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 04:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbZKIJmv
+	id S1755137AbZKIJnf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 04:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZKIJne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 04:42:51 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:47487 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754593AbZKIJmu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 04:42:50 -0500
-X-Sasl-enc: Ik8LTt0IXqavtfgRHwmq9D2KrOXSakQX/SrRwpc+fZzR 1257759726
-Date: Mon, 9 Nov 2009 07:42:03 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Dave Chinner <david@fromorbit.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Daniel Pittman <daniel@rimspace.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-pm@lists.linux-foundation.org,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Massive ext4 filesystem corruption after a failed
- s2disk/ram cycle
-Message-ID: <20091109094203.GA10007@khazad-dum.debian.net>
-References: <87vdisq7bh.fsf@rimspace.net>
- <20091007161604.GA28849@infradead.org>
- <20091104111125.54C3.A69D9226@jp.fujitsu.com>
- <20091108082905.GA25494@discord.disaster>
- <20091108164913.GA12053@infradead.org>
+	Mon, 9 Nov 2009 04:43:34 -0500
+Received: from www.tglx.de ([62.245.132.106]:40832 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754718AbZKIJne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 04:43:34 -0500
+Date: Mon, 9 Nov 2009 10:43:09 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Martin Schwidefsky <schwidefsky@googlemail.com>
+cc: Oleg Nesterov <oleg@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: 2.6.32-rc5-mmotm1101 - lockdep whinge during early boot
+In-Reply-To: <alpine.LFD.2.00.0911051748090.12138@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0911091038010.2725@localhost.localdomain>
+References: <6417.1257351084@turing-police.cc.vt.edu>  <200911051941.03401.rusty@rustcorp.com.au>  <20091105141055.GA17350@redhat.com>  <alpine.LFD.2.00.0911051547110.12138@localhost.localdomain>  <20091105152241.GA24690@redhat.com>  <20091105153321.GB24690@redhat.com>
+  <alpine.LFD.2.00.0911051653170.12138@localhost.localdomain> <6e0cfd1d0911050820v19ebedl4177eea7b576ad67@mail.gmail.com> <alpine.LFD.2.00.0911051748090.12138@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091108164913.GA12053@infradead.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 08 Nov 2009, Christoph Hellwig wrote:
-> IMHO the best option is to have a separate partition for /boot with a
-> very simple filesystem that we can expect boot loader developers to
-> implement fully and correctly.
+On Thu, 5 Nov 2009, Thomas Gleixner wrote:
+> On Thu, 5 Nov 2009, Martin Schwidefsky wrote:
+> > >
+> > > Which basically reverts commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
+> > >
+> > 
+> > It is this commit in linux-next:
+> > 
+> > commit 66b1a72ceaa7da811db025855f19482f0a38e815
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Thu Sep 10 19:39:52 2009 +0200
+> > 
+> >     Revert "clocksource: Resolve cpu hotplug dead lock with TSC unstable"
+> > 
+> >     This reverts commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16.
+> > 
+> >     causes crashes.
+> > 
+> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> Eeek. We fixed this in mainline via:
+> 
+> commit f79e0258ea1f04d63db499479b5fb855dff6dbc5
+> Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Date:   Fri Sep 11 15:33:05 2009 +0200
+> 
+>     clocksource: Resolve cpu hotplug dead lock with TSC unstable, fix crash
+> 
+> and
+> 
+> commit 54a6bc0b071c50150bc6d1da16c2cd9a963e288c
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Mon Sep 14 19:49:02 2009 +0200
+> 
+>     clocksource: Delay clocksource down rating to late boot
+> 
+> 
+> These patches came via the tip tree right at the beginning of the
+> merge window several days _before_ I asked Linus to pull the timer
+> code for 32.
+> 
+> So there is something weird going on.
 
-Agreed.  And one that is not all but abandoned kernel-side, or you will risk
-bugs there.
+Ok, figured out what happened.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+The revert has been in next via the tip-tree for some days when
+testing turned up the problem and the fixes were not ready.
+
+So it looks like Andrew picked exactly such a linux-next snapshot to
+create his baseline patch.
+
+linux-next, tip, mainline of today all have the correct and functional
+code.
+
+Thanks,
+
+	tglx
