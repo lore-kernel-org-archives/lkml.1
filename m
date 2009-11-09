@@ -1,72 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbZKISuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbZKISxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbZKISuh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:50:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZKISuh
+	id S1752515AbZKISxX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 13:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZKISxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:50:37 -0500
-Received: from www.tglx.de ([62.245.132.106]:45258 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbZKISug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:50:36 -0500
-Date: Mon, 9 Nov 2009 19:50:17 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to
- preempt_count leakage in keventd
-In-Reply-To: <200911091836.30349.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0911091949500.2725@localhost.localdomain>
-References: <200911091250.31626.rjw@sisk.pl> <200911091647.54171.rjw@sisk.pl> <1257783553.6408.6.camel@marge.simson.net> <200911091836.30349.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 9 Nov 2009 13:53:22 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:45802 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751067AbZKISxV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 13:53:21 -0500
+Date: Mon, 9 Nov 2009 13:52:59 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Huang Ying <ying.huang@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH 1/2] x86, crypto, Generate .byte code for some new
+	instructions via gas macro
+Message-ID: <20091109185259.GA9588@gondor.apana.org.au>
+References: <1257403455.22519.249.camel@yhuang-dev.sh.intel.com> <20091105142336.GB1910@gondor.apana.org.au> <4AF30447.2030705@zytor.com> <20091108105619.GF11372@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091108105619.GF11372@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Nov 2009, Rafael J. Wysocki wrote:
-
-> On Monday 09 November 2009, Mike Galbraith wrote:
-> > On Mon, 2009-11-09 at 16:47 +0100, Rafael J. Wysocki wrote:
-> > > On Monday 09 November 2009, Mike Galbraith wrote:
+On Sun, Nov 08, 2009 at 11:56:19AM +0100, Ingo Molnar wrote:
+>
+> > I'm not Ingo, but:
 > > 
-> > > > > Very likely.  What did you do to fix it?
-> > > > 
-> > > > You don't really wanna know.  In 31 with newidle enabled, the below
-> > > > fixed it.  It won't fix 32, though it might cure the resume problem.
-> > > 
-> > > OK, I'll give it a try.
+> > Acked-by: H. Peter Anvin <hpa@zytor.com>
 > 
-> It doesn't help.
-> 
-> Also, I can reproduce the issue with current -git and kernel preepmtion
-> disabled.
-> 
-> > I just tried to trigger badness via high speed online/offline combined
-> > with taskset with CONFIG_PREEMPT enabled, and couldn't make it explode.
-> 
-> I'm not able to do it this way too, so resume seems to be necessary to trigger
-> it.  I'm going try with the suspend debug in the "core" mode.
-> 
-> > (damn, wish i could s2ram this box)
-> 
-> That need not suffice.  I have two other boxes that suspend and resume
-> correctly with 2.6.32-rc, AFAICS.
-> 
-> However, there seems to be a systematic error somewhere, since the failure
-> always happens at the same place, ie. list_del_init(cwq->worklist.next); in
-> run_workqueue(), in preemptible as well as in non-preemptible kernels.
-> 
-> Which is kind of strange, given the !list_empty(&cwq->worklist) test right
-> before it.
+> Fine to me too and for future variations thereof.
 
-Does that happen before or after the secondary CPU has been brought up ?
-
-Thanks,
-
-	tglx
+Thanks guys I'll put this into cryptodev now.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
