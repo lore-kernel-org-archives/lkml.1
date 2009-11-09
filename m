@@ -1,105 +1,380 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbZKIHXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbZKIGrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbZKIHXK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 02:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZKIHXJ
+	id S1752346AbZKIGrW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 01:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbZKIGrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 02:23:09 -0500
-Received: from ms13.sony.co.jp ([211.125.136.230]:41910 "EHLO ms13.sony.co.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753997AbZKIHXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 02:23:08 -0500
-X-Greylist: delayed 2469 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Nov 2009 02:23:08 EST
-Date: Mon, 09 Nov 2009 15:40:42 +0900
-From: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] block/ps3: Fix slow VRAM IO
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-kernel@vger.kernel.org,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Jim Paris <jim@jtan.com>, Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20091103002322.1f04adbe.akpm@linux-foundation.org>
-References: <4ADCC4E3.8060104@am.sony.com> <20091103002322.1f04adbe.akpm@linux-foundation.org>
-Message-Id: <20091109154036.08C0.4D252088@rd.scei.sony.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 9 Nov 2009 01:47:22 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44210 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbZKIGrV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 01:47:21 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 9 Nov 2009 15:44:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH 2/2] memcg : rewrite percpu countings with new interfaces v2
+Message-Id: <20091109154446.181b0e1f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091106175545.b97ee867.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091106175242.6e13ee29.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091106175545.b97ee867.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.51.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for the review!
+Thank you Chirsotph for review.
 
-> > The current PS3 VRAM driver uses msleep() to wait for completion
-> > of RSX DMA transfers between system memory and VRAM.  Depending
-> > on the system timing, the processing delay and overhead of this
-> > msleep() call can significantly impact VRAM driver IO.
-> > 
-> > To avoid the condition, add a short duration (200 usec max)
-> > udelay() polling loop before entering the msleep() polling
-> > loop.
-> > 
-> 
-> When raising a performance-based patch, please always try to include
-> before-and-after performance measurements in the changelog.  People
-> want to know the magnitude of the improvement.
+I think this version works well.
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-No problem we will add the difference of improvement in the changelog.
-This is the results. Pretty impressive.
-Before
-  Reading:  33MB/s 
-  Writing:  16MB/s
-After
-  Reading: 370MB/s
-  Writing: 238MB/s
+Now, alloc_percpu() alloc good dynamic allocations and
+Recent updates on percpu.h gives us following kind of ops 
+   - this_cpu_add() etc...
+This is designed to be a help for reduce code size in hot-path
+and very useful to handle percpu area. Thanks for great works.
 
-> > +		if (!notify[3])
-> > +			return 0;
-> > +		udelay(10);
-> > +	}
-> 
-> You might as well do a udelay(1) here.  The additional cost will be
-> negligible, and it will reduce latency.
+This patch rewrite memcg's (not-good) percpu status with new
+percpu support macros. This decreases code size and instruction
+size. By this, this area is now NUMA-aware and may have performance 
+benefit. 
 
-Are you mentioning adding udelay(1) in the between udelay polling 
-and msleep polling? Or are you mentioning to change udelay(10) to udelay(1)
-inside the udelay polling?
+Changelog: 2009/11/09
+ - fixed misusage of __this_cpu_xxx
 
-The former is no problem, but the later has impact on performance of PS3 
-system.
-Because Cell/B.E.(consists of PPE and SPEs cores) and GPU are connected with 
-ring bus called EIB and every issuing notify[3] to check VRAM-DMA results 
-will generate data transfer to the bus. 
-There are only one EIB bus in PS3 and other devices connected on the bus
-such as SPEs will be affected if the bus is occupied by many notify[3] and
-as a result it will decrease the over all system performance.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memcontrol.c |  172 +++++++++++++++++++-------------------------------------
+ 1 file changed, 61 insertions(+), 111 deletions(-)
 
-The udelay(10) was the most reasonable distance not to overcrowd the bus 
-and not to wait too long for checking DMA on VRAM.
-We have tried udelay(5) but did not improve the VRAM IO speed.
-
-> > +	timeout = jiffies + msecs_to_jiffies(timeout_ms);
-> 
-> The maximum latency is now timout_ms + 200usec.
-> 
-> That's OK with the current constants, but if someone later changes a
-> constant, the error could become significant.
-
-Yes, I think so too. Probably reconstructing the design entirely based on 
-usec instead of msec might be ideal but adding 200usec loops fixes the
-current slow VRAM driver, so I thought it is acceptable work around.
-
-> Perhaps that isn't worth bothering about though.
-> 
-> >  	do {
-> >  		if (!notify[3])
-
--- 
-Akira Tsukamoto
-Sony Computer Entertainment Inc. 
-Architecture Lab.
-Japan
+Index: mmotm-2.6.32-Nov2/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.32-Nov2.orig/mm/memcontrol.c
++++ mmotm-2.6.32-Nov2/mm/memcontrol.c
+@@ -39,6 +39,7 @@
+ #include <linux/mm_inline.h>
+ #include <linux/page_cgroup.h>
+ #include <linux/cpu.h>
++#include <linux/percpu.h>
+ #include "internal.h"
+ 
+ #include <asm/uaccess.h>
+@@ -78,54 +79,8 @@ enum mem_cgroup_stat_index {
+ 
+ struct mem_cgroup_stat_cpu {
+ 	s64 count[MEMCG_STAT_NSTATS];
+-} ____cacheline_aligned_in_smp;
+-
+-struct mem_cgroup_stat {
+-	struct mem_cgroup_stat_cpu cpustat[0];
+ };
+ 
+-static inline void
+-__mem_cgroup_stat_reset_safe(struct mem_cgroup_stat_cpu *stat,
+-				enum mem_cgroup_stat_index idx)
+-{
+-	stat->count[idx] = 0;
+-}
+-
+-static inline s64
+-__mem_cgroup_stat_read_local(struct mem_cgroup_stat_cpu *stat,
+-				enum mem_cgroup_stat_index idx)
+-{
+-	return stat->count[idx];
+-}
+-
+-/*
+- * For accounting under irq disable, no need for increment preempt count.
+- */
+-static inline void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat_cpu *stat,
+-		enum mem_cgroup_stat_index idx, int val)
+-{
+-	stat->count[idx] += val;
+-}
+-
+-static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
+-		enum mem_cgroup_stat_index idx)
+-{
+-	int cpu;
+-	s64 ret = 0;
+-	for_each_possible_cpu(cpu)
+-		ret += stat->cpustat[cpu].count[idx];
+-	return ret;
+-}
+-
+-static s64 mem_cgroup_local_usage(struct mem_cgroup_stat *stat)
+-{
+-	s64 ret;
+-
+-	ret = mem_cgroup_read_stat(stat, MEMCG_NR_CACHE);
+-	ret += mem_cgroup_read_stat(stat, MEMCG_NR_RSS);
+-	return ret;
+-}
+-
+ /*
+  * per-zone information in memory controller.
+  */
+@@ -226,10 +181,7 @@ struct mem_cgroup {
+ 	/* set when res.limit == memsw.limit */
+ 	bool		memsw_is_minimum;
+ 
+-	/*
+-	 * statistics. This must be placed at the end of memcg.
+-	 */
+-	struct mem_cgroup_stat stat;
++	struct mem_cgroup_stat_cpu *cpustat;
+ };
+ 
+ /*
+@@ -370,18 +322,13 @@ mem_cgroup_remove_exceeded(struct mem_cg
+ static bool mem_cgroup_soft_limit_check(struct mem_cgroup *mem)
+ {
+ 	bool ret = false;
+-	int cpu;
+ 	s64 val;
+-	struct mem_cgroup_stat_cpu *cpustat;
+ 
+-	cpu = get_cpu();
+-	cpustat = &mem->stat.cpustat[cpu];
+-	val = __mem_cgroup_stat_read_local(cpustat, MEMCG_EVENTS);
++	val = this_cpu_read(mem->cpustat->count[MEMCG_EVENTS]);
+ 	if (unlikely(val > SOFTLIMIT_EVENTS_THRESH)) {
+-		__mem_cgroup_stat_reset_safe(cpustat, MEMCG_EVENTS);
++		this_cpu_write(mem->cpustat->count[MEMCG_EVENTS], 0);
+ 		ret = true;
+ 	}
+-	put_cpu();
+ 	return ret;
+ }
+ 
+@@ -477,17 +424,34 @@ mem_cgroup_largest_soft_limit_node(struc
+ 	return mz;
+ }
+ 
++static s64 mem_cgroup_read_stat(struct mem_cgroup *mem,
++		enum mem_cgroup_stat_index idx)
++{
++	struct mem_cgroup_stat_cpu *cstat;
++	int cpu;
++	s64 ret = 0;
++
++	for_each_possible_cpu(cpu)
++		ret += per_cpu_ptr(mem->cpustat->count[idx], cpu);
++
++	return ret;
++}
++
++static s64 mem_cgroup_local_usage(struct mem_cgroup *mem)
++{
++	s64 ret;
++
++	ret = mem_cgroup_read_stat(mem, MEMCG_NR_CACHE);
++	ret += mem_cgroup_read_stat(mem, MEMCG_NR_RSS);
++	return ret;
++}
++
+ static void mem_cgroup_swap_statistics(struct mem_cgroup *mem,
+ 					 bool charge)
+ {
+ 	int val = (charge) ? 1 : -1;
+-	struct mem_cgroup_stat *stat = &mem->stat;
+-	struct mem_cgroup_stat_cpu *cpustat;
+-	int cpu = get_cpu();
+ 
+-	cpustat = &stat->cpustat[cpu];
+-	__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_SWAP, val);
+-	put_cpu();
++	this_cpu_add(mem->cpustat->count[MEMCG_NR_SWAP], val);
+ }
+ 
+ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+@@ -495,22 +459,19 @@ static void mem_cgroup_charge_statistics
+ 					 bool charge)
+ {
+ 	int val = (charge) ? 1 : -1;
+-	struct mem_cgroup_stat *stat = &mem->stat;
+-	struct mem_cgroup_stat_cpu *cpustat;
+-	int cpu = get_cpu();
+ 
+-	cpustat = &stat->cpustat[cpu];
++	preempt_disable();
+ 	if (PageCgroupCache(pc))
+-		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_CACHE, val);
++		__this_cpu_add(mem->cpustat->count[MEMCG_NR_CACHE], val);
+ 	else
+-		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_RSS, val);
++		__this_cpu_add(mem->cpustat->count[MEMCG_NR_RSS], val);
+ 
+ 	if (charge)
+-		__mem_cgroup_stat_add_safe(cpustat, MEMCG_PGPGIN, 1);
++		__this_cpu_inc(mem->cpustat->count[MEMCG_PGPGIN]);
+ 	else
+-		__mem_cgroup_stat_add_safe(cpustat, MEMCG_PGPGOUT, 1);
+-	__mem_cgroup_stat_add_safe(cpustat, MEMCG_EVENTS, 1);
+-	put_cpu();
++		__this_cpu_inc(mem->cpustat->count[MEMCG_PGPGOUT]);
++	__this_cpu_inc(mem->cpustat->count[MEMCG_EVENTS]);
++	preempt_enable();
+ }
+ 
+ static unsigned long mem_cgroup_get_local_zonestat(struct mem_cgroup *mem,
+@@ -1162,7 +1123,7 @@ static int mem_cgroup_hierarchical_recla
+ 				}
+ 			}
+ 		}
+-		if (!mem_cgroup_local_usage(&victim->stat)) {
++		if (!mem_cgroup_local_usage(victim)) {
+ 			/* this cgroup's local usage == 0 */
+ 			css_put(&victim->css);
+ 			continue;
+@@ -1228,9 +1189,6 @@ static void record_last_oom(struct mem_c
+ void mem_cgroup_update_file_mapped(struct page *page, int val)
+ {
+ 	struct mem_cgroup *mem;
+-	struct mem_cgroup_stat *stat;
+-	struct mem_cgroup_stat_cpu *cpustat;
+-	int cpu;
+ 	struct page_cgroup *pc;
+ 
+ 	pc = lookup_page_cgroup(page);
+@@ -1245,14 +1203,7 @@ void mem_cgroup_update_file_mapped(struc
+ 	if (!PageCgroupUsed(pc))
+ 		goto done;
+ 
+-	/*
+-	 * Preemption is already disabled, we don't need get_cpu()
+-	 */
+-	cpu = smp_processor_id();
+-	stat = &mem->stat;
+-	cpustat = &stat->cpustat[cpu];
+-
+-	__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_FILE_MAPPED, val);
++	this_cpu_add(mem->cpustat->count[MEMCG_NR_FILE_MAPPED], val);
+ done:
+ 	unlock_page_cgroup(pc);
+ }
+@@ -1623,9 +1574,6 @@ static int mem_cgroup_move_account(struc
+ 	int nid, zid;
+ 	int ret = -EBUSY;
+ 	struct page *page;
+-	int cpu;
+-	struct mem_cgroup_stat *stat;
+-	struct mem_cgroup_stat_cpu *cpustat;
+ 
+ 	VM_BUG_ON(from == to);
+ 	VM_BUG_ON(PageLRU(pc->page));
+@@ -1650,16 +1598,12 @@ static int mem_cgroup_move_account(struc
+ 
+ 	page = pc->page;
+ 	if (page_mapped(page) && !PageAnon(page)) {
+-		cpu = smp_processor_id();
++		preempt_disable();
+ 		/* Update mapped_file data for mem_cgroup "from" */
+-		stat = &from->stat;
+-		cpustat = &stat->cpustat[cpu];
+-		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_FILE_MAPPED, -1);
+-
++		__this_cpu_dec(from->cpustat->count[MEMCG_NR_FILE_MAPPED]);
+ 		/* Update mapped_file data for mem_cgroup "to" */
+-		stat = &to->stat;
+-		cpustat = &stat->cpustat[cpu];
+-		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_FILE_MAPPED, 1);
++		__this_cpu_inc(to->cpustat->count[MEMCG_NR_FILE_MAPPED]);
++		preempt_enable();
+ 	}
+ 
+ 	if (do_swap_account && !mem_cgroup_is_root(from))
+@@ -2715,7 +2659,7 @@ static int
+ mem_cgroup_get_idx_stat(struct mem_cgroup *mem, void *data)
+ {
+ 	struct mem_cgroup_idx_data *d = data;
+-	d->val += mem_cgroup_read_stat(&mem->stat, d->idx);
++	d->val += mem_cgroup_read_stat(mem, d->idx);
+ 	return 0;
+ }
+ 
+@@ -2920,18 +2864,18 @@ static int mem_cgroup_get_local_stat(str
+ 	s64 val;
+ 
+ 	/* per cpu stat */
+-	val = mem_cgroup_read_stat(&mem->stat, MEMCG_NR_CACHE);
++	val = mem_cgroup_read_stat(mem, MEMCG_NR_CACHE);
+ 	s->stat[MCS_CACHE] += val * PAGE_SIZE;
+-	val = mem_cgroup_read_stat(&mem->stat, MEMCG_NR_RSS);
++	val = mem_cgroup_read_stat(mem, MEMCG_NR_RSS);
+ 	s->stat[MCS_RSS] += val * PAGE_SIZE;
+-	val = mem_cgroup_read_stat(&mem->stat, MEMCG_NR_FILE_MAPPED);
++	val = mem_cgroup_read_stat(mem, MEMCG_NR_FILE_MAPPED);
+ 	s->stat[MCS_FILE_MAPPED] += val * PAGE_SIZE;
+-	val = mem_cgroup_read_stat(&mem->stat, MEMCG_PGPGIN);
++	val = mem_cgroup_read_stat(mem, MEMCG_PGPGIN);
+ 	s->stat[MCS_PGPGIN] += val;
+-	val = mem_cgroup_read_stat(&mem->stat, MEMCG_PGPGOUT);
++	val = mem_cgroup_read_stat(mem, MEMCG_PGPGOUT);
+ 	s->stat[MCS_PGPGOUT] += val;
+ 	if (do_swap_account) {
+-		val = mem_cgroup_read_stat(&mem->stat, MEMCG_NR_SWAP);
++		val = mem_cgroup_read_stat(mem, MEMCG_NR_SWAP);
+ 		s->stat[MCS_SWAP] += val * PAGE_SIZE;
+ 	}
+ 
+@@ -3190,17 +3134,12 @@ static void free_mem_cgroup_per_zone_inf
+ 	kfree(mem->info.nodeinfo[node]);
+ }
+ 
+-static int mem_cgroup_size(void)
+-{
+-	int cpustat_size = nr_cpu_ids * sizeof(struct mem_cgroup_stat_cpu);
+-	return sizeof(struct mem_cgroup) + cpustat_size;
+-}
+-
+ static struct mem_cgroup *mem_cgroup_alloc(void)
+ {
+ 	struct mem_cgroup *mem;
+-	int size = mem_cgroup_size();
++	int size = sizeof(struct mem_cgroup);
+ 
++	/* Can be very big if MAX_NUMNODES is big */
+ 	if (size < PAGE_SIZE)
+ 		mem = kmalloc(size, GFP_KERNEL);
+ 	else
+@@ -3208,6 +3147,15 @@ static struct mem_cgroup *mem_cgroup_all
+ 
+ 	if (mem)
+ 		memset(mem, 0, size);
++	mem->cpustat = alloc_percpu(struct mem_cgroup_stat_cpu);
++	if (!mem->cpustat) {
++		if (size < PAGE_SIZE)
++			kfree(mem);
++		else
++			vfree(mem);
++		mem = NULL;
++	}
++
+ 	return mem;
+ }
+ 
+@@ -3232,7 +3180,9 @@ static void __mem_cgroup_free(struct mem
+ 	for_each_node_state(node, N_POSSIBLE)
+ 		free_mem_cgroup_per_zone_info(mem, node);
+ 
+-	if (mem_cgroup_size() < PAGE_SIZE)
++	free_percpu(mem->cpustat);
++
++	if (sizeof(struct mem_cgroup) < PAGE_SIZE)
+ 		kfree(mem);
+ 	else
+ 		vfree(mem);
 
