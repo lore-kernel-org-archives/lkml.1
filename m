@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbZKISVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZKISeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752966AbZKISVL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZKISVK
+	id S1751353AbZKISeh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 13:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZKISeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:21:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16452 "EHLO mx1.redhat.com"
+	Mon, 9 Nov 2009 13:34:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16156 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbZKISVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:21:10 -0500
-Subject: Re: [PATCH] audit: Match SELinux context in "user" records
-From: Eric Paris <eparis@redhat.com>
-To: Miloslav =?UTF-8?Q?Trma=C4=8D?= <mitr@redhat.com>
-Cc: viro@zeniv.linux.org.uk, linux-audit@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1257779446-1395-1-git-send-email-mitr@redhat.com>
-References: <1257779446-1395-1-git-send-email-mitr@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Nov 2009 13:21:13 -0500
-Message-Id: <1257790873.2994.25.camel@dhcp231-106.rdu.redhat.com>
+	id S1751073AbZKISee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 13:34:34 -0500
+Date: Mon, 9 Nov 2009 16:33:58 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [GIT PATCHES for 2.6.32] V4L/DVB fixes
+Message-ID: <20091109163358.78183665@pedra.chehab.org>
+In-Reply-To: <alpine.LFD.2.01.0911091001410.31845@localhost.localdomain>
+References: <20091107143757.5a9453dc@pedra.chehab.org>
+	<alpine.LFD.2.01.0911091001410.31845@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-09 at 16:10 +0100, Miloslav Trmač wrote:
-> From: Miloslav Trmac <mitr@redhat.com>
-> 
-> Add support for matching by security label (e.g. SELinux context) of
-> the sender of an user-space audit record.
-> 
-> The audit filter code already allows user space to configure such
-> filters, but they were ignored during evaluation.  This patch implements
-> evaluation of these filters.
-> 
-> For example, after application of this patch, PAM authentication logs
-> caused by cron can be disabled using
-> 	auditctl -a user,never -F subj_type=crond_t
-> 
-> Signed-off-by: Miloslav Trmac <mitr@redhat.com>
+Em Mon, 9 Nov 2009 10:02:05 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> escreveu:
 
-I wish there was a way to stop sending these instead of dropping them
-later, but the functionality itself is not a horrid idea and this isn't
-a performance hot list (like the syscall list)  so.....
+> 
+> 
+> On Sat, 7 Nov 2009, Mauro Carvalho Chehab wrote:
+> > 
+> > Please pull from:
+> >         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+> 
+> 	"Already up-to-date."
+> 
+> Forgot to push it out?
 
-Acked-by: Eric Paris <eparis@redhat.com>
+Sorry.
 
-(I actually talked to Al about it already and he'll queue it up for the
-next merge window)
+Should be there already.
 
+$ git push origin
+Counting objects: 911, done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (138/138), done.
+Writing objects: 100% (648/648), 102.81 KiB, done.
+Total 648 (delta 512), reused 637 (delta 502)
+To ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+   3f48258..22370ef  for_linus -> for_linus
+
+-- 
+
+Cheers,
+Mauro
