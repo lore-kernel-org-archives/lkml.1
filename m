@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbZKIPYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbZKIPZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756047AbZKIPYy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 10:24:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZKIPYx
+	id S1756085AbZKIPZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 10:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZKIPZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 10:24:53 -0500
-Received: from mail-forward1.uio.no ([129.240.10.70]:38080 "EHLO
-	mail-forward1.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753613AbZKIPYw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 10:24:52 -0500
-Message-ID: <4AF83444.9090208@simula.no>
-Date: Mon, 09 Nov 2009 16:24:52 +0100
-From: Andreas Petlund <apetlund@simula.no>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 9 Nov 2009 10:25:28 -0500
+Received: from cantor.suse.de ([195.135.220.2]:54730 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755864AbZKIPZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 10:25:27 -0500
+Date: Mon, 9 Nov 2009 16:25:29 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: Re: linux-next: manual merge of the trivial tree with the  tree
+In-Reply-To: <200911091608.36757.bzolnier@gmail.com>
+Message-ID: <alpine.LSU.2.00.0911091624370.15039@wotan.suse.de>
+References: <20091109154305.49d3eb7c.sfr@canb.auug.org.au> <alpine.LSU.2.00.0911090944200.15039@wotan.suse.de> <200911091608.36757.bzolnier@gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-CC: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       William Allen Simpson <william.allen.simpson@gmail.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "shemminger@vyatta.com" <shemminger@vyatta.com>,
-       "davem@davemloft.net" <davem@davemloft.net>
-Subject: Re: [PATCH 1/3] net: TCP thin-stream detection
-References: <f7b4caf3a5b5c906cb8d508239455322.squirrel@webmail.uio.no> <4AEB0512.4010804@nets.rwth-aachen.de> <4AF2D47F.4030701@simula.no> <alpine.DEB.2.00.0911051536200.7024@wel-95.cs.helsinki.fi>
-In-Reply-To: <alpine.DEB.2.00.0911051536200.7024@wel-95.cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-UiO-Ratelimit-Test: rcpts/h 18 msgs/h 3 sum rcpts/h 21 sum msgs/h 3 total rcpts 540 max rcpts/h 37 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: B40AAB59A7CF3568569377818CCD111B823CB0AC
-X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 5 total 5917 max/h 49 blacklist 0 greylist 0 ratelimit 0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen wrote:
-> On Thu, 5 Nov 2009, Andreas Petlund wrote:
+On Mon, 9 Nov 2009, Bartlomiej Zolnierkiewicz wrote:
+
+> > From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> > Subject: rt2x00: fix some typos and punctuation in comments
+> > 
+> > fix some typos and punctuation in comments
+> > 
+> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 > 
->> Arnd Hannemann wrote:
->>> One example: Consider standard NewReno non-SACK enabled flow:
->>> For some reasons two data packets get reordered.
->>> The TCP sender will produce a dupACK and an ACK.
->>> The dupACK will trigger (because of your logic) a spurious retransmit.
->>> The spurious retransmit will trigger a dupACK.
->>> This dupACK will again trigger a spurious retransmit.
->>> And this game will continue, unless a packet is dropped by coincidence.
->> Such an effect will be extremely rare. It will depend on the application 
->> producing an extremely even flow of packets with just the right 
->> interarrival time, and also on reordering of data (which also will 
->> happen very seldom when the number of packets in flight are so low). 
->> Even though it can happen, the data flow will progress (with spurious 
->> retransmissions). The effect will stop as soon as the application sends 
->> more than 4 segments in an RTT (which will disable the thin-stream 
->> modifications) or less than 1 (which will cause all segments to be 
->> successfully ACKed), or if, as you say, a packet is dropped.
-> 
-> I'd simply workaround this problem by requiring SACK to be enabled for 
-> such a connection. This is reinforced by the fact that small windowed 
-> transfers want it certainly to be on anyway to get the best out of ACK 
-> flow even if there were some ACK losses.
-> 
+> FWIW the patch is in rt2800 tree now.
 
-Thanks. I will revise the patches based on all the feedback I have gotten
-and get back to the list with a new version when I have done some more
-testing.
+I have dropped the respective hunk from my tree (I hope that being in your 
+tree means that it will get upstream one day, I must say I got completely 
+lost in the recent rt2x00 flames :) ).
 
-Best regards,
-Andreas
+Thanks,
 
-
-
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
