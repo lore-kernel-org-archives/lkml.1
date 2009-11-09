@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZKIGuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbZKIHEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbZKIGuf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 01:50:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZKIGue
+	id S1753065AbZKIHEX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 02:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZKIHEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 01:50:34 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:45003 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbZKIGue (ORCPT
+	Mon, 9 Nov 2009 02:04:23 -0500
+Received: from e28smtp02.in.ibm.com ([122.248.162.2]:36054 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbZKIHEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 01:50:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:mime-version
-         :content-type:content-transfer-encoding:message-id;
-        b=x/tocG+6TKVK/duJeAPnBsoVHnCElHgVuc/JSp0jFY9afAuXeItWA9gICCzIHNVFOY
-         AaUpzhnBrTKLxlnWJt2eSkoCrhU/GY3wO9UhgsQf36dnYYaB4fAN/DfsgEcM4iRNkWJG
-         fdwgMf31X6vwE6E1v9st7q2OHagUKgRS2fZLQ=
-From: Mark Veltzer <mark.veltzer@gmail.com>
-Organization: veltzer.net
-To: linux-kernel@vger.kernel.org
-Subject: get_user_pages question
-Date: Mon, 9 Nov 2009 08:50:25 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.30-1-686; KDE/4.3.2; i686; ; )
+	Mon, 9 Nov 2009 02:04:22 -0500
+Date: Mon, 9 Nov 2009 12:34:21 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/2] memcg make use of new percpu implementations
+Message-ID: <20091109070421.GD3042@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091106175242.6e13ee29.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911090850.26724.mark.veltzer@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091106175242.6e13ee29.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all!
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-11-06 17:52:42]:
 
-I have searched the list for similar issues and have not found an answer so I 
-am posting.
+> Hi,
+> 
+> Recent updates on dynamic percpu allocation looks good and I tries to rewrite
+> memcg's poor implementation of percpu status counter.
+> (It's not NUMA-aware ...)
+> Thanks for great works.
+> 
+> For this time. I added Christoph to CC because I'm not fully sure my usage of
+> __this_cpu_xxx is correct...I'm glad if you check the usage when you have time.
+> 
+> 
+> Patch 1/2 is just clean up (prepare for patch 2/2)
+> Patch 2/2 is for percpu.
+> 
+> Tested on my 8cpu box and works well.
+> Pathcesa are against the latest mmotm.
 
-I am using 'get_user_pages' and friends to get a hold of user memory in kernel 
-space. User space passes buffer to kernel, kernel does get_user_pages, holds 
-them for some time while user space is doing something else, writes to the 
-pages and then releases them (SetPageDirty and page_cache_release as per LDD 
-3rd edition). So far so good. 
+How do the test results look? DO you see a significant boost? BTW,
+I've been experimenting a bit with the earlier percpu counter patches,
+I might post an iteration once I have some good results.
 
-I am testing this kernel module with several buffers from user space allocated 
-in several different ways. heap, data segment, static variable in function and 
-stack. All scenarious work EXCEPT the stack one. When passing the stack buffer 
-the kernel sees one thing while user space sees another.
-
-My not so intelligent questions (they may well be off the mark):
-- How can this be? (two views of the same page)
-- Does not 'get_user_pages' pin the pages?
-- Could this be due to stack protection of some sort?
-- Do I need to do anything extra with the vm_area I receive for the stack 
-pages EXCEPT 'get_user_pages' ?
-
-I know this is not an orthodox method to write a driver and I better use mmap 
-for these things but I have other constrains in this driver design that I do 
-not want to bore you with. I am also awara that passing a buffer on stack and 
-letting user space continue running is a very dangerous thing to do for user 
-space (or kernel space) integrity. I wish I could do it another way...
-
-The platform is x86 32 bit standad with standard kernels and headers 
-distributed with ubuntu 9.04 and 9.10 which are 2.6.28 and 2.6.31.
-
-Please reply to my email as well as I am not a subscriber.
-
-Cheers,
-	Mark
+-- 
+	Balbir
