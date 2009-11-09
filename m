@@ -1,69 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZKIK6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZKIK5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbZKIK6v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 05:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbZKIK6u
+	id S1753346AbZKIK5r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 05:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZKIK5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 05:58:50 -0500
-Received: from postduif.ic.uva.nl ([145.18.40.180]:55237 "EHLO
-	postduif.ic.uva.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbZKIK6t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 05:58:49 -0500
-X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Nov 2009 05:58:49 EST
-Date: Mon, 9 Nov 2009 18:51:32 +0800 (SGT)
-From: Mark Pith <mark.pith@student.uva.nl>
-X-X-Sender: mark.pith@SpithFire.local
-To: linux-kernel@vger.kernel.org
-Subject: Programmers motivation research
-Message-ID: <alpine.OSX.1.00-jdl.0911091850210.13221@SpithFire.local>
-User-Agent: Alpine 1.00-jdl (OSX 882 2007-12-20)
+	Mon, 9 Nov 2009 05:57:46 -0500
+Received: from lucidpixels.com ([75.144.35.66]:52785 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751036AbZKIK5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 05:57:46 -0500
+Date: Mon, 9 Nov 2009 05:57:51 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, news@phoronix.com
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: Re: Intel DP55KG + Intel Core i7 870 + Phoronix Benchmarks / Turbo
+ Boost
+In-Reply-To: <alpine.DEB.2.00.0911081638400.25174@p34.internal.lan>
+Message-ID: <alpine.DEB.2.00.0911090555250.22798@p34.internal.lan>
+References: <alpine.DEB.2.00.0911081638400.25174@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-900199427-1257763898=:13221"
-X-Spam-Score: undef - spam scanning disabled
-X-CanIt-Geo: ip=146.50.144.91; country=NL; region=07; city=Amsterdam; latitude=52.3500; longitude=4.9167; http://maps.google.com/maps?q=52.3500,4.9167&z=6
-X-CanItPRO-Stream: auth (inherits from default)
-X-Canit-Stats-ID: Bayes signature not available
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---0-900199427-1257763898=:13221
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
 
-Dear Linux kernel community, 
+On Sun, 8 Nov 2009, Justin Piszcz wrote:
 
-We are researching the motivation factors of Open Source software 
-programmers and would like to ask your cooperation in our large-scale 
-research. The research is performed for the Amsterdam Business School of 
-the University of Amsterdam. Your participation would consist of 
-completing an online survey to which we have linked below. Your 
-participation is completely anonymous and the research publication will 
-be freely available, including the results of the survey.
- 
-The goal of the research is to better understand the motivations 
-software programmers have for joining and contributing to an Open Source 
-project. The insights gained from this research would help the 
-development of theory for Information Management and could help 
-practitioners better understand Open Source projects. Next to this, the 
-publication of this research will increase the exposure of the 
-development of Open Source software within the academic environment. 
-Please follow the link to the online survey.
- 
-Our test audience has shown that completing the survey will take about 
-15 minutes. Your time is highly appreciated by us.
- 
-http://bit.ly/Survey_Developers_Motivation
- 
-Kind regards,
-Dr. Thomas Adelaar
-Mark Pith
+> Hello,
+>
+> I performed a bunch of tests with my processor to see if Turbo Boost was
+> working correct, the short answer is, it /appears/ to be..
 
-Please CC me for a faster response, if you reply this message.
+[ .. ]
 
--This independent research is not related to linux.org.-
---0-900199427-1257763898=:13221--
+There is another method to check whether Turbo Boost appears to be working, 
+without ACPI_FREQ/etc, I noticed the none of the cores ever went above ~48-50c
+for a single threaded application @ 100% CPU.
+
+Now, with ACPI_FREQ+NO_HZ, etc, it is evident that the first core is probably
+in Turbo Boost mode, the application being run also seems to indicate this as
+it shows a slight increase in performance.
+
+$ sensors
+coretemp-isa-0000
+Adapter: ISA adapter
+Core 0:      +57.0M-0C  (high = +84.0M-0C, crit = +100.0M-0C)
+
+coretemp-isa-0001
+Adapter: ISA adapter
+Core 1:      +57.0M-0C  (high = +84.0M-0C, crit = +100.0M-0C)
+
+coretemp-isa-0002
+Adapter: ISA adapter
+Core 2:      +41.0M-0C  (high = +84.0M-0C, crit = +100.0M-0C)
+
+coretemp-isa-0003
+Adapter: ISA adapter
+Core 3:      +41.0M-0C  (high = +84.0M-0C, crit = +100.0M-0C)
+
+coretemp-isa-0004
+Adapter: ISA adapter
+Core 4:      +46.0M-0C  (high = +84.0M-0C, crit = +100.0M-0C)
+
+coretemp-isa-0005
+Adapter: ISA adapter
+Core 5:      +46.0M-0C  (high = +84.0M-0C, crit = +100.0M-0C)
+
+coretemp-isa-0006
+Adapter: ISA adapter
+Core 6:      +41.0M-0C  (high = +84.0M-0C, crit = +100.0M-0C)
+
+coretemp-isa-0007
+Adapter: ISA adapter
+Core 7:      +41.0M-0C  (high = +84.0M-0C, crit = +100.0M-0C)
+
+Justin.
+
