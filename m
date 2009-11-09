@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbZKIKgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbZKIKgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753835AbZKIKgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 05:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZKIKgQ
+	id S1752694AbZKIKgE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 05:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZKIKgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 05:36:16 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:41165 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753024AbZKIKgN (ORCPT
+	Mon, 9 Nov 2009 05:36:03 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57342 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbZKIKgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 05:36:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=g92pBBVuN+mnVTduXkFFsD4tSZSTHiRJtwiF/DOYo+4pm/sC27HxRChHdCpxdzR6fu
-         f9U4DDdOBsoH5mlGSP1689hZx9fEROmgv4WXToykncgxToePXCC8OKirA1juxA6LAufE
-         +apKzeJW9bKoKrARnHObge3qspealdqCMGH/A=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [GIT]: IDE
-Date: Mon, 9 Nov 2009 11:35:08 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091108.213055.54434626.davem@davemloft.net>
-In-Reply-To: <20091108.213055.54434626.davem@davemloft.net>
+	Mon, 9 Nov 2009 05:36:03 -0500
+Date: Mon, 9 Nov 2009 11:36:02 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>
+Subject: dream: fastboot getting protocol errors
+Message-ID: <20091109103602.GC2207@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911091135.09051.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 November 2009 06:30:55 David Miller wrote:
-> 
-> The revert we thought we didn't need, we really do need still, even
-> with Bart Z.'s fix.
-> 
-> The issue is that we are doing these PIO setting calls before we did
-> the device probe and therefore we don't yet know the media type.
-> 
-> Yet the ->set_pio_mode() of some drivers key off of the media type to
-> determine whether to turn prefetching etc. on so it can't possibly
-> work properly.
+Hi!
 
-Thanks for quick reaction to the revert request.
+I'm still fighting with porting MMC support to current mainline.
 
-If somebody is interested in the proper way to fix it you just need to
-add ide_unknown media type and set it before probe instead of ide_disk
-one.  Then audit ->set_pio_mode implementations for potential gotchas.
+Meanwhile: I'm getting this *way* too often -- with the htcUSB  to
+2xUSB reduction. Any ideas?
 
-[ However it is too late for -rc and nobody is currently working on
-  IDE fixes anyway so I just requested the revert . ]
+root@amd:/data/l/android# ./fastboot -c "console=tty0
+root=/dev/mmcblk0p1 rootdelay=5 fbcon=rotate:1" boot
+/data/l/linux-msm/arch/arm/boot/zImage
+creating boot image...
+creating boot image - 1667072 bytes
+downloading 'boot.img'... FAILED (command write failed (Protocol
+error))
+root@amd:/data/l/android# 
 
+...and then it just goes away after powercycling the phone...
+									Pavel
 -- 
-Bartlomiej Zolnierkiewicz
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
