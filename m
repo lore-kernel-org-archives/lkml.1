@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbZKIE6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750903AbZKIFKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350AbZKIE6r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 23:58:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbZKIE6q
+	id S1750903AbZKIFKe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 00:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZKIFKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 23:58:46 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51271
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754228AbZKIE6p (ORCPT
+	Mon, 9 Nov 2009 00:10:33 -0500
+Received: from e28smtp03.in.ibm.com ([122.248.162.3]:58323 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbZKIFKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 23:58:45 -0500
-Date: Sun, 08 Nov 2009 20:59:11 -0800 (PST)
-Message-Id: <20091108.205911.177751843.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, wg@grandegger.com, haas@ems-wuensche.com
-Subject: Re: linux-next: manual merge of the net tree with the net-current
- tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091109130323.5dcc7829.sfr@canb.auug.org.au>
-References: <20091109130323.5dcc7829.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Nov 2009 00:10:32 -0500
+Date: Mon, 9 Nov 2009 10:35:18 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: libcg-devel <libcg-devel@lists.sourceforge.net>,
+       "menage@google.com" <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       containers@lists.linux-foundation.org,
+       Jan Safranek <jsafrane@redhat.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Bharata B Rao <bharata.rao@in.ibm.com>
+Subject: Re: [RFC] Mount point suggestions for cgroup
+Message-ID: <20091109050517.GA3042@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091104063005.GC3560@balbir.in.ibm.com>
+ <20091108170512.GB1372@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091108170512.GB1372@ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 9 Nov 2009 13:03:23 +1100
+* Pavel Machek <pavel@ucw.cz> [2009-11-08 18:05:12]:
 
-> Hi all,
+> On Wed 2009-11-04 12:00:05, Balbir Singh wrote:
+> > Hi, All,
+> > 
+> > We've been having a discussion as to what would be the right place to
+> > mount the cgroup filesystem. Jan has been proactively looking into
+> > this. The FHS has no recommendation since cgroup filesystem came in
+> > much later.
+> > 
+> > The options are
+> > 
+> > 1. /dev/cgroup
+> > 2. /cgroup
+> > 3. Some place under /sys
 > 
-> Today's linux-next merge of the net tree got a conflict in
-> drivers/net/can/usb/ems_usb.c between commit
-> 2b2072e902848a63168570f500a5726744b3873a ("ems_usb: Fix byte order issues
-> on big endian machines") from the net-current tree and commit
-> 7b6856a0296a8f187bb88ba31fa83a08abba7966 ("can: provide library functions
-> for skb allocation") from the net tree.
-> 
-> Just context changes.  I fixed it up (see below) and can carry the fix
-> for a while.
+> Underr /sys, please. Actually I wonder that it may even belong /proc
+> ... It *is* process related, right?
+>
 
-I'll do a merge and resolve this, thanks Stephen!
+We already have /proc/cgroups for showing currently supported
+subsystems and /proc/pid/cgroups to show which subsystems/tasks
+ 
+
+-- 
+	Balbir
