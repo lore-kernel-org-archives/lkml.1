@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbZKIXed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZKIXDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410AbZKIXed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 18:34:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZKIXec
+	id S1755303AbZKIXDG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 18:03:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZKIXDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 18:34:32 -0500
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:56562 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754747AbZKIXeb (ORCPT
+	Mon, 9 Nov 2009 18:03:05 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53427 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755096AbZKIXDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 18:34:31 -0500
-Date: Mon, 09 Nov 2009 22:59:42 +0000
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Staging: rt28x0: remove no longer needed common/cmm_data_2860.c
-Message-ID: <50BD25B328%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <200911092106.32462.bzolnier@gmail.com>
-References: <200911091720.39821.bzolnier@gmail.com> 
- <50BD09C528%linux@youmustbejoking.demon.co.uk> 
- <200911092106.32462.bzolnier@gmail.com>
-Mail-Followup-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
- gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
- Darren Salt <linux@youmustbejoking.demon.co.uk>
-User-Agent: Messenger-Pro/2.60.0.3101 (Qt/4.5.3) (Linux-x86_64)
-X-NuLabour-Date: Mon, 9110 Dec 1984 22:59:42 +0000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+	Mon, 9 Nov 2009 18:03:04 -0500
+Subject: Re: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent
+ on	passthrough
+From: David Woodhouse <dwmw2@infradead.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: alex.williamson@hp.com, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
+References: <20091104225359.2720.91502.stgit@nehalem.aw>
+	 <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 23:02:27 +0000
+Message-ID: <1257807747.25961.852.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 (2.28.1-2.fc12) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I demand that Bartlomiej Zolnierkiewicz may or may not have written...
+On Fri, 2009-11-06 at 11:41 +0900, FUJITA Tomonori wrote:
+> This is fine for 2.6.32 but we'll cleanly fix this by using
+> swiotlb_dma_ops later, right?
 
-> On Monday 09 November 2009 18:54:38 Darren Salt wrote:
->> Your removal of cmm_data_2860.c also removes a bug fix (commit
->> 0af49167b1e5ba154e90d2c454bf4624ee47df80; for background, see
->> http://bugzilla.kernel.org/show_bug.cgi?id=13390).
+Well, the idea was that with 'iommu=pt' we'd have passthrough mode for
+_decent_ devices, but the crappy devices without 64-bit DMA would just
+have the IOMMU enabled instead.
 
-> commit 0af49167b1e5ba154e90d2c454bf4624ee47df80
-> Author: Darren Salt <linux@youmustbejoking.demon.co.uk>
-> Date:   Wed Oct 14 02:19:22 2009 +0100
->     Staging: rt2860sta: prevent a panic when disabling when associated
+We can see this as a simple classification bug -- we should be checking
+pdev->coherent_dma_mask as well as pdev->dma_mask:
 
-> while:
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -2196,7 +2196,8 @@ static int iommu_should_identity_map(struct pci_dev *pdev, int startup)
+ 	 * take them out of the 1:1 domain later.
+ 	 */
+ 	if (!startup)
+-		return pdev->dma_mask > DMA_BIT_MASK(32);
++		return (pdev->dma_mask & pdev->coherent_dma_mask) < 
++			dma_get_required_mask();
+ 
+ 	return 1;
+ }
 
-> ommit 5d315c4baa7be30e0fb8c924a64406492b2263b8
-> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date:   Tue Sep 22 20:44:07 2009 +0200
->     Staging: rt28x0: updates from vendor's V2.1.0.0 drivers
+That fixes the case of a 32-bit coherent_dma_mask as it was intended to
+be fixed.
 
-> dropped cmm_data_2860.o from the build..
+Unfortunately, Alex's hardware is more broken than that. It also likes
+to do stray reads from unmapped addresses -- addresses which used to be
+mapped at some time in the past. So he really _does_ want the IOMMU
+disabled, or in passthrough mode.
 
-Ouch. ;-)
+But I think that's a special case and needs to be handled with a quirk,
+while the above patch actually addresses the problem we claimed we were
+trying to address.
 
-[snip]
->> Is this fix present (or, better, not needed) in the code which obsoletes
->> this file? (I can test if needed; just point me in the right direction
->> wrt patches or repositories.)
+Handling Alex's broken hardware probably wants to be done with
+'iommu=off' for now, and then when Chris's swiotlb fallback patches are
+done we can perhaps do something more cunning.
 
-> It seems it is still needed so could you port it over to cmm_data_pci.c
-> (just use staging or linux-next as a base)?
-
-I've tested with the Ralink drivers from -next copied into my 2.6.32-rc6 tree
-(which has one bad patch from -rc5 reverted, else the bug would be masked),
-and all appears to be working well.
-
-So, unless you think that extra belt and braces would be of use here, I'm not
-going to bother porting it.
+I'm slightly reluctant to put the half-arsed 'try to allocate in the
+right region for broken devices but without full swiotlb support' option
+into 2.6.32.
 
 -- 
-| Darren Salt            | linux at youmustbejoking | nr. Ashington, | Doon
-| using Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
-| + http://www.youmustbejoking.demon.co.uk/
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-Pssst... the root password is 'kumquat'.
