@@ -1,87 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZKIQcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZKIQcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbZKIQcs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 11:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZKIQcp
+	id S1755098AbZKIQcO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 11:32:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZKIQcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 11:32:45 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:42755 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756083AbZKIQcc (ORCPT
+	Mon, 9 Nov 2009 11:32:14 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:45314 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbZKIQcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 11:32:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:message-id
-         :content-type:content-transfer-encoding;
-        b=B9RH4uAzJY6Z+vxndvmClQudPdxiKw4CQCN17dsPesQBSm2Uf+UQWv1uN9zo0jdi5u
-         n+/sSpqyr2DNAcxoz8mx4NCKxvSIuICqqlJTLWeQGY1ZGJR7n//y2D8Q8hAQbBsOVSQ3
-         UltuR9Q0G0qHZh7/D7Nn8NkFJyKcsUl0lsOQY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Subject: [PATCH] Staging: remove rtl8187se driver because of lack of development activities
-Date: Mon, 9 Nov 2009 17:31:36 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-MIME-Version: 1.0
-Message-Id: <200911091731.36861.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Mon, 9 Nov 2009 11:32:13 -0500
+Subject: virtio: Add memory statistics reporting to the balloon driver
+From: Adam Litke <agl@us.ibm.com>
+To: qemu-devel@nongnu.org
+Cc: "virtualization@lists.linux-foundation.orgAnthony Liguori" 
+	<aliguori@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1257782838.2835.5.camel@aglitke>
+References: <1257782838.2835.5.camel@aglitke>
+Content-Type: text/plain; charset="UTF-8"
+Organization: IBM
+Date: Mon, 09 Nov 2009 10:32:06 -0600
+Message-ID: <1257784326.2835.16.camel@aglitke>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: remove rtl8187se driver because of lack of development activities
+When using ballooning to manage overcommitted memory on a host, a system for
+guests to communicate their memory usage to the host can provide information
+that will minimize the impact of ballooning on the guests.  The current method
+employs a daemon running in each guest that communicates memory statistics to a
+host daemon at a specified time interval.  The host daemon aggregates this
+information and inflates and/or deflates balloons according to the level of
+host memory pressure.  This approach is effective but overly complex since a
+daemon must be installed inside each guest and coordinated to communicate with
+the host.  A simpler approach is to collect memory statistics in the virtio
+balloon driver and communicate them to the host via the device config space.
 
-This driver hasn't seen any real development activities since early July:
+This patch enables the guest-side support by adding stats collection and
+reporting to the virtio balloon driver.
 
-   257bc86   Staging: rtl8187se: remove unused #include <linu
-   2035beb   param:remove-useless-writable-charp
-   305409a   tree-wide: fix some typos and punctuation in com
-   b881c6c   Staging: fix wireless drivers depends
-   a010a33   Staging: rtl8187se/rtl8192e/rtl8192su: allow mod
-   125b181   staging: Add proper selection of WIRELESS_EXT an
-   b3184e1   Staging: rtl8187se: Fix comment-out-typo
-   b6ac161   Staging: ARRAY_SIZE changes
+Comments?
 
-so remove it for now.
+Signed-off-by: Adam Litke <agl@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Avi Kivity <avi@redhat.com>
+Cc: virtualization@lists.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-patch is too big for a mailing list so it can be obtained from:
-http://www.kernel.org/pub/linux/kernel/people/bart/staging-remove-rtl8187se-driver-because-of-lack-of-development-activities.patch
+diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
+index 200c22f..0c9a9a1 100644
+--- a/drivers/virtio/virtio_balloon.c
++++ b/drivers/virtio/virtio_balloon.c
+@@ -180,6 +180,41 @@ static void update_balloon_size(struct virtio_balloon *vb)
+ 			      &actual, sizeof(actual));
+ }
+ 
++static inline void update_stat(struct virtio_device *vdev, int feature,
++				unsigned long value, unsigned offset)
++{
++	__le32 __v = cpu_to_le32(value);
++	if (virtio_has_feature(vdev, feature))
++		vdev->config->set(vdev, offset, &__v, sizeof(__v));
++}
++
++#define K(x) ((x) << (PAGE_SHIFT - 10))
++static void update_balloon_stats(struct virtio_balloon *vb)
++{
++	unsigned long events[NR_VM_EVENT_ITEMS];
++	struct sysinfo i;
++	unsigned off = offsetof(struct virtio_balloon_config, stats);
++
++	all_vm_events(events);
++
++	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_SWAP_IN, events[PSWPIN],
++		    off + offsetof(struct virtio_balloon_stats, pswapin));
++	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_SWAP_OUT, events[PSWPOUT],
++		    off + offsetof(struct virtio_balloon_stats, pswapout));
++	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_MAJFLT, events[PGMAJFAULT],
++		    off + offsetof(struct virtio_balloon_stats, pgmajfault));
++	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_MINFLT, events[PGFAULT],
++		    off + offsetof(struct virtio_balloon_stats, pgminfault));
++	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_ANON,
++		    K(global_page_state(NR_ANON_PAGES)),
++		    off + offsetof(struct virtio_balloon_stats, panon));
++	si_meminfo(&i);
++	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_MEMFREE, K(i.freeram),
++		    off + offsetof(struct virtio_balloon_stats, memfree));
++	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_MEMTOT, K(i.totalram),
++		    off + offsetof(struct virtio_balloon_stats, memtot));
++}
++
+ static int balloon(void *_vballoon)
+ {
+ 	struct virtio_balloon *vb = _vballoon;
+@@ -189,15 +224,17 @@ static int balloon(void *_vballoon)
+ 		s64 diff;
+ 
+ 		try_to_freeze();
+-		wait_event_interruptible(vb->config_change,
++		wait_event_interruptible_timeout(vb->config_change,
+ 					 (diff = towards_target(vb)) != 0
+ 					 || kthread_should_stop()
+-					 || freezing(current));
++					 || freezing(current),
++					 VIRTIO_BALLOON_TIMEOUT);
+ 		if (diff > 0)
+ 			fill_balloon(vb, diff);
+ 		else if (diff < 0)
+ 			leak_balloon(vb, -diff);
+ 		update_balloon_size(vb);
++		update_balloon_stats(vb);
+ 	}
+ 	return 0;
+ }
+@@ -265,7 +302,12 @@ static void virtballoon_remove(struct virtio_device *vdev)
+ 	kfree(vb);
+ }
+ 
+-static unsigned int features[] = { VIRTIO_BALLOON_F_MUST_TELL_HOST };
++static unsigned int features[] = {
++	VIRTIO_BALLOON_F_MUST_TELL_HOST, VIRTIO_BALLOON_F_RPT_SWAP_IN,
++	VIRTIO_BALLOON_F_RPT_SWAP_OUT, VIRTIO_BALLOON_F_RPT_ANON,
++	VIRTIO_BALLOON_F_RPT_MAJFLT, VIRTIO_BALLOON_F_RPT_MINFLT,
++	VIRTIO_BALLOON_F_RPT_MEMFREE, VIRTIO_BALLOON_F_RPT_MEMTOT,
++};
+ 
+ static struct virtio_driver virtio_balloon = {
+ 	.feature_table = features,
+diff --git a/include/linux/virtio_balloon.h b/include/linux/virtio_balloon.h
+index 09d7300..0bff4b8 100644
+--- a/include/linux/virtio_balloon.h
++++ b/include/linux/virtio_balloon.h
+@@ -6,15 +6,39 @@
+ 
+ /* The feature bitmap for virtio balloon */
+ #define VIRTIO_BALLOON_F_MUST_TELL_HOST	0 /* Tell before reclaiming pages */
++                                          /* Guest memory statistic reporting */
++#define VIRTIO_BALLOON_F_RPT_SWAP_IN  1   /* Number of pages swapped in */
++#define VIRTIO_BALLOON_F_RPT_SWAP_OUT 2   /* Number of pages swapped out */
++#define VIRTIO_BALLOON_F_RPT_ANON     3   /* Number of anonymous pages in use */
++#define VIRTIO_BALLOON_F_RPT_MAJFLT   4   /* Number of major faults */
++#define VIRTIO_BALLOON_F_RPT_MINFLT   5   /* Number of minor faults */
++#define VIRTIO_BALLOON_F_RPT_MEMFREE  6   /* Total amount of free memory */
++#define VIRTIO_BALLOON_F_RPT_MEMTOT   7   /* Total amount of memory */
+ 
+ /* Size of a PFN in the balloon interface. */
+ #define VIRTIO_BALLOON_PFN_SHIFT 12
+ 
++struct virtio_balloon_stats
++{
++	__le32 pswapin;      /* pages swapped in */
++	__le32 pswapout;     /* pages swapped out */
++	__le32 panon;        /* anonymous pages in use (in kb) */
++	__le32 pgmajfault;   /* Major page faults */
++	__le32 pgminfault;   /* Minor page faults */
++	__le32 memfree;      /* Total amount of free memory (in kb) */
++	__le32 memtot;       /* Total amount of memory (in kb) */
++};
++
+ struct virtio_balloon_config
+ {
+ 	/* Number of pages host wants Guest to give up. */
+ 	__le32 num_pages;
+ 	/* Number of pages we've actually got in balloon. */
+ 	__le32 actual;
++	/* Memory statistics */
++	struct virtio_balloon_stats stats;
+ };
++
++#define VIRTIO_BALLOON_TIMEOUT (30 * HZ)
++
+ #endif /* _LINUX_VIRTIO_BALLOON_H */
 
- drivers/staging/Kconfig                                    |    2 
- drivers/staging/rtl8187se/Kconfig                          |    7 
- drivers/staging/rtl8187se/Makefile                         |   39 
- drivers/staging/rtl8187se/TODO                             |   14 
- drivers/staging/rtl8187se/ieee80211/dot11d.c               |  224 
- drivers/staging/rtl8187se/ieee80211/dot11d.h               |  100 
- drivers/staging/rtl8187se/ieee80211/ieee80211.h            | 1496 ----
- drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c      |  247 
- drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.h      |   86 
- drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c |  469 -
- drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c |  753 --
- drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c  |  295 
- drivers/staging/rtl8187se/ieee80211/ieee80211_module.c     |  210 
- drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c         | 1548 ----
- drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c    | 3008 --------
- drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c |  572 -
- drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c         |  583 -
- drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c         |  749 --
- drivers/staging/rtl8187se/r8180.h                          |  739 --
- drivers/staging/rtl8187se/r8180_93cx6.c                    |  146 
- drivers/staging/rtl8187se/r8180_93cx6.h                    |   57 
- drivers/staging/rtl8187se/r8180_core.c                     | 4467 -------------
- drivers/staging/rtl8187se/r8180_dm.c                       | 1667 ----
- drivers/staging/rtl8187se/r8180_dm.h                       |   23 
- drivers/staging/rtl8187se/r8180_hw.h                       |  573 -
- drivers/staging/rtl8187se/r8180_rtl8225.h                  |   34 
- drivers/staging/rtl8187se/r8180_rtl8225z2.c                | 1089 ---
- drivers/staging/rtl8187se/r8180_wx.c                       | 1589 ----
- drivers/staging/rtl8187se/r8180_wx.h                       |   21 
- drivers/staging/rtl8187se/r8185b_init.c                    | 2681 -------
- 30 files changed, 23488 deletions(-)
+-- 
+Thanks,
+Adam
+
