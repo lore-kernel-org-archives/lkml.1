@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZKIUCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZKIUCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbZKIUCY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 15:02:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZKIUCX
+	id S1754002AbZKIUCk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 15:02:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZKIUCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 15:02:23 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:56260 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753355AbZKIUCX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 15:02:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=rdTYGOGLQltQqmNhmgliCI9LkdJdb5fiQUTzRiL0Zjy9TrWjd/v19LHgj95GIbFX9T
-         sWTJ0Hu9yBCWChprTOM4SN/Z8eI+UxvNsLAavduFYBHJZBs/UHXhzydlYSw8Y/BydhDV
-         eHQvsIktlFa0tNvKJJ8uUeU93Yp+0ABcXbFuc=
+	Mon, 9 Nov 2009 15:02:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52302 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751326AbZKIUCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 15:02:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to preempt_count leakage in keventd
+Date: Mon, 9 Nov 2009 21:03:54 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc6-tst; KDE/4.3.1; x86_64; ; )
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <200911091250.31626.rjw@sisk.pl> <200911091836.30349.rjw@sisk.pl> <alpine.LFD.2.00.0911092012340.2725@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0911092012340.2725@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <1256712464-21472-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	 <1256712464-21472-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Date: Mon, 9 Nov 2009 22:02:24 +0200
-X-Google-Sender-Auth: 53c3436b67556375
-Message-ID: <84144f020911091202h26dbfad4qf0651ae327444fc0@mail.gmail.com>
-Subject: Re: [PATCH 01/10] Add iommu_init to x86_init_ops
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
-       joerg.roedel@amd.com, mingo@elte.hu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911092103.54083.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 8:47 AM, FUJITA Tomonori
-<fujita.tomonori@lab.ntt.co.jp> wrote:
-> We call the detections functions of all the IOMMUs then all their
-> initialization functions. THe latter is pointless since we don't
-> detect multiple different IOMMUs. What we need to do is calling the
-> initialization function of the detected IOMMU.
->
-> This adds iommu_init hook to x86_init_ops so if an IOMMU detection
-> function can set its initialization function to the hook.
->
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  arch/x86/include/asm/iommu.h    |    1 +
->  arch/x86/include/asm/x86_init.h |    9 +++++++++
->  arch/x86/kernel/pci-dma.c       |    2 ++
->  arch/x86/kernel/x86_init.c      |    5 +++++
->  4 files changed, 17 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
-> index fd6d21b..42aa977 100644
-> --- a/arch/x86/include/asm/iommu.h
-> +++ b/arch/x86/include/asm/iommu.h
-> @@ -3,6 +3,7 @@
->
->  extern void pci_iommu_shutdown(void);
->  extern void no_iommu_init(void);
-> +static inline int iommu_init_noop(void) { return 0; }
+On Monday 09 November 2009, Thomas Gleixner wrote:
+> On Mon, 9 Nov 2009, Rafael J. Wysocki wrote:
+> > On Monday 09 November 2009, Mike Galbraith wrote:
+> > > On Mon, 2009-11-09 at 16:47 +0100, Rafael J. Wysocki wrote:
+> > > > On Monday 09 November 2009, Mike Galbraith wrote:
+> > > 
+> > > > > > Very likely.  What did you do to fix it?
+> > > > > 
+> > > > > You don't really wanna know.  In 31 with newidle enabled, the below
+> > > > > fixed it.  It won't fix 32, though it might cure the resume problem.
+> > > > 
+> > > > OK, I'll give it a try.
+> > 
+> > It doesn't help.
+> > 
+> > Also, I can reproduce the issue with current -git and kernel preepmtion
+> > disabled.
+> > 
+> > > I just tried to trigger badness via high speed online/offline combined
+> > > with taskset with CONFIG_PREEMPT enabled, and couldn't make it explode.
+> > 
+> > I'm not able to do it this way too, so resume seems to be necessary to trigger
+> > it.  I'm going try with the suspend debug in the "core" mode.
+> > 
+> > > (damn, wish i could s2ram this box)
+> > 
+> > That need not suffice.  I have two other boxes that suspend and resume
+> > correctly with 2.6.32-rc, AFAICS.
+> > 
+> > However, there seems to be a systematic error somewhere, since the failure
+> > always happens at the same place, ie. list_del_init(cwq->worklist.next); in
+> > run_workqueue(), in preemptible as well as in non-preemptible kernels.
+> > 
+> > Which is kind of strange, given the !list_empty(&cwq->worklist) test right
+> > before it.
+> 
+> Hmm, no. list_empty() just tells you whether the list is empty or
+> not. It does not care whether the list is corrupted or not. Have you
+> tried to run with list debugging enabled ?
 
-Why is this function not put in x86_init.c?
+I did, but the result was exactly the same as without it.
+
+Also, I don't seem to be able to reproduce the issue without actually
+suspending the box.  I tried with offlining/onlining CPU1 and with
+the /sys/power/pm_test "core" test and it didn't show up.
+
+Thanks,
+Rafael
