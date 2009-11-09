@@ -1,320 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZKIHYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbZKIHwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbZKIHYQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 02:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZKIHYO
+	id S1753562AbZKIHwX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 02:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZKIHwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 02:24:14 -0500
-Received: from mga01.intel.com ([192.55.52.88]:18003 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754036AbZKIHYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 02:24:10 -0500
+	Mon, 9 Nov 2009 02:52:22 -0500
+Received: from mga05.intel.com ([192.55.52.89]:19315 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752639AbZKIHwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 02:52:22 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,706,1249282800"; 
-   d="scan'208";a="511933945"
-Subject: [BUGFIX -v2 for .32] crypto, gcm, fix another complete call in
- complete fuction
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 09 Nov 2009 15:24:14 +0800
-Message-Id: <1257751454.22519.2287.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+   d="scan'208";a="745106837"
+Date: Mon, 9 Nov 2009 15:25:28 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3] x86: under bios control, restore AP's APIC_LVTTHMR
+	to the BSP value
+Message-ID: <20091109072528.GA2646@ywang-moblin2.bj.intel.com>
+References: <20091109042134.GA9169@ywang-moblin2.bj.intel.com> <20091109070844.GA453@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091109070844.GA453@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The flow of the complete function (xxx_done) in gcm.c is as follow:
+On Mon, Nov 09, 2009 at 08:08:44AM +0100, Ingo Molnar wrote:
+> 
+> * Yong Wang <yong.y.wang@linux.intel.com> wrote:
+> 
+> > Changes since v2:
+> > Incorporate Ingo's comments to get BSP's thermal init value in a
+> > 'boot-CPU-only' function.
+> 
+> > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> > index e09f0e2..2323771 100644
+> > --- a/arch/x86/kernel/setup.c
+> > +++ b/arch/x86/kernel/setup.c
+> > @@ -1002,6 +1002,7 @@ void __init setup_arch(char **cmdline_p)
+> >  
+> >  	init_apic_mappings();
+> >  	ioapic_init_mappings();
+> > +	get_bsp_lvtthmr_init();
+> >  
+> >  	/* need to wait for io_apic is mapped */
+> >  	probe_nr_irqs_gsi();
+> 
+> Ok - it's almost good in this form - it would be nice to name the new 
+> function something more generic, like mcheck_intel_therm_init(), and 
+> call it from arch/x86/kernel/cpu/mcheck/mce.c's mcheck_init() function.
+> 
 
-void complete(struct crypto_async_request *areq, int err)
-{
-	struct aead_request *req = areq->data;
+I just checked that arch/x86/kernel/cpu/mcheck/mce.c's mcheck_init()
+will not only run on BSP but also on APs. I put get_bsp_lvtthmr_init()
+right behind init_apic_mappings() because init_apic_mappings() will
+setup the fixmap for LAPIC so that I can call apic_read from inside
+get_bsp_lvtthmr_init().
 
-	if (!err) {
-		err = async_next_step();
-		if (err == -EINPROGRESS || err == -EBUSY)
-			return;
-	}
+I can rename get_bsp_lvtthmr_init() to mcheck_intel_therm_init() to make
+it more generic as we might add more stuff into it in the future.
 
-	complete_for_next_step(areq, err);
-}
-
-But *areq may be destroyed in async_next_step(), this makes
-complete_for_next_step() can not work properly. To fix this, one of
-following methods is used for each complete function.
-
-- Add a __complete() for each complete(), which accept struct
-  aead_request *req instead of areq, so avoid using areq after it is
-  destroyed.
-
-- Expand complete_for_next_step().
-
-The fixing method is based on the idea of Herbert Xu.
-
-Signed-off-by: Huang Ying <ying.huang@intel.com>
----
- crypto/gcm.c |  120 ++++++++++++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 86 insertions(+), 34 deletions(-)
-
---- a/crypto/gcm.c
-+++ b/crypto/gcm.c
-@@ -40,7 +40,7 @@ struct crypto_rfc4106_ctx {
- struct crypto_gcm_ghash_ctx {
- 	unsigned int cryptlen;
- 	struct scatterlist *src;
--	crypto_completion_t complete;
-+	void (*complete)(struct aead_request *req, int err);
- };
- 
- struct crypto_gcm_req_priv_ctx {
-@@ -267,54 +267,73 @@ static int gcm_hash_final(struct aead_re
- 	return crypto_ahash_final(ahreq);
- }
- 
--static void gcm_hash_final_done(struct crypto_async_request *areq,
--				int err)
-+static void __gcm_hash_final_done(struct aead_request *req,
-+				  struct crypto_gcm_req_priv_ctx *pctx,
-+				  int err)
- {
--	struct aead_request *req = areq->data;
--	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
- 	struct crypto_gcm_ghash_ctx *gctx = &pctx->ghash_ctx;
- 
- 	if (!err)
- 		crypto_xor(pctx->auth_tag, pctx->iauth_tag, 16);
- 
--	gctx->complete(areq, err);
-+	gctx->complete(req, err);
- }
- 
--static void gcm_hash_len_done(struct crypto_async_request *areq,
--			      int err)
-+static void gcm_hash_final_done(struct crypto_async_request *areq, int err)
- {
- 	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
- 
-+	__gcm_hash_final_done(req, pctx, err);
-+}
-+
-+static void __gcm_hash_len_done(struct aead_request *req,
-+				struct crypto_gcm_req_priv_ctx *pctx,
-+				int err)
-+{
- 	if (!err) {
- 		err = gcm_hash_final(req, pctx);
- 		if (err == -EINPROGRESS || err == -EBUSY)
- 			return;
- 	}
- 
--	gcm_hash_final_done(areq, err);
-+	__gcm_hash_final_done(req, pctx, err);
- }
- 
--static void gcm_hash_crypt_remain_done(struct crypto_async_request *areq,
--				       int err)
-+static void gcm_hash_len_done(struct crypto_async_request *areq, int err)
- {
- 	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
- 
-+	__gcm_hash_len_done(req, pctx, err);
-+}
-+
-+static void __gcm_hash_crypt_remain_done(struct aead_request *req,
-+					 struct crypto_gcm_req_priv_ctx *pctx,
-+					 int err)
-+{
- 	if (!err) {
- 		err = gcm_hash_len(req, pctx);
- 		if (err == -EINPROGRESS || err == -EBUSY)
- 			return;
- 	}
- 
--	gcm_hash_len_done(areq, err);
-+	__gcm_hash_len_done(req, pctx, err);
- }
- 
--static void gcm_hash_crypt_done(struct crypto_async_request *areq,
--				int err)
-+static void gcm_hash_crypt_remain_done(struct crypto_async_request *areq,
-+				       int err)
- {
- 	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
-+
-+	__gcm_hash_crypt_remain_done(req, pctx, err);
-+}
-+
-+static void __gcm_hash_crypt_done(struct aead_request *req,
-+				  struct crypto_gcm_req_priv_ctx *pctx,
-+				  int err)
-+{
- 	struct crypto_gcm_ghash_ctx *gctx = &pctx->ghash_ctx;
- 	unsigned int remain;
- 
-@@ -327,14 +346,21 @@ static void gcm_hash_crypt_done(struct c
- 			return;
- 	}
- 
--	gcm_hash_crypt_remain_done(areq, err);
-+	__gcm_hash_crypt_remain_done(req, pctx, err);
- }
- 
--static void gcm_hash_assoc_remain_done(struct crypto_async_request *areq,
--					   int err)
-+static void gcm_hash_crypt_done(struct crypto_async_request *areq, int err)
- {
- 	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
-+
-+	__gcm_hash_crypt_done(req, pctx, err);
-+}
-+
-+static void __gcm_hash_assoc_remain_done(struct aead_request *req,
-+					 struct crypto_gcm_req_priv_ctx *pctx,
-+					 int err)
-+{
- 	struct crypto_gcm_ghash_ctx *gctx = &pctx->ghash_ctx;
- 	crypto_completion_t complete;
- 	unsigned int remain = 0;
-@@ -350,16 +376,24 @@ static void gcm_hash_assoc_remain_done(s
- 	}
- 
- 	if (remain)
--		gcm_hash_crypt_done(areq, err);
-+		__gcm_hash_crypt_done(req, pctx, err);
- 	else
--		gcm_hash_crypt_remain_done(areq, err);
-+		__gcm_hash_crypt_remain_done(req, pctx, err);
- }
- 
--static void gcm_hash_assoc_done(struct crypto_async_request *areq,
--				int err)
-+static void gcm_hash_assoc_remain_done(struct crypto_async_request *areq,
-+				       int err)
- {
- 	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
-+
-+	__gcm_hash_assoc_remain_done(req, pctx, err);
-+}
-+
-+static void __gcm_hash_assoc_done(struct aead_request *req,
-+				  struct crypto_gcm_req_priv_ctx *pctx,
-+				  int err)
-+{
- 	unsigned int remain;
- 
- 	if (!err) {
-@@ -371,14 +405,21 @@ static void gcm_hash_assoc_done(struct c
- 			return;
- 	}
- 
--	gcm_hash_assoc_remain_done(areq, err);
-+	__gcm_hash_assoc_remain_done(req, pctx, err);
- }
- 
--static void gcm_hash_init_done(struct crypto_async_request *areq,
--			       int err)
-+static void gcm_hash_assoc_done(struct crypto_async_request *areq, int err)
- {
- 	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
-+
-+	__gcm_hash_assoc_done(req, pctx, err);
-+}
-+
-+static void __gcm_hash_init_done(struct aead_request *req,
-+				 struct crypto_gcm_req_priv_ctx *pctx,
-+				 int err)
-+{
- 	crypto_completion_t complete;
- 	unsigned int remain = 0;
- 
-@@ -393,9 +434,17 @@ static void gcm_hash_init_done(struct cr
- 	}
- 
- 	if (remain)
--		gcm_hash_assoc_done(areq, err);
-+		__gcm_hash_assoc_done(req, pctx, err);
- 	else
--		gcm_hash_assoc_remain_done(areq, err);
-+		__gcm_hash_assoc_remain_done(req, pctx, err);
-+}
-+
-+static void gcm_hash_init_done(struct crypto_async_request *areq, int err)
-+{
-+	struct aead_request *req = areq->data;
-+	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
-+
-+	__gcm_hash_init_done(req, pctx, err);
- }
- 
- static int gcm_hash(struct aead_request *req,
-@@ -457,10 +506,8 @@ static void gcm_enc_copy_hash(struct aea
- 				 crypto_aead_authsize(aead), 1);
- }
- 
--static void gcm_enc_hash_done(struct crypto_async_request *areq,
--				     int err)
-+static void gcm_enc_hash_done(struct aead_request *req, int err)
- {
--	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
- 
- 	if (!err)
-@@ -470,7 +517,7 @@ static void gcm_enc_hash_done(struct cry
- }
- 
- static void gcm_encrypt_done(struct crypto_async_request *areq,
--				     int err)
-+			     int err)
- {
- 	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
-@@ -479,9 +526,13 @@ static void gcm_encrypt_done(struct cryp
- 		err = gcm_hash(req, pctx);
- 		if (err == -EINPROGRESS || err == -EBUSY)
- 			return;
-+		else if (!err) {
-+			crypto_xor(pctx->auth_tag, pctx->iauth_tag, 16);
-+			gcm_enc_copy_hash(req, pctx);
-+		}
- 	}
- 
--	gcm_enc_hash_done(areq, err);
-+	aead_request_complete(req, err);
- }
- 
- static int crypto_gcm_encrypt(struct aead_request *req)
-@@ -538,9 +589,8 @@ static void gcm_decrypt_done(struct cryp
- 	aead_request_complete(req, err);
- }
- 
--static void gcm_dec_hash_done(struct crypto_async_request *areq, int err)
-+static void gcm_dec_hash_done(struct aead_request *req, int err)
- {
--	struct aead_request *req = areq->data;
- 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
- 	struct ablkcipher_request *abreq = &pctx->u.abreq;
- 	struct crypto_gcm_ghash_ctx *gctx = &pctx->ghash_ctx;
-@@ -552,9 +602,11 @@ static void gcm_dec_hash_done(struct cry
- 		err = crypto_ablkcipher_decrypt(abreq);
- 		if (err == -EINPROGRESS || err == -EBUSY)
- 			return;
-+		else if (!err)
-+			err = crypto_gcm_verify(req, pctx);
- 	}
- 
--	gcm_decrypt_done(areq, err);
-+	aead_request_complete(req, err);
- }
- 
- static int crypto_gcm_decrypt(struct aead_request *req)
-
-
+Thanks for your comments.
+-Yong
