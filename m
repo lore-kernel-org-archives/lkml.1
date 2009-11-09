@@ -1,161 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751452AbZKIKWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbZKILHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751452AbZKIKWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 05:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbZKIKWQ
+	id S1754371AbZKILHS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 06:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZKILHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 05:22:16 -0500
-Received: from gw1.transmode.se ([213.115.205.20]:55462 "EHLO gw1.transmode.se"
+	Mon, 9 Nov 2009 06:07:18 -0500
+Received: from nn7.de ([85.214.94.156]:35888 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbZKIKWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 05:22:16 -0500
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: akpm@linux-foundation.org, Richard Purdie <rpurdie@rpsys.net>,
-       linux-kernel@vger.kernel.org
-Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: [PATCH] zlib: Optimize inffast even more
-Date: Mon, 9 Nov 2009 11:22:16 +0100
-Message-Id: <1257762136-17593-1-git-send-email-Joakim.Tjernlund@transmode.se>
-X-Mailer: git-send-email 1.6.4.4
-X-MIMETrack: Itemize by SMTP Server on sesr04/Transmode(Release 8.5 HF964|October 21, 2009) at
- 2009-11-09 11:22:19,
-	Serialize by Router on sesr04/Transmode(Release 8.5 HF964|October 21, 2009) at
- 2009-11-09 11:22:19,
-	Serialize complete at 2009-11-09 11:22:19
+	id S1751569AbZKILHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 06:07:16 -0500
+Subject: [PATCH] mouse button 1 emulation for mac_hid
+From: Soeren Sonnenburg <sonne@debian.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, olh@suse.de,
+       Jiri Slaby <jirislaby@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-ql1mhDvsuNY0WoUddaAu"
+Date: Mon, 09 Nov 2009 11:28:51 +0100
+Message-ID: <1257762531.7245.23.camel@no>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This improves zlib: Optimize inffast when copying direct from output
-and gives another 3-4% improvement for my MPC8321 target.
-Does not need CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS,
-uses get_unaligned() but only in one place.
-The copy loop just above this one can also use this
-optimization, but I havn't done so as I have not tested if it
-is a win there too.
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
----
+--=-ql1mhDvsuNY0WoUddaAu
+Content-Type: multipart/mixed; boundary="=-d/4RUOEtsUxjSEULL9ef"
 
- Someone with a little endian target should test too.
 
- arch/powerpc/boot/Makefile |    1 +
- lib/zlib_inflate/inffast.c |   54 ++++++++++++++++++++++----------------------
- 2 files changed, 28 insertions(+), 27 deletions(-)
+--=-d/4RUOEtsUxjSEULL9ef
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 9ae7b7e..33335be 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -34,6 +34,7 @@ BOOTCFLAGS	+= -fno-stack-protector
- endif
- 
- BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
-+BOOTCFLAGS	+= -Iarch/powerpc/include
- 
- DTS_FLAGS	?= -p 1024
- 
-diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
-index 0588fbf..4f78567 100644
---- a/lib/zlib_inflate/inffast.c
-+++ b/lib/zlib_inflate/inffast.c
-@@ -4,6 +4,7 @@
-  */
- 
- #include <linux/zutil.h>
-+#include <asm/unaligned.h>
- #include "inftrees.h"
- #include "inflate.h"
- #include "inffast.h"
-@@ -24,9 +25,11 @@
- #ifdef POSTINC
- #  define OFF 0
- #  define PUP(a) *(a)++
-+#  define UP_UNALIGNED(a) get_unaligned((a)++)
- #else
- #  define OFF 1
- #  define PUP(a) *++(a)
-+#  define UP_UNALIGNED(a) get_unaligned(++(a))
- #endif
- 
- /*
-@@ -240,52 +243,49 @@ void inflate_fast(z_streamp strm, unsigned start)
-                 }
-                 else {
-                     from = out - dist;          /* copy direct from output */
--#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-                     /* minimum length is three */
- 		    if (dist > 2 ) {
--			unsigned short *sout = (unsigned short *)(out - OFF);
--			unsigned short *sfrom = (unsigned short *)(from - OFF);
--			unsigned long loops = len >> 1;
-+			unsigned short *sout;
-+			unsigned short *sfrom;
-+			unsigned long loops;
- 
-+			/* Align out addr, only sfrom might be unaligned */
-+			if (!((long)(out - 1 + OFF)) & 1) {
-+			    PUP(out) = PUP(from);
-+			    len--;
-+			}
-+			sout = (unsigned short *)(out - OFF);
-+			sfrom = (unsigned short *)(from - OFF);
-+			loops = len >> 1;
- 			do
--			    PUP(sout) = PUP(sfrom);
-+			    PUP(sout) = UP_UNALIGNED(sfrom);
- 			while (--loops);
- 			out = (unsigned char *)sout + OFF;
- 			from = (unsigned char *)sfrom + OFF;
- 			if (len & 1)
- 			    PUP(out) = PUP(from);
--		    } else if (dist == 2) {
--			unsigned short *sout = (unsigned short *)(out - OFF);
-+		    } else { /* dist == 1 or dist == 2 */
-+			unsigned short *sout;
- 			unsigned short pat16;
--			unsigned long loops = len >> 1;
-+			unsigned long loops;
- 
-+			/* Align out addr */
-+			if (!((long)(out - 1 + OFF)) & 1) {
-+			    PUP(out) = PUP(from);
-+			    len--;
-+			}
-+			sout = (unsigned short *)(out - OFF);
- 			pat16 = *(sout-2+2*OFF);
-+			if (dist == 1)
-+			    pat16 = (pat16 & 0xff) | ((pat16 & 0xff ) << 8);
-+			loops = len >> 1;
- 			do
- 			    PUP(sout) = pat16;
- 			while (--loops);
- 			out = (unsigned char *)sout + OFF;
- 			if (len & 1)
- 			    PUP(out) = PUP(from);
--		    } else {
--			unsigned char pat8 = *(out - 1 + OFF);
--
--			do {
--			    PUP(out) = pat8;
--			} while (--len);
- 		    }
--#else
--                    do {                        /* minimum length is three */
--                        PUP(out) = PUP(from);
--                        PUP(out) = PUP(from);
--                        PUP(out) = PUP(from);
--                        len -= 3;
--                    } while (len > 2);
--                    if (len) {
--                        PUP(out) = PUP(from);
--                        if (len > 1)
--                            PUP(out) = PUP(from);
--                    }
--#endif
-                 }
-             }
-             else if ((op & 64) == 0) {          /* 2nd level distance code */
--- 
-1.6.4.4
+(this is a resent with all the people included in the CC that git
+         blame'd they are the authors).
 
+Dear all,
+
+I am not sure what the future of mac_hid is (the source says will be
+removed, but since 9 years). In case it stays in kernel the attached
+patch adds support for mouse button 1 emulation. If this driver stays in
+the kernel I would also suggest to rename it - it is not mac specific (I
+am using this on a netbook).
+
+Rationale? Broken touchpads, within linux unsupported (multi-)touchpads
+where click and hold + moving the mouse does not work (yet?).
+
+I am using this for over a week now with about that uptime - so it
+should be safe.
+
+Soeren
+--=20
+For the one fact about the future of which we can be certain is that it
+will be utterly fantastic. -- Arthur C. Clarke, 1962
+
+
+--=-d/4RUOEtsUxjSEULL9ef
+Content-Disposition: attachment; filename="mac_hid_lmb.diff"
+Content-Type: text/x-patch; name="mac_hid_lmb.diff"; charset="ISO-8859-15"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWFjaW50b3NoL21hY19oaWQuYyBiL2RyaXZlcnMvbWFjaW50
+b3NoL21hY19oaWQuYw0KaW5kZXggY2M5ZjI3NS4uM2FhYzkwZiAxMDA2NDQNCi0tLSBhL2RyaXZl
+cnMvbWFjaW50b3NoL21hY19oaWQuYw0KKysrIGIvZHJpdmVycy9tYWNpbnRvc2gvbWFjX2hpZC5j
+DQpAQCAtMTksNiArMTksNyBAQA0KIHN0YXRpYyBzdHJ1Y3QgaW5wdXRfZGV2ICplbXVtb3VzZWJ0
+bjsNCiBzdGF0aWMgaW50IGVtdW1vdXNlYnRuX2lucHV0X3JlZ2lzdGVyKHZvaWQpOw0KIHN0YXRp
+YyBpbnQgbW91c2VfZW11bGF0ZV9idXR0b25zOw0KK3N0YXRpYyBpbnQgbW91c2VfYnV0dG9uMV9r
+ZXljb2RlID0gS0VZX1JJR0hUU0hJRlQ7CS8qIHJpZ2h0IHNoaWZ0IGtleSAqLw0KIHN0YXRpYyBp
+bnQgbW91c2VfYnV0dG9uMl9rZXljb2RlID0gS0VZX1JJR0hUQ1RSTDsJLyogcmlnaHQgY29udHJv
+bCBrZXkgKi8NCiBzdGF0aWMgaW50IG1vdXNlX2J1dHRvbjNfa2V5Y29kZSA9IEtFWV9SSUdIVEFM
+VDsJLyogcmlnaHQgb3B0aW9uIGtleSAqLw0KIHN0YXRpYyBpbnQgbW91c2VfbGFzdF9rZXljb2Rl
+Ow0KQEAgLTM1LDYgKzM2LDE0IEBAIHN0YXRpYyBjdGxfdGFibGUgbWFjX2hpZF9maWxlc1tdID0g
+ew0KIAkJLnByb2NfaGFuZGxlcgk9ICZwcm9jX2RvaW50dmVjLA0KIAl9LA0KIAl7DQorCQkuY3Rs
+X25hbWUJPSBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT04xX0tFWUNPREUsDQorCQkucHJvY25hbWUJ
+PSAibW91c2VfYnV0dG9uMV9rZXljb2RlIiwNCisJCS5kYXRhCQk9ICZtb3VzZV9idXR0b24xX2tl
+eWNvZGUsDQorCQkubWF4bGVuCQk9IHNpemVvZihpbnQpLA0KKwkJLm1vZGUJCT0gMDY0NCwNCisJ
+CS5wcm9jX2hhbmRsZXIJPSAmcHJvY19kb2ludHZlYywNCisJfSwNCisJew0KIAkJLmN0bF9uYW1l
+CT0gREVWX01BQ19ISURfTU9VU0VfQlVUVE9OMl9LRVlDT0RFLA0KIAkJLnByb2NuYW1lCT0gIm1v
+dXNlX2J1dHRvbjJfa2V5Y29kZSIsDQogCQkuZGF0YQkJPSAmbW91c2VfYnV0dG9uMl9rZXljb2Rl
+LA0KQEAgLTgzLDE2ICs5MiwyNCBAQCBzdGF0aWMgc3RydWN0IGN0bF90YWJsZV9oZWFkZXIgKm1h
+Y19oaWRfc3lzY3RsX2hlYWRlcjsNCiANCiBpbnQgbWFjX2hpZF9tb3VzZV9lbXVsYXRlX2J1dHRv
+bnMoaW50IGNhbGxlciwgdW5zaWduZWQgaW50IGtleWNvZGUsIGludCBkb3duKQ0KIHsNCisJdW5z
+aWduZWQgaW50IHJlcG9ydGNvZGU7DQorDQogCXN3aXRjaCAoY2FsbGVyKSB7DQogCWNhc2UgMToN
+CiAJCS8qIENhbGxlZCBmcm9tIGtleWJvYXJkLmMgKi8NCiAJCWlmIChtb3VzZV9lbXVsYXRlX2J1
+dHRvbnMNCi0JCSAgICAmJiAoa2V5Y29kZSA9PSBtb3VzZV9idXR0b24yX2tleWNvZGUNCi0JCQl8
+fCBrZXljb2RlID09IG1vdXNlX2J1dHRvbjNfa2V5Y29kZSkpIHsNCisJCSAgICAmJiAoa2V5Y29k
+ZSA9PSBtb3VzZV9idXR0b24xX2tleWNvZGUgfHwNCisJCQkJa2V5Y29kZSA9PSBtb3VzZV9idXR0
+b24yX2tleWNvZGUgfHwNCisJCQkJa2V5Y29kZSA9PSBtb3VzZV9idXR0b24zX2tleWNvZGUpKSB7
+DQogCQkJaWYgKG1vdXNlX2VtdWxhdGVfYnV0dG9ucyA9PSAxKSB7DQotCQkJCWlucHV0X3JlcG9y
+dF9rZXkoZW11bW91c2VidG4sDQotCQkJCQkJIGtleWNvZGUgPT0gbW91c2VfYnV0dG9uMl9rZXlj
+b2RlID8gQlROX01JRERMRSA6IEJUTl9SSUdIVCwNCi0JCQkJCQkgZG93bik7DQorCQkJCWlmIChr
+ZXljb2RlPT1tb3VzZV9idXR0b24xX2tleWNvZGUpDQorCQkJCQlyZXBvcnRjb2RlPUJUTl9MRUZU
+Ow0KKwkJCQllbHNlIGlmIChrZXljb2RlPT1tb3VzZV9idXR0b24yX2tleWNvZGUpDQorCQkJCQly
+ZXBvcnRjb2RlPUJUTl9NSURETEU7DQorCQkJCWVsc2UNCisJCQkJCXJlcG9ydGNvZGU9QlROX1JJ
+R0hUOw0KKw0KKwkJCQlpbnB1dF9yZXBvcnRfa2V5KGVtdW1vdXNlYnRuLCByZXBvcnRjb2RlLCBk
+b3duKTsNCiAJCQkJaW5wdXRfc3luYyhlbXVtb3VzZWJ0bik7DQogCQkJCXJldHVybiAxOw0KIAkJ
+CX0NCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3N5c2N0bC5oIGIvaW5jbHVkZS9saW51eC9z
+eXNjdGwuaA0KaW5kZXggMWU0NzQzZS4uZDM4ZjVhMCAxMDA2NDQNCi0tLSBhL2luY2x1ZGUvbGlu
+dXgvc3lzY3RsLmgNCisrKyBiL2luY2x1ZGUvbGludXgvc3lzY3RsLmgNCkBAIC05MTMsOSArOTEz
+LDEwIEBAIGVudW0gew0KIAlERVZfTUFDX0hJRF9LRVlCT0FSRF9TRU5EU19MSU5VWF9LRVlDT0RF
+Uz0xLA0KIAlERVZfTUFDX0hJRF9LRVlCT0FSRF9MT0NLX0tFWUNPREVTPTIsDQogCURFVl9NQUNf
+SElEX01PVVNFX0JVVFRPTl9FTVVMQVRJT049MywNCi0JREVWX01BQ19ISURfTU9VU0VfQlVUVE9O
+Ml9LRVlDT0RFPTQsDQotCURFVl9NQUNfSElEX01PVVNFX0JVVFRPTjNfS0VZQ09ERT01LA0KLQlE
+RVZfTUFDX0hJRF9BREJfTU9VU0VfU0VORFNfS0VZQ09ERVM9Ng0KKwlERVZfTUFDX0hJRF9NT1VT
+RV9CVVRUT04xX0tFWUNPREU9NCwNCisJREVWX01BQ19ISURfTU9VU0VfQlVUVE9OMl9LRVlDT0RF
+PTUsDQorCURFVl9NQUNfSElEX01PVVNFX0JVVFRPTjNfS0VZQ09ERT02LA0KKwlERVZfTUFDX0hJ
+RF9BREJfTU9VU0VfU0VORFNfS0VZQ09ERVM9Nw0KIH07DQogDQogLyogL3Byb2Mvc3lzL2Rldi9z
+Y3NpICovDQpkaWZmIC0tZ2l0IGEva2VybmVsL3N5c2N0bF9jaGVjay5jIGIva2VybmVsL3N5c2N0
+bF9jaGVjay5jDQppbmRleCBiNmU3YWFlLi42MGZhN2ZlIDEwMDY0NA0KLS0tIGEva2VybmVsL3N5
+c2N0bF9jaGVjay5jDQorKysgYi9rZXJuZWwvc3lzY3RsX2NoZWNrLmMNCkBAIC04MTYsNiArODE2
+LDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCB0cmFuc19jdGxfdGFibGUgdHJhbnNfbWFjX2hpZF9m
+aWxlc1tdID0gew0KIAkvKiBERVZfTUFDX0hJRF9LRVlCT0FSRF9TRU5EU19MSU5VWF9LRVlDT0RF
+UyB1bnVzZWQgKi8NCiAJLyogREVWX01BQ19ISURfS0VZQk9BUkRfTE9DS19LRVlDT0RFUyB1bnVz
+ZWQgKi8NCiAJeyBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT05fRU1VTEFUSU9OLAkibW91c2VfYnV0
+dG9uX2VtdWxhdGlvbiIgfSwNCisJeyBERVZfTUFDX0hJRF9NT1VTRV9CVVRUT04xX0tFWUNPREUs
+CSJtb3VzZV9idXR0b24xX2tleWNvZGUiIH0sDQogCXsgREVWX01BQ19ISURfTU9VU0VfQlVUVE9O
+Ml9LRVlDT0RFLAkibW91c2VfYnV0dG9uMl9rZXljb2RlIiB9LA0KIAl7IERFVl9NQUNfSElEX01P
+VVNFX0JVVFRPTjNfS0VZQ09ERSwJIm1vdXNlX2J1dHRvbjNfa2V5Y29kZSIgfSwNCiAJLyogREVW
+X01BQ19ISURfQURCX01PVVNFX1NFTkRTX0tFWUNPREVTIHVudXNlZCAqLw0K
+
+
+--=-d/4RUOEtsUxjSEULL9ef--
+
+--=-ql1mhDvsuNY0WoUddaAu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABAgAGBQJK9+7iAAoJEH82z1Wqh6p3PZYP/2fnUOQwIWSzO3/HjiK3ZeUw
+9i29PMM57l/Yb8Uj9sh6Vg8gXZtfACc2uvuhvFvNqcdIPvl8nH9ExHbggJdXDrHq
+jjsXjUPm9TAtlK+pnim86FVdEahSCULCOZ9uGxNTkxsiW61zTJWl8rVoYuh9dx2Q
+juJGO6kHaIMmkag4OahSYP8k31dYVs1i4n5EGpbnp6gKi7GRyq9ALlXhF8Zjfoky
+GmuZlai9piiZy9X05UmwiHmT3LNrX5fJH/Vs68DSllErJ05OIer8Ud4qMHqawLNJ
+13heaLH11RF0C/Z/vv9hLqIMV1uxib2kWOj6Aq7R1XqAj7rBf4HpRyJG6R0fvkml
+89yBqTxNZMEql0Mv+yDYDYj8cPGvGGkd7kl+ebISvcm7gocJqvvtAxIXviilpbt5
+AcqMUFTox+hpRzca4gZnVRiegwOq3DlhY6gayKppD01EaWSVcOvi3FU9wJ03kxkT
+M1lK1aMZCIbjdvmI7NUyuGkR/r4b81RTCC5GqvC15+sdOc+E7ZXw+Ru11RKz6DQY
+qjK9pXY+XcL3hBg/6UXcHfyK+DuF36AArVzGbhalkCKWqgpySZ5emTVea3QbgIZy
+wSdqIQ6Ne7XC8LT/R/RcYKhZ8xaRmGyx7Rit0PlN6EvwjUOt02PenEie9mj1xLi6
+UIwow9VWYRY3enaV8kQL
+=21sF
+-----END PGP SIGNATURE-----
+
+--=-ql1mhDvsuNY0WoUddaAu--
