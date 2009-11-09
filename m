@@ -1,106 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZKINXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbZKIN23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbZKINXX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 08:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbZKINXW
+	id S1755886AbZKIN23 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 08:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbZKIN23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 08:23:22 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:32641
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752118AbZKINXV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 08:23:21 -0500
-X-SpamScore: -19
-X-BigFish: VPS-19(zba6lz1432R98dN1447Rzz1202hzzz32i176h6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KSUFUS-03-DTF-02
-X-M-MSG: 
-Date: Mon, 9 Nov 2009 14:23:38 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Yong Wang <yong.y.wang@linux.intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] x86: under bios control, restore AP's APIC_LVTTHMR
- to the BSP value
-Message-ID: <20091109132338.GB32321@aftab>
-References: <20091109114752.GA3896@ywang-moblin2.bj.intel.com>
- <20091109122919.GA32321@aftab>
- <20091109121005.GB3896@ywang-moblin2.bj.intel.com>
+	Mon, 9 Nov 2009 08:28:29 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:46255 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755805AbZKIN22 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 08:28:28 -0500
+Date: Mon, 9 Nov 2009 14:28:30 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
+Message-ID: <20091109132830.GF26740@basil.fritz.box>
+References: <m1pr7siqjz.fsf@fess.ebiederm.org> <m1hbt4ipni.fsf@fess.ebiederm.org> <20091108164855.595ec70d@infradead.org> <m1tyx49y44.fsf@fess.ebiederm.org> <20091108205725.28778016@infradead.org> <m1hbt45kcp.fsf@fess.ebiederm.org> <87ocnc598i.fsf@basil.nowhere.org> <m1my2vyla5.fsf@fess.ebiederm.org> <20091109120445.GC26740@basil.fritz.box> <m1zl6vvpiv.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091109121005.GB3896@ywang-moblin2.bj.intel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 09 Nov 2009 13:23:15.0553 (UTC) FILETIME=[CB530510:01CA613F]
-X-Reverse-DNS: unknown
+In-Reply-To: <m1zl6vvpiv.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2009 at 08:10:05PM +0800, Yong Wang wrote:
-> > > +	mcheck_init();
-> > 
-> > I think you need
-> > 
-> > #ifdef CONFIG_X86_MCE
-> > ...
-> > #endif
-> > 
-> > here for cases where mcheck is config-disabled, no?
-> > 
+On Mon, Nov 09, 2009 at 04:41:44AM -0800, Eric W. Biederman wrote:
+> >> >> The glibc pthread code that uses sysctl has no problems if sys_sysctl
+> >> >> is gone.  It both falls back to reading /proc/sys and it just controls
+> >> >> an optimization and the code works with either result.  Been there,
+> >> >> done that.
+> >> >
+> >> > /proc/sys is much slower than sysctl though. So you made program startup
+> >> > slower.
+> >> 
+> >> Not much slower, but slower. I just measured it in a case that favors
+> >> sysctl and the ration is about 5:2.  Or sysctl is about 2.5x faster.
+> >> About 49usec for open/read/close on proc and 19usec for sysctl.
+> >> In my emulation it is a bit slower than that.
+> >
+> > That's not good.
 > 
-> Petkov, thanks for the review. Part of my patch is as below. Does this
-> resolve your concern?
+> Why?
 
-Sorry, my comment was wrong. I remember seeing "#ifdef CONFIG_X86_MCE...
-#endif" around mcheck_cpu_init(), that's why I asked. Anyways, with
-CONFIG_X86_MCE disabled I still get
+Because it slows down a very common path.
 
-...
-/home/boris/kernel/linux-2.6/arch/x86/include/asm/mce.h:126: warning: ‘mcheck_init’ defined but not used
-  CC      arch/x86/ia32/audit.o
-  AS      arch/x86/kernel/entry_64.o
-  CC      arch/x86/kernel/traps.o
-  LD      arch/x86/ia32/built-in.o
-  LD      arch/x86/kvm/built-in.o
-  CC [M]  arch/x86/kvm/svm.o
-/home/boris/kernel/linux-2.6/arch/x86/include/asm/mce.h:126: warning: ‘mcheck_init’ defined but not used
-  CC      arch/x86/kernel/irq.o
-/home/boris/kernel/linux-2.6/arch/x86/include/asm/mce.h:126: warning: ‘mcheck_init’ defined but not used
-...
-
-
-which should be fixed IMHO by inlining mcheck_init() like
-mcheck_cpu_init(). And while we're at it, we should remove the #ifdef's
-around mcheck_cpu_init() in identify_cpu() since they're not needed.
-
-> diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-> index 161485d..41d8e42 100644
-> --- a/arch/x86/include/asm/mce.h
-> +++ b/arch/x86/include/asm/mce.h
-> @@ -120,8 +120,10 @@ extern int mce_disabled;
->  extern int mce_p5_enabled;
+> >
+> > a) all
+> > b) common ones used by glibc and perhaps a few others only
+> > c) none
+> >
+> > I suspect most users would use (b), in fact (c) might be redundant
+> > if (b) is cheap enough (which it should be)
 > 
->  #ifdef CONFIG_X86_MCE
-> +int mcheck_init(void);
->  void mcheck_cpu_init(struct cpuinfo_x86 *c);
->  #else
-> +static int mcheck_init(void) { return 0; }
->  static inline void mcheck_cpu_init(struct cpuinfo_x86 *c) {}
->  #endif
+> Next year I expect b == c.
 
-Thanks.
+Only if you ignore ABI compatibility.
 
+> 
+> If you think we need something better additional patches to sysctl_binary.c
+> are welcome.  Just add your custom fast path before the through the
+> VFS.
+
+I think sysctl_binary should be just stripped down for common sysctls
+(at least with a CONFIG)
+
+> > Hmm? There's plenty of glibc code that uses the binary sysctl.
+> 
+> Where?  I grepped glibc today.  The only use in a recent glibc is
+> in glibc-ports for the support of arm inb/outb.  The only other
+> use in older glibc was checking to see if we ran on an SMP kernel.
+
+That older glibc is widely deployed. And it won't go away next year.
+
+> >> Ultimately what drives me most is that people are still accidentally
+> >> adding binary sysctls, which no one uses or tests.  For a recent
+> >> example see:
+> >
+> > Yes I agree new binary sysctls should just be deprecated right now.
+> 
+> Good.  The only way to keep new ones from showing up is to that I know
+> of is to move everything into an emulation layer.  I have done the heavy
+> lifting there and everything is emulated using the exact same code.
+
+I agree with that.
+
+I just think you should have two flavours of emulation layer:
+full and "common sysctls". This can be probably done with the same
+code and some strategic ifdefs.
+
+-Andi
 -- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+ak@linux.intel.com -- Speaking for myself only.
