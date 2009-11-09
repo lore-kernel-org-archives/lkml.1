@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbZKIRbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbZKIRbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751326AbZKIRbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 12:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbZKIRbT
+	id S1752113AbZKIRbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 12:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZKIRbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 12:31:19 -0500
-Received: from khc.piap.pl ([195.187.100.11]:36241 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbZKIRbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 12:31:17 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: SATA_SIL on IXP425 workaround
-Date: Mon, 09 Nov 2009 18:31:21 +0100
-Message-ID: <m33a4nfvva.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Nov 2009 12:31:48 -0500
+Received: from casper.infradead.org ([85.118.1.10]:48436 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbZKIRbr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 12:31:47 -0500
+Subject: Re: utime/stime decreasing on thread exit
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091109172020.GA7751@redhat.com>
+References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com>
+	 <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop>
+	 <20091109172020.GA7751@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 18:31:43 +0100
+Message-ID: <1257787903.4108.345.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to add a workaround for IXP4xx CPUs to SATA SIL driver. The
-problem is that IXP4xx CPUs (Intel's XScale (ARM) network-oriented
-processors) are unable to perform 8 and 16-bit read from PCI MMIO, they
-can only do a full 32-bit readl(); SIL chips respond to that with PCI
-abort. The workaround is to use 8 and 16-bit regular IO reads (inb/inw)
-instead (MMIO write is not a problem).
+On Mon, 2009-11-09 at 18:20 +0100, Oleg Nesterov wrote:
 
-For SIL3x12 the workaround is simple (attached) and it works on my 3512.
-I'm not sure about 3114 (the 4-port chip) - the PIO BARs have TF, CTL
-and BWDMA registers which are common to channels 0 and 2, and (the other
-set) to channels 1 and 3. Channel selection is done with bit 4 of
-device/head TF register, this is similar (same?) as PATA master/slave.
-Does that mean that I can simply treat channel 0 as PRI master, ch#2 as
-PRI slave, ch#1 as SEC master and ch#3 as SEC slave, and the SFF code
-will select the right device correctly? Does it need additional code?
-I don't have anything based on 3114.
+> > I just checked .22 and there we seem to hold p->sighand->siglock over
+> > the full task iteration.
+> 
+> Yes. Then thread_group_cputime() was changed so that it didn't itearate
+> over sub-threads, then this callsite was move outside of ->siglock, now
+> it does while_each_thread() again.
+> 
+> > So we might as well revert back to that if
+> > people really mind counting things twice :-)
+> 
+> Stanislaw has already sent the patch, but I don't know what happened
+> with this patch:
+> 
+> 	[PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with __exit_signal()
+> 	http://marc.info/?l=linux-kernel&m=124505545131145
 
-Note: the large PRD is not a problem here, the transfer can be started
-by MMIO write. Only reads are an issue.
+That patch has the siglock in the function calling
+thread_group_cputime(), the 22 code had it near the loop proper, which
+to me seems a more sensible thing, since there could be more callers,
+no?
 
---- a/drivers/ata/sata_sil.c
-+++ b/drivers/ata/sata_sil.c
-@@ -757,7 +757,12 @@ static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (rc)
- 		return rc;
- 
-+#ifdef CONFIG_ARCH_IXP4XX
-+	/* We need all 6 regions on IXP4xx */
-+	rc = pcim_iomap_regions(pdev, 0x3F, DRV_NAME);
-+#else
- 	rc = pcim_iomap_regions(pdev, 1 << SIL_MMIO_BAR, DRV_NAME);
-+#endif
- 	if (rc == -EBUSY)
- 		pcim_pin_device(pdev);
- 	if (rc)
-@@ -777,10 +782,18 @@ static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		struct ata_port *ap = host->ports[i];
- 		struct ata_ioports *ioaddr = &ap->ioaddr;
- 
-+#ifdef CONFIG_ARCH_IXP4XX
-+		/* IXP4xx CPUs can't perform 8 and 16-bit MMIO reads,
-+		   use normal IO from/to regions 0-5 instead */
-+		ioaddr->cmd_addr = host->iomap[i * 2];
-+		ioaddr->altstatus_addr = host->iomap[1 + i * 2] + 2;
-+		ioaddr->bmdma_addr = host->iomap[4] + sil_port[i].bmdma;
-+#else
- 		ioaddr->cmd_addr = mmio_base + sil_port[i].tf;
--		ioaddr->altstatus_addr =
--		ioaddr->ctl_addr = mmio_base + sil_port[i].ctl;
-+		ioaddr->altstatus_addr = mmio_base + sil_port[i].ctl;
- 		ioaddr->bmdma_addr = mmio_base + sil_port[i].bmdma;
-+#endif
-+		ioaddr->ctl_addr = mmio_base + sil_port[i].ctl;
- 		ioaddr->scr_addr = mmio_base + sil_port[i].scr;
- 		ata_sff_std_ports(ioaddr);
- 
-
--- 
-Krzysztof Halasa
