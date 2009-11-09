@@ -1,380 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbZKIGrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZKIGuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752346AbZKIGrW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 01:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbZKIGrW
+	id S1752907AbZKIGuf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 01:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZKIGue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 01:47:22 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44210 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbZKIGrV (ORCPT
+	Mon, 9 Nov 2009 01:50:34 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:45003 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751551AbZKIGue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 01:47:21 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 9 Nov 2009 15:44:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] memcg : rewrite percpu countings with new interfaces v2
-Message-Id: <20091109154446.181b0e1f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091106175545.b97ee867.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091106175242.6e13ee29.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091106175545.b97ee867.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 9 Nov 2009 01:50:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:mime-version
+         :content-type:content-transfer-encoding:message-id;
+        b=x/tocG+6TKVK/duJeAPnBsoVHnCElHgVuc/JSp0jFY9afAuXeItWA9gICCzIHNVFOY
+         AaUpzhnBrTKLxlnWJt2eSkoCrhU/GY3wO9UhgsQf36dnYYaB4fAN/DfsgEcM4iRNkWJG
+         fdwgMf31X6vwE6E1v9st7q2OHagUKgRS2fZLQ=
+From: Mark Veltzer <mark.veltzer@gmail.com>
+Organization: veltzer.net
+To: linux-kernel@vger.kernel.org
+Subject: get_user_pages question
+Date: Mon, 9 Nov 2009 08:50:25 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.30-1-686; KDE/4.3.2; i686; ; )
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911090850.26724.mark.veltzer@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you Chirsotph for review.
+Hello all!
 
-I think this version works well.
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+I have searched the list for similar issues and have not found an answer so I 
+am posting.
 
-Now, alloc_percpu() alloc good dynamic allocations and
-Recent updates on percpu.h gives us following kind of ops 
-   - this_cpu_add() etc...
-This is designed to be a help for reduce code size in hot-path
-and very useful to handle percpu area. Thanks for great works.
+I am using 'get_user_pages' and friends to get a hold of user memory in kernel 
+space. User space passes buffer to kernel, kernel does get_user_pages, holds 
+them for some time while user space is doing something else, writes to the 
+pages and then releases them (SetPageDirty and page_cache_release as per LDD 
+3rd edition). So far so good. 
 
-This patch rewrite memcg's (not-good) percpu status with new
-percpu support macros. This decreases code size and instruction
-size. By this, this area is now NUMA-aware and may have performance 
-benefit. 
+I am testing this kernel module with several buffers from user space allocated 
+in several different ways. heap, data segment, static variable in function and 
+stack. All scenarious work EXCEPT the stack one. When passing the stack buffer 
+the kernel sees one thing while user space sees another.
 
-Changelog: 2009/11/09
- - fixed misusage of __this_cpu_xxx
+My not so intelligent questions (they may well be off the mark):
+- How can this be? (two views of the same page)
+- Does not 'get_user_pages' pin the pages?
+- Could this be due to stack protection of some sort?
+- Do I need to do anything extra with the vm_area I receive for the stack 
+pages EXCEPT 'get_user_pages' ?
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/memcontrol.c |  172 +++++++++++++++++++-------------------------------------
- 1 file changed, 61 insertions(+), 111 deletions(-)
+I know this is not an orthodox method to write a driver and I better use mmap 
+for these things but I have other constrains in this driver design that I do 
+not want to bore you with. I am also awara that passing a buffer on stack and 
+letting user space continue running is a very dangerous thing to do for user 
+space (or kernel space) integrity. I wish I could do it another way...
 
-Index: mmotm-2.6.32-Nov2/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.32-Nov2.orig/mm/memcontrol.c
-+++ mmotm-2.6.32-Nov2/mm/memcontrol.c
-@@ -39,6 +39,7 @@
- #include <linux/mm_inline.h>
- #include <linux/page_cgroup.h>
- #include <linux/cpu.h>
-+#include <linux/percpu.h>
- #include "internal.h"
- 
- #include <asm/uaccess.h>
-@@ -78,54 +79,8 @@ enum mem_cgroup_stat_index {
- 
- struct mem_cgroup_stat_cpu {
- 	s64 count[MEMCG_STAT_NSTATS];
--} ____cacheline_aligned_in_smp;
--
--struct mem_cgroup_stat {
--	struct mem_cgroup_stat_cpu cpustat[0];
- };
- 
--static inline void
--__mem_cgroup_stat_reset_safe(struct mem_cgroup_stat_cpu *stat,
--				enum mem_cgroup_stat_index idx)
--{
--	stat->count[idx] = 0;
--}
--
--static inline s64
--__mem_cgroup_stat_read_local(struct mem_cgroup_stat_cpu *stat,
--				enum mem_cgroup_stat_index idx)
--{
--	return stat->count[idx];
--}
--
--/*
-- * For accounting under irq disable, no need for increment preempt count.
-- */
--static inline void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat_cpu *stat,
--		enum mem_cgroup_stat_index idx, int val)
--{
--	stat->count[idx] += val;
--}
--
--static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
--		enum mem_cgroup_stat_index idx)
--{
--	int cpu;
--	s64 ret = 0;
--	for_each_possible_cpu(cpu)
--		ret += stat->cpustat[cpu].count[idx];
--	return ret;
--}
--
--static s64 mem_cgroup_local_usage(struct mem_cgroup_stat *stat)
--{
--	s64 ret;
--
--	ret = mem_cgroup_read_stat(stat, MEMCG_NR_CACHE);
--	ret += mem_cgroup_read_stat(stat, MEMCG_NR_RSS);
--	return ret;
--}
--
- /*
-  * per-zone information in memory controller.
-  */
-@@ -226,10 +181,7 @@ struct mem_cgroup {
- 	/* set when res.limit == memsw.limit */
- 	bool		memsw_is_minimum;
- 
--	/*
--	 * statistics. This must be placed at the end of memcg.
--	 */
--	struct mem_cgroup_stat stat;
-+	struct mem_cgroup_stat_cpu *cpustat;
- };
- 
- /*
-@@ -370,18 +322,13 @@ mem_cgroup_remove_exceeded(struct mem_cg
- static bool mem_cgroup_soft_limit_check(struct mem_cgroup *mem)
- {
- 	bool ret = false;
--	int cpu;
- 	s64 val;
--	struct mem_cgroup_stat_cpu *cpustat;
- 
--	cpu = get_cpu();
--	cpustat = &mem->stat.cpustat[cpu];
--	val = __mem_cgroup_stat_read_local(cpustat, MEMCG_EVENTS);
-+	val = this_cpu_read(mem->cpustat->count[MEMCG_EVENTS]);
- 	if (unlikely(val > SOFTLIMIT_EVENTS_THRESH)) {
--		__mem_cgroup_stat_reset_safe(cpustat, MEMCG_EVENTS);
-+		this_cpu_write(mem->cpustat->count[MEMCG_EVENTS], 0);
- 		ret = true;
- 	}
--	put_cpu();
- 	return ret;
- }
- 
-@@ -477,17 +424,34 @@ mem_cgroup_largest_soft_limit_node(struc
- 	return mz;
- }
- 
-+static s64 mem_cgroup_read_stat(struct mem_cgroup *mem,
-+		enum mem_cgroup_stat_index idx)
-+{
-+	struct mem_cgroup_stat_cpu *cstat;
-+	int cpu;
-+	s64 ret = 0;
-+
-+	for_each_possible_cpu(cpu)
-+		ret += per_cpu_ptr(mem->cpustat->count[idx], cpu);
-+
-+	return ret;
-+}
-+
-+static s64 mem_cgroup_local_usage(struct mem_cgroup *mem)
-+{
-+	s64 ret;
-+
-+	ret = mem_cgroup_read_stat(mem, MEMCG_NR_CACHE);
-+	ret += mem_cgroup_read_stat(mem, MEMCG_NR_RSS);
-+	return ret;
-+}
-+
- static void mem_cgroup_swap_statistics(struct mem_cgroup *mem,
- 					 bool charge)
- {
- 	int val = (charge) ? 1 : -1;
--	struct mem_cgroup_stat *stat = &mem->stat;
--	struct mem_cgroup_stat_cpu *cpustat;
--	int cpu = get_cpu();
- 
--	cpustat = &stat->cpustat[cpu];
--	__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_SWAP, val);
--	put_cpu();
-+	this_cpu_add(mem->cpustat->count[MEMCG_NR_SWAP], val);
- }
- 
- static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
-@@ -495,22 +459,19 @@ static void mem_cgroup_charge_statistics
- 					 bool charge)
- {
- 	int val = (charge) ? 1 : -1;
--	struct mem_cgroup_stat *stat = &mem->stat;
--	struct mem_cgroup_stat_cpu *cpustat;
--	int cpu = get_cpu();
- 
--	cpustat = &stat->cpustat[cpu];
-+	preempt_disable();
- 	if (PageCgroupCache(pc))
--		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_CACHE, val);
-+		__this_cpu_add(mem->cpustat->count[MEMCG_NR_CACHE], val);
- 	else
--		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_RSS, val);
-+		__this_cpu_add(mem->cpustat->count[MEMCG_NR_RSS], val);
- 
- 	if (charge)
--		__mem_cgroup_stat_add_safe(cpustat, MEMCG_PGPGIN, 1);
-+		__this_cpu_inc(mem->cpustat->count[MEMCG_PGPGIN]);
- 	else
--		__mem_cgroup_stat_add_safe(cpustat, MEMCG_PGPGOUT, 1);
--	__mem_cgroup_stat_add_safe(cpustat, MEMCG_EVENTS, 1);
--	put_cpu();
-+		__this_cpu_inc(mem->cpustat->count[MEMCG_PGPGOUT]);
-+	__this_cpu_inc(mem->cpustat->count[MEMCG_EVENTS]);
-+	preempt_enable();
- }
- 
- static unsigned long mem_cgroup_get_local_zonestat(struct mem_cgroup *mem,
-@@ -1162,7 +1123,7 @@ static int mem_cgroup_hierarchical_recla
- 				}
- 			}
- 		}
--		if (!mem_cgroup_local_usage(&victim->stat)) {
-+		if (!mem_cgroup_local_usage(victim)) {
- 			/* this cgroup's local usage == 0 */
- 			css_put(&victim->css);
- 			continue;
-@@ -1228,9 +1189,6 @@ static void record_last_oom(struct mem_c
- void mem_cgroup_update_file_mapped(struct page *page, int val)
- {
- 	struct mem_cgroup *mem;
--	struct mem_cgroup_stat *stat;
--	struct mem_cgroup_stat_cpu *cpustat;
--	int cpu;
- 	struct page_cgroup *pc;
- 
- 	pc = lookup_page_cgroup(page);
-@@ -1245,14 +1203,7 @@ void mem_cgroup_update_file_mapped(struc
- 	if (!PageCgroupUsed(pc))
- 		goto done;
- 
--	/*
--	 * Preemption is already disabled, we don't need get_cpu()
--	 */
--	cpu = smp_processor_id();
--	stat = &mem->stat;
--	cpustat = &stat->cpustat[cpu];
--
--	__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_FILE_MAPPED, val);
-+	this_cpu_add(mem->cpustat->count[MEMCG_NR_FILE_MAPPED], val);
- done:
- 	unlock_page_cgroup(pc);
- }
-@@ -1623,9 +1574,6 @@ static int mem_cgroup_move_account(struc
- 	int nid, zid;
- 	int ret = -EBUSY;
- 	struct page *page;
--	int cpu;
--	struct mem_cgroup_stat *stat;
--	struct mem_cgroup_stat_cpu *cpustat;
- 
- 	VM_BUG_ON(from == to);
- 	VM_BUG_ON(PageLRU(pc->page));
-@@ -1650,16 +1598,12 @@ static int mem_cgroup_move_account(struc
- 
- 	page = pc->page;
- 	if (page_mapped(page) && !PageAnon(page)) {
--		cpu = smp_processor_id();
-+		preempt_disable();
- 		/* Update mapped_file data for mem_cgroup "from" */
--		stat = &from->stat;
--		cpustat = &stat->cpustat[cpu];
--		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_FILE_MAPPED, -1);
--
-+		__this_cpu_dec(from->cpustat->count[MEMCG_NR_FILE_MAPPED]);
- 		/* Update mapped_file data for mem_cgroup "to" */
--		stat = &to->stat;
--		cpustat = &stat->cpustat[cpu];
--		__mem_cgroup_stat_add_safe(cpustat, MEMCG_NR_FILE_MAPPED, 1);
-+		__this_cpu_inc(to->cpustat->count[MEMCG_NR_FILE_MAPPED]);
-+		preempt_enable();
- 	}
- 
- 	if (do_swap_account && !mem_cgroup_is_root(from))
-@@ -2715,7 +2659,7 @@ static int
- mem_cgroup_get_idx_stat(struct mem_cgroup *mem, void *data)
- {
- 	struct mem_cgroup_idx_data *d = data;
--	d->val += mem_cgroup_read_stat(&mem->stat, d->idx);
-+	d->val += mem_cgroup_read_stat(mem, d->idx);
- 	return 0;
- }
- 
-@@ -2920,18 +2864,18 @@ static int mem_cgroup_get_local_stat(str
- 	s64 val;
- 
- 	/* per cpu stat */
--	val = mem_cgroup_read_stat(&mem->stat, MEMCG_NR_CACHE);
-+	val = mem_cgroup_read_stat(mem, MEMCG_NR_CACHE);
- 	s->stat[MCS_CACHE] += val * PAGE_SIZE;
--	val = mem_cgroup_read_stat(&mem->stat, MEMCG_NR_RSS);
-+	val = mem_cgroup_read_stat(mem, MEMCG_NR_RSS);
- 	s->stat[MCS_RSS] += val * PAGE_SIZE;
--	val = mem_cgroup_read_stat(&mem->stat, MEMCG_NR_FILE_MAPPED);
-+	val = mem_cgroup_read_stat(mem, MEMCG_NR_FILE_MAPPED);
- 	s->stat[MCS_FILE_MAPPED] += val * PAGE_SIZE;
--	val = mem_cgroup_read_stat(&mem->stat, MEMCG_PGPGIN);
-+	val = mem_cgroup_read_stat(mem, MEMCG_PGPGIN);
- 	s->stat[MCS_PGPGIN] += val;
--	val = mem_cgroup_read_stat(&mem->stat, MEMCG_PGPGOUT);
-+	val = mem_cgroup_read_stat(mem, MEMCG_PGPGOUT);
- 	s->stat[MCS_PGPGOUT] += val;
- 	if (do_swap_account) {
--		val = mem_cgroup_read_stat(&mem->stat, MEMCG_NR_SWAP);
-+		val = mem_cgroup_read_stat(mem, MEMCG_NR_SWAP);
- 		s->stat[MCS_SWAP] += val * PAGE_SIZE;
- 	}
- 
-@@ -3190,17 +3134,12 @@ static void free_mem_cgroup_per_zone_inf
- 	kfree(mem->info.nodeinfo[node]);
- }
- 
--static int mem_cgroup_size(void)
--{
--	int cpustat_size = nr_cpu_ids * sizeof(struct mem_cgroup_stat_cpu);
--	return sizeof(struct mem_cgroup) + cpustat_size;
--}
--
- static struct mem_cgroup *mem_cgroup_alloc(void)
- {
- 	struct mem_cgroup *mem;
--	int size = mem_cgroup_size();
-+	int size = sizeof(struct mem_cgroup);
- 
-+	/* Can be very big if MAX_NUMNODES is big */
- 	if (size < PAGE_SIZE)
- 		mem = kmalloc(size, GFP_KERNEL);
- 	else
-@@ -3208,6 +3147,15 @@ static struct mem_cgroup *mem_cgroup_all
- 
- 	if (mem)
- 		memset(mem, 0, size);
-+	mem->cpustat = alloc_percpu(struct mem_cgroup_stat_cpu);
-+	if (!mem->cpustat) {
-+		if (size < PAGE_SIZE)
-+			kfree(mem);
-+		else
-+			vfree(mem);
-+		mem = NULL;
-+	}
-+
- 	return mem;
- }
- 
-@@ -3232,7 +3180,9 @@ static void __mem_cgroup_free(struct mem
- 	for_each_node_state(node, N_POSSIBLE)
- 		free_mem_cgroup_per_zone_info(mem, node);
- 
--	if (mem_cgroup_size() < PAGE_SIZE)
-+	free_percpu(mem->cpustat);
-+
-+	if (sizeof(struct mem_cgroup) < PAGE_SIZE)
- 		kfree(mem);
- 	else
- 		vfree(mem);
+The platform is x86 32 bit standad with standard kernels and headers 
+distributed with ubuntu 9.04 and 9.10 which are 2.6.28 and 2.6.31.
 
+Please reply to my email as well as I am not a subscriber.
+
+Cheers,
+	Mark
