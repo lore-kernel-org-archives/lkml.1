@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZKILgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZKILlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614AbZKILgo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 06:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbZKILgo
+	id S1754645AbZKILlX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 06:41:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZKILlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 06:36:44 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:64790 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbZKILgn (ORCPT
+	Mon, 9 Nov 2009 06:41:23 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:41228 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbZKILlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 06:36:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sDUJtzhK4VnQ6UO3hRWq7V14CclNuV1bU+0IbJW9BzjlXYfQycX2qEnnKstzLL61OA
-         Nuj2rlzYnNnbmoHdQxXpccKG9ErYU9oEQpMUaN/E0ev34nxbZerzReQAiEfWiEP9pAav
-         +0sCs1LemkuCaBHvt3i5fYUZiL8w2yTGCLauw=
-Date: Mon, 9 Nov 2009 12:36:50 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Adam Nemet <anemet@caviumnetworks.com>,
-       Patrik Kluba <kpajko79@gmail.com>
-Subject: Re: [PATCH -v6 08/13] tracing: add IRQENTRY_EXIT section for MIPS
-Message-ID: <20091109113647.GA5206@nowhere>
-References: <cover.1256569489.git.wuzhangjin@gmail.com> <f746f813531a16bd650f9290787c66cbc0cdc34d.1256569489.git.wuzhangjin@gmail.com> <20091109022640.GC13153@nowhere> <1257737468.3451.9.camel@falcon.domain.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257737468.3451.9.camel@falcon.domain.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 9 Nov 2009 06:41:22 -0500
+Subject: Re: [PATCH resend] mtd/maps: Fix accidental removal in Makefile
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+       Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20091108.024307.183026733.anemo@mba.ocn.ne.jp>
+References: <20091108.024307.183026733.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 13:40:53 +0200
+Message-Id: <1257766853.21596.292.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 09 Nov 2009 11:40:58.0722 (UTC) FILETIME=[817CEC20:01CA6131]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2009 at 11:31:08AM +0800, Wu Zhangjin wrote:
-> Who should I resend this patchset to? you or Steven? If this patchset
-> are okay, I will rebase it on the latest tracing/core branch of -tip and
-> send the latest version out, and hope you can apply it, otherwise, I
-> need to rebase it to the future mainline versions again and again ;) and
-> at least, I have tested all of them and their combinations on YeeLoong
-> netbook, they work well. of course, more testing report from the other
-> MIPS developers are welcome ;)
+On Sun, 2009-11-08 at 02:43 +0900, Atsushi Nemoto wrote:
+> The commit d79c326 ("gpio-addr-flash: new driver for GPIO assisted
+> flash addressing") removed two lines from the Makefile by accident.
+> Though I'm not sure how this accident happened, this patch reverts the
+> removal.
 > 
-> Regards,
-> 	Wu Zhangjin
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
+> This patch fixes a regression from 2.6.31
+> 
+>  drivers/mtd/maps/Makefile |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
+> index 1d5cf86..ae2f6db 100644
+> --- a/drivers/mtd/maps/Makefile
+> +++ b/drivers/mtd/maps/Makefile
+> @@ -58,4 +58,6 @@ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
+>  obj-$(CONFIG_MTD_OMAP_NOR)	+= omap_nor.o
+>  obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
+>  obj-$(CONFIG_MTD_BFIN_ASYNC)	+= bfin-async-flash.o
+> +obj-$(CONFIG_MTD_RBTX4939)	+= rbtx4939-flash.o
+> +obj-$(CONFIG_MTD_VMU)		+= vmu-flash.o
+>  obj-$(CONFIG_MTD_GPIO_ADDR)	+= gpio-addr-flash.o
 
+This patch is in my l2-mtd-2.6 tree now, but I think it should be merged
+to 2.6.32-rcX.
 
-You can keep the current Cc list so that we are all uptodate with the
-latest state. I don't think you need to rebase against latest tracing/core
-as there doesn't seem to be conflicatble changes inside added lately.
-The person who is likely to apply it is Steven as he can test it :)
-
-Thanks.
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
