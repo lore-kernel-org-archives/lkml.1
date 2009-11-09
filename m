@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbZKIP60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZKIP6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756295AbZKIP60 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 10:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbZKIP6Z
+	id S1756438AbZKIP6b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 10:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbZKIP6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 10:58:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45260 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756078AbZKIP6Z (ORCPT
+	Mon, 9 Nov 2009 10:58:31 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:31409 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756393AbZKIP63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 10:58:25 -0500
-Date: Mon, 9 Nov 2009 07:57:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to
- preempt_count leakage in keventd
-In-Reply-To: <alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0911090733150.31845@localhost.localdomain>
-References: <200911091250.31626.rjw@sisk.pl> <20091109120217.GB18399@elte.hu> <200911091324.37955.rjw@sisk.pl> <20091109124937.GA21114@elte.hu> <alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 9 Nov 2009 10:58:29 -0500
+X-Trace: 287122278/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.15.142/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.15.142
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkYFAHLK90pPRQ+O/2dsb2JhbACBTo5rAc1mhD4EgWg
+X-IronPort-AV: E=Sophos;i="4.44,708,1249254000"; 
+   d="scan'208";a="287122278"
+Date: Mon, 9 Nov 2009 15:58:23 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ksm: cond_resched in unstable tree
+Message-ID: <Pine.LNX.4.64.0911091554500.25509@sister.anvils>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KSM needs a cond_resched() for CONFIG_PREEMPT_NONE, in its unbounded
+search of the unstable tree.  The stable tree cases already have one,
+and originally there was one down inside get_user_pages();
+but I missed it when I converted to follow_page() instead.
 
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+---
 
-On Mon, 9 Nov 2009, Thomas Gleixner wrote:
-> 
-> I think it _IS_ releated because the worker_thread is CPU affine and
-> the debug_smp_processor_id() check does:
+ mm/ksm.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Hmm. We do know CPU affinity is destroyed by CPU hotplug. People have 
-complained about that before (for user-space processes that get moved 
-around due to hot-unplug/plug).
-
-And the suspend/resume process does CPU hotplug to take down all but one 
-CPU. The workqueues should act on those events already, but maybe there's 
-a bug somewhere. None of that is new to 32-rc, though - is it?
-
-And workqueue_cpu_callback() seems buggy. It loops over the 'workqueues' 
-list with no protection. Yes, we do 'stop_machine' for CPU hotplug events, 
-but only for the very internal one (CPU_DYING) will the CPU notifiers be 
-called with the machine stopped).
-
-Hmm. I don't see any changes in kernel/cpu.c or kernel/workqueue.c that 
-look at all relevant. But scheduler changes could certainly matter.
-
-			Linus
+--- 2.6.32-rc6/mm/ksm.c	2009-10-12 00:26:43.000000000 +0100
++++ linux/mm/ksm.c	2009-11-07 14:44:58.000000000 +0000
+@@ -1012,6 +1012,7 @@ static struct rmap_item *unstable_tree_s
+ 		struct rmap_item *tree_rmap_item;
+ 		int ret;
+ 
++		cond_resched();
+ 		tree_rmap_item = rb_entry(*new, struct rmap_item, node);
+ 		page2[0] = get_mergeable_page(tree_rmap_item);
+ 		if (!page2[0])
