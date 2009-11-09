@@ -1,102 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbZKIVDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZKIVMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754443AbZKIVDz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 16:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZKIVDy
+	id S1754835AbZKIVMv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 16:12:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZKIVMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 16:03:54 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:39946 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754085AbZKIVDx convert rfc822-to-8bit (ORCPT
+	Mon, 9 Nov 2009 16:12:51 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:38514 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753863AbZKIVMu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 16:03:53 -0500
+	Mon, 9 Nov 2009 16:12:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:from:date:message-id:subject:to
          :cc:content-type:content-transfer-encoding;
-        b=jbuQSR2k6xwDP9OJ2LgsLcevyyOu1nLc7f27PIlBykETxHQFlP/1zG9uKLiNIoAXo+
-         LkZyuEk4AGbTHdjNxpQjeYnS6FY5ev3jEpcYklXL0D26wgfF1qTB0inz35Z44sp8m/XB
-         Yp7OvqZ11tlqiUQOjZ67EBwpXqZxNIzibAqSU=
+        b=tLkCvQeHv8E5zVh7Xzy4MD+mCRv9I9lyQo+dBBSS3UtyzCy+mBAr3BPScYhFQzPCr/
+         mBbcAs4ogV7FU54bvVQCYSrZ5o2fNp8F+t3ms3hFZX5nSvE91Wm/6QEDV1dkaCjmS8oe
+         aoT2eBlgnT5r1zoCKJr6v9TV7ILyiWDr5WcPQ=
 MIME-Version: 1.0
-In-Reply-To: <20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
-References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 
-	<20091003072127.GC21407@elte.hu> <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com> 
-	<4AF4526B.4060101@zytor.com> <40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com> 
-	<20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
-From: Matteo Croce <technoboy85@gmail.com>
-Date: Mon, 9 Nov 2009 22:03:35 +0100
-Message-ID: <40101cc30911091303v23b0d336u982ce70be4a0b66e@mail.gmail.com>
-Subject: Re: i686 quirk for AMD Geode
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
+In-Reply-To: <4AF828C50200005A000585DB@sinclair.provo.novell.com>
+References: <20091108121650.GB11372@elte.hu> <4AF828C50200005A000585DB@sinclair.provo.novell.com>
+From: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Date: Mon, 9 Nov 2009 19:12:35 -0200
+Message-ID: <193b0f820911091312y125209deufadd1040aff65cfd@mail.gmail.com>
+Subject: Re: [lucas.de.marchi@gmail.com: Bug when changing cpus_allowed of RT 
+	tasks?]
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 9, 2009 at 9:16 PM, Lennart Sorensen
-<lsorense@csclub.uwaterloo.ca> wrote:
-> On Sun, Nov 08, 2009 at 07:42:48PM +0100, Matteo Croce wrote:
->> There is a small advantage, but considering that GCC isn't much geode aware yet
->> there is stil room for improvement IMHO:
+On Mon, Nov 9, 2009 at 17:35, Gregory Haskins <ghaskins@novell.com> wrote:
+> Hi Lucas,
 >
-> Perhaps gcc considers geode to mean geode GX[m12] not geode LX (which is
-> newer and the one in question here).
->
-> The Geode GX line prefers i486 code to i586 code (which appears to be
-> what -march=geode is for).  I am using i486 at the moment when I build
-> for this one.
->
-> The Geode LX is what is being discussed which is in fact mostly a K6 as
-> far as I understand things.  It seems to like i686 code, other than
-> apparently those NOP instructions.  I wonder if the K6 has those noop
-> instructions and if not, perhaps gcc 4.4's -march=k6-3 would be the
-> right choice.  I have always suspected the LX was really a K6-3 based
-> design (the cache sizes are a bit different, but clock speeds and
-> instruction sets seem to match).
->
-> The Geode NX (which no one has mentioned yet) is an Athlon derived chip.
->
->> root@alix:/usr/src/dist# ll
->> totale 257M
->> -rwxr-xr-x 1 1000 src  93K  8 nov  2009 bzip2-i586
->> -rwxr-xr-x 1 1000 src  93K  8 nov  2009 bzip2-i686
->> -rwxr-xr-x 1 1000 src  60K  8 nov  2009 gzip-i586
->> -rwxr-xr-x 1 1000 src  60K  8 nov  2009 gzip-i686
->> -rw-r--r-- 1 1000 src 256M  8 nov  2009 linux-2.6.31.5.tar
->> -rwxr-xr-x 1 1000 src  90K  8 nov  2009 lzma-i586
->> -rwxr-xr-x 1 1000 src  94K  8 nov  2009 lzma-i686
->> root@alix:/usr/src/dist# time cat linux-2.6.31.5.tar >/dev/null
->>
->> real    0m10.168s
->> user    0m0.030s
->> sys     0m1.390s
->> root@alix:/usr/src/dist# time ./gzip-i586 -9 < linux-2.6.31.5.tar >/dev/null
->>
->> real    5m22.331s
->> user    5m10.820s
->> sys     0m11.170s
->> root@alix:/usr/src/dist# time ./gzip-i686 -9 < linux-2.6.31.5.tar >/dev/null
->>
->> real    5m3.737s
->> user    4m51.880s
->> sys     0m11.510s
->> root@alix:/usr/src/dist# time ./bzip2-i586 -9 < linux-2.6.31.5.tar >/dev/null
->>
->> real    9m16.539s
->> user    9m4.410s
->> sys     0m11.760s
->> root@alix:/usr/src/dist# time ./bzip2-i686 -9 < linux-2.6.31.5.tar >/dev/null
->>
->> real    8m48.682s
->> user    8m34.950s
->> sys     0m13.260s
->
-> --
-> Len Sorensen
->
+> Ingo asked me to take a look at the problem you are reporting.  Is this a bug you are seeing in the
+> wild, or was this found by code-inspection?  I took a look, and it looks to me that the original code
+> is correct, but I will keep an open mind.
 
-You're right, indeed this is being discussed here:
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=41989
+I found this "maybe"-bug in some changes I'm doing to balance of RT tasks. It
+was not giving me the expected results so inspecting the code I supposed this
+was the problem. Applying the patch it solved my problem, but I think it was a
+problem with my code. Comments inlined.
+
+>>       static int select_task_rq_rt(struct task_struct *p, int sd_flag, int flags)
+>>       {
+>>               [...]
+>>               if (unlikely(rt_task(rq->curr)) &&
+>>                   (p->rt.nr_cpus_allowed > 1)) {
+>>                       int cpu = find_lowest_rq(p);
+>>
+>>                       return (cpu == -1) ? task_cpu(p) : cpu;
+>>               }
+	/*
+	 * Otherwise, just let it ride on the affined RQ and the
+	 * post-schedule router will push the preempted task away
+	 */
+	return task_cpu(p);
+
+>>       }
+I completed the rest of function to emphasize it will return task_cpu(p)
+afterwards.
+
+>
+> So the intent of this logic is to say "if the task is of type RT, and it can move, see if it can move
+> elsewhere".  Otherwise, we do not try to move it at all.
+
+I'd say "if _current_ is of type RT, and _p_ can move, see if _p_ can move
+elsewhere". And this check is repeated for p inside find_lowest_rq, so it would
+not be needed here. Just let it call find_lowest_rq and -1 will be returned.
+
+>>       static int find_lowest_rq(struct task_struct *task)
+>>       {
+[...]
+>>               if (task->rt.nr_cpus_allowed == 1)
+>>                       return -1; /* No other targets possible */
+>>               [...]
+>>       }
+
+
+>> What happens if rt.nr_cpus_allowed continues to be 1, but the allowed cpu is
+>> not the one in which task is being woken up?
+>
+> The one case that I can think of that would fall into this category is during a sched_setaffinity()?
+>
+> If so, what happens is that we ultimately call set_cpus_allowed() -> set_cpus_allowed_ptr().  Inside
+> this function, the new mask is validated independent of the nr_cpus_allowed value and we will
+> migrate the task away if it is no longer on a valid core.
+
+This was exactly the case I was falling into. But I was setting the affinity
+inside the kernel, not passing through setaffinity syscall, and I was wrongly
+calling set_cpus_allowed_rt directly instead of set_cpus_allowed, so task would
+not migrate in that case.
+
+>
+> Until further evidence is presented, I have to respectfully NAK the patch, as I do not think its doing the right thing
+> nor do I think the current code is actually broken.
+
+I see now it's not doing the right thing. IMO only the double check of
+rt.nr_cpus_allowed is superfluous, but not wrong.
+
+
+Thanks for clarifications
+
+
+Lucas De Marchi
