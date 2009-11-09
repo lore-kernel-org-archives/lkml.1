@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZKIIxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZKIIzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbZKIIxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 03:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbZKIIxY
+	id S1754706AbZKIIzJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 03:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbZKIIzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 03:53:24 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40045 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754314AbZKIIxW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 03:53:22 -0500
-Date: Mon, 9 Nov 2009 09:53:18 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, david@lang.hm,
-       Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net, jack@suse.cz
-Subject: periodic fsck was Re: [patch] ext2/3: document conditions when
- reliable operation is possible
-Message-ID: <20091109085318.GE4818@elf.ucw.cz>
-References: <20090824223915.GI17684@mit.edu>
- <20090824230036.GK29763@elf.ucw.cz>
- <4A932B18.1020209@redhat.com>
- <20090825093414.GB15563@elf.ucw.cz>
- <4A94ACDF.30405@redhat.com>
- <20090826111751.GC26595@elf.ucw.cz>
- <alpine.DEB.2.00.0908260428310.30426@asgard.lang.hm>
- <20090826131028.GB1370@ucw.cz>
- <alpine.DEB.2.00.0908260642560.28411@asgard.lang.hm>
- <20090826180248.GB6997@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090826180248.GB6997@mit.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 9 Nov 2009 03:55:09 -0500
+Received: from gate.crashing.org ([63.228.1.57]:53942 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754477AbZKIIzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 03:55:08 -0500
+Subject: Re: [patch 09/16] powerpc: Replace old style lock initializer
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <20091109161502.ab064092.sfr@canb.auug.org.au>
+References: <20091106223547.784916750@linutronix.de>
+	 <20091106223806.762624109@linutronix.de>
+	 <1257548144.13611.267.camel@pasglop>
+	 <20091109161502.ab064092.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 19:53:25 +1100
+Message-ID: <1257756805.13611.296.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-08-26 14:02:48, Theodore Tso wrote:
-> On Wed, Aug 26, 2009 at 06:43:24AM -0700, david@lang.hm wrote:
-> >>>
-> >>> as the ext3 authors have stated many times over the years, you still need
-> >>> to run fsck periodicly anyway.
-> >>
-> >> Where is that documented?
-> >
-> > linux-kernel mailing list archives.
+On Mon, 2009-11-09 at 16:15 +1100, Stephen Rothwell wrote:
+> Hi Thomas,
 > 
-> Probably from some 6-8 years ago, in e-mail postings that I made.  My
-> argument has always been that PC-class hardware is crap, and it's a
+> On Sat, 07 Nov 2009 09:55:44 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > On Fri, 2009-11-06 at 22:41 +0000, Thomas Gleixner wrote:
+> > > plain text document attachment
+> > > (power-replace-old-style-lock-init.patch)
+> > > SPIN_LOCK_UNLOCKED is deprecated. Init the lock array at runtime
+> > > instead.
+> > > 
+> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > Cc: linuxppc-dev@ozlabs.org
+> > > ---
+> > 
+> > Looks reasonable. But iseries can be a bitch, so we do need to test it
+> > on monday.
+> 
+> Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Well, in SUSE11-or-so, distro stopped period fscks, silently :-(. I
-believed that it was really bad idea at that point, but because I
-could not find piece of documentation recommending them, I lost the
-argument.
-									Pavel
+Thanks Stephen !
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
