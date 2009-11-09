@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZKISyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZKIS4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677AbZKISyb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:54:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbZKISya
+	id S1752795AbZKIS4R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 13:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZKIS4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:54:30 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58559 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843AbZKISya (ORCPT
+	Mon, 9 Nov 2009 13:56:17 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:34418 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751814AbZKIS4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:54:30 -0500
-Date: Mon, 9 Nov 2009 19:54:34 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "Ma, Ling" <ling.ma@intel.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
-	fast string.
-Message-ID: <20091109185434.GH26740@basil.fritz.box>
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com> <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com> <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com> <4AF7C66C.6000009@zytor.com> <87ws2059s9.fsf@basil.nowhere.org> <4AF84640.7010705@zytor.com>
+	Mon, 9 Nov 2009 13:56:16 -0500
+Date: Mon, 9 Nov 2009 13:56:10 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH 2/2] x86, crypto, Use gas macro for AES-NI instructions
+Message-ID: <20091109185609.GB9588@gondor.apana.org.au>
+References: <1257403457.22519.250.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AF84640.7010705@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1257403457.22519.250.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ling's numbers didn't seem to show a significant slowdown on Core 2 (it
-> was something like 0.95x baseline in the worst case, and most of the
-> cases were positive) so Core 2 doesn't seem to have a problem.
+On Thu, Nov 05, 2009 at 02:44:17PM +0800, Huang Ying wrote:
+> Old binutils do not support AES-NI instructions, to make kernel can be
+> compiled by them, .byte code is used instead of AES-NI assembly
+> instructions. But the readability and flexibility of raw .byte code is
+> not good.
+> 
+> So corresponding assembly instruction like gas macro is used instead.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-I ran quite a lot of micro benchmarks with various alignments and sizes
-the 'q' variant was not always a win. I haven't checked that particular
-version though.
+Sorry, but this doesn't apply:
 
-There's also K8 of course.
+$ git apply ~/p
+fatal: patch fragment without header at line 428: @@ -518,51 +417,37 @@ _aesni_dec1:
+$
 
--Andi
+Cheers,
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
