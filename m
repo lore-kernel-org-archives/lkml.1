@@ -1,75 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbZKIHbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbZKIHcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096AbZKIHbF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 02:31:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZKIHbE
+	id S1754220AbZKIHcT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 02:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZKIHcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 02:31:04 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:44727 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750768AbZKIHbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 02:31:02 -0500
-Date: Mon, 9 Nov 2009 18:31:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
+	Mon, 9 Nov 2009 02:32:19 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:36959 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752664AbZKIHcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 02:32:18 -0500
+Date: Mon, 9 Nov 2009 08:32:23 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: rr tree build warnings
-Message-Id: <20091109183104.2bf7add6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__9_Nov_2009_18_31_04_+1100_mGdS_55yb6h9SkxN"
+Subject: Re: linux-next: pcmcia tree build warning
+Message-ID: <20091109073223.GB20696@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20091109145451.c9f1c4c3.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091109145451.c9f1c4c3.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__9_Nov_2009_18_31_04_+1100_mGdS_55yb6h9SkxN
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Stephen,
 
-Hi Rusty,
+this issue just got fixed by hiding it behind the driver-specific
+DEBUG define -- thanks! :)
 
-Today's linux-next build (x86_64 allmodconfig) produced these warnings:
-
-drivers/usb/storage/libusual.c:239: warning: passing argument 1 of '__check=
-_old_set_param' from incompatible pointer type
-include/linux/moduleparam.h:165: note: expected 'int (*)(const char *, stru=
-ct kernel_param *)' but argument is of type 'int (*)(const char *, const st=
-ruct kernel_param *)'
-drivers/usb/storage/libusual.c:239: warning: passing argument 1 of '__check=
-_old_set_param' from incompatible pointer type
-include/linux/moduleparam.h:165: note: expected 'int (*)(const char *, stru=
-ct kernel_param *)' but argument is of type 'int (*)(const char *, const st=
-ruct kernel_param *)'
-drivers/usb/storage/libusual.c:239: warning: passing argument 1 of '__check=
-_old_set_param' from incompatible pointer type
-include/linux/moduleparam.h:165: note: expected 'int (*)(const char *, stru=
-ct kernel_param *)' but argument is of type 'int (*)(const char *, const st=
-ruct kernel_param *)'
-drivers/usb/storage/libusual.c:239: warning: passing argument 1 of '__check=
-_old_set_param' from incompatible pointer type
-include/linux/moduleparam.h:165: note: expected 'int (*)(const char *, stru=
-ct kernel_param *)' but argument is of type 'int (*)(const char *, const st=
-ruct kernel_param *)'
-
-Introduced by commit 9f94999724555729819ea0143eab1d0529c029d1
-("param:param_ops").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__9_Nov_2009_18_31_04_+1100_mGdS_55yb6h9SkxN
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkr3xTgACgkQjjKRsyhoI8xumQCgnb89O5wP1mBVI8VEmEVBPQTQ
-4akAn0QZpGXqZY//qRj35FLHP6hp+yx6
-=vkmH
------END PGP SIGNATURE-----
-
---Signature=_Mon__9_Nov_2009_18_31_04_+1100_mGdS_55yb6h9SkxN--
+Best,
+	Dominik
