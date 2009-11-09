@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbZKIJ0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbZKIJ0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbZKIJ0O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 04:26:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbZKIJ0O
+	id S1755080AbZKIJ0q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 04:26:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbZKIJ0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 04:26:14 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48020 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754264AbZKIJ0N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 04:26:13 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Ma, Ling" <ling.ma@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by fast string.
-From: Andi Kleen <andi@firstfloor.org>
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
-	<4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com>
-	<8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
-	<4AF7C66C.6000009@zytor.com>
-Date: Mon, 09 Nov 2009 10:26:14 +0100
-In-Reply-To: <4AF7C66C.6000009@zytor.com> (H. Peter Anvin's message of "Sun, 08 Nov 2009 23:36:12 -0800")
-Message-ID: <87ws2059s9.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 9 Nov 2009 04:26:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49828 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755001AbZKIJ0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 04:26:44 -0500
+Date: Mon, 9 Nov 2009 10:26:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Neil Horman <nhorman@tuxdriver.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
+ external to a process (v7)
+Message-ID: <20091109092629.GA26890@elte.hu>
+References: <20091102152520.GG23776@elte.hu>
+ <20091102175407.GE4075@hmsreliant.think-freely.org>
+ <20091102185137.GA28803@elte.hu>
+ <20091103002355.GB19891@localhost.localdomain>
+ <20091104112632.GA9243@elte.hu>
+ <20091105204843.GA2980@hmsreliant.think-freely.org>
+ <20091106092600.GC22505@elte.hu>
+ <4AF7D8C2.60807@gmail.com>
+ <20091109090143.GB24020@elte.hu>
+ <4AF7DF41.5080100@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF7DF41.5080100@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
->
-> My personal opinion is that if we can show no significant slowdown on
-> P4, K8, P-M/Core 1, Core 2, and Nehalem then we can simply use this code
 
-The issue is Core 2.
+* Jiri Slaby <jirislaby@gmail.com> wrote:
 
-P4 uses a different path, and Core 1 doesn't use the 64bit code.
+> On 11/09/2009 10:01 AM, Ingo Molnar wrote:
+> > So i guess renaming setrlimit to do_setrlimit and adding the syscall 
+> > from Neil's patch should bring the two series into sync, right?
+> 
+> Looks like that. I have a nit, 32-bit programs on 64-bit x86 won't 
+> work. I think we should add compat handlers for ia32 emulation too?
 
-> unconditionally.  If one of them is radically worse than baseline, then
-> we have to do something conditional, which is a lot more complicated.
+Yeah.
 
-I have an older patchkit which did this, and some more optimizations
-to this code.
-
-There was still one open issue, that is why I didn't post it. If there's
-interest I can post it.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Ingo
