@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZKILxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZKIL7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbZKILxA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 06:53:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbZKILw7
+	id S1755010AbZKIL7U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 06:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZKIL7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 06:52:59 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:24642 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754228AbZKILw6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 06:52:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=svLAzQjd0sYCKZMUX4GPzkN5dyorQLlGzsEYWxCq/1EgqVmTMc9APEZ2sPTvrG4s0P
-         /JAIB2JG4jyglbr5NQQMInLGgODWhYtwEdsQUyrpHmmdN7UMgi6BLxhfaK+zVBaLHtSG
-         qDdjxp8EiQTccIaNwV1Z+SiI8W/r/zJ+F2fdQ=
-Date: Mon, 9 Nov 2009 12:53:05 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Adam Nemet <anemet@caviumnetworks.com>,
-       Patrik Kluba <kpajko79@gmail.com>
-Subject: Re: [PATCH -v5 08/11] tracing: not trace mips_timecounter_init()
-	in MIPS
-Message-ID: <20091109115303.GB5206@nowhere>
-References: <54c417629e91f40b2bbb4e08cda2a4e6527824c0.1256483735.git.wuzhangjin@gmail.com> <29bccff04932e993ecd9f516d8b6dcf84e2ceecf.1256483735.git.wuzhangjin@gmail.com> <72f2270f7b6e01ca7a4cdf4ac8c21778e5d9652f.1256483735.git.wuzhangjin@gmail.com> <cover.1256483735.git.wuzhangjin@gmail.com> <6140dd8f4e1783e5ac30977cf008bb98e4698322.1256483735.git.wuzhangjin@gmail.com> <49b3c441a57f4db423732f81432a3450ccb3240e.1256483735.git.wuzhangjin@gmail.com> <c62985530910251727o23beafcco539870e4b2f84637@mail.gmail.com> <1256550156.5642.148.camel@falcon> <20091102214351.GI4880@nowhere> <1257741072.3451.27.camel@falcon.domain.org>
+	Mon, 9 Nov 2009 06:59:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41254 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754492AbZKIL7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 06:59:18 -0500
+Date: Mon, 9 Nov 2009 13:55:48 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, s.hetze@linux-ag.com,
+       Daniel Walker <dwalker@fifo99.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCHv8 3/3] vhost_net: a kernel-level virtio server
+Message-ID: <20091109115548.GA2368@redhat.com>
+References: <cover.1257349249.git.mst@redhat.com> <200911061529.17500.rusty@rustcorp.com.au> <20091108113516.GA19016@redhat.com> <200911091647.29655.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257741072.3451.27.camel@falcon.domain.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200911091647.29655.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2009 at 12:31:12PM +0800, Wu Zhangjin wrote:
-> I think if we use something like __mips_notrace here, we may get lots of
-> __ARCH_notraces here too, 'Cause some other platforms(at least, as I
-> know, Microblaze will do it too) may also need to add one here, it will
-> become:
+On Mon, Nov 09, 2009 at 04:47:29PM +1030, Rusty Russell wrote:
+> Actually, this looks wrong to me:
 > 
-> __mips_notrace __ARCH1_notrace __ARCH2_notrace .... foo() {...}
+> +	case VHOST_SET_VRING_BASE:
+> ...
+> +		vq->avail_idx = vq->last_avail_idx = s.num;
 > 
-> A little ugly ;)
-
-
-Yeah :)
-I thought Mips would be the only one to do that.
-
- 
-> and If a new platform need it's __ARCH_notrace, they need to touch the
-> common part of ftrace, more side-effects!
+> The last_avail_idx is part of the state of the driver.  It needs to be saved
+> and restored over susp/resume.  The only reason it's not in the ring itself
+> is because I figured the other side doesn't need to see it (which is true, but
+> missed debugging opportunities as well as man-in-the-middle issues like this
+> one).  I had a patch which put this field at the end of the ring, I might
+> resurrect it to avoid this problem.  This is backwards compatible with all
+> implementations.  See patch at end.
 > 
-> but with __arch_notrace, the archs only need to touch it's own part,
-> Although there is a side-effect as you mentioned above ;)
->
-> So, what should we do?
-> 
-> Regards,
-> 	Wu Zhangjin
->
+> I would drop avail_idx altogether: get_user is basically free, and simplifies
+> a lot.  As most state is in the ring, all you need is an ioctl to save/restore
+> the last_avail_idx.
 
-Why not __time ?
-As it's normal that such few functions that are used to read the timecounter
-have fair chances to be __no_trace on archs like MIPS. Interested
-archs would just need to override a default stub __time.
+I remembered another reason for caching head in avail_idx.  Basically,
+avail index could change between when I poll for descriptors and when I
+want to notify guest.
 
+So we could have:
+	- poll descriptors until empty
+	- notify
+		detects not empty so does not notify
+
+And the way to solve it would be to return flag from
+notify telling us to restart the polling loop.
+
+But, this will be more code, on data path, than
+what happens today where I simply keep state
+from descriptor polling and use that to notify.
+
+I also suspect that somehow this race in practice can not create
+deadlocks ... but I prefer to avoid it, these things are very tricky: if
+I see an empty ring, and stop processing descriptors, I want to trigger
+notify on empty.
+
+So if we want to avoid keeping "empty" state, IMO the best way would be
+to pass a flag to vhost_signal that tells it that ring is empty.
+Makes sense?
+
+-- 
+MST
