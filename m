@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZKICLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbZKICNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbZKICLl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 21:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZKICLl
+	id S1753286AbZKICNM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 21:13:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZKICNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 21:11:41 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:38576 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753042AbZKICLk convert rfc822-to-8bit (ORCPT
+	Sun, 8 Nov 2009 21:13:11 -0500
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:54085 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbZKICNL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 21:11:40 -0500
+	Sun, 8 Nov 2009 21:13:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=db7sbRrQ24j/pTQT3kFda8HvTuFH6IJNXptSPdW+LTEJ586cntwcOS64/v5+dRDEsC
-         Ai2A4oi7b1Xt3HBs1bWtmr2jARUCt9Z2ksBxyXkRQ24koIPr17vb3qBamEWKCR29pkd4
-         KMh8ovUQeYh9Ou8BWptCn+p+Q2uJk1Ci1TaXM=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HqwbMr6urUIJibBj6feTi2Pu8gsffbX0LGwknPxvVnCJoE/amPBnB2C9NBdA0Tooie
+         X/SQRUa+pxYzXDNum+YH+OQA7P9IJQa7U9379gIBdwl0Xeq6npt7NTY23d6X8HJbDWwq
+         n6c1i3XoUa3aPLUZ9qRlo/u7cAYt8kMQMycug=
+Date: Mon, 9 Nov 2009 10:13:31 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Jeff Dike <jdike@addtoit.com>
+Subject: Re: [patch 07/16] um: Replace old style lock initializer
+Message-ID: <20091109021331.GA2399@hack>
+References: <20091106223547.784916750@linutronix.de> <20091106223806.682280699@linutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <12d7e64c0911071408m51ce62bdk5530fc52a1c4172@mail.gmail.com>
-References: <12d7e64c0911071408m51ce62bdk5530fc52a1c4172@mail.gmail.com>
-From: Zeev Tarantov <zeev.tarantov@gmail.com>
-Date: Mon, 9 Nov 2009 04:11:25 +0200
-Message-ID: <12d7e64c0911081811i7e5b466cu6706ff6ab3e70db4@mail.gmail.com>
-Subject: [PATCH, v2] perf tools: fix syntax in documentation
-To: Ingo Molnar <mingo@elte.hu>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091106223806.682280699@linutronix.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A big "thank you" to Ingo Molnar for pointing out that gmail changes
-tabs into spaces.
-This patch is against current tip.
+On Fri, Nov 06, 2009 at 10:41:33PM -0000, Thomas Gleixner wrote:
+>SPIN_LOCK_UNLOCKED is deprecated since quite a while. Runtime init the
+>locks instead.
+>
+>Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>Cc: Jeff Dike <jdike@addtoit.com>
 
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Fix trivial syntax in perf-events user-space tools documentation.
-Signed-off-by: Zeev Tarantov <zeev.tarantov@gmail.com>
+Thanks.
 
---- a/tools/perf/Documentation/perf-report.txt
-+++ b/tools/perf/Documentation/perf-report.txt
-@@ -24,11 +24,11 @@ OPTIONS
- --dsos=::
-	Only consider symbols in these dsos. CSV that understands
-	file://filename entries.
---n
----show-nr-samples
-+-n::
-+--show-nr-samples=::
-	Show the number of samples for each symbol
---T
----threads
-+-T::
-+--threads=::
-	Show per-thread event counters
- -C::
- --comms=::
+>---
+> arch/um/drivers/ubd_kern.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>Index: linux-2.6/arch/um/drivers/ubd_kern.c
+>===================================================================
+>--- linux-2.6.orig/arch/um/drivers/ubd_kern.c
+>+++ linux-2.6/arch/um/drivers/ubd_kern.c
+>@@ -180,7 +180,6 @@ struct ubd {
+> 	.no_cow =               0, \
+> 	.shared =		0, \
+> 	.cow =			DEFAULT_COW, \
+>-	.lock =			SPIN_LOCK_UNLOCKED,	\
+> 	.request =		NULL, \
+> 	.start_sg =		0, \
+> 	.end_sg =		0, \
+>@@ -838,6 +837,7 @@ static int ubd_add(int n, char **error_o
+> 
+> 	ubd_dev->size = ROUND_BLOCK(ubd_dev->size);
+> 
+>+	spin_lock_init(&ubd_dev->lock);
+> 	INIT_LIST_HEAD(&ubd_dev->restart);
+> 	sg_init_table(ubd_dev->sg, MAX_SG);
+> 
+>
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Live like a child, think like the god.
+ 
