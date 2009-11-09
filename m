@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZKIS4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZKITA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752937AbZKIS4l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:56:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZKIS4j
+	id S1753687AbZKITA7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 14:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZKITA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:56:39 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:51695 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752157AbZKIS4j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:56:39 -0500
-Date: Mon, 9 Nov 2009 18:56:44 +0000
-To: linux-kernel@vger.kernel.org
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       Len Sorensen <lsorense@csclub.uwaterloo.ca>, netdev@vger.kernel.org
-Subject: Fix syntax of mdio.txt to match actual syntax.
-Message-ID: <20091109185644.GA15159@caffeine.csclub.uwaterloo.ca>
+	Mon, 9 Nov 2009 14:00:58 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:51672 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753586AbZKITA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 14:00:57 -0500
+Date: Mon, 9 Nov 2009 19:00:59 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Frans Pop <elendil@planet.nl>
+Cc: Chris Mason <chris.mason@oracle.com>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Message-ID: <20091109190059.GH6657@csn.ul.ie>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910262206.13146.elendil@planet.nl> <200911052114.36718.elendil@planet.nl> <200911061051.40443.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <200911061051.40443.elendil@planet.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The syntax in Documentation/powerpc/dts-bindings/gpio/mdio.txt is not
-up to date and no longer works.  Fix this as well as actually show how
-to represent a PHY on the gpio-bitbang bus.
+On Fri, Nov 06, 2009 at 10:51:37AM +0100, Frans Pop wrote:
+> On Thursday 05 November 2009, Frans Pop wrote:
+> > On Monday 26 October 2009, Frans Pop wrote:
+> > > On Tuesday 20 October 2009, Mel Gorman wrote:
+> > > > I've attached a patch below that should allow us to cheat. When it's
+> > > > applied, it outputs who called congestion_wait(), how long the
+> > > > timeout was and how long it waited for. By comparing before and
+> > > > after sleep times, we should be able to see which of the callers has
+> > > > significantly changed and if it's something easily addressable.
+> > >
+> > > The results from this look fairly interesting (although I may be a bad
+> > > judge as I don't really know what I'm looking at ;-).
+> > >
+> > > I've tested with two kernels:
+> > > 1) 2.6.31.1: 1 test run
+> > > 2) 2.6.31.1 + congestion_wait() reverts: 2 test runs
+> >
+> > I've taken another look at the data from this debug patch, resulting in
+> > these graphs: http://people.debian.org/~fjp/tmp/kernel/congestion.pdf
+> >
+> > I think the graph may show the reason for the congestion_wait()
+> > regression. Horizontal axis shows time, vertical axis shows number of
+> > logged congestion_wait calls per type.
+> 
+> I'm sorry. My initial version had a skewed time axis (showed occurrences 
+> instead of actual time). I've now uploaded a corrected version:
+> http://people.debian.org/~fjp/tmp/kernel/congestion.pdf
+> 
+> I've also uploaded a second version that shows cumulative delay per type, 
+> which probably gives a better insight:
+> http://people.debian.org/~fjp/tmp/kernel/congestion2.pdf
+> 
+> For both the top chart is without the revert, the bottom one after the 
+> revert.
+> 
 
-Tested with 2.6.31 on a RuggedCom RX5000 (mpc8360e based).
+I'm looking into this at the moment. There are some definite
+differences not only in the length congestion_wait() is waiting but in
+what the callers are doing. I've more or less reproduced your results
+locally and am slowly plodding through each caller to see what has
+changed of significance. No patches yet though.
 
-Signed-off-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-
-diff --git a/Documentation/powerpc/dts-bindings/gpio/mdio.txt b/Documentation/powerpc/dts-bindings/gpio/mdio.txt
-index bc95495..7a84f25 100644
---- a/Documentation/powerpc/dts-bindings/gpio/mdio.txt
-+++ b/Documentation/powerpc/dts-bindings/gpio/mdio.txt
-@@ -14,6 +14,15 @@ mdio {
- 	compatible = "virtual,mdio-gpio";
- 	#address-cells = <1>;
- 	#size-cells = <0>;
--	gpios = <&qe_pio_a 11
--		 &qe_pio_c 6>;
-+	gpios = <&qe_pio_a 11 0
-+		 &qe_pio_c 6 0>;
-+
-+	phy0: ethernet-phy@00 {
-+		reg = <0x18>;
-+		device_type = "ethernet-phy";
-+	};
-+	phy1: ethernet-phy@01 {
-+		reg = <0x0f>;
-+		device_type = "ethernet-phy";
-+	};
- };
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
