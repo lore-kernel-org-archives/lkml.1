@@ -1,121 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZKILtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZKILxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZKILtG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 06:49:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbZKILtE
+	id S1754890AbZKILxA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 06:53:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbZKILw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 06:49:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49606 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755129AbZKILtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 06:49:00 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Help needed: Resume problems in 2.6.32-rc, perhaps related to preempt_count leakage in keventd
-Date: Mon, 9 Nov 2009 12:50:31 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.31.5-tst; KDE/4.3.1; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>
+	Mon, 9 Nov 2009 06:52:59 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:24642 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754228AbZKILw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 06:52:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=svLAzQjd0sYCKZMUX4GPzkN5dyorQLlGzsEYWxCq/1EgqVmTMc9APEZ2sPTvrG4s0P
+         /JAIB2JG4jyglbr5NQQMInLGgODWhYtwEdsQUyrpHmmdN7UMgi6BLxhfaK+zVBaLHtSG
+         qDdjxp8EiQTccIaNwV1Z+SiI8W/r/zJ+F2fdQ=
+Date: Mon, 9 Nov 2009 12:53:05 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Adam Nemet <anemet@caviumnetworks.com>,
+       Patrik Kluba <kpajko79@gmail.com>
+Subject: Re: [PATCH -v5 08/11] tracing: not trace mips_timecounter_init()
+	in MIPS
+Message-ID: <20091109115303.GB5206@nowhere>
+References: <54c417629e91f40b2bbb4e08cda2a4e6527824c0.1256483735.git.wuzhangjin@gmail.com> <29bccff04932e993ecd9f516d8b6dcf84e2ceecf.1256483735.git.wuzhangjin@gmail.com> <72f2270f7b6e01ca7a4cdf4ac8c21778e5d9652f.1256483735.git.wuzhangjin@gmail.com> <cover.1256483735.git.wuzhangjin@gmail.com> <6140dd8f4e1783e5ac30977cf008bb98e4698322.1256483735.git.wuzhangjin@gmail.com> <49b3c441a57f4db423732f81432a3450ccb3240e.1256483735.git.wuzhangjin@gmail.com> <c62985530910251727o23beafcco539870e4b2f84637@mail.gmail.com> <1256550156.5642.148.camel@falcon> <20091102214351.GI4880@nowhere> <1257741072.3451.27.camel@falcon.domain.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911091250.31626.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257741072.3451.27.camel@falcon.domain.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Nov 09, 2009 at 12:31:12PM +0800, Wu Zhangjin wrote:
+> I think if we use something like __mips_notrace here, we may get lots of
+> __ARCH_notraces here too, 'Cause some other platforms(at least, as I
+> know, Microblaze will do it too) may also need to add one here, it will
+> become:
+> 
+> __mips_notrace __ARCH1_notrace __ARCH2_notrace .... foo() {...}
+> 
+> A little ugly ;)
 
-For the last couple of days I've been trying to debug resume problems on
-Toshiba Portege R500 that seem to be to a leakage of preempt_count in the
-"events" thread.
 
-To start with, more-or-less since 2.6.32-rc4 I've been observing a
-resume-from-hibernation issue causing the box to hang solid, apparently during
-the final switch from a VT to X (it ends up with the X cursor in the black
-background).  Initially I thought it was related to the graphics driver (i915),
-but I didn't use KMS on this box and the non-KMS suspend-resume handling
-hasn't really changed in there since 2.6.31.
+Yeah :)
+I thought Mips would be the only one to do that.
 
-However, after 2.6.32-rc6 I started to observe similar symptoms during resume
-from suspend to RAM.  Then, I thought it was a separate issue and tried to
-narrow it down.  I thought it might be related to the VGA framebuffer, so I
-started to boot with vga=0 and it turned out that it apparently was a NULL
-pointer dereference in worker_thread() of the "events" thread (with the
-graphics framebuffer the box just hanged with the X cursor in the black
-backgroung, sometimes it managed to display the windows and then hanged).
+ 
+> and If a new platform need it's __ARCH_notrace, they need to touch the
+> common part of ftrace, more side-effects!
+> 
+> but with __arch_notrace, the archs only need to touch it's own part,
+> Although there is a side-effect as you mentioned above ;)
+>
+> So, what should we do?
+> 
+> Regards,
+> 	Wu Zhangjin
+>
 
-I'm saying "apparently", because I've never been able to see the entire oops
-message.  I only saw a call trace pointing to autoremove_wake_function() and
-saying that RIP was somewhere in worker_thread(), so I used gdb to find the
-code this address corresponded to and it turned out to be the first instruction
-of __list_del().  This, in turn, appeared to mean that the list_del_init() in
-run_workqueue(), which was inlined, hit the NULL pointer and that seemed quite
-strange to me.
+Why not __time ?
+As it's normal that such few functions that are used to read the timecounter
+have fair chances to be __no_trace on archs like MIPS. Interested
+archs would just need to override a default stub __time.
 
-Nevertheless, I started to search for commits that might have caused this
-to happen and I first found out that the problem was not reproducible without
-commit 9905d1b411946fb3fb228e8c6529fd94afda8a92 (PM / yenta: Split resume into
-early and late parts (rev. 4)) from myself, but this commit didn't do anything
-that might result in the observed behavior.  Moreover, it didn't cause any
-problems to happen when applied on top of 2.6.31.5 on the very same box with
-a very similar .config.  So, I thought that the commit just made the issue more
-likely to happen and I started to use it as a "trigger" in further debugging.
-
-Next, I started to look for kernel versions in which I was able to reproduce
-the problem and I found that it was already present in 2.6.32-rc1 (or
-2.6.32-rc2), so apparently it had to be introduced during the merge window.
-So, I thought I'd carry out a bisection of the merge window commits and
-I verified that the problem was not reproducible with the kernel where
-commit 5d1fe0c98f2aef99fb57aaf6dd25e793c186cea3 was the head
-(approximately in the middle of the merge window).  However, in the next
-step of bisection, in which commit c720f5655df159a630fa0290a0bd67c93e92b0bf was
-the head, I got the following call trace:
-
-[ 2016.865041] BUG: using smp_processor_id() in preemptible [00000000] code: events/1/29920                                                                                         
-[ 2016.865344] caller is vmstat_update+0x13/0x48                                          
-[ 2016.865522] Pid: 29920, comm: events/1 Not tainted 2.6.31-tst #158                     
-[ 2016.865700] Call Trace:                                                                
-[ 2016.865877]  [<ffffffff811608e8>] debug_smp_processor_id+0xc4/0xd4                     
-[ 2016.866052]  [<ffffffff810a9ae1>] vmstat_update+0x13/0x48                              
-[ 2016.866232]  [<ffffffff81051ee6>] worker_thread+0x18b/0x22a                            
-[ 2016.866409]  [<ffffffff810a9ace>] ? vmstat_update+0x0/0x48                             
-[ 2016.866578]  [<ffffffff810556a5>] ? autoremove_wake_function+0x0/0x38                  
-[ 2016.866749]  [<ffffffff81288803>] ? _spin_unlock_irqrestore+0x35/0x37                  
-[ 2016.866935]  [<ffffffff81051d5b>] ? worker_thread+0x0/0x22a                            
-[ 2016.867113]  [<ffffffff8105547d>] kthread+0x69/0x71                                    
-[ 2016.867278]  [<ffffffff8100c1aa>] child_rip+0xa/0x20                                   
-[ 2016.867450]  [<ffffffff81055414>] ? kthread+0x0/0x71                                   
-[ 2016.867618]  [<ffffffff8100c1a0>] ? child_rip+0x0/0x20                                 
-[ 2016.867781] BUG: using smp_processor_id() in preemptible [00000000] code: events/1/29920                                                                                         
-[ 2016.868077] caller is vmstat_update+0x2e/0x48                                          
-[ 2016.868239] Pid: 29920, comm: events/1 Not tainted 2.6.31-tst #158                     
-[ 2016.868406] Call Trace:                                                                
-[ 2016.868576]  [<ffffffff811608e8>] debug_smp_processor_id+0xc4/0xd4                     
-[ 2016.868756]  [<ffffffff810a9afc>] vmstat_update+0x2e/0x48                              
-[ 2016.868938]  [<ffffffff81051ee6>] worker_thread+0x18b/0x22a                            
-[ 2016.869121]  [<ffffffff810a9ace>] ? vmstat_update+0x0/0x48                             
-[ 2016.869292]  [<ffffffff810556a5>] ? autoremove_wake_function+0x0/0x38                  
-[ 2016.869466]  [<ffffffff81288803>] ? _spin_unlock_irqrestore+0x35/0x37                  
-[ 2016.869635]  [<ffffffff81051d5b>] ? worker_thread+0x0/0x22a                            
-[ 2016.869808]  [<ffffffff8105547d>] kthread+0x69/0x71                                    
-[ 2016.869979]  [<ffffffff8100c1aa>] child_rip+0xa/0x20                                   
-[ 2016.870149]  [<ffffffff81055414>] ? kthread+0x0/0x71                                   
-[ 2016.870317]  [<ffffffff8100c1a0>] ? child_rip+0x0/0x20
-
-where, according to gdb, worker_thread+0x18b corresponded to the
-
-if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
-
-condition in run_workqueue().  That didn't kill the box, but I wonder if the
-leakage of preempt_count may lead to the solid hang observed before.
-
-I also am not sure if I should mark this commit as "bad" or "good" in the
-bisection process.
-
-Please advise.
-
-Rafael
