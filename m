@@ -1,64 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZKIRP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZKIRZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbZKIRP1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 12:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZKIRP0
+	id S1755930AbZKIRZo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 12:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZKIRZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 12:15:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:50023 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754312AbZKIRPZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 12:15:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=eBFGSIVNhggtI1ot5BwJLN9KtBulIVTIeztnuWzGHktNqXT6tC2QpkZ2GrycI7Nm4F
-         w+0qg5RD+rErKhiFMtiS5XqV2I0uIKVW2/Z/9h2jSD5K+p1sClGqwQzzugKHvFIRdSi+
-         n2IByDD8mqoHGL+EtfwZokva34akuv48xmVUU=
-Message-ID: <4AF84E2F.3010305@gmail.com>
-Date: Mon, 09 Nov 2009 18:15:27 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5pre) Gecko/20091028 SUSE/3.0b4-5.1 Thunderbird/3.0pre
+	Mon, 9 Nov 2009 12:25:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17069 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755768AbZKIRZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 12:25:38 -0500
+Date: Mon, 9 Nov 2009 18:20:20 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: utime/stime decreasing on thread exit
+Message-ID: <20091109172020.GA7751@redhat.com>
+References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com> <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Neil Horman <nhorman@tuxdriver.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits external
- to a process (v7)
-References: <20091102152520.GG23776@elte.hu> <20091102175407.GE4075@hmsreliant.think-freely.org> <20091102185137.GA28803@elte.hu> <20091103002355.GB19891@localhost.localdomain> <20091104112632.GA9243@elte.hu> <20091105204843.GA2980@hmsreliant.think-freely.org> <20091106092600.GC22505@elte.hu> <4AF7D8C2.60807@gmail.com> <20091109090143.GB24020@elte.hu> <4AF83B9A.60702@gmail.com> <20091109164053.GB5160@redhat.com>
-In-Reply-To: <20091109164053.GB5160@redhat.com>
-X-Enigmail-Version: 0.97b
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257778154.4108.341.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/09/2009 05:40 PM, Oleg Nesterov wrote:
-> Also, I don't understand why wthis code get's both pid and task_struct().
+On 11/09, Peter Zijlstra wrote:
+>
+> On Thu, 2009-11-05 at 14:24 +0900, Hidetoshi Seto wrote:
+>
+> > Problem [1]:
+> >   thread_group_cputime() vs exit
+> >
+> > +void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
+> > +{
+> > +       struct sighand_struct *sighand;
+> > +       struct signal_struct *sig;
+> > +       struct task_struct *t;
+> > +
+> > +       *times = INIT_CPUTIME;
+> > +
+> > +       rcu_read_lock();
+> > +       sighand = rcu_dereference(tsk->sighand);
+> > +       if (!sighand)
+> > +               goto out;
+> > +
+> > +       sig = tsk->signal;
+> > +
+> > +       t = tsk;
+> > +       do {
+> > +               times->utime = cputime_add(times->utime, t->utime);
+> > +               times->stime = cputime_add(times->stime, t->stime);
+> > +               times->sum_exec_runtime += t->se.sum_exec_runtime;
+> > +
+> > +               t = next_thread(t);
+> > +       } while (t != tsk);
+> > +
+> > +       times->utime = cputime_add(times->utime, sig->utime);
+> > +       times->stime = cputime_add(times->stime, sig->stime);
+> > +       times->sum_exec_runtime += sig->sum_sched_runtime;
+> > +out:
+> > +       rcu_read_unlock();
+> > +}
+> >
+> > If one of (thousands) threads do exit while a thread is doing do-while
+> > above, the s/utime of exited thread can be accounted twice, at do-while
+> > (before exit) and at cputime_add() at last (after exit).
+> >
+> > I suppose this is hard to fix: Taking lock on signal would solve this
+> > problem, but it could block all other threads long and cause serious
+> > performance issue and so on...
+>
+> I just checked .22 and there we seem to hold p->sighand->siglock over
+> the full task iteration.
 
-And what do you suggest? I, with my knowledge and after fast
-investigation, see no other option.
+Yes. Then thread_group_cputime() was changed so that it didn't itearate
+over sub-threads, then this callsite was move outside of ->siglock, now
+it does while_each_thread() again.
 
-> And the "if (resource >= RLIM_NLIMITS)" check is racy afaics, see
-> http://marc.info/?l=linux-kernel&m=125200862124872
+> So we might as well revert back to that if
+> people really mind counting things twice :-)
 
-Your patch (which I have in my series btw) is likely needed for the
-setprlimit syscall, having this on my mind again from now on. But the
-'if' above is a different story. 'resource' is an index here.
+Stanislaw has already sent the patch, but I don't know what happened
+with this patch:
 
-And as a bonus, what I found out now is that /proc/*/limits
-(proc_info_read->proc_pid_limits) doesn't necessarily reflect current
-limits. Since task_lock(current->group_leader) is not held, values of
-one limit may be from the old as well as the currently updated one.
+	[PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with __exit_signal()
+	http://marc.info/?l=linux-kernel&m=124505545131145
 
-Am I right and do we care at all (since it's not atomic anyway in the
-sense of reading 2 small chunks from that file)?
+Oleg.
 
-Thanks for the input.
