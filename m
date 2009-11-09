@@ -1,83 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbZKIMtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbZKIMua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755720AbZKIMtz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 07:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZKIMtz
+	id S1755772AbZKIMua (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 07:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZKIMu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 07:49:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47337 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755007AbZKIMty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 07:49:54 -0500
-Date: Mon, 9 Nov 2009 13:49:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to
- preempt_count leakage in keventd
-Message-ID: <20091109124937.GA21114@elte.hu>
-References: <200911091250.31626.rjw@sisk.pl>
- <20091109120217.GB18399@elte.hu>
- <200911091324.37955.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911091324.37955.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 9 Nov 2009 07:50:28 -0500
+Received: from mail.gmx.net ([213.165.64.20]:34430 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755733AbZKIMu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 07:50:27 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX193RjJcuPJ3LvDMxanrDrHKbIuBh0soHHm8YBbLR+
+	hIAQyLoi61nqtr
+Subject: Re: Kernel oops in resched_task() with 2.6.31.5
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <1257770720.4108.195.camel@laptop>
+References: <4AF80B8B.8080203@jp.fujitsu.com>
+	 <1257770720.4108.195.camel@laptop>
+Content-Type: text/plain
+Date: Mon, 09 Nov 2009 13:50:28 +0100
+Message-Id: <1257771028.6834.11.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Monday 09 November 2009, Ingo Molnar wrote:
+On Mon, 2009-11-09 at 13:45 +0100, Peter Zijlstra wrote:
+> On Mon, 2009-11-09 at 21:31 +0900, Kenji Kaneshige wrote:
+> > Hi,
 > > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > I frequently encounter the kernel oops attached below in resched_task()
+> > with 2.6.31.5. This kernel oops happens also with 2.6.32-rc5. I don't
+> > know about other kernel.
 > > 
-> > > [ 2016.865041] BUG: using smp_processor_id() in preemptible [00000000] code: events/1/29920                                                                                         
-> > > [ 2016.865344] caller is vmstat_update+0x13/0x48                                          
-> > > [ 2016.865522] Pid: 29920, comm: events/1 Not tainted 2.6.31-tst #158                     
-> > > [ 2016.865700] Call Trace:                                                                
-> > > [ 2016.865877]  [<ffffffff811608e8>] debug_smp_processor_id+0xc4/0xd4                     
-> > > [ 2016.866052]  [<ffffffff810a9ae1>] vmstat_update+0x13/0x48                              
-> > > [ 2016.866232]  [<ffffffff81051ee6>] worker_thread+0x18b/0x22a                            
-> > > [ 2016.866409]  [<ffffffff810a9ace>] ? vmstat_update+0x0/0x48                             
-> > > [ 2016.866578]  [<ffffffff810556a5>] ? autoremove_wake_function+0x0/0x38                  
-> > > [ 2016.866749]  [<ffffffff81288803>] ? _spin_unlock_irqrestore+0x35/0x37                  
-> > > [ 2016.866935]  [<ffffffff81051d5b>] ? worker_thread+0x0/0x22a                            
-> > > [ 2016.867113]  [<ffffffff8105547d>] kthread+0x69/0x71                                    
-> > > [ 2016.867278]  [<ffffffff8100c1aa>] child_rip+0xa/0x20                                   
-> > > [ 2016.867450]  [<ffffffff81055414>] ? kthread+0x0/0x71                                   
-> > > [ 2016.867618]  [<ffffffff8100c1a0>] ? child_rip+0x0/0x20                                 
+> > Here is my analysis:
 > > 
-> > a bug producing similar looking messages was fixed by:
+> > The immediate cause of this kernel oops is that NULL was passed to
+> > resched_task() from resched_cpu(). From my investigation, this was
+> > caused as follows:
 > > 
-> >   fd21073: sched: Fix affinity logic in select_task_rq_fair()
+> > - trigger_load_balance() caluculated cpu number of idle load balancer
+> >   using find_new_ilb(), and find_new_ilb() returned *offline* CPU
+> >   number (16 in my case). Note that I didn't do any CPU hotplug
+> >   operation. On my system, present, online and offline under
+> >   /sys/devices/system/cpu/ are
 > > 
-> > but that bug was introduced by:
+> >     [kanesige@localhost ~]$ cat /sys/devices/system/cpu/present
+> >     0-15
+> >     [kanesige@localhost ~]$ cat /sys/devices/system/cpu/online
+> >     0-15
+> >     [kanesige@localhost ~]$ cat /sys/devices/system/cpu/offline
+> >     16-255
 > > 
-> >   a1f84a3: sched: Check for an idle shared cache in select_task_rq_fair()
+> >   And nr_cpu_ids is 256.
+> > 
+> > - resched_cpu() calculated current task by cpu_curr() with offline CPU
+> >   number.
+> > 
+> > So this kernel oops seems to be caused by invalid CPU number returned
+> > from find_new_ilb(). I don't know the find_new_ilb() implementation,
+> > but I suspect the initialization of cpumasks used by find_new_ilb().
+> > The patch attached below seems to fix the problem (With this patch,
+> > the kernel oops doesn't happen). But I don't know if this is the
+> > correct fix.
 > 
-> I guess these are tip commits?
-
-yep, tip:sched/core ones.
-
-> > Which is for v2.6.33, not v2.6.32.
+> Please send patches against -tip.
 > 
-> The one I saw was in the Linus' tree, quite obviously.
+> You might find that Rusty has already fixed a similar issue there in
+> commit: 49557e620339cb134127b5bfbcfecc06b77d0232.
+> 
+> Now, Rusty's patch does not clear the ilb mask, so maybe it doesn't
+> fully cover your issue, please test.
 
-ok, then my observation should not apply.
+Doesn't 31 need this too?  (for me it did)
 
-	Ingo
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 1b59e26..6e71932 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4032,7 +4049,7 @@ static int load_balance(int this_cpu, struct rq *this_rq,
+ 	unsigned long flags;
+ 	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+ 
+-	cpumask_setall(cpus);
++	cpumask_copy(cpus, cpu_online_mask);
+ 
+ 	/*
+ 	 * When power savings policy is enabled for the parent domain, idle
+@@ -4195,7 +4212,7 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd)
+ 	int all_pinned = 0;
+ 	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+ 
+-	cpumask_setall(cpus);
++	cpumask_copy(cpus, cpu_online_mask);
+ 
+ 	/*
+ 	 * When power savings policy is enabled for the parent domain, idle
+
+
