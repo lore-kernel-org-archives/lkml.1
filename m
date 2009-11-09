@@ -1,146 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZKIEsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZKIEbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbZKIEsS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 23:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZKIEsS
+	id S1753642AbZKIEbO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 23:31:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbZKIEbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 23:48:18 -0500
-Received: from mga06.intel.com ([134.134.136.21]:12641 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753286AbZKIEsR (ORCPT
+	Sun, 8 Nov 2009 23:31:13 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:51890 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753248AbZKIEbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 23:48:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,705,1249282800"; 
-   d="scan'208";a="465525789"
-Date: Mon, 9 Nov 2009 12:21:34 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3] x86: under bios control, restore AP's APIC_LVTTHMR to
-	the BSP value
-Message-ID: <20091109042134.GA9169@ywang-moblin2.bj.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 8 Nov 2009 23:31:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=KZOCoXJKzjS/BkWIQx2FkoRPdr1l9RGVWlpKKd55YEbQtMMRs7xaqG49nig0shxONy
+         podjKHX7xvqG+ZaXMcu6JSRGN3k+9WPVvcniQKw/eobpvqqn4VfrjzxaWVIw6hBVN4dq
+         Dv1oYPtrfwSxB2xyPci/V1+xLK1/1B+3v9CB4=
+Subject: Re: [PATCH -v5 08/11] tracing: not trace mips_timecounter_init()
+ in MIPS
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Adam Nemet <anemet@caviumnetworks.com>,
+       Patrik Kluba <kpajko79@gmail.com>
+In-Reply-To: <20091102214351.GI4880@nowhere>
+References: <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256483735.git.wuzhangjin@gmail.com>
+	 <3e0c2d7d8b8f196a8153beb41ea7f3cbf42b3d84.1256483735.git.wuzhangjin@gmail.com>
+	 <54c417629e91f40b2bbb4e08cda2a4e6527824c0.1256483735.git.wuzhangjin@gmail.com>
+	 <29bccff04932e993ecd9f516d8b6dcf84e2ceecf.1256483735.git.wuzhangjin@gmail.com>
+	 <72f2270f7b6e01ca7a4cdf4ac8c21778e5d9652f.1256483735.git.wuzhangjin@gmail.com>
+	 <cover.1256483735.git.wuzhangjin@gmail.com>
+	 <6140dd8f4e1783e5ac30977cf008bb98e4698322.1256483735.git.wuzhangjin@gmail.com>
+	 <49b3c441a57f4db423732f81432a3450ccb3240e.1256483735.git.wuzhangjin@gmail.com>
+	 <c62985530910251727o23beafcco539870e4b2f84637@mail.gmail.com>
+	 <1256550156.5642.148.camel@falcon>  <20091102214351.GI4880@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Mon, 09 Nov 2009 12:31:12 +0800
+Message-ID: <1257741072.3451.27.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes since v2:
-Incorporate Ingo's comments to get BSP's thermal init value in a
-'boot-CPU-only' function.
+Hi,
 
----
+On Mon, 2009-11-02 at 22:43 +0100, Frederic Weisbecker wrote:
+[...]
+> > > 
+> > > But I would rather see a __mips_notrace on these two core functions.
+> > 
+> > What about this: __arch_notrace? If the arch need this, define it,
+> > otherwise, ignore it! if only graph tracer need it, define it in "#ifdef
+> > CONFIG_FUNCTION_GRAPH_TRACER ... #endif".
+> 
+> 
+> 
+> The problem is that archs may want to disable tracing on different
+> places.
+> For example mips wants to disable tracing in timecounter_read_delta,
+> but another arch may want to disable tracing somewhere else.
+> 
+> We'll then have several unrelated __arch_notrace. One that is relevant
+> for mips, another that is relevant for arch_foo, but all of them will
+> apply for all arch that have defined a __arch_notrace.
+> 
+> It's true that __mips_notrace is not very elegant as it looks like
+> a specific arch annotation intruder.
+> 
+>
+> But at least that gives us a per arch filter granularity.
+> 
+> If only static ftrace could disappear, we could keep only dynamic
+> ftrace and we would then be able to filter dynamically.
+> But I'm not sure it's a good idea for archs integration.
+> 
 
-On platforms where bios handles the thermal monitor interrupt,
-APIC_LVTTHMR on each logical CPU is programmed to generate a SMI and OS
-can't touch it.
+I think if we use something like __mips_notrace here, we may get lots of
+__ARCH_notraces here too, 'Cause some other platforms(at least, as I
+know, Microblaze will do it too) may also need to add one here, it will
+become:
 
-Unfortunately AP bringup sequence using INIT-SIPI-SIPI clear all
-the LVT entries except the mask bit. Essentially this results in
-all LVT entries including the thermal monitoring interrupt set to masked
-(clearing the bios programmed value for APIC_LVTTHMR).
+__mips_notrace __ARCH1_notrace __ARCH2_notrace .... foo() {...}
 
-And this leads to kernel take over the thermal monitoring interrupt
-on AP's but not on BSP (leaving the bios programmed value only on BSP).
+A little ugly ;)
 
-As a result of this, we have seen system hangs when the thermal
-monitoring interrupt is generated.
+and If a new platform need it's __ARCH_notrace, they need to touch the
+common part of ftrace, more side-effects!
 
-Fix this by reading the initial value of thermal LVT entry on BSP
-and if bios has taken over the control, then program the same value
-on all AP's and leave the thermal monitoring interrupt control
-on all the logical cpu's to the bios.
+but with __arch_notrace, the archs only need to touch it's own part,
+Although there is a side-effect as you mentioned above ;)
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Cc: stable@kernel.org
----
- arch/x86/include/asm/apic.h              |    6 ++++++
- arch/x86/kernel/cpu/mcheck/therm_throt.c |   27 ++++++++++++++++++++++++++-
- arch/x86/kernel/setup.c                  |    1 +
- 3 files changed, 33 insertions(+), 1 deletion(-)
+So, what should we do?
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 474d80d..97ea588 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -594,4 +594,10 @@ static inline physid_mask_t default_apicid_to_cpu_present(int phys_apicid)
- extern u8 cpu_2_logical_apicid[NR_CPUS];
- #endif
- 
-+#ifdef CONFIG_X86_THERMAL_VECTOR
-+extern void get_bsp_lvtthmr_init(void);
-+#else
-+static inline void get_bsp_lvtthmr_init(void) { }
-+#endif
-+
- #endif /* _ASM_X86_APIC_H */
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index b3a1dba..55c5995 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -49,6 +49,8 @@ static DEFINE_PER_CPU(struct thermal_state, thermal_state);
- 
- static atomic_t therm_throt_en	= ATOMIC_INIT(0);
- 
-+static u32 lvtthmr_init __read_mostly;
-+
- #ifdef CONFIG_SYSFS
- #define define_therm_throt_sysdev_one_ro(_name)				\
- 	static SYSDEV_ATTR(_name, 0444, therm_throt_sysdev_show_##_name, NULL)
-@@ -254,6 +256,16 @@ asmlinkage void smp_thermal_interrupt(struct pt_regs *regs)
- 	ack_APIC_irq();
- }
- 
-+void get_bsp_lvtthmr_init(void)
-+{
-+	/*
-+	 * This function is only called on boot CPU. Save the init thermal
-+	 * LVT value on BSP and use that value to restore APs' thermal LVT
-+	 * entry BIOS programmed later
-+	 */
-+	lvtthmr_init = apic_read(APIC_LVTTHMR);
-+}
-+
- void intel_init_thermal(struct cpuinfo_x86 *c)
- {
- 	unsigned int cpu = smp_processor_id();
-@@ -270,7 +282,20 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	 * since it might be delivered via SMI already:
- 	 */
- 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--	h = apic_read(APIC_LVTTHMR);
-+
-+	/*
-+	 * The initial value of thermal LVT entries on all APs always reads
-+	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
-+	 * sequence to them and LVT registers are reset to 0s except for
-+	 * the mask bits which are set to 1s when APs receive INIT IPI.
-+	 * Always restore the value that BIOS has programmed on AP based on
-+	 * BSP's info we saved since BIOS is always setting the same value
-+	 * for all threads/cores
-+	 */
-+	apic_write(APIC_LVTTHMR, lvtthmr_init);
-+
-+	h = lvtthmr_init;
-+
- 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
- 		printk(KERN_DEBUG
- 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index e09f0e2..2323771 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -1002,6 +1002,7 @@ void __init setup_arch(char **cmdline_p)
- 
- 	init_apic_mappings();
- 	ioapic_init_mappings();
-+	get_bsp_lvtthmr_init();
- 
- 	/* need to wait for io_apic is mapped */
- 	probe_nr_irqs_gsi();
+Regards,
+	Wu Zhangjin
+
