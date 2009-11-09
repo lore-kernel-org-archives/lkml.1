@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZKIT7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZKIUCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbZKIT7o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 14:59:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZKIT7o
+	id S1753872AbZKIUCA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 15:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZKIUCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 14:59:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52282 "EHLO ogre.sisk.pl"
+	Mon, 9 Nov 2009 15:02:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50825 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbZKIT7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 14:59:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to preempt_count leakage in keventd
-Date: Mon, 9 Nov 2009 21:00:58 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc6-tst; KDE/4.3.1; x86_64; ; )
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <200911091250.31626.rjw@sisk.pl> <200911091836.30349.rjw@sisk.pl> <alpine.LFD.2.00.0911091949500.2725@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0911091949500.2725@localhost.localdomain>
+	id S1753665AbZKIUB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 15:01:59 -0500
+Date: Mon, 9 Nov 2009 15:02:02 -0500
+From: Aristeu Rozanski <aris@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: introduce NMI_AUTO as nmi_watchdog option
+Message-ID: <20091109200201.GT18613@redhat.com>
+References: <20091103171054.GB25437@redhat.com> <20091104114630.GA16993@elte.hu> <20091104151929.GH18613@redhat.com> <20091104155641.GA11444@elte.hu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911092100.58187.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091104155641.GA11444@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 November 2009, Thomas Gleixner wrote:
-> On Mon, 9 Nov 2009, Rafael J. Wysocki wrote:
-> 
-> > On Monday 09 November 2009, Mike Galbraith wrote:
-> > > On Mon, 2009-11-09 at 16:47 +0100, Rafael J. Wysocki wrote:
-> > > > On Monday 09 November 2009, Mike Galbraith wrote:
+> > > > NMI_AUTO is a new nmi_watchdog option that makes LAPIC be tried first 
+> > > > and if the CPU isn't supported, IOAPIC will be used. It's useful in 
+> > > > cases where NMI watchdog is enabled by default in a kernel built for 
+> > > > different machines. It can be configured by default or selected with 
+> > > > nmi_watchdog=3 or nmi_watchdog=auto parameters.
 > > > 
-> > > > > > Very likely.  What did you do to fix it?
-> > > > > 
-> > > > > You don't really wanna know.  In 31 with newidle enabled, the below
-> > > > > fixed it.  It won't fix 32, though it might cure the resume problem.
-> > > > 
-> > > > OK, I'll give it a try.
-> > 
-> > It doesn't help.
-> > 
-> > Also, I can reproduce the issue with current -git and kernel preepmtion
-> > disabled.
-> > 
-> > > I just tried to trigger badness via high speed online/offline combined
-> > > with taskset with CONFIG_PREEMPT enabled, and couldn't make it explode.
-> > 
-> > I'm not able to do it this way too, so resume seems to be necessary to trigger
-> > it.  I'm going try with the suspend debug in the "core" mode.
-> > 
-> > > (damn, wish i could s2ram this box)
-> > 
-> > That need not suffice.  I have two other boxes that suspend and resume
-> > correctly with 2.6.32-rc, AFAICS.
-> > 
-> > However, there seems to be a systematic error somewhere, since the failure
-> > always happens at the same place, ie. list_del_init(cwq->worklist.next); in
-> > run_workqueue(), in preemptible as well as in non-preemptible kernels.
-> > 
-> > Which is kind of strange, given the !list_empty(&cwq->worklist) test right
-> > before it.
+> > > What i'd like to see for the NMI watchdog is much more ambitious than 
+> > > this: the use of perf events to run a periodic NMI callback.
+> > > 
+> > > The NMI watchdog would cause the creation of a per-cpu perf_event 
+> > > structure (in-kernel). All x86 CPUs that have perf event support (the 
+> > > majority of them) will thus be able to have an NMI watchdog using a 
+> > > nice, generic piece of code and we'd be able to phase out the open-coded 
+> > > NMI watchdog code.
+> > > 
+> > > The user would not notice much from this: we'd still have the 
+> > > /proc/sys/kernel/nmi_watchdog toggle to turn it on/off, and we'd still 
+> > > have the nmi_watchog= boot parameter as well. But the underlying 
+> > > implementation would be far more generic and far more usable than the 
+> > > current code.
+> > > 
+> > > Would you be interested in moving the NMI watchdog code in this 
+> > > direction? Most of the perf events changes (callbacks, helpers for 
+> > > in-kernel event allocations, etc.) are in latest -tip already, so you 
+> > > could use that as a base.
+> >
+> > but that would work only for LAPIC. You're suggesting killing IOAPIC 
+> > mode too?
 > 
-> Does that happen before or after the secondary CPU has been brought up ?
+> Would it be a big loss, with all modern systems expected to have a 
+> working lapic based NMI source? I wrote the IOAPIC mode originally but i 
+> dont feel too attached to it ;-)
+ok, fair enough. but since it'll be another implementation, do you mind
+applying the patches I submitted so they can be used until the new
+implementation is in place?
 
-Way after.  It seems to happen more-or-less during or right after the thawing
-of tasks.
+-- 
+Aristeu
 
-Moreover, the call trace I get is (manual transcription):
-
-? autoremove_wake_function+0x0
-? worker_thread+0x0
-kthread+0x69
-child_rip+0xa
-
-where kthread+0x69 is the do_exit(ret); in kthread().  Afterwards it says
-that "events/0" exited with preempt_count = 1 (it sometimes is "events/1"
-IIRC).
-
-Still, RIP always points to list_del_init(cwq->worklist.next); in
-run_workqueue().
-
-Thanks,
-Rafael
