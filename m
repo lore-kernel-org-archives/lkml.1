@@ -1,86 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbZKINbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZKINfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbZKINbh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 08:31:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbZKINbg
+	id S1755930AbZKINfI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 08:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZKINfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 08:31:36 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:35864 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755864AbZKINbf (ORCPT
+	Mon, 9 Nov 2009 08:35:04 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:32866 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755918AbZKINfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 08:31:35 -0500
-Date: Mon, 9 Nov 2009 13:31:36 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Kuninori Morimoto <morimoto.kuninori@renesas.com>
-Cc: alsa-devel@alsa-project.org, Magnus Damm <damm@opensource.se>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [alsa-devel] [PATCH 1/2 v2] ASoC: sh: fsi: Add runtime PM
-	support
-Message-ID: <20091109133136.GC1245@sirena.org.uk>
-References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com> <20091109105858.GB1245@sirena.org.uk>
+	Mon, 9 Nov 2009 08:35:03 -0500
+Date: Mon, 9 Nov 2009 08:34:58 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
+	external to a process (v7)
+Message-ID: <20091109133458.GA19756@hmsreliant.think-freely.org>
+References: <20091102175407.GE4075@hmsreliant.think-freely.org> <20091102185137.GA28803@elte.hu> <20091103002355.GB19891@localhost.localdomain> <20091104112632.GA9243@elte.hu> <20091105204843.GA2980@hmsreliant.think-freely.org> <20091106092600.GC22505@elte.hu> <4AF3F3CF.5080503@gmail.com> <20091108103629.GA11372@elte.hu> <20091109001003.GA4129@localhost.localdomain> <4AF7D396.4080304@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091109105858.GB1245@sirena.org.uk>
-X-Cookie: This bag is recyclable.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <4AF7D396.4080304@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.8 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2009 at 10:58:58AM +0000, Mark Brown wrote:
+On Mon, Nov 09, 2009 at 09:32:22AM +0100, Jiri Slaby wrote:
+> On 11/09/2009 01:10 AM, Neil Horman wrote:
+> > That seems like a reasonable approach to me.  Jiri, would you like to do that or
+> > shall I?  I'm happy to but it will take me a few days (I've got a bug I need to
+> > focus on first).
+> 
+> Yup, I'll do that. v7 is the newest version you sent, right?
+> 
+Correct, thanks!
+Neil
 
-Adding in an address for Magnus which hopefully won't bounce and also
-the linux-pm list which get_maintainers didn't find.
-
-> On Mon, Nov 09, 2009 at 11:54:47AM +0900, Kuninori Morimoto wrote:
-> > This patch add support runtime PM.
-> > Driver callbacks for Runtime PM are empty because
-> > the device registers are always re-initialized after
-> > pm_runtime_get_sync(). The Runtime PM functions replaces the
-> > clock framework module stop bit handling in this driver.
-> 
-> > Signed-off-by: Kuninori Morimoto <morimoto.kuninori@renesas.com>
-> 
-> Hrm.  I'll have to see how this plays with ASoC core pm_runtime support
-> when that appears.  It should be OK as-is, I think.
-> 
-> > +	pm_suspend_ignore_children(&pdev->dev, true);
-> > +	pm_runtime_enable(&pdev->dev);
-> > +	pm_runtime_resume(&pdev->dev);
-> 
-> Why pm_suspend_ignore_all_children()?  I'd not expect the device to have
-> any children and if it did it doesn't seem like an entirely safe
-> assumption.
-> 
-> > +static int fsi_runtime_nop(struct device *dev)
-> > +{
-> > +	/* Runtime PM callback shared between ->runtime_suspend()
-> > +	 * and ->runtime_resume(). Simply returns success.
-> > +	 *
-> > +	 * This driver re-initializes all registers after
-> > +	 * pm_runtime_get_sync() anyway so there is no need
-> > +	 * to save and restore registers here.
-> > +	 */
-> > +	return 0;
-> > +}
-> 
-> This sets off alarm bells but it's perfectly reasonable, especially with
-> platforms able to put things into a low power state with no explicit
-> driver code now they can do power domain style things like SH.  I've
-> CCed in the PM folks since this seems like a perfectly reasonable use
-> case which ought to be handled more nicely.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
--- 
-"You grabbed my hand and we fell into it, like a daydream - or a fever."
