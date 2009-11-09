@@ -1,125 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZKIHpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbZKIHrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbZKIHpu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 02:45:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbZKIHpt
+	id S1753278AbZKIHrE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 02:47:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZKIHrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 02:45:49 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:37193 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbZKIHps convert rfc822-to-8bit (ORCPT
+	Mon, 9 Nov 2009 02:47:04 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:19574 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbZKIHrC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 02:45:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=BavfJPP0ss2mgcW0n2I/ZmqMg6C3NRD32IuFnxbuVKtjYwrq9Xh777jWFiNBYo+/yz
-         y1F8ODbw5yUVAV3mvmyO6yt0/6y2EH+Uy+4+ssFlW14Ue9NMYk3vYLE3xHyu5l0ubY/K
-         Kue6FpfvR7Nw5iasa53NEtPAl3WBNBLDWG2SI=
+	Mon, 9 Nov 2009 02:47:02 -0500
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: alsa-devel@alsa-project.org, "tony@atomide.com" <tony@atomide.com>
+Subject: Re: [alsa-devel] [PATCH 2/4 v2] OMAP: Configure audio_mclk for twl4030-codec MFD
+Date: Mon, 9 Nov 2009 09:46:46 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo-r4; KDE/4.3.2; i686; ; )
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "sameo@linux.intel.com" <sameo@linux.intel.com>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1257321500-27049-1-git-send-email-peter.ujfalusi@nokia.com> <1257321500-27049-2-git-send-email-peter.ujfalusi@nokia.com> <1257321500-27049-3-git-send-email-peter.ujfalusi@nokia.com>
+In-Reply-To: <1257321500-27049-3-git-send-email-peter.ujfalusi@nokia.com>
 MIME-Version: 1.0
-Date: Mon, 9 Nov 2009 13:15:54 +0530
-Message-ID: <6d53329e0911082345o60d5b37m936e2a7138a230b@mail.gmail.com>
-Subject: MIPS + Kernel unaligned instruction access issue in 2.6.23 kernel
-From: venki kaps <venkiece2005@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       linux-mips@vger.kernel.org, nubi@linux-mips.org
-Content-Type: text/plain; charset=windows-1252
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
+Message-Id: <200911090946.46576.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 09 Nov 2009 07:46:54.0575 (UTC) FILETIME=[CE8627F0:01CA6110]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello Tony,
 
-I have been tracing kernel system call information using the my own
-Kprobes implementation in the 2.6.23 kernel on MIPS architecture.
-I have been facing one issue while running my own kprobe tests.
+On Wednesday 04 November 2009 09:58:18 Ujfalusi Peter (Nokia-D/Tampere) wrote:
+> audio_mclk value is going to be handled by the
+> twl4030-codec MFD driver, configure the correct
+> value for boards, which is using the twl4030 audio.
+> 
+> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+> ---
+>  arch/arm/mach-omap2/board-3430sdp.c      |    1 +
+>  arch/arm/mach-omap2/board-omap3beagle.c  |    1 +
+>  arch/arm/mach-omap2/board-omap3evm.c     |    1 +
+>  arch/arm/mach-omap2/board-omap3pandora.c |    1 +
+>  arch/arm/mach-omap2/board-overo.c        |    1 +
+>  arch/arm/mach-omap2/board-zoom2.c        |    1 +
+>  6 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/arm/mach-omap2/board-3430sdp.c
+>  b/arch/arm/mach-omap2/board-3430sdp.c index 4f91f7a..9afd957 100644
+> --- a/arch/arm/mach-omap2/board-3430sdp.c
+> +++ b/arch/arm/mach-omap2/board-3430sdp.c
+> @@ -415,6 +415,7 @@ static struct twl4030_codec_audio_data sdp3430_audio =
+>  { };
+> 
+>  static struct twl4030_codec_data sdp3430_codec = {
+> +	.audio_mclk = 26000000,
+>  	.audio = &sdp3430_audio,
+>  };
+> 
+> diff --git a/arch/arm/mach-omap2/board-omap3beagle.c
+>  b/arch/arm/mach-omap2/board-omap3beagle.c index 2161d85..8f0c106 100644
+> --- a/arch/arm/mach-omap2/board-omap3beagle.c
+> +++ b/arch/arm/mach-omap2/board-omap3beagle.c
+> @@ -259,6 +259,7 @@ static struct twl4030_codec_audio_data
+>  beagle_audio_data = { };
+> 
+>  static struct twl4030_codec_data beagle_codec_data = {
+> +	.audio_mclk = 26000000,
+>  	.audio = &beagle_audio_data,
+>  };
+> 
+> diff --git a/arch/arm/mach-omap2/board-omap3evm.c
+>  b/arch/arm/mach-omap2/board-omap3evm.c index d9a6103..5bb30cb 100644
+> --- a/arch/arm/mach-omap2/board-omap3evm.c
+> +++ b/arch/arm/mach-omap2/board-omap3evm.c
+> @@ -199,6 +199,7 @@ static struct twl4030_codec_audio_data
+>  omap3evm_audio_data = { };
+> 
+>  static struct twl4030_codec_data omap3evm_codec_data = {
+> +	.audio_mclk = 26000000,
+>  	.audio = &omap3evm_audio_data,
+>  };
+> 
+> diff --git a/arch/arm/mach-omap2/board-omap3pandora.c
+>  b/arch/arm/mach-omap2/board-omap3pandora.c index 5036b56..77790ee 100644
+> --- a/arch/arm/mach-omap2/board-omap3pandora.c
+> +++ b/arch/arm/mach-omap2/board-omap3pandora.c
+> @@ -286,6 +286,7 @@ static struct twl4030_codec_audio_data
+>  omap3pandora_audio_data = { };
+> 
+>  static struct twl4030_codec_data omap3pandora_codec_data = {
+> +	.audio_mclk = 26000000,
+>  	.audio = &omap3pandora_audio_data,
+>  };
+> 
+> diff --git a/arch/arm/mach-omap2/board-overo.c
+>  b/arch/arm/mach-omap2/board-overo.c index dc55008..e1fb504 100644
+> --- a/arch/arm/mach-omap2/board-overo.c
+> +++ b/arch/arm/mach-omap2/board-overo.c
+> @@ -334,6 +334,7 @@ static struct twl4030_codec_audio_data overo_audio_data
+>  = { };
+> 
+>  static struct twl4030_codec_data overo_codec_data = {
+> +	.audio_mclk = 26000000,
+>  	.audio = &overo_audio_data,
+>  };
+> 
+> diff --git a/arch/arm/mach-omap2/board-zoom2.c
+>  b/arch/arm/mach-omap2/board-zoom2.c index f1b4e7c..de3a38d 100644
+> --- a/arch/arm/mach-omap2/board-zoom2.c
+> +++ b/arch/arm/mach-omap2/board-zoom2.c
+> @@ -234,6 +234,7 @@ static struct twl4030_codec_audio_data zoom2_audio_data
+>  = { };
+> 
+>  static struct twl4030_codec_data zoom2_codec_data = {
+> +	.audio_mclk = 26000000,
+>  	.audio = &zoom2_audio_data,
+>  };
+> 
+> --
+> 1.6.5.2
 
-For instance, when I am planting kprobe at ‘’’sys_call_table’’’
-(arch/mips/kernel/scall32-o32.S) while unregister of probe, Kernel
-panic is getting generated.
-But I do not have any issues with other system calls which are present
-in scall32-o32.S expect ‘’’sys_call_table’’’.
+Can you take a look at this patch?
+The rest of the series has already got Ack from Samuel and Mark, and only your 
+verdict for the OMAP part is missing.
 
-The following is debugging snapshot-
-
-•	/ # unaligned.c: in do_ade
-•	unaligned.c: in do_ade
-•	do_ade: regs->cp0_badvaddr = 13 regs->cp0_epc = 2147741016
-regs->cp0_epc & 0x1 = 0
-•	emulate_load_store_insn : lw_op
-•	res
-•	unaligned.c: in do_ade
-•	do_ade: regs->cp0_badvaddr = 17 regs->cp0_epc = 2147741024
-regs->cp0_epc & 0x1 = 0
-•	emulate_load_store_insn : lw_op
-•	res
-•	do_ade: regs->cp0_badvaddr = 13 regs->cp0_epc = 13 regs->cp0_epc & 0x1 = 1
-•	do_ade: regs->cp0_badvaddr == regs->cp0_epc) || (regs->cp0_epc & 0x1
-•	Kernel unaligned instruction access[#1]:
-•	Cpu 0
-•	$ 0   : 00000000 fffffff8 00000000 2abf972c
-•	$ 4   : 00001021 0047a540 00000480 0000002d
-•	$ 8   : 00000000 c0000008 0000000d 0000000c
-•	$12   : 7fb46cd0 0047d830 004214a8 004752b8
-•	$16   : 7fb46ef8 00000001 7fb46e28 00000480
-•	$20   : 00000000 00000002 004f3008 004f5908
-•	$24   : 00000000 2abf971c
-•	$28   : 87d0a000 87d0bf30 7fb46d48 8002b0f0
-•	Hi    : 00000351
-•	Lo    : 002f4a35
-•	epc   : 0000000d 0xc     Not tainted
-•	ra    : 8002b0f0 stack_done+0x20/0x3c
-•	Status: 30048403    KERNEL EXL IE
-•	Cause : 10000010
-•	BadVA : 0000000d
-•	PrId  : 00002d30
-•	Modules linked in: kprobe_sys_call_table
-•	Process rmmod (pid: 55, threadinfo=87d0a000, task=807c7120)
-•	Stack : 004f5608 004f5348 004f3008 00000000 0047d830 004214a8
-004752b8 00000000
-•	        00000fa0 00000004 00001021 0047a540 00000480 0000002d
-2ab1a2e4 00000000
-•	        2aac6000 2aad6520 0000003d 0000003f 0000003a 00426c48
-7fb46ef8 00000001
-•	        7fb46e28 00000480 00000000 00000002 004f3008 004f5908
-00000273 2abf971c
-•	        0000002d 00000000 2ac87950 7fb46cb0 7fb46d48 00426c48
-20048413 00000351
-•	        ...
-•	Call Trace:
-•	
-•	
-•	Code: (Bad address in epc)
-•	
-•	Fatal exception: panic in 5 seconds
-•	Kernel panic - not syncing: Fatal exception
-
-Generally we used to get the above error when system call is not
-aligned on 32 bit boundary.
-But in my case, ‘’’sys_call_table’’’ is .align 3.
-
-MIPS cpuinfo:
-=======
-system type             : Toshiba RBTX4927/RBTX4937
-processor               : 0
-cpu model               : TX49xx V3.0  FPU V3.0
-BogoMIPS                : 299.00
-wait instruction        : yes
-microsecond timers      : yes
-tlb_entries             : 48
-
-Queries:
-=====
-1. Are there any unaligned instructions in MIPS (Toshiba RBTX4927/RBTX4937)?
-2. Is it my MIPS kprobe implementation problem?
-3. May I know the tracing flow to resolve these types of issues?
-
-
-Please give your valuable comments.
-
-Thanks in advance.
-
-Best regards,
-Venkappa
+Thank you, 
+Péter
