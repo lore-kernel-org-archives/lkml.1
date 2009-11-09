@@ -1,93 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZKIDJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbZKIDN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbZKIDJI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 22:09:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbZKIDJH
+	id S1753578AbZKIDN6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 22:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZKIDN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 22:09:07 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:59855 "EHLO
+	Sun, 8 Nov 2009 22:13:57 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:59938 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbZKIDJG (ORCPT
+	with ESMTP id S1751092AbZKIDN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 22:09:06 -0500
-Date: Mon, 09 Nov 2009 12:09:08 +0900 (JST)
-Message-Id: <20091109.120908.552412311744460070.mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       a.p.zijlstra@chello.nl, efault@gmx.de, acme@redhat.com,
-       fweisbec@gmail.com, jkosina@suse.cz
-Subject: Re: [PATCH v5 0/7] Adding general performance benchmarking
- subcommand to perf.
+	Sun, 8 Nov 2009 22:13:57 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <20091108092121.GB21267@elte.hu>
-References: <1257381097-4743-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	<20091108092121.GB21267@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Kosina <jkosina@suse.cz>
+Subject: [PATCH] perf bench:Fix bench/sched-pipe.c to wait child process
+Date: Mon,  9 Nov 2009 12:13:08 +0900
+Message-Id: <1257736388-7303-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <20091109.120908.552412311744460070.mitake@dcl.info.waseda.ac.jp>
+References: <20091109.120908.552412311744460070.mitake@dcl.info.waseda.ac.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v5 0/7] Adding general performance benchmarking subcommand to perf.
-Date: Sun, 8 Nov 2009 10:21:21 +0100
+Fixed bench/sched-pipe.c to avoid the below case
+notified by Ingo Molnar,
 
-> 
-> * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-> 
-> > This patch series add general benchmark subcommand to perf.
-> > 
-> > The subcommand will unify the benchmarking programs
-> > and provide these in standardized way.
-> > 
-> > I fixed this series for latest tip tree.
-> > My previous patch series conflicts with cmd_probe().
-> > So please discard v4 and use this v5.
-> > 
-> > Hitoshi Mitake (7):
-> >   Adding new directory and header for new subcommand 'bench'
-> >   sched-messaging.c: benchmark for scheduler and IPC mechanisms based
-> >     on hackbench
-> >   sched-pipe.c: benchmark for pipe() system call
-> >   builtin-bench.c: General framework for benchmark suites
-> >   Modifying builtin.h for new prototype
-> >   Modyfing perf.c for subcommand 'bench'
-> >   Modyfing Makefile to build subcommand 'bench'
-> > 
-> >  tools/perf/Makefile                |    6 +
-> >  tools/perf/bench/bench.h           |    9 +
-> >  tools/perf/bench/sched-messaging.c |  332 ++++++++++++++++++++++++++++++++++++
-> >  tools/perf/bench/sched-pipe.c      |  113 ++++++++++++
-> >  tools/perf/builtin-bench.c         |  128 ++++++++++++++
-> >  tools/perf/builtin.h               |    1 +
-> >  tools/perf/perf.c                  |    1 +
-> >  7 files changed, 590 insertions(+), 0 deletions(-)
-> >  create mode 100644 tools/perf/bench/bench.h
-> >  create mode 100644 tools/perf/bench/sched-messaging.c
-> >  create mode 100644 tools/perf/bench/sched-pipe.c
-> >  create mode 100644 tools/perf/builtin-bench.c
-> 
-> Looks good - i've applied the patches to tip:perf/bench, thanks!
+---
 
-Thanks! Then I'll work on documentation and merging other
-benchmarks such like lmbench or copybench.
+$ ./perf bench sched pipe
+(executing 1000000 pipe operations between two tasks)
 
-> 
-> There's one small bug i noticed:
-> 
-> $ ./perf bench sched pipe
-> (executing 1000000 pipe operations between two tasks)
-> 
-> 	Total time:4.898 sec
-> $ 		4.898586 usecs/op
-> 		204140 ops/sec
-> 
-> 
-> the shell prompt came back before the usecs/op and ops/sec line was 
-> printed. Process teardown race, lack of wait() or so?
+	Total time:4.898 sec
+$ 		4.898586 usecs/op
+		204140 ops/sec
 
-Thanks for your notify. I prepared a patch to fix this problem.
-I'll send it later.
+the shell prompt came back before the usecs/op and ops/sec line was
+printed. Process teardown race, lack of wait() or so?
+
+---
+
+This caused by lack of calling waitpid() by parent process,
+so I added it.
+
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
+---
+ tools/perf/bench/sched-pipe.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/tools/perf/bench/sched-pipe.c b/tools/perf/bench/sched-pipe.c
+index 3214ed2..6a29100 100644
+--- a/tools/perf/bench/sched-pipe.c
++++ b/tools/perf/bench/sched-pipe.c
+@@ -26,6 +26,7 @@
+ #include <errno.h>
+ #include <assert.h>
+ #include <sys/time.h>
++#include <sys/types.h>
+ 
+ #define LOOPS_DEFAULT 1000000
+ static int loops = LOOPS_DEFAULT;
+@@ -58,8 +59,8 @@ int bench_sched_pipe(int argc, const char **argv,
+ 	 * discarding returned value of read(), write()
+ 	 * causes error in building environment for perf
+ 	 */
+-	int ret;
+-	pid_t pid;
++	int ret, wait_stat;
++	pid_t pid, retpid;
+ 
+ 	argc = parse_options(argc, argv, options,
+ 			     bench_sched_pipe_usage, 0);
+@@ -87,8 +88,11 @@ int bench_sched_pipe(int argc, const char **argv,
+ 	gettimeofday(&stop, NULL);
+ 	timersub(&stop, &start, &diff);
+ 
+-	if (pid)
++	if (pid) {
++		retpid = waitpid(pid, &wait_stat, 0);
++		assert((retpid == pid) && WIFEXITED(wait_stat));
+ 		return 0;
++	}
+ 
+ 	if (simple)
+ 		printf("%lu.%03lu\n",
+-- 
+1.6.5.2
 
