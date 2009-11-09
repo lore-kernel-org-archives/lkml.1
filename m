@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZKIXDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZKIWHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbZKIXDG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 18:03:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZKIXDF
+	id S1755636AbZKIWHR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 17:07:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZKIWHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 18:03:05 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53427 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755096AbZKIXDE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 18:03:04 -0500
-Subject: Re: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent
- on	passthrough
-From: David Woodhouse <dwmw2@infradead.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: alex.williamson@hp.com, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
-References: <20091104225359.2720.91502.stgit@nehalem.aw>
-	 <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Nov 2009 23:02:27 +0000
-Message-ID: <1257807747.25961.852.camel@macbook.infradead.org>
+	Mon, 9 Nov 2009 17:07:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41015 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755592AbZKIWHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 17:07:15 -0500
+Date: Mon, 9 Nov 2009 17:03:11 -0600
+From: David Teigland <teigland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       cluster-devel@redhat.com, device@lanana.org, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, rubini@vision.unipv.it
+Subject: Re: [Cluster-devel] Re: [PATCH] misc: use a proper range for minor number dynamic allocation
+Message-ID: <20091109230311.GA820@redhat.com>
+References: <1256340497-19320-1-git-send-email-cascardo@holoscopio.com> <20091109132836.6cf7f559.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 (2.28.1-2.fc12) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091109132836.6cf7f559.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-06 at 11:41 +0900, FUJITA Tomonori wrote:
-> This is fine for 2.6.32 but we'll cleanly fix this by using
-> swiotlb_dma_ops later, right?
+On Mon, Nov 09, 2009 at 01:28:36PM -0800, Andrew Morton wrote:
+> On Fri, 23 Oct 2009 21:28:17 -0200
+> Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote:
+> 
+> > The current dynamic allocation of minor number for misc devices has some
+> > drawbacks.
+> > 
+> > First of all, the range for dynamic numbers include some statically
+> > allocated numbers. It goes from 63 to 0, and we have numbers in the
+> > range from 1 to 15 already allocated. Although, it gives priority to the
+> > higher and not allocated numbers, we may end up in a situation where we
+> > must reject registering a driver which got a static number because a
+> > driver got its number with dynamic allocation. Considering fs/dlm/user.c
+> > allocates as many misc devices as lockspaces are created, and that we
+> > have more than 50 users around, it's not unreasonable to reach that
+> > situation.
+> 
+> What is this DLM behaviour of which you speak?  It sounds broken.
 
-Well, the idea was that with 'iommu=pt' we'd have passthrough mode for
-_decent_ devices, but the crappy devices without 64-bit DMA would just
-have the IOMMU enabled instead.
+One for each userland lockspace, I know of three userland apps using dlm:
+1. rgmanager which is at the end of its life
+2. clvmd which is switching to a different lock manager
+3. ocfs2 tools, where the userland portion is transient; it only exists
+   while the tool executes.
 
-We can see this as a simple classification bug -- we should be checking
-pdev->coherent_dma_mask as well as pdev->dma_mask:
+That said, it shouldn't be a problem to switch to a single device in the
+next version of the interface.
 
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -2196,7 +2196,8 @@ static int iommu_should_identity_map(struct pci_dev *pdev, int startup)
- 	 * take them out of the 1:1 domain later.
- 	 */
- 	if (!startup)
--		return pdev->dma_mask > DMA_BIT_MASK(32);
-+		return (pdev->dma_mask & pdev->coherent_dma_mask) < 
-+			dma_get_required_mask();
- 
- 	return 1;
- }
-
-That fixes the case of a 32-bit coherent_dma_mask as it was intended to
-be fixed.
-
-Unfortunately, Alex's hardware is more broken than that. It also likes
-to do stray reads from unmapped addresses -- addresses which used to be
-mapped at some time in the past. So he really _does_ want the IOMMU
-disabled, or in passthrough mode.
-
-But I think that's a special case and needs to be handled with a quirk,
-while the above patch actually addresses the problem we claimed we were
-trying to address.
-
-Handling Alex's broken hardware probably wants to be done with
-'iommu=off' for now, and then when Chris's swiotlb fallback patches are
-done we can perhaps do something more cunning.
-
-I'm slightly reluctant to put the half-arsed 'try to allocate in the
-right region for broken devices but without full swiotlb support' option
-into 2.6.32.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Dave
 
