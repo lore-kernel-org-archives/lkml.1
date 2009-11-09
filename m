@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750903AbZKIFKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbZKIFPC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750903AbZKIFKe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 00:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZKIFKd
+	id S1750999AbZKIFPC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 00:15:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZKIFPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 00:10:33 -0500
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:58323 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbZKIFKc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 00:10:32 -0500
-Date: Mon, 9 Nov 2009 10:35:18 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: libcg-devel <libcg-devel@lists.sourceforge.net>,
-       "menage@google.com" <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org,
-       Jan Safranek <jsafrane@redhat.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Bharata B Rao <bharata.rao@in.ibm.com>
-Subject: Re: [RFC] Mount point suggestions for cgroup
-Message-ID: <20091109050517.GA3042@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091104063005.GC3560@balbir.in.ibm.com>
- <20091108170512.GB1372@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091108170512.GB1372@ucw.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 9 Nov 2009 00:15:01 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58695 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750800AbZKIFPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 00:15:01 -0500
+Date: Mon, 9 Nov 2009 16:15:02 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [patch 09/16] powerpc: Replace old style lock initializer
+Message-Id: <20091109161502.ab064092.sfr@canb.auug.org.au>
+In-Reply-To: <1257548144.13611.267.camel@pasglop>
+References: <20091106223547.784916750@linutronix.de>
+	<20091106223806.762624109@linutronix.de>
+	<1257548144.13611.267.camel@pasglop>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__9_Nov_2009_16_15_02_+1100_VXaAjp_Frxudoo9n"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pavel Machek <pavel@ucw.cz> [2009-11-08 18:05:12]:
+--Signature=_Mon__9_Nov_2009_16_15_02_+1100_VXaAjp_Frxudoo9n
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Wed 2009-11-04 12:00:05, Balbir Singh wrote:
-> > Hi, All,
-> > 
-> > We've been having a discussion as to what would be the right place to
-> > mount the cgroup filesystem. Jan has been proactively looking into
-> > this. The FHS has no recommendation since cgroup filesystem came in
-> > much later.
-> > 
-> > The options are
-> > 
-> > 1. /dev/cgroup
-> > 2. /cgroup
-> > 3. Some place under /sys
-> 
-> Underr /sys, please. Actually I wonder that it may even belong /proc
-> ... It *is* process related, right?
+Hi Thomas,
+
+On Sat, 07 Nov 2009 09:55:44 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
 >
+> On Fri, 2009-11-06 at 22:41 +0000, Thomas Gleixner wrote:
+> > plain text document attachment
+> > (power-replace-old-style-lock-init.patch)
+> > SPIN_LOCK_UNLOCKED is deprecated. Init the lock array at runtime
+> > instead.
+> >=20
+> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: linuxppc-dev@ozlabs.org
+> > ---
+>=20
+> Looks reasonable. But iseries can be a bitch, so we do need to test it
+> on monday.
 
-We already have /proc/cgroups for showing currently supported
-subsystems and /proc/pid/cgroups to show which subsystems/tasks
- 
+Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-	Balbir
+--Signature=_Mon__9_Nov_2009_16_15_02_+1100_VXaAjp_Frxudoo9n
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr3pVYACgkQjjKRsyhoI8xGQwCgnRc8jgHeGJFueccVWDyc4HFd
+ShUAniFJkr80jd342IXlM8QZOF+zBsdI
+=QbRQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__9_Nov_2009_16_15_02_+1100_VXaAjp_Frxudoo9n--
