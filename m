@@ -1,213 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZKIOv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbZKJOzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbZKIOv4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 09:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZKIOvz
+	id S1756602AbZKJOzY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 09:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756533AbZKJOzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 09:51:55 -0500
-Received: from mga12.intel.com ([143.182.124.36]:17934 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753967AbZKIOvz (ORCPT
+	Tue, 10 Nov 2009 09:55:23 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:64848 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbZKJOzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 09:51:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,708,1249282800"; 
-   d="scan'208";a="209338437"
-Date: Mon, 9 Nov 2009 22:51:48 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Borislav Petkov <borislav.petkov@amd.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v5] x86: under bios control, restore AP's APIC_LVTTHMR to
-	the BSP value
-Message-ID: <20091109145148.GA15170@ywang-moblin2.bj.intel.com>
+	Tue, 10 Nov 2009 09:55:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=o54DEyL0CDIgqUIraIPUXClzEbBhYyDrVo9XG/T0oZuLaI3fFVvRIsBLA+/9QVWcnn
+         S0Vb8ODsb1CNspocmhtNhPAtBHIOpg78X52OMDjdpp546ED+8NOb1F3UT4AZGysBfJLh
+         ULeIu5XiWhuQ32fhNlXihLf/Mb9ZccO8s90/Q=
+From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
+To: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
+Subject: [PATCH v2 0/2] bsearch: fix overflow and avoid unnecessary calculation
+Date: Mon,  9 Nov 2009 12:53:47 -0200
+Message-Id: <cover.1257778258.git.andre.goddard@gmail.com>
+X-Mailer: git-send-email 1.6.5.2.153.g6e31f.dirty
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes since v4:
+Fix a rare overflow situation which can occur when working with large arrays.
+Also, remove an unneeded calculation.
 
-Inlining mcheck_init() when CONFIG_X86_MCE is disabled. Also removed the
-ifdef around mcheck_cpu_init() in identify_cpu() since that has been
-taken care of in mce.h. Thanks to Borislav for testing.
+changelog:
+    v2: fix a bug introduced into 00/01 of the v1 patch
+    v1: initial submission
 
-Changes since v3:
+André Goddard Rosa (2):
+  bsearch: avoid unneeded decrement arithmetic
+  bsearch: prevent overflow when computing middle comparison element
 
-Rename get_bsp_lvtthmr_init to mcheck_intel_therm_init and call it from
-mcheck_init function. Make mcheck_init a non-early_initcall so that it
-could execute earlier. Many thanks to Ingo for the valuable comments.
+ lib/bsearch.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
----
-On platforms where bios handles the thermal monitor interrupt,
-APIC_LVTTHMR on each logical CPU is programmed to generate a SMI and OS
-can't touch it.
-
-Unfortunately AP bringup sequence using INIT-SIPI-SIPI clear all
-the LVT entries except the mask bit. Essentially this results in
-all LVT entries including the thermal monitoring interrupt set to masked
-(clearing the bios programmed value for APIC_LVTTHMR).
-
-And this leads to kernel take over the thermal monitoring interrupt
-on AP's but not on BSP (leaving the bios programmed value only on BSP).
-
-As a result of this, we have seen system hangs when the thermal
-monitoring interrupt is generated.
-
-Fix this by reading the initial value of thermal LVT entry on BSP
-and if bios has taken over the control, then program the same value
-on all AP's and leave the thermal monitoring interrupt control
-on all the logical cpu's to the bios.
-
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Cc: stable@kernel.org
----
- arch/x86/include/asm/mce.h               |    9 +++++++++
- arch/x86/kernel/cpu/common.c             |    2 --
- arch/x86/kernel/cpu/mcheck/mce.c         |    5 +++--
- arch/x86/kernel/cpu/mcheck/therm_throt.c |   27 ++++++++++++++++++++++++++-
- arch/x86/kernel/setup.c                  |    3 +++
- 5 files changed, 41 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index 161485d..858baa0 100644
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -120,8 +120,10 @@ extern int mce_disabled;
- extern int mce_p5_enabled;
- 
- #ifdef CONFIG_X86_MCE
-+int mcheck_init(void);
- void mcheck_cpu_init(struct cpuinfo_x86 *c);
- #else
-+static inline int mcheck_init(void) { return 0; }
- static inline void mcheck_cpu_init(struct cpuinfo_x86 *c) {}
- #endif
- 
-@@ -215,5 +217,12 @@ extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
- void intel_init_thermal(struct cpuinfo_x86 *c);
- 
- void mce_log_therm_throt_event(__u64 status);
-+
-+#ifdef CONFIG_X86_THERMAL_VECTOR
-+extern void mcheck_intel_therm_init(void);
-+#else
-+static inline void mcheck_intel_therm_init(void) { }
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_X86_MCE_H */
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 4df69a3..9053be5 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -837,10 +837,8 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
- 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
- 	}
- 
--#ifdef CONFIG_X86_MCE
- 	/* Init Machine Check Exception if available. */
- 	mcheck_cpu_init(c);
--#endif
- 
- 	select_idle_routine(c);
- 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 8080170..0d41020 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1655,13 +1655,14 @@ static int __init mcheck_enable(char *str)
- }
- __setup("mce", mcheck_enable);
- 
--static int __init mcheck_init(void)
-+int __init mcheck_init(void)
- {
- 	atomic_notifier_chain_register(&x86_mce_decoder_chain, &mce_dec_nb);
- 
-+	mcheck_intel_therm_init();
-+
- 	return 0;
- }
--early_initcall(mcheck_init);
- 
- /*
-  * Sysfs support
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index b3a1dba..3faa138 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -49,6 +49,8 @@ static DEFINE_PER_CPU(struct thermal_state, thermal_state);
- 
- static atomic_t therm_throt_en	= ATOMIC_INIT(0);
- 
-+static u32 lvtthmr_init __read_mostly;
-+
- #ifdef CONFIG_SYSFS
- #define define_therm_throt_sysdev_one_ro(_name)				\
- 	static SYSDEV_ATTR(_name, 0444, therm_throt_sysdev_show_##_name, NULL)
-@@ -254,6 +256,16 @@ asmlinkage void smp_thermal_interrupt(struct pt_regs *regs)
- 	ack_APIC_irq();
- }
- 
-+void mcheck_intel_therm_init(void)
-+{
-+	/*
-+	 * This function is only called on boot CPU. Save the init thermal
-+	 * LVT value on BSP and use that value to restore APs' thermal LVT
-+	 * entry BIOS programmed later
-+	 */
-+	lvtthmr_init = apic_read(APIC_LVTTHMR);
-+}
-+
- void intel_init_thermal(struct cpuinfo_x86 *c)
- {
- 	unsigned int cpu = smp_processor_id();
-@@ -270,7 +282,20 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	 * since it might be delivered via SMI already:
- 	 */
- 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--	h = apic_read(APIC_LVTTHMR);
-+
-+	/*
-+	 * The initial value of thermal LVT entries on all APs always reads
-+	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
-+	 * sequence to them and LVT registers are reset to 0s except for
-+	 * the mask bits which are set to 1s when APs receive INIT IPI.
-+	 * Always restore the value that BIOS has programmed on AP based on
-+	 * BSP's info we saved since BIOS is always setting the same value
-+	 * for all threads/cores
-+	 */
-+	apic_write(APIC_LVTTHMR, lvtthmr_init);
-+
-+	h = lvtthmr_init;
-+
- 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
- 		printk(KERN_DEBUG
- 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 0a64353..e6f0ef9 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -110,6 +110,7 @@
- #ifdef CONFIG_X86_64
- #include <asm/numa_64.h>
- #endif
-+#include <asm/mce.h>
- 
- /*
-  * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-@@ -1040,6 +1041,8 @@ void __init setup_arch(char **cmdline_p)
- #endif
- #endif
- 	x86_init.oem.banner();
-+
-+	mcheck_init();
- }
- 
- #ifdef CONFIG_X86_32
