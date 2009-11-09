@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZKIJk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZKIJmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbZKIJk5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 04:40:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZKIJk4
+	id S1755113AbZKIJmv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 04:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbZKIJmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 04:40:56 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:42475 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753910AbZKIJkz (ORCPT
+	Mon, 9 Nov 2009 04:42:51 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:47487 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754593AbZKIJmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 04:40:55 -0500
-Subject: Re: [PATCH] txx9ndfmc: Use nand_release() to free resources
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1257172848-6282-1-git-send-email-anemo@mba.ocn.ne.jp>
-References: <1257172848-6282-1-git-send-email-anemo@mba.ocn.ne.jp>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Nov 2009 11:40:38 +0200
-Message-Id: <1257759638.21596.233.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 09 Nov 2009 09:40:42.0577 (UTC) FILETIME=[B4549410:01CA6120]
-X-Nokia-AV: Clean
+	Mon, 9 Nov 2009 04:42:50 -0500
+X-Sasl-enc: Ik8LTt0IXqavtfgRHwmq9D2KrOXSakQX/SrRwpc+fZzR 1257759726
+Date: Mon, 9 Nov 2009 07:42:03 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Dave Chinner <david@fromorbit.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Daniel Pittman <daniel@rimspace.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-pm@lists.linux-foundation.org,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Massive ext4 filesystem corruption after a failed
+ s2disk/ram cycle
+Message-ID: <20091109094203.GA10007@khazad-dum.debian.net>
+References: <87vdisq7bh.fsf@rimspace.net>
+ <20091007161604.GA28849@infradead.org>
+ <20091104111125.54C3.A69D9226@jp.fujitsu.com>
+ <20091108082905.GA25494@discord.disaster>
+ <20091108164913.GA12053@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091108164913.GA12053@infradead.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-02 at 23:40 +0900, Atsushi Nemoto wrote:
-> This patch fixes memory leak on chip->bbt and chip->buffers.
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> ---
->  drivers/mtd/nand/txx9ndfmc.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
+On Sun, 08 Nov 2009, Christoph Hellwig wrote:
+> IMHO the best option is to have a separate partition for /boot with a
+> very simple filesystem that we can expect boot loader developers to
+> implement fully and correctly.
 
-Taken to the l2-mtd-2.6 tree, thanks. 
+Agreed.  And one that is not all but abandoned kernel-side, or you will risk
+bugs there.
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
