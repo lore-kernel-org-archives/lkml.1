@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751826AbZKISeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZKIRzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751826AbZKISeu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:34:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbZKISet
+	id S1752836AbZKIRzh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 12:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbZKIRzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:34:49 -0500
-Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:45262 "EHLO
-	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751516AbZKISet (ORCPT
+	Mon, 9 Nov 2009 12:55:37 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43868 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752529AbZKIRzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:34:49 -0500
-Date: Mon, 09 Nov 2009 17:54:38 +0000
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: bzolnier@gmail.com
-Cc: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Staging: rt28x0: remove no longer needed common/cmm_data_2860.c
-In-Reply-To: <200911091720.39821.bzolnier@gmail.com>
-References: <200911091720.39821.bzolnier@gmail.com>
-Message-ID: <50BD09C528%linux@youmustbejoking.demon.co.uk>
-Mail-Followup-To: bzolnier@gmail.com, gregkh@suse.de,
- devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
- linux@youmustbejoking.demon.co.uk
-User-Agent: Messenger-Pro/2.60.0.3101 (Qt/4.5.3) (Linux-x86_64)
-X-NuLabour-Date: Mon, 9110 Dec 1984 17:54:38 +0000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+	Mon, 9 Nov 2009 12:55:36 -0500
+Date: Mon, 9 Nov 2009 17:57:28 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mariusz Smykula <mariuszs@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel 2.6.29+ broke Cisco VPN Client
+Message-ID: <20091109175728.4eec67b9@lxorguk.ukuu.org.uk>
+In-Reply-To: <3642a3130911090908i55d6e1f2y6d9a5106d9febfc6@mail.gmail.com>
+References: <3642a3130911090908i55d6e1f2y6d9a5106d9febfc6@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your removal of cmm_data_2860.c also removes a bug fix (commit
-0af49167b1e5ba154e90d2c454bf4624ee47df80; for background, see
-http://bugzilla.kernel.org/show_bug.cgi?id=13390).
+On Mon, 9 Nov 2009 18:08:40 +0100
+Mariusz Smykula <mariuszs@gmail.com> wrote:
 
-Is this fix present (or, better, not needed) in the code which obsoletes this
-file? (I can test if needed; just point me in the right direction wrt patches
-or repositories.)
+> Kernel 2.6.31 go mainstream and there new problem grow up for many
+> users of poor Cisco VPN Client with certs authentication (there is no
+> alternative for this). 
 
--- 
-| Darren Salt            | linux at youmustbejoking | nr. Ashington, | Doon
-| using Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
-|   Kill all extremists!
+I must have imagined openconnect. Failing that you need to talk to your
+distro if they shipped the module or to cisco.
 
-Congratulations! The pressure will stop soon.
+Alan
