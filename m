@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZKITA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZKITCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687AbZKITA7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 14:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZKITA6
+	id S1753787AbZKITCP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 14:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZKITCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 14:00:58 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:51672 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753586AbZKITA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 14:00:57 -0500
-Date: Mon, 9 Nov 2009 19:00:59 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Frans Pop <elendil@planet.nl>
-Cc: Chris Mason <chris.mason@oracle.com>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Message-ID: <20091109190059.GH6657@csn.ul.ie>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910262206.13146.elendil@planet.nl> <200911052114.36718.elendil@planet.nl> <200911061051.40443.elendil@planet.nl>
+	Mon, 9 Nov 2009 14:02:14 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:37582 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753627AbZKITCO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 14:02:14 -0500
+Date: Mon, 9 Nov 2009 19:02:19 +0000
+To: linux-kernel@vger.kernel.org
+Cc: Len Sorensen <lsorense@csclub.uwaterloo.ca>, netdev@vger.kernel.org,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Fix gpio-mdio driver to work for gpio's that return something
+	other than 0 and 1.
+Message-ID: <20091109190219.GB15159@caffeine.csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911061051.40443.elendil@planet.nl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 06, 2009 at 10:51:37AM +0100, Frans Pop wrote:
-> On Thursday 05 November 2009, Frans Pop wrote:
-> > On Monday 26 October 2009, Frans Pop wrote:
-> > > On Tuesday 20 October 2009, Mel Gorman wrote:
-> > > > I've attached a patch below that should allow us to cheat. When it's
-> > > > applied, it outputs who called congestion_wait(), how long the
-> > > > timeout was and how long it waited for. By comparing before and
-> > > > after sleep times, we should be able to see which of the callers has
-> > > > significantly changed and if it's something easily addressable.
-> > >
-> > > The results from this look fairly interesting (although I may be a bad
-> > > judge as I don't really know what I'm looking at ;-).
-> > >
-> > > I've tested with two kernels:
-> > > 1) 2.6.31.1: 1 test run
-> > > 2) 2.6.31.1 + congestion_wait() reverts: 2 test runs
-> >
-> > I've taken another look at the data from this debug patch, resulting in
-> > these graphs: http://people.debian.org/~fjp/tmp/kernel/congestion.pdf
-> >
-> > I think the graph may show the reason for the congestion_wait()
-> > regression. Horizontal axis shows time, vertical axis shows number of
-> > logged congestion_wait calls per type.
-> 
-> I'm sorry. My initial version had a skewed time axis (showed occurrences 
-> instead of actual time). I've now uploaded a corrected version:
-> http://people.debian.org/~fjp/tmp/kernel/congestion.pdf
-> 
-> I've also uploaded a second version that shows cumulative delay per type, 
-> which probably gives a better insight:
-> http://people.debian.org/~fjp/tmp/kernel/congestion2.pdf
-> 
-> For both the top chart is without the revert, the bottom one after the 
-> revert.
-> 
+The gpio-mdio driver seems to assume GPIOs return 0 and 1, although that
+doesn't seem to be the case.  I see return values of 0 and 0x1000000
+for the GPIO I happen to be using.  A simple application of !! solves
+that though.
 
-I'm looking into this at the moment. There are some definite
-differences not only in the length congestion_wait() is waiting but in
-what the callers are doing. I've more or less reproduced your results
-locally and am slowly plodding through each caller to see what has
-changed of significance. No patches yet though.
+Tested on a RuggedCom RX5000 (mpc8360e based).
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Signed-off-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+
+diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
+index 8659d34..7e76f0c 100644
+--- a/drivers/net/phy/mdio-gpio.c
++++ b/drivers/net/phy/mdio-gpio.c
+@@ -55,7 +55,7 @@ static int mdio_get(struct mdiobb_ctrl *ctrl)
+ 	struct mdio_gpio_info *bitbang =
+ 		container_of(ctrl, struct mdio_gpio_info, ctrl);
+ 
+-	return gpio_get_value(bitbang->mdio);
++	return !!gpio_get_value(bitbang->mdio);
+ }
+ 
+ static void mdio_set(struct mdiobb_ctrl *ctrl, int what)
