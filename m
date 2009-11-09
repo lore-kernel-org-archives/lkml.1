@@ -1,76 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbZKIFh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbZKIFrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751584AbZKIFh6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 00:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbZKIFh5
+	id S1751302AbZKIFrj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 00:47:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZKIFri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 00:37:57 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:59837 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbZKIFh4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 00:37:56 -0500
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
-References: <m14op5jjo4.fsf@fess.ebiederm.org>
-	<1257682930-31401-22-git-send-email-ebiederm@xmission.com>
-	<20091108123422.GA9145@flint.arm.linux.org.uk>
-	<m1pr7siqjz.fsf@fess.ebiederm.org> <m1hbt4ipni.fsf@fess.ebiederm.org>
-	<20091108164855.595ec70d@infradead.org>
-	<m1tyx49y44.fsf@fess.ebiederm.org>
-	<20091108205725.28778016@infradead.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 08 Nov 2009 21:37:58 -0800
-In-Reply-To: <20091108205725.28778016@infradead.org> (Arjan van de Ven's message of "Sun\, 8 Nov 2009 20\:57\:25 -0800")
-Message-ID: <m1hbt45kcp.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 9 Nov 2009 00:47:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33803 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750768AbZKIFri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 00:47:38 -0500
+Message-ID: <4AF7ACCC.2050208@kernel.org>
+Date: Mon, 09 Nov 2009 14:46:52 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH percpu#for-linus] percpu: fix possible deadlock via irq lock
+ inversion
+References: <86802c440911041008q4969b9bdk15b4598c40bb84bd@mail.gmail.com>	 <4AF25FC7.4000502@kernel.org> <20091105082102.GA2870@elte.hu>	 <4AF28D7A.6020209@kernel.org>	 <alpine.LSU.2.00.0911051502060.9988@wotan.suse.de>	 <4AF3B9BD.9050300@kernel.org> <20091106071711.GA20946@elte.hu>	 <4AF3D428.8000804@kernel.org> <20091106075820.GA28227@elte.hu>	 <4AF3DD30.8050200@kernel.org> <20091106084041.GA22505@elte.hu>	 <4AF3E3D1.7010101@kernel.org>	 <alpine.DEB.1.10.0911061108120.3453@V090114053VZO-1>	 <4AF45109.7070503@kernel.org>	 <alpine.DEB.1.10.0911061159450.5187@V090114053VZO-1> <1257610412.4108.3.camel@laptop>
+In-Reply-To: <1257610412.4108.3.camel@laptop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
+Lockdep caught the following irq lock inversion which can lead to
+deadlock.
 
-> On Sun, 08 Nov 2009 19:27:07 -0800
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->> I just took a look and the use in linux threads that I don't warn
->> about is used by glibc-2.8 but not by glibc-2.10.  glibc-2.11 has just
->> been released. so by next year when the removal is scheduled we are
->> looking at multiple releases of glibc that don't use sys_sysctl.  So I
->> expect shortly I can warn about all uses of sys_sysctl without anyone
->> seeing a warning.
->
-> hmmmmm it's still an ABI break, and while you say "oh it's 3 glibcs
-> ago".. there's the static linking case.
->
-> to be honest, I don't think we can ever remove things that are used by
-> glibc during its startup....
+ =========================================================
+ [ INFO: possible irq lock inversion dependency detected ]
+ 2.6.32-rc5-tip-04815-g12f0f93-dirty #745
+ ---------------------------------------------------------
+ hub 1-3:1.0: state 7 ports 2 chg 0000 evt 0004
+ ksoftirqd/65/199 just changed the state of lock:
+  (pcpu_lock){..-...}, at: [<ffffffff81130e04>] free_percpu+0x38/0x104
+ but this lock took another, SOFTIRQ-unsafe lock in the past:
+  (vmap_area_lock){+.+...}
 
-The glibc pthread code that uses sysctl has no problems if sys_sysctl
-is gone.  It both falls back to reading /proc/sys and it just controls
-an optimization and the code works with either result.  Been there,
-done that.
+ and interrupts could create inverse lock ordering between them.
 
-The only reason sys_sysctl remains is because there are a handful of
-other apps that needed an appropriate warning time, and we weren't
-doing anything that had a reasonable chance of notifying them.
+This happens because pcpu_lock is allowed to be acquired from irq
+context for free_percpu() path and alloc_percpu() path may call
+vfree() with pcpu_lock held.  As vmap_area_lock isn't irq safe, if an
+IRQ occurs while vmap_area_lock is held and the irq handler calls
+free_percpu(), locking order inversion occurs.
 
-I think it is worth getting us to the point where we can run with
-sysctl disabled.  At the same time, this patchset gets 99%+ of the
-benefit.  It isolates the entire binary interface into sysctl_binary.c
-so outside of that one file we have no maintenance overhead in
-maintaining the binary interface, and anyone who is trying to optimize
-for kernel size can trivially turn it off.
+As the nesting only occurs in the alloc path which isn't allowed to be
+called from irq context, A->B->A deadlock won't occur but A->B B->A
+deadlock is still possible.
 
-Which allows the kernel development to proceed as if the sysctl binary
-interface does not exist, as it has largely always done.
+The only place where vmap_area_lock is nested under pcpu_lock is while
+extending area_map to free old map.  Break the locking order by
+temporarily releasing pcpu_lock when freeing old map.  This is safe to
+do as allocation path is protected with outer pcpu_alloc_mutex.
 
-Eric
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+If nobody objects, I'll push it to Linus tomorrow.  Thanks.
+
+ mm/percpu.c |   17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/mm/percpu.c b/mm/percpu.c
+index d907971..30cd343 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -372,7 +372,7 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
+ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, unsigned long *flags)
+ {
+ 	int new_alloc;
+-	int *new;
++	int *new, *old = NULL;
+ 	size_t size;
+
+ 	/* has enough? */
+@@ -407,10 +407,23 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, unsigned long *flags)
+ 	 * one of the first chunks and still using static map.
+ 	 */
+ 	if (chunk->map_alloc >= PCPU_DFL_MAP_ALLOC)
+-		pcpu_mem_free(chunk->map, size);
++		old = chunk->map;
+
+ 	chunk->map_alloc = new_alloc;
+ 	chunk->map = new;
++
++	/*
++	 * pcpu_mem_free() might end up calling vfree() which uses
++	 * IRQ-unsafe lock and thus can't be called with pcpu_lock
++	 * held.  Release and reacquire pcpu_lock if old map needs to
++	 * be freed.
++	 */
++	if (old) {
++		spin_unlock_irqrestore(&pcpu_lock, *flags);
++		pcpu_mem_free(old, size);
++		spin_lock_irqsave(&pcpu_lock, *flags);
++	}
++
+ 	return 0;
+ }
+
