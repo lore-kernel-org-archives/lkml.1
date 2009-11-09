@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZKIMXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZKIM1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZKIMXI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 07:23:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZKIMXH
+	id S1755514AbZKIM1u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 07:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbZKIM1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 07:23:07 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49887 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750840AbZKIMXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 07:23:06 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to preempt_count leakage in keventd
-Date: Mon, 9 Nov 2009 13:24:37 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.31.5-tst; KDE/4.3.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <200911091250.31626.rjw@sisk.pl> <20091109120217.GB18399@elte.hu>
-In-Reply-To: <20091109120217.GB18399@elte.hu>
+	Mon, 9 Nov 2009 07:27:50 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:2102 "EHLO
+	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755224AbZKIM1t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 07:27:49 -0500
+X-SpamScore: 4
+X-BigFish: VPS4(z3edbo63cmz4015Laf6Ozz1202hzzz32i176h6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KSUDA4-04-13L-02
+X-M-MSG: 
+Message-ID: <4AF80AA3.9020400@amd.com>
+Date: Mon, 9 Nov 2009 13:27:15 +0100
+From: Andre Przywara <andre.przywara@amd.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090329)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: x86/NUMA: Reason for ignoring too small NUMA nodes?
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911091324.37955.rjw@sisk.pl>
+X-OriginalArrivalTime: 09 Nov 2009 12:27:42.0643 (UTC) FILETIME=[08C15030:01CA6138]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 November 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > [ 2016.865041] BUG: using smp_processor_id() in preemptible [00000000] code: events/1/29920                                                                                         
-> > [ 2016.865344] caller is vmstat_update+0x13/0x48                                          
-> > [ 2016.865522] Pid: 29920, comm: events/1 Not tainted 2.6.31-tst #158                     
-> > [ 2016.865700] Call Trace:                                                                
-> > [ 2016.865877]  [<ffffffff811608e8>] debug_smp_processor_id+0xc4/0xd4                     
-> > [ 2016.866052]  [<ffffffff810a9ae1>] vmstat_update+0x13/0x48                              
-> > [ 2016.866232]  [<ffffffff81051ee6>] worker_thread+0x18b/0x22a                            
-> > [ 2016.866409]  [<ffffffff810a9ace>] ? vmstat_update+0x0/0x48                             
-> > [ 2016.866578]  [<ffffffff810556a5>] ? autoremove_wake_function+0x0/0x38                  
-> > [ 2016.866749]  [<ffffffff81288803>] ? _spin_unlock_irqrestore+0x35/0x37                  
-> > [ 2016.866935]  [<ffffffff81051d5b>] ? worker_thread+0x0/0x22a                            
-> > [ 2016.867113]  [<ffffffff8105547d>] kthread+0x69/0x71                                    
-> > [ 2016.867278]  [<ffffffff8100c1aa>] child_rip+0xa/0x20                                   
-> > [ 2016.867450]  [<ffffffff81055414>] ? kthread+0x0/0x71                                   
-> > [ 2016.867618]  [<ffffffff8100c1a0>] ? child_rip+0x0/0x20                                 
-> 
-> a bug producing similar looking messages was fixed by:
-> 
->   fd21073: sched: Fix affinity logic in select_task_rq_fair()
-> 
-> but that bug was introduced by:
-> 
->   a1f84a3: sched: Check for an idle shared cache in select_task_rq_fair()
+Hi Andi,
 
-I guess these are tip commits?
+while experimenting with a system with a memory-less NUMA node I 
+stumbled upon code in the Linux kernel which ignores nodes containing 
+less than a certain amount of RAM, obviously to fix systems with a buggy 
+BIOS.
+Can you elaborate on this? What kind of incorrect entry have you seen?
+To correctly map the memory less node I did a patch to accept at least 
+nodes with exactly zero bytes of memory (read: no SRAT memory entry), 
+was this special condition also present in the buggy machines?
+Another comments reads:
+      /*
+      * Don't confuse VM with a node that doesn't have the
+      * minimum amount of memory:
+      */
+Is that still a valid statement? How can the VM get confused by a node 
+with already exhausted memory resources?
+(found in arch/x86/mm/{srat,numa}_64.c)
 
-> Which is for v2.6.33, not v2.6.32.
-
-The one I saw was in the Linus' tree, quite obviously.
-
-Also, I should have noted that the problem is not really easy to trigger.
-Usually, it involves 20-25 suspend-resume cycles to reproduce it.  For this
-reason the kernels that I mark as "good" may still be affected, although in
-such a way that the problem is much harder to reproduce with them.
+I'd be grateful for some hints!
 
 Thanks,
-Rafael
+Andre.
+
+-- 
+Andre Przywara
+AMD-Operating System Research Center (OSRC), Dresden, Germany
+Tel: +49 351 448 3567 12
+----to satisfy European Law for business letters:
+Advanced Micro Devices GmbH
+Karl-Hammerschmidt-Str. 34, 85609 Dornach b. Muenchen
+Geschaeftsfuehrer: Andrew Bowd; Thomas M. McCoy; Giuliano Meroni
+Sitz: Dornach, Gemeinde Aschheim, Landkreis Muenchen
+Registergericht Muenchen, HRB Nr. 43632
+
