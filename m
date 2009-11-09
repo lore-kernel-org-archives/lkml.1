@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZKIS4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbZKIS44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbZKIS4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 13:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZKIS4R
+	id S1753108AbZKIS44 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 13:56:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbZKIS4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 13:56:17 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:34418 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751814AbZKIS4Q (ORCPT
+	Mon, 9 Nov 2009 13:56:55 -0500
+Received: from casper.infradead.org ([85.118.1.10]:42632 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753002AbZKIS4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 13:56:16 -0500
-Date: Mon, 9 Nov 2009 13:56:10 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [PATCH 2/2] x86, crypto, Use gas macro for AES-NI instructions
-Message-ID: <20091109185609.GB9588@gondor.apana.org.au>
-References: <1257403457.22519.250.camel@yhuang-dev.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257403457.22519.250.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 9 Nov 2009 13:56:55 -0500
+Subject: Re: [RFC,PATCH] mutex: mutex_is_owner() helper
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <4AF1B7A7.6030902@gmail.com>
+References: <4AF19D06.3060401@gmail.com> <20091104154015.GA32567@elte.hu>
+	 <4AF1B7A7.6030902@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 19:56:27 +0100
+Message-ID: <1257792987.4108.364.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 05, 2009 at 02:44:17PM +0800, Huang Ying wrote:
-> Old binutils do not support AES-NI instructions, to make kernel can be
-> compiled by them, .byte code is used instead of AES-NI assembly
-> instructions. But the readability and flexibility of raw .byte code is
-> not good.
+On Wed, 2009-11-04 at 18:19 +0100, Eric Dumazet wrote:
 > 
-> So corresponding assembly instruction like gas macro is used instead.
+> BTW, I was thinking of a mutex_yield() implementation, but could not
+> cook it without hard thinking, maybe you already have some nice
+> implementation ?
+
+Why? Yield sets off alarm bells, since 99.9%, and possibly more, of its
+uses are wrong.
+
+> int mutex_yield(struct mutex *lock)
+> {
+>         int ret = 0;
 > 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+>         if (mutex_needbreak(lock) || should_resched()) {
+>                 mutex_unlock(lock); 
+>                 __cond_resched();
+>                 mutex_lock(lock);
+>                 ret = 1;
+>         }
+>         return ret;
+> } 
 
-Sorry, but this doesn't apply:
+That reads like it should be called cond_resched_mutex(), except that
+the should_resched() thing seems daft (but maybe it makes sense for
+silly preemption modes like voluntary).
 
-$ git apply ~/p
-fatal: patch fragment without header at line 428: @@ -518,51 +417,37 @@ _aesni_dec1:
-$
+iirc we actually have something similar in -rt in order to implement the
+lock-break for the rt-mutex based spinlocks, we set ->needbreak when a
+higher priority task contends -- a policy for regular mutexes might be
+'interesting' though.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+As to your 'debug' helper that started this thread, doesn't
+lockdep_assert_held() work for you?
+
