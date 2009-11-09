@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbZKIHHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbZKIHIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753202AbZKIHHl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 02:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZKIHHl
+	id S1753176AbZKIHIx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 02:08:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbZKIHIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 02:07:41 -0500
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:53233 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbZKIHHk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 02:07:40 -0500
-Date: Mon, 9 Nov 2009 12:37:37 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] memcg : rewrite percpu countings with new
- interfaces
-Message-ID: <20091109070737.GE3042@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091106175242.6e13ee29.kamezawa.hiroyu@jp.fujitsu.com>
- <20091106175545.b97ee867.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 9 Nov 2009 02:08:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34490 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751014AbZKIHIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 02:08:52 -0500
+Date: Mon, 9 Nov 2009 08:08:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yong Wang <yong.y.wang@linux.intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3] x86: under bios control, restore AP's APIC_LVTTHMR to
+ the BSP value
+Message-ID: <20091109070844.GA453@elte.hu>
+References: <20091109042134.GA9169@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091106175545.b97ee867.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091109042134.GA9169@ywang-moblin2.bj.intel.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-11-06 17:55:45]:
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Now, alloc_percpu() alloc good dynamic allocations and
-> Recent updates on percpu.h gives us following kind of ops 
->    - __this_cpu_add() etc...
-> This is designed to be a help for reduce code size in hot-path
-> and very useful to handle percpu area. Thanks for great works.
-> 
-> This patch rewrite memcg's (not-good) percpu status with new
-> percpu support macros. This decreases code size and instruction
-> size. By this, this area is now NUMA-aware and may have performance 
-> benefit. 
-> 
-> I got good result in parallel pagefault test. (my host is 8cpu/2socket)
-> 
-> before==
->  Performance counter stats for './runpause.sh' (5 runs):
-> 
->   474070.055912  task-clock-msecs         #      7.881 CPUs    ( +-   0.013% )
->        35829310  page-faults              #      0.076 M/sec   ( +-   0.217% )
->      3803016722  cache-references         #      8.022 M/sec   ( +-   0.215% )  (scaled from 100.00%)
->      1104083123  cache-misses             #      2.329 M/sec   ( +-   0.961% )  (scaled from 100.00%)
-> 
->    60.154982314  seconds time elapsed   ( +-   0.018% )
-> 
-> after==
->  Performance counter stats for './runpause.sh' (5 runs):
-> 
->   474919.429670  task-clock-msecs         #      7.896 CPUs    ( +-   0.013% )
->        36520440  page-faults              #      0.077 M/sec   ( +-   1.854% )
->      3109834751  cache-references         #      6.548 M/sec   ( +-   0.276% )
->      1053275160  cache-misses             #      2.218 M/sec   ( +-   0.036% )
-> 
->    60.146585280  seconds time elapsed   ( +-   0.019% )
-> 
-> This test is affected by cpu-utilization but I think more improvements
-> will be found in bigger system.
->
+* Yong Wang <yong.y.wang@linux.intel.com> wrote:
 
-Hi, Kamezawa-San,
+> Changes since v2:
+> Incorporate Ingo's comments to get BSP's thermal init value in a
+> 'boot-CPU-only' function.
 
-Could you please post the IPC results as well? 
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index e09f0e2..2323771 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -1002,6 +1002,7 @@ void __init setup_arch(char **cmdline_p)
+>  
+>  	init_apic_mappings();
+>  	ioapic_init_mappings();
+> +	get_bsp_lvtthmr_init();
+>  
+>  	/* need to wait for io_apic is mapped */
+>  	probe_nr_irqs_gsi();
 
--- 
-	Balbir
+Ok - it's almost good in this form - it would be nice to name the new 
+function something more generic, like mcheck_intel_therm_init(), and 
+call it from arch/x86/kernel/cpu/mcheck/mce.c's mcheck_init() function.
+
+Thanks,
+
+	Ingo
