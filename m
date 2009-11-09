@@ -1,40 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZKID2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZKIDa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbZKID2D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 22:28:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZKID2C
+	id S1753811AbZKIDa4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 22:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbZKIDa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 22:28:02 -0500
-Received: from ozlabs.org ([203.10.76.45]:41891 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753461AbZKID2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 22:28:01 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: =?utf-8?q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Subject: Re: [PATCH v4 01/12] vsprintf: factorize "(null)" string
-Date: Mon, 9 Nov 2009 13:58:03 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-References: <cover.1257602781.git.andre.goddard@gmail.com> <643e6260a571b533d8985b377a82410aded4ddae.1257602781.git.andre.goddard@gmail.com>
-In-Reply-To: <643e6260a571b533d8985b377a82410aded4ddae.1257602781.git.andre.goddard@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Sun, 8 Nov 2009 22:30:56 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:53281 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753538AbZKIDaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 22:30:55 -0500
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       adobriyan@gmail.com, viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH] proc: revalidate dentry returned by proc_pid_follow_link
+References: <1257513594-31071-1-git-send-email-jlayton@redhat.com>
+	<20091106203601.GD27751@shareable.org>
+	<20091106160612.4cd05e76@tlielax.poochiereds.net>
+	<m17hu1miea.fsf@fess.ebiederm.org>
+	<20091108201237.79af5cac@tupile.poochiereds.net>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 08 Nov 2009 19:30:55 -0800
+In-Reply-To: <20091108201237.79af5cac@tupile.poochiereds.net> (Jeff Layton's message of "Sun\, 8 Nov 2009 20\:12\:37 -0500")
+Message-ID: <m1hbt49xxs.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911091358.03545.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Nov 2009 01:46:09 am you wrote:
-> Change "<NULL>" to "(null)" and make it a static const char[] hoping that
-> the compiler will make null_str a label to a read-only area containing it.
+Jeff Layton <jlayton@redhat.com> writes:
 
-(Trimmed the 79 recipients of the original).
+>> Hmm.  Looking at the code I get the impression that a file bind mount
+>> will have exactly the same problem.
+>> 
+>> Can you confirm.
+>> 
+>> If file bind mounts also have this problem a bugfix to to just
+>> proc seems questionable.
+>> 
+>
+> I'm not sure I understand what you mean by "file bind mount". Is that
+> something like mounting with "-o loop" ?
 
-Hi Andre,
+# cd /tmp
+# echo foo > foo
+# echo bar > bar
+# mount --bind foo bar
+# cat bar
+foo
+#
 
-Consistently using <NULL> or (null) makes sense.  But I'm really missing your argument: is there some reason why normal string merging won't work?
+> I'm not at all opposed to fixing this in a more broad fashion, but as
+> best I can tell, the only place that LAST_BIND is used is in procfs.
 
-Confused,
-Rusty.
+proc does appear to be the only user of LAST_BIND.  With a file bind
+mount we can get to the same ok: label without a revalidate.  The
+difference is that we came from __follow_mount instead of follow_link.
+
+At least that is how I read the code.
+
+Eric
