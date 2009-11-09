@@ -1,184 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZKIQcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbZKIQdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755098AbZKIQcO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 11:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZKIQcO
+	id S1756413AbZKIQdF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 11:33:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbZKIQdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 11:32:14 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:45314 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbZKIQcN (ORCPT
+	Mon, 9 Nov 2009 11:33:00 -0500
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:61033 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755991AbZKIQc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 11:32:13 -0500
-Subject: virtio: Add memory statistics reporting to the balloon driver
-From: Adam Litke <agl@us.ibm.com>
-To: qemu-devel@nongnu.org
-Cc: "virtualization@lists.linux-foundation.orgAnthony Liguori" 
-	<aliguori@us.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1257782838.2835.5.camel@aglitke>
-References: <1257782838.2835.5.camel@aglitke>
-Content-Type: text/plain; charset="UTF-8"
-Organization: IBM
-Date: Mon, 09 Nov 2009 10:32:06 -0600
-Message-ID: <1257784326.2835.16.camel@aglitke>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Nov 2009 11:32:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=QlBDRIt5Vekg1p4RaYfIV2H1y6ppioa3+JpPwymiuXLAJ59izN5fu7FAq0325fyLle
+         jV+HAeVrXSVy3EW3hD3vjlHZMWMvBCk+hBX+K+cpfEv9D3p7Ay9cA2D0gzvnZg3IVXND
+         ULTRqrt/J55Oq+jf5En+oanLFe/CBHhVkiLCE=
+MIME-Version: 1.0
+In-Reply-To: <4AF5FBC7.9000105@linux.intel.com>
+References: <1257537660-5301-1-git-send-email-lrodriguez@atheros.com> 
+	<200911072152.57596.trenn@suse.de> <4AF5F47C.5000402@linux.intel.com> 
+	<200911072347.05786.trenn@suse.de> <4AF5FBC7.9000105@linux.intel.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Mon, 9 Nov 2009 08:32:43 -0800
+Message-ID: <43e72e890911090832v1c809482yde7e767502271376@mail.gmail.com>
+Subject: Re: [PATCH] cpu-freq: add troubleshooting section for FSB changes
+To: Arjan van de Ven <arjan@linux.intel.com>,
+       Senthil Balasubramanian <senthilkumar@atheros.com>,
+       Aeolus Yang <Aeolus.Yang@atheros.com>,
+       Jonathan May <Jonathan.May@atheros.com>
+Cc: Thomas Renninger <trenn@suse.de>, davej@redhat.com,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg@redhat.com>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Amod Bodas <Amod.Bodas@atheros.com>,
+       David Quan <David.Quan@atheros.com>,
+       Kishore Jotwani <Kishore.Jotwani@atheros.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When using ballooning to manage overcommitted memory on a host, a system for
-guests to communicate their memory usage to the host can provide information
-that will minimize the impact of ballooning on the guests.  The current method
-employs a daemon running in each guest that communicates memory statistics to a
-host daemon at a specified time interval.  The host daemon aggregates this
-information and inflates and/or deflates balloons according to the level of
-host memory pressure.  This approach is effective but overly complex since a
-daemon must be installed inside each guest and coordinated to communicate with
-the host.  A simpler approach is to collect memory statistics in the virtio
-balloon driver and communicate them to the host via the device config space.
+On Sat, Nov 7, 2009 at 2:59 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
+>>> in addition, most FSB systems have the memory controller in the chipset,
+>>> next to the PCI logic... so that the FSB bus for DMA transactions only
+>>> carries the snoop traffic, not the whole data.
+>>
+>> So when should people look at this?
+>
+> at this point the atheros folks haven't even confirmed that this is the
+> cause...
 
-This patch enables the guest-side support by adding stats collection and
-reporting to the virtio balloon driver.
+And we tested this (reducing the min cpu freq to one less than the
+highest supported P state to avoid an FSB speed change) and it seems
+doing the steps described here did not fix the issue. But at least now
+if anyone else wants to verify this they can with some sort of
+documentaiton.
 
-Comments?
+So to confirm though -- we are seeing a huge performance depredation
+mainly on RX on an Intel Pine Trail platform with SpeedStep enabled on
+the BIOS.
 
-Signed-off-by: Adam Litke <agl@us.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: virtualization@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
+Let me get into the specifics in case anyone is able to help. The
+issue is with ath9k on RX and the CPU on C3 state requesting DMA over
+PCI-E. We typically would get about 110 Mbps with an AR9285 (single
+stream) but when SpeedStep is enabled it goes down to 25 Mbps. At the
+PCI-E level we are seeing huge latencies introduced when SpeedStep is
+used for DMA requests to the Intel root complex on the Intel Pine
+trail platform. Latencies are about 20-60 us.
 
-diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
-index 200c22f..0c9a9a1 100644
---- a/drivers/virtio/virtio_balloon.c
-+++ b/drivers/virtio/virtio_balloon.c
-@@ -180,6 +180,41 @@ static void update_balloon_size(struct virtio_balloon *vb)
- 			      &actual, sizeof(actual));
- }
- 
-+static inline void update_stat(struct virtio_device *vdev, int feature,
-+				unsigned long value, unsigned offset)
-+{
-+	__le32 __v = cpu_to_le32(value);
-+	if (virtio_has_feature(vdev, feature))
-+		vdev->config->set(vdev, offset, &__v, sizeof(__v));
-+}
-+
-+#define K(x) ((x) << (PAGE_SHIFT - 10))
-+static void update_balloon_stats(struct virtio_balloon *vb)
-+{
-+	unsigned long events[NR_VM_EVENT_ITEMS];
-+	struct sysinfo i;
-+	unsigned off = offsetof(struct virtio_balloon_config, stats);
-+
-+	all_vm_events(events);
-+
-+	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_SWAP_IN, events[PSWPIN],
-+		    off + offsetof(struct virtio_balloon_stats, pswapin));
-+	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_SWAP_OUT, events[PSWPOUT],
-+		    off + offsetof(struct virtio_balloon_stats, pswapout));
-+	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_MAJFLT, events[PGMAJFAULT],
-+		    off + offsetof(struct virtio_balloon_stats, pgmajfault));
-+	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_MINFLT, events[PGFAULT],
-+		    off + offsetof(struct virtio_balloon_stats, pgminfault));
-+	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_ANON,
-+		    K(global_page_state(NR_ANON_PAGES)),
-+		    off + offsetof(struct virtio_balloon_stats, panon));
-+	si_meminfo(&i);
-+	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_MEMFREE, K(i.freeram),
-+		    off + offsetof(struct virtio_balloon_stats, memfree));
-+	update_stat(vb->vdev, VIRTIO_BALLOON_F_RPT_MEMTOT, K(i.totalram),
-+		    off + offsetof(struct virtio_balloon_stats, memtot));
-+}
-+
- static int balloon(void *_vballoon)
- {
- 	struct virtio_balloon *vb = _vballoon;
-@@ -189,15 +224,17 @@ static int balloon(void *_vballoon)
- 		s64 diff;
- 
- 		try_to_freeze();
--		wait_event_interruptible(vb->config_change,
-+		wait_event_interruptible_timeout(vb->config_change,
- 					 (diff = towards_target(vb)) != 0
- 					 || kthread_should_stop()
--					 || freezing(current));
-+					 || freezing(current),
-+					 VIRTIO_BALLOON_TIMEOUT);
- 		if (diff > 0)
- 			fill_balloon(vb, diff);
- 		else if (diff < 0)
- 			leak_balloon(vb, -diff);
- 		update_balloon_size(vb);
-+		update_balloon_stats(vb);
- 	}
- 	return 0;
- }
-@@ -265,7 +302,12 @@ static void virtballoon_remove(struct virtio_device *vdev)
- 	kfree(vb);
- }
- 
--static unsigned int features[] = { VIRTIO_BALLOON_F_MUST_TELL_HOST };
-+static unsigned int features[] = {
-+	VIRTIO_BALLOON_F_MUST_TELL_HOST, VIRTIO_BALLOON_F_RPT_SWAP_IN,
-+	VIRTIO_BALLOON_F_RPT_SWAP_OUT, VIRTIO_BALLOON_F_RPT_ANON,
-+	VIRTIO_BALLOON_F_RPT_MAJFLT, VIRTIO_BALLOON_F_RPT_MINFLT,
-+	VIRTIO_BALLOON_F_RPT_MEMFREE, VIRTIO_BALLOON_F_RPT_MEMTOT,
-+};
- 
- static struct virtio_driver virtio_balloon = {
- 	.feature_table = features,
-diff --git a/include/linux/virtio_balloon.h b/include/linux/virtio_balloon.h
-index 09d7300..0bff4b8 100644
---- a/include/linux/virtio_balloon.h
-+++ b/include/linux/virtio_balloon.h
-@@ -6,15 +6,39 @@
- 
- /* The feature bitmap for virtio balloon */
- #define VIRTIO_BALLOON_F_MUST_TELL_HOST	0 /* Tell before reclaiming pages */
-+                                          /* Guest memory statistic reporting */
-+#define VIRTIO_BALLOON_F_RPT_SWAP_IN  1   /* Number of pages swapped in */
-+#define VIRTIO_BALLOON_F_RPT_SWAP_OUT 2   /* Number of pages swapped out */
-+#define VIRTIO_BALLOON_F_RPT_ANON     3   /* Number of anonymous pages in use */
-+#define VIRTIO_BALLOON_F_RPT_MAJFLT   4   /* Number of major faults */
-+#define VIRTIO_BALLOON_F_RPT_MINFLT   5   /* Number of minor faults */
-+#define VIRTIO_BALLOON_F_RPT_MEMFREE  6   /* Total amount of free memory */
-+#define VIRTIO_BALLOON_F_RPT_MEMTOT   7   /* Total amount of memory */
- 
- /* Size of a PFN in the balloon interface. */
- #define VIRTIO_BALLOON_PFN_SHIFT 12
- 
-+struct virtio_balloon_stats
-+{
-+	__le32 pswapin;      /* pages swapped in */
-+	__le32 pswapout;     /* pages swapped out */
-+	__le32 panon;        /* anonymous pages in use (in kb) */
-+	__le32 pgmajfault;   /* Major page faults */
-+	__le32 pgminfault;   /* Minor page faults */
-+	__le32 memfree;      /* Total amount of free memory (in kb) */
-+	__le32 memtot;       /* Total amount of memory (in kb) */
-+};
-+
- struct virtio_balloon_config
- {
- 	/* Number of pages host wants Guest to give up. */
- 	__le32 num_pages;
- 	/* Number of pages we've actually got in balloon. */
- 	__le32 actual;
-+	/* Memory statistics */
-+	struct virtio_balloon_stats stats;
- };
-+
-+#define VIRTIO_BALLOON_TIMEOUT (30 * HZ)
-+
- #endif /* _LINUX_VIRTIO_BALLOON_H */
+Is there a timeout threshold change that will cause the Intel chipset
+wait for some time after completion before going into a C3 state? Are
+there any other explanations for seeing such huge latencies on C3
+state?
 
--- 
-Thanks,
-Adam
+Thanks for your review and help with this. Any suggestions are greatly
+appreciated.
 
+  Luis
