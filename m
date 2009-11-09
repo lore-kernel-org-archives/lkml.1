@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbZKIILq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbZKIIIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754458AbZKIILq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 03:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZKIILp
+	id S1754037AbZKIIIM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 03:08:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZKIIIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 03:11:45 -0500
-Received: from fwc-tlex12.fwc.state.fl.us ([216.76.92.217]:15798 "EHLO
-	FWC-TLEX8.fwc.state.fl.us" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753915AbZKIILp convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 03:11:45 -0500
-X-Greylist: delayed 310 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Nov 2009 03:11:45 EST
-From: "Smith, Kent" <kent.smith@MyFWC.com>
-Date: Mon, 9 Nov 2009 03:06:27 -0500
-Subject: Webmail Verification Update!
-Thread-Topic: Webmail Verification Update!
-Thread-Index: AQHKYROJx0n8g85460ee6VVTxdId/w==
-Message-ID: <99C1885E43A5C94D979598FDF64A28E1058ED68F@FWC-TLEX10.fwc.state.fl.us>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Mon, 9 Nov 2009 03:08:09 -0500
+Received: from dip-colo-pa.panasas.com ([67.152.220.67]:21927 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754058AbZKIIIF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 03:08:05 -0500
+Message-ID: <4AF7CDE7.8030008@panasas.com>
+Date: Mon, 09 Nov 2009 10:08:07 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: unlisted-recipients:; (no To-header on input)
+To: dave@gnu.org
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/20] SCSI: No longer use Scsi_Cmd typedef
+References: <1257711411.4759.105.camel@dbueso-pc>
+In-Reply-To: <1257711411.4759.105.camel@dbueso-pc>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Nov 2009 08:08:10.0670 (UTC) FILETIME=[C722CCE0:01CA6113]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your mailbox quota has exceeded the storage limit which is
-20GB
-as set by your administrator, you are currently running on
-20.9GB.
-You may not be able to send or receive new mails until you
-re-validate
-your mailbox.
-To re-activate your account please click the link and
-login with the
-username and password provided for you below:
-http://rpc.formmailhosting.com/showform.php?id=6256
-Thanks and we are sorry for the inconviniences
-Localhost.
+On 11/08/2009 10:16 PM, Davidlohr Bueso wrote:
+> Plenty of older drivers are still using Scsi_Cmd. The following patches
+> remove its use and changes them for "struct scsi_cmnd". There is also no
+> need for the drivers/scsi/scsi_typedefs.h file anymore since this only
+> contains the typedef for Scsi_Cmd. 
+> 
+> Thanks,
+> Davidlohr
+> 
+> 
+>  drivers/scsi/NCR5380.c       |   72 ++++++++++++++++---------------
+>  drivers/scsi/NCR5380.h       |   16 ++++----
+>  drivers/scsi/NCR53c406a.c    |    6 +-
+>  drivers/scsi/aha152x.c       |   68 +++++++++++++++---------------
+>  drivers/scsi/aha1542.c       |   30 +++++++-------
+>  drivers/scsi/aha1542.h       |   12 +++---
+>  drivers/scsi/aha1740.c       |    8 ++--
+>  drivers/scsi/aha1740.h       |    4 +-
+>  drivers/scsi/atari_NCR5380.c |   94 +++++++++++++++++++++---------------------
+>  drivers/scsi/atari_scsi.c    |   12 +++---
+>  drivers/scsi/atari_scsi.h    |    2 +-
+>  drivers/scsi/dtc.h           |    6 +-
+>  drivers/scsi/fd_mcs.c        |   10 ++--
+>  drivers/scsi/g_NCR5380.c     |   10 ++--
+>  drivers/scsi/g_NCR5380.h     |    6 +-
+>  drivers/scsi/gdth.c          |   66 +++++++++++++++---------------
+>  drivers/scsi/gdth.h          |   10 ++--
+>  drivers/scsi/gdth_proc.c     |    2 +-
+>  drivers/scsi/ibmmca.c        |   28 ++++++------
+>  drivers/scsi/in2000.c        |   68 +++++++++++++++---------------
+>  drivers/scsi/in2000.h        |   14 +++---
+>  drivers/scsi/megaraid.c      |   28 ++++++------
+>  drivers/scsi/megaraid.h      |   18 ++++----
+>  drivers/scsi/nsp32_debug.c   |    2 +-
+>  drivers/scsi/pas16.h         |    6 +-
+>  drivers/scsi/scsi.h          |    3 -
+>  drivers/scsi/sym53c416.c     |    6 +-
+>  drivers/scsi/sym53c416.h     |    4 +-
+>  drivers/scsi/wd7000.c        |    2 +-
+>  29 files changed, 306 insertions(+), 307 deletions(-)
+> 
+
+Thanks for doing this. What a grate relief.
+
+One thing that I'm missing is the actual patch to remove the
+scsi_typedefs.h file. Is it still used?
+
+Thanks
+Boaz
