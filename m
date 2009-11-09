@@ -1,191 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbZKIIfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbZKIIir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbZKIIfG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 03:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZKIIfG
+	id S1754652AbZKIIir (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 03:38:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZKIIir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 03:35:06 -0500
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:34767 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbZKIIfF (ORCPT
+	Mon, 9 Nov 2009 03:38:47 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49300 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754400AbZKIIiq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 03:35:05 -0500
-Message-ID: <4AF7D439.4030305@ladisch.de>
-Date: Mon, 09 Nov 2009 09:35:05 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-CC: Andrea Righi <righi.andrea@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH] fbcon: make cursor display conditional
-References: <1257412658-9444-1-git-send-email-daniel@caiaq.de> <4AF3DB6C.2070300@ladisch.de> <20091106143916.GA30819@linux> <20091106164532.GK14091@buzzloop.caiaq.de>
-In-Reply-To: <20091106164532.GK14091@buzzloop.caiaq.de>
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Nov 2009 03:38:46 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 9 Nov 2009 17:36:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] memcg : rewrite percpu countings with new
+ interfaces
+Message-Id: <20091109173610.3d23daf2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091109070737.GE3042@balbir.in.ibm.com>
+References: <20091106175242.6e13ee29.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091106175545.b97ee867.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091109070737.GE3042@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Mack wrote:
-> > On Fri, Nov 06, 2009 at 09:16:44AM +0100, Clemens Ladisch wrote:
-> > > Wouldn't it be more useful to change the CUR_DEFAULT symbol (see the
-> > > end of <linux/console_struct.h>) into a kernel parameter, instead of
-> > > adding a new flag?
+On Mon, 9 Nov 2009 12:37:37 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+ 
+> > after==
+> >  Performance counter stats for './runpause.sh' (5 runs):
+> > 
+> >   474919.429670  task-clock-msecs         #      7.896 CPUs    ( +-   0.013% )
+> >        36520440  page-faults              #      0.077 M/sec   ( +-   1.854% )
+> >      3109834751  cache-references         #      6.548 M/sec   ( +-   0.276% )
+> >      1053275160  cache-misses             #      2.218 M/sec   ( +-   0.036% )
+> > 
+> >    60.146585280  seconds time elapsed   ( +-   0.019% )
+> > 
+> > This test is affected by cpu-utilization but I think more improvements
+> > will be found in bigger system.
+> >
 > 
-> Ok, much better idea, I agree. See the patch below.
+> Hi, Kamezawa-San,
 > 
-> Subject: [PATCH] char/console: make default cursor type configurable
+> Could you please post the IPC results as well? 
 > 
-> --- a/drivers/char/vt.c
-> +++ b/drivers/char/vt.c
-> +#if defined(CONFIG_CONSOLE_DEF_CUR_NONE)
-> +#define CUR_DEFAULT CUR_NONE
-> +
-> +#elif defined(CONFIG_CONSOLE_DEF_CUR_UNDERLINE)
-> +#define CUR_DEFAULT CUR_UNDERLINE
-> +...
+Because PREEMPT=n, no differnce between v1/v2, basically.
 
-With a separate Kconfig variable, we can avoid having to put the
-parallel list into vt.c.
+Here.
+==
+ Performance counter stats for './runpause.sh' (5 runs):
 
-Furthermore, we can add options for the software cursor while we're
-at it; something like this:
+  475884.969949  task-clock-msecs         #      7.913 CPUs    ( +-   0.005% )
+       36592060  page-faults              #      0.077 M/sec   ( +-   0.301% )
+     3037784893  cache-references         #      6.383 M/sec   ( +-   0.361% )  (scaled from 99.71%)
+     1130761297  cache-misses             #      2.376 M/sec   ( +-   0.244% )  (scaled from 98.24%)
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+   60.136803969  seconds time elapsed   ( +-   0.006% )
+==
 
---- linux-2.6/include/linux/console_struct.h
-+++ linux-2.6/include/linux/console_struct.h
-@@ -130,8 +130,6 @@ extern void vc_SAK(struct work_struct *w
- #define CUR_HWMASK	0x0f
- #define CUR_SWMASK	0xfff0
- 
--#define CUR_DEFAULT CUR_UNDERLINE
--
- #define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp)
- 
- #endif /* _LINUX_CONSOLE_STRUCT_H */
---- linux-2.6/drivers/char/vt.c
-+++ linux-2.6/drivers/char/vt.c
-@@ -138,6 +138,11 @@ const struct consw *conswitchp;
- #define DEFAULT_BELL_PITCH	750
- #define DEFAULT_BELL_DURATION	(HZ/8)
- 
-+#define CUR_DEFAULT (CONFIG_CUR_DEFAULT_HW | \
-+		     CONFIG_CUR_DEFAULT_SW_FLAGS | \
-+		     (CONFIG_CUR_DEFAULT_SW_ATTR_XOR << 8) | \
-+		     (CONFIG_CUR_DEFAULT_SW_ATTR_SET << 16))
-+
- struct vc vc_cons [MAX_NR_CONSOLES];
- 
- #ifndef VT_SINGLE_DRIVER
---- linux-2.6/drivers/char/Kconfig
-+++ linux-2.6/drivers/char/Kconfig
-@@ -88,6 +88,104 @@ config VT_HW_CONSOLE_BINDING
- 	 information. For framebuffer console users, please refer to
- 	 <file:Documentation/fb/fbcon.txt>.
- 
-+choice
-+	prompt "Default hardware cursor shape"
-+	depends on HW_CONSOLE
-+	default CUR_DEFAULT_UNDERLINE
-+	help
-+	  Select the default shape of the blinking hardware cursor.
-+
-+	config CUR_DEFAULT_DEF
-+		bool "Default"
-+	config CUR_DEFAULT_NONE
-+		bool "None"
-+	config CUR_DEFAULT_UNDERLINE
-+		bool "Underline"
-+	config CUR_DEFAULT_LOWER_THIRD
-+		bool "Lower third"
-+	config CUR_DEFAULT_LOWER_HALF
-+		bool "Lower half"
-+	config CUR_DEFAULT_TWO_THIRDS
-+		bool "Two thirds"
-+	config CUR_DEFAULT_BLOCK
-+		bool "Block"
-+endchoice
-+
-+config CUR_DEFAULT_HW
-+	depends on HW_CONSOLE
-+	int
-+	default 0 if CUR_DEFAULT_DEF
-+	default 1 if CUR_DEFAULT_NONE
-+	default 2 if CUR_DEFAULT_UNDERLINE
-+	default 3 if CUR_DEFAULT_LOWER_THIRD
-+	default 4 if CUR_DEFAULT_LOWER_HALF
-+	default 5 if CUR_DEFAULT_TWO_THIRDS
-+	default 6 if CUR_DEFAULT_BLOCK
-+
-+config CUR_DEFAULT_SW
-+	bool "Use software cursor by default"
-+	depends on HW_CONSOLE
-+	default n
-+	help
-+	  The software cursor allows you to customize the appearance of the
-+	  cursor; this is done by changing the attributes (the color) of the
-+	  character under the cursor.
-+
-+	  See <file:Documentation/VGA-softcursor.txt> for more information.
-+
-+config CUR_DEFAULT_SW_ATTR_XOR
-+	depends on HW_CONSOLE
-+	prompt "Software cursor changed attribute bits" if CUR_DEFAULT_SW
-+	int
-+	range 0 255
-+	default 0
-+	help
-+	  Enter the character attribute bits that are changed by the
-+	  software cursor. This is equivalent to the second parameter
-+	  of the <ESC>[?1;2;3c escape sequence; for more information,
-+	  see <file:Documentation/VGA-softcursor.txt>.
-+
-+config CUR_DEFAULT_SW_ATTR_SET
-+	depends on HW_CONSOLE
-+	prompt "Software cursor set attribute bits" if CUR_DEFAULT_SW
-+	int
-+	range 0 255
-+	default 0
-+	help
-+	  Enter the character attribute bits that are set by the
-+	  software cursor. This is equivalent to the third parameter
-+	  of the <ESC>[?1;2;3c escape sequence; for more information,
-+	  see <file:Documentation/VGA-softcursor.txt>.
-+
-+config CUR_DEFAULT_SW_CHANGE_BKGND
-+	bool "Software cursor always changes background"
-+	depends on CUR_DEFAULT_SW
-+	default y
-+	help
-+	  If you say Y here, the software cursor will ensure that the
-+	  background color of the character under the cursor is changed,
-+	  even if the cursor color is the same as the original character's
-+	  color.
-+
-+config CUR_DEFAULT_SW_BKGND_DIFFERENT
-+	bool "Software cursor makes foreground color different from background"
-+	depends on CUR_DEFAULT_SW
-+	default y
-+	help
-+	  If you say Y here, the software cursor will ensure that the
-+	  foreground color of the character under the cursor is different
-+	  from the background color.
-+
-+config CUR_DEFAULT_SW_FLAGS
-+	depends on HW_CONSOLE
-+	int
-+	default 0 if !CUR_DEFAULT_SW
-+	# 16 + (32 if CHANGE_BKGND) + (64 if BKGND_DIFFERENT):
-+	default 16 if !CUR_DEFAULT_SW_CHANGE_BKGND && !CUR_DEFAULT_SW_BKGND_DIFFERENT
-+	default 48 if CUR_DEFAULT_SW_CHANGE_BKGND && !CUR_DEFAULT_SW_BKGND_DIFFERENT
-+	default 80 if !CUR_DEFAULT_SW_CHANGE_BKGND && CUR_DEFAULT_SW_BKGND_DIFFERENT
-+	default 112 if CUR_DEFAULT_SW_CHANGE_BKGND && CUR_DEFAULT_SW_BKGND_DIFFERENT
-+
- config DEVKMEM
- 	bool "/dev/kmem virtual device support"
- 	default y
+But this program is highly affected by cpu utilization etc...
+
+Thanks,
+-Kame
+
+
+
