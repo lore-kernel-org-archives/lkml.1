@@ -1,110 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZKIVMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbZKIVO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbZKIVMv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 16:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZKIVMv
+	id S1754853AbZKIVO0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 16:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZKIVOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 16:12:51 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:38514 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753863AbZKIVMu convert rfc822-to-8bit (ORCPT
+	Mon, 9 Nov 2009 16:14:25 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:49959 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754675AbZKIVOY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 16:12:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=tLkCvQeHv8E5zVh7Xzy4MD+mCRv9I9lyQo+dBBSS3UtyzCy+mBAr3BPScYhFQzPCr/
-         mBbcAs4ogV7FU54bvVQCYSrZ5o2fNp8F+t3ms3hFZX5nSvE91Wm/6QEDV1dkaCjmS8oe
-         aoT2eBlgnT5r1zoCKJr6v9TV7ILyiWDr5WcPQ=
+	Mon, 9 Nov 2009 16:14:24 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18Bvxh+7ZDgNiK62FG8sb3u
+Date: Mon, 9 Nov 2009 13:14:24 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] OMAP: DMA: Fix omapfb/lcdc on OMAP1510 broken when
+ PM set
+Message-ID: <20091109211424.GF23952@atomide.com>
+References: <200911051951.32020.jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
-In-Reply-To: <4AF828C50200005A000585DB@sinclair.provo.novell.com>
-References: <20091108121650.GB11372@elte.hu> <4AF828C50200005A000585DB@sinclair.provo.novell.com>
-From: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Date: Mon, 9 Nov 2009 19:12:35 -0200
-Message-ID: <193b0f820911091312y125209deufadd1040aff65cfd@mail.gmail.com>
-Subject: Re: [lucas.de.marchi@gmail.com: Bug when changing cpus_allowed of RT 
-	tasks?]
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911051951.32020.jkrzyszt@tis.icnet.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 9, 2009 at 17:35, Gregory Haskins <ghaskins@novell.com> wrote:
-> Hi Lucas,
->
-> Ingo asked me to take a look at the problem you are reporting.  Is this a bug you are seeing in the
-> wild, or was this found by code-inspection?  I took a look, and it looks to me that the original code
-> is correct, but I will keep an open mind.
+* Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091105 10:52]:
+> With CONFIG_PM=y, the omapfb/lcdc device on Amstrad Delta, after initially
+> starting correctly, breaks with the following error messages:
+> 
+> omapfb omapfb: resetting (status 0xffffff96,reset count 1)
+> ...
+> omapfb omapfb: resetting (status 0xffffff96,reset count 100)
+> omapfb omapfb: too many reset attempts, giving up.
+> 
+> Looking closer at this I have found that it had been broken almost 2 years ago
+> with commit 2418996e3b100114edb2ae110d5d4acb928909d2, PM fixes for OMAP1.
+> 
+> The definite reason for broken omapfb/lcdc behavoiur in PM mode
+> appeared to be ARM_IDLECT1:IDLIF_ARM (bit 6) put into idle regardless of LCD
+> DMA possibly running. The bit were set based on return value of the
+> omap_dma_running() function that did not check for dedicated LCD DMA
+> channel status. The patch below fixes this.
+> 
+> Created against linux-2.6.32-rc6
+> 
+> Tested on Amstrad Delta
+> 
+> Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+> 
+> ---
+> Tuesday 03 November 2009 21:10:48 Tony Lindgren wrote:
+> > * Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091103 12:05]:
+> > > Sorry, I've not checked for new mail before posting this one and missed
+> > > your acceptance for my idea of fixing all omap1510, not only ams_delta.
+> > > If there are no more comments, I'll submit v3 with cpu_is_omap1510()
+> > > replacing machine_is_ams_delta().
+> >
+> > Sounds good to me.
+> >
+> > Tony
+> 
+> --- linux-2.6.32-rc6/arch/arm/plat-omap/dma.c.orig	2009-11-03 20:37:49.000000000 +0100
+> +++ linux-2.6.32-rc6/arch/arm/plat-omap/dma.c	2009-11-05 19:30:39.000000000 +0100
+> @@ -1108,6 +1108,14 @@ int omap_dma_running(void)
+>  {
+>  	int lch;
+>  
+> +	/*
+> +	 * On OMAP1510, internal LCD controller will start the transfer
+> +	 * when it gets enabled, so assume DMA running if LCD enabled.
+> +	 */
+> +	if (cpu_is_omap1510())
+> +		if (omap_readw(0xfffec000 + 0x00) & (1 << 0))
+> +			return 1;
+> +
+>  	/* Check if LCD DMA is running */
+>  	if (cpu_is_omap16xx())
+>  		if (omap_readw(OMAP1610_DMA_LCD_CCR) & OMAP_DMA_CCR_EN)
 
-I found this "maybe"-bug in some changes I'm doing to balance of RT tasks. It
-was not giving me the expected results so inspecting the code I supposed this
-was the problem. Applying the patch it solved my problem, but I think it was a
-problem with my code. Comments inlined.
+Can you please use some define rather than the 0xfffec000 register
+above?
 
->>       static int select_task_rq_rt(struct task_struct *p, int sd_flag, int flags)
->>       {
->>               [...]
->>               if (unlikely(rt_task(rq->curr)) &&
->>                   (p->rt.nr_cpus_allowed > 1)) {
->>                       int cpu = find_lowest_rq(p);
->>
->>                       return (cpu == -1) ? task_cpu(p) : cpu;
->>               }
-	/*
-	 * Otherwise, just let it ride on the affined RQ and the
-	 * post-schedule router will push the preempted task away
-	 */
-	return task_cpu(p);
+Regards,
 
->>       }
-I completed the rest of function to emphasize it will return task_cpu(p)
-afterwards.
-
->
-> So the intent of this logic is to say "if the task is of type RT, and it can move, see if it can move
-> elsewhere".  Otherwise, we do not try to move it at all.
-
-I'd say "if _current_ is of type RT, and _p_ can move, see if _p_ can move
-elsewhere". And this check is repeated for p inside find_lowest_rq, so it would
-not be needed here. Just let it call find_lowest_rq and -1 will be returned.
-
->>       static int find_lowest_rq(struct task_struct *task)
->>       {
-[...]
->>               if (task->rt.nr_cpus_allowed == 1)
->>                       return -1; /* No other targets possible */
->>               [...]
->>       }
-
-
->> What happens if rt.nr_cpus_allowed continues to be 1, but the allowed cpu is
->> not the one in which task is being woken up?
->
-> The one case that I can think of that would fall into this category is during a sched_setaffinity()?
->
-> If so, what happens is that we ultimately call set_cpus_allowed() -> set_cpus_allowed_ptr().  Inside
-> this function, the new mask is validated independent of the nr_cpus_allowed value and we will
-> migrate the task away if it is no longer on a valid core.
-
-This was exactly the case I was falling into. But I was setting the affinity
-inside the kernel, not passing through setaffinity syscall, and I was wrongly
-calling set_cpus_allowed_rt directly instead of set_cpus_allowed, so task would
-not migrate in that case.
-
->
-> Until further evidence is presented, I have to respectfully NAK the patch, as I do not think its doing the right thing
-> nor do I think the current code is actually broken.
-
-I see now it's not doing the right thing. IMO only the double check of
-rt.nr_cpus_allowed is superfluous, but not wrong.
-
-
-Thanks for clarifications
-
-
-Lucas De Marchi
+Tony
