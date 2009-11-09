@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZKIJLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZKIJLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbZKIJLQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 04:11:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZKIJLP
+	id S1754835AbZKIJLz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 04:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZKIJLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 04:11:15 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:48981 "EHLO e1.ny.us.ibm.com"
+	Mon, 9 Nov 2009 04:11:54 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:53266 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754722AbZKIJLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 04:11:14 -0500
-Date: Mon, 9 Nov 2009 14:41:14 +0530
+	id S1754577AbZKIJLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 04:11:53 -0500
+Date: Mon, 9 Nov 2009 14:41:54 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
@@ -23,8 +23,9 @@ Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
        Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
        Mike Waychison <mikew@google.com>
-Subject: [RFC v3 PATCH 4/7] sched: Unthrottle the throttled tasks
-Message-ID: <20091109091114.GH23472@in.ibm.com>
+Subject: [RFC v3 PATCH 5/7] sched: Add throttle time statistics to
+	/proc/sched_debug
+Message-ID: <20091109091154.GI23472@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20091109090838.GD23472@in.ibm.com>
 MIME-Version: 1.0
@@ -36,101 +37,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: Unthrottle the throttled tasks.
+sched: Add throttle time statistics to /proc/sched_debug
 
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 
-Refresh runtimes when group's period expires. Unthrottle any
-throttled groups at that time. Refreshing runtimes is driven through
-a periodic timer.
+With hard limits, provide stats about throttle time, throttle count
+and max throttle time for group sched entities in /proc/sched_debug
+Throttle stats are collected only for group entities.
 
 Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- kernel/sched.c      |    3 +++
- kernel/sched_fair.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 47 insertions(+), 1 deletions(-)
+ include/linux/sched.h |    6 ++++++
+ kernel/sched_debug.c  |   17 ++++++++++++++++-
+ kernel/sched_fair.c   |   20 ++++++++++++++++++++
+ 3 files changed, 42 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 5d2e5e5..8cccda2 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1889,6 +1889,8 @@ static inline u64 global_cfs_runtime(void)
- 	return RUNTIME_INF;
- }
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 75e6e60..b7f238c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1183,6 +1183,12 @@ struct sched_entity {
+ 	u64			nr_wakeups_affine_attempts;
+ 	u64			nr_wakeups_passive;
+ 	u64			nr_wakeups_idle;
++#ifdef CONFIG_CFS_HARD_LIMITS
++	u64			throttle_start;
++	u64			throttle_max;
++	u64			throttle_count;
++	u64			throttle_sum;
++#endif
+ #endif
  
-+void do_sched_cfs_period_timer(struct cfs_bandwidth *cfs_b);
-+
- static inline void cfs_rq_runtime_lock(struct cfs_rq *cfs_rq)
- {
- 	spin_lock(&cfs_rq->cfs_runtime_lock);
-@@ -1908,6 +1910,7 @@ static enum hrtimer_restart sched_cfs_period_timer(struct hrtimer *timer)
- 	struct cfs_bandwidth *cfs_b =
- 		container_of(timer, struct cfs_bandwidth, cfs_period_timer);
- 
-+	do_sched_cfs_period_timer(cfs_b);
- 	hrtimer_add_expires_ns(timer, ktime_to_ns(cfs_b->cfs_period));
- 	return HRTIMER_RESTART;
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index efb8440..a8f24fb 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -80,6 +80,11 @@ static void print_cfs_group_stats(struct seq_file *m, int cpu,
+ 	PN(se->wait_max);
+ 	PN(se->wait_sum);
+ 	P(se->wait_count);
++#ifdef CONFIG_CFS_HARD_LIMITS
++	PN(se->throttle_max);
++	PN(se->throttle_sum);
++	P(se->throttle_count);
++#endif
+ #endif
+ 	P(se->load.weight);
+ #undef PN
+@@ -214,6 +219,16 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
+ #ifdef CONFIG_SMP
+ 	SEQ_printf(m, "  .%-30s: %lu\n", "shares", cfs_rq->shares);
+ #endif
++#ifdef CONFIG_CFS_HARD_LIMITS
++	spin_lock_irqsave(&rq->lock, flags);
++	SEQ_printf(m, "  .%-30s: %d\n", "cfs_throttled",
++			cfs_rq->cfs_throttled);
++	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "cfs_time",
++			SPLIT_NS(cfs_rq->cfs_time));
++	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "cfs_runtime",
++			SPLIT_NS(cfs_rq->cfs_runtime));
++	spin_unlock_irqrestore(&rq->lock, flags);
++#endif /* CONFIG_CFS_HARD_LIMITS */
+ 	print_cfs_group_stats(m, cpu, cfs_rq->tg);
+ #endif
  }
+@@ -310,7 +325,7 @@ static int sched_debug_show(struct seq_file *m, void *v)
+ 	u64 now = ktime_to_ns(ktime_get());
+ 	int cpu;
+ 
+-	SEQ_printf(m, "Sched Debug Version: v0.09, %s %.*s\n",
++	SEQ_printf(m, "Sched Debug Version: v0.10, %s %.*s\n",
+ 		init_utsname()->release,
+ 		(int)strcspn(init_utsname()->version, " "),
+ 		init_utsname()->version);
 diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index b83ff7d..557d30d 100644
+index 557d30d..828d7e7 100644
 --- a/kernel/sched_fair.c
 +++ b/kernel/sched_fair.c
-@@ -221,6 +221,50 @@ static void sched_cfs_runtime_exceeded(struct sched_entity *se,
+@@ -191,6 +191,23 @@ find_matching_se(struct sched_entity **se, struct sched_entity **pse)
+ 
+ #ifdef CONFIG_CFS_HARD_LIMITS
+ 
++static inline void update_stats_throttle_start(struct cfs_rq *cfs_rq,
++			struct sched_entity *se)
++{
++	schedstat_set(se->throttle_start, rq_of(cfs_rq)->clock);
++}
++
++static inline void update_stats_throttle_end(struct cfs_rq *cfs_rq,
++			struct sched_entity *se)
++{
++	schedstat_set(se->throttle_max, max(se->throttle_max,
++			rq_of(cfs_rq)->clock - se->throttle_start));
++	schedstat_set(se->throttle_count, se->throttle_count + 1);
++	schedstat_set(se->throttle_sum, se->throttle_sum +
++			rq_of(cfs_rq)->clock - se->throttle_start);
++	schedstat_set(se->throttle_start, 0);
++}
++
+ static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
+ {
+ 	return cfs_rq->cfs_throttled;
+@@ -217,6 +234,7 @@ static void sched_cfs_runtime_exceeded(struct sched_entity *se,
+ 
+ 	if (cfs_rq->cfs_time > cfs_rq->cfs_runtime) {
+ 		cfs_rq->cfs_throttled = 1;
++		update_stats_throttle_start(cfs_rq, se);
+ 		resched_task(tsk_curr);
  	}
  }
- 
-+static void enqueue_entity_locked(struct cfs_rq *cfs_rq,
-+		struct sched_entity *se, int wakeup);
-+
-+static void enqueue_throttled_entity(struct rq *rq, struct sched_entity *se)
-+{
-+	for_each_sched_entity(se) {
-+		if (se->on_rq)
-+			break;
-+		if (cfs_rq_throttled(group_cfs_rq(se)))
-+			break;
-+		enqueue_entity_locked(cfs_rq_of(se), se, 0);
-+	}
-+}
-+
-+/*
-+ * Refresh runtimes of all cfs_rqs in this group, i,e.,
-+ * refresh runtimes of the representative cfs_rq of this
-+ * tg on all cpus. Enqueue any throttled entity back.
-+ */
-+void do_sched_cfs_period_timer(struct cfs_bandwidth *cfs_b)
-+{
-+	int i;
-+	const struct cpumask *span = sched_bw_period_mask();
-+	struct task_group *tg = container_of(cfs_b, struct task_group,
-+					cfs_bandwidth);
-+	unsigned long flags;
-+
-+	for_each_cpu(i, span) {
-+		struct rq *rq = cpu_rq(i);
-+		struct cfs_rq *cfs_rq = tg->cfs_rq[i];
-+		struct sched_entity *se = tg->se[i];
-+
-+		spin_lock_irqsave(&rq->lock, flags);
-+		cfs_rq_runtime_lock(cfs_rq);
-+		cfs_rq->cfs_time = 0;
-+		if (cfs_rq_throttled(cfs_rq)) {
-+			cfs_rq->cfs_throttled = 0;
-+			enqueue_throttled_entity(rq, se);
-+		}
-+		cfs_rq_runtime_unlock(cfs_rq);
-+		spin_unlock_irqrestore(&rq->lock, flags);
-+	}
-+}
-+
- #else
- 
- static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
-@@ -304,7 +348,6 @@ static void sched_cfs_runtime_exceeded(struct sched_entity *se,
- 
- #endif	/* CONFIG_FAIR_GROUP_SCHED */
- 
--
- /**************************************************************
-  * Scheduling class tree data structure manipulation methods:
-  */
+@@ -257,6 +275,8 @@ void do_sched_cfs_period_timer(struct cfs_bandwidth *cfs_b)
+ 		cfs_rq_runtime_lock(cfs_rq);
+ 		cfs_rq->cfs_time = 0;
+ 		if (cfs_rq_throttled(cfs_rq)) {
++			update_rq_clock(rq);
++			update_stats_throttle_end(cfs_rq, se);
+ 			cfs_rq->cfs_throttled = 0;
+ 			enqueue_throttled_entity(rq, se);
+ 		}
