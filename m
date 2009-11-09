@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbZKIN3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZKIN3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbZKIN3O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 08:29:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbZKIN3O
+	id S1755907AbZKIN3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 08:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZKIN3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 08:29:14 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:42334 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755582AbZKIN3N (ORCPT
+	Mon, 9 Nov 2009 08:29:42 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:50101 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755861AbZKIN3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 08:29:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=hHtGWbGwCRhN579QCMi/Id7FMgUsbMmVVy7/h+K9IE6H7QuGzAc2P9udHnjcV2sQdb
-         QxfeCt6xfAWIObxqenU7j4qtIx5tnVxs2JLTHefoQX5X0CBUz3yVb12Pw+sv0rF1eNPm
-         t0U3oc8RkagGkfG1Srn7cRZa4ni8c/p7Y6Ek8=
+	Mon, 9 Nov 2009 08:29:41 -0500
+Message-ID: <4AF8193A.70505@nokia.com>
+Date: Mon, 09 Nov 2009 15:29:30 +0200
+From: Aaro Koskinen <aaro.koskinen@nokia.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20091108143059.029abf8b@infradead.org>
-References: <20090915054259.5282e5ba@infradead.org>
-	 <4e5e476b0911040139h1f471627la4262a5fa66abab0@mail.gmail.com>
-	 <20091108124035.23d53197@infradead.org>
-	 <4e5e476b0911081359x32d7a6c4x61ee3af92dc0c8a1@mail.gmail.com>
-	 <20091108143059.029abf8b@infradead.org>
-Date: Mon, 9 Nov 2009 14:29:17 +0100
-Message-ID: <4e5e476b0911090529g6ba93a9o91cfc1b15d7497d1@mail.gmail.com>
-Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO performance
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
-       jens.axboe@oracle.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Content-Type: text/plain; charset=UTF-8
+To: ext Kalle Valo <kalle.valo@iki.fi>
+CC: "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>,
+       "tony@atomide.com" <tony@atomide.com>
+Subject: Re: [PATCH v2 2/2] omap: RX-51: enable tsc2005
+References: <1257340982-22814-1-git-send-email-aaro.koskinen@nokia.com>	<1257340982-22814-2-git-send-email-aaro.koskinen@nokia.com> <87d43ufih0.fsf@purkki.valot.fi>
+In-Reply-To: <87d43ufih0.fsf@purkki.valot.fi>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Nov 2009 13:29:35.0671 (UTC) FILETIME=[ADE46C70:01CA6140]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 8, 2009 at 11:30 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sun, 8 Nov 2009 22:59:43 +0100
-> I think we all agree that long term polling is bad ;-)
-> (even though we use rep nop in the polling loop which is also a HT
-> yield).
->
-> There's just the very short sleeps (where short is "single digit usecs")
-> where the rules are slightly different.
->
->> > this check is supposed to catch the known timer cases; those
->> > are rather accurate in prediction
+Hi,
+
+ext Kalle Valo wrote:
+> Aaro Koskinen <aaro.koskinen@nokia.com> writes:
+> 
+>> Enable tsc2005 touchscreen driver on the RX-51 board.
 >>
->> Unfortunately, I have seen polling residency times > 1ms, so it must
->> not be so accurate.
->
-> well the question is... is this a measurement error or an error in
-> when polling is chosen.
-> We obviously need to fix it whatever it is, but... first need to chase
-> down really which it is.
+>> Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
+>> ---
+>>
+>> The patch is for 2.6.32-rc6.
+> 
+> [...]
+> 
+>> +static struct spi_board_info rx51_peripherals_spi_board_info[] = {
+>> +	[0] = {
+>> +		.modalias		= "tsc2005",
+>> +		.bus_num		= 1,
+>> +		.chip_select		= 0,
+>> +		.irq			= OMAP_GPIO_IRQ(RX51_TSC2005_IRQ_GPIO),
+>> +		.max_speed_hz		= 6000000,
+>> +		.controller_data	= &tsc2005_mcspi_config,
+>> +		.platform_data		= &tsc2005_config,
+>> +	},
+>> +};
+> 
+> I sent a wl1251 patch which adds spi_board_info and conflicts with
+> this patch:
+> 
+> http://www.mail-archive.com/linux-omap@vger.kernel.org/msg17604.html
+> 
+> How do we handle this?
 
-Any suggestion on how to check?
-Clocksource is hpet, and I have CONFIG_SCHED_HRTICK=y, so the
-granularity should not be a problem.
+I can resend/rebase this patch once the wl1251 patch is integrated.
 
-Corrado
+BTW, check the comment from Tommi Rantala - spi_board_info can be marked
+with __initdata.
+
+A.
