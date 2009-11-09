@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZKIB6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbZKIB6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752952AbZKIB6G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 20:58:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZKIB6G
+	id S1753107AbZKIB6Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 20:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZKIB6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 20:58:06 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:46616 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbZKIB6E (ORCPT
+	Sun, 8 Nov 2009 20:58:22 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:39692 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753042AbZKIB6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 20:58:04 -0500
-Date: Mon, 9 Nov 2009 10:57:42 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.32-rc7
-Message-ID: <20091109015742.GB22932@linux-sh.org>
+	Sun, 8 Nov 2009 20:58:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pc8M4swdD666MASaNMivpyd4nyBTO7yPDHCYvhHRHPI0T6ADHIsFnJCKK+Qgk0NdHx
+         lAs7e5ZGD4SglJ/CLmofWQWhMmiK+/iYNvIzMQA0WMDsC1P/I6qJt0J813DGHD4a2xPR
+         4V3/WRL0Xj6txyf5iqDiifLaOnHm5inGCrL8w=
+Date: Mon, 9 Nov 2009 02:58:16 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, zhaolei@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH] softirq,tracing: enable to trace softirq raise latency
+Message-ID: <20091109015812.GA13153@nowhere>
+References: <4AF284CF.3010407@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4AF284CF.3010407@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Thu, Nov 05, 2009 at 03:54:55PM +0800, Lai Jiangshan wrote:
+> 
+> Add a tracepoint for tracing when softirq action is raised.
+> 
+> It and the existed tracepoints complete softirq's tracepoints:
+> softirq_raise, softirq_entry and softirq_exit.
+> 
+> And when this tracepoint is used in combination with
+> the softirq_entry tracepoint we can determine
+> the softirq raise latency.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.32
 
-Which contains:
+Looks good!
 
-Magnus Damm (1):
-      serial: sh-sci: disable callback typo fix
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-Matt Fleming (1):
-      sh: Account for cache aliases in flush_icache_range()
-
-Paul Mundt (1):
-      sh: unwinder: Fix up invalid PC refetch in dwarf unwinder.
-
-Thomas Gleixner (1):
-      sh: Replace old style lock initializer
-
- arch/sh/include/asm/rwsem.h |    2 +-
- arch/sh/kernel/dwarf.c      |    2 +-
- arch/sh/mm/cache-sh4.c      |    5 ++++-
- drivers/serial/sh-sci.c     |    2 +-
- 4 files changed, 7 insertions(+), 4 deletions(-)
