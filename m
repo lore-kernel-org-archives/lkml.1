@@ -1,164 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbZKJOzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbZKIPSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756657AbZKJOzf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 09:55:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbZKJOzd
+	id S1755712AbZKIPSt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 10:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbZKIPSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 09:55:33 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:64848 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756619AbZKJOz3 (ORCPT
+	Mon, 9 Nov 2009 10:18:48 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:34770 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753952AbZKIPSs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 09:55:29 -0500
+	Mon, 9 Nov 2009 10:18:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :mime-version:content-type:content-transfer-encoding;
-        b=qToQ3HBcJcpI9Z3Gvh/6gOIVEIl2xdfd8cFcLUH9R/l+gRhKTuXaXp7Nc1mYMN9QWt
-         wNnEUpqzhzoBojVPXWaU5l0KIocfD8o1qyForHqpI5RGzQ/TYSssgfoc4nBkDNlHTcaK
-         tT38nzV7zW+iaYxO0yHWtQ32aOE5kAcD6hC00=
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-To: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Subject: [PATCH v2 2/2] bsearch: prevent overflow when computing middle comparison element
-Date: Mon,  9 Nov 2009 12:53:49 -0200
-Message-Id: <d748022cff75d9c09afc93b77cb16a683136cd13.1257778258.git.andre.goddard@gmail.com>
-X-Mailer: git-send-email 1.6.5.2.153.g6e31f.dirty
-In-Reply-To: <cover.1257778258.git.andre.goddard@gmail.com>
-References: <cover.1257778258.git.andre.goddard@gmail.com>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=tEa/3/SWXSlp9tT2Hh747HcKYRyG6NzPcpGnwly+Z/W78Obd+e+HrQLLq48yKFv+XT
+         QvRw2rTDMz6ckI7vItAFYnqCD/SXKIbDaZyO79/NM954S1ldvwemak1PSBiCPsET52Ue
+         ht/S3ml5ErUEujphTfWW6j0Nq8IFw+F5DAEiU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: linux-next: manual merge of the trivial tree with the  tree
+Date: Mon, 9 Nov 2009 16:08:36 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+References: <20091109154305.49d3eb7c.sfr@canb.auug.org.au> <alpine.LSU.2.00.0911090944200.15039@wotan.suse.de>
+In-Reply-To: <alpine.LSU.2.00.0911090944200.15039@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911091608.36757.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's really difficult to occur in practice because the sum of the lower
-and higher limits must overflow an int variable, but it can occur when
-working with large arrays. We'd better safe than sorry by avoiding this
-overflow situation when computing the middle element for comparison.
+On Monday 09 November 2009 09:45:50 Jiri Kosina wrote:
 
-See:
-http://googleresearch.blogspot.com/2006/06/extra-extra-read-all-about-it-nearly.html
-http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5045582
+> From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> Subject: rt2x00: fix some typos and punctuation in comments
+> 
+> fix some typos and punctuation in comments
+> 
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-The program below demonstrates the issue:
+FWIW the patch is in rt2800 tree now.
 
-$ ./a.out
-(glibc)         Element is at the last position
-(patched)       Element is at the last position
-Segmentation fault
-
-===
-#include <search.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-/* A number that when doubled will be bigger than 2^31 - 1 */
-#define BIG_NUMBER_TO_OVERFLOW_INT	(1100000000)
-
-static int cmp_char(const void *p1, const void *p2)
-{
-	char v1 = (*(char *)p1);
-	char v2 = (*(char *)p2);
-
-	if (v1 < v2)
-		return -1;
-	else if (v1 > v2)
-		return 1;
-	else
-		return 0;
-}
-
-void *lib_bsearch(const void *key, const void *base, size_t num, size_t size
-	, int (*cmp)(const void *key, const void *elt))
-{
-	int start = 0, end = num - 1, mid, result;
-
-	while (start <= end) {
-		mid = (start + end) / 2;
-		result = cmp(key, base + mid * size);
-		if (result < 0)
-			end = mid - 1;
-		else if (result > 0)
-			start = mid + 1;
-		else
-			return (void *)base + mid * size;
-	}
-
-	return NULL;
-}
-
-void *patch_lib_bsearch(const void *key, const void *base, size_t num, size_t size
-	, int (*cmp)(const void *key, const void *elt))
-{
-	size_t start = 0, end = num, mid;
-	int result;
-
-	while (start < end) {
-		mid = (start + end) / 2;
-		result = cmp(key, base + mid * size);
-		if (result < 0)
-			end = mid - 1;
-		else if (result > 0)
-			start = mid + 1;
-		else
-			return (void *)base + mid * size;
-	}
-
-	return NULL;
-}
-
-int main(void)
-{
-	char key = 1;
-	char *array = calloc(BIG_NUMBER_TO_OVERFLOW_INT, sizeof(char));
-	void *ptr;
-
-	if (!array)
-	{
-		printf("%s\n", "no memory");
-		return EXIT_FAILURE;
-	}
-	array[BIG_NUMBER_TO_OVERFLOW_INT - 1] = 1;
-
-	ptr = bsearch(&key, array, BIG_NUMBER_TO_OVERFLOW_INT, sizeof(char), cmp_char);
-	printf("(glibc) Element is%sat the last position\n"
-		, (ptr == &array[BIG_NUMBER_TO_OVERFLOW_INT - 1]) ? " " : " NOT ");
-
-	ptr = patch_lib_bsearch(&key, array, BIG_NUMBER_TO_OVERFLOW_INT, sizeof(char), cmp_char);
-	printf("(patched) Element is%sat the last position\n"
-		, (ptr == &array[BIG_NUMBER_TO_OVERFLOW_INT - 1]) ? " " : " NOT ");
-
-	ptr = lib_bsearch(&key, array, BIG_NUMBER_TO_OVERFLOW_INT, sizeof(char), cmp_char);
-	printf("(unpatched) Element is%sat the last position\n"
-		, (ptr == &array[BIG_NUMBER_TO_OVERFLOW_INT - 1]) ? " " : " NOT ");
-
-	free(array);
-
-	return EXIT_SUCCESS;
-}
-
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
----
- lib/bsearch.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/lib/bsearch.c b/lib/bsearch.c
-index 33cbba6..af40c03 100644
---- a/lib/bsearch.c
-+++ b/lib/bsearch.c
-@@ -33,7 +33,8 @@
- void *bsearch(const void *key, const void *base, size_t num, size_t size,
- 	      int (*cmp)(const void *key, const void *elt))
- {
--	int start = 0, end = num, mid, result;
-+	size_t start = 0, end = num, mid;
-+	int result;
- 
- 	while (start < end) {
- 		mid = (start + end) / 2;
 -- 
-1.6.5.2.153.g6e31f.dirty
-
+Bartlomiej Zolnierkiewicz
