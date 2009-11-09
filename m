@@ -1,99 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZKIOYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbZKIO0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZKIOYq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 09:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbZKIOYp
+	id S1755613AbZKIO0m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 09:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbZKIO0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 09:24:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50707 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753220AbZKIOYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 09:24:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to preempt_count leakage in keventd
-Date: Mon, 9 Nov 2009 15:26:02 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.31.5-tst; KDE/4.3.1; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <200911091250.31626.rjw@sisk.pl> <20091109124937.GA21114@elte.hu> <alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
+	Mon, 9 Nov 2009 09:26:41 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:52312 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118AbZKIO0k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 09:26:40 -0500
+Date: Mon, 9 Nov 2009 08:26:28 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
+       Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 06/15] sysfs: Fix locking and factor out
+ sysfs_sd_setattr
+Message-ID: <20091109142628.GA11296@us.ibm.com>
+References: <m1pr7tmqb4.fsf@fess.ebiederm.org>
+ <1257665233-12468-6-git-send-email-ebiederm@xmission.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911091526.02147.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257665233-12468-6-git-send-email-ebiederm@xmission.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 November 2009, Thomas Gleixner wrote:
-> On Mon, 9 Nov 2009, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > On Monday 09 November 2009, Ingo Molnar wrote:
-> > > > 
-> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > 
-> > > > > [ 2016.865041] BUG: using smp_processor_id() in preemptible [00000000] code: events/1/29920                                                                                         
-> > > > > [ 2016.865344] caller is vmstat_update+0x13/0x48                                          
-> > > > > [ 2016.865522] Pid: 29920, comm: events/1 Not tainted 2.6.31-tst #158                     
-> > > > > [ 2016.865700] Call Trace:                                                                
-> > > > > [ 2016.865877]  [<ffffffff811608e8>] debug_smp_processor_id+0xc4/0xd4                     
-> > > > > [ 2016.866052]  [<ffffffff810a9ae1>] vmstat_update+0x13/0x48                              
-> > > > > [ 2016.866232]  [<ffffffff81051ee6>] worker_thread+0x18b/0x22a                            
-> > > > > [ 2016.866409]  [<ffffffff810a9ace>] ? vmstat_update+0x0/0x48                             
-> > > > > [ 2016.866578]  [<ffffffff810556a5>] ? autoremove_wake_function+0x0/0x38                  
-> > > > > [ 2016.866749]  [<ffffffff81288803>] ? _spin_unlock_irqrestore+0x35/0x37                  
-> > > > > [ 2016.866935]  [<ffffffff81051d5b>] ? worker_thread+0x0/0x22a                            
-> > > > > [ 2016.867113]  [<ffffffff8105547d>] kthread+0x69/0x71                                    
-> > > > > [ 2016.867278]  [<ffffffff8100c1aa>] child_rip+0xa/0x20                                   
-> > > > > [ 2016.867450]  [<ffffffff81055414>] ? kthread+0x0/0x71                                   
-> > > > > [ 2016.867618]  [<ffffffff8100c1a0>] ? child_rip+0x0/0x20                                 
-> > > > 
-> > > > a bug producing similar looking messages was fixed by:
-> > > > 
-> > > >   fd21073: sched: Fix affinity logic in select_task_rq_fair()
-> > > > 
-> > > > but that bug was introduced by:
-> > > > 
-> > > >   a1f84a3: sched: Check for an idle shared cache in select_task_rq_fair()
-> > > 
-> > > I guess these are tip commits?
-> > 
-> > yep, tip:sched/core ones.
-> > 
-> > > > Which is for v2.6.33, not v2.6.32.
-> > > 
-> > > The one I saw was in the Linus' tree, quite obviously.
-> > 
-> > ok, then my observation should not apply.
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> From: Eric W. Biederman <ebiederm@xmission.com>
 > 
-> I think it _IS_ releated because the worker_thread is CPU affine and
-> the debug_smp_processor_id() check does:
+> Cleanly separate the work that is specific to setting the
+> attributes of a sysfs_dirent from what is needed to update
+> the attributes of a vfs inode.
 > 
->     if (cpumask_equal(&current->cpus_allowed, cpumask_of(this_cpu)))
+> Additionally grab the sysfs_mutex to keep any nasties from
+> surprising us when updating the sysfs_dirent.
 > 
-> which prevents that usage of smp_processor_id() in ksoftirqd and
-> keventd in preempt enabled regions is warned on.
-> 
-> We saw exaclty the same back trace with fd21073 (sched: Fix affinity
-> logic in select_task_rq_fair()).
-> 
-> Rafael, can you please add a printk to debug_smp_processor_id() so we
-> can see on which CPU we are running ? I suspect we are on the wrong
-> one.
+> Acked-by: Tejun Heo <tj@kernel.org>
+> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 
-Well, I can add the printk(), but I can't guarantee that I will get the call
-trace once again.  So far I've seen it only once after 20-25 consecutive
-suspend-resume cycles, so ...  you get the idea.
+Oh, sorry, guess i never did
 
-However, running on a wrong CPU would very nicely explain all of the observed
-symptoms, so I guess we can try a House M.D.-alike approach and assume that the
-answer is "yes, we're running on the wrong CPU".  What would we do next if that
-was the case?
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Rafael
+> ---
+>  fs/sysfs/inode.c |   52 ++++++++++++++++++++++++++++++++--------------------
+>  fs/sysfs/sysfs.h |    1 +
+>  2 files changed, 33 insertions(+), 20 deletions(-)
+> 
+> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+> index fed7a74..fccfb55 100644
+> --- a/fs/sysfs/inode.c
+> +++ b/fs/sysfs/inode.c
+> @@ -64,30 +64,15 @@ struct sysfs_inode_attrs *sysfs_init_inode_attrs(struct sysfs_dirent *sd)
+> 
+>  	return attrs;
+>  }
+> -int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+> +
+> +int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
+>  {
+> -	struct inode * inode = dentry->d_inode;
+> -	struct sysfs_dirent * sd = dentry->d_fsdata;
+>  	struct sysfs_inode_attrs *sd_attrs;
+>  	struct iattr *iattrs;
+>  	unsigned int ia_valid = iattr->ia_valid;
+> -	int error;
+> -
+> -	if (!sd)
+> -		return -EINVAL;
+> 
+>  	sd_attrs = sd->s_iattr;
+> 
+> -	error = inode_change_ok(inode, iattr);
+> -	if (error)
+> -		return error;
+> -
+> -	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
+> -
+> -	error = inode_setattr(inode, iattr);
+> -	if (error)
+> -		return error;
+> -
+>  	if (!sd_attrs) {
+>  		/* setting attributes for the first time, allocate now */
+>  		sd_attrs = sysfs_init_inode_attrs(sd);
+> @@ -110,12 +95,39 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+>  			iattrs->ia_ctime = iattr->ia_ctime;
+>  		if (ia_valid & ATTR_MODE) {
+>  			umode_t mode = iattr->ia_mode;
+> -
+> -			if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
+> -				mode &= ~S_ISGID;
+>  			iattrs->ia_mode = sd->s_mode = mode;
+>  		}
+>  	}
+> +	return 0;
+> +}
+> +
+> +int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+> +{
+> +	struct inode * inode = dentry->d_inode;
+> +	struct sysfs_dirent * sd = dentry->d_fsdata;
+> +	int error;
+> +
+> +	if (!sd)
+> +		return -EINVAL;
+> +
+> +	error = inode_change_ok(inode, iattr);
+> +	if (error)
+> +		return error;
+> +
+> +	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
+> +	if (iattr->ia_valid & ATTR_MODE) {
+> +		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
+> +			iattr->ia_mode &= ~S_ISGID;
+> +	}
+> +
+> +	error = inode_setattr(inode, iattr);
+> +	if (error)
+> +		return error;
+> +
+> +	mutex_lock(&sysfs_mutex);
+> +	error = sysfs_sd_setattr(sd, iattr);
+> +	mutex_unlock(&sysfs_mutex);
+> +
+>  	return error;
+>  }
+> 
+> diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+> index af4c4e7..a96d967 100644
+> --- a/fs/sysfs/sysfs.h
+> +++ b/fs/sysfs/sysfs.h
+> @@ -155,6 +155,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
+>   */
+>  struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
+>  void sysfs_delete_inode(struct inode *inode);
+> +int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
+>  int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
+>  int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+>  		size_t size, int flags);
+> -- 
+> 1.6.5.2.143.g8cc62
