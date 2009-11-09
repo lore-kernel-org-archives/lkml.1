@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbZKICNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbZKICOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbZKICNM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 21:13:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZKICNL
+	id S1753423AbZKICOk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 21:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZKICOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 21:13:11 -0500
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:54085 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751406AbZKICNL (ORCPT
+	Sun, 8 Nov 2009 21:14:40 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:51327 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752341AbZKICOj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 21:13:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HqwbMr6urUIJibBj6feTi2Pu8gsffbX0LGwknPxvVnCJoE/amPBnB2C9NBdA0Tooie
-         X/SQRUa+pxYzXDNum+YH+OQA7P9IJQa7U9379gIBdwl0Xeq6npt7NTY23d6X8HJbDWwq
-         n6c1i3XoUa3aPLUZ9qRlo/u7cAYt8kMQMycug=
-Date: Mon, 9 Nov 2009 10:13:31 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Jeff Dike <jdike@addtoit.com>
-Subject: Re: [patch 07/16] um: Replace old style lock initializer
-Message-ID: <20091109021331.GA2399@hack>
-References: <20091106223547.784916750@linutronix.de> <20091106223806.682280699@linutronix.de>
+	Sun, 8 Nov 2009 21:14:39 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091106223806.682280699@linutronix.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091108091009.GB20529@n2100.arm.linux.org.uk>
+References: <20091103105319.GA2492@elf.ucw.cz>
+	 <20091103105737.GE20341@fluff.org.uk>
+	 <20091108081314.GA16482@elf.ucw.cz>
+	 <20091108091009.GB20529@n2100.arm.linux.org.uk>
+Date: Sun, 8 Nov 2009 18:14:45 -0800
+Message-ID: <d6200be20911081814y286d58d2yf3d9eb7e6ddffa5b@mail.gmail.com>
+Subject: Re: dream: glue for mmc controller
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, Ben Dooks <ben-linux@fluff.org>,
+       Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 06, 2009 at 10:41:33PM -0000, Thomas Gleixner wrote:
->SPIN_LOCK_UNLOCKED is deprecated since quite a while. Runtime init the
->locks instead.
+On Sun, Nov 8, 2009 at 1:10 AM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Sun, Nov 08, 2009 at 09:13:14AM +0100, Pavel Machek wrote:
+>> > > +#include <asm/io.h>
+>> > > +#include <asm/gpio.h>
+>> > linux/gpio.h
+>> > linux/io.h
+>>
+>> I got compile errors when trying to use linux/gpio.h:
+>>
+>> arch/arm/mach-msm/board-dream-gpio.c: In function
+>> 'dream_gpio_configure':
+>> arch/arm/mach-msm/board-dream-gpio.c:109: error: 'GPIOF_OUTPUT_LOW'
+>> undeclared (first use in this function)
 >
->Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->Cc: Jeff Dike <jdike@addtoit.com>
+> This means it's abusing the gpio header files - which are intended for
+> the generic GPIO support, but are being used for this platforms private
+> non-generic GPIO based stuff.
+>
 
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
-
-Thanks.
-
->---
-> arch/um/drivers/ubd_kern.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
->Index: linux-2.6/arch/um/drivers/ubd_kern.c
->===================================================================
->--- linux-2.6.orig/arch/um/drivers/ubd_kern.c
->+++ linux-2.6/arch/um/drivers/ubd_kern.c
->@@ -180,7 +180,6 @@ struct ubd {
-> 	.no_cow =               0, \
-> 	.shared =		0, \
-> 	.cow =			DEFAULT_COW, \
->-	.lock =			SPIN_LOCK_UNLOCKED,	\
-> 	.request =		NULL, \
-> 	.start_sg =		0, \
-> 	.end_sg =		0, \
->@@ -838,6 +837,7 @@ static int ubd_add(int n, char **error_o
-> 
-> 	ubd_dev->size = ROUND_BLOCK(ubd_dev->size);
-> 
->+	spin_lock_init(&ubd_dev->lock);
-> 	INIT_LIST_HEAD(&ubd_dev->restart);
-> 	sg_init_table(ubd_dev->sg, MAX_SG);
-> 
->
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+It also means that CONFIG_GENERIC_GPIO is not set, so linux/gpio.h
+stubbed out all the gpio functions.
 
 -- 
-Live like a child, think like the god.
- 
+Arve Hjønnevåg
