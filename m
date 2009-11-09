@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZKIDyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZKID6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753729AbZKIDyw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 22:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZKIDyv
+	id S1753665AbZKID6F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 22:58:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZKID6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 22:54:51 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57227 "EHLO smtps.tip.net.au"
+	Sun, 8 Nov 2009 22:58:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57488 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753478AbZKIDyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 22:54:51 -0500
-Date: Mon, 9 Nov 2009 14:54:51 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: pcmcia tree build warning
-Message-Id: <20091109145451.c9f1c4c3.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__9_Nov_2009_14_54_51_+1100_zOx8ZIjvcYUrwOYF"
+	id S1751092AbZKID6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 22:58:03 -0500
+Message-ID: <4AF7933D.6070103@kernel.org>
+Date: Mon, 09 Nov 2009 12:57:49 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: Re: [PATCH 0/15] sysfs lazification final
+References: <m13a4vbz8r.fsf@fess.ebiederm.org> <m1pr7tmqb4.fsf@fess.ebiederm.org>
+In-Reply-To: <m1pr7tmqb4.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__9_Nov_2009_14_54_51_+1100_zOx8ZIjvcYUrwOYF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Eric W. Biederman wrote:
+> The sysfs code updates the vfs caches immediately when the sysfs data
+> structures change causing a lot of unnecessary complications.  The
+> following patchset untangles that beast.  Allowing for simpler
+> more straight forward code, the removal of a hack from the vfs
+> to support sysfs, and human comprehensible locking on sysfs.
+> 
+> Most of these patches have already been reviewed and acked from the
+> last time I had time to work on sysfs.
+> 
+> This acks have been folded in and the two small bugs found in the
+> previous review have been fixed in the trailing patches (they are
+> minor enough nits that even a bisect that happens to land in the
+> middle should not see sysfs problems).
 
-Hi Dominik,
+Thanks a lot for bringing some sanity to sysfs.  :-)
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
-
-drivers/char/pcmcia/cm4000_cs.c: In function 'cmm_ioctl':
-/scratch/sfr/next/drivers/char/pcmcia/cm4000_cs.c:1630: warning: the frame =
-size of 2176 bytes is larger than 2048 bytes
-
-Introduced by commit 7194198b163c83725f52ce8e34b24cca053deea7 ("pcmcia:
-use dynamic debug infrastructure, deprecate CS_CHECK (char)") which
-unconditionalised "char *ioctl_names[CM_IOC_MAXNR + 1]" on the stack.
-CM_IOC_MAXNR is 255, so this adds 2k to the stack frame just to allow the
-printing of one of five ioctl names in a debug message.  It could be made
-static ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__9_Nov_2009_14_54_51_+1100_zOx8ZIjvcYUrwOYF
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkr3kosACgkQjjKRsyhoI8w6ZgCgvES2lGYx1ytihQj1qEI/ykd9
-gQMAn3adEVFJE7tUbFBc6l67f6Kc4Zh4
-=Yvcc
------END PGP SIGNATURE-----
-
---Signature=_Mon__9_Nov_2009_14_54_51_+1100_zOx8ZIjvcYUrwOYF--
+-- 
+tejun
