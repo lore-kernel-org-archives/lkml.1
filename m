@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZKIP6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbZKIP6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbZKIP6b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 10:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbZKIP6b
+	id S1756447AbZKIP6z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 10:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbZKIP6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 10:58:31 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:31409 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756393AbZKIP63 (ORCPT
+	Mon, 9 Nov 2009 10:58:53 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:37653 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756448AbZKIP6w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 10:58:29 -0500
-X-Trace: 287122278/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.15.142/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.15.142
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkYFAHLK90pPRQ+O/2dsb2JhbACBTo5rAc1mhD4EgWg
-X-IronPort-AV: E=Sophos;i="4.44,708,1249254000"; 
-   d="scan'208";a="287122278"
-Date: Mon, 9 Nov 2009 15:58:23 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] ksm: cond_resched in unstable tree
-Message-ID: <Pine.LNX.4.64.0911091554500.25509@sister.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Nov 2009 10:58:52 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
+Date: Mon, 09 Nov 2009 08:58:49 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: periodic fsck was Re: [patch] ext2/3: document conditions when
+ reliable operation is possible
+In-reply-to: <20091109140555.GG7592@mit.edu>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Pavel Machek <pavel@ucw.cz>, david@lang.hm, Rik van Riel <riel@redhat.com>,
+       Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       ext4 development <linux-ext4@vger.kernel.org>, corbet@lwn.net,
+       Jan Kara <jack@suse.cz>, Bryan Kadzban <bryan@kadzban.is-a-geek.net>,
+       Karel Zak <kzak@redhat.com>, LVM Mailing List <linux-lvm@redhat.com>
+Message-id: <B18BA4E1-2D18-4E00-8678-5DE92EBA343D@sun.com>
+X-Mailer: Apple Mail (2.936)
+References: <20090824230036.GK29763@elf.ucw.cz> <4A932B18.1020209@redhat.com>
+ <20090825093414.GB15563@elf.ucw.cz> <4A94ACDF.30405@redhat.com>
+ <20090826111751.GC26595@elf.ucw.cz>
+ <alpine.DEB.2.00.0908260428310.30426@asgard.lang.hm>
+ <20090826131028.GB1370@ucw.cz>
+ <alpine.DEB.2.00.0908260642560.28411@asgard.lang.hm>
+ <20090826180248.GB6997@mit.edu> <20091109085318.GE4818@elf.ucw.cz>
+ <20091109140555.GG7592@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KSM needs a cond_resched() for CONFIG_PREEMPT_NONE, in its unbounded
-search of the unstable tree.  The stable tree cases already have one,
-and originally there was one down inside get_user_pages();
-but I missed it when I converted to follow_page() instead.
+On 2009-11-09, at 07:05, Theodore Tso wrote:
+> So these days, what I strongly recommend is that people use LVM
+> snapshots, and schedule weekly checks during some low usage period
+> (i.e., 3am on Saturdays), using something like the e2croncheck shell
+> script.
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
 
- mm/ksm.c |    1 +
- 1 file changed, 1 insertion(+)
+There was another script written to do this that handled the e2fsck,  
+reiserfsck
+and xfs_check, detecting all volume groups automatically, along with  
+e.g.
+validating that the snapshot volume doesn't exist before starting the  
+check
+(which may indicate that the previous e2fsck is still running), and  
+not running while on AC power.
 
---- 2.6.32-rc6/mm/ksm.c	2009-10-12 00:26:43.000000000 +0100
-+++ linux/mm/ksm.c	2009-11-07 14:44:58.000000000 +0000
-@@ -1012,6 +1012,7 @@ static struct rmap_item *unstable_tree_s
- 		struct rmap_item *tree_rmap_item;
- 		int ret;
- 
-+		cond_resched();
- 		tree_rmap_item = rb_entry(*new, struct rmap_item, node);
- 		page2[0] = get_mergeable_page(tree_rmap_item);
- 		if (!page2[0])
+The last version was in the thread "forced fsck (again?)" dated  
+2008-01-28.
+Would it be better to use that one?  In that thread we discussed not  
+clobbering
+the last checked time as e2croncheck does, so the admin can see how  
+long it
+was since the filesystem was last checked.
+
+Maybe it makes more sense to get the lvcheck script included into util- 
+linux-ng
+or lvm2 packages, and have it added automatically to the cron.weekly  
+directory?
+Then the distros could disable the at-boot checking safely, while  
+still being
+able to detect corruption caused by cables/RAM/drives/software.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
