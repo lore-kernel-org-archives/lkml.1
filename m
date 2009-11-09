@@ -1,133 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbZKIHrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbZKIHrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbZKIHrE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 02:47:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZKIHrE
+	id S1753603AbZKIHrW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 02:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZKIHrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 02:47:04 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:19574 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbZKIHrC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 02:47:02 -0500
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: alsa-devel@alsa-project.org, "tony@atomide.com" <tony@atomide.com>
-Subject: Re: [alsa-devel] [PATCH 2/4 v2] OMAP: Configure audio_mclk for twl4030-codec MFD
-Date: Mon, 9 Nov 2009 09:46:46 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo-r4; KDE/4.3.2; i686; ; )
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "sameo@linux.intel.com" <sameo@linux.intel.com>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1257321500-27049-1-git-send-email-peter.ujfalusi@nokia.com> <1257321500-27049-2-git-send-email-peter.ujfalusi@nokia.com> <1257321500-27049-3-git-send-email-peter.ujfalusi@nokia.com>
-In-Reply-To: <1257321500-27049-3-git-send-email-peter.ujfalusi@nokia.com>
+	Mon, 9 Nov 2009 02:47:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39950 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752648AbZKIHrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 02:47:21 -0500
+Date: Mon, 9 Nov 2009 08:47:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Roland McGrath <roland@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, oleg@redhat.com
+Subject: Re: [PATCH] extend print_fatal_signals for reached RLIMIT_SIGPENDING
+Message-ID: <20091109074707.GE453@elte.hu>
+References: <4AF6E7E2.9080406@miraclelinux.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911090946.46576.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 09 Nov 2009 07:46:54.0575 (UTC) FILETIME=[CE8627F0:01CA6110]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF6E7E2.9080406@miraclelinux.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Tony,
 
-On Wednesday 04 November 2009 09:58:18 Ujfalusi Peter (Nokia-D/Tampere) wrote:
-> audio_mclk value is going to be handled by the
-> twl4030-codec MFD driver, configure the correct
-> value for boards, which is using the twl4030 audio.
+* Naohiro Ooiwa <nooiwa@miraclelinux.com> wrote:
+
+> When the system has too many timers or too many aggregate
+> queued signals, the EAGAIN error is returned to application
+> from kernel, including timer_create().
+> It means that exceeded limit of pending signals at all.
+> But we can't imagine it.
 > 
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+> This patch show the message when reached limit of pending signals
+> and enabled print_fatal_signals.
+> If you see this message and your system behaved unexpectedly,
+> you can run following command.
+>    # ulimit -i unlimited
+> 
+> With help from Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>.
+> 
+> 
+> Signed-off-by: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 > ---
->  arch/arm/mach-omap2/board-3430sdp.c      |    1 +
->  arch/arm/mach-omap2/board-omap3beagle.c  |    1 +
->  arch/arm/mach-omap2/board-omap3evm.c     |    1 +
->  arch/arm/mach-omap2/board-omap3pandora.c |    1 +
->  arch/arm/mach-omap2/board-overo.c        |    1 +
->  arch/arm/mach-omap2/board-zoom2.c        |    1 +
->  6 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/board-3430sdp.c
->  b/arch/arm/mach-omap2/board-3430sdp.c index 4f91f7a..9afd957 100644
-> --- a/arch/arm/mach-omap2/board-3430sdp.c
-> +++ b/arch/arm/mach-omap2/board-3430sdp.c
-> @@ -415,6 +415,7 @@ static struct twl4030_codec_audio_data sdp3430_audio =
->  { };
-> 
->  static struct twl4030_codec_data sdp3430_codec = {
-> +	.audio_mclk = 26000000,
->  	.audio = &sdp3430_audio,
->  };
-> 
-> diff --git a/arch/arm/mach-omap2/board-omap3beagle.c
->  b/arch/arm/mach-omap2/board-omap3beagle.c index 2161d85..8f0c106 100644
-> --- a/arch/arm/mach-omap2/board-omap3beagle.c
-> +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-> @@ -259,6 +259,7 @@ static struct twl4030_codec_audio_data
->  beagle_audio_data = { };
-> 
->  static struct twl4030_codec_data beagle_codec_data = {
-> +	.audio_mclk = 26000000,
->  	.audio = &beagle_audio_data,
->  };
-> 
-> diff --git a/arch/arm/mach-omap2/board-omap3evm.c
->  b/arch/arm/mach-omap2/board-omap3evm.c index d9a6103..5bb30cb 100644
-> --- a/arch/arm/mach-omap2/board-omap3evm.c
-> +++ b/arch/arm/mach-omap2/board-omap3evm.c
-> @@ -199,6 +199,7 @@ static struct twl4030_codec_audio_data
->  omap3evm_audio_data = { };
-> 
->  static struct twl4030_codec_data omap3evm_codec_data = {
-> +	.audio_mclk = 26000000,
->  	.audio = &omap3evm_audio_data,
->  };
-> 
-> diff --git a/arch/arm/mach-omap2/board-omap3pandora.c
->  b/arch/arm/mach-omap2/board-omap3pandora.c index 5036b56..77790ee 100644
-> --- a/arch/arm/mach-omap2/board-omap3pandora.c
-> +++ b/arch/arm/mach-omap2/board-omap3pandora.c
-> @@ -286,6 +286,7 @@ static struct twl4030_codec_audio_data
->  omap3pandora_audio_data = { };
-> 
->  static struct twl4030_codec_data omap3pandora_codec_data = {
-> +	.audio_mclk = 26000000,
->  	.audio = &omap3pandora_audio_data,
->  };
-> 
-> diff --git a/arch/arm/mach-omap2/board-overo.c
->  b/arch/arm/mach-omap2/board-overo.c index dc55008..e1fb504 100644
-> --- a/arch/arm/mach-omap2/board-overo.c
-> +++ b/arch/arm/mach-omap2/board-overo.c
-> @@ -334,6 +334,7 @@ static struct twl4030_codec_audio_data overo_audio_data
->  = { };
-> 
->  static struct twl4030_codec_data overo_codec_data = {
-> +	.audio_mclk = 26000000,
->  	.audio = &overo_audio_data,
->  };
-> 
-> diff --git a/arch/arm/mach-omap2/board-zoom2.c
->  b/arch/arm/mach-omap2/board-zoom2.c index f1b4e7c..de3a38d 100644
-> --- a/arch/arm/mach-omap2/board-zoom2.c
-> +++ b/arch/arm/mach-omap2/board-zoom2.c
-> @@ -234,6 +234,7 @@ static struct twl4030_codec_audio_data zoom2_audio_data
->  = { };
-> 
->  static struct twl4030_codec_data zoom2_codec_data = {
-> +	.audio_mclk = 26000000,
->  	.audio = &zoom2_audio_data,
->  };
-> 
-> --
-> 1.6.5.2
+>  Documentation/kernel-parameters.txt |   11 +++++++++--
+>  kernel/signal.c                     |   21 ++++++++++++++++++---
+>  2 files changed, 27 insertions(+), 5 deletions(-)
 
-Can you take a look at this patch?
-The rest of the series has already got Ack from Samuel and Mark, and only your 
-verdict for the OMAP part is missing.
+Thanks, i've applied your patch to tip:core/signal, for v2.6.33 merge 
+(if it passes all tests).
 
-Thank you, 
-Péter
+I made a few (very small) changes, see the -tip commit notification 
+email in this thread with the final commit:
+
+ - Extended the functions so that we can print which precise signal got 
+   dropped - app writers will likely want to know that
+
+ - Changed the message to:
+
+        task/1234: reached RLIMIT_SIGPENDING, dropping signal
+
+   which is slightly more informative.
+
+ - Cleaned up small cleanliness details in surrounding code that caught 
+   my eyes.
+
+ - Changed a few variable and function names to be a tiny bit more 
+   expressive.
+
+ - Pushed the print_fatal_printks check into the new utility function 
+   (print_dropped_signal()), to not clutter __sigqueue_alloc() 
+   needlessly.
+
+ - Clarified the commit log message a bit, gave sample output of the new 
+   behavior.
+
+Thanks,
+
+	Ingo
