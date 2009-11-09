@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZKINe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbZKINfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755903AbZKINe5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 08:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbZKINe4
+	id S1755938AbZKINfW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 08:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZKINfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 08:34:56 -0500
+	Mon, 9 Nov 2009 08:35:18 -0500
 Received: from fg-out-1718.google.com ([72.14.220.159]:31462 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755613AbZKINez (ORCPT
+	with ESMTP id S1755870AbZKINfN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 08:34:55 -0500
+	Mon, 9 Nov 2009 08:35:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=f2eJRFmB6EUKe0gBZQN5CiaxejmHi3VKyVCm/OF2Yq0DnTyKtbx7k5oJlVJAxOaT5p
-         d0Mn9+WIu9Jrp9Sq6rOM3WfgEfWSiVNRL2kcg3yWsxxf0RfR7PBa6fvGKX3aLT8EoDep
-         aRfSYxQ2OaM/4C8Y7aTgCQd6qzsJwGRNC9UnI=
-Message-ID: <4AF81A85.1080706@gmail.com>
-Date: Mon, 09 Nov 2009 16:35:01 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dyd4JHXDHZ83IqfcsB3GwGPQhxZvzmE8NNxWK3nuo9eaUeU7+InVaFfytTZrZd3AEc
+         JHPDq9nhuO7pc0ZPCpEwP91jtFTx6HMhtT5PDENvsmMQ4yO1iPHXBEvec2u2bJ6v8sBP
+         w/3gk2euFnnQyyaDee5EkTOEfHVSRZbAAhNjc=
+Date: Mon, 9 Nov 2009 14:35:15 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>
+Subject: Re: [PATCH 2/2] x86, amd-ucode: Remove needless log messages
+Message-ID: <20091109133515.GD18592@alberich.amd.com>
+References: <20091029134552.GC30802@alberich.amd.com>
+ <20091029134742.GD30802@alberich.amd.com>
+ <20091108145748.GB12290@elte.hu>
 MIME-Version: 1.0
-To: Ike Panhc <ike.pan@canonical.com>
-CC: linux-acpi@vger.kernel.org, Corentin Chary <corentin.chary@gmail.com>,
-       linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net
-Subject: Re: [PATCH] Add Lenovo SL hotkey support on asus-laptop
-References: <1257765266-6669-1-git-send-email-ike.pan@canonical.com>
-In-Reply-To: <1257765266-6669-1-git-send-email-ike.pan@canonical.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091108145748.GB12290@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Nov 08, 2009 at 03:57:48PM +0100, Ingo Molnar wrote:
+> 
+> * Andreas Herrmann <herrmann.der.user@googlemail.com> wrote:
 
-See, no interception of EC query was needed :)
+ [...]
 
-Regards,
-Alex.
+> > -	if (mc_header->processor_rev_id != equiv_cpu_id) {
+> > -		printk(KERN_ERR	"microcode: CPU%d: patch mismatch "
+> > -		       "(processor_rev_id: %x, equiv_cpu_id: %x)\n",
+> > -		       cpu, mc_header->processor_rev_id, equiv_cpu_id);
+> > +	if (mc_header->processor_rev_id != equiv_cpu_id)
+> >  		return 0;
+> > -	}
+> >  
+> >  	/* ucode might be chipset specific -- currently we don't support this */
+> >  	if (mc_header->nb_dev_id || mc_header->sb_dev_id) {
+> 
+> but why remove this one? Someone tries to load a mismatching microcode 
+> file, isnt that some sort of bug in user-space? (Which ought to find out 
+> whether it has anything for the CPU at hand, and only attempt it if it's 
+> matching - or so.)
 
-Ike Panhc wrote:
-> Lenovo SL series laptop has a very similar DSDT with Asus laptops. We can
-> easily have the extra ACPI function support with little modification in
-> asus-laptop.c
->
-> Here is the hotkey enablement for Lenovo SL series laptop.
->
-> This patch will enable the following hotkey:
->  - Volumn Up
->  - Volumn Down
->  - Mute
->  - Screen Lock (Fn+F2)
->  - Battery Status (Fn+F3)
->  - WLAN switch (Fn+F5)
->  - Video output switch (Fn+F7)
->  - Touchpad switch (Fn+F8)
->  - Screen Magnifier (Fn+Space)
->
-> The following function of Lenovo SL laptop is still need to be enabled:
->  - Hotkey: KEY_SUSPEND (Fn+F4), KEY_SLEEP (Fn+F12), Dock Eject (Fn+F9)
->  - Rfkill for bluetooth and wlan
->  - LenovoCare LED
->  - Hwmon for fan speed
->  - Fingerprint scanner
->  - Active Protection System
->
-> Signed-off-by: Ike Panhc <ike.pan@canonical.com>
-> ---
->  drivers/platform/x86/asus-laptop.c |   11 +++++++++++
->  1 files changed, 11 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
-> index b39d2bb..a365636 100644
-> --- a/drivers/platform/x86/asus-laptop.c
-> +++ b/drivers/platform/x86/asus-laptop.c
-> @@ -221,6 +221,7 @@ static struct asus_hotk *hotk;
->   */
->  static const struct acpi_device_id asus_device_ids[] = {
->  	{"ATK0100", 0},
-> +	{"ATK0101", 0},
->  	{"", 0},
->  };
->  MODULE_DEVICE_TABLE(acpi, asus_device_ids);
-> @@ -293,6 +294,11 @@ struct key_entry {
->  enum { KE_KEY, KE_END };
->  
->  static struct key_entry asus_keymap[] = {
-> +	{KE_KEY, 0x02, KEY_SCREENLOCK},
-> +	{KE_KEY, 0x05, KEY_WLAN},
-> +	{KE_KEY, 0x08, BTN_TOUCH},
-> +	{KE_KEY, 0x17, KEY_ZOOM},
-> +	{KE_KEY, 0x1f, KEY_BATTERY},
->  	{KE_KEY, 0x30, KEY_VOLUMEUP},
->  	{KE_KEY, 0x31, KEY_VOLUMEDOWN},
->  	{KE_KEY, 0x32, KEY_MUTE},
-> @@ -312,7 +318,9 @@ static struct key_entry asus_keymap[] = {
->  	{KE_KEY, 0x5F, KEY_WLAN},
->  	{KE_KEY, 0x60, KEY_SWITCHVIDEOMODE},
->  	{KE_KEY, 0x61, KEY_SWITCHVIDEOMODE},
-> +	{KE_KEY, 0x62, KEY_SWITCHVIDEOMODE},
-> +	{KE_KEY, 0x63, KEY_SWITCHVIDEOMODE},
->  	{KE_KEY, 0x6B, BTN_TOUCH}, /* Lock Mouse */
->  	{KE_KEY, 0x82, KEY_CAMERA},
->  	{KE_KEY, 0x8A, KEY_PROG1},
->  	{KE_KEY, 0x95, KEY_MEDIA},
->   
+The ucode file that we provide contains many ucode patches -- its a
+"container" file providing patches for several CPUs. Of course this
+means that there are patches in the file which are not meant for that
+CPU -- that is no error case but rather normal.
 
+> maybe it's not a KERN_ERR but KERN_INFO, but still.
+
+KERN_DEBUG at the most. It's simple as that: if the CPU has same
+PATCH_LEVEL before and after microcode.ko tried to update the ucode,
+there either was no ucode-file available or it just didn't contain a
+newer ucode version for this CPU.
+
+Andreas
