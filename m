@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbZKIDN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZKIDR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753578AbZKIDN6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Nov 2009 22:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZKIDN5
+	id S1753575AbZKIDR4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Nov 2009 22:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbZKIDRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Nov 2009 22:13:57 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:59938 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751092AbZKIDN5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Nov 2009 22:13:57 -0500
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH] perf bench:Fix bench/sched-pipe.c to wait child process
-Date: Mon,  9 Nov 2009 12:13:08 +0900
-Message-Id: <1257736388-7303-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <20091109.120908.552412311744460070.mitake@dcl.info.waseda.ac.jp>
-References: <20091109.120908.552412311744460070.mitake@dcl.info.waseda.ac.jp>
+	Sun, 8 Nov 2009 22:17:55 -0500
+Received: from ozlabs.org ([203.10.76.45]:33720 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751739AbZKIDRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Nov 2009 22:17:55 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the kernel (__ksymtab)
+Date: Mon, 9 Nov 2009 13:47:57 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: Sam Ravnborg <sam@ravnborg.org>, Mike Frysinger <vapier.adi@gmail.com>,
+       greg@kroah.com, linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
+       linux-kernel@vger.kernel.org
+References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> <20091104171916.GA6323@merkur.ravnborg.org> <4AF2E00A.3010107@tuffmail.co.uk>
+In-Reply-To: <4AF2E00A.3010107@tuffmail.co.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911091347.57286.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed bench/sched-pipe.c to avoid the below case
-notified by Ingo Molnar,
+On Fri, 6 Nov 2009 12:54:10 am Alan Jenkins wrote:
+> Sam Ravnborg wrote:
+> > On Wed, Nov 04, 2009 at 10:00:50AM +0000, Alan Jenkins wrote:
+> >   
+> >> Rusty Russell wrote:
+> >>     
+> >>> On Tue, 3 Nov 2009 08:36:17 pm Alan Jenkins wrote:
+> >>>   
+> >>>       
+> >>>> +/*
+> >>>> + * We use CPP macros since they are more familiar than assembly macros.
+> >>>> + * Note that CPP macros eat newlines, so each statement must be terminated
+> >>>> + * by a semicolon.
+> >>>> + */
+> >>>> +
+> >>>> +#ifdef CONFIG_HAVE_SYMBOL_PREFIX
+> >>>> +#define __SYM(sym) _##sym
+> >>>> +#else
+> >>>> +#define __SYM(sym) sym
+> >>>> +#endif
+> >>>>     
+> >>>>         
+> >>> Ideally, you would used MODULE_SYMBOL_PREFIX here, but of course it's a
+> >>> string.  I don't think Kconfig can do arbitrary identifiers, so we can't
+> >>> make CONFIG_SYMBOL_PREFIX empty or _.
+> >>>
+> >>> Perhaps clarify it to a bool CONFIG_HAVE_MODULE_UNDERSCORE_PREFIX then,
+> >>> since that's what you're assuming here?
+> >>>
+> >>> Thanks,
+> >>> Rusty.
+> >>>       
+> >> I made the same assumption in patch 4.  The arch defines  
+> >> CONFIG_HAVE_SYMBOL_PREFIX, which then causes init/Kconfig to define  
+> >> CONFIG_SYMBOL_PREFIX="_".
+> >>
+> >> Mike suggested that I hack kbuild instead, to do something like
+> >>
+> >> unquote = ...
+> >> AFLAGS_.tmp_export-asm.o += -DSYMBOL_PREFIX=$(unquote CONFIG_SYMBOL_PREFIX)
+> >>
+> >> I'm experimenting with the idea, but I haven't managed to get it working  
+> >>     
+> >
+> > Something like this:
+> > unquote = $(patsubst "%",%,$($1))
+> >
+> > AFLAGS_.tmp_export-asm.o += -DSYMBOL_PREFIX=$(call unquote,CONFIG_SYMBOL_PREFIX)
+> >
+> > But the readability is low so we could be better off doing it direct:
+> >
+> > AFLAGS_.tmp_export-asm.o += -DSYMBOL_PREFIX=$(patsubst "%",",$(CONFIG_SYMBOL_PREFIX))
+> >
+> > 	Sam
+> >   
+> 
+> Thanks to both of you, I have something that works now. 
 
----
+I've taken this, but really, it's overkill.  Changing the config to a fixed
+"underscore or nothing" was simpler and demonstrably sufficient for all cases
+in the last 5 years.
 
-$ ./perf bench sched pipe
-(executing 1000000 pipe operations between two tasks)
-
-	Total time:4.898 sec
-$ 		4.898586 usecs/op
-		204140 ops/sec
-
-the shell prompt came back before the usecs/op and ops/sec line was
-printed. Process teardown race, lack of wait() or so?
-
----
-
-This caused by lack of calling waitpid() by parent process,
-so I added it.
-
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>
----
- tools/perf/bench/sched-pipe.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/tools/perf/bench/sched-pipe.c b/tools/perf/bench/sched-pipe.c
-index 3214ed2..6a29100 100644
---- a/tools/perf/bench/sched-pipe.c
-+++ b/tools/perf/bench/sched-pipe.c
-@@ -26,6 +26,7 @@
- #include <errno.h>
- #include <assert.h>
- #include <sys/time.h>
-+#include <sys/types.h>
- 
- #define LOOPS_DEFAULT 1000000
- static int loops = LOOPS_DEFAULT;
-@@ -58,8 +59,8 @@ int bench_sched_pipe(int argc, const char **argv,
- 	 * discarding returned value of read(), write()
- 	 * causes error in building environment for perf
- 	 */
--	int ret;
--	pid_t pid;
-+	int ret, wait_stat;
-+	pid_t pid, retpid;
- 
- 	argc = parse_options(argc, argv, options,
- 			     bench_sched_pipe_usage, 0);
-@@ -87,8 +88,11 @@ int bench_sched_pipe(int argc, const char **argv,
- 	gettimeofday(&stop, NULL);
- 	timersub(&stop, &start, &diff);
- 
--	if (pid)
-+	if (pid) {
-+		retpid = waitpid(pid, &wait_stat, 0);
-+		assert((retpid == pid) && WIFEXITED(wait_stat));
- 		return 0;
-+	}
- 
- 	if (simple)
- 		printf("%lu.%03lu\n",
--- 
-1.6.5.2
-
+Thanks,
+Rusty.
