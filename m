@@ -1,293 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZKIIWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbZKIIbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbZKIIWr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 03:22:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZKIIWq
+	id S1754616AbZKIIbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 03:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZKIIbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 03:22:46 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48586 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbZKIIWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 03:22:45 -0500
-Date: Mon, 9 Nov 2009 19:22:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for November 9
-Message-Id: <20091109192246.aa0dfd93.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__9_Nov_2009_19_22_46_+1100_a.riTJSR8Wezn7zj"
+	Mon, 9 Nov 2009 03:31:43 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33446 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754571AbZKIIbm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 03:31:42 -0500
+Date: Mon, 9 Nov 2009 09:31:33 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Dasgupta, Romit" <romit@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
+ threads
+Message-ID: <20091109083133.GB4818@elf.ucw.cz>
+References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
+ <20091107165421.GA1630@ucw.cz>
+ <B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
+ <20091108082727.GC16482@elf.ucw.cz>
+ <B85A65D85D7EB246BE421B3FB0FBB59301DE31FD10@dbde02.ent.ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB59301DE31FD10@dbde02.ent.ti.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__9_Nov_2009_19_22_46_+1100_a.riTJSR8Wezn7zj
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun 2009-11-08 16:40:07, Dasgupta, Romit wrote:
+> (Resending with 80 column restriction) 
 
-Hi all,
+Thanks.
 
-Changes since 20091106:
+> > > > > @@ -49,7 +50,7 @@ void refrigerator(void)
+> > > > >
+> > > > >  	for (;;) {
+> > > > >  		set_current_state(TASK_UNINTERRUPTIBLE);
+> > > > > -		if (!frozen(current))
+> > > > > +		if (!frozen(current) || (!current->mm 
+> > && kthread_should_stop()))
+> > > > >  			break;
+> > > > >  		schedule();
+> > > > 
+> > > > Well, what if the thread does some processing before 
+> > stopping? That
+> > > > would break refrigerator assumptions...
+> > > 
+> > > The suspend thread will block until the 'to be stopped' 
+> > thread clears up. That is what any call to kthread_stop would 
+> > boil down to. The target thread would anyway be out of the 
+> > refrigerator so I am not sure what assumption you mean here. 
+> > Eventually, the target thread would clear up and wake up the 
+> > suspend thread and then things would go on as usual.
+> > 
+> > (Please format to 80 columns).
+> > 
+> > No, I do not get it.
+> > 
+> > Lets say we have
+> > 
+> > evil_data_writer thread that needs to be stopped becuase it writes to
+> > filesystem
+> > 
+> > nofreeze random_stopper thread
+> > 
+> > now we create the suspend image, and start writing it out. But that's
+> > okay, evil_data_writer is stopped so it can't do no harm. But now
+> > random_stopper decides to thread_stop() the evil_data_writer, and this
+> > new code allows it to exit the refrigerator, *do some writing*, and
+> > then stop.
+> > 
+> > That's bad, right?
+> evil_data_writer will enter refrigerator after invoking 'try_to_freeze'. This 
+> should be followed by a call to kthread_should_stop. There it decides if it 
 
-The sparc tree lost its build failure.
+Really? I believe the "ktrhead_should_stop" is new rule, and code does
+not seem to follow it. Actually, for example audit does not seem to
+use kthread_should_stop() at all...
 
-The net tree lost a conflict, but gained another against the net-current
-tree and a build failure for which I applied a patch.
+./kernel/rtmutex-tester.c-
+./kernel/rtmutex-tester.c-		/* Wait for the next command to be executed */
+./kernel/rtmutex-tester.c-		schedule();
+./kernel/rtmutex-tester.c:		try_to_freeze();
+./kernel/rtmutex-tester.c-
+./kernel/rtmutex-tester.c-		if (signal_pending(current))
+./kernel/rtmutex-tester.c-			flush_signals(current);
+--
+./kernel/slow-work.c-			schedule();
+./kernel/slow-work.c-		finish_wait(&slow_work_thread_wq, &wait);
+./kernel/slow-work.c-
+./kernel/slow-work.c:		try_to_freeze();
+./kernel/slow-work.c-
+./kernel/slow-work.c-		vsmax = vslow_work_proportion;
+./kernel/slow-work.c-		vsmax *= atomic_read(&slow_work_thread_count);
+--
+./kernel/audit.c-			add_wait_queue(&kauditd_wait, &wait);
+./kernel/audit.c-
+./kernel/audit.c-			if (!skb_queue_len(&audit_skb_queue)) {
+./kernel/audit.c:				try_to_freeze();
+./kernel/audit.c-				schedule();
+./kernel/audit.c-			}
+./kernel/audit.c-
+--
+./kernel/signal.c-	/* Now we don't run again until woken by SIGCONT or SIGKILL */
+./kernel/signal.c-	do {
+./kernel/signal.c-		schedule();
+./kernel/signal.c:	} while (try_to_freeze());
+./kernel/signal.c-
+./kernel/signal.c-	tracehook_finish_jctl();
+./kernel/signal.c-	current->exit_code = 0;
+--
+./kernel/signal.c-	 * Now that we woke up, it's crucial if we're supposed to be
+./kernel/signal.c-	 * frozen that we freeze now before running anything substantial.
+./kernel/signal.c-	 */
+./kernel/signal.c:	try_to_freeze();
+./kernel/signal.c-
+./kernel/signal.c-	spin_lock_irq(&sighand->siglock);
+./kernel/signal.c-	/*
+--
+./net/core/pktgen.c-			t->control &= ~(T_REMDEV);
+./net/core/pktgen.c-		}
+./net/core/pktgen.c-
+./net/core/pktgen.c:		try_to_freeze();
+./net/core/pktgen.c-
+./net/core/pktgen.c-		set_current_state(TASK_INTERRUPTIBLE);
+./net/core/pktgen.c-	}
+--
+./net/sunrpc/svc_xprt.c-
+./net/sunrpc/svc_xprt.c-		time_left = schedule_timeout(timeout);
+./net/sunrpc/svc_xprt.c-
+./net/sunrpc/svc_xprt.c:		try_to_freeze();
+./net/sunrpc/svc_xprt.c-
+./net/sunrpc/svc_xprt.c-		spin_lock_bh(&pool->sp_lock);
+./net/sunrpc/svc_xprt.c-		remove_wait_queue(&rqstp->rq_wait, &wait);
+--
+./arch/m32r/kernel/signal.c-	if (!user_mode(regs))
+./arch/m32r/kernel/signal.c-		return 1;
+./arch/m32r/kernel/signal.c-
+./arch/m32r/kernel/signal.c:	if (try_to_freeze()) 
+./arch/m32r/kernel/signal.c-		goto no_signal;
+./arch/m32r/kernel/signal.c-
+./arch/m32r/kernel/signal.c-	if (!oldset)
+--
+./arch/h8300/kernel/signal.c-	if ((regs->ccr & 0x10))
+./arch/h8300/kernel/signal.c-		return 1;
+./arch/h8300/kernel/signal.c-
+./arch/h8300/kernel/signal.c:	if (try_to_freeze())
+./arch/h8300/kernel/signal.c-		goto no_signal;
+./arch/h8300/kernel/signal.c-
+./arch/h8300/kernel/signal.c-	current->thread.esp0 = (unsigned long) regs;
+--
+./arch/powerpc/platforms/ps3/device-init.c-
+./arch/powerpc/platforms/ps3/device-init.c-	/* Loop here processing the requested notification events. */
+./arch/powerpc/platforms/ps3/device-init.c-	do {
+./arch/powerpc/platforms/ps3/device-init.c:		try_to_freeze();
+./arch/powerpc/platforms/ps3/device-init.c-
+./arch/powerpc/platforms/ps3/device-init.c-		memset(notify_event, 0, sizeof(*notify_event));
+./arch/powerpc/platforms/ps3/device-init.c-
+--
+./arch/powerpc/platforms/83xx/suspend.c-{
+./arch/powerpc/platforms/83xx/suspend.c-	while (1) {
+./arch/powerpc/platforms/83xx/suspend.c-		wait_event_interruptible(agent_wq, pci_pm_state >= 2);
+./arch/powerpc/platforms/83xx/suspend.c:		try_to_freeze();
+./arch/powerpc/platforms/83xx/suspend.c-
+./arch/powerpc/platforms/83xx/suspend.c-		if (signal_pending(current) || pci_pm_state < 2)
+./arch/powerpc/platforms/83xx/suspend.c-			continue;
+--
+./arch/blackfin/kernel/signal.c-
+./arch/blackfin/kernel/signal.c-	current->thread.esp0 = (unsigned long)regs;
+./arch/blackfin/kernel/signal.c-
+./arch/blackfin/kernel/signal.c:	if (try_to_freeze())
+./arch/blackfin/kernel/signal.c-		goto no_signal;
+./arch/blackfin/kernel/signal.c-
+./arch/blackfin/kernel/signal.c-	if (test_thread_flag(TIF_RESTORE_SIGMASK))
+--
+./arch/frv/kernel/signal.c-	if (!user_mode(__frame))
+./arch/frv/kernel/signal.c-		return;
+./arch/frv/kernel/signal.c-
+./arch/frv/kernel/signal.c:	if (try_to_freeze())
+./arch/frv/kernel/signal.c-		goto no_signal;
+./arch/frv/kernel/signal.c-
+./arch/frv/kernel/signal.c-	if (test_thread_flag(TIF_RESTORE_SIGMASK))
+--
+./arch/arm/kernel/signal.c-	if (!user_mode(regs))
+./arch/arm/kernel/signal.c-		return;
+./arch/arm/kernel/signal.c-
+./arch/arm/kernel/signal.c:	if (try_to_freeze())
+./arch/arm/kernel/signal.c-		goto no_signal;
+./arch/arm/kernel/signal.c-
+./arch/arm/kernel/signal.c-	single_step_clear(current);
+--
+./arch/sh/kernel/signal_32.c-	if (!user_mode(regs))
+./arch/sh/kernel/signal_32.c-		return;
+./arch/sh/kernel/signal_32.c-
+./arch/sh/kernel/signal_32.c:	if (try_to_freeze())
+./arch/sh/kernel/signal_32.c-		goto no_signal;
+./arch/sh/kernel/signal_32.c-
+./arch/sh/kernel/signal_32.c-	if (test_thread_flag(TIF_RESTORE_SIGMASK))
+...
 
-The wireless tree gained a build failure for which I applied a patch.
+									Pavel
 
-The pcmcia tree gained a conflict against the mtd tree.
 
-The trivial tree gained a conflict against the wireless tree.
-
-The staging tree gained 3 conflicts against the pcmcia tree.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 146 trees (counting Linus' and 22 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
-pu.h
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/master
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-CONFLICT (content): Merge conflict in arch/powerpc/kvm/timing.h
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/can/usb/ems_usb.c
-CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
-nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
-CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/cmd.c
-CONFLICT (content): Merge conflict in drivers/staging/rtl8187se/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/rtl8192e/Kconfig
-$ git rm -f drivers/net/sfc/sfe4001.c
-Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-Applying: net/appletalk: using compat_ptr needs inclusion of linux/compat.h
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-omap3evm.c
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
-CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging security-testing/next
-CONFLICT (content): Merge conflict in Documentation/dontdiff
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2800usb=
-.c
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in drivers/net/Kconfig
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging limits/writable_limits
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
-Merging oprofile/for-next
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
-CONFLICT (content): Merge conflict in kernel/softlockup.c
-CONFLICT (content): Merge conflict in mm/percpu.c
-Applying: percpu: merge fixup for variable renaming
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/cb_das=
-16_cs.c
-CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_lab=
-pc_cs.c
-CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_mio=
-_cs.c
-Merging scsi-post-merge/master
-Applying: wireless/rt2x00usb: include usb.h to get needed constants
-
---Signature=_Mon__9_Nov_2009_19_22_46_+1100_a.riTJSR8Wezn7zj
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkr30VYACgkQjjKRsyhoI8xJrACgiTd9ECXj6rsjN3MArq7WsWpp
-xLMAniLWymG6pLhQ2Bwgifrkwyx1BYWf
-=lXuS
------END PGP SIGNATURE-----
-
---Signature=_Mon__9_Nov_2009_19_22_46_+1100_a.riTJSR8Wezn7zj--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
