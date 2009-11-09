@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbZKIOPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbZKIOQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbZKIOPB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 09:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZKIOPB
+	id S1756020AbZKIOQQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 09:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZKIOQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 09:15:01 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46417 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755926AbZKIOPA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 09:15:00 -0500
-Date: Mon, 9 Nov 2009 08:14:39 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 12/13] sysfs: Propagate renames to the vfs on demand
-Message-ID: <20091109141439.GA10927@us.ibm.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org>
- <1257249429-12384-12-git-send-email-ebiederm@xmission.com>
- <20091104214938.GA21033@us.ibm.com>
- <m13a4ux86v.fsf@fess.ebiederm.org>
- <4AF4D76C.6090008@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF4D76C.6090008@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 9 Nov 2009 09:16:16 -0500
+Received: from mail.gmx.net ([213.165.64.20]:50235 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755944AbZKIOQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 09:16:15 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX190N6R1OXd0j0U3mUn2xj4BjrB1qbHU+x+MZcE2Cy
+	Y2iIrbBLWEzh2K
+Subject: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to
+ preempt_count leakage in keventd
+From: Mike Galbraith <efault@gmx.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
+References: <200911091250.31626.rjw@sisk.pl>
+	 <20091109120217.GB18399@elte.hu> <200911091324.37955.rjw@sisk.pl>
+	 <20091109124937.GA21114@elte.hu>
+	 <alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 09 Nov 2009 15:16:16 +0100
+Message-Id: <1257776176.6365.8.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.61
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Tejun Heo (tj@kernel.org):
-> Hello,
-> 
-> Eric W. Biederman wrote:
-> > It isn't what I want but it is what the VFS requires.  If let the vfs
-> > continue on it's delusional state we will leak the vfs mount and
-> > everything mounted on top of it, with no way to remove the mounts.
-> 
-> This is caused by not having any way to prevent deletion on
-> directories with submounts, right?  How does other distributed
-> filesystems deal with directories with submounts going away underneath
-> it?
+On Mon, 2009-11-09 at 15:02 +0100, Thomas Gleixner wrote:
+> On Mon, 9 Nov 2009, Ingo Molnar wrote:
+> > 
 
-Ooooh.  I see, I was thinking only about the rename case, and forgot
-this was the path for deleted files, too.  For the rename case it
-should be ok to let the dentry be put since the submounts will be
-accessible at the new location, right?  Should that be handled
-separately?
+> > ok, then my observation should not apply.
+> 
+> I think it _IS_ releated because the worker_thread is CPU affine and
+> the debug_smp_processor_id() check does:
+> 
+>     if (cpumask_equal(&current->cpus_allowed, cpumask_of(this_cpu)))
+> 
+> which prevents that usage of smp_processor_id() in ksoftirqd and
+> keventd in preempt enabled regions is warned on.
+> 
+> We saw exaclty the same back trace with fd21073 (sched: Fix affinity
+> logic in select_task_rq_fair()).
+> 
+> Rafael, can you please add a printk to debug_smp_processor_id() so we
+> can see on which CPU we are running ? I suspect we are on the wrong
+> one.
 
--serge
+I wonder if that's not intimately related to the problem I had, namely
+newidle balancing offline CPUs as they're coming up, making a mess of
+cpu enumeration.
+
+	-Mike
+
