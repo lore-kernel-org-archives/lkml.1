@@ -1,80 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbZKJMlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbZKJMkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756310AbZKJMlQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 07:41:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbZKJMlO
+	id S1756273AbZKJMkw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 07:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbZKJMkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 07:41:14 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:37721 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754256AbZKJMlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 07:41:12 -0500
-Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
-References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 10 Nov 2009 14:40:48 +0200
-Message-Id: <1257856848.21596.753.camel@localhost>
+	Tue, 10 Nov 2009 07:40:51 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:36980 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756256AbZKJMku convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;3:1>);
+	Tue, 10 Nov 2009 07:40:50 -0500
+Message-Id: <4AF919020200005A000586A9@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Tue, 10 Nov 2009 05:40:50 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: <alacrityvm-devel@lists.sourceforge.net>, <herbert.xu@redhat.com>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+References: <20091002141407.30224.54207.stgit@dev.haskins.net>
+ <20091110115335.GC6989@redhat.com>
+In-Reply-To: <20091110115335.GC6989@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 10 Nov 2009 12:40:53.0484 (UTC) FILETIME=[0A8BD2C0:01CA6203]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomi,
-
-could you please kindly ask Stephen (CCed) to include the DSS2 tree into
-linux-next, because you are going to merge it the next merge window, and
-there does not seem to be any blocker for this.
-
-Being in linux-next for a while is really important.
-
-On Mon, 2009-11-09 at 13:45 +0200, Tomi Valkeinen wrote:
-> This patch set implement new display subsystem driver (DSS2) and omapfb driver
-> for OMAP2/3. The patches have been reviewed on linux-omap and linux-fbdev-devel
-> mailing lists. The patches can also be found from master branch in
-> http://gitorious.org/linux-omap-dss2/linux. The branch is based on the
-> linux-next tree.
+>>> On 11/10/2009 at  6:53 AM, in message <20091110115335.GC6989@redhat.com>,
+"Michael S. Tsirkin" <mst@redhat.com> wrote: 
+> On Fri, Oct 02, 2009 at 10:20:00AM -0400, Gregory Haskins wrote:
+>> (Applies to davem/net-2.6.git:4fdb78d30)
+>> 
+>> Hi David, netdevs,
+>> 
+>> The following is an RFC for an attempt at addressing a zero-copy solution.
+>> 
+>> To be perfectly honest, I have no idea if this is the best solution, or if
+>> there is truly a problem with skb->destructor that requires an alternate
+>> mechanism.  What I do know is that this patch seems to work, and I would
+>> like to see some kind of solution available upstream.  So I thought I would
+>> send my hack out as at least a point of discussion.  FWIW: This has been
+>> tested heavily in my rig and is technically suitable for inclusion after
+>> review as is, if that is decided to be the optimal path forward here.
+>> 
+>> Thanks for your review and consideration,
+>> 
+>> Kind regards,
+>> -Greg
+>> 
+>> ----------------------------------------
+>> From: Gregory Haskins <ghaskins@novell.com>
+>> Subject: [RFC PATCH] net: add dataref destructor to sk_buff
+>> 
+>> What: The skb->destructor field is reportedly unreliable for ensuring
+>> that all shinfo users have dropped their references.  Therefore, we add
+>> a distinct ->release() method for the shinfo structure which is closely
+>> tied to the underlying page resources we want to protect.
+>> 
+>> Why: We want to add zero-copy transmit support for AlacrityVM guests.
+>> In order to support this, the host kernel must map guest pages directly
+>> into a paged-skb and send it as normal.  put_page() alone is not
+>> sufficient lifetime management since the pages are ultimately allocated
+>> from within the guest.  Therefore, we need higher-level notification
+>> when the skb is finally freed on the host so we can then inject a proper
+>> "tx-complete" event into the guest context.
+>> 
+>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>> ---
+>> 
+>>  include/linux/skbuff.h |    2 ++
+>>  net/core/skbuff.c      |    9 +++++++++
+>>  2 files changed, 11 insertions(+), 0 deletions(-)
+>> 
+>> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+>> index df7b23a..02cdab6 100644
+>> --- a/include/linux/skbuff.h
+>> +++ b/include/linux/skbuff.h
+>> @@ -207,6 +207,8 @@ struct skb_shared_info {
+>>  	/* Intermediate layers must ensure that destructor_arg
+>>  	 * remains valid until skb destructor */
+>>  	void *		destructor_arg;
+>> +	void *          priv;
+>> +	void           (*release)(struct sk_buff *skb);
+>>  };
+>>  
+>>  /* We divide dataref into two halves.  The higher 16 bits hold references
+>> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+>> index 80a9616..a7e40a9 100644
+>> --- a/net/core/skbuff.c
+>> +++ b/net/core/skbuff.c
+>> @@ -219,6 +219,8 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t 
+> gfp_mask,
+>>  	shinfo->tx_flags.flags = 0;
+>>  	skb_frag_list_init(skb);
+>>  	memset(&shinfo->hwtstamps, 0, sizeof(shinfo->hwtstamps));
+>> +	shinfo->release = NULL;
+>> +	shinfo->priv = NULL;
+>>  
+>>  	if (fclone) {
+>>  		struct sk_buff *child = skb + 1;
+>> @@ -350,6 +352,9 @@ static void skb_release_data(struct sk_buff *skb)
+>>  		if (skb_has_frags(skb))
+>>  			skb_drop_fraglist(skb);
+>>  
+>> +		if (skb_shinfo(skb)->release)
+>> +			skb_shinfo(skb)->release(skb);
+>> +
+>>  		kfree(skb->head);
+>>  	}
+>>  }
+>> @@ -514,6 +519,8 @@ int skb_recycle_check(struct sk_buff *skb, int skb_size)
+>>  	shinfo->tx_flags.flags = 0;
+>>  	skb_frag_list_init(skb);
+>>  	memset(&shinfo->hwtstamps, 0, sizeof(shinfo->hwtstamps));
+>> +	shinfo->release = NULL;
+>> +	shinfo->priv = NULL;
+>>  
+>>  	memset(skb, 0, offsetof(struct sk_buff, tail));
+>>  	skb->data = skb->head + NET_SKB_PAD;
+>> @@ -856,6 +863,8 @@ int pskb_expand_head(struct sk_buff *skb, int nhead, int 
+> ntail,
+>>  	skb->hdr_len  = 0;
+>>  	skb->nohdr    = 0;
+>>  	atomic_set(&skb_shinfo(skb)->dataref, 1);
+>> +	skb_shinfo(skb)->release = NULL;
+>> +	skb_shinfo(skb)->priv = NULL;
+>>  	return 0;
+>>  
+>>  nodata:
 > 
-> The patches include DSS documentation patch that includes more instructions for
-> module parameters, sysfs files etc.
-> 
-> The patches enable DSS2 for OMAP3430 SDP board and support for other boards can
-> be sent after the DSS2 has been merged. DSS2 is used in various boards, for
-> example Nokia N900, Beagle Board and Overo.
-> 
-> I don't currently have any OMAP2 board to test DSS2, but it has worked on OMAP2
-> and the possible fixes needed should be minimal.
-> 
-> OMAP1 is not supported, and so the old DSS needs to be used on OMAP1 boards. My
-> longer term plan is to move all OMAP2 stuff from the old DSS to the new one,
-> and then shrink the old DSS to support OMAP1 only.
-> 
-> DSS2 is partly based on the old omapfb driver by Imre Deak, and Imre has also
-> contributed to DSS2 quite a bit. Ville Syrjälä has been contributing to scaling
-> and tv-out work, and Topi Pohjolainen to VRFB. Also some contributions have
-> been made by Hardik Shah, Vaibhav Hiremath, and perhaps some others that I have
-> forgotten =).
+> This is basically subset of the skb data destructors patch, isn't it?
 
-Tomi,
+Sort of, but the emphasis is different.  Here are the main differences:
 
-could you please kindly ask Stephen (CCed) to include the DSS2 tree into
-linux-next, because you are going to merge it the next merge window, and
-there does not seem to be any blocker for this.
+1) skb->destructor() is on the skb level, shinfo->release() is at the shared-info/page level
 
-Being in linux-next for a while is really important.
+2) skb->destructor is (iiuc) modified during the skb's lifetime (for instance rmem hooks here to
+manage the buffer-space dynamically), whereas shinfo->release is designed to be used by
+"the owner" and is thus only set at creation.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+3) shinfo->release tracks the lifetime of the pages, not the skb.  This means it transcends
+the skb's lifetime (such as splits for clone, etc) and focuses on the shared component: the pages
+
+> Last time this was tried, this is the objection that was voiced:
+> 
+> 	The problem with this patch is that it's tracking skb's, while
+> 	you want use it to track pages for zero-copy.  That just doesn't
+> 	work.  Through mechanisms like splice, individual pages in the
+> 	skb can be detached and metastasize to other locations, e.g.,
+> 	the VFS.
+
+Right, and I don't think this applies here because I specifically chose the shinfo level to try to properly
+track the page level avoid this issue.  Multiple skb's can point to a single shinfo, iiuc.
+
+> 
+> and I think this applies here.
+
+I don't think so, but if you think I missed something, do not be shy (not that you ever are).
+
+> In other words, this only *seems*
+> to work for you because you are not trying to do things like
+> guest to host communication, with host doing smart things.
+
+I am not following what you mean here, as I do use this for guest->host and guest->host->remote, and
+it works quite nicely.  I map the guest pages in, and when the last reference to the pages are dropped,
+I release the pages back to the guest.  It doesn't matter if the skb egresses out a physical adapter or is
+received locally.  All that matters is the lifetime of the shinfo (and thus its pages) is handled correctly.
+
+> 
+> Cc Herbert which was involved in the original discussion.
+> 
+> In the specific case, it seems that things like pskb_copy,
+> skb_split and others will also be broken, won't they?
+
+Not to my knowledge.   They up the reference to the shinfo before proceeding.
+
+Kind Regards,
+-Greg
+
+
 
