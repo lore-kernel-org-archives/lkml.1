@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbZKJWyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbZKJWyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbZKJWyq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 17:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758630AbZKJWyp
+	id S1758490AbZKJWyb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 17:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZKJWya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 17:54:45 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38368 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758582AbZKJWyi (ORCPT
+	Tue, 10 Nov 2009 17:54:30 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40176 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751214AbZKJWya (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 17:54:38 -0500
-Message-ID: <4AF9ED78.3000106@zytor.com>
-Date: Tue, 10 Nov 2009 14:47:20 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-References: <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <20091110211259.GD26633@1wt.eu> <4AF9D8E2.7050205@zytor.com> <20091110220652.GE26633@1wt.eu> <4AF9E61B.5090407@zytor.com> <20091110222031.GA22911@elte.hu> <20091110224222.GA28648@1wt.eu>
-In-Reply-To: <20091110224222.GA28648@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 10 Nov 2009 17:54:30 -0500
+Date: Tue, 10 Nov 2009 14:54:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com
+Subject: Re: [PATCH 0/3] rtc: pcf50633 fixes (is rtc maintainer around?)
+Message-Id: <20091110145429.46150d57.akpm@linux-foundation.org>
+In-Reply-To: <1257371717-547-1-git-send-email-fercerpav@gmail.com>
+References: <1257371717-547-1-git-send-email-fercerpav@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 02:42 PM, Willy Tarreau wrote:
-> On Tue, Nov 10, 2009 at 11:20:31PM +0100, Ingo Molnar wrote:
->>
->> * H. Peter Anvin <hpa@zytor.com> wrote:
->>
->>> *THIS* is the kind of complexity that makes me think that having a 
->>> single source for all interpretation done in the kernel is the 
->>> preferred option.
->>
->> Definitely agreed ... The NX code is quite a maze right now, so changes 
->> to it should come generously laced with cleanups.
-> 
-> BTW, I don't see why we should be impacted by NX. Trying to
-> execute from an NX page would return a SEGV, not SIGILL, so
-> we should not be bothered, am I wrong ?
+On Thu,  5 Nov 2009 00:55:14 +0300
+Paul Fertser <fercerpav@gmail.com> wrote:
 
-Yes.  Consider a page-crossing instruction.
+> [PATCH 1/3] rtc: pcf50633: Fix month off-by-one error
+> [PATCH 2/3] rtc: pcf50633: consider alrm->enable in pcf50633_rtc_set_alarm
+> [PATCH 3/3] rtc: pcf50633: manage RTC alarm "pending" flag
 
-	-hpa
+I queued 1 and 2 for 2.6.32 (but not 2.6.31.x or earlier).
+I queued 3 for 2.6.33.
+
+If that was inappropriate then please let me know, with the reasons.
