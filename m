@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbZKJKXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZKJKZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753427AbZKJKXc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 05:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZKJKXb
+	id S1755224AbZKJKZz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 05:25:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZKJKZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 05:23:31 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37447 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753063AbZKJKXb (ORCPT
+	Tue, 10 Nov 2009 05:25:54 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:62696 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752119AbZKJKZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 05:23:31 -0500
-Date: Tue, 10 Nov 2009 10:25:18 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] parport_pc.c: Use correct length in strncmp
-Message-ID: <20091110102518.7c3fc47c@lxorguk.ukuu.org.uk>
-In-Reply-To: <1257825083.12852.83.camel@Joe-Laptop.home>
-References: <1257825083.12852.83.camel@Joe-Laptop.home>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Nov 2009 05:25:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=dE42uZnAcnYjo1E0vmH6w88YJXhguzLYzfEDPe9VMfpflcg8CMNPZ4UhJ27fUkyDX6
+         v5cgm7EmeKqsdoWPbOJa1NGBLjoR4ZsXWIJGQY0Abp4rPISUw6EkeLqX28Rq9/i3TRcu
+         lBZD2nWhb7OKi+NPKosiiRCHmiBePmn57obuE=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jan Kiszka <jan.kiszka@web.de>, Avi Kivity <avi@redhat.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: [GIT PULL] hw-breakpoints: Various fixes
+Date: Tue, 10 Nov 2009 11:25:56 +0100
+Message-Id: <1257848760-9407-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 09 Nov 2009 19:51:23 -0800
-Joe Perches <joe@perches.com> wrote:
+Ingo,
 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
-> index 2597145..ad113b0 100644
-> --- a/drivers/parport/parport_pc.c
-> +++ b/drivers/parport/parport_pc.c
-> @@ -3403,7 +3403,7 @@ static int __init parport_parse_param(const char *s, int *val,
->  		*val = automatic;
->  	else if (!strncmp(s, "none", 4))
->  		*val = none;
-> -	else if (nofifo && !strncmp(s, "nofifo", 4))
-> +	else if (nofifo && !strncmp(s, "nofifo", 6))
->  		*val = nofifo;
+Please pull the tracing/hw-breakpoints branch that can be found at:
 
-I just hope nobody is booting with =nofif due to a typo ;)
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/hw-breakpoints
 
-Acked-by: Alan Cox <alan@linux.intel.com>
+Thanks,
+	Frederic
+---
+
+Frederic Weisbecker (3):
+      hw-breakpoints: Fix broken a.out format dump
+      hw-breakpoints: Fix broken hw-breakpoint sample module
+      hw-breakpoints: Wrap in the KVM breakpoint active state check
+
+Paul Mundt (1):
+      ksym_tracer: Support read accesses independent of read/write.
+
+
+ arch/x86/include/asm/a.out-core.h       |   10 +------
+ arch/x86/include/asm/debugreg.h         |    7 +++++
+ arch/x86/kernel/hw_breakpoint.c         |   35 +++++++++++++++++++++++++
+ arch/x86/kvm/x86.c                      |    2 +-
+ kernel/hw_breakpoint.c                  |    3 +-
+ kernel/kallsyms.c                       |    1 +
+ kernel/trace/trace_ksym.c               |   11 +++++++-
+ samples/hw_breakpoint/data_breakpoint.c |   43 +++++++++++++++++-------------
+ 8 files changed, 82 insertions(+), 30 deletions(-)
