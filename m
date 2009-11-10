@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757534AbZKJSXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZKJSZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757534AbZKJSXw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 13:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbZKJSXv
+	id S1754159AbZKJSZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 13:25:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZKJSZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 13:23:51 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:40616 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757511AbZKJSXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 13:23:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type;
-        b=HSQApgHsBd6m7saq8G1Hk2S4v46r7MTEuaN8TgEQXxD+DVc9EsJb2fXHr5PDTVlygb
-         XvdR25b/mKBTgJKejLV6Wt9nmmIeHJGQTvuFkEDqb01xctH5uxTzhbE6o5I6/7eurFHF
-         x/DvEkWLxldCEU+NXVPZiuDAq2dBWAuy2vc0M=
-Message-ID: <4AF9AFB5.7080809@gmail.com>
-Date: Tue, 10 Nov 2009 13:23:49 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 10 Nov 2009 13:25:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54542 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752015AbZKJSZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 13:25:56 -0500
+Date: Tue, 10 Nov 2009 19:24:15 +0100
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: utime/stime decreasing on thread exit
+Message-ID: <20091110182415.GB6066@dhcp-lab-161.englab.brq.redhat.com>
+References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com> <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop> <20091109172020.GA7751@redhat.com> <1257787903.4108.345.camel@laptop> <20091109192355.GA13724@redhat.com> <20091110104452.GB2391@dhcp-lab-161.englab.brq.redhat.com> <20091110174008.GA12909@redhat.com>
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Eric Dumazet <eric.dumazet@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH] Documentation: rw_lock lessons learned
-Content-Type: multipart/mixed;
- boundary="------------020008060903090007010701"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091110174008.GA12909@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020008060903090007010701
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Nov 10, 2009 at 06:40:08PM +0100, Oleg Nesterov wrote:
+> > One other exception is:
+> > fastpath_timer_check() -> thread_group_cputimer() -> thread_group_cputime()
+> >
+> > We can solve this like that:
+> >
+> > --- a/kernel/posix-cpu-timers.c
+> > +++ b/kernel/posix-cpu-timers.c
+> > @@ -1375,13 +1375,8 @@ static inline int fastpath_timer_check(struct task_struct *tsk)
+> >  	}
+> >
+> >  	sig = tsk->signal;
+> > -	if (!task_cputime_zero(&sig->cputime_expires)) {
+> > -		struct task_cputime group_sample;
+> > -
+> > -		thread_group_cputimer(tsk, &group_sample);
+> > -		if (task_cputime_expired(&group_sample, &sig->cputime_expires))
+> > -			return 1;
+> > -	}
+> > +	if (!task_cputime_zero(&sig->cputime_expires))
+> > +		return 1;
+> >
+> >  	return sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY;
+> >  }
+> >
+> > Or stay with task_cputime_expired() but only if cputimer is currently running.
+> 
+> Oh. I forgot this code completely, can't comment.
+> 
+> Can't we ensure that fastpath_timer_check() never do while_each_thread() ?
 
-In recent weeks, two different network projects erroneously
-strayed down the rw_lock path.  Update the Documentation
-based upon comments in those threads.
----
-  Documentation/spinlocks.txt |   14 ++++++++++++++
-  1 files changed, 14 insertions(+), 0 deletions(-)
+Removing possibility to call while_each_tread() from fastpath_timer_check()
+was exactly my intension here, perhaps I was not clear.
 
---------------020008060903090007010701
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="spinlocks.txt.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="spinlocks.txt.patch"
+> IOW, if sig->cputime_expires != 0 then ->running must be true.
+> At least, shouldn't stop_process_timers() clear sig->cputime_expires ?
 
-diff --git a/Documentation/spinlocks.txt b/Documentation/spinlocks.txt
-index 619699d..c112052 100644
---- a/Documentation/spinlocks.txt
-+++ b/Documentation/spinlocks.txt
-@@ -233,4 +233,18 @@ indeed), while write-locks need to protect themselves against interrupts.
- 
- 		Linus
- 
-+----
-+
-+The implications of spin_locks on memory are further described in:
-+
-+  Documentation/memory-barriers.txt
-+    (5) LOCK operations.
-+    (6) UNLOCK operations.
-+
-+----
-+
-+We are working hard to remove reader-writer spinlocks (rw_lock) from the
-+network stack, so please don't add a new one.  Instead, see:
-+
-+  Documentation/RCU/rcu.txt
- 
--- 
-1.6.3.3
+I'm going to think about that. However as far seems, checking ->running
+explicitly and goto slow patch when is not true is safer solution.
 
-
---------------020008060903090007010701--
+Stanislaw
