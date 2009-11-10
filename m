@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZKJEW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZKJEWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbZKJEW3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 23:22:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZKJEW2
+	id S1756044AbZKJEWn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 23:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756028AbZKJEWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 23:22:28 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45897 "EHLO hera.kernel.org"
+	Mon, 9 Nov 2009 23:22:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45915 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751814AbZKJEW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 23:22:27 -0500
-Date: Tue, 10 Nov 2009 04:22:04 GMT
+	id S1755607AbZKJEWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 23:22:39 -0500
+Date: Tue, 10 Nov 2009 04:22:20 GMT
 From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
        mingo@redhat.com, a.p.zijlstra@chello.nl, mitake@dcl.info.waseda.ac.jp,
@@ -17,12 +17,12 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1257808802-9420-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1257808802-9420-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <1257808802-9420-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+References: <1257808802-9420-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/bench] perf bench: Add format constants to bench.h for unified output formatting
-Message-ID: <tip-242aa14a67f4e19453fc8a51cffc5ac5ee5bcbd1@git.kernel.org>
-Git-Commit-ID: 242aa14a67f4e19453fc8a51cffc5ac5ee5bcbd1
+Subject: [tip:perf/bench] perf bench: Modify builtin-bench.c for processing common options
+Message-ID: <tip-386d7e9e542c2115d5d300747e57f503458a1617@git.kernel.org>
+Git-Commit-ID: 386d7e9e542c2115d5d300747e57f503458a1617
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,43 +31,160 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  242aa14a67f4e19453fc8a51cffc5ac5ee5bcbd1
-Gitweb:     http://git.kernel.org/tip/242aa14a67f4e19453fc8a51cffc5ac5ee5bcbd1
+Commit-ID:  386d7e9e542c2115d5d300747e57f503458a1617
+Gitweb:     http://git.kernel.org/tip/386d7e9e542c2115d5d300747e57f503458a1617
 Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-AuthorDate: Tue, 10 Nov 2009 08:19:59 +0900
+AuthorDate: Tue, 10 Nov 2009 08:20:00 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Tue, 10 Nov 2009 04:53:48 +0100
 
-perf bench: Add format constants to bench.h for unified output formatting
+perf bench: Modify builtin-bench.c for processing common options
 
-This patch adds some constants and extern declaration to
-bench.h. These are used for unified output formatting
-of 'perf bench'.
+This patch modifies builtin-bench.c for processing common
+options. The first option added is "--format".
+Users of perf bench will be able to specify output style by
+--format.
+
+Usage example:
+
+ % ./perf bench sched messaging		# with no style specify
+ (20 sender and receiver processes per group)
+ (10 groups == 400 processes run)
+
+         Total time:1.431 sec
+
+ % ./perf bench --format=simple sched messaging # specified
+ simple 1.431
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1257808802-9420-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+LKML-Reference: <1257808802-9420-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/bench/bench.h |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ tools/perf/builtin-bench.c |   79 ++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 65 insertions(+), 14 deletions(-)
 
-diff --git a/tools/perf/bench/bench.h b/tools/perf/bench/bench.h
-index 59adb27..42167ea 100644
---- a/tools/perf/bench/bench.h
-+++ b/tools/perf/bench/bench.h
-@@ -6,4 +6,13 @@ extern int bench_sched_messaging(int argc, const char **argv,
- extern int bench_sched_pipe(int argc, const char **argv,
- 			    const char *prefix);
+diff --git a/tools/perf/builtin-bench.c b/tools/perf/builtin-bench.c
+index 31f4164..c7505ea 100644
+--- a/tools/perf/builtin-bench.c
++++ b/tools/perf/builtin-bench.c
+@@ -74,53 +74,104 @@ static void dump_suites(int subsys_index)
+ 	return;
+ }
  
-+#define BENCH_FORMAT_DEFAULT_STR "default"
-+#define BENCH_FORMAT_DEFAULT 0
-+#define BENCH_FORMAT_SIMPLE_STR "simple"
-+#define BENCH_FORMAT_SIMPLE 1
++static char *bench_format_str;
++int bench_format = BENCH_FORMAT_DEFAULT;
 +
-+#define BENCH_FORMAT_UNKNOWN -1
++static const struct option bench_options[] = {
++	OPT_STRING('f', "format", &bench_format_str, "default",
++		    "Specify format style"),
++	OPT_END()
++};
 +
-+extern int bench_format;
++static const char * const bench_usage[] = {
++	"perf bench [<common options>] <subsystem> <suite> [<options>]",
++	NULL
++};
 +
- #endif
++static void print_usage(void)
++{
++	int i;
++
++	printf("Usage: \n");
++	for (i = 0; bench_usage[i]; i++)
++		printf("\t%s\n", bench_usage[i]);
++	printf("\n");
++
++	printf("List of available subsystems...\n\n");
++
++	for (i = 0; subsystems[i].name; i++)
++		printf("\t%s: %s\n",
++		       subsystems[i].name, subsystems[i].summary);
++	printf("\n");
++}
++
++static int bench_str2int(char *str)
++{
++	if (!str)
++		return BENCH_FORMAT_DEFAULT;
++
++	if (!strcmp(str, BENCH_FORMAT_DEFAULT_STR))
++		return BENCH_FORMAT_DEFAULT;
++	else if (!strcmp(str, BENCH_FORMAT_SIMPLE_STR))
++		return BENCH_FORMAT_SIMPLE;
++
++	return BENCH_FORMAT_UNKNOWN;
++}
++
+ int cmd_bench(int argc, const char **argv, const char *prefix __used)
+ {
+ 	int i, j, status = 0;
+ 
+ 	if (argc < 2) {
+ 		/* No subsystem specified. */
+-		printf("Usage: perf bench <subsystem> <suite> [<options>]\n\n");
+-		printf("List of available subsystems...\n\n");
++		print_usage();
++		goto end;
++	}
+ 
+-		for (i = 0; subsystems[i].name; i++)
+-			printf("\t%s: %s\n",
+-			       subsystems[i].name, subsystems[i].summary);
+-		printf("\n");
++	argc = parse_options(argc, argv, bench_options, bench_usage,
++			     PARSE_OPT_STOP_AT_NON_OPTION);
++
++	bench_format = bench_str2int(bench_format_str);
++	if (bench_format == BENCH_FORMAT_UNKNOWN) {
++		printf("Unknown format descriptor:%s\n", bench_format_str);
++		goto end;
++	}
+ 
++	if (argc < 1) {
++		print_usage();
+ 		goto end;
+ 	}
+ 
+ 	for (i = 0; subsystems[i].name; i++) {
+-		if (strcmp(subsystems[i].name, argv[1]))
++		if (strcmp(subsystems[i].name, argv[0]))
+ 			continue;
+ 
+-		if (argc < 3) {
++		if (argc < 2) {
+ 			/* No suite specified. */
+ 			dump_suites(i);
+ 			goto end;
+ 		}
+ 
+ 		for (j = 0; subsystems[i].suites[j].name; j++) {
+-			if (strcmp(subsystems[i].suites[j].name, argv[2]))
++			if (strcmp(subsystems[i].suites[j].name, argv[1]))
+ 				continue;
+ 
+-			status = subsystems[i].suites[j].fn(argc - 2,
+-							    argv + 2, prefix);
++			status = subsystems[i].suites[j].fn(argc - 1,
++							    argv + 1, prefix);
+ 			goto end;
+ 		}
+ 
+-		if (!strcmp(argv[2], "-h") || !strcmp(argv[2], "--help")) {
++		if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
+ 			dump_suites(i);
+ 			goto end;
+ 		}
+ 
+-		printf("Unknown suite:%s for %s\n", argv[2], argv[1]);
++		printf("Unknown suite:%s for %s\n", argv[1], argv[0]);
+ 		status = 1;
+ 		goto end;
+ 	}
+ 
+-	printf("Unknown subsystem:%s\n", argv[1]);
++	printf("Unknown subsystem:%s\n", argv[0]);
+ 	status = 1;
+ 
+ end:
