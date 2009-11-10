@@ -1,87 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbZKJUpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbZKJUui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758121AbZKJUpw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 15:45:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbZKJUpw
+	id S1758125AbZKJUui (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 15:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZKJUuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 15:45:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34663 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758072AbZKJUpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 15:45:51 -0500
-Date: Tue, 10 Nov 2009 21:45:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] new -stable tag variant, Git workflow question
-Message-ID: <20091110204537.GB18509@elte.hu>
-References: <20091110034831.GB26809@elte.hu>
- <20091110041452.GA25575@suse.de>
- <1257863388.4184.220.camel@mulgrave.site>
- <4AF98C36.9040405@s5r6.in-berlin.de>
- <20091110193919.GC12686@suse.de>
+	Tue, 10 Nov 2009 15:50:37 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:63590 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbZKJUug (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 15:50:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=GueRjRJR3yeS33qsOFlocSm6xyj5/291yzcT6QbSvegFuz5eDA4+QFnUOOWZsfQwsv
+         HB4azIbHQ9EZWdJoVX8PQbz0+ynkV1Y6xqk3V2LjxwLgrlAw0+EId7hurwuvcKHypoWN
+         E6n/+qXv3O9r248rJWw/F7xicW4/UvBK0y1Dk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091110193919.GC12686@suse.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <43e72e890911101230t23933eaem4d7bc10237e1a725@mail.gmail.com>
+References: <43e72e890911041540hd1e5f87u8d282d9c95857504@mail.gmail.com> 
+	<alpine.LFD.2.01.0911041551220.31845@localhost.localdomain> 
+	<20091105071431.GA14055@elte.hu> <43e72e890911081135q78416ef7ua6c5991b15fb2659@mail.gmail.com> 
+	<20091109071558.GC453@elte.hu> <43e72e890911090749r5b35fb83s4991bb9c44a1773a@mail.gmail.com> 
+	<43e72e890911101230t23933eaem4d7bc10237e1a725@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Tue, 10 Nov 2009 12:50:21 -0800
+Message-ID: <43e72e890911101250tcc8dcdk7a639bdbe7b00215@mail.gmail.com>
+Subject: Re: Reverting 5d423 fixes loading of ath9k on Acer Extensa 7630EZ
+To: Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
+       stable@kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Yannick Roehlly <yannick.roehlly@free.fr>,
+       Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jesse.barnes@intel.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "John W. Linville" <linville@tuxdriver.com>, berndl81@gmx.at,
+       Ingo Molnar <mingo@elte.hu>, Stefan Bader <stefan.bader@canonical.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 10, 2009 at 12:30 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Mon, Nov 9, 2009 at 7:49 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>> On Sun, Nov 8, 2009 at 11:15 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>>
+>>> * Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>>>
+>>>> On Wed, Nov 4, 2009 at 11:14 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>>> >
+>>>> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>>> >
+>>>> >> On Wed, 4 Nov 2009, Luis R. Rodriguez wrote:
+>>>> >> >
+>>>> >> > Can you please consider reviewing this issue and help determine if
+>>>> >> > this indeed needs to be reverted for 2.6.32 and the next 2.6.31.y.
+>>>> >> >
+>>>> >> > I am curious if other devices would work by reverting this as well.
+>>>> >> > [ ... ] For details please feel free to check:
+>>>> >> >
+>>>> >> > http://bugzilla.kernel.org/show_bug.cgi?id=14402
+>>>> >>
+>>>> >> That same commit was the cause for
+>>>> >>
+>>>> >> ?? ?? ?? http://bugzilla.kernel.org/show_bug.cgi?id=13940
+>>>> >>
+>>>> >> and we just increased the rounding to make it go away (see commit
+>>>> >> 15b812f1). But that was a hack.
+>>>> >>
+>>>> >> And if that didn't help the ath9k case, then we should just revert
+>>>> >> entirely.
+>>>> >
+>>>> > Agreed - below is the combo 15b812f1 + 5d423ccd revert. (Would be nice
+>>>> > to get the boot log of the latest post-15b812f1 kernel that Yinghai
+>>>> > asked for before we revert, in the hope of better understanding the
+>>>> > problem.)
+>>>>
+>>>> Bernhard has confirmed the new patch fixes this issue.
+>>>
+>>> Good - so latest kernels should be fine (on Bernhard's box) and no
+>>> change is needed, right?
+>>
+>> Yea, but it does mean we need a fix propagated down to older kernels.
+>
+> Greg, please consider applying 15b812f1d0 to stable 2.6.31 as it fixes
+> an issue introduced on 2.6.31 and only fixed now for 2.6.32. This
+> should fix an issue when loading either sky2 or ath9k on some specific
+> platforms.
+>
+> The details for the ath9k debugging are available on this bug:
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=14402
 
-* Greg KH <gregkh@suse.de> wrote:
+Just noticed this did make it to 2.6.31.6, sorry for the noise and thanks.
 
-> > More importantly, isn't this against the character of the -stable 
-> > kernel branches as _safe and simple_ hotfix branches?
-> > 
-> > If a fix has a number of prerequisites which ar not -stable fixes 
-> > themselves, then it is more than a hint that this fix is not really 
-> > well suited for -stable.
-> 
-> Not true, we have been doing this kind of thing for quite some time 
-> now. Sometimes it's just a simple "this patch cleans up the code, and 
-> the second one fixes it in an obvious manner" type thing.  It is 
-> easier for me and everyone else for us to apply 2 commits to the 
-> -stable tree, instead of rewriting the second patch that actually does 
-> the fix and hope I got it all correct in doing so.
-> 
-> It's also easier to review stuff, which is the most important thing.
-
-Yeah. This new tagging scheme doesnt really allow anything 'new' per se 
-- it just helps the existing practice some more. All these commits were 
--stable candidates anyway, in exactly the same order - the only 
-difference the new tagging scheme adds here is a more organized, 
-in-upsream-Git way of communicating it to you.
-
-This is also easier and less error prone for me than using email: i can 
-do all the -stable tagging when i create a commit - or if i see that a 
-commit has prereqs and those should be in -stable too. In those 
-situations i check out the last stable kernel version, and cherry-pick 
-the prereqs and the target commit, to see that it cherry-picks without 
-conflicts.
-
-But i cannot send you an email to stable@kernel.org just yet: as i 
-havent fully tested the last commit yet, and have not pushed it out yet. 
-The commit ID is not stable yet.
-
-So without the in-commit tagging, i'd have to remember to send you an 
-email in an hour (or in a day - whenever testing is done) - and that is 
-error prone and easy to forget. The prereqs might be lost, etc. It's 
-better to do this all in one well-focused moment of time, gather the 
-information and mention it in the changelog.
-
-	Ingo
+  Luis
