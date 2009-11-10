@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbZKJPCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZKJPDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756646AbZKJPCo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 10:02:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322AbZKJPCo
+	id S1756664AbZKJPDd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 10:03:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZKJPDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 10:02:44 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:61862 "EHLO poutre.nerim.net"
+	Tue, 10 Nov 2009 10:03:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24523 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830AbZKJPCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 10:02:43 -0500
-Date: Tue, 10 Nov 2009 16:02:46 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mika Kuoppala <mika.kuoppala@nokia.com>
-Subject: Re: linux-next: manual merge of the net tree with the i2c tree
-Message-ID: <20091110160246.506b7789@hyperion.delvare>
-In-Reply-To: <1257859379.2834.2.camel@achroite.uk.solarflarecom.com>
-References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-	<20091110124231.66141a0f@hyperion.delvare>
-	<1257859379.2834.2.camel@achroite.uk.solarflarecom.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1756516AbZKJPDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 10:03:32 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC, PATCH] cfq-iosched: remove redundant queuing detection code
+References: <200911101454.57522.czoccolo@gmail.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 10 Nov 2009 10:03:32 -0500
+In-Reply-To: <200911101454.57522.czoccolo@gmail.com> (Corrado Zoccolo's
+	message of "Tue, 10 Nov 2009 14:54:57 +0100")
+Message-ID: <x49vdhi5smz.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009 13:22:58 +0000, Ben Hutchings wrote:
-> On Tue, 2009-11-10 at 12:42 +0100, Jean Delvare wrote:
-> > Ben, you can adjust your own patches to make use of this API instead of
-> > accessing the i2c_adapter mutex directly. That way, you are no longer
-> > dependent of implementation changes, and this should solve the conflict.
-> > 
-> > Stephen, you can then drop your fixup patch.
-> 
-> I don't think so, since the conflict resulted from joining two files
-> including sfe4001.c in net-next-2.6.
+Corrado Zoccolo <czoccolo@gmail.com> writes:
 
-My patch series no longer touches sfe4001.c, so how would the conflict
-remain?
+> The core block layer already has code to detect presence of command
+> queuing devices. We convert cfq to use that instead of re-doing the
+> computation.
 
--- 
-Jean Delvare
+This sounds like a good idea to me, and it appears the same number of
+requests will be used to detect command queuing.  I'm surprised we can't
+just query each device to detect this, honestly.
+
+One thing you missed, though, was removing the CFQ_HW_QUEUE_MIN define.
+
+Cheers,
+Jeff
