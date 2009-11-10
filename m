@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZKJX2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbZKJXkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbZKJX2H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 18:28:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758648AbZKJX2G
+	id S1758713AbZKJXkr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 18:40:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZKJXkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 18:28:06 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:56167 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758568AbZKJX2G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 18:28:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=p/9Mfo9HxayE9qEW1tRzVWeGivz8bRApn/QKyF9MJ14WU/JtHEAR9xhrj5TahCBZ8L
-         uejrioR8W7C/FxV5OMPWpMSiknDTizz0RFx9bbDj77v21rzdkhWiFtTeEbi1PKvHNc84
-         5Jnh7oTssMMvM3tCRsuw0Y5hIpPZkSfgUmT9U=
+	Tue, 10 Nov 2009 18:40:46 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:44431 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757186AbZKJXkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 18:40:45 -0500
+Date: Tue, 10 Nov 2009 15:41:01 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/rcu] rcu: Remove inline from forward-referenced
+	functions
+Message-ID: <20091110234101.GB8424@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <tip-dbe01350fa8ce0c11948ab7d6be71a4d901be151@git.kernel.org> <1257892710.25443.9.camel@Joe-Laptop.home> <20091110225926.GA8424@linux.vnet.ibm.com> <1257894380.25443.16.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Tue, 10 Nov 2009 15:27:50 -0800
-Message-ID: <43e72e890911101527s6d29b35cuaf63e081762c1eb7@mail.gmail.com>
-Subject: Oops on i915 on 8086:a011 pine trail 2.6.32-rc6
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257894380.25443.16.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Getting an oops with a pine trail netbook I'm doing testing on on
-2.6.32-rc6 with a fresh new distro kernel for the next Ubuntu 10.04
-release:
+On Tue, Nov 10, 2009 at 03:06:20PM -0800, Joe Perches wrote:
+> On Tue, 2009-11-10 at 14:59 -0800, Paul E. McKenney wrote:
+> > > non-inline functions in .h files probably aren't a good idea.
+> > ;-)
+> > Here are my options:
+> []
+> > Please note that kernel/rcutree_plugin.h is internal to RCU -- only
+> > kernel/rcutree.c includes it, so there is no possibility of conflicting
+> > definitions.
+> > 
+> > Any options that I am missing?
+> 
+> Maybe something like:
+> 
+> #ifdef whatever
+> #define RCU_ANNOUNCE "Hierarchical RCU implementation.\n"
+> ...
+> #else
+> #define RCU_ANNOUNCE "Experimental preemptable hierarchical RCU implementation.\n"
+> ...
+> #endif
+> 
+> Use pr_info(RCU_ANNOUNCE) instead of rcu_bootup_announce();
+> 
+> ?
 
-https://launchpad.net/ubuntu/+source/linux/2.6.32-3.3/+build/1339939/+files/linux-image-2.6.32-3-386_2.6.32-3.3_i386.deb
+This would still be a forward reference, right?  Unless I am missing
+something, changing from a static inline to a cpp macro doesn't change
+anything.
 
-The machine boots fine with 2.6.31.
-
-The oops happens early on the boot process, I'll next rebuild my own
-with early boot delay (CONFIG_BOOT_PRINTK_DELAY) as that seems to be
-the only way I'm going to get this full trace out. Good thing is its
-100% reproducible so I should be able to bisect. The only thing
-visible so far is the end of the oops:
-
-http://bombadil.infradead.org/~mcgrof/oops-img/2009/11/2.6.32-rc6-i915-8086-a011-oops-01.jpg
-
-PS. who maintains i915? I see no entry for it on MAINTAINERS and it
-took me a while to find the intel-gfx@lists.freedesktop.org (only
-member posting) list. Is this the right list?
-
-  Luis
+							Thanx, Paul
