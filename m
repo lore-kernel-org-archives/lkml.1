@@ -1,92 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZKJBIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZKJBL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbZKJBIU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 20:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZKJBIU
+	id S1755889AbZKJBL5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 20:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbZKJBLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 20:08:20 -0500
-Received: from ozlabs.org ([203.10.76.45]:40626 "EHLO ozlabs.org"
+	Mon, 9 Nov 2009 20:11:54 -0500
+Received: from kroah.org ([198.145.64.141]:45803 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbZKJBIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 20:08:19 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Subject: Re: [PATCHv8 3/3] vhost_net: a kernel-level virtio server
-Date: Tue, 10 Nov 2009 11:38:20 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, s.hetze@linux-ag.com,
-       Daniel Walker <dwalker@fifo99.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-References: <cover.1257349249.git.mst@redhat.com> <200911091647.29655.rusty@rustcorp.com.au> <8f53421d0911082310n1f5f487ew8c2c03d2e1d7ca5c@mail.gmail.com>
-In-Reply-To: <8f53421d0911082310n1f5f487ew8c2c03d2e1d7ca5c@mail.gmail.com>
+	id S1755482AbZKJBLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 20:11:47 -0500
+Date: Mon, 9 Nov 2009 17:08:31 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Cc: lwn@lwn.net
+Subject: Linux 2.6.27.39
+Message-ID: <20091110010831.GC8144@kroah.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911101138.20569.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Nov 2009 05:40:32 pm Michael S. Tsirkin wrote:
-> On Mon, Nov 9, 2009 at 8:17 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > There's something about the 'acked' which rubs me the wrong way.
-> > "enabled_features" is perhaps a better term than "acked_features"; "acked"
-> > seems more a user point-of-view, "enabled" seems more driver POV?
-> 
-> Hmm. Are you happy with the ioctl name? If yes I think being consistent
-> with that is important.
+I'm announcing the release of the 2.6.27.39 kernel.  All users of the
+2.6.27 kernel series are very strongly encouraged to upgrade.
 
-I think in my original comments I noted that I preferred GET / SET, rather
-than GET/ACK.
+The updated 2.6.27.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
 
-> > Actually, this looks wrong to me:
-> >
-> > +       case VHOST_SET_VRING_BASE:
-> > ...
-> > +               vq->avail_idx = vq->last_avail_idx = s.num;
-> >
-> > The last_avail_idx is part of the state of the driver.  It needs to be saved
-> > and restored over susp/resume.
-> 
-> 
-> Exactly. That's what VHOST_GET/SET_VRING_BASE does.  avail_idx is just a
-> cached value for notify on empty, so what this does is clear the value.
+thanks,
 
-Ah, you actually refresh it every time anyway.  Hmm, could you do my poor
-brain a favor and either just get_user it in vhost_trigger_irq(), or call
-it 'cached_avail_idx' or something?
+greg k-h
 
-> >  The only reason it's not in the ring itself
-> > is because I figured the other side doesn't need to see it (which is true, but
-> > missed debugging opportunities as well as man-in-the-middle issues like this
-> > one).  I had a patch which put this field at the end of the ring, I might
-> > resurrect it to avoid this problem.  This is backwards compatible with all
-> > implementations.  See patch at end.
-> 
-> Yes, I remember that patch. There seems to be little point though, at
-> this stage.
+------------
 
-Well, it avoids this ioctl, by exposing all the state.  We may well need it
-later, to expand the ring in other ways.
+ Makefile                               |    2 -
+ arch/m68k/Kconfig                      |    6 ++--
+ arch/x86/ia32/ia32entry.S              |    5 +--
+ arch/x86/kernel/amd_iommu_init.c       |   25 ++++++++++++++++-
+ arch/x86/kvm/x86.c                     |    2 +
+ drivers/acpi/scan.c                    |   12 +-------
+ drivers/ata/libata-core.c              |   12 ++++----
+ drivers/base/driver.c                  |    2 -
+ drivers/char/Kconfig                   |    6 ++--
+ drivers/input/mouse/synaptics.c        |   10 +++++++
+ drivers/net/appletalk/ipddp.c          |    3 --
+ drivers/net/bonding/bond_main.c        |    2 -
+ drivers/net/wireless/b43/rfkill.c      |    3 +-
+ drivers/net/wireless/libertas/if_usb.c |    2 -
+ drivers/net/wireless/ray_cs.c          |    2 -
+ drivers/scsi/dpt_i2o.c                 |    4 ++
+ drivers/serial/8250_pci.c              |   11 +++++++
+ fs/hfsplus/wrapper.c                   |    4 ++
+ fs/nfs/client.c                        |    2 -
+ fs/nfs/dir.c                           |    4 ++
+ fs/nfs/direct.c                        |    1 
+ fs/nfs/nfs4proc.c                      |   27 ++++++++++++++----
+ fs/nfs/nfs4renewd.c                    |    6 ----
+ fs/nfs/nfs4xdr.c                       |    1 
+ fs/nfs/super.c                         |    1 
+ fs/pipe.c                              |   41 +++++++++++++++++++++-------
+ include/linux/kernel.h                 |    4 ++
+ include/linux/pci_ids.h                |    3 ++
+ include/net/irda/irda_device.h         |    4 ++
+ kernel/printk.c                        |   19 +++++++++++--
+ kernel/time/tick-sched.c               |    2 -
+ kernel/timer.c                         |    1 
+ mm/mempolicy.c                         |    3 +-
+ net/appletalk/aarp.c                   |   16 +++++++----
+ net/appletalk/ddp.c                    |   47 ++++++++++++++++-----------------
+ net/sched/cls_api.c                    |    2 -
+ net/unix/af_unix.c                     |    2 +
+ 37 files changed, 204 insertions(+), 95 deletions(-)
 
-> > I would drop avail_idx altogether: get_user is basically free, and simplifies
-> > a lot.  As most state is in the ring, all you need is an ioctl to save/restore
-> > the last_avail_idx.
-> 
-> avail_idx is there for notify on empty: I had this thought that it's
-> better to leave the avail cache line alone when we are triggering
-> interrupt to avoid bouncing it around if guest is updating it meanwhile
-> on another CPU, and I think my testing showed that it helped
-> performance, but could be a mistake.  You don't believe this can help?
+Alan Cox (3):
+      dpt_i2o: Fix up copy*user
+      ray_cs: Fix copy_from_user handling
+      tty: Mark generic_serial users as BROKEN
 
-I believe it could help, but this is YA case where it would have been nice to
-have a dumb basic patch and this as a patch on top.  But I am going to ask
-you to re-run that measurement, see if it stacks up (because it's an
-interesting lesson if it does..)
+Arnaldo Carvalho de Melo (1):
+      appletalk: Fix skb leak when ipddp interface is not loaded (CVE-2009-2903)
 
-Thanks!
-Rusty.
+Avi Kivity (1):
+      KVM: Prevent overflow in KVM_GET_SUPPORTED_CPUID (CVE-2009-3638)
+
+Ben Hutchings (2):
+      hfsplus: refuse to mount volumes larger than 2TB
+      nfs: Avoid overrun when copying client IP address string
+
+Benjamin Herrenschmidt (1):
+      8250_pci: add IBM Saturn serial card
+
+David Woodhouse (1):
+      libertas if_usb: Fix crash on 64-bit machines
+
+Dmitry Torokhov (1):
+      Input: synaptics - add another Protege M300 to rate blacklist
+
+Earl Chew (1):
+      fs: pipe.c null pointer dereference
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.27.39
+
+Jan Beulich (1):
+      x86-64: Fix register leak in 32-bit syscall audting
+
+Jiri Bohac (1):
+      bonding: fix a race condition in calls to slave MII ioctls
+
+Jiri Pirko (1):
+      netlink: fix typo in initialization (CVE-2009-3612)
+
+Joerg Roedel (2):
+      x86/amd-iommu: Un__init function required on shutdown
+      x86/amd-iommu: Workaround for erratum 63
+
+KOSAKI Motohiro (1):
+      mbind(): fix leak of never putback pages
+
+Larry Finger (1):
+      b43: Fix Bugzilla #14181 and the bug from the previous 'fix'
+
+Len Brown (1):
+      Revert "ACPI: Attach the ACPI device to the ACPI handle as early as possible"
+
+OGAWA Hirofumi (1):
+      dpt_i2o: Fix typo of EINVAL
+
+Peter Zijlstra (1):
+      printk: robustify printk
+
+Samuel Ortiz (1):
+      irda: Add irda_skb_cb qdisc related padding
+
+Stas Sergeev (1):
+      Driver core: fix driver_register() return value
+
+Tejun Heo (1):
+      libata: fix internal command failure handling
+
+Terry Loftin (1):
+      nfs: Panic when commit fails
+
+Tomoki Sekiyama (1):
+      AF_UNIX: Fix deadlock on connecting to shutdown socket (CVE-2009-3621)
+
+Trond Myklebust (4):
+      NFSv4: Fix a bug when the server returns NFS4ERR_RESOURCE
+      NFSv4: Kill nfs4_renewd_prepare_shutdown()
+      NFSv4: Fix a problem whereby a buggy server can oops the kernel
+      NFSv4: The link() operation should return any delegation on the file
+
