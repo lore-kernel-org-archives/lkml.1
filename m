@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbZKJVWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbZKJV1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758217AbZKJVWD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:22:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZKJVWD
+	id S1758242AbZKJV1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbZKJV1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:22:03 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58654 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755174AbZKJVWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:22:00 -0500
-Date: Tue, 10 Nov 2009 22:22:05 +0100
-From: Jan Kara <jack@suse.cz>
-To: Tao Ma <tao.ma@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sunil.mushran@oracle.com,
-       Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] JBD/JBD2: free j_wbuf if journal init fails.
-Message-ID: <20091110212205.GE27326@duck.suse.cz>
-References: <1257844402-7828-1-git-send-email-tao.ma@oracle.com>
+	Tue, 10 Nov 2009 16:27:21 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57550 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754877AbZKJV1U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:27:20 -0500
+Message-ID: <4AF9D98A.90808@zytor.com>
+Date: Tue, 10 Nov 2009 13:22:18 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257844402-7828-1-git-send-email-tao.ma@oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Kees Cook <kees.cook@canonical.com>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
+References: <20091109221015.GB5129@outflux.net> <4AF8A2C0.5080700@zytor.com> <20091110154956.GF5129@outflux.net> <4AF9991B.20400@zytor.com> <20091110165738.GH5129@outflux.net> <4AF99F0C.2050806@zytor.com> <20091110174622.GK5129@outflux.net> <4AF9B6AD.8020505@zytor.com> <20091110194304.GW5129@outflux.net> <4AF9C627.1070206@zytor.com> <20091110205544.GZ5129@outflux.net>
+In-Reply-To: <20091110205544.GZ5129@outflux.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 10-11-09 17:13:22, Tao Ma wrote:
-> If journal init fails, we need to free j_wbuf.
-  Thanks, added to my tree.
+On 11/10/2009 12:55 PM, Kees Cook wrote:
+>> > I also think "missing in kernel" is misleading in the 32-bit non-PAE,
+>> > no-NX case (as it would imply that another kernel could do something),
+> Well, I think thinking that even if they turned on the flag in the BIOS,
+> the non-PAE kernel couldn't do anything about it anyway.  But, from your
+> example, I see you went with "missing in kernel" anyway.
 
-							Honza
+No, I didn't: in my example, the CPU checks have higher priority than
+the kernel feature check.
+
+>> So the logic that makes sense would be:
+>>
+>> if (!cpu_has_nx) {
 > 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Jan Kara <jack@suse.cz>
-> Signed-off-by: Tao Ma <tao.ma@oracle.com>
-> ---
->  fs/jbd/journal.c  |    2 ++
->  fs/jbd2/journal.c |    2 ++
->  2 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-> index bd3c073..49d5cd6 100644
-> --- a/fs/jbd/journal.c
-> +++ b/fs/jbd/journal.c
-> @@ -756,6 +756,7 @@ journal_t * journal_init_dev(struct block_device *bdev,
->  
->  	return journal;
->  out_err:
-> +	kfree(journal->j_wbuf);
->  	kfree(journal);
->  	return NULL;
->  }
-> @@ -820,6 +821,7 @@ journal_t * journal_init_inode (struct inode *inode)
->  
->  	return journal;
->  out_err:
-> +	kfree(journal->j_wbuf);
->  	kfree(journal);
->  	return NULL;
->  }
-> diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-> index b0ab521..fed8538 100644
-> --- a/fs/jbd2/journal.c
-> +++ b/fs/jbd2/journal.c
-> @@ -913,6 +913,7 @@ journal_t * jbd2_journal_init_dev(struct block_device *bdev,
->  
->  	return journal;
->  out_err:
-> +	kfree(journal->j_wbuf);
->  	jbd2_stats_proc_exit(journal);
->  	kfree(journal);
->  	return NULL;
-> @@ -986,6 +987,7 @@ journal_t * jbd2_journal_init_inode (struct inode *inode)
->  
->  	return journal;
->  out_err:
-> +	kfree(journal->j_wbuf);
->  	jbd2_stats_proc_exit(journal);
->  	kfree(journal);
->  	return NULL;
-> -- 
-> 1.5.4.4
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> cpu_has_nx is not the same as nx_enabled (due to disable_nx).  Also, why
+> doesn't set_nx() use cpu_has_nx?  It seems like it does the check
+> manually?  Should that be cleaned up?
+
+Yes, it should be.  set_nx() and check_efer() are doing the same thing,
+except in different ways, and they are - IMO - *both* doing something
+dumb -- although check_efer() is saner.
+
+Anyway, I forgot the last case, which is NX disabled manually
+(disable_nx).  It probably makes sense to make it the lowest priority
+message.
+
+if (!cpu_has_nx) {
+	/* If the CPU can't do it... */
+	printk(KERN_INFO "cpu: NX protection unavailable in CPU\n");
+} else  {
+#if defined(CONFIG_X86_32) && !defined(CONFIG_X86_PAE)
+	/* Non-PAE kernel: NX unavailable */
+	printk(KERN_NOTICE "cpu: NX protection not supported by kernel\n");
+#else
+	if (disable_nx)
+		printk(KERN_INFO "cpu: NX protection disabled by kernel command line
+option\n");
+	else
+		printk(KERN_INFO "cpu: NX protection active\n");
+#endif
+}
+
+
+> How about this?  (Along with the nx_enabled setting in set_nx() for the
+> 64-bit and 32-bit+PAE case.)
+
+No, it gives the wrong message for the manually disabled case.
+
+	-hpa
