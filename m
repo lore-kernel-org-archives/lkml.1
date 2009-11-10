@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZKJRrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbZKJRte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbZKJRrI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 12:47:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbZKJRrI
+	id S1757496AbZKJRte (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 12:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757432AbZKJRtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 12:47:08 -0500
-Received: from smtp.outflux.net ([198.145.64.163]:50164 "EHLO smtp.outflux.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757408AbZKJRrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 12:47:07 -0500
-Date: Tue, 10 Nov 2009 09:46:22 -0800
-From: Kees Cook <kees.cook@canonical.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
-Message-ID: <20091110174622.GK5129@outflux.net>
-References: <4ADD1E03.4070200@zytor.com>
- <20091020045513.GU5394@outflux.net>
- <20091109221015.GB5129@outflux.net>
- <4AF8A2C0.5080700@zytor.com>
- <20091110154956.GF5129@outflux.net>
- <4AF9991B.20400@zytor.com>
- <20091110165738.GH5129@outflux.net>
- <4AF99F0C.2050806@zytor.com>
+	Tue, 10 Nov 2009 12:49:33 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:19924 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757422AbZKJRtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 12:49:32 -0500
+Message-ID: <4AF9A77E.6020908@caviumnetworks.com>
+Date: Tue, 10 Nov 2009 09:48:46 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF99F0C.2050806@zytor.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+CC: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       zhangfx@lemote.com, zhouqg@gmail.com,
+       Ralf Baechle <ralf@linux-mips.org>, rostedt@goodmis.org,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH v7 03/17] tracing: add MIPS specific trace_clock_local()
+References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com> <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com> <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com>
+In-Reply-To: <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Nov 2009 17:48:47.0544 (UTC) FILETIME=[0DF1AB80:01CA622E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 09:12:44AM -0800, H. Peter Anvin wrote:
-> On 11/10/2009 08:57 AM, Kees Cook wrote:
-> > 
-> > 64-bit does not set nx_enabled to "1" by default anywhere.  And setting
-> > the default to 1 in check_efer() seemed out of place to me.
-> > 
-> 
-> If it doesn't set nx_enabled anywhere, you'll end up with the message
-> 
-> +	printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-> +	       "missing in CPU or disabled in BIOS!\n");
-> 
-> which seems obviously wrong... no?
+Wu Zhangjin wrote:
+[...]
+> + * trace_clock_local(): the simplest and least coherent tracing clock.
+> + *
+> + * Useful for tracing that does not cross to other CPUs nor
+> + * does it go through idle events.
+> + */
+> +u64 trace_clock_local(void)
+> +{
+> +	unsigned long flags;
+> +	u64 clock;
+> +
+> +	raw_local_irq_save(flags);
+> +
+> +	clock = mips_timecounter_read();
+> +
+> +	raw_local_irq_restore(flags);
+> +
+> +	return clock;
+> +}
 
-The kernel as-is does not set nx_enabled for 64-bit, so this message is
-skipped completely:
+Why disable interrupts?
 
-        if (nx_enabled)
-                printk(KERN_INFO "NX (Execute Disable) protection: active\n");
+Also you call the new function mips_timecounter_read().  Since 
+sched_clock() is a weak function, you can override the definition with a 
+more accurate version when possible.  Then you could just directly call 
+it here, instead of adding the new mips_timecounter_read() that the 
+'[PATCH v7 02/17] tracing: add mips_timecounter_read() for MIPS' adds.
 
-The only time this printk is shown is on 32-bit with PAE (with NX).
-There is no "else" currently.
-
-
-My patch seeks to do two things:
- - report the "active" message on 64-bit (if not disabled in check_efer())
- - report "zomg NX missing" for all cases when PAE is available to the CPU.
-
-To implement the first, the set_nx() routine for non-PAE 32-bit and all
-64-bit needs to have nx_enabled set correctly (which is done in the second
-set_nx() that was empty in arch/x86/mm/setup_nx.c).
-
-To implement the second, the following logic is then added to the "if
-(nx_enabled)" case in arch/x86/mm/init.c as an "else":
-
-        else if (cpu_has_pae)
-#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-                /* PAE kernel, PAE CPU, without NX */
-                printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-                       "missing in CPU or disabled in BIOS!\n");
-#else
-                /* 32bit non-PAE kernel, PAE CPU */
-                printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-                       "cannot be enabled: non-PAE kernel!\n");
-#endif
-
-
--- 
-Kees Cook
-Ubuntu Security Team
+David Daney
