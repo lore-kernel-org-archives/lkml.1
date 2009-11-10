@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbZKJP4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750830AbZKJP6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbZKJP4A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 10:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbZKJPz7
+	id S1750830AbZKJP6T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 10:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbZKJP6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 10:55:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43155 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756731AbZKJPz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 10:55:59 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>, aaronc@gelato.unsw.edu.au
-Subject: Re: [RFC, PATCH] cfq-iosched: remove redundant queuing detection code
-References: <200911101454.57522.czoccolo@gmail.com>
-	<20091110151431.GI8742@kernel.dk>
-	<x49ocna5rv1.fsf@segfault.boston.devel.redhat.com>
-	<20091110152745.GK8742@kernel.dk>
-	<x49k4xy5qw6.fsf@segfault.boston.devel.redhat.com>
-	<20091110154809.GL8742@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 10 Nov 2009 10:55:47 -0500
-In-Reply-To: <20091110154809.GL8742@kernel.dk> (Jens Axboe's message of "Tue,
-	10 Nov 2009 16:48:09 +0100")
-Message-ID: <x49fx8m5q7w.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	Tue, 10 Nov 2009 10:58:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53436 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756735AbZKJP6R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 10:58:17 -0500
+Date: Tue, 10 Nov 2009 07:57:47 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: pci_find_parent_resource patch
+In-Reply-To: <86802c440911100205i14dcf69i99cb0ef6f76406d1@mail.gmail.com>
+Message-ID: <alpine.LFD.2.01.0911100745580.31845@localhost.localdomain>
+References: <4AF875D0.10602@kernel.org> <20091110082340.319f1ad3@jbarnes-x200> <86802c440911100205i14dcf69i99cb0ef6f76406d1@mail.gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
 
->> Why don't we simply use the value configured via the queue_depth sysfs
->> file?
->
-> First of all, that only covers SCSI. We could do that by having the tag
-> on/off functions set the same flag. But even for such devices, actual
-> tag depth is dependent upon what other devices are on the controller
-> (since it's often a shared map) and may not even be statically
-> detectable in the sense that actual depth is only really seen when the
-> device returns busy on a queue attempt.
->
-> In most cases it would work fine, but the dynamic detection is more
-> reliable. The sysfs setting in reality is max setting.
 
-OK, thanks for the patient explanation, Jens!
+On Tue, 10 Nov 2009, Yinghai Lu wrote:
 
-Cheers,
-Jeff
+> On Tue, Nov 10, 2009 at 12:23 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > I don't remember seeing it, is it for 2.6.32?
+> 
+> http://lkml.org/lkml/2009/8/7/352
+
+I'm not entirely sure it needs to go into 32, but it's probably the right 
+thing to do. Another way of explaining the patch is:
+
+ - we currently pick the _first_ exactly matching bus resource entry, but 
+   the _last_ inexactly matching one. Normally first/last shouldn't 
+   matter, but bus resource entries aren't actually all created equal: in 
+   a transparent bus, the last resources will be the parent resources, 
+   which we should generally try to avoid unless we have no choice. So 
+   "first matching" is the thing we should always aim for.
+
+ - the patch is a bit bigger than it needs to be, because I simplified the 
+   logic at the same time. It used to be a fairly incomprehensible
+
+	if ((res->flags & IORESOURCE_PREFETCH) && !(r->flags & IORESOURCE_PREFETCH))
+		best = r;       /* Approximating prefetchable by non-prefetchable */
+
+   and technically, all the patch did was to make that complex choice be 
+   even more complex (it basically added a "&& !best" to say that if we 
+   already gound a non-prefetchable window for the prefetchable resource, 
+   then we won't override an earlier one with that later one: remember 
+   "first matching").
+
+ - So instead of that complex one with three separate conditionals in one, 
+   I split it up a bit, and am taking advantage of the fact that we 
+   already handled the exact case, so if 'res->flags' has the PREFETCH 
+   bit, then we already know that 'r->flags' will _not_ have it. So the 
+   simplified code drops the redundant test, and does the new '!best' test 
+   separately. It also uses 'continue' as a way to ignore the bus 
+   resource we know doesn't work (ie a prefetchable bus resource is _not_ 
+   acceptable for anything but an exact match), so it turns into:
+
+
+	/* We can't insert a non-prefetch resource inside a prefetchable parent .. */
+	if (r->flags & IORESOURCE_PREFETCH)
+		continue;
+	/* .. but we can put a prefetchable resource inside a non-prefetchable one */
+	if (!best)
+		best = r;
+
+   instead. With the comments, it's now six lines instead of two, but it's 
+   conceptually simpler, and I _could_ have written it as two lines:
+
+	if ((res->flags & IORESOURCE_PREFETCH) && !best)
+		best = r;	/* Approximating prefetchable by non-prefetchable */
+
+   but I thought that was too damn subtle.
+
+Feel free to use this long explanation as a commit message if you want,
+
+			Linus
