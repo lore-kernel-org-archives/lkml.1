@@ -1,291 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbZKJOLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZKJONI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756263AbZKJOLM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 09:11:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZKJOLL
+	id S1756246AbZKJONI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 09:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZKJONG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 09:11:11 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:38048 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751459AbZKJOLJ (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Tue, 10 Nov 2009 09:11:09 -0500
-Message-ID: <4AF9747E.8020408@novell.com>
-Date: Tue, 10 Nov 2009 09:11:10 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 10 Nov 2009 09:13:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17594 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751943AbZKJONF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 09:13:05 -0500
+Date: Tue, 10 Nov 2009 09:12:46 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [RFC] Workload type Vs Groups (Was: Re: [PATCH 02/20] blkio:
+	Change CFQ to use CFS like queue time stamps)
+Message-ID: <20091110141246.GB1083@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-3-git-send-email-vgoyal@redhat.com> <4e5e476b0911041318w68bd774qf110d1abd7f946e4@mail.gmail.com> <20091106222257.GB2969@redhat.com> <4e5e476b0911091347t60e4d572kef2e632800fbf849@mail.gmail.com> <20091109231257.GG22860@redhat.com> <4e5e476b0911100329v5da70aedj4a943c4b0220cee8@mail.gmail.com> <20091110133113.GA1083@redhat.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: alacrityvm-devel@lists.sourceforge.net, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
-References: <20091002141407.30224.54207.stgit@dev.haskins.net> <20091110115335.GC6989@redhat.com> <4AF919020200005A000586A9@sinclair.provo.novell.com> <20091110131722.GA19645@redhat.com>
-In-Reply-To: <20091110131722.GA19645@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig1800449CB42F9F363F7605BC"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091110133113.GA1083@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig1800449CB42F9F363F7605BC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Nov 10, 2009 at 08:31:13AM -0500, Vivek Goyal wrote:
+> On Tue, Nov 10, 2009 at 12:29:30PM +0100, Corrado Zoccolo wrote:
+> > On Tue, Nov 10, 2009 at 12:12 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > >
+> > > I thought it was reverse. For sync-noidle workoads (typically seeky), we
+> > > do lot less IO and size of IO is not the right measure otherwise most of
+> > > the disk time we will be giving to this sync-noidle queue/group and
+> > > sync-idle queues will be heavily punished in other groups.
+> > 
+> > This happens only if you try to measure both sequential and seeky with
+> > the same metric.
+> 
+> Ok, we seem to be discussing many things. I will try to pull it back on
+> core points.
+> 
+> To me there are only two key questions.
+> 
+> - Whether workload type should be on topmost layer or groups should be on
+>   topmost layer.
+> 
+> - How to define fairness in case of NCQ SSD where idling hurts and we
+>   don't choose to idle.
+> 
+> 
+> For the first issue, if we keep workoad type on top, then we weaken the
+> isolation between groups. We provide isolation between only same kind of
+> workload type and not across the workloads types.
+> 
+> So if a group is running only sequential readers and other group is runnig
+> random seeky reaeder, then share of second group is not determined by the
+> group weight but the number of queues in first group.
+> 
+> Hence as we increase number of queues in first group, share of second
+> group keep on coming down. This kind of implies that sequential reads
+> in first group are more important as comapred to random seeky reader in
+> second group. But in this case the relative importance of workload is
+> specifed by the user with the help of cgroups and weights and IO scheduler
+> should honor that.
+> 
+> So to me, groups on topmost layer makes more sense than having workload
+> type on topmost layer.
+> 
+> > >
+> > > time based fairness generally should work better on seeky media. As the
+> > > seek cost starts to come down, size of IO also starts making sense.
+> > >
+> > > In fact on SSD, we do queue switching so fast and don't idle on the queue,
+> > > doing time accounting and providing fairness in terms of time is hard, for
+> > > the groups which are not continuously backlogged.
+> > The mechanism in place still gives fairness in terms of I/Os for SSDs.
+> > One queue is not even nearly backlogged, then there is no point in
+> > enforcing fairness for it so that the backlogged one gets lower
+> > bandwidth, but the not backlogged one doesn't get higher (since it is
+> > limited by its think time).
+> > 
+> > For me fairness for SSDs should happen only when the total BW required
+> > by all the queues is more than the one the disk can deliver, or the
+> > total number of active queues is more than NCQ depth. Otherwise, each
+> > queue will get exactly the bandwidth it wants, without affecting the
+> > others, so no idling should happen. In the mentioned cases, instead,
+> > no idling needs to be added, since the contention for resource will
+> > already introduce delays.
+> > 
+> 
+> Ok, above is pertinent for the second issue of not idling on NCQ SSDs as
+> it hurts and brings down the overall throughput. I tend to agree here,
+> that idling on queues limited by think time does not make much sense on
+> NCQ SSD. In this case probably fairness will be defined by how many a
+> times a group got scheduled in for dispatch. If group has higher weight
+> then it should be able to dispatch more times (in proportionate ratio),
+> as compared to group lower weight group.
+> 
+> We should be able to achieve this without idling hence overall thoughtput
+> of the system should also be good. The only catch here is that it will be
+> hard to achieve this behavior if group is not continuously backlogged.
+> 
+> You seem to be suggesting that current CFQ formula for calculating slice
+> offset provides take care of that. Looking at the formula I can't
+> understand how does it enable dispatch from a queue in proportion to
+> weight or priority. I will do some experiments on my NCQ SSD and do
+> more discussion on this aspect later.
+> 
 
-Michael S. Tsirkin wrote:
-> On Tue, Nov 10, 2009 at 05:40:50AM -0700, Gregory Haskins wrote:
->>>>> On 11/10/2009 at  6:53 AM, in message <20091110115335.GC6989@redhat=
-=2Ecom>,
->> "Michael S. Tsirkin" <mst@redhat.com> wrote:=20
->>> On Fri, Oct 02, 2009 at 10:20:00AM -0400, Gregory Haskins wrote:
->>>> (Applies to davem/net-2.6.git:4fdb78d30)
->>>>
->>>> Hi David, netdevs,
->>>>
->>>> The following is an RFC for an attempt at addressing a zero-copy sol=
-ution.
->>>>
->>>> To be perfectly honest, I have no idea if this is the best solution,=
- or if
->>>> there is truly a problem with skb->destructor that requires an alter=
-nate
->>>> mechanism.  What I do know is that this patch seems to work, and I w=
-ould
->>>> like to see some kind of solution available upstream.  So I thought =
-I would
->>>> send my hack out as at least a point of discussion.  FWIW: This has =
-been
->>>> tested heavily in my rig and is technically suitable for inclusion a=
-fter
->>>> review as is, if that is decided to be the optimal path forward here=
-=2E
->>>>
->>>> Thanks for your review and consideration,
->>>>
->>>> Kind regards,
->>>> -Greg
->>>>
->>>> ----------------------------------------
->>>> From: Gregory Haskins <ghaskins@novell.com>
->>>> Subject: [RFC PATCH] net: add dataref destructor to sk_buff
->>>>
->>>> What: The skb->destructor field is reportedly unreliable for ensurin=
-g
->>>> that all shinfo users have dropped their references.  Therefore, we =
-add
->>>> a distinct ->release() method for the shinfo structure which is clos=
-ely
->>>> tied to the underlying page resources we want to protect.
->>>>
->>>> Why: We want to add zero-copy transmit support for AlacrityVM guests=
-=2E
->>>> In order to support this, the host kernel must map guest pages direc=
-tly
->>>> into a paged-skb and send it as normal.  put_page() alone is not
->>>> sufficient lifetime management since the pages are ultimately alloca=
-ted
->>>> from within the guest.  Therefore, we need higher-level notification=
+Ok, I ran some simple tests on my NCQ SSD. I had pulled the Jen's branch
+few days back and it has your patches in it.
 
->>>> when the skb is finally freed on the host so we can then inject a pr=
-oper
->>>> "tx-complete" event into the guest context.
->>>>
->>>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->>>> ---
->>>>
->>>>  include/linux/skbuff.h |    2 ++
->>>>  net/core/skbuff.c      |    9 +++++++++
->>>>  2 files changed, 11 insertions(+), 0 deletions(-)
->>>>
->>>> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
->>>> index df7b23a..02cdab6 100644
->>>> --- a/include/linux/skbuff.h
->>>> +++ b/include/linux/skbuff.h
->>>> @@ -207,6 +207,8 @@ struct skb_shared_info {
->>>>  	/* Intermediate layers must ensure that destructor_arg
->>>>  	 * remains valid until skb destructor */
->>>>  	void *		destructor_arg;
->>>> +	void *          priv;
->>>> +	void           (*release)(struct sk_buff *skb);
->>>>  };
->>>> =20
->>>>  /* We divide dataref into two halves.  The higher 16 bits hold refe=
-rences
->>>> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
->>>> index 80a9616..a7e40a9 100644
->>>> --- a/net/core/skbuff.c
->>>> +++ b/net/core/skbuff.c
->>>> @@ -219,6 +219,8 @@ struct sk_buff *__alloc_skb(unsigned int size, g=
-fp_t=20
->>> gfp_mask,
->>>>  	shinfo->tx_flags.flags =3D 0;
->>>>  	skb_frag_list_init(skb);
->>>>  	memset(&shinfo->hwtstamps, 0, sizeof(shinfo->hwtstamps));
->>>> +	shinfo->release =3D NULL;
->>>> +	shinfo->priv =3D NULL;
->>>> =20
->>>>  	if (fclone) {
->>>>  		struct sk_buff *child =3D skb + 1;
->>>> @@ -350,6 +352,9 @@ static void skb_release_data(struct sk_buff *skb=
-)
->>>>  		if (skb_has_frags(skb))
->>>>  			skb_drop_fraglist(skb);
->>>> =20
->>>> +		if (skb_shinfo(skb)->release)
->>>> +			skb_shinfo(skb)->release(skb);
->>>> +
->>>>  		kfree(skb->head);
->>>>  	}
->>>>  }
->>>> @@ -514,6 +519,8 @@ int skb_recycle_check(struct sk_buff *skb, int s=
-kb_size)
->>>>  	shinfo->tx_flags.flags =3D 0;
->>>>  	skb_frag_list_init(skb);
->>>>  	memset(&shinfo->hwtstamps, 0, sizeof(shinfo->hwtstamps));
->>>> +	shinfo->release =3D NULL;
->>>> +	shinfo->priv =3D NULL;
->>>> =20
->>>>  	memset(skb, 0, offsetof(struct sk_buff, tail));
->>>>  	skb->data =3D skb->head + NET_SKB_PAD;
->>>> @@ -856,6 +863,8 @@ int pskb_expand_head(struct sk_buff *skb, int nh=
-ead, int=20
->>> ntail,
->>>>  	skb->hdr_len  =3D 0;
->>>>  	skb->nohdr    =3D 0;
->>>>  	atomic_set(&skb_shinfo(skb)->dataref, 1);
->>>> +	skb_shinfo(skb)->release =3D NULL;
->>>> +	skb_shinfo(skb)->priv =3D NULL;
->>>>  	return 0;
->>>> =20
->>>>  nodata:
->>> This is basically subset of the skb data destructors patch, isn't it?=
+I am running three direct sequential readers or prio 0, 4 and 7
+respectively using fio for 10 seconds and then monitoring who got how
+much job done.
 
->> Sort of, but the emphasis is different.  Here are the main differences=
-:
->>
->> 1) skb->destructor() is on the skb level, shinfo->release() is at the =
-shared-info/page level
->>
->> 2) skb->destructor is (iiuc) modified during the skb's lifetime (for i=
-nstance rmem hooks here to
->> manage the buffer-space dynamically), whereas shinfo->release is desig=
-ned to be used by
->> "the owner" and is thus only set at creation.
->>
->> 3) shinfo->release tracks the lifetime of the pages, not the skb.  Thi=
-s means it transcends
->> the skb's lifetime (such as splits for clone, etc) and focuses on the =
-shared component: the pages
->=20
-> You are comparing with skb destructors, not skb data destructors :) skb=
+Following is my fio job file
 
-> data destructor is Rusty's patch which he wanted to use for vringfd.  I=
+****************************************************************
+[global]
+ioengine=sync
+runtime=10
+size=1G
+rw=read
+directory=/mnt/sdc/fio/
+direct=1
+bs=4K
+exec_prerun="echo 3 > /proc/sys/vm/drop_caches"
 
-> mean e.g. this:
-> http://lists.openwall.net/netdev/2008/04/18/7
+[seqread0]
+prio=0
 
-Ah, I wasn't aware.  I believe Anthony Ligouri had pointed me at this
-same patch earlier this year.  However, more recently when I saw
-skb->destructor() in mainline (seemingly from Rusty), I thought it had
-been accepted and didn't investigate further.  I see now that you are
-talking about something else.
+[seqread4]
+prio=4
 
->=20
->>> Last time this was tried, this is the objection that was voiced:
->>>
->>> 	The problem with this patch is that it's tracking skb's, while
->>> 	you want use it to track pages for zero-copy.  That just doesn't
->>> 	work.  Through mechanisms like splice, individual pages in the
->>> 	skb can be detached and metastasize to other locations, e.g.,
->>> 	the VFS.
->> Right, and I don't think this applies here because I specifically chos=
-e the shinfo level to try to properly
->> track the page level avoid this issue.  Multiple skb's can point to a =
-single shinfo, iiuc.
->=20
-> VFS does not know about shinfo either, does it?
+[seqread7]
+prio=7
+************************************************************************
 
-I do not follow the reference.  Where does VFS come into play?
+Following are the results of 4 runs. Every run lists three jobs of prio0,
+prio4 and prio7 respectively.
 
->=20
->>> and I think this applies here.
->> I don't think so, but if you think I missed something, do not be shy (=
-not that you ever are).
->=20
-> Well, I hope the reviews are helpful.
+First run
+=========
+read : io=75,996KB, bw=7,599KB/s, iops=1,899, runt= 10001msec
+read : io=95,920KB, bw=9,591KB/s, iops=2,397, runt= 10001msec
+read : io=21,068KB, bw=2,107KB/s, iops=526, runt= 10001msec
 
-Yes, I didn't mean it as a slam.  Was only trying to convey that I
-didn't think I was wrong but am open minded to the possibility, so
-please keep the discussion going.
+Second run
+==========
+read : io=103MB, bw=10,540KB/s, iops=2,635, runt= 10001msec
+read : io=102MB, bw=10,479KB/s, iops=2,619, runt= 10001msec
+read : io=720KB, bw=73,728B/s, iops=18, runt= 10000msec
 
->  I'll be happy if we learn to
-> track pages involved in transmit, but need to be careful.
->=20
+Third Run
+=========
+read : io=103MB, bw=10,532KB/s, iops=2,632, runt= 10001msec
+read : io=85,728KB, bw=8,572KB/s, iops=2,142, runt= 10001msec
+read : io=19,696KB, bw=1,969KB/s, iops=492, runt= 10001msec
 
-Agreed.
+Fourth Run
+==========
+read : io=50,060KB, bw=5,005KB/s, iops=1,251, runt= 10001msec
+read : io=102MB, bw=10,409KB/s, iops=2,602, runt= 10001msec
+read : io=54,844KB, bw=5,484KB/s, iops=1,370, runt= 10001msec
 
->>> In other words, this only *seems*
->>> to work for you because you are not trying to do things like
->>> guest to host communication, with host doing smart things.
->> I am not following what you mean here, as I do use this for guest->hos=
-t and guest->host->remote, and
->> it works quite nicely.  I map the guest pages in, and when the last re=
-ference to the pages are dropped,
->> I release the pages back to the guest.  It doesn't matter if the skb e=
-gresses out a physical adapter or is
->> received locally.  All that matters is the lifetime of the shinfo (and=
- thus its pages) is handled correctly.
->=20
-> Not if someone else is referencing the pages without a reference to shi=
-nfo.
+I can't see fairness being provided to processes of diff prio levels. In
+first run prio4 got more BW than prio0 process.
 
-I agree that if we can reference pages outside of the skb/shinfo then
-there is a problem.  I wasn't aware that we could do this, tbh.
+In second run prio 7 process got completely starved. Based on slice
+calculation, the difference between prio 0 and prio 7 should be 180/40=4.5
 
-However, it seems to me that this is a problem with the overall stack,
-if true....isn't it?  For instance, if I do a sendmsg() from a userspace
-app and block until its consumed, how can the system function sanely if
-the app returns from the call but something is still referencing the
-page(s)?  This seems broken to me.
+Third run is still better.
 
->=20
->>> Cc Herbert which was involved in the original discussion.
->>>
->>> In the specific case, it seems that things like pskb_copy,
->>> skb_split and others will also be broken, won't they?
->> Not to my knowledge.   They up the reference to the shinfo before proc=
-eeding.
->=20
-> I don't seem to find where does skb_split reference the shinfo.
-> It seems to do get_page on individual pages?
+In fourth run again prio 4 got double the BW of prio 0.
 
-Ill take a look.
+So I can't see how are you achieving fariness on NCQ SSD?
 
-If so, one alternate solution that I had considered was to look at some
-kind of page->release() hook.  There are obvious disadvantages to such a
-solution (for one, it has no such notion, and second we have to manage
-the aggregate collection which has overhead), so I shied away from that
-design in favor of this one.  But perhaps we will ultimately have no choi=
-ce.
+One more important thing to notice is that throughput of SSD has come down
+significantly. If I just run one job then I get 73MB/s. With these tree
+jobs running, we are achieving close to 19 MB/s. 
 
-Kind Regards,
--Greg
+I think this is happening because of seeks happening almost after every
+dispatch and that brings down the overall throughput. If we had idled
+here, I think probably overall throughput would have been better.
 
-
---------------enig1800449CB42F9F363F7605BC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkr5dH4ACgkQP5K2CMvXmqEKxQCfa2XknFCAj0zWl45y3JVw5c21
-5L8AnifVmEcgkqjIUPDME6GI7ocfZgfm
-=gfms
------END PGP SIGNATURE-----
-
---------------enig1800449CB42F9F363F7605BC--
+Thanks
+Vivek
