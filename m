@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbZKJU7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbZKJVII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbZKJU7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 15:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbZKJU7U
+	id S1758208AbZKJVII (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:08:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758186AbZKJVIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 15:59:20 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:33091 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757980AbZKJU7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 15:59:19 -0500
-Date: Tue, 10 Nov 2009 20:59:22 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jerome Glisse <jglisse@redhat.com>
-cc: airlied@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [PATCH] drm/radeon/kms: disable load detection on TV output
-In-Reply-To: <1257880483-21478-1-git-send-email-jglisse@redhat.com>
-Message-ID: <alpine.DEB.2.00.0911102057460.19146@skynet.skynet.ie>
-References: <1257880483-21478-1-git-send-email-jglisse@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 10 Nov 2009 16:08:07 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:52123 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758159AbZKJVIG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:08:06 -0500
+Message-ID: <4AF9D5D1.9040501@nortel.com>
+Date: Tue, 10 Nov 2009 15:06:25 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Ben Hutchings <bhutchings@solarflare.com>, netdev@vger.kernel.org,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: sunrpc port allocation and IANA reserved list
+References: <4AF9A63B.6010101@nortel.com>	 <1257875623.2834.19.camel@achroite.uk.solarflarecom.com>	 <4AF9B2CF.6050305@nortel.com> <1257884799.3044.7.camel@heimdal.trondhjem.org>
+In-Reply-To: <1257884799.3044.7.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Nov 2009 21:07:47.0006 (UTC) FILETIME=[DA6AFDE0:01CA6249]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Do like in the DDX don't try to load detect TV output, there is a lot
-> of false positive detection with those code. Seems to be isolated to
-> RS480/RC410 chipset thought. Need more investigations.
+On 11/10/2009 02:26 PM, Trond Myklebust wrote:
+> On Tue, 2009-11-10 at 12:37 -0600, Chris Friesen wrote:
+>> On 11/10/2009 11:53 AM, Ben Hutchings wrote:
+>>> On Tue, 2009-11-10 at 11:43 -0600, Chris Friesen wrote:
+>>
+>>>> Given that a userspace application can be stopped and restarted at any
+>>>> time, and a sunrpc registration can happen at any time, what is the
+>>>> expected mechanism to prevent the kernel from allocating a port for use
+>>>> by sunrpc that reserved or well-known?
+>>>>
+>>>> Apparently Redhat and Debian have distro-specific ways of dealing with
+>>>> this, but is there a standard solution?  Should there be?
+>>>>
+>>>> The current setup seems suboptimal.
+>>>
+>>> I believe both RH and Debian are using the same implementation:
+>>> <http://cyberelk.net/tim/software/portreserve/>.
+>>
+>> That helps with the startup case, but still leaves a possible hole if an
+>> app using a fixed port number is restarted at runtime.  During the
+>> window where nobody is bound to the port, the kernel could randomly
+>> assign it to someone else.
 > 
+> Just use /proc/sys/sunrpc/{max,min}_resvport interface to restrict the
+> range used to a safer one. That's what it is for...
 
-NAK, I've not seen any false positive bug reports other than rs480, and
-I suspect that is some timing difference due to different ref clock, I've 
-tested this code on my r100/r200/r300 cards and seemed to always work 
-fine.
+What constitutes a "safer range"?  IANA has ports assigned
+intermittently all the way through the default RPC range.  The largest
+unassigned range is 922-988 (since 921 is used by lwresd).  If someone
+needs more than 66 ports, how are they supposed to handle it?
 
-So just turn it off for rs480, I'm also seeing a lot of rs480 reporting tv
-connectors that don't exist, has the person got a real connector?
-
-Dave.
-
- > Signed-off-by: Jerome Glisse 
-<jglisse@redhat.com>
-> ---
->  drivers/gpu/drm/radeon/radeon_connectors.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/radeon/radeon_connectors.c b/drivers/gpu/drm/radeon/radeon_connectors.c
-> index fce4c40..292b170 100644
-> --- a/drivers/gpu/drm/radeon/radeon_connectors.c
-> +++ b/drivers/gpu/drm/radeon/radeon_connectors.c
-> @@ -1015,7 +1015,7 @@ radeon_add_atom_connector(struct drm_device *dev,
->  			ret = drm_connector_helper_add(&radeon_connector->base, &radeon_tv_connector_helper_funcs);
->  			if (ret)
->  				goto failed;
-> -			radeon_connector->dac_load_detect = true;
-> +			radeon_connector->dac_load_detect = false;
->  			drm_connector_attach_property(&radeon_connector->base,
->  						      rdev->mode_info.load_detect_property,
->  						      1);
-> @@ -1148,7 +1148,7 @@ radeon_add_legacy_connector(struct drm_device *dev,
->  			ret = drm_connector_helper_add(&radeon_connector->base, &radeon_tv_connector_helper_funcs);
->  			if (ret)
->  				goto failed;
-> -			radeon_connector->dac_load_detect = true;
-> +			radeon_connector->dac_load_detect = false;
->  			drm_connector_attach_property(&radeon_connector->base,
->  						      rdev->mode_info.load_detect_property,
->  						      1);
-> 
+Chris
