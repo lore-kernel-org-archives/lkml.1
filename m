@@ -1,119 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbZKJHoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbZKJHsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752440AbZKJHoF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 02:44:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZKJHoE
+	id S1752456AbZKJHsQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 02:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZKJHsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 02:44:04 -0500
-Received: from mga02.intel.com ([134.134.136.20]:29342 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751802AbZKJHoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 02:44:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,715,1249282800"; 
-   d="scan'208";a="568107786"
-Subject: [PATCH 2/2] x86, crypto, Use gas macro for PCLMULQDQ-NI and PSHUFB
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 10 Nov 2009 15:44:01 +0800
-Message-Id: <1257839041.22519.2523.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Nov 2009 02:48:15 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:47867 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbZKJHsP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 02:48:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UAtq153AZ7FXvOK1eX0qhmFFCVmnV3+PzClU1iFeNeT0DJBxTdL+xM78cnnBGEM1e3
+         BWjFmbdRqJXdgepRjIIpcd62DpwFZlFrZUxaK9V10b2YJ/N80Ig7rWkXDuqvHVBzQ6kn
+         istLlTM6XPDlJi8VkdOLdUPVpkB+ML25K/9h4=
+MIME-Version: 1.0
+In-Reply-To: <3642a3130911092304x5c8fe8ddme1df39e6981cfe0a@mail.gmail.com>
+References: <3642a3130911090908i55d6e1f2y6d9a5106d9febfc6@mail.gmail.com>
+	 <20091109175728.4eec67b9@lxorguk.ukuu.org.uk>
+	 <3642a3130911092236p11ef0502se12788800c8d2084@mail.gmail.com>
+	 <3642a3130911092304x5c8fe8ddme1df39e6981cfe0a@mail.gmail.com>
+Date: Tue, 10 Nov 2009 08:48:19 +0100
+Message-ID: <b637ec0b0911092348x29453bco7f7ca94f3772601@mail.gmail.com>
+Subject: Re: Kernel 2.6.29+ broke Cisco VPN Client
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Mariusz Smykula <mariuszs@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Old binutils do not support PCLMULQDQ-NI and PSHUFB, to make kernel
-can be compiled by them, .byte code is used instead of assembly
-instructions. But the readability and flexibility of raw .byte code is
-not good.
+Please have a look at:
 
-So corresponding assembly instruction like gas macro is used instead.
+http://forum.tuxx-home.at/viewtopic.php?f=15&t=790#p5227
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
----
- arch/x86/crypto/ghash-clmulni-intel_asm.S |   29 ++++++++++-------------------
- 1 file changed, 10 insertions(+), 19 deletions(-)
+There is a patch there that can be used to make CiscoVPN work with the
+latest stable kernels. For me it worked fine (over a wifi connection)
+until I lost interest as now I'm able to use vpnc, thanks to the
+people on the vpnc support forum.
 
---- a/arch/x86/crypto/ghash-clmulni-intel_asm.S
-+++ b/arch/x86/crypto/ghash-clmulni-intel_asm.S
-@@ -17,7 +17,7 @@
-  */
- 
- #include <linux/linkage.h>
--#include <asm/i387.h>
-+#include <asm/inst.h>
- 
- .align 16
- .Lbswap_mask:
-@@ -56,12 +56,9 @@ __clmul_gf128mul_ble:
- 	pxor DATA, T2
- 	pxor SHASH, T3
- 
--	# pclmulqdq $0x00, SHASH, DATA	# DATA = a0 * b0
--	.byte 0x66, 0x0f, 0x3a, 0x44, 0xc1, 0x00
--	# pclmulqdq $0x11, SHASH, T1	# T1 = a1 * b1
--	.byte 0x66, 0x0f, 0x3a, 0x44, 0xd1, 0x11
--	# pclmulqdq $0x00, T3, T2	# T2 = (a1 + a0) * (b1 + b0)
--	.byte 0x66, 0x0f, 0x3a, 0x44, 0xdc, 0x00
-+	PCLMULQDQ 0x00 SHASH DATA	# DATA = a0 * b0
-+	PCLMULQDQ 0x11 SHASH T1		# T1 = a1 * b1
-+	PCLMULQDQ 0x00 T3 T2		# T2 = (a1 + a0) * (b1 + b0)
- 	pxor DATA, T2
- 	pxor T1, T2			# T2 = a0 * b1 + a1 * b0
- 
-@@ -101,11 +98,9 @@ ENTRY(clmul_ghash_mul)
- 	movups (%rdi), DATA
- 	movups (%rsi), SHASH
- 	movaps .Lbswap_mask, BSWAP
--	# pshufb BSWAP, DATA
--	PSHUFB_XMM5_XMM0
-+	PSHUFB_XMM BSWAP DATA
- 	call __clmul_gf128mul_ble
--	# pshufb BSWAP, DATA
--	.byte 0x66, 0x0f, 0x38, 0x00, 0xc5
-+	PSHUFB_XMM BSWAP DATA
- 	movups DATA, (%rdi)
- 	ret
- 
-@@ -119,21 +114,18 @@ ENTRY(clmul_ghash_update)
- 	movaps .Lbswap_mask, BSWAP
- 	movups (%rdi), DATA
- 	movups (%rcx), SHASH
--	# pshufb BSWAP, DATA
--	PSHUFB_XMM5_XMM0
-+	PSHUFB_XMM BSWAP DATA
- .align 4
- .Lupdate_loop:
- 	movups (%rsi), IN1
--	# pshufb BSWAP, IN1
--	PSHUFB_XMM5_XMM6
-+	PSHUFB_XMM BSWAP IN1
- 	pxor IN1, DATA
- 	call __clmul_gf128mul_ble
- 	sub $16, %rdx
- 	add $16, %rsi
- 	cmp $16, %rdx
- 	jge .Lupdate_loop
--	# pshufb BSWAP, DATA
--	PSHUFB_XMM5_XMM0
-+	PSHUFB_XMM BSWAP DATA
- 	movups DATA, (%rdi)
- .Lupdate_just_ret:
- 	ret
-@@ -146,8 +138,7 @@ ENTRY(clmul_ghash_update)
- ENTRY(clmul_ghash_setkey)
- 	movaps .Lbswap_mask, BSWAP
- 	movups (%rsi), %xmm0
--	# pshufb BSWAP, %xmm0
--	PSHUFB_XMM5_XMM0
-+	PSHUFB_XMM BSWAP %xmm0
- 	movaps %xmm0, %xmm1
- 	psllq $1, %xmm0
- 	psrlq $63, %xmm1
+Hope this helps.
 
+[BTW, CiscoPVN is OT on this list]
 
+On Tue, Nov 10, 2009 at 8:04 AM, Mariusz Smykula <mariuszs@gmail.com> wrote:
+> On Mon, Nov 9, 2009 at 6:57 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> I must have imagined openconnect. Failing that you need to talk to your
+>> distro if they shipped the module or to cisco.
+>
+> OpenConnect supports the new Cisco "AnyConnect" SSL VPN, not the old
+> IPsec-based VPN. Cisco ended support for this software and devices and
+> is not interested in helping us. All we have is open sourced cisco vpn
+> client which is broken since 2.6.29.
+>
+> --
+> Mariusz Smykuła
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
