@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751846AbZKJHEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbZKJHEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751846AbZKJHEH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 02:04:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbZKJHEG
+	id S1752105AbZKJHEh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 02:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZKJHEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 02:04:06 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:34208 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbZKJHEF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 02:04:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:cc
-         :content-type:content-transfer-encoding;
-        b=MDH4wGS0DAjWOzlNxF20ZFi8uRDRg59VP7jsIh1i8o/qQUhGFrYHh8XlXWAXEPawBS
-         OWAbUEhocutGZ8CWJB9M38G5rlFMcEHGTSMYk0Gy7SnH47CTEOF2hribWjuLDhyDXlXo
-         LZ7F5TtYfokzOblcFFPBmw2HnnGnO/AQpLAiQ=
-MIME-Version: 1.0
-In-Reply-To: <3642a3130911092236p11ef0502se12788800c8d2084@mail.gmail.com>
-References: <3642a3130911090908i55d6e1f2y6d9a5106d9febfc6@mail.gmail.com>
-	 <20091109175728.4eec67b9@lxorguk.ukuu.org.uk>
-	 <3642a3130911092236p11ef0502se12788800c8d2084@mail.gmail.com>
-Date: Tue, 10 Nov 2009 08:04:09 +0100
-Message-ID: <3642a3130911092304x5c8fe8ddme1df39e6981cfe0a@mail.gmail.com>
-Subject: Re: Kernel 2.6.29+ broke Cisco VPN Client
-From: Mariusz Smykula <mariuszs@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-To: unlisted-recipients:; (no To-header on input)
+	Tue, 10 Nov 2009 02:04:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28290 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751428AbZKJHEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 02:04:36 -0500
+Subject: Re: Libertas related kernel crash
+From: Dan Williams <dcbw@redhat.com>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: netdev@vger.kernel.org, libertas-dev@lists.infradead.org,
+       Michael Hirsch <m.hirsch@raumfeld.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20091110065457.GL14091@buzzloop.caiaq.de>
+References: <20091105120549.GQ14091@buzzloop.caiaq.de>
+	 <20091109155354.GC14091@buzzloop.caiaq.de>
+	 <1257835893.15493.37.camel@localhost.localdomain>
+	 <20091110065457.GL14091@buzzloop.caiaq.de>
+Content-Type: text/plain
+Date: Mon, 09 Nov 2009 23:04:25 -0800
+Message-Id: <1257836665.19597.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 9, 2009 at 6:57 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> I must have imagined openconnect. Failing that you need to talk to your
-> distro if they shipped the module or to cisco.
+On Tue, 2009-11-10 at 07:54 +0100, Daniel Mack wrote:
+> On Mon, Nov 09, 2009 at 10:51:33PM -0800, Dan Williams wrote:
+> > On Mon, 2009-11-09 at 16:53 +0100, Daniel Mack wrote:
+> > > On Thu, Nov 05, 2009 at 01:05:49PM +0100, Daniel Mack wrote:
+> > > > On an ARM (PXA300) embdedded platform with a libertas chip connected via
+> > > > SDIO, we happen to see the kernel Ooops below once in a while.
+> > > > 
+> > > > Any pointer on where to dig?
+> > > 
+> > > Some more input on this. Oopses similar to the one below are likely
+> > > triggered when switching from Ad-hoc to managed mode multiple times in a
+> > > row, and something seems corrupt the memory badly. I've searched for the
+> > > obvious (double frees, out-of-bound writes etc), but I couldn't find
+> > > anything yet. It is, however, related to the wireless core and/or the
+> > > libertas driver.
+> > 
+> > Probably just libertas.  Any chance you can enable debugging options
+> > (either in libertas, or in the kernel allocator) to help narrow down the
+> > issue?
+> 
+> Sure. I already enabled DEBUG_VM, but that didn't spit out anything
+> before it crashes. Which other debug flags would you recommend to set?
 
-OpenConnect supports the new Cisco "AnyConnect" SSL VPN, not the old
-IPsec-based VPN. Cisco ended support for this software and devices and
-is not interested in helping us. All we have is open sourced cisco vpn
-client which is broken since 2.6.29.
+Offhand I don't actually know; but ISTR there used to be slab debugging
+options in the kernel that could help find memory corruption issues.  I
+can't think of anything in libertas offhand that would trigger this, but
+maybe something is not getting properly cleaned up when switching modes?
 
--- 
-Mariusz Smykuła
+Dan
+
+
