@@ -1,60 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757217AbZKJWOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZKJWQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757217AbZKJWOy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 17:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbZKJWOx
+	id S1757137AbZKJWQm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 17:16:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbZKJWQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 17:14:53 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:45712 "EHLO mail-out2.uio.no"
+	Tue, 10 Nov 2009 17:16:41 -0500
+Received: from smtp.outflux.net ([198.145.64.163]:59886 "EHLO smtp.outflux.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756827AbZKJWOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 17:14:52 -0500
-Subject: Re: sunrpc port allocation and IANA reserved list
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, netdev@vger.kernel.org,
-       Linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1257888720.2834.30.camel@achroite.uk.solarflarecom.com>
-References: <4AF9A63B.6010101@nortel.com>
-	 <1257875623.2834.19.camel@achroite.uk.solarflarecom.com>
-	 <4AF9B2CF.6050305@nortel.com>
-	 <1257884799.3044.7.camel@heimdal.trondhjem.org>
-	 <4AF9D5D1.9040501@nortel.com>
-	 <1257888720.2834.30.camel@achroite.uk.solarflarecom.com>
-Content-Type: text/plain
-Date: Wed, 11 Nov 2009 07:14:51 +0900
-Message-Id: <1257891291.3044.50.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 4 msgs/h 1 sum rcpts/h 9 sum msgs/h 2 total rcpts 1842 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: BF1DF1CA15BF5319724766B3A03F0D2A6DE271C0
-X-UiO-SPAM-Test: remote_host: 198.95.226.230 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 38 max/h 3 blacklist 0 greylist 0 ratelimit 0
+	id S1753259AbZKJWQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 17:16:41 -0500
+Date: Tue, 10 Nov 2009 14:15:37 -0800
+From: Kees Cook <kees.cook@canonical.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
+Message-ID: <20091110221537.GB5129@outflux.net>
+References: <20091110154956.GF5129@outflux.net>
+ <4AF9991B.20400@zytor.com>
+ <20091110165738.GH5129@outflux.net>
+ <4AF99F0C.2050806@zytor.com>
+ <20091110174622.GK5129@outflux.net>
+ <4AF9B6AD.8020505@zytor.com>
+ <20091110194304.GW5129@outflux.net>
+ <4AF9C627.1070206@zytor.com>
+ <20091110205544.GZ5129@outflux.net>
+ <4AF9D98A.90808@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF9D98A.90808@zytor.com>
+Organization: Canonical
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-10 at 21:32 +0000, Ben Hutchings wrote:
-> On Tue, 2009-11-10 at 15:06 -0600, Chris Friesen wrote:
-> > On 11/10/2009 02:26 PM, Trond Myklebust wrote: 
-> > > Just use /proc/sys/sunrpc/{max,min}_resvport interface to restrict the
-> > > range used to a safer one. That's what it is for...
-> 
-> Unless I'm much mistaken, that only affects in-kernel SunRPC users.
+On Tue, Nov 10, 2009 at 01:22:18PM -0800, H. Peter Anvin wrote:
+> Yes, it should be.  set_nx() and check_efer() are doing the same thing,
+> except in different ways, and they are - IMO - *both* doing something
+> dumb -- although check_efer() is saner.
 
-There shouldn't be that many non-kernel sunrpc users that require
-privileged ports.
+BTW, it seems like set_nx() should move from init_memory_mapping to
+setup_arch, since init_memory_mapping can be called twice, but I don't
+think set_nx needs to be.
 
-The exceptions I can think of are
+Also, disable_nx is only defined in setup_nx.c when
+"defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)", so I re-arranged the
+logic to match that.
 
-      * the 'mount' program, if you are using the legacy binary mount
-        interface. Use text mounts instead...
-      * rpc.statd might also use privileged ports when booting the
-        system when it needs to notify servers of the reboot. You can
-        set that port number using the '-o' option.
+How about the following clean-up and merge...
 
-Others? Do any of the NIS services require it?
+---
+It is possible for x86_64 systems to lack the NX bit (see check_efer())
+either due to the hardware lacking support or the BIOS having turned
+off the CPU capability, so NX status should be reported.  Additionally,
+anyone booting NX-capable CPUs in 32bit mode without PAE will lack NX
+functionality, so this change provides feedback for that case as well.
 
-Trond
+Signed-off-by: Kees Cook <kees.cook@canonical.com>
+---
+ arch/x86/kernel/setup.c |    2 ++
+ arch/x86/mm/init.c      |    4 ----
+ arch/x86/mm/setup_nx.c  |   31 ++++++++++++++++++++-----------
+ 3 files changed, 22 insertions(+), 15 deletions(-)
 
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index e09f0e2..72181c1 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -895,6 +895,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	init_gbpages();
+ 
++	set_nx();
++
+ 	/* max_pfn_mapped is updated here */
+ 	max_low_pfn_mapped = init_memory_mapping(0, max_low_pfn<<PAGE_SHIFT);
+ 	max_pfn_mapped = max_low_pfn_mapped;
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index 73ffd55..d406c52 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -146,10 +146,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	use_gbpages = direct_gbpages;
+ #endif
+ 
+-	set_nx();
+-	if (nx_enabled)
+-		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
+-
+ 	/* Enable PSE if available */
+ 	if (cpu_has_pse)
+ 		set_in_cr4(X86_CR4_PSE);
+diff --git a/arch/x86/mm/setup_nx.c b/arch/x86/mm/setup_nx.c
+index 513d8ed..269b668 100644
+--- a/arch/x86/mm/setup_nx.c
++++ b/arch/x86/mm/setup_nx.c
+@@ -33,28 +33,37 @@ static int __init noexec_setup(char *str)
+ early_param("noexec", noexec_setup);
+ #endif
+ 
+-#ifdef CONFIG_X86_PAE
+ void __init set_nx(void)
+ {
+-	unsigned int v[4], l, h;
+-
+-	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
+-		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
++	if (!cpu_has_nx) {
++		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
++		       "missing in CPU or disabled in BIOS!\n");
++	} else {
++#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
++		if (disable_nx)
++			printk(KERN_INFO "NX (Execute Disable) protection: "
++			       "disabled by kernel command line option\n");
++		else {
++# ifdef CONFIG_X86_PAE
++			/* 32-bit PAE */
++			unsigned int l, h;
+ 
+-		if ((v[3] & (1 << 20)) && !disable_nx) {
+ 			rdmsr(MSR_EFER, l, h);
+ 			l |= EFER_NX;
+ 			wrmsr(MSR_EFER, l, h);
+ 			nx_enabled = 1;
+ 			__supported_pte_mask |= _PAGE_NX;
++# endif
++			printk(KERN_INFO "NX (Execute Disable) protection: "
++			       "active\n");
+ 		}
+-	}
+-}
+ #else
+-void set_nx(void)
+-{
+-}
++		/* 32bit non-PAE kernel, NX cannot be used */
++		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
++		       "cannot be enabled: non-PAE kernel!\n");
+ #endif
++	}
++}
+ 
+ #ifdef CONFIG_X86_64
+ void __cpuinit check_efer(void)
+-- 
+1.6.5
+
+
+
+-- 
+Kees Cook
+Ubuntu Security Team
