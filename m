@@ -1,79 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbZKJPla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZKJPpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbZKJPla (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 10:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756600AbZKJPl3
+	id S1756738AbZKJPpc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 10:45:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbZKJPpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 10:41:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40115 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756563AbZKJPl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 10:41:29 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>, aaronc@gelato.unsw.edu.au
-Subject: Re: [RFC, PATCH] cfq-iosched: remove redundant queuing detection code
-References: <200911101454.57522.czoccolo@gmail.com>
-	<20091110151431.GI8742@kernel.dk>
-	<x49ocna5rv1.fsf@segfault.boston.devel.redhat.com>
-	<20091110152745.GK8742@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 10 Nov 2009 10:41:13 -0500
-In-Reply-To: <20091110152745.GK8742@kernel.dk> (Jens Axboe's message of "Tue,
-	10 Nov 2009 16:27:45 +0100")
-Message-ID: <x49k4xy5qw6.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	Tue, 10 Nov 2009 10:45:31 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:52715 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756653AbZKJPpa (ORCPT
+	<rfc822;groupwise-GHaskins@novell.com;0:0>);
+	Tue, 10 Nov 2009 10:45:30 -0500
+Message-ID: <4AF98A8C.9040201@novell.com>
+Date: Tue, 10 Nov 2009 10:45:16 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: alacrityvm-devel@lists.sourceforge.net, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+References: <20091002141407.30224.54207.stgit@dev.haskins.net> <20091110115335.GC6989@redhat.com> <4AF919020200005A000586A9@sinclair.provo.novell.com> <20091110131722.GA19645@redhat.com> <4AF9747E.8020408@novell.com> <20091110143652.GB19645@redhat.com>
+In-Reply-To: <20091110143652.GB19645@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig755F04A89FB5DA7DE994117F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig755F04A89FB5DA7DE994117F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, Nov 10 2009, Jeff Moyer wrote:
->> Jens Axboe <jens.axboe@oracle.com> writes:
->> 
->> > On Tue, Nov 10 2009, Corrado Zoccolo wrote:
->> >> The core block layer already has code to detect presence of command
->> >> queuing devices. We convert cfq to use that instead of re-doing the
->> >> computation.
->> >
->> > There's is the major difference that the CFQ variant is dynamic and the
->> > block layer one is not. This change came from Aaron some time ago IIRC,
->> > see commit 45333d5. It's a bit of a chicken and egg problem.
->> 
->> Really?  blk_dequeue_request sure looks like it updates things
->> dynamically, but only one way (not queueing -> queueing).  Would it make
->
-> Yes of course the block layer one is dynamically on as well. The ideal
-> goal would be to have every driver use the block layer tagging in which
-> case we'd know without checking, but alas it isn't so (yet). My point is
-> that the CFQ variant is dynamically off as well. Corrado presents his
-> patch as a direct functional equivelant, which it definitely isn't.
+Michael S. Tsirkin wrote:
+> On Tue, Nov 10, 2009 at 09:11:10AM -0500, Gregory Haskins wrote:
+>> Michael S. Tsirkin wrote:
+>>> On Tue, Nov 10, 2009 at 05:40:50AM -0700, Gregory Haskins wrote:
+>>>>>>> On 11/10/2009 at  6:53 AM, in message <20091110115335.GC6989@redh=
+at.com>,
+>>>> "Michael S. Tsirkin" <mst@redhat.com> wrote:=20
+>>
+>>>>> Last time this was tried, this is the objection that was voiced:
+>>>>>
+>>>>> 	The problem with this patch is that it's tracking skb's, while
+>>>>> 	you want use it to track pages for zero-copy.  That just doesn't
+>>>>> 	work.  Through mechanisms like splice, individual pages in the
+>>>>> 	skb can be detached and metastasize to other locations, e.g.,
+>>>>> 	the VFS.
+>>>> Right, and I don't think this applies here because I specifically ch=
+ose the shinfo level to try to properly
+>>>> track the page level avoid this issue.  Multiple skb's can point to =
+a single shinfo, iiuc.
+>>> VFS does not know about shinfo either, does it?
+>> I do not follow the reference.  Where does VFS come into play?
+>=20
+> "Through mechanisms like splice, individual pages in the
+> skb can be detached and metastasize to other locations, e.g.,
+> the VFS"
 
-OK.  So we really want to keep track of two things:
-1) What queue depth does the hardware support?
-2) What is the command queue depth configured to?
+Right, understood.  What I mean is: How is that actually used in
+real-life in a way that is valid?
 
-That second thing can be changed by the administrator (down from or up
-to the maximum value allowed by 1).
+What I am getting at is as follows:  From a real basic perspective, you
+can look at all of this as a simple synchronous call (i.e. sendmsg()).
+The "app" (be it a userspace app, or a guest) prepares a buffer for
+transmission, and offers it to the next layer in the stack.  The app
+must maintain the integrity of that buffer at least until the layer
+below it signifies that it is "consumed".  This may mean its a
+synchronous call, like sendmsg(), or it may be asynchronous, like AIO.
 
->> sense to just put CFQ's logic into the block layer so that everyone uses
->> the same implementation?  It makes little sense to have two notions of
->> whether or not queueing is supported for a device.
->
-> The one use in the block layer cares about the static property of the
-> device, not the current behaviour. So I'm not sure it makes a lot of
-> sense to unify these. It's not really a case of code duplication either,
-> the block layer one is two checks and a bit. The cfq variant is a bit
-> more involved in that it tracks the state continually.
+But the key thing here is that at some point, the lower layer has to
+signify that the buffer stability constraint has been met.  In either
+case, we have a clear delineated event: the io-completes =3D the buffer i=
+s
+free to be reused.
 
-Why don't we simply use the value configured via the queue_depth sysfs
-file?
+In the simple case, the buffer in question is copied to a kernel buffer,
+and the io completes immediately. In other cases (such as zero copy),
+the buffer is mapped into the skb, and we have to wait for even lower
+layers to signify the completion.
 
-Cheers,
-Jeff
+I am not a stack expert, but I was under the impression that we use this
+model for userspace pages today as well using the wmem callbacks in
+skb->destructor().  If so, I do not see how you could do something like
+detach a page from a pskb and still expect to have a proper event that
+delineates the io-completion to the higher layers.
+
+So the questions are:
+
+1) do we in fact map userspace pages to pskbs today?
+2a) if so, how do we delineate the completion event?
+2b) and how do we prevent worrying about the get_page() issue you refer
+to.
+
+
+>>
+>>>>> In other words, this only *seems*
+>>>>> to work for you because you are not trying to do things like
+>>>>> guest to host communication, with host doing smart things.
+>>>> I am not following what you mean here, as I do use this for guest->h=
+ost and guest->host->remote, and
+>>>> it works quite nicely.  I map the guest pages in, and when the last =
+reference to the pages are dropped,
+>>>> I release the pages back to the guest.  It doesn't matter if the skb=
+ egresses out a physical adapter or is
+>>>> received locally.  All that matters is the lifetime of the shinfo (a=
+nd thus its pages) is handled correctly.
+>>> Not if someone else is referencing the pages without a reference to s=
+hinfo.
+>> I agree that if we can reference pages outside of the skb/shinfo then
+>> there is a problem.  I wasn't aware that we could do this, tbh.
+>>
+>> However, it seems to me that this is a problem with the overall stack,=
+
+>> if true....isn't it?  For instance, if I do a sendmsg() from a userspa=
+ce
+>> app and block until its consumed,
+>=20
+> consumed =3D=3D memcpy_from_iovec?
+
+For non-zero-copy, sure why not.
+
+>=20
+>> how can the system function sanely if
+>> the app returns from the call but something is still referencing the
+>> page(s)?
+>=20
+> which pages?
+
+You said that there are paths that get_page() out of shinfo without
+holding a shinfo reference.
+
+Kind Regards,
+-Greg
+
+
+--------------enig755F04A89FB5DA7DE994117F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkr5iowACgkQP5K2CMvXmqGBJQCfdIq7CmFBA7/UF31JCUgJZqki
+wkIAnRtRHTt7a+7ZEuH5Fal3IWH+xWhx
+=ymlb
+-----END PGP SIGNATURE-----
+
+--------------enig755F04A89FB5DA7DE994117F--
