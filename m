@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbZKJOit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbZKJOmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756583AbZKJOit (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 09:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbZKJOis
+	id S1756562AbZKJOmv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 09:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbZKJOmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 09:38:48 -0500
-Received: from emulex.emulex.com ([138.239.112.1]:61865 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbZKJOir (ORCPT
+	Tue, 10 Nov 2009 09:42:50 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:61782 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756044AbZKJOmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 09:38:47 -0500
-Message-ID: <4AF97AF5.2090700@emulex.com>
-Date: Tue, 10 Nov 2009 09:38:45 -0500
-From: James Smart <James.Smart@Emulex.Com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 10 Nov 2009 09:42:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=wU99Eo3dROJlmWa9esv3c1wzAgUzOpjUdpqHJr8XPh0vNLSfzI833leO4d1L/WbeZl
+         ScoST7z9SkaKdSZeNxadaPBFqMzLTkIyWyUn8q2QvqI8glbIBKpOdMGvMJisNJoLR/cN
+         XPnE4bbaZwY1pGRlavIZbmCiXyhrdw248ep90=
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "andrew.vasquez@qlogic.com" <andrew.vasquez@qlogic.com>,
-       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] scsi_lib_dma.c :  fix bug with dma maps on nested scsi
- objects - (2nd try)
-References: <1257295546.5965.7.camel@wookie> <1257449592.10355.26.camel@mulgrave.site>
-In-Reply-To: <1257449592.10355.26.camel@mulgrave.site>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Nov 2009 14:38:47.0477 (UTC) FILETIME=[82F97E50:01CA6213]
+In-Reply-To: <20091106135722.5abfdd03@jbarnes-piketon>
+References: <cb0375e10910030939v8d03df7m861a2f05219f173c@mail.gmail.com>
+	 <cb0375e10910291022l5650994dyc4a36d55f1e5bbc4@mail.gmail.com>
+	 <cb0375e10910291040i31a7b9aatb6da5c20778d9791@mail.gmail.com>
+	 <cb0375e10910292325l659034c4u36cf263cda8e90c8@mail.gmail.com>
+	 <20091030083742.48f5d4f3@jbarnes-g45>
+	 <cb0375e10910301155s5e2b2e79t562bfa798ba75e23@mail.gmail.com>
+	 <cb0375e10911042000h3cf215a1o44add74510c15a1c@mail.gmail.com>
+	 <20091105082829.2d59dcae@jbarnes-piketon>
+	 <cb0375e10911061225y1bc29807y5abd67e748ef4164@mail.gmail.com>
+	 <20091106135722.5abfdd03@jbarnes-piketon>
+Date: Tue, 10 Nov 2009 09:42:52 -0500
+X-Google-Sender-Auth: 2e96bf69357d2123
+Message-ID: <cb0375e10911100642p348cc701la840e0b39aa8615f@mail.gmail.com>
+Subject: Re: [resend] i915: high power consumption after suspend/resume
+From: Andrew Lutomirski <luto@mit.edu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James,
+Just to confuse matters further, the following patch does *not* help.
+Even with this patch applied, power consumption often goes high when
+resuming, and writing 1 to i915_wedged after fully resuming fixes it.
 
-This updated patch works fine for lpfc and our vports...
+I now officially have no clue what's going on.  Maybe there's
+something wrong with the i915 resume code that increases power
+consumption.
 
-Acked-By: James Smart  <james.smart@emulex.com>
+diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
+index 7f436ec..71472a9 100644
+--- a/drivers/gpu/drm/i915/i915_drv.c
++++ b/drivers/gpu/drm/i915/i915_drv.c
+@@ -99,11 +99,28 @@ static int i915_resume(struct drm_device *dev)
+ {
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 	int ret = 0;
++	u8 gdrst;
++	unsigned long timeout;
++
 
--- james s
+ 	if (pci_enable_device(dev->pdev))
+ 		return -1;
+ 	pci_set_master(dev->pdev);
 
++	pci_read_config_byte(dev->pdev, GDRST, &gdrst);
++	pci_write_config_byte(dev->pdev, GDRST, gdrst | GDRST_RENDER);
++	udelay(50);
++	//pci_write_config_byte(dev->pdev, GDRST, gdrst & 0xfe);
++	
++	/* ...we don't want to loop forever though, 500ms should be plenty */
++	timeout = jiffies + msecs_to_jiffies(500);
++	do {
++		udelay(100);
++		pci_read_config_byte(dev->pdev, GDRST, &gdrst);
++	} while ((gdrst & 0x1) && time_after(timeout, jiffies));
++	printk(KERN_INFO "i915: Reset on resume took %d ms\n",
++	       jiffies_to_msecs(jiffies - timeout + msecs_to_jiffies(500)));
++
+ 	i915_restore_state(dev);
 
-James Bottomley wrote:
-> 
-> 141 lines plus a static list to solve a simple problem is getting a bit
-> icky to say the least.
-> 
-> What about being more simplistic and simply making the host cache a
-> pointer to the physical bus device?  I probably objected to this a long
-> time ago because using the parent pointers is more elegant, but I think
-> this patch demonstrates conclusively it's not worth this amount of code
-> for the sake of alleged elegance.
-> 
-> James
-> 
-> ---
->  drivers/scsi/hosts.c            |   13 ++++++++++---
->  drivers/scsi/lpfc/lpfc_init.c   |    2 +-
->  drivers/scsi/qla2xxx/qla_attr.c |    3 ++-
->  drivers/scsi/scsi_lib_dma.c     |    4 ++--
->  include/scsi/scsi_host.h        |   16 +++++++++++++++-
->  5 files changed, 30 insertions(+), 8 deletions(-)
+ 	intel_opregion_init(dev, 1);
 
+--Andy
