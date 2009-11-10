@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbZKJQPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZKJQNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757074AbZKJQPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 11:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbZKJQNa
+	id S1756962AbZKJQNg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 11:13:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbZKJQNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 11:13:30 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:59920 "EHLO
+	Tue, 10 Nov 2009 11:13:33 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:59958 "EHLO
 	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756917AbZKJQNX (ORCPT
+	with ESMTP id S1756828AbZKJQN1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 11:13:23 -0500
+	Tue, 10 Nov 2009 11:13:27 -0500
 From: John Johansen <john.johansen@canonical.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org,
        John Johansen <john.johansen@canonical.com>
-Subject: [PATCH 05/12] AppArmor: dfa match engine
-Date: Tue, 10 Nov 2009 08:12:58 -0800
-Message-Id: <1257869585-7092-6-git-send-email-john.johansen@canonical.com>
+Subject: [PATCH 06/12] AppArmor: policy routines for loading and unpacking policy
+Date: Tue, 10 Nov 2009 08:12:59 -0800
+Message-Id: <1257869585-7092-7-git-send-email-john.johansen@canonical.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>
 References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>
@@ -24,50 +24,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A basic dfa matching engine based off the dfa engine in the Dragon
-Book.  It uses simple row compression with a check field.
+AppArmor policy is loaded in a platform independent flattened binary
+stream.  Verify and unpack the data converting it to the internal
+format needed for enforcement.
 
-This allows AppArmor to do pattern matching in linear time, and also
-avoids stack issues that an nfa based engine may have.  The dfa
-engine uses a byte based comparison, with all values being valid.
-Any potential character encoding are handled user side when the dfa
-tables are created.  By convention AppArmor uses \0 to separate two
-dependent path matches since \0 is not a valid path character
-(this is done in the link permission check).
-
-The dfa tables are generated in user space and are verified at load
-time to be internally consistent.
-
-There are several future improvements planned for the dfa engine:
-* Currently AppArmor permissions are embedded in the accept table.
-  Inthe future AppArmor specific dependencies will be separated out,
-  making the dfa a generic matching engine.
-* The dfa engine may be converted to a hybrid nfa-dfa engine, with
-  a fixed size limited stack.  This would allow for size time
-  tradeoffs, by inserting limited nfa states to help control
-  state explosion that can occur with dfas.
-* The dfa engine may pickup the ability to do limited dynamic
-  variable matching, instead of fixing all variables at policy
-  load time.
+The current routines are compatible with older AppArmor policy.  There
+are several planned improvements, to reduce the amount of unpacking
+and unaligned accesses being done by moving to more aligned tables
+that can be shared similar to what is done currently with dfa tables.
 
 Signed-off-by: John Johansen <john.johansen@canonical.com>
 ---
- security/apparmor/include/match.h |  104 +++++++++++++
- security/apparmor/match.c         |  301 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 405 insertions(+), 0 deletions(-)
- create mode 100644 security/apparmor/include/match.h
- create mode 100644 security/apparmor/match.c
+ security/apparmor/include/policy_unpack.h |   30 ++
+ security/apparmor/policy_unpack.c         |  602 +++++++++++++++++++++++++++++
+ 2 files changed, 632 insertions(+), 0 deletions(-)
+ create mode 100644 security/apparmor/include/policy_unpack.h
+ create mode 100644 security/apparmor/policy_unpack.c
 
-diff --git a/security/apparmor/include/match.h b/security/apparmor/include/match.h
+diff --git a/security/apparmor/include/policy_unpack.h b/security/apparmor/include/policy_unpack.h
 new file mode 100644
-index 0000000..bd5015d
+index 0000000..1c02ce6
 --- /dev/null
-+++ b/security/apparmor/include/match.h
-@@ -0,0 +1,104 @@
++++ b/security/apparmor/include/policy_unpack.h
+@@ -0,0 +1,30 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor policy dfa matching engine definitions.
++ * This file contains AppArmor policy loading interface function definitions.
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009 Canonical Ltd.
@@ -78,106 +61,33 @@ index 0000000..bd5015d
 + * License.
 + */
 +
-+#ifndef __AA_MATCH_H
-+#define __AA_MATCH_H
++#ifndef __POLICY_INTERFACE_H
++#define __POLICY_INTERFACE_H
 +
-+#define DFA_NOMATCH			0
-+#define DFA_START			1
++struct aa_audit_iface {
++	struct aa_audit base;
 +
-+#define DFA_VALID_PERM_MASK		0xffffffff
-+#define DFA_VALID_PERM2_MASK		0xffffffff
-+
-+/**
-+ * The format used for transition tables is based on the GNU flex table
-+ * file format (--tables-file option; see Table File Format in the flex
-+ * info pages and the flex sources for documentation). The magic number
-+ * used in the header is 0x1B5E783D insted of 0xF13C57B1 though, because
-+ * the YY_ID_CHK (check) and YY_ID_DEF (default) tables are used
-+ * slightly differently (see the apparmor-parser package).
-+ */
-+
-+#define YYTH_MAGIC	0x1B5E783D
-+
-+struct table_set_header {
-+	u32 th_magic;		/* YYTH_MAGIC */
-+	u32 th_hsize;
-+	u32 th_ssize;
-+	u16 th_flags;
-+	char th_version[];
++	const char *name;
++	const char *name2;
++	long pos;
 +};
 +
-+#define	YYTD_ID_ACCEPT	1
-+#define YYTD_ID_BASE	2
-+#define YYTD_ID_CHK	3
-+#define YYTD_ID_DEF	4
-+#define YYTD_ID_EC	5
-+#define YYTD_ID_META	6
-+#define YYTD_ID_ACCEPT2 7
-+#define YYTD_ID_NXT	8
++int aa_audit_iface(struct aa_audit_iface *sa);
++struct aa_profile *aa_unpack(void *udata, size_t size,
++			     struct aa_audit_iface *sa);
 +
-+#define YYTD_DATA8	1
-+#define YYTD_DATA16	2
-+#define YYTD_DATA32	4
-+
-+struct table_header {
-+	u16 td_id;
-+	u16 td_flags;
-+	u32 td_hilen;
-+	u32 td_lolen;
-+	char td_data[];
-+};
-+
-+#define DEFAULT_TABLE(DFA) ((u16 *)((DFA)->tables[YYTD_ID_DEF - 1]->td_data))
-+#define BASE_TABLE(DFA) ((u32 *)((DFA)->tables[YYTD_ID_BASE - 1]->td_data))
-+#define NEXT_TABLE(DFA) ((u16 *)((DFA)->tables[YYTD_ID_NXT - 1]->td_data))
-+#define CHECK_TABLE(DFA) ((u16 *)((DFA)->tables[YYTD_ID_CHK - 1]->td_data))
-+#define EQUIV_TABLE(DFA) ((u8 *)((DFA)->tables[YYTD_ID_EC - 1]->td_data))
-+#define ACCEPT_TABLE(DFA) ((u32 *)((DFA)->tables[YYTD_ID_ACCEPT - 1]->td_data))
-+#define ACCEPT_TABLE2(DFA) ((u32 *)\
-+			    ((DFA)->tables[YYTD_ID_ACCEPT2 - 1]->td_data))
-+
-+struct aa_dfa {
-+	struct table_header *tables[YYTD_ID_NXT];
-+};
-+
-+#define byte_to_byte(X) (X)
-+
-+#define UNPACK_ARRAY(TABLE, BLOB, LEN, TYPE, NTOHX) \
-+	do { \
-+		typeof(LEN) __i; \
-+		TYPE *__t = (TYPE *) TABLE; \
-+		TYPE *__b = (TYPE *) BLOB; \
-+		for (__i = 0; __i < LEN; __i++) { \
-+			__t[__i] = NTOHX(__b[__i]); \
-+		} \
-+	} while (0)
-+
-+static inline size_t table_size(size_t len, size_t el_size)
-+{
-+	return ALIGN(sizeof(struct table_header) + len * el_size, 8);
-+}
-+
-+struct aa_dfa *aa_match_alloc(void);
-+void aa_match_free(struct aa_dfa *dfa);
-+int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size);
-+int verify_dfa(struct aa_dfa *dfa);
-+unsigned int aa_dfa_match_len(struct aa_dfa *dfa, unsigned int start,
-+			      const char *str, int len);
-+unsigned int aa_dfa_match(struct aa_dfa *dfa, unsigned int start,
-+			  const char *str);
-+unsigned int aa_dfa_null_transition(struct aa_dfa *dfa, unsigned int start);
-+
-+#endif /* __AA_MATCH_H */
-diff --git a/security/apparmor/match.c b/security/apparmor/match.c
++#endif /* __POLICY_INTERFACE_H */
+diff --git a/security/apparmor/policy_unpack.c b/security/apparmor/policy_unpack.c
 new file mode 100644
-index 0000000..c76807b
+index 0000000..9b64f21
 --- /dev/null
-+++ b/security/apparmor/match.c
-@@ -0,0 +1,301 @@
++++ b/security/apparmor/policy_unpack.c
+@@ -0,0 +1,602 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor dfa based regular expression matching engine
++ * This file contains AppArmor functions for unpacking policy loaded from
++ * userspace.
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009 Canonical Ltd.
@@ -186,294 +96,594 @@ index 0000000..c76807b
 + * modify it under the terms of the GNU General Public License as
 + * published by the Free Software Foundation, version 2 of the
 + * License.
++ *
++ * AppArmor uses a serialized binary format for loading policy.
++ * The policy format is documented in Documentation/???
++ * All policy is validated all before it is used.
 + */
 +
++#include <asm/unaligned.h>
 +#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
 +
 +#include "include/apparmor.h"
++#include "include/audit.h"
++#include "include/context.h"
 +#include "include/match.h"
-+#include "include/file.h"
++#include "include/policy.h"
++#include "include/policy_unpack.h"
++#include "include/sid.h"
 +
-+static void free_table(struct table_header *table)
++/*
++ * The AppArmor interface treats data as a type byte followed by the
++ * actual data.  The interface has the notion of a a named entry
++ * which has a name (AA_NAME typecode followed by name string) followed by
++ * the entries typecode and data.  Named types allow for optional
++ * elements and extensions to be added and tested for without breaking
++ * backwards compatability.
++ */
++
++enum aa_code {
++	AA_U8,
++	AA_U16,
++	AA_U32,
++	AA_U64,
++	AA_NAME,		/* same as string except it is items name */
++	AA_STRING,
++	AA_BLOB,
++	AA_STRUCT,
++	AA_STRUCTEND,
++	AA_LIST,
++	AA_LISTEND,
++	AA_ARRAY,
++	AA_ARRAYEND,
++};
++
++/*
++ * aa_ext is the read of the buffer containing the serialized profile.  The
++ * data is copied into a kernel buffer in apparmorfs and then handed off to
++ * the unpack routines.
++ */
++struct aa_ext {
++	void *start;
++	void *end;
++	void *pos;		/* pointer to current position in the buffer */
++	u32 version;
++};
++
++static void audit_cb(struct audit_buffer *ab, void *va)
 +{
-+	if (is_vmalloc_addr(table))
-+		vfree(table);
-+	else
-+		kfree(table);
++	struct aa_audit_iface *sa = va;
++
++	if (sa->name)
++		audit_log_format(ab, " name=%s", sa->name);
++	if (sa->name2)
++		audit_log_format(ab, " namespace=%s", sa->name2);
++	if (sa->base.error && sa->pos)
++		audit_log_format(ab, " offset=%ld", sa->pos);
 +}
 +
-+static struct table_header *unpack_table(void *blob, size_t bsize)
++int aa_audit_iface(struct aa_audit_iface *sa)
 +{
-+	struct table_header *table = NULL;
-+	struct table_header th;
-+	size_t tsize;
-+
-+	if (bsize < sizeof(struct table_header))
-+		goto out;
-+
-+	th.td_id = be16_to_cpu(*(u16 *) (blob));
-+	th.td_flags = be16_to_cpu(*(u16 *) (blob + 2));
-+	th.td_lolen = be32_to_cpu(*(u32 *) (blob + 8));
-+	blob += sizeof(struct table_header);
-+
-+	if (!(th.td_flags == YYTD_DATA16 || th.td_flags == YYTD_DATA32 ||
-+	      th.td_flags == YYTD_DATA8))
-+		goto out;
-+
-+	tsize = table_size(th.td_lolen, th.td_flags);
-+	if (bsize < tsize)
-+		goto out;
-+
-+	/* freed by free_table */
-+	table = kmalloc(tsize, GFP_KERNEL);
-+	if (!table)
-+		table = vmalloc(tsize);
-+	if (table) {
-+		*table = th;
-+		if (th.td_flags == YYTD_DATA8)
-+			UNPACK_ARRAY(table->td_data, blob, th.td_lolen,
-+				     u8, byte_to_byte);
-+		else if (th.td_flags == YYTD_DATA16)
-+			UNPACK_ARRAY(table->td_data, blob, th.td_lolen,
-+				     u16, be16_to_cpu);
-+		else
-+			UNPACK_ARRAY(table->td_data, blob, th.td_lolen,
-+				     u32, be32_to_cpu);
-+	}
-+
-+out:
-+	return table;
++	struct aa_profile *profile;
++	struct cred *cred = aa_get_task_policy(current, &profile);
++	int error = aa_audit(AUDIT_APPARMOR_STATUS, profile, &sa->base,
++			     audit_cb);
++	put_cred(cred);
++	return error;
 +}
 +
-+int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size)
++static int aa_inbounds(struct aa_ext *e, size_t size)
 +{
-+	int hsize, i;
-+	int error = -ENOMEM;
++	return (size <= e->end - e->pos);
++}
 +
-+	/* get dfa table set header */
-+	if (size < sizeof(struct table_set_header))
-+		goto fail;
++/**
++ * aa_u16_chunck - test and do bounds checking for a u16 size based chunk
++ * @e: serialized data read head
++ * @chunk: start address for chunk of data
++ *
++ * return the size of chunk found with the read head at the end of
++ * the chunk.
++ */
++static size_t unpack_u16_chunk(struct aa_ext *e, char **chunk)
++{
++	size_t size = 0;
 +
-+	if (ntohl(*(u32 *) blob) != YYTH_MAGIC)
-+		goto fail;
++	if (!aa_inbounds(e, sizeof(u16)))
++		return 0;
++	size = le16_to_cpu(get_unaligned((u16 *) e->pos));
++	e->pos += sizeof(u16);
++	if (!aa_inbounds(e, size))
++		return 0;
++	*chunk = e->pos;
++	e->pos += size;
++	return size;
++}
 +
-+	hsize = ntohl(*(u32 *) (blob + 4));
-+	if (size < hsize)
-+		goto fail;
++static int unpack_X(struct aa_ext *e, enum aa_code code)
++{
++	if (!aa_inbounds(e, 1))
++		return 0;
++	if (*(u8 *) e->pos != code)
++		return 0;
++	e->pos++;
++	return 1;
++}
 +
-+	blob += hsize;
-+	size -= hsize;
-+
-+	error = -EPROTO;
-+	while (size > 0) {
-+		struct table_header *table;
-+		table = unpack_table(blob, size);
-+		if (!table)
++/**
++ * unpack_nameX - check is the next element is of type X with a name of @name
++ * @e: serialized data extent information
++ * @code: type code
++ * @name: name to match to the serialized element.
++ *
++ * check that the next serialized data element is of type X and has a tag
++ * name @name.  If @name is specified then there must be a matching
++ * name element in the stream.  If @name is NULL any name element will be
++ * skipped and only the typecode will be tested.
++ * returns 1 on success (both type code and name tests match) and the read
++ * head is advanced past the headers
++ * returns %0 if either match failes, the read head does not move
++ */
++static int unpack_nameX(struct aa_ext *e, enum aa_code code, const char *name)
++{
++	/*
++	 * May need to rest pos if name or type doesn't match, could be
++	 * an optional component.
++	 */
++	void *pos = e->pos;
++	/*
++	 * Check for presence of a tagname, and if present name size
++	 * AA_NAME tag value is a u16.
++	 */
++	if (unpack_X(e, AA_NAME)) {
++		char *tag = NULL;
++		size_t size = unpack_u16_chunk(e, &tag);
++		/* if a name is specified it must match. otherwise skip tag */
++		if (name && (!size || strcmp(name, tag)))
 +			goto fail;
-+
-+		switch (table->td_id) {
-+		case YYTD_ID_ACCEPT:
-+		case YYTD_ID_ACCEPT2:
-+		case YYTD_ID_BASE:
-+			dfa->tables[table->td_id - 1] = table;
-+			if (table->td_flags != YYTD_DATA32)
-+				goto fail;
-+			break;
-+		case YYTD_ID_DEF:
-+		case YYTD_ID_NXT:
-+		case YYTD_ID_CHK:
-+			dfa->tables[table->td_id - 1] = table;
-+			if (table->td_flags != YYTD_DATA16)
-+				goto fail;
-+			break;
-+		case YYTD_ID_EC:
-+			dfa->tables[table->td_id - 1] = table;
-+			if (table->td_flags != YYTD_DATA8)
-+				goto fail;
-+			break;
-+		default:
-+			free_table(table);
-+			goto fail;
-+		}
-+
-+		blob += table_size(table->td_lolen, table->td_flags);
-+		size -= table_size(table->td_lolen, table->td_flags);
++	} else if (name) {
++		/* if a name is specified and there is no name tag fail */
++		goto fail;
 +	}
 +
-+	return 0;
++	/* now check if type code matches */
++	if (unpack_X(e, code))
++		return 1;
 +
 +fail:
-+	for (i = 0; i < ARRAY_SIZE(dfa->tables); i++) {
-+		free_table(dfa->tables[i]);
-+		dfa->tables[i] = NULL;
-+	}
-+	return error;
++	e->pos = pos;
++	return 0;
 +}
 +
-+/**
-+ * verify_dfa - verify that all the transitions and states in the dfa tables
-+ *              are in bounds.
-+ * @dfa: dfa to test
-+ *
-+ * assumes dfa has gone through the verification done by unpacking
-+ */
-+int verify_dfa(struct aa_dfa *dfa)
++static int unpack_u16(struct aa_ext *e, u16 *data, const char *name)
 +{
-+	size_t i, state_count, trans_count;
-+	int error = -EPROTO;
-+
-+	/* check that required tables exist */
-+	if (!(dfa->tables[YYTD_ID_ACCEPT - 1] &&
-+	      dfa->tables[YYTD_ID_ACCEPT2 - 1] &&
-+	      dfa->tables[YYTD_ID_DEF - 1] &&
-+	      dfa->tables[YYTD_ID_BASE - 1] &&
-+	      dfa->tables[YYTD_ID_NXT - 1] && dfa->tables[YYTD_ID_CHK - 1]))
-+		goto out;
-+
-+	/* accept.size == default.size == base.size */
-+	state_count = dfa->tables[YYTD_ID_BASE - 1]->td_lolen;
-+	if (!(state_count == dfa->tables[YYTD_ID_DEF - 1]->td_lolen &&
-+	      state_count == dfa->tables[YYTD_ID_ACCEPT - 1]->td_lolen &&
-+	      state_count == dfa->tables[YYTD_ID_ACCEPT2 - 1]->td_lolen))
-+		goto out;
-+
-+	/* next.size == chk.size */
-+	trans_count = dfa->tables[YYTD_ID_NXT - 1]->td_lolen;
-+	if (trans_count != dfa->tables[YYTD_ID_CHK - 1]->td_lolen)
-+		goto out;
-+
-+	/* if equivalence classes then its table size must be 256 */
-+	if (dfa->tables[YYTD_ID_EC - 1] &&
-+	    dfa->tables[YYTD_ID_EC - 1]->td_lolen != 256)
-+		goto out;
-+
-+	for (i = 0; i < state_count; i++) {
-+		if (DEFAULT_TABLE(dfa)[i] >= state_count)
-+			goto out;
-+		if (BASE_TABLE(dfa)[i] >= trans_count + 256)
-+			goto out;
++	if (unpack_nameX(e, AA_U16, name)) {
++		if (!aa_inbounds(e, sizeof(u16)))
++			return 0;
++		if (data)
++			*data = le16_to_cpu(get_unaligned((u16 *) e->pos));
++		e->pos += sizeof(u16);
++		return 1;
 +	}
-+
-+	for (i = 0; i < trans_count; i++) {
-+		if (NEXT_TABLE(dfa)[i] >= state_count)
-+			goto out;
-+		if (CHECK_TABLE(dfa)[i] >= state_count)
-+			goto out;
-+	}
-+
-+	/* verify accept permissions */
-+	for (i = 0; i < state_count; i++) {
-+		int mode = ACCEPT_TABLE(dfa)[i];
-+
-+		if (mode & ~DFA_VALID_PERM_MASK)
-+			goto out;
-+		if (ACCEPT_TABLE2(dfa)[i] & ~DFA_VALID_PERM2_MASK)
-+			goto out;
-+
-+	}
-+
-+	error = 0;
-+out:
-+	return error;
++	return 0;
 +}
 +
-+struct aa_dfa *aa_match_alloc(void)
++static int unpack_u32(struct aa_ext *e, u32 *data, const char *name)
 +{
-+	/* freed by aa_match_free, by caller */
-+	return kzalloc(sizeof(struct aa_dfa), GFP_KERNEL);
-+}
-+
-+void aa_match_free(struct aa_dfa *dfa)
-+{
-+	if (dfa) {
-+		int i;
-+
-+		for (i = 0; i < ARRAY_SIZE(dfa->tables); i++)
-+			free_table(dfa->tables[i]);
++	if (unpack_nameX(e, AA_U32, name)) {
++		if (!aa_inbounds(e, sizeof(u32)))
++			return 0;
++		if (data)
++			*data = le32_to_cpu(get_unaligned((u32 *) e->pos));
++		e->pos += sizeof(u32);
++		return 1;
 +	}
-+	kfree(dfa);
++	return 0;
 +}
 +
-+/**
-+ * aa_dfa_match_len - traverse @dfa to find state @str stops at
-+ * @dfa: the dfa to match @str against
-+ * @start: the state of the dfa to start matching in
-+ * @str: the string of bytes to match against the dfa
-+ * @len: length of the string of bytes to match
-+ *
-+ * aa_dfa_match_len will match @str against the dfa and return the state it
-+ * finished matching in. The final state can be used to look up the accepting
-+ * label, or as the start state of a continuing match.
-+ *
-+ * This function will happily match again the 0 byte and only finishes
-+ * when @len input is consumed.
-+ */
-+unsigned int aa_dfa_match_len(struct aa_dfa *dfa, unsigned int start,
-+			      const char *str, int len)
++static int unpack_u64(struct aa_ext *e, u64 *data, const char *name)
 +{
-+	u16 *def = DEFAULT_TABLE(dfa);
-+	u32 *base = BASE_TABLE(dfa);
-+	u16 *next = NEXT_TABLE(dfa);
-+	u16 *check = CHECK_TABLE(dfa);
-+	unsigned int state = start, pos;
++	if (unpack_nameX(e, AA_U64, name)) {
++		if (!aa_inbounds(e, sizeof(u64)))
++			return 0;
++		if (data)
++			*data = le64_to_cpu(get_unaligned((u64 *) e->pos));
++		e->pos += sizeof(u64);
++		return 1;
++	}
++	return 0;
++}
 +
-+	if (state == 0)
++static size_t unpack_array(struct aa_ext *e, const char *name)
++{
++	if (unpack_nameX(e, AA_ARRAY, name)) {
++		int size;
++		if (!aa_inbounds(e, sizeof(u16)))
++			return 0;
++		size = (int)le16_to_cpu(get_unaligned((u16 *) e->pos));
++		e->pos += sizeof(u16);
++		return size;
++	}
++	return 0;
++}
++
++static size_t unpack_blob(struct aa_ext *e, char **blob, const char *name)
++{
++	if (unpack_nameX(e, AA_BLOB, name)) {
++		u32 size;
++		if (!aa_inbounds(e, sizeof(u32)))
++			return 0;
++		size = le32_to_cpu(get_unaligned((u32 *) e->pos));
++		e->pos += sizeof(u32);
++		if (aa_inbounds(e, (size_t) size)) {
++			*blob = e->pos;
++			e->pos += size;
++			return size;
++		}
++	}
++	return 0;
++}
++
++static int unpack_string(struct aa_ext *e, char **string, const char *name)
++{
++	char *src_str;
++	size_t size = 0;
++	void *pos = e->pos;
++	*string = NULL;
++	if (unpack_nameX(e, AA_STRING, name)) {
++		size = unpack_u16_chunk(e, &src_str);
++		if (size) {
++			/* strings are null terminated, length is size - 1 */
++			if (src_str[size - 1] != 0)
++				goto fail;
++			*string = src_str;
++		}
++	}
++	return size;
++
++fail:
++	e->pos = pos;
++	return 0;
++}
++
++static int unpack_dynstring(struct aa_ext *e, char **string, const char *name)
++{
++	char *tmp;
++	void *pos = e->pos;
++	int res = unpack_string(e, &tmp, name);
++	*string = NULL;
++
++	if (!res)
 +		return 0;
 +
-+	/* current state is <state>, matching character *str */
-+	if (dfa->tables[YYTD_ID_EC - 1]) {
-+		u8 *equiv = EQUIV_TABLE(dfa);
-+		for (; len; len--) {
-+			pos = base[state] + equiv[(u8) *str++];
-+			if (check[pos] == state)
-+				state = next[pos];
-+			else
-+				state = def[state];
++	*string = kstrdup(tmp, GFP_KERNEL);
++	if (!*string) {
++		e->pos = pos;
++		return 0;
++	}
++
++	return res;
++}
++
++/**
++ * aa_unpack_dfa - unpack a file rule dfa
++ * @e: serialized data extent information
++ *
++ * returns dfa or ERR_PTR
++ */
++static struct aa_dfa *aa_unpack_dfa(struct aa_ext *e)
++{
++	char *blob = NULL;
++	size_t size, error = 0;
++	struct aa_dfa *dfa = NULL;
++
++	size = unpack_blob(e, &blob, "aadfa");
++	if (size) {
++		dfa = aa_match_alloc();
++		if (dfa) {
++			/*
++			 * The dfa is aligned with in the blob to 8 bytes
++			 * from the beginning of the stream.
++			 */
++			size_t sz = blob - (char *)e->start;
++			size_t pad = ALIGN(sz, 8) - sz;
++			error = unpack_dfa(dfa, blob + pad, size - pad);
++			if (!error)
++				error = verify_dfa(dfa);
++		} else {
++			error = -ENOMEM;
 +		}
-+	} else {
-+		for (; len; len--) {
-+			pos = base[state] + (u8) *str++;
-+			if (check[pos] == state)
-+				state = next[pos];
-+			else
-+				state = def[state];
++
++		if (error) {
++			aa_match_free(dfa);
++			dfa = ERR_PTR(error);
 +		}
 +	}
-+	return state;
++
++	return dfa;
++}
++
++static int aa_unpack_trans_table(struct aa_ext *e, struct aa_profile *profile)
++{
++	void *pos = e->pos;
++
++	/* exec table is optional */
++	if (unpack_nameX(e, AA_STRUCT, "xtable")) {
++		int i, size;
++
++		size = unpack_array(e, NULL);
++		/* currently 4 exec bits and entries 0-3 are reserved iupcx */
++		if (size > 16 - 4)
++			goto fail;
++		profile->file.trans.table = kzalloc(sizeof(char *) * size,
++						    GFP_KERNEL);
++		if (!profile->file.trans.table)
++			goto fail;
++
++		profile->file.trans.size = size;
++		for (i = 0; i < size; i++) {
++			char *tmp;
++			if (!unpack_dynstring(e, &tmp, NULL))
++				goto fail;
++			/*
++			 * note: strings beginning with a : have an embedded
++			 * \0 seperating the profile ns name from the profile
++			 * name
++			 */
++			profile->file.trans.table[i] = tmp;
++		}
++		if (!unpack_nameX(e, AA_ARRAYEND, NULL))
++			goto fail;
++		if (!unpack_nameX(e, AA_STRUCTEND, NULL))
++			goto fail;
++	}
++	return 1;
++
++fail:
++	if (profile->file.trans.table) {
++		int i;
++		for (i = 0; i < profile->file.trans.size; i++)
++			kfree(profile->file.trans.table[i]);
++	}
++	e->pos = pos;
++	return 0;
++}
++
++int aa_unpack_rlimits(struct aa_ext *e, struct aa_profile *profile)
++{
++	void *pos = e->pos;
++
++	/* rlimits are optional */
++	if (unpack_nameX(e, AA_STRUCT, "rlimits")) {
++		int i, size;
++		u32 tmp = 0;
++		if (!unpack_u32(e, &tmp, NULL))
++			goto fail;
++		profile->rlimits.mask = tmp;
++
++		size = unpack_array(e, NULL);
++		if (size > RLIM_NLIMITS)
++			goto fail;
++		for (i = 0; i < size; i++) {
++			u64 tmp = 0;
++			if (!unpack_u64(e, &tmp, NULL))
++				goto fail;
++			profile->rlimits.limits[i].rlim_max = tmp;
++		}
++		if (!unpack_nameX(e, AA_ARRAYEND, NULL))
++			goto fail;
++		if (!unpack_nameX(e, AA_STRUCTEND, NULL))
++			goto fail;
++	}
++	return 1;
++
++fail:
++	e->pos = pos;
++	return 0;
 +}
 +
 +/**
-+ * aa_dfa_next_state - traverse @dfa to find state @str stops at
-+ * @dfa: the dfa to match @str against
-+ * @start: the state of the dfa to start matching in
-+ * @str: the null terminated string of bytes to match against the dfa
-+ *
-+ * aa_dfa_next_state will match @str against the dfa and return the state it
-+ * finished matching in. The final state can be used to look up the accepting
-+ * label, or as the start state of a continuing match.
++ * aa_unpack_profile - unpack a serialized profile
++ * @e: serialized data extent information
++ * @sa: audit struct for the operation
 + */
-+unsigned int aa_dfa_match(struct aa_dfa *dfa, unsigned int start,
-+			  const char *str)
++static struct aa_profile *aa_unpack_profile(struct aa_ext *e,
++					    struct aa_audit_iface *sa)
 +{
-+	return aa_dfa_match_len(dfa, start, str, strlen(str));
++	struct aa_profile *profile = NULL;
++	char *name;
++	size_t size = 0;
++	int i, error = -EPROTO;
++	u32 tmp;
++	u64 tmp64;
++
++	/* check that we have the right struct being passed */
++	if (!unpack_nameX(e, AA_STRUCT, "profile"))
++		goto fail;
++	if (!unpack_string(e, &name, NULL))
++		goto fail;
++
++	profile = alloc_aa_profile(name);
++	if (!profile)
++		return ERR_PTR(-ENOMEM);
++
++	/* xmatch is optional and may be NULL */
++	profile->xmatch = aa_unpack_dfa(e);
++	if (IS_ERR(profile->xmatch)) {
++		error = PTR_ERR(profile->xmatch);
++		profile->xmatch = NULL;
++		goto fail;
++	}
++	/* xmatch_len is not optional is xmatch is set */
++	if (profile->xmatch && !unpack_u32(e, &tmp, NULL))
++		goto fail;
++	profile->xmatch_len = tmp;
++
++	/* per profile debug flags (complain, audit) */
++	if (!unpack_nameX(e, AA_STRUCT, "flags"))
++		goto fail;
++	if (!unpack_u32(e, &tmp, NULL))
++		goto fail;
++	if (tmp)
++		profile->flags |= PFLAG_HAT;
++	if (!unpack_u32(e, &tmp, NULL))
++		goto fail;
++	if (tmp)
++		profile->mode = APPARMOR_COMPLAIN;
++	if (!unpack_u32(e, &tmp, NULL))
++		goto fail;
++	if (tmp)
++		profile->audit = AUDIT_ALL;
++
++	if (!unpack_nameX(e, AA_STRUCTEND, NULL))
++		goto fail;
++
++	/* mmap_min_addr is optional */
++	if (unpack_u64(e, &tmp64, "mmap_min_addr")) {
++		profile->mmap_min_addr = (unsigned long)tmp64;
++		if (((u64) profile->mmap_min_addr) == tmp64) {
++			profile->flags |= PFLAG_MMAP_MIN_ADDR;
++		} else {
++			sa->base.info = "invalid set mmap_min_addr";
++			goto fail;
++		}
++	}
++
++	if (!unpack_u32(e, &(profile->caps.allowed.cap[0]), NULL))
++		goto fail;
++	if (!unpack_u32(e, &(profile->caps.audit.cap[0]), NULL))
++		goto fail;
++	if (!unpack_u32(e, &(profile->caps.quiet.cap[0]), NULL))
++		goto fail;
++	if (!unpack_u32(e, &(profile->caps.set.cap[0]), NULL))
++		goto fail;
++
++	if (unpack_nameX(e, AA_STRUCT, "caps64")) {
++		/* optional upper half of 64 bit caps */
++		if (!unpack_u32(e, &(profile->caps.allowed.cap[1]), NULL))
++			goto fail;
++		if (!unpack_u32(e, &(profile->caps.audit.cap[1]), NULL))
++			goto fail;
++		if (!unpack_u32(e, &(profile->caps.quiet.cap[1]), NULL))
++			goto fail;
++		if (!unpack_u32(e, &(profile->caps.set.cap[1]), NULL))
++			goto fail;
++		if (!unpack_nameX(e, AA_STRUCTEND, NULL))
++			goto fail;
++	}
++
++	if (!aa_unpack_rlimits(e, profile))
++		goto fail;
++
++	size = unpack_array(e, "net_allowed_af");
++	if (size) {
++		if (size > AF_MAX)
++			goto fail;
++
++		for (i = 0; i < size; i++) {
++			if (!unpack_u16(e, &profile->net.allowed[i], NULL))
++				goto fail;
++			if (!unpack_u16(e, &profile->net.audit[i], NULL))
++				goto fail;
++			if (!unpack_u16(e, &profile->net.quiet[i], NULL))
++				goto fail;
++		}
++		if (!unpack_nameX(e, AA_ARRAYEND, NULL))
++			goto fail;
++		/*
++		 * allow unix domain and netlink sockets they are handled
++		 * by IPC
++		 */
++	}
++	profile->net.allowed[AF_UNIX] = 0xffff;
++	profile->net.allowed[AF_NETLINK] = 0xffff;
++
++	/* get file rules */
++	profile->file.dfa = aa_unpack_dfa(e);
++	if (IS_ERR(profile->file.dfa)) {
++		error = PTR_ERR(profile->file.dfa);
++		profile->file.dfa = NULL;
++		goto fail;
++	}
++
++	if (!aa_unpack_trans_table(e, profile))
++		goto fail;
++
++	if (!unpack_nameX(e, AA_STRUCTEND, NULL))
++		goto fail;
++
++	return profile;
++
++fail:
++	sa->name = profile && profile->base.name ? profile->base.name :
++	    "unknown";
++	if (!sa->base.info)
++		sa->base.info = "failed to unpack profile";
++	aa_audit_iface(sa);
++
++	free_aa_profile(profile);
++
++	return ERR_PTR(error);
 +}
 +
 +/**
-+ * aa_dfa_null_transition - step to next state after null character
-+ * @dfa: the dfa to match against
-+ * @start: the state of the dfa to start matching in
++ * aa_verify_head - unpack serialized stream header
++ * @e: serialized data read head
++ * @operation: operation header is being verified for
 + *
-+ * aa_dfa_null_transition transitions to the next state after a null
-+ * character which is not used in standard matching and is only
-+ * used to seperate pairs.
++ * returns error or 0 if header is good
 + */
-+unsigned int aa_dfa_null_transition(struct aa_dfa *dfa, unsigned int start)
++static int aa_verify_header(struct aa_ext *e, struct aa_audit_iface *sa)
 +{
-+	return aa_dfa_match_len(dfa, start, "", 1);
++	/* get the interface version */
++	if (!unpack_u32(e, &e->version, "version")) {
++		sa->base.info = "invalid profile format";
++		aa_audit_iface(sa);
++		return -EPROTONOSUPPORT;
++	}
++
++	/* check that the interface version is currently supported */
++	if (e->version != 5) {
++		sa->base.info = "unsupported interface version";
++		aa_audit_iface(sa);
++		return -EPROTONOSUPPORT;
++	}
++
++	/* read the namespace if present */
++	if (!unpack_string(e, &sa->name2, "namespace"))
++		sa->name2 = NULL;
++
++	return 0;
++}
++
++/**
++ * aa_unpack - unpack packed binary profile data loaded from user space
++ * @udata: user data copied to kmem
++ * @size: the size of the user data
++ * @sa: audit struct for unpacking
++ *
++ * Unpack user data and return refcounted allocated profile or ERR_PTR
++ */
++struct aa_profile *aa_unpack(void *udata, size_t size,
++			     struct aa_audit_iface *sa)
++{
++	struct aa_profile *profile;
++	int error;
++	struct aa_ext e = {
++		.start = udata,
++		.end = udata + size,
++		.pos = udata,
++	};
++
++	error = aa_verify_header(&e, sa);
++	if (error)
++		return ERR_PTR(error);
++
++	profile = aa_unpack_profile(&e, sa);
++	if (IS_ERR(profile))
++		sa->pos = e.pos - e.start;
++	/* return refcount */
++	return profile;
 +}
 -- 
 1.6.3.3
