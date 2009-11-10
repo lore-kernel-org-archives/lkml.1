@@ -1,76 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbZKJPu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZKJPwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbZKJPu6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 10:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbZKJPu5
+	id S1756806AbZKJPwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 10:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZKJPwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 10:50:57 -0500
-Received: from smtp.outflux.net ([198.145.64.163]:34657 "EHLO smtp.outflux.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756690AbZKJPu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 10:50:57 -0500
-Date: Tue, 10 Nov 2009 07:49:56 -0800
-From: Kees Cook <kees.cook@canonical.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
-Message-ID: <20091110154956.GF5129@outflux.net>
-References: <4ADD1E03.4070200@zytor.com>
- <20091020045513.GU5394@outflux.net>
- <20091109221015.GB5129@outflux.net>
- <4AF8A2C0.5080700@zytor.com>
+	Tue, 10 Nov 2009 10:52:33 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:55990 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756791AbZKJPwa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 10:52:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=bBxEKgcWz48rVqgNWJ4yJUyb+zu/geGUzH9/PYwQngNsYXY3WqFh5zxnEyNrfEkgeY
+         RFPJ6ajU9Nfxe/txMf9EEr0uw/DMhowHPeKFfGLdNXWBxW/PDKmVdY8idmlCg8R7OEqx
+         E/rRC89x7JCSp2J1HoU6ADmu/PFfneItVXUVw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Mark Lord <liml@rtr.ca>
+Subject: Re: [PATCH] ata: Clean up hard coded array size calculation.
+Date: Tue, 10 Nov 2009 16:51:24 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Thiago Farina <tfransosi@gmail.com>, jgarzik@pobox.com, mlord@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1257708657-1232-1-git-send-email-tfransosi@gmail.com> <4AF8F363.3010806@rtr.ca>
+In-Reply-To: <4AF8F363.3010806@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF8A2C0.5080700@zytor.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+Message-Id: <200911101651.24912.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2009 at 03:16:16PM -0800, H. Peter Anvin wrote:
-> On 11/09/2009 02:10 PM, Kees Cook wrote:
-> > diff --git a/arch/x86/mm/setup_nx.c b/arch/x86/mm/setup_nx.c
-> > index 513d8ed..1b93231 100644
-> > --- a/arch/x86/mm/setup_nx.c
-> > +++ b/arch/x86/mm/setup_nx.c
-> > @@ -53,6 +53,9 @@ void __init set_nx(void)
-> >  #else
-> >  void set_nx(void)
-> >  {
-> > +	/* notice if _PAGE_NX exists and was removed during check_efer() */
-> > +	if (_PAGE_NX && ((__supported_pte_mask & _PAGE_NX) == _PAGE_NX))
-> > +		nx_enabled = 1;
-> >  }
-> >  #endif
+On Tuesday 10 November 2009 06:00:19 Mark Lord wrote:
+> Thiago Farina wrote:
+> > Use ARRAY_SIZE macro of kernel api instead.
+> > 
+> > Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+> > ---
+> >  drivers/ata/sata_mv.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+> > index 6f5093b..a8a7be0 100644
+> > --- a/drivers/ata/sata_mv.c
+> > +++ b/drivers/ata/sata_mv.c
+> > @@ -2217,7 +2217,7 @@ static unsigned int mv_qc_issue_fis(struct ata_queued_cmd *qc)
+> >  	int err = 0;
 > >  
+> >  	ata_tf_to_fis(&qc->tf, link->pmp, 1, (void *)fis);
+> > -	err = mv_send_fis(ap, fis, sizeof(fis) / sizeof(fis[0]));
+> > +	err = mv_send_fis(ap, fis, ARRAY_SIZE(fis));
+> >  	if (err)
+> >  		return err;
+> >  
+> ..
 > 
-> The second clause can only get executed if CONFIG_X86_PAE is unset,
-> which in turn means _PAGE_NX == 0... so that piece of code is meaningless.
+> What's the point of this ?
+> 
+> There is no "hardcoded array size" there to begin with,
+> and using that silly macro obscures the actual calculation.
+> 
+> So now, instead of being able to verify correctness at a glance,
 
-CONFIG_X86_PAE is unset for x86_64, where _PAGE_NX is valid.  (This was
-the main situation I was trying to address.)  So that chunk runs for
-non-pae 32bit, and all 64bit:
+I kindly disagree here.  ARRAY_SIZE makes code smaller and prevents
+subtle bugs in the more complex situations once you learn to always
+use it.
 
-config X86_PAE
-        bool "PAE (Physical Address Extension) Support"
-        depends on X86_32 && !HIGHMEM4G
+[ Using ARRAY_SIZE you no longer have to verify anything and person
+  looking at the code (which not necessarily is the original author)
+  immediately knows what was the author's intention. ]
 
-> It also looks to me that there is no message distinguishing the case
-> when nx_enabled == 1 but disable_nx == 1, and instead we say NX is
-> "active" when in fact it is disabled in the kernel.
+> I have to go off and research some silly macro and verify that
+> it does the right thing.
 
-That's true -- I had overlooked that part.  New patch on the way...
-
--Kees
+You did it already and the macro name is quite descriptive so you
+may as well just ACK the patch now.. ;)
 
 -- 
-Kees Cook
-Ubuntu Security Team
+Bartlomiej Zolnierkiewicz
