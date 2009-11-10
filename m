@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZKJQNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbZKJQNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbZKJQNg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 11:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbZKJQNd
+	id S1756986AbZKJQNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 11:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756963AbZKJQNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 11:13:33 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:59958 "EHLO
+	Tue, 10 Nov 2009 11:13:37 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:59999 "EHLO
 	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756828AbZKJQN1 (ORCPT
+	with ESMTP id S1756905AbZKJQNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 11:13:27 -0500
+	Tue, 10 Nov 2009 11:13:31 -0500
 From: John Johansen <john.johansen@canonical.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org,
        John Johansen <john.johansen@canonical.com>
-Subject: [PATCH 06/12] AppArmor: policy routines for loading and unpacking policy
-Date: Tue, 10 Nov 2009 08:12:59 -0800
-Message-Id: <1257869585-7092-7-git-send-email-john.johansen@canonical.com>
+Subject: [PATCH 07/12] AppArmor: userspace interfaces
+Date: Tue, 10 Nov 2009 08:13:00 -0800
+Message-Id: <1257869585-7092-8-git-send-email-john.johansen@canonical.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>
 References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>
@@ -24,70 +24,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AppArmor policy is loaded in a platform independent flattened binary
-stream.  Verify and unpack the data converting it to the internal
-format needed for enforcement.
+AppArmor /proc/<pid>/attr/* and apparmorfs interfaces to userspace.
 
-The current routines are compatible with older AppArmor policy.  There
-are several planned improvements, to reduce the amount of unpacking
-and unaligned accesses being done by moving to more aligned tables
-that can be shared similar to what is done currently with dfa tables.
+The /proc/<pid>/attr/* interface is used for process introspection and
+commands.  While the apparmorfs interface is used for global introspection
+and loading and removing policy.
+
+The current apparmorfs interface is compatible with previous versions
+of AppArmor.  The plans are to deprecate it (hence the config option
+APPARMOR_COMPAT_24) and replace it with a more sysfs style single
+entry per file interface.
 
 Signed-off-by: John Johansen <john.johansen@canonical.com>
 ---
- security/apparmor/include/policy_unpack.h |   30 ++
- security/apparmor/policy_unpack.c         |  602 +++++++++++++++++++++++++++++
- 2 files changed, 632 insertions(+), 0 deletions(-)
- create mode 100644 security/apparmor/include/policy_unpack.h
- create mode 100644 security/apparmor/policy_unpack.c
+ security/apparmor/apparmorfs-24.c      |  211 ++++++++++++++++++++++++++
+ security/apparmor/apparmorfs.c         |  260 ++++++++++++++++++++++++++++++++
+ security/apparmor/include/apparmorfs.h |   29 ++++
+ security/apparmor/include/procattr.h   |   26 +++
+ security/apparmor/procattr.c           |  114 ++++++++++++++
+ 5 files changed, 640 insertions(+), 0 deletions(-)
+ create mode 100644 security/apparmor/apparmorfs-24.c
+ create mode 100644 security/apparmor/apparmorfs.c
+ create mode 100644 security/apparmor/include/apparmorfs.h
+ create mode 100644 security/apparmor/include/procattr.h
+ create mode 100644 security/apparmor/procattr.c
 
-diff --git a/security/apparmor/include/policy_unpack.h b/security/apparmor/include/policy_unpack.h
+diff --git a/security/apparmor/apparmorfs-24.c b/security/apparmor/apparmorfs-24.c
 new file mode 100644
-index 0000000..1c02ce6
+index 0000000..02a3396
 --- /dev/null
-+++ b/security/apparmor/include/policy_unpack.h
-@@ -0,0 +1,30 @@
++++ b/security/apparmor/apparmorfs-24.c
+@@ -0,0 +1,211 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor policy loading interface function definitions.
-+ *
-+ * Copyright (C) 1998-2008 Novell/SUSE
-+ * Copyright 2009 Canonical Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ */
-+
-+#ifndef __POLICY_INTERFACE_H
-+#define __POLICY_INTERFACE_H
-+
-+struct aa_audit_iface {
-+	struct aa_audit base;
-+
-+	const char *name;
-+	const char *name2;
-+	long pos;
-+};
-+
-+int aa_audit_iface(struct aa_audit_iface *sa);
-+struct aa_profile *aa_unpack(void *udata, size_t size,
-+			     struct aa_audit_iface *sa);
-+
-+#endif /* __POLICY_INTERFACE_H */
-diff --git a/security/apparmor/policy_unpack.c b/security/apparmor/policy_unpack.c
-new file mode 100644
-index 0000000..9b64f21
---- /dev/null
-+++ b/security/apparmor/policy_unpack.c
-@@ -0,0 +1,602 @@
-+/*
-+ * AppArmor security module
-+ *
-+ * This file contains AppArmor functions for unpacking policy loaded from
-+ * userspace.
++ * This file contains AppArmor /sys/kernel/secrutiy/apparmor interface functions
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009 Canonical Ltd.
@@ -97,593 +68,656 @@ index 0000000..9b64f21
 + * published by the Free Software Foundation, version 2 of the
 + * License.
 + *
-+ * AppArmor uses a serialized binary format for loading policy.
-+ * The policy format is documented in Documentation/???
-+ * All policy is validated all before it is used.
++ *
++ * This file contain functions providing an interface for <= AppArmor 2.4
++ * compatibility.  It is dependent on CONFIG_SECURITY_APPARMOR_COMPAT_24
++ * being set (see Makefile).
 + */
 +
-+#include <asm/unaligned.h>
-+#include <linux/errno.h>
++#include <linux/security.h>
++#include <linux/vmalloc.h>
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <linux/uaccess.h>
++#include <linux/namei.h>
 +
 +#include "include/apparmor.h"
 +#include "include/audit.h"
 +#include "include/context.h"
-+#include "include/match.h"
 +#include "include/policy.h"
-+#include "include/policy_unpack.h"
-+#include "include/sid.h"
 +
-+/*
-+ * The AppArmor interface treats data as a type byte followed by the
-+ * actual data.  The interface has the notion of a a named entry
-+ * which has a name (AA_NAME typecode followed by name string) followed by
-+ * the entries typecode and data.  Named types allow for optional
-+ * elements and extensions to be added and tested for without breaking
-+ * backwards compatability.
++/**
++ * next_profile - step to the next profile to be output
++ * @profile: profile that was last output
++ *
++ * Perform a depth first traversal over profile tree.
++ *
++ * Returns: next profile or NULL if done
++ * Requires: ns_list_lock, and profile->ns->base.lock be held
++ *           will unlock profile->ns.base.lock and aquire lock for next ns
++ *           __releases(last ns lock);
 + */
-+
-+enum aa_code {
-+	AA_U8,
-+	AA_U16,
-+	AA_U32,
-+	AA_U64,
-+	AA_NAME,		/* same as string except it is items name */
-+	AA_STRING,
-+	AA_BLOB,
-+	AA_STRUCT,
-+	AA_STRUCTEND,
-+	AA_LIST,
-+	AA_LISTEND,
-+	AA_ARRAY,
-+	AA_ARRAYEND,
-+};
-+
-+/*
-+ * aa_ext is the read of the buffer containing the serialized profile.  The
-+ * data is copied into a kernel buffer in apparmorfs and then handed off to
-+ * the unpack routines.
-+ */
-+struct aa_ext {
-+	void *start;
-+	void *end;
-+	void *pos;		/* pointer to current position in the buffer */
-+	u32 version;
-+};
-+
-+static void audit_cb(struct audit_buffer *ab, void *va)
++static struct aa_profile *next_profile(struct aa_profile *profile)
 +{
-+	struct aa_audit_iface *sa = va;
++	struct aa_profile *parent;
++	struct aa_namespace *ns = profile->ns;
 +
-+	if (sa->name)
-+		audit_log_format(ab, " name=%s", sa->name);
-+	if (sa->name2)
-+		audit_log_format(ab, " namespace=%s", sa->name2);
-+	if (sa->base.error && sa->pos)
-+		audit_log_format(ab, " offset=%ld", sa->pos);
++	/* is next profile a child */
++	if (!list_empty(&profile->base.profiles))
++		return list_first_entry(&profile->base.profiles,
++					struct aa_profile, base.list);
++
++	/* is next a sibling, parent sibling, gp sibling */
++	parent = profile->parent;
++	while (parent) {
++		list_for_each_entry_continue(profile, &parent->base.profiles,
++					     base.list)
++			return profile;
++		profile = parent;
++		parent = parent->parent;
++	}
++
++	/* is next the another profile in the namespace */
++	list_for_each_entry_continue(profile, &ns->base.profiles, base.list)
++		return profile;
++
++	/* finished all profiles in namespace move to next namespace */
++	read_unlock(&ns->base.lock);
++	list_for_each_entry_continue(ns, &ns_list, base.list) {
++		read_lock(&ns->base.lock);
++		return list_first_entry(&ns->base.profiles, struct aa_profile,
++					base.list);
++	}
++
++	/* done all profiles */
++	return NULL;
 +}
 +
-+int aa_audit_iface(struct aa_audit_iface *sa)
++/**
++ * p_start - start a depth first traversal of profile tree
++ * @f: seq_file to fill
++ * @pos: current position
++ *
++ * acquires first ns->base.lock
++ */
++static void *p_start(struct seq_file *f, loff_t *pos) __acquires(ns_list_lock)
 +{
++	struct aa_namespace *ns;
++	loff_t l = *pos;
++
++	read_lock(&ns_list_lock);
++	if (!list_empty(&ns_list)) {
++		struct aa_profile *profile = NULL;
++		ns = list_first_entry(&ns_list, typeof(*ns), base.list);
++		read_lock(&ns->base.lock);
++		if (!list_empty(&ns->base.profiles)) {
++			profile = list_first_entry(&ns->base.profiles,
++						   typeof(*profile), base.list);
++			/* skip to position */
++			for (; profile && l > 0; l--)
++				profile = next_profile(profile);
++			return profile;
++		} else
++			read_unlock(&ns->base.lock);
++	}
++	return NULL;
++}
++
++static void *p_next(struct seq_file *f, void *p, loff_t *pos)
++{
++	struct aa_profile *profile = (struct aa_profile *)p;
++
++	(*pos)++;
++	profile = next_profile(profile);
++
++	return profile;
++}
++
++/**
++ * p_stop - stop depth first traversal
++ * @f: seq_file we are filling
++ * @p: the last profile writen
++ *
++ * if we haven't completely traversed the profile tree will release the
++ * ns->base.lock, if we have the ns->base.lock was released in next_profile
++ */
++static void p_stop(struct seq_file *f, void *p) __releases(ns_list_lock)
++{
++	struct aa_profile *profile = (struct aa_profile *)p;
++
++	if (profile)
++		read_unlock(&profile->ns->base.lock);
++	read_unlock(&ns_list_lock);
++}
++
++static void print_name(struct seq_file *f, struct aa_profile *profile)
++{
++	if (profile->parent) {
++		print_name(f, profile->parent);
++		seq_printf(f, "//");
++	}
++	seq_printf(f, "%s", profile->base.name);
++}
++
++static int seq_show_profile(struct seq_file *f, void *p)
++{
++	struct aa_profile *profile = (struct aa_profile *)p;
++
++	if (profile->ns != default_namespace)
++		seq_printf(f, ":%s:", profile->ns->base.name);
++	print_name(f, profile);
++	seq_printf(f, " (%s)\n",
++		   PROFILE_COMPLAIN(profile) ? "complain" : "enforce");
++
++	return 0;
++}
++
++/* Used in apparmorfs.c */
++static const struct seq_operations aa_fs_profiles_op = {
++	.start = p_start,
++	.next = p_next,
++	.stop = p_stop,
++	.show = seq_show_profile,
++};
++
++static int aa_profiles_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &aa_fs_profiles_op);
++}
++
++static int aa_profiles_release(struct inode *inode, struct file *file)
++{
++	return seq_release(inode, file);
++}
++
++const struct file_operations aa_fs_profiles_fops = {
++	.open = aa_profiles_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = aa_profiles_release,
++};
++
++/* apparmor/matching */
++static ssize_t aa_matching_read(struct file *file, char __user *buf,
++				size_t size, loff_t *ppos)
++{
++	const char matching[] = "pattern=aadfa audit perms=crwxamlk/ "
++	    "user::other";
++
++	return simple_read_from_buffer(buf, size, ppos, matching,
++				       sizeof(matching) - 1);
++}
++
++const struct file_operations aa_fs_matching_fops = {
++	.read = aa_matching_read,
++};
++
++/* apparmor/features */
++static ssize_t aa_features_read(struct file *file, char __user *buf,
++				size_t size, loff_t *ppos)
++{
++	const char features[] = "file=3.1 capability=2.0 network=1.0 "
++	    "change_hat=1.5 change_profile=1.1 " "aanamespaces=1.1 rlimit=1.1";
++
++	return simple_read_from_buffer(buf, size, ppos, features,
++				       sizeof(features) - 1);
++}
++
++const struct file_operations aa_fs_features_fops = {
++	.read = aa_features_read,
++};
+diff --git a/security/apparmor/apparmorfs.c b/security/apparmor/apparmorfs.c
+new file mode 100644
+index 0000000..8aa1c48
+--- /dev/null
++++ b/security/apparmor/apparmorfs.c
+@@ -0,0 +1,260 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains AppArmor /sys/kernel/security/apparmor interface functions
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#include <linux/security.h>
++#include <linux/vmalloc.h>
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <linux/uaccess.h>
++#include <linux/namei.h>
++
++#include "include/apparmor.h"
++#include "include/apparmorfs.h"
++#include "include/audit.h"
++#include "include/context.h"
++#include "include/policy.h"
++
++static char *aa_simple_write_to_buffer(const char __user *userbuf,
++				       size_t alloc_size, size_t copy_size,
++				       loff_t *pos, const char *operation)
++{
++	const struct cred *cred;
 +	struct aa_profile *profile;
-+	struct cred *cred = aa_get_task_policy(current, &profile);
-+	int error = aa_audit(AUDIT_APPARMOR_STATUS, profile, &sa->base,
-+			     audit_cb);
-+	put_cred(cred);
++	char *data;
++
++	if (*pos != 0) {
++		/* only writes from pos 0, that is complete writes */
++		data = ERR_PTR(-ESPIPE);
++		goto out;
++	}
++
++	/*
++	 * Don't allow confined processes to load/replace/remove profiles.
++	 * No sane person would add rules allowing this to a profile
++	 * but we enforce the restriction anyways.
++	 */
++	cred = aa_current_policy(&profile);
++	if (profile) {
++		struct aa_audit sa = {
++			.operation = operation,
++			.gfp_mask = GFP_KERNEL,
++			.error = -EACCES,
++		};
++		data = ERR_PTR(aa_audit(AUDIT_APPARMOR_DENIED, profile, &sa,
++					NULL));
++		goto out;
++	}
++
++	/* freed by caller to aa_simple_write_to_buffer */
++	data = vmalloc(alloc_size);
++	if (data == NULL) {
++		data = ERR_PTR(-ENOMEM);
++		goto out;
++	}
++
++	if (copy_from_user(data, userbuf, copy_size)) {
++		vfree(data);
++		data = ERR_PTR(-EFAULT);
++		goto out;
++	}
++
++out:
++	return data;
++}
++
++/* apparmor/.load */
++static ssize_t aa_profile_load(struct file *f, const char __user *buf,
++			       size_t size, loff_t *pos)
++{
++	char *data;
++	ssize_t error;
++
++	data = aa_simple_write_to_buffer(buf, size, size, pos, "profile_load");
++
++	error = PTR_ERR(data);
++	if (!IS_ERR(data)) {
++		error = aa_interface_add_profiles(data, size);
++		vfree(data);
++	}
++
 +	return error;
 +}
 +
-+static int aa_inbounds(struct aa_ext *e, size_t size)
++static const struct file_operations aa_fs_profile_load = {
++	.write = aa_profile_load
++};
++
++/* apparmor/.replace */
++static ssize_t aa_profile_replace(struct file *f, const char __user *buf,
++				  size_t size, loff_t *pos)
 +{
-+	return (size <= e->end - e->pos);
++	char *data;
++	ssize_t error;
++
++	data = aa_simple_write_to_buffer(buf, size, size, pos,
++					 "profile_replace");
++	error = PTR_ERR(data);
++	if (!IS_ERR(data)) {
++		error = aa_interface_replace_profiles(data, size);
++		vfree(data);
++	}
++
++	return error;
 +}
 +
-+/**
-+ * aa_u16_chunck - test and do bounds checking for a u16 size based chunk
-+ * @e: serialized data read head
-+ * @chunk: start address for chunk of data
-+ *
-+ * return the size of chunk found with the read head at the end of
-+ * the chunk.
-+ */
-+static size_t unpack_u16_chunk(struct aa_ext *e, char **chunk)
-+{
-+	size_t size = 0;
++static const struct file_operations aa_fs_profile_replace = {
++	.write = aa_profile_replace
++};
 +
-+	if (!aa_inbounds(e, sizeof(u16)))
-+		return 0;
-+	size = le16_to_cpu(get_unaligned((u16 *) e->pos));
-+	e->pos += sizeof(u16);
-+	if (!aa_inbounds(e, size))
-+		return 0;
-+	*chunk = e->pos;
-+	e->pos += size;
-+	return size;
-+}
-+
-+static int unpack_X(struct aa_ext *e, enum aa_code code)
++/* apparmor/.remove */
++static ssize_t aa_profile_remove(struct file *f, const char __user *buf,
++				 size_t size, loff_t *pos)
 +{
-+	if (!aa_inbounds(e, 1))
-+		return 0;
-+	if (*(u8 *) e->pos != code)
-+		return 0;
-+	e->pos++;
-+	return 1;
-+}
++	char *data;
++	ssize_t error;
 +
-+/**
-+ * unpack_nameX - check is the next element is of type X with a name of @name
-+ * @e: serialized data extent information
-+ * @code: type code
-+ * @name: name to match to the serialized element.
-+ *
-+ * check that the next serialized data element is of type X and has a tag
-+ * name @name.  If @name is specified then there must be a matching
-+ * name element in the stream.  If @name is NULL any name element will be
-+ * skipped and only the typecode will be tested.
-+ * returns 1 on success (both type code and name tests match) and the read
-+ * head is advanced past the headers
-+ * returns %0 if either match failes, the read head does not move
-+ */
-+static int unpack_nameX(struct aa_ext *e, enum aa_code code, const char *name)
-+{
 +	/*
-+	 * May need to rest pos if name or type doesn't match, could be
-+	 * an optional component.
++	 * aa_remove_profile needs a null terminated string so 1 extra
++	 * byte is allocated and the copied data is null terminated.
 +	 */
-+	void *pos = e->pos;
-+	/*
-+	 * Check for presence of a tagname, and if present name size
-+	 * AA_NAME tag value is a u16.
-+	 */
-+	if (unpack_X(e, AA_NAME)) {
-+		char *tag = NULL;
-+		size_t size = unpack_u16_chunk(e, &tag);
-+		/* if a name is specified it must match. otherwise skip tag */
-+		if (name && (!size || strcmp(name, tag)))
-+			goto fail;
-+	} else if (name) {
-+		/* if a name is specified and there is no name tag fail */
-+		goto fail;
++	data = aa_simple_write_to_buffer(buf, size + 1, size, pos,
++					 "profile_remove");
++
++	error = PTR_ERR(data);
++	if (!IS_ERR(data)) {
++		data[size] = 0;
++		error = aa_interface_remove_profiles(data, size);
++		vfree(data);
 +	}
 +
-+	/* now check if type code matches */
-+	if (unpack_X(e, code))
-+		return 1;
-+
-+fail:
-+	e->pos = pos;
-+	return 0;
++	return error;
 +}
 +
-+static int unpack_u16(struct aa_ext *e, u16 *data, const char *name)
++static const struct file_operations aa_fs_profile_remove = {
++	.write = aa_profile_remove
++};
++
++static struct dentry *aa_fs_dentry;
++struct dentry *aa_fs_null;
++struct vfsmount *aa_fs_mnt;
++
++static void aafs_remove(const char *name)
 +{
-+	if (unpack_nameX(e, AA_U16, name)) {
-+		if (!aa_inbounds(e, sizeof(u16)))
-+			return 0;
-+		if (data)
-+			*data = le16_to_cpu(get_unaligned((u16 *) e->pos));
-+		e->pos += sizeof(u16);
-+		return 1;
++	struct dentry *dentry;
++
++	dentry = lookup_one_len(name, aa_fs_dentry, strlen(name));
++	if (!IS_ERR(dentry)) {
++		securityfs_remove(dentry);
++		dput(dentry);
 +	}
-+	return 0;
-+}
-+
-+static int unpack_u32(struct aa_ext *e, u32 *data, const char *name)
-+{
-+	if (unpack_nameX(e, AA_U32, name)) {
-+		if (!aa_inbounds(e, sizeof(u32)))
-+			return 0;
-+		if (data)
-+			*data = le32_to_cpu(get_unaligned((u32 *) e->pos));
-+		e->pos += sizeof(u32);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static int unpack_u64(struct aa_ext *e, u64 *data, const char *name)
-+{
-+	if (unpack_nameX(e, AA_U64, name)) {
-+		if (!aa_inbounds(e, sizeof(u64)))
-+			return 0;
-+		if (data)
-+			*data = le64_to_cpu(get_unaligned((u64 *) e->pos));
-+		e->pos += sizeof(u64);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static size_t unpack_array(struct aa_ext *e, const char *name)
-+{
-+	if (unpack_nameX(e, AA_ARRAY, name)) {
-+		int size;
-+		if (!aa_inbounds(e, sizeof(u16)))
-+			return 0;
-+		size = (int)le16_to_cpu(get_unaligned((u16 *) e->pos));
-+		e->pos += sizeof(u16);
-+		return size;
-+	}
-+	return 0;
-+}
-+
-+static size_t unpack_blob(struct aa_ext *e, char **blob, const char *name)
-+{
-+	if (unpack_nameX(e, AA_BLOB, name)) {
-+		u32 size;
-+		if (!aa_inbounds(e, sizeof(u32)))
-+			return 0;
-+		size = le32_to_cpu(get_unaligned((u32 *) e->pos));
-+		e->pos += sizeof(u32);
-+		if (aa_inbounds(e, (size_t) size)) {
-+			*blob = e->pos;
-+			e->pos += size;
-+			return size;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int unpack_string(struct aa_ext *e, char **string, const char *name)
-+{
-+	char *src_str;
-+	size_t size = 0;
-+	void *pos = e->pos;
-+	*string = NULL;
-+	if (unpack_nameX(e, AA_STRING, name)) {
-+		size = unpack_u16_chunk(e, &src_str);
-+		if (size) {
-+			/* strings are null terminated, length is size - 1 */
-+			if (src_str[size - 1] != 0)
-+				goto fail;
-+			*string = src_str;
-+		}
-+	}
-+	return size;
-+
-+fail:
-+	e->pos = pos;
-+	return 0;
-+}
-+
-+static int unpack_dynstring(struct aa_ext *e, char **string, const char *name)
-+{
-+	char *tmp;
-+	void *pos = e->pos;
-+	int res = unpack_string(e, &tmp, name);
-+	*string = NULL;
-+
-+	if (!res)
-+		return 0;
-+
-+	*string = kstrdup(tmp, GFP_KERNEL);
-+	if (!*string) {
-+		e->pos = pos;
-+		return 0;
-+	}
-+
-+	return res;
 +}
 +
 +/**
-+ * aa_unpack_dfa - unpack a file rule dfa
-+ * @e: serialized data extent information
++ * aafs_create - create an entry in the apparmor filesystem
++ * @name: name of the entry
++ * @mask: file permission mask of the file
++ * @fops: file operations for the file
 + *
-+ * returns dfa or ERR_PTR
++ * Used aafs_remove to remove entries created with this fn.
 + */
-+static struct aa_dfa *aa_unpack_dfa(struct aa_ext *e)
++static int aafs_create(const char *name, int mask,
++		       const struct file_operations *fops)
 +{
-+	char *blob = NULL;
-+	size_t size, error = 0;
-+	struct aa_dfa *dfa = NULL;
++	struct dentry *dentry;
 +
-+	size = unpack_blob(e, &blob, "aadfa");
-+	if (size) {
-+		dfa = aa_match_alloc();
-+		if (dfa) {
-+			/*
-+			 * The dfa is aligned with in the blob to 8 bytes
-+			 * from the beginning of the stream.
-+			 */
-+			size_t sz = blob - (char *)e->start;
-+			size_t pad = ALIGN(sz, 8) - sz;
-+			error = unpack_dfa(dfa, blob + pad, size - pad);
-+			if (!error)
-+				error = verify_dfa(dfa);
-+		} else {
-+			error = -ENOMEM;
-+		}
++	dentry = securityfs_create_file(name, S_IFREG | mask, aa_fs_dentry,
++					NULL, fops);
 +
-+		if (error) {
-+			aa_match_free(dfa);
-+			dfa = ERR_PTR(error);
-+		}
-+	}
-+
-+	return dfa;
-+}
-+
-+static int aa_unpack_trans_table(struct aa_ext *e, struct aa_profile *profile)
-+{
-+	void *pos = e->pos;
-+
-+	/* exec table is optional */
-+	if (unpack_nameX(e, AA_STRUCT, "xtable")) {
-+		int i, size;
-+
-+		size = unpack_array(e, NULL);
-+		/* currently 4 exec bits and entries 0-3 are reserved iupcx */
-+		if (size > 16 - 4)
-+			goto fail;
-+		profile->file.trans.table = kzalloc(sizeof(char *) * size,
-+						    GFP_KERNEL);
-+		if (!profile->file.trans.table)
-+			goto fail;
-+
-+		profile->file.trans.size = size;
-+		for (i = 0; i < size; i++) {
-+			char *tmp;
-+			if (!unpack_dynstring(e, &tmp, NULL))
-+				goto fail;
-+			/*
-+			 * note: strings beginning with a : have an embedded
-+			 * \0 seperating the profile ns name from the profile
-+			 * name
-+			 */
-+			profile->file.trans.table[i] = tmp;
-+		}
-+		if (!unpack_nameX(e, AA_ARRAYEND, NULL))
-+			goto fail;
-+		if (!unpack_nameX(e, AA_STRUCTEND, NULL))
-+			goto fail;
-+	}
-+	return 1;
-+
-+fail:
-+	if (profile->file.trans.table) {
-+		int i;
-+		for (i = 0; i < profile->file.trans.size; i++)
-+			kfree(profile->file.trans.table[i]);
-+	}
-+	e->pos = pos;
-+	return 0;
-+}
-+
-+int aa_unpack_rlimits(struct aa_ext *e, struct aa_profile *profile)
-+{
-+	void *pos = e->pos;
-+
-+	/* rlimits are optional */
-+	if (unpack_nameX(e, AA_STRUCT, "rlimits")) {
-+		int i, size;
-+		u32 tmp = 0;
-+		if (!unpack_u32(e, &tmp, NULL))
-+			goto fail;
-+		profile->rlimits.mask = tmp;
-+
-+		size = unpack_array(e, NULL);
-+		if (size > RLIM_NLIMITS)
-+			goto fail;
-+		for (i = 0; i < size; i++) {
-+			u64 tmp = 0;
-+			if (!unpack_u64(e, &tmp, NULL))
-+				goto fail;
-+			profile->rlimits.limits[i].rlim_max = tmp;
-+		}
-+		if (!unpack_nameX(e, AA_ARRAYEND, NULL))
-+			goto fail;
-+		if (!unpack_nameX(e, AA_STRUCTEND, NULL))
-+			goto fail;
-+	}
-+	return 1;
-+
-+fail:
-+	e->pos = pos;
-+	return 0;
++	return IS_ERR(dentry) ? PTR_ERR(dentry) : 0;
 +}
 +
 +/**
-+ * aa_unpack_profile - unpack a serialized profile
-+ * @e: serialized data extent information
-+ * @sa: audit struct for the operation
-+ */
-+static struct aa_profile *aa_unpack_profile(struct aa_ext *e,
-+					    struct aa_audit_iface *sa)
-+{
-+	struct aa_profile *profile = NULL;
-+	char *name;
-+	size_t size = 0;
-+	int i, error = -EPROTO;
-+	u32 tmp;
-+	u64 tmp64;
-+
-+	/* check that we have the right struct being passed */
-+	if (!unpack_nameX(e, AA_STRUCT, "profile"))
-+		goto fail;
-+	if (!unpack_string(e, &name, NULL))
-+		goto fail;
-+
-+	profile = alloc_aa_profile(name);
-+	if (!profile)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/* xmatch is optional and may be NULL */
-+	profile->xmatch = aa_unpack_dfa(e);
-+	if (IS_ERR(profile->xmatch)) {
-+		error = PTR_ERR(profile->xmatch);
-+		profile->xmatch = NULL;
-+		goto fail;
-+	}
-+	/* xmatch_len is not optional is xmatch is set */
-+	if (profile->xmatch && !unpack_u32(e, &tmp, NULL))
-+		goto fail;
-+	profile->xmatch_len = tmp;
-+
-+	/* per profile debug flags (complain, audit) */
-+	if (!unpack_nameX(e, AA_STRUCT, "flags"))
-+		goto fail;
-+	if (!unpack_u32(e, &tmp, NULL))
-+		goto fail;
-+	if (tmp)
-+		profile->flags |= PFLAG_HAT;
-+	if (!unpack_u32(e, &tmp, NULL))
-+		goto fail;
-+	if (tmp)
-+		profile->mode = APPARMOR_COMPLAIN;
-+	if (!unpack_u32(e, &tmp, NULL))
-+		goto fail;
-+	if (tmp)
-+		profile->audit = AUDIT_ALL;
-+
-+	if (!unpack_nameX(e, AA_STRUCTEND, NULL))
-+		goto fail;
-+
-+	/* mmap_min_addr is optional */
-+	if (unpack_u64(e, &tmp64, "mmap_min_addr")) {
-+		profile->mmap_min_addr = (unsigned long)tmp64;
-+		if (((u64) profile->mmap_min_addr) == tmp64) {
-+			profile->flags |= PFLAG_MMAP_MIN_ADDR;
-+		} else {
-+			sa->base.info = "invalid set mmap_min_addr";
-+			goto fail;
-+		}
-+	}
-+
-+	if (!unpack_u32(e, &(profile->caps.allowed.cap[0]), NULL))
-+		goto fail;
-+	if (!unpack_u32(e, &(profile->caps.audit.cap[0]), NULL))
-+		goto fail;
-+	if (!unpack_u32(e, &(profile->caps.quiet.cap[0]), NULL))
-+		goto fail;
-+	if (!unpack_u32(e, &(profile->caps.set.cap[0]), NULL))
-+		goto fail;
-+
-+	if (unpack_nameX(e, AA_STRUCT, "caps64")) {
-+		/* optional upper half of 64 bit caps */
-+		if (!unpack_u32(e, &(profile->caps.allowed.cap[1]), NULL))
-+			goto fail;
-+		if (!unpack_u32(e, &(profile->caps.audit.cap[1]), NULL))
-+			goto fail;
-+		if (!unpack_u32(e, &(profile->caps.quiet.cap[1]), NULL))
-+			goto fail;
-+		if (!unpack_u32(e, &(profile->caps.set.cap[1]), NULL))
-+			goto fail;
-+		if (!unpack_nameX(e, AA_STRUCTEND, NULL))
-+			goto fail;
-+	}
-+
-+	if (!aa_unpack_rlimits(e, profile))
-+		goto fail;
-+
-+	size = unpack_array(e, "net_allowed_af");
-+	if (size) {
-+		if (size > AF_MAX)
-+			goto fail;
-+
-+		for (i = 0; i < size; i++) {
-+			if (!unpack_u16(e, &profile->net.allowed[i], NULL))
-+				goto fail;
-+			if (!unpack_u16(e, &profile->net.audit[i], NULL))
-+				goto fail;
-+			if (!unpack_u16(e, &profile->net.quiet[i], NULL))
-+				goto fail;
-+		}
-+		if (!unpack_nameX(e, AA_ARRAYEND, NULL))
-+			goto fail;
-+		/*
-+		 * allow unix domain and netlink sockets they are handled
-+		 * by IPC
-+		 */
-+	}
-+	profile->net.allowed[AF_UNIX] = 0xffff;
-+	profile->net.allowed[AF_NETLINK] = 0xffff;
-+
-+	/* get file rules */
-+	profile->file.dfa = aa_unpack_dfa(e);
-+	if (IS_ERR(profile->file.dfa)) {
-+		error = PTR_ERR(profile->file.dfa);
-+		profile->file.dfa = NULL;
-+		goto fail;
-+	}
-+
-+	if (!aa_unpack_trans_table(e, profile))
-+		goto fail;
-+
-+	if (!unpack_nameX(e, AA_STRUCTEND, NULL))
-+		goto fail;
-+
-+	return profile;
-+
-+fail:
-+	sa->name = profile && profile->base.name ? profile->base.name :
-+	    "unknown";
-+	if (!sa->base.info)
-+		sa->base.info = "failed to unpack profile";
-+	aa_audit_iface(sa);
-+
-+	free_aa_profile(profile);
-+
-+	return ERR_PTR(error);
-+}
-+
-+/**
-+ * aa_verify_head - unpack serialized stream header
-+ * @e: serialized data read head
-+ * @operation: operation header is being verified for
++ * aa_destroy_aafs - cleanup and free aafs
 + *
-+ * returns error or 0 if header is good
++ * releases dentries allocated by aa_create_aafs
 + */
-+static int aa_verify_header(struct aa_ext *e, struct aa_audit_iface *sa)
++void aa_destroy_aafs(void)
 +{
-+	/* get the interface version */
-+	if (!unpack_u32(e, &e->version, "version")) {
-+		sa->base.info = "invalid profile format";
-+		aa_audit_iface(sa);
-+		return -EPROTONOSUPPORT;
++	if (aa_fs_dentry) {
++		aafs_remove(".remove");
++		aafs_remove(".replace");
++		aafs_remove(".load");
++#ifdef CONFIG_SECURITY_APPARMOR_COMPAT_24
++		aafs_remove("matching");
++		aafs_remove("features");
++		aafs_remove("profiles");
++#endif
++		securityfs_remove(aa_fs_dentry);
++		aa_fs_dentry = NULL;
 +	}
-+
-+	/* check that the interface version is currently supported */
-+	if (e->version != 5) {
-+		sa->base.info = "unsupported interface version";
-+		aa_audit_iface(sa);
-+		return -EPROTONOSUPPORT;
-+	}
-+
-+	/* read the namespace if present */
-+	if (!unpack_string(e, &sa->name2, "namespace"))
-+		sa->name2 = NULL;
-+
-+	return 0;
 +}
 +
 +/**
-+ * aa_unpack - unpack packed binary profile data loaded from user space
-+ * @udata: user data copied to kmem
-+ * @size: the size of the user data
-+ * @sa: audit struct for unpacking
++ * aa_create_aafs - create the apparmor security filesystem
 + *
-+ * Unpack user data and return refcounted allocated profile or ERR_PTR
++ * dentries created here are released by aa_destroy_aafs
 + */
-+struct aa_profile *aa_unpack(void *udata, size_t size,
-+			     struct aa_audit_iface *sa)
++int aa_create_aafs(void)
 +{
-+	struct aa_profile *profile;
 +	int error;
-+	struct aa_ext e = {
-+		.start = udata,
-+		.end = udata + size,
-+		.pos = udata,
-+	};
 +
-+	error = aa_verify_header(&e, sa);
++	if (!apparmor_initialized)
++		return 0;
++
++	if (aa_fs_dentry) {
++		AA_ERROR("%s: AppArmor securityfs already exists\n", __func__);
++		return -EEXIST;
++	}
++
++	aa_fs_dentry = securityfs_create_dir("apparmor", NULL);
++	if (IS_ERR(aa_fs_dentry)) {
++		error = PTR_ERR(aa_fs_dentry);
++		aa_fs_dentry = NULL;
++		goto error;
++	}
++#ifdef CONFIG_SECURITY_APPARMOR_COMPAT_24
++	error = aafs_create("profiles", 0440, &aa_fs_profiles_fops);
 +	if (error)
-+		return ERR_PTR(error);
++		goto error;
++	error = aafs_create("matching", 0444, &aa_fs_matching_fops);
++	if (error)
++		goto error;
++	error = aafs_create("features", 0444, &aa_fs_features_fops);
++	if (error)
++		goto error;
++#endif
++	error = aafs_create(".load", 0640, &aa_fs_profile_load);
++	if (error)
++		goto error;
++	error = aafs_create(".replace", 0640, &aa_fs_profile_replace);
++	if (error)
++		goto error;
++	error = aafs_create(".remove", 0640, &aa_fs_profile_remove);
++	if (error)
++		goto error;
 +
-+	profile = aa_unpack_profile(&e, sa);
-+	if (IS_ERR(profile))
-+		sa->pos = e.pos - e.start;
-+	/* return refcount */
-+	return profile;
++	/* TODO: add support for apparmorfs_null and apparmorfs_mnt */
++
++	/* Report that AppArmor fs is enabled */
++	aa_info_message("AppArmor Filesystem Enabled");
++	return 0;
++
++error:
++	aa_destroy_aafs();
++	AA_ERROR("Error creating AppArmor securityfs\n");
++	apparmor_disable();
++	return error;
++}
++
++fs_initcall(aa_create_aafs);
+diff --git a/security/apparmor/include/apparmorfs.h b/security/apparmor/include/apparmorfs.h
+new file mode 100644
+index 0000000..177b35b
+--- /dev/null
++++ b/security/apparmor/include/apparmorfs.h
+@@ -0,0 +1,29 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains AppArmor filesystem definitions.
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#ifndef __AA_APPARMORFS_H
++#define __AA_APPARMORFS_H
++
++extern struct dentry *aa_fs_null;
++extern struct vfsmount *aa_fs_mnt;
++
++extern void aa_destroy_aafs(void);
++
++#ifdef CONFIG_SECURITY_APPARMOR_COMPAT_24
++extern const struct file_operations aa_fs_profiles_fops;
++extern const struct file_operations aa_fs_matching_fops;
++extern const struct file_operations aa_fs_features_fops;
++#endif
++
++#endif /* __AA_APPARMORFS_H */
+diff --git a/security/apparmor/include/procattr.h b/security/apparmor/include/procattr.h
+new file mode 100644
+index 0000000..70f4c8a
+--- /dev/null
++++ b/security/apparmor/include/procattr.h
+@@ -0,0 +1,26 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains AppArmor /proc/<pid>/attr/ interface function defintions.
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#ifndef __AA_PROCATTR_H
++#define __AA_PROCATTR_H
++
++#define AA_DO_TEST 1
++
++int aa_getprocattr(struct aa_namespace *ns, struct aa_profile *profile,
++		   char **string);
++int aa_setprocattr_changehat(char *args, int test);
++int aa_setprocattr_changeprofile(char *args, int onexec, int test);
++int aa_setprocattr_permipc(char *args);
++
++#endif /* __AA_PROCATTR_H */
+diff --git a/security/apparmor/procattr.c b/security/apparmor/procattr.c
+new file mode 100644
+index 0000000..cba407a
+--- /dev/null
++++ b/security/apparmor/procattr.c
+@@ -0,0 +1,114 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains AppArmor /proc/<pid>/attr/ interface functions
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#include "include/apparmor.h"
++#include "include/policy.h"
++#include "include/domain.h"
++
++int aa_getprocattr(struct aa_namespace *ns, struct aa_profile *profile,
++		   char **string)
++{
++	char *str;
++	int len = 0;
++
++	if (profile) {
++		int mode_len, name_len, ns_len = 0;
++		const char *mode_str = profile_mode_names[profile->mode];
++		char *s;
++
++		mode_len = strlen(mode_str) + 3;	/* + 3 for _() */
++		name_len = strlen(profile->fqname);
++		if (ns != default_namespace)
++			ns_len = strlen(ns->base.name) + 3; /*+ 3 for :// */
++		len = mode_len + ns_len + name_len + 1;	    /*+ 1 for \n */
++		s = str = kmalloc(len + 1, GFP_ATOMIC);	    /* + 1 \0 */
++		if (!str)
++			return -ENOMEM;
++
++		if (ns_len) {
++			sprintf(s, "%s://", ns->base.name);
++			s += ns_len;
++		}
++		sprintf(s, "%s (%s)\n",profile->fqname, mode_str);
++	} else {
++		const char unconfined_str[] = "unconfined\n";
++
++		len = sizeof(unconfined_str) - 1;	/* - 1 for \0 */
++		if (ns != default_namespace)
++			len += strlen(ns->base.name) + 3; /* + 3 for :// */
++
++		str = kmalloc(len + 1, GFP_ATOMIC);
++		if (!str)
++			return -ENOMEM;
++
++		if (ns != default_namespace)
++			sprintf(str, "%s://%s", ns->base.name, unconfined_str);
++		else
++			memcpy(str, unconfined_str, len);
++	}
++	*string = str;
++
++	/* NOTE: len does not include \0 of string, not saved as part of file */
++	return len;
++}
++
++static char *split_token_from_name(const char *op, char *args, u64 * token)
++{
++	char *name;
++
++	*token = simple_strtoull(args, &name, 16);
++	if ((name == args) || *name != '^') {
++		AA_ERROR("%s: Invalid input '%s'", op, args);
++		return ERR_PTR(-EINVAL);
++	}
++
++	name++;			/* skip ^ */
++	if (!*name)
++		name = NULL;
++	return name;
++}
++
++int aa_setprocattr_changehat(char *args, int test)
++{
++	char *hat;
++	u64 token;
++
++	hat = split_token_from_name("change_hat", args, &token);
++	if (IS_ERR(hat))
++		return PTR_ERR(hat);
++
++	if (!hat && !token) {
++		AA_ERROR("change_hat: Invalid input, NULL hat and NULL magic");
++		return -EINVAL;
++	}
++
++	AA_DEBUG("%s: Magic 0x%llx Hat '%s'\n",
++		 __func__, token, hat ? hat : NULL);
++
++	return aa_change_hat(hat, token, test);
++}
++
++int aa_setprocattr_changeprofile(char *args, int onexec, int test)
++{
++	char *name, *ns_name;
++
++	name = aa_split_name_from_ns(args, &ns_name);
++	return aa_change_profile(ns_name, name, onexec, test);
++}
++
++int aa_setprocattr_permipc(char *args)
++{
++	/* TODO: add ipc permission querying */
++	return -ENOTSUPP;
 +}
 -- 
 1.6.3.3
