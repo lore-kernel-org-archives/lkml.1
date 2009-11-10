@@ -1,222 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbZKJOSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbZKJO3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbZKJOSa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 09:18:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbZKJOS3
+	id S1756456AbZKJO3t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 09:29:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756393AbZKJO3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 09:18:29 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:61913 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbZKJOS2 (ORCPT
+	Tue, 10 Nov 2009 09:29:49 -0500
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:56621 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756390AbZKJO3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 09:18:28 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] net/compat: fix dev_ifsioc emulation corner cases
-Date: Tue, 10 Nov 2009 15:18:20 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Patrick Ohly <patrick.ohly@intel.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Tue, 10 Nov 2009 09:29:48 -0500
+Subject: Re: [RFC] new -stable tag variant, Git workflow question
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20091110041452.GA25575@suse.de>
+References: <20091110034831.GB26809@elte.hu>
+	 <20091110041452.GA25575@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 10 Nov 2009 09:29:48 -0500
+Message-Id: <1257863388.4184.220.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911101518.21061.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+ZEnaCNWEJFia2rFmcjk+LRj5gmbSOhxq0X+h
- YkdrJ1Uy9nUaP14RDBr3pPc81HEjpY0gzSajzP+iAkfdgpgu3x
- mBPNKKmHwwO5f/pFjGlrQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handling for SIOCSHWTSTAMP is broken on architectures
-with a split user/kernel address space like s390,
-because it passes a real user pointer while using
-set_fs(KERNEL_DS).
-A similar problem might arise the next time somebody
-adds code to dev_ifsioc.
+On Mon, 2009-11-09 at 20:14 -0800, Greg KH wrote:
+> On Tue, Nov 10, 2009 at 04:48:31AM +0100, Ingo Molnar wrote:
+> > FYI, today i committed a scheduler performance fix that has a number of 
+> > commit prerequisites for -stable integration. Those commits are not 
+> > marked -stable.
+> > 
+> > Previously, in similar situations, i solved it by email-forwarding the 
+> > prereq commits to stable@kernel.org. (or by waiting for your 'it does 
+> > not apply to -stable' email and figuring out the prereqs then.)
+> > 
+> > But we can move this into the Git commit space too, and minimize the 
+> > work for the -stable team, via a new -stable tag variant. So with this 
+> > new commit i started using a new tagging scheme in the commit itself:
+> > 
+> >  Cc: <stable@kernel.org> # .32.x: a1f84a3: sched: Check for an idle shared cache
+> >  Cc: <stable@kernel.org> # .32.x: 1b9508f: sched: Rate-limit newidle
+> >  Cc: <stable@kernel.org> # .32.x: fd21073: sched: Fix affinity logic
+> >  Cc: <stable@kernel.org> # .32.x
+> >  LKML-Reference: <1257821402.5648.17.camel@marge.simson.net>
+> >  Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > The tag sequence has the meaning of:
+> > 
+> >   git cherry-pick a1f84a3
+> >   git cherry-pick 1b9508f
+> >   git cherry-pick fd21073
+> >   git cherry-pick <this commit>
+> > 
+> > and i'm wondering whether this tagging scheme is fine with your -stable 
+> > scripting, etc.
+> 
+> It would work just fine.
+> 
+> I only rely on one main script right now, one that runs from James's
+> directory on kernel.org that picks out the "Cc: <stable@kernel.org>"
+> lines and forwards the full commit message to stable@kernel.org.
+> 
+> Then I have a simple script that I just pass the git commit id and
+> formats it properly for inclusion on the quilt tree for the stable
+> queue.  If you list the other git commit ids that are needed as a
+> prerequesite as you did above, that's trivial to also pick out.
+> 
+> So I think this is good for me and my workflow.
 
-Split up dev_ifsioc into three separate functions for
-SIOCSHWTSTAMP, SIOC*IFMAP and all other numbers so
-we can get rid of set_fs in all potentially affected
-cases.
+So I take this to mean that I don't alter my script and you pick out the
+precursors with yours ...
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Patrick Ohly <patrick.ohly@intel.com>
-Cc: David S. Miller <davem@davemloft.net>
----
- net/socket.c |  119 +++++++++++++++++++++++++++++++++++----------------------
- 1 files changed, 73 insertions(+), 46 deletions(-)
+> > A further question is, i can see using this tagging scheme in the future 
+> > in merge commits log messages too - will your scripts notice that too?
+> 
+> Hm, I don't think we look at merges as there's nothing there to actually
+> commit.
+> 
+> > For example if there's a few commits left in tip:*/urgent branches 
+> > (tip:sched/urgent, tip:core/urgent, tip:x86/urgent, etc.) by the time 
+> > v2.6.32 is released, i will then merge them into tip:sched/core, 
+> > tip:core/core, tip:x86/core, etc. - and i could use the merge commit as 
+> > a notification area to 'activate' them for -stable backporting via a 
+> > merge commit.
+> > 
+> > This is how such merge commits would look like:
+> > 
+> >   Merge branch 'core/urgent' into core/rcu
+> > 
+> >   Merge reason: Pick up urgent fixes that did not make it into .32.0
+> > 
+> >   Cc: <stable@kernel.org> # .32.x: 83f5b01: rcu: Fix long-grace-period race
+> >   Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > This is not so rare of a situation as it might seem - for the trees i 
+> > maintain it happens in almost every release cycle - i typically skip 
+> > urgent branch merges after -rc8/-rc9, unless they are very-very-urgent 
+> > fixes - but they'd still be eligible for -stable.
+> 
+> Ok, that would be good and fine with me.
+> 
+> James, would your script pick this up, or does it need to also pay
+> attention to merge commits?
 
-diff --git a/net/socket.c b/net/socket.c
-index 17c98a5..1f2f6d2 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -2564,38 +2564,15 @@ static int siocdevprivate_ioctl(struct net *net, unsigned int cmd,
- static int dev_ifsioc(struct net *net, struct socket *sock,
- 			 unsigned int cmd, struct compat_ifreq __user *uifr32)
- {
--	struct ifreq ifr;
--	struct compat_ifmap __user *uifmap32;
--	mm_segment_t old_fs;
-+	struct ifreq __user *uifr;
- 	int err;
--	
--	uifmap32 = &uifr32->ifr_ifru.ifru_map;
--	switch (cmd) {
--	case SIOCSIFMAP:
--		err = copy_from_user(&ifr, uifr32, sizeof(ifr.ifr_name));
--		err |= __get_user(ifr.ifr_map.mem_start, &uifmap32->mem_start);
--		err |= __get_user(ifr.ifr_map.mem_end, &uifmap32->mem_end);
--		err |= __get_user(ifr.ifr_map.base_addr, &uifmap32->base_addr);
--		err |= __get_user(ifr.ifr_map.irq, &uifmap32->irq);
--		err |= __get_user(ifr.ifr_map.dma, &uifmap32->dma);
--		err |= __get_user(ifr.ifr_map.port, &uifmap32->port);
--		if (err)
--			return -EFAULT;
--		break;
--	case SIOCSHWTSTAMP:
--		if (copy_from_user(&ifr, uifr32, sizeof(*uifr32)))
--			return -EFAULT;
--		ifr.ifr_data = compat_ptr(uifr32->ifr_ifru.ifru_data);
--		break;
--	default:
--		if (copy_from_user(&ifr, uifr32, sizeof(*uifr32)))
--			return -EFAULT;
--		break;
--	}
--	old_fs = get_fs();
--	set_fs (KERNEL_DS);
--	err = sock_do_ioctl(net, sock, cmd, (unsigned long)&ifr);
--	set_fs (old_fs);
-+
-+	uifr = compat_alloc_user_space(sizeof(*uifr));
-+	if (copy_in_user(uifr, uifr32, sizeof(*uifr32)))
-+		return -EFAULT;
-+
-+	err = sock_do_ioctl(net, sock, cmd, (unsigned long)uifr);
-+
- 	if (!err) {
- 		switch (cmd) {
- 		case SIOCGIFFLAGS:
-@@ -2612,18 +2589,7 @@ static int dev_ifsioc(struct net *net, struct socket *sock,
- 		case SIOCGIFTXQLEN:
- 		case SIOCGMIIPHY:
- 		case SIOCGMIIREG:
--			if (copy_to_user(uifr32, &ifr, sizeof(*uifr32)))
--				return -EFAULT;
--			break;
--		case SIOCGIFMAP:
--			err = copy_to_user(uifr32, &ifr, sizeof(ifr.ifr_name));
--			err |= __put_user(ifr.ifr_map.mem_start, &uifmap32->mem_start);
--			err |= __put_user(ifr.ifr_map.mem_end, &uifmap32->mem_end);
--			err |= __put_user(ifr.ifr_map.base_addr, &uifmap32->base_addr);
--			err |= __put_user(ifr.ifr_map.irq, &uifmap32->irq);
--			err |= __put_user(ifr.ifr_map.dma, &uifmap32->dma);
--			err |= __put_user(ifr.ifr_map.port, &uifmap32->port);
--			if (err)
-+			if (copy_in_user(uifr32, uifr, sizeof(*uifr32)))
- 				err = -EFAULT;
- 			break;
- 		}
-@@ -2631,6 +2597,65 @@ static int dev_ifsioc(struct net *net, struct socket *sock,
- 	return err;
- }
- 
-+static int compat_sioc_ifmap(struct net *net, unsigned int cmd,
-+			struct compat_ifreq __user *uifr32)
-+{
-+	struct ifreq ifr;
-+	struct compat_ifmap __user *uifmap32;
-+	mm_segment_t old_fs;
-+	int err;
-+
-+	uifmap32 = &uifr32->ifr_ifru.ifru_map;
-+	err = copy_from_user(&ifr, uifr32, sizeof(ifr.ifr_name));
-+	err |= __get_user(ifr.ifr_map.mem_start, &uifmap32->mem_start);
-+	err |= __get_user(ifr.ifr_map.mem_end, &uifmap32->mem_end);
-+	err |= __get_user(ifr.ifr_map.base_addr, &uifmap32->base_addr);
-+	err |= __get_user(ifr.ifr_map.irq, &uifmap32->irq);
-+	err |= __get_user(ifr.ifr_map.dma, &uifmap32->dma);
-+	err |= __get_user(ifr.ifr_map.port, &uifmap32->port);
-+	if (err)
-+		return -EFAULT;
-+
-+	old_fs = get_fs();
-+	set_fs (KERNEL_DS);
-+	err = dev_ioctl(net, cmd, (void __user *)&ifr);
-+	set_fs (old_fs);
-+
-+	if (cmd == SIOCGIFMAP && !err) {
-+		err = copy_to_user(uifr32, &ifr, sizeof(ifr.ifr_name));
-+		err |= __put_user(ifr.ifr_map.mem_start, &uifmap32->mem_start);
-+		err |= __put_user(ifr.ifr_map.mem_end, &uifmap32->mem_end);
-+		err |= __put_user(ifr.ifr_map.base_addr, &uifmap32->base_addr);
-+		err |= __put_user(ifr.ifr_map.irq, &uifmap32->irq);
-+		err |= __put_user(ifr.ifr_map.dma, &uifmap32->dma);
-+		err |= __put_user(ifr.ifr_map.port, &uifmap32->port);
-+		if (err)
-+			err = -EFAULT;
-+	}
-+	return err;
-+}
-+
-+static int compat_siocshwtstamp(struct net *net, struct compat_ifreq __user *uifr32)
-+{
-+	void __user *uptr;
-+	compat_uptr_t uptr32;
-+	struct ifreq __user *uifr;
-+
-+	uifr = compat_alloc_user_space(sizeof (*uifr));
-+	if (copy_in_user(uifr, uifr32, sizeof(struct compat_ifreq)))
-+		return -EFAULT;
-+
-+	if (get_user(uptr32, &uifr32->ifr_data))
-+		return -EFAULT;
-+
-+	uptr = compat_ptr(uptr32);
-+
-+	if (put_user(uptr, &uifr->ifr_data))
-+		return -EFAULT;
-+
-+	return dev_ioctl(net, SIOCSHWTSTAMP, uifr);
-+}
-+
- struct rtentry32 {
-         u32   		rt_pad1;
-         struct sockaddr rt_dst;         /* target address               */
-@@ -2923,6 +2948,9 @@ static int compat_sock_ioctl_trans(struct file *file, struct socket *sock,
- 		return ethtool_ioctl(net, argp);
- 	case SIOCWANDEV:
- 		return compat_siocwandev(net, argp);
-+	case SIOCGIFMAP:
-+	case SIOCSIFMAP:
-+		return compat_sioc_ifmap(net, cmd, argp);
- 	case SIOCBONDENSLAVE:
- 	case SIOCBONDRELEASE:
- 	case SIOCBONDSETHWADDR:
-@@ -2937,6 +2965,8 @@ static int compat_sock_ioctl_trans(struct file *file, struct socket *sock,
- 		return do_siocgstamp(net, sock, cmd, argp);
- 	case SIOCGSTAMPNS:
- 		return do_siocgstampns(net, sock, cmd, argp);
-+	case SIOCSHWTSTAMP:
-+		return compat_siocshwtstamp(net, argp);
- 
- 	case FIOSETOWN:
- 	case SIOCSPGRP:
-@@ -2963,12 +2993,9 @@ static int compat_sock_ioctl_trans(struct file *file, struct socket *sock,
- 	case SIOCADDMULTI:
- 	case SIOCDELMULTI:
- 	case SIOCGIFINDEX:
--	case SIOCGIFMAP:
--	case SIOCSIFMAP:
- 	case SIOCGIFADDR:
- 	case SIOCSIFADDR:
- 	case SIOCSIFHWBROADCAST:
--	case SIOCSHWTSTAMP:
- 	case SIOCDIFADDR:
- 	case SIOCGIFBRDADDR:
- 	case SIOCSIFBRDADDR:
--- 
-1.6.3.3
+No ... because merge commits should effectively be empty (and when
+they're not you can't generate an applyable diff).  If I understand the
+workflow, the desire is to have the whole branch sent to stable by
+tagging the merge commit.  That's possible ... it's exactly the same
+logic I use in the commit scripts for the SCSI tree, so it should be
+possible to extract the logic.
+
+By the looks of the above it's only a few commits, or is it the entire
+branch?
+
+> > I've attached the full commit below. The prereq commits are not uptream 
+> > yet, and they dont carry a -stable backporting tag as the -stable 
+> > relevance was not anticipated at that point yet. They will all be 
+> > upstream in the next merge window when Linus merges the relevant tree - 
+> > and then all these tags become visible to the -stable team's scripts.
+> > 
+> > What do you think about this new -stable tagging variant? To me it looks 
+> > quite intuitive, less error-prone and it is more informative as well. 
+> > Furthermore, it gives us some freedom to mark commits as backport 
+> > candidates later on. I kept them oneliners for the purpose of making 
+> > them all self-sufficient tags.
+> 
+> I agree.
+> 
+> > ( Sidenote: i wouldnt go as far as to generate null Git commits to mark
+> >   backports after the fact - this scheme is for a series of commits that 
+> >   get 'completed' - there's usually a final followup commit that can 
+> >   embedd this information. )
+> 
+> That's fine, don't worry about this.
+
+The question is, how important is this?
+
+One of the assumptions behind the current setup is that I assume
+backports are independent (so the order of transmission doesn't matter
+that much).  This isn't always true, but the exceptions tend to get
+handled manually.  Part of what the above is requesting is an
+implementation that starts to care about ordering.
+
+James
+
 
