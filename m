@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758415AbZKJVoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbZKJVn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758415AbZKJVoh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758287AbZKJVoh
+	id S1758393AbZKJVn2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758327AbZKJVn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:44:37 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44196 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758263AbZKJVog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:44:36 -0500
-Message-ID: <4AF9DE50.50807@kernel.org>
-Date: Tue, 10 Nov 2009 13:42:40 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 10 Nov 2009 16:43:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48620 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758296AbZKJVn0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:43:26 -0500
+Date: Tue, 10 Nov 2009 13:42:51 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Tejun Heo <tj@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
+In-Reply-To: <4AF9C402.9040800@kernel.org>
+Message-ID: <alpine.LFD.2.01.0911101338190.31845@localhost.localdomain>
+References: <4AF90254.40909@kernel.org> <alpine.LFD.2.01.0911100903370.31845@localhost.localdomain> <4AF9B1FD.1010408@kernel.org> <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain> <4AF9BE3A.40409@kernel.org> <20091110193705.GA9011@elte.hu>
+ <4AF9C402.9040800@kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Rientjes <rientjes@google.com>, Mike Travis <travis@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch v2] x86: reduce srat verbosity in the kernel log
-References: <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com> <alpine.DEB.2.00.0911101307440.28728@chino.kir.corp.google.com> <20091110213312.GE23196@elte.hu>
-In-Reply-To: <20091110213312.GE23196@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * David Rientjes <rientjes@google.com> wrote:
-> 
->> On Tue, 27 Oct 2009, David Rientjes wrote:
->>
->>> x86: reduce srat verbosity in the kernel log
->>>
->>> It's possible to reduce the number of SRAT messages emitted to the kernel
->>> log by printing each valid pxm once and then creating bitmaps to represent
->>> the apic ids that map to the same node.
->>>
->>> This reduces lines such as
->>>
->>> 	SRAT: PXM 0 -> APIC 0 -> Node 0
->>> 	SRAT: PXM 0 -> APIC 1 -> Node 0
->>> 	SRAT: PXM 1 -> APIC 2 -> Node 1
->>> 	SRAT: PXM 1 -> APIC 3 -> Node 1
->>>
->>> to
->>>
->>> 	SRAT: PXM 0 -> APIC {0-1} -> Node 0
->>> 	SRAT: PXM 1 -> APIC {2-3} -> Node 1
->>>
->>> The buffer used to store the apic id list is 128 characters in length.
->>> If that is too small to represent all the apic id ranges that are bound
->>> to a single pxm, a trailing "..." is added.  APICID_LIST_LEN should be
->>> manually increased for such configurations.
->>>
->>> Acked-by: Mike Travis <travis@sgi.com>
->>> Signed-off-by: David Rientjes <rientjes@google.com>
->> Ingo, have you had a chance to look at merging this yet?
-> 
-> I'm waiting for Mike to test them (and other patches) and send a new 
-> series out with bits to pick up.
-> 
-> But i really dont like such type of buffering - in the past they tended 
-> to be problematic. Why print this info at all in the default bootup?  
-> It's not needed on a correctly functioning system.
-> 
-> For failure analysis make it opt-in available via a boot parameter (if 
-> it's needed for bootup analysis) - but otherwise just dont print it.
-> 
-make them to depend on apic=debug or apic=verbose?
 
-YH
+
+On Wed, 11 Nov 2009, Tejun Heo wrote:
+> 
+> If you're talking about the three way return value, which I do agree
+> to be quite ugly, I think it will be a lot safer to have three patches
+> - one to fix the deadlock, another to fix the return value and the
+> final one to de-uglify the function, especially as we're pretty late
+> in the release cycle.
+
+I'm certainly ok with doing it in stages if that is how you want to do it.
+
+That said, I'm not entirely sure it's _worthwhile_, since the "return 1" 
+case has apparently never ever actually worked. From a bisect standpoint, 
+what's the difference between seeing
+
+ - oh, now that we made it return the documented code and actually re-try 
+   properly when dropping the lock, it turns out that the re-try code was 
+   always buggy and we just hadn't noticed before because it didn't 
+   trigger
+
+or
+
+ - oh, now that we rewrote the function to be cleaner and do the lock 
+   dropping and retry more obviously, it turns out that the retry doesn't 
+   actually work and leads to deadlocks.
+
+but I don't care deeply.
+
+I want the cleanup because I think that the code sucks from a "future 
+proofing" and readability standpoint, but I really don't mind one way or 
+the other whether you want to finally do that one "return 1" correctly for 
+one commit, only to then fix it to not do that three-way test of a single 
+function in the next one.
+
+So whatever works - as long as the end result both looks sane and doesn't 
+have the bug we clearly have now.
+
+		Linus
