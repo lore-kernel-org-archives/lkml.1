@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbZKJEk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbZKJEmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbZKJEk3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 23:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZKJEk3
+	id S1756005AbZKJEmy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 23:42:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbZKJEmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 23:40:29 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:62243 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752810AbZKJEk2 (ORCPT
+	Mon, 9 Nov 2009 23:42:53 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:51311 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbZKJEmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 23:40:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=Mb25vYWbwsg7viHKVfetrDEn9aq/XvyuWLywdL4ffxmiCIfh+SwyzUzfVSb59+X8nC
-         yOOTHvsmTA2DsURM7SrebsY8hAGk5A1a44BhkGsn8o9/SCmECBwZwvenUOcS+FRaqd+j
-         qPiGYUZnmYH2NciKS3qjWrgZiYNRKyRiEIosM=
+	Mon, 9 Nov 2009 23:42:52 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
+References: <m1pr7siqjz.fsf@fess.ebiederm.org>
+	<200911091628.47003.arnd@arndb.de>
+	<20091109154621.GG26740@basil.fritz.box>
+	<200911091723.23785.arnd@arndb.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 09 Nov 2009 20:42:47 -0800
+In-Reply-To: <200911091723.23785.arnd@arndb.de> (Arnd Bergmann's message of "Mon\, 9 Nov 2009 17\:23\:23 +0100")
+Message-ID: <m1ocnbrnw8.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0911092326200.9725@eddie.linux-mips.org>
-References: <20091108155356.GB25940@lenovo> <4AF8A0A0.2080800@zytor.com>
-	 <alpine.LFD.2.00.0911092326200.9725@eddie.linux-mips.org>
-Date: Tue, 10 Nov 2009 07:40:32 +0300
-X-Google-Sender-Auth: 01f5b1088dd7f9c0
-Message-ID: <aa79d98a0911092040o332f7bb7t7501955572b992d2@mail.gmail.com>
-Subject: Re: [PATCH -tip] x86,apic: Use PAGE_SIZE instead of numbers
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>, x86team <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/09, Maciej W. Rozycki <macro@linux-mips.org> wrote:
-> On Mon, 9 Nov 2009, H. Peter Anvin wrote:
->
->> In theory we could have more than one ioapic packed into a single page,
->> and it is also entirely plausible we'll support other page sizes in x86
->> at some point.  However, it's probably easier to flag something as
->> PAGE_SIZE and have to fix it up later than have magic constants, so I
->> think it's probably the right thing to do.
->
->  Hmm, the MPS said in Chapter 3.6.5 "APIC Memory Mapping":
->
->  "Non-default APIC base addresses can be used if the MP configuration
-> table is provided. (Refer to Chapter 4.)  However, the local APIC base
-> address must be aligned on a 4K boundary, and the I/O APIC base address
-> must be aligned on a 1K boundary."
->
-> This probably still stands; I suppose it would be safer to define
-> IOAPIC_SLOT_SIZE to 1024 and use it by default, expanding all reservations
-> as needed where less than PAGE_SIZE / IOAPIC_SLOT_SIZE I/O APICs would be
+Arnd Bergmann <arnd@arndb.de> writes:
 
-yes, it would be even more clear, i'll take care
+> On Monday 09 November 2009, Andi Kleen wrote:
+>> > 
+>> > So? Most users of old glibc are also using old kernels, and they
+>> 
+>> How do you know? At least here it's quite common to use new kernels
+>> with old user land.
+>
+> If by 'here' you mean kernel developers, sure. Other people I'd
+> assume typically run whatever comes with the distro, and that
+> usually includes both a libc and a kernel.
 
-> mapped in a page.  This is relatively recent a piece of code -- how much
-> has it been tested?
->
->  Well, actually not much as a quick search has revealed this message:
->
-> http://marc.info/?l=linux-kernel&m=118114792006520
->
-> which shows page alignment of I/O APICs clearly does not stand, and
-> moreover there are two pairs of I/O APIC in the system reported which
-> share a page each.  In this case the ranges requested do not make sense
-> and some resource insertions will silently fail.  And also while page
-> aliases created in fixmaps here should not harm, they make me feel a
-> little bit chilly...
->
->  Overall this piece of code needs an overhaul, fixing resource allocation
-> and reusing fixmaps where possible.
+The question with respect to my patchset. Is the increase in time
+a measurable performace regression or is the cost lost in the noise?
 
-Ok
+Andi do you know of a way to measure this?
 
->
->   Maciej
->
+Doing a special case for /proc/sys/kernel/version if someone can
+measure the overhead seem sane.  But the double maintenance isn't
+my idea of fun.
 
-thanks, Peter, Maciej for comments!
-I must admit (to be fair) i was concerning about fixmap itself so that
-forgot about 1k alignment requirement :/ Will fix.
+The code involved would need to look something like:
+
+	if (len > sizeof(current->nsporxy->uts_ns.name.version)
+		len = sizeof(current->nsporxy->uts_ns.name.version);
+	down_read(&uts_sem);
+	ret = copy_to_user(buf, current->nsproxy->uts_ns.name.version, len);
+	up_read(&uts_sem);
+
+That isn't a particular pretty expression, and it has a much higher chance
+of bitrotting than what I have now.
+
+>> > can still use the  config option for the compatibility code.
+>> > There wouldn't even be a performance penalty over new glibc with
+>> > new kernels which already use procfs.
+>> 
+>> When he drops the sysctl(2) API completely the old userland will
+>> be unhappy.
+>
+> I did not get the impression that this was the plan. Maybe I missed
+> something, but the work that Eric did seemed to be strategic for
+> leaving the code around for a really long time without causing any
+> maintainance pain that the current code does.
+>
+> It will be years before we can really remove that code, but distros
+> can start disabling it (or making it modular) earlier than that
+> when they feel the time has come to stop support for static binaries
+> using sysctl (there should really be few of those).
+
+There is always the question if we can get away with it.  I intend to
+submit a patch that changes the default to off.  Beyond that I don't
+don't know.  I expect folks doing enterprise distro would want to turn
+of sys_sysctl because it is a typically buggy.  Why chance bitrot leading
+to a security hole?
+
+Eric
