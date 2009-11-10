@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbZKJMaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZKJMeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbZKJMaM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 07:30:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZKJMaL
+	id S1753400AbZKJMeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 07:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbZKJMeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 07:30:11 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:43117 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751965AbZKJMaJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 07:30:09 -0500
-Date: Tue, 10 Nov 2009 13:30:08 +0100
-From: Daniel Mack <daniel@caiaq.de>
-To: David Newall <davidn@davidnewall.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Clemens Ladisch <clemens@ladisch.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vt: make the default cursor shape configurable
-Message-ID: <20091110123008.GW14091@buzzloop.caiaq.de>
-References: <4AF7D439.4030305@ladisch.de>
- <20091109091044.GX29442@buzzloop.caiaq.de>
- <4AF7DDC1.4090006@ladisch.de>
- <20091109095316.6283fbd6@lxorguk.ukuu.org.uk>
- <4AF7FC64.6030904@ladisch.de>
- <20091109114600.4d91b90e@lxorguk.ukuu.org.uk>
- <20091109145056.GB14091@buzzloop.caiaq.de>
- <4AF8582B.2000403@davidnewall.com>
- <20091109220944.GH14091@buzzloop.caiaq.de>
- <4AF956F8.7090707@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF956F8.7090707@davidnewall.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 10 Nov 2009 07:34:25 -0500
+Received: from ns.penguin.cz ([84.21.108.25]:58199 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750864AbZKJMeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 07:34:24 -0500
+Subject: Re: spitz battery driver
+From: Stanislav Brabec <utx@penguin.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Eric Miao <eric.y.miao@gmail.com>, zaurus-devel@www.linuxtogo.org,
+       rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com,
+       Paul Fertser <fercerpav@gmail.com>
+In-Reply-To: <20091110104634.GA1395@ucw.cz>
+References: <20091109135813.GA1385@ucw.cz>
+	 <f17812d70911091948p5331f11djc887443559b233db@mail.gmail.com>
+	 <20091110104634.GA1395@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 10 Nov 2009 13:34:24 +0100
+Message-Id: <1257856464.6394.6.camel@utx.utx.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 10:35:12PM +1030, David Newall wrote:
-> I'm having trouble seeing a flashing cursor during device startup as a
-> problem. I expect it will prove a useful diagnostic, one day. I think
-> you can turn it off (from user space) within a couple of seconds of
-> power on; you did say embedded, didn't you? Perhaps you even can
-> configure your hardware to not display the cursor on startup, which is
-> the second likeliest (after user-space) place to satisfy your needs.
+Pavel Machek wrote:
+> On Tue 2009-11-10 11:48:16, Eric Miao wrote:
 
-I'm talking about an embedded device with no keyboard connected but
-only a touch screen. In this case, the cursor is clearly misleading, as
-there is no input device to use it. And for such a case (and I'm sure
-I'm not the only one having it), a way to switch the cursor off is much
-appreciated. I don't believe that's so hard to understand, really.
+> > > This introduces battery driver for spitz. For now it is
+> > > monitoring&debug-only.
+> > >
+> > 
+> > This is a good move. However, I assume the patch is still RFC now.
+> > Or basically the coding style cleanup can be separated into another
+> > patch?
+> 
+> Its rfc now. Parts of codingstyle cleanup should already be in your
+> tree, I'll rediff it later.
 
-"A couple of seconds" is still too much. We don't want to give the
-impression of a terminal at all. The whole application starting
-afterwards has no cursor either.
+Pavel, could you compare your patch with the "power: implement platform
+battery driver"﻿ patches from Paul Fertser just sent to LKML and
+zaurus-devel list? Would it be complicated to migrate to it? I guess
+that use of platform driver could allow to recycle major parts of the
+charging driver by more devices.
 
-Daniel
+
+________________________________________________________________________
+Stanislav Brabec
+http://www.penguin.cz/~utx/zaurus
 
