@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZKJIXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZKJIXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbZKJIXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 03:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbZKJIXo
+	id S1754899AbZKJIXz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 03:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbZKJIXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 03:23:44 -0500
-Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:42208 "HELO
-	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754269AbZKJIXn (ORCPT
+	Tue, 10 Nov 2009 03:23:54 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:59790 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754780AbZKJIXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 03:23:43 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=pgHYYZWJ28pOGdb9tDvoyLImdxy1aVkNarlGl09YBlVJMd0n9qj/XEfDYHA5yzFTOrqx4eEMgJ+MQrteEsDLho/oc5ESfr0Pk1vuHGpl+qvkFKElASf9FjVxX4NWlTVU;
-Date: Tue, 10 Nov 2009 08:23:40 +0000
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: pci_find_parent_resource patch
-Message-ID: <20091110082340.319f1ad3@jbarnes-x200>
-In-Reply-To: <4AF875D0.10602@kernel.org>
-References: <4AF875D0.10602@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Tue, 10 Nov 2009 03:23:54 -0500
+Date: Tue, 10 Nov 2009 17:23:57 +0900 (JST)
+Message-Id: <20091110.172357.877383598482614594.mitake@dcl.info.waseda.ac.jp>
+To: mingo@elte.hu
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       paulus@samba.org
+Subject: Re: [PATCH v2 0/4] perf bench: Common option for specifying style
+ formatting
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <20091110080135.GA32322@elte.hu>
+References: <20091110035812.GB29454@elte.hu>
+	<20091110.165102.386189748263321818.mitake@dcl.info.waseda.ac.jp>
+	<20091110080135.GA32322@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 158.43.2.102 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't remember seeing it, is it for 2.6.32?
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2 0/4] perf bench: Common option for specifying style formatting
+Date: Tue, 10 Nov 2009 09:01:35 +0100
 
-Jesse
+> 
+> * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> 
+> > And I have a question.
+> > In tools/perf/command-list.txt, there is the word "mainporcelain".
+> > What does this mean?
+> 
+> tools/perf/ inherited the command-list.txt code from the Git project:
+> 
+>   git://git.kernel.org/pub/scm/git/git.git
+> 
+> in Git talk, 'porcelain' is the pretty stuff humans use. 'plumbing' is 
+> the lowlevel stuff humans dont get to see.
+> 
+> 'mainporcelain' are the major commands you get listed when you type 
+> 'perf' (or 'git').
 
-On Mon, 09 Nov 2009 12:04:32 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+Thanks, I got it!
 
-> it seems this patch from Linus get lost ?
 > 
-> -----------------------------------------------------
+> ( i've Cc:-ed the Git list as i never saw any real formal definition for
+>   this anywhere, maybe i got this wrong :-)
 > 
+> > Of course I searched this word on my dictionary, but cannot got an answer.
+> > I'm preparing the initial document for perf-bench.
+> > Can I add perf-bench with mainporcelain to command-list.txt?
 > 
-> 
-> from Linus
-> 
-> ---
->  drivers/pci/pci.c |    8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/drivers/pci/pci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci.c
-> +++ linux-2.6/drivers/pci/pci.c
-> @@ -382,8 +382,12 @@ pci_find_parent_resource(const struct pc
->  			continue;	/* Wrong type */
->  		if (!((res->flags ^ r->flags) & IORESOURCE_PREFETCH))
->  			return r;	/* Exact match */
-> -		if ((res->flags & IORESOURCE_PREFETCH) && !(r->flags
-> & IORESOURCE_PREFETCH))
-> -			best = r;	/* Approximating
-> prefetchable by non-prefetchable */
-> +		/* We can't insert a non-prefetch resource inside a
-> prefetchable parent .. */
-> +		if (r->flags & IORESOURCE_PREFETCH)
-> +			continue;
-> +		/* .. but we can put a prefetchable resource inside
-> a non-prefetchable one */
-> +		if (!best)
-> +			best = r;
->  	}
->  	return best;
->  }
-> 
+> yeah, i'd suggest to do that - that will make 'perf bench' show up in 
+> 'perf' output.
 
+I'll describe perf bench as mainporcelain command, thanks.
