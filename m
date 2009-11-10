@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbZKJRte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbZKJRsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757496AbZKJRte (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 12:49:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757432AbZKJRtd
+	id S1757480AbZKJRsp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 12:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbZKJRso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 12:49:33 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:19924 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757422AbZKJRtc (ORCPT
+	Tue, 10 Nov 2009 12:48:44 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:45841 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756750AbZKJRso convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 12:49:32 -0500
-Message-ID: <4AF9A77E.6020908@caviumnetworks.com>
-Date: Tue, 10 Nov 2009 09:48:46 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 10 Nov 2009 12:48:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=HqLRDZcbrwoaogWt35oTYeIsvHBDYUQaIcw0UCgJ0VEyojrw2Zl4WU0tOpmauUtkdq
+         XLt/GrpAiif8W1253CnxTnXiEvT1pC8Vg0fBbwJHAIRLzdBWSYCgxRIrccqxSIjEKI3c
+         pqaaC1IqU2R32NEmrHvxzhvZfuSWtIxJIt4YI=
 MIME-Version: 1.0
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-CC: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       zhangfx@lemote.com, zhouqg@gmail.com,
-       Ralf Baechle <ralf@linux-mips.org>, rostedt@goodmis.org,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH v7 03/17] tracing: add MIPS specific trace_clock_local()
-References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com> <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com> <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com>
-In-Reply-To: <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Nov 2009 17:48:47.0544 (UTC) FILETIME=[0DF1AB80:01CA622E]
+In-Reply-To: <20091110170453.GA11771@redhat.com>
+References: <20091110170453.GA11771@redhat.com>
+Date: Wed, 11 Nov 2009 02:48:49 +0900
+X-Google-Sender-Auth: 0f95517989e02b51
+Message-ID: <2f11576a0911100948o79970e44t197cd2978428de1a@mail.gmail.com>
+Subject: Re: + prctl-add-pr_set_proctitle_area-option.patch added to -mm tree
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bryan Donlan <bdonlan@gmail.com>, Timo Sirainen <tss@iki.fi>,
+       Ulrich Drepper <drepper@redhat.com>,
+       WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Zhangjin wrote:
-[...]
-> + * trace_clock_local(): the simplest and least coherent tracing clock.
-> + *
-> + * Useful for tracing that does not cross to other CPUs nor
-> + * does it go through idle events.
-> + */
-> +u64 trace_clock_local(void)
-> +{
-> +	unsigned long flags;
-> +	u64 clock;
+2009/11/11 Oleg Nesterov <oleg@redhat.com>:
+> @@ -1424,6 +1424,28 @@ static void k_getrusage(struct task_stru
+>                        } while (t != p);
+>                        break;
+>
+> +               case PR_SET_PROCTITLE_AREA: {
+> +                       struct mm_struct *mm = current->mm;
+> +                       unsigned long addr = arg2;
+> +                       unsigned long len = arg3;
+> +                       unsigned long end = arg2 + arg3;
 > +
-> +	raw_local_irq_save(flags);
+> +                       if (len > PAGE_SIZE)
+> +                               return -EINVAL;
 > +
-> +	clock = mips_timecounter_read();
+> +                       if (addr >= end)
+> +                               return -EINVAL;
 > +
-> +	raw_local_irq_restore(flags);
+> +                       if (!access_ok(VERIFY_READ, addr, len))
+> +                               return -EFAULT;
 > +
-> +	return clock;
-> +}
+> +                       mutex_lock(&mm->arg_lock);
+> +                       mm->arg_start = addr;
+> +                       mm->arg_end = end;
+> +                       mutex_unlock(&mm->arg_lock);
+>
+> This looks like the merging error, I guess this code should go into
+> sys_prct(), not k_getrusage().
+>
+>
+> The patch adds mm_struct->arg_lock mutex. Can't we reuse mm->mmap_sem?
+> A bit ugly to have mm->arg_lock just to synchronize sys_prctl() and
+> proc_pid_cmdline(), imho.
+>
+> Yes, we can't do access_process_vm() under ->mmap_sem, but we can add
+> the new helper, say, access_process_vm_locked(tsk, mm, ...) which does
+> the actual work. Then proc_pid_cmdline() can take mmap_sem for reading,
+> read arg_start/arg_end and call access_process_vm_locked().
+>
+> No?
 
-Why disable interrupts?
+There is unwritten reason. I hope to add /proc/[pid]/cmdline cache. It
+help to avoid
+ps getting stuck by mmap_sem.
+But, I can accept your proposal on 2.6.32 timeframe. so, I'll make
+this patch again.
 
-Also you call the new function mips_timecounter_read().  Since 
-sched_clock() is a weak function, you can override the definition with a 
-more accurate version when possible.  Then you could just directly call 
-it here, instead of adding the new mips_timecounter_read() that the 
-'[PATCH v7 02/17] tracing: add mips_timecounter_read() for MIPS' adds.
-
-David Daney
+Andrew, can you please drop this patch at once?
