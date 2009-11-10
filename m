@@ -1,89 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbZKJK0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZKJK0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbZKJK0G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 05:26:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZKJK0D
+	id S1754256AbZKJK0u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 05:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZKJK0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 05:26:03 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:62696 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755303AbZKJK0B (ORCPT
+	Tue, 10 Nov 2009 05:26:49 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:49279 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755984AbZKJK0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 05:26:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=quGiy80xwNqr3Uje5hA2xcjwdIDSxJjbmZF9sfpdJGTTEJ4iE+Hut7Sr7VjJiM9t2h
-         Z9OlFjuiQTHYepv9vpaBqRcWWDY01RLeUYAP3LzvwSZ+FUQhdNh0l3NxC/Onw4YCv1fU
-         AOVEg4i/7F5iOd7GuTbwguKK8yig6Oe6tMKHU=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jan Kiszka <jan.kiszka@web.de>, Avi Kivity <avi@redhat.com>,
-       "K. Prasad" <prasad@linux.vnet.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH 4/4] hw-breakpoints: Wrap in the KVM breakpoint active state check
-Date: Tue, 10 Nov 2009 11:26:00 +0100
-Message-Id: <1257848760-9407-5-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1257848760-9407-1-git-send-email-fweisbec@gmail.com>
-References: <1257848760-9407-1-git-send-email-fweisbec@gmail.com>
+	Tue, 10 Nov 2009 05:26:44 -0500
+Message-ID: <4AF93FE5.1080009@free.fr>
+Date: Tue, 10 Nov 2009 11:26:45 +0100
+From: Daniel Lezcano <daniel.lezcano@free.fr>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Ben Blum <bblum@google.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
+       serue@us.ibm.com, menage@google.com
+Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
+ tgid at	once
+References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com> <4AF84C68.7010803@free.fr> <4AF8C20C.1070003@cn.fujitsu.com>
+In-Reply-To: <4AF8C20C.1070003@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap in the cpu dr7 check that tells if we have active
-breakpoints that need to be restored in the cpu.
+Li Zefan wrote:
+> Daniel Lezcano wrote:
+>   
+>> Ben Blum wrote:
+>>     
+>>> Makes procs file writable to move all threads by tgid at once
+>>>
+>>> This patch adds functionality that enables users to move all threads in a
+>>> threadgroup at once to a cgroup by writing the tgid to the 'cgroup.procs'
+>>> file. This current implementation makes use of a rwsem that's taken for
+>>> reading in the fork() path to prevent newly forking threads within the
+>>> threadgroup from "escaping" while moving is in progress.
+>>>
+>>> Signed-off-by: Ben Blum <bblum@google.com>
+>>>   
+>>>       
+>> [ cut ]
+>>     
+>>>  /**
+>>> + * cgroup_fork_failed - undo operations for fork failure
+>>> + * @tsk: pointer to  task_struct of exiting process
+>>> + * @run_callback: run exit callbacks?
+>>> + *
+>>> + * Description: Undo cgroup operations after cgroup_fork in fork
+>>> failure.
+>>> + *
+>>> + * We release the read lock that was taken in cgroup_fork(), since it is
+>>> + * supposed to be dropped in cgroup_post_fork in the success case.
+>>> The other
+>>> + * thing that wants to be done is detaching the failed child task
+>>> from the
+>>> + * cgroup, so we wrap cgroup_exit.
+>>> + */
+>>> +void cgroup_fork_failed(struct task_struct *tsk, int run_callbacks)
+>>> +{
+>>> +    up_read(&cgroup_fork_mutex);
+>>> +    cgroup_exit(tsk, run_callbacks);
+>>> +}
+>>> +
+>>> +/**
+>>>   * cgroup_clone - clone the cgroup the given subsystem is attached to
+>>>   * @tsk: the task to be moved
+>>>   * @subsys: the given subsystem
+>>> diff --git a/kernel/fork.c b/kernel/fork.c
+>>> index 926c117..027ec16 100644
+>>> --- a/kernel/fork.c
+>>> +++ b/kernel/fork.c
+>>> @@ -1300,7 +1300,7 @@ bad_fork_cleanup_policy:
+>>>      mpol_put(p->mempolicy);
+>>>  bad_fork_cleanup_cgroup:
+>>>  #endif
+>>> -    cgroup_exit(p, cgroup_callbacks_done);
+>>> +    cgroup_fork_failed(p, cgroup_callbacks_done);
+>>>      delayacct_tsk_free(p);
+>>>      if (p->binfmt)
+>>>          module_put(p->binfmt->module);
+>>>   
+>>>       
+>> Hi Ben,
+>>
+>> The current code (with or without your patch) may lead to an error
+>> because the fork hook can fail and the exit hook is called in all the
+>> cases making the fork / exit asymmetric.
+>>
+>>     
+>
+> The _current_ code won't lead to this error, because the fork hook
+> can't fail.
+>   
+Right, as no subsystem is using both hooks right now, the bug is never 
+triggered and the current code won't lead to an error.
+But from my POV, there is a bug hidden in a corner waiting for a 
+subsystem to make use of the fail-able fork / exit :)
 
-This wrapper makes the check more self-explainable and also
-reusable for any further other uses.
+>> I will take the usual example with a cgroup with a counter of tasks, in
+>> the fork hook it increments the counter, in the exit hook it decrements
+>> the counter. There is one process in the cgroup, hence the counter value
+>> is 1. Now this process forks and the fork hook fails before the task
+>> counter is incremented to 2, this is not detected in copy process
+>> function because the cgroup_fork_callbacks does not return an error, so
+>> the process will be forked without error and when the process will exits
+>> the counter will be decremented reaching 0 instead of 1.
+>>
+>> IMO, the correct fix should be to make the fork hook to return an error
+>> and have the cgroup to call the exit method of the subsystem where the
+>> fork hook was called. For example, there are 10 subsystems using the
+>> fork / exit hooks, when the a process forks, the fork callbacks is
+>> called for these subsystems but, let's say, the 3rd fails. So we undo,
+>> by calling the exit hooks of the first two.
+>>
+>> I wrote a patchset to consolidate the hooks called in the cgroup for
+>> fork and exit, and one of them does a rollback for the fork hook when an
+>> error occurs. I added an attachment the patch as an example.
+>>
+>>     
+>
+> I'd like to see this patch sent with another patch that needs this
+> fail-able fork() hook.
+>
+> Note this patch is not doing a _fix_, but does an extension. And
+> for now, this extension is not needed.
+>   
+I don't know, may be it could be interesting to implement that before 
+more subsystems make use of these hooks.
+This is not critical, that can be sent later, separately from this 
+patchset of course.
 
-Reported-by: Jan Kiszka <jan.kiszka@web.de>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>
----
- arch/x86/include/asm/debugreg.h |    5 +++++
- arch/x86/kvm/x86.c              |    2 +-
- 2 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/include/asm/debugreg.h b/arch/x86/include/asm/debugreg.h
-index f1b673f..0f6e92a 100644
---- a/arch/x86/include/asm/debugreg.h
-+++ b/arch/x86/include/asm/debugreg.h
-@@ -89,6 +89,11 @@ static inline void hw_breakpoint_disable(void)
- 	set_debugreg(0UL, 3);
- }
- 
-+static inline int hw_breakpoint_active(void)
-+{
-+	return __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK;
-+}
-+
- extern void aout_dump_debugregs(struct user *dump);
- 
- #ifdef CONFIG_KVM
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 22dee7a..3817220 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -3651,7 +3651,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	 * care about the messed up debug address registers. But if
- 	 * we have some of them active, restore the old state.
- 	 */
--	if (__get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK)
-+	if (hw_breakpoint_active())
- 		hw_breakpoint_restore();
- 
- 	set_bit(KVM_REQ_KICK, &vcpu->requests);
--- 
-1.6.2.3
-
+Thanks
+  -- Daniel
