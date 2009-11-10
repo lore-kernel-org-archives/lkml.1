@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZKJMeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbZKJMfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbZKJMeZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 07:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbZKJMeZ
+	id S1755404AbZKJMfv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 07:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZKJMfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 07:34:25 -0500
-Received: from ns.penguin.cz ([84.21.108.25]:58199 "EHLO ns.penguin.cz"
+	Tue, 10 Nov 2009 07:35:50 -0500
+Received: from sh.osrg.net ([192.16.179.4]:49426 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750864AbZKJMeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 07:34:24 -0500
-Subject: Re: spitz battery driver
-From: Stanislav Brabec <utx@penguin.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, zaurus-devel@www.linuxtogo.org,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com,
-       Paul Fertser <fercerpav@gmail.com>
-In-Reply-To: <20091110104634.GA1395@ucw.cz>
-References: <20091109135813.GA1385@ucw.cz>
-	 <f17812d70911091948p5331f11djc887443559b233db@mail.gmail.com>
-	 <20091110104634.GA1395@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 10 Nov 2009 13:34:24 +0100
-Message-Id: <1257856464.6394.6.camel@utx.utx.cz>
+	id S1751019AbZKJMfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 07:35:50 -0500
+Date: Tue, 10 Nov 2009 21:35:17 +0900
+To: mingo@elte.hu
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, dwmw2@infradead.org, joerg.roedel@amd.com,
+       muli@il.ibm.com
+Subject: Re: [PATCH v2 0/9] x86: handle HW IOMMU initialization failure
+ gracefully
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091110115555.GA29383@elte.hu>
+References: <1257849980-22640-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20091110111919.GA20353@elte.hu>
+	<20091110115555.GA29383@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20091110213459P.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 10 Nov 2009 21:35:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Tue 2009-11-10 11:48:16, Eric Miao wrote:
+On Tue, 10 Nov 2009 12:55:55 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> > > This introduces battery driver for spitz. For now it is
-> > > monitoring&debug-only.
-> > >
-> > 
-> > This is a good move. However, I assume the patch is still RFC now.
-> > Or basically the coding style cleanup can be separated into another
-> > patch?
 > 
-> Its rfc now. Parts of codingstyle cleanup should already be in your
-> tree, I'll rediff it later.
+> hm, one of the swiotlb patches caused this bootup crash:
 
-Pavel, could you compare your patch with the "power: implement platform
-battery driver"﻿ patches from Paul Fertser just sent to LKML and
-zaurus-devel list? Would it be complicated to migrate to it? I guess
-that use of platform driver could allow to recycle major parts of the
-charging driver by more devices.
+Sorry about that. I totally forgot about x86_32.
 
+the following patch fixes this? Sorry that I'm away from the workplace
+and can't test it.
 
-________________________________________________________________________
-Stanislav Brabec
-http://www.penguin.cz/~utx/zaurus
-
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index a234e63..63eebee 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -129,6 +129,8 @@ void __init pci_iommu_alloc(void)
+ #ifdef CONFIG_X86_64
+ 	/* free the range so iommu could get some range less than 4G */
+ 	dma32_free_bootmem();
++#else
++	dma_ops = &nommu_dma_ops;
+ #endif
+ 	pci_swiotlb_init();
+ 	if (use_swiotlb)
