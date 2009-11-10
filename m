@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbZKJVLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbZKJVNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753107AbZKJVLl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZKJVLk
+	id S1754086AbZKJVNQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZKJVNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:11:40 -0500
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:42886 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbZKJVLk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:11:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:cc:subject
-	:references:from:date:message-id:mime-version:content-type; q=
-	dns; s=sasl; b=td0FFh5inNMxlvmp/QWtOvok2Y64xIrYahNi6TFH1W+3RfvQ9
-	n5qHYvvIiP9pPLtz/802LaYFLKF0PCXvHUdaMFotUf6aWAV7Do92xcfZmL6RNnqW
-	3wbsJIMfE9KQY/PHy1fBfSk6lo3IcT2sI09XA3Vp1/ut0z8URTdKrrYqZ8=
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Greg KH <gregkh@suse.de>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] new -stable tag variant, Git workflow question
-References: <20091110034831.GB26809@elte.hu> <20091110041452.GA25575@suse.de>
- <1257863388.4184.220.camel@mulgrave.site>
- <4AF98C36.9040405@s5r6.in-berlin.de> <20091110193919.GC12686@suse.de>
- <20091110204537.GB18509@elte.hu>
-From: Junio C Hamano <gitster@pobox.com>
-Date: Tue, 10 Nov 2009 13:11:17 -0800
-Message-ID: <7vhbt23x1m.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 10 Nov 2009 16:13:15 -0500
+Received: from 1wt.eu ([62.212.114.60]:50922 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752306AbZKJVNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:13:15 -0500
+Date: Tue, 10 Nov 2009 22:12:59 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Avi Kivity <avi@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091110211259.GD26633@1wt.eu>
+References: <4AF9020C.90108@zytor.com> <4AF9435F.2070103@redhat.com> <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: 9F5C6B48-CE3D-11DE-A97D-7B3EEE7EF46B-77302942!a-pb-sasl-quonix.pobox.com
+Content-Disposition: inline
+In-Reply-To: <20091110205445.GB1407@ucw.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Tue, Nov 10, 2009 at 09:54:45PM +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > Indeed, but there is a difference between [cmpxchg, bswap, cmov, nopl]
+> > on one side and [sse*] on the other : distros are built assuming the
+> > former are always available while they are not always. And the
+> > distro
+> 
+> Well, fix the distros... 
 
-> Yeah. This new tagging scheme doesnt really allow anything 'new' per se 
-> - it just helps the existing practice some more. All these commits were 
-> -stable candidates anyway, in exactly the same order - the only 
-> difference the new tagging scheme adds here is a more organized, 
-> in-upsream-Git way of communicating it to you.
+you know like me that it's as easy as useless to point the finger at
+distros, because people running on low end want something that works
+and people running on high end want something that runs fast. In order
+to satisfy every one, you would have to build with optimizations for
+every CPU around, which does not make sense. Simply count the number
+of CPU variants in the kernel, and imagine that many CDs/DVDs for a
+single platform distro.
 
-I am just a bystander, but if it were truly in-upstream-git way, wouldn't
-you be forking a branch from the tagged target release (the latest of
-2.6.32.X), and queuing only the changes meant for -stable to it, and
-giving the name of the branch to git people and sending out patches from
-that branch for e-mailed review and application?
+However, targetting the most common denominator of high end machines
+(basically i686) and having the lower end systems experience a tiny
+slowdown is not stupid at all since performance is not what matters
+the most there. The higher end systems will simply be able to run
+CPU-specific optimizations per-program as they already do right now.
 
-There won't be any special tagging required, only a dedicated branch.
+(...)
+> > CMOV/NOPL are rarely used, thus have no reason to cause a massive
+> > performance drop, but are frequent enough (at least cmov) for almost
+> 
+> *One* CMOV in the inner loop will make your performance go down 20x.
 
-Or am I missing something?
+yes, just like with emulated FPU or trapped unaligned accesses. It's
+just like flying fishes. They exist but they aren't the most common
+ones. If people encounter these cases on a specific program, then
+they just have to recompile it if it is a problem. At least they
+don't rebuild the whole distro. And once again, I've been using
+cmpxchg/bswap emulation for years on my i386 without feeling any
+need for a rebuild, and CMOV emulation for years now on my mini-itx 
+C3 without any problem either. These are real experiences, not just
+fears of imaginary problems. Yes I can design a program to run 400
+times slower on these machines if I want. I just don't feel the need
+to do so and apparently existing programs' authors didn't either.
+
+Regards,
+Willy
+
