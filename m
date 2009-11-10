@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZKJRQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbZKJRPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbZKJRQl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 12:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZKJRQl
+	id S1757372AbZKJRPv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 12:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZKJRPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 12:16:41 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54355 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757220AbZKJRQk (ORCPT
+	Tue, 10 Nov 2009 12:15:51 -0500
+Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:41197
+	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757325AbZKJRPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 12:16:40 -0500
-Message-ID: <4AF99F0C.2050806@zytor.com>
-Date: Tue, 10 Nov 2009 09:12:44 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 10 Nov 2009 12:15:50 -0500
+Date: Tue, 10 Nov 2009 15:15:53 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       device@lanana.org, rubini@vision.unipv.it, gregkh@suse.de,
+       cluster-devel@redhat.com
+Subject: Re: [PATCH] misc: use a proper range for minor number dynamic
+	allocation
+Message-ID: <20091110171552.GB3628@vespa.holoscopio.com>
+References: <1256340497-19320-1-git-send-email-cascardo@holoscopio.com> <20091109132836.6cf7f559.akpm@linux-foundation.org> <20091109220257.GD12217@vespa.holoscopio.com> <20091110110942.4cb70b13@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Kees Cook <kees.cook@canonical.com>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
-References: <4ADD1E03.4070200@zytor.com> <20091020045513.GU5394@outflux.net> <20091109221015.GB5129@outflux.net> <4AF8A2C0.5080700@zytor.com> <20091110154956.GF5129@outflux.net> <4AF9991B.20400@zytor.com> <20091110165738.GH5129@outflux.net>
-In-Reply-To: <20091110165738.GH5129@outflux.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
+Content-Disposition: inline
+In-Reply-To: <20091110110942.4cb70b13@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 08:57 AM, Kees Cook wrote:
-> 
-> 64-bit does not set nx_enabled to "1" by default anywhere.  And setting
-> the default to 1 in check_efer() seemed out of place to me.
-> 
 
-If it doesn't set nx_enabled anywhere, you'll end up with the message
+--KFztAG8eRSV9hGtP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-+	printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-+	       "missing in CPU or disabled in BIOS!\n");
+On Tue, Nov 10, 2009 at 11:09:42AM +0000, Alan Cox wrote:
+> > We could consider buggy the caller which asks for the same device name
+> > more than once, without unregistering the first device. But better safe
+>=20
+> If they ask for the same name we certainly should. Probably we should
+> error that request and use WARN_ON() to shame the offender in
+> kerneloops.org.
+>=20
 
-which seems obviously wrong... no?
+The current code returns an error. It does not clear the bit in the
+allocation bitmap, which is a bug in misc, which my first patch in the
+series fixes now.
 
-	-hpa
+If it uses the same name, device_create is the responsible for failing.
+It already logs that, but it uses no WARN right now. I think this WARN
+should be in the driver core, not in misc, so we catch other offenders
+as well.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> > than sorry: we should protect the correct drivers from the buggy ones
+> > and avoid a depletion of the minor numbers. And, in case the driver core
+> > returns another error for another reason (from device_create), we do the
+> > right thing.
+>=20
+> Agreed we need to protect the working drivers.
+>=20
+> Alan
 
+So, do you think this should be in 2.6.32 or even go down to stable?
+
+Regards,
+Cascardo.
+
+--KFztAG8eRSV9hGtP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkr5n8gACgkQyTpryRcqtS1sgACfXx8ytx0tATSv5AhlL69HCmxd
+QVYAoIY5bh4wgks7rbSBvFFt7iCZ3hgS
+=PRZ8
+-----END PGP SIGNATURE-----
+
+--KFztAG8eRSV9hGtP--
