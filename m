@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZKJAJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZKJAPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbZKJAJG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 19:09:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbZKJAJF
+	id S1755597AbZKJAPc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 19:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbZKJAPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 19:09:05 -0500
-Received: from icebox.esperi.org.uk ([81.187.191.129]:45952 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbZKJAJF (ORCPT
+	Mon, 9 Nov 2009 19:15:31 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:45973 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754747AbZKJAPb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 19:09:05 -0500
-To: "Tantilov, Emil S" <emil.s.tantilov@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>
-Subject: Re: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31 (SMP only? MSI? PAUSE!)
-References: <873a4rqu9o.fsf@spindle.srvr.nix>
-	<EA929A9653AAE14F841771FB1DE5A1365F9923A504@rrsmsx501.amr.corp.intel.com>
-	<87ljihnh81.fsf@spindle.srvr.nix>
-From: Nix <nix@esperi.org.uk>
-Emacs: because you deserve a brk today.
-Date: Tue, 10 Nov 2009 00:08:47 +0000
-In-Reply-To: <87ljihnh81.fsf@spindle.srvr.nix> (nix@esperi.org.uk's message of "Sun, 08 Nov 2009 15:55:58 +0000")
-Message-ID: <87eio7meb4.fsf_-_@spindle.srvr.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
+	Mon, 9 Nov 2009 19:15:31 -0500
+Date: Tue, 10 Nov 2009 00:15:36 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Cyrill Gorcunov <gorcunov@openvz.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, x86team <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86,apic: Use PAGE_SIZE instead of numbers
+In-Reply-To: <4AF8A0A0.2080800@zytor.com>
+Message-ID: <alpine.LFD.2.00.0911092326200.9725@eddie.linux-mips.org>
+References: <20091108155356.GB25940@lenovo> <4AF8A0A0.2080800@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-x.dcc-servers-Metrics: spindle 104; Body=3 Fuz1=3 Fuz2=3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8 Nov 2009, nix@esperi.org.uk told this:
+On Mon, 9 Nov 2009, H. Peter Anvin wrote:
 
-> On 6 Nov 2009, Emil S. Tantilov verbalised:
->> Also try disabling Tx pause frames:
->> ethtool -A fastnet tx off autoneg off
->
-> Trying that now. No freezes yet, but I haven't really given it long
-> enough.
+> In theory we could have more than one ioapic packed into a single page,
+> and it is also entirely plausible we'll support other page sizes in x86
+> at some point.  However, it's probably easier to flag something as
+> PAGE_SIZE and have to fix it up later than have magic constants, so I
+> think it's probably the right thing to do.
 
-I just did a large number of kernel-build-and-installs with frame
-pointers over NFS over the errant link. No problems at all.
+ Hmm, the MPS said in Chapter 3.6.5 "APIC Memory Mapping":
 
-I think we can say this fixes it (works around it?)
+ "Non-default APIC base addresses can be used if the MP configuration 
+table is provided. (Refer to Chapter 4.)  However, the local APIC base 
+address must be aligned on a 4K boundary, and the I/O APIC base address 
+must be aligned on a 1K boundary."
 
-Does this implicate the gigabit switch I'm talking to, or is it a kernel
-bug? (It looks like the cheap Realteks at the other ends of this link
-don't support pause frames at all: at least ethtool -a gives
--EOPNOTSUPP, but maybe they simply can't be turned off... hm, r8169.c
-vaguely suggests that it supports them but can't turn them off without
-source hacking.)
+This probably still stands; I suppose it would be safer to define 
+IOAPIC_SLOT_SIZE to 1024 and use it by default, expanding all reservations 
+as needed where less than PAGE_SIZE / IOAPIC_SLOT_SIZE I/O APICs would be 
+mapped in a page.  This is relatively recent a piece of code -- how much 
+has it been tested?
+
+ Well, actually not much as a quick search has revealed this message:
+
+http://marc.info/?l=linux-kernel&m=118114792006520
+
+which shows page alignment of I/O APICs clearly does not stand, and 
+moreover there are two pairs of I/O APIC in the system reported which 
+share a page each.  In this case the ranges requested do not make sense 
+and some resource insertions will silently fail.  And also while page 
+aliases created in fixmaps here should not harm, they make me feel a 
+little bit chilly...
+
+ Overall this piece of code needs an overhaul, fixing resource allocation 
+and reusing fixmaps where possible.
+
+  Maciej 
