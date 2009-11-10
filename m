@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZKJRYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZKJRW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbZKJRYL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 12:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbZKJRYK
+	id S1757341AbZKJRW2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 12:22:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZKJRW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 12:24:10 -0500
-Received: from smtp.outflux.net ([198.145.64.163]:43039 "EHLO smtp.outflux.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752865AbZKJRYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 12:24:09 -0500
-Date: Tue, 10 Nov 2009 09:23:35 -0800
-From: Kees Cook <kees.cook@canonical.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>, Steve Grubb <sgrubb@redhat.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       George Wilson <gcwilson@us.ibm.com>
-Subject: Re: drop SECURITY_FILE_CAPABILITIES?
-Message-ID: <20091110172335.GI5129@outflux.net>
-References: <20091110140739.GA15534@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091110140739.GA15534@us.ibm.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+	Tue, 10 Nov 2009 12:22:26 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56142 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752773AbZKJRWZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 12:22:25 -0500
+Date: Tue, 10 Nov 2009 17:23:37 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Timo Sirainen <tss@iki.fi>, Ulrich Drepper <drepper@redhat.com>,
+       WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: + prctl-add-pr_set_proctitle_area-option.patch added to -mm
+ tree
+Message-ID: <20091110172337.2236ad58@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091110170453.GA11771@redhat.com>
+References: <20091110170453.GA11771@redhat.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Yes, we can't do access_process_vm() under ->mmap_sem, but we can add
+> the new helper, say, access_process_vm_locked(tsk, mm, ...) which does
+> the actual work. Then proc_pid_cmdline() can take mmap_sem for reading,
+> read arg_start/arg_end and call access_process_vm_locked().
 
-On Tue, Nov 10, 2009 at 08:07:39AM -0600, Serge E. Hallyn wrote:
-> Just a probe to see what people think.  I've seen two cases
-> in about the last month where software was confounded by
-> an assumption that prctl(PR_CAPBSET_DROP, CAP_SOMETHING)
-> would succeed if privileged, but not handling the fact
-> that SECURITY_FILE_CAPABILITIES=n means you can't do that.
-> 
-> Are we at the point yet where we feel we can get rid of
-> the SECURITY_FILE_CAPABILITIES=n case?
-
-It seems to me that the process caps bounding set (and file caps) are the
-way forward and retaining the =n option is nonsense, especially since caps
-are an integral part of the kernel.
-
-> Does anyone know of cases where CONFIG_SECURITY_FILE_CAPABILITIES=n
-> is still perceived as useful?
-
-Building a kernel that willfully ignores fscaps?  I don't see the point.
-It saves only a few bytes of code, AFAICT, and if it needs to be disabled
-for some reason, the kernel boot option "no_file_caps" can be set.
-
-At the very least it should default to "y" and/or have its help updated to
-include the list of things it enables.
-
--Kees
-
--- 
-Kees Cook
-Ubuntu Security Team
+It might not be a bad idea if whoever wrote it spent about 60 seconds
+thinking about maths overflow as well. I'm not sure some of the tools
+will react too well if end is before start.
