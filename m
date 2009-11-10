@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbZKJFU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751548AbZKJF1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbZKJFU5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 00:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZKJFU4
+	id S1751548AbZKJF1Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 00:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZKJF1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 00:20:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41635 "EHLO mx2.mail.elte.hu"
+	Tue, 10 Nov 2009 00:27:24 -0500
+Received: from 1wt.eu ([62.212.114.60]:50881 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbZKJFUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 00:20:54 -0500
-Date: Tue, 10 Nov 2009 06:20:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Aristeu Rozanski <aris@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Fr?d?ric Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] x86: introduce NMI_AUTO as nmi_watchdog option
-Message-ID: <20091110052051.GJ7897@elte.hu>
-References: <20091103171054.GB25437@redhat.com>
- <20091104114630.GA16993@elte.hu>
- <20091104151929.GH18613@redhat.com>
- <20091104155641.GA11444@elte.hu>
- <20091109200201.GT18613@redhat.com>
-MIME-Version: 1.0
+	id S1750864AbZKJF1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 00:27:24 -0500
+Date: Tue, 10 Nov 2009 06:27:11 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091110052711.GA15338@1wt.eu>
+References: <4AF4526B.4060101@zytor.com> <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com> <20091108173708.GF1372@ucw.cz> <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com> <20091108181016.GB32364@elf.ucw.cz> <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de> <20091108193618.GB4186@elf.ucw.cz> <40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com> <20091108195158.GD4186@elf.ucw.cz> <20091108200852.7f2cf092@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091109200201.GT18613@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091108200852.7f2cf092@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Nov 08, 2009 at 08:08:52PM +0000, Alan Cox wrote:
+> > SIGILL is easier to debug than NOPL mysteriously taking 100x time it
+> > should, sorry.
+> 
+> And a working 686 distribution is a great deal more useful to end users,
+> who outnumber you by a few million to one. It's a very sensible patch, or
+> perhaps you'd prefer we didn't say. And you forget the user "debug" for
+> a Geode + i686 without this will be "it hangs when I try and boot the
+> install CD"
+> 
+> It would probably also be worth having cmov fixups for the VIA C3 as well.
 
-* Aristeu Rozanski <aris@redhat.com> wrote:
+Agreed! I've been using the cmov patch on my kernels for years and
+it has helped a lot. It isn't *that* slow and allows you to boot a
+machine which wouldn't boot otherwise. Also, I have memories about
+the C3 supporting register-to-register CMOV but faulting only on
+register-to-memory, which is less common and makes the patch even
+more useful.
 
-> > > > > NMI_AUTO is a new nmi_watchdog option that makes LAPIC be tried first 
-> > > > > and if the CPU isn't supported, IOAPIC will be used. It's useful in 
-> > > > > cases where NMI watchdog is enabled by default in a kernel built for 
-> > > > > different machines. It can be configured by default or selected with 
-> > > > > nmi_watchdog=3 or nmi_watchdog=auto parameters.
-> > > > 
-> > > > What i'd like to see for the NMI watchdog is much more ambitious than 
-> > > > this: the use of perf events to run a periodic NMI callback.
-> > > > 
-> > > > The NMI watchdog would cause the creation of a per-cpu perf_event 
-> > > > structure (in-kernel). All x86 CPUs that have perf event support (the 
-> > > > majority of them) will thus be able to have an NMI watchdog using a 
-> > > > nice, generic piece of code and we'd be able to phase out the open-coded 
-> > > > NMI watchdog code.
-> > > > 
-> > > > The user would not notice much from this: we'd still have the 
-> > > > /proc/sys/kernel/nmi_watchdog toggle to turn it on/off, and we'd still 
-> > > > have the nmi_watchog= boot parameter as well. But the underlying 
-> > > > implementation would be far more generic and far more usable than the 
-> > > > current code.
-> > > > 
-> > > > Would you be interested in moving the NMI watchdog code in this 
-> > > > direction? Most of the perf events changes (callbacks, helpers for 
-> > > > in-kernel event allocations, etc.) are in latest -tip already, so you 
-> > > > could use that as a base.
-> > >
-> > > but that would work only for LAPIC. You're suggesting killing IOAPIC 
-> > > mode too?
-> > 
-> > Would it be a big loss, with all modern systems expected to have a 
-> > working lapic based NMI source? I wrote the IOAPIC mode originally but i 
-> > dont feel too attached to it ;-)
->
-> ok, fair enough. but since it'll be another implementation, do you 
-> mind applying the patches I submitted so they can be used until the 
-> new implementation is in place?
+I'm very happy that people finally consider instruction emulation
+in kernel. Many other systems do that to help porting code between
+CPUs, and it's easier to work with that than to have builds for a
+large variety of CPUs in the same family. I'm sure that many distros
+would prefer to provide a build optimized for the fastest CPUs around
+and support the other ones in compatiblity mode than optimize for the
+smallest ones in order to support everyone.
 
-For that i need to see at least an RFC v1 version series of the new 
-implementation - otherwise we might end up sitting on this interim 
-version with no-one doing the better variant.
+Also, I think that if we start adding emulation, a global and per-task
+counter would immensely help to know what processes make intensive use
+of emulation.
 
-Thanks,
+Willy
 
-	Ingo
