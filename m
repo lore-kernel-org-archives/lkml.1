@@ -1,87 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZKJN0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbZKJNcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbZKJN0L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 08:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756452AbZKJN0J
+	id S1752714AbZKJNcF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 08:32:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZKJNcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 08:26:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34300 "EHLO hera.kernel.org"
+	Tue, 10 Nov 2009 08:32:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33650 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756388AbZKJN0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 08:26:07 -0500
-Date: Tue, 10 Nov 2009 13:25:45 GMT
-From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, mitake@dcl.info.waseda.ac.jp,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1257853855-28934-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1257853855-28934-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/bench] perf bench: Modify command-list.txt for the entry of perf-bench
-Message-ID: <tip-8d8d61aadb9d8cce07f7dcdb77a4c20a25d36d07@git.kernel.org>
-Git-Commit-ID: 8d8d61aadb9d8cce07f7dcdb77a4c20a25d36d07
-X-Mailer: tip-git-log-daemon
+	id S1751385AbZKJNcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 08:32:03 -0500
+Date: Tue, 10 Nov 2009 08:31:14 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [RFC] Workload type Vs Groups (Was: Re: [PATCH 02/20] blkio:
+	Change CFQ to use CFS like queue time stamps)
+Message-ID: <20091110133113.GA1083@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-3-git-send-email-vgoyal@redhat.com> <4e5e476b0911041318w68bd774qf110d1abd7f946e4@mail.gmail.com> <20091106222257.GB2969@redhat.com> <4e5e476b0911091347t60e4d572kef2e632800fbf849@mail.gmail.com> <20091109231257.GG22860@redhat.com> <4e5e476b0911100329v5da70aedj4a943c4b0220cee8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4e5e476b0911100329v5da70aedj4a943c4b0220cee8@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8d8d61aadb9d8cce07f7dcdb77a4c20a25d36d07
-Gitweb:     http://git.kernel.org/tip/8d8d61aadb9d8cce07f7dcdb77a4c20a25d36d07
-Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-AuthorDate: Tue, 10 Nov 2009 20:50:55 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Nov 2009 14:14:36 +0100
+On Tue, Nov 10, 2009 at 12:29:30PM +0100, Corrado Zoccolo wrote:
+> On Tue, Nov 10, 2009 at 12:12 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >
+> > I thought it was reverse. For sync-noidle workoads (typically seeky), we
+> > do lot less IO and size of IO is not the right measure otherwise most of
+> > the disk time we will be giving to this sync-noidle queue/group and
+> > sync-idle queues will be heavily punished in other groups.
+> 
+> This happens only if you try to measure both sequential and seeky with
+> the same metric.
 
-perf bench: Modify command-list.txt for the entry of perf-bench
+Ok, we seem to be discussing many things. I will try to pull it back on
+core points.
 
-This patch modifies command-list.txt for the entry of
-perf-bench. So perf will show 'bench' in command list.
+To me there are only two key questions.
 
-Example:
-% perf
+- Whether workload type should be on topmost layer or groups should be on
+  topmost layer.
 
- usage: perf [--version] [--help] COMMAND [ARGS]
+- How to define fairness in case of NCQ SSD where idling hurts and we
+  don't choose to idle.
 
- The most commonly used perf commands are:
-   annotate    Read perf.data (created by perf record) and display annotated code
-   bench       General framework for benchmark suites
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   list        List all symbolic event types
-   probe       Define new dynamic tracepoints
-   record      Run a command and record its profile into perf.data
-   report      Read perf.data (created by perf record) and display the profile
-   sched       Tool to trace/measure scheduler properties (latencies)
-   stat        Run a command and gather performance counter statistics
-   timechart   Tool to visualize total system behavior during a workload
-   top         System profiling tool.
-   trace       Read perf.data (created by perf record) and display trace output
 
- See 'perf help COMMAND' for more information on a specific command.
+For the first issue, if we keep workoad type on top, then we weaken the
+isolation between groups. We provide isolation between only same kind of
+workload type and not across the workloads types.
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1257853855-28934-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/command-list.txt |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+So if a group is running only sequential readers and other group is runnig
+random seeky reaeder, then share of second group is not determined by the
+group weight but the number of queues in first group.
 
-diff --git a/tools/perf/command-list.txt b/tools/perf/command-list.txt
-index 00326e2..981c40b 100644
---- a/tools/perf/command-list.txt
-+++ b/tools/perf/command-list.txt
-@@ -3,6 +3,7 @@
- # command name			category [deprecated] [common]
- #
- perf-annotate			mainporcelain common
-+perf-bench			mainporcelain common
- perf-list			mainporcelain common
- perf-sched			mainporcelain common
- perf-record			mainporcelain common
+Hence as we increase number of queues in first group, share of second
+group keep on coming down. This kind of implies that sequential reads
+in first group are more important as comapred to random seeky reader in
+second group. But in this case the relative importance of workload is
+specifed by the user with the help of cgroups and weights and IO scheduler
+should honor that.
+
+So to me, groups on topmost layer makes more sense than having workload
+type on topmost layer.
+
+> >
+> > time based fairness generally should work better on seeky media. As the
+> > seek cost starts to come down, size of IO also starts making sense.
+> >
+> > In fact on SSD, we do queue switching so fast and don't idle on the queue,
+> > doing time accounting and providing fairness in terms of time is hard, for
+> > the groups which are not continuously backlogged.
+> The mechanism in place still gives fairness in terms of I/Os for SSDs.
+> One queue is not even nearly backlogged, then there is no point in
+> enforcing fairness for it so that the backlogged one gets lower
+> bandwidth, but the not backlogged one doesn't get higher (since it is
+> limited by its think time).
+> 
+> For me fairness for SSDs should happen only when the total BW required
+> by all the queues is more than the one the disk can deliver, or the
+> total number of active queues is more than NCQ depth. Otherwise, each
+> queue will get exactly the bandwidth it wants, without affecting the
+> others, so no idling should happen. In the mentioned cases, instead,
+> no idling needs to be added, since the contention for resource will
+> already introduce delays.
+> 
+
+Ok, above is pertinent for the second issue of not idling on NCQ SSDs as
+it hurts and brings down the overall throughput. I tend to agree here,
+that idling on queues limited by think time does not make much sense on
+NCQ SSD. In this case probably fairness will be defined by how many a
+times a group got scheduled in for dispatch. If group has higher weight
+then it should be able to dispatch more times (in proportionate ratio),
+as compared to group lower weight group.
+
+We should be able to achieve this without idling hence overall thoughtput
+of the system should also be good. The only catch here is that it will be
+hard to achieve this behavior if group is not continuously backlogged.
+
+You seem to be suggesting that current CFQ formula for calculating slice
+offset provides take care of that. Looking at the formula I can't
+understand how does it enable dispatch from a queue in proportion to
+weight or priority. I will do some experiments on my NCQ SSD and do
+more discussion on this aspect later.
+
+Thoughts?
+
+Thanks
+Vivek
