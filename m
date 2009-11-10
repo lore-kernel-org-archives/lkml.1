@@ -1,61 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbZKJU0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZKJUac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbZKJU0p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 15:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758038AbZKJU0o
+	id S1758087AbZKJUac (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 15:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758059AbZKJUac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 15:26:44 -0500
-Received: from mail-out1.uio.no ([129.240.10.57]:52224 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757972AbZKJU0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 15:26:43 -0500
-Subject: Re: sunrpc port allocation and IANA reserved list
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Ben Hutchings <bhutchings@solarflare.com>, netdev@vger.kernel.org,
-       Linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AF9B2CF.6050305@nortel.com>
-References: <4AF9A63B.6010101@nortel.com>
-	 <1257875623.2834.19.camel@achroite.uk.solarflarecom.com>
-	 <4AF9B2CF.6050305@nortel.com>
-Content-Type: text/plain
-Date: Wed, 11 Nov 2009 05:26:39 +0900
-Message-Id: <1257884799.3044.7.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 4 msgs/h 1 sum rcpts/h 6 sum msgs/h 1 total rcpts 1829 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 1E4822C2B4AE9FCC79542E73516D6B31FEE4E582
-X-UiO-SPAM-Test: remote_host: 198.95.226.230 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 34 max/h 3 blacklist 0 greylist 0 ratelimit 0
+	Tue, 10 Nov 2009 15:30:32 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:35348 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758054AbZKJUaa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 15:30:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=VCh+G+94VFOkw5yRs0OY0l1Bi11umjwNzfKMnpDnphDI8dYPnwhnD7WDjvnRLP31Rq
+         b05Jt9SUg7XxXi7+U2Ud1DQluIIxOo1sJ+KeK3O1Ea38yYJpov4feIRa00/ENvKebKrp
+         2sDW+5zDMUNTPPBrURjot4ogmBi9fGpm6ktCo=
+MIME-Version: 1.0
+In-Reply-To: <43e72e890911090749r5b35fb83s4991bb9c44a1773a@mail.gmail.com>
+References: <43e72e890911041540hd1e5f87u8d282d9c95857504@mail.gmail.com> 
+	<alpine.LFD.2.01.0911041551220.31845@localhost.localdomain> 
+	<20091105071431.GA14055@elte.hu> <43e72e890911081135q78416ef7ua6c5991b15fb2659@mail.gmail.com> 
+	<20091109071558.GC453@elte.hu> <43e72e890911090749r5b35fb83s4991bb9c44a1773a@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Tue, 10 Nov 2009 12:30:16 -0800
+Message-ID: <43e72e890911101230t23933eaem4d7bc10237e1a725@mail.gmail.com>
+Subject: Re: Reverting 5d423 fixes loading of ath9k on Acer Extensa 7630EZ
+To: Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
+       stable@kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Yannick Roehlly <yannick.roehlly@free.fr>,
+       Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jesse.barnes@intel.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "John W. Linville" <linville@tuxdriver.com>, berndl81@gmx.at,
+       Ingo Molnar <mingo@elte.hu>, Stefan Bader <stefan.bader@canonical.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-10 at 12:37 -0600, Chris Friesen wrote:
-> On 11/10/2009 11:53 AM, Ben Hutchings wrote:
-> > On Tue, 2009-11-10 at 11:43 -0600, Chris Friesen wrote:
-> 
-> >> Given that a userspace application can be stopped and restarted at any
-> >> time, and a sunrpc registration can happen at any time, what is the
-> >> expected mechanism to prevent the kernel from allocating a port for use
-> >> by sunrpc that reserved or well-known?
-> >>
-> >> Apparently Redhat and Debian have distro-specific ways of dealing with
-> >> this, but is there a standard solution?  Should there be?
-> >>
-> >> The current setup seems suboptimal.
-> > 
-> > I believe both RH and Debian are using the same implementation:
-> > <http://cyberelk.net/tim/software/portreserve/>.
-> 
-> That helps with the startup case, but still leaves a possible hole if an
-> app using a fixed port number is restarted at runtime.  During the
-> window where nobody is bound to the port, the kernel could randomly
-> assign it to someone else.
+On Mon, Nov 9, 2009 at 7:49 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Sun, Nov 8, 2009 at 11:15 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> * Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>>
+>>> On Wed, Nov 4, 2009 at 11:14 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>> >
+>>> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>> >
+>>> >> On Wed, 4 Nov 2009, Luis R. Rodriguez wrote:
+>>> >> >
+>>> >> > Can you please consider reviewing this issue and help determine if
+>>> >> > this indeed needs to be reverted for 2.6.32 and the next 2.6.31.y.
+>>> >> >
+>>> >> > I am curious if other devices would work by reverting this as well.
+>>> >> > [ ... ] For details please feel free to check:
+>>> >> >
+>>> >> > http://bugzilla.kernel.org/show_bug.cgi?id=14402
+>>> >>
+>>> >> That same commit was the cause for
+>>> >>
+>>> >> ?? ?? ?? http://bugzilla.kernel.org/show_bug.cgi?id=13940
+>>> >>
+>>> >> and we just increased the rounding to make it go away (see commit
+>>> >> 15b812f1). But that was a hack.
+>>> >>
+>>> >> And if that didn't help the ath9k case, then we should just revert
+>>> >> entirely.
+>>> >
+>>> > Agreed - below is the combo 15b812f1 + 5d423ccd revert. (Would be nice
+>>> > to get the boot log of the latest post-15b812f1 kernel that Yinghai
+>>> > asked for before we revert, in the hope of better understanding the
+>>> > problem.)
+>>>
+>>> Bernhard has confirmed the new patch fixes this issue.
+>>
+>> Good - so latest kernels should be fine (on Bernhard's box) and no
+>> change is needed, right?
+>
+> Yea, but it does mean we need a fix propagated down to older kernels.
 
-Just use /proc/sys/sunrpc/{max,min}_resvport interface to restrict the
-range used to a safer one. That's what it is for...
+Greg, please consider applying 15b812f1d0 to stable 2.6.31 as it fixes
+an issue introduced on 2.6.31 and only fixed now for 2.6.32. This
+should fix an issue when loading either sky2 or ath9k on some specific
+platforms.
 
-Trond
+The details for the ath9k debugging are available on this bug:
 
+http://bugzilla.kernel.org/show_bug.cgi?id=14402
+
+  Luis
