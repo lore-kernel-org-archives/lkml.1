@@ -1,215 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbZKJWou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbZKJWyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758489AbZKJWou (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 17:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbZKJWot
+	id S1758641AbZKJWyq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 17:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758630AbZKJWyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 17:44:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45821 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756636AbZKJWot (ORCPT
+	Tue, 10 Nov 2009 17:54:45 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38368 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758582AbZKJWyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 17:44:49 -0500
-Date: Tue, 10 Nov 2009 16:44:47 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Greg Kroah-Hartman <gregkh@suse.de>, bzolnier@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: rtl8187se: Remove card_type
-Message-ID: <4af9ecdf.PFfC9drWlHV20I8E%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Tue, 10 Nov 2009 17:54:38 -0500
+Message-ID: <4AF9ED78.3000106@zytor.com>
+Date: Tue, 10 Nov 2009 14:47:20 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Willy Tarreau <w@1wt.eu>
+CC: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+References: <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <20091110211259.GD26633@1wt.eu> <4AF9D8E2.7050205@zytor.com> <20091110220652.GE26633@1wt.eu> <4AF9E61B.5090407@zytor.com> <20091110222031.GA22911@elte.hu> <20091110224222.GA28648@1wt.eu>
+In-Reply-To: <20091110224222.GA28648@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vendor-written driver for the RTL8187SE has a private variable
-for the card type, even though it only occurs in PCI format.
+On 11/10/2009 02:42 PM, Willy Tarreau wrote:
+> On Tue, Nov 10, 2009 at 11:20:31PM +0100, Ingo Molnar wrote:
+>>
+>> * H. Peter Anvin <hpa@zytor.com> wrote:
+>>
+>>> *THIS* is the kind of complexity that makes me think that having a 
+>>> single source for all interpretation done in the kernel is the 
+>>> preferred option.
+>>
+>> Definitely agreed ... The NX code is quite a maze right now, so changes 
+>> to it should come generously laced with cleanups.
+> 
+> BTW, I don't see why we should be impacted by NX. Trying to
+> execute from an NX page would return a SEGV, not SIGILL, so
+> we should not be bothered, am I wrong ?
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+Yes.  Consider a page-crossing instruction.
 
-Index: wireless-testing/drivers/staging/rtl8187se/r8180.h
-===================================================================
---- wireless-testing.orig/drivers/staging/rtl8187se/r8180.h
-+++ wireless-testing/drivers/staging/rtl8187se/r8180.h
-@@ -328,7 +328,6 @@ typedef struct r8180_priv
- 
- 	short phy_ver; /* meaningful for rtl8225 1:A 2:B 3:C */
- 	short enable_gpio0;
--	enum card_type {PCI,MINIPCI,CARDBUS,USB/*rtl8187*/}card_type;
- 	short hw_plcp_len;
- 	short plcp_preamble_mode; // 0:auto 1:short 2:long
- 
-Index: wireless-testing/drivers/staging/rtl8187se/r8180_core.c
-===================================================================
---- wireless-testing.orig/drivers/staging/rtl8187se/r8180_core.c
-+++ wireless-testing/drivers/staging/rtl8187se/r8180_core.c
-@@ -2911,8 +2911,6 @@ short rtl8180_init(struct net_device *de
- 	priv->ieee80211->short_slot = 1;
- 
- 	// just for sync 85
--	priv->card_type = PCI;
--        DMESG("This is a PCI NIC");
- 	priv->enable_gpio0 = 0;
- 
- 	usValue = eprom_read(dev, EEPROM_SW_REVD_OFFSET);
-@@ -3233,7 +3231,6 @@ void rtl8185_set_rate(struct net_device
- void rtl8180_adapter_start(struct net_device *dev)
- {
-         struct r8180_priv *priv = ieee80211_priv(dev);
--	u8 config3;
- 
- 	rtl8180_rtx_disable(dev);
- 	rtl8180_reset(dev);
-@@ -3247,12 +3244,6 @@ void rtl8180_adapter_start(struct net_de
- 
- 	rtl8180_beacon_tx_disable(dev);
- 
--	if(priv->card_type == CARDBUS ){
--		config3=read_nic_byte(dev, CONFIG3);
--		write_nic_byte(dev,CONFIG3,config3 | CONFIG3_FuncRegEn);
--		write_nic_word(dev,FEMR, FEMR_INTR | FEMR_WKUP | FEMR_GWAKE |
--			read_nic_word(dev, FEMR));
--	}
- 	rtl8180_set_mode(dev, EPROM_CMD_CONFIG);
- 	write_nic_dword(dev, MAC0, ((u32*)dev->dev_addr)[0]);
- 	write_nic_word(dev, MAC4, ((u32*)dev->dev_addr)[1] & 0xffff );
-Index: wireless-testing/drivers/staging/rtl8187se/r8180_rtl8225z2.c
-===================================================================
---- wireless-testing.orig/drivers/staging/rtl8187se/r8180_rtl8225z2.c
-+++ wireless-testing/drivers/staging/rtl8187se/r8180_rtl8225z2.c
-@@ -23,7 +23,6 @@ static void write_rtl8225(struct net_dev
- 	u16 out, select;
- 	u8 bit;
- 	u32 bangdata = (data << 4) | (adr & 0xf);
--	struct r8180_priv *priv = ieee80211_priv(dev);
- 
- 	out = read_nic_word(dev, RFPinsOutput) & 0xfff3;
- 
-@@ -33,7 +32,7 @@ static void write_rtl8225(struct net_dev
- 	select = read_nic_word(dev, RFPinsSelect);
- 
- 	write_nic_word(dev, RFPinsSelect, select | 0x7 |
--		((priv->card_type == USB) ? 0 : SW_CONTROL_GPIO));
-+		       SW_CONTROL_GPIO);
- 
- 	force_pci_posting(dev);
- 	udelay(10);
-@@ -71,16 +70,11 @@ static void write_rtl8225(struct net_dev
- 	force_pci_posting(dev);
- 	udelay(10);
- 
--	write_nic_word(dev, RFPinsOutput, out |
--		((priv->card_type == USB) ? 4 : BB_HOST_BANG_EN));
-+	write_nic_word(dev, RFPinsOutput, out | BB_HOST_BANG_EN);
- 
--	write_nic_word(dev, RFPinsSelect, select |
--		((priv->card_type == USB) ? 0 : SW_CONTROL_GPIO));
-+	write_nic_word(dev, RFPinsSelect, select | SW_CONTROL_GPIO);
- 
--	if (priv->card_type == USB)
--		mdelay(2);
--	else
--		rtl8185_rf_pins_enable(dev);
-+	rtl8185_rf_pins_enable(dev);
- }
- 
- static const u16 rtl8225bcd_rxgain[] = {
-@@ -174,15 +168,9 @@ static void rtl8225_SetTXPowerLevel(stru
- 	u8 cck_power_level = 0xff & priv->chtxpwr[ch];
- 	u8 ofdm_power_level = 0xff & priv->chtxpwr_ofdm[ch];
- 
--	if (priv->card_type == USB) {
--		max_cck_power_level = 11;
--		max_ofdm_power_level = 25;
--		min_ofdm_power_level = 10;
--	} else {
--		max_cck_power_level = 35;
--		max_ofdm_power_level = 35;
--		min_ofdm_power_level = 0;
--	}
-+	max_cck_power_level = 35;
-+	max_ofdm_power_level = 35;
-+	min_ofdm_power_level = 0;
- 
- 	if (cck_power_level > max_cck_power_level)
- 		cck_power_level = max_cck_power_level;
-@@ -629,8 +617,7 @@ void rtl8225z2_rf_init(struct net_device
- 
- 	priv->chan = channel;
- 
--	if (priv->card_type != USB)
--		rtl8225_host_pci_init(dev);
-+	rtl8225_host_pci_init(dev);
- 
- 	write_nic_dword(dev, RF_TIMING, 0x000a8008);
- 
-@@ -653,7 +640,7 @@ void rtl8225z2_rf_init(struct net_device
- 	write_rtl8225(dev, 0x4, 0x8c3); mdelay(1);
- 	write_rtl8225(dev, 0x5, 0xc72); mdelay(1);
- 	write_rtl8225(dev, 0x6, 0xe6);  mdelay(1);
--	write_rtl8225(dev, 0x7, ((priv->card_type == USB)? 0x82a : rtl8225_chan[channel]));  mdelay(1);
-+	write_rtl8225(dev, 0x7, rtl8225_chan[channel]);  mdelay(1);
- 	write_rtl8225(dev, 0x8, 0x3f);  mdelay(1);
- 	write_rtl8225(dev, 0x9, 0x335); mdelay(1);
- 	write_rtl8225(dev, 0xa, 0x9d4); mdelay(1);
-@@ -679,13 +666,6 @@ void rtl8225z2_rf_init(struct net_device
- 
- 	write_rtl8225(dev, 0x2, 0xc4d);
- 
--	if (priv->card_type == USB) {
--		mdelay(200);
--
--		write_rtl8225(dev, 0x2, 0x44d);
--		mdelay(100);
--	}
--
- 	/* FIXME!! rtl8187 we have to check if calibrarion
- 	 * is successful and eventually cal. again (repeat
- 	 * the two write on reg 2)
-@@ -705,9 +685,6 @@ void rtl8225z2_rf_init(struct net_device
- 
- 	write_rtl8225(dev, 0x0, 0x2bf);
- 
--	if (priv->card_type != USB)
--		rtl8185_rf_pins_enable(dev);
--
- 	for (i = 0; i < 128; i++) {
- 		data = rtl8225_agc[i];
- 
-@@ -724,7 +701,7 @@ void rtl8225z2_rf_init(struct net_device
- 
- 	write_phy_ofdm(dev, 0x00, 0x01); mdelay(1);
- 	write_phy_ofdm(dev, 0x01, 0x02); mdelay(1);
--	write_phy_ofdm(dev, 0x02, ((priv->card_type == USB) ? 0x42 : 0x62)); mdelay(1);
-+	write_phy_ofdm(dev, 0x02, 0x62); mdelay(1);
- 	write_phy_ofdm(dev, 0x03, 0x00); mdelay(1);
- 	write_phy_ofdm(dev, 0x04, 0x00); mdelay(1);
- 	write_phy_ofdm(dev, 0x05, 0x00); mdelay(1);
-@@ -772,7 +749,7 @@ void rtl8225z2_rf_init(struct net_device
- 	write_phy_cck(dev, 0x6, 0xfc); mdelay(1);
- 	write_phy_cck(dev, 0x7, 0x78); mdelay(1);
- 	write_phy_cck(dev, 0x8, 0x2e); mdelay(1);
--	write_phy_cck(dev, 0x10, ((priv->card_type == USB) ? 0x9b: 0x93)); mdelay(1);
-+	write_phy_cck(dev, 0x10, 0x93); mdelay(1);
- 	write_phy_cck(dev, 0x11, 0x88); mdelay(1);
- 	write_phy_cck(dev, 0x12, 0x47); mdelay(1);
- 	write_phy_cck(dev, 0x13, 0xd0);
-@@ -806,12 +783,8 @@ void rtl8225z2_rf_init(struct net_device
- 	/* switch to high-speed 3-wire
- 	 * last digit. 2 for both cck and ofdm
- 	 */
--	if (priv->card_type == USB)
--		write_nic_dword(dev, 0x94, 0x3dc00002);
--	else {
--		write_nic_dword(dev, 0x94, 0x15c00002);
--		rtl8185_rf_pins_enable(dev);
--	}
-+	write_nic_dword(dev, 0x94, 0x15c00002);
-+	rtl8185_rf_pins_enable(dev);
- 
- 	rtl8225_rf_set_chan(dev, priv->chan);
- }
-
+	-hpa
