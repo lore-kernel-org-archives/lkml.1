@@ -1,103 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbZKJITn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbZKJIXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752891AbZKJITn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 03:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZKJITm
+	id S1754226AbZKJIXO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 03:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZKJIXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 03:19:42 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55617 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbZKJITk (ORCPT
+	Tue, 10 Nov 2009 03:23:13 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:33651 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752258AbZKJIXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 03:19:40 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 10 Nov 2009 17:17:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       cl@linux-foundation.org, rientjes@google.com
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with
- nodemask v2
-Message-Id: <20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
-References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
-	<20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091110163419.361E.A69D9226@jp.fujitsu.com>
-	<20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Nov 2009 03:23:12 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: [PATCH 1/2] regulator/mc13783: rename source file to match other drivers
+Date: Tue, 10 Nov 2009 09:18:06 +0100
+Message-Id: <1257841087-23662-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <20091106002847.GC22366@sortiz.org>
+References: <20091106002847.GC22366@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009 17:03:38 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+One annoying thing about the old name was that the module was just
+called mc13783 which caused wrong expectations (at least for me).
 
-> On Tue, 10 Nov 2009 16:40:55 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Tue, 10 Nov 2009 16:39:02 +0900 (JST)
-> > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > 
-> > > > > > +
-> > > > > > +	/* Check this allocation failure is caused by cpuset's wall function */
-> > > > > > +	for_each_zone_zonelist_nodemask(zone, z, zonelist,
-> > > > > > +			high_zoneidx, nodemask)
-> > > > > > +		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
-> > > > > >  			return CONSTRAINT_CPUSET;
-> > > > > 
-> > > > > If cpuset and MPOL_BIND are both used, Probably CONSTRAINT_MEMORY_POLICY is
-> > > > > better choice.
-> > > > 
-> > > > No. this memory allocation is failed by limitation of cpuset's alloc mask.
-> > > > Not from mempolicy.
-> > > 
-> > > But CONSTRAINT_CPUSET doesn't help to free necessary node memory. It isn't
-> > > your fault. original code is wrong too. but I hope we should fix it.
-> > > 
-> I think so too.
-> 
-> > Hmm, maybe fair enough.
-> > 
-> > My 3rd version will use "kill always current(CONSTRAINT_MEMPOLICY does this)
-> > if it uses mempolicy" logic.
-> > 
-> "if it uses mempoicy" ?
-> You mean "kill allways current if memory allocation has failed by limitation of
-> cpuset's mask"(i.e. CONSTRAINT_CPUSET case) ?
-> 
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+---
+Hello,
 
-No. "kill always current process if memory allocation uses mempolicy"
-regardless of cpuset. If the task doesn't use mempolicy allocation,
-usual CONSTRAINT_CPUSET/CONSTRAINT_NONE oom handler will be invoked.
+I split that from the following patch mainly for review because if I
+squash them together git's rename detection doesn't trigger any more.
 
-Now, without patch, CONSTRAINT_MEMPOLICY is not returned at all. I'd
-like to limit the scope of this patch to return it. If it's returned,
-current will be killed.
+Best regards
+Uwe
 
-Finally, we'll have to consinder "how to manage oom under cpuset"
-problem, again. It's not handled in good way, now.
+ drivers/regulator/Makefile                         |    2 +-
+ .../regulator/{mc13783.c => mc13783-regulator.c}   |    0
+ 2 files changed, 1 insertions(+), 1 deletions(-)
+ rename drivers/regulator/{mc13783.c => mc13783-regulator.c} (100%)
 
-The main problems are...
-   - Cpuset allows intersection of nodes among groups. 
-   - Task can be migrated to other cpuset withoug moving memory.
-   - We don't have per-node-rss information per task.
-
-Then,
-   - We have to scan all tasks.
-   - We have to invoke Totally-Random-Innocent-Task-Killer and pray that
-     someone bad will be killed.
-
-IMHO, "find correct one" is too heavy to the kernel (under cpuset).
-If we can have notifier to userland, some daemon can check numa_maps of all
-tasks and will do something reasonbale.
-
-
-Thanks,
--Kame
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 4257a86..8891767 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -20,7 +20,7 @@ obj-$(CONFIG_REGULATOR_WM8400) += wm8400-regulator.o
+ obj-$(CONFIG_REGULATOR_DA903X)	+= da903x.o
+ obj-$(CONFIG_REGULATOR_PCF50633) += pcf50633-regulator.o
+ obj-$(CONFIG_REGULATOR_PCAP) += pcap-regulator.o
+-obj-$(CONFIG_REGULATOR_MC13783) += mc13783.o
++obj-$(CONFIG_REGULATOR_MC13783) += mc13783-regulator.o
+ obj-$(CONFIG_REGULATOR_AB3100) += ab3100.o
+ 
+ obj-$(CONFIG_REGULATOR_TPS65023) += tps65023-regulator.o
+diff --git a/drivers/regulator/mc13783.c b/drivers/regulator/mc13783-regulator.c
+similarity index 100%
+rename from drivers/regulator/mc13783.c
+rename to drivers/regulator/mc13783-regulator.c
+-- 
+1.6.5.2
 
