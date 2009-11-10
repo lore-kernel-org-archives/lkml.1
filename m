@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbZKJQ1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbZKJQib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbZKJQ1r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 11:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbZKJQ1p
+	id S1757084AbZKJQib (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 11:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbZKJQib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 11:27:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58227 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756896AbZKJQ1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 11:27:42 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Cc: ebiederm@xmission.com, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
-       jamie@shareable.org
-Subject: [PATCH 2/2] vfs: force reval on dentry of bind mounted files for LOOKUP_OPEN
-Date: Tue, 10 Nov 2009 11:27:36 -0500
-Message-Id: <1257870456-31188-3-git-send-email-jlayton@redhat.com>
-In-Reply-To: <1257870456-31188-1-git-send-email-jlayton@redhat.com>
-References: <1257870456-31188-1-git-send-email-jlayton@redhat.com>
+	Tue, 10 Nov 2009 11:38:31 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35815 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756872AbZKJQia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 11:38:30 -0500
+Message-ID: <4AF994FA.8010702@zytor.com>
+Date: Tue, 10 Nov 2009 08:29:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Willy Tarreau <w@1wt.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+References: <4AF4526B.4060101@zytor.com> <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com> <20091108173708.GF1372@ucw.cz> <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com> <20091108181016.GB32364@elf.ucw.cz> <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de> <20091108193618.GB4186@elf.ucw.cz> <40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com> <20091108195158.GD4186@elf.ucw.cz> <20091108200852.7f2cf092@lxorguk.ukuu.org.uk> <20091110052711.GA15338@1wt.eu> <4AF9020C.90108@zytor.com> <4AF9435F.2070103@redhat.com>
+In-Reply-To: <4AF9435F.2070103@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the case of a bind mounted file, the path walking code will assume
-that a cached dentry is valid and doesn't revalidate it. This is a
-problem for NFSv4 in a way that's similar to LAST_BIND symlinks.
+On 11/10/2009 02:41 AM, Avi Kivity wrote:
+> 
+> In theory yes.  There would need to be a bit of work to disassociate it
+> from kvm, but nothing too difficult.
+> 
+> Note that the kvm x86 emulator is more general than need be (emulates
+> real mode code and cpl 0 instructions) and less general than needed
+> (many instructions are not emulated, for example nopl).
+> 
 
-Fix this by revalidating the dentry if LOOKUP_OPEN is set and
-__follow_mount returns true.
+Yes, but I suspect that adding new instructions probably is
+straightforward.  I would still prefer to have a single interpreter in
+the kernel as opposed to two different ones which are going to have
+different bugs.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/namei.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+	-hpa
 
-diff --git a/fs/namei.c b/fs/namei.c
-index 5c8ef80..b7c9747 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -839,6 +839,7 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
- {
- 	struct vfsmount *mnt = nd->path.mnt;
- 	struct dentry *dentry = __d_lookup(nd->path.dentry, name);
-+	int error = 0;
- 
- 	if (!dentry)
- 		goto need_lookup;
-@@ -847,8 +848,9 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
- done:
- 	path->mnt = mnt;
- 	path->dentry = dentry;
--	__follow_mount(path);
--	return 0;
-+	if (__follow_mount(path))
-+		error = open_reval_path(path, nd);
-+	return error;
- 
- need_lookup:
- 	dentry = real_lookup(nd->path.dentry, name, nd);
-@@ -1836,6 +1838,9 @@ do_last:
- 		error = -ELOOP;
- 		if (flag & O_NOFOLLOW)
- 			goto exit_dput;
-+		error = open_reval_path(&path, &nd);
-+		if (error)
-+			goto exit;
- 	}
- 
- 	error = -ENOENT;
 -- 
-1.5.5.6
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
