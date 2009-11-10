@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbZKJAEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZKJAJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbZKJAEI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 19:04:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbZKJAEH
+	id S1755455AbZKJAJG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 19:09:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbZKJAJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 19:04:07 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:50849 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753670AbZKJAEH (ORCPT
+	Mon, 9 Nov 2009 19:09:05 -0500
+Received: from icebox.esperi.org.uk ([81.187.191.129]:45952 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbZKJAJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 19:04:07 -0500
-Date: Tue, 10 Nov 2009 00:04:11 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, torvalds@linux-foundation.org
-Subject: Re: [PULL] pull request for fixes-s3c-2632-rc6
-Message-ID: <20091110000411.GF20341@fluff.org.uk>
-References: <20091109235623.GA13968@fluff.org.uk>
+	Mon, 9 Nov 2009 19:09:05 -0500
+To: "Tantilov, Emil S" <emil.s.tantilov@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>
+Subject: Re: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31 (SMP only? MSI? PAUSE!)
+References: <873a4rqu9o.fsf@spindle.srvr.nix>
+	<EA929A9653AAE14F841771FB1DE5A1365F9923A504@rrsmsx501.amr.corp.intel.com>
+	<87ljihnh81.fsf@spindle.srvr.nix>
+From: Nix <nix@esperi.org.uk>
+Emacs: because you deserve a brk today.
+Date: Tue, 10 Nov 2009 00:08:47 +0000
+In-Reply-To: <87ljihnh81.fsf@spindle.srvr.nix> (nix@esperi.org.uk's message of "Sun, 08 Nov 2009 15:55:58 +0000")
+Message-ID: <87eio7meb4.fsf_-_@spindle.srvr.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091109235623.GA13968@fluff.org.uk>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-DCC-x.dcc-servers-Metrics: spindle 104; Body=3 Fuz1=3 Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2009 at 11:56:23PM +0000, Ben Dooks wrote:
+On 8 Nov 2009, nix@esperi.org.uk told this:
 
-Sorry, this should have been CC: to torvalds@linux-foundation.org
+> On 6 Nov 2009, Emil S. Tantilov verbalised:
+>> Also try disabling Tx pause frames:
+>> ethtool -A fastnet tx off autoneg off
+>
+> Trying that now. No freezes yet, but I haven't really given it long
+> enough.
 
-> Pull request for fixes for the current kernel release.
-> 
-> The following changes since commit 799dd75b1a8380a967c929a4551895788c374b31:
->   Linus Torvalds (1):
->         Merge branch 'i2c-for-linus' of git://git.kernel.org/.../jdelvare/staging
-> 
-> are available in the git repository at:
-> 
->   git://git.fluff.org/bjdooks/linux fixes-s3c-2632-rc6
-> 
-> Ben Dooks (2):
->       ARM: S3C64XX: Tidy definition and comments in s3c_dma_has_circular()
->       ARM: S3C: Merge fixes-s3c64xx-dma
-> 
-> Jassi Brar (5):
->       ARM: S3C64XX: DMA: Protect buffer pointers while manipulation
->       ARM: S3C64XX: DMA: Unify callback functions for success/failure
->       ARM: S3C64XX: DMA: Make src and dst transfer size same
->       ARM: S3C64XX: DMA: Callback with correct buffer pointer
->       ARM: S3C64XX: DMA: Free node for non-circular queues
-> 
-> Mark Brown (2):
->       ARM: SMDK6410: Configure GPIO pull up for WM835x IRQ line
->       ARM: SMDK6410: Allocate more GPIO space for WM1190-EV1
-> 
-> Maurus Cuelenaere (1):
->       ARM: S3C64XX: Remove duplicate s3c_dma_has_circular() definition for S3C64xx.
-> 
->  arch/arm/mach-s3c6400/include/mach/dma.h |   12 +----
->  arch/arm/mach-s3c6410/Kconfig            |    1 +
->  arch/arm/mach-s3c6410/mach-smdk6410.c    |    3 +
->  arch/arm/plat-s3c64xx/dma.c              |   76 ++++++++++++++++++++---------
->  4 files changed, 58 insertions(+), 34 deletions(-)
-> 
-> 
-> -- 
-> Ben (ben@fluff.org, http://www.fluff.org/)
-> 
->   'a smiley only costs 4 bytes'
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I just did a large number of kernel-build-and-installs with frame
+pointers over NFS over the errant link. No problems at all.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+I think we can say this fixes it (works around it?)
 
-  'a smiley only costs 4 bytes'
+Does this implicate the gigabit switch I'm talking to, or is it a kernel
+bug? (It looks like the cheap Realteks at the other ends of this link
+don't support pause frames at all: at least ethtool -a gives
+-EOPNOTSUPP, but maybe they simply can't be turned off... hm, r8169.c
+vaguely suggests that it supports them but can't turn them off without
+source hacking.)
