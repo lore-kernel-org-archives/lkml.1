@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZKJQv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZKJQrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbZKJQv2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 11:51:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757174AbZKJQv2
+	id S1757184AbZKJQrl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 11:47:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbZKJQrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 11:51:28 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48744 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757173AbZKJQv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 11:51:27 -0500
-Message-ID: <4AF9991B.20400@zytor.com>
-Date: Tue, 10 Nov 2009 08:47:23 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 10 Nov 2009 11:47:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26515 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757085AbZKJQrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 11:47:40 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Jan Kara <jack@suse.cz>, jens.axboe@oracle.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: Performance regression in IO scheduler still there
+References: <20091026172012.GC7233@duck.suse.cz>
+	<x49zl7020mr.fsf@segfault.boston.devel.redhat.com>
+	<x49my2zh47n.fsf@segfault.boston.devel.redhat.com>
+	<4e5e476b0911080901n6b855b0dle63f0151073ec2c6@mail.gmail.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 10 Nov 2009 11:47:30 -0500
+In-Reply-To: <4e5e476b0911080901n6b855b0dle63f0151073ec2c6@mail.gmail.com>
+	(Corrado Zoccolo's message of "Sun, 8 Nov 2009 18:01:50 +0100")
+Message-ID: <x494op25ntp.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Kees Cook <kees.cook@canonical.com>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
-References: <4ADD1E03.4070200@zytor.com> <20091020045513.GU5394@outflux.net> <20091109221015.GB5129@outflux.net> <4AF8A2C0.5080700@zytor.com> <20091110154956.GF5129@outflux.net>
-In-Reply-To: <20091110154956.GF5129@outflux.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 07:49 AM, Kees Cook wrote:
->>
->> The second clause can only get executed if CONFIG_X86_PAE is unset,
->> which in turn means _PAGE_NX == 0... so that piece of code is meaningless.
-> 
-> CONFIG_X86_PAE is unset for x86_64, where _PAGE_NX is valid.  (This was
-> the main situation I was trying to address.)  So that chunk runs for
-> non-pae 32bit, and all 64bit:
-> 
+Corrado Zoccolo <czoccolo@gmail.com> writes:
 
-In reality, X86_PAE really should have been defined for 64 bits, since
-64 bits really is PAE in most aspects.
+> Jeff, Jens,
+> do you think we should try to do more auto-tuning of cfq parameters?
+> Looking at those numbers for SANs, I think we are being suboptimal in
+> some cases.
+> E.g. sequential read throughput is lower than random read.
 
-Anyway, for the 64-bit case it looks like the proper place for any of
-this is in check_efer() just below, not in this null routine.
+I investigated this further, and this was due to a problem in the
+benchmark.  It was being run with only 500 samples for random I/O and
+65536 samples for sequential.  After fixing this, we see random I/O is
+slower than sequential, as expected.
 
-	-hpa
+> I also think that current slice_idle and slice_sync values are good
+> for devices with 8ms seek time, but they are too high for non-NCQ
+> flash devices, where "seek" penalty is under 1ms, and we still prefer
+> idling.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Do you have numbers to back that up?  If not, throw a fio job file over
+the fence and I'll test it on one such device.
 
+> If we agree on this, should the measurement part (I'm thinking to
+> measure things like seek time, throughput, etc...) be added to the
+> common elevator code, or done inside cfq?
+
+Well, if it's something that is of interest to others, than pushing it
+up a layer makes sense.  If only CFQ is going to use it, keep it there.
+
+Cheers,
+Jeff
