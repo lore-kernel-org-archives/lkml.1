@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbZKJQib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZKJQ3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbZKJQib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 11:38:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbZKJQib
+	id S1756916AbZKJQ3v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 11:29:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbZKJQ3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 11:38:31 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35815 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756872AbZKJQia (ORCPT
+	Tue, 10 Nov 2009 11:29:49 -0500
+Received: from gv-out-0910.google.com ([216.239.58.185]:54902 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756137AbZKJQ3s convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 11:38:30 -0500
-Message-ID: <4AF994FA.8010702@zytor.com>
-Date: Tue, 10 Nov 2009 08:29:46 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 10 Nov 2009 11:29:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ojd8DZ66Mbc1LVWE9Ty4icpkQh2JGp1sr0LKmJSMYB2ZmxnJEFee9OrCUJrQb/oF7P
+         u/yeaPaBNKxTiQOSKbtK+GeCCYxxPkq9NCnHr/g8UVzO8BDY1WvDtK6RMR2Q/d2zTKlS
+         y2S0YpqeN9xiXXtPmhM1L/BlnwPGP/Ksr7Ovs=
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Willy Tarreau <w@1wt.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-References: <4AF4526B.4060101@zytor.com> <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com> <20091108173708.GF1372@ucw.cz> <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com> <20091108181016.GB32364@elf.ucw.cz> <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de> <20091108193618.GB4186@elf.ucw.cz> <40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com> <20091108195158.GD4186@elf.ucw.cz> <20091108200852.7f2cf092@lxorguk.ukuu.org.uk> <20091110052711.GA15338@1wt.eu> <4AF9020C.90108@zytor.com> <4AF9435F.2070103@redhat.com>
-In-Reply-To: <4AF9435F.2070103@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1257869585-7092-8-git-send-email-john.johansen@canonical.com>
+References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>
+	 <1257869585-7092-8-git-send-email-john.johansen@canonical.com>
+Date: Tue, 10 Nov 2009 18:29:52 +0200
+X-Google-Sender-Auth: 41174ee98baf7e71
+Message-ID: <84144f020911100829k515c7f73w84df942162a49a30@mail.gmail.com>
+Subject: Re: [PATCH 07/12] AppArmor: userspace interfaces
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: John Johansen <john.johansen@canonical.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 02:41 AM, Avi Kivity wrote:
-> 
-> In theory yes.  There would need to be a bit of work to disassociate it
-> from kvm, but nothing too difficult.
-> 
-> Note that the kvm x86 emulator is more general than need be (emulates
-> real mode code and cpl 0 instructions) and less general than needed
-> (many instructions are not emulated, for example nopl).
-> 
+Hi John,
 
-Yes, but I suspect that adding new instructions probably is
-straightforward.  I would still prefer to have a single interpreter in
-the kernel as opposed to two different ones which are going to have
-different bugs.
+On Tue, Nov 10, 2009 at 6:13 PM, John Johansen
+<john.johansen@canonical.com> wrote:
+> The current apparmorfs interface is compatible with previous versions
+> of AppArmor.  The plans are to deprecate it (hence the config option
+> APPARMOR_COMPAT_24) and replace it with a more sysfs style single
+> entry per file interface.
 
-	-hpa
+We don't usually merge compatibility code to handle ABIs that were
+developed out-of-tree. Why should we treat AppArmor differently?
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+                        Pekka
