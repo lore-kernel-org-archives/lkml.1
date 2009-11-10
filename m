@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbZKJNZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZKJNZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608AbZKJNZx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 08:25:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbZKJNZw
+	id S1756600AbZKJNZj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 08:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZKJNZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 08:25:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34280 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbZKJNZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 08:25:51 -0500
-Date: Tue, 10 Nov 2009 13:25:10 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, mitake@dcl.info.waseda.ac.jp,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1257853855-28934-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1257853855-28934-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/bench] perf bench: Clean up bench/bench.h
-Message-ID: <tip-606bc1e18d346fc7d7fb333909cc95b06b1ca5b1@git.kernel.org>
-Git-Commit-ID: 606bc1e18d346fc7d7fb333909cc95b06b1ca5b1
-X-Mailer: tip-git-log-daemon
+	Tue, 10 Nov 2009 08:25:36 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34567 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756549AbZKJNZW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 08:25:22 -0500
+Date: Tue, 10 Nov 2009 14:25:26 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Stanislav Brabec <utx@penguin.cz>
+Cc: Eric Miao <eric.y.miao@gmail.com>, zaurus-devel@www.linuxtogo.org,
+       rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com,
+       Paul Fertser <fercerpav@gmail.com>
+Subject: Re: spitz battery driver
+Message-ID: <20091110132526.GC26144@atrey.karlin.mff.cuni.cz>
+References: <20091109135813.GA1385@ucw.cz> <f17812d70911091948p5331f11djc887443559b233db@mail.gmail.com> <20091110104634.GA1395@ucw.cz> <1257856464.6394.6.camel@utx.utx.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1257856464.6394.6.camel@utx.utx.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  606bc1e18d346fc7d7fb333909cc95b06b1ca5b1
-Gitweb:     http://git.kernel.org/tip/606bc1e18d346fc7d7fb333909cc95b06b1ca5b1
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 10 Nov 2009 20:50:53 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Nov 2009 14:14:35 +0100
+k
+> > > This is a good move. However, I assume the patch is still RFC now.
+> > > Or basically the coding style cleanup can be separated into another
+> > > patch?
+> > 
+> > Its rfc now. Parts of codingstyle cleanup should already be in your
+> > tree, I'll rediff it later.
+> 
+> Pavel, could you compare your patch with the "power: implement platform
+> battery driver"??? patches from Paul Fertser just sent to LKML and
+> zaurus-devel list? Would it be complicated to migrate to it? I guess
 
-perf bench: Clean up bench/bench.h
+Complicated? No. Useful? Probably also no. Remove 50 lines for
+additional indirection? I'd prefer not to.
 
-Clean up initializers in bench.h:
+> that use of platform driver could allow to recycle major parts of the
+> charging driver by more devices.
 
-  - No need to break the line for function prototypes, they are more
-    readable in a single line. (even if checkpatch complains about it
+take a look at those patches. I'd rather use mainline battery api.
 
-  - We try to align definitions / structure fields vertically,
-    to make it  all a bit more readable.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1257853855-28934-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
----
- tools/perf/bench/bench.h |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
-
-diff --git a/tools/perf/bench/bench.h b/tools/perf/bench/bench.h
-index 42167ea..9fbd8d7 100644
---- a/tools/perf/bench/bench.h
-+++ b/tools/perf/bench/bench.h
-@@ -1,17 +1,15 @@
- #ifndef BENCH_H
- #define BENCH_H
- 
--extern int bench_sched_messaging(int argc, const char **argv,
--				 const char *prefix);
--extern int bench_sched_pipe(int argc, const char **argv,
--			    const char *prefix);
-+extern int bench_sched_messaging(int argc, const char **argv, const char *prefix);
-+extern int bench_sched_pipe(int argc, const char **argv, const char *prefix);
- 
--#define BENCH_FORMAT_DEFAULT_STR "default"
--#define BENCH_FORMAT_DEFAULT 0
--#define BENCH_FORMAT_SIMPLE_STR "simple"
--#define BENCH_FORMAT_SIMPLE 1
-+#define BENCH_FORMAT_DEFAULT_STR	"default"
-+#define BENCH_FORMAT_DEFAULT		0
-+#define BENCH_FORMAT_SIMPLE_STR		"simple"
-+#define BENCH_FORMAT_SIMPLE		1
- 
--#define BENCH_FORMAT_UNKNOWN -1
-+#define BENCH_FORMAT_UNKNOWN		-1
- 
- extern int bench_format;
- 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
