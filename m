@@ -1,46 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbZKJIWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZKJIXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbZKJIWI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 03:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZKJIWH
+	id S1754610AbZKJIXo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 03:23:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbZKJIXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 03:22:07 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52206 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752549AbZKJIWF convert rfc822-to-8bit (ORCPT
+	Tue, 10 Nov 2009 03:23:44 -0500
+Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:42208 "HELO
+	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754269AbZKJIXn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 03:22:05 -0500
-Subject: Re: [PATCH] kernel.h: Add printk_ratelimited and pr_<level>_rl
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>,
-       Naohiro Ooiwa <nooiwa@miraclelinux.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, roland@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, oleg@redhat.com
-In-Reply-To: <20091110073909.GA8874@elte.hu>
-References: <4AEACFBF.4060108@miraclelinux.com>
-	 <20091030143333.414ea29c.akpm@linux-foundation.org>
-	 <1256939158.1917.43.camel@Joe-Laptop.home>
-	 <1256944907.1917.109.camel@Joe-Laptop.home>
-	 <20091109134914.70de28cf.akpm@linux-foundation.org>
-	 <20091110051734.GG7897@elte.hu> <1257838493.21088.6.camel@twins>
-	 <20091110073909.GA8874@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Tue, 10 Nov 2009 09:21:56 +0100
-Message-ID: <1257841316.9767.0.camel@twins>
+	Tue, 10 Nov 2009 03:23:43 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=pgHYYZWJ28pOGdb9tDvoyLImdxy1aVkNarlGl09YBlVJMd0n9qj/XEfDYHA5yzFTOrqx4eEMgJ+MQrteEsDLho/oc5ESfr0Pk1vuHGpl+qvkFKElASf9FjVxX4NWlTVU;
+Date: Tue, 10 Nov 2009 08:23:40 +0000
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: pci_find_parent_resource patch
+Message-ID: <20091110082340.319f1ad3@jbarnes-x200>
+In-Reply-To: <4AF875D0.10602@kernel.org>
+References: <4AF875D0.10602@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 158.43.2.102 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-10 at 08:39 +0100, Ingo Molnar wrote:
-> 
-> printk wont go away as an ad-hoc print-this tool. (Nor will we convert 
-> most of the remaining 18,000+ uses of printk() in the kernel, so 
-> printk() will be with us forever i guess.)
+I don't remember seeing it, is it for 2.6.32?
 
-Ok good, /me purges all knowledge of pr_* and will henceforth ignore
-it ;-)
+Jesse
+
+On Mon, 09 Nov 2009 12:04:32 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
+
+> it seems this patch from Linus get lost ?
+> 
+> -----------------------------------------------------
+> 
+> 
+> 
+> from Linus
+> 
+> ---
+>  drivers/pci/pci.c |    8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/drivers/pci/pci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci.c
+> +++ linux-2.6/drivers/pci/pci.c
+> @@ -382,8 +382,12 @@ pci_find_parent_resource(const struct pc
+>  			continue;	/* Wrong type */
+>  		if (!((res->flags ^ r->flags) & IORESOURCE_PREFETCH))
+>  			return r;	/* Exact match */
+> -		if ((res->flags & IORESOURCE_PREFETCH) && !(r->flags
+> & IORESOURCE_PREFETCH))
+> -			best = r;	/* Approximating
+> prefetchable by non-prefetchable */
+> +		/* We can't insert a non-prefetch resource inside a
+> prefetchable parent .. */
+> +		if (r->flags & IORESOURCE_PREFETCH)
+> +			continue;
+> +		/* .. but we can put a prefetchable resource inside
+> a non-prefetchable one */
+> +		if (!best)
+> +			best = r;
+>  	}
+>  	return best;
+>  }
+> 
+
