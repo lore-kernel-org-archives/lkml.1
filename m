@@ -1,64 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZKJLGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZKJLHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbZKJLGa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 06:06:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZKJLG3
+	id S1753442AbZKJLHY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 06:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZKJLHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 06:06:29 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:43722 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbZKJLG1 convert rfc822-to-8bit (ORCPT
+	Tue, 10 Nov 2009 06:07:23 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:56431 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbZKJLHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 06:06:27 -0500
+	Tue, 10 Nov 2009 06:07:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=sWQqIb2lNGAYda7VuBIhr3qsMaeFEKmW5wrdSJ8km4q6AOcwYL0+7SREQiLaOdHhYY
-         eEzo2YPd9BtqE5if3heLcexIWnx3iBLA4PDwNEo216PT0FOtI2Bz3uxZkoPjsQg8KUjp
-         Me/mWp8cgeUYNXxI8am6Yt2jytfT7gXlZXHwY=
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Y05SOjk8myBt5N+kQmvCf0dxdZ8oyHzCNP7pIr4hK4H40+8dT2gr+MCEl9TrKcGV+u
+         r2cqecUaztulGuhJEREYPf9CI6niUOrLtW7dRenf6FJb2eXcQa3BQsS4berqPQ2ryMN8
+         q/UFUYhsOam2bJFYieZ+8LsxJLiE+/VzPsvds=
+Date: Tue, 10 Nov 2009 12:07:23 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, dimm <dmitry.adamushko@gmail.com>
+Subject: [PATCH 1/3] x86, ucode-amd: Load ucode-patches once and not
+ separately fo each CPU
+Message-ID: <20091110110723.GH30802@alberich.amd.com>
+References: <20091110110601.GG30802@alberich.amd.com>
 MIME-Version: 1.0
-In-Reply-To: <3e8340490911091600v3a0e9b67r279349ac852d604a@mail.gmail.com>
-References: <20091103094703.GB11134@hack.redhat.com>
-	 <20091103230548.0B45.A69D9226@jp.fujitsu.com>
-	 <20091104002544.0B4A.A69D9226@jp.fujitsu.com>
-	 <20091109144717.0cd17421.akpm@linux-foundation.org>
-	 <3e8340490911091600v3a0e9b67r279349ac852d604a@mail.gmail.com>
-Date: Tue, 10 Nov 2009 20:06:31 +0900
-X-Google-Sender-Auth: 483fa48c6c7a5b0d
-Message-ID: <2f11576a0911100306k7e2a64b9r35e13454be858140@mail.gmail.com>
-Subject: Re: [PATCH v5] Added PR_SET_PROCTITLE_AREA option for prctl()
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Bryan Donlan <bdonlan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Americo Wang <xiyou.wangcong@gmail.com>, Timo Sirainen <tss@iki.fi>,
-       Ulrich Drepper <drepper@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091110110601.GG30802@alberich.amd.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/10 Bryan Donlan <bdonlan@gmail.com>:
-> On Mon, Nov 9, 2009 at 5:47 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->
->> What happens if userspace unmaps the memory after telling the kernel to
->> use it?
->>
->> Will processes which try to read the command line get an error reading
->> /proc?  If so, do all the commandline-reading programs in the world
->> handle this in an appropriate fashion?
->
-> This case can already occur in the current code; the userspace process
-> would have to munmap() the top of its stack, but it certainly can do
-> so if it tries. In any case, access_process_vm() then returns 0
-> because of the fault, and thus /proc/pid/cmdline is seen to have zero
-> length. Since a zero-length /proc/pid/cmdline occurs with kernel
-> threads as well, we know this isn't a problem.
+This also implies that corresponding log messages, e.g.
 
-Plus, ps can read under exiting process. In this case, task->mm is NULL and
-proc_pid_cmdline return 0.
+  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
 
-procps tools are already NUL safe since long time ago.
+show up only once on module load and not when ucode is updated for
+each CPU.
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/include/asm/microcode.h |    2 ++
+ arch/x86/kernel/microcode_amd.c  |   24 +++++++++++++++++-------
+ arch/x86/kernel/microcode_core.c |    6 ++++++
+ 3 files changed, 25 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/include/asm/microcode.h b/arch/x86/include/asm/microcode.h
+index ef51b50..c24ca9a 100644
+--- a/arch/x86/include/asm/microcode.h
++++ b/arch/x86/include/asm/microcode.h
+@@ -12,6 +12,8 @@ struct device;
+ enum ucode_state { UCODE_ERROR, UCODE_OK, UCODE_NFOUND };
+ 
+ struct microcode_ops {
++	void (*init)(struct device *device);
++	void (*fini)(void);
+ 	enum ucode_state (*request_microcode_user) (int cpu,
+ 				const void __user *buf, size_t size);
+ 
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index c043534..75538f6 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -33,6 +33,8 @@ MODULE_LICENSE("GPL v2");
+ #define UCODE_EQUIV_CPU_TABLE_TYPE 0x00000000
+ #define UCODE_UCODE_TYPE           0x00000001
+ 
++const struct firmware *firmware;
++
+ struct equiv_cpu_entry {
+ 	u32	installed_cpu;
+ 	u32	fixed_errata_mask;
+@@ -301,14 +303,10 @@ generic_load_microcode(int cpu, const u8 *data, size_t size)
+ 
+ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
+ {
+-	const char *fw_name = "amd-ucode/microcode_amd.bin";
+-	const struct firmware *firmware;
+ 	enum ucode_state ret;
+ 
+-	if (request_firmware(&firmware, fw_name, device)) {
+-		printk(KERN_ERR "microcode: failed to load file %s\n", fw_name);
++	if (firmware == NULL)
+ 		return UCODE_NFOUND;
+-	}
+ 
+ 	if (*(u32 *)firmware->data != UCODE_MAGIC) {
+ 		printk(KERN_ERR "microcode: invalid UCODE_MAGIC (0x%08x)\n",
+@@ -318,8 +316,6 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
+ 
+ 	ret = generic_load_microcode(cpu, firmware->data, firmware->size);
+ 
+-	release_firmware(firmware);
+-
+ 	return ret;
+ }
+ 
+@@ -339,7 +335,21 @@ static void microcode_fini_cpu_amd(int cpu)
+ 	uci->mc = NULL;
+ }
+ 
++void init_microcode_amd(struct device *device)
++{
++	const char *fw_name = "amd-ucode/microcode_amd.bin";
++	if (request_firmware(&firmware, fw_name, device))
++		printk(KERN_ERR "microcode: failed to load file %s\n", fw_name);
++}
++
++void fini_microcode_amd(void)
++{
++	release_firmware(firmware);
++}
++
+ static struct microcode_ops microcode_amd_ops = {
++	.init				  = init_microcode_amd,
++	.fini				  = fini_microcode_amd,
+ 	.request_microcode_user           = request_microcode_user,
+ 	.request_microcode_fw             = request_microcode_fw,
+ 	.collect_cpu_info                 = collect_cpu_info_amd,
+diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+index 2bcad39..230fb09 100644
+--- a/arch/x86/kernel/microcode_core.c
++++ b/arch/x86/kernel/microcode_core.c
+@@ -518,6 +518,9 @@ static int __init microcode_init(void)
+ 		return PTR_ERR(microcode_pdev);
+ 	}
+ 
++	if (microcode_ops->init)
++		microcode_ops->init(&microcode_pdev->dev);
++
+ 	get_online_cpus();
+ 	mutex_lock(&microcode_mutex);
+ 
+@@ -561,6 +564,9 @@ static void __exit microcode_exit(void)
+ 
+ 	platform_device_unregister(microcode_pdev);
+ 
++	if (microcode_ops->fini)
++		microcode_ops->fini();
++
+ 	microcode_ops = NULL;
+ 
+ 	pr_info("Microcode Update Driver: v" MICROCODE_VERSION " removed.\n");
+-- 
+1.6.5.2
+
