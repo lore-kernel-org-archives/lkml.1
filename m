@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbZKJUap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbZKJUcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758096AbZKJUap (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 15:30:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758091AbZKJUap
+	id S1758097AbZKJUcM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 15:32:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbZKJUcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 15:30:45 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:51905 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758092AbZKJUao (ORCPT
+	Tue, 10 Nov 2009 15:32:11 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33963 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758059AbZKJUcK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 15:30:44 -0500
-X-Greylist: delayed 481 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Nov 2009 15:30:44 EST
-Date: Tue, 10 Nov 2009 15:20:41 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: npiggin@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: Re: Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu counter
-  instead
-In-Reply-To: <28c262360911062019q254f7541lbdc3d94491a69bd6@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0911101519250.14300@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911051417370.24312@V090114053VZO-1>  <alpine.DEB.1.10.0911051419320.24312@V090114053VZO-1>  <28c262360911060741x3f7ab0a2k15be645e287e05ac@mail.gmail.com>  <alpine.DEB.1.10.0911061209520.5187@V090114053VZO-1>
- <28c262360911062019q254f7541lbdc3d94491a69bd6@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 10 Nov 2009 15:32:10 -0500
+Message-ID: <4AF9CC1E.2050700@zytor.com>
+Date: Tue, 10 Nov 2009 12:25:02 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Willy Tarreau <w@1wt.eu>
+CC: Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+References: <20091108200852.7f2cf092@lxorguk.ukuu.org.uk> <20091110052711.GA15338@1wt.eu> <4AF9020C.90108@zytor.com> <4AF9435F.2070103@redhat.com> <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu>
+In-Reply-To: <20091110201602.GA26633@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Nov 2009, Minchan Kim wrote:
+On 11/10/2009 12:16 PM, Willy Tarreau wrote:
+> 
+> Indeed, but there is a difference between [cmpxchg, bswap, cmov, nopl]
+> on one side and [sse*] on the other : distros are built assuming the
+> former are always available while they are not always. And the distro
+> which make the difference have to provide an dedicated build for earlier
+> systems just for compatibility. SSE*, 3dnow* etc... are only used by a
+> handful of media players/converters/encoders which are able to detect
+> themselves what to use and already have the necessary fallbacks because
+> these instruction sets vary too much between processors and vendors.
+> 
 
-> On Sat, Nov 7, 2009 at 2:10 AM, Christoph Lameter
-> <cl@linux-foundation.org> wrote:
-> > On Sat, 7 Nov 2009, Minchan Kim wrote:
-> >
-> >> How about change from 'mm_readers' to 'is_readers' to improve your
-> >> goal 'scalibility'?
-> >
-> > Good idea. Thanks. Next rev will use your suggestion.
-> >
-> > Any creative thoughts on what to do about the 1 millisecond wait period?
-> >
->
-> Hmm,
-> it would be importatn to prevent livelock for reader to hold lock
-> continuously before
-> hodling writer than 1 msec write ovhead.
+That is increasingly not true since gcc is now doing autovectorization.
 
-Livelock because there are too frequent readers?
+> One could argue that cmpxchg/bswap/xadd are supported by 486 and that
+> implementing them for 386 is almost useless now (though it costs almost
+> nothing to provide them, I did a few years ago). 
+> 
+> CMOV/NOPL are rarely used, thus have no reason to cause a massive
+> performance drop, but are frequent enough (at least cmov) for almost
+> any program to have at least one or two inside, making it incompatible
+> with a given processor, and are almost obvious to implement too.
 
-We could just keep the mutex locked to ensure that no new readers arrive.
+I could 970 cmovs in libc out of 322660 instructions.  That is one in
+333 instruction.  In other words, a trap-and-emulate of some 500 cycles
+would add some two cycles *per instruction* during execution -- hardly
+an insignificant number.  All in all, any of this is really only useful
+as a limp.
 
-> First of all, After we solve it, second step is that optimize write
-> overhead, I think.
+> SSE*/3dnow* would be much much harder and would only serve very few
+> programs, and serve them badly because when they're used, it would
+> be intensive.
+> 
+> I personally am not against being able to emulate every optional
+> instruction, quite the opposite instead. It's just that if in order
+> to do this, we add cost to the other obvious ones, we lose what we
+> expected to win (simplicity and efficiency).
 
+I don't see any particular subset as being more obvious than the other,
+with the *possible* exception of NOPL, simply because NOPL was
+undocumented for so long.
+
+	-hpa
