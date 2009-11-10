@@ -1,28 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZKJRW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZKJRXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbZKJRW2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 12:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZKJRW0
+	id S1757357AbZKJRXv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 12:23:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbZKJRXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 12:22:26 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56142 "EHLO
+	Tue, 10 Nov 2009 12:23:50 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51084 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752773AbZKJRWZ (ORCPT
+	with ESMTP id S1754977AbZKJRXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 12:22:25 -0500
-Date: Tue, 10 Nov 2009 17:23:37 +0000
+	Tue, 10 Nov 2009 12:23:50 -0500
+Date: Tue, 10 Nov 2009 17:24:54 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Bryan Donlan <bdonlan@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Timo Sirainen <tss@iki.fi>, Ulrich Drepper <drepper@redhat.com>,
-       WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: + prctl-add-pr_set_proctitle_area-option.patch added to -mm
- tree
-Message-ID: <20091110172337.2236ad58@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091110170453.GA11771@redhat.com>
-References: <20091110170453.GA11771@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Avi Kivity <avi@redhat.com>, Willy Tarreau <w@1wt.eu>,
+       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091110172454.3c4481f2@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AF99E04.8080704@zytor.com>
+References: <4AF4526B.4060101@zytor.com>
+	<40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com>
+	<20091108173708.GF1372@ucw.cz>
+	<40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com>
+	<20091108181016.GB32364@elf.ucw.cz>
+	<alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>
+	<20091108193618.GB4186@elf.ucw.cz>
+	<40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com>
+	<20091108195158.GD4186@elf.ucw.cz>
+	<20091108200852.7f2cf092@lxorguk.ukuu.org.uk>
+	<20091110052711.GA15338@1wt.eu>
+	<4AF9020C.90108@zytor.com>
+	<4AF9435F.2070103@redhat.com>
+	<20091110105642.215804e0@lxorguk.ukuu.org.uk>
+	<4AF99E04.8080704@zytor.com>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,11 +43,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, we can't do access_process_vm() under ->mmap_sem, but we can add
-> the new helper, say, access_process_vm_locked(tsk, mm, ...) which does
-> the actual work. Then proc_pid_cmdline() can take mmap_sem for reading,
-> read arg_start/arg_end and call access_process_vm_locked().
+On Tue, 10 Nov 2009 09:08:20 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-It might not be a bad idea if whoever wrote it spent about 60 seconds
-thinking about maths overflow as well. I'm not sure some of the tools
-will react too well if end is before start.
+> On 11/10/2009 02:56 AM, Alan Cox wrote:
+> >> In theory yes.  There would need to be a bit of work to disassociate it 
+> >> from kvm, but nothing too difficult.
+> > 
+> > For the tiny cases that actually matter using the KVM code appears a bit
+> > over the top.
+> 
+> In the short term, yes, of course.  However, if we're going to do
+> emulation, we might as well do it right.
+
+Why is using KVM doing it right ? It sounds like its doing it slowly,
+and hideously memory inefficiently. You are solving an uninteresting
+general case problem when you just need two tiny fixups (or perhaps 3 if
+you want to fix up early x86-64 prefetch)
