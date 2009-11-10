@@ -1,212 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbZKJW2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbZKJW1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758430AbZKJW2E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 17:28:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758403AbZKJW2B
+	id S1758282AbZKJW1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 17:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbZKJW1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 17:28:01 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:43392 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758385AbZKJW17 (ORCPT
-	<rfc822;groupwise-PMullaney@novell.com;0:0>);
-	Tue, 10 Nov 2009 17:27:59 -0500
-From: Patrick Mullaney <pmullaney@novell.com>
-Subject: [PATCH 1/4] macvlan:  derived from Arnd Bergmann's patch for macvtap
-To: alacrityvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, kaber@trash.net, arnd@arndb.de,
-       bridge@lists.linux-foundation.org, evb@yahoogroups.com,
-       netdev@vger.kernel.org
-Date: Tue, 10 Nov 2009 17:27:49 -0500
-Message-ID: <20091110222749.24100.57638.stgit@mimic.site>
-In-Reply-To: <20091110222632.24100.14884.stgit@mimic.site>
-References: <20091110222632.24100.14884.stgit@mimic.site>
-User-Agent: StGIT/0.14.3
+	Tue, 10 Nov 2009 17:27:52 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:35543 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757988AbZKJW1v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 17:27:51 -0500
+Date: Tue, 10 Nov 2009 22:27:56 +0000
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Willy Tarreau <w@1wt.eu>, Pavel Machek <pavel@ucw.cz>,
+       Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091110222756.GF15159@caffeine.csclub.uwaterloo.ca>
+References: <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <20091110211259.GD26633@1wt.eu> <4AF9D8E2.7050205@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF9D8E2.7050205@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is in the series because this has not gone upstream yet and
-the subsequent patches depend on it. This patch includes only the
-basic framework for overriding the receive path and the macvlan header
-was moved to allow modules outside of driver/net to use it.
+On Tue, Nov 10, 2009 at 01:19:30PM -0800, H. Peter Anvin wrote:
+> Willy, perhaps you can come up with a list of features you think should
+> be emulated, together with an explanation of why you opted for that list
+> of features and *did not* opt for others.
+> 
+> Note: emulated FPU is a special subcase.  The FPU operations are
+> heavyweight enough that the overhead of trapping versus library calls is
+> relatively insignificant.
 
-Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
----
+That doesn't seem to be the experience of the arm EABI versus the old
+arm ABI with kernel FPU emulation.  Using user space library calls for
+FPU is vastly faster than the trapping and kernel FPU emulation.
 
- drivers/net/macvlan.c   |   39 +++++++++++++++------------------------
- include/linux/macvlan.h |   37 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 52 insertions(+), 24 deletions(-)
- create mode 100644 include/linux/macvlan.h
-
-diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
-index 99eed9f..0a389b8 100644
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -30,22 +30,7 @@
- #include <linux/if_macvlan.h>
- #include <net/rtnetlink.h>
- 
--#define MACVLAN_HASH_SIZE	(1 << BITS_PER_BYTE)
--
--struct macvlan_port {
--	struct net_device	*dev;
--	struct hlist_head	vlan_hash[MACVLAN_HASH_SIZE];
--	struct list_head	vlans;
--};
--
--struct macvlan_dev {
--	struct net_device	*dev;
--	struct list_head	list;
--	struct hlist_node	hlist;
--	struct macvlan_port	*port;
--	struct net_device	*lowerdev;
--};
--
-+#include <linux/macvlan.h>
- 
- static struct macvlan_dev *macvlan_hash_lookup(const struct macvlan_port *port,
- 					       const unsigned char *addr)
-@@ -135,7 +120,7 @@ static void macvlan_broadcast(struct sk_buff *skb,
- 			else
- 				nskb->pkt_type = PACKET_MULTICAST;
- 
--			netif_rx(nskb);
-+			vlan->receive(nskb);
- 		}
- 	}
- }
-@@ -180,11 +165,11 @@ static struct sk_buff *macvlan_handle_frame(struct sk_buff *skb)
- 	skb->dev = dev;
- 	skb->pkt_type = PACKET_HOST;
- 
--	netif_rx(skb);
-+	vlan->receive(skb);
- 	return NULL;
- }
- 
--static int macvlan_start_xmit(struct sk_buff *skb, struct net_device *dev)
-+int macvlan_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	const struct macvlan_dev *vlan = netdev_priv(dev);
- 	unsigned int len = skb->len;
-@@ -202,6 +187,7 @@ static int macvlan_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	}
- 	return NETDEV_TX_OK;
- }
-+EXPORT_SYMBOL_GPL(macvlan_start_xmit);
- 
- static int macvlan_hard_header(struct sk_buff *skb, struct net_device *dev,
- 			       unsigned short type, const void *daddr,
-@@ -412,7 +398,7 @@ static const struct net_device_ops macvlan_netdev_ops = {
- 	.ndo_validate_addr	= eth_validate_addr,
- };
- 
--static void macvlan_setup(struct net_device *dev)
-+void macvlan_setup(struct net_device *dev)
- {
- 	ether_setup(dev);
- 
-@@ -423,6 +409,7 @@ static void macvlan_setup(struct net_device *dev)
- 	dev->ethtool_ops	= &macvlan_ethtool_ops;
- 	dev->tx_queue_len	= 0;
- }
-+EXPORT_SYMBOL_GPL(macvlan_setup);
- 
- static int macvlan_port_create(struct net_device *dev)
- {
-@@ -472,7 +459,7 @@ static void macvlan_transfer_operstate(struct net_device *dev)
- 	}
- }
- 
--static int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
-+int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
- {
- 	if (tb[IFLA_ADDRESS]) {
- 		if (nla_len(tb[IFLA_ADDRESS]) != ETH_ALEN)
-@@ -482,9 +469,10 @@ static int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
- 	}
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(macvlan_validate);
- 
--static int macvlan_newlink(struct net_device *dev,
--			   struct nlattr *tb[], struct nlattr *data[])
-+int macvlan_newlink(struct net_device *dev,
-+		    struct nlattr *tb[], struct nlattr *data[])
- {
- 	struct macvlan_dev *vlan = netdev_priv(dev);
- 	struct macvlan_port *port;
-@@ -524,6 +512,7 @@ static int macvlan_newlink(struct net_device *dev,
- 	vlan->lowerdev = lowerdev;
- 	vlan->dev      = dev;
- 	vlan->port     = port;
-+	vlan->receive  = netif_rx;
- 
- 	err = register_netdevice(dev);
- 	if (err < 0)
-@@ -533,8 +522,9 @@ static int macvlan_newlink(struct net_device *dev,
- 	macvlan_transfer_operstate(dev);
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(macvlan_newlink);
- 
--static void macvlan_dellink(struct net_device *dev)
-+void macvlan_dellink(struct net_device *dev)
- {
- 	struct macvlan_dev *vlan = netdev_priv(dev);
- 	struct macvlan_port *port = vlan->port;
-@@ -545,6 +535,7 @@ static void macvlan_dellink(struct net_device *dev)
- 	if (list_empty(&port->vlans))
- 		macvlan_port_destroy(port->dev);
- }
-+EXPORT_SYMBOL_GPL(macvlan_dellink);
- 
- static struct rtnl_link_ops macvlan_link_ops __read_mostly = {
- 	.kind		= "macvlan",
-diff --git a/include/linux/macvlan.h b/include/linux/macvlan.h
-new file mode 100644
-index 0000000..3f3c6c3
---- /dev/null
-+++ b/include/linux/macvlan.h
-@@ -0,0 +1,37 @@
-+#ifndef _MACVLAN_H
-+#define _MACVLAN_H
-+
-+#include <linux/netdevice.h>
-+#include <linux/netlink.h>
-+#include <linux/list.h>
-+
-+#define MACVLAN_HASH_SIZE	(1 << BITS_PER_BYTE)
-+
-+struct macvlan_port {
-+	struct net_device	*dev;
-+	struct hlist_head	vlan_hash[MACVLAN_HASH_SIZE];
-+	struct list_head	vlans;
-+};
-+
-+struct macvlan_dev {
-+	struct net_device	*dev;
-+	struct list_head	list;
-+	struct hlist_node	hlist;
-+	struct macvlan_port	*port;
-+	struct net_device	*lowerdev;
-+
-+	int (*receive)(struct sk_buff *skb);
-+};
-+
-+extern int macvlan_start_xmit(struct sk_buff *skb, struct net_device *dev);
-+
-+extern void macvlan_setup(struct net_device *dev);
-+
-+extern int macvlan_validate(struct nlattr *tb[], struct nlattr *data[]);
-+
-+extern int macvlan_newlink(struct net_device *dev,
-+		struct nlattr *tb[], struct nlattr *data[]);
-+
-+extern void macvlan_dellink(struct net_device *dev);
-+
-+#endif /* _MACVLAN_H */
-
+-- 
+Len Sorensen
