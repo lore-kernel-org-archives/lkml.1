@@ -1,67 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbZKJAkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZKJAq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbZKJAkS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 19:40:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZKJAkR
+	id S1755097AbZKJAq4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 19:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZKJAqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 19:40:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38688 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750954AbZKJAkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 19:40:16 -0500
-Message-ID: <4AF8B66B.3010405@redhat.com>
-Date: Mon, 09 Nov 2009 19:40:11 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for October 29 (x86 posttest)
-References: <20091029182919.4d6ec52c.sfr@canb.auug.org.au>	<20091029090627.7857ed08.rdunlap@xenotime.net>	<4AE9C74C.2040309@redhat.com> <20091106085954.39eb2789.rdunlap@xenotime.net>
-In-Reply-To: <20091106085954.39eb2789.rdunlap@xenotime.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 9 Nov 2009 19:46:55 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40026 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbZKJAqy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 19:46:54 -0500
+Subject: Re: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent
+ on passthrough
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alex Williamson <alex.williamson@hp.com>
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20091104225359.2720.91502.stgit@nehalem.aw>
+References: <20091104225359.2720.91502.stgit@nehalem.aw>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 10 Nov 2009 00:46:54 +0000
+Message-ID: <1257814014.25961.912.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 (2.28.1-2.fc12) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Thu, 29 Oct 2009 12:48:12 -0400 Masami Hiramatsu wrote:
->
->> Randy Dunlap wrote:
->>> On Thu, 29 Oct 2009 18:29:19 +1100 Stephen Rothwell wrote:
->>>
->>>> Hi all,
->>>>
->>>> [I accidentally deleted my merge log today, so sorry to anyone who
->>>> actually reads them :-), the summary still appears below.]
->>>
->>>
->>> I'm getting this on x86_64:
->>>
->>>     TEST    posttest
->>> Error: ffffffff810299e2:	f2 41 0f 28 52 b0    	repnz movaps -0x50(%r10),%xmm2
->>> Error: objdump says 6 bytes, but insn_get_length() says 4 (attr:0)
->>> make[2]: *** [posttest] Error 2
->>
->> Ah, that's should be fixed by AVX support patch which I've posted.
->> http://git.kernel.org/tip/e0e492e99b372c6990a5daca9e4683c341f1330e
->
-> Has that been merged into linux-next?
-> I'm still seeing this failure in linux-next-20091106.
+On Wed, 2009-11-04 at 15:59 -0700, Alex Williamson wrote:
+> 
+> @@ -2582,7 +2582,7 @@ static dma_addr_t __intel_map_single(struct
+> device *hwdev, phys_addr_t paddr,
+>         BUG_ON(dir == DMA_NONE);
+>  
+>         if (iommu_no_mapping(hwdev))
+> -               return paddr;
+> +               return paddr + size > dma_mask ? 0 : paddr; 
 
-I checked it has been merged.
-So, it should disappear from linux-next-20091109. :-)
+Especially on 32-bit without PAE, that 'paddr + size' can wrap.
 
-Thanks!
+How's this... (Alex, you can tell me if you still want it to be From:
+you after I changed the comments).
+
+
+From:  Alex Williamson <alex.williamson@hp.com>
+Date: Wed, 4 Nov 2009 15:59:34 -0700
+Subject: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent on passthrough
+
+The model for IOMMU passthrough is that decent devices that can cope
+with DMA to all of memory get passthrough; crappy devices with a limited
+dma_mask don't -- they get to use the IOMMU anyway.
+
+This is done on the basis that IOMMU passthrough is usually wanted for
+performance reasons, and it's only the decent PCI devices that you
+really care about performance for, while the crappy 32-bit ones like
+your USB controller can just use the IOMMU and you won't really care.
+
+Unfortunately, the check for this was only looking at dev->dma_mask, not
+at dev->coherent_dma_mask. And some devices have a 32-bit
+coherent_dma_mask even though they have a full 64-bit dma_mask.
+
+Even more unfortunately, fixing that simple oversight would upset
+certain broken HP devices. Not only do they have a 32-bit
+coherent_dma_mask, but they also have a tendency to do stray DMA to
+unmapped addresses. And then they die when they take the DMA fault they
+so richly deserve.
+
+So if we do the 'correct' fix, it'll mean that affects users have to
+disable IOMMU support completely on "a large percentage of servers from
+a major vendor."
+
+Personally, I have little sympathy -- given that this is the _same_
+'major vendor' who is shipping machines which claim to have IOMMU
+support but have obviously never _once_ booted a VT-d capable OS to do
+any form of QA. But strictly speaking, it _would_ be a regression even
+though it only ever worked by fluke and the hardware is arguably broken.
+
+For 2.6.33, we'll come up with a quirk which gives swiotlb support
+for this particular device, and other devices with an inadequate
+coherent_dma_mask will just get normal IOMMU mapping.
+
+The simplest fix for 2.6.32, though, is just to jump through some hoops
+to try to allocate coherent DMA memory for such devices in a place that
+they can reach. We'd use dma_generic_alloc_coherent() for this if it
+existed on IA64.
+
+Signed-off-by: Alex Williamson <alex.williamson@hp.com>
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+---
+ drivers/pci/intel-iommu.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index b1e97e6..fe9ca58 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -2582,7 +2582,7 @@ static dma_addr_t __intel_map_single(struct device *hwdev, phys_addr_t paddr,
+ 	BUG_ON(dir == DMA_NONE);
+ 
+ 	if (iommu_no_mapping(hwdev))
+-		return paddr;
++		return paddr > dma_mask - size ? 0 : paddr;
+ 
+ 	domain = get_valid_domain_for_dev(pdev);
+ 	if (!domain)
+@@ -2767,7 +2767,15 @@ static void *intel_alloc_coherent(struct device *hwdev, size_t size,
+ 
+ 	size = PAGE_ALIGN(size);
+ 	order = get_order(size);
+-	flags &= ~(GFP_DMA | GFP_DMA32);
++
++	if (!iommu_no_mapping(hwdev))
++		flags &= ~(GFP_DMA | GFP_DMA32);
++	else if (hwdev->coherent_dma_mask < dma_get_required_mask()) {
++		if (hwdev->coherent_dma_mask < DMA_BIT_MASK(32))
++			flags |= GFP_DMA;
++		else
++			flags |= GFP_DMA32;
++	}
+ 
+ 	vaddr = (void *)__get_free_pages(flags, order);
+ 	if (!vaddr)
+-- 
+1.6.5.2
+
+
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
