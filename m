@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbZKJPBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbZKJOyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbZKJPBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 10:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZKJPBV
+	id S1756490AbZKJOyy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 09:54:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZKJOyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 10:01:21 -0500
-Received: from winfree.gag.com ([192.133.104.8]:37293 "EHLO winfree.gag.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830AbZKJPBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 10:01:20 -0500
-X-Greylist: delayed 464 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Nov 2009 10:01:20 EST
-To: linux-kernel@vger.kernel.org, tiwai@suse.de
-Subject: problem with codec discovery on HP 2530p
-Message-Id: <20091110145338.A55E719D7AD@rover.gag.com>
-Date: Tue, 10 Nov 2009 09:53:38 -0500 (EST)
-From: bdale@gag.com (Bdale Garbee)
+	Tue, 10 Nov 2009 09:54:53 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:21793 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbZKJOyx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 09:54:53 -0500
+Subject: Re: [PATCH] mtd: m25p80: make command buffer DMA-safe
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Johannes Stezenbach <js@sig21.net>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20091103100018.GA20519@sig21.net>
+References: <20091028132137.GA17813@sig21.net>
+	 <1257230165.21596.33.camel@localhost>  <20091103100018.GA20519@sig21.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 10 Nov 2009 16:54:07 +0200
+Message-Id: <1257864847.21596.769.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 10 Nov 2009 14:54:21.0901 (UTC) FILETIME=[AFEF47D0:01CA6215]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I recently moved from 2.6.30.9 to the 2.6.32-rcX series on my HP EliteBook 
-2530p.  Audio didn't work, and I've finally made time to track down the 
-problem.  It turns out the problem actually started with 2.6.31-rc1, due
-to a patch that was part of the 2.6.30-rcX series but apparently wasn't in
-the 2.6.30 stable release.  
+On Tue, 2009-11-03 at 11:00 +0100, Johannes Stezenbach wrote:
+> On Tue, Nov 03, 2009 at 08:36:05AM +0200, Artem Bityutskiy wrote:
+> > On Wed, 2009-10-28 at 14:21 +0100, Johannes Stezenbach wrote:
+> > > spi_write() requires the buffer to be DMA-safe, kmalloc()
+> > > it seperately to ensure this.
+> > 
+> > Even though it is just 4 or 5 bytes it can do DMA? Does not sound too
+> > sane to use DMA in that case. Does this patch fix a real error?
+> > 
+> > I do not know much about SPI, but for me it sounds like there should be
+> > a method to ask SPI to avoid using DMA, and you should use that method.
+> 
+> It fixes a real error -- with an out-of-tree driver and ancient kernel.
+> For the flash read/write case it is used with list-DMA (e.g. write 4 bytes,
+> read 64KB).  There are extensive comments in include/linux/spi/spi.h
+> which document the DMA-safe requirement of the buffers.
 
-The symptom is:
+Pushed to my l2-mtd-2.6 tree, thanks.
 
-HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-HDA Intel 0000:00:1b.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-HDA Intel 0000:00:1b.0: irq 30 for MSI/MSI-X
-HDA Intel 0000:00:1b.0: setting latency timer to 64
-hda-intel: Codec #0 probe error; disabling it...
-hda-intel: spurious response 0x0:0x0, last cmd=0x0f0000
-hda-intel: no codecs initialized
-hda-intel: spurious response 0x0:0x0, last cmd=0x0f0000
-HDA Intel 0000:00:1b.0: PCI INT A disabled
-
-The codec in this machine is an AD1984A.  Bisecting, I discovered that 
-reverting this single commit fixes things for me in 2.6.32-rc6:
-
-8174086167d43d0fd7b21928074145ae1d15bbab is the first bad commit
-commit 8174086167d43d0fd7b21928074145ae1d15bbab
-Author: Takashi Iwai <tiwai@suse.de>
-Date:   Tue May 26 15:22:00 2009 +0200
-
-    ALSA: hda - Allow concurrent RIRB access in single_cmd mode
-    
-    In the single_cmd mode, the current driver code doesn't do any update
-    for RIRB just for any safety reason.  But, actually the RIRB and
-    single_cmd mode don't conflict.  Unsolicited events can be delivered
-    even while using the single_cmd mode.
-    
-    This patch allows the handling of unsolicited events with single_cmd
-    mode, just always checking RIRB independent from single_cmd flag.
-    
-    Signed-off-by: Takashi Iwai <tiwai@suse.de>
-
-:040000 040000 f4fa70b3ac4fe54d436c59c26c9fe6754625953e 65ff495d67e60d2cf33bf9ea994a0a828d367284 M	sound
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
