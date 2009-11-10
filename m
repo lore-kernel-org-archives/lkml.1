@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbZKJTzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbZKJT6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbZKJTzp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 14:55:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbZKJTzp
+	id S1757990AbZKJT6d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 14:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757975AbZKJT6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 14:55:45 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:35013 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757912AbZKJTzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 14:55:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type;
-        b=nXhsKwPpyhQZNY0nhVRl6CVtSPPJRReVW+t67HhYM0Auh8sLWgE8cRm+BO2iF2818Q
-         MCdbnUiJGAxGS++1frhyGnzss6FVWQvrXmz3ueaSd1p8qmwegldv7wJCt7n4zR+sv4yD
-         kpmP5T9ibzXxdJHs7/4DhI9JBt+MZsSMz+TOg=
-Message-ID: <4AF9C540.5090403@gmail.com>
-Date: Tue, 10 Nov 2009 14:55:44 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 10 Nov 2009 14:58:31 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:55382 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757957AbZKJT6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 14:58:30 -0500
+Date: Tue, 10 Nov 2009 13:58:35 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Travis <travis@sgi.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: Remove asm/apicnum.h
+Message-ID: <20091110195835.GA4393@sgi.com>
+References: <20091110190515.GB5881@lenovo> <4AF9BBB8.8010809@sgi.com> <20091110192454.GB3904@sgi.com> <20091110192852.GD5881@lenovo>
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Eric Dumazet <eric.dumazet@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH resent] Documentation: rw_lock lessons learned
-Content-Type: multipart/mixed;
- boundary="------------040700040300000504090809"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091110192852.GD5881@lenovo>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040700040300000504090809
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+It doesn't look as though arch/x86/include/asm/apicnum.h is referenced
+anywhere anymore.  Its definitions appear in apicdef.h.
 
-In recent weeks, two different network projects erroneously
-strayed down the rw_lock path.  Update the Documentation
-based upon comments in those threads.
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-Signed-off-by: William.Allen.Simpson@gmail.com
 ---
-   Documentation/spinlocks.txt |   14 ++++++++++++++
-   1 files changed, 14 insertions(+), 0 deletions(-)
 
+ arch/x86/include/asm/apicnum.h |   12 ------------
+ 1 file changed, 12 deletions(-)
 
---------------040700040300000504090809
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="spinlocks.txt.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="spinlocks.txt.patch"
-
-diff --git a/Documentation/spinlocks.txt b/Documentation/spinlocks.txt
-index 619699d..c112052 100644
---- a/Documentation/spinlocks.txt
-+++ b/Documentation/spinlocks.txt
-@@ -233,4 +233,18 @@ indeed), while write-locks need to protect themselves against interrupts.
- 
- 		Linus
- 
-+----
-+
-+The implications of spin_locks on memory are further described in:
-+
-+  Documentation/memory-barriers.txt
-+    (5) LOCK operations.
-+    (6) UNLOCK operations.
-+
-+----
-+
-+We are working hard to remove reader-writer spinlocks (rw_lock) from the
-+network stack, so please don't add a new one.  Instead, see:
-+
-+  Documentation/RCU/rcu.txt
- 
--- 
-1.6.3.3
-
-
-
---------------040700040300000504090809--
+Index: linux/arch/x86/include/asm/apicnum.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/apicnum.h	2009-11-10 08:52:08.000000000 -0600
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,12 +0,0 @@
+-#ifndef _ASM_X86_APICNUM_H
+-#define _ASM_X86_APICNUM_H
+-
+-/* define MAX_IO_APICS */
+-#ifdef CONFIG_X86_32
+-# define MAX_IO_APICS 64
+-#else
+-# define MAX_IO_APICS 128
+-# define MAX_LOCAL_APIC 32768
+-#endif
+-
+-#endif /* _ASM_X86_APICNUM_H */
