@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbZKJKmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751265AbZKJKrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751965AbZKJKmd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 05:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZKJKmc
+	id S1751265AbZKJKrU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 05:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZKJKrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 05:42:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:36764 "EHLO mx1.redhat.com"
+	Tue, 10 Nov 2009 05:47:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3653 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750903AbZKJKmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 05:42:32 -0500
-Message-ID: <4AF9435F.2070103@redhat.com>
-Date: Tue, 10 Nov 2009 12:41:35 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	id S1750876AbZKJKrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 05:47:19 -0500
+Date: Tue, 10 Nov 2009 11:44:56 +0100
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: utime/stime decreasing on thread exit
+Message-ID: <20091110104452.GB2391@dhcp-lab-161.englab.brq.redhat.com>
+References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com> <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop> <20091109172020.GA7751@redhat.com> <1257787903.4108.345.camel@laptop> <20091109192355.GA13724@redhat.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Willy Tarreau <w@1wt.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-References: <4AF4526B.4060101@zytor.com> <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com> <20091108173708.GF1372@ucw.cz> <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com> <20091108181016.GB32364@elf.ucw.cz> <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de> <20091108193618.GB4186@elf.ucw.cz> <40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com> <20091108195158.GD4186@elf.ucw.cz> <20091108200852.7f2cf092@lxorguk.ukuu.org.uk> <20091110052711.GA15338@1wt.eu> <4AF9020C.90108@zytor.com>
-In-Reply-To: <4AF9020C.90108@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091109192355.GA13724@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 08:02 AM, H. Peter Anvin wrote:
-> On 11/09/2009 09:27 PM, Willy Tarreau wrote:
->    
->> Also, I think that if we start adding emulation, a global and per-task
->> counter would immensely help to know what processes make intensive use
->> of emulation.
->>
->>      
-> Agreed.
->
-> My first question would be if the interpreter in KVM can be reused in
-> any way.
->
->    
+On Mon, Nov 09, 2009 at 08:23:55PM +0100, Oleg Nesterov wrote:
+> On 11/09, Peter Zijlstra wrote:
+> >
+> > On Mon, 2009-11-09 at 18:20 +0100, Oleg Nesterov wrote:
+> >
+> > > Stanislaw has already sent the patch, but I don't know what happened
+> > > with this patch:
+> > >
+> > > 	[PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with __exit_signal()
+> > > 	http://marc.info/?l=linux-kernel&m=124505545131145
 
-In theory yes.  There would need to be a bit of work to disassociate it 
-from kvm, but nothing too difficult.
+I did not resubmit it enough times :) But I didn't thought it worth to,
+since performance can be degraded.
 
-Note that the kvm x86 emulator is more general than need be (emulates 
-real mode code and cpl 0 instructions) and less general than needed 
-(many instructions are not emulated, for example nopl).
+> > That patch has the siglock in the function calling
+> > thread_group_cputime(), the 22 code had it near the loop proper, which
+> > to me seems a more sensible thing, since there could be more callers,
+> > no?
+> 
+> Well, we can't take ->siglock in thread_group_cputime(), sometimes it
+> is called under ->siglock. do_task_stat(), get_cpu_itimer() at least.
+> 
+> IIRC, Stanislaw verified other callers have no problems with this helper.
 
--- 
-error compiling committee.c: too many arguments to function
+Actually I didn't. Try to do now. 
 
+Most calls are done with sighand or tasklist lock taken, except 
+
+Cscope tag: thread_group_cputime
+   #   line  filename / context / line
+   1   1353  fs/binfmt_elf.c <<fill_prstatus>>
+             thread_group_cputime(p, &cputime);
+   2   1403  fs/binfmt_elf_fdpic.c <<fill_prstatus>>
+             thread_group_cputime(p, &cputime);
+  10    129  mm/oom_kill.c <<badness>>
+             thread_group_cputime(p, &task_time);
+
+I do not think in case 1 and 2 lock is needed since it seems to be core dump
+with all threads dead. Not sure about 10 - oom killer.
+
+One other exception is: 
+fastpath_timer_check() -> thread_group_cputimer() -> thread_group_cputime()
+
+We can solve this like that:
+
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -1375,13 +1375,8 @@ static inline int fastpath_timer_check(struct task_struct *tsk)
+ 	}
+ 
+ 	sig = tsk->signal;
+-	if (!task_cputime_zero(&sig->cputime_expires)) {
+-		struct task_cputime group_sample;
+-
+-		thread_group_cputimer(tsk, &group_sample);
+-		if (task_cputime_expired(&group_sample, &sig->cputime_expires))
+-			return 1;
+-	}
++	if (!task_cputime_zero(&sig->cputime_expires))
++		return 1;
+ 
+ 	return sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY;
+ }
+
+Or stay with task_cputime_expired() but only if cputimer is currently running.
+
+Cheers
+Stanislaw
