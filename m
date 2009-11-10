@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbZKJF6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbZKJGKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751442AbZKJF6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 00:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZKJF6e
+	id S1751943AbZKJGKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 01:10:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZKJGKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 00:58:34 -0500
-Received: from 1wt.eu ([62.212.114.60]:50888 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750903AbZKJF6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 00:58:33 -0500
-Date: Tue, 10 Nov 2009 06:58:37 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: Matteo Croce <technoboy85@gmail.com>, linux-kernel@vger.kernel.org
+	Tue, 10 Nov 2009 01:10:18 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33230 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751838AbZKJGKO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 01:10:14 -0500
+Message-ID: <4AF9020C.90108@zytor.com>
+Date: Mon, 09 Nov 2009 22:02:52 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>
 Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091110055837.GB15338@1wt.eu>
-References: <20091106155937.11d95279@lxorguk.ukuu.org.uk> <20091106165731.26800@gmx.net> <20091106182218.43940287@lxorguk.ukuu.org.uk> <20091106200620.179910@gmx.net> <m3r5sbcl07.fsf@intrepid.localdomain> <20091107000559.166710@gmx.net> <40101cc30911070311u56035911l5eb50ac4abb73acc@mail.gmail.com> <20091108110512.3cfad100@mycelium.queued.net> <40101cc30911081022h33ac20d7od591a9bcdb739f04@mail.gmail.com> <20091108134759.51ca97fc@mycelium.queued.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091108134759.51ca97fc@mycelium.queued.net>
-User-Agent: Mutt/1.5.11
+References: <4AF4526B.4060101@zytor.com> <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com> <20091108173708.GF1372@ucw.cz> <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com> <20091108181016.GB32364@elf.ucw.cz> <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de> <20091108193618.GB4186@elf.ucw.cz> <40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com> <20091108195158.GD4186@elf.ucw.cz> <20091108200852.7f2cf092@lxorguk.ukuu.org.uk> <20091110052711.GA15338@1wt.eu>
+In-Reply-To: <20091110052711.GA15338@1wt.eu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 01:47:59PM -0500, Andres Salomon wrote:
-> > Right, but what if is_geode_lx() is called befor the x86.id change
-> > takes effect? Maybe something like this?
-> > 
-> > --- a/arch/x86/include/asm/geode.h 2009-11-08 19:13:43.531117343 +0100
-> > +++ b/arch/x86/include/asm/geode.h      2009-11-08 19:19:42.130618023
-> > +0100 @@ -177,7 +177,7 @@
-> >  static inline int is_geode_lx(void)
-> >  {
-> >         return ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
-> > -               (boot_cpu_data.x86 == 5) &&
-> > +               (boot_cpu_data.x86 == 5 || boot_cpu_data.x86 == 6) &&
-> >                 (boot_cpu_data.x86_model == 10));
-> >  }
+On 11/09/2009 09:27 PM, Willy Tarreau wrote:
 > 
+> Also, I think that if we start adding emulation, a global and per-task
+> counter would immensely help to know what processes make intensive use
+> of emulation.
 > 
-> Yeah, that looks better.
 
-Wouldn't it be even better if we didn't touch boot_cpu_data.x86
-in the first place ? We can provide the emulation to support
-686 binaries without faking the CPU family/model, I think it
-would be cleaner. Otherwise we would need to report "real" and
-"emulated" families in /proc...
+Agreed.
 
-Willy
+My first question would be if the interpreter in KVM can be reused in
+any way.
+
+	-hpa
+
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
