@@ -1,106 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZKJNIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZKJNIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbZKJNIc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 08:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005AbZKJNIb
+	id S1756276AbZKJNIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 08:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbZKJNIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 08:08:31 -0500
-Received: from mga03.intel.com ([143.182.124.21]:64135 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753212AbZKJNIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 08:08:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,716,1249282800"; 
-   d="scan'208";a="209761825"
-Date: Tue, 10 Nov 2009 21:08:18 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Martin Knoblauch <spamtrap@knobisoft.de>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Myklebust, Trond" <Trond.Myklebust@netapp.com>,
-       Peter Staubach <staubach@redhat.com>, linux-fsdevel@vger.kernel.org
-Subject: Re: Likley stupid question on "throttle_vm_writeout"
-Message-ID: <20091110130818.GA6229@localhost>
-References: <799070.68490.qm@web32608.mail.mud.yahoo.com> <1257780393.4108.343.camel@laptop> <20091110020858.GA5749@localhost> <707547.6272.qm@web32605.mail.mud.yahoo.com>
+	Tue, 10 Nov 2009 08:08:46 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42075 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756005AbZKJNIp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 08:08:45 -0500
+Date: Tue, 10 Nov 2009 13:08:49 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: [PATCH 2/2] regulator/mc13783: various cleanups
+Message-ID: <20091110130849.GE16200@rakim.wolfsonmicro.main>
+References: <20091106002847.GC22366@sortiz.org>
+ <1257841087-23662-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1257841087-23662-2-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <707547.6272.qm@web32605.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1257841087-23662-2-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Cookie: BOFH excuse
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 08:01:47PM +0800, Martin Knoblauch wrote:
-> ----- Original Message ----
+On Tue, Nov 10, 2009 at 09:18:07AM +0100, Uwe Kleine-König wrote:
+> - define needed registers and bits in the driver
+> - properly namespace functions and structs
+> - fix locking as required by patch
+>   "mfd/mc13783: near complete rewrite"
+> - use platform_data as provided by "mfd/mc13783: near complete rewrite"
+>   instead of accessing struct mc13783
+> - struct mc13783_regulator_priv.desc is (and was) unused and so can go
+>   away
+> - use cpp magic to initialize mc13783_regulators
+> - bring MODULE_LICENSE in sync with actual copyright
+> - minor style fixes
 > 
-> > From: Wu Fengguang <fengguang.wu@intel.com>
-> > To: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Martin Knoblauch <spamtrap@knobisoft.de>; linux-kernel@vger.kernel.org
-> > Sent: Tue, November 10, 2009 3:08:58 AM
-> > Subject: Re: Likley stupid question on "throttle_vm_writeout"
-> > 
-> > On Mon, Nov 09, 2009 at 04:26:33PM +0100, Peter Zijlstra wrote:
-> > > On Mon, 2009-11-09 at 07:15 -0800, Martin Knoblauch wrote:
-> > > > Hi, (please CC me on replies)
-> > > > 
-> > > >  I have a likely stupid question on the function "throttle_vm_writeout". 
-> > Looking at the code I find:
-> > > > 
-> > > >                 if (global_page_state(NR_UNSTABLE_NFS) +
-> > > >                         global_page_state(NR_WRITEBACK) <= dirty_thresh)
-> > > >                                 break;
-> > > >                 congestion_wait(WRITE, HZ/10);
-> > > > 
-> > > > Shouldn't the NR_FILE_DIRTY pages be considered as well?
-> > > 
-> > > Ha, you just trod onto a piece of ugly I'd totally forgotten about ;-)
-> > > 
-> > > The intent of throttle_vm_writeout() is to limit the total pages in
-> > > writeout and to wait for them to go-away.
-> > 
-> > Like this:
-> > 
-> >         vmscan fast => large NR_WRITEBACK => throttle vmscan based on it
-> > 
-> > > Everybody hates the function, nobody managed to actually come up with
-> > > anything better.
-> > 
-> > btw, here is another reason to limit NR_WRITEBACK: I saw many
-> > throttle_vm_writeout() waits if there is no wait queue to limit
-> > NR_WRITEBACK (eg. NFS). In that case the (steadily) big NR_WRITEBACK
-> > is _not_ caused by fast vmscan..
-> > 
-> 
->  That is exactely what made me look again into the code. My observation is that when doing something like:
-> 
-> dd if=/dev/zero of=fast-local-disk bs=1M count=15000
-> 
-> most of the "dirty" pages are in NR_FILE_DIRTY with some relatively small amount (10% or so) in NR_WRITEBACK. If I do:
-> 
-> dd if=/dev/zero of=some-nfs-mount bs=1M count=15000
-> 
-> NR_WRITEBACK almost immediatelly goes up to dirty_ratio, with
-> NR_UNSTABLE_NFS small. Over time NR_UNSTABLE_NFS grows, but is
-> always lower than NR_WRITEBACK (maybe 40/60).
+> This allows not including mc13783-private.h which I intend to remove
+> soon.
 
-This is interesting, though I don't see explicit NFS code to limit
-NR_UNSTABLE_NFS. Maybe there are some implicit rules.
+Acked-by: Mark Brown <broonie@opensoruce.wolfsonmicro.com>
 
->  But don't ask what happens if I do both in parallel.... The local
->  IO really slows to a crawl and sometimes the system just becomes
->  very unresponsive. Have we heard that before? :-)
-
-You may be the first reporter as far as I can tell :)
-
->  Somehow I have the impression that NFS writeout is able to
->  absolutely dominate the dirty pages to an extent that the system is
->  unusable.
-
-This is why I want to limit NR_WRITEBACK for NFS:
-
-        [PATCH] NFS: introduce writeback wait queue
-        http://lkml.org/lkml/2009/10/3/198
-
-Thanks,
-Fengguang
+It'd have been a bit easier to review if done as more patches - eg, the
+change to use macros to define the regulators could've been done as a
+separate patch.
