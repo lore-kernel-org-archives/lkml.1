@@ -1,161 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZKJWQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbZKJWXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbZKJWQm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 17:16:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbZKJWQl
+	id S1757596AbZKJWXH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 17:23:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbZKJWXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 17:16:41 -0500
-Received: from smtp.outflux.net ([198.145.64.163]:59886 "EHLO smtp.outflux.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753259AbZKJWQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 17:16:41 -0500
-Date: Tue, 10 Nov 2009 14:15:37 -0800
-From: Kees Cook <kees.cook@canonical.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
-Message-ID: <20091110221537.GB5129@outflux.net>
-References: <20091110154956.GF5129@outflux.net>
- <4AF9991B.20400@zytor.com>
- <20091110165738.GH5129@outflux.net>
- <4AF99F0C.2050806@zytor.com>
- <20091110174622.GK5129@outflux.net>
- <4AF9B6AD.8020505@zytor.com>
- <20091110194304.GW5129@outflux.net>
- <4AF9C627.1070206@zytor.com>
- <20091110205544.GZ5129@outflux.net>
- <4AF9D98A.90808@zytor.com>
+	Tue, 10 Nov 2009 17:23:06 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44527 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752763AbZKJWXF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 17:23:05 -0500
+Message-ID: <4AF9E61B.5090407@zytor.com>
+Date: Tue, 10 Nov 2009 14:15:55 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF9D98A.90808@zytor.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+To: Willy Tarreau <w@1wt.eu>
+CC: Pavel Machek <pavel@ucw.cz>, Avi Kivity <avi@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+References: <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <20091110211259.GD26633@1wt.eu> <4AF9D8E2.7050205@zytor.com> <20091110220652.GE26633@1wt.eu>
+In-Reply-To: <20091110220652.GE26633@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 01:22:18PM -0800, H. Peter Anvin wrote:
-> Yes, it should be.  set_nx() and check_efer() are doing the same thing,
-> except in different ways, and they are - IMO - *both* doing something
-> dumb -- although check_efer() is saner.
+On 11/10/2009 02:06 PM, Willy Tarreau wrote:
+> On Tue, Nov 10, 2009 at 01:19:30PM -0800, H. Peter Anvin wrote:
+>> Willy, perhaps you can come up with a list of features you think should
+>> be emulated, together with an explanation of why you opted for that list
+>> of features and *did not* opt for others.
+> 
+> Well, the instructions I had to emulate were the result of failures
+> to run standard distros on older machines. When I ran a 486 distro
+> on my old 386, I found that almost everything worked except a few
+> programs making use of BSWAP for htonl(), and a small group of other
+> ones making occasional use of CMPXCHG for mutex handling. So I checked
+> the differences between 386 and 486 and found that the last remaining
+> one was XADD which I did not find in my binaries but which was really
+> obvious to implement, so it made sense to complete the emulator. That
+> said, a feature was missing with CMPXCHG. It was generally used with
+> a LOCK prefix which could not be emulated. In practice, that wasn't
+> an issue since I did not have any SMP i386 and I think we might only
+> find them on some very specific industrial boards if any.
+> 
 
-BTW, it seems like set_nx() should move from init_memory_mapping to
-setup_arch, since init_memory_mapping can be called twice, but I don't
-think set_nx needs to be.
+Linux doesn't support 386 SMP anyway, and we really don't support 486
+SMP either since noone relevant seems to have a board we can test on.
 
-Also, disable_nx is only defined in setup_nx.c when
-"defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)", so I re-arranged the
-logic to match that.
+> But what I can say is that after emulating those instructions, I
+> never got any illegal instruction anymore on my systems. Here
+> Matteo reports an issue with NOPL, which might have been introduced
+> with newer compilers. So if we get NOPL+CMOV, I think that every
+> CPU starting from 486 will be able to execute all the applications
+> I have been running on those machines. We can add the 486 ones if
+> we think it's worth it.
 
-How about the following clean-up and merge...
+NOPL was introduced with a recent binutils(!) change.  They might have
+backed that one out.
 
----
-It is possible for x86_64 systems to lack the NX bit (see check_efer())
-either due to the hardware lacking support or the BIOS having turned
-off the CPU capability, so NX status should be reported.  Additionally,
-anyone booting NX-capable CPUs in 32bit mode without PAE will lack NX
-functionality, so this change provides feedback for that case as well.
+> Once again, I have no argument against emulating more instructions.
+> It's just that I never needed them, and I fear that doing so might
+> render the code a lot more complex and slower. Maybe time will prove
+> me wrong and I will have no problem with that. We can re-open this
+> thread after the first report of a SIGILL with the patch applied.
+> 
+> So in my opinion, we should have :
+>   - CMOV (for 486, Pentium, C3, K6, ...)
+>   - NOPL (newcomer)
+> 
+> And if we want to extend down to i386 :
+>   - BSWAP (=htonl)
+>   - CMPXCHG (mutex)
+>   - XADD (never encoutered but cheap)
+> 
+> I still have the 2.4 patch for BSWAP, CMPXCHG, CMOV and XADD lying
+> around. I'm appending it to the end of this mail in case it can fuel
+> the discussion. I've not ported it to 2.6 yet simply because my old
+> systems are still on 2.4, but volunteers are welcome :-)
+> 
+>> Note: emulated FPU is a special subcase.  The FPU operations are
+>> heavyweight enough that the overhead of trapping versus library calls is
+>> relatively insignificant.
+> 
+> Agreed for most of them, though some cheap ones such as FADD can
+> see a huge difference. In fact it's mostly that it's been common
+> for a long time to see slow software FPU (till 386 & 486-SX), so
+> it's been avoided for a long time.
+> 
+> Regards,
+> Willy
 
-Signed-off-by: Kees Cook <kees.cook@canonical.com>
----
- arch/x86/kernel/setup.c |    2 ++
- arch/x86/mm/init.c      |    4 ----
- arch/x86/mm/setup_nx.c  |   31 ++++++++++++++++++++-----------
- 3 files changed, 22 insertions(+), 15 deletions(-)
+I immediately note that you have absolutely no check on the code
+segment, either in terms of code segment limits or even that we're in
+the right mode.  Furthermore, you read user space -- code in user space
+is still user space -- without get_user().  We also need NX protection
+to be honoured, and the various special subtleties of the x86
+instruction format (15-byte limit, for example) to be preserved: they
+aren't just there randomly, but are there to protect against specific
+failures.
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index e09f0e2..72181c1 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -895,6 +895,8 @@ void __init setup_arch(char **cmdline_p)
- 
- 	init_gbpages();
- 
-+	set_nx();
-+
- 	/* max_pfn_mapped is updated here */
- 	max_low_pfn_mapped = init_memory_mapping(0, max_low_pfn<<PAGE_SHIFT);
- 	max_pfn_mapped = max_low_pfn_mapped;
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 73ffd55..d406c52 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -146,10 +146,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	use_gbpages = direct_gbpages;
- #endif
- 
--	set_nx();
--	if (nx_enabled)
--		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
--
- 	/* Enable PSE if available */
- 	if (cpu_has_pse)
- 		set_in_cr4(X86_CR4_PSE);
-diff --git a/arch/x86/mm/setup_nx.c b/arch/x86/mm/setup_nx.c
-index 513d8ed..269b668 100644
---- a/arch/x86/mm/setup_nx.c
-+++ b/arch/x86/mm/setup_nx.c
-@@ -33,28 +33,37 @@ static int __init noexec_setup(char *str)
- early_param("noexec", noexec_setup);
- #endif
- 
--#ifdef CONFIG_X86_PAE
- void __init set_nx(void)
- {
--	unsigned int v[4], l, h;
--
--	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
--		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
-+	if (!cpu_has_nx) {
-+		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-+		       "missing in CPU or disabled in BIOS!\n");
-+	} else {
-+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-+		if (disable_nx)
-+			printk(KERN_INFO "NX (Execute Disable) protection: "
-+			       "disabled by kernel command line option\n");
-+		else {
-+# ifdef CONFIG_X86_PAE
-+			/* 32-bit PAE */
-+			unsigned int l, h;
- 
--		if ((v[3] & (1 << 20)) && !disable_nx) {
- 			rdmsr(MSR_EFER, l, h);
- 			l |= EFER_NX;
- 			wrmsr(MSR_EFER, l, h);
- 			nx_enabled = 1;
- 			__supported_pte_mask |= _PAGE_NX;
-+# endif
-+			printk(KERN_INFO "NX (Execute Disable) protection: "
-+			       "active\n");
- 		}
--	}
--}
- #else
--void set_nx(void)
--{
--}
-+		/* 32bit non-PAE kernel, NX cannot be used */
-+		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-+		       "cannot be enabled: non-PAE kernel!\n");
- #endif
-+	}
-+}
- 
- #ifdef CONFIG_X86_64
- void __cpuinit check_efer(void)
--- 
-1.6.5
+*THIS* is the kind of complexity that makes me think that having a
+single source for all interpretation done in the kernel is the preferred
+option.
 
-
-
--- 
-Kees Cook
-Ubuntu Security Team
+	-hpa
