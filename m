@@ -1,87 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbZKJTCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbZKJTGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757831AbZKJTCF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 14:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757803AbZKJTCE
+	id S1757827AbZKJTGA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 14:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757689AbZKJTF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 14:02:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37415 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757819AbZKJTCC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 14:02:02 -0500
-Date: Tue, 10 Nov 2009 19:01:29 GMT
-From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, mitake@dcl.info.waseda.ac.jp,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1257865442-20252-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1257865442-20252-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/bench] perf bench: Improve sched-message.c with more comfortable output
-Message-ID: <tip-c5659b74f052150791750234f92dcfb29d27efa5@git.kernel.org>
-Git-Commit-ID: c5659b74f052150791750234f92dcfb29d27efa5
-X-Mailer: tip-git-log-daemon
+	Tue, 10 Nov 2009 14:05:58 -0500
+Received: from 2605ds1-ynoe.0.fullrate.dk ([90.184.12.24]:46435 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757672AbZKJTF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 14:05:58 -0500
+Message-ID: <4AF9B994.8040301@krogh.cc>
+Date: Tue, 10 Nov 2009 20:05:56 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       Greg Banks <gnb@fmeh.org>
+Subject: Re: 2.6.31 under "heavy" NFS load.
+References: <4AF86DE4.5010607@krogh.cc> <20091110184126.GD15000@fieldses.org>
+In-Reply-To: <20091110184126.GD15000@fieldses.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c5659b74f052150791750234f92dcfb29d27efa5
-Gitweb:     http://git.kernel.org/tip/c5659b74f052150791750234f92dcfb29d27efa5
-Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-AuthorDate: Wed, 11 Nov 2009 00:04:02 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Nov 2009 19:56:46 +0100
+J. Bruce Fields wrote:
+> On Mon, Nov 09, 2009 at 08:30:44PM +0100, Jesper Krogh wrote:
+>> When a lot (~60 all on 1GbitE) of NFS clients are hitting an NFS server
+>> that has an 10GbitE NIC sitting on it I'm seeing high IO-wait load
+>> (>50%) and load number over 100 on the server. This is a change since
+>> 2.6.29 where the IO-wait load under similar workload was less than 10%.
+>>
+>> The system has 16 Opteron cores.
+>>
+>> All data the NFS-clients are reading are "memory recident" since they
+>> are all reading off the same 10GB of data and the server has 32GB of
+>> main memory dedicated to nothing else than serving NFS.
+>>
+>> A snapshot of top looks like this:
+>> http://krogh.cc/~jesper/top-hest-2.6.31.txt
+>>
+>> The load is generally alot higher than on 2.6.29 and it "explodes" to
+>> over 100 when a few processes begin utillizing the disk while serving
+>> files over NFS. "dstat" reports a read-out of 10-20MB/s from disk which
+>> is close to what I'd expect. and the system delivers around 600-800MB/s
+>> over the NIC in this workload.
+> 
+> Is that the bandwidth you get with 2.6.31, with 2.6.29, or with both?
 
-perf bench: Improve sched-message.c with more comfortable output
+Without being able to be fully accurate, I have a strong feeling that
+the comparative numbers on 2.6.29 were more around 800-1000MB/s. But
+this isn't based on any measurements so dont put too much into it. I'll
+try to make up something that I can use for testing over multiple
+kernel-versions.
 
-This patch improves sched-message.c with more comfortable output.
+> Are you just noticing a change in the statistics, or are there concrete
+> changes in the performance of the server?
 
-Change points are comment style description and
-formatting numerical values and its units.
+Interactivity on the console is alot worse. Still usable, but top takes
+~5s to start up on 2.6.31 where I didn't remember any lags on 2.6.29 (so
+less than 2s).
 
-Example:
+>> Sorry that I cannot be more specific, I can answer questions on a
+>> running 2.6.31 kernel, but I cannot reboot the system back to 2.6.29
+>> just to test since the system is "in production". I tried 2.6.30 and it
+>> has the same pattern as 2.6.31, so based on that fragile evidence the
+>> change should be found in between 2.6.29 and 2.6.30. I hope a "wague"
+>> report is better than none.
+> 
+> Can you test whether this helps?
 
- | % perf bench sched messaging
- | # Running sched/messaging benchmark...
- | # 20 sender and receiver processes per group
- | # 10 groups == 400 processes run
- |
- |      Total time: 1.490 [sec]
+I'll schedule testing..
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1257865442-20252-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
----
- tools/perf/bench/sched-messaging.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/tools/perf/bench/sched-messaging.c b/tools/perf/bench/sched-messaging.c
-index 2cc5edc..605a2a9 100644
---- a/tools/perf/bench/sched-messaging.c
-+++ b/tools/perf/bench/sched-messaging.c
-@@ -314,12 +314,12 @@ int bench_sched_messaging(int argc, const char **argv,
- 
- 	switch (bench_format) {
- 	case BENCH_FORMAT_DEFAULT:
--		printf("(%d sender and receiver %s per group)\n",
-+		printf("# %d sender and receiver %s per group\n",
- 		       num_fds, thread_mode ? "threads" : "processes");
--		printf("(%d groups == %d %s run)\n\n",
-+		printf("# %d groups == %d %s run\n\n",
- 		       num_groups, num_groups * 2 * num_fds,
- 		       thread_mode ? "threads" : "processes");
--		printf("\tTotal time:%lu.%03lu sec\n",
-+		printf(" %14s: %lu.%03lu [sec]\n", "Total time",
- 		       diff.tv_sec, diff.tv_usec/1000);
- 		break;
- 	case BENCH_FORMAT_SIMPLE:
+-- 
+Jesper
