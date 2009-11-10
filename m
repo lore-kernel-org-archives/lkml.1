@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbZKJOs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbZKJPBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756627AbZKJOs0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 09:48:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbZKJOsZ
+	id S1756596AbZKJPBV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 10:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZKJPBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 09:48:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44726 "EHLO mx1.redhat.com"
+	Tue, 10 Nov 2009 10:01:21 -0500
+Received: from winfree.gag.com ([192.133.104.8]:37293 "EHLO winfree.gag.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756545AbZKJOsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 09:48:24 -0500
-Date: Tue, 10 Nov 2009 16:45:44 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: alacrityvm-devel@lists.sourceforge.net, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
-Message-ID: <20091110144543.GC19645@redhat.com>
-References: <20091002141407.30224.54207.stgit@dev.haskins.net> <20091110115335.GC6989@redhat.com> <4AF919020200005A000586A9@sinclair.provo.novell.com> <20091110131722.GA19645@redhat.com> <4AF9747E.8020408@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF9747E.8020408@novell.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1750830AbZKJPBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 10:01:20 -0500
+X-Greylist: delayed 464 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Nov 2009 10:01:20 EST
+To: linux-kernel@vger.kernel.org, tiwai@suse.de
+Subject: problem with codec discovery on HP 2530p
+Message-Id: <20091110145338.A55E719D7AD@rover.gag.com>
+Date: Tue, 10 Nov 2009 09:53:38 -0500 (EST)
+From: bdale@gag.com (Bdale Garbee)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 09:11:10AM -0500, Gregory Haskins wrote:
-> > You are comparing with skb destructors, not skb data destructors :) skb
-> > data destructor is Rusty's patch which he wanted to use for vringfd.  I
-> > mean e.g. this:
-> > http://lists.openwall.net/netdev/2008/04/18/7
-> 
-> Ah, I wasn't aware.  I believe Anthony Ligouri had pointed me at this
-> same patch earlier this year.  However, more recently when I saw
-> skb->destructor() in mainline (seemingly from Rusty), I thought it had
-> been accepted and didn't investigate further.
+I recently moved from 2.6.30.9 to the 2.6.32-rcX series on my HP EliteBook 
+2530p.  Audio didn't work, and I've finally made time to track down the 
+problem.  It turns out the problem actually started with 2.6.31-rc1, due
+to a patch that was part of the 2.6.30-rcX series but apparently wasn't in
+the 2.6.30 stable release.  
 
-skb->destructor seems to be there as far back as 2.2.0
-http://lxr.linux.no/#linux-old+v2.2.0/include/linux/skbuff.h
+The symptom is:
 
--- 
-MST
+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
+HDA Intel 0000:00:1b.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+HDA Intel 0000:00:1b.0: irq 30 for MSI/MSI-X
+HDA Intel 0000:00:1b.0: setting latency timer to 64
+hda-intel: Codec #0 probe error; disabling it...
+hda-intel: spurious response 0x0:0x0, last cmd=0x0f0000
+hda-intel: no codecs initialized
+hda-intel: spurious response 0x0:0x0, last cmd=0x0f0000
+HDA Intel 0000:00:1b.0: PCI INT A disabled
+
+The codec in this machine is an AD1984A.  Bisecting, I discovered that 
+reverting this single commit fixes things for me in 2.6.32-rc6:
+
+8174086167d43d0fd7b21928074145ae1d15bbab is the first bad commit
+commit 8174086167d43d0fd7b21928074145ae1d15bbab
+Author: Takashi Iwai <tiwai@suse.de>
+Date:   Tue May 26 15:22:00 2009 +0200
+
+    ALSA: hda - Allow concurrent RIRB access in single_cmd mode
+    
+    In the single_cmd mode, the current driver code doesn't do any update
+    for RIRB just for any safety reason.  But, actually the RIRB and
+    single_cmd mode don't conflict.  Unsolicited events can be delivered
+    even while using the single_cmd mode.
+    
+    This patch allows the handling of unsolicited events with single_cmd
+    mode, just always checking RIRB independent from single_cmd flag.
+    
+    Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+:040000 040000 f4fa70b3ac4fe54d436c59c26c9fe6754625953e 65ff495d67e60d2cf33bf9ea994a0a828d367284 M	sound
+
