@@ -1,106 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751268AbZKJFPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbZKJFP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751268AbZKJFPr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 00:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbZKJFPr
+	id S1751442AbZKJFP7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 00:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZKJFP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 00:15:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38570 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Nov 2009 00:15:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56513 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830AbZKJFPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 00:15:46 -0500
-Date: Tue, 10 Nov 2009 06:15:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       stable kernel team <stable@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: Kernel oops in resched_task() with 2.6.31.5
-Message-ID: <20091110051537.GF7897@elte.hu>
-References: <4AF80B8B.8080203@jp.fujitsu.com>
- <1257770720.4108.195.camel@laptop>
- <4AF810C5.4010505@jp.fujitsu.com>
- <4AF8F63B.1040402@jp.fujitsu.com>
+	id S1751385AbZKJFP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 00:15:57 -0500
+Date: Tue, 10 Nov 2009 05:15:37 GMT
+From: tip-bot for Andreas Herrmann <herrmann.der.user@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andreas.herrmann3@amd.com, herrmann.der.user@googlemail.com,
+       tglx@linutronix.de, borislav.petkov@amd.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, herrmann.der.user@googlemail.com,
+       tglx@linutronix.de, borislav.petkov@amd.com, mingo@elte.hu
+In-Reply-To: <20091029134742.GD30802@alberich.amd.com>
+References: <20091029134742.GD30802@alberich.amd.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/microcode] x86, amd-ucode: Remove needless log messages
+Message-ID: <tip-6e18da75c28b592594fd632cf3e6eb09d3d078de@git.kernel.org>
+Git-Commit-ID: 6e18da75c28b592594fd632cf3e6eb09d3d078de
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4AF8F63B.1040402@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  6e18da75c28b592594fd632cf3e6eb09d3d078de
+Gitweb:     http://git.kernel.org/tip/6e18da75c28b592594fd632cf3e6eb09d3d078de
+Author:     Andreas Herrmann <herrmann.der.user@googlemail.com>
+AuthorDate: Thu, 29 Oct 2009 14:47:42 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Nov 2009 05:49:28 +0100
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+x86, amd-ucode: Remove needless log messages
 
-> Kenji Kaneshige wrote:
-> >Peter Zijlstra wrote:
-> >>On Mon, 2009-11-09 at 21:31 +0900, Kenji Kaneshige wrote:
-> >>>Hi,
-> >>>
-> >>>I frequently encounter the kernel oops attached below in resched_task()
-> >>>with 2.6.31.5. This kernel oops happens also with 2.6.32-rc5. I don't
-> >>>know about other kernel.
-> >>>
-> >>>Here is my analysis:
-> >>>
-> >>>The immediate cause of this kernel oops is that NULL was passed to
-> >>>resched_task() from resched_cpu(). From my investigation, this was
-> >>>caused as follows:
-> >>>
-> >>>- trigger_load_balance() caluculated cpu number of idle load balancer
-> >>>  using find_new_ilb(), and find_new_ilb() returned *offline* CPU
-> >>>  number (16 in my case). Note that I didn't do any CPU hotplug
-> >>>  operation. On my system, present, online and offline under
-> >>>  /sys/devices/system/cpu/ are
-> >>>
-> >>>    [kanesige@localhost ~]$ cat /sys/devices/system/cpu/present
-> >>>    0-15
-> >>>    [kanesige@localhost ~]$ cat /sys/devices/system/cpu/online
-> >>>    0-15
-> >>>    [kanesige@localhost ~]$ cat /sys/devices/system/cpu/offline
-> >>>    16-255
-> >>>
-> >>>  And nr_cpu_ids is 256.
-> >>>
-> >>>- resched_cpu() calculated current task by cpu_curr() with offline CPU
-> >>>  number.
-> >>>
-> >>>So this kernel oops seems to be caused by invalid CPU number returned
-> >>>from find_new_ilb(). I don't know the find_new_ilb() implementation,
-> >>>but I suspect the initialization of cpumasks used by find_new_ilb().
-> >>>The patch attached below seems to fix the problem (With this patch,
-> >>>the kernel oops doesn't happen). But I don't know if this is the
-> >>>correct fix.
-> >>
-> >>Please send patches against -tip.
-> >>
-> >>You might find that Rusty has already fixed a similar issue there in
-> >>commit: 49557e620339cb134127b5bfbcfecc06b77d0232.
-> >>
-> >>Now, Rusty's patch does not clear the ilb mask, so maybe it doesn't
-> >>fully cover your issue, please test.
-> >>
-> >
-> >Thank you for quick response.
-> >
-> >I didn't notice Rusty's fix.
-> >I'll look at and test it tomorrow.
-> >
-> 
-> I tested Rusty's patch and confirmed it fixes the problem.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>
+LKML-Reference: <20091029134742.GD30802@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/microcode_amd.c |    9 +--------
+ 1 files changed, 1 insertions(+), 8 deletions(-)
 
-Thanks.
-
--stable team, please cherry-pick this upstream commit for .31.x:
-
- 49557e6: sched: Fix boot crash by zalloc()ing most of the cpu masks
-
-	Ingo
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index f4c538b..c043534 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -109,12 +109,8 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+ 		return 0;
+ 	}
+ 
+-	if (mc_header->processor_rev_id != equiv_cpu_id) {
+-		printk(KERN_ERR	"microcode: CPU%d: patch mismatch "
+-		       "(processor_rev_id: %x, equiv_cpu_id: %x)\n",
+-		       cpu, mc_header->processor_rev_id, equiv_cpu_id);
++	if (mc_header->processor_rev_id != equiv_cpu_id)
+ 		return 0;
+-	}
+ 
+ 	/* ucode might be chipset specific -- currently we don't support this */
+ 	if (mc_header->nb_dev_id || mc_header->sb_dev_id) {
+@@ -185,9 +181,6 @@ get_next_ucode(const u8 *buf, unsigned int size, unsigned int *mc_size)
+ 
+ 	total_size = (unsigned long) (section_hdr[4] + (section_hdr[5] << 8));
+ 
+-	printk(KERN_DEBUG "microcode: size %u, total_size %u\n",
+-	       size, total_size);
+-
+ 	if (total_size > size || total_size > UCODE_MAX_SIZE) {
+ 		printk(KERN_ERR "microcode: error: size mismatch\n");
+ 		return NULL;
