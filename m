@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbZKJEWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZKJEW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756016AbZKJEWa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 23:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZKJEW3
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1755975AbZKJEW3 (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 9 Nov 2009 23:22:29 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45899 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754134AbZKJEW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZKJEW2
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 9 Nov 2009 23:22:28 -0500
-Date: Tue, 10 Nov 2009 04:21:47 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, yanmin_zhang@linux.intel.com, efault@gmx.de,
-       alex.shi@intel.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, yanmin_zhang@linux.intel.com,
-       alex.shi@intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1257821402.5648.17.camel@marge.simson.net>
-References: <1257821402.5648.17.camel@marge.simson.net>
+Received: from hera.kernel.org ([140.211.167.34]:45897 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751814AbZKJEW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 23:22:27 -0500
+Date: Tue, 10 Nov 2009 04:22:04 GMT
+From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, mitake@dcl.info.waseda.ac.jp,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1257808802-9420-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+References: <1257808802-9420-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Fix and clean up rate-limit newidle code
-Message-ID: <tip-eae0c9dfb534cb3449888b9601228efa6480fdb5@git.kernel.org>
-Git-Commit-ID: eae0c9dfb534cb3449888b9601228efa6480fdb5
+Subject: [tip:perf/bench] perf bench: Add format constants to bench.h for unified output formatting
+Message-ID: <tip-242aa14a67f4e19453fc8a51cffc5ac5ee5bcbd1@git.kernel.org>
+Git-Commit-ID: 242aa14a67f4e19453fc8a51cffc5ac5ee5bcbd1
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,104 +31,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  eae0c9dfb534cb3449888b9601228efa6480fdb5
-Gitweb:     http://git.kernel.org/tip/eae0c9dfb534cb3449888b9601228efa6480fdb5
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Tue, 10 Nov 2009 03:50:02 +0100
+Commit-ID:  242aa14a67f4e19453fc8a51cffc5ac5ee5bcbd1
+Gitweb:     http://git.kernel.org/tip/242aa14a67f4e19453fc8a51cffc5ac5ee5bcbd1
+Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+AuthorDate: Tue, 10 Nov 2009 08:19:59 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Nov 2009 04:25:58 +0100
+CommitDate: Tue, 10 Nov 2009 04:53:48 +0100
 
-sched: Fix and clean up rate-limit newidle code
+perf bench: Add format constants to bench.h for unified output formatting
 
-Commit 1b9508f, "Rate-limit newidle" has been confirmed to fix
-the netperf UDP loopback regression reported by Alex Shi.
+This patch adds some constants and extern declaration to
+bench.h. These are used for unified output formatting
+of 'perf bench'.
 
-This is a cleanup and a fix:
-
- - moved to a more out of the way spot
-
- - fix to ensure that balancing doesn't try to balance
-   runqueues which haven't gone online yet, which can
-   mess up CPU enumeration during boot.
-
-Reported-by: Alex Shi <alex.shi@intel.com>
-Reported-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: <stable@kernel.org> # .32.x: a1f84a3: sched: Check for an idle shared cache
-Cc: <stable@kernel.org> # .32.x: 1b9508f: sched: Rate-limit newidle
-Cc: <stable@kernel.org> # .32.x: fd21073: sched: Fix affinity logic
-Cc: <stable@kernel.org> # .32.x
-LKML-Reference: <1257821402.5648.17.camel@marge.simson.net>
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <1257808802-9420-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched.c |   28 +++++++++++++++-------------
- 1 files changed, 15 insertions(+), 13 deletions(-)
+ tools/perf/bench/bench.h |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 23e3535..ad37776 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2354,17 +2354,6 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 	if (rq != orig_rq)
- 		update_rq_clock(rq);
+diff --git a/tools/perf/bench/bench.h b/tools/perf/bench/bench.h
+index 59adb27..42167ea 100644
+--- a/tools/perf/bench/bench.h
++++ b/tools/perf/bench/bench.h
+@@ -6,4 +6,13 @@ extern int bench_sched_messaging(int argc, const char **argv,
+ extern int bench_sched_pipe(int argc, const char **argv,
+ 			    const char *prefix);
  
--	if (rq->idle_stamp) {
--		u64 delta = rq->clock - rq->idle_stamp;
--		u64 max = 2*sysctl_sched_migration_cost;
--
--		if (delta > max)
--			rq->avg_idle = max;
--		else
--			update_avg(&rq->avg_idle, delta);
--		rq->idle_stamp = 0;
--	}
--
- 	WARN_ON(p->state != TASK_WAKING);
- 	cpu = task_cpu(p);
- 
-@@ -2421,6 +2410,17 @@ out_running:
- #ifdef CONFIG_SMP
- 	if (p->sched_class->task_wake_up)
- 		p->sched_class->task_wake_up(rq, p);
++#define BENCH_FORMAT_DEFAULT_STR "default"
++#define BENCH_FORMAT_DEFAULT 0
++#define BENCH_FORMAT_SIMPLE_STR "simple"
++#define BENCH_FORMAT_SIMPLE 1
 +
-+	if (unlikely(rq->idle_stamp)) {
-+		u64 delta = rq->clock - rq->idle_stamp;
-+		u64 max = 2*sysctl_sched_migration_cost;
++#define BENCH_FORMAT_UNKNOWN -1
 +
-+		if (delta > max)
-+			rq->avg_idle = max;
-+		else
-+			update_avg(&rq->avg_idle, delta);
-+		rq->idle_stamp = 0;
-+	}
- #endif
- out:
- 	task_rq_unlock(rq, &flags);
-@@ -4098,7 +4098,7 @@ static int load_balance(int this_cpu, struct rq *this_rq,
- 	unsigned long flags;
- 	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
- 
--	cpumask_setall(cpus);
-+	cpumask_copy(cpus, cpu_online_mask);
- 
- 	/*
- 	 * When power savings policy is enabled for the parent domain, idle
-@@ -4261,7 +4261,7 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd)
- 	int all_pinned = 0;
- 	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
- 
--	cpumask_setall(cpus);
-+	cpumask_copy(cpus, cpu_online_mask);
- 
- 	/*
- 	 * When power savings policy is enabled for the parent domain, idle
-@@ -9522,6 +9522,8 @@ void __init sched_init(void)
- 		rq->cpu = i;
- 		rq->online = 0;
- 		rq->migration_thread = NULL;
-+		rq->idle_stamp = 0;
-+		rq->avg_idle = 2*sysctl_sched_migration_cost;
- 		INIT_LIST_HEAD(&rq->migration_queue);
- 		rq_attach_root(rq, &def_root_domain);
++extern int bench_format;
++
  #endif
