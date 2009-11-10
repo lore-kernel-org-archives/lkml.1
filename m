@@ -1,48 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbZKJDKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZKJDT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755447AbZKJDKU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 22:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbZKJDKU
+	id S1755929AbZKJDT3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 22:19:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZKJDT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 22:10:20 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:37253 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750944AbZKJDKT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 22:10:19 -0500
-Date: Mon, 9 Nov 2009 22:10:22 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [BUGFIX -v2 for .32] crypto, gcm, fix another complete call in
-	complete fuction
-Message-ID: <20091110031022.GA13710@gondor.apana.org.au>
-References: <1257751454.22519.2287.camel@yhuang-dev.sh.intel.com> <20091109190250.GC9588@gondor.apana.org.au> <1257821399.22519.2410.camel@yhuang-dev.sh.intel.com>
+	Mon, 9 Nov 2009 22:19:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40742 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755889AbZKJDTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 22:19:24 -0500
+Date: Tue, 10 Nov 2009 03:18:39 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <12571987491353-git-send-email->
+References: <12571987491353-git-send-email->
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/rcu] rcu: Prepare for synchronization fixes: clean up for non-NO_HZ handling of ->completed counter
+Message-ID: <tip-281d150c5f8892f158747594ab49ce2823fd8b8c@git.kernel.org>
+Git-Commit-ID: 281d150c5f8892f158747594ab49ce2823fd8b8c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1257821399.22519.2410.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 10:49:59AM +0800, Huang Ying wrote:
->
-> Yes. This is for performance only. Because crypto_gcm_reqctx(req) is not
-> so trivial (it needs access tfm), and used by every xxx_done function,
-> so I think it is better to just call crypto_gcm_reqctx once and pass it
-> down. Do you think so?
+Commit-ID:  281d150c5f8892f158747594ab49ce2823fd8b8c
+Gitweb:     http://git.kernel.org/tip/281d150c5f8892f158747594ab49ce2823fd8b8c
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Mon, 2 Nov 2009 13:52:27 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Nov 2009 04:11:17 +0100
 
-Since we only support blocksize == 16, that means the alignment
-cannot exceed 16 bytes.  So just always align to 16 bytes and that
-should make crypto_gcm_reqctx trivial once optimised by the
-compiler.
+rcu: Prepare for synchronization fixes: clean up for non-NO_HZ handling of ->completed counter
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Impose a clear locking design on non-NO_HZ handling of the
+->completed counter.  This increases the distance between the
+RCU and the CPU-hotplug mechanisms.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: josh@joshtriplett.org
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+Cc: Valdis.Kletnieks@vt.edu
+Cc: dhowells@redhat.com
+Cc: <stable@kernel.org> # .32.x
+LKML-Reference: <12571987491353-git-send-email->
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/rcutree.c |   67 ++++++++++++++++++++++++-----------------------------
+ kernel/rcutree.h |    8 +++---
+ 2 files changed, 34 insertions(+), 41 deletions(-)
+
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 69f4efe..26249ab 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -178,9 +178,29 @@ static struct rcu_node *rcu_get_root(struct rcu_state *rsp)
+ 	return &rsp->node[0];
+ }
+ 
++/*
++ * Record the specified "completed" value, which is later used to validate
++ * dynticks counter manipulations and CPU-offline checks.  Specify
++ * "rsp->completed - 1" to unconditionally invalidate any future dynticks
++ * manipulations and CPU-offline checks.  Such invalidation is useful at
++ * the beginning of a grace period.
++ */
++static void dyntick_record_completed(struct rcu_state *rsp, long comp)
++{
++	rsp->dynticks_completed = comp;
++}
++
+ #ifdef CONFIG_SMP
+ 
+ /*
++ * Recall the previously recorded value of the completion for dynticks.
++ */
++static long dyntick_recall_completed(struct rcu_state *rsp)
++{
++	return rsp->dynticks_completed;
++}
++
++/*
+  * If the specified CPU is offline, tell the caller that it is in
+  * a quiescent state.  Otherwise, whack it with a reschedule IPI.
+  * Grace periods can end up waiting on an offline CPU when that
+@@ -337,28 +357,9 @@ void rcu_irq_exit(void)
+ 		set_need_resched();
+ }
+ 
+-/*
+- * Record the specified "completed" value, which is later used to validate
+- * dynticks counter manipulations.  Specify "rsp->completed - 1" to
+- * unconditionally invalidate any future dynticks manipulations (which is
+- * useful at the beginning of a grace period).
+- */
+-static void dyntick_record_completed(struct rcu_state *rsp, long comp)
+-{
+-	rsp->dynticks_completed = comp;
+-}
+-
+ #ifdef CONFIG_SMP
+ 
+ /*
+- * Recall the previously recorded value of the completion for dynticks.
+- */
+-static long dyntick_recall_completed(struct rcu_state *rsp)
+-{
+-	return rsp->dynticks_completed;
+-}
+-
+-/*
+  * Snapshot the specified CPU's dynticks counter so that we can later
+  * credit them with an implicit quiescent state.  Return 1 if this CPU
+  * is in dynticks idle mode, which is an extended quiescent state.
+@@ -421,24 +422,8 @@ static int rcu_implicit_dynticks_qs(struct rcu_data *rdp)
+ 
+ #else /* #ifdef CONFIG_NO_HZ */
+ 
+-static void dyntick_record_completed(struct rcu_state *rsp, long comp)
+-{
+-}
+-
+ #ifdef CONFIG_SMP
+ 
+-/*
+- * If there are no dynticks, then the only way that a CPU can passively
+- * be in a quiescent state is to be offline.  Unlike dynticks idle, which
+- * is a point in time during the prior (already finished) grace period,
+- * an offline CPU is always in a quiescent state, and thus can be
+- * unconditionally applied.  So just return the current value of completed.
+- */
+-static long dyntick_recall_completed(struct rcu_state *rsp)
+-{
+-	return rsp->completed;
+-}
+-
+ static int dyntick_save_progress_counter(struct rcu_data *rdp)
+ {
+ 	return 0;
+@@ -1146,6 +1131,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	long lastcomp;
+ 	struct rcu_node *rnp = rcu_get_root(rsp);
+ 	u8 signaled;
++	u8 forcenow;
+ 
+ 	if (!rcu_gp_in_progress(rsp))
+ 		return;  /* No grace period in progress, nothing to force. */
+@@ -1182,16 +1168,23 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 		if (rcu_process_dyntick(rsp, lastcomp,
+ 					dyntick_save_progress_counter))
+ 			goto unlock_ret;
++		/* fall into next case. */
++
++	case RCU_SAVE_COMPLETED:
+ 
+ 		/* Update state, record completion counter. */
++		forcenow = 0;
+ 		spin_lock(&rnp->lock);
+ 		if (lastcomp == rsp->completed &&
+-		    rsp->signaled == RCU_SAVE_DYNTICK) {
++		    rsp->signaled == signaled) {
+ 			rsp->signaled = RCU_FORCE_QS;
+ 			dyntick_record_completed(rsp, lastcomp);
++			forcenow = signaled == RCU_SAVE_COMPLETED;
+ 		}
+ 		spin_unlock(&rnp->lock);
+-		break;
++		if (!forcenow)
++			break;
++		/* fall into next case. */
+ 
+ 	case RCU_FORCE_QS:
+ 
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index 1899023..8a4c165 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -204,11 +204,12 @@ struct rcu_data {
+ #define RCU_GP_IDLE		0	/* No grace period in progress. */
+ #define RCU_GP_INIT		1	/* Grace period being initialized. */
+ #define RCU_SAVE_DYNTICK	2	/* Need to scan dyntick state. */
+-#define RCU_FORCE_QS		3	/* Need to force quiescent state. */
++#define RCU_SAVE_COMPLETED	3	/* Need to save rsp->completed. */
++#define RCU_FORCE_QS		4	/* Need to force quiescent state. */
+ #ifdef CONFIG_NO_HZ
+ #define RCU_SIGNAL_INIT		RCU_SAVE_DYNTICK
+ #else /* #ifdef CONFIG_NO_HZ */
+-#define RCU_SIGNAL_INIT		RCU_FORCE_QS
++#define RCU_SIGNAL_INIT		RCU_SAVE_COMPLETED
+ #endif /* #else #ifdef CONFIG_NO_HZ */
+ 
+ #define RCU_JIFFIES_TILL_FORCE_QS	 3	/* for rsp->jiffies_force_qs */
+@@ -274,9 +275,8 @@ struct rcu_state {
+ 	unsigned long jiffies_stall;		/* Time at which to check */
+ 						/*  for CPU stalls. */
+ #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+-#ifdef CONFIG_NO_HZ
+ 	long dynticks_completed;		/* Value of completed @ snap. */
+-#endif /* #ifdef CONFIG_NO_HZ */
++						/*  Protected by fqslock. */
+ };
+ 
+ #ifdef RCU_TREE_NONCORE
