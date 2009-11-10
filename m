@@ -1,64 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZKJQ6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbZKJQ6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757254AbZKJQ6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 11:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbZKJQ6V
+	id S1757245AbZKJQ6K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 11:58:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbZKJQ6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 11:58:21 -0500
-Received: from smtp.outflux.net ([198.145.64.163]:52852 "EHLO smtp.outflux.net"
+	Tue, 10 Nov 2009 11:58:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8684 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757170AbZKJQ6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 11:58:20 -0500
-Date: Tue, 10 Nov 2009 08:57:38 -0800
-From: Kees Cook <kees.cook@canonical.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
-Message-ID: <20091110165738.GH5129@outflux.net>
-References: <4ADD1E03.4070200@zytor.com>
- <20091020045513.GU5394@outflux.net>
- <20091109221015.GB5129@outflux.net>
- <4AF8A2C0.5080700@zytor.com>
- <20091110154956.GF5129@outflux.net>
- <4AF9991B.20400@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF9991B.20400@zytor.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+	id S1756912AbZKJQ6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 11:58:08 -0500
+Subject: [PATCH] prevent deadlock in __unmap_hugepage_range() when
+	alloc_huge_page() fails.
+From: Larry Woodman <lwoodman@redhat.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: multipart/mixed; boundary="=-OO+By7Lz7MYtHsqpzyd2"
+Date: Tue, 10 Nov 2009 12:00:56 -0500
+Message-Id: <1257872456.3227.2.camel@dhcp-100-19-198.bos.redhat.com>
+Mime-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 08:47:23AM -0800, H. Peter Anvin wrote:
-> On 11/10/2009 07:49 AM, Kees Cook wrote:
-> >>
-> >> The second clause can only get executed if CONFIG_X86_PAE is unset,
-> >> which in turn means _PAGE_NX == 0... so that piece of code is meaningless.
-> > 
-> > CONFIG_X86_PAE is unset for x86_64, where _PAGE_NX is valid.  (This was
-> > the main situation I was trying to address.)  So that chunk runs for
-> > non-pae 32bit, and all 64bit:
-> > 
-> 
-> In reality, X86_PAE really should have been defined for 64 bits, since
-> 64 bits really is PAE in most aspects.
-> 
-> Anyway, for the 64-bit case it looks like the proper place for any of
-> this is in check_efer() just below, not in this null routine.
 
-64-bit does not set nx_enabled to "1" by default anywhere.  And setting
-the default to 1 in check_efer() seemed out of place to me.
+--=-OO+By7Lz7MYtHsqpzyd2
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
--Kees
 
--- 
-Kees Cook
-Ubuntu Security Team
+hugetlb_fault() takes the mm->page_table_lock spinlock then calls
+hugetlb_cow().  If the alloc_huge_page() in hugetlb_cow() fails due to
+an insufficient huge page pool it calls unmap_ref_private() with the
+mm->page_table_lock held.  unmap_ref_private() then calls
+unmap_hugepage_range() which tries to acquire the mm->page_table_lock.
+
+
+[<ffffffff810928c3>] print_circular_bug_tail+0x80/0x9f 
+ [<ffffffff8109280b>] ? check_noncircular+0xb0/0xe8
+ [<ffffffff810935e0>] __lock_acquire+0x956/0xc0e
+ [<ffffffff81093986>] lock_acquire+0xee/0x12e
+ [<ffffffff8111a7a6>] ? unmap_hugepage_range+0x3e/0x84
+ [<ffffffff8111a7a6>] ? unmap_hugepage_range+0x3e/0x84
+ [<ffffffff814c348d>] _spin_lock+0x40/0x89
+ [<ffffffff8111a7a6>] ? unmap_hugepage_range+0x3e/0x84
+ [<ffffffff8111afee>] ? alloc_huge_page+0x218/0x318
+ [<ffffffff8111a7a6>] unmap_hugepage_range+0x3e/0x84
+ [<ffffffff8111b2d0>] hugetlb_cow+0x1e2/0x3f4
+ [<ffffffff8111b935>] ? hugetlb_fault+0x453/0x4f6
+ [<ffffffff8111b962>] hugetlb_fault+0x480/0x4f6
+ [<ffffffff8111baee>] follow_hugetlb_page+0x116/0x2d9
+ [<ffffffff814c31a7>] ? _spin_unlock_irq+0x3a/0x5c
+ [<ffffffff81107b4d>] __get_user_pages+0x2a3/0x427
+ [<ffffffff81107d0f>] get_user_pages+0x3e/0x54
+ [<ffffffff81040b8b>] get_user_pages_fast+0x170/0x1b5
+ [<ffffffff81160352>] dio_get_page+0x64/0x14a
+ [<ffffffff8116112a>] __blockdev_direct_IO+0x4b7/0xb31
+ [<ffffffff8115ef91>] blkdev_direct_IO+0x58/0x6e
+ [<ffffffff8115e0a4>] ? blkdev_get_blocks+0x0/0xb8
+ [<ffffffff810ed2c5>] generic_file_aio_read+0xdd/0x528
+ [<ffffffff81219da3>] ? avc_has_perm+0x66/0x8c
+ [<ffffffff81132842>] do_sync_read+0xf5/0x146
+ [<ffffffff8107da00>] ? autoremove_wake_function+0x0/0x5a
+ [<ffffffff81211857>] ? security_file_permission+0x24/0x3a
+ [<ffffffff81132fd8>] vfs_read+0xb5/0x126
+ [<ffffffff81133f6b>] ? fget_light+0x5e/0xf8
+ [<ffffffff81133131>] sys_read+0x54/0x8c
+ [<ffffffff81011e42>] system_call_fastpath+0x16/0x1b
+
+This can be fixed by dropping the mm->page_table_lock around the call 
+to unmap_ref_private() if alloc_huge_page() fails, its dropped right below
+in the normal path anyway:
+
+
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 5d7601b..f4daef4 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1973,12 +1973,15 @@ retry_avoidcopy:
+                 */
+                if (outside_reserve) {
+                        BUG_ON(huge_pte_none(pte));
++                       spin_unlock(&mm->page_table_lock);
+                        if (unmap_ref_private(mm, vma, old_page, address)) {
++                               spin_lock(&mm->page_table_lock);
+                                BUG_ON(page_count(old_page) != 1);
+                                BUG_ON(huge_pte_none(pte));
+                                goto retry_avoidcopy;
+                        }
+                        WARN_ON_ONCE(1);
++                       spin_lock(&mm->page_table_lock);
+                }
+
+                return -PTR_ERR(new_page);
+
+
+Signed-off-by: Larry Woodman <lwooman@redhat.com>
+
+--=-OO+By7Lz7MYtHsqpzyd2
+Content-Disposition: attachment; filename=hugetlb_cow.diff
+Content-Type: text/x-patch; name=hugetlb_cow.diff; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 5d7601b..f4daef4 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1973,12 +1973,15 @@ retry_avoidcopy:
+ 		 */
+ 		if (outside_reserve) {
+ 			BUG_ON(huge_pte_none(pte));
++			spin_unlock(&mm->page_table_lock);
+ 			if (unmap_ref_private(mm, vma, old_page, address)) {
++				spin_lock(&mm->page_table_lock);
+ 				BUG_ON(page_count(old_page) != 1);
+ 				BUG_ON(huge_pte_none(pte));
+ 				goto retry_avoidcopy;
+ 			}
+ 			WARN_ON_ONCE(1);
++			spin_lock(&mm->page_table_lock);
+ 		}
+ 
+ 		return -PTR_ERR(new_page);
+
+--=-OO+By7Lz7MYtHsqpzyd2--
+
