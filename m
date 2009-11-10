@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbZKJEmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZKJEpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbZKJEmy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 23:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbZKJEmx
+	id S1756039AbZKJEpP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 23:45:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbZKJEpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 23:42:53 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:51311 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbZKJEmw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 23:42:52 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
-References: <m1pr7siqjz.fsf@fess.ebiederm.org>
-	<200911091628.47003.arnd@arndb.de>
-	<20091109154621.GG26740@basil.fritz.box>
-	<200911091723.23785.arnd@arndb.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 09 Nov 2009 20:42:47 -0800
-In-Reply-To: <200911091723.23785.arnd@arndb.de> (Arnd Bergmann's message of "Mon\, 9 Nov 2009 17\:23\:23 +0100")
-Message-ID: <m1ocnbrnw8.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 9 Nov 2009 23:45:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43692 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754398AbZKJEpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 23:45:14 -0500
+Date: Tue, 10 Nov 2009 05:45:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       dwmw2@infradead.org, joerg.roedel@amd.com
+Subject: Re: [PATCH 01/10] Add iommu_init to x86_init_ops
+Message-ID: <20091110044507.GB7897@elte.hu>
+References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1256712464-21472-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <84144f020911091202h26dbfad4qf0651ae327444fc0@mail.gmail.com>
+ <20091110051037B.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <20091110051037B.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann <arnd@arndb.de> writes:
 
-> On Monday 09 November 2009, Andi Kleen wrote:
->> > 
->> > So? Most users of old glibc are also using old kernels, and they
->> 
->> How do you know? At least here it's quite common to use new kernels
->> with old user land.
->
-> If by 'here' you mean kernel developers, sure. Other people I'd
-> assume typically run whatever comes with the distro, and that
-> usually includes both a libc and a kernel.
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-The question with respect to my patchset. Is the increase in time
-a measurable performace regression or is the cost lost in the noise?
+> On Mon, 9 Nov 2009 22:02:24 +0200
+> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> 
+> > On Wed, Oct 28, 2009 at 8:47 AM, FUJITA Tomonori
+> > <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > We call the detections functions of all the IOMMUs then all their
+> > > initialization functions. THe latter is pointless since we don't
+> > > detect multiple different IOMMUs. What we need to do is calling the
+> > > initialization function of the detected IOMMU.
+> > >
+> > > This adds iommu_init hook to x86_init_ops so if an IOMMU detection
+> > > function can set its initialization function to the hook.
+> > >
+> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > ---
+> > > ?arch/x86/include/asm/iommu.h ? ?| ? ?1 +
+> > > ?arch/x86/include/asm/x86_init.h | ? ?9 +++++++++
+> > > ?arch/x86/kernel/pci-dma.c ? ? ? | ? ?2 ++
+> > > ?arch/x86/kernel/x86_init.c ? ? ?| ? ?5 +++++
+> > > ?4 files changed, 17 insertions(+), 0 deletions(-)
+> > >
+> > > diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
+> > > index fd6d21b..42aa977 100644
+> > > --- a/arch/x86/include/asm/iommu.h
+> > > +++ b/arch/x86/include/asm/iommu.h
+> > > @@ -3,6 +3,7 @@
+> > >
+> > > ?extern void pci_iommu_shutdown(void);
+> > > ?extern void no_iommu_init(void);
+> > > +static inline int iommu_init_noop(void) { return 0; }
+> > 
+> > Why is this function not put in x86_init.c?
+> 
+> If it's fine by x86 maintainers, I'll do in the next version.
 
-Andi do you know of a way to measure this?
+Sure, that looks good to me.
 
-Doing a special case for /proc/sys/kernel/version if someone can
-measure the overhead seem sane.  But the double maintenance isn't
-my idea of fun.
-
-The code involved would need to look something like:
-
-	if (len > sizeof(current->nsporxy->uts_ns.name.version)
-		len = sizeof(current->nsporxy->uts_ns.name.version);
-	down_read(&uts_sem);
-	ret = copy_to_user(buf, current->nsproxy->uts_ns.name.version, len);
-	up_read(&uts_sem);
-
-That isn't a particular pretty expression, and it has a much higher chance
-of bitrotting than what I have now.
-
->> > can still use the  config option for the compatibility code.
->> > There wouldn't even be a performance penalty over new glibc with
->> > new kernels which already use procfs.
->> 
->> When he drops the sysctl(2) API completely the old userland will
->> be unhappy.
->
-> I did not get the impression that this was the plan. Maybe I missed
-> something, but the work that Eric did seemed to be strategic for
-> leaving the code around for a really long time without causing any
-> maintainance pain that the current code does.
->
-> It will be years before we can really remove that code, but distros
-> can start disabling it (or making it modular) earlier than that
-> when they feel the time has come to stop support for static binaries
-> using sysctl (there should really be few of those).
-
-There is always the question if we can get away with it.  I intend to
-submit a patch that changes the default to off.  Beyond that I don't
-don't know.  I expect folks doing enterprise distro would want to turn
-of sys_sysctl because it is a typically buggy.  Why chance bitrot leading
-to a security hole?
-
-Eric
+	Ingo
