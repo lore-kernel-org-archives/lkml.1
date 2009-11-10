@@ -1,94 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZKJLjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZKJLnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbZKJLjb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 06:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZKJLja
+	id S1755746AbZKJLnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 06:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZKJLnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 06:39:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25730 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751461AbZKJLj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 06:39:29 -0500
-Date: Tue, 10 Nov 2009 13:36:37 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, s.hetze@linux-ag.com,
-       Daniel Walker <dwalker@fifo99.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCHv9 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091110113637.GB6989@redhat.com>
-References: <cover.1257786516.git.mst@redhat.com> <20091109172230.GD4724@redhat.com> <200911101349.09783.rusty@rustcorp.com.au>
-MIME-Version: 1.0
+	Tue, 10 Nov 2009 06:43:42 -0500
+Received: from forum.psychotherapie.org ([217.160.22.205]:39969 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752940AbZKJLnl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 06:43:41 -0500
+Date: Tue, 10 Nov 2009 12:40:22 +0100
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: package managers [was: FatELF patches...]
+Message-ID: <20091110114022.GC2998@nibiru.local>
+Reply-To: weigelt@metux.de
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <7004b08e0911041332x259c02afg612be7eb02e4d6bb@mail.gmail.com> <Pine.LNX.4.64.0911042244030.24799@artax.karlin.mff.cuni.cz> <200911042343.01957.tweek@tweek.dk> <Pine.LNX.4.64.0911050019540.1469@artax.karlin.mff.cuni.cz> <5659.1257387887@turing-police.cc.vt.edu> <Pine.LNX.4.64.0911050329130.18234@artax.karlin.mff.cuni.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911101349.09783.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <Pine.LNX.4.64.0911050329130.18234@artax.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
+X-Killer: 23, endloesung, Weltuntergang, 
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 01:49:09PM +1030, Rusty Russell wrote:
-> One fix:
+* Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz> wrote:
+
+> No, if I compile alpha version of mplayer by hand, it compiles and links 
+> against whatever libraries I have on my system. If I pull it out of some 
+> "testing" repository, it is already compiled and linked against libraries 
+> in the same "testing" repository and it will load the system with crap.
+
+You picked the wrong repo. Use one which contains only the wanted
+package, not tons of other stuff. If there is none, create it.
+ 
+> > Or if you're arguing "you'd give up after seeing it needed an experimental
+> > libfoo", I'll counter "you'd hopefully think twice if yum said it was
+> > installing a experimental mplayer, and dragging in a whole chain of pre-reqs".
 > 
-> vhost: fix TUN=m VHOST_NET=y
-> 
-> 	drivers/built-in.o: In function `get_tun_socket':
-> 	net.c:(.text+0x15436e): undefined reference to `tun_get_socket'
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  drivers/vhost/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/vhost/Kconfig b/drivers/vhost/Kconfig
-> --- a/drivers/vhost/Kconfig
-> +++ b/drivers/vhost/Kconfig
-> @@ -1,6 +1,6 @@
->  config VHOST_NET
->  	tristate "Host kernel accelerator for virtio net (EXPERIMENTAL)"
-> -	depends on NET && EVENTFD && EXPERIMENTAL
-> +	depends on NET && EVENTFD && TUN && EXPERIMENTAL
->  	---help---
->  	  This kernel module can be loaded in host kernel to accelerate
->  	  guest networking with virtio_net. Not to be confused with virtio_net
+> ... or use --disable-libfoo if it insists on newer version and I don't 
+> want to upgrade it. 
 
-In fact, vhost can be built with TUN=n VHOST_NET=y as well
-(tun_get_socket is stubbed out in that case).
-So I think this is better (it looks strange
-until you realize that for tristate variables
-boolean logic math does not apply):
+Either abdicate the feature requiring libfoo or statically link that
+new version. In neither way FatELF will help here.
 
---->
+> Or maybe the configure scripts detects on its own that the library is 
+> too old will compile without new features. Or it uses libfoo shipped 
+> with the sources.
 
-From: Michael S. Tsirkin <mst@redhat.com>
-Subject: vhost: fix TUN=m VHOST_NET=y
-
-    drivers/built-in.o: In function `get_tun_socket':
-    net.c:(.text+0x15436e): undefined reference to `tun_get_socket'
-
-If tun is a module, vhost must be a module, too.
-If tun is built-in or disabled, vhost can be built-in.
-
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-
----
-
-diff --git a/drivers/vhost/Kconfig b/drivers/vhost/Kconfig
-index 9f409f4..9e93553 100644
---- a/drivers/vhost/Kconfig
-+++ b/drivers/vhost/Kconfig
-@@ -1,6 +1,6 @@
- config VHOST_NET
- 	tristate "Host kernel accelerator for virtio net (EXPERIMENTAL)"
--	depends on NET && EVENTFD && EXPERIMENTAL
-+	depends on NET && EVENTFD && (TUN || !TUN) && EXPERIMENTAL
- 	---help---
- 	  This kernel module can be loaded in host kernel to accelerate
- 	  guest networking with virtio_net. Not to be confused with virtio_net
+Blame mplayer folks for their crappy configure script. Automatically
+switching features on presence of some libs (also *against* explicit
+options), or - even worse - hard coded system lib pathes (!) is simply
+insane. FatELF can't delete ignorance from jerks like Rich Felker ;-O
 
 
+cu
 -- 
-MST
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
