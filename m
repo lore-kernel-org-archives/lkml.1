@@ -1,129 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbZKJRj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZKJRhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757414AbZKJRj2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 12:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757134AbZKJRj1
+	id S1757378AbZKJRhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 12:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757158AbZKJRhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 12:39:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:26341 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751557AbZKJRj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 12:39:26 -0500
-Date: Tue, 10 Nov 2009 19:36:45 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: alacrityvm-devel@lists.sourceforge.net, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
-Message-ID: <20091110173644.GA8888@redhat.com>
-References: <20091002141407.30224.54207.stgit@dev.haskins.net> <20091110115335.GC6989@redhat.com> <4AF919020200005A000586A9@sinclair.provo.novell.com> <20091110131722.GA19645@redhat.com> <4AF9747E.8020408@novell.com> <20091110143652.GB19645@redhat.com> <4AF98A8C.9040201@novell.com>
+	Tue, 10 Nov 2009 12:37:55 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:48261 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757028AbZKJRhy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 12:37:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZwOg89r0anu/Z5UCrQwVq2OFa2fEQhUYJAvU51CsFcC8RJeS5V2PjVMrWP8uJL35Ax
+         elqNEZp4gv0MUIgqvJB4J4UX4hEP7qVv1+9k6UpDiZAAkR73gGlM2zKgZb30gqTY4E9l
+         t4/kZ/75idqRKYhOc73sFnAYMA6MT7Sy/bXEg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF98A8C.9040201@novell.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <x494op25ntp.fsf@segfault.boston.devel.redhat.com>
+References: <20091026172012.GC7233@duck.suse.cz>
+	 <x49zl7020mr.fsf@segfault.boston.devel.redhat.com>
+	 <x49my2zh47n.fsf@segfault.boston.devel.redhat.com>
+	 <4e5e476b0911080901n6b855b0dle63f0151073ec2c6@mail.gmail.com>
+	 <x494op25ntp.fsf@segfault.boston.devel.redhat.com>
+Date: Tue, 10 Nov 2009 18:37:57 +0100
+Message-ID: <4e5e476b0911100937s31767d1dh52831126c5e8cf47@mail.gmail.com>
+Subject: Re: Performance regression in IO scheduler still there
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Jan Kara <jack@suse.cz>, jens.axboe@oracle.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 10:45:16AM -0500, Gregory Haskins wrote:
-> Michael S. Tsirkin wrote:
-> > On Tue, Nov 10, 2009 at 09:11:10AM -0500, Gregory Haskins wrote:
-> >> Michael S. Tsirkin wrote:
-> >>> On Tue, Nov 10, 2009 at 05:40:50AM -0700, Gregory Haskins wrote:
-> >>>>>>> On 11/10/2009 at  6:53 AM, in message <20091110115335.GC6989@redhat.com>,
-> >>>> "Michael S. Tsirkin" <mst@redhat.com> wrote: 
-> >>
-> >>>>> Last time this was tried, this is the objection that was voiced:
-> >>>>>
-> >>>>> 	The problem with this patch is that it's tracking skb's, while
-> >>>>> 	you want use it to track pages for zero-copy.  That just doesn't
-> >>>>> 	work.  Through mechanisms like splice, individual pages in the
-> >>>>> 	skb can be detached and metastasize to other locations, e.g.,
-> >>>>> 	the VFS.
-> >>>> Right, and I don't think this applies here because I specifically chose the shinfo level to try to properly
-> >>>> track the page level avoid this issue.  Multiple skb's can point to a single shinfo, iiuc.
-> >>> VFS does not know about shinfo either, does it?
-> >> I do not follow the reference.  Where does VFS come into play?
-> > 
-> > "Through mechanisms like splice, individual pages in the
-> > skb can be detached and metastasize to other locations, e.g.,
-> > the VFS"
-> 
-> Right, understood.  What I mean is: How is that actually used in
-> real-life in a way that is valid?
-> 
-> What I am getting at is as follows:  From a real basic perspective, you
-> can look at all of this as a simple synchronous call (i.e. sendmsg()).
-> The "app" (be it a userspace app, or a guest) prepares a buffer for
-> transmission, and offers it to the next layer in the stack.  The app
-> must maintain the integrity of that buffer at least until the layer
-> below it signifies that it is "consumed".  This may mean its a
-> synchronous call, like sendmsg(), or it may be asynchronous, like AIO.
-> 
-> But the key thing here is that at some point, the lower layer has to
-> signify that the buffer stability constraint has been met.  In either
-> case, we have a clear delineated event: the io-completes = the buffer is
-> free to be reused.
-> 
-> In the simple case, the buffer in question is copied to a kernel buffer,
-> and the io completes immediately. In other cases (such as zero copy),
-> the buffer is mapped into the skb, and we have to wait for even lower
-> layers to signify the completion.
-> 
-> I am not a stack expert, but I was under the impression that we use this
-> model for userspace pages today as well using the wmem callbacks in
-> skb->destructor().  If so, I do not see how you could do something like
-> detach a page from a pskb and still expect to have a proper event that
-> delineates the io-completion to the higher layers.
+On Tue, Nov 10, 2009 at 5:47 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> Corrado Zoccolo <czoccolo@gmail.com> writes:
+>
+>> Jeff, Jens,
+>> do you think we should try to do more auto-tuning of cfq parameters?
+>> Looking at those numbers for SANs, I think we are being suboptimal in
+>> some cases.
+>> E.g. sequential read throughput is lower than random read.
+>
+> I investigated this further, and this was due to a problem in the
+> benchmark.  It was being run with only 500 samples for random I/O and
+> 65536 samples for sequential.  After fixing this, we see random I/O is
+> slower than sequential, as expected.
+Ok.
+>> I also think that current slice_idle and slice_sync values are good
+>> for devices with 8ms seek time, but they are too high for non-NCQ
+>> flash devices, where "seek" penalty is under 1ms, and we still prefer
+>> idling.
+>
+> Do you have numbers to back that up?  If not, throw a fio job file over
+> the fence and I'll test it on one such device.
+>
+It is based on reasoning.
+Currently idling is based on the assumption that we can wait up to
+10ms, to get a better request than jumping far away, since the jump
+will likely cost more than that. If the jump costs around 1ms, like on
+flash cards, then waiting 10ms is surely wasted time.
+On the other hand, on flash cards a random write could cost 50ms or
+more, so we will need to differentiate the last idle before switching
+to async writes from the inter-read idles. This should be possible
+with the new workload based infrastructure, but we need to measure
+those characteristic times in order to use them in the heuristics.
 
-I think linux only cares about that for accounting purposes (stuff like
-socket sndbuff size). If someone takes over the page, the socket can
-stop worrying about it.
+>> If we agree on this, should the measurement part (I'm thinking to
+>> measure things like seek time, throughput, etc...) be added to the
+>> common elevator code, or done inside cfq?
+>
+> Well, if it's something that is of interest to others, than pushing it
+> up a layer makes sense.  If only CFQ is going to use it, keep it there.
+If the direction is to have only one intelligent I/O scheduler, as the
+removal of anticipatory indicates, then it is the latter. I don't
+think noop or deadline will ever make any use of them.
+But it could still be useful for reporting performance as seen by the
+kernel, after the page cache.
 
-> So the questions are:
-> 
-> 1) do we in fact map userspace pages to pskbs today?
-
-I don't think so.
-
-> 2a) if so, how do we delineate the completion event?
-> 2b) and how do we prevent worrying about the get_page() issue you refer
-> to.
-> 
-> 
-> >>
-> >>>>> In other words, this only *seems*
-> >>>>> to work for you because you are not trying to do things like
-> >>>>> guest to host communication, with host doing smart things.
-> >>>> I am not following what you mean here, as I do use this for guest->host and guest->host->remote, and
-> >>>> it works quite nicely.  I map the guest pages in, and when the last reference to the pages are dropped,
-> >>>> I release the pages back to the guest.  It doesn't matter if the skb egresses out a physical adapter or is
-> >>>> received locally.  All that matters is the lifetime of the shinfo (and thus its pages) is handled correctly.
-> >>> Not if someone else is referencing the pages without a reference to shinfo.
-> >> I agree that if we can reference pages outside of the skb/shinfo then
-> >> there is a problem.  I wasn't aware that we could do this, tbh.
-> >>
-> >> However, it seems to me that this is a problem with the overall stack,
-> >> if true....isn't it?  For instance, if I do a sendmsg() from a userspace
-> >> app and block until its consumed,
-> > 
-> > consumed == memcpy_from_iovec?
-> 
-> For non-zero-copy, sure why not.
-> 
-> > 
-> >> how can the system function sanely if
-> >> the app returns from the call but something is still referencing the
-> >> page(s)?
-> > 
-> > which pages?
-> 
-> You said that there are paths that get_page() out of shinfo without
-> holding a shinfo reference.
-
-Without zero copy, application does not care about these,
-they have been allocated by kernel.
-
--- 
-MST
+Thanks
+Corrado
+>
+> Cheers,
+> Jeff
+>
