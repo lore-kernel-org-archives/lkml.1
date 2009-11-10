@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbZKJWhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbZKJWpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbZKJWhF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 17:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758502AbZKJWhB
+	id S1758550AbZKJWpL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 17:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758377AbZKJWpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 17:37:01 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:35067 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758606AbZKJWg7 (ORCPT
+	Tue, 10 Nov 2009 17:45:10 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60914 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758341AbZKJWpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 17:36:59 -0500
-Subject: [PATCH v3 5/5] Documentation: ABI: /sys/devices/system/cpu/cpu#/node
-To: akpm@linux-foundation.org
-From: Alex Chiang <achiang@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Date: Tue, 10 Nov 2009 15:37:04 -0700
-Message-ID: <20091110223704.25636.78808.stgit@bob.kio>
-In-Reply-To: <20091110223154.25636.48462.stgit@bob.kio>
-References: <20091110223154.25636.48462.stgit@bob.kio>
-User-Agent: StGit/0.15
+	Tue, 10 Nov 2009 17:45:09 -0500
+Message-ID: <4AF9EB4A.1050601@zytor.com>
+Date: Tue, 10 Nov 2009 14:38:02 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Willy Tarreau <w@1wt.eu>, Pavel Machek <pavel@ucw.cz>,
+       Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+References: <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <20091110211259.GD26633@1wt.eu> <4AF9D8E2.7050205@zytor.com> <20091110222756.GF15159@caffeine.csclub.uwaterloo.ca> <4AF9E94D.5040601@zytor.com> <20091110223407.GN15157@caffeine.csclub.uwaterloo.ca>
+In-Reply-To: <20091110223407.GN15157@caffeine.csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Describe NUMA node symlink created for CPUs when CONFIG_NUMA is set.
+On 11/10/2009 02:34 PM, Lennart Sorensen wrote:
+> On Tue, Nov 10, 2009 at 02:29:33PM -0800, H. Peter Anvin wrote:
+>> I don't believe we were talking about ARM.
+> 
+> True.  I do get the impression the ARM has higher trap overhead than x86.
 
-Cc: Greg KH <greg@kroah.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
+Also, the x87 FPU is a very clunky beast that's slow to emulate (unlike
+SSE).
 
- Documentation/ABI/testing/sysfs-devices-system-cpu |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 5aace16..1671634 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -94,6 +94,20 @@ Description:	Discover and change the online state of a CPU.
- 		For more information, please read Documentation/cpu-hotplug.txt
- 
- 
-+What:		/sys/devices/system/cpu/cpu#/node
-+Date:		October 2009
-+Contact:	Linux memory management mailing list <linux-mm@kvack.org>
-+Description:	Discover NUMA node a CPU belongs to
-+
-+		When CONFIG_NUMA is enabled, a symbolic link that points
-+		to the corresponding NUMA node directory.
-+
-+		For example, the following symlink is created for cpu42
-+		in NUMA node 2:
-+
-+		/sys/devices/system/cpu/cpu42/node2 -> ../../node/node2
-+
-+
- What:		/sys/devices/system/cpu/cpu#/topology/core_id
- 		/sys/devices/system/cpu/cpu#/topology/core_siblings
- 		/sys/devices/system/cpu/cpu#/topology/core_siblings_list
+	-hpa
 
