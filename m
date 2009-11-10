@@ -1,92 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758259AbZKJVeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbZKJVgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758259AbZKJVeF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:34:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZKJVeF
+	id S1758271AbZKJVgK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbZKJVgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:34:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51542 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754729AbZKJVeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:34:03 -0500
-Date: Tue, 10 Nov 2009 22:33:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Rientjes <rientjes@google.com>
-Cc: Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch v2] x86: reduce srat verbosity in the kernel log
-Message-ID: <20091110213312.GE23196@elte.hu>
-References: <87pr8ay6tc.fsf@basil.nowhere.org>
- <4AE710C9.2070307@sgi.com>
- <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
- <4AE75162.7080903@sgi.com>
- <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com>
- <20091028033219.GE7744@basil.fritz.box>
- <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com>
- <20091028041159.GI7744@basil.fritz.box>
- <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com>
- <alpine.DEB.2.00.0911101307440.28728@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0911101307440.28728@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 10 Nov 2009 16:36:09 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:49459 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758235AbZKJVgI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:36:08 -0500
+Cc: Chris Friesen <cfriesen@nortel.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, netdev@vger.kernel.org,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Message-Id: <212D08D7-AC22-4857-837A-E72B0A11E8DE@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+In-Reply-To: <1257888720.2834.30.camel@achroite.uk.solarflarecom.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: sunrpc port allocation and IANA reserved list
+Date: Tue, 10 Nov 2009 16:34:45 -0500
+References: <4AF9A63B.6010101@nortel.com> <1257875623.2834.19.camel@achroite.uk.solarflarecom.com> <4AF9B2CF.6050305@nortel.com> <1257884799.3044.7.camel@heimdal.trondhjem.org> <4AF9D5D1.9040501@nortel.com> <1257888720.2834.30.camel@achroite.uk.solarflarecom.com>
+X-Mailer: Apple Mail (2.936)
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AF9DCBD.0078:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Rientjes <rientjes@google.com> wrote:
+On Nov 10, 2009, at 4:32 PM, Ben Hutchings wrote:
 
-> On Tue, 27 Oct 2009, David Rientjes wrote:
-> 
-> > x86: reduce srat verbosity in the kernel log
-> > 
-> > It's possible to reduce the number of SRAT messages emitted to the kernel
-> > log by printing each valid pxm once and then creating bitmaps to represent
-> > the apic ids that map to the same node.
-> > 
-> > This reduces lines such as
-> > 
-> > 	SRAT: PXM 0 -> APIC 0 -> Node 0
-> > 	SRAT: PXM 0 -> APIC 1 -> Node 0
-> > 	SRAT: PXM 1 -> APIC 2 -> Node 1
-> > 	SRAT: PXM 1 -> APIC 3 -> Node 1
-> > 
-> > to
-> > 
-> > 	SRAT: PXM 0 -> APIC {0-1} -> Node 0
-> > 	SRAT: PXM 1 -> APIC {2-3} -> Node 1
-> > 
-> > The buffer used to store the apic id list is 128 characters in length.
-> > If that is too small to represent all the apic id ranges that are bound
-> > to a single pxm, a trailing "..." is added.  APICID_LIST_LEN should be
-> > manually increased for such configurations.
-> > 
-> > Acked-by: Mike Travis <travis@sgi.com>
-> > Signed-off-by: David Rientjes <rientjes@google.com>
-> 
-> Ingo, have you had a chance to look at merging this yet?
+> On Tue, 2009-11-10 at 15:06 -0600, Chris Friesen wrote:
+>> On 11/10/2009 02:26 PM, Trond Myklebust wrote:
+>>> On Tue, 2009-11-10 at 12:37 -0600, Chris Friesen wrote:
+>>>> On 11/10/2009 11:53 AM, Ben Hutchings wrote:
+>>>>> On Tue, 2009-11-10 at 11:43 -0600, Chris Friesen wrote:
+>>>>
+>>>>>> Given that a userspace application can be stopped and restarted  
+>>>>>> at any
+>>>>>> time, and a sunrpc registration can happen at any time, what is  
+>>>>>> the
+>>>>>> expected mechanism to prevent the kernel from allocating a port  
+>>>>>> for use
+>>>>>> by sunrpc that reserved or well-known?
+>>>>>>
+>>>>>> Apparently Redhat and Debian have distro-specific ways of  
+>>>>>> dealing with
+>>>>>> this, but is there a standard solution?  Should there be?
+>>>>>>
+>>>>>> The current setup seems suboptimal.
+>>>>>
+>>>>> I believe both RH and Debian are using the same implementation:
+>>>>> <http://cyberelk.net/tim/software/portreserve/>.
+>>>>
+>>>> That helps with the startup case, but still leaves a possible  
+>>>> hole if an
+>>>> app using a fixed port number is restarted at runtime.  During the
+>>>> window where nobody is bound to the port, the kernel could randomly
+>>>> assign it to someone else.
+>>>
+>>> Just use /proc/sys/sunrpc/{max,min}_resvport interface to restrict  
+>>> the
+>>> range used to a safer one. That's what it is for...
+>
+> Unless I'm much mistaken, that only affects in-kernel SunRPC users.
+>
+>> What constitutes a "safer range"?  IANA has ports assigned
+>> intermittently all the way through the default RPC range.  The  
+>> largest
+>> unassigned range is 922-988 (since 921 is used by lwresd).  If  
+>> someone
+>> needs more than 66 ports, how are they supposed to handle it?
+>
+> I'm sure we could afford 128 bytes for a blacklist of privileged  
+> ports.
+> However, the problem is that there is no API for userland to request
+> 'any free privileged port' - it has to just try binding to different
+> ports until it finds one available.
 
-I'm waiting for Mike to test them (and other patches) and send a new 
-series out with bits to pick up.
+bindresvport(3) and bindresvport_sa(3t) ?
 
-But i really dont like such type of buffering - in the past they tended 
-to be problematic. Why print this info at all in the default bootup?  
-It's not needed on a correctly functioning system.
+> This means that the kernel can't
+> tell whether a process is trying to allocate a specifically assigned
+> port or whether the blacklist should be applied.
 
-For failure analysis make it opt-in available via a boot parameter (if 
-it's needed for bootup analysis) - but otherwise just dont print it.
+Such a blacklist would have to be managed by glibc or libtirpc.
 
-	Ingo
+--
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
+
+
+
