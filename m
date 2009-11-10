@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbZKJW3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbZKJW1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbZKJW3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 17:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758469AbZKJW3S
+	id S1757857AbZKJW1q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 17:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbZKJW1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 17:29:18 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58573 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758304AbZKJW3P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 17:29:15 -0500
-Message-ID: <4AF9E851.2000406@zytor.com>
-Date: Tue, 10 Nov 2009 14:25:21 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 10 Nov 2009 17:27:45 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:41628 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765AbZKJW1o (ORCPT
+	<rfc822;groupwise-PMullaney@novell.com;0:0>);
+	Tue, 10 Nov 2009 17:27:44 -0500
+From: Patrick Mullaney <pmullaney@novell.com>
+Subject: [PATCH 0/4] vbus: venet macvlan support
+To: alacrityvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, kaber@trash.net, arnd@arndb.de,
+       bridge@lists.linux-foundation.org, evb@yahoogroups.com,
+       netdev@vger.kernel.org
+Date: Tue, 10 Nov 2009 17:27:42 -0500
+Message-ID: <20091110222632.24100.14884.stgit@mimic.site>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Kees Cook <kees.cook@canonical.com>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
-References: <20091110154956.GF5129@outflux.net> <4AF9991B.20400@zytor.com> <20091110165738.GH5129@outflux.net> <4AF99F0C.2050806@zytor.com> <20091110174622.GK5129@outflux.net> <4AF9B6AD.8020505@zytor.com> <20091110194304.GW5129@outflux.net> <4AF9C627.1070206@zytor.com> <20091110205544.GZ5129@outflux.net> <4AF9D98A.90808@zytor.com> <20091110221537.GB5129@outflux.net>
-In-Reply-To: <20091110221537.GB5129@outflux.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 02:15 PM, Kees Cook wrote:
-> On Tue, Nov 10, 2009 at 01:22:18PM -0800, H. Peter Anvin wrote:
->> Yes, it should be.  set_nx() and check_efer() are doing the same thing,
->> except in different ways, and they are - IMO - *both* doing something
->> dumb -- although check_efer() is saner.
-> 
-> BTW, it seems like set_nx() should move from init_memory_mapping to
-> setup_arch, since init_memory_mapping can be called twice, but I don't
-> think set_nx needs to be.
-> 
+(Applies to alacrityvm.git/master:34534534)
 
-We already have call points in setup_arch for check_efer(), which are
-where this code needs to be called.
+This patchset implements a vbus venet device with a
+macvlan backend.
 
-As I said, check_efer() and set_nx() are the 64- and 32-bit versions of
-*exactly the same thing*.  Furthermore, it looks to me that set_nx() is
-simply broken; it forces the bit set in EFER even though it is already
-set in head_32.S.
+These patches allow an alacrityvm guest to send and receive
+directly over a macvlan, avoiding the bridge entirely.
+This driver inherits all of the benefits of the work done
+to date on vbus/venet driver(SAR offloading, zero-copy
+in the guest->host path, configurable tx-complete mitigation,
+interrupt coalescing at the vbus level).  Some of the work to
+re-factor and share the common code between venet-tap and
+venet-macvlan was done prior because it should be generally
+useful to anyone wanting to implement a venet type of device.
 
-Thus, what we *should* do is:
+Once the driver is built and installed, you may use it
+just like you would a venet-tap device. In order to
+instantiate a venet-macvlan, there are just two differences
+from the procedure to instantiating a venet-tap. In order
+to create the venet-macvlan device, just:
 
-a) remove set_nx() completely;
-b) enable check_efer() on 32 bits;
-c) rename check_efer() to something sane, like x86_configure_nx();
+echo venet-macvlan > /config/vbus/devices/<device-name>/type
 
-Optionally we should just use cpu_has_nx instead of reading EFER.
+and
 
-	-hpa
+echo "lower-devicename" > /sys/vbus/devices/<device-name>/ll_ifname
+
+where lower-devicename is something like eth0, eth1, eth2 etc.
+
+The second step associates the lower-devicename, usually
+a physical device, with the venet-macvlan device being created.
+This step must be perform prior to enabling the venet-macvlan
+device.
+
+After that, a guest can make use of the venet-macvlan in
+exactly the same manner as a venet-tap. In fact, the guest
+actually sees venet-tap and venet-macvlan as identical
+types of the devices on the vbus.
+
+Using the venet-macvlan driver will reduce some overhead by
+eliminating the linux bridge from the send and receive
+paths. For a lightly loaded network segment and system,
+we have measured this to be aproximately 1-3 us per side
+depending on what hardware is involved.
+
+Since this driver layered over the macvlan driver, it will
+have that same limitations as the macvlan driver. For example,
+forwarding between macvlan devices on the same host is not
+supported. This driver targeted toward VEPA environments as
+described by the 'Edge Virtual Bridging' working group.
+
+---
+
+Patrick Mullaney (4):
+      venet-macvlan: add new driver to connect a venet to a macvlan netdevice
+      venetdev: support common venet netdev routines
+      macvlan: allow in-kernel modules to create and manage macvlan devices
+      macvlan:  derived from Arnd Bergmann's patch for macvtap
+
+
+ drivers/net/macvlan.c                   |  105 +++--
+ drivers/net/vbus-enet.c                 |    8 
+ include/linux/macvlan.h                 |   43 ++
+ include/linux/venet.h                   |    5 
+ kernel/vbus/devices/venet/Kconfig       |   11 +
+ kernel/vbus/devices/venet/Makefile      |   10 -
+ kernel/vbus/devices/venet/device.c      |   53 ++-
+ kernel/vbus/devices/venet/macvlan.c     |  598 +++++++++++++++++++++++++++++++
+ kernel/vbus/devices/venet/venetdevice.h |   12 +
+ 9 files changed, 785 insertions(+), 60 deletions(-)
+ create mode 100644 include/linux/macvlan.h
+ create mode 100644 kernel/vbus/devices/venet/macvlan.c
+
