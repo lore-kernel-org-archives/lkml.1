@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbZKJLGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZKJLGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753002AbZKJLGG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 06:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZKJLGF
+	id S1753400AbZKJLGa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 06:06:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZKJLG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 06:06:05 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:59639 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbZKJLGE (ORCPT
+	Tue, 10 Nov 2009 06:06:29 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:43722 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbZKJLG1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 06:06:04 -0500
+	Tue, 10 Nov 2009 06:06:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=gM5PvlNI/L0nmuaPJ7I5TLdJRqFrCxhwLQrw3F9IGyIjYCAkz743kwwhB1b4q2J4R1
-         /Jy/kW+M6g5ZB93WxLKojDp0yGvogr8NL+H0glwEySrnbJ5iBVXnGbmR8XZy6JwUWoLk
-         Y2gHtCZKuup24INQ8fvN3pZVQsvjwFEAYBT8k=
-Date: Tue, 10 Nov 2009 12:06:01 +0100
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, dimm <dmitry.adamushko@gmail.com>
-Subject: [PATCH 0/3] x86, ucode-amd: trim verbosity
-Message-ID: <20091110110601.GG30802@alberich.amd.com>
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=sWQqIb2lNGAYda7VuBIhr3qsMaeFEKmW5wrdSJ8km4q6AOcwYL0+7SREQiLaOdHhYY
+         eEzo2YPd9BtqE5if3heLcexIWnx3iBLA4PDwNEo216PT0FOtI2Bz3uxZkoPjsQg8KUjp
+         Me/mWp8cgeUYNXxI8am6Yt2jytfT7gXlZXHwY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <3e8340490911091600v3a0e9b67r279349ac852d604a@mail.gmail.com>
+References: <20091103094703.GB11134@hack.redhat.com>
+	 <20091103230548.0B45.A69D9226@jp.fujitsu.com>
+	 <20091104002544.0B4A.A69D9226@jp.fujitsu.com>
+	 <20091109144717.0cd17421.akpm@linux-foundation.org>
+	 <3e8340490911091600v3a0e9b67r279349ac852d604a@mail.gmail.com>
+Date: Tue, 10 Nov 2009 20:06:31 +0900
+X-Google-Sender-Auth: 483fa48c6c7a5b0d
+Message-ID: <2f11576a0911100306k7e2a64b9r35e13454be858140@mail.gmail.com>
+Subject: Re: [PATCH v5] Added PR_SET_PROCTITLE_AREA option for prctl()
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Americo Wang <xiyou.wangcong@gmail.com>, Timo Sirainen <tss@iki.fi>,
+       Ulrich Drepper <drepper@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following patches make log messages of microcode_amd more terse.
+2009/11/10 Bryan Donlan <bdonlan@gmail.com>:
+> On Mon, Nov 9, 2009 at 5:47 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>> What happens if userspace unmaps the memory after telling the kernel to
+>> use it?
+>>
+>> Will processes which try to read the command line get an error reading
+>> /proc?  If so, do all the commandline-reading programs in the world
+>> handle this in an appropriate fashion?
+>
+> This case can already occur in the current code; the userspace process
+> would have to munmap() the top of its stack, but it certainly can do
+> so if it tries. In any case, access_process_vm() then returns 0
+> because of the fault, and thus /proc/pid/cmdline is seen to have zero
+> length. Since a zero-length /proc/pid/cmdline occurs with kernel
+> threads as well, we know this isn't a problem.
 
-Especially in conjunction with Dmitry's planned changes to summarize
-patch level information this will help to trim messages to the
-necessary minimum on systems with many CPUs.
+Plus, ps can read under exiting process. In this case, task->mm is NULL and
+proc_pid_cmdline return 0.
 
-Example (without patch 1 and 2) of a 48 CPU system:
-
-  microcode: CPU0: patch_level=0x10000b5
-  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-  microcode: CPU0: cpu revision not listed in equivalent cpu table
-  microcode: CPU0: cpu revision not listed in equivalent cpu table
-  microcode: CPU1: patch_level=0x10000b5
-  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-  microcode: CPU1: cpu revision not listed in equivalent cpu table
-  microcode: CPU1: cpu revision not listed in equivalent cpu table
-
-  ...
-
-  microcode: CPU46: patch_level=0x10000b5
-  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-  microcode: CPU46: cpu revision not listed in equivalent cpu table
-  microcode: CPU46: cpu revision not listed in equivalent cpu table
-  microcode: CPU47: patch_level=0x10000b5
-  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-  microcode: CPU47: cpu revision not listed in equivalent cpu table
-  microcode: CPU47: cpu revision not listed in equivalent cpu table
-  Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
-
-This is a lot of unnecessary noise. With patches 1 and 2 applied this
-is shortened to:
-
-  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-  microcode: CPU0: patch_level=0x10000b5
-  microcode: CPU1: patch_level=0x10000b5
-
-  ...
-
-  microcode: CPU46: patch_level=0x10000b5
-  microcode: CPU47: patch_level=0x10000b5
-  Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
-
-And with Dmitry's patches this will be trimmed down even further.
-Note: Patch 3 is just a conversion from printk to pr_ macros.
-
-Patches are against tip/master.
-Please apply.
-
-
-Thanks,
-
-Andreas
+procps tools are already NUL safe since long time ago.
