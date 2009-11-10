@@ -1,74 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbZKJTnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbZKJThj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbZKJTnX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 14:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757911AbZKJTnV
+	id S1757927AbZKJThj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 14:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbZKJThi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 14:43:21 -0500
-Received: from cantor.suse.de ([195.135.220.2]:55233 "EHLO mx1.suse.de"
+	Tue, 10 Nov 2009 14:37:38 -0500
+Received: from mga14.intel.com ([143.182.124.37]:22553 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757913AbZKJTnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 14:43:20 -0500
-Date: Tue, 10 Nov 2009 11:39:19 -0800
-From: Greg KH <gregkh@suse.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] new -stable tag variant, Git workflow question
-Message-ID: <20091110193919.GC12686@suse.de>
-References: <20091110034831.GB26809@elte.hu>
- <20091110041452.GA25575@suse.de>
- <1257863388.4184.220.camel@mulgrave.site>
- <4AF98C36.9040405@s5r6.in-berlin.de>
+	id S1757903AbZKJThh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 14:37:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,717,1249282800"; 
+   d="scan'208";a="209934418"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Alexander Miller <Miller@fmi.uni-stuttgart.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+Date: Tue, 10 Nov 2009 11:42:02 -0800
+Subject: RE: [PATCH] cpufreq: fix conservative/ondemand behaviour with
+ ignore_nice_load
+Thread-Topic: [PATCH] cpufreq: fix conservative/ondemand behaviour with
+ ignore_nice_load
+Thread-Index: Acpe/4mrBq5o+1KgS4SXdKbrJw6wUQDPatvw
+Message-ID: <7E82351C108FA840AB1866AC776AEC467631F1E1@orsmsx505.amr.corp.intel.com>
+References: <200911061727.17541.Miller@fmi.uni-stuttgart.de>
+In-Reply-To: <200911061727.17541.Miller@fmi.uni-stuttgart.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF98C36.9040405@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 04:52:22PM +0100, Stefan Richter wrote:
-> James Bottomley wrote:
-> [...]
-> >> On Tue, Nov 10, 2009 at 04:48:31AM +0100, Ingo Molnar wrote:
-> >> > FYI, today i committed a scheduler performance fix that has a number of 
-> >> > commit prerequisites for -stable integration. Those commits are not 
-> >> > marked -stable.
-> [...]
-> >> > we can move this into the Git commit space too, and minimize the 
-> >> > work for the -stable team, via a new -stable tag variant.
-> [...]
-> > The question is, how important is this?
-> > 
-> > One of the assumptions behind the current setup is that I assume
-> > backports are independent (so the order of transmission doesn't matter
-> > that much).  This isn't always true, but the exceptions tend to get
-> > handled manually.  Part of what the above is requesting is an
-> > implementation that starts to care about ordering.
+>-----Original Message-----
+>From: cpufreq-owner@vger.kernel.org 
+>[mailto:cpufreq-owner@vger.kernel.org] On Behalf Of Alexander Miller
+>Sent: Friday, November 06, 2009 8:27 AM
+>To: linux-kernel@vger.kernel.org
+>Cc: cpufreq@vger.kernel.org; Dave Jones
+>Subject: [PATCH] cpufreq: fix conservative/ondemand behaviour 
+>with ignore_nice_load
+>
+>Remove conversion of nice load to microseconds which caused addition
+>of times measured in different units and thus unreasonable behaviour
+>with both governors.                                                  
+
+Can you describe the "unresonable behavior" you are seeing. Is it
+with NO_HZ enabled or disabled?
+
+I see there can be a problem with this code when NO_HZ is disabled.
+But, the patch below is not the right solution as it will result in
+Adding times in different units with NO_HZ enabled.
+
+Thanks,
+Venki
+
+>
+>Signed-off-by: Alexander Miller <Miller@fmi.uni-stuttgart.de>
+>---
+>diff -uprN 
+>linux-2.6.git/drivers/cpufreq/cpufreq_conservative.c 
+>linux/drivers/cpufreq/cpufreq_conservative.c
+>--- linux-2.6.git/drivers/cpufreq/cpufreq_conservative.c	
+>2009-10-10 15:56:58.010595257 +0200
+>+++ linux/drivers/cpufreq/cpufreq_conservative.c	
+>2009-10-10 20:56:52.194598889 +0200
+>@@ -400,20 +400,10 @@ static void dbs_check_cpu(struct cpu_dbs
+> 		j_dbs_info->prev_cpu_idle = cur_idle_time;
 > 
-> More importantly, isn't this against the character of the -stable kernel
-> branches as _safe and simple_ hotfix branches?
+> 		if (dbs_tuners_ins.ignore_nice) {
+>-			cputime64_t cur_nice;
+>-			unsigned long cur_nice_jiffies;
+>-
+>-			cur_nice = 
+>cputime64_sub(kstat_cpu(j).cpustat.nice,
+>+			idle_time += (unsigned int) cputime64_sub(
+>+					 kstat_cpu(j).cpustat.nice,
+> 					 j_dbs_info->prev_cpu_nice);
+>-			/*
+>-			 * Assumption: nice time between 
+>sampling periods will
+>-			 * be less than 2^32 jiffies for 32 bit sys
+>-			 */
+>-			cur_nice_jiffies = (unsigned long)
+>-					
+>cputime64_to_jiffies64(cur_nice);
+>-
+> 			j_dbs_info->prev_cpu_nice = 
+>kstat_cpu(j).cpustat.nice;
+>-			idle_time += jiffies_to_usecs(cur_nice_jiffies);
+> 		}
 > 
-> If a fix has a number of prerequisites which ar not -stable fixes
-> themselves, then it is more than a hint that this fix is not really well
-> suited for -stable.
-
-Not true, we have been doing this kind of thing for quite some time now.
-Sometimes it's just a simple "this patch cleans up the code, and the
-second one fixes it in an obvious manner" type thing.  It is easier for
-me and everyone else for us to apply 2 commits to the -stable tree,
-instead of rewriting the second patch that actually does the fix and
-hope I got it all correct in doing so.
-
-It's also easier to review stuff, which is the most important thing.
-
-thanks,
-
-greg k-h
+> 		if (unlikely(!wall_time || wall_time < idle_time))
+>diff -uprN linux-2.6.git/drivers/cpufreq/cpufreq_ondemand.c 
+>linux/drivers/cpufreq/cpufreq_ondemand.c
+>--- linux-2.6.git/drivers/cpufreq/cpufreq_ondemand.c	
+>2009-10-10 16:00:40.380595816 +0200
+>+++ linux/drivers/cpufreq/cpufreq_ondemand.c	2009-10-10 
+>20:56:52.195596654 +0200
+>@@ -488,20 +488,10 @@ static void dbs_check_cpu(struct cpu_dbs
+> 		j_dbs_info->prev_cpu_idle = cur_idle_time;
+> 
+> 		if (dbs_tuners_ins.ignore_nice) {
+>-			cputime64_t cur_nice;
+>-			unsigned long cur_nice_jiffies;
+>-
+>-			cur_nice = 
+>cputime64_sub(kstat_cpu(j).cpustat.nice,
+>+			idle_time += (unsigned int) cputime64_sub(
+>+					 kstat_cpu(j).cpustat.nice,
+> 					 j_dbs_info->prev_cpu_nice);
+>-			/*
+>-			 * Assumption: nice time between 
+>sampling periods will
+>-			 * be less than 2^32 jiffies for 32 bit sys
+>-			 */
+>-			cur_nice_jiffies = (unsigned long)
+>-					
+>cputime64_to_jiffies64(cur_nice);
+>-
+> 			j_dbs_info->prev_cpu_nice = 
+>kstat_cpu(j).cpustat.nice;
+>-			idle_time += jiffies_to_usecs(cur_nice_jiffies);
+> 		}
+> 
+> 		if (unlikely(!wall_time || wall_time < idle_time))
+>--
+>To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
