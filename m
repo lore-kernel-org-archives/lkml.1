@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbZKJK0D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbZKJK0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbZKJK0D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 05:26:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbZKJK0B
+	id S1755995AbZKJK0H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 05:26:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZKJK0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 05:26:01 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:62696 "EHLO
+	Tue, 10 Nov 2009 05:26:05 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:63374 "EHLO
 	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753249AbZKJKZ6 (ORCPT
+	with ESMTP id S1755291AbZKJK0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 05:25:58 -0500
+	Tue, 10 Nov 2009 05:26:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=jsi2x8GSjqwik86lRPcgLarL3YyParyPsGbSR+NaBfFMNzCpHvy+zo8Q5PbHEelEFK
-         0woItS4ln7MDRIMWkndFMi450A9DSVedp0/2oOrkabscc2s8qWY81l+uC2LIK04b8mmW
-         EyJS5NORgaY8EdId0Mc8nfwesO+UE7l+27UpQ=
+        b=NxfZgWu27ZVvzo2AA2t6P8NhW7tm/rvcLVl82c0gdBtUY39aswfuS+dndkycj6daS1
+         OIPhKalWDJM5sxV+xQxcX3HsU1gk3ZZaPKhVYDiTGC4HxZ/vhl6TY6JfOqhSuSsHx5xq
+         QmH1mD1e+gV8WDklQeWMTuGXAtI9ulxHZ64L0=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>,
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Jan Kiszka <jan.kiszka@web.de>, Avi Kivity <avi@redhat.com>,
-       "K. Prasad" <prasad@linux.vnet.ibm.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Alan Stern <stern@rowland.harvard.edu>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
        Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/4] ksym_tracer: Support read accesses independent of read/write.
-Date: Tue, 10 Nov 2009 11:25:57 +0100
-Message-Id: <1257848760-9407-2-git-send-email-fweisbec@gmail.com>
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH 2/4] hw-breakpoints: Fix broken a.out format dump
+Date: Tue, 10 Nov 2009 11:25:58 +0100
+Message-Id: <1257848760-9407-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1257848760-9407-1-git-send-email-fweisbec@gmail.com>
 References: <1257848760-9407-1-git-send-email-fweisbec@gmail.com>
@@ -39,77 +40,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mundt <lethal@linux-sh.org>
+Fix the broken a.out format dump. For now we only dump the ptrace
+breakpoints.
 
-All of the infrastructure already exists to support read accesses
-for platforms that support a read access independently of read/write
-(such as in the case of the SuperH UBC). This just trivially hooks
-up the read case by itself.
+TODO: Dump every perf breakpoints for the current thread, not only
+ptrace based ones.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jan Kiszka <jan.kiszka@web.de>
-Cc: Jiri Slaby <jirislaby@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-LKML-Reference: <20091109083733.GA25848@linux-sh.org>
+Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>
 ---
- kernel/trace/trace_ksym.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/a.out-core.h |   10 ++--------
+ arch/x86/include/asm/debugreg.h   |    2 ++
+ arch/x86/kernel/hw_breakpoint.c   |   35 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 39 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-index fea83ee..11935b5 100644
---- a/kernel/trace/trace_ksym.c
-+++ b/kernel/trace/trace_ksym.c
-@@ -136,6 +136,7 @@ static int ksym_trace_get_access_type(char *str)
- 		access |= HW_BREAKPOINT_X;
+diff --git a/arch/x86/include/asm/a.out-core.h b/arch/x86/include/asm/a.out-core.h
+index fc4685d..7a15588 100644
+--- a/arch/x86/include/asm/a.out-core.h
++++ b/arch/x86/include/asm/a.out-core.h
+@@ -17,6 +17,7 @@
  
- 	switch (access) {
-+	case HW_BREAKPOINT_R:
- 	case HW_BREAKPOINT_W:
- 	case HW_BREAKPOINT_W | HW_BREAKPOINT_R:
- 		return access;
-@@ -239,7 +240,9 @@ static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
+ #include <linux/user.h>
+ #include <linux/elfcore.h>
++#include <asm/debugreg.h>
  
- 	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
- 		ret = trace_seq_printf(s, "%pS:", (void *)entry->ksym_addr);
--		if (entry->type == HW_BREAKPOINT_W)
-+		if (entry->type == HW_BREAKPOINT_R)
-+			ret = trace_seq_puts(s, "r--\n");
-+		else if (entry->type == HW_BREAKPOINT_W)
- 			ret = trace_seq_puts(s, "-w-\n");
- 		else if (entry->type == (HW_BREAKPOINT_W | HW_BREAKPOINT_R))
- 			ret = trace_seq_puts(s, "rw-\n");
-@@ -414,6 +417,9 @@ static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
- 		return TRACE_TYPE_PARTIAL_LINE;
+ /*
+  * fill in the user structure for an a.out core dump
+@@ -32,14 +33,7 @@ static inline void aout_dump_thread(struct pt_regs *regs, struct user *dump)
+ 			>> PAGE_SHIFT;
+ 	dump->u_dsize -= dump->u_tsize;
+ 	dump->u_ssize = 0;
+-	dump->u_debugreg[0] = current->thread.debugreg[0];
+-	dump->u_debugreg[1] = current->thread.debugreg[1];
+-	dump->u_debugreg[2] = current->thread.debugreg[2];
+-	dump->u_debugreg[3] = current->thread.debugreg[3];
+-	dump->u_debugreg[4] = 0;
+-	dump->u_debugreg[5] = 0;
+-	dump->u_debugreg[6] = current->thread.debugreg6;
+-	dump->u_debugreg[7] = current->thread.debugreg7;
++	aout_dump_debugregs(dump);
  
- 	switch (field->type) {
-+	case HW_BREAKPOINT_R:
-+		ret = trace_seq_printf(s, " R  ");
-+		break;
- 	case HW_BREAKPOINT_W:
- 		ret = trace_seq_printf(s, " W  ");
- 		break;
-@@ -488,6 +494,9 @@ static int ksym_tracer_stat_show(struct seq_file *m, void *v)
- 	access_type = entry->type;
+ 	if (dump->start_stack < TASK_SIZE)
+ 		dump->u_ssize = ((unsigned long)(TASK_SIZE - dump->start_stack))
+diff --git a/arch/x86/include/asm/debugreg.h b/arch/x86/include/asm/debugreg.h
+index 9a3333c..f1b673f 100644
+--- a/arch/x86/include/asm/debugreg.h
++++ b/arch/x86/include/asm/debugreg.h
+@@ -89,6 +89,8 @@ static inline void hw_breakpoint_disable(void)
+ 	set_debugreg(0UL, 3);
+ }
  
- 	switch (access_type) {
-+	case HW_BREAKPOINT_R:
-+		seq_puts(m, "  R           ");
-+		break;
- 	case HW_BREAKPOINT_W:
- 		seq_puts(m, "  W           ");
- 		break;
++extern void aout_dump_debugregs(struct user *dump);
++
+ #ifdef CONFIG_KVM
+ extern void hw_breakpoint_restore(void);
+ #endif
+diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
+index e622620..57dcee5 100644
+--- a/arch/x86/kernel/hw_breakpoint.c
++++ b/arch/x86/kernel/hw_breakpoint.c
+@@ -376,6 +376,41 @@ int arch_validate_hwbkpt_settings(struct perf_event *bp,
+ }
+ 
+ /*
++ * Dump the debug register contents to the user.
++ * We can't dump our per cpu values because it
++ * may contain cpu wide breakpoint, something that
++ * doesn't belong to the current task.
++ *
++ * TODO: include non-ptrace user breakpoints (perf)
++ */
++void aout_dump_debugregs(struct user *dump)
++{
++	int i;
++	int dr7 = 0;
++	struct perf_event *bp;
++	struct arch_hw_breakpoint *info;
++	struct thread_struct *thread = &current->thread;
++
++	for (i = 0; i < HBP_NUM; i++) {
++		bp = thread->ptrace_bps[i];
++
++		if (bp && !bp->attr.disabled) {
++			dump->u_debugreg[i] = bp->attr.bp_addr;
++			info = counter_arch_bp(bp);
++			dr7 |= encode_dr7(i, info->len, info->type);
++		} else {
++			dump->u_debugreg[i] = 0;
++		}
++	}
++
++	dump->u_debugreg[4] = 0;
++	dump->u_debugreg[5] = 0;
++	dump->u_debugreg[6] = current->thread.debugreg6;
++
++	dump->u_debugreg[7] = dr7;
++}
++
++/*
+  * Release the user breakpoints used by ptrace
+  */
+ void flush_ptrace_hw_breakpoint(struct task_struct *tsk)
 -- 
 1.6.2.3
 
