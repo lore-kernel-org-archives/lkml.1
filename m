@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZKJJQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZKJJTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755098AbZKJJQZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 04:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZKJJQZ
+	id S1753947AbZKJJTy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 04:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZKJJTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 04:16:25 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:39959 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754430AbZKJJQX (ORCPT
+	Tue, 10 Nov 2009 04:19:53 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52798 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbZKJJTw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 04:16:23 -0500
-From: Tao Ma <tao.ma@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: sunil.mushran@oracle.com, Tao Ma <tao.ma@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
-Subject: [PATCH] JBD/JBD2: free j_wbuf if journal init fails.
-Date: Tue, 10 Nov 2009 17:13:22 +0800
-Message-Id: <1257844402-7828-1-git-send-email-tao.ma@oracle.com>
-X-Mailer: git-send-email 1.5.4.GIT
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4AF92F43.0103:SCFMA4539814,ss=1,fgs=0
+	Tue, 10 Nov 2009 04:19:52 -0500
+Date: Tue, 10 Nov 2009 10:19:53 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: Re: Subject: [RFC MM] mmap_sem scaling: Use mutex and percpu
+	counter instead
+Message-ID: <20091110091953.GA2373@basil.fritz.box>
+References: <20091106174439.GB819@basil.fritz.box> <alpine.DEB.1.10.0911061249170.5187@V090114053VZO-1> <20091110151145.3615.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091110151145.3615.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If journal init fails, we need to free j_wbuf.
+On Tue, Nov 10, 2009 at 03:21:11PM +0900, KOSAKI Motohiro wrote:
+> > On Fri, 6 Nov 2009, Andi Kleen wrote:
+> > 
+> > > On Fri, Nov 06, 2009 at 12:08:54PM -0500, Christoph Lameter wrote:
+> > > > On Fri, 6 Nov 2009, Andi Kleen wrote:
+> > > >
+> > > > > Yes but all the major calls still take mmap_sem, which is not ranged.
+> > > >
+> > > > But exactly that issue is addressed by this patch!
+> > >
+> > > Major calls = mmap, brk, etc.
+> > 
+> > Those are rare. More frequently are for faults, get_user_pages and
+> > the like operations that are frequent.
+> > 
+> > brk depends on process wide settings and has to be
+> > serialized using a processor wide locks.
+> > 
+> > mmap and other address space local modification may be able to avoid
+> > taking mmap write lock by taking the read lock and then locking the
+> > ptls in the page struct relevant to the address space being modified.
+> > 
+> > This is also enabled by this patchset.
+> 
+> Andi, Why do you ignore fork? fork() hold mmap_sem write-side lock and
+> it is one of critical path.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>
-Signed-off-by: Tao Ma <tao.ma@oracle.com>
----
- fs/jbd/journal.c  |    2 ++
- fs/jbd2/journal.c |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+I have not seen profile logs where fork was critical. But that's not saying
+that it can't be.  But fork is so intrusive that locking it fine grained
+is probably very hard.
 
-diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-index bd3c073..49d5cd6 100644
---- a/fs/jbd/journal.c
-+++ b/fs/jbd/journal.c
-@@ -756,6 +756,7 @@ journal_t * journal_init_dev(struct block_device *bdev,
- 
- 	return journal;
- out_err:
-+	kfree(journal->j_wbuf);
- 	kfree(journal);
- 	return NULL;
- }
-@@ -820,6 +821,7 @@ journal_t * journal_init_inode (struct inode *inode)
- 
- 	return journal;
- out_err:
-+	kfree(journal->j_wbuf);
- 	kfree(journal);
- 	return NULL;
- }
-diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-index b0ab521..fed8538 100644
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -913,6 +913,7 @@ journal_t * jbd2_journal_init_dev(struct block_device *bdev,
- 
- 	return journal;
- out_err:
-+	kfree(journal->j_wbuf);
- 	jbd2_stats_proc_exit(journal);
- 	kfree(journal);
- 	return NULL;
-@@ -986,6 +987,7 @@ journal_t * jbd2_journal_init_inode (struct inode *inode)
- 
- 	return journal;
- out_err:
-+	kfree(journal->j_wbuf);
- 	jbd2_stats_proc_exit(journal);
- 	kfree(journal);
- 	return NULL;
+> Plus, most critical mmap_sem issue is not locking cost itself. In stree workload,
+> the procss grabbing mmap_sem frequently sleep. and fair rw-semaphoe logic
+> frequently prevent reader side locking.
+> At least, this improvement doesn't help google like workload.
+
+Not helping is not too bad, the problem I had was just that it makes
+writers even slower. 
+
+-Andi
 -- 
-1.5.4.4
-
+ak@linux.intel.com -- Speaking for myself only.
