@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751120AbZKJFLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751214AbZKJFMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751120AbZKJFLv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 00:11:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbZKJFLu
+	id S1751214AbZKJFMn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 00:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbZKJFMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 00:11:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40266 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbZKJFLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 00:11:49 -0500
-Date: Tue, 10 Nov 2009 06:11:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH 3/4] perf/core: Split up pinned and non pinned
- processing
-Message-ID: <20091110051141.GD7897@elte.hu>
-References: <1257711206-12243-1-git-send-email-fweisbec@gmail.com>
- <1257711206-12243-4-git-send-email-fweisbec@gmail.com>
+	Tue, 10 Nov 2009 00:12:42 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45088 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792AbZKJFMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 00:12:42 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AF8F63B.1040402@jp.fujitsu.com>
+Date: Tue, 10 Nov 2009 14:12:27 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257711206-12243-4-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Peter Zijlstra <peterz@infradead.org>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Kernel oops in resched_task() with 2.6.31.5
+References: <4AF80B8B.8080203@jp.fujitsu.com> <1257770720.4108.195.camel@laptop> <4AF810C5.4010505@jp.fujitsu.com>
+In-Reply-To: <4AF810C5.4010505@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kenji Kaneshige wrote:
+> Peter Zijlstra wrote:
+>> On Mon, 2009-11-09 at 21:31 +0900, Kenji Kaneshige wrote:
+>>> Hi,
+>>>
+>>> I frequently encounter the kernel oops attached below in resched_task()
+>>> with 2.6.31.5. This kernel oops happens also with 2.6.32-rc5. I don't
+>>> know about other kernel.
+>>>
+>>> Here is my analysis:
+>>>
+>>> The immediate cause of this kernel oops is that NULL was passed to
+>>> resched_task() from resched_cpu(). From my investigation, this was
+>>> caused as follows:
+>>>
+>>> - trigger_load_balance() caluculated cpu number of idle load balancer
+>>>   using find_new_ilb(), and find_new_ilb() returned *offline* CPU
+>>>   number (16 in my case). Note that I didn't do any CPU hotplug
+>>>   operation. On my system, present, online and offline under
+>>>   /sys/devices/system/cpu/ are
+>>>
+>>>     [kanesige@localhost ~]$ cat /sys/devices/system/cpu/present
+>>>     0-15
+>>>     [kanesige@localhost ~]$ cat /sys/devices/system/cpu/online
+>>>     0-15
+>>>     [kanesige@localhost ~]$ cat /sys/devices/system/cpu/offline
+>>>     16-255
+>>>
+>>>   And nr_cpu_ids is 256.
+>>>
+>>> - resched_cpu() calculated current task by cpu_curr() with offline CPU
+>>>   number.
+>>>
+>>> So this kernel oops seems to be caused by invalid CPU number returned
+>>> from find_new_ilb(). I don't know the find_new_ilb() implementation,
+>>> but I suspect the initialization of cpumasks used by find_new_ilb().
+>>> The patch attached below seems to fix the problem (With this patch,
+>>> the kernel oops doesn't happen). But I don't know if this is the
+>>> correct fix.
+>>
+>> Please send patches against -tip.
+>>
+>> You might find that Rusty has already fixed a similar issue there in
+>> commit: 49557e620339cb134127b5bfbcfecc06b77d0232.
+>>
+>> Now, Rusty's patch does not clear the ilb mask, so maybe it doesn't
+>> fully cover your issue, please test.
+>>
+> 
+> Thank you for quick response.
+> 
+> I didn't notice Rusty's fix.
+> I'll look at and test it tomorrow.
+> 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+I tested Rusty's patch and confirmed it fixes the problem.
 
-> Split up pinned and non-pinned events processing in two helpers
-> so that it's more flexible to handle them seperately.
+Thanks,
+Kenji Kaneshige
 
-> +static void
-> +__perf_event_sched_in_volatile(struct perf_event_context *ctx,
-> +			       struct perf_cpu_context *cpuctx, int cpu)
 
-Small naming suggestion: 'volatile' is a C keyword and rarely used 
-outside of that context in the kernel, which makes this function name a 
-bit confusing.
-
-So instead of pinned/volatile, a pinned/flexible naming would be more 
-readable, i.e. __perf_event_sched_in_flexible() or so.
-
-Also, most of the static functions in kernel/perf_event.c could lose 
-their perf_event_ prefix - we already know it's a perf thing, right? 
-That will shorten quite a few function names there.
-
-These functions would turn into __sched_in_pinned()/__sched_in_flexible().
-
-Agreed?
-
-	Ingo
