@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbZKJVNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbZKJVR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbZKJVNQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZKJVNP
+	id S1754535AbZKJVR3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZKJVR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:13:15 -0500
-Received: from 1wt.eu ([62.212.114.60]:50922 "EHLO 1wt.eu"
+	Tue, 10 Nov 2009 16:17:28 -0500
+Received: from mail-out1.uio.no ([129.240.10.57]:55239 "EHLO mail-out1.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbZKJVNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:13:15 -0500
-Date: Tue, 10 Nov 2009 22:12:59 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Avi Kivity <avi@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091110211259.GD26633@1wt.eu>
-References: <4AF9020C.90108@zytor.com> <4AF9435F.2070103@redhat.com> <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz>
+	id S1753855AbZKJVR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:17:27 -0500
+Subject: Re: sunrpc port allocation and IANA reserved list
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Ben Hutchings <bhutchings@solarflare.com>, netdev@vger.kernel.org,
+       Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AF9D5D1.9040501@nortel.com>
+References: <4AF9A63B.6010101@nortel.com>
+	 <1257875623.2834.19.camel@achroite.uk.solarflarecom.com>
+	 <4AF9B2CF.6050305@nortel.com>
+	 <1257884799.3044.7.camel@heimdal.trondhjem.org>
+	 <4AF9D5D1.9040501@nortel.com>
+Content-Type: text/plain
+Date: Wed, 11 Nov 2009 06:17:24 +0900
+Message-Id: <1257887844.3044.24.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091110205445.GB1407@ucw.cz>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 4 msgs/h 1 sum rcpts/h 6 sum msgs/h 2 total rcpts 1834 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 8CFA5F62AA9D374A27747ACCE9E5B4E8AFDF00D1
+X-UiO-SPAM-Test: remote_host: 198.95.226.230 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 36 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 09:54:45PM +0100, Pavel Machek wrote:
-> Hi!
+On Tue, 2009-11-10 at 15:06 -0600, Chris Friesen wrote:
+> On 11/10/2009 02:26 PM, Trond Myklebust wrote:
+> > On Tue, 2009-11-10 at 12:37 -0600, Chris Friesen wrote:
+> >> On 11/10/2009 11:53 AM, Ben Hutchings wrote:
+> >>> On Tue, 2009-11-10 at 11:43 -0600, Chris Friesen wrote:
+> >>
+> >>>> Given that a userspace application can be stopped and restarted at any
+> >>>> time, and a sunrpc registration can happen at any time, what is the
+> >>>> expected mechanism to prevent the kernel from allocating a port for use
+> >>>> by sunrpc that reserved or well-known?
+> >>>>
+> >>>> Apparently Redhat and Debian have distro-specific ways of dealing with
+> >>>> this, but is there a standard solution?  Should there be?
+> >>>>
+> >>>> The current setup seems suboptimal.
+> >>>
+> >>> I believe both RH and Debian are using the same implementation:
+> >>> <http://cyberelk.net/tim/software/portreserve/>.
+> >>
+> >> That helps with the startup case, but still leaves a possible hole if an
+> >> app using a fixed port number is restarted at runtime.  During the
+> >> window where nobody is bound to the port, the kernel could randomly
+> >> assign it to someone else.
+> > 
+> > Just use /proc/sys/sunrpc/{max,min}_resvport interface to restrict the
+> > range used to a safer one. That's what it is for...
 > 
-> > Indeed, but there is a difference between [cmpxchg, bswap, cmov, nopl]
-> > on one side and [sse*] on the other : distros are built assuming the
-> > former are always available while they are not always. And the
-> > distro
-> 
-> Well, fix the distros... 
+> What constitutes a "safer range"?  IANA has ports assigned
+> intermittently all the way through the default RPC range.  The largest
+> unassigned range is 922-988 (since 921 is used by lwresd).  If someone
+> needs more than 66 ports, how are they supposed to handle it?
 
-you know like me that it's as easy as useless to point the finger at
-distros, because people running on low end want something that works
-and people running on high end want something that runs fast. In order
-to satisfy every one, you would have to build with optimizations for
-every CPU around, which does not make sense. Simply count the number
-of CPU variants in the kernel, and imagine that many CDs/DVDs for a
-single platform distro.
+Distributions can, and should, set the default to whatever range that
+constitutes a broad percentile of their customers, and then leave
+instructions on how to change that default for the people who run the
+funky setups.
 
-However, targetting the most common denominator of high end machines
-(basically i686) and having the lower end systems experience a tiny
-slowdown is not stupid at all since performance is not what matters
-the most there. The higher end systems will simply be able to run
-CPU-specific optimizations per-program as they already do right now.
+The people who are trying to run absolutely all IANA registered services
+on a single Linux machine that is also trying to run as an NFS client
+may have a problem, but then again, how many setups do you know who are
+trying to do that?
 
-(...)
-> > CMOV/NOPL are rarely used, thus have no reason to cause a massive
-> > performance drop, but are frequent enough (at least cmov) for almost
-> 
-> *One* CMOV in the inner loop will make your performance go down 20x.
-
-yes, just like with emulated FPU or trapped unaligned accesses. It's
-just like flying fishes. They exist but they aren't the most common
-ones. If people encounter these cases on a specific program, then
-they just have to recompile it if it is a problem. At least they
-don't rebuild the whole distro. And once again, I've been using
-cmpxchg/bswap emulation for years on my i386 without feeling any
-need for a rebuild, and CMOV emulation for years now on my mini-itx 
-C3 without any problem either. These are real experiences, not just
-fears of imaginary problems. Yes I can design a program to run 400
-times slower on these machines if I want. I just don't feel the need
-to do so and apparently existing programs' authors didn't either.
-
-Regards,
-Willy
+  Trond
 
