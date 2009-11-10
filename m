@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZKJOhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZKJNnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZKJOhH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 09:37:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZKJOhF
+	id S1754256AbZKJNnO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 08:43:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZKJNnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 09:37:05 -0500
-Received: from mpemail.mpe.mpg.de ([130.183.137.110]:48918 "EHLO
-	mpemail.mpe.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756372AbZKJOhD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 09:37:03 -0500
-X-Greylist: delayed 3358 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Nov 2009 09:37:03 EST
-Message-ID: <60380.41.220.75.16.1257860322.squirrel@webmail.mpe.mpg.de>
-Date: Tue, 10 Nov 2009 14:38:42 +0100 (CET)
-Subject: Your mailbox has exceeded the storage limit.
-From: "System Administrator" <administrator@webmail.org>
-Reply-To: helpwebct1@tmail.tv
-User-Agent: SquirrelMail/1.4.6
+	Tue, 10 Nov 2009 08:43:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58290 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751965AbZKJNnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 08:43:13 -0500
+Date: Tue, 10 Nov 2009 13:42:33 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1257849980-22640-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1257849980-22640-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/iommu] x86: Add iommu_init to x86_init_ops, fix build
+Message-ID: <tip-b4941a9a606f0131559cc040b64e8437ac7b32c5@git.kernel.org>
+Git-Commit-ID: b4941a9a606f0131559cc040b64e8437ac7b32c5
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  b4941a9a606f0131559cc040b64e8437ac7b32c5
+Gitweb:     http://git.kernel.org/tip/b4941a9a606f0131559cc040b64e8437ac7b32c5
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 10 Nov 2009 14:37:58 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Nov 2009 14:37:58 +0100
 
+x86: Add iommu_init to x86_init_ops, fix build
 
+Most of the time x86_init.h is included in pci-dma.c - but not always,
+leading to this rare build failure:
 
--- 
-Dear Webmail Account User,
+arch/x86/kernel/pci-dma.c:296: error: 'x86_init' undeclared (first use in this function)
 
-This message was sent automatically by a program on Webmail admin center
-which periodically checks the size of inbox, The program is run
-automatically to ensure no user inbox grows too large. If your inbox
-becomes too large, you will be unable to receive new emails. Just before
-this message was sent, you are currently running on 20.9 GB, You have has
-exceeded the storage limit which is 20GB.
+So include asm/x86_init.h explicitly.
 
-To help us re-set your Account SPACE on our database prior to maintain
-your INBOX, you must reply to this e-mail providing us your the Below
-information:
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: chrisw@sous-sol.org
+Cc: dwmw2@infradead.org
+Cc: joerg.roedel@amd.com
+Cc: muli@il.ibm.com
+LKML-Reference: <1257849980-22640-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/pci-dma.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-E-mail ( ... ... ... ...  ... ... ... ...  ... ... ... ...  ... ... ... ... )
-Username/ID ( ... ... ... ... ... ...  )
-Current Password ( ... ...... ... ) Retype Password: ( ... ...... ... )
-
->From this point you will be unable to receive new email as it will be
-returned to the sender, Provide the above information to enable us help
-reset your webmail immediately.
-
-NOTE: Your Webmail Account Expire in Three (3) Days. After you read this
-message, it is best to REPLY with the required information to upgrade
-MailBox. Reply to this message immediately to Re activate your Account.
-
-Thank you for your cooperation.
-Webmail Help Desk. System Administrator
---------------------------------------------------
-
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 63eebee..f79870e 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -11,6 +11,7 @@
+ #include <asm/gart.h>
+ #include <asm/calgary.h>
+ #include <asm/amd_iommu.h>
++#include <asm/x86_init.h>
+ 
+ static int forbid_dac __read_mostly;
+ 
