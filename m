@@ -1,82 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbZKJV3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZKJVb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbZKJV3f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZKJV3e
+	id S1758206AbZKJVb7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZKJVb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:29:34 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43120 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752529AbZKJV3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:29:34 -0500
-Date: Tue, 10 Nov 2009 22:29:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Junio C Hamano <gitster@pobox.com>
-Cc: Greg KH <gregkh@suse.de>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] new -stable tag variant, Git workflow question
-Message-ID: <20091110212903.GD23196@elte.hu>
-References: <20091110034831.GB26809@elte.hu>
- <20091110041452.GA25575@suse.de>
- <1257863388.4184.220.camel@mulgrave.site>
- <4AF98C36.9040405@s5r6.in-berlin.de>
- <20091110193919.GC12686@suse.de>
- <20091110204537.GB18509@elte.hu>
- <7vhbt23x1m.fsf@alter.siamese.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7vhbt23x1m.fsf@alter.siamese.dyndns.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Tue, 10 Nov 2009 16:31:58 -0500
+Received: from exchange.solarflare.com ([216.237.3.220]:18044 "EHLO
+	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZKJVb5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:31:57 -0500
+Subject: Re: sunrpc port allocation and IANA reserved list
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, netdev@vger.kernel.org,
+       Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AF9D5D1.9040501@nortel.com>
+References: <4AF9A63B.6010101@nortel.com>
+	 <1257875623.2834.19.camel@achroite.uk.solarflarecom.com>
+	 <4AF9B2CF.6050305@nortel.com>
+	 <1257884799.3044.7.camel@heimdal.trondhjem.org>
+	 <4AF9D5D1.9040501@nortel.com>
+Content-Type: text/plain
+Organization: Solarflare Communications
+Date: Tue, 10 Nov 2009 21:32:00 +0000
+Message-Id: <1257888720.2834.30.camel@achroite.uk.solarflarecom.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Nov 2009 21:32:03.0449 (UTC) FILETIME=[3E868E90:01CA624D]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17000.004
+X-TM-AS-Result: No--39.690600-0.000000-31
+X-TM-AS-User-Approved-Sender: Yes
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-11-10 at 15:06 -0600, Chris Friesen wrote:
+> On 11/10/2009 02:26 PM, Trond Myklebust wrote:
+> > On Tue, 2009-11-10 at 12:37 -0600, Chris Friesen wrote:
+> >> On 11/10/2009 11:53 AM, Ben Hutchings wrote:
+> >>> On Tue, 2009-11-10 at 11:43 -0600, Chris Friesen wrote:
+> >>
+> >>>> Given that a userspace application can be stopped and restarted at any
+> >>>> time, and a sunrpc registration can happen at any time, what is the
+> >>>> expected mechanism to prevent the kernel from allocating a port for use
+> >>>> by sunrpc that reserved or well-known?
+> >>>>
+> >>>> Apparently Redhat and Debian have distro-specific ways of dealing with
+> >>>> this, but is there a standard solution?  Should there be?
+> >>>>
+> >>>> The current setup seems suboptimal.
+> >>>
+> >>> I believe both RH and Debian are using the same implementation:
+> >>> <http://cyberelk.net/tim/software/portreserve/>.
+> >>
+> >> That helps with the startup case, but still leaves a possible hole if an
+> >> app using a fixed port number is restarted at runtime.  During the
+> >> window where nobody is bound to the port, the kernel could randomly
+> >> assign it to someone else.
+> > 
+> > Just use /proc/sys/sunrpc/{max,min}_resvport interface to restrict the
+> > range used to a safer one. That's what it is for...
 
-* Junio C Hamano <gitster@pobox.com> wrote:
+Unless I'm much mistaken, that only affects in-kernel SunRPC users.
 
-> Ingo Molnar <mingo@elte.hu> writes:
-> 
-> > Yeah. This new tagging scheme doesnt really allow anything 'new' per se 
-> > - it just helps the existing practice some more. All these commits were 
-> > -stable candidates anyway, in exactly the same order - the only 
-> > difference the new tagging scheme adds here is a more organized, 
-> > in-upsream-Git way of communicating it to you.
-> 
-> I am just a bystander, but if it were truly in-upstream-git way, 
-> wouldn't you be forking a branch from the tagged target release (the 
-> latest of 2.6.32.X), and queuing only the changes meant for -stable to 
-> it, and giving the name of the branch to git people and sending out 
-> patches from that branch for e-mailed review and application?
-> 
-> There won't be any special tagging required, only a dedicated branch.
-> 
-> Or am I missing something?
+> What constitutes a "safer range"?  IANA has ports assigned
+> intermittently all the way through the default RPC range.  The largest
+> unassigned range is 922-988 (since 921 is used by lwresd).  If someone
+> needs more than 66 ports, how are they supposed to handle it?
 
-There's no Git flow towards -stable. It's either forwarded emails, or 
-tags in the upstream kernel. Also, _only_ commits that were pulled by 
-Linus are eligible for -stable.
+I'm sure we could afford 128 bytes for a blacklist of privileged ports.
+However, the problem is that there is no API for userland to request
+'any free privileged port' - it has to just try binding to different
+ports until it finds one available.  This means that the kernel can't
+tell whether a process is trying to allocate a specifically assigned
+port or whether the blacklist should be applied.
 
-So the pull requests all first go to Linus - then can any commit flow to 
--stable.
+Ben.
 
-But even if it was possible to send pull requests to Greg, marking 
-commits as -stable candidates is more natural in the commit log itself.
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
 
-That informs people ('hey, that's a dangerous patch, dont mark it for 
--stable!!' or 'hey, why isnt this commit tagged to stable??'), and it 
-also ensures it that only commits from Linus's tree flow towards 
--stable.
-
-	Ingo
