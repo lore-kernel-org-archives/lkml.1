@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbZKJTGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757800AbZKJTJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757827AbZKJTGA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 14:06:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757689AbZKJTF6
+	id S1757800AbZKJTJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 14:09:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757704AbZKJTJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 14:05:58 -0500
-Received: from 2605ds1-ynoe.0.fullrate.dk ([90.184.12.24]:46435 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757672AbZKJTF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 14:05:58 -0500
-Message-ID: <4AF9B994.8040301@krogh.cc>
-Date: Tue, 10 Nov 2009 20:05:56 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 10 Nov 2009 14:09:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41765 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757579AbZKJTJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 14:09:55 -0500
+Date: Tue, 10 Nov 2009 19:09:39 GMT
+From: tip-bot for Dave Jones <davej@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       davej@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, davej@redhat.com, mingo@elte.hu
+In-Reply-To: <20091110184924.GA20337@redhat.com>
+References: <20091110184924.GA20337@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Add new Intel CPU cache size descriptors
+Message-ID: <tip-85160b92fbd35321104819283c91bfed2b553e3c@git.kernel.org>
+Git-Commit-ID: 85160b92fbd35321104819283c91bfed2b553e3c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Greg Banks <gnb@fmeh.org>
-Subject: Re: 2.6.31 under "heavy" NFS load.
-References: <4AF86DE4.5010607@krogh.cc> <20091110184126.GD15000@fieldses.org>
-In-Reply-To: <20091110184126.GD15000@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Mon, Nov 09, 2009 at 08:30:44PM +0100, Jesper Krogh wrote:
->> When a lot (~60 all on 1GbitE) of NFS clients are hitting an NFS server
->> that has an 10GbitE NIC sitting on it I'm seeing high IO-wait load
->> (>50%) and load number over 100 on the server. This is a change since
->> 2.6.29 where the IO-wait load under similar workload was less than 10%.
->>
->> The system has 16 Opteron cores.
->>
->> All data the NFS-clients are reading are "memory recident" since they
->> are all reading off the same 10GB of data and the server has 32GB of
->> main memory dedicated to nothing else than serving NFS.
->>
->> A snapshot of top looks like this:
->> http://krogh.cc/~jesper/top-hest-2.6.31.txt
->>
->> The load is generally alot higher than on 2.6.29 and it "explodes" to
->> over 100 when a few processes begin utillizing the disk while serving
->> files over NFS. "dstat" reports a read-out of 10-20MB/s from disk which
->> is close to what I'd expect. and the system delivers around 600-800MB/s
->> over the NIC in this workload.
-> 
-> Is that the bandwidth you get with 2.6.31, with 2.6.29, or with both?
+Commit-ID:  85160b92fbd35321104819283c91bfed2b553e3c
+Gitweb:     http://git.kernel.org/tip/85160b92fbd35321104819283c91bfed2b553e3c
+Author:     Dave Jones <davej@redhat.com>
+AuthorDate: Tue, 10 Nov 2009 13:49:24 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Nov 2009 20:06:16 +0100
 
-Without being able to be fully accurate, I have a strong feeling that
-the comparative numbers on 2.6.29 were more around 800-1000MB/s. But
-this isn't based on any measurements so dont put too much into it. I'll
-try to make up something that I can use for testing over multiple
-kernel-versions.
+x86: Add new Intel CPU cache size descriptors
 
-> Are you just noticing a change in the statistics, or are there concrete
-> changes in the performance of the server?
+The latest rev of Intel doc AP-485 details new cache descriptors
+that we don't yet support. 12MB, 18MB and 24MB 24-way assoc L3
+caches.
 
-Interactivity on the console is alot worse. Still usable, but top takes
-~5s to start up on 2.6.31 where I didn't remember any lags on 2.6.29 (so
-less than 2s).
+Signed-off-by: Dave Jones <davej@redhat.com>
+LKML-Reference: <20091110184924.GA20337@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
->> Sorry that I cannot be more specific, I can answer questions on a
->> running 2.6.31 kernel, but I cannot reboot the system back to 2.6.29
->> just to test since the system is "in production". I tried 2.6.30 and it
->> has the same pattern as 2.6.31, so based on that fragile evidence the
->> change should be found in between 2.6.29 and 2.6.30. I hope a "wague"
->> report is better than none.
-> 
-> Can you test whether this helps?
-
-I'll schedule testing..
-
--- 
-Jesper
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 804c40e..1410392 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -102,6 +102,9 @@ static const struct _cache_table __cpuinitconst cache_table[] =
+ 	{ 0xe2, LVL_3,    2048 },	/* 16-way set assoc, 64 byte line size */
+ 	{ 0xe3, LVL_3,    4096 },	/* 16-way set assoc, 64 byte line size */
+ 	{ 0xe4, LVL_3,    8192 },	/* 16-way set assoc, 64 byte line size */
++	{ 0xea, LVL_3,    12288 },	/* 24-way set assoc, 64 byte line size */
++	{ 0xeb, LVL_3,    18432 },	/* 24-way set assoc, 64 byte line size */
++	{ 0xec, LVL_3,    24576 },	/* 24-way set assoc, 64 byte line size */
+ 	{ 0x00, 0, 0}
+ };
+ 
