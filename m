@@ -1,91 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbZKJVN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbZKJVdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbZKJVN2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZKJVN1
+	id S1758246AbZKJVdg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZKJVdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:13:27 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:55712 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbZKJVN0 (ORCPT
+	Tue, 10 Nov 2009 16:33:36 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60347 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754729AbZKJVdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:13:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=W5/HUtkf0sVB+gRwWGfBKZJKlEJycPIuNMZvQKqevzk5xRF4pAdIt8Cazf9fp1BNO7
-         fI+62nvvhAs9XwJysX4z8c27+rmvU2AE47EBnHB+d19i4P0YTc/9kseYanVoiqc5gawM
-         Vb83bFmB4ak9rLDIxlHvESV2vtZ4aZkV8dvtc=
-Message-ID: <4AF9DA42.8060200@gmail.com>
-Date: Tue, 10 Nov 2009 22:25:22 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
+	Tue, 10 Nov 2009 16:33:35 -0500
+Message-ID: <4AF9DA6B.803@zytor.com>
+Date: Tue, 10 Nov 2009 13:26:03 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] rtxxxx/sta_ioctl: rate_index one too large
+To: Matt Thrailkill <matt.thrailkill@gmail.com>
+CC: Pavel Machek <pavel@ucw.cz>, Willy Tarreau <w@1wt.eu>,
+       Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+References: <20091110052711.GA15338@1wt.eu> <4AF9435F.2070103@redhat.com> 	<20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> 	<20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> 	<4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> 	<20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <a91053ef0911101321he1cf15cx8d15d747b371fde4@mail.gmail.com>
+In-Reply-To: <a91053ef0911101321he1cf15cx8d15d747b371fde4@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-`rate_count' is the size of ralinkrate[]. So an index
-that equals rate_count is one too large.
+On 11/10/2009 01:21 PM, Matt Thrailkill wrote:
+> On Tue, Nov 10, 2009 at 12:54 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> *One* CMOV in the inner loop will make your performance go down 20x.
+> 
+> This is 20x slower than not running at all, right?
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/staging/rt2860/sta_ioctl.c |    4 ++--
- drivers/staging/rt3090/sta_ioctl.c |   10 +++++-----
- 2 files changed, 7 insertions(+), 7 deletions(-)
+And that's the fundamental win of doing a fullscale emulator: you will
+always be able to run, at *some* performance level.
 
-diff --git a/drivers/staging/rt2860/sta_ioctl.c b/drivers/staging/rt2860/sta_ioctl.c
-index c0e0425..5344616 100644
---- a/drivers/staging/rt2860/sta_ioctl.c
-+++ b/drivers/staging/rt2860/sta_ioctl.c
-@@ -2572,8 +2572,8 @@ int rt_ioctl_giwrate(struct net_device *dev,
-     if (rate_index < 0)
-         rate_index = 0;
- 
--    if (rate_index > rate_count)
--        rate_index = rate_count;
-+    if (rate_index >= rate_count)
-+        rate_index = rate_count - 1;
- 
-     wrqu->bitrate.value = ralinkrate[rate_index] * 500000;
-     wrqu->bitrate.disabled = 0;
-diff --git a/drivers/staging/rt3090/sta_ioctl.c b/drivers/staging/rt3090/sta_ioctl.c
-index b8ab84a..a314cbb 100644
---- a/drivers/staging/rt3090/sta_ioctl.c
-+++ b/drivers/staging/rt3090/sta_ioctl.c
-@@ -1409,8 +1409,8 @@ int rt_ioctl_giwscan(struct net_device *dev,
- 				int rate_index = 12 + ((UCHAR)capInfo.ChannelWidth * 24) + ((UCHAR)shortGI *48) + ((UCHAR)maxMCS);
- 				if (rate_index < 0)
- 					rate_index = 0;
--				if (rate_index > rate_count)
--					rate_index = rate_count;
-+				if (rate_index >= rate_count)
-+					rate_index = rate_count - 1;
- 				iwe.u.bitrate.value	=  ralinkrate[rate_index] * 500000;
- 			}
- 
-@@ -3163,8 +3163,8 @@ int rt_ioctl_giwrate(struct net_device *dev,
-     if (rate_index < 0)
-         rate_index = 0;
- 
--    if (rate_index > rate_count)
--        rate_index = rate_count;
-+    if (rate_index >= rate_count)
-+        rate_index = rate_count - 1;
- 
-     wrqu->bitrate.value = ralinkrate[rate_index] * 500000;
-     wrqu->bitrate.disabled = 0;
-@@ -7554,4 +7554,4 @@ INT	Set_Antenna_Proc(
- 
- 	return TRUE;
- }
--#endif // ANT_DIVERSITY_SUPPORT //
-\ No newline at end of file
-+#endif // ANT_DIVERSITY_SUPPORT //
+	-hpa
+
