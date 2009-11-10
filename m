@@ -1,80 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751720AbZKJFS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbZKJFTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751720AbZKJFS0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 00:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbZKJFSZ
+	id S1751713AbZKJFTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 00:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZKJFTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 00:18:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38831 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Nov 2009 00:19:17 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44760 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZKJFSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 00:18:25 -0500
-Date: Tue, 10 Nov 2009 06:18:08 +0100
+	id S1751347AbZKJFTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 00:19:16 -0500
+Date: Tue, 10 Nov 2009 06:19:01 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Naohiro Ooiwa <nooiwa@miraclelinux.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, roland@redhat.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, oleg@redhat.com
-Subject: Re: [PATCH] kernel.h: Add printk_ratelimited and pr_<level>_rl
-Message-ID: <20091110051808.GH7897@elte.hu>
-References: <4AEACFBF.4060108@miraclelinux.com>
- <20091030143333.414ea29c.akpm@linux-foundation.org>
- <1256939158.1917.43.camel@Joe-Laptop.home>
- <1256944907.1917.109.camel@Joe-Laptop.home>
- <20091109134914.70de28cf.akpm@linux-foundation.org>
- <1257804320.12852.16.camel@Joe-Laptop.home>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
+       a.p.zijlstra@chello.nl, efault@gmx.de, acme@redhat.com,
+       fweisbec@gmail.com
+Subject: Re: [PATCH v2 3/7] Adding general performance benchmarking
+ subcommand to perf.
+Message-ID: <20091110051901.GI7897@elte.hu>
+References: <20091108113013.GM11372@elte.hu>
+ <20091109.122712.865412965745306501.mitake@dcl.info.waseda.ac.jp>
+ <20091109075512.GG453@elte.hu>
+ <20091110.015023.244106360.mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257804320.12852.16.camel@Joe-Laptop.home>
+In-Reply-To: <20091110.015023.244106360.mitake@dcl.info.waseda.ac.jp>
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joe Perches <joe@perches.com> wrote:
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
 
-> On Mon, 2009-11-09 at 13:49 -0800, Andrew Morton wrote:
-> > On Fri, 30 Oct 2009 16:21:47 -0700
-> > Joe Perches <joe@perches.com> wrote:
-> > > +#define pr_emerg_rl(fmt, ...) \
-> > > +        printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-> > > +#define pr_alert_rl(fmt, ...) \
-> > > +        printk_ratelimited(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
-> > > +#define pr_crit_rl(fmt, ...) \
-> > > +        printk_ratelimited(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
-> > > +#define pr_err_rl(fmt, ...) \
-> > > +        printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
-> > > +#define pr_warning_rl(fmt, ...) \
-> > > +        printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-> > > +#define pr_notice_rl(fmt, ...) \
-> > > +        printk_ratelimited(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
-> > > +#define pr_info_rl(fmt, ...) \
-> > > +        printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+> From: Ingo Molnar <mingo@elte.hu>
+> Subject: Re: [PATCH v2 3/7] Adding general performance benchmarking subcommand to perf.
+> Date: Mon, 9 Nov 2009 08:55:12 +0100
+> 
 > > 
-> > Would prefer pr_emerg_ratelimited personally.  It's longer, but one
-> > doesn't ask "wtf does _rl" mean and it avoids having two identifiers
-> > which refer to the same thing.
+> > * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> > 
+> > > From: Ingo Molnar <mingo@elte.hu>
+> > > Subject: Re: [PATCH v2 3/7] Adding general performance benchmarking subcommand to perf.
+> > > Date: Sun, 8 Nov 2009 12:30:13 +0100
+> > > 
+> > > > > > 
+> > > > > > Shouldnt we output the unit of measurement, i.e. '4.575 usecs'? Also, we 
+> > > > > > should perhaps print something like:
+> > > > > > 
+> > > > > >   % perf bench sched pipe
+> > > > > > 
+> > > > > >   (executing 1000000 pipe operations between two tasks)
+> > > > > > 
+> > > > > >      4.575 usecs per op
+> > > > > >     218579 ops/sec   
+> > > > > > 
+> > > > > > ?
+> > > > > 
+> > > > > I have to admit that single float value output is too simple.
+> > > > > So I'll fix the default output.
+> > > > > 
+> > > > > But, I believe that simple form makes sense for
+> > > > > processing by scripts or graph tools like gnuplot.
+> > > > > I'll add the option (may be --simple) to switch
+> > > > > friendliness of outputs.
+> > > > 
+> > > > Btw., could you make it Git-ish, i.e.:
+> > > > 
+> > > >  --format=short
+> > > > 
+> > > > or:
+> > > > 
+> > > >  --format=simple
+> > > > 
+> > > > Eventually more format options might be added.
+> > > 
+> > > It's good idea.
+> > > I have to admit that reserving -s for simple output is not good idea.
+> > > I'll do this.
+> > 
+> > I think --format=simple will be used by scripts mostly, so it doesnt 
+> > matter that it's longer to type. We try to save the shorter options for 
+> > humans and be conservative with them.
+> > 
+> > Another angle is coherency between different subcommands - and '-s' is 
+> > already used as -s/--sort in other perf subcommands, which does not 
+> > match up with the '-s/--simple' usage.
+> > 
+> > We try to match what the Git project does here - a good deal of 
+> > infrastructure code in perf came from Git and i find Git very easy to 
+> > use and it's managed well.
+> > 
+> > It's not a hard rule: not all option name incoherencies are fixable or 
+> > avoidable, and there's no big problem if something slips in - i just 
+> > wanted to mention so that you can keep an eye on it when developing new 
+> > features for perf bench.
+> > 
+> > 	Ingo
+> > 
 > 
-> I don't have a strong opinion either way.
-> _rl is shorter and that has some value.
-> 
-> I think pr_crit_rl, pr_emerg_rl and pr_alert_rl likely
-> aren't useful.  Is there a sensible use case for those?
-> 
-> I added them for completeness, but...
+> I added --format as option of bench subcommand,
+> not of each suites.
+> Because I thought that flavors of formatting are common thing
+> across the suites.
 
-Yes, we want it for API completeness mostly.
+yeah. Maybe it might be librarized into util/ as well in the future, if 
+another perf subcommand wants to pick it up.
+
+> 
+> Example of use:
+> % ./perf bench sched pipe           # with no style specify
+> (executing 1000000 pipe operations between two tasks)
+> 
+>         Total time:5.855 sec
+>                 5.855061 usecs/op
+>                 170792 ops/sec
+> % ./perf bench --format=simple sched pipe # specified simple
+>                ^^^^^^^^^^^^^^^	# <- --format is here
+> 5.988
+> 
+> How do you think?
+> I'll send patch series later.
+
+Looks good - i picked them up.
+
+Thanks,
 
 	Ingo
