@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbZKJVn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbZKJVuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393AbZKJVn2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758327AbZKJVn1
+	id S932067AbZKJVuH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:50:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758306AbZKJVuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:43:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48620 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758296AbZKJVn0 (ORCPT
+	Tue, 10 Nov 2009 16:50:07 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:8718 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758288AbZKJVuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:43:26 -0500
-Date: Tue, 10 Nov 2009 13:42:51 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Tejun Heo <tj@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
-In-Reply-To: <4AF9C402.9040800@kernel.org>
-Message-ID: <alpine.LFD.2.01.0911101338190.31845@localhost.localdomain>
-References: <4AF90254.40909@kernel.org> <alpine.LFD.2.01.0911100903370.31845@localhost.localdomain> <4AF9B1FD.1010408@kernel.org> <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain> <4AF9BE3A.40409@kernel.org> <20091110193705.GA9011@elte.hu>
- <4AF9C402.9040800@kernel.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 10 Nov 2009 16:50:06 -0500
+X-Trace: 287951003/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.44.180/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.44.180
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgMHABNv+UpPRSy0/2dsb2JhbACBTo52Ac47hD4E
+X-IronPort-AV: E=Sophos;i="4.44,718,1249254000"; 
+   d="scan'208";a="287951003"
+Date: Tue, 10 Nov 2009 21:50:06 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 0/6] mm: prepare for ksm swapping
+Message-ID: <Pine.LNX.4.64.0911102142570.2272@sister.anvils>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here's a series of six miscellaneous mm patches against 2.6.32-rc5-mm1,
+intended to follow my earlier swap_info patches, or slot in just before
+mmend in the mmotm series.
 
+Apart from the sixth, they have some relevance to the KSM-page swapping
+patches, following after a few days.  They clear away some mm cruft,
+to let that series concentrate on ksm.c; but should stand on their own.
 
-On Wed, 11 Nov 2009, Tejun Heo wrote:
-> 
-> If you're talking about the three way return value, which I do agree
-> to be quite ugly, I think it will be a lot safer to have three patches
-> - one to fix the deadlock, another to fix the return value and the
-> final one to de-uglify the function, especially as we're pretty late
-> in the release cycle.
+ include/linux/ksm.h        |    5 -
+ include/linux/mm.h         |   17 +++
+ include/linux/page-flags.h |    8 -
+ include/linux/rmap.h       |    8 +
+ mm/Kconfig                 |   14 --
+ mm/internal.h              |   26 ++---
+ mm/memory-failure.c        |    2 
+ mm/memory.c                |    4 
+ mm/migrate.c               |   11 --
+ mm/mlock.c                 |    2 
+ mm/page_alloc.c            |    4 
+ mm/rmap.c                  |  174 +++++++++++------------------------
+ mm/swapfile.c              |    2 
+ 13 files changed, 110 insertions(+), 167 deletions(-)
 
-I'm certainly ok with doing it in stages if that is how you want to do it.
-
-That said, I'm not entirely sure it's _worthwhile_, since the "return 1" 
-case has apparently never ever actually worked. From a bisect standpoint, 
-what's the difference between seeing
-
- - oh, now that we made it return the documented code and actually re-try 
-   properly when dropping the lock, it turns out that the re-try code was 
-   always buggy and we just hadn't noticed before because it didn't 
-   trigger
-
-or
-
- - oh, now that we rewrote the function to be cleaner and do the lock 
-   dropping and retry more obviously, it turns out that the retry doesn't 
-   actually work and leads to deadlocks.
-
-but I don't care deeply.
-
-I want the cleanup because I think that the code sucks from a "future 
-proofing" and readability standpoint, but I really don't mind one way or 
-the other whether you want to finally do that one "return 1" correctly for 
-one commit, only to then fix it to not do that three-way test of a single 
-function in the next one.
-
-So whatever works - as long as the end result both looks sane and doesn't 
-have the bug we clearly have now.
-
-		Linus
+Hugh
