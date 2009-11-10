@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZKJLvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbZKJLvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbZKJLvU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 06:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbZKJLvR
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756149AbZKJLvR (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 10 Nov 2009 06:51:17 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:61593 "EHLO
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbZKJLu7
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 10 Nov 2009 06:50:59 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:61595 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751461AbZKJLu4 (ORCPT
+	with ESMTP id S1751554AbZKJLu4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Nov 2009 06:50:56 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
@@ -16,9 +16,9 @@ Cc: linux-kernel@vger.kernel.org,
        Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/3] perf bench: Add new document of perf-bench
-Date: Tue, 10 Nov 2009 20:50:54 +0900
-Message-Id: <1257853855-28934-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH 3/3] perf bench: Modify command-list.txt for the entry of perf-bench
+Date: Tue, 10 Nov 2009 20:50:55 +0900
+Message-Id: <1257853855-28934-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1257853855-28934-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 References: <1257853855-28934-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
@@ -26,143 +26,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds new document of perf-bench.
-Man page and html will be provided for user.
+This patch modifies command-list.txt for the entry of perf-bench.
+So perf will show 'bench' in command list.
+
+Example:
+% perf
+
+ usage: perf [--version] [--help] COMMAND [ARGS]
+
+ The most commonly used perf commands are:
+   annotate    Read perf.data (created by perf record) and display annotated code
+   bench       General framework for benchmark suites
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   list        List all symbolic event types
+   probe       Define new dynamic tracepoints
+   record      Run a command and record its profile into perf.data
+   report      Read perf.data (created by perf record) and display the profile
+   sched       Tool to trace/measure scheduler properties (latencies)
+   stat        Run a command and gather performance counter statistics
+   timechart   Tool to visualize total system behavior during a workload
+   top         System profiling tool.
+   trace       Read perf.data (created by perf record) and display trace output
+
+ See 'perf help COMMAND' for more information on a specific command.
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 ---
- tools/perf/Documentation/perf-bench.txt |  120 +++++++++++++++++++++++++++++++
- 1 files changed, 120 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/Documentation/perf-bench.txt
+ tools/perf/command-list.txt |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/Documentation/perf-bench.txt b/tools/perf/Documentation/perf-bench.txt
-new file mode 100644
-index 0000000..ae525ac
---- /dev/null
-+++ b/tools/perf/Documentation/perf-bench.txt
-@@ -0,0 +1,120 @@
-+perf-bench(1)
-+============
-+
-+NAME
-+----
-+perf-bench - General framework for benchmark suites
-+
-+SYNOPSIS
-+--------
-+[verse]
-+'perf bench' [<common options>] <subsystem> <suite> [<options>]
-+
-+DESCRIPTION
-+-----------
-+This 'perf bench' command is general framework for benchmark suites.
-+
-+COMMON OPTIONS
-+--------------
-+-f::
-+--format=::
-+Specify format style.
-+Current available format styles are,
-+
-+'default'::
-+Default style. This is mainly for human reading.
-+---------------------
-+% perf bench sched pipe                      # with no style specify
-+(executing 1000000 pipe operations between two tasks)
-+        Total time:5.855 sec
-+                5.855061 usecs/op
-+		170792 ops/sec
-+---------------------
-+
-+'simple'::
-+This simple style is friendly for automated
-+processing by scripts.
-+---------------------
-+% perf bench --format=simple sched pipe      # specified simple
-+5.988
-+---------------------
-+
-+SUBSYSTEM
-+---------
-+
-+'sched'::
-+	Scheduler and IPC mechanisms.
-+
-+SUITES FOR 'sched'
-+~~~~~~~~~~~~~~~~~~
-+*messaging*::
-+Suite for evaluating performance of scheduler and IPC mechanisms.
-+Based on hackbench by Rusty Russell.
-+
-+Options of *pipe*
-+^^^^^^^^^^^^^^^^^
-+-p::
-+--pipe::
-+Use pipe() instead of socketpair()
-+
-+-t::
-+--thread::
-+Be multi thread instead of multi process
-+
-+-g::
-+--group=::
-+Specify number of groups
-+
-+-l::
-+--loop=::
-+Specify number of loops
-+
-+Example of *messaging*
-+^^^^^^^^^^^^^^^^^^^^^^
-+
-+---------------------
-+% perf bench sched messaging                 # run with default
-+options (20 sender and receiver processes per group)
-+(10 groups == 400 processes run)
-+
-+      Total time:0.308 sec
-+
-+% perf bench sched messaging -t -g 20        # be multi-thread,with 20 groups
-+(20 sender and receiver threads per group)
-+(20 groups == 800 threads run)
-+
-+      Total time:0.582 sec
-+---------------------
-+
-+*pipe*::
-+Suite for pipe() system call.
-+Based on pipe-test-1m.c by Ingo Molnar.
-+
-+Options of *pipe*
-+^^^^^^^^^^^^^^^^^
-+-l::
-+--loop=::
-+Specify number of loops.
-+
-+Example of *pipe*
-+^^^^^^^^^^^^^^^^^
-+
-+---------------------
-+% perf bench sched pipe
-+(executing 1000000 pipe operations between two tasks)
-+
-+        Total time:8.091 sec
-+                8.091833 usecs/op
-+                123581 ops/sec
-+
-+% perf bench sched pipe -l 1000              # loop 1000
-+(executing 1000 pipe operations between two tasks)
-+
-+        Total time:0.016 sec
-+                16.948000 usecs/op
-+                59004 ops/sec
-+---------------------
-+
-+SEE ALSO
-+--------
-+linkperf:perf[1]
+diff --git a/tools/perf/command-list.txt b/tools/perf/command-list.txt
+index 6475db4..161322b 100644
+--- a/tools/perf/command-list.txt
++++ b/tools/perf/command-list.txt
+@@ -12,3 +12,4 @@ perf-timechart			mainporcelain common
+ perf-top			mainporcelain common
+ perf-trace			mainporcelain common
+ perf-probe			mainporcelain common
++perf-bench			mainporcelain common
 -- 
 1.6.5.2
 
