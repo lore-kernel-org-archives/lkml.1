@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbZKJIBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZKJIBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752951AbZKJIBM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 03:01:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZKJIBL
+	id S1753303AbZKJIBm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 03:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZKJIBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 03:01:11 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:47186 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbZKJIBK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 03:01:10 -0500
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
-References: <m1pr7siqjz.fsf@fess.ebiederm.org>
-	<m1zl6vvpiv.fsf@fess.ebiederm.org>
-	<20091109132830.GF26740@basil.fritz.box>
-	<200911091628.47003.arnd@arndb.de>
-	<20091109154621.GG26740@basil.fritz.box>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 10 Nov 2009 00:01:07 -0800
-In-Reply-To: <20091109154621.GG26740@basil.fritz.box> (Andi Kleen's message of "Mon\, 9 Nov 2009 16\:46\:21 +0100")
-Message-ID: <m1r5s6n70c.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 10 Nov 2009 03:01:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48915 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753036AbZKJIBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 03:01:41 -0500
+Date: Tue, 10 Nov 2009 09:01:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>, git@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, paulus@samba.org
+Subject: Re: [PATCH v2 0/4] perf bench: Common option for specifying style
+ formatting
+Message-ID: <20091110080135.GA32322@elte.hu>
+References: <1257808802-9420-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+ <20091110035812.GB29454@elte.hu>
+ <20091110.165102.386189748263321818.mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <20091110.165102.386189748263321818.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
 
->> can still use the  config option for the compatibility code.
->> There wouldn't even be a performance penalty over new glibc with
->> new kernels which already use procfs.
->
-> When he drops the sysctl(2) API completely the old userland will
-> be unhappy.
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
 
-When it comes to breaking user space the issue is not glibc or
-anything in a open source distribution.  There are maybe 3 apps that
-are affected at all and as far as I can tell they were all fixed long
-ago.  Last time I investigated this in 2007 none of the existing
-userlands would break if sysctl was disabled completely.
+> And I have a question.
+> In tools/perf/command-list.txt, there is the word "mainporcelain".
+> What does this mean?
 
-The issue is all of the in-house and 3rd party software, that we don't
-have access to.  We have no way of knowing what is used.  So I do not
-favor a solution that kills some but not all sysctls.  Either you
-might need them or you don't.
+tools/perf/ inherited the command-list.txt code from the Git project:
 
-So the decision must be made to you break the rare app from the writer
-who has given you no feed back after you have given him fair warning,
-or do you try and support him forever, with code that no cares about
-and no one tests.
+  git://git.kernel.org/pub/scm/git/git.git
 
-I think the solution in sysctl_binary.c strikes a good balance there.
-The code is simple and should survive a long time with little to no
-maintenance, so it is good if we need decide we are too chicken to
-disable the sysctl system call, and at the same time my changes remove
-the support overhead from everywhere else.
+in Git talk, 'porcelain' is the pretty stuff humans use. 'plumbing' is 
+the lowlevel stuff humans dont get to see.
 
-Further with the existence of a single file for all of the binary
-sysctls we can modify it to strike any other balance between long term
-maintainability, and removal of unused cruft.
+'mainporcelain' are the major commands you get listed when you type 
+'perf' (or 'git').
 
-I am happy to see additional patches from anyone else who chooses to seek
-a different balance.
+( i've Cc:-ed the Git list as i never saw any real formal definition for
+  this anywhere, maybe i got this wrong :-)
 
-Eric
+> Of course I searched this word on my dictionary, but cannot got an answer.
+> I'm preparing the initial document for perf-bench.
+> Can I add perf-bench with mainporcelain to command-list.txt?
+
+yeah, i'd suggest to do that - that will make 'perf bench' show up in 
+'perf' output.
+
+	Ingo
