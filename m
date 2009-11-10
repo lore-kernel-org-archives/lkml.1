@@ -1,82 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757675AbZKJSzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757714AbZKJS5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757675AbZKJSzc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 13:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbZKJSzb
+	id S1757714AbZKJS5O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 13:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757697AbZKJS5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 13:55:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38852 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757651AbZKJSzb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 13:55:31 -0500
-Date: Tue, 10 Nov 2009 10:54:27 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Tejun Heo <tj@kernel.org>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
-In-Reply-To: <4AF9B1FD.1010408@kernel.org>
-Message-ID: <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain>
-References: <4AF90254.40909@kernel.org> <alpine.LFD.2.01.0911100903370.31845@localhost.localdomain> <4AF9B1FD.1010408@kernel.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 10 Nov 2009 13:57:13 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:40706 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757687AbZKJS5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 13:57:13 -0500
+Date: Tue, 10 Nov 2009 12:57:16 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, suresh.b.siddha@intel.com, tglx@linutronix.de
+Subject: [PATCH] Remove SMP ifdef from irq_desc
+Message-ID: <20091110185716.GA4665@sgi.com>
+References: <20091021011233.GB32196@sgi.com> <tip-683c91f85d7a3e1092d7fa3ec5687af8cd379f02@git.kernel.org> <20091108145355.GA8432@elte.hu> <20091109160215.GA14718@sgi.com> <20091110044025.GA7897@elte.hu> <20091110163118.GA13707@sgi.com> <20091110171910.GA25581@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091110171910.GA25581@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remove the CONFIG_SMP ifdef from the irq_desc structure and consolidate
+initializers for the smp/non-smp cases.
 
+For the x86_32 case, this adds 4 bytes of text and 128 bytes of data.
 
-On Wed, 11 Nov 2009, Tejun Heo wrote:
-> 
-> If I'm missing something, I'm sure you'll hammer it into me.
+For the x86_64 case, this adds 15 bytes of text and 240 bytes of data.
 
-Here's from the comments on that function:
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
- * RETURNS:
- * 0 if noop, 1 if successfully extended, -errno on failure.
+---
 
-and here's from one of the main callers:
+ include/linux/irq.h |   70 +++++++++++++++++++-----------------------------
+ kernel/irq/chip.c   |    2 -
+ kernel/irq/handle.c |    4 --
+ 3 files changed, 29 insertions(+), 47 deletions(-)
 
-                list_for_each_entry(chunk, &pcpu_slot[slot], list) {
-		...
-                        switch (pcpu_extend_area_map(chunk, &flags)) {
-                        case 0:
-                                break;
-                        case 1:
-                                goto restart;   /* pcpu_lock dropped, restart */
-
-where that '&pcpu_slot[slot]' list is protected by the pcpu_lock, and 
-nothing else. At least according to all the _other_ comments in that file. 
-Including the one that very much tries to _explain_ the locking at the 
-top, quote:
-
-  "The latter is a spinlock and protects the index data structures - chunk 
-   slots, chunks and area maps in chunks."
-
-So as far as I can tell, either the comments are all crap, the whole 
-restart code is pointless and in fact the whole spin-lock is seemingly 
-almost entirely pointless to begin with (since pcpu_alloc_mutex is the 
-only thing that matters), or the code is buggy.
-
-Also, quite frankly, even if the code _isn't_ buggy, it's still wrong to 
-release a lock that somebody else took. It's a sure-fire way to write 
-unmaintainable code with bugs almost guaranteed in the future. Yes, it 
-happens, and sometimes it's the only sane way to do it, but in this case 
-that really isn't true as far as I can tell.
-
->From my (admittedly fairly quick) look, my suggested split-up really would 
-make the code _more_ readable (no need for that subtle "negative, zero or 
-positive all mean different things" logic), and hopefully avoid the whole 
-"drop the lock that somebody else took", because we could drop it in the 
-caller where it was taken.
-
-So it all boils down to: the code is unquestionably ugly and almost 
-certainly broken. And if it isn't broken, then _all_ the comments are 
-total crap. 
-
-Your choice. 
-
-			Linus
+Index: linux/include/linux/irq.h
+===================================================================
+--- linux.orig/include/linux/irq.h	2009-11-10 11:54:52.000000000 -0600
++++ linux/include/linux/irq.h	2009-11-10 11:54:55.000000000 -0600
+@@ -193,13 +193,11 @@ struct irq_desc {
+ 	unsigned long		last_unhandled;	/* Aging timer for unhandled count */
+ 	unsigned int		irqs_unhandled;
+ 	spinlock_t		lock;
+-#ifdef CONFIG_SMP
+ 	cpumask_var_t		affinity;
+ 	unsigned int		node;
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 	cpumask_var_t		pending_mask;
+ #endif
+-#endif
+ 	atomic_t		threads_active;
+ 	wait_queue_head_t       wait_for_threads;
+ #ifdef CONFIG_PROC_FS
+@@ -423,6 +421,35 @@ extern int set_irq_msi(unsigned int irq,
+ 
+ #endif /* !CONFIG_S390 */
+ 
++static inline void init_desc_masks(struct irq_desc *desc)
++{
++	cpumask_setall(desc->affinity);
++#ifdef CONFIG_GENERIC_PENDING_IRQ
++	cpumask_clear(desc->pending_mask);
++#endif
++}
++
++/**
++ * init_copy_desc_masks - copy cpumasks for irq_desc
++ * @old_desc:	pointer to old irq_desc struct
++ * @new_desc:	pointer to new irq_desc struct
++ *
++ * Insures affinity and pending_masks are copied to new irq_desc.
++ * If !CONFIG_CPUMASKS_OFFSTACK the cpumasks are embedded in the
++ * irq_desc struct so the copy is redundant.
++ */
++static inline void init_copy_desc_masks(struct irq_desc *old_desc,
++					struct irq_desc *new_desc)
++{
++#ifdef CONFIG_CPUMASK_OFFSTACK
++	cpumask_copy(new_desc->affinity, old_desc->affinity);
++
++#ifdef CONFIG_GENERIC_PENDING_IRQ
++	cpumask_copy(new_desc->pending_mask, old_desc->pending_mask);
++#endif
++#endif
++}
++
+ #ifdef CONFIG_SMP
+ /**
+  * alloc_desc_masks - allocate cpumasks for irq_desc
+@@ -455,36 +482,6 @@ static inline bool alloc_desc_masks(stru
+ 	return true;
+ }
+ 
+-static inline void init_desc_masks(struct irq_desc *desc)
+-{
+-	cpumask_setall(desc->affinity);
+-#ifdef CONFIG_GENERIC_PENDING_IRQ
+-	cpumask_clear(desc->pending_mask);
+-#endif
+-}
+-
+-/**
+- * init_copy_desc_masks - copy cpumasks for irq_desc
+- * @old_desc:	pointer to old irq_desc struct
+- * @new_desc:	pointer to new irq_desc struct
+- *
+- * Insures affinity and pending_masks are copied to new irq_desc.
+- * If !CONFIG_CPUMASKS_OFFSTACK the cpumasks are embedded in the
+- * irq_desc struct so the copy is redundant.
+- */
+-
+-static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+-					struct irq_desc *new_desc)
+-{
+-#ifdef CONFIG_CPUMASK_OFFSTACK
+-	cpumask_copy(new_desc->affinity, old_desc->affinity);
+-
+-#ifdef CONFIG_GENERIC_PENDING_IRQ
+-	cpumask_copy(new_desc->pending_mask, old_desc->pending_mask);
+-#endif
+-#endif
+-}
+-
+ static inline void free_desc_masks(struct irq_desc *old_desc,
+ 				   struct irq_desc *new_desc)
+ {
+@@ -503,15 +500,6 @@ static inline bool alloc_desc_masks(stru
+ 	return true;
+ }
+ 
+-static inline void init_desc_masks(struct irq_desc *desc)
+-{
+-}
+-
+-static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+-					struct irq_desc *new_desc)
+-{
+-}
+-
+ static inline void free_desc_masks(struct irq_desc *old_desc,
+ 				   struct irq_desc *new_desc)
+ {
+Index: linux/kernel/irq/handle.c
+===================================================================
+--- linux.orig/kernel/irq/handle.c	2009-11-10 11:54:52.000000000 -0600
++++ linux/kernel/irq/handle.c	2009-11-10 11:54:55.000000000 -0600
+@@ -110,9 +110,7 @@ static void init_one_irq_desc(int irq, s
+ 
+ 	spin_lock_init(&desc->lock);
+ 	desc->irq = irq;
+-#ifdef CONFIG_SMP
+ 	desc->node = node;
+-#endif
+ 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
+ 	init_kstat_irqs(desc, node, nr_cpu_ids);
+ 	if (!desc->kstat_irqs) {
+@@ -173,9 +171,7 @@ int __init early_irq_init(void)
+ 
+ 	for (i = 0; i < legacy_count; i++) {
+ 		desc[i].irq = i;
+-#ifdef CONFIG_SMP
+ 		desc[i].node = node;
+-#endif
+ 		desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+ 		alloc_desc_masks(&desc[i], node, true);
+Index: linux/kernel/irq/chip.c
+===================================================================
+--- linux.orig/kernel/irq/chip.c	2009-11-10 11:54:52.000000000 -0600
++++ linux/kernel/irq/chip.c	2009-11-10 11:54:55.000000000 -0600
+@@ -45,12 +45,10 @@ void dynamic_irq_init(unsigned int irq)
+ 	desc->action = NULL;
+ 	desc->irq_count = 0;
+ 	desc->irqs_unhandled = 0;
+-#ifdef CONFIG_SMP
+ 	cpumask_setall(desc->affinity);
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 	cpumask_clear(desc->pending_mask);
+ #endif
+-#endif
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ }
+ 
