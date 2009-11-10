@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbZKJGzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbZKJGzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751914AbZKJGzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 01:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZKJGzX
+	id S1752050AbZKJGzv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 01:55:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZKJGzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 01:55:23 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51856 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbZKJGzV (ORCPT
+	Tue, 10 Nov 2009 01:55:50 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:43285 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbZKJGzt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 01:55:21 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: Likley stupid question on "throttle_vm_writeout"
-Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <peterz@infradead.org>,
-       Martin Knoblauch <spamtrap@knobisoft.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20091110020858.GA5749@localhost>
-References: <1257780393.4108.343.camel@laptop> <20091110020858.GA5749@localhost>
-Message-Id: <20091110154929.3618.A69D9226@jp.fujitsu.com>
+	Tue, 10 Nov 2009 01:55:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=NfMFjp7cgiJYldrruw/xVGd7k5Y0b8iskBcGc//isto8nFJZ/Pf0O6HAqkXuQzKAt3
+         s5BvfqOjZFsWN7LRWDbkyNjYdo11IorsdPkQB5ld75jH4Ki+q4pVxeyaAjAIZm+ksah7
+         GIyomnmB5N7QW+pwXXMWZPrPc4YQ740hGadEE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 10 Nov 2009 15:55:20 +0900 (JST)
+Date: Tue, 10 Nov 2009 14:55:54 +0800
+Message-ID: <7d98bfeb0911092255j1923ff6evafd9d40ee317d1d3@mail.gmail.com>
+Subject: problems of using the 2.6.26 Linux Kernel Debugger (KGDB) with VMware
+From: min li <fly.limin@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Nov 09, 2009 at 04:26:33PM +0100, Peter Zijlstra wrote:
-> > On Mon, 2009-11-09 at 07:15 -0800, Martin Knoblauch wrote:
-> > > Hi, (please CC me on replies)
-> > > 
-> > >  I have a likely stupid question on the function "throttle_vm_writeout". Looking at the code I find:
-> > > 
-> > >                 if (global_page_state(NR_UNSTABLE_NFS) +
-> > >                         global_page_state(NR_WRITEBACK) <= dirty_thresh)
-> > >                                 break;
-> > >                 congestion_wait(WRITE, HZ/10);
-> > > 
-> > > Shouldn't the NR_FILE_DIRTY pages be considered as well?
-> > 
-> > Ha, you just trod onto a piece of ugly I'd totally forgotten about ;-)
-> > 
-> > The intent of throttle_vm_writeout() is to limit the total pages in
-> > writeout and to wait for them to go-away.
-> 
-> Like this:
-> 
->         vmscan fast => large NR_WRITEBACK => throttle vmscan based on it
-> 
-> > Everybody hates the function, nobody managed to actually come up with
-> > anything better.
-> 
-> btw, here is another reason to limit NR_WRITEBACK: I saw many
-> throttle_vm_writeout() waits if there is no wait queue to limit
-> NR_WRITEBACK (eg. NFS). In that case the (steadily) big NR_WRITEBACK
-> is _not_ caused by fast vmscan..
+Hi everyone:
+Recently I was using kgdb and VMware workstation to debug linux kernel 2.6.26.
+I compiled and install kgdb according to the following webpage£º
+http://jaredrobinson.com/blog/using-the-2626-linux-kernel-debugger-kgdb-with-vmware/
 
-btw, this explanation point out why we should remove other bare congestion_wait()
-in reclaim path.
-At least, I observed the congestion_wait() in do_try_to_free_pages() decrease
-reclaim performance very much.
+But I still have some problems£º
+When I start gdb like£ºgdb ./vmliunx, it shows£º
 
+[root@localhost linux-2.6.26]# gdb ./vmlinux
+GNU gdb Red Hat Linux (6.6-35.fc8rh)
+Copyright (C) 2006 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "i386-redhat-linux-gnu"...
+Using host libthread_db library "/lib/libthread_db.so.1".
+(gdb) set remotebaud 115200
+(gdb) target remote /dev/ttyS0
+Remote debugging using /dev/ttyS0
+warning: shared library handler failed to enable breakpoint
+0xc045516d in ?? ()
 
+Then I type "n", it shows£º
+(gdb) n
+Cannot find bounds of current function
 
+I simply realize the output "0xc045516d in ?? ()" is different from
+common output
+"breakpoint () at kernel/kgdb.c:1212
+1212:atomic_set(&kgdb_setting_breakpoint, 0);" which I found on some webpages
 
+The real problem is that when I set breakpoints at like "sys_open",
+"sys_getdents64", the kernel execution didn't stop at that point.
+But if I "echo g > /proc/sysrq-trigger " in target machine, it can
+stop running. In the development machine, I still only can send
+"continue" command to make the target run again, if I send "next"
+command, it shows just like above.
+
+Does anybody confront this kind of problems, please give me some
+suggestions, I really appreciate that!
+
+--
+Min Li
+School of Computer Science and Technology
+Cluster and Grid Computing Lab
+Services Computing Technology and System Lab
+Huazhong University of Science and Technology
+Wuhan, 430074, China
+Tel: +86-139-8625-1431
+Email: fly.limin@gmail.com
