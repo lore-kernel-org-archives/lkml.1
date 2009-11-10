@@ -1,127 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbZKJQbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZKJQdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756976AbZKJQbR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 11:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbZKJQbQ
+	id S1756911AbZKJQdd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 11:33:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbZKJQdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 11:31:16 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:44797 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756137AbZKJQbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 11:31:15 -0500
-Date: Tue, 10 Nov 2009 10:31:18 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, suresh.b.siddha@intel.com, tglx@linutronix.de
-Subject: Re: [tip:x86/apic] x86/apic: Limit irq affinity
-Message-ID: <20091110163118.GA13707@sgi.com>
-References: <20091021011233.GB32196@sgi.com> <tip-683c91f85d7a3e1092d7fa3ec5687af8cd379f02@git.kernel.org> <20091108145355.GA8432@elte.hu> <20091109160215.GA14718@sgi.com> <20091110044025.GA7897@elte.hu>
+	Tue, 10 Nov 2009 11:33:32 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:7470 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751265AbZKJQdb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 11:33:31 -0500
+X-Trace: 287308201/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.123.216/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.123.216
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjkFAE4k+UpPRXvY/2dsb2JhbACBTt03hD4E
+X-IronPort-AV: E=Sophos;i="4.44,717,1249254000"; 
+   d="scan'208";a="287308201"
+Date: Tue, 10 Nov 2009 16:33:30 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Mark Veltzer <mark.veltzer@gmail.com>
+cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+Subject: Re: get_user_pages question
+In-Reply-To: <200911100013.31768.mark.veltzer@gmail.com>
+Message-ID: <Pine.LNX.4.64.0911101613080.22198@sister.anvils>
+References: <200911090850.26724.mark.veltzer@gmail.com> <87skco59jl.fsf@basil.nowhere.org>
+ <Pine.LNX.4.64.0911091031460.15199@sister.anvils> <200911100013.31768.mark.veltzer@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091110044025.GA7897@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 05:40:25AM +0100, Ingo Molnar wrote:
-> 
-> * Dimitri Sivanich <sivanich@sgi.com> wrote:
-> 
-> > On Sun, Nov 08, 2009 at 03:53:55PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * tip-bot for Dimitri Sivanich <sivanich@sgi.com> wrote:
-> > > 
-> > > > Commit-ID:  683c91f85d7a3e1092d7fa3ec5687af8cd379f02
-> > > > Gitweb:     http://git.kernel.org/tip/683c91f85d7a3e1092d7fa3ec5687af8cd379f02
-> > > > Author:     Dimitri Sivanich <sivanich@sgi.com>
-> > > > AuthorDate: Tue, 3 Nov 2009 12:40:37 -0600
-> > > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > > CommitDate: Sun, 8 Nov 2009 13:30:40 +0100
-> > > > 
-> > > > x86/apic: Limit irq affinity
-> > > > 
-> > > > This patch allows for hard numa restrictions to irq affinity on
-> > > > x86 systems.
-> > > 
-> > > -tip testing found a build failure:
-> > > 
-> > > arch/x86/kernel/apic/io_apic.c:1438: error: ???struct irq_desc??? has no member named ???node???
-> > > arch/x86/kernel/apic/io_apic.c:3286: error: ???struct irq_desc??? has no member named ???node???
+On Tue, 10 Nov 2009, Mark Veltzer wrote:
+> On Monday 09 November 2009 12:32:52 you wrote:
+> > On Mon, 9 Nov 2009, Andi Kleen wrote:
+> > > Mark Veltzer <mark.veltzer@gmail.com> writes:
+> > > > I am testing this kernel module with several buffers from user space
+> > > > allocated in several different ways. heap, data segment, static
+> > > > variable in function and stack. All scenarious work EXCEPT the stack
+> > > > one. When passing the stack buffer the kernel sees one thing while user
+> > > > space sees another.
 > > >
+> > > In theory it should work, stack is no different from any other pages.
+> > > First thought was that you used some platform with incoherent caches,
+> > > but that doesn't seem to be the case if it's standard x86.
 > > 
-> > In the interest of doing some ifdef cleanup as well as fixing the 
-> > build problem, can I suggest that we remove the 'ifdef CONFIG_SMP' 
-> > from the irq_desc?
+> > It may be irrelevant to Mark's stack case, but it is worth mentioning
+> > the fork problem: how a process does get_user_pages to pin down a buffer
+> > somewhere in anonymous memory, a thread forks (write protecting anonymous
+> > memory shared between parent and child), child userspace writes to a
+> > location in the same page as that buffer, causing copy-on-write which
+> > breaks the connection between the get_user_pages buffer and what child
+> > userspace sees there afterwards.
 > 
-> What's the (data and code) size effect on UP kernels?
+> Thanks Hugh and Andi
 > 
+> Hugh, you actually hit the nail on the head!
 
-While I'm not fully certain what is best to report, here is output from
-both 'size' and 'readelf'.
+I'm glad that turned out to be relevant and helpful.
 
-For the x86_32 case (the default configuration with SMP_CONFIG off):
+> 
+> I was forking while doing these mappings and the child won the race and got to 
+> keep the pinned pages while the parent got left with a copy which meant 
+> nothing. The thing is that it was hard to spot because I was using a library 
+> function which called a function etc... which eventually did some system(3). 
+> It only happened on in stack testing case bacause the child was not really 
+> doing anything with the pinned memory on purpose and so in all other cases did 
+> not touch the memory except the stack which it, ofcourse, uses. The child won 
+> the race in the stack case and so shared the data with the kernel and the 
+> parent got a copy with the old data.
+> 
+> I understand that madvise(2) can prevent this copy-on-write and race between 
+> child and parent and I also duplicated it in the kernel using the following 
+> code:
+> 
+> 		[lock the current->mm for writing]
+> 			vma=find_vma(current->mm, [user pointer])
+> 			vma->vm_flags|=VM_DONTCOPY
+> 		[unlock the current->mm for writing]
+> 
+> The above code is actually a kernel version of madvise(2) and MADV_DONTFORK.
+> 
+> The problem with this solution (either madvise in user space or DONTCOPY in 
+> kernel) is that I give up the ability to fork(2) since the child is left 
+> stackless (or with a hold in it's stack - im not sure...)
+> 
+> My question is: is there a way to allow forking while still pinning STACK 
+> memory via get_user_pages? I can actually live with the current solution since 
+> I can make sure that the user space thread that does the work with the driver 
+> never forks but I'm interested to know what other neat vm tricks linux has up 
+> it's sleeve...
 
-Without the patch to remove '#ifdef CONFIG_SMP' from irq_desc:
-$ size vmlinux
-   text    data     bss     dec     hex filename
-6853617  674868 1333604 8862089  873989 vmlinux
+I think MADV_DONTFORK is as far as we've gone,
+but I might be forgetting something.
 
-With the patch to remove '#ifdef CONFIG_SMP' from irq_desc:
-$ size vmlinux
-size vmlinux
-   text    data     bss     dec     hex filename
-6853621  674996 1333604 8862221  873a0d vmlinux
+In fairness I've added Andrea and KOSAKI-san to the Cc, since I know
+they are two people keen to fix this issue once and for all.  Whereas
+I am with Linus in the opposite camp: solutions have looked nasty,
+and short of bright new ideas, I feel we've gone as far as we ought.
 
-So it looks like we have 4 bytes more text and 128 bytes more data.
+Just don't do that: don't test the incompatibility of GUP pinning
+versus COW semantics, by placing such buffers in problematic areas
+while forking.
 
-Looking at elf data, no MemSiz difference is apparent.
+(That sentence might be more convincing if we put in more thought,
+to enumerate precisely which areas are "problematic".)
 
-Without the patch:
-$ readelf -l vmlinux
-..
-..
-Program Headers:
-  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
-  LOAD           0x001000 0xc1000000 0x01000000 0x651000 0x651000 R E 0x1000
-  LOAD           0x652000 0xc1651000 0x01651000 0xdea1e 0x225000 RWE 0x1000
-  NOTE           0x43bd4c 0xc143ad4c 0x0143ad4c 0x00024 0x00024     0x4
+> 
+> BTW: would it not be a good addition to the madvise(2) manpage to state that 
+> you should be careful with doing madvise(DONTFORK) because you may segfault 
+> your children and that doing so on a stack address has even more chance of 
+> crashing children ? Who should I talk about adding this info to the manual 
+> page? The current manpage that I have only talks about scatter-gather uses of 
+> DONTFORK and does not mention the problems of DONTFORK...
 
-With the patch:
-Program Headers:
-  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
-  LOAD           0x001000 0xc1000000 0x01000000 0x651000 0x651000 R E 0x1000
-  LOAD           0x652000 0xc1651000 0x01651000 0xdea1e 0x225000 RWE 0x1000
-  NOTE           0x43bd44 0xc143ad44 0x0143ad44 0x00024 0x00024     0x4
+Michael looks after the manpages, I've added him to the Cc.
+Yes, an additional sentence there might indeed be helpful.
 
-
-
-
-
-For the x86_64 case:
-Without patch on x86_64:
-$ size vmlinux
-   text    data     bss     dec     hex filename
-6879227  731284  883216 8493727  819a9f vmlinux
-
-With patch on x86_64:
-$ size vmlinux
-   text    data     bss     dec     hex filename
-6879242  731524  883216 8493982  819b9e vmlinux
-
-Looks like 15 bytes text and 240 bytes data.
-
-
-Looking at elf data, there's a 256 byte difference in MemSiz data
-(here I'm showing the output diff without/with the patch):
-
-Program Headers:
-  Type           Offset             VirtAddr           PhysAddr
-                 FileSiz            MemSiz              Flags  Align
-  LOAD           0x0000000000200000 0xffffffff81000000 0x0000000001000000
-                 0x0000000000807000 0x0000000000807000  R E    200000
-  LOAD           0x0000000000c00000 0xffffffff81a00000 0x0000000001a00000
--                0x0000000000088ff8 0x0000000000088ff8  RWE    200000
-+                0x00000000000890f8 0x00000000000890f8  RWE    200000
+Hugh
