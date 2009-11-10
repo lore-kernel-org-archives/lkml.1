@@ -1,55 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZKJV0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbZKJVVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbZKJV0p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbZKJV0p
+	id S1754750AbZKJVVY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:21:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZKJVVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:26:45 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57540 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754692AbZKJV0o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:26:44 -0500
-Message-ID: <4AF9D8E2.7050205@zytor.com>
-Date: Tue, 10 Nov 2009 13:19:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 10 Nov 2009 16:21:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56622 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753974AbZKJVVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:21:22 -0500
+Date: Tue, 10 Nov 2009 22:20:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] new -stable tag variant, Git workflow question
+Message-ID: <20091110212059.GC23196@elte.hu>
+References: <20091110034831.GB26809@elte.hu>
+ <20091110041452.GA25575@suse.de>
+ <1257863388.4184.220.camel@mulgrave.site>
+ <4AF98C36.9040405@s5r6.in-berlin.de>
+ <4AF9BB2A.7060109@nortel.com>
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Pavel Machek <pavel@ucw.cz>, Avi Kivity <avi@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-References: <4AF9020C.90108@zytor.com> <4AF9435F.2070103@redhat.com> <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <20091110211259.GD26633@1wt.eu>
-In-Reply-To: <20091110211259.GD26633@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF9BB2A.7060109@nortel.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 01:12 PM, Willy Tarreau wrote:
-> yes, just like with emulated FPU or trapped unaligned accesses. It's
-> just like flying fishes. They exist but they aren't the most common
-> ones. If people encounter these cases on a specific program, then
-> they just have to recompile it if it is a problem. At least they
-> don't rebuild the whole distro. And once again, I've been using
-> cmpxchg/bswap emulation for years on my i386 without feeling any
-> need for a rebuild, and CMOV emulation for years now on my mini-itx 
-> C3 without any problem either. These are real experiences, not just
-> fears of imaginary problems. Yes I can design a program to run 400
-> times slower on these machines if I want. I just don't feel the need
-> to do so and apparently existing programs' authors didn't either.
 
-Willy, perhaps you can come up with a list of features you think should
-be emulated, together with an explanation of why you opted for that list
-of features and *did not* opt for others.
+* Chris Friesen <cfriesen@nortel.com> wrote:
 
-Note: emulated FPU is a special subcase.  The FPU operations are
-heavyweight enough that the overhead of trapping versus library calls is
-relatively insignificant.
+> On 11/10/2009 09:52 AM, Stefan Richter wrote:
+> 
+> > More importantly, isn't this against the character of the -stable kernel
+> > branches as _safe and simple_ hotfix branches?
+> > 
+> > If a fix has a number of prerequisites which ar not -stable fixes
+> > themselves, then it is more than a hint that this fix is not really well
+> > suited for -stable.
+> 
+> Alternately, it's conceivable that the prerequisites were not 
+> in-and-of-themselves candidates for -stable (maybe they didn't do 
+> anything by themselves) but when combined with the final commit the 
+> overall change is suitable for inclusion in -stable.
 
-	-hpa
+Yeah.
 
+The way i do it as a maintainer is that when i add a new commit that i 
+realize as a -stable candidate, and i know that it has no semantic 
+prereqs (such as a new API, etc.), i git-cherry-pick it into stable in a 
+test branch. If that works fine i mark it -stable straight away.
+
+If it conflicts, i figure out the prereqs, and look at those. If they 
+are too big, or too risky, i often decide not to mark a patch for 
+-stable backporting. (If it's not obvious to be in -stable then it 
+should not be in -stable, almost by definition - a _LOT_ of people are 
+using the stable kernels.)
+
+If the prereqs look sane and are wanted for -stable, i end up with a 
+list of 2 or at most 3 commits that will cherry-pick cleanly. (rarely 
+more than that - the 4 commits here are really an exception - they are a 
+string of prereqs that are also fixes)
+
+I send that list of commits to stable@kernel.org.
+
+( Sidenote: rarely does it make sense to port a conflicting commit to 
+  -stable. The risks of introducing some regression are just too high. 
+  Cherry-picking of commits, (while not entirely risk-free of course), 
+  is far more robust in practice. (conflicting backmerges do happen too 
+  occasionally, for high-profile bug fixes that justify the cost.) )
+
+So this 'send the list to stable@kernel.org' step is simplified via 
+these tags:
+
+    Cc: <stable@kernel.org> # .32.x: a1f84a3: sched: Check for an idle shared cache
+    Cc: <stable@kernel.org> # .32.x: 1b9508f: sched: Rate-limit newidle
+    Cc: <stable@kernel.org> # .32.x: fd21073: sched: Fix affinity logic
+    Cc: <stable@kernel.org> # .32.x
+
+I'd have done that via a plain email in any case - so this scheme does 
+not enable anything new - it just simplifies the process and makes it a 
+bit more robust.
+
+	Ingo
