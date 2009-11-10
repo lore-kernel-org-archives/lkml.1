@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZKJUPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbZKJUQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbZKJUPj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 15:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757982AbZKJUPj
+	id S1758050AbZKJUQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 15:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757982AbZKJUQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 15:15:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54548 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757972AbZKJUPi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 15:15:38 -0500
-Date: Tue, 10 Nov 2009 12:15:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: jblunck@suse.de, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, matthew@wil.cx, viro@zeniv.linux.org.uk
-Subject: Re: BKL: Remove BKL from Squashfs
-Message-Id: <20091110121511.5adca8a9.akpm@linux-foundation.org>
-In-Reply-To: <E1N5L6K-0008LW-6y@dylan.lougher.demon.co.uk>
-References: <E1N5L6K-0008LW-6y@dylan.lougher.demon.co.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Tue, 10 Nov 2009 15:16:30 -0500
+Received: from 1wt.eu ([62.212.114.60]:50902 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757979AbZKJUQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 15:16:30 -0500
+Date: Tue, 10 Nov 2009 21:16:02 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091110201602.GA26633@1wt.eu>
+References: <20091108200852.7f2cf092@lxorguk.ukuu.org.uk> <20091110052711.GA15338@1wt.eu> <4AF9020C.90108@zytor.com> <4AF9435F.2070103@redhat.com> <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF9C6AB.8080006@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Nov 2009 15:15:16 +0000
-Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
-
+On Tue, Nov 10, 2009 at 12:01:47PM -0800, H. Peter Anvin wrote:
+> On 11/10/2009 11:50 AM, Avi Kivity wrote:
+> >>
+> >> Consider SSE3, for example.  Why should the same concept not apply to
+> >> SSE3 instructions as to CMOV?
+> > 
+> > Because then user programs would run 20x or more slower than the user 
+> > expects.  Better to terminate early (and teach userspace how to choose 
+> > the instruction subset correctly).
+> > 
 > 
-> BKL is only used in fill_super/put_super.  It is safe to remove it.
+> I picked the example carefully: SSE3 is a small set of instructions
+> which probably aren't used very heavily.  In that sense, it has
+> *exactly* the same properties as CMOV - if you have the source, you're
+> better off recompiling, but it *might* help you if you happen to only
+> have a binary.
 > 
+> What I want people to understand is that this is a *huge* rathole, and
+> it doesn't have any obvious bottom that I can see.
 
-What kernel are you trying to patch here?
+Indeed, but there is a difference between [cmpxchg, bswap, cmov, nopl]
+on one side and [sse*] on the other : distros are built assuming the
+former are always available while they are not always. And the distro
+which make the difference have to provide an dedicated build for earlier
+systems just for compatibility. SSE*, 3dnow* etc... are only used by a
+handful of media players/converters/encoders which are able to detect
+themselves what to use and already have the necessary fallbacks because
+these instruction sets vary too much between processors and vendors.
 
-Most of your patch is already present in mainline.  Against mainline,
-this what is left of your patch:
+One could argue that cmpxchg/bswap/xadd are supported by 486 and that
+implementing them for 386 is almost useless now (though it costs almost
+nothing to provide them, I did a few years ago). 
 
---- a/fs/squashfs/super.c~bkl-remove-bkl-from-squashfs
-+++ a/fs/squashfs/super.c
-@@ -30,7 +30,6 @@
- #include <linux/fs.h>
- #include <linux/vfs.h>
- #include <linux/slab.h>
--#include <linux/smp_lock.h>
- #include <linux/mutex.h>
- #include <linux/pagemap.h>
- #include <linux/init.h>
-@@ -339,8 +338,6 @@ static int squashfs_remount(struct super
- 
- static void squashfs_put_super(struct super_block *sb)
- {
--	lock_kernel();
--
- 	if (sb->s_fs_info) {
- 		struct squashfs_sb_info *sbi = sb->s_fs_info;
- 		squashfs_cache_delete(sbi->block_cache);
-@@ -353,8 +350,6 @@ static void squashfs_put_super(struct su
- 		kfree(sb->s_fs_info);
- 		sb->s_fs_info = NULL;
- 	}
--
--	unlock_kernel();
- }
- 
+CMOV/NOPL are rarely used, thus have no reason to cause a massive
+performance drop, but are frequent enough (at least cmov) for almost
+any program to have at least one or two inside, making it incompatible
+with a given processor, and are almost obvious to implement too.
 
-So someone has decided to remove lots of lock_kernel()'s but chose to
-leave the squashfs_put_super() ones behind.
+SSE*/3dnow* would be much much harder and would only serve very few
+programs, and serve them badly because when they're used, it would
+be intensive.
 
-Why did they do that?  Your patch effectively asserts that their
-decision was incorrect.
+I personally am not against being able to emulate every optional
+instruction, quite the opposite instead. It's just that if in order
+to do this, we add cost to the other obvious ones, we lose what we
+expected to win (simplicity and efficiency).
 
+Regards,
+Willy
 
-So please rethink, update the changelog appropriately and resend.
