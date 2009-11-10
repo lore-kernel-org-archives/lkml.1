@@ -1,72 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZKJUey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbZKJUja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbZKJUey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 15:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758090AbZKJUex
+	id S1758117AbZKJUja (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 15:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758105AbZKJUj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 15:34:53 -0500
-Received: from 1wt.eu ([62.212.114.60]:50913 "EHLO 1wt.eu"
+	Tue, 10 Nov 2009 15:39:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48387 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758080AbZKJUex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 15:34:53 -0500
-Date: Tue, 10 Nov 2009 21:34:34 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091110203434.GC26633@1wt.eu>
-References: <4AF9020C.90108@zytor.com> <4AF9435F.2070103@redhat.com> <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <4AF9CC1E.2050700@zytor.com>
-Mime-Version: 1.0
+	id S1758104AbZKJUj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 15:39:28 -0500
+Date: Tue, 10 Nov 2009 21:39:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Greg KH <gregkh@suse.de>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] new -stable tag variant, Git workflow question
+Message-ID: <20091110203913.GA18509@elte.hu>
+References: <20091110034831.GB26809@elte.hu>
+ <20091110041452.GA25575@suse.de>
+ <1257863388.4184.220.camel@mulgrave.site>
+ <20091110193747.GB12686@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AF9CC1E.2050700@zytor.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20091110193747.GB12686@suse.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 12:25:02PM -0800, H. Peter Anvin wrote:
-> On 11/10/2009 12:16 PM, Willy Tarreau wrote:
-> > 
-> > Indeed, but there is a difference between [cmpxchg, bswap, cmov, nopl]
-> > on one side and [sse*] on the other : distros are built assuming the
-> > former are always available while they are not always. And the distro
-> > which make the difference have to provide an dedicated build for earlier
-> > systems just for compatibility. SSE*, 3dnow* etc... are only used by a
-> > handful of media players/converters/encoders which are able to detect
-> > themselves what to use and already have the necessary fallbacks because
-> > these instruction sets vary too much between processors and vendors.
-> > 
+
+* Greg KH <gregkh@suse.de> wrote:
+
+> > By the looks of the above it's only a few commits, or is it the 
+> > entire branch?
 > 
-> That is increasingly not true since gcc is now doing autovectorization.
+> I'm thinking the commit would be the merge, right Ingo?  So it would 
+> just be a single commit that has the marker in it.
 
-But programs have to be built to use that specific platform anyway ; this
-is different from all programs built with support for CMOV enabled by
-default and which will work on 95% of the platforms.
+Correct.
 
-(...)
-> I could 970 cmovs in libc out of 322660 instructions.  That is one in
-> 333 instruction.
+This is really a special case, a small variation of the commit eae0c9d 
+-stable tagging scheme i outlined in the first mail.
 
-Not bad, I agree ! But on the C3, CMOV from/to register is implemented.
-It's only CMOV from/to memory which has to be emulated, which makes it
-a lot less common. Anyway that's why we need counters, so that the user
-knows when he really ought to recompile.
+When i merge */urgent branches into the for-linus branch in the merge 
+window, i cannot change the commits anymore (it would amount to a 
+rebase), but i have the opportunity to modify the merge commit message 
+itself. (which is typically a regular merge commit and does not carry 
+any -stable actionable change itself.)
 
-(...)
-> I don't see any particular subset as being more obvious than the other,
-> with the *possible* exception of NOPL, simply because NOPL was
-> undocumented for so long.
+I already annotate merge commits today - for example:
 
-well, simply the availability of binaries making use of them. I'm not
-sure you would find SSE* instructions in your libc where you found the
-970 cmov. For NOPL, that's different, I first heard about it in this
-thread, and my C3 running with the CMOV patch has never complained from
-missing it :-)
+ | commit 43315956509ca6913764861ac7dec128b91eb1ec
+ | Merge: 9bf4e7f 6beba7a
+ | Author: Ingo Molnar <mingo@elte.hu>
+ | Date:   Fri Oct 23 08:23:20 2009 +0200
+ |
+ |     Merge branch 'perf/core' into perf/probes
+ |    
+ |     Conflicts:
+ |         tools/perf/Makefile
+ |    
+ |     Merge reason:
+ |    
+ |      - fix the conflict
+ |      - pick up the pr_*() infrastructure to queue up dependent patch
+ |    
+ |     Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Regards,
-Willy
+Note how i already put a SOB line into the merge commit - i treat every 
+merge as something that 'had to be done' so they are never arbitrary and 
+always carry real information.
 
+So my idea was to potentially use the extended -stable notification 
+scheme in certain merge commits too. Here's a mockup merge commit log:
+
+    Merge branch 'sched/urgent' into sched/core
+     
+    Conflicts:
+        tools/perf/Makefile
+     
+    Merge reason:
+     
+     - resolve the conflict
+     - queue up urgent fixes for the next merge window
+
+    Cc: <stable@kernel.org> # .32.x: a1f84a3: sched: Check for an idle shared cache
+    Cc: <stable@kernel.org> # .32.x: 1b9508f: sched: Rate-limit newidle
+    Cc: <stable@kernel.org> # .32.x: fd21073: sched: Fix affinity logic
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Note that the merge commit itself carries no action for -stable: there's 
+no "Cc: <stable@kernel.org>" line - only 'pointer' lines in the form 
+of:
+
+    Cc: <stable@kernel.org> # .32.x: sha1: title
+
+But ... if you or Linus dislikes this direction of tagging for some 
+reason i can still do the manual approach as well. It seemed useful to 
+me though and it would be a natural portion of my workflow.
+
+	Ingo
