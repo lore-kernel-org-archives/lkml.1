@@ -1,217 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZKJCi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755AbZKJCi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZKJCi1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 21:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZKJCi0
+	id S1755755AbZKJCi3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 21:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZKJCi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 21:38:26 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:60929 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754615AbZKJCiS (ORCPT
+	Mon, 9 Nov 2009 21:38:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:46851 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755495AbZKJCiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 21:38:18 -0500
+	Mon, 9 Nov 2009 21:38:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=cyeaW5iLOT/7TVZNrOH2EEyqgOCI20VZTxfPXzKhrk/lFwH7wGlqgJVhanK+dKqNi0
-         PN/MTk5V4vScxfeqK4+eZll/QaZKyJCINh2pPDpd/JztlPmfF4o+k3Tm9kpmkSNDBPy4
-         rXd5I8vrFLkMs9Fc7teC9sw0KEcueFGQ96hdg=
+        b=NKNDvXIXcWjzcg9mGgfdPu1nby2L7BXn7Mjhdp7fZEvpLClDT2sJywhhyDNyrDzX5n
+         rY0knf53FYRGCOcZLGkTVIQeQtb2q/KnzG/gQHKu2bWDhQMLFmGUF1xiicFDFcdK8oGg
+         4ABKXA7AMiVnHiG2FfJJxvhdYF4UJbiZdqPmU=
 From: Paul Fertser <fercerpav@gmail.com>
 To: Anton Vorontsov <cbou@mail.ru>
 Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
        Pavel Machek <pavel@ucw.cz>, zaurus-devel@www.linuxtogo.org,
        Paul Fertser <fercerpav@gmail.com>
-Subject: [RFC PATCH 1/2] power: implement platform battery driver
-Date: Tue, 10 Nov 2009 05:37:52 +0300
-Message-Id: <1257820673-30801-2-git-send-email-fercerpav@gmail.com>
+Subject: [RFC PATCH 2/2] gta02: add support for platform_battery
+Date: Tue, 10 Nov 2009 05:37:53 +0300
+Message-Id: <1257820673-30801-3-git-send-email-fercerpav@gmail.com>
 X-Mailer: git-send-email 1.6.4.4
-In-Reply-To: <1257820673-30801-1-git-send-email-fercerpav@gmail.com>
+In-Reply-To: <1257820673-30801-2-git-send-email-fercerpav@gmail.com>
 References: <1257820673-30801-1-git-send-email-fercerpav@gmail.com>
+ <1257820673-30801-2-git-send-email-fercerpav@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver can be used for dumb batteries when all knowledge about
-their state belongs to the platform that does necessary ADC readings,
-conversions, guessimations etc.
+This adds support for platform_battery driver which allows to specify a set
+of power supply properties and callbacks to acquire them. It is needed to
+support dumb batteries where all the information about their status can
+only be obtained by platform-specific actions such as specific ADC
+measurements, some guessimation etc.
 
 Signed-off-by: Paul Fertser <fercerpav@gmail.com>
 ---
- drivers/power/Kconfig            |    6 ++
- drivers/power/Makefile           |    1 +
- drivers/power/platform_battery.c |  119 ++++++++++++++++++++++++++++++++++++++
- include/linux/platform_battery.h |   12 ++++
- 4 files changed, 138 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/platform_battery.c
- create mode 100644 include/linux/platform_battery.h
+ arch/arm/mach-s3c2442/mach-gta02.c |  113 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 113 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index bdbc4f7..5382c10 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -103,4 +103,10 @@ config CHARGER_PCF50633
- 	help
- 	 Say Y to include support for NXP PCF50633 Main Battery Charger.
+diff --git a/arch/arm/mach-s3c2442/mach-gta02.c b/arch/arm/mach-s3c2442/mach-gta02.c
+index 8c61026..2159066 100644
+--- a/arch/arm/mach-s3c2442/mach-gta02.c
++++ b/arch/arm/mach-s3c2442/mach-gta02.c
+@@ -106,6 +106,8 @@
+ #include <linux/hdq.h>
+ #include <linux/bq27000_battery.h>
  
-+config BATTERY_PLATFORM
-+	tristate "Platform battery driver"
-+	help
-+	  Say Y here to include support for battery driver that gets all
-+	  information from platform functions.
-+
- endif # POWER_SUPPLY
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 380d17c..b962d1a 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -28,3 +28,4 @@ obj-$(CONFIG_BATTERY_BQ27x00)	+= bq27x00_battery.o
- obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
- obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
- obj-$(CONFIG_CHARGER_PCF50633)	+= pcf50633-charger.o
-+obj-$(CONFIG_BATTERY_PLATFORM)	+= platform_battery.o
-diff --git a/drivers/power/platform_battery.c b/drivers/power/platform_battery.c
-new file mode 100644
-index 0000000..99e155a
---- /dev/null
-+++ b/drivers/power/platform_battery.c
-@@ -0,0 +1,119 @@
-+/*
-+ * Driver for platform battery
-+ *
-+ * Copyright (c) Paul Fertser <fercerpav@gmail.com>
-+ * Inspired by Balaji Rao <balajirrao@openmoko.org>
-+ *
-+ * This driver can be used for dumb batteries when all knowledge about
-+ * their state belongs to the platform that does necessary ADC readings,
-+ * conversions, guessimations etc.
-+ *
-+ * Use consistent with the GNU GPL is permitted, provided that this
-+ * copyright notice is preserved in its entirety in all copies and derived
-+ * works.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/param.h>
-+#include <linux/delay.h>
-+#include <linux/workqueue.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
 +#include <linux/platform_battery.h>
 +
-+struct platform_battery {
-+	struct power_supply psy;
-+	struct platform_bat_platform_data *pdata;
-+};
+ #include <linux/gta02-vibrator.h>
+ 
+ #include <mach/ts.h>
+@@ -866,6 +868,117 @@ struct platform_device bq27000_battery_device = {
+ 	},
+ };
+ 
++/* Platform battery */
 +
-+static int platform_bat_get_property(struct power_supply *psy,
-+				       enum power_supply_property psp,
-+				       union power_supply_propval *val)
++/* Capacity of a typical BL-5C dumb battery */
++#define GTA02_BAT_CHARGE_FULL	850000
++
++static int gta02_bat_voltscale(int volt)
 +{
-+	struct platform_battery *bat =
-+				container_of(psy, struct platform_battery, psy);
-+	size_t i;
-+	int present = 1;
++	/* This table is suggested by SpeedEvil based on analysis of
++	 * experimental data */
++	static const int lut[][2] = {
++		{ 4120, 100 },
++		{ 3900, 60 },
++		{ 3740, 25 },
++		{ 3600, 5 },
++		{ 3000, 0 } };
++	int i, res = 0;
 +
-+	if (bat->pdata->is_present)
-+		present = bat->pdata->is_present();
-+
-+	if (psp != POWER_SUPPLY_PROP_PRESENT && !present)
-+		return -ENODEV;
-+
-+	for (i = 0; i < psy->num_properties; i++)
-+		if (psy->properties[i] == psp) {
-+			val->intval = bat->pdata->get_property[i]();
-+			return 0;
-+		}
-+
-+	return -EINVAL;
-+}
-+
-+static void platform_bat_ext_changed(struct power_supply *psy)
-+{
-+	struct platform_battery *bat =
-+				container_of(psy, struct platform_battery, psy);
-+	power_supply_changed(&bat->psy);
-+}
-+
-+static int platform_battery_probe(struct platform_device *pdev)
-+{
-+	struct platform_battery *platform_bat;
-+	struct platform_bat_platform_data *pdata =
-+		(struct platform_bat_platform_data *)pdev->dev.platform_data;
-+
-+	platform_bat = kzalloc(sizeof(*platform_bat), GFP_KERNEL);
-+	if (!platform_bat)
-+		return -ENOMEM;
-+
-+	if (pdata->name)
-+		platform_bat->psy.name = pdata->name;
++	if (volt > lut[0][0])
++		res = lut[0][1];
 +	else
-+		platform_bat->psy.name = dev_name(&pdev->dev);
-+	platform_bat->psy.type = POWER_SUPPLY_TYPE_BATTERY;
-+	platform_bat->psy.properties = pdata->properties;
-+	platform_bat->psy.num_properties = pdata->num_properties;
-+	platform_bat->psy.get_property = platform_bat_get_property;
-+	platform_bat->psy.external_power_changed = platform_bat_ext_changed;
-+
-+	platform_bat->pdata = pdata;
-+	platform_set_drvdata(pdev, platform_bat);
-+	power_supply_register(&pdev->dev, &platform_bat->psy);
-+
-+	return 0;
++		for (i = 0; lut[i][1]; i++) {
++			if (volt <= lut[i][0] && volt >= lut[i+1][0]) {
++				res = lut[i][1] - (lut[i][0]-volt)*
++					(lut[i][1]-lut[i+1][1])/
++					(lut[i][0]-lut[i+1][0]);
++				break;
++			}
++		}
++	return res;
 +}
 +
-+static int platform_battery_remove(struct platform_device *pdev)
++static int gta02_bat_get_voltage(void)
 +{
-+	struct platform_battery *bat = platform_get_drvdata(pdev);
-+
-+	power_supply_unregister(&bat->psy);
-+	kfree(bat);
-+
-+	return 0;
++	struct pcf50633 *pcf = gta02_pcf;
++	u16 adc, mv = 0;
++	adc = pcf50633_adc_sync_read(pcf,
++		PCF50633_ADCC1_MUX_BATSNS_RES,
++		PCF50633_ADCC1_AVERAGE_16);
++	/* The formula from DS is for divide-by-two mode, current driver uses
++	divide-by-three */
++	mv = (adc * 6000) / 1023;
++	return mv * 1000;
 +}
 +
-+static struct platform_driver platform_battery_driver = {
-+	.driver = {
-+		.name = "platform_battery",
-+	},
-+	.probe	  = platform_battery_probe,
-+	.remove   = platform_battery_remove,
-+};
-+
-+static int __init platform_battery_init(void)
++static int gta02_bat_get_present(void)
 +{
-+	return platform_driver_register(&platform_battery_driver);
++	/* There is no reliable way to tell if it is present or not */
++	return 1;
 +}
-+module_init(platform_battery_init);
 +
-+static void __exit platform_battery_exit(void)
++static int gta02_bat_get_status(void)
 +{
-+	platform_driver_unregister(&platform_battery_driver);
-+}
-+module_exit(platform_battery_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Paul Fertser <fercerpav@gmail.com>");
-+MODULE_DESCRIPTION("platform battery driver");
-diff --git a/include/linux/platform_battery.h b/include/linux/platform_battery.h
-new file mode 100644
-index 0000000..00f7651
---- /dev/null
-+++ b/include/linux/platform_battery.h
-@@ -0,0 +1,12 @@
-+#ifndef __PLATFORM_BATTERY_H__
-+#define __PLATFORM_BATTERY_H__
-+
-+struct platform_bat_platform_data {
-+	const char *name;
-+	int (**get_property)(void);
-+	int (*is_present)(void);
-+	enum power_supply_property *properties;
-+	size_t num_properties;
-+};
-+
++#ifdef CONFIG_CHARGER_PCF50633
++	if (gta02_get_charger_active_status())
++		return POWER_SUPPLY_STATUS_CHARGING;
++	else
++		return POWER_SUPPLY_STATUS_DISCHARGING;
++#else
++	return POWER_SUPPLY_STATUS_UNKNOWN;
 +#endif
++}
++
++static int gta02_bat_get_capacity(void)
++{
++	return gta02_bat_voltscale(gta02_bat_get_voltage()/1000);
++}
++
++static int gta02_bat_get_charge_full(void)
++{
++	return GTA02_BAT_CHARGE_FULL;
++}
++
++static int gta02_bat_get_charge_now(void)
++{
++	return gta02_bat_get_capacity() * gta02_bat_get_charge_full() / 100;
++}
++
++static enum power_supply_property gta02_platform_bat_properties[] = {
++	POWER_SUPPLY_PROP_PRESENT,
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_CAPACITY,
++	POWER_SUPPLY_PROP_CHARGE_FULL,
++	POWER_SUPPLY_PROP_CHARGE_NOW,
++};
++
++int (*gta02_platform_bat_get_property[])(void) = {
++	gta02_bat_get_present,
++	gta02_bat_get_status,
++	gta02_bat_get_voltage,
++	gta02_bat_get_capacity,
++	gta02_bat_get_charge_full,
++	gta02_bat_get_charge_now,
++};
++
++static struct platform_bat_platform_data gta02_platform_bat_pdata = {
++	.name = "battery",
++	.properties = gta02_platform_bat_properties,
++	.num_properties = ARRAY_SIZE(gta02_platform_bat_properties),
++	.get_property = gta02_platform_bat_get_property,
++	.is_present = gta02_bat_get_present,
++};
++
++struct platform_device gta02_platform_bat = {
++	.name = "platform_battery",
++	.id = -1,
++	.dev = {
++		.platform_data = &gta02_platform_bat_pdata,
++	}
++};
++
+ /* HDQ */
+ 
+ static void gta02_hdq_attach_child_devices(struct device *parent_device)
 -- 
 1.6.4.4
 
