@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZKJNWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZKJNXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbZKJNWz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 08:22:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZKJNWy
+	id S1756510AbZKJNXU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 08:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbZKJNXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 08:22:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34044 "EHLO hera.kernel.org"
+	Tue, 10 Nov 2009 08:23:18 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34078 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755404AbZKJNWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 08:22:53 -0500
-Date: Tue, 10 Nov 2009 13:22:19 GMT
-From: tip-bot for Andreas Herrmann <herrmann.der.user@googlemail.com>
+	id S1756428AbZKJNXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 08:23:15 -0500
+Date: Tue, 10 Nov 2009 13:22:35 GMT
+From: tip-bot for FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       andreas.herrmann3@amd.com, dmitry.adamushko@gmail.com,
-       herrmann.der.user@googlemail.com, tglx@linutronix.de, mingo@elte.hu
+       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       andreas.herrmann3@amd.com, dmitry.adamushko@gmail.com,
-       herrmann.der.user@googlemail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20091110110920.GJ30802@alberich.amd.com>
-References: <20091110110920.GJ30802@alberich.amd.com>
+       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1257849980-22640-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1257849980-22640-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/microcode] x86: ucode-amd: Convert printk(KERN_*...) to pr_*(...)
-Message-ID: <tip-1a74357066369be91e6f4f431621a00b052df964@git.kernel.org>
-Git-Commit-ID: 1a74357066369be91e6f4f431621a00b052df964
+Subject: [tip:core/iommu] x86: Add iommu_init to x86_init_ops
+Message-ID: <tip-d07c1be0693e0902d743160b8b638585b808f8ac@git.kernel.org>
+Git-Commit-ID: d07c1be0693e0902d743160b8b638585b808f8ac
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,141 +29,97 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1a74357066369be91e6f4f431621a00b052df964
-Gitweb:     http://git.kernel.org/tip/1a74357066369be91e6f4f431621a00b052df964
-Author:     Andreas Herrmann <herrmann.der.user@googlemail.com>
-AuthorDate: Tue, 10 Nov 2009 12:09:20 +0100
+Commit-ID:  d07c1be0693e0902d743160b8b638585b808f8ac
+Gitweb:     http://git.kernel.org/tip/d07c1be0693e0902d743160b8b638585b808f8ac
+Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+AuthorDate: Tue, 10 Nov 2009 19:46:12 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Nov 2009 12:15:50 +0100
+CommitDate: Tue, 10 Nov 2009 12:31:07 +0100
 
-x86: ucode-amd: Convert printk(KERN_*...) to pr_*(...)
+x86: Add iommu_init to x86_init_ops
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: dimm <dmitry.adamushko@gmail.com>
-LKML-Reference: <20091110110920.GJ30802@alberich.amd.com>
+We call the detections functions of all the IOMMUs then all
+their initialization functions. The latter is pointless since we
+don't detect multiple different IOMMUs. What we need to do is
+calling the initialization function of the detected IOMMU.
+
+This adds iommu_init hook to x86_init_ops so if an IOMMU
+detection function can set its initialization function to the
+hook.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: chrisw@sous-sol.org
+Cc: dwmw2@infradead.org
+Cc: joerg.roedel@amd.com
+Cc: muli@il.ibm.com
+LKML-Reference: <1257849980-22640-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/microcode_amd.c |   34 +++++++++++++++-------------------
- 1 files changed, 15 insertions(+), 19 deletions(-)
+ arch/x86/include/asm/x86_init.h |    9 +++++++++
+ arch/x86/kernel/pci-dma.c       |    2 ++
+ arch/x86/kernel/x86_init.c      |    5 +++++
+ 3 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 9f13324..26e33bd 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -78,12 +78,12 @@ static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
+diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
+index 66008ed..d8e7145 100644
+--- a/arch/x86/include/asm/x86_init.h
++++ b/arch/x86/include/asm/x86_init.h
+@@ -91,6 +91,14 @@ struct x86_init_timers {
+ };
  
- 	memset(csig, 0, sizeof(*csig));
- 	if (c->x86_vendor != X86_VENDOR_AMD || c->x86 < 0x10) {
--		printk(KERN_WARNING "microcode: CPU%d: AMD CPU family 0x%x not "
--		       "supported\n", cpu, c->x86);
-+		pr_warning("microcode: CPU%d: AMD CPU family 0x%x not "
-+			   "supported\n", cpu, c->x86);
- 		return -1;
- 	}
- 	rdmsr(MSR_AMD64_PATCH_LEVEL, csig->rev, dummy);
--	printk(KERN_INFO "microcode: CPU%d: patch_level=0x%x\n", cpu, csig->rev);
-+	pr_info("microcode: CPU%d: patch_level=0x%x\n", cpu, csig->rev);
- 	return 0;
- }
+ /**
++ * struct x86_init_iommu - platform specific iommu setup
++ * @iommu_init:			platform specific iommu setup
++ */
++struct x86_init_iommu {
++	int (*iommu_init)(void);
++};
++
++/**
+  * struct x86_init_ops - functions for platform specific setup
+  *
+  */
+@@ -101,6 +109,7 @@ struct x86_init_ops {
+ 	struct x86_init_oem		oem;
+ 	struct x86_init_paging		paging;
+ 	struct x86_init_timers		timers;
++	struct x86_init_iommu		iommu;
+ };
  
-@@ -113,7 +113,7 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+ /**
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 839d49a..a13478d 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -292,6 +292,8 @@ static int __init pci_iommu_init(void)
+ 	dma_debug_add_bus(&pci_bus_type);
+ #endif
  
- 	/* ucode might be chipset specific -- currently we don't support this */
- 	if (mc_header->nb_dev_id || mc_header->sb_dev_id) {
--		printk(KERN_ERR "microcode: CPU%d: loading of chipset "
-+		pr_err(KERN_ERR "microcode: CPU%d: loading of chipset "
- 		       "specific code not yet supported\n", cpu);
- 		return 0;
- 	}
-@@ -143,14 +143,12 @@ static int apply_microcode_amd(int cpu)
++	x86_init.iommu.iommu_init();
++
+ 	calgary_iommu_init();
  
- 	/* check current patch id and patch's id for match */
- 	if (rev != mc_amd->hdr.patch_id) {
--		printk(KERN_ERR "microcode: CPU%d: update failed "
-+		pr_err("microcode: CPU%d: update failed "
- 		       "(for patch_level=0x%x)\n", cpu, mc_amd->hdr.patch_id);
- 		return -1;
- 	}
+ 	intel_iommu_init();
+diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+index bc9b230..c46984d 100644
+--- a/arch/x86/kernel/x86_init.c
++++ b/arch/x86/kernel/x86_init.c
+@@ -19,6 +19,7 @@
+ void __cpuinit x86_init_noop(void) { }
+ void __init x86_init_uint_noop(unsigned int unused) { }
+ void __init x86_init_pgd_noop(pgd_t *unused) { }
++int __init iommu_init_noop(void) { return 0; }
  
--	printk(KERN_INFO "microcode: CPU%d: updated (new patch_level=0x%x)\n",
--	       cpu, rev);
--
-+	pr_info("microcode: CPU%d: updated (new patch_level=0x%x)\n", cpu, rev);
- 	uci->cpu_sig.rev = rev;
+ /*
+  * The platform setup functions are preset with the default functions
+@@ -63,6 +64,10 @@ struct x86_init_ops x86_init __initdata = {
+ 		.tsc_pre_init		= x86_init_noop,
+ 		.timer_init		= hpet_time_init,
+ 	},
++
++	.iommu = {
++		.iommu_init		= iommu_init_noop,
++	},
+ };
  
- 	return 0;
-@@ -173,7 +171,7 @@ get_next_ucode(const u8 *buf, unsigned int size, unsigned int *mc_size)
- 		return NULL;
- 
- 	if (section_hdr[0] != UCODE_UCODE_TYPE) {
--		printk(KERN_ERR "microcode: error: invalid type field in "
-+		pr_err("microcode: error: invalid type field in "
- 		       "container file section header\n");
- 		return NULL;
- 	}
-@@ -181,7 +179,7 @@ get_next_ucode(const u8 *buf, unsigned int size, unsigned int *mc_size)
- 	total_size = (unsigned long) (section_hdr[4] + (section_hdr[5] << 8));
- 
- 	if (total_size > size || total_size > UCODE_MAX_SIZE) {
--		printk(KERN_ERR "microcode: error: size mismatch\n");
-+		pr_err("microcode: error: size mismatch\n");
- 		return NULL;
- 	}
- 
-@@ -210,15 +208,14 @@ static int install_equiv_cpu_table(const u8 *buf)
- 	size = buf_pos[2];
- 
- 	if (buf_pos[1] != UCODE_EQUIV_CPU_TABLE_TYPE || !size) {
--		printk(KERN_ERR "microcode: error: invalid type field in "
-+		pr_err("microcode: error: invalid type field in "
- 		       "container file section header\n");
- 		return 0;
- 	}
- 
- 	equiv_cpu_table = (struct equiv_cpu_entry *) vmalloc(size);
- 	if (!equiv_cpu_table) {
--		printk(KERN_ERR "microcode: failed to allocate "
--		       "equivalent CPU table\n");
-+		pr_err("microcode: failed to allocate equivalent CPU table\n");
- 		return 0;
- 	}
- 
-@@ -251,8 +248,7 @@ generic_load_microcode(int cpu, const u8 *data, size_t size)
- 
- 	offset = install_equiv_cpu_table(ucode_ptr);
- 	if (!offset) {
--		printk(KERN_ERR "microcode: failed to create "
--		       "equivalent cpu table\n");
-+		pr_err("microcode: failed to create equivalent cpu table\n");
- 		return UCODE_ERROR;
- 	}
- 
-@@ -306,7 +302,7 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- 		return UCODE_NFOUND;
- 
- 	if (*(u32 *)firmware->data != UCODE_MAGIC) {
--		printk(KERN_ERR "microcode: invalid UCODE_MAGIC (0x%08x)\n",
-+		pr_err("microcode: invalid UCODE_MAGIC (0x%08x)\n",
- 		       *(u32 *)firmware->data);
- 		return UCODE_ERROR;
- 	}
-@@ -319,8 +315,8 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- static enum ucode_state
- request_microcode_user(int cpu, const void __user *buf, size_t size)
- {
--	printk(KERN_INFO "microcode: AMD microcode update via "
--	       "/dev/cpu/microcode not supported\n");
-+	pr_info("microcode: AMD microcode update via "
-+		"/dev/cpu/microcode not supported\n");
- 	return UCODE_ERROR;
- }
- 
-@@ -336,7 +332,7 @@ void init_microcode_amd(struct device *device)
- {
- 	const char *fw_name = "amd-ucode/microcode_amd.bin";
- 	if (request_firmware(&firmware, fw_name, device))
--		printk(KERN_ERR "microcode: failed to load file %s\n", fw_name);
-+		pr_err("microcode: failed to load file %s\n", fw_name);
- }
- 
- void fini_microcode_amd(void)
+ struct x86_cpuinit_ops x86_cpuinit __cpuinitdata = {
