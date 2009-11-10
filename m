@@ -1,57 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZKJNZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZKJNZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZKJNZj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 08:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZKJNZg
+	id S1756620AbZKJNZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 08:25:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbZKJNZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 08:25:36 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34567 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756549AbZKJNZW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 08:25:22 -0500
-Date: Tue, 10 Nov 2009 14:25:26 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, zaurus-devel@www.linuxtogo.org,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com,
-       Paul Fertser <fercerpav@gmail.com>
-Subject: Re: spitz battery driver
-Message-ID: <20091110132526.GC26144@atrey.karlin.mff.cuni.cz>
-References: <20091109135813.GA1385@ucw.cz> <f17812d70911091948p5331f11djc887443559b233db@mail.gmail.com> <20091110104634.GA1395@ucw.cz> <1257856464.6394.6.camel@utx.utx.cz>
+	Tue, 10 Nov 2009 08:25:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34286 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756320AbZKJNZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 08:25:55 -0500
+Date: Tue, 10 Nov 2009 13:25:30 GMT
+From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, mitake@dcl.info.waseda.ac.jp,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1257853855-28934-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+References: <1257853855-28934-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/bench] perf bench: Add new document about perf-bench
+Message-ID: <tip-9fbc04f2493929a69fd9e53b5fb53c127d7950d5@git.kernel.org>
+Git-Commit-ID: 9fbc04f2493929a69fd9e53b5fb53c127d7950d5
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1257856464.6394.6.camel@utx.utx.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-k
-> > > This is a good move. However, I assume the patch is still RFC now.
-> > > Or basically the coding style cleanup can be separated into another
-> > > patch?
-> > 
-> > Its rfc now. Parts of codingstyle cleanup should already be in your
-> > tree, I'll rediff it later.
-> 
-> Pavel, could you compare your patch with the "power: implement platform
-> battery driver"??? patches from Paul Fertser just sent to LKML and
-> zaurus-devel list? Would it be complicated to migrate to it? I guess
+Commit-ID:  9fbc04f2493929a69fd9e53b5fb53c127d7950d5
+Gitweb:     http://git.kernel.org/tip/9fbc04f2493929a69fd9e53b5fb53c127d7950d5
+Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+AuthorDate: Tue, 10 Nov 2009 20:50:54 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Nov 2009 14:14:36 +0100
 
-Complicated? No. Useful? Probably also no. Remove 50 lines for
-additional indirection? I'd prefer not to.
+perf bench: Add new document about perf-bench
 
-> that use of platform driver could allow to recycle major parts of the
-> charging driver by more devices.
+This patch adds new document about perf-bench.
+Man page and html will be provided for user.
 
-take a look at those patches. I'd rather use mainline battery api.
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <1257853855-28934-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/Documentation/perf-bench.txt |  120 +++++++++++++++++++++++++++++++
+ 1 files changed, 120 insertions(+), 0 deletions(-)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/tools/perf/Documentation/perf-bench.txt b/tools/perf/Documentation/perf-bench.txt
+new file mode 100644
+index 0000000..ae525ac
+--- /dev/null
++++ b/tools/perf/Documentation/perf-bench.txt
+@@ -0,0 +1,120 @@
++perf-bench(1)
++============
++
++NAME
++----
++perf-bench - General framework for benchmark suites
++
++SYNOPSIS
++--------
++[verse]
++'perf bench' [<common options>] <subsystem> <suite> [<options>]
++
++DESCRIPTION
++-----------
++This 'perf bench' command is general framework for benchmark suites.
++
++COMMON OPTIONS
++--------------
++-f::
++--format=::
++Specify format style.
++Current available format styles are,
++
++'default'::
++Default style. This is mainly for human reading.
++---------------------
++% perf bench sched pipe                      # with no style specify
++(executing 1000000 pipe operations between two tasks)
++        Total time:5.855 sec
++                5.855061 usecs/op
++		170792 ops/sec
++---------------------
++
++'simple'::
++This simple style is friendly for automated
++processing by scripts.
++---------------------
++% perf bench --format=simple sched pipe      # specified simple
++5.988
++---------------------
++
++SUBSYSTEM
++---------
++
++'sched'::
++	Scheduler and IPC mechanisms.
++
++SUITES FOR 'sched'
++~~~~~~~~~~~~~~~~~~
++*messaging*::
++Suite for evaluating performance of scheduler and IPC mechanisms.
++Based on hackbench by Rusty Russell.
++
++Options of *pipe*
++^^^^^^^^^^^^^^^^^
++-p::
++--pipe::
++Use pipe() instead of socketpair()
++
++-t::
++--thread::
++Be multi thread instead of multi process
++
++-g::
++--group=::
++Specify number of groups
++
++-l::
++--loop=::
++Specify number of loops
++
++Example of *messaging*
++^^^^^^^^^^^^^^^^^^^^^^
++
++---------------------
++% perf bench sched messaging                 # run with default
++options (20 sender and receiver processes per group)
++(10 groups == 400 processes run)
++
++      Total time:0.308 sec
++
++% perf bench sched messaging -t -g 20        # be multi-thread,with 20 groups
++(20 sender and receiver threads per group)
++(20 groups == 800 threads run)
++
++      Total time:0.582 sec
++---------------------
++
++*pipe*::
++Suite for pipe() system call.
++Based on pipe-test-1m.c by Ingo Molnar.
++
++Options of *pipe*
++^^^^^^^^^^^^^^^^^
++-l::
++--loop=::
++Specify number of loops.
++
++Example of *pipe*
++^^^^^^^^^^^^^^^^^
++
++---------------------
++% perf bench sched pipe
++(executing 1000000 pipe operations between two tasks)
++
++        Total time:8.091 sec
++                8.091833 usecs/op
++                123581 ops/sec
++
++% perf bench sched pipe -l 1000              # loop 1000
++(executing 1000 pipe operations between two tasks)
++
++        Total time:0.016 sec
++                16.948000 usecs/op
++                59004 ops/sec
++---------------------
++
++SEE ALSO
++--------
++linkperf:perf[1]
