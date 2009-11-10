@@ -1,72 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbZKJIFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZKJIGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752825AbZKJIFB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 03:05:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZKJIFA
+	id S1753036AbZKJIGA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 03:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZKJIF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 03:05:00 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:37167 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbZKJIFA (ORCPT
+	Tue, 10 Nov 2009 03:05:59 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33419 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752084AbZKJIF7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 03:05:00 -0500
-Date: Tue, 10 Nov 2009 17:03:38 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       cl@linux-foundation.org, rientjes@google.com,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with
- nodemask v2
-Message-Id: <20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
-	<20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091110163419.361E.A69D9226@jp.fujitsu.com>
-	<20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Nov 2009 03:05:59 -0500
+Message-ID: <4AF91EE0.9090906@cs.helsinki.fi>
+Date: Tue, 10 Nov 2009 10:05:52 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
+       joerg.roedel@amd.com, mingo@elte.hu, akpm@linux-foundation.org,
+       hannes@cmpxchg.org, tj@kernel.org
+Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
+References: <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>	<84144f020911091213j393a9761pe13808d1e091e169@mail.gmail.com>	<84144f020911091221n1d025d9bv3915751bf474b47a@mail.gmail.com> <20091110064650H.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091110064650H.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009 16:40:55 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Tue, 10 Nov 2009 16:39:02 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+FUJITA Tomonori wrote:
+> On Mon, 9 Nov 2009 22:21:48 +0200
+> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 > 
-> > > > > +
-> > > > > +	/* Check this allocation failure is caused by cpuset's wall function */
-> > > > > +	for_each_zone_zonelist_nodemask(zone, z, zonelist,
-> > > > > +			high_zoneidx, nodemask)
-> > > > > +		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
-> > > > >  			return CONSTRAINT_CPUSET;
-> > > > 
-> > > > If cpuset and MPOL_BIND are both used, Probably CONSTRAINT_MEMORY_POLICY is
-> > > > better choice.
-> > > 
-> > > No. this memory allocation is failed by limitation of cpuset's alloc mask.
-> > > Not from mempolicy.
-> > 
-> > But CONSTRAINT_CPUSET doesn't help to free necessary node memory. It isn't
-> > your fault. original code is wrong too. but I hope we should fix it.
-> > 
-I think so too.
-
-> Hmm, maybe fair enough.
+>> On Mon, Nov 9, 2009 at 10:13 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>>>>        for (cursor = start; cursor < end; cursor += BITS_PER_LONG) {
+>>>> -               unsigned long idx, vec;
+>>>> +               unsigned long vec;
+>>>>
+>>>> -               idx = cursor - start;
+>>>> -               vec = ~map[idx / BITS_PER_LONG];
+>>>> +               if (map) {
+>>>> +                       unsigned long idx = cursor - start;
+>>>> +                       vec = ~map[idx / BITS_PER_LONG];
+>>>> +               } else {
+>>>> +                       if (end - cursor >= BITS_PER_LONG)
+>>>> +                               vec = ~0UL;
+>>> Why do we need the above?
+>> OK, I figured that out. I'm not sure why you want to play tricks with
+>> "vec" when you could just add a new helper that calls
+>> __free_pages_bootmem() for the full contiguous page range.
 > 
-> My 3rd version will use "kill always current(CONSTRAINT_MEMPOLICY does this)
-> if it uses mempolicy" logic.
+> I'm not sure why Chris did that, but yeah, I think that it's cleaner
+> to leave free_all_bootmem_core alone.
 > 
-"if it uses mempoicy" ?
-You mean "kill allways current if memory allocation has failed by limitation of
-cpuset's mask"(i.e. CONSTRAINT_CPUSET case) ?
+> There is just one user of free_bootmem_late to free some memory so how
+> about the following simple patch instead 7/10?
 
+Looks good to me!
 
-Thanks,
-Daisuke Nishimura.
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+> index dd97fb8..b10ec49 100644
+> --- a/include/linux/bootmem.h
+> +++ b/include/linux/bootmem.h
+> @@ -53,6 +53,7 @@ extern void free_bootmem_node(pg_data_t *pgdat,
+>  			      unsigned long addr,
+>  			      unsigned long size);
+>  extern void free_bootmem(unsigned long addr, unsigned long size);
+> +extern void free_bootmem_late(unsigned long addr, unsigned long size);
+>  
+>  /*
+>   * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
+> diff --git a/mm/bootmem.c b/mm/bootmem.c
+> index 94ef2e7..b0b393b 100644
+> --- a/mm/bootmem.c
+> +++ b/mm/bootmem.c
+> @@ -196,6 +196,30 @@ static unsigned long __init free_bootmem_pages(unsigned long start,
+>  	return count;
+>  }
+>  
+> +/*
+> + * free_bootmem_late - free bootmem pages directly to page allocator
+> + * @addr: starting address of the range
+> + * @size: size of the range in bytes
+> + *
+> + * This is only useful when the bootmem allocator has already been torn
+> + * down, but we are still initializing the system.  Pages are given directly
+> + * to the page allocator, no bootmem metadata is updated because it is gone.
+> + */
+> +void __init free_bootmem_late(unsigned long addr, unsigned long size)
+> +{
+> +	unsigned long cursor, end;
+> +
+> +	kmemleak_free_part(__va(addr), size);
+> +
+> +	cursor = PFN_UP(addr);
+> +	end = PFN_DOWN(addr + size);
+> +
+> +	for (; cursor < end; cursor++) {
+> +		__free_pages_bootmem(pfn_to_page(cursor), 0);
+> +		totalram_pages++;
+> +	}
+> +}
+> +
+>  static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
+>  {
+>  	struct page *page;
+> 
+> 
+
