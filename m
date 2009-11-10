@@ -1,135 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZKJAq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZKJBAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbZKJAq4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 19:46:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZKJAqz
+	id S1755367AbZKJBAe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 20:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZKJBAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 19:46:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:40026 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbZKJAqy (ORCPT
+	Mon, 9 Nov 2009 20:00:33 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:38575 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810AbZKJBAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 19:46:54 -0500
-Subject: Re: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent
- on passthrough
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alex Williamson <alex.williamson@hp.com>
-Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20091104225359.2720.91502.stgit@nehalem.aw>
-References: <20091104225359.2720.91502.stgit@nehalem.aw>
+	Mon, 9 Nov 2009 20:00:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=hxIq2hk3MRo8VA68it9d8yzfLwzn0RLuPfXbeiMbZt51eNqot+XM8sxkTNm2ZchL0b
+         AZQp6qcLX4R8bMaKOZApqILLOjXq1bfuqwcumtr+ac9yrHkM++04UOC50W5xUN7jslD1
+         JRuoFBE0IiqsefqVaPx2QrqqlwythJUHLn1nA=
+Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
+ for MIPS
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       zhangfx@lemote.com, zhouqg@gmail.com,
+       Ralf Baechle <ralf@linux-mips.org>, rostedt@goodmis.org,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Simek <monstr@monstr.eu>
+In-Reply-To: <4AF8B31C.5030802@caviumnetworks.com>
+References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com>
+	 <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com>
+	 <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com>
+	 <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com>
+	 <4AF8B31C.5030802@caviumnetworks.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 10 Nov 2009 00:46:54 +0000
-Message-ID: <1257814014.25961.912.camel@macbook.infradead.org>
+Organization: DSLab, Lanzhou University, China
+Date: Tue, 10 Nov 2009 09:00:17 +0800
+Message-ID: <1257814817.2822.3.camel@falcon.domain.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 (2.28.1-2.fc12) 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-04 at 15:59 -0700, Alex Williamson wrote:
+Hi,
+
+On Mon, 2009-11-09 at 16:26 -0800, David Daney wrote: 
+> Wu Zhangjin wrote:
 > 
-> @@ -2582,7 +2582,7 @@ static dma_addr_t __intel_map_single(struct
-> device *hwdev, phys_addr_t paddr,
->         BUG_ON(dir == DMA_NONE);
->  
->         if (iommu_no_mapping(hwdev))
-> -               return paddr;
-> +               return paddr + size > dma_mask ? 0 : paddr; 
+> >  
+> > +ifndef CONFIG_FUNCTION_TRACER
+> >  cflags-y := -ffunction-sections
+> > +else
+> > +cflags-y := -mlong-calls
+> > +endif
+> >  cflags-y += $(call cc-option, -mno-check-zero-division)
+> >  
+> 
+> That doesn't make sense to me.  Modules are already compiled with 
+> -mlong-calls.  The only time you would need the entire kernel compiled 
+> with -mlong-calls is if the tracer were in a module.  The logic here 
+> doesn't seem to reflect that.
 
-Especially on 32-bit without PAE, that 'paddr + size' can wrap.
+Yes, I knew the module have gotten the -mlong-calls, Here we just want
+to use -mlong-calls for the whole kernel, and then we get the same
+_mcount stuff in the whole kernel, at last, we can use the same
+scripts/recordmcount.pl and ftrace_make_nop & ftrace_make_call for the
+dynamic ftracer.
 
-How's this... (Alex, you can tell me if you still want it to be From:
-you after I changed the comments).
+And seems we only need to enable it for the dynamic one. So, I will
+split it out into it's own patch later.
 
-
-From:  Alex Williamson <alex.williamson@hp.com>
-Date: Wed, 4 Nov 2009 15:59:34 -0700
-Subject: [PATCH] intel-iommu: Obey coherent_dma_mask for alloc_coherent on passthrough
-
-The model for IOMMU passthrough is that decent devices that can cope
-with DMA to all of memory get passthrough; crappy devices with a limited
-dma_mask don't -- they get to use the IOMMU anyway.
-
-This is done on the basis that IOMMU passthrough is usually wanted for
-performance reasons, and it's only the decent PCI devices that you
-really care about performance for, while the crappy 32-bit ones like
-your USB controller can just use the IOMMU and you won't really care.
-
-Unfortunately, the check for this was only looking at dev->dma_mask, not
-at dev->coherent_dma_mask. And some devices have a 32-bit
-coherent_dma_mask even though they have a full 64-bit dma_mask.
-
-Even more unfortunately, fixing that simple oversight would upset
-certain broken HP devices. Not only do they have a 32-bit
-coherent_dma_mask, but they also have a tendency to do stray DMA to
-unmapped addresses. And then they die when they take the DMA fault they
-so richly deserve.
-
-So if we do the 'correct' fix, it'll mean that affects users have to
-disable IOMMU support completely on "a large percentage of servers from
-a major vendor."
-
-Personally, I have little sympathy -- given that this is the _same_
-'major vendor' who is shipping machines which claim to have IOMMU
-support but have obviously never _once_ booted a VT-d capable OS to do
-any form of QA. But strictly speaking, it _would_ be a regression even
-though it only ever worked by fluke and the hardware is arguably broken.
-
-For 2.6.33, we'll come up with a quirk which gives swiotlb support
-for this particular device, and other devices with an inadequate
-coherent_dma_mask will just get normal IOMMU mapping.
-
-The simplest fix for 2.6.32, though, is just to jump through some hoops
-to try to allocate coherent DMA memory for such devices in a place that
-they can reach. We'd use dma_generic_alloc_coherent() for this if it
-existed on IA64.
-
-Signed-off-by: Alex Williamson <alex.williamson@hp.com>
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
----
- drivers/pci/intel-iommu.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index b1e97e6..fe9ca58 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -2582,7 +2582,7 @@ static dma_addr_t __intel_map_single(struct device *hwdev, phys_addr_t paddr,
- 	BUG_ON(dir == DMA_NONE);
- 
- 	if (iommu_no_mapping(hwdev))
--		return paddr;
-+		return paddr > dma_mask - size ? 0 : paddr;
- 
- 	domain = get_valid_domain_for_dev(pdev);
- 	if (!domain)
-@@ -2767,7 +2767,15 @@ static void *intel_alloc_coherent(struct device *hwdev, size_t size,
- 
- 	size = PAGE_ALIGN(size);
- 	order = get_order(size);
--	flags &= ~(GFP_DMA | GFP_DMA32);
-+
-+	if (!iommu_no_mapping(hwdev))
-+		flags &= ~(GFP_DMA | GFP_DMA32);
-+	else if (hwdev->coherent_dma_mask < dma_get_required_mask()) {
-+		if (hwdev->coherent_dma_mask < DMA_BIT_MASK(32))
-+			flags |= GFP_DMA;
-+		else
-+			flags |= GFP_DMA32;
-+	}
- 
- 	vaddr = (void *)__get_free_pages(flags, order);
- 	if (!vaddr)
--- 
-1.6.5.2
-
-
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Thanks & Regards,
+	Wu Zhangjin
 
