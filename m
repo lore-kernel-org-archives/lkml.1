@@ -1,133 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbZKJNX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbZKJNXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756476AbZKJNX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 08:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbZKJNXX
+	id S1756461AbZKJNXA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 08:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbZKJNW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 08:23:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34090 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756511AbZKJNXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 08:23:21 -0500
-Date: Tue, 10 Nov 2009 13:22:50 GMT
-From: tip-bot for FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fujita.tomonori@lab.ntt.co.jp, muli@il.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, muli@il.ibm.com,
-       mingo@elte.hu
-In-Reply-To: <1257849980-22640-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1257849980-22640-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/iommu] x86: Calgary: Convert detect_calgary() to use iommu_init hook
-Message-ID: <tip-d7b9f7be216b04ff9d108f856bc03d96e7b3439c@git.kernel.org>
-Git-Commit-ID: d7b9f7be216b04ff9d108f856bc03d96e7b3439c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Tue, 10 Nov 2009 08:22:58 -0500
+Received: from mail.solarflare.com ([216.237.3.220]:49948 "EHLO
+	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbZKJNW4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 08:22:56 -0500
+Subject: Re: linux-next: manual merge of the net tree with the i2c tree
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mika Kuoppala <mika.kuoppala@nokia.com>
+In-Reply-To: <20091110124231.66141a0f@hyperion.delvare>
+References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
+	 <20091110124231.66141a0f@hyperion.delvare>
+Content-Type: text/plain
+Organization: Solarflare Communications
+Date: Tue, 10 Nov 2009 13:22:58 +0000
+Message-Id: <1257859379.2834.2.camel@achroite.uk.solarflarecom.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Nov 2009 13:23:02.0304 (UTC) FILETIME=[EDD72200:01CA6208]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17000.004
+X-TM-AS-Result: No--24.855300-0.000000-31
+X-TM-AS-User-Approved-Sender: Yes
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d7b9f7be216b04ff9d108f856bc03d96e7b3439c
-Gitweb:     http://git.kernel.org/tip/d7b9f7be216b04ff9d108f856bc03d96e7b3439c
-Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-AuthorDate: Tue, 10 Nov 2009 19:46:13 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Nov 2009 12:31:15 +0100
+On Tue, 2009-11-10 at 12:42 +0100, Jean Delvare wrote:
+> Hi Stephen, Ben,
+> 
+> On Mon, 26 Oct 2009 13:37:57 +1100, Stephen Rothwell wrote:
+> > Today's linux-next merge of the net tree got a conflict in
+> > drivers/net/sfc/sfe4001.c between commit
+> > 3f7c0648f727a6d5baf6117653e4001dc877b90b ("i2c: Prevent priority
+> > inversion on top of bus lock") from the i2c tree and commit
+> > c9597d4f89565b6562bd3026adbe6eac6c317f47 ("sfc: Merge sfe4001.c into
+> > falcon_boards.c") from the net tree.
+> > 
+> > I have applied the following merge fixup patch (after removing
+> > drivers/net/sfc/sfe4001.c) and can carry it as necessary.
+> 
+> I've merged the new API to get and release the i2c_adapter mutex:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=afa08974fe80c198b8650f73ed8ab59135ca10d0
 
-x86: Calgary: Convert detect_calgary() to use iommu_init hook
+Thanks, Jean.
 
-This changes detect_calgary() to set init_calgary() to
-iommu_init hook if detect_calgary() finds the Calgary IOMMU.
+> Ben, you can adjust your own patches to make use of this API instead of
+> accessing the i2c_adapter mutex directly. That way, you are no longer
+> dependent of implementation changes, and this should solve the conflict.
+> 
+> Stephen, you can then drop your fixup patch.
 
-We can kill the code to check if we found the IOMMU in
-init_calgary() since detect_calgary() sets init_calgary() only
-when it found the IOMMU.
+I don't think so, since the conflict resulted from joining two files
+including sfe4001.c in net-next-2.6.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: chrisw@sous-sol.org
-Cc: dwmw2@infradead.org
-Cc: joerg.roedel@amd.com
-LKML-Reference: <1257849980-22640-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/calgary.h   |    2 --
- arch/x86/kernel/pci-calgary_64.c |   11 +++++------
- arch/x86/kernel/pci-dma.c        |    2 --
- 3 files changed, 5 insertions(+), 10 deletions(-)
+Ben.
 
-diff --git a/arch/x86/include/asm/calgary.h b/arch/x86/include/asm/calgary.h
-index b03bedb..0918654 100644
---- a/arch/x86/include/asm/calgary.h
-+++ b/arch/x86/include/asm/calgary.h
-@@ -62,10 +62,8 @@ struct cal_chipset_ops {
- extern int use_calgary;
- 
- #ifdef CONFIG_CALGARY_IOMMU
--extern int calgary_iommu_init(void);
- extern void detect_calgary(void);
- #else
--static inline int calgary_iommu_init(void) { return 1; }
- static inline void detect_calgary(void) { return; }
- #endif
- 
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index 971a3be..47bd419 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -46,6 +46,7 @@
- #include <asm/dma.h>
- #include <asm/rio.h>
- #include <asm/bios_ebda.h>
-+#include <asm/x86_init.h>
- 
- #ifdef CONFIG_CALGARY_IOMMU_ENABLED_BY_DEFAULT
- int use_calgary __read_mostly = 1;
-@@ -1344,6 +1345,8 @@ static void __init get_tce_space_from_tar(void)
- 	return;
- }
- 
-+int __init calgary_iommu_init(void);
-+
- void __init detect_calgary(void)
- {
- 	int bus;
-@@ -1445,6 +1448,8 @@ void __init detect_calgary(void)
- 		/* swiotlb for devices that aren't behind the Calgary. */
- 		if (max_pfn > MAX_DMA32_PFN)
- 			swiotlb = 1;
-+
-+		x86_init.iommu.iommu_init = calgary_iommu_init;
- 	}
- 	return;
- 
-@@ -1461,12 +1466,6 @@ int __init calgary_iommu_init(void)
- {
- 	int ret;
- 
--	if (no_iommu || (swiotlb && !calgary_detected))
--		return -ENODEV;
--
--	if (!calgary_detected)
--		return -ENODEV;
--
- 	/* ok, we're trying to use Calgary - let's roll */
- 	printk(KERN_INFO "PCI-DMA: Using Calgary IOMMU\n");
- 
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index a13478d..0224da8 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -294,8 +294,6 @@ static int __init pci_iommu_init(void)
- 
- 	x86_init.iommu.iommu_init();
- 
--	calgary_iommu_init();
--
- 	intel_iommu_init();
- 
- 	amd_iommu_init();
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
+
