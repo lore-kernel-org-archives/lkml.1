@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZKJPwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbZKJPwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZKJPwd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 10:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZKJPwd
+	id S1756757AbZKJPwZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 10:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbZKJPwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 10:52:33 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:55990 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756791AbZKJPwa (ORCPT
+	Tue, 10 Nov 2009 10:52:24 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:41353 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756396AbZKJPwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 10:52:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=bBxEKgcWz48rVqgNWJ4yJUyb+zu/geGUzH9/PYwQngNsYXY3WqFh5zxnEyNrfEkgeY
-         RFPJ6ajU9Nfxe/txMf9EEr0uw/DMhowHPeKFfGLdNXWBxW/PDKmVdY8idmlCg8R7OEqx
-         E/rRC89x7JCSp2J1HoU6ADmu/PFfneItVXUVw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Mark Lord <liml@rtr.ca>
-Subject: Re: [PATCH] ata: Clean up hard coded array size calculation.
-Date: Tue, 10 Nov 2009 16:51:24 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Thiago Farina <tfransosi@gmail.com>, jgarzik@pobox.com, mlord@pobox.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1257708657-1232-1-git-send-email-tfransosi@gmail.com> <4AF8F363.3010806@rtr.ca>
-In-Reply-To: <4AF8F363.3010806@rtr.ca>
+	Tue, 10 Nov 2009 10:52:24 -0500
+Message-ID: <4AF98C36.9040405@s5r6.in-berlin.de>
+Date: Tue, 10 Nov 2009 16:52:22 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Message-Id: <200911101651.24912.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] new -stable tag variant, Git workflow question
+References: <20091110034831.GB26809@elte.hu>	 <20091110041452.GA25575@suse.de> <1257863388.4184.220.camel@mulgrave.site>
+In-Reply-To: <1257863388.4184.220.camel@mulgrave.site>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 November 2009 06:00:19 Mark Lord wrote:
-> Thiago Farina wrote:
-> > Use ARRAY_SIZE macro of kernel api instead.
-> > 
-> > Signed-off-by: Thiago Farina <tfransosi@gmail.com>
-> > ---
-> >  drivers/ata/sata_mv.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-> > index 6f5093b..a8a7be0 100644
-> > --- a/drivers/ata/sata_mv.c
-> > +++ b/drivers/ata/sata_mv.c
-> > @@ -2217,7 +2217,7 @@ static unsigned int mv_qc_issue_fis(struct ata_queued_cmd *qc)
-> >  	int err = 0;
-> >  
-> >  	ata_tf_to_fis(&qc->tf, link->pmp, 1, (void *)fis);
-> > -	err = mv_send_fis(ap, fis, sizeof(fis) / sizeof(fis[0]));
-> > +	err = mv_send_fis(ap, fis, ARRAY_SIZE(fis));
-> >  	if (err)
-> >  		return err;
-> >  
-> ..
+James Bottomley wrote:
+[...]
+>> On Tue, Nov 10, 2009 at 04:48:31AM +0100, Ingo Molnar wrote:
+>> > FYI, today i committed a scheduler performance fix that has a number of 
+>> > commit prerequisites for -stable integration. Those commits are not 
+>> > marked -stable.
+[...]
+>> > we can move this into the Git commit space too, and minimize the 
+>> > work for the -stable team, via a new -stable tag variant.
+[...]
+> The question is, how important is this?
 > 
-> What's the point of this ?
-> 
-> There is no "hardcoded array size" there to begin with,
-> and using that silly macro obscures the actual calculation.
-> 
-> So now, instead of being able to verify correctness at a glance,
+> One of the assumptions behind the current setup is that I assume
+> backports are independent (so the order of transmission doesn't matter
+> that much).  This isn't always true, but the exceptions tend to get
+> handled manually.  Part of what the above is requesting is an
+> implementation that starts to care about ordering.
 
-I kindly disagree here.  ARRAY_SIZE makes code smaller and prevents
-subtle bugs in the more complex situations once you learn to always
-use it.
+More importantly, isn't this against the character of the -stable kernel
+branches as _safe and simple_ hotfix branches?
 
-[ Using ARRAY_SIZE you no longer have to verify anything and person
-  looking at the code (which not necessarily is the original author)
-  immediately knows what was the author's intention. ]
-
-> I have to go off and research some silly macro and verify that
-> it does the right thing.
-
-You did it already and the macro name is quite descriptive so you
-may as well just ACK the patch now.. ;)
-
+If a fix has a number of prerequisites which ar not -stable fixes
+themselves, then it is more than a hint that this fix is not really well
+suited for -stable.
 -- 
-Bartlomiej Zolnierkiewicz
+Stefan Richter
+-=====-==--= =-== -=-=-
+http://arcgraph.de/sr/
