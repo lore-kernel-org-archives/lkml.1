@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbZKJGKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751265AbZKJGEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbZKJGKT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 01:10:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZKJGKS
+	id S1751265AbZKJGEe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 01:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbZKJGEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 01:10:18 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33230 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751838AbZKJGKO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 01:10:14 -0500
-Message-ID: <4AF9020C.90108@zytor.com>
-Date: Mon, 09 Nov 2009 22:02:52 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 10 Nov 2009 01:04:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42738 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750776AbZKJGEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 01:04:32 -0500
+Message-ID: <4AF90254.40909@kernel.org>
+Date: Tue, 10 Nov 2009 15:04:04 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>
-Subject: Re: i686 quirk for AMD Geode
-References: <4AF4526B.4060101@zytor.com> <40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com> <20091108173708.GF1372@ucw.cz> <40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com> <20091108181016.GB32364@elf.ucw.cz> <alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de> <20091108193618.GB4186@elf.ucw.cz> <40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com> <20091108195158.GD4186@elf.ucw.cz> <20091108200852.7f2cf092@lxorguk.ukuu.org.uk> <20091110052711.GA15338@1wt.eu>
-In-Reply-To: <20091110052711.GA15338@1wt.eu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [GIT PULL] percpu fixes for 2.6.32-rc6
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/09/2009 09:27 PM, Willy Tarreau wrote:
-> 
-> Also, I think that if we start adding emulation, a global and per-task
-> counter would immensely help to know what processes make intensive use
-> of emulation.
-> 
+Hello, Linus.
 
-Agreed.
+Please pull from the following percpu fix branch.
 
-My first question would be if the interpreter in KVM can be reused in
-any way.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
 
-	-hpa
+It fixes a possible deadlock caused by lock ordering inversion through
+irq.
 
+Thanks.
+---
+Tejun Heo (1):
+      percpu: fix possible deadlock via irq lock inversion
+
+ mm/percpu.c |   17 +++++++++++++++--
+
+diff --git a/mm/percpu.c b/mm/percpu.c
+index d907971..30cd343 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -372,7 +372,7 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
+ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, unsigned long *flags)
+ {
+ 	int new_alloc;
+-	int *new;
++	int *new, *old = NULL;
+ 	size_t size;
+
+ 	/* has enough? */
+@@ -407,10 +407,23 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, unsigned long *flags)
+ 	 * one of the first chunks and still using static map.
+ 	 */
+ 	if (chunk->map_alloc >= PCPU_DFL_MAP_ALLOC)
+-		pcpu_mem_free(chunk->map, size);
++		old = chunk->map;
+
+ 	chunk->map_alloc = new_alloc;
+ 	chunk->map = new;
++
++	/*
++	 * pcpu_mem_free() might end up calling vfree() which uses
++	 * IRQ-unsafe lock and thus can't be called with pcpu_lock
++	 * held.  Release and reacquire pcpu_lock if old map needs to
++	 * be freed.
++	 */
++	if (old) {
++		spin_unlock_irqrestore(&pcpu_lock, *flags);
++		pcpu_mem_free(old, size);
++		spin_lock_irqsave(&pcpu_lock, *flags);
++	}
++
+ 	return 0;
+ }
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+tejun
