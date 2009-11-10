@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbZKJW1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbZKJW2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757857AbZKJW1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 17:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbZKJW1p
+	id S1758477AbZKJW2K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 17:28:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbZKJW2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 17:27:45 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:41628 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753765AbZKJW1o (ORCPT
-	<rfc822;groupwise-PMullaney@novell.com;0:0>);
-	Tue, 10 Nov 2009 17:27:44 -0500
-From: Patrick Mullaney <pmullaney@novell.com>
-Subject: [PATCH 0/4] vbus: venet macvlan support
-To: alacrityvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, kaber@trash.net, arnd@arndb.de,
-       bridge@lists.linux-foundation.org, evb@yahoogroups.com,
-       netdev@vger.kernel.org
-Date: Tue, 10 Nov 2009 17:27:42 -0500
-Message-ID: <20091110222632.24100.14884.stgit@mimic.site>
-User-Agent: StGIT/0.14.3
+	Tue, 10 Nov 2009 17:28:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34918 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758403AbZKJW2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 17:28:05 -0500
+Date: Tue, 10 Nov 2009 22:27:42 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <12578890422402-git-send-email->
+References: <12578890422402-git-send-email->
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/rcu] rcu: Remove inline from forward-referenced functions
+Message-ID: <tip-dbe01350fa8ce0c11948ab7d6be71a4d901be151@git.kernel.org>
+Git-Commit-ID: dbe01350fa8ce0c11948ab7d6be71a4d901be151
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Applies to alacrityvm.git/master:34534534)
+Commit-ID:  dbe01350fa8ce0c11948ab7d6be71a4d901be151
+Gitweb:     http://git.kernel.org/tip/dbe01350fa8ce0c11948ab7d6be71a4d901be151
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Tue, 10 Nov 2009 13:37:19 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Nov 2009 22:48:49 +0100
 
-This patchset implements a vbus venet device with a
-macvlan backend.
+rcu: Remove inline from forward-referenced functions
 
-These patches allow an alacrityvm guest to send and receive
-directly over a macvlan, avoiding the bridge entirely.
-This driver inherits all of the benefits of the work done
-to date on vbus/venet driver(SAR offloading, zero-copy
-in the guest->host path, configurable tx-complete mitigation,
-interrupt coalescing at the vbus level).  Some of the work to
-re-factor and share the common code between venet-tap and
-venet-macvlan was done prior because it should be generally
-useful to anyone wanting to implement a venet type of device.
+Some variants of gcc are reputed to dislike forward references
+to functions declared "inline".  Remove the "inline" keyword
+from such functions.
 
-Once the driver is built and installed, you may use it
-just like you would a venet-tap device. In order to
-instantiate a venet-macvlan, there are just two differences
-from the procedure to instantiating a venet-tap. In order
-to create the venet-macvlan device, just:
-
-echo venet-macvlan > /config/vbus/devices/<device-name>/type
-
-and
-
-echo "lower-devicename" > /sys/vbus/devices/<device-name>/ll_ifname
-
-where lower-devicename is something like eth0, eth1, eth2 etc.
-
-The second step associates the lower-devicename, usually
-a physical device, with the venet-macvlan device being created.
-This step must be perform prior to enabling the venet-macvlan
-device.
-
-After that, a guest can make use of the venet-macvlan in
-exactly the same manner as a venet-tap. In fact, the guest
-actually sees venet-tap and venet-macvlan as identical
-types of the devices on the vbus.
-
-Using the venet-macvlan driver will reduce some overhead by
-eliminating the linux bridge from the send and receive
-paths. For a lightly loaded network segment and system,
-we have measured this to be aproximately 1-3 us per side
-depending on what hardware is involved.
-
-Since this driver layered over the macvlan driver, it will
-have that same limitations as the macvlan driver. For example,
-forwarding between macvlan devices on the same host is not
-supported. This driver targeted toward VEPA environments as
-described by the 'Edge Virtual Bridging' working group.
-
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: josh@joshtriplett.org
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+Cc: Valdis.Kletnieks@vt.edu
+Cc: dhowells@redhat.com
+LKML-Reference: <12578890422402-git-send-email->
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ kernel/rcutree.h        |    2 +-
+ kernel/rcutree_plugin.h |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Patrick Mullaney (4):
-      venet-macvlan: add new driver to connect a venet to a macvlan netdevice
-      venetdev: support common venet netdev routines
-      macvlan: allow in-kernel modules to create and manage macvlan devices
-      macvlan:  derived from Arnd Bergmann's patch for macvtap
-
-
- drivers/net/macvlan.c                   |  105 +++--
- drivers/net/vbus-enet.c                 |    8 
- include/linux/macvlan.h                 |   43 ++
- include/linux/venet.h                   |    5 
- kernel/vbus/devices/venet/Kconfig       |   11 +
- kernel/vbus/devices/venet/Makefile      |   10 -
- kernel/vbus/devices/venet/device.c      |   53 ++-
- kernel/vbus/devices/venet/macvlan.c     |  598 +++++++++++++++++++++++++++++++
- kernel/vbus/devices/venet/venetdevice.h |   12 +
- 9 files changed, 785 insertions(+), 60 deletions(-)
- create mode 100644 include/linux/macvlan.h
- create mode 100644 kernel/vbus/devices/venet/macvlan.c
-
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index c1891c3..ddb79ec 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -301,7 +301,7 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
+ #else /* #ifdef RCU_TREE_NONCORE */
+ 
+ /* Forward declarations for rcutree_plugin.h */
+-static inline void rcu_bootup_announce(void);
++static void rcu_bootup_announce(void);
+ long rcu_batches_completed(void);
+ static void rcu_preempt_note_context_switch(int cpu);
+ static int rcu_preempted_readers(struct rcu_node *rnp);
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index ef2a58c..c03edf7 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
+ /*
+  * Tell them what RCU they are running.
+  */
+-static inline void rcu_bootup_announce(void)
++static void rcu_bootup_announce(void)
+ {
+ 	printk(KERN_INFO
+ 	       "Experimental preemptable hierarchical RCU implementation.\n");
+@@ -481,7 +481,7 @@ void exit_rcu(void)
+ /*
+  * Tell them what RCU they are running.
+  */
+-static inline void rcu_bootup_announce(void)
++static void rcu_bootup_announce(void)
+ {
+ 	printk(KERN_INFO "Hierarchical RCU implementation.\n");
+ }
