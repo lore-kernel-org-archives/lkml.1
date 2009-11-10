@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZKJEpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZKJEwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZKJEpP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 23:45:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbZKJEpP
+	id S1755903AbZKJEwN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 23:52:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbZKJEwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 23:45:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43692 "EHLO mx3.mail.elte.hu"
+	Mon, 9 Nov 2009 23:52:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38719 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754398AbZKJEpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 23:45:14 -0500
-Date: Tue, 10 Nov 2009 05:45:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       dwmw2@infradead.org, joerg.roedel@amd.com
-Subject: Re: [PATCH 01/10] Add iommu_init to x86_init_ops
-Message-ID: <20091110044507.GB7897@elte.hu>
-References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1256712464-21472-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <84144f020911091202h26dbfad4qf0651ae327444fc0@mail.gmail.com>
- <20091110051037B.fujita.tomonori@lab.ntt.co.jp>
+	id S1752940AbZKJEwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Nov 2009 23:52:11 -0500
+Date: Tue, 10 Nov 2009 04:51:39 GMT
+From: tip-bot for Borislav Petkov <borislav.petkov@amd.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andreas.herrmann3@amd.com, tglx@linutronix.de, mingo@elte.hu,
+       borislav.petkov@amd.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, tglx@linutronix.de, borislav.petkov@amd.com,
+       mingo@elte.hu
+In-Reply-To: <20091029134552.GC30802@alberich.amd.com>
+References: <20091029134552.GC30802@alberich.amd.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, amd-ucode: Check UCODE_MAGIC before loading the container file
+Message-ID: <tip-506f90eeae682dc96c11c7aefac0262b3a560b49@git.kernel.org>
+Git-Commit-ID: 506f90eeae682dc96c11c7aefac0262b3a560b49
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091110051037B.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  506f90eeae682dc96c11c7aefac0262b3a560b49
+Gitweb:     http://git.kernel.org/tip/506f90eeae682dc96c11c7aefac0262b3a560b49
+Author:     Borislav Petkov <borislav.petkov@amd.com>
+AuthorDate: Thu, 29 Oct 2009 14:45:52 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Nov 2009 05:46:09 +0100
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+x86, amd-ucode: Check UCODE_MAGIC before loading the container file
 
-> On Mon, 9 Nov 2009 22:02:24 +0200
-> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> 
-> > On Wed, Oct 28, 2009 at 8:47 AM, FUJITA Tomonori
-> > <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > > We call the detections functions of all the IOMMUs then all their
-> > > initialization functions. THe latter is pointless since we don't
-> > > detect multiple different IOMMUs. What we need to do is calling the
-> > > initialization function of the detected IOMMU.
-> > >
-> > > This adds iommu_init hook to x86_init_ops so if an IOMMU detection
-> > > function can set its initialization function to the hook.
-> > >
-> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > ---
-> > > ?arch/x86/include/asm/iommu.h ? ?| ? ?1 +
-> > > ?arch/x86/include/asm/x86_init.h | ? ?9 +++++++++
-> > > ?arch/x86/kernel/pci-dma.c ? ? ? | ? ?2 ++
-> > > ?arch/x86/kernel/x86_init.c ? ? ?| ? ?5 +++++
-> > > ?4 files changed, 17 insertions(+), 0 deletions(-)
-> > >
-> > > diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
-> > > index fd6d21b..42aa977 100644
-> > > --- a/arch/x86/include/asm/iommu.h
-> > > +++ b/arch/x86/include/asm/iommu.h
-> > > @@ -3,6 +3,7 @@
-> > >
-> > > ?extern void pci_iommu_shutdown(void);
-> > > ?extern void no_iommu_init(void);
-> > > +static inline int iommu_init_noop(void) { return 0; }
-> > 
-> > Why is this function not put in x86_init.c?
-> 
-> If it's fine by x86 maintainers, I'll do in the next version.
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+LKML-Reference: <20091029134552.GC30802@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/microcode_amd.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Sure, that looks good to me.
-
-	Ingo
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 366baa1..f4c538b 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -317,6 +317,12 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
+ 		return UCODE_NFOUND;
+ 	}
+ 
++	if (*(u32 *)firmware->data != UCODE_MAGIC) {
++		printk(KERN_ERR "microcode: invalid UCODE_MAGIC (0x%08x)\n",
++		       *(u32 *)firmware->data);
++		return UCODE_ERROR;
++	}
++
+ 	ret = generic_load_microcode(cpu, firmware->data, firmware->size);
+ 
+ 	release_firmware(firmware);
