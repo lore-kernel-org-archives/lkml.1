@@ -1,101 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758452AbZKJV7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbZKJV6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758452AbZKJV7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZKJV7S
+	id S1758460AbZKJV6O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:58:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758445AbZKJV6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:59:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57866 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Nov 2009 16:58:13 -0500
+Received: from mail-out2.uio.no ([129.240.10.58]:49460 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbZKJV7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:59:17 -0500
-Date: Tue, 10 Nov 2009 22:57:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: David Rientjes <rientjes@google.com>, Mike Travis <travis@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch v2] x86: reduce srat verbosity in the kernel log
-Message-ID: <20091110215759.GG23196@elte.hu>
-References: <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
- <4AE75162.7080903@sgi.com>
- <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com>
- <20091028033219.GE7744@basil.fritz.box>
- <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com>
- <20091028041159.GI7744@basil.fritz.box>
- <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com>
- <alpine.DEB.2.00.0911101307440.28728@chino.kir.corp.google.com>
- <20091110213312.GE23196@elte.hu>
- <4AF9DE50.50807@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF9DE50.50807@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1757974AbZKJV6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:58:12 -0500
+Subject: Re: sunrpc port allocation and IANA reserved list
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Ben Hutchings <bhutchings@solarflare.com>, netdev@vger.kernel.org,
+       Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1257887844.3044.24.camel@heimdal.trondhjem.org>
+References: <4AF9A63B.6010101@nortel.com>
+	 <1257875623.2834.19.camel@achroite.uk.solarflarecom.com>
+	 <4AF9B2CF.6050305@nortel.com>
+	 <1257884799.3044.7.camel@heimdal.trondhjem.org>
+	 <4AF9D5D1.9040501@nortel.com>
+	 <1257887844.3044.24.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Date: Wed, 11 Nov 2009 06:58:10 +0900
+Message-Id: <1257890290.3044.39.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 8 msgs/h 2 sum rcpts/h 10 sum msgs/h 3 total rcpts 1838 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 486C94379D6912BEC765B373BED98F1714B72CA8
+X-UiO-SPAM-Test: remote_host: 198.95.226.230 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 2 total 37 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-11-11 at 06:17 +0900, Trond Myklebust wrote:
+> The people who are trying to run absolutely all IANA registered services
+> on a single Linux machine that is also trying to run as an NFS client
+> may have a problem, but then again, how many setups do you know who are
+> trying to do that?
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+BTW: Even these setups can be fixed. One way to extend the available
+port ranges is to allocate more than one IP address; either through the
+use of multiple NICs, or through address aliasing. You can set up the
+services to listen on one interface, while setting up your routing
+tables to ensure that any outgoing connections to your NFS servers go
+through through a different interface.
 
-> Ingo Molnar wrote:
-> > * David Rientjes <rientjes@google.com> wrote:
-> > 
-> >> On Tue, 27 Oct 2009, David Rientjes wrote:
-> >>
-> >>> x86: reduce srat verbosity in the kernel log
-> >>>
-> >>> It's possible to reduce the number of SRAT messages emitted to the kernel
-> >>> log by printing each valid pxm once and then creating bitmaps to represent
-> >>> the apic ids that map to the same node.
-> >>>
-> >>> This reduces lines such as
-> >>>
-> >>> 	SRAT: PXM 0 -> APIC 0 -> Node 0
-> >>> 	SRAT: PXM 0 -> APIC 1 -> Node 0
-> >>> 	SRAT: PXM 1 -> APIC 2 -> Node 1
-> >>> 	SRAT: PXM 1 -> APIC 3 -> Node 1
-> >>>
-> >>> to
-> >>>
-> >>> 	SRAT: PXM 0 -> APIC {0-1} -> Node 0
-> >>> 	SRAT: PXM 1 -> APIC {2-3} -> Node 1
-> >>>
-> >>> The buffer used to store the apic id list is 128 characters in length.
-> >>> If that is too small to represent all the apic id ranges that are bound
-> >>> to a single pxm, a trailing "..." is added.  APICID_LIST_LEN should be
-> >>> manually increased for such configurations.
-> >>>
-> >>> Acked-by: Mike Travis <travis@sgi.com>
-> >>> Signed-off-by: David Rientjes <rientjes@google.com>
-> >> Ingo, have you had a chance to look at merging this yet?
-> > 
-> > I'm waiting for Mike to test them (and other patches) and send a new 
-> > series out with bits to pick up.
-> > 
-> > But i really dont like such type of buffering - in the past they tended 
-> > to be problematic. Why print this info at all in the default bootup?  
-> > It's not needed on a correctly functioning system.
-> > 
-> > For failure analysis make it opt-in available via a boot parameter (if 
-> > it's needed for bootup analysis) - but otherwise just dont print it.
-> > 
-> make them to depend on apic=debug or apic=verbose?
+You could also use virtualised machines to host the services, etc...
 
-Yeah - i'd definitely suggest to not splinter the boot flag space too 
-much - users wont know what to enable in case of trouble.
+Trond
 
-But that is a detail (and it can be improved later on as well).
-
-	Ingo
