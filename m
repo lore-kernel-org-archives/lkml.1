@@ -1,101 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbZKJMFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZKJMBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756151AbZKJMFw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 07:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZKJMFw
+	id S1756008AbZKJMBn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 07:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZKJMBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 07:05:52 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:36034 "EHLO cmpxchg.org"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbZKJMFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 07:05:51 -0500
-Date: Tue, 10 Nov 2009 13:00:53 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, chrisw@sous-sol.org,
-       wmw2@infradead.org, joerg.roedel@amd.com, muli@il.ibm.com,
-       akpm@linux-foundation.org, tj@kernel.org
-Subject: Re: [PATCH -v2 6/9] bootmem: add free_bootmem_late
-Message-ID: <20091110120053.GA14940@cmpxchg.org>
-References: <1257849980-22640-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1257849980-22640-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
+	Tue, 10 Nov 2009 07:01:43 -0500
+Received: from web32605.mail.mud.yahoo.com ([68.142.207.232]:48694 "HELO
+	web32605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750976AbZKJMBm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 07:01:42 -0500
+Message-ID: <707547.6272.qm@web32605.mail.mud.yahoo.com>
+X-YMail-OSG: oFluw98VM1nBxYZRy3Hs8bVaVtS21mJIiAo8YUd2aca_HX2ieet61Y1QV7q.NJqA0gKNP3QkxZv4bbnXeOXKPnQAhxmrDk95Uuzat51FWDeGICt9N7pq2Onp3KY0Yql6D5zYaeG_URXkjoMjMuvU82gsNm791UtgF.dcFXDXXga3RbgCobslGxpfUXXv3d4w0HaCwZmWnnnsVxgJ2bqBBDvVTnbBQxk5yQbuCmjYNEdGUNq6f7rfBa_E791CyCLbCOZReuuABnbw.dAI0x8J8Wwzk4EkQG4TNss5tUhFhO_mHtQ0rbypCU6_QH2n0LvTvb1jKDtwxoRhb28uN_t1l0xATzUbxyIe5qw4vXt5
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/211.6 YahooMailWebService/0.7.361.4
+References: <799070.68490.qm@web32608.mail.mud.yahoo.com> <1257780393.4108.343.camel@laptop> <20091110020858.GA5749@localhost>
+Date: Tue, 10 Nov 2009 04:01:47 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: Likley stupid question on "throttle_vm_writeout"
+To: Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20091110020858.GA5749@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257849980-22640-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 07:46:17PM +0900, FUJITA Tomonori wrote:
-> Add a new function for freeing bootmem after the bootmem allocator has
-> been released and the unreserved pages given to the page allocator.
-> This allows us to reserve bootmem and then release it if we later
-> discover it was not needed.
+----- Original Message ----
+
+> From: Wu Fengguang <fengguang.wu@intel.com>
+> To: Peter Zijlstra <peterz@infradead.org>
+> Cc: Martin Knoblauch <spamtrap@knobisoft.de>; linux-kernel@vger.kernel.org
+> Sent: Tue, November 10, 2009 3:08:58 AM
+> Subject: Re: Likley stupid question on "throttle_vm_writeout"
 > 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Cc: hannes@cmpxchg.org
-> Cc: akpm@linux-foundation.org
-> Cc: tj@kernel.org
-> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  include/linux/bootmem.h |    1 +
->  mm/bootmem.c            |   24 ++++++++++++++++++++++++
->  2 files changed, 25 insertions(+), 0 deletions(-)
+> On Mon, Nov 09, 2009 at 04:26:33PM +0100, Peter Zijlstra wrote:
+> > On Mon, 2009-11-09 at 07:15 -0800, Martin Knoblauch wrote:
+> > > Hi, (please CC me on replies)
+> > > 
+> > >  I have a likely stupid question on the function "throttle_vm_writeout". 
+> Looking at the code I find:
+> > > 
+> > >                 if (global_page_state(NR_UNSTABLE_NFS) +
+> > >                         global_page_state(NR_WRITEBACK) <= dirty_thresh)
+> > >                                 break;
+> > >                 congestion_wait(WRITE, HZ/10);
+> > > 
+> > > Shouldn't the NR_FILE_DIRTY pages be considered as well?
+> > 
+> > Ha, you just trod onto a piece of ugly I'd totally forgotten about ;-)
+> > 
+> > The intent of throttle_vm_writeout() is to limit the total pages in
+> > writeout and to wait for them to go-away.
 > 
-> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-> index dd97fb8..b10ec49 100644
-> --- a/include/linux/bootmem.h
-> +++ b/include/linux/bootmem.h
-> @@ -53,6 +53,7 @@ extern void free_bootmem_node(pg_data_t *pgdat,
->  			      unsigned long addr,
->  			      unsigned long size);
->  extern void free_bootmem(unsigned long addr, unsigned long size);
-> +extern void free_bootmem_late(unsigned long addr, unsigned long size);
->  
->  /*
->   * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
-> diff --git a/mm/bootmem.c b/mm/bootmem.c
-> index ca92991..30f1702 100644
-> --- a/mm/bootmem.c
-> +++ b/mm/bootmem.c
-> @@ -143,6 +143,30 @@ unsigned long __init init_bootmem(unsigned long start, unsigned long pages)
->  	return init_bootmem_core(NODE_DATA(0)->bdata, start, 0, pages);
->  }
->  
-> +/*
-> + * free_bootmem_late - free bootmem pages directly to page allocator
-> + * @addr: starting address of the range
-> + * @size: size of the range in bytes
-> + *
-> + * This is only useful when the bootmem allocator has already been torn
-> + * down, but we are still initializing the system.  Pages are given directly
-> + * to the page allocator, no bootmem metadata is updated because it is gone.
-> + */
-> +void __init free_bootmem_late(unsigned long addr, unsigned long size)
-> +{
-> +	unsigned long cursor, end;
-> +
-> +	kmemleak_free_part(__va(addr), size);
-> +
-> +	cursor = PFN_UP(addr);
-> +	end = PFN_DOWN(addr + size);
-> +
-> +	for (; cursor < end; cursor++) {
-> +		__free_pages_bootmem(pfn_to_page(cursor), 0);
-> +		totalram_pages++;
-> +	}
-> +}
+> Like this:
+> 
+>         vmscan fast => large NR_WRITEBACK => throttle vmscan based on it
+> 
+> > Everybody hates the function, nobody managed to actually come up with
+> > anything better.
+> 
+> btw, here is another reason to limit NR_WRITEBACK: I saw many
+> throttle_vm_writeout() waits if there is no wait queue to limit
+> NR_WRITEBACK (eg. NFS). In that case the (steadily) big NR_WRITEBACK
+> is _not_ caused by fast vmscan..
+> 
 
-I find it a bit weird that free_all_bootmem() callers have to take
-care of totalram_pages while this function does the accounting on its
-own.
+ That is exactely what made me look again into the code. My observation is that when doing something like:
 
-And I think the function is more logically placed right below
-free_bootmem(), like you did in the header.
+dd if=/dev/zero of=fast-local-disk bs=1M count=15000
 
-These are no show-stoppers for me, though, and otherwise the patch
-looks simple and straight-forward.  Feel free to add
+most of the "dirty" pages are in NR_FILE_DIRTY with some relatively small amount (10% or so) in NR_WRITEBACK. If I do:
 
-	Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
+dd if=/dev/zero of=some-nfs-mount bs=1M count=15000
 
-Thanks!
+NR_WRITEBACK almost immediatelly goes up to dirty_ratio, with NR_UNSTABLE_NFS small. Over time NR_UNSTABLE_NFS grows, but is always lower than NR_WRITEBACK (maybe 40/60).
+
+ But don't ask what happens if I do both in parallel.... The local IO really slows to a crawl and sometimes the system just becomes very unresponsive. Have we heard that before? :-)
+
+ Somehow I have the impression that NFS writeout is able to absolutely dominate the dirty pages to an extent that the system is unusable.
+
+Cheers
+Martin
+
