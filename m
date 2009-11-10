@@ -1,91 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZKJBTL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZKJB0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755903AbZKJBTL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 20:19:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZKJBTK
+	id S1755314AbZKJB0t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 20:26:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZKJB0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 20:19:10 -0500
-Received: from mga02.intel.com ([134.134.136.20]:10693 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755263AbZKJBTK convert rfc822-to-8bit (ORCPT
+	Mon, 9 Nov 2009 20:26:49 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:47118 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbZKJB0s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 20:19:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,712,1249282800"; 
-   d="scan'208";a="465826806"
-From: "Allan, Bruce W" <bruce.w.allan@intel.com>
-To: Nix <nix@esperi.org.uk>, "Tantilov, Emil S" <emil.s.tantilov@intel.com>
-CC: "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 9 Nov 2009 17:19:14 -0800
-Subject: RE: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31 (SMP
-	only? MSI? PAUSE!)
-Thread-Topic: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31 (SMP
-	only? MSI? PAUSE!)
-Thread-Index: Acphmgvl5K9PBnjEQve4+L2N/6DPmwACQA5g
-Message-ID: <8DD2590731AB5D4C9DBF71A877482A903B4E371A@orsmsx509.amr.corp.intel.com>
-References: <873a4rqu9o.fsf@spindle.srvr.nix>
-	<EA929A9653AAE14F841771FB1DE5A1365F9923A504@rrsmsx501.amr.corp.intel.com>
-	<87ljihnh81.fsf@spindle.srvr.nix> <87eio7meb4.fsf_-_@spindle.srvr.nix>
-In-Reply-To: <87eio7meb4.fsf_-_@spindle.srvr.nix>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Mon, 9 Nov 2009 20:26:48 -0500
+Subject: Re: [PATCH] Allow threads to rename siblings via
+ /proc/pid/tasks/tid/comm
+From: john stultz <johnstul@us.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
+       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+In-Reply-To: <87aayy6j8b.fsf@basil.nowhere.org>
+References: <1256347303.5059.26.camel@localhost.localdomain>
+	 <1257557918.3298.21.camel@localhost.localdomain>
+	 <87aayy6j8b.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 09 Nov 2009 17:26:46 -0800
+Message-ID: <1257816406.10091.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not a fix, but a workaround.
+On Sat, 2009-11-07 at 23:52 +0100, Andi Kleen wrote:
+> john stultz <johnstul@us.ibm.com> writes:
+> > -	strlcpy(tsk->comm, buf, sizeof(tsk->comm));
+> > +
+> > +	/*
+> > +	 * Threads may access current->comm without holding
+> > +	 * the task lock, so write the string carefully
+> > +	 * to avoid non-terminating reads. Readers without a lock
+> > +	 * will get the oldname, the newname or an empty string.
+> > +	 */
+> > +	tsk->comm[0] = 0;
+> > +	wmb();
+> > +	strlcpy(tsk->comm+1, buf+1, sizeof(tsk->comm)-1);
+> > +	wmb();
+> > +	tsk->comm[0] = buf[0];
+> 
+> Is this really safe? 
+> 
+> reader                    writer
+> 
+> 
+> read comm[0]
+>                          set comm[0] to 0
+>                          overwrites comm[1]
+> read comm[1]
+> read comm[2]
+>                          writes comm[2] to 0 
+> read comm[3]
+> 
+> ...
+> goes beyond the end
 
-It's not your gigabit switch either; it's a bug in the driver introduced in 2.6.30...sorry about that.  I'm working on a fix now that should be submitted upstream in the next few days.
+Ah. Thanks for catching that.
 
-Sorry for any inconvenience,
-Bruce.
+Here's a reworked patch using Arjan's suggestion of memsetting the whole
+string. Does this look ok to you?
 
->-----Original Message-----
->From: Nix [mailto:nix@esperi.org.uk]
->Sent: Monday, November 09, 2009 4:09 PM
->To: Tantilov, Emil S
->Cc: e1000-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org
->Subject: Re: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31
->(SMP only? MSI? PAUSE!)
->
->On 8 Nov 2009, nix@esperi.org.uk told this:
->
->> On 6 Nov 2009, Emil S. Tantilov verbalised:
->>> Also try disabling Tx pause frames:
->>> ethtool -A fastnet tx off autoneg off
->>
->> Trying that now. No freezes yet, but I haven't really given it long
->> enough.
->
->I just did a large number of kernel-build-and-installs with frame
->pointers over NFS over the errant link. No problems at all.
->
->I think we can say this fixes it (works around it?)
->
->Does this implicate the gigabit switch I'm talking to, or is it a kernel
->bug? (It looks like the cheap Realteks at the other ends of this link
->don't support pause frames at all: at least ethtool -a gives
->-EOPNOTSUPP, but maybe they simply can't be turned off... hm, r8169.c
->vaguely suggests that it supports them but can't turn them off without
->source hacking.)
->
->--------------------------------------------------------------------------
->----
->Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-
->Day
->trial. Simplify your report design, integration and deployment - and focus
->on
->what you do best, core application coding. Discover what's new with
->Crystal Reports now.  http://p.sf.net/sfu/bobj-july
->_______________________________________________
->E1000-devel mailing list
->E1000-devel@lists.sourceforge.net
->https://lists.sourceforge.net/lists/listinfo/e1000-devel
+thanks
+-john
+
+
+Setting a thread's comm to be something unique is a very useful ability
+and is helpful for debugging complicated threaded applications. However
+currently the only way to set a thread name is for the thread to name
+itself via the PR_SET_NAME prctl.
+
+However, there may be situations where it would be advantageous for a
+thread dispatcher to be naming the threads its managing, rather then
+having the threads self-describe themselves. This sort of behavior is
+available on other systems via the pthread_setname_np() interface.
+
+This patch exports a task's comm via proc/pid/comm and
+proc/pid/task/tid/comm interfaces, and allows thread siblings to write
+to these values.
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/fs/exec.c b/fs/exec.c
+index d49be6b..90003f8 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -926,6 +926,15 @@ char *get_task_comm(char *buf, struct task_struct *tsk)
+ void set_task_comm(struct task_struct *tsk, char *buf)
+ {
+ 	task_lock(tsk);
++
++	/*
++	 * Threads may access current->comm without holding
++	 * the task lock, so write the string carefully.
++	 * Readers without a lock may see incomplete new
++	 * names but are safe from non-terminating string reads.
++	 */
++	memset(tsk->comm, 0, TASK_COMM_LEN);
++	wmb();
+ 	strlcpy(tsk->comm, buf, sizeof(tsk->comm));
+ 	task_unlock(tsk);
+ 	perf_event_comm(tsk);
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 837469a..7f59af1 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -1265,6 +1265,78 @@ static const struct file_operations proc_pid_sched_operations = {
+ 
+ #endif
+ 
++
++
++static ssize_t
++comm_write(struct file *file, const char __user *buf,
++	    size_t count, loff_t *offset)
++{
++	struct inode *inode = file->f_path.dentry->d_inode;
++	struct task_struct *p;
++	char buffer[TASK_COMM_LEN];
++
++	memset(buffer, 0, sizeof(buffer));
++	if (count > sizeof(buffer) - 1)
++		count = sizeof(buffer) - 1;
++	if (copy_from_user(buffer, buf, count))
++		return -EFAULT;
++
++	p = get_proc_task(inode);
++	if (!p)
++		return -ESRCH;
++
++	if (same_thread_group(current, p))
++		set_task_comm(p, buffer);
++	else
++		count = -EINVAL;
++
++	put_task_struct(p);
++
++	return count;
++}
++
++
++static int comm_show(struct seq_file *m, void *v)
++{
++	struct inode *inode = m->private;
++	struct task_struct *p;
++
++	p = get_proc_task(inode);
++	if (!p)
++		return -ESRCH;
++
++	task_lock(p);
++	seq_printf(m, "%s\n", p->comm);
++	task_unlock(p);
++
++	put_task_struct(p);
++
++	return 0;
++}
++
++static int comm_open(struct inode *inode, struct file *filp)
++{
++	int ret;
++
++	ret = single_open(filp, comm_show, NULL);
++	if (!ret) {
++		struct seq_file *m = filp->private_data;
++
++		m->private = inode;
++	}
++	return ret;
++}
++
++
++static const struct file_operations proc_pid_set_comm_operations = {
++	.open		= comm_open,
++	.read		= seq_read,
++	.write		= comm_write,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++
+ /*
+  * We added or removed a vma mapping the executable. The vmas are only mapped
+  * during exec and are not mapped with the mmap system call.
+@@ -2504,6 +2576,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
+ #endif
++	REG("comm",      S_IRUGO|S_IWUSR, proc_pid_set_comm_operations),
+ #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
+ 	INF("syscall",    S_IRUSR, proc_pid_syscall),
+ #endif
+@@ -2839,6 +2912,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
+ #endif
++	REG("comm",      S_IRUGO|S_IWUSR, proc_pid_set_comm_operations),
+ #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
+ 	INF("syscall",   S_IRUSR, proc_pid_syscall),
+ #endif
+
+
