@@ -1,101 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbZKJHje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbZKJHjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbZKJHje (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 02:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbZKJHje
+	id S1752174AbZKJHjO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 02:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZKJHjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 02:39:34 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35564 "EHLO mx2.mail.elte.hu"
+	Tue, 10 Nov 2009 02:39:13 -0500
+Received: from mga11.intel.com ([192.55.52.93]:19040 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752066AbZKJHjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 02:39:33 -0500
-Date: Tue, 10 Nov 2009 08:39:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>,
-       Naohiro Ooiwa <nooiwa@miraclelinux.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, roland@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, oleg@redhat.com
-Subject: Re: [PATCH] kernel.h: Add printk_ratelimited and pr_<level>_rl
-Message-ID: <20091110073909.GA8874@elte.hu>
-References: <4AEACFBF.4060108@miraclelinux.com>
- <20091030143333.414ea29c.akpm@linux-foundation.org>
- <1256939158.1917.43.camel@Joe-Laptop.home>
- <1256944907.1917.109.camel@Joe-Laptop.home>
- <20091109134914.70de28cf.akpm@linux-foundation.org>
- <20091110051734.GG7897@elte.hu>
- <1257838493.21088.6.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257838493.21088.6.camel@twins>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1752050AbZKJHjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 02:39:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,714,1249282800"; 
+   d="scan'208";a="745463591"
+Subject: [BUGFIX -v3 for .32] crypto, gcm, fix another complete call in
+ complete fuction
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 10 Nov 2009 15:39:11 +0800
+Message-Id: <1257838751.22519.2513.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The flow of the complete function (xxx_done) in gcm.c is as follow:
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+void complete(struct crypto_async_request *areq, int err)
+{
+	struct aead_request *req = areq->data;
 
-> On Tue, 2009-11-10 at 06:17 +0100, Ingo Molnar wrote:
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Fri, 30 Oct 2009 16:21:47 -0700
-> > > Joe Perches <joe@perches.com> wrote:
-> > > 
-> > > > +#define pr_emerg_rl(fmt, ...) \
-> > > > +        printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-> > > > +#define pr_alert_rl(fmt, ...) \
-> > > > +        printk_ratelimited(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
-> > > > +#define pr_crit_rl(fmt, ...) \
-> > > > +        printk_ratelimited(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
-> > > > +#define pr_err_rl(fmt, ...) \
-> > > > +        printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
-> > > > +#define pr_warning_rl(fmt, ...) \
-> > > > +        printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-> > > > +#define pr_notice_rl(fmt, ...) \
-> > > > +        printk_ratelimited(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
-> > > > +#define pr_info_rl(fmt, ...) \
-> > > > +        printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-> > > 
-> > > Would prefer pr_emerg_ratelimited personally.  It's longer, but one 
-> > > doesn't ask "wtf does _rl" mean and it avoids having two identifiers 
-> > > which refer to the same thing.
-> > 
-> > Yeah. It will be rarely used so that it wont ever really be 'obvious at 
-> > a glance', even to folks well versed in kernel source code details.
-> 
-> Is there a reason for all this pr_ nonsense? will we depricate printk()?
+	if (!err) {
+		err = async_next_step();
+		if (err == -EINPROGRESS || err == -EBUSY)
+			return;
+	}
 
-Yes, pr_*() has established itself as a printk shortcut. The benefits 
-of:
+	complete_for_next_step(areq, err);
+}
 
-  pr_info("stuff\n");
+But *areq may be destroyed in async_next_step(), this makes
+complete_for_next_step() can not work properly. To fix this, one of
+following methods is used for each complete function.
 
-versus:
+- Add a __complete() for each complete(), which accept struct
+  aead_request *req instead of areq, so avoid using areq after it is
+  destroyed.
 
-  printk(KERN_INFO "stuff\n");
+- Expand complete_for_next_step().
 
-are sufficiently large:
+The fixing method is based on the idea of Herbert Xu.
 
- - it's shorter by 9 characters (more than a level of indentation)
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ crypto/gcm.c |  107 ++++++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 73 insertions(+), 34 deletions(-)
 
- - you cannot forget to add a KERN_ prefix - which is required for 98% 
-   of all printks but which is forgotten from 50% of the submitted 
-   patches.
+--- a/crypto/gcm.c
++++ b/crypto/gcm.c
+@@ -40,7 +40,7 @@ struct crypto_rfc4106_ctx {
+ struct crypto_gcm_ghash_ctx {
+ 	unsigned int cryptlen;
+ 	struct scatterlist *src;
+-	crypto_completion_t complete;
++	void (*complete)(struct aead_request *req, int err);
+ };
+ 
+ struct crypto_gcm_req_priv_ctx {
+@@ -267,23 +267,26 @@ static int gcm_hash_final(struct aead_re
+ 	return crypto_ahash_final(ahreq);
+ }
+ 
+-static void gcm_hash_final_done(struct crypto_async_request *areq,
+-				int err)
++static void __gcm_hash_final_done(struct aead_request *req, int err)
+ {
+-	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 	struct crypto_gcm_ghash_ctx *gctx = &pctx->ghash_ctx;
+ 
+ 	if (!err)
+ 		crypto_xor(pctx->auth_tag, pctx->iauth_tag, 16);
+ 
+-	gctx->complete(areq, err);
++	gctx->complete(req, err);
+ }
+ 
+-static void gcm_hash_len_done(struct crypto_async_request *areq,
+-			      int err)
++static void gcm_hash_final_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
++
++	__gcm_hash_final_done(req, err);
++}
++
++static void __gcm_hash_len_done(struct aead_request *req, int err)
++{
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 
+ 	if (!err) {
+@@ -292,13 +295,18 @@ static void gcm_hash_len_done(struct cry
+ 			return;
+ 	}
+ 
+-	gcm_hash_final_done(areq, err);
++	__gcm_hash_final_done(req, err);
+ }
+ 
+-static void gcm_hash_crypt_remain_done(struct crypto_async_request *areq,
+-				       int err)
++static void gcm_hash_len_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
++
++	__gcm_hash_len_done(req, err);
++}
++
++static void __gcm_hash_crypt_remain_done(struct aead_request *req, int err)
++{
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 
+ 	if (!err) {
+@@ -307,13 +315,19 @@ static void gcm_hash_crypt_remain_done(s
+ 			return;
+ 	}
+ 
+-	gcm_hash_len_done(areq, err);
++	__gcm_hash_len_done(req, err);
+ }
+ 
+-static void gcm_hash_crypt_done(struct crypto_async_request *areq,
+-				int err)
++static void gcm_hash_crypt_remain_done(struct crypto_async_request *areq,
++				       int err)
+ {
+ 	struct aead_request *req = areq->data;
++
++	__gcm_hash_crypt_remain_done(req, err);
++}
++
++static void __gcm_hash_crypt_done(struct aead_request *req, int err)
++{
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 	struct crypto_gcm_ghash_ctx *gctx = &pctx->ghash_ctx;
+ 	unsigned int remain;
+@@ -327,13 +341,18 @@ static void gcm_hash_crypt_done(struct c
+ 			return;
+ 	}
+ 
+-	gcm_hash_crypt_remain_done(areq, err);
++	__gcm_hash_crypt_remain_done(req, err);
+ }
+ 
+-static void gcm_hash_assoc_remain_done(struct crypto_async_request *areq,
+-					   int err)
++static void gcm_hash_crypt_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
++
++	__gcm_hash_crypt_done(req, err);
++}
++
++static void __gcm_hash_assoc_remain_done(struct aead_request *req, int err)
++{
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 	struct crypto_gcm_ghash_ctx *gctx = &pctx->ghash_ctx;
+ 	crypto_completion_t complete;
+@@ -350,15 +369,21 @@ static void gcm_hash_assoc_remain_done(s
+ 	}
+ 
+ 	if (remain)
+-		gcm_hash_crypt_done(areq, err);
++		__gcm_hash_crypt_done(req, err);
+ 	else
+-		gcm_hash_crypt_remain_done(areq, err);
++		__gcm_hash_crypt_remain_done(req, err);
+ }
+ 
+-static void gcm_hash_assoc_done(struct crypto_async_request *areq,
+-				int err)
++static void gcm_hash_assoc_remain_done(struct crypto_async_request *areq,
++				       int err)
+ {
+ 	struct aead_request *req = areq->data;
++
++	__gcm_hash_assoc_remain_done(req, err);
++}
++
++static void __gcm_hash_assoc_done(struct aead_request *req, int err)
++{
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 	unsigned int remain;
+ 
+@@ -371,13 +396,18 @@ static void gcm_hash_assoc_done(struct c
+ 			return;
+ 	}
+ 
+-	gcm_hash_assoc_remain_done(areq, err);
++	__gcm_hash_assoc_remain_done(req, err);
+ }
+ 
+-static void gcm_hash_init_done(struct crypto_async_request *areq,
+-			       int err)
++static void gcm_hash_assoc_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
++
++	__gcm_hash_assoc_done(req, err);
++}
++
++static void __gcm_hash_init_done(struct aead_request *req, int err)
++{
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 	crypto_completion_t complete;
+ 	unsigned int remain = 0;
+@@ -393,9 +423,16 @@ static void gcm_hash_init_done(struct cr
+ 	}
+ 
+ 	if (remain)
+-		gcm_hash_assoc_done(areq, err);
++		__gcm_hash_assoc_done(req, err);
+ 	else
+-		gcm_hash_assoc_remain_done(areq, err);
++		__gcm_hash_assoc_remain_done(req, err);
++}
++
++static void gcm_hash_init_done(struct crypto_async_request *areq, int err)
++{
++	struct aead_request *req = areq->data;
++
++	__gcm_hash_init_done(req, err);
+ }
+ 
+ static int gcm_hash(struct aead_request *req,
+@@ -457,10 +494,8 @@ static void gcm_enc_copy_hash(struct aea
+ 				 crypto_aead_authsize(aead), 1);
+ }
+ 
+-static void gcm_enc_hash_done(struct crypto_async_request *areq,
+-				     int err)
++static void gcm_enc_hash_done(struct aead_request *req, int err)
+ {
+-	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 
+ 	if (!err)
+@@ -469,8 +504,7 @@ static void gcm_enc_hash_done(struct cry
+ 	aead_request_complete(req, err);
+ }
+ 
+-static void gcm_encrypt_done(struct crypto_async_request *areq,
+-				     int err)
++static void gcm_encrypt_done(struct crypto_async_request *areq, int err)
+ {
+ 	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+@@ -479,9 +513,13 @@ static void gcm_encrypt_done(struct cryp
+ 		err = gcm_hash(req, pctx);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		else if (!err) {
++			crypto_xor(pctx->auth_tag, pctx->iauth_tag, 16);
++			gcm_enc_copy_hash(req, pctx);
++		}
+ 	}
+ 
+-	gcm_enc_hash_done(areq, err);
++	aead_request_complete(req, err);
+ }
+ 
+ static int crypto_gcm_encrypt(struct aead_request *req)
+@@ -538,9 +576,8 @@ static void gcm_decrypt_done(struct cryp
+ 	aead_request_complete(req, err);
+ }
+ 
+-static void gcm_dec_hash_done(struct crypto_async_request *areq, int err)
++static void gcm_dec_hash_done(struct aead_request *req, int err)
+ {
+-	struct aead_request *req = areq->data;
+ 	struct crypto_gcm_req_priv_ctx *pctx = crypto_gcm_reqctx(req);
+ 	struct ablkcipher_request *abreq = &pctx->u.abreq;
+ 	struct crypto_gcm_ghash_ctx *gctx = &pctx->ghash_ctx;
+@@ -552,9 +589,11 @@ static void gcm_dec_hash_done(struct cry
+ 		err = crypto_ablkcipher_decrypt(abreq);
+ 		if (err == -EINPROGRESS || err == -EBUSY)
+ 			return;
++		else if (!err)
++			err = crypto_gcm_verify(req, pctx);
+ 	}
+ 
+-	gcm_decrypt_done(areq, err);
++	aead_request_complete(req, err);
+ }
+ 
+ static int crypto_gcm_decrypt(struct aead_request *req)
 
-so pr_*(), while named in a sucky way (all 2 letter abbrevs are sucky), 
-has advantages, makes stuff more readable and reduces churn.
 
-printk wont go away as an ad-hoc print-this tool. (Nor will we convert 
-most of the remaining 18,000+ uses of printk() in the kernel, so 
-printk() will be with us forever i guess.)
-
-	Ingo
