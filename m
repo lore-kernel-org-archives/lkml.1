@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbZKJMI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZKJMLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbZKJMI3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 07:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZKJMI2
+	id S1756206AbZKJMLU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 07:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZKJMLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 07:08:28 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:48585 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751029AbZKJMI1 (ORCPT
+	Tue, 10 Nov 2009 07:11:20 -0500
+Received: from fencepost.gnu.org ([140.186.70.10]:44537 "EHLO
+	fencepost.gnu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbZKJMLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 07:08:27 -0500
-Date: Tue, 10 Nov 2009 12:08:31 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Cc: alsa-devel@alsa-project.org, linux-omap@vger.kernel.org,
-       sameo@linux.intel.com, linux-kernel@vger.kernel.org, tony@atomide.com
-Subject: Re: [PATCH 1/4 v2] MFD: TWL4030: Add audio_mclk to the codec
- platform data
-Message-ID: <20091110120831.GB16200@rakim.wolfsonmicro.main>
-References: <1257321500-27049-1-git-send-email-peter.ujfalusi@nokia.com>
- <1257321500-27049-2-git-send-email-peter.ujfalusi@nokia.com>
+	Tue, 10 Nov 2009 07:11:19 -0500
+Date: Tue, 10 Nov 2009 07:11:24 -0500
+From: Davidlohr Bueso <dave@gnu.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/20] SCSI: No longer use Scsi_Cmd typedef
+Message-ID: <20091110121124.GA18938@fencepost.gnu.org>
+References: <1257711411.4759.105.camel@dbueso-pc> <4AF7CDE7.8030008@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257321500-27049-2-git-send-email-peter.ujfalusi@nokia.com>
-X-Cookie: BOFH excuse
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4AF7CDE7.8030008@panasas.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 09:58:17AM +0200, Peter Ujfalusi wrote:
-> Add audio_mclk to the platform data struct for the
-> twl4030-codec MFD driver.
-> 
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-> Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+On Mon, Nov 09, 2009 at 10:08:07AM +0200, Boaz Harrosh wrote:
+> On 11/08/2009 10:16 PM, Davidlohr Bueso wrote:
+> > Plenty of older drivers are still using Scsi_Cmd. The following patches
+> > remove its use and changes them for "struct scsi_cmnd". There is also no
+> > need for the drivers/scsi/scsi_typedefs.h file anymore since this only
+> > contains the typedef for Scsi_Cmd. 
 
-Applied all, thanks.
+> 
+> Thanks for doing this. What a grate relief.
+> 
+> One thing that I'm missing is the actual patch to remove the
+> scsi_typedefs.h file. Is it still used?
+
+Oops, you're right, sending now.
+
+Thanks,
+Davidlohr
+
+Signed-off-by: Davidlohr Bueso <dave@gnu.org>
+
+---
+ drivers/scsi/scsi_typedefs.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+ delete mode 100644 drivers/scsi/scsi_typedefs.h
+
+diff --git a/drivers/scsi/scsi_typedefs.h b/drivers/scsi/scsi_typedefs.h
+deleted file mode 100644
+index 2ed4c5c..0000000
+--- a/drivers/scsi/scsi_typedefs.h
++++ /dev/null
+@@ -1,2 +0,0 @@
+-
+-typedef struct scsi_cmnd Scsi_Cmnd;
+-- 
+1.6.3.3
