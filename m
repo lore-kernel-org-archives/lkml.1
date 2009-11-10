@@ -1,121 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbZKJBPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZKJBTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755838AbZKJBPh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Nov 2009 20:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZKJBPh
+	id S1755903AbZKJBTL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Nov 2009 20:19:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZKJBTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Nov 2009 20:15:37 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:55281 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbZKJBPg (ORCPT
+	Mon, 9 Nov 2009 20:19:10 -0500
+Received: from mga02.intel.com ([134.134.136.20]:10693 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755263AbZKJBTK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Nov 2009 20:15:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=Ren7JDxakblhv9DkxkRZbSFD2CQx007X8Mpgc2GHNrALyFCSCNeOe9usd7EXECozuq
-         bRtdipAx0wz39J7B75SfY5SMhLSyJhCm1QCcswToVLtI/yCcokoHZGSgSRn84JPpYL+j
-         yJhUwupAbcJDoUVK9cEuNWzqqDgHkbasEPlbk=
-Message-ID: <4AF8BEB9.1070103@gmail.com>
-Date: Mon, 09 Nov 2009 20:15:37 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Mon, 9 Nov 2009 20:19:10 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,712,1249282800"; 
+   d="scan'208";a="465826806"
+From: "Allan, Bruce W" <bruce.w.allan@intel.com>
+To: Nix <nix@esperi.org.uk>, "Tantilov, Emil S" <emil.s.tantilov@intel.com>
+CC: "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 9 Nov 2009 17:19:14 -0800
+Subject: RE: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31 (SMP
+	only? MSI? PAUSE!)
+Thread-Topic: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31 (SMP
+	only? MSI? PAUSE!)
+Thread-Index: Acphmgvl5K9PBnjEQve4+L2N/6DPmwACQA5g
+Message-ID: <8DD2590731AB5D4C9DBF71A877482A903B4E371A@orsmsx509.amr.corp.intel.com>
+References: <873a4rqu9o.fsf@spindle.srvr.nix>
+	<EA929A9653AAE14F841771FB1DE5A1365F9923A504@rrsmsx501.amr.corp.intel.com>
+	<87ljihnh81.fsf@spindle.srvr.nix> <87eio7meb4.fsf_-_@spindle.srvr.nix>
+In-Reply-To: <87eio7meb4.fsf_-_@spindle.srvr.nix>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Lucas De Marchi <lucas.de.marchi@gmail.com>
-CC: Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [lucas.de.marchi@gmail.com: Bug when changing cpus_allowed of
- RT tasks?]
-References: <20091108121650.GB11372@elte.hu> <4AF828C50200005A000585DB@sinclair.provo.novell.com> <193b0f820911091312y125209deufadd1040aff65cfd@mail.gmail.com>
-In-Reply-To: <193b0f820911091312y125209deufadd1040aff65cfd@mail.gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigAB207F9FA73AEF6801D1AA81"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigAB207F9FA73AEF6801D1AA81
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Not a fix, but a workaround.
 
-Lucas De Marchi wrote:
-> On Mon, Nov 9, 2009 at 17:35, Gregory Haskins <ghaskins@novell.com> wro=
-te:
->=20
->>>       static int select_task_rq_rt(struct task_struct *p, int sd_flag=
-, int flags)
->>>       {
->>>               [...]
->>>               if (unlikely(rt_task(rq->curr)) &&
->>>                   (p->rt.nr_cpus_allowed > 1)) {
->>>                       int cpu =3D find_lowest_rq(p);
->>>
->>>                       return (cpu =3D=3D -1) ? task_cpu(p) : cpu;
->>>               }
-> 	/*
-> 	 * Otherwise, just let it ride on the affined RQ and the
-> 	 * post-schedule router will push the preempted task away
-> 	 */
-> 	return task_cpu(p);
->=20
->>>       }
-> I completed the rest of function to emphasize it will return task_cpu(p=
-)
-> afterwards.
->=20
->> So the intent of this logic is to say "if the task is of type RT, and =
-it can move, see if it can move
->> elsewhere".  Otherwise, we do not try to move it at all.
->=20
-> I'd say "if _current_ is of type RT, and _p_ can move, see if _p_ can m=
-ove
-> elsewhere". And this check is repeated for p inside find_lowest_rq, so =
-it would
-> not be needed here. Just let it call find_lowest_rq and -1 will be retu=
-rned.
+It's not your gigabit switch either; it's a bug in the driver introduced in 2.6.30...sorry about that.  I'm working on a fix now that should be submitted upstream in the next few days.
 
-Ah, yes, "current" is correct.  My bad.
+Sorry for any inconvenience,
+Bruce.
 
-
->=20
->> Until further evidence is presented, I have to respectfully NAK the pa=
-tch, as I do not think its doing the right thing
->> nor do I think the current code is actually broken.
->=20
-> I see now it's not doing the right thing. IMO only the double check of
-> rt.nr_cpus_allowed is superfluous, but not wrong.
->=20
-
-Right.  I have a suspicion that the original code didn't have the
-redundant check, but it was patched that way later.  I can't recall, tbh.=
-
-
->=20
-> Thanks for clarifications
-
-Np.
-
-Kind Regards,
--Greg
-
-
---------------enigAB207F9FA73AEF6801D1AA81
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkr4vrkACgkQP5K2CMvXmqG0tgCeKyHnQ7OXCgJzzW9uiWh2OZsP
-xJEAoIgOK+0CZ5rUc9KYVcbPee2DkYiB
-=+Pca
------END PGP SIGNATURE-----
-
---------------enigAB207F9FA73AEF6801D1AA81--
+>-----Original Message-----
+>From: Nix [mailto:nix@esperi.org.uk]
+>Sent: Monday, November 09, 2009 4:09 PM
+>To: Tantilov, Emil S
+>Cc: e1000-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org
+>Subject: Re: [E1000-devel] [in-tree drivers] freezing e1000e in 2.6.31
+>(SMP only? MSI? PAUSE!)
+>
+>On 8 Nov 2009, nix@esperi.org.uk told this:
+>
+>> On 6 Nov 2009, Emil S. Tantilov verbalised:
+>>> Also try disabling Tx pause frames:
+>>> ethtool -A fastnet tx off autoneg off
+>>
+>> Trying that now. No freezes yet, but I haven't really given it long
+>> enough.
+>
+>I just did a large number of kernel-build-and-installs with frame
+>pointers over NFS over the errant link. No problems at all.
+>
+>I think we can say this fixes it (works around it?)
+>
+>Does this implicate the gigabit switch I'm talking to, or is it a kernel
+>bug? (It looks like the cheap Realteks at the other ends of this link
+>don't support pause frames at all: at least ethtool -a gives
+>-EOPNOTSUPP, but maybe they simply can't be turned off... hm, r8169.c
+>vaguely suggests that it supports them but can't turn them off without
+>source hacking.)
+>
+>--------------------------------------------------------------------------
+>----
+>Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-
+>Day
+>trial. Simplify your report design, integration and deployment - and focus
+>on
+>what you do best, core application coding. Discover what's new with
+>Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+>_______________________________________________
+>E1000-devel mailing list
+>E1000-devel@lists.sourceforge.net
+>https://lists.sourceforge.net/lists/listinfo/e1000-devel
