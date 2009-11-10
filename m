@@ -1,48 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752096AbZKJKzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbZKJLGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752096AbZKJKzt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 05:55:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZKJKzs
+	id S1753002AbZKJLGG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 06:06:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZKJLGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 05:55:48 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56915 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751034AbZKJKzs (ORCPT
+	Tue, 10 Nov 2009 06:06:05 -0500
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:59639 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751214AbZKJLGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 05:55:48 -0500
-Date: Tue, 10 Nov 2009 10:56:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Avi Kivity <avi@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Willy Tarreau <w@1wt.eu>,
-       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091110105642.215804e0@lxorguk.ukuu.org.uk>
-In-Reply-To: <4AF9435F.2070103@redhat.com>
-References: <4AF4526B.4060101@zytor.com>
-	<40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com>
-	<20091108173708.GF1372@ucw.cz>
-	<40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com>
-	<20091108181016.GB32364@elf.ucw.cz>
-	<alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>
-	<20091108193618.GB4186@elf.ucw.cz>
-	<40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com>
-	<20091108195158.GD4186@elf.ucw.cz>
-	<20091108200852.7f2cf092@lxorguk.ukuu.org.uk>
-	<20091110052711.GA15338@1wt.eu>
-	<4AF9020C.90108@zytor.com>
-	<4AF9435F.2070103@redhat.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Nov 2009 06:06:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=gM5PvlNI/L0nmuaPJ7I5TLdJRqFrCxhwLQrw3F9IGyIjYCAkz743kwwhB1b4q2J4R1
+         /Jy/kW+M6g5ZB93WxLKojDp0yGvogr8NL+H0glwEySrnbJ5iBVXnGbmR8XZy6JwUWoLk
+         Y2gHtCZKuup24INQ8fvN3pZVQsvjwFEAYBT8k=
+Date: Tue, 10 Nov 2009 12:06:01 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, dimm <dmitry.adamushko@gmail.com>
+Subject: [PATCH 0/3] x86, ucode-amd: trim verbosity
+Message-ID: <20091110110601.GG30802@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In theory yes.  There would need to be a bit of work to disassociate it 
-> from kvm, but nothing too difficult.
+Following patches make log messages of microcode_amd more terse.
 
-For the tiny cases that actually matter using the KVM code appears a bit
-over the top.
+Especially in conjunction with Dmitry's planned changes to summarize
+patch level information this will help to trim messages to the
+necessary minimum on systems with many CPUs.
+
+Example (without patch 1 and 2) of a 48 CPU system:
+
+  microcode: CPU0: patch_level=0x10000b5
+  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+  microcode: CPU0: cpu revision not listed in equivalent cpu table
+  microcode: CPU0: cpu revision not listed in equivalent cpu table
+  microcode: CPU1: patch_level=0x10000b5
+  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+  microcode: CPU1: cpu revision not listed in equivalent cpu table
+  microcode: CPU1: cpu revision not listed in equivalent cpu table
+
+  ...
+
+  microcode: CPU46: patch_level=0x10000b5
+  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+  microcode: CPU46: cpu revision not listed in equivalent cpu table
+  microcode: CPU46: cpu revision not listed in equivalent cpu table
+  microcode: CPU47: patch_level=0x10000b5
+  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+  microcode: CPU47: cpu revision not listed in equivalent cpu table
+  microcode: CPU47: cpu revision not listed in equivalent cpu table
+  Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+
+This is a lot of unnecessary noise. With patches 1 and 2 applied this
+is shortened to:
+
+  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+  microcode: CPU0: patch_level=0x10000b5
+  microcode: CPU1: patch_level=0x10000b5
+
+  ...
+
+  microcode: CPU46: patch_level=0x10000b5
+  microcode: CPU47: patch_level=0x10000b5
+  Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+
+And with Dmitry's patches this will be trimmed down even further.
+Note: Patch 3 is just a conversion from printk to pr_ macros.
+
+Patches are against tip/master.
+Please apply.
+
+
+Thanks,
+
+Andreas
