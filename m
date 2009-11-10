@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbZKJKIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbZKJKFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753427AbZKJKIH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 05:08:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZKJKIH
+	id S1753421AbZKJKFO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 05:05:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZKJKFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 05:08:07 -0500
-Received: from forum.psychotherapie.org ([217.160.22.205]:53663 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752939AbZKJKIG (ORCPT
+	Tue, 10 Nov 2009 05:05:13 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:40545 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752939AbZKJKFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 05:08:06 -0500
-Date: Tue, 10 Nov 2009 11:04:50 +0100
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: FatELF patches...
-Message-ID: <20091110100450.GB575@nibiru.local>
-Reply-To: weigelt@metux.de
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan> <1257103201.2865.6.camel@chumley>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257103201.2865.6.camel@chumley>
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+	Tue, 10 Nov 2009 05:05:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=xRCJfJ6NnImRAv4Y/uJuRjAB5h3ZjfCpBhfaiUTSEvnhD1jZzRJ7U7Hej5f+1Y0tai
+         1GY39eKR+Y7bDgMtjOHraq15bpr9PkDj1GxcExskWw0tx6mqEIXUF96AKiqZTvg/4bNM
+         SznhdCplPDy88VCL2P8pZMlqBKrLPvoNNqhlQ=
+MIME-Version: 1.0
+In-Reply-To: <20091110082340.319f1ad3@jbarnes-x200>
+References: <4AF875D0.10602@kernel.org> <20091110082340.319f1ad3@jbarnes-x200>
+Date: Tue, 10 Nov 2009 02:05:17 -0800
+Message-ID: <86802c440911100205i14dcf69i99cb0ef6f76406d1@mail.gmail.com>
+Subject: Re: pci_find_parent_resource patch
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Hagood <david.hagood@gmail.com> wrote:
+On Tue, Nov 10, 2009 at 12:23 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> I don't remember seeing it, is it for 2.6.32?
 
-Hi,
+http://lkml.org/lkml/2009/8/7/352
 
-> I hope it's not too late for a request for consideration: if we start
-> having fat binaries, could one of the "binaries" be one of the "not
-> quite compiled code" formats like Architecture Neutral Distribution
-> Format (ANDF), such that, given a fat binary which does NOT support a
-> given CPU, you could at least in theory process the ANDF section to
-> create the needed target binary? Bonus points for being able to then
-> append the newly created section to the file.
-
-If you really wanna have arch independent binaries, you need some sort 
-of virtual processor. Java, LLVM, etc. The idea is far from being new, 
-IMHO originally came from old Burroughs Mainframes, which ran some
-Algol-tailored bytecode, driven by an interpreter in microcode.
-(I'm currently desiging a new VP with similar concepts, just in case
-anybody's interested).
-
-BTW: this does not need additional kernel support - binfmt_misc 
-is your friend ;-P
-
-> As an embedded systems guy who is looking to have to support multiple
-> CPU types, this is really very interesting to me.
-
-Just for the protocol: you want to have FatELF on embedded system ?
-
-
-cu
--- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
+YH
