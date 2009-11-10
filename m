@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758176AbZKJUzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758162AbZKJUz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758176AbZKJUzc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 15:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbZKJUzb
+	id S1758162AbZKJUz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 15:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbZKJUzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 15:55:31 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52335 "EHLO hera.kernel.org"
+	Tue, 10 Nov 2009 15:55:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52330 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758115AbZKJUz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 15:55:28 -0500
-Date: Tue, 10 Nov 2009 20:54:52 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+	id S1758081AbZKJUzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 15:55:25 -0500
+Date: Tue, 10 Nov 2009 20:55:08 GMT
+From: tip-bot for Dave Jones <davej@redhat.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, peterz@infradead.org,
-       tglx@linutronix.de, pwil3058@bigpond.net.au, mingo@elte.hu
+       davej@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, efault@gmx.de,
-       tglx@linutronix.de, pwil3058@bigpond.net.au, mingo@elte.hu
-In-Reply-To: <1257880321.4108.457.camel@laptop>
-References: <1257880321.4108.457.camel@laptop>
+       tglx@linutronix.de, davej@redhat.com, mingo@elte.hu
+In-Reply-To: <20091110200120.GA27090@redhat.com>
+References: <20091110200120.GA27090@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Make sure task has correct sched_class after policy change
-Message-ID: <tip-ffd44db5f02af32bcc25a8eb5981bf02a141cdab@git.kernel.org>
-Git-Commit-ID: ffd44db5f02af32bcc25a8eb5981bf02a141cdab
+Subject: [tip:x86/urgent] x86: Fix typo in Intel CPU cache size descriptor
+Message-ID: <tip-e02e0e1a130b9ca37c5186d38ad4b3aaf58bb149@git.kernel.org>
+Git-Commit-ID: e02e0e1a130b9ca37c5186d38ad4b3aaf58bb149
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,60 +29,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ffd44db5f02af32bcc25a8eb5981bf02a141cdab
-Gitweb:     http://git.kernel.org/tip/ffd44db5f02af32bcc25a8eb5981bf02a141cdab
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Tue, 10 Nov 2009 20:12:01 +0100
+Commit-ID:  e02e0e1a130b9ca37c5186d38ad4b3aaf58bb149
+Gitweb:     http://git.kernel.org/tip/e02e0e1a130b9ca37c5186d38ad4b3aaf58bb149
+Author:     Dave Jones <davej@redhat.com>
+AuthorDate: Tue, 10 Nov 2009 15:01:20 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Nov 2009 20:22:31 +0100
+CommitDate: Tue, 10 Nov 2009 21:52:32 +0100
 
-sched: Make sure task has correct sched_class after policy change
+x86: Fix typo in Intel CPU cache size descriptor
 
->From the code in rt_mutex_setprio(), it is evident that the
-intention is that task's with a RT 'prio' value as a consequence
-of receiving a PI boost also have their 'sched_class' field set
-to '&rt_sched_class'.
+I double-checked the datasheet. One of the existing
+descriptors has a typo: it should be 2MB not 2038 KB.
 
-However, Peter noticed that the code in __setscheduler() could
-result in this intention being frustrated. Fix it.
-
-Reported-by: Peter Williams <pwil3058@bigpond.net.au>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <1257880321.4108.457.camel@laptop>
+Signed-off-by: Dave Jones <davej@redhat.com>
+Cc: <stable@kernel.org> # .3x.x: 85160b9: x86: Add new Intel CPU cache size descriptors
+Cc: <stable@kernel.org> # .3x.x
+LKML-Reference: <20091110200120.GA27090@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched.c |   16 ++++------------
- 1 files changed, 4 insertions(+), 12 deletions(-)
+ arch/x86/kernel/cpu/intel_cacheinfo.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ad37776..43e61fa 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6159,22 +6159,14 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
- 	BUG_ON(p->se.on_rq);
- 
- 	p->policy = policy;
--	switch (p->policy) {
--	case SCHED_NORMAL:
--	case SCHED_BATCH:
--	case SCHED_IDLE:
--		p->sched_class = &fair_sched_class;
--		break;
--	case SCHED_FIFO:
--	case SCHED_RR:
--		p->sched_class = &rt_sched_class;
--		break;
--	}
--
- 	p->rt_priority = prio;
- 	p->normal_prio = normal_prio(p);
- 	/* we are holding p->pi_lock already */
- 	p->prio = rt_mutex_getprio(p);
-+	if (rt_prio(p->prio))
-+		p->sched_class = &rt_sched_class;
-+	else
-+		p->sched_class = &fair_sched_class;
- 	set_load_weight(p);
- }
- 
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 1410392..8178d03 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -94,7 +94,7 @@ static const struct _cache_table __cpuinitconst cache_table[] =
+ 	{ 0xd1, LVL_3,    1024 },	/* 4-way set assoc, 64 byte line size */
+ 	{ 0xd2, LVL_3,    2048 },	/* 4-way set assoc, 64 byte line size */
+ 	{ 0xd6, LVL_3,    1024 },	/* 8-way set assoc, 64 byte line size */
+-	{ 0xd7, LVL_3,    2038 },	/* 8-way set assoc, 64 byte line size */
++	{ 0xd7, LVL_3,    2048 },	/* 8-way set assoc, 64 byte line size */
+ 	{ 0xd8, LVL_3,    4096 },	/* 12-way set assoc, 64 byte line size */
+ 	{ 0xdc, LVL_3,    2048 },	/* 12-way set assoc, 64 byte line size */
+ 	{ 0xdd, LVL_3,    4096 },	/* 12-way set assoc, 64 byte line size */
