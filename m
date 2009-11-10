@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZKJVJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZKJVMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677AbZKJVJq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZKJVJp
+	id S1753684AbZKJVMM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZKJVML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:09:45 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49473 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751281AbZKJVJo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:09:44 -0500
-Date: Tue, 10 Nov 2009 22:09:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: David Newall <davidn@davidnewall.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vt: make the default cursor shape configurable
-Message-ID: <20091110210940.GA1590@ucw.cz>
-References: <4AF7D439.4030305@ladisch.de> <20091109091044.GX29442@buzzloop.caiaq.de> <4AF7DDC1.4090006@ladisch.de> <20091109095316.6283fbd6@lxorguk.ukuu.org.uk> <4AF7FC64.6030904@ladisch.de> <20091109114600.4d91b90e@lxorguk.ukuu.org.uk> <20091109145056.GB14091@buzzloop.caiaq.de> <4AF8582B.2000403@davidnewall.com> <20091109220944.GH14091@buzzloop.caiaq.de>
+	Tue, 10 Nov 2009 16:12:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56928 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751975AbZKJVMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:12:10 -0500
+Date: Tue, 10 Nov 2009 21:09:44 GMT
+From: tip-bot for Dimitri Sivanich <sivanich@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, travis@sgi.com, tglx@linutronix.de,
+       sivanich@sgi.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, travis@sgi.com, tglx@linutronix.de,
+       sivanich@sgi.com, mingo@elte.hu
+In-Reply-To: <20091110195835.GA4393@sgi.com>
+References: <20091110195835.GA4393@sgi.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/apic] x86: Remove asm/apicnum.h
+Message-ID: <tip-200a9ae2801bc725f2c41ab13f6e0fb1610d2fb6@git.kernel.org>
+Git-Commit-ID: 200a9ae2801bc725f2c41ab13f6e0fb1610d2fb6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091109220944.GH14091@buzzloop.caiaq.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-11-09 23:09:44, Daniel Mack wrote:
-> On Tue, Nov 10, 2009 at 04:28:03AM +1030, David Newall wrote:
-> > Daniel Mack wrote:
-> > > And even if the cursor behaviour is changable at runtime, I don't see
-> > > why it shouldn't have a selectable compile time default. Which is what
-> > > the patch adds.
-> > 
-> > 
-> > It seems like adding cruft to the kernel that is just as effectively
-> > available at run-time. Where does it end? Do we eventually add bash to
-> > the kernel?
-> 
-> One more thing:
-> 
-> Clemens' last patch didn't add anything to the kernel's binary size.
-> It didn't slow down anything either, as there is no run-time condition
-> evaluation. It just makes something configurable which was hard
-> coded before. So where's the cruft?
+Commit-ID:  200a9ae2801bc725f2c41ab13f6e0fb1610d2fb6
+Gitweb:     http://git.kernel.org/tip/200a9ae2801bc725f2c41ab13f6e0fb1610d2fb6
+Author:     Dimitri Sivanich <sivanich@sgi.com>
+AuthorDate: Tue, 10 Nov 2009 13:58:35 -0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Nov 2009 22:07:35 +0100
 
-The number of configs to test just got bigger. 100% bigger in
-fact. Every single developer will have to answer 'do you want blinking
-cursor?' when your patch is merged.
+x86: Remove asm/apicnum.h
 
-config options _are_ expensive.
+arch/x86/include/asm/apicnum.h is not referenced anywhere
+anymore. Its definitions appear in apicdef.h. Remove it.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
+Acked-by: Mike Travis <travis@sgi.com>
+LKML-Reference: <20091110195835.GA4393@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/apicnum.h |   12 ------------
+ 1 files changed, 0 insertions(+), 12 deletions(-)
+
+diff --git a/arch/x86/include/asm/apicnum.h b/arch/x86/include/asm/apicnum.h
+deleted file mode 100644
+index 82f613c..0000000
+--- a/arch/x86/include/asm/apicnum.h
++++ /dev/null
+@@ -1,12 +0,0 @@
+-#ifndef _ASM_X86_APICNUM_H
+-#define _ASM_X86_APICNUM_H
+-
+-/* define MAX_IO_APICS */
+-#ifdef CONFIG_X86_32
+-# define MAX_IO_APICS 64
+-#else
+-# define MAX_IO_APICS 128
+-# define MAX_LOCAL_APIC 32768
+-#endif
+-
+-#endif /* _ASM_X86_APICNUM_H */
