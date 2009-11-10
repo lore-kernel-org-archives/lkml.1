@@ -1,50 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZKJQ3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbZKJQbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbZKJQ3v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 11:29:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbZKJQ3t
+	id S1756976AbZKJQbR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 11:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbZKJQbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 11:29:49 -0500
-Received: from gv-out-0910.google.com ([216.239.58.185]:54902 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756137AbZKJQ3s convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 11:29:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ojd8DZ66Mbc1LVWE9Ty4icpkQh2JGp1sr0LKmJSMYB2ZmxnJEFee9OrCUJrQb/oF7P
-         u/yeaPaBNKxTiQOSKbtK+GeCCYxxPkq9NCnHr/g8UVzO8BDY1WvDtK6RMR2Q/d2zTKlS
-         y2S0YpqeN9xiXXtPmhM1L/BlnwPGP/Ksr7Ovs=
+	Tue, 10 Nov 2009 11:31:16 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:44797 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756137AbZKJQbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 11:31:15 -0500
+Date: Tue, 10 Nov 2009 10:31:18 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, suresh.b.siddha@intel.com, tglx@linutronix.de
+Subject: Re: [tip:x86/apic] x86/apic: Limit irq affinity
+Message-ID: <20091110163118.GA13707@sgi.com>
+References: <20091021011233.GB32196@sgi.com> <tip-683c91f85d7a3e1092d7fa3ec5687af8cd379f02@git.kernel.org> <20091108145355.GA8432@elte.hu> <20091109160215.GA14718@sgi.com> <20091110044025.GA7897@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <1257869585-7092-8-git-send-email-john.johansen@canonical.com>
-References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>
-	 <1257869585-7092-8-git-send-email-john.johansen@canonical.com>
-Date: Tue, 10 Nov 2009 18:29:52 +0200
-X-Google-Sender-Auth: 41174ee98baf7e71
-Message-ID: <84144f020911100829k515c7f73w84df942162a49a30@mail.gmail.com>
-Subject: Re: [PATCH 07/12] AppArmor: userspace interfaces
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: John Johansen <john.johansen@canonical.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091110044025.GA7897@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
+On Tue, Nov 10, 2009 at 05:40:25AM +0100, Ingo Molnar wrote:
+> 
+> * Dimitri Sivanich <sivanich@sgi.com> wrote:
+> 
+> > On Sun, Nov 08, 2009 at 03:53:55PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * tip-bot for Dimitri Sivanich <sivanich@sgi.com> wrote:
+> > > 
+> > > > Commit-ID:  683c91f85d7a3e1092d7fa3ec5687af8cd379f02
+> > > > Gitweb:     http://git.kernel.org/tip/683c91f85d7a3e1092d7fa3ec5687af8cd379f02
+> > > > Author:     Dimitri Sivanich <sivanich@sgi.com>
+> > > > AuthorDate: Tue, 3 Nov 2009 12:40:37 -0600
+> > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > CommitDate: Sun, 8 Nov 2009 13:30:40 +0100
+> > > > 
+> > > > x86/apic: Limit irq affinity
+> > > > 
+> > > > This patch allows for hard numa restrictions to irq affinity on
+> > > > x86 systems.
+> > > 
+> > > -tip testing found a build failure:
+> > > 
+> > > arch/x86/kernel/apic/io_apic.c:1438: error: ???struct irq_desc??? has no member named ???node???
+> > > arch/x86/kernel/apic/io_apic.c:3286: error: ???struct irq_desc??? has no member named ???node???
+> > >
+> > 
+> > In the interest of doing some ifdef cleanup as well as fixing the 
+> > build problem, can I suggest that we remove the 'ifdef CONFIG_SMP' 
+> > from the irq_desc?
+> 
+> What's the (data and code) size effect on UP kernels?
+> 
 
-On Tue, Nov 10, 2009 at 6:13 PM, John Johansen
-<john.johansen@canonical.com> wrote:
-> The current apparmorfs interface is compatible with previous versions
-> of AppArmor.  The plans are to deprecate it (hence the config option
-> APPARMOR_COMPAT_24) and replace it with a more sysfs style single
-> entry per file interface.
+While I'm not fully certain what is best to report, here is output from
+both 'size' and 'readelf'.
 
-We don't usually merge compatibility code to handle ABIs that were
-developed out-of-tree. Why should we treat AppArmor differently?
+For the x86_32 case (the default configuration with SMP_CONFIG off):
 
-                        Pekka
+Without the patch to remove '#ifdef CONFIG_SMP' from irq_desc:
+$ size vmlinux
+   text    data     bss     dec     hex filename
+6853617  674868 1333604 8862089  873989 vmlinux
+
+With the patch to remove '#ifdef CONFIG_SMP' from irq_desc:
+$ size vmlinux
+size vmlinux
+   text    data     bss     dec     hex filename
+6853621  674996 1333604 8862221  873a0d vmlinux
+
+So it looks like we have 4 bytes more text and 128 bytes more data.
+
+Looking at elf data, no MemSiz difference is apparent.
+
+Without the patch:
+$ readelf -l vmlinux
+..
+..
+Program Headers:
+  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+  LOAD           0x001000 0xc1000000 0x01000000 0x651000 0x651000 R E 0x1000
+  LOAD           0x652000 0xc1651000 0x01651000 0xdea1e 0x225000 RWE 0x1000
+  NOTE           0x43bd4c 0xc143ad4c 0x0143ad4c 0x00024 0x00024     0x4
+
+With the patch:
+Program Headers:
+  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+  LOAD           0x001000 0xc1000000 0x01000000 0x651000 0x651000 R E 0x1000
+  LOAD           0x652000 0xc1651000 0x01651000 0xdea1e 0x225000 RWE 0x1000
+  NOTE           0x43bd44 0xc143ad44 0x0143ad44 0x00024 0x00024     0x4
+
+
+
+
+
+For the x86_64 case:
+Without patch on x86_64:
+$ size vmlinux
+   text    data     bss     dec     hex filename
+6879227  731284  883216 8493727  819a9f vmlinux
+
+With patch on x86_64:
+$ size vmlinux
+   text    data     bss     dec     hex filename
+6879242  731524  883216 8493982  819b9e vmlinux
+
+Looks like 15 bytes text and 240 bytes data.
+
+
+Looking at elf data, there's a 256 byte difference in MemSiz data
+(here I'm showing the output diff without/with the patch):
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  LOAD           0x0000000000200000 0xffffffff81000000 0x0000000001000000
+                 0x0000000000807000 0x0000000000807000  R E    200000
+  LOAD           0x0000000000c00000 0xffffffff81a00000 0x0000000001a00000
+-                0x0000000000088ff8 0x0000000000088ff8  RWE    200000
++                0x00000000000890f8 0x00000000000890f8  RWE    200000
