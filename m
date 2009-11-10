@@ -1,102 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbZKJFrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbZKJF6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751923AbZKJFrl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 00:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZKJFrk
+	id S1751442AbZKJF6e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 00:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZKJF6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 00:47:40 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46627 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbZKJFrk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 00:47:40 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AF8FE76.406@jp.fujitsu.com>
-Date: Tue, 10 Nov 2009 14:47:34 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
-       sgruszka@redhat.com
-Subject: [PATCH] fix granularity of task_u/stime()
-References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com>	 <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop> <4AF8FD3C.2090008@jp.fujitsu.com>
-In-Reply-To: <4AF8FD3C.2090008@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Nov 2009 00:58:34 -0500
+Received: from 1wt.eu ([62.212.114.60]:50888 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750903AbZKJF6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 00:58:33 -0500
+Date: Tue, 10 Nov 2009 06:58:37 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Andres Salomon <dilinger@collabora.co.uk>
+Cc: Matteo Croce <technoboy85@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091110055837.GB15338@1wt.eu>
+References: <20091106155937.11d95279@lxorguk.ukuu.org.uk> <20091106165731.26800@gmx.net> <20091106182218.43940287@lxorguk.ukuu.org.uk> <20091106200620.179910@gmx.net> <m3r5sbcl07.fsf@intrepid.localdomain> <20091107000559.166710@gmx.net> <40101cc30911070311u56035911l5eb50ac4abb73acc@mail.gmail.com> <20091108110512.3cfad100@mycelium.queued.net> <40101cc30911081022h33ac20d7od591a9bcdb739f04@mail.gmail.com> <20091108134759.51ca97fc@mycelium.queued.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091108134759.51ca97fc@mycelium.queued.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove casting to clock_t from task_u/stime(), and keep granularity of
-cputime_t over the calculation.
+On Sun, Nov 08, 2009 at 01:47:59PM -0500, Andres Salomon wrote:
+> > Right, but what if is_geode_lx() is called befor the x86.id change
+> > takes effect? Maybe something like this?
+> > 
+> > --- a/arch/x86/include/asm/geode.h 2009-11-08 19:13:43.531117343 +0100
+> > +++ b/arch/x86/include/asm/geode.h      2009-11-08 19:19:42.130618023
+> > +0100 @@ -177,7 +177,7 @@
+> >  static inline int is_geode_lx(void)
+> >  {
+> >         return ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
+> > -               (boot_cpu_data.x86 == 5) &&
+> > +               (boot_cpu_data.x86 == 5 || boot_cpu_data.x86 == 6) &&
+> >                 (boot_cpu_data.x86_model == 10));
+> >  }
+> 
+> 
+> Yeah, that looks better.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- kernel/sched.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
+Wouldn't it be even better if we didn't touch boot_cpu_data.x86
+in the first place ? We can provide the emulation to support
+686 binaries without faking the CPU family/model, I think it
+would be cleaner. Otherwise we would need to report "real" and
+"emulated" families in /proc...
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 28dd4f4..1632e82 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5171,41 +5171,44 @@ cputime_t task_stime(struct task_struct *p)
- 	return p->stime;
- }
- #else
-+
-+#ifndef nsecs_to_cputime
-+# define nsecs_to_cputime(__nsecs) msecs_to_cputime((__nsecs) / NSEC_PER_MSEC)
-+#endif
-+
- cputime_t task_utime(struct task_struct *p)
- {
--	clock_t utime = cputime_to_clock_t(p->utime),
--		total = utime + cputime_to_clock_t(p->stime);
-+	cputime_t utime = p->utime, total = utime + p->stime;
- 	u64 temp;
- 
- 	/*
- 	 * Use CFS's precise accounting:
- 	 */
--	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
-+	temp = (u64)nsecs_to_cputime(p->se.sum_exec_runtime);
- 
- 	if (total) {
- 		temp *= utime;
- 		do_div(temp, total);
- 	}
--	utime = (clock_t)temp;
-+	utime = (cputime_t)temp;
- 
--	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
-+	p->prev_utime = max(p->prev_utime, utime);
- 	return p->prev_utime;
- }
- 
- cputime_t task_stime(struct task_struct *p)
- {
--	clock_t stime;
-+	cputime_t stime;
- 
- 	/*
- 	 * Use CFS's precise accounting. (we subtract utime from
- 	 * the total, to make sure the total observed by userspace
- 	 * grows monotonically - apps rely on that):
- 	 */
--	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
--			cputime_to_clock_t(task_utime(p));
-+	stime = nsecs_to_cputime(p->se.sum_exec_runtime) - task_utime(p);
- 
- 	if (stime >= 0)
--		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
-+		p->prev_stime = max(p->prev_stime, stime);
- 
- 	return p->prev_stime;
- }
--- 
-1.6.5.2
-
-
+Willy
 
