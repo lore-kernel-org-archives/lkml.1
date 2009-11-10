@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZKJM3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbZKJMaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbZKJM3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 07:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbZKJM3f
+	id S1756228AbZKJMaM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 07:30:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZKJMaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 07:29:35 -0500
-Received: from www.tglx.de ([62.245.132.106]:58753 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756044AbZKJM3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 07:29:34 -0500
-Date: Tue, 10 Nov 2009 13:28:45 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
-       John Kacur <jkacur@redhat.com>
-Subject: [ANNOUNCE] 2.6.31.6-rt19
-In-Reply-To: <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
- <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
- <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
- <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain> <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 10 Nov 2009 07:30:11 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:43117 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751965AbZKJMaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 07:30:09 -0500
+Date: Tue, 10 Nov 2009 13:30:08 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: David Newall <davidn@davidnewall.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Clemens Ladisch <clemens@ladisch.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vt: make the default cursor shape configurable
+Message-ID: <20091110123008.GW14091@buzzloop.caiaq.de>
+References: <4AF7D439.4030305@ladisch.de>
+ <20091109091044.GX29442@buzzloop.caiaq.de>
+ <4AF7DDC1.4090006@ladisch.de>
+ <20091109095316.6283fbd6@lxorguk.ukuu.org.uk>
+ <4AF7FC64.6030904@ladisch.de>
+ <20091109114600.4d91b90e@lxorguk.ukuu.org.uk>
+ <20091109145056.GB14091@buzzloop.caiaq.de>
+ <4AF8582B.2000403@davidnewall.com>
+ <20091109220944.GH14091@buzzloop.caiaq.de>
+ <4AF956F8.7090707@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF956F8.7090707@davidnewall.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
+On Tue, Nov 10, 2009 at 10:35:12PM +1030, David Newall wrote:
+> I'm having trouble seeing a flashing cursor during device startup as a
+> problem. I expect it will prove a useful diagnostic, one day. I think
+> you can turn it off (from user space) within a couple of seconds of
+> power on; you did say embedded, didn't you? Perhaps you even can
+> configure your hardware to not display the cursor on startup, which is
+> the second likeliest (after user-space) place to satisfy your needs.
 
-    - forward to 2.6.31.6
+I'm talking about an embedded device with no keyboard connected but
+only a touch screen. In this case, the cursor is clearly misleading, as
+there is no input device to use it. And for such a case (and I'm sure
+I'm not the only one having it), a way to switch the cursor off is much
+appreciated. I don't believe that's so hard to understand, really.
 
-    - Add missing preemption point in ksoftirqd (Jupyung Lee)
+"A couple of seconds" is still too much. We don't want to give the
+impression of a terminal at all. The whole application starting
+afterwards has no cursor either.
 
-Download locations:
-   
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
+Daniel
 
-Git release branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
-  
-Git development branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
-
-Gitweb:
-    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
-  
-Information on the RT patch can be found at:
-
-    http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.31.6-rt19 tree, the following patches should be
-applied:
-
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.6.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31.6-rt19.bz2
-
-Enjoy !
-
-      tglx
