@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbZKJSik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbZKJSh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757600AbZKJSik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 13:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757578AbZKJSij
+	id S1757558AbZKJSh1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 13:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbZKJSh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 13:38:39 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:34903 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757584AbZKJSii (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 13:38:38 -0500
-Message-ID: <4AF9B2CF.6050305@nortel.com>
-Date: Tue, 10 Nov 2009 12:37:03 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Tue, 10 Nov 2009 13:37:26 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53059 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752535AbZKJSh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 13:37:26 -0500
+Date: Tue, 10 Nov 2009 19:37:30 +0100
+From: Jan Kara <jack@suse.cz>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>, Jan Kara <jack@suse.cz>,
+       jens.axboe@oracle.com, LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: Performance regression in IO scheduler still there
+Message-ID: <20091110183730.GA27326@duck.suse.cz>
+References: <20091026172012.GC7233@duck.suse.cz> <x49zl7020mr.fsf@segfault.boston.devel.redhat.com> <4e5e476b0911051500j7587dd6dh975148475418efcf@mail.gmail.com> <x494op7ivtu.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-To: Ben Hutchings <bhutchings@solarflare.com>
-CC: netdev@vger.kernel.org, Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: sunrpc port allocation and IANA reserved list
-References: <4AF9A63B.6010101@nortel.com> <1257875623.2834.19.camel@achroite.uk.solarflarecom.com>
-In-Reply-To: <1257875623.2834.19.camel@achroite.uk.solarflarecom.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Nov 2009 18:38:25.0670 (UTC) FILETIME=[FD0BA260:01CA6234]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x494op7ivtu.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 11:53 AM, Ben Hutchings wrote:
-> On Tue, 2009-11-10 at 11:43 -0600, Chris Friesen wrote:
-
->> Given that a userspace application can be stopped and restarted at any
->> time, and a sunrpc registration can happen at any time, what is the
->> expected mechanism to prevent the kernel from allocating a port for use
->> by sunrpc that reserved or well-known?
->>
->> Apparently Redhat and Debian have distro-specific ways of dealing with
->> this, but is there a standard solution?  Should there be?
->>
->> The current setup seems suboptimal.
+On Fri 06-11-09 09:14:53, Jeff Moyer wrote:
+> Corrado Zoccolo <czoccolo@gmail.com> writes:
 > 
-> I believe both RH and Debian are using the same implementation:
-> <http://cyberelk.net/tim/software/portreserve/>.
+> > Hi Jeff,
+> > what hardware are you using for tests?
+> > I see aggregated random read bandwidth is larger than sequential read
+> > bandwidth, and write bandwidth greater than read.
+> > Is this a SAN with multiple independent spindles?
+> 
+> Yeah, this is a single path to an HP EVA storage array.  There are 24 or
+> so disks striped in the pool used to create the volume I am using.  Jan,
+> could you repeat your tests with /sys/block/sdX/queue/iosched/low_latency
+> set to 0?
+  I'll give it a spin tomorrow...
 
-That helps with the startup case, but still leaves a possible hole if an
-app using a fixed port number is restarted at runtime.  During the
-window where nobody is bound to the port, the kernel could randomly
-assign it to someone else.
-
-Chris
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
