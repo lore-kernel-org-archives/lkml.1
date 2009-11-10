@@ -1,103 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZKJMkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbZKJMlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbZKJMkm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 07:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZKJMkl
+	id S1756310AbZKJMlQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 07:41:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbZKJMlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 07:40:41 -0500
-Received: from ns.firmix.at ([62.141.48.66]:1139 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754009AbZKJMkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 07:40:40 -0500
-Subject: Re: FatELF patches...
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: weigelt@metux.de
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20091110112737.GB2998@nibiru.local>
-References: <alpine.DEB.2.00.0910271410510.16178@andre.icculuslan>
-	 <1257103201.2865.6.camel@chumley> <yw1xy6mq0z2s.fsf@unicorn.mansr.com>
-	 <alpine.OSX.1.10.0911011540400.53392@caridad.local>
-	 <20091102000147.424f104b@lxorguk.ukuu.org.uk>
-	 <alpine.OSX.1.10.0911021057450.464@caridad.icculuslan>
-	 <20091110112737.GB2998@nibiru.local>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Tue, 10 Nov 2009 13:40:25 +0100
-Message-Id: <1257856825.795.20.camel@tara.firmix.at>
+	Tue, 10 Nov 2009 07:41:14 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:37721 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754256AbZKJMlM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 07:41:12 -0500
+Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
+References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 10 Nov 2009 14:40:48 +0200
+Message-Id: <1257856848.21596.753.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.67 on ns.firmix.at
-X-Firmix-Spam-Score: -2.285 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.285 required=5
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-X-Firmix-Received-Date: Tue, 10 Nov 2009 13:40:45 CET
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 10 Nov 2009 12:40:53.0484 (UTC) FILETIME=[0A8BD2C0:01CA6203]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-10 at 12:27 +0100, Enrico Weigelt wrote:
-> * Ryan C. Gordon <icculus@icculus.org> wrote:
-[...] 
-> > True. If I try to run a PowerPC binary on a Sparc, it fails in any 
-> > circumstance. I recognize the goal of this post was to shoot down every 
-If tools like qemu support PowerPC or Sparc (similar to some dialects of
-ARM), you your run it through that (on every hardware where qemu as such
-runs[0]).
-And if you have bimfmt_misc, you can start it like any other "native"
-program.
+Tomi,
 
-> > single point, but you can't see a scenario where this adds a benefit? Even 
-> > in a world that's still running 32-bit web browsers on _every major 
-> > operating system_ because some crucial plugins aren't 64-bit yet?
->
-> The root of evil are plugins - even worse: binary-only plugins.
+could you please kindly ask Stephen (CCed) to include the DSS2 tree into
+linux-next, because you are going to merge it the next merge window, and
+there does not seem to be any blocker for this.
+
+Being in linux-next for a while is really important.
+
+On Mon, 2009-11-09 at 13:45 +0200, Tomi Valkeinen wrote:
+> This patch set implement new display subsystem driver (DSS2) and omapfb driver
+> for OMAP2/3. The patches have been reviewed on linux-omap and linux-fbdev-devel
+> mailing lists. The patches can also be found from master branch in
+> http://gitorious.org/linux-omap-dss2/linux. The branch is based on the
+> linux-next tree.
 > 
-> Let's just take browsers: is there any damn good reason for not putting
-> those things into their own process (9P provides a fine IPC for that),
-> besides stupidity and lazyness of certain devs (yes, this explicitly
-> includes mozilla guys) ?
-Or implement running 32bit plugins from a 64bit browser.
+> The patches include DSS documentation patch that includes more instructions for
+> module parameters, sysfs files etc.
+> 
+> The patches enable DSS2 for OMAP3430 SDP board and support for other boards can
+> be sent after the DSS2 has been merged. DSS2 is used in various boards, for
+> example Nokia N900, Beagle Board and Overo.
+> 
+> I don't currently have any OMAP2 board to test DSS2, but it has worked on OMAP2
+> and the possible fixes needed should be minimal.
+> 
+> OMAP1 is not supported, and so the old DSS needs to be used on OMAP1 boards. My
+> longer term plan is to move all OMAP2 stuff from the old DSS to the new one,
+> and then shrink the old DSS to support OMAP1 only.
+> 
+> DSS2 is partly based on the old omapfb driver by Imre Deak, and Imre has also
+> contributed to DSS2 quite a bit. Ville Syrjälä has been contributing to scaling
+> and tv-out work, and Topi Pohjolainen to VRFB. Also some contributions have
+> been made by Hardik Shah, Vaibhav Hiremath, and perhaps some others that I have
+> forgotten =).
 
-[...]  
-> > > - Prepare your app on a USB stick for sneakernet, know it'll work on
-> > >   whatever Linux box you are likely to plug it into.
-Trojan horse deployers paradise BTW.
+Tomi,
 
-[....]
-> > It's possible to ship binaries that don't depend on a specific 
-> > distribution, or preinstalled dependencies, beyond the existance of a 
-> > glibc that was built in the last five years or so. I do it every day. It's 
-ACK, just link it statically and be done (but then you have other
-problems, e.g. "$LIB has an exploit and I have to rebuild and redeploy
-$BINARY").
+could you please kindly ask Stephen (CCed) to include the DSS2 tree into
+linux-next, because you are going to merge it the next merge window, and
+there does not seem to be any blocker for this.
 
-[...]
-> > That is anecdotal, and I apologize for that. But I'm not the only 
-> > developer that's not in an apt repository, and all of these rebuttals are 
-> > anecdotal: "I just use yum [...because I don't personally care about 
-> > Debian users]."
-It's not that the other way around is much of a difference:-(
-And if there is some really interested Debian user, he can package it
-for Debian.
-IMHO better no package for $DISTRIBUTION than only bad (and old) ones
-because some packager (which is not necessarily a core programmer) has
-only very little personal interest in the .deb version.
+Being in linux-next for a while is really important.
 
-> Can't just just make up your own repo ? Is it so hard ?
-> Just can speak for Gentoo - overlays are quite convenient here.
-And it's not that hard to write .spec files for RPM (for average
-packages - e.g. the kernel and gcc is somewhat different). Just take a
-small one (e.g. the one from "trace") and start from there.
-SCNR,
-	Bernd
-
-[09: I never tried to cascade qemu though.
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
