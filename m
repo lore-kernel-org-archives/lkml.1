@@ -1,118 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbZKJU4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbZKJUz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758170AbZKJU4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 15:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbZKJU4b
+	id S1758182AbZKJUz4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 15:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758129AbZKJUzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 15:56:31 -0500
-Received: from smtp.outflux.net ([198.145.64.163]:55594 "EHLO smtp.outflux.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758129AbZKJU4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 15:56:30 -0500
-Date: Tue, 10 Nov 2009 12:55:44 -0800
-From: Kees Cook <kees.cook@canonical.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] [x86] detect and report lack of NX protections
-Message-ID: <20091110205544.GZ5129@outflux.net>
-References: <20091109221015.GB5129@outflux.net>
- <4AF8A2C0.5080700@zytor.com>
- <20091110154956.GF5129@outflux.net>
- <4AF9991B.20400@zytor.com>
- <20091110165738.GH5129@outflux.net>
- <4AF99F0C.2050806@zytor.com>
- <20091110174622.GK5129@outflux.net>
- <4AF9B6AD.8020505@zytor.com>
- <20091110194304.GW5129@outflux.net>
- <4AF9C627.1070206@zytor.com>
+	Tue, 10 Nov 2009 15:55:55 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:28834 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758128AbZKJUzy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 15:55:54 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=WuVQyydGmkG8IR1fMs6Y+I7P9eGWShxLwvjFCpGz99Td3Fc5RBUX1amKt2pnIgi1S
+	7BsrCGS+o0F6Fn8/3ZQWg==
+Date: Tue, 10 Nov 2009 12:55:50 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Alex Chiang <achiang@hp.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Badari Pulavarty <pbadari@us.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch -mm] mm: slab allocate memory section nodemask for large
+ systems
+In-Reply-To: <20091110125131.30376c03.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0911101255020.28728@chino.kir.corp.google.com>
+References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041510.15705.5410.stgit@bob.kio> <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com> <20091027195907.GJ14102@ldl.fc.hp.com> <alpine.DEB.2.00.0910271422090.22335@chino.kir.corp.google.com>
+ <20091028083137.GA24140@osiris.boeblingen.de.ibm.com> <alpine.DEB.2.00.0910280159380.7122@chino.kir.corp.google.com> <20091028183905.GF22743@ldl.fc.hp.com> <alpine.DEB.2.00.0910281315370.23279@chino.kir.corp.google.com> <20091102204726.GG5525@ldl.fc.hp.com>
+ <20091110125131.30376c03.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AF9C627.1070206@zytor.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 11:59:35AM -0800, H. Peter Anvin wrote:
-> On 11/10/2009 11:43 AM, Kees Cook wrote:
-> > kernel  cpu -> |              CPU has PAE              |  CPU lacks PAE  |
-> >    |           |       CPU has NX  | CPU lacks NX      |                 |
-> >    V           +-------------------+-------------------+-----------------+
-> > 32-bit non-PAE | missing in kernel | missing in kernel |    no message   |
-> >                +-------------------+-------------------+-----------------+
-> > 32-bit PAE     | active *          | missing in CPU    |    no message   |
-> >                +-------------------+-------------------+-----------------+
-> > 64-bit         | active            | missing in CPU    |    impossible   |
-> >                +-------------------+-------------------+-----------------+
-> > The box with the "*" is the only message currently reported by the kernel.
+On Tue, 10 Nov 2009, Andrew Morton wrote:
+
+> The prerequisite Documentation/ patches are a bit of a mess - some have
+> been cherrypicked into Greg's tree I believe and some haven't.  So
+> please also send out whatever is needed to bring linux-next up to date.
 > 
-> The last column should actually be "no message", "impossible", "impossible".
 
-Ah, yes, very true.
-
-> I also think "missing in kernel" is misleading in the 32-bit non-PAE,
-> no-NX case (as it would imply that another kernel could do something),
-
-Well, I think thinking that even if they turned on the flag in the BIOS,
-the non-PAE kernel couldn't do anything about it anyway.  But, from your
-example, I see you went with "missing in kernel" anyway.
-
-> and I *really* fail to see why it is in any way different from the "CPU
-> lacks PAE" case -- which also means no NX.  "Unavailable in CPU" seems
-> to beat everything.
-
-I was trying to be conservative and not have older hardware without PAE
-yelling about missing features.  It seemed only worth complaining about
-missing NX if PAE was possible (the class of machines without PAE being
-larger than those without NX and with PAE).
-
-> So the logic that makes sense would be:
-> 
-> if (!cpu_has_nx) {
-
-cpu_has_nx is not the same as nx_enabled (due to disable_nx).  Also, why
-doesn't set_nx() use cpu_has_nx?  It seems like it does the check
-manually?  Should that be cleaned up?
-
-> 	/* If the CPU can't do it... */
-> 	printk(KERN_INFO "cpu: NX protection unavailable in CPU\n");
-> } else  {
-> #if defined(CONFIG_X86_32) && !defined(CONFIG_X86_PAE)
-> 	/* Non-PAE kernel: NX unavailable */
-> 	printk(KERN_NOTICE "cpu: NX protection missing in kernel\n");
-> #else
-> 	printk(KERN_INFO "cpu: NX protection active\n");
-> #endif
-> }
-
-How about this?  (Along with the nx_enabled setting in set_nx() for the
-64-bit and 32-bit+PAE case.)
-
-        set_nx();
-        if (nx_enabled) {
-                printk(KERN_INFO "NX (Execute Disable) protection: active\n");
-#if defined(CONFIG_X86_32) && !defined(CONFIG_X86_PAE)
-        } else if (cpu_has_pae) {
-                /* 32bit non-PAE kernel, PAE CPU */
-                printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-                       "cannot be enabled: non-PAE kernel!\n");
-#else
-        } else {
-                /* PAE kernel, PAE CPU, without NX */
-                printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-                       "missing in CPU or disabled in BIOS!\n");
-#endif
-        }
-
-
--- 
-Kees Cook
-Ubuntu Security Team
+I'm not aware of any prerequisites for this patchset, Alex's documentation 
+changes have already been merged by Linus.
