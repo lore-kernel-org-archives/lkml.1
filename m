@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbZKJRPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbZKJRLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbZKJRPb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 12:15:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbZKJRPa
+	id S1757319AbZKJRLi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 12:11:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbZKJRLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 12:15:30 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54342 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757307AbZKJRP3 (ORCPT
+	Tue, 10 Nov 2009 12:11:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44078 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757290AbZKJRLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 12:15:29 -0500
-Message-ID: <4AF99E04.8080704@zytor.com>
-Date: Tue, 10 Nov 2009 09:08:20 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 10 Nov 2009 12:11:35 -0500
+Date: Tue, 10 Nov 2009 09:10:34 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Tejun Heo <tj@kernel.org>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
+In-Reply-To: <4AF90254.40909@kernel.org>
+Message-ID: <alpine.LFD.2.01.0911100903370.31845@localhost.localdomain>
+References: <4AF90254.40909@kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Avi Kivity <avi@redhat.com>, Willy Tarreau <w@1wt.eu>,
-       Pavel Machek <pavel@ucw.cz>, Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-References: <4AF4526B.4060101@zytor.com>	<40101cc30911061418w357b74d8i3bf9a9537de052d4@mail.gmail.com>	<20091108173708.GF1372@ucw.cz>	<40101cc30911080940s18eb26bbg641beeaddbc25c3d@mail.gmail.com>	<20091108181016.GB32364@elf.ucw.cz>	<alpine.DEB.2.00.0911082026430.30789@aurora.sdinet.de>	<20091108193618.GB4186@elf.ucw.cz>	<40101cc30911081147j77f7b81o86f2cc5a869aca1f@mail.gmail.com>	<20091108195158.GD4186@elf.ucw.cz>	<20091108200852.7f2cf092@lxorguk.ukuu.org.uk>	<20091110052711.GA15338@1wt.eu>	<4AF9020C.90108@zytor.com>	<4AF9435F.2070103@redhat.com> <20091110105642.215804e0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091110105642.215804e0@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 02:56 AM, Alan Cox wrote:
->> In theory yes.  There would need to be a bit of work to disassociate it 
->> from kvm, but nothing too difficult.
+
+
+On Tue, 10 Nov 2009, Tejun Heo wrote:
 > 
-> For the tiny cases that actually matter using the KVM code appears a bit
-> over the top.
+> Please pull from the following percpu fix branch.
 
-In the short term, yes, of course.  However, if we're going to do
-emulation, we might as well do it right.
+No way in hell.
 
-	-hpa
+> It fixes a possible deadlock caused by lock ordering inversion through
+> irq.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+.. and it does so by introducing a new bug. No thank you.
 
+> +
+> +	/*
+> +	 * pcpu_mem_free() might end up calling vfree() which uses
+> +	 * IRQ-unsafe lock and thus can't be called with pcpu_lock
+> +	 * held.  Release and reacquire pcpu_lock if old map needs to
+> +	 * be freed.
+> +	 */
+> +	if (old) {
+> +		spin_unlock_irqrestore(&pcpu_lock, *flags);
+> +		pcpu_mem_free(old, size);
+> +		spin_lock_irqsave(&pcpu_lock, *flags);
+> +	}
+
+Routines that drop and then re-take the lock should be banned, as it's 
+almost always a bug waiting to happen. As it is this time:
+
+>  	return 0;
+
+Now the caller will happily continue to traverse a list that may no longer 
+be valid, because you dropped the lock.
+
+Really. This thing is total sh*t. It was misdesigned to start with, and 
+the calling convention is wrong. That 'pcpu_extend_area_map()' function 
+should be split up into two functions: 'pcpu_needs_to_extend()' that never 
+drops the lock, and 'pcpu_extend_area()' that _always_ drops the lock 
+(and then returns an error if it can't allocate the memory).
+
+Not that shit-for-brains that may or may not drop the lock, and then 
+returns an incorrect error return depending on whether it did.
+
+In other words: fix the sh*t, don't add even more to it. That 'return 0' 
+was and is wrong. It should have been a 'return 1'. And thank the Gods 
+that I looked at it, 
+
+Sure, you can fix the bug by just returning 1. But you can't fix the total 
+crap of a calling convention that way. Fix it properly as outlined above, 
+and remember: functions that drop locks that were held when called are 
+EVIL and almost always the source of really subtle races.
+
+As it was in this case.
+
+			Linus
