@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751554AbZKJFQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751673AbZKJFQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751554AbZKJFQg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 00:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZKJFQe
+	id S1751673AbZKJFQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 00:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZKJFQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 00:16:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51710 "EHLO hera.kernel.org"
+	Tue, 10 Nov 2009 00:16:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51728 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750841AbZKJFQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 00:16:32 -0500
-Date: Tue, 10 Nov 2009 05:16:11 GMT
-From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
+	id S1751021AbZKJFQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 00:16:57 -0500
+Date: Tue, 10 Nov 2009 05:16:29 GMT
+From: tip-bot for Joe Perches <joe@perches.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yong.y.wang@intel.com, arjan@infradead.org, yong.y.wang@linux.intel.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu,
-       borislav.petkov@amd.com
+       joe@perches.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yong.y.wang@intel.com, arjan@infradead.org, yong.y.wang@linux.intel.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu,
-       borislav.petkov@amd.com
-In-Reply-To: <20091110013824.GA24940@ywang-moblin2.bj.intel.com>
-References: <20091110013824.GA24940@ywang-moblin2.bj.intel.com>
+       joe@perches.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1257818330.12852.72.camel@Joe-Laptop.home>
+References: <1257818330.12852.72.camel@Joe-Laptop.home>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/mce] x86: Under BIOS control, restore AP's APIC_LVTTHMR to the BSP value
-Message-ID: <tip-a2202aa29289db64ca7988b12343158b67b27f10@git.kernel.org>
-Git-Commit-ID: a2202aa29289db64ca7988b12343158b67b27f10
+Subject: [tip:core/iommu] x86: GART: pci-gart_64.c: Use correct length in strncmp
+Message-ID: <tip-41855b77547fa18d90ed6a5d322983d3fdab1959@git.kernel.org>
+Git-Commit-ID: 41855b77547fa18d90ed6a5d322983d3fdab1959
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,187 +29,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a2202aa29289db64ca7988b12343158b67b27f10
-Gitweb:     http://git.kernel.org/tip/a2202aa29289db64ca7988b12343158b67b27f10
-Author:     Yong Wang <yong.y.wang@linux.intel.com>
-AuthorDate: Tue, 10 Nov 2009 09:38:24 +0800
+Commit-ID:  41855b77547fa18d90ed6a5d322983d3fdab1959
+Gitweb:     http://git.kernel.org/tip/41855b77547fa18d90ed6a5d322983d3fdab1959
+Author:     Joe Perches <joe@perches.com>
+AuthorDate: Mon, 9 Nov 2009 17:58:50 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Nov 2009 05:57:55 +0100
+CommitDate: Tue, 10 Nov 2009 06:05:39 +0100
 
-x86: Under BIOS control, restore AP's APIC_LVTTHMR to the BSP value
+x86: GART: pci-gart_64.c: Use correct length in strncmp
 
-On platforms where the BIOS handles the thermal monitor interrupt,
-APIC_LVTTHMR on each logical CPU is programmed to generate a SMI
-and OS must not touch it.
-
-Unfortunately AP bringup sequence using INIT-SIPI-SIPI clears all
-the LVT entries except the mask bit. Essentially this results in
-all LVT entries including the thermal monitoring interrupt set
-to masked (clearing the bios programmed value for APIC_LVTTHMR).
-
-And this leads to kernel take over the thermal monitoring
-interrupt on AP's but not on BSP (leaving the bios programmed
-value only on BSP).
-
-As a result of this, we have seen system hangs when the thermal
-monitoring interrupt is generated.
-
-Fix this by reading the initial value of thermal LVT entry on
-BSP and if bios has taken over the control, then program the
-same value on all AP's and leave the thermal monitoring
-interrupt control on all the logical cpu's to the bios.
-
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Reviewed-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Arjan van de Ven <arjan@infradead.org>
-LKML-Reference: <20091110013824.GA24940@ywang-moblin2.bj.intel.com>
+Signed-off-by: Joe Perches <joe@perches.com>
+Cc: <stable@kernel.org> # .3x.x
+LKML-Reference: <1257818330.12852.72.camel@Joe-Laptop.home>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: stable@kernel.org
 ---
- arch/x86/include/asm/mce.h               |    9 +++++++++
- arch/x86/kernel/cpu/common.c             |    2 --
- arch/x86/kernel/cpu/mcheck/mce.c         |    5 +++--
- arch/x86/kernel/cpu/mcheck/therm_throt.c |   29 ++++++++++++++++++++++++++++-
- arch/x86/kernel/setup.c                  |    3 +++
- 5 files changed, 43 insertions(+), 5 deletions(-)
+ arch/x86/kernel/pci-gart_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index 161485d..858baa0 100644
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -120,8 +120,10 @@ extern int mce_disabled;
- extern int mce_p5_enabled;
- 
- #ifdef CONFIG_X86_MCE
-+int mcheck_init(void);
- void mcheck_cpu_init(struct cpuinfo_x86 *c);
- #else
-+static inline int mcheck_init(void) { return 0; }
- static inline void mcheck_cpu_init(struct cpuinfo_x86 *c) {}
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index a9bcdf7..eb46ab3 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -858,7 +858,7 @@ void __init gart_parse_options(char *p)
  #endif
- 
-@@ -215,5 +217,12 @@ extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
- void intel_init_thermal(struct cpuinfo_x86 *c);
- 
- void mce_log_therm_throt_event(__u64 status);
-+
-+#ifdef CONFIG_X86_THERMAL_VECTOR
-+extern void mcheck_intel_therm_init(void);
-+#else
-+static inline void mcheck_intel_therm_init(void) { }
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_X86_MCE_H */
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 4df69a3..9053be5 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -837,10 +837,8 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
- 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
- 	}
- 
--#ifdef CONFIG_X86_MCE
- 	/* Init Machine Check Exception if available. */
- 	mcheck_cpu_init(c);
--#endif
- 
- 	select_idle_routine(c);
- 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 8080170..0d41020 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1655,13 +1655,14 @@ static int __init mcheck_enable(char *str)
- }
- __setup("mce", mcheck_enable);
- 
--static int __init mcheck_init(void)
-+int __init mcheck_init(void)
- {
- 	atomic_notifier_chain_register(&x86_mce_decoder_chain, &mce_dec_nb);
- 
-+	mcheck_intel_therm_init();
-+
- 	return 0;
- }
--early_initcall(mcheck_init);
- 
- /*
-  * Sysfs support
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index b3a1dba..7f3cf36 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -49,6 +49,8 @@ static DEFINE_PER_CPU(struct thermal_state, thermal_state);
- 
- static atomic_t therm_throt_en	= ATOMIC_INIT(0);
- 
-+static u32 lvtthmr_init __read_mostly;
-+
- #ifdef CONFIG_SYSFS
- #define define_therm_throt_sysdev_one_ro(_name)				\
- 	static SYSDEV_ATTR(_name, 0444, therm_throt_sysdev_show_##_name, NULL)
-@@ -254,6 +256,18 @@ asmlinkage void smp_thermal_interrupt(struct pt_regs *regs)
- 	ack_APIC_irq();
- }
- 
-+void mcheck_intel_therm_init(void)
-+{
-+	/*
-+	 * This function is only called on boot CPU. Save the init thermal
-+	 * LVT value on BSP and use that value to restore APs' thermal LVT
-+	 * entry BIOS programmed later
-+	 */
-+	if (cpu_has(&boot_cpu_data, X86_FEATURE_ACPI) &&
-+		cpu_has(&boot_cpu_data, X86_FEATURE_ACC))
-+		lvtthmr_init = apic_read(APIC_LVTTHMR);
-+}
-+
- void intel_init_thermal(struct cpuinfo_x86 *c)
- {
- 	unsigned int cpu = smp_processor_id();
-@@ -270,7 +284,20 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	 * since it might be delivered via SMI already:
- 	 */
- 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--	h = apic_read(APIC_LVTTHMR);
-+
-+	/*
-+	 * The initial value of thermal LVT entries on all APs always reads
-+	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
-+	 * sequence to them and LVT registers are reset to 0s except for
-+	 * the mask bits which are set to 1s when APs receive INIT IPI.
-+	 * Always restore the value that BIOS has programmed on AP based on
-+	 * BSP's info we saved since BIOS is always setting the same value
-+	 * for all threads/cores
-+	 */
-+	apic_write(APIC_LVTTHMR, lvtthmr_init);
-+
-+	h = lvtthmr_init;
-+
- 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
- 		printk(KERN_DEBUG
- 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index e09f0e2..179c1f2 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -109,6 +109,7 @@
- #ifdef CONFIG_X86_64
- #include <asm/numa_64.h>
- #endif
-+#include <asm/mce.h>
- 
- /*
-  * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-@@ -1024,6 +1025,8 @@ void __init setup_arch(char **cmdline_p)
- #endif
- #endif
- 	x86_init.oem.banner();
-+
-+	mcheck_init();
- }
- 
- #ifdef CONFIG_X86_32
+ 	if (isdigit(*p) && get_option(&p, &arg))
+ 		iommu_size = arg;
+-	if (!strncmp(p, "fullflush", 8))
++	if (!strncmp(p, "fullflush", 9))
+ 		iommu_fullflush = 1;
+ 	if (!strncmp(p, "nofullflush", 11))
+ 		iommu_fullflush = 0;
