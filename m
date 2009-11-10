@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbZKJVgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbZKJVgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbZKJVgK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 16:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbZKJVgJ
+	id S1758276AbZKJVgw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 16:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbZKJVgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 16:36:09 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:49459 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758235AbZKJVgI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 16:36:08 -0500
-Cc: Chris Friesen <cfriesen@nortel.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, netdev@vger.kernel.org,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Message-Id: <212D08D7-AC22-4857-837A-E72B0A11E8DE@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-In-Reply-To: <1257888720.2834.30.camel@achroite.uk.solarflarecom.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: sunrpc port allocation and IANA reserved list
-Date: Tue, 10 Nov 2009 16:34:45 -0500
-References: <4AF9A63B.6010101@nortel.com> <1257875623.2834.19.camel@achroite.uk.solarflarecom.com> <4AF9B2CF.6050305@nortel.com> <1257884799.3044.7.camel@heimdal.trondhjem.org> <4AF9D5D1.9040501@nortel.com> <1257888720.2834.30.camel@achroite.uk.solarflarecom.com>
-X-Mailer: Apple Mail (2.936)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4AF9DCBD.0078:SCFMA4539814,ss=1,fgs=0
+	Tue, 10 Nov 2009 16:36:52 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:55893 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755182AbZKJVgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 16:36:51 -0500
+Date: Tue, 10 Nov 2009 13:36:51 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: [PATCH tip/core/rcu 0/4] rcu inline, expedited, ->completed
+	cleanups
+Message-ID: <20091110213651.GA21411@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patchset contains a few fixes from testing and review of treercu.
+The review was spurred by the earlier bugs.
 
-On Nov 10, 2009, at 4:32 PM, Ben Hutchings wrote:
+1.	Some compilers don't like forward references to inline functions.
+	Make the compiler happy by removing "inline".
 
-> On Tue, 2009-11-10 at 15:06 -0600, Chris Friesen wrote:
->> On 11/10/2009 02:26 PM, Trond Myklebust wrote:
->>> On Tue, 2009-11-10 at 12:37 -0600, Chris Friesen wrote:
->>>> On 11/10/2009 11:53 AM, Ben Hutchings wrote:
->>>>> On Tue, 2009-11-10 at 11:43 -0600, Chris Friesen wrote:
->>>>
->>>>>> Given that a userspace application can be stopped and restarted  
->>>>>> at any
->>>>>> time, and a sunrpc registration can happen at any time, what is  
->>>>>> the
->>>>>> expected mechanism to prevent the kernel from allocating a port  
->>>>>> for use
->>>>>> by sunrpc that reserved or well-known?
->>>>>>
->>>>>> Apparently Redhat and Debian have distro-specific ways of  
->>>>>> dealing with
->>>>>> this, but is there a standard solution?  Should there be?
->>>>>>
->>>>>> The current setup seems suboptimal.
->>>>>
->>>>> I believe both RH and Debian are using the same implementation:
->>>>> <http://cyberelk.net/tim/software/portreserve/>.
->>>>
->>>> That helps with the startup case, but still leaves a possible  
->>>> hole if an
->>>> app using a fixed port number is restarted at runtime.  During the
->>>> window where nobody is bound to the port, the kernel could randomly
->>>> assign it to someone else.
->>>
->>> Just use /proc/sys/sunrpc/{max,min}_resvport interface to restrict  
->>> the
->>> range used to a safer one. That's what it is for...
->
-> Unless I'm much mistaken, that only affects in-kernel SunRPC users.
->
->> What constitutes a "safer range"?  IANA has ports assigned
->> intermittently all the way through the default RPC range.  The  
->> largest
->> unassigned range is 922-988 (since 921 is used by lwresd).  If  
->> someone
->> needs more than 66 ports, how are they supposed to handle it?
->
-> I'm sure we could afford 128 bytes for a blacklist of privileged  
-> ports.
-> However, the problem is that there is no API for userland to request
-> 'any free privileged port' - it has to just try binding to different
-> ports until it finds one available.
+2.	Although synchronize_sched_expedited() was implemented with a
+	fastpath to efficiently handle multiple concurrent calls,
+	the counter increment that enabled this fastpath was omitted.
+	Add it back in.  (And yes, this does make a big difference in
+	performance and scalability for multiple concurrent calls to
+	synchronize_sched_expedited(), not that such calls should happen
+	all that often.  Still, no point in bringing the machine to its
+	knees unnecessarily.)
 
-bindresvport(3) and bindresvport_sa(3t) ?
+3.	The field rsp->dynticks_completed is now used whether or not
+	dynticks is enabled.  Rename it to rsp->completed_fqs to better
+	document its new role.
 
-> This means that the kernel can't
-> tell whether a process is trying to allocate a specifically assigned
-> port or whether the blacklist should be applied.
-
-Such a blacklist would have to be managed by glibc or libtirpc.
-
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
-
-
-
+4.	Much of the confusion leading to the bugs provoked by testing
+	with long RCU grace periods was due to the method used to
+	determine which grace period a given context-switch quiescent
+	state is to be applied to.  This change provides a much more
+	straightforward detection method for these quiescent states.
+	The quiescent states induced by force_quiescent_state() still
+	use the old method, and a separate patch for them is in the
+	works.
