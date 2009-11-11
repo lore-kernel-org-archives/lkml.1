@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZKKAWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZKKA36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbZKKAWv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 19:22:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZKKAWu
+	id S1752867AbZKKA36 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 19:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZKKA35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 19:22:50 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:39022 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751294AbZKKAWu (ORCPT
+	Tue, 10 Nov 2009 19:29:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33969 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751849AbZKKA35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 19:22:50 -0500
-Message-Id: <1257898975.30125.1344591929@webmail.messagingengine.com>
-X-Sasl-Enc: s92qWSs4qSf3+xZ+nEzHtfheneeWvOEq7FylA6G8v895 1257898975
-From: myuboot@fastmail.fm
-To: linux-kernel@vger.kernel.org, "linux-mips" <linux-mips@linux-mips.org>
-MIME-Version: 1.0
+	Tue, 10 Nov 2009 19:29:57 -0500
+Date: Tue, 10 Nov 2009 16:29:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Harik <harik.attar@gmail.com>, Thiago Farina <tfransosi@gmail.com>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] drivers/serial: remove BAUD_TABLE_SIZE macro.
+Message-Id: <20091110162955.68321ab9.akpm@linux-foundation.org>
+In-Reply-To: <20091111001100.GA14329@suse.de>
+References: <1257428794-9203-1-git-send-email-tfransosi@gmail.com>
+	<c0c067900911101609v5ca52bb1h98a7bde2cf625ad@mail.gmail.com>
+	<20091111001100.GA14329@suse.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1255735395.30097.1340523469@webmail.messagingengine.com>
- <4AD906D8.3020404@caviumnetworks.com>
-Subject: Kernel panic - not syncing: Attempted to kill init!
-In-Reply-To: <4AD906D8.3020404@caviumnetworks.com>
-Date: Tue, 10 Nov 2009 18:22:55 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On Tue, 10 Nov 2009 16:11:00 -0800
+Greg KH <gregkh@suse.de> wrote:
 
-I got the following error trying to bring up the /sbin/init with Kernel
-2.6.31 using cramfs filesystem on a MIPS 32 board:
+> On Tue, Nov 10, 2009 at 07:09:30PM -0500, Harik wrote:
+> > On Thu, Nov 5, 2009 at 8:46 AM, Thiago Farina <tfransosi@gmail.com> wrote:
+> > > This macro is a duplicated of ARRAY_SIZE defined in kernel api,
+> > > so just use it instead.
+> > 
+> > > - __ __ __ UBAUD = PUT_FIELD(UBAUD_DIVIDE, __ __hw_baud_table[i].divisor) |
+> > > + __ __ __ UBAUD = PUT_FIELD(UBAUD_DIVIDE, __ __hw_baud_table[i].divisor) |
+> > 
+> > Random bit of whitespace got in the patch
+> 
+> What patch?
 
-[    1.160000] VFS: Mounted root (cramfs filesystem) readonly on device
-31:2.
-[    1.171000] Freeing unused kernel memory: 116k freed
-[    1.223000] Kernel panic - not syncing: Attempted to kill init!
-[    1.229000] Rebooting in 3 seconds..
+That patch!
 
-Using BDI I know the kernel panic happens as soon as
-run_init_process("/sbin/init") in init_post() is called. The filesystem
-itself seems to be ok, because I can use 'ls' command under u-boot to
-see /sbin/init is a symbolic link to busybox. Also the kernel seems to
-like the filesystem and can mount the filesystem.  I have for checked
-for similar questions for this error, so I tried replacing /sbin/init
-with a hello world program, but the result is exactly the same. It seems
-neither hello-world or /sbin/init got executed. 
+> > Since nobody directly owns this file, CCing maintainers listed for serial_core
+> 
+> Sure, care to point me at a correct one?
 
-At this point, I don't know how to debug this issue. Any suggestion on
-how to debug this issue will be greatly appreciated.
-
-Andrew
+I got it.
