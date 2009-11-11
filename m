@@ -1,73 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758444AbZKKSmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZKKTZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758444AbZKKSmM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 13:42:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbZKKSmM
+	id S1758674AbZKKTZF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 14:25:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbZKKTZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 13:42:12 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:51549 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758125AbZKKSmL (ORCPT
+	Wed, 11 Nov 2009 14:25:05 -0500
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:42617 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758617AbZKKTZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 13:42:11 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/kVxLrU50KeuhD+mlkbtk4
-Date: Wed, 11 Nov 2009 10:42:09 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-fbdev-devel@lists.sourceforge.net" 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "dedekind1@gmail.com" <dedekind1@gmail.com>
-Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
-Message-ID: <20091111184208.GC24837@atomide.com>
-References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
- <1257856848.21596.753.camel@localhost>
- <1257929140.20378.51.camel@tubuntu.research.nokia.com>
- <1257932641.20378.77.camel@tubuntu.research.nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257932641.20378.77.camel@tubuntu.research.nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 11 Nov 2009 14:25:04 -0500
+Subject: Re: [RFC] new -stable tag variant, Git workflow question
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20091110193747.GB12686@suse.de>
+References: <20091110034831.GB26809@elte.hu>
+	 <20091110041452.GA25575@suse.de> <1257863388.4184.220.camel@mulgrave.site>
+	 <20091110193747.GB12686@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 11 Nov 2009 12:50:24 -0600
+Message-Id: <1257965424.11985.9.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@nokia.com> [091111 01:43]:
-> On Wed, 2009-11-11 at 09:45 +0100, Valkeinen Tomi (Nokia-D/Helsinki)
-> wrote:
-> > On Tue, 2009-11-10 at 13:40 +0100, Artem Bityutskiy wrote:
-> > > Tomi,
+On Tue, 2009-11-10 at 11:37 -0800, Greg KH wrote:
+> On Tue, Nov 10, 2009 at 09:29:48AM -0500, James Bottomley wrote:
+> > On Mon, 2009-11-09 at 20:14 -0800, Greg KH wrote:
+> > > > A further question is, i can see using this tagging scheme in the future 
+> > > > in merge commits log messages too - will your scripts notice that too?
 > > > 
-> > > could you please kindly ask Stephen (CCed) to include the DSS2 tree into
-> > > linux-next, because you are going to merge it the next merge window, and
-> > > there does not seem to be any blocker for this.
+> > > Hm, I don't think we look at merges as there's nothing there to actually
+> > > commit.
 > > > 
-> > > Being in linux-next for a while is really important.
+> > > > For example if there's a few commits left in tip:*/urgent branches 
+> > > > (tip:sched/urgent, tip:core/urgent, tip:x86/urgent, etc.) by the time 
+> > > > v2.6.32 is released, i will then merge them into tip:sched/core, 
+> > > > tip:core/core, tip:x86/core, etc. - and i could use the merge commit as 
+> > > > a notification area to 'activate' them for -stable backporting via a 
+> > > > merge commit.
+> > > > 
+> > > > This is how such merge commits would look like:
+> > > > 
+> > > >   Merge branch 'core/urgent' into core/rcu
+> > > > 
+> > > >   Merge reason: Pick up urgent fixes that did not make it into .32.0
+> > > > 
+> > > >   Cc: <stable@kernel.org> # .32.x: 83f5b01: rcu: Fix long-grace-period race
+> > > >   Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > > 
+> > > > This is not so rare of a situation as it might seem - for the trees i 
+> > > > maintain it happens in almost every release cycle - i typically skip 
+> > > > urgent branch merges after -rc8/-rc9, unless they are very-very-urgent 
+> > > > fixes - but they'd still be eligible for -stable.
+> > > 
+> > > Ok, that would be good and fine with me.
+> > > 
+> > > James, would your script pick this up, or does it need to also pay
+> > > attention to merge commits?
 > > 
-> > Stephen, would this be possible? DSS2 driver is rather big piece of
-> > code, even if it's quite isolated, so it would be nice to have it in
-> > linux-next.
+> > No ... because merge commits should effectively be empty (and when
+> > they're not you can't generate an applyable diff).  If I understand the
+> > workflow, the desire is to have the whole branch sent to stable by
+> > tagging the merge commit.  That's possible ... it's exactly the same
+> > logic I use in the commit scripts for the SCSI tree, so it should be
+> > possible to extract the logic.
 > > 
-> > What does it require from me? A git tree, obviously, but what should it
-> > be based on?
+> > By the looks of the above it's only a few commits, or is it the entire
+> > branch?
 > 
-> Ah, I just realized that DSS2 patches depend on patches from Tony's
-> tree. I guess I should base my tree on top of some Tony's tree that is
-> going to linux-next?
+> I'm thinking the commit would be the merge, right Ingo?  So it would
+> just be a single commit that has the marker in it.
 
-Or I can merge them into my for-next if that's OK with everybody. This
-merge cycle is a pain for omap as we've moved all the common headers from
-include/mach to include/plat.
+OK, so I can make it send you this just by removing the --no-merge flag
+from the git rev-list the script uses to sift through what changed
+(which I've already done).
 
-Tomi should still send a separate pull request for Linus for the
-DSS2 patches.
+The slight problem is that further down, to generate the patch the
+script uses git format-patch -k --stdout commit^..commit.  For a merge
+commit, this will generate a patch equivalent to the entire branch that
+was merged, even though the commit message will only pick out some of
+these ... is this OK?
 
-Regards,
+If not, I can look at using git show instead to generate the patches (it
+will effectively generate null diffs for merge points with the stable
+tag, which is closer to what you want).
 
-Tony
+Alternatively, if you pick up the commits from Linus' tree anyway, I
+could just stop producing diffs, which will save email bandwidth and
+then be automatically correct whether the commit is a merge or not.
+
+James
+
+
