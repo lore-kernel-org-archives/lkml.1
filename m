@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbZKKCbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbZKKCev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758779AbZKKCbx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 21:31:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbZKKCbw
+	id S1758788AbZKKCev (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 21:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756496AbZKKCeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 21:31:52 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:42043 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756128AbZKKCbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 21:31:51 -0500
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
-References: <m1pr7siqjz.fsf@fess.ebiederm.org>
-	<m1zl6vvpiv.fsf@fess.ebiederm.org>
-	<20091109132830.GF26740@basil.fritz.box>
-	<200911091628.47003.arnd@arndb.de>
-	<20091109154621.GG26740@basil.fritz.box>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 10 Nov 2009 18:31:51 -0800
-In-Reply-To: <20091109154621.GG26740@basil.fritz.box> (Andi Kleen's message of "Mon\, 9 Nov 2009 16\:46\:21 +0100")
-Message-ID: <m18wedeqqw.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 10 Nov 2009 21:34:50 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55661 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756583AbZKKCet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 21:34:49 -0500
+Message-ID: <4AFA2293.5080803@cn.fujitsu.com>
+Date: Wed, 11 Nov 2009 10:33:55 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, mingo@elte.hu,
+       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+References: <20091025225342.007138f5@infradead.org>
+In-Reply-To: <20091025225342.007138f5@infradead.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
+> +/*
+> + * Tracepoint for dirtying an inode:
+> + */
+> +TRACE_EVENT(dirty_inode,
+> +
+> +	TP_PROTO(struct inode *inode, struct task_struct *task),
+> +
+> +	TP_ARGS(inode, task),
+> +
+> +	TP_STRUCT__entry(
+> +		__array( char,	comm,	TASK_COMM_LEN	)
+> +		__field( pid_t,	pid			)
+> +		__array( char,  dev,    16		)
+> +		__array( char,  file,   32		)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		if (inode->i_ino || strcmp(inode->i_sb->s_id, "bdev")) {
+> +                	struct dentry *dentry;
+> +                	const char *name = "?";
+> +
+> +			dentry = d_find_alias(inode);
+> +			if (dentry) {
+> +				spin_lock(&dentry->d_lock);
+> +				name = (const char *) dentry->d_name.name;
+> +			}
+> +
+> +			memcpy(__entry->comm, task->comm, TASK_COMM_LEN);
+> +			__entry->pid = task->pid;
+> +			strlcpy(__entry->file, name, 32);
+> +			strlcpy(__entry->dev, inode->i_sb->s_id, 16);
+> +
+> +			if (dentry) {
+> +				spin_unlock(&dentry->d_lock);
+> +				dput(dentry);
+> +			}
+> +		}
 
->> Can you name one binary sysctl value that gets accessed more
->> than a few times during the execution of a vaguely common
->> application? We're talking about microseconds for typically
->> write-once or read-once settings.
->
-> For example shell scripts tend to execute programs quite a lot.
->
->> The question is just how many sysctl values you regard as both
->> common and performance critical.
->
-> Very little, I suspect in fact it's only one.
+This will leave __entry->comm, __entry->file and __entry->dev
+uninitialized in the "else" case..
 
-I just took a second look, attempting to figure out how much startup
-overhead my sysctl used.  I failed because I don't have a user space
-old enough that it calls sysctl. I had to go back all of the way to
-glibc-2.4 to find a version of nptl that calls sysctl at startup.
-glibc-2.5 on i386 uses uname and all other architectures uses either
-assumes smp is true or false without performing a system call.
+And is there any reason that we have to use __array() but can't
+use __string()?
 
-I don't believe an inuse version of glibc exists that uses sysctl
-except the ioperm implementation on arm.  So I can't see how being
-a little slower will impact anyone.
-
-Eric
+> +	),
+> +
+> +	TP_printk("task=%i (%s) file=%s dev=%s",
+> +		__entry->pid, __entry->comm, __entry->file, __entry->dev)
+> +);
+> +
+> +#endif /* _TRACE_VFS_H */
