@@ -1,123 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbZKKUjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbZKKUfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758919AbZKKUjx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:39:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758875AbZKKUju
+	id S1758856AbZKKUfz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbZKKUfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:39:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:64826 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758863AbZKKUjs (ORCPT
+	Wed, 11 Nov 2009 15:35:54 -0500
+Received: from gv-out-0910.google.com ([216.239.58.189]:38249 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbZKKUfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:39:48 -0500
+	Wed, 11 Nov 2009 15:35:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tSHTlowUxCeXbP+lZVh4K+ksla1MKICCqPdoeZEnAWfxFuK1d8KAhpTY74+G4A8ysZ
-         yoVeBMV46as54yZv7itYUGi8rp52wlqdMBdO709CP2DCS5NfV5lOWiX5IO396PTUK2wa
-         v81dDH29IY2keaIcpsfZyZMsfvmm9MjRYMYoQ=
-Date: Wed, 11 Nov 2009 23:34:25 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Ma, Ling" <ling.ma@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
-	fast string.
-Message-ID: <20091111203425.GA25401@lenovo>
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com> <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com> <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com> <4AF7C66C.6000009@zytor.com> <20091109080830.GI453@elte.hu> <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=qEaZ+AAdemfdH2dvYoWY3/G4Vcx9ZUNlZ35mngLwoyLQz/6f4Q2rkN6sKR89VljHsY
+         iYL9bsPZgqc+glffFScyzIcDd9bn9Jjs3tsiTWIi8tpDN02VGNcNQbUM6RuIbS63xWP9
+         Y+gvyapr5GM4wyMDHHkjoidzA6tedOB2290hQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: x86@kernel.org
+Subject: [PATCH RFC] x86: fix confusing name of /proc/cpuinfo "ht" flag
+Date: Wed, 11 Nov 2009 21:34:34 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911112134.34261.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 03:05:34PM +0800, Ma, Ling wrote:
-> Hi All
-> Please use the memcpy.c(cc -o memcpy memcpy.c -O2) to test more cases,
-> if you have interest. In this program we did simple modification
-> on memcpy_new function.
-> 
-> Thanks
-> Ling
 
-Just my 0.2$ :)
+"ht" flag indicates only ability to detect siblings not HT presence itself.
 
-	-- Cyrill
+Inspired by:
+http://www.codemonkey.org.uk/2009/11/10/common-hyperthreading-misconception/
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-                       			memcpy_orig	memcpy_new
-TPT: Len 1024, alignment  8/ 0:		490		570
-TPT: Len 2048, alignment  8/ 0:		826		329
-TPT: Len 3072, alignment  8/ 0:		441		464
-TPT: Len 4096, alignment  8/ 0:		579		596
-TPT: Len 5120, alignment  8/ 0:		723		729
-TPT: Len 6144, alignment  8/ 0:		859		861
-TPT: Len 7168, alignment  8/ 0:		996		994
-TPT: Len 8192, alignment  8/ 0:		1165		1127
-TPT: Len 9216, alignment  8/ 0:		1273		1260
-TPT: Len 10240, alignment  8/ 0:	1402		1395
-TPT: Len 11264, alignment  8/ 0:	1543		1525
-TPT: Len 12288, alignment  8/ 0:	1682		1659
-TPT: Len 13312, alignment  8/ 0:	1869		1815
-TPT: Len 14336, alignment  8/ 0:	1982		1951
-TPT: Len 15360, alignment  8/ 0:	2185		2110
----
+It could be that there are some user-space programs depending on "ht"
+flag so the patch is marked as RFC..
 
-I've run this test a few times and results almost the same,
-with alignment 1024, 3072, 4096, 5120, 6144, new version a bit slowly.
+ arch/x86/include/asm/cpufeature.h |    4 ++--
+ arch/x86/kernel/cpu/capflags.c    |    2 +-
+ arch/x86/kernel/cpu/common.c      |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
----
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 23
-model name	: Intel(R) Core(TM)2 Duo CPU     T8100  @ 2.10GHz
-stepping	: 6
-cpu MHz		: 800.000
-cache size	: 3072 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 2
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 lahf_lm ida tpr_shadow vnmi flexpriority
-bogomips	: 4189.60
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
-processor	: 1
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 23
-model name	: Intel(R) Core(TM)2 Duo CPU     T8100  @ 2.10GHz
-stepping	: 6
-cpu MHz		: 800.000
-cache size	: 3072 KB
-physical id	: 0
-siblings	: 2
-core id		: 1
-cpu cores	: 2
-apicid		: 1
-initial apicid	: 1
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 lahf_lm ida tpr_shadow vnmi flexpriority
-bogomips	: 4189.46
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
+Index: b/arch/x86/include/asm/cpufeature.h
+===================================================================
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -42,7 +42,7 @@
+ #define X86_FEATURE_XMM		(0*32+25) /* "sse" */
+ #define X86_FEATURE_XMM2	(0*32+26) /* "sse2" */
+ #define X86_FEATURE_SELFSNOOP	(0*32+27) /* "ss" CPU self snoop */
+-#define X86_FEATURE_HT		(0*32+28) /* Hyper-Threading */
++#define X86_FEATURE_HT_DETECTION (0*32+28) /* Hyper-Threading detection */
+ #define X86_FEATURE_ACC		(0*32+29) /* "tm" Automatic clock control */
+ #define X86_FEATURE_IA64	(0*32+30) /* IA-64 processor */
+ #define X86_FEATURE_PBE		(0*32+31) /* Pending Break Enable */
+@@ -220,7 +220,7 @@ extern const char * const x86_power_flag
+ #define cpu_has_xmm2		boot_cpu_has(X86_FEATURE_XMM2)
+ #define cpu_has_xmm3		boot_cpu_has(X86_FEATURE_XMM3)
+ #define cpu_has_aes		boot_cpu_has(X86_FEATURE_AES)
+-#define cpu_has_ht		boot_cpu_has(X86_FEATURE_HT)
++#define cpu_has_ht_detection	boot_cpu_has(X86_FEATURE_HT_DETECTION)
+ #define cpu_has_mp		boot_cpu_has(X86_FEATURE_MP)
+ #define cpu_has_nx		boot_cpu_has(X86_FEATURE_NX)
+ #define cpu_has_k6_mtrr		boot_cpu_has(X86_FEATURE_K6_MTRR)
+Index: b/arch/x86/kernel/cpu/capflags.c
+===================================================================
+--- a/arch/x86/kernel/cpu/capflags.c
++++ b/arch/x86/kernel/cpu/capflags.c
+@@ -27,7 +27,7 @@ const char * const x86_cap_flags[NCAPINT
+ 	[X86_FEATURE_XMM]                = "sse",
+ 	[X86_FEATURE_XMM2]               = "sse2",
+ 	[X86_FEATURE_SELFSNOOP]          = "ss",
+-	[X86_FEATURE_HT]                 = "ht",
++	[X86_FEATURE_HT_DETECTION]       = "ht_detection",
+ 	[X86_FEATURE_ACC]                = "tm",
+ 	[X86_FEATURE_IA64]               = "ia64",
+ 	[X86_FEATURE_PBE]                = "pbe",
+Index: b/arch/x86/kernel/cpu/common.c
+===================================================================
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -433,7 +433,7 @@ void __cpuinit detect_ht(struct cpuinfo_
+ 	u32 eax, ebx, ecx, edx;
+ 	int index_msb, core_bits;
+ 
+-	if (!cpu_has(c, X86_FEATURE_HT))
++	if (!cpu_has(c, X86_FEATURE_HT_DETECTION))
+ 		return;
+ 
+ 	if (cpu_has(c, X86_FEATURE_CMP_LEGACY))
