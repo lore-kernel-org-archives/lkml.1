@@ -1,121 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbZKKH41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbZKKH4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756362AbZKKH41 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:56:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZKKH40
+	id S1756865AbZKKH4e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:56:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbZKKH4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:56:26 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36136 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754937AbZKKH4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:56:25 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH 2/6] mm: mlocking in try_to_unmap_one
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0911102151500.2816@sister.anvils>
-References: <Pine.LNX.4.64.0911102142570.2272@sister.anvils> <Pine.LNX.4.64.0911102151500.2816@sister.anvils>
-Message-Id: <20091111102400.FD36.A69D9226@jp.fujitsu.com>
+	Wed, 11 Nov 2009 02:56:31 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:45914 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756701AbZKKH43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 02:56:29 -0500
+Message-ID: <4AFA6E2D.7010709@garzik.org>
+Date: Wed, 11 Nov 2009 02:56:29 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+References: <20091025225342.007138f5@infradead.org> <20091111020108.GA11423@localhost> <20091110223456.01ef355f@infradead.org> <4AFA6AEF.5060306@garzik.org> <20091111074542.GB25132@elte.hu>
+In-Reply-To: <20091111074542.GB25132@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 11 Nov 2009 16:56:28 +0900 (JST)
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh
-
-> @@ -1081,45 +1053,23 @@ static int try_to_unmap_file(struct page
->  	unsigned long max_nl_cursor = 0;
->  	unsigned long max_nl_size = 0;
->  	unsigned int mapcount;
-> -	unsigned int mlocked = 0;
-> -	int unlock = TTU_ACTION(flags) == TTU_MUNLOCK;
-> -
-> -	if (MLOCK_PAGES && unlikely(unlock))
-> -		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
->  
->  	spin_lock(&mapping->i_mmap_lock);
->  	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
-> -		if (MLOCK_PAGES && unlikely(unlock)) {
-> -			if (!((vma->vm_flags & VM_LOCKED) &&
-> -						page_mapped_in_vma(page, vma)))
-> -				continue;	/* must visit all vmas */
-> -			ret = SWAP_MLOCK;
-> -		} else {
-> -			ret = try_to_unmap_one(page, vma, flags);
-> -			if (ret == SWAP_FAIL || !page_mapped(page))
-> -				goto out;
-> -		}
-> -		if (ret == SWAP_MLOCK) {
-> -			mlocked = try_to_mlock_page(page, vma);
-> -			if (mlocked)
-> -				break;  /* stop if actually mlocked page */
-> -		}
-> +		ret = try_to_unmap_one(page, vma, flags);
-> +		if (ret != SWAP_AGAIN || !page_mapped(page))
-> +			goto out;
->  	}
->  
-> -	if (mlocked)
-> +	if (list_empty(&mapping->i_mmap_nonlinear))
->  		goto out;
+On 11/11/2009 02:45 AM, Ingo Molnar wrote:
 >
-> -	if (list_empty(&mapping->i_mmap_nonlinear))
-> +	/* We don't bother to try to find the munlocked page in nonlinears */
-> +	if (MLOCK_PAGES && TTU_ACTION(flags) == TTU_MUNLOCK)
->  		goto out;
+> * Jeff Garzik<jeff@garzik.org>  wrote:
+>
+>> On 11/11/2009 01:34 AM, Arjan van de Ven wrote:
+>>> Wu Fengguang<fengguang.wu@intel.com>   wrote:
+>>>> Maybe this is enough for POWERTOP, however for general use, the dirty
+>>>> type(data/metadata) and inode number may be valuable to some users?
+>>>
+>>> what can a user do with an inode number????
+>>
+>> Inode numbers have always been visible to userspace...  IIRC, tar(1)
+>> uses the st_ino member of struct stat to detect hard links in certain
+>> cases.  ls(1) displays inode numbers with -i, find(1) looks for them
+>> with -inum, ...
+>
+> Without an inode->vfs-name lookup/matching service it's of limited
+> utility
 
-I have dumb question.
-Does this shortcut exiting code makes any behavior change?
+Look in the quoted text for one such service...  :)
 
-
-
-
->  
->  	list_for_each_entry(vma, &mapping->i_mmap_nonlinear,
->  						shared.vm_set.list) {
-> -		if (MLOCK_PAGES && unlikely(unlock)) {
-> -			if (!(vma->vm_flags & VM_LOCKED))
-> -				continue;	/* must visit all vmas */
-> -			ret = SWAP_MLOCK;	/* leave mlocked == 0 */
-> -			goto out;		/* no need to look further */
-> -		}
->  		if (!MLOCK_PAGES && !(flags & TTU_IGNORE_MLOCK) &&
->  			(vma->vm_flags & VM_LOCKED))
->  			continue;
-> @@ -1161,10 +1111,9 @@ static int try_to_unmap_file(struct page
->  			cursor = (unsigned long) vma->vm_private_data;
->  			while ( cursor < max_nl_cursor &&
->  				cursor < vma->vm_end - vma->vm_start) {
-> -				ret = try_to_unmap_cluster(cursor, &mapcount,
-> -								vma, page);
-> -				if (ret == SWAP_MLOCK)
-> -					mlocked = 2;	/* to return below */
-> +				if (try_to_unmap_cluster(cursor, &mapcount,
-> +						vma, page) == SWAP_MLOCK)
-> +					ret = SWAP_MLOCK;
->  				cursor += CLUSTER_SIZE;
->  				vma->vm_private_data = (void *) cursor;
->  				if ((int)mapcount <= 0)
-> @@ -1185,10 +1134,6 @@ static int try_to_unmap_file(struct page
->  		vma->vm_private_data = NULL;
->  out:
->  	spin_unlock(&mapping->i_mmap_lock);
-> -	if (mlocked)
-> -		ret = SWAP_MLOCK;	/* actually mlocked the page */
-> -	else if (ret == SWAP_MLOCK)
-> -		ret = SWAP_AGAIN;	/* saw VM_LOCKED vma */
->  	return ret;
->  }
->  
+	Jeff
 
 
