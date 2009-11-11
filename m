@@ -1,382 +1,349 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZKKM2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZKKM2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbZKKM2V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 07:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbZKKM2L
+	id S1755843AbZKKM2Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 07:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbZKKM2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 07:28:11 -0500
-Received: from mail.free-electrons.com ([88.191.76.200]:48964 "EHLO
+	Wed, 11 Nov 2009 07:28:23 -0500
+Received: from mail.free-electrons.com ([88.191.76.200]:48973 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbZKKM2E (ORCPT
+	with ESMTP id S1751542AbZKKM2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 07:28:04 -0500
+	Wed, 11 Nov 2009 07:28:06 -0500
 From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
 To: akpm@linux-foundation.org
 Cc: hpa@zytor.com, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
        Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: [PATCH v3 1/4] Add support for LZO-compressed kernels
-Date: Wed, 11 Nov 2009 13:27:55 +0100
-Message-Id: <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
+Subject: [PATCH v3 2/4] Add support for LZO-compressed kernels for ARM
+Date: Wed, 11 Nov 2009 13:27:56 +0100
+Message-Id: <1257942478-18719-3-git-send-email-albin.tonnerre@free-electrons.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
+In-Reply-To: <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
 References: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
+ <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the first part of the lzo patch
-The lzo compressor is worse than gzip at compression, but faster at
-extraction. Here are some figures for an ARM board I'm working on:
-
-Uncompressed size: 3.24Mo
-gzip  1.61Mo 0.72s
-lzo   1.75Mo 0.48s
-
-So for a compression ratio that is still relatively close to gzip, it's
-much faster to extract, at least in that case.
-
-This version applies to kernel 2.6.31-rc3
-
-This part contains:
- - Makefile routine to support lzo compression
- - Fixes to the existing lzo compressor so that it can be used in
-   compressed kernels
- - wrapper around the existing lzo1x_decompress, as it only extracts one
-   block at a time, while we need to extract a whole file here
- - config dialog for kernel compression
+This is the second part of patch. This part includes:
+ - changes to ach/arch/boot/Makefile to make it easier to add new
+   compression types
+ - new piggy.lzo.S necessary for lzo compression
+ - changes in arch/arm/boot/compressed/misc.c to allow the use of lzo or
+   gzip, depending on the config
+ - Kconfig support
 
 Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
 ---
- include/linux/decompress/unlzo.h |   10 ++
- init/Kconfig                     |   18 +++-
- lib/decompress_unlzo.c           |  208 ++++++++++++++++++++++++++++++++++++++
- lib/lzo/lzo1x_decompress.c       |    9 +-
- scripts/Makefile.lib             |    5 +
- 5 files changed, 243 insertions(+), 7 deletions(-)
- create mode 100644 include/linux/decompress/unlzo.h
- create mode 100644 lib/decompress_unlzo.c
+ arch/arm/Kconfig                      |    2 +
+ arch/arm/boot/compressed/Makefile     |   31 ++++++---
+ arch/arm/boot/compressed/misc.c       |  116 ++++++++++-----------------------
+ arch/arm/boot/compressed/piggy.S      |    6 --
+ arch/arm/boot/compressed/piggy.gzip.S |    6 ++
+ arch/arm/boot/compressed/piggy.lzo.S  |    6 ++
+ 6 files changed, 70 insertions(+), 97 deletions(-)
+ delete mode 100644 arch/arm/boot/compressed/piggy.S
+ create mode 100644 arch/arm/boot/compressed/piggy.gzip.S
+ create mode 100644 arch/arm/boot/compressed/piggy.lzo.S
 
-diff --git a/include/linux/decompress/unlzo.h b/include/linux/decompress/unlzo.h
-new file mode 100644
-index 0000000..9872297
---- /dev/null
-+++ b/include/linux/decompress/unlzo.h
-@@ -0,0 +1,10 @@
-+#ifndef DECOMPRESS_UNLZO_H
-+#define DECOMPRESS_UNLZO_H
-+
-+int unlzo(unsigned char *inbuf, int len,
-+	int(*fill)(void*, unsigned int),
-+	int(*flush)(void*, unsigned int),
-+	unsigned char *output,
-+	int *pos,
-+	void(*error)(char *x));
-+#endif
-diff --git a/init/Kconfig b/init/Kconfig
-index f515864..eb65318 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -115,10 +115,13 @@ config HAVE_KERNEL_BZIP2
- config HAVE_KERNEL_LZMA
- 	bool
- 
-+config HAVE_KERNEL_LZO
-+	bool
-+
- choice
- 	prompt "Kernel compression mode"
- 	default KERNEL_GZIP
--	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA
-+	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA || HAVE_KERNEL_LZO
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 1c4119c..350921d 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -18,6 +18,8 @@ config ARM
+ 	select HAVE_KRETPROBES if (HAVE_KPROBES)
+ 	select HAVE_FUNCTION_TRACER if (!XIP_KERNEL)
+ 	select HAVE_GENERIC_DMA_COHERENT
++	select HAVE_KERNEL_GZIP
++	select HAVE_KERNEL_LZO
  	help
- 	  The linux kernel is a kind of self-extracting executable.
- 	  Several compression algorithms are available, which differ
-@@ -141,9 +144,8 @@ config KERNEL_GZIP
- 	bool "Gzip"
- 	depends on HAVE_KERNEL_GZIP
- 	help
--	  The old and tried gzip compression. Its compression ratio is
--	  the poorest among the 3 choices; however its speed (both
--	  compression and decompression) is the fastest.
-+	  The old and tried gzip compression. It provides a good balance
-+	  between compression ratio and decompression speed.
+ 	  The ARM series is a line of low-power-consumption RISC chip designs
+ 	  licensed by ARM Ltd and targeted at embedded applications and
+diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
+index ce39dc5..5b4629b 100644
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -63,8 +63,12 @@ endif
  
- config KERNEL_BZIP2
- 	bool "Bzip2"
-@@ -164,6 +166,14 @@ config KERNEL_LZMA
- 	  two. Compression is slowest.	The kernel size is about 33%
- 	  smaller with LZMA in comparison to gzip.
+ SEDFLAGS	= s/TEXT_START/$(ZTEXTADDR)/;s/BSS_START/$(ZBSSADDR)/
  
-+config KERNEL_LZO
-+	bool "LZO"
-+	depends on HAVE_KERNEL_LZO
-+	help
-+	  Its compression ratio is the poorest among the 4. The kernel
-+	  size is about about 10% bigger than gzip; however its speed
-+	  (both compression and decompression) is the fastest.
+-targets       := vmlinux vmlinux.lds piggy.gz piggy.o font.o font.c \
+-		 head.o misc.o $(OBJS)
++suffix_$(CONFIG_KERNEL_GZIP) = gzip
++suffix_$(CONFIG_KERNEL_LZO)  = lzo
 +
- endchoice
++targets       := vmlinux vmlinux.lds \
++		 piggy.$(suffix_y) piggy.$(suffix_y).o \
++		 font.o font.c head.o misc.o $(OBJS)
  
- config SWAP
-diff --git a/lib/decompress_unlzo.c b/lib/decompress_unlzo.c
-new file mode 100644
-index 0000000..2bb736f
---- /dev/null
-+++ b/lib/decompress_unlzo.c
-@@ -0,0 +1,208 @@
-+/*
-+ * LZO decompressor for the Linux kernel. Code borrowed from the lzo
-+ * implementation by Markus Franz Xaver Johannes Oberhumer.
-+ *
-+ * Linux kernel adaptation:
-+ * Copyright (C) 2009
-+ * Albin Tonnerre, Free Electrons <albin.tonnerre@free-electrons.com>
-+ *
-+ * Original code:
-+ * Copyright (C) 1996-2005 Markus Franz Xaver Johannes Oberhumer
-+ * All Rights Reserved.
-+ *
-+ * lzop and the LZO library are free software; you can redistribute them
-+ * and/or modify them under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; see the file COPYING.
-+ * If not, write to the Free Software Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Markus F.X.J. Oberhumer
-+ * <markus@oberhumer.com>
-+ * http://www.oberhumer.com/opensource/lzop/
-+ */
+ ifeq ($(CONFIG_FUNCTION_TRACER),y)
+ ORIG_CFLAGS := $(KBUILD_CFLAGS)
+@@ -87,22 +91,31 @@ endif
+ ifneq ($(PARAMS_PHYS),)
+ LDFLAGS_vmlinux += --defsym params_phys=$(PARAMS_PHYS)
+ endif
+-LDFLAGS_vmlinux += -p --no-undefined -X \
+-	$(shell $(CC) $(KBUILD_CFLAGS) --print-libgcc-file-name) -T
++# ?
++LDFLAGS_vmlinux += -p
++# Report unresolved symbol references
++LDFLAGS_vmlinux += --no-undefined
++# Delete all temporary local symbols
++LDFLAGS_vmlinux += -X
++# Next argument is a linker script
++LDFLAGS_vmlinux += -T
 +
-+#ifdef STATIC
-+#include "lzo/lzo1x_decompress.c"
-+#else
-+#include <linux/slab.h>
-+#include <linux/decompress/unlzo.h>
-+#endif
++# For __aeabi_uidivmod
++lib1funcs = $(srctree)/arch/$(SRCARCH)/lib/lib1funcs.o
+ 
+ # Don't allow any static data in misc.o, which
+ # would otherwise mess up our GOT table
+ CFLAGS_misc.o := -Dstatic=
+ 
+-$(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.o \
+-	 	$(addprefix $(obj)/, $(OBJS)) FORCE
++$(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.$(suffix_y).o \
++	 	$(addprefix $(obj)/, $(OBJS)) $(lib1funcs) FORCE
+ 	$(call if_changed,ld)
+ 	@:
+ 
+-$(obj)/piggy.gz: $(obj)/../Image FORCE
+-	$(call if_changed,gzip)
++$(obj)/piggy.$(suffix_y): $(obj)/../Image FORCE
++	$(call if_changed,$(suffix_y))
+ 
+-$(obj)/piggy.o:  $(obj)/piggy.gz FORCE
++$(obj)/piggy.$(suffix_y).o:  $(obj)/piggy.$(suffix_y) FORCE
+ 
+ CFLAGS_font.o := -Dstatic=
+ 
+diff --git a/arch/arm/boot/compressed/misc.c b/arch/arm/boot/compressed/misc.c
+index 17153b5..7e0fe4d 100644
+--- a/arch/arm/boot/compressed/misc.c
++++ b/arch/arm/boot/compressed/misc.c
+@@ -18,10 +18,15 @@
+ 
+ unsigned int __machine_arch_type;
+ 
++#define _LINUX_STRING_H_
 +
-+#include <linux/types.h>
-+#include <linux/lzo.h>
-+#include <linux/decompress/mm.h>
+ #include <linux/compiler.h>	/* for inline */
+ #include <linux/types.h>	/* for size_t */
+ #include <linux/stddef.h>	/* for NULL */
+ #include <asm/string.h>
++#include <linux/linkage.h>
 +
-+#include <linux/compiler.h>
 +#include <asm/unaligned.h>
-+
-+static const unsigned char lzop_magic[] =
-+	{ 0x89, 0x4c, 0x5a, 0x4f, 0x00, 0x0d, 0x0a, 0x1a, 0x0a };
-+
-+#define LZO_BLOCK_SIZE        (256*1024l)
-+#define HEADER_HAS_FILTER      0x00000800L
-+
-+STATIC inline int INIT parse_header(u8 *input, u8 *skip)
-+{
-+	int l;
-+	u8 *parse = input;
-+	u8 level = 0;
-+	u16 version;
-+
-+	/* read magic: 9 first bits */
-+	for (l = 0; l < 9; l++) {
-+		if (*parse++ != lzop_magic[l])
-+			return 0;
-+	}
-+	/* get version (2bytes), skip library version (2),
-+	 * 'need to be extracted' version (2) and
-+	 * method (1) */
-+	version = get_unaligned_be16(parse);
-+	parse += 7;
-+	if (version >= 0x0940)
-+		level = *parse++;
-+	if (get_unaligned_be32(parse) & HEADER_HAS_FILTER)
-+		parse += 8; /* flags + filter info */
-+	else
-+		parse += 4; /* flags */
-+
-+	/* skip mode and mtime_low */
-+	parse += 8;
-+	if (version >= 0x0940)
-+		parse += 4;	/* skip mtime_high */
-+
-+	l = *parse++;
-+	/* don't care about the file name, and skip checksum */
-+	parse += l + 4;
-+
-+	*skip = parse - input;
-+	return 1;
-+}
-+
-+STATIC inline int INIT unlzo(u8 *input, int in_len,
-+				int (*fill) (void *, unsigned int),
-+				int (*flush) (void *, unsigned int),
-+				u8 *output, int *posp,
-+				void (*error_fn) (char *x))
-+{
-+	u8 skip = 0, r = 0;
-+	u32 src_len, dst_len;
-+	size_t tmp;
-+	u8 *in_buf, *in_buf_save, *out_buf;
-+	int obytes_processed = 0;
-+
-+	set_error_fn(error_fn);
-+
-+	if (output)
-+		out_buf = output;
-+	else if (!flush) {
-+		error("NULL output pointer and no flush function provided");
-+		goto exit;
-+	} else {
-+		out_buf = malloc(LZO_BLOCK_SIZE);
-+		if (!out_buf) {
-+			error("Could not allocate output buffer");
-+			goto exit;
-+		}
-+	}
-+
-+	if (input && fill) {
-+		error("Both input pointer and fill function provided, don't know what to do");
-+		goto exit_1;
-+	} else if (input)
-+		in_buf = input;
-+	else if (!fill || !posp) {
-+		error("NULL input pointer and missing position pointer or fill function");
-+		goto exit_1;
-+	} else {
-+		in_buf = malloc(lzo1x_worst_compress(LZO_BLOCK_SIZE));
-+		if (!in_buf) {
-+			error("Could not allocate input buffer");
-+			goto exit_1;
-+		}
-+	}
-+	in_buf_save = in_buf;
-+
-+	if (posp)
-+		*posp = 0;
-+
-+	if (fill)
-+		fill(in_buf, lzo1x_worst_compress(LZO_BLOCK_SIZE));
-+
-+	if (!parse_header(input, &skip)) {
-+		error("invalid header");
-+		goto exit_2;
-+	}
-+	in_buf += skip;
-+
-+	if (posp)
-+		*posp = skip;
-+
-+	for (;;) {
-+		/* read uncompressed block size */
-+		dst_len = get_unaligned_be32(in_buf);
-+		in_buf += 4;
-+
-+		/* exit if last block */
-+		if (dst_len == 0) {
-+			if (posp)
-+				*posp += 4;
-+			break;
-+		}
-+
-+		if (dst_len > LZO_BLOCK_SIZE) {
-+			error("dest len longer than block size");
-+			goto exit_2;
-+		}
-+
-+		/* read compressed block size, and skip block checksum info */
-+		src_len = get_unaligned_be32(in_buf);
-+		in_buf += 8;
-+
-+		if (src_len <= 0 || src_len > dst_len) {
-+			error("file corrupted");
-+			goto exit_2;
-+		}
-+
-+		/* decompress */
-+		tmp = dst_len;
-+		r = lzo1x_decompress_safe((u8 *) in_buf, src_len, out_buf, &tmp);
-+
-+		if (r != LZO_E_OK || dst_len != tmp) {
-+			error("Compressed data violation");
-+			goto exit_2;
-+		}
-+
-+		obytes_processed += dst_len;
-+		if (flush)
-+			flush(out_buf, dst_len);
-+		if (output)
-+			out_buf += dst_len;
-+		if (posp)
-+			*posp += src_len + 12;
-+		if (fill) {
-+			in_buf = in_buf_save;
-+			fill(in_buf, lzo1x_worst_compress(LZO_BLOCK_SIZE));
-+		} else
-+			in_buf += src_len;
-+	}
-+
-+exit_2:
-+	if (!input)
-+		free(in_buf);
-+exit_1:
-+	if (!output)
-+		free(out_buf);
-+exit:
-+	return obytes_processed;
-+}
-+
-+#define decompress unlzo
-diff --git a/lib/lzo/lzo1x_decompress.c b/lib/lzo/lzo1x_decompress.c
-index 5dc6b29..f2fd098 100644
---- a/lib/lzo/lzo1x_decompress.c
-+++ b/lib/lzo/lzo1x_decompress.c
-@@ -11,11 +11,13 @@
-  *  Richard Purdie <rpurdie@openedhand.com>
+ 
+ #ifdef STANDALONE_DEBUG
+ #define putstr printf
+@@ -188,34 +193,8 @@ static inline __ptr_t memcpy(__ptr_t __dest, __const __ptr_t __src,
+ /*
+  * gzip delarations
   */
+-#define OF(args)  args
+ #define STATIC static
  
-+#ifndef STATIC
- #include <linux/module.h>
- #include <linux/kernel.h>
--#include <linux/lzo.h>
--#include <asm/byteorder.h>
-+#endif
-+
- #include <asm/unaligned.h>
-+#include <linux/lzo.h>
- #include "lzodefs.h"
- 
- #define HAVE_IP(x, ip_end, ip) ((size_t)(ip_end - ip) < (x))
-@@ -244,9 +246,10 @@ lookbehind_overrun:
- 	*out_len = op - out;
- 	return LZO_E_LOOKBEHIND_OVERRUN;
- }
+-typedef unsigned char  uch;
+-typedef unsigned short ush;
+-typedef unsigned long  ulg;
 -
-+#ifndef STATIC
- EXPORT_SYMBOL_GPL(lzo1x_decompress_safe);
+-#define WSIZE 0x8000		/* Window size must be at least 32k, */
+-				/* and a power of two */
+-
+-static uch *inbuf;		/* input buffer */
+-static uch window[WSIZE];	/* Sliding window buffer */
+-
+-static unsigned insize;		/* valid bytes in inbuf */
+-static unsigned inptr;		/* index of next byte to be processed in inbuf */
+-static unsigned outcnt;		/* bytes in output buffer */
+-
+-/* gzip flag byte */
+-#define ASCII_FLAG   0x01 /* bit 0 set: file probably ascii text */
+-#define CONTINUATION 0x02 /* bit 1 set: continuation of multi-part gzip file */
+-#define EXTRA_FIELD  0x04 /* bit 2 set: extra field present */
+-#define ORIG_NAME    0x08 /* bit 3 set: original file name present */
+-#define COMMENT      0x10 /* bit 4 set: file comment present */
+-#define ENCRYPTED    0x20 /* bit 5 set: file is encrypted */
+-#define RESERVED     0xC0 /* bit 6,7:   reserved */
+-
+-#define get_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf())
+-
+ /* Diagnostic functions */
+ #ifdef DEBUG
+ #  define Assert(cond,msg) {if(!(cond)) error(msg);}
+@@ -233,24 +212,20 @@ static unsigned outcnt;		/* bytes in output buffer */
+ #  define Tracecv(c,x)
+ #endif
  
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("LZO1X Decompressor");
+-static int  fill_inbuf(void);
+-static void flush_window(void);
+ static void error(char *m);
  
+ extern char input_data[];
+ extern char input_data_end[];
+ 
+-static uch *output_data;
+-static ulg output_ptr;
+-static ulg bytes_out;
++static unsigned char *output_data;
++static unsigned long output_ptr;
+ 
+ static void error(char *m);
+ 
+ static void putstr(const char *);
+ 
+-extern int end;
+-static ulg free_mem_ptr;
+-static ulg free_mem_end_ptr;
++static unsigned long free_mem_ptr;
++static unsigned long free_mem_end_ptr;
+ 
+ #ifdef STANDALONE_DEBUG
+ #define NO_INFLATE_MALLOC
+@@ -258,46 +233,13 @@ static ulg free_mem_end_ptr;
+ 
+ #define ARCH_HAS_DECOMP_WDOG
+ 
+-#include "../../../../lib/inflate.c"
+-
+-/* ===========================================================================
+- * Fill the input buffer. This is called only when the buffer is empty
+- * and at least one byte is really needed.
+- */
+-int fill_inbuf(void)
+-{
+-	if (insize != 0)
+-		error("ran out of input data");
+-
+-	inbuf = input_data;
+-	insize = &input_data_end[0] - &input_data[0];
+-
+-	inptr = 1;
+-	return inbuf[0];
+-}
++#ifdef CONFIG_KERNEL_GZIP
++#include "../../../../lib/decompress_inflate.c"
 +#endif
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index ffdafb2..39c3483 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -230,3 +230,8 @@ quiet_cmd_lzma = LZMA    $@
- cmd_lzma = (cat $(filter-out FORCE,$^) | \
- 	lzma -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
- 	(rm -f $@ ; false)
+ 
+-/* ===========================================================================
+- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+- * (Used for the decompressed data only.)
+- */
+-void flush_window(void)
+-{
+-	ulg c = crc;
+-	unsigned n;
+-	uch *in, *out, ch;
+-
+-	in = window;
+-	out = &output_data[output_ptr];
+-	for (n = 0; n < outcnt; n++) {
+-		ch = *out++ = *in++;
+-		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
+-	}
+-	crc = c;
+-	bytes_out += (ulg)outcnt;
+-	output_ptr += (ulg)outcnt;
+-	outcnt = 0;
+-	putstr(".");
+-}
++#ifdef CONFIG_KERNEL_LZO
++#include "../../../../lib/decompress_unlzo.c"
++#endif
+ 
+ #ifndef arch_error
+ #define arch_error(x)
+@@ -314,22 +256,33 @@ static void error(char *x)
+ 	while(1);	/* Halt */
+ }
+ 
++asmlinkage void __div0(void)
++{
++	error("Attempting division by 0!");
++}
 +
-+quiet_cmd_lzo = LZO    $@
-+cmd_lzo = (cat $(filter-out FORCE,$^) | \
-+	lzop -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
-+	(rm -f $@ ; false)
+ #ifndef STANDALONE_DEBUG
+ 
+-ulg
+-decompress_kernel(ulg output_start, ulg free_mem_ptr_p, ulg free_mem_ptr_end_p,
+-		  int arch_id)
++unsigned long
++decompress_kernel(unsigned long output_start, unsigned long free_mem_ptr_p,
++		unsigned long free_mem_ptr_end_p,
++		int arch_id)
+ {
+-	output_data		= (uch *)output_start;	/* Points to kernel start */
++	unsigned char *tmp;
++
++	output_data		= (unsigned char *)output_start;
+ 	free_mem_ptr		= free_mem_ptr_p;
+ 	free_mem_end_ptr	= free_mem_ptr_end_p;
+ 	__machine_arch_type	= arch_id;
+ 
+ 	arch_decomp_setup();
+ 
+-	makecrc();
++	tmp = (unsigned char *) (((unsigned long)input_data_end) - 4);
++	output_ptr = get_unaligned_le32(tmp);
++
+ 	putstr("Uncompressing Linux...");
+-	gunzip();
++	decompress(input_data, input_data_end - input_data,
++			NULL, NULL, output_data, NULL, error);
+ 	putstr(" done, booting the kernel.\n");
+ 	return output_ptr;
+ }
+@@ -341,11 +294,10 @@ int main()
+ {
+ 	output_data = output_buffer;
+ 
+-	makecrc();
+ 	putstr("Uncompressing Linux...");
+-	gunzip();
++	decompress(input_data, input_data_end - input_data,
++			NULL, NULL, output_data, NULL, error);
+ 	putstr("done.\n");
+ 	return 0;
+ }
+ #endif
+-	
+diff --git a/arch/arm/boot/compressed/piggy.S b/arch/arm/boot/compressed/piggy.S
+deleted file mode 100644
+index 54c9518..0000000
+--- a/arch/arm/boot/compressed/piggy.S
++++ /dev/null
+@@ -1,6 +0,0 @@
+-	.section .piggydata,#alloc
+-	.globl	input_data
+-input_data:
+-	.incbin	"arch/arm/boot/compressed/piggy.gz"
+-	.globl	input_data_end
+-input_data_end:
+diff --git a/arch/arm/boot/compressed/piggy.gzip.S b/arch/arm/boot/compressed/piggy.gzip.S
+new file mode 100644
+index 0000000..a68adf9
+--- /dev/null
++++ b/arch/arm/boot/compressed/piggy.gzip.S
+@@ -0,0 +1,6 @@
++	.section .piggydata,#alloc
++	.globl	input_data
++input_data:
++	.incbin	"arch/arm/boot/compressed/piggy.gzip"
++	.globl	input_data_end
++input_data_end:
+diff --git a/arch/arm/boot/compressed/piggy.lzo.S b/arch/arm/boot/compressed/piggy.lzo.S
+new file mode 100644
+index 0000000..a425ad9
+--- /dev/null
++++ b/arch/arm/boot/compressed/piggy.lzo.S
+@@ -0,0 +1,6 @@
++	.section .piggydata,#alloc
++	.globl	input_data
++input_data:
++	.incbin	"arch/arm/boot/compressed/piggy.lzo"
++	.globl	input_data_end
++input_data_end:
 -- 
 1.6.3.3
 
