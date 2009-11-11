@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbZKKUvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbZKKVAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758941AbZKKUvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbZKKUvm
+	id S1759050AbZKKVAS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:00:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759034AbZKKVAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:51:42 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60964 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753773AbZKKUvl (ORCPT
+	Wed, 11 Nov 2009 16:00:17 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:46629 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759022AbZKKVAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:51:41 -0500
-Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
-From: Peter Zijlstra <peterz@infradead.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4AFB2109.8010708@nortel.com>
-References: <4AEF94E8.3030403@cn.fujitsu.com>
-	 <1257846518.4648.18.camel@twins>
-	 <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com>
-	 <1257924007.23203.18.camel@twins>  <4AFB2109.8010708@nortel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 11 Nov 2009 21:51:31 +0100
-Message-ID: <1257972691.4039.15.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 16:00:15 -0500
+Date: Wed, 11 Nov 2009 15:51:42 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-11-11
+Message-ID: <20091111205141.GK4392@tuxdriver.com>
+References: <20091111172255.GH4392@tuxdriver.com> <20091111.112031.184370997.davem@davemloft.net> <20091111.114114.228545645.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091111.114114.228545645.davem@davemloft.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 14:39 -0600, Chris Friesen wrote:
-> On 11/11/2009 01:20 AM, Peter Zijlstra wrote:
-> > On Wed, 2009-11-11 at 15:21 +0900, Yasunori Goto wrote:
+On Wed, Nov 11, 2009 at 11:41:14AM -0800, David Miller wrote:
+> From: David Miller <davem@davemloft.net>
+> Date: Wed, 11 Nov 2009 11:20:31 -0800 (PST)
+> 
+> > From: "John W. Linville" <linville@tuxdriver.com>
+> > Date: Wed, 11 Nov 2009 12:22:55 -0500
 > > 
-> >> When users use cpuset/cpu affinity, then they would like to controll cpu affinity.
-> >> Not CPU time.
+> >> P.S.  Due to the aformentioned iwlwifi fix, this will cause -next
+> >> conflicts for sfr.  You may want to pull net-2.6 into net-next-2.6 after
+> >> pulling this.  The iwlwifi conflicts can be resolved by taking the bigger
+> >> hunks...
 > > 
-> > What are people using affinity for? The only use of affinity is to
-> > restrict or disable the load-balancer. Don't complain the load-balancer
-> > doesn't work when you're taking active steps to hinder its work.
+> > Yep, I noticed this, I'll sort it out, thanks.
 > 
-> I have one active user of scheduler groups (using CKRM though, but they
-> want to switch to a new kernel using CFS and sched groups in the near
-> future).
-> 
-> They want to run their app on one cpu by itself with as little
-> interference as possible.  Pure cpu processing, not even any I/O except
-> via shared memory buffers.  Everything else gets done on the other cpu,
-> but they want to control how much of the other cpu is assigned to packet
-> processing, how much to system maintenance, normal user shell commands, etc.
-> 
-> This would seem like a case where some sort of cpuset/affinity  and
-> sched groups would be expected to play nice together.
+> I just pushed out the merge to net-next-2.6, please double
+> check my work.
 
-Agreed, and I'd like the load-balance partition feature of cpusets and
-the cpu task-groups to work well together, except that the current
-interface doesn't allow that nicely.
+Found a little merge damage, sent a fixup patch to netdev@vger.kernel.org...
 
+Thanks!  Sorry if I gave bad merge conflict fixup advice...
 
-
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
