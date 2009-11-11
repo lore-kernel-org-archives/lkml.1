@@ -1,77 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbZKKL5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbZKKMBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757268AbZKKL5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 06:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZKKL5r
+	id S1757450AbZKKMBo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 07:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZKKMBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 06:57:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35243 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751563AbZKKL5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 06:57:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: romit@ti.com, "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads before invoking kthread_stop on them
-Date: Wed, 11 Nov 2009 12:59:04 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc6-tst; KDE/4.3.1; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>
-References: <1257928216.15415.57.camel@boson> <200911111230.58479.rjw@sisk.pl> <1257940231.28810.2.camel@boson>
-In-Reply-To: <1257940231.28810.2.camel@boson>
+	Wed, 11 Nov 2009 07:01:43 -0500
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:58165 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757384AbZKKMBm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 07:01:42 -0500
+Date: Wed, 11 Nov 2009 17:31:40 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nathan Fontenot <nfont@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v5 0/4] pseries: Add cede support for cpu-offline
+Message-ID: <20091111120140.GA11317@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911111259.04481.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 November 2009, Romit Dasgupta wrote:
-> Hello Rafael, 
->               As suggested I have added the relevant information in the
-> changelog. The patch is below:
-> > For completness, below is the information from the Romit's introductory message
-> > (Romit, I really think that should go into the chagelog):
+On Fri, Oct 30, 2009 at 10:52:43AM +0530, Gautham R Shenoy wrote:
+> Hi,
+
+Hi Peter,
+
+Did you get a chance to look at this new design ?
+
 > 
-> Kicks out frozen bdi flusher task out of the refrigerator when the said task
-> needs to exit.
-> Steps to reproduce this.
-> 1) Mount a file system from MMC/SD card.
-> 2) Unmount the file system. This creates a flusher task.
-> 3) Attempt suspend to RAM. System is unresponsive.
+> This is version 5 of patch series that provides a framework to choose the
+> state a pseries CPU must be put to when it is offlined.
 > 
-> This is because the bdi flusher thread is already in the refrigerator and will
-> remain so until it is thawed. The MMC driver suspend routine ultimately will
-> issue a 'kthread_stop' on the bdi flusher thread and will block until the
-> flusher thread is exited. Since the bdi flusher thread is in the refrigerator
-> it never cleans up until thawed.
+> Previous versions can be found here:
+> Version 4: http://lkml.org/lkml/2009/10/9/59
+> Version 3: http://lkml.org/lkml/2009/9/15/164
+> Version 2: http://lkml.org/lkml/2009/8/28/102
+> Version 1: http://lkml.org/lkml/2009/8/6/236
 > 
-> Signed-off-by: Romit Dasgupta <romit@ti.com>
-
-Thanks!  I'd still like to know that this change is fine with Jens, though.
-
-Rafael
-
-
+> Changes from the previous version include:
+> - Rebased against Nathan Fontenot's latest "pseries kernel handling of dynamic
+>   logical paritioning v4" patches found here:
+>   http://lkml.org/lkml/2009/10/21/98
+> 
+> - Added boot-time option to disable putting the offlined vcpus into an
+>   extended H_CEDE state.
+> 
+> - Addressed Ben's comments regarding the if-else sequencing in
+>   pseries_mach_cpu_die().
+> 
+> - Addition of comments for pseries_cpu_die() to distinguish it from
+>   pseries_mach_cpu_die()
+> 
+> Also,
+> 
+> - This approach addresses Peter Z's objections regarding layering
+>   violations. The user simply offlines the cpu and doesn't worry about what
+>   state the CPU should be put into. That part is automatically handled by the
+>   kernel.
+> 
+> - It does not add any additional sysfs interface instead uses the existing
+>   sysfs interface to offline CPUs.
+> 
+> - On platforms which do not have support for ceding the vcpu with a
+>   latency specifier value, the offlining mechanism defaults to the current
+>   method of calling rtas_stop_self().
+> 
+> The patchset has been tested on the available pseries platforms and it works
+> as per the expectations. I believe that the patch set is ready for inclusion.
 > ---
-> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-> index 5a37e20..c757b05 100644
-> --- a/mm/backing-dev.c
-> +++ b/mm/backing-dev.c
-> @@ -606,8 +606,11 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
->  	 * Finally, kill the kernel threads. We don't need to be RCU
->  	 * safe anymore, since the bdi is gone from visibility.
->  	 */
-> -	list_for_each_entry(wb, &bdi->wb_list, list)
-> +	list_for_each_entry(wb, &bdi->wb_list, list) {
-> +		if (unlikely(frozen(wb->task)))
-> +			wb->task->flags &= ~PF_FROZEN;
->  		kthread_stop(wb->task);
-> +	}
->  }
->  
->  void bdi_unregister(struct backing_dev_info *bdi)
+> 
+> Gautham R Shenoy (4):
+>       pseries: Serialize cpu hotplug operations during deactivate Vs deallocate
+>       pseries: Add code to online/offline CPUs of a DLPAR node.
+>       pSeries: Add hooks to put the CPU into an appropriate offline state
+>       pSeries: extended_cede_processor() helper function.
+> 
+> 
+>  Documentation/cpu-hotplug.txt                   |    6 +
+>  arch/powerpc/include/asm/lppaca.h               |    9 +
+>  arch/powerpc/platforms/pseries/dlpar.c          |  129 ++++++++++++++++
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c    |  182 ++++++++++++++++++++++-
+>  arch/powerpc/platforms/pseries/offline_states.h |   18 ++
+>  arch/powerpc/platforms/pseries/plpar_wrappers.h |   22 +++
+>  arch/powerpc/platforms/pseries/smp.c            |   19 ++
+>  arch/powerpc/xmon/xmon.c                        |    3 
+>  drivers/base/cpu.c                              |    2 
+>  include/linux/cpu.h                             |   13 ++
+>  10 files changed, 387 insertions(+), 16 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/pseries/offline_states.h
+> 
+> -- 
+> Thanks and Regards
+> gautham.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+-- 
+Thanks and Regards
+gautham
