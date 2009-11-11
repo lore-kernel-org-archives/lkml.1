@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbZKKTOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbZKKTUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbZKKTOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 14:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758489AbZKKTOT
+	id S1758610AbZKKTUG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 14:20:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758556AbZKKTUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 14:14:19 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53186 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758401AbZKKTOT (ORCPT
+	Wed, 11 Nov 2009 14:20:05 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48369
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758553AbZKKTUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 14:14:19 -0500
-Date: Wed, 11 Nov 2009 19:16:09 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] potential ancient bug (since 1.99.14) at char/pty
-Message-ID: <20091111191609.00c14644@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091111150103.06cc3489@pedra.chehab.org>
-References: <20091111150103.06cc3489@pedra.chehab.org>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 11 Nov 2009 14:20:05 -0500
+Date: Wed, 11 Nov 2009 11:20:31 -0800 (PST)
+Message-Id: <20091111.112031.184370997.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-11-11
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091111172255.GH4392@tuxdriver.com>
+References: <20091111172255.GH4392@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 15:01:03 -0200
-Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Wed, 11 Nov 2009 12:22:55 -0500
 
-> Hi Alan/Ts'o,
+> Here is another batch of small fixes intended for 2.6.32.  Along with a
+> number of simple fixes, there is also a MAINTAINERS update, some LED
+> handling quirks for ath5k, a libertas beautification that is a prereq
+> for a libertas fix, and an iwlwifi fix that was already sent for
+> net-next-2.6 but which is needed to support an iwlwifi regression fix.
 > 
-> There's an open bugzilla at Red Hat for the pty driver that I'm not sure
-> what would be the better fix. It tracks to kernel 1.99.14:
-> 	http://www.linuxhq.com/kernel/v1.99/13/drivers/char/ChangeLog
-> 	http://www.linuxhq.com/kernel/v1.99/13/drivers/char/pty.c
+> My personal favorite is the ath5k mcast filtering fix.  The problem
+> only revealed itself when using IP autoconf w/ multicast DNS... :-)
+> 
+> Please let me know if there are problems!
 
-You would need to look at the BSD Unix behaviour and the check SuS v3
-specification (which I don't think covers this feature from memory).
+Pulled, but that libertas "coding style cleanup" really pushes
+the edge of what I'm willing to take into net-2.6 right now.
 
-I couldn't tell you off hand what the correct behaviour is so you'll have
-to do a spot of research
+And I don't want to hear anything about how it "makes the bug fix
+change simpler".  That absolutely doesn't apply when we're this deep
+in -rc territory.
+
+> P.S.  Due to the aformentioned iwlwifi fix, this will cause -next
+> conflicts for sfr.  You may want to pull net-2.6 into net-next-2.6 after
+> pulling this.  The iwlwifi conflicts can be resolved by taking the bigger
+> hunks...
+
+Yep, I noticed this, I'll sort it out, thanks.
