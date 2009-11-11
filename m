@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZKKPA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbZKKPAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbZKKPA4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 10:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbZKKPAz
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1757318AbZKKPAz (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 11 Nov 2009 10:00:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48288 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757115AbZKKPAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbZKKPAy
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 11 Nov 2009 10:00:54 -0500
-Message-ID: <4AFAD172.4090003@redhat.com>
-Date: Wed, 11 Nov 2009 17:00:02 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:43264 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756544AbZKKPAx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 10:00:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=sPD6bipcomgGf6zF4ZY8n/kRfaNaN4vcPlCvS1a19Nw/Sdov0nDA5oaSBw5nZxVoy1
+         C1ZHUR7SYJL/dqjHQILr6GVa6OY/sbu/2MPtz6JENgkLMKKK1MR0a3rWuygaCFzrAflX
+         nbVFHbsHy1/g/R2ws4pEWfOe5lqSBgIB4LcIU=
 MIME-Version: 1.0
-To: Adam Litke <agl@us.ibm.com>
-CC: "Daniel P. Berrange" <berrange@redhat.com>,
-       Jamie Lokier <jamie@shareable.org>,
-       Anthony Liguori <aliguori@us.ibm.com>, agl@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, qemu-devel@nongnu.org,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [Qemu-devel] Re: virtio: Add memory statistics reporting to the
- balloon driver
-References: <1257782838.2835.5.camel@aglitke>	 <1257784326.2835.16.camel@aglitke>	 <200911101312.02650.rusty@rustcorp.com.au> <4AF97A5E.1070801@codemonkey.ws>	 <4AF97C1A.2080609@redhat.com> <4AF97F93.2080707@us.ibm.com>	 <20091111092409.GA24646@shareable.org>  <20091111101223.GA22937@redhat.com> <1257945984.2876.1.camel@aglitke>
-In-Reply-To: <1257945984.2876.1.camel@aglitke>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200911111048.46705.rusty@rustcorp.com.au>
+References: <cover.1257778258.git.andre.goddard@gmail.com> 
+	<d748022cff75d9c09afc93b77cb16a683136cd13.1257778258.git.andre.goddard@gmail.com> 
+	<200911111048.46705.rusty@rustcorp.com.au>
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Date: Wed, 11 Nov 2009 13:00:39 -0200
+Message-ID: <b8bf37780911110700o4355aab1hd3ec3152fe2eb8c6@mail.gmail.com>
+Subject: Re: [PATCH v3 2/2] bsearch: prevent overflow when computing middle 
+	comparison element
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11/2009 03:26 PM, Adam Litke wrote:
-> On Wed, 2009-11-11 at 10:12 +0000, Daniel P. Berrange wrote:
->    
->> This all suggests that we should only update the stats from the guest
->> when something on the host actually asks for them by issuing the QEMU
->> monitor command. We don't want any kind of continuous polling of stats
->> at any frequency, if nothing is using these stats on the host.
->>      
-> Agreed.  The next version of the patch will remove the timer completely.
-> We'll wake up in response to config change notifications only.
->    
+On Tue, Nov 10, 2009 at 10:18 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Tue, 10 Nov 2009 02:12:31 am André Goddard Rosa wrote:
+>> It's really difficult to occur in practice because the sum of the lower
+>> and higher limits must overflow an int variable, but it can occur when
+>> working with large arrays. We'd better safe than sorry by avoiding this
+>> overflow situation when computing the middle element for comparison.
+>
+> I always thought the obvious answer was:
+>
+>        mid = start + (end - start)/2;
 
-A vq with its own interrupt would be much nicer.
+Hi, Rusty!
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+    Yes, you're right! The previous patch fixes the case where the
+number of elements approach the
+maximum int value (2^31 - 1 on my computer). If the number of elements
+(parameter num) were an
+integer amount (Java's array length case), just making those unsigned
+would be enough, because
+in the worst case we would have:
 
+    (max int) * 2 < (max unsigned int)
+    (2^31 - 1) * 2 < (2^32 - 1)
+
+    But it does not fix the case where the number of elements
+approaches the maximum unsigned int
+value (parameter size_t num).
+
+    So, the worst case happens when the number we search for is stored
+at the highest extreme of the array.
+In that case, 'start' tends toward 'end', and if 'end' is near the
+maximum allowed value for a specific data type,
+the overflow could still happen.
+
+     I'm sending a fixed patch in a moment as per your suggestion.
+
+Thank you,
+André
