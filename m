@@ -1,149 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752001AbZKKNCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbZKKNPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752001AbZKKNCW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 08:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZKKNCW
+	id S1752718AbZKKNPE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 08:15:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZKKNPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 08:02:22 -0500
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:37478 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751393AbZKKNCV (ORCPT
+	Wed, 11 Nov 2009 08:15:03 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:33340 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbZKKNPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 08:02:21 -0500
-Date: Wed, 11 Nov 2009 18:32:07 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH 5/7 v6] hw-breakpoints: Rewrite the hw-breakpoints
-	layer on top of perf events
-Message-ID: <20091111130207.GA5676@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com> <1257694141-5670-6-git-send-email-fweisbec@gmail.com>
+	Wed, 11 Nov 2009 08:15:02 -0500
+Date: Wed, 11 Nov 2009 13:15:02 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+cc: David Daney <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com,
+       Ralf Baechle <ralf@linux-mips.org>, rostedt@goodmis.org,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
+ for MIPS
+In-Reply-To: <1257907351.2922.37.camel@falcon.domain.org>
+Message-ID: <alpine.LFD.2.00.0911111309170.10184@eddie.linux-mips.org>
+References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com>  <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com>  <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com> 
+ <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com>  <4AF8B31C.5030802@caviumnetworks.com>  <1257814817.2822.3.camel@falcon.domain.org>  <4AF99848.9090000@caviumnetworks.com> <1257907351.2922.37.camel@falcon.domain.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257694141-5670-6-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 04:28:59PM +0100, Frederic Weisbecker wrote:
+On Wed, 11 Nov 2009, Wu Zhangjin wrote:
 
-There were a few comments that I posted against version 6 of your
-patchset (which happened to cross your version 7 posting...) regarding
-the breakpoint interfaces, reservation of register for unpinned events
-and such...
+> > -mlong-calls really degrades performance.  I have seen things like 6% 
+> > drop in network packet forwarding rates with -mlong-calls.
+> > 
+> 
+> so much drop? seems only two instructions added for it: lui, addi. from
+> this view point, I think the -fno-omit-frame-pointer(add, sd, move...)
+> will also bring with much drop.
 
-By the way, I'm looking at refs/heads/perfevents/hw-breakpoint branch in
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-and hope that's correct/latest?
+ No, register jumps cannot be predicted -- this is where the performance 
+goes on any serious processor -- the two extra instructions are nothing 
+compared to that.  OTOH frame pointer calculations are pure arithmetic, so 
+you only lose time incurred by the instructions themselves.
 
-Some more comments about the ptrace implementation here...
-
-
-static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
-				      unsigned long addr)
-{
-	struct perf_event *bp;
-	struct thread_struct *t = &tsk->thread;
-
-	if (!t->ptrace_bps[nr]) {
-		/*
-		 * Put stub len and type to register (reserve) an inactive but
-		 * correct bp
-		 */
-		bp = register_user_hw_breakpoint(addr, HW_BREAKPOINT_LEN_1,
-						 HW_BREAKPOINT_W,
-						 ptrace_triggered, tsk,
-						 false);
-..
-...
-}
-
-Given that a register_user_hw_breakpoint() is done at the time of a
-write to DR0-DR3, it would needlessly hold onto the debug register until
-the corresponding DR7 bit is allocated while using up one 'pinned' debug
-slot. It would be prudent to postpone the breakpoint registration till
-DR7 is changed to activate it.
-
-static int ptrace_write_dr7(struct task_struct *tsk, unsigned long data)
-{
-..
-...
-		/*
-		 * We shoud have at least an inactive breakpoint at this
-		 * slot. It means the user is writing dr7 without having
-		 * written the address register first
-		 */
-		if (!bp) {
-			rc = -EINVAL;
-			break;
-		}
-
-I was just about confused...thinking that the above condition would
-become true during second_pass, but alas it turns out that you restore 
-"thread->ptrace_bps[i] = bp" again later.
-
-		rc = arch_bp_generic_fields(len, type, &gen_len, &gen_type);
-		if (rc)
-			break;
-
-		/*
-		 * This is a temporary thing as bp is unregistered/registered
-		 * to simulate modification
-		 */
-		bp = modify_user_hw_breakpoint(bp, bp->attr.bp_addr, gen_len,
-					       gen_type, bp->callback,
-					       tsk, true);
-
-modify_user_hw_breakpoint() is called twice (once per pass) and in its
-current implementation, it would leave open a window for register
-grabbing on two occasions. Another reason to change its implementation
-soon...
-
-		thread->ptrace_bps[i] = NULL;
-
-Why not remove this line from here...
-
-		if (!bp) { /* incorrect bp, or we have a bug in bp API */
-			rc = -EINVAL;
-			break;
-		}
-		if (IS_ERR(bp)) {
-			rc = PTR_ERR(bp);
-			bp = NULL;
-			break;
-		}
-		thread->ptrace_bps[i] = bp;
-
-...and put it here inside a condition "if (second_pass)"?
-
-	}
-	/*
-	 * Make a second pass to free the remaining unused breakpoints
-	 * or to restore the original breakpoints if an error occurred.
-	 */
-	if (!second_pass) {
-		second_pass = 1;
-		if (rc < 0) {
-			orig_ret = rc;
-			data = old_dr7;
-		}
-		goto restore;
-	}
-	return ((orig_ret < 0) ? orig_ret : rc);
-}
-
-Thanks,
-K.Prasad
-
+  Maciej
