@@ -1,50 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbZKKTHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758558AbZKKTL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758536AbZKKTHG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 14:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758521AbZKKTHF
+	id S1758558AbZKKTL1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 14:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758547AbZKKTL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 14:07:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41062 "EHLO hera.kernel.org"
+	Wed, 11 Nov 2009 14:11:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33284 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758469AbZKKTHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 14:07:03 -0500
-Message-ID: <4AFB0B02.4050306@kernel.org>
-Date: Wed, 11 Nov 2009 11:05:38 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1758281AbZKKTLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 14:11:25 -0500
+Date: Wed, 11 Nov 2009 19:09:47 GMT
+From: tip-bot for Andreas Herrmann <herrmann.der.user@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andreas.herrmann3@amd.com, dmitry.adamushko@gmail.com,
+       herrmann.der.user@googlemail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, dmitry.adamushko@gmail.com,
+       herrmann.der.user@googlemail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20091111190329.GF18592@alberich.amd.com>
+References: <20091111190329.GF18592@alberich.amd.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/microcode] x86, ucode-amd: Ensure ucode update on suspend/resume after CPU off/online cycle
+Message-ID: <tip-9f15226e75583547aaf542c6be4bdac1060dd425@git.kernel.org>
+Git-Commit-ID: 9f15226e75583547aaf542c6be4bdac1060dd425
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: ykzhao <yakui.zhao@intel.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>	 <4AFA210B.3020207@kernel.org> <1257930767.31183.113.camel@localhost.localdomain>
-In-Reply-To: <1257930767.31183.113.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ykzhao wrote:
-> On Wed, 2009-11-11 at 10:27 +0800, Yinghai Lu wrote:
->> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
->>
->> to get area is below 1M
->>
->> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
-> It seems that the function of find_e820_area is called in several
-> places.
->    >Initmem_init: bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT,
-> bootmap_size, PAGE_SIZE);
->    
-> If we also call it in the acpi_reserve_wakeup_memory, do we get the same
-> base address as that obtained in initmem_init?
+Commit-ID:  9f15226e75583547aaf542c6be4bdac1060dd425
+Gitweb:     http://git.kernel.org/tip/9f15226e75583547aaf542c6be4bdac1060dd425
+Author:     Andreas Herrmann <herrmann.der.user@googlemail.com>
+AuthorDate: Wed, 11 Nov 2009 20:03:29 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 11 Nov 2009 20:06:54 +0100
 
-no. find_e820_area will check the reserve res array that could be updated by reserve_early.
+x86, ucode-amd: Ensure ucode update on suspend/resume after CPU off/online cycle
 
-YH
+When switching a CPU offline/online and then doing
+suspend/resume, ucode is not updated on this CPU.
+
+This is due to the microcode_fini_cpu() call which frees uci->mc
+when setting the CPU offline:
+
+  static void microcode_fini_cpu_amd(int cpu)
+  {
+          struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+
+          vfree(uci->mc);
+          uci->mc = NULL;
+  }
+
+When the CPU is set online uci->mc is still NULL because no
+ucode update is required.
+
+Finally this prevents ucode update when resuming after suspend:
+
+  static enum ucode_state microcode_resume_cpu(int cpu)
+  {
+        struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+
+        if (!uci->mc)
+                return UCODE_NFOUND;
+
+        ...
+  }
+
+Fix is to check whether uci->mc is valid before
+microcode_resume_cpu() is called.
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: dimm <dmitry.adamushko@gmail.com>
+LKML-Reference: <20091111190329.GF18592@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/microcode_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+index d2a8160..adf2340 100644
+--- a/arch/x86/kernel/microcode_core.c
++++ b/arch/x86/kernel/microcode_core.c
+@@ -393,7 +393,7 @@ static enum ucode_state microcode_update_cpu(int cpu)
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 	enum ucode_state ustate;
+ 
+-	if (uci->valid)
++	if (uci->valid && uci->mc)
+ 		ustate = microcode_resume_cpu(cpu);
+ 	else
+ 		ustate = microcode_init_cpu(cpu);
