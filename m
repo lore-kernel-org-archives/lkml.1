@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZKKNXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZKKN2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbZKKNXK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 08:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbZKKNXK
+	id S1753381AbZKKN2h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 08:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZKKN2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 08:23:10 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50985 "EHLO
+	Wed, 11 Nov 2009 08:28:37 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54284 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbZKKNXJ convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751242AbZKKN2g convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 08:23:09 -0500
-Subject: Re: Hard lockup with timer events
+	Wed, 11 Nov 2009 08:28:36 -0500
+Subject: Re: [PATCH v5 0/4] pseries: Add cede support for cpu-offline
 From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Soeren Sandmann <sandmann@daimi.au.dk>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, acme@redhat.com, rosted@goodmis.org,
-       paulus@samba.org
-In-Reply-To: <20091111045004.GA5421@nowhere>
-References: <ye8hbtiko5k.fsf@camel23.daimi.au.dk>
-	 <20091111045004.GA5421@nowhere>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Nathan Fontenot <nfont@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
-Date: Wed, 11 Nov 2009 14:23:01 +0100
-Message-ID: <1257945781.4372.34.camel@twins>
+Date: Wed, 11 Nov 2009 14:25:35 +0100
+Message-ID: <1257945935.4372.36.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 05:50 +0100, Frederic Weisbecker wrote:
-> On Thu, Oct 29, 2009 at 08:15:03PM +0100, Soeren Sandmann wrote:
-> > Hi,
-> > 
-> > This program
-> > 
-> >         http://www.daimi.au.dk/~sandmann/lockup.c
-> > 
-> > locks up hard for me on a Pentium 4 in 32 bit mode, with the hrtimer
-> > patches applied (-tip for example).
-> > 
-> > What the program does is spawn a thread that just spins, and then 400
-> > threads that each create a performance counter of type
-> > PERF_COUNT_SW_CPU_CLOCK and a sample period of 1000000 and a
-> > sample_type of
-> > 
-> >         PERF_SAMPLE_IP | PERF_SAMPLE_TID | PERF_SAMPLE_CALLCHAIN
-> > 
-> > These threads then map the event buffer and read it continuously.
-> > 
-> > It does not apparently lock up if SAMPLE_CALLCHAIN is removed; also I
-> > cannot get it to lock up on Core 2 Duo in either 32 or 64 bit mode.
-> > 
-> > 
-> > Soren
-> 
-> 
-> 
-> It locks up hard for me too, no more blinking cursor, nothing.
-> I've attached my config, it's against tip:master from yesterday.
+On Fri, 2009-10-30 at 10:52 +0530, Gautham R Shenoy wrote:
 
-What kind of cpu does your laptop have? The .config seems to suggest a
-Core2. Which would make Soeren's report of not being able to trash a
-64bit core2 'interesting' ;-)
+> Gautham R Shenoy (4):
+>       pseries: Serialize cpu hotplug operations during deactivate Vs deallocate
+>       pseries: Add code to online/offline CPUs of a DLPAR node.
+>       pSeries: Add hooks to put the CPU into an appropriate offline state
+>       pSeries: extended_cede_processor() helper function.
+> 
+> 
+>  Documentation/cpu-hotplug.txt                   |    6 +
+>  arch/powerpc/include/asm/lppaca.h               |    9 +
+>  arch/powerpc/platforms/pseries/dlpar.c          |  129 ++++++++++++++++
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c    |  182 ++++++++++++++++++++++-
+>  arch/powerpc/platforms/pseries/offline_states.h |   18 ++
+>  arch/powerpc/platforms/pseries/plpar_wrappers.h |   22 +++
+>  arch/powerpc/platforms/pseries/smp.c            |   19 ++
+>  arch/powerpc/xmon/xmon.c                        |    3 
+>  drivers/base/cpu.c                              |    2 
+>  include/linux/cpu.h                             |   13 ++
+>  10 files changed, 387 insertions(+), 16 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/pseries/offline_states.h
+
+Not quite sure how you solved the DLPAR communication but since pretty
+much everything is under arch/powerpc/ I really don't have much to say.
