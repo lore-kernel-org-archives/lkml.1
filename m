@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZKKDOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbZKKDOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbZKKDOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 22:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbZKKDOc
+	id S1756476AbZKKDOa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 22:14:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbZKKDO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 22:14:32 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:35564 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755607AbZKKDOb (ORCPT
+	Tue, 10 Nov 2009 22:14:29 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:32825 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755219AbZKKDO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 22:14:31 -0500
-Date: Wed, 11 Nov 2009 04:13:25 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: David Daney <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com,
-       rostedt@goodmis.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Nicholas Mc Guire <der.herr@hofr.at>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
-	for MIPS
-Message-ID: <20091111031325.GA20716@linux-mips.org>
-References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com> <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com> <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com> <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com> <4AF8B31C.5030802@caviumnetworks.com> <1257814817.2822.3.camel@falcon.domain.org> <4AF99848.9090000@caviumnetworks.com> <1257907351.2922.37.camel@falcon.domain.org>
+	Tue, 10 Nov 2009 22:14:29 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=dsplo//Ca9zn0DFfl1UoaTnUy9g450JOnjzMYiZrqqaEW3YZ1Ebr7DQ1tLZKT1oM8
+	tMW3PXGYRt5KxQRqc/FvQ==
+Date: Tue, 10 Nov 2009 19:14:25 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
+ v3
+In-Reply-To: <20091111115217.FD56.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0911101908180.14549@chino.kir.corp.google.com>
+References: <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911101841480.11083@chino.kir.corp.google.com> <20091111115217.FD56.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257907351.2922.37.camel@falcon.domain.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 10:42:31AM +0800, Wu Zhangjin wrote:
+On Wed, 11 Nov 2009, KOSAKI Motohiro wrote:
 
-> > -mlong-calls really degrades performance.  I have seen things like 6% 
-> > drop in network packet forwarding rates with -mlong-calls.
+> > >  {
+> > > -#ifdef CONFIG_NUMA
+> > >  	struct zone *zone;
+> > >  	struct zoneref *z;
+> > >  	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+> > > -	nodemask_t nodes = node_states[N_HIGH_MEMORY];
+> > > +	int ret = CONSTRAINT_NONE;
+> > >  
+> > > -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+> > > -		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
+> > > -			node_clear(zone_to_nid(zone), nodes);
+> > > -		else
+> > > +	/*
+> > > + 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
+> > > + 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
+> > > + 	 * feature. mempolicy is an only user of nodemask here.
+> > > + 	 */
+> > > +	if (nodemask) {
+> > > +		nodemask_t mask;
+> > > +		/* check mempolicy's nodemask contains all N_HIGH_MEMORY */
+> > > +		nodes_and(mask, *nodemask, node_states[N_HIGH_MEMORY]);
+> > > +		if (!nodes_equal(mask, node_states[N_HIGH_MEMORY]))
+> > > +			return CONSTRAINT_MEMORY_POLICY;
+> > > +	}
 > > 
+> > Although a nodemask_t was previously allocated on the stack, we should 
+> > probably change this to use NODEMASK_ALLOC() for kernels with higher 
+> > CONFIG_NODES_SHIFT since allocations can happen very deep into the stack.
 > 
-> so much drop? seems only two instructions added for it: lui, addi. from
-> this view point, I think the -fno-omit-frame-pointer(add, sd, move...)
-> will also bring with much drop.
+> No. NODEMASK_ALLOC() is crap. we should remove it. 
 
-The calling sequence is quite badly bloated.  Example:
+I've booted 1K node systems and have found it to be helpful to ensure that 
+the stack will not overflow especially in areas where we normally are deep 
+already, such as in the page allocator.
 
-Normal 32/64-bit subroutine call:
+> btw, CPUMASK_ALLOC was already removed.
 
-	jal	symbol
-
-32-bit with -mlong-call:
-
-	lui	$25, %hi(foo)
-	addiu	$25, %lo(foo)
-	jalr	$25
-
-64-bit with -mlong-call:
-
-	lui	$25, %highest(foo)
-	lui	$2, %hi(foo)
-	daddiu	$25, %higher(foo)
-	daddiu	$2, %lo(foo)
-	dsll	$25, 32
-	daddu	$25, $2
-	jalr	$25
-
-So not considering the possible cost of the delay slot that's 1 vs. 3 vs. 7
-instructions.  Last I checked ages ago gcc didn't apropriately consider this
-cost when generating -mlong-calls code and Linux these days also is
-optimized under the assumption that subroutine calls are cheap.
-
-It's time that we get a -G optimization that works for the kernel; it would
-allow to cut down the -mlong-calls calling sequence to just:
-
-	lw/ld	$25, offset($gp)
-	jalr	$25
-
-> It's time to remove them? -mlong-calls, -fno-omit-frame-pointer.
-> 
-> > It would be better to fix all the tools so that they could handle both 
-> > -mlong-calls and -mno-long-calls code.
-> > 
-> 
-> It's totally possible, will try to make it work later. I just wanted the
-> stuff simple, but if it really brings us with much drop, it's time to
-> fix it.
-
-  Ralf
+I don't remember CPUMASK_ALLOC() actually being merged.  I know the 
+comment exists in nodemask.h, but I don't recall any CPUMASK_ALLOC() users 
+in the tree.
