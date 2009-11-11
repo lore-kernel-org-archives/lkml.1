@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbZKKPJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbZKKPQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757603AbZKKPJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 10:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbZKKPJy
+	id S1757569AbZKKPQN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 10:16:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757377AbZKKPQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 10:09:54 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:64878 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbZKKPJx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 10:09:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KfRfC8jMOnIZWLFJ6EFarCd+hNmPZAhTwHuG+j6go05YZeLkTbGcHWEX+DuUZPXNE2
-         ghO8ZpB+EdRQKe4we20nJdFxqgcVMrNaOSrWMcpWoaKTq1H5GvpHQst0GFoirM4M4IbZ
-         fXsTKJfNziykgPfbec04uudbyIQFxVHVDGPgg=
-MIME-Version: 1.0
-In-Reply-To: <2bd27b061789ed14dd80816fd987273ae33ffbd1.1257864802.git.andre.goddard@gmail.com>
-References: <cover.1257864802.git.andre.goddard@gmail.com>
-	 <2bd27b061789ed14dd80816fd987273ae33ffbd1.1257864802.git.andre.goddard@gmail.com>
-Date: Wed, 11 Nov 2009 13:09:57 -0200
-Message-ID: <a4c8a6d00911110709j65b54875sb9e56edf0a32c28d@mail.gmail.com>
-Subject: Re: [PATCH v4 2/2] bsearch: prevent overflow when computing middle 
-	comparison element
-From: Thiago Farina <tfransosi@gmail.com>
-To: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Cc: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 11 Nov 2009 10:16:12 -0500
+Received: from cantor.suse.de ([195.135.220.2]:37474 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756746AbZKKPQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 10:16:12 -0500
+Date: Wed, 11 Nov 2009 16:16:16 +0100
+From: Jan Blunck <jblunck@suse.de>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, matthew@wil.cx, viro@zeniv.linux.org.uk
+Subject: Re: BKL: Remove BKL from Squashfs
+Message-ID: <20091111151616.GF21750@bolzano.suse.de>
+References: <E1N5L6K-0008LW-6y@dylan.lougher.demon.co.uk> <20091110121511.5adca8a9.akpm@linux-foundation.org> <4AF9D6EE.1070205@lougher.demon.co.uk> <4AF9DD24.8060501@lougher.demon.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF9DD24.8060501@lougher.demon.co.uk>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 1:00 PM, André Goddard Rosa
-<andre.goddard@gmail.com> wrote:
->  void *bsearch(const void *key, const void *base, size_t num, size_t size,
->              int (*cmp)(const void *key, const void *elt))
->  {
-> -       int start = 0, end = num, mid, result;
-> +       size_t start = 0, end = num;
-> +       int result;
->
->        while (start < end) {
-> -               mid = (start + end) / 2;
-> +               size_t mid = start + (end - start) / 2;
-I think it is more readable if you could keep the mid variable outside
-of the while loop.
+On Tue, Nov 10, Phillip Lougher wrote:
+
+> Phillip Lougher wrote:
+> 
+> >This patch was prompted by Jan Blunck's "Push down BKL to the 
+> >filesystems" patch
+> >series, where he firstly pushes the BKL down to individual filesystems
+> >(even if they don't need it) , and then successively removes them
+> >(on a one patch per filesystem basis) in later patches.
+> >
+> >The patch should be reviewed in the context that it is intended for Jan's
+> >BKL removal patch series.
+> >
+> 
+> Jan and/or Matthew,
+> 
+> Can you please ACK this patch, and say whether you're going to
+> add it to your BKL patch series? (I'm happy for it to go through
+> there, rather than my Squashfs tree).
+> 
+> After reviewing your patches, it seems to me that the BKL isn't
+> needed in Squashfs.  You removed it from 23 filesystems because
+> it's not protecting any shared state,  on that basis it isn't needed
+> needed in Squashfs either.
+
+Yes, I'll do this through my patch series. I'll rework the series a bit and
+will repost it soon.
+
+Thanks,
+	Jan
+
+-- 
+Jan Blunck <jblunck@suse.de>
