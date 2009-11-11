@@ -1,115 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbZKKP3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZKKPbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757296AbZKKP3u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 10:29:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756277AbZKKP3t
+	id S1757409AbZKKPbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 10:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbZKKPbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 10:29:49 -0500
-Received: from stinky.trash.net ([213.144.137.162]:33439 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756028AbZKKP3s (ORCPT
+	Wed, 11 Nov 2009 10:31:39 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:4209 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754440AbZKKPbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 10:29:48 -0500
-Message-ID: <4AFAD86A.9070506@trash.net>
-Date: Wed, 11 Nov 2009 16:29:46 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Wed, 11 Nov 2009 10:31:38 -0500
+Date: Wed, 11 Nov 2009 18:31:43 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: Ben Dooks <ben@simtec.co.uk>, Anton Vorontsov <cbou@mail.ru>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Lars-Peter Clausen <lars@metafoo.de>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH 3/6] gta02: set pcf50633 charger_reference_current_ma
+Message-ID: <20091111153143.GA1610@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1257369899-325-1-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-2-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-3-git-send-email-fercerpav@gmail.com>
+ <20091111134844.GB22476@home.pavel.comp>
 MIME-Version: 1.0
-To: Patrick Mullaney <pmullaney@novell.com>
-CC: alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       arnd@arndb.de, bridge@lists.linux-foundation.org, evb@yahoogroups.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/4] macvlan: allow in-kernel modules to create and manage
- macvlan devices
-References: <20091110222632.24100.14884.stgit@mimic.site> <20091110222757.24100.16046.stgit@mimic.site>
-In-Reply-To: <20091110222757.24100.16046.stgit@mimic.site>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20091111134844.GB22476@home.pavel.comp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick Mullaney wrote:
-> The macvlan driver didn't allow for creation/deletion of devices
-> by other in-kernel modules. This patch provides common routines
-> for both in-kernel and netlink based management. This patch
-> also enables macvlan device support for gro for lower level
-> devices that support gro.
+On Wed, Nov 11, 2009 at 04:48:44PM +0300, Paul Fertser wrote:
+> Hi,
+> 
+> Ben, please give us an advice on how to proceed with this rather
+> trivial patch. Anton doesn't merge the other patches from this series
+> because we do not know via which tree to merge this particular patch.
 
-> -static void macvlan_transfer_operstate(struct net_device *dev)
-> +void macvlan_transfer_operstate(struct net_device *dev)
->  {
->  	struct macvlan_dev *vlan = netdev_priv(dev);
->  	const struct net_device *lowerdev = vlan->lowerdev;
-> @@ -458,6 +458,7 @@ static void macvlan_transfer_operstate(struct net_device *dev)
->  			netif_carrier_off(dev);
->  	}
->  }
-> +EXPORT_SYMBOL_GPL(macvlan_transfer_operstate);
+Paul, I'll just merge the whole patch set but skip this particular
+patch.
 
-I think this function could be moved to net/core/dev.c or
-net/core/link_watch.c. The VLAN code has an identical copy.
+Thanks,
 
-> -int macvlan_newlink(struct net_device *dev,
-> -		    struct nlattr *tb[], struct nlattr *data[])
-> +int macvlan_link_lowerdev(struct net_device *dev,
-> +						  struct net_device *lowerdev)
+> On Thu, Nov 05, 2009 at 12:24:56AM +0300, Paul Fertser wrote:
+> > From: Lars-Peter Clausen <lars@metafoo.de>
+> > 
+> > This value is board-specific and is needed for calculations to set charging
+> > current limit properly.
+> > 
+> > Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+> > Acked-by: Nelson Castillo <arhuaco@freaks-unidos.net>
+> > Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+> > Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+> > ---
+> > 
+> > Since this patch compile-depends on previous probably it should go through
+> > the same tree as others. Nelson (gta02 maintainer) agrees with whatever you
+> > think is best.
+> > 
+> > Anton Vorontsov is ok with merging it through his tree but needs an explicit
+> > ack.
+> > 
+> >  arch/arm/mach-s3c2442/mach-gta02.c |    3 +++
+> >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/arm/mach-s3c2442/mach-gta02.c b/arch/arm/mach-s3c2442/mach-gta02.c
+> > index 0fb385b..b0a3d74 100644
+> > --- a/arch/arm/mach-s3c2442/mach-gta02.c
+> > +++ b/arch/arm/mach-s3c2442/mach-gta02.c
+> > @@ -268,6 +268,9 @@ struct pcf50633_platform_data gta02_pcf_pdata = {
+> >  
+> >  	.batteries = gta02_batteries,
+> >  	.num_batteries = ARRAY_SIZE(gta02_batteries),
+> > +
+> > +	.charger_reference_current_ma = 1000,
+> > +
+> >  	.reg_init_data = {
+> >  		[PCF50633_REGULATOR_AUTO] = {
+> >  			.constraints = {
+> > -- 
+> > 1.6.4.4
+> > 
+> 
+> -- 
+> Be free, use free (http://www.gnu.org/philosophy/free-sw.html) software!
+> mailto:fercerpav@gmail.com
+> 
 
-Please indent this more cleanly.
-
->  {
->  	struct macvlan_dev *vlan = netdev_priv(dev);
->  	struct macvlan_port *port;
-> +	int err = 0;
-> +
-> +	if (lowerdev->macvlan_port == NULL) {
-> +		err = macvlan_port_create(lowerdev);
-> +		if (err < 0)
-> +			return err;
-> +	}
-> +	port = lowerdev->macvlan_port;
-> +
-> +	vlan->lowerdev = lowerdev;
-> +	vlan->dev      = dev;
-> +	vlan->port     = port;
-> +	vlan->receive  = netif_rx;
-> +
-> +	macvlan_init(dev);
-> +
-> +	list_add_tail(&vlan->list, &port->vlans);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(macvlan_link_lowerdev);
-
-> @@ -502,23 +539,14 @@ int macvlan_newlink(struct net_device *dev,
->  	if (!tb[IFLA_ADDRESS])
->  		random_ether_addr(dev->dev_addr);
->  
-> -	if (lowerdev->macvlan_port == NULL) {
-> -		err = macvlan_port_create(lowerdev);
-> -		if (err < 0)
-> -			return err;
-> -	}
-> -	port = lowerdev->macvlan_port;
-> -
-> -	vlan->lowerdev = lowerdev;
-> -	vlan->dev      = dev;
-> -	vlan->port     = port;
-> -	vlan->receive  = netif_rx;
-> +	err = macvlan_link_lowerdev(dev, lowerdev);
-> +	if (err < 0)
-> +		return err;
->
->  	err = register_netdevice(dev);
->  	if (err < 0)
->  		return err;
-
-You've already added the device to the port->vlans list, so you
-need to remove it again when register_netdevice() fails.
-
-> -	list_add_tail(&vlan->list, &port->vlans);
->  	macvlan_transfer_operstate(dev);
->  	return 0;
->  }
-> @@ -526,14 +554,8 @@ EXPORT_SYMBOL_GPL(macvlan_newlink);
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
