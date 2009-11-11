@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbZKKGyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZKKG0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbZKKGyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 01:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZKKGys
+	id S1752140AbZKKG0Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 01:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZKKG0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 01:54:48 -0500
-Received: from serv04.lahn.de ([213.239.197.57]:53682 "EHLO serv04.lahn.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751823AbZKKGys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 01:54:48 -0500
-X-Greylist: delayed 1753 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Nov 2009 01:54:47 EST
-Date: Wed, 11 Nov 2009 07:25:37 +0100
-From: Philipp Matthias Hahn <pmhahn@pmhahn.de>
-To: Mariusz Smykula <mariuszs@gmail.com>
-Cc: Fabio Comolli <fabio.comolli@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel 2.6.29+ broke Cisco VPN Client
-Message-ID: <20091111062537.GA13282@pmhahn.de>
-Mail-Followup-To: Mariusz Smykula <mariuszs@gmail.com>,
-	Fabio Comolli <fabio.comolli@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <3642a3130911090908i55d6e1f2y6d9a5106d9febfc6@mail.gmail.com>
- <20091109175728.4eec67b9@lxorguk.ukuu.org.uk>
- <3642a3130911092236p11ef0502se12788800c8d2084@mail.gmail.com>
- <3642a3130911092304x5c8fe8ddme1df39e6981cfe0a@mail.gmail.com>
- <b637ec0b0911092348x29453bco7f7ca94f3772601@mail.gmail.com>
- <3642a3130911100149t7452a6f3k188e0fe972783521@mail.gmail.com>
+	Wed, 11 Nov 2009 01:26:23 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:6203 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbZKKG0W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 01:26:22 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=euqj6oWDOrrnnaNGljCrZRStLRKo2yK4WKCcpx+CYq8esRxESuW/cS3SWlAJk2Oxe
+	tp3ZXbWSKClXMU1GOIT4A==
+Date: Tue, 10 Nov 2009 22:26:19 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
+ v4.1
+In-Reply-To: <20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0911102224440.6652@chino.kir.corp.google.com>
+References: <20091110162121.361B.A69D9226@jp.fujitsu.com> <20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com> <20091110163419.361E.A69D9226@jp.fujitsu.com> <20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com> <20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
+ <20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com> <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com> <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com> <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com> <20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3642a3130911100149t7452a6f3k188e0fe972783521@mail.gmail.com>
-Organization: UUCP-Freunde Lahn e.V.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 11 Nov 2009, KAMEZAWA Hiroyuki wrote:
 
-On Tue, Nov 10, 2009 at 10:49:48AM +0100, Mariusz Smykula wrote:
-> On Tue, Nov 10, 2009 at 8:48 AM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
-> > Please have a look at:
-> >
-> > http://forum.tuxx-home.at/viewtopic.php?f=15&t=790#p5227
-> >
-> > There is a patch there that can be used to make CiscoVPN work with the
-> > latest stable kernels. For me it worked fine (over a wifi connection)
-> > until I lost interest as now I'm able to use vpnc, thanks to the
-> > people on the vpnc support forum.
+> > > Index: mm-test-kernel/mm/oom_kill.c
+> > > ===================================================================
+> > > --- mm-test-kernel.orig/mm/oom_kill.c
+> > > +++ mm-test-kernel/mm/oom_kill.c
+> > > @@ -196,27 +196,47 @@ unsigned long badness(struct task_struct
+> > >  /*
+> > >   * Determine the type of allocation constraint.
+> > >   */
+> > > -static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+> > > -						    gfp_t gfp_mask)
+> > > -{
+> > >  #ifdef CONFIG_NUMA
+> > > +static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+> > > +				    gfp_t gfp_mask, nodemask_t *nodemask)
+> > > +{
+> > >  	struct zone *zone;
+> > >  	struct zoneref *z;
+> > >  	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+> > > -	nodemask_t nodes = node_states[N_HIGH_MEMORY];
+> > > +	int ret = CONSTRAINT_NONE;
+> > >  
+> > > -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+> > > -		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
+> > > -			node_clear(zone_to_nid(zone), nodes);
+> > > -		else
+> > > -			return CONSTRAINT_CPUSET;
+> > > +	/*
+> > > +	 * Reach here only when __GFP_NOFAIL is used. So, we should avoid
+> > > + 	 * to kill current.We have to random task kill in this case.
+> > > + 	 * Hopefully, CONSTRAINT_THISNODE...but no way to handle it, now.
+> > > + 	 */
+> > > +	if (gfp_mask & __GPF_THISNODE)
+> > > +		return ret;
+> > >  
+> > 
+> > That shouldn't compile.
+> > 
+> Why ?
 > 
-> I have no problem to compile and connect using CiscoVPN + 2.6.31, but
-> this is unstable solution. After some time (seconds or minutes) whole
-> computer is freezing dead.
-> 
-> vpnc is no option, because he lacks supports of certs auth.
 
-You might want to give http://www.shrew.net/software a try. I'd be
-interested if this works for you.
+Even when I pointed it out, you still didn't bother to try compiling it?  
+You need s/GPF/GFP, it stands for "get free pages."
 
-BYtE
-Philipp
--- 
-  / /  (_)__  __ ____  __ Philipp Hahn
- / /__/ / _ \/ // /\ \/ /
-/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
+You can also eliminate the ret variable, it's not doing anything.
