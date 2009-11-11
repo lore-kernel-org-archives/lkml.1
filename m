@@ -1,144 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbZKKUjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbZKKUeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758881AbZKKUjB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:39:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758868AbZKKUi7
+	id S1758833AbZKKUeD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:34:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbZKKUeC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:38:59 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:47627 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758859AbZKKUi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:38:57 -0500
-Date: Wed, 11 Nov 2009 21:33:03 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: linux-pcmcia@lists.infradead.org
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-serial@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [RFC] even more PCMCIA cleanup patches for 2.6.33
-Message-ID: <20091111203303.GA7939@comet.dominikbrodowski.net>
-Mail-Followup-To: linux-pcmcia@lists.infradead.org, netdev@vger.kernel.org,
-	linux-wireless@vger.kernel.org, linux-serial@vger.kernel.org,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 11 Nov 2009 15:34:02 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:37716 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757349AbZKKUeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 15:34:00 -0500
+Date: Wed, 11 Nov 2009 12:33:40 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Mount -o sync regression in 2.6.31
+Message-ID: <20091111123340.703f5c86@nehalam>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hej,
+One of the configurations supported in our specialized distribution is using
+floppy to store configuration information (and live cd for everything else).
+The floppy is mounted with '-o sync' so that if floppy is removed the files
+are still updated. The floppy is formatted with ext2 filesystem.
 
-in addition to the patch series already submitted as RFCs and reviewed[*]
-here are 13 more patches intended for submission after 2.6.32 is released.
-The patches will be sent to the PCMCIA list shortly, with CC to other
-lists if deemed appropriate. Also, they can be found in the "pcmcia-test"
-branch at 
+This broke somewhere between 2.6.30 and 2.6.31-rc1, and was caught by our
+release regression system (with VMware pseudo-floppys) but it is easily
+reproducible with real hardware.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git pcmcia-test
+The following sequence demonstrates this:
 
-and gitweb at
+# mount /dev/fd0 /mnt -o sync,noatime,noexec,nosuid 
+# cp /etc/motd /mnt/motd.$$
 
-	http://git.kernel.org/?p=linux/kernel/git/brodo/pcmcia-2.6.git;a=shortlog;h=refs/heads/pcmcia-test
+(Manually eject floppy)
 
+# umount /mnt
 
-[*] 	- patchset sent on Oct 19
-	- patchset sent on Oct 24
-	- Russell King's patchset sent on Oct 27
+(I/O errors occur)
 
----
+With -o sync, all I/O should have been completed when the copy was done.
 
-Avi Cohen Stuart (1):
-      pcmcia: correct handling for Zoomed Video registers in topic.h
+This may also effect people using -o sync on USB thumb drives as well.
 
-Dominik Brodowski (7):
-      pcmcia/staging: update comedi drivers
-      pcmcia: autoload module pcmcia
-      pcmcia: move some window-related code to pcmcia_ioctl.c
-      pcmcia: remove unused "window_t" typedef
-      pcmcia: pcmcia_request_window() doesn't need a pointer to a pointer
-      pcmcia: remove deprecated handle_to_dev() macro
-      pcmcia: rework the irq_req_t typedef
-
-Magnus Damm (4):
-      pcmcia: Pass struct pcmcia_device to pcmcia_release_window()
-      pcmcia: Pass struct pcmcia_device to pcmcia_map_mem_page()
-      pcmcia: Pass struct pcmcia_socket to pcmcia_get_mem_page()
-      pcmcia: Change window_handle_t logic to unsigned long
-
-Randy Dunlap (1):
-      pcmcia: fix printk formats
-
----
-
- drivers/ata/pata_pcmcia.c                        |    1 
- drivers/bluetooth/bluecard_cs.c                  |    4 
- drivers/bluetooth/bt3c_cs.c                      |    4 
- drivers/bluetooth/btuart_cs.c                    |    4 
- drivers/bluetooth/dtl1_cs.c                      |    4 
- drivers/char/pcmcia/cm4000_cs.c                  |    2 
- drivers/char/pcmcia/cm4040_cs.c                  |   10 
- drivers/char/pcmcia/ipwireless/hardware.c        |    8 
- drivers/char/pcmcia/ipwireless/main.c            |   28 +-
- drivers/char/pcmcia/synclink_cs.c                |    3 
- drivers/ide/ide-cs.c                             |    1 
- drivers/isdn/hardware/avm/avm_cs.c               |    2 
- drivers/isdn/hisax/avma1_cs.c                    |    2 
- drivers/isdn/hisax/elsa_cs.c                     |    1 
- drivers/isdn/hisax/sedlbauer_cs.c                |    5 
- drivers/isdn/hisax/teles_cs.c                    |    1 
- drivers/mtd/maps/pcmciamtd.c                     |    6 
- drivers/net/pcmcia/3c574_cs.c                    |    6 
- drivers/net/pcmcia/3c589_cs.c                    |    6 
- drivers/net/pcmcia/axnet_cs.c                    |    3 
- drivers/net/pcmcia/com20020_cs.c                 |   10 
- drivers/net/pcmcia/fmvj18x_cs.c                  |   20 -
- drivers/net/pcmcia/ibmtr_cs.c                    |   25 +-
- drivers/net/pcmcia/nmclan_cs.c                   |    6 
- drivers/net/pcmcia/pcnet_cs.c                    |   17 -
- drivers/net/pcmcia/smc91c92_cs.c                 |   14 -
- drivers/net/pcmcia/xirc2ps_cs.c                  |    9 
- drivers/net/wireless/airo_cs.c                   |    7 
- drivers/net/wireless/atmel_cs.c                  |    5 
- drivers/net/wireless/b43/pcmcia.c                |    6 
- drivers/net/wireless/hostap/hostap_cs.c          |    7 
- drivers/net/wireless/libertas/if_cs.c            |    5 
- drivers/net/wireless/netwave_cs.c                |   11 -
- drivers/net/wireless/orinoco/orinoco_cs.c        |    6 
- drivers/net/wireless/orinoco/spectrum_cs.c       |    6 
- drivers/net/wireless/ray_cs.c                    |   22 --
- drivers/net/wireless/wavelan_cs.c                |   11 -
- drivers/net/wireless/wl3501_cs.c                 |    7 
- drivers/parport/parport_cs.c                     |    1 
- drivers/pcmcia/cs.c                              |    7 
- drivers/pcmcia/cs_internal.h                     |    4 
- drivers/pcmcia/pcmcia_ioctl.c                    |   61 +++++
- drivers/pcmcia/pcmcia_resource.c                 |  153 +++++---------
- drivers/pcmcia/topic.h                           |   15 -
- drivers/scsi/pcmcia/aha152x_stub.c               |    1 
- drivers/scsi/pcmcia/fdomain_stub.c               |    1 
- drivers/scsi/pcmcia/nsp_cs.c                     |    8 
- drivers/scsi/pcmcia/qlogic_stub.c                |    1 
- drivers/scsi/pcmcia/sym53c500_cs.c               |    1 
- drivers/serial/serial_cs.c                       |    3 
- drivers/staging/comedi/drivers/cb_das16_cs.c     |  221 +++++----------------
- drivers/staging/comedi/drivers/das08_cs.c        |  203 +++++--------------
- drivers/staging/comedi/drivers/ni_daq_700.c      |  237 +++++++----------------
- drivers/staging/comedi/drivers/ni_daq_dio24.c    |  236 +++++++---------------
- drivers/staging/comedi/drivers/ni_labpc_cs.c     |  225 +++++++--------------
- drivers/staging/comedi/drivers/ni_mio_cs.c       |  127 ++----------
- drivers/staging/comedi/drivers/quatech_daqp_cs.c |  219 +++++----------------
- drivers/usb/host/sl811_cs.c                      |    3 
- include/pcmcia/cs.h                              |   14 -
- include/pcmcia/cs_types.h                        |    3 
- include/pcmcia/ds.h                              |   12 -
- include/pcmcia/ss.h                              |   11 -
- sound/pcmcia/pdaudiocf/pdaudiocf.c               |    6 
- sound/pcmcia/vx/vxpocket.c                       |    6 
- 64 files changed, 688 insertions(+), 1386 deletions(-)
-
-
-Best,
-	Dominik
+I tried the obvious bisection, but git bisect seems to wonder off into the
+weeds now. There is no reason that bisecting between v2.6.30 and v2.6.31-rc1
+should go off into v2.6.30-rc2
 
