@@ -1,241 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751393AbZKKFau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZKKFlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751393AbZKKFau (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 00:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZKKFau
+	id S1751528AbZKKFlY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 00:41:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZKKFlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 00:30:50 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58274 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbZKKFat (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 00:30:49 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 11 Nov 2009 14:28:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       cl@linux-foundation.org, rientjes@google.com
-Subject: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
- v4.1
-Message-Id: <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
-	<20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091110163419.361E.A69D9226@jp.fujitsu.com>
-	<20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
-	<20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 00:41:23 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:55782 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750961AbZKKFlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 00:41:22 -0500
+Date: Tue, 10 Nov 2009 21:41:38 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/rcu] rcu: Remove inline from forward-referenced
+	functions
+Message-ID: <20091111054138.GA19777@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <tip-dbe01350fa8ce0c11948ab7d6be71a4d901be151@git.kernel.org> <1257892710.25443.9.camel@Joe-Laptop.home> <20091110225926.GA8424@linux.vnet.ibm.com> <1257894380.25443.16.camel@Joe-Laptop.home> <20091110234101.GB8424@linux.vnet.ibm.com> <1257901421.25443.34.camel@Joe-Laptop.home> <20091111014222.GE8424@linux.vnet.ibm.com> <1257910108.25443.40.camel@Joe-Laptop.home> <20091111045013.GG8424@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091111045013.GG8424@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, missed to remove 'inline'...
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
+On Tue, Nov 10, 2009 at 08:50:13PM -0800, Paul E. McKenney wrote:
+> On Tue, Nov 10, 2009 at 07:28:28PM -0800, Joe Perches wrote:
+> > On Tue, 2009-11-10 at 17:42 -0800, Paul E. McKenney wrote:
+> > > On Tue, Nov 10, 2009 at 05:03:41PM -0800, Joe Perches wrote:
+> > > > So maybe rename rcutree_plugin.h to rcutree_plugin.c and
+> > > > #include "rcutree_plugin.c" in rcutree.c instead.
+> > > Hmmm...
+> > 
+> > Perhaps something like this:
+> 
+> While I do very much appreciate your time and attention to this...
+> 
+> My problem with this sort of thing is that when I tried it, it proved
+> fragile.  Small changes required lots of rework of forward declarations.
+> Putting it at the end makes it work very nicely -- the list of forward
+> declarations doubles as documentation for the plugins, and the contents
+> of kernel/rcutree_plugin.h (or .c or whatever, either way I end up
+> violation about the same number of coding guidelines) is independent of
+> rearrangements of kernel/rcutree.c.
+> 
+> The reason that I would really like to keep rcu_bootup_announce() as
+> a function is that it makes it trivial to collect RCU-flavor-dependent
+> boot-time information, if needed for some debugging effort.  If I pull
+> the string out, this sort of thing becomes much more painful.
 
-Fixing node-oriented allocation handling in oom-kill.c
-I myself think this as bugfix not as ehnancement.
+And, as noted in our offline conversation, you are absolutely right
+that I need to add __init to both definitions of rcu_bootup_announce(),
+which I will do, with your Suggested-by.
 
-In these days, things are changed as
-  - alloc_pages() eats nodemask as its arguments, __alloc_pages_nodemask().
-  - mempolicy don't maintain its own private zonelists.
-  (And cpuset doesn't use nodemask for __alloc_pages_nodemask())
+Fair enough?
 
-So, current oom-killer's check function is wrong.
+							Thanx, Paul
 
-This patch does
-  - check nodemask, if nodemask && nodemask doesn't cover all
-    node_states[N_HIGH_MEMORY], this is CONSTRAINT_MEMORY_POLICY.
-  - Scan all zonelist under nodemask, if it hits cpuset's wall
-    this faiulre is from cpuset.
-And
-  - modifies the caller of out_of_memory not to call oom if __GFP_THISNODE.
-    This doesn't change "current" behavior. If callers use __GFP_THISNODE
-    it should handle "page allocation failure" by itself.
-
-  - handle __GFP_NOFAIL+__GFP_THISNODE path.
-    This is something like a FIXME but this gfpmask is not used now.
-
-Changelog: 2009/11/11(2)
- - uses nodes_subset().
- - clean up.
- - added __GFP_NOFAIL case. And added waring.
- - removed inline
-
-Changelog: 2009/11/11
- - fixed nodes_equal() calculation.
- - return CONSTRAINT_MEMPOLICY always if given nodemask is not enough big.
-
-Changelog: 2009/11/06
- - fixed lack of oom.h
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
----
- drivers/char/sysrq.c |    2 +-
- include/linux/oom.h  |    4 +++-
- mm/oom_kill.c        |   47 ++++++++++++++++++++++++++++++++++-------------
- mm/page_alloc.c      |   20 +++++++++++++++-----
- 4 files changed, 53 insertions(+), 20 deletions(-)
-
-Index: mm-test-kernel/drivers/char/sysrq.c
-===================================================================
---- mm-test-kernel.orig/drivers/char/sysrq.c
-+++ mm-test-kernel/drivers/char/sysrq.c
-@@ -339,7 +339,7 @@ static struct sysrq_key_op sysrq_term_op
- 
- static void moom_callback(struct work_struct *ignored)
- {
--	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
-+	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0, NULL);
- }
- 
- static DECLARE_WORK(moom_work, moom_callback);
-Index: mm-test-kernel/mm/oom_kill.c
-===================================================================
---- mm-test-kernel.orig/mm/oom_kill.c
-+++ mm-test-kernel/mm/oom_kill.c
-@@ -196,27 +196,47 @@ unsigned long badness(struct task_struct
- /*
-  * Determine the type of allocation constraint.
-  */
--static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
--						    gfp_t gfp_mask)
--{
- #ifdef CONFIG_NUMA
-+static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-+				    gfp_t gfp_mask, nodemask_t *nodemask)
-+{
- 	struct zone *zone;
- 	struct zoneref *z;
- 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
--	nodemask_t nodes = node_states[N_HIGH_MEMORY];
-+	int ret = CONSTRAINT_NONE;
- 
--	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
--		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
--			node_clear(zone_to_nid(zone), nodes);
--		else
--			return CONSTRAINT_CPUSET;
-+	/*
-+	 * Reach here only when __GFP_NOFAIL is used. So, we should avoid
-+ 	 * to kill current.We have to random task kill in this case.
-+ 	 * Hopefully, CONSTRAINT_THISNODE...but no way to handle it, now.
-+ 	 */
-+	if (gfp_mask & __GPF_THISNODE)
-+		return ret;
- 
--	if (!nodes_empty(nodes))
-+	/*
-+ 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
-+ 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
-+ 	 * feature. mempolicy is an only user of nodemask here.
-+	 * check mempolicy's nodemask contains all N_HIGH_MEMORY
-+ 	 */
-+	if (nodemask && !nodes_subset(node_states[N_HIGH_MEMORY], *nodemask))
- 		return CONSTRAINT_MEMORY_POLICY;
--#endif
- 
-+	/* Check this allocation failure is caused by cpuset's wall function */
-+	for_each_zone_zonelist_nodemask(zone, z, zonelist,
-+			high_zoneidx, nodemask)
-+		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
-+			return CONSTRAINT_CPUSET;
-+
-+	return CONSTRAINT_NONE;
-+}
-+#else
-+static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-+				gfp_t gfp_mask, nodemask_t *nodemask)
-+{
- 	return CONSTRAINT_NONE;
- }
-+#endif
- 
- /*
-  * Simple selection loop. We chose the process with the highest
-@@ -603,7 +623,8 @@ rest_and_return:
-  * OR try to be smart about which process to kill. Note that we
-  * don't have to be perfect here, we just have to be good.
-  */
--void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
-+void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
-+		int order, nodemask_t *nodemask)
- {
- 	unsigned long freed = 0;
- 	enum oom_constraint constraint;
-@@ -622,7 +643,7 @@ void out_of_memory(struct zonelist *zone
- 	 * Check if there were limitations on the allocation (only relevant for
- 	 * NUMA) that may require different handling.
- 	 */
--	constraint = constrained_alloc(zonelist, gfp_mask);
-+	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
- 	read_lock(&tasklist_lock);
- 
- 	switch (constraint) {
-Index: mm-test-kernel/mm/page_alloc.c
-===================================================================
---- mm-test-kernel.orig/mm/page_alloc.c
-+++ mm-test-kernel/mm/page_alloc.c
-@@ -1664,12 +1664,22 @@ __alloc_pages_may_oom(gfp_t gfp_mask, un
- 	if (page)
- 		goto out;
- 
--	/* The OOM killer will not help higher order allocs */
--	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
--		goto out;
--
-+	if (!(gfp_mask & __GFP_NOFAIL)) {
-+		/* The OOM killer will not help higher order allocs */
-+		if (order > PAGE_ALLOC_COSTLY_ORDER)
-+			goto out;
-+		/*
-+	 	* GFP_THISNODE contains __GFP_NORETRY and we never hit this.
-+	 	* Sanity check for bare calls of __GFP_THISNODE, not real OOM.
-+	 	* The caller should handle page allocation failure by itself if
-+	 	* it specifies __GFP_THISNODE.
-+	 	* Note: Hugepage uses it but will hit PAGE_ALLOC_COSTLY_ORDER.
-+	 	*/
-+		if (gfp_mask & __GFP_THISNODE)
-+			goto out;
-+	}
- 	/* Exhausted what can be done so it's blamo time */
--	out_of_memory(zonelist, gfp_mask, order);
-+	out_of_memory(zonelist, gfp_mask, order, nodemask);
- 
- out:
- 	clear_zonelist_oom(zonelist, gfp_mask);
-Index: mm-test-kernel/include/linux/oom.h
-===================================================================
---- mm-test-kernel.orig/include/linux/oom.h
-+++ mm-test-kernel/include/linux/oom.h
-@@ -10,6 +10,7 @@
- #ifdef __KERNEL__
- 
- #include <linux/types.h>
-+#include <linux/nodemask.h>
- 
- struct zonelist;
- struct notifier_block;
-@@ -26,7 +27,8 @@ enum oom_constraint {
- extern int try_set_zone_oom(struct zonelist *zonelist, gfp_t gfp_flags);
- extern void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_flags);
- 
--extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order);
-+extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
-+		int order, nodemask_t *mask);
- extern int register_oom_notifier(struct notifier_block *nb);
- extern int unregister_oom_notifier(struct notifier_block *nb);
- 
-
+> > cheers, Joe
+> > 
+> > rcu: rename rcutree_plugin.h to .c and use
+> > 
+> > diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+> > index d802419..737dc72 100644
+> > --- a/kernel/rcutree.c
+> > +++ b/kernel/rcutree.c
+> > @@ -1783,6 +1783,8 @@ do { \
+> >  	} \
+> >  } while (0)
+> > 
+> > +#include "rcutree_plugin.c"
+> > +
+> >  void __init __rcu_init(void)
+> >  {
+> >  	rcu_bootup_announce();
+> > @@ -1795,4 +1797,3 @@ void __init __rcu_init(void)
+> >  	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+> >  }
+> > 
+> > -#include "rcutree_plugin.h"
+> > diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+> > index 17a28a0..ed11d16 100644
+> > --- a/kernel/rcutree.h
+> > +++ b/kernel/rcutree.h
+> > @@ -300,8 +300,7 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
+> > 
+> >  #else /* #ifdef RCU_TREE_NONCORE */
+> > 
+> > -/* Forward declarations for rcutree_plugin.h */
+> > -static void rcu_bootup_announce(void);
+> > +/* Forward declarations for rcutree_plugin.c */
+> >  long rcu_batches_completed(void);
+> >  static void rcu_preempt_note_context_switch(int cpu);
+> >  static int rcu_preempted_readers(struct rcu_node *rnp);
+> > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.c
+> > similarity index 99%
+> > rename from kernel/rcutree_plugin.h
+> > rename to kernel/rcutree_plugin.c
+> > index 52075da..5ca2d26 100644
+> > --- a/kernel/rcutree_plugin.h
+> > +++ b/kernel/rcutree_plugin.c
+> > @@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
+> >  /*
+> >   * Tell them what RCU they are running.
+> >   */
+> > -static void rcu_bootup_announce(void)
+> > +static void __init rcu_bootup_announce(void)
+> >  {
+> >  	printk(KERN_INFO
+> >  	       "Experimental preemptable hierarchical RCU implementation.\n");
+> > @@ -481,7 +481,7 @@ void exit_rcu(void)
+> >  /*
+> >   * Tell them what RCU they are running.
+> >   */
+> > -static void rcu_bootup_announce(void)
+> > +static void __init rcu_bootup_announce(void)
+> >  {
+> >  	printk(KERN_INFO "Hierarchical RCU implementation.\n");
+> >  }
+> > 
+> > 
