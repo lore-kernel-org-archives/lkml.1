@@ -1,228 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZKKJJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbZKKJOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZKKJJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 04:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZKKJJy
+	id S1754314AbZKKJOq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 04:14:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZKKJOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 04:09:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:58675 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbZKKJJv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 04:09:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Y0VqgMYl3+Qe3MtSElgqueoToN54Yxeiz4h5JMwsOci30S8rFHH7HARcqRxlTJnxtL
-         yxV4mx+0BqJCPGUAM+qJmug5AJXNyxg1yfXgwlzIXo94vj/3cIJNwNhz96mkw0lC3nb7
-         S3T7rUPHyM59lq+YD+lI3RaSz6XZL+KGsnCCw=
-Subject: [PATCH v2] ALPS: Add support for 4 directions button on Acer
- Aspire 5720
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Vojtech Pavlik <vojtech@suse.cz>
-In-Reply-To: <20091110173047.GC15263@core.coreip.homeip.net>
-References: <1256955018.9681.23.camel@maxim-laptop>
-	 <1257846940.4921.11.camel@maxim-laptop>
-	 <1257847427.4921.13.camel@maxim-laptop>
-	 <20091110173047.GC15263@core.coreip.homeip.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 11 Nov 2009 11:09:50 +0200
-Message-ID: <1257930590.3601.2.camel@maxim-laptop>
+	Wed, 11 Nov 2009 04:14:45 -0500
+Received: from mga11.intel.com ([192.55.52.93]:46447 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753430AbZKKJOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 04:14:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,722,1249282800"; 
+   d="scan'208";a="745865250"
+Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
+From: ykzhao <yakui.zhao@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <4AFA210B.3020207@kernel.org>
+References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>
+	 <4AFA210B.3020207@kernel.org>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Wed, 11 Nov 2009 17:12:47 +0800
+Message-Id: <1257930767.31183.113.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6b263982ffd62ae4621a5202f0084983af8dc093 Mon Sep 17 00:00:00 2001
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Date: Wed, 11 Nov 2009 11:03:35 +0200
-Subject: [PATCH] ALPS: Add support for 4 directions button on Acer Aspire 5720
- Implemented using DMI due to uncertainty about systems that have
- only the middle button
+On Wed, 2009-11-11 at 10:27 +0800, Yinghai Lu wrote:
+> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+> 
+> to get area is below 1M
+> 
+> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
+It seems that the function of find_e820_area is called in several
+places.
+   >Initmem_init: bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT,
+bootmap_size, PAGE_SIZE);
+   
+If we also call it in the acpi_reserve_wakeup_memory, do we get the same
+base address as that obtained in initmem_init?
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- drivers/input/mouse/alps.c |   75 +++++++++++++++++++++++++++++++++++++-------
- drivers/input/mouse/alps.h |    2 +-
- 2 files changed, 64 insertions(+), 13 deletions(-)
+Thanks.
 
-diff --git a/drivers/input/mouse/alps.c b/drivers/input/mouse/alps.c
-index f361106..96fa093 100644
---- a/drivers/input/mouse/alps.c
-+++ b/drivers/input/mouse/alps.c
-@@ -17,6 +17,7 @@
- #include <linux/input.h>
- #include <linux/serio.h>
- #include <linux/libps2.h>
-+#include <linux/dmi.h>
- 
- #include "psmouse.h"
- #include "alps.h"
-@@ -28,13 +29,16 @@
- #define dbg(format, arg...) do {} while (0)
- #endif
- 
--#define ALPS_DUALPOINT	0x01
--#define ALPS_WHEEL	0x02
--#define ALPS_FW_BK_1	0x04
--#define ALPS_4BTN	0x08
--#define ALPS_OLDPROTO	0x10
--#define ALPS_PASS	0x20
--#define ALPS_FW_BK_2	0x40
-+
-+#define ALPS_OLDPROTO		0x01	/* old style input */
-+#define ALPS_DUALPOINT		0x02	/* touchpad has trackstick */
-+#define ALPS_PASS		0x04	/* select which device to address each time */
-+
-+#define ALPS_WHEEL		0x08	/* hardware wheel present */
-+#define ALPS_FW_BK_1		0x10	/* front & back buttons present */
-+#define ALPS_FW_BK_2		0x20	/* front & back buttons present */
-+#define ALPS_FOUR_BUTTONS	0x40	/* 4 direction button present */
-+
- 
- static const struct alps_model_info alps_model_data[] = {
- 	{ { 0x32, 0x02, 0x14 },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT }, /* Toshiba Salellite Pro M10 */
-@@ -117,7 +121,7 @@ static void alps_process_packet(struct psmouse *psmouse)
- 		z = packet[5];
- 	}
- 
--	if (priv->i->flags & ALPS_FW_BK_1) {
-+	if (priv->i->flags & (ALPS_FW_BK_1 | ALPS_FOUR_BUTTONS)) {
- 		back = packet[0] & 0x10;
- 		forward = packet[2] & 4;
- 	}
-@@ -147,7 +151,9 @@ static void alps_process_packet(struct psmouse *psmouse)
- 
- 	input_report_key(dev, BTN_LEFT, left);
- 	input_report_key(dev, BTN_RIGHT, right);
--	input_report_key(dev, BTN_MIDDLE, middle);
-+
-+	if (!(priv->i->flags & ALPS_FOUR_BUTTONS))
-+		input_report_key(dev, BTN_MIDDLE, middle);
- 
- 	/* Convert hardware tap to a reasonable Z value */
- 	if (ges && !fin) z = 40;
-@@ -185,6 +191,13 @@ static void alps_process_packet(struct psmouse *psmouse)
- 		input_report_key(dev, BTN_BACK, back);
- 	}
- 
-+	if (priv->i->flags & ALPS_FOUR_BUTTONS) {
-+		input_report_key(dev, BTN_0, forward);
-+		input_report_key(dev, BTN_1, back);
-+		input_report_key(dev, BTN_2, middle);
-+		input_report_key(dev, BTN_3, packet[0] & 0x20);
-+	}
-+
- 	input_sync(dev);
- }
- 
-@@ -216,7 +229,8 @@ static psmouse_ret_t alps_process_byte(struct psmouse *psmouse)
- 	return PSMOUSE_GOOD_DATA;
- }
- 
--static const struct alps_model_info *alps_get_model(struct psmouse *psmouse, int *version)
-+static struct alps_model_info *alps_get_model(struct psmouse *psmouse,
-+								int *version)
- {
- 	struct ps2dev *ps2dev = &psmouse->ps2dev;
- 	static const unsigned char rates[] = { 0, 10, 20, 40, 60, 80, 100, 200 };
-@@ -268,9 +282,15 @@ static const struct alps_model_info *alps_get_model(struct psmouse *psmouse, int
- 
- 	for (i = 0; i < ARRAY_SIZE(alps_model_data); i++)
- 		if (!memcmp(param, alps_model_data[i].signature,
--			    sizeof(alps_model_data[i].signature)))
--			return alps_model_data + i;
-+			    sizeof(alps_model_data[i].signature))) {
-+
-+			model_info = kmalloc(sizeof(struct alps_model_info),
-+				GFP_KERNEL);
- 
-+			memcpy(model_info, alps_model_data + i,
-+				sizeof(struct alps_model_info));
-+			return model_info;
-+		}
- 	return NULL;
- }
- 
-@@ -393,6 +413,25 @@ static int alps_poll(struct psmouse *psmouse)
- 	return 0;
- }
- 
-+static int alps_dmi_flags;
-+static int alps_acer_5720_flags(const struct dmi_system_id *d)
-+{
-+	alps_dmi_flags = ALPS_FOUR_BUTTONS;
-+	return 0;
-+}
-+
-+static struct dmi_system_id alps_dmi_table[] = {
-+	{
-+	 .callback = alps_acer_5720_flags,
-+	 .ident = "Acer Aspire 5720",
-+	 .matches = {
-+		DMI_MATCH(DMI_BOARD_VENDOR, "Acer"),
-+		DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5720"),
-+		},
-+	},
-+	{}
-+};
-+
- static int alps_hw_init(struct psmouse *psmouse, int *version)
- {
- 	struct alps_data *priv = psmouse->private;
-@@ -401,6 +440,10 @@ static int alps_hw_init(struct psmouse *psmouse, int *version)
- 	if (!priv->i)
- 		return -1;
- 
-+	dmi_check_system(alps_dmi_table);
-+	if (alps_dmi_flags)
-+		priv->i->flags = alps_dmi_flags;
-+
- 	if ((priv->i->flags & ALPS_PASS) &&
- 	    alps_passthrough_mode(psmouse, true)) {
- 		return -1;
-@@ -446,6 +489,7 @@ static void alps_disconnect(struct psmouse *psmouse)
- 
- 	psmouse_reset(psmouse);
- 	input_unregister_device(priv->dev2);
-+	kfree(priv->i);
- 	kfree(priv);
- }
- 
-@@ -487,6 +531,13 @@ int alps_init(struct psmouse *psmouse)
- 		dev1->keybit[BIT_WORD(BTN_BACK)] |= BIT_MASK(BTN_BACK);
- 	}
- 
-+	if (priv->i->flags & ALPS_FOUR_BUTTONS) {
-+		dev1->keybit[BIT_WORD(BTN_0)] |= BIT_MASK(BTN_0);
-+		dev1->keybit[BIT_WORD(BTN_1)] |= BIT_MASK(BTN_1);
-+		dev1->keybit[BIT_WORD(BTN_2)] |= BIT_MASK(BTN_2);
-+		dev1->keybit[BIT_WORD(BTN_3)] |= BIT_MASK(BTN_3);
-+	}
-+
- 	snprintf(priv->phys, sizeof(priv->phys), "%s/input1", psmouse->ps2dev.serio->phys);
- 	dev2->phys = priv->phys;
- 	dev2->name = (priv->i->flags & ALPS_DUALPOINT) ? "DualPoint Stick" : "PS/2 Mouse";
-diff --git a/drivers/input/mouse/alps.h b/drivers/input/mouse/alps.h
-index bc87936..92505d5 100644
---- a/drivers/input/mouse/alps.h
-+++ b/drivers/input/mouse/alps.h
-@@ -21,7 +21,7 @@ struct alps_model_info {
- struct alps_data {
- 	struct input_dev *dev2;		/* Relative device */
- 	char phys[32];			/* Phys */
--	const struct alps_model_info *i;/* Info */
-+	struct alps_model_info *i;	/* Info */
- 	int prev_fin;			/* Finger bit from previous packet */
- };
- 
--- 
-1.6.3.3
-
-
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  arch/x86/include/asm/acpi.h  |    2 +-
+>  arch/x86/kernel/acpi/sleep.c |   15 +++++++++------
+>  arch/x86/kernel/setup.c      |   13 +++++++------
+>  3 files changed, 17 insertions(+), 13 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/include/asm/acpi.h
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/include/asm/acpi.h
+> +++ linux-2.6/arch/x86/include/asm/acpi.h
+> @@ -118,7 +118,7 @@ extern void acpi_restore_state_mem(void)
+>  extern unsigned long acpi_wakeup_address;
+>  
+>  /* early initialization routine */
+> -extern void acpi_reserve_bootmem(void);
+> +extern void acpi_reserve_wakeup_memory(void);
+>  
+>  /*
+>   * Check if the CPU can handle C2 and deeper
+> Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
+> +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
+> @@ -119,29 +119,32 @@ void acpi_restore_state_mem(void)
+>  
+> 
+>  /**
+> - * acpi_reserve_bootmem - do _very_ early ACPI initialisation
+> + * acpi_reserve_wakeup_memory - do _very_ early ACPI initialisation
+>   *
+>   * We allocate a page from the first 1MB of memory for the wakeup
+>   * routine for when we come back from a sleep state. The
+>   * runtime allocator allows specification of <16MB pages, but not
+>   * <1MB pages.
+>   */
+> -void __init acpi_reserve_bootmem(void)
+> +void __init acpi_reserve_wakeup_memory(void)
+>  {
+> +	unsigned long mem;
+> +
+>  	if ((&wakeup_code_end - &wakeup_code_start) > WAKEUP_SIZE) {
+>  		printk(KERN_ERR
+>  		       "ACPI: Wakeup code way too big, S3 disabled.\n");
+>  		return;
+>  	}
+>  
+> -	acpi_realmode = (unsigned long)alloc_bootmem_low(WAKEUP_SIZE);
+> +	mem = find_e820_area(0, 1<<20, WAKEUP_SIZE, PAGE_SIZE);
+>  
+> -	if (!acpi_realmode) {
+> +	if (mem == -1L) {
+>  		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
+>  		return;
+>  	}
+> -
+> -	acpi_wakeup_address = virt_to_phys((void *)acpi_realmode);
+> +	acpi_realmode = (unsigned long) phys_to_virt(mem);
+> +	acpi_wakeup_address = mem;
+> +	reserve_early(mem, mem + WAKEUP_SIZE, "ACPI WAKEUP");
+>  }
+>  
+> 
+> Index: linux-2.6/arch/x86/kernel/setup.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/setup.c
+> +++ linux-2.6/arch/x86/kernel/setup.c
+> @@ -905,6 +905,13 @@ void __init setup_arch(char **cmdline_p)
+>  
+>  	reserve_brk();
+>  
+> +#ifdef CONFIG_ACPI_SLEEP
+> +	/*
+> +	 * Reserve low memory region for sleep support.
+> +	 * even before init_memory_mapping
+> +	 */
+> +	acpi_reserve_wakeup_memory();
+> +#endif
+>  	init_gbpages();
+>  
+>  	/* max_pfn_mapped is updated here */
+> @@ -956,12 +963,6 @@ void __init setup_arch(char **cmdline_p)
+>  
+>  	initmem_init(0, max_pfn, acpi, k8);
+>  
+> -#ifdef CONFIG_ACPI_SLEEP
+> -	/*
+> -	 * Reserve low memory region for sleep support.
+> -	 */
+> -	acpi_reserve_bootmem();
+> -#endif
+>  	/*
+>  	 * Find and reserve possible boot-time SMP configuration:
+>  	 */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
