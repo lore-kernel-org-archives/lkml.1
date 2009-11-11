@@ -1,84 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbZKKUbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbZKKUjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757342AbZKKUbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZKKUbm
+	id S1758881AbZKKUjB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758868AbZKKUi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:31:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48538 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750970AbZKKUbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:31:42 -0500
-Date: Wed, 11 Nov 2009 20:31:14 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, joe@perches.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, joe@perches.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20091111192806.GA10073@linux.vnet.ibm.com>
-References: <20091111192806.GA10073@linux.vnet.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Mark init-time-only rcu_bootup_announce() as __init
-Message-ID: <tip-0e0fc1c23e04c15e814763f2b366e92d87d8b95d@git.kernel.org>
-Git-Commit-ID: 0e0fc1c23e04c15e814763f2b366e92d87d8b95d
-X-Mailer: tip-git-log-daemon
+	Wed, 11 Nov 2009 15:38:59 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:47627 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758859AbZKKUi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 15:38:57 -0500
+Date: Wed, 11 Nov 2009 21:33:03 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: linux-pcmcia@lists.infradead.org
+Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-serial@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [RFC] even more PCMCIA cleanup patches for 2.6.33
+Message-ID: <20091111203303.GA7939@comet.dominikbrodowski.net>
+Mail-Followup-To: linux-pcmcia@lists.infradead.org, netdev@vger.kernel.org,
+	linux-wireless@vger.kernel.org, linux-serial@vger.kernel.org,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0e0fc1c23e04c15e814763f2b366e92d87d8b95d
-Gitweb:     http://git.kernel.org/tip/0e0fc1c23e04c15e814763f2b366e92d87d8b95d
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Wed, 11 Nov 2009 11:28:06 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 11 Nov 2009 21:27:42 +0100
+Hej,
 
-rcu: Mark init-time-only rcu_bootup_announce() as __init
+in addition to the patch series already submitted as RFCs and reviewed[*]
+here are 13 more patches intended for submission after 2.6.32 is released.
+The patches will be sent to the PCMCIA list shortly, with CC to other
+lists if deemed appropriate. Also, they can be found in the "pcmcia-test"
+branch at 
 
-Because rcu_bootup_announce() is used only at boot time, mark it
-as __init, presumably so that its memory can be reclaimed.
+	git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git pcmcia-test
 
-Suggested-by: Joe Perches <joe@perches.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-LKML-Reference: <20091111192806.GA10073@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+and gitweb at
+
+	http://git.kernel.org/?p=linux/kernel/git/brodo/pcmcia-2.6.git;a=shortlog;h=refs/heads/pcmcia-test
+
+
+[*] 	- patchset sent on Oct 19
+	- patchset sent on Oct 24
+	- Russell King's patchset sent on Oct 27
+
 ---
- kernel/rcutree_plugin.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 52075da..5ca2d26 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
- /*
-  * Tell them what RCU they are running.
-  */
--static void rcu_bootup_announce(void)
-+static void __init rcu_bootup_announce(void)
- {
- 	printk(KERN_INFO
- 	       "Experimental preemptable hierarchical RCU implementation.\n");
-@@ -481,7 +481,7 @@ void exit_rcu(void)
- /*
-  * Tell them what RCU they are running.
-  */
--static void rcu_bootup_announce(void)
-+static void __init rcu_bootup_announce(void)
- {
- 	printk(KERN_INFO "Hierarchical RCU implementation.\n");
- }
+Avi Cohen Stuart (1):
+      pcmcia: correct handling for Zoomed Video registers in topic.h
+
+Dominik Brodowski (7):
+      pcmcia/staging: update comedi drivers
+      pcmcia: autoload module pcmcia
+      pcmcia: move some window-related code to pcmcia_ioctl.c
+      pcmcia: remove unused "window_t" typedef
+      pcmcia: pcmcia_request_window() doesn't need a pointer to a pointer
+      pcmcia: remove deprecated handle_to_dev() macro
+      pcmcia: rework the irq_req_t typedef
+
+Magnus Damm (4):
+      pcmcia: Pass struct pcmcia_device to pcmcia_release_window()
+      pcmcia: Pass struct pcmcia_device to pcmcia_map_mem_page()
+      pcmcia: Pass struct pcmcia_socket to pcmcia_get_mem_page()
+      pcmcia: Change window_handle_t logic to unsigned long
+
+Randy Dunlap (1):
+      pcmcia: fix printk formats
+
+---
+
+ drivers/ata/pata_pcmcia.c                        |    1 
+ drivers/bluetooth/bluecard_cs.c                  |    4 
+ drivers/bluetooth/bt3c_cs.c                      |    4 
+ drivers/bluetooth/btuart_cs.c                    |    4 
+ drivers/bluetooth/dtl1_cs.c                      |    4 
+ drivers/char/pcmcia/cm4000_cs.c                  |    2 
+ drivers/char/pcmcia/cm4040_cs.c                  |   10 
+ drivers/char/pcmcia/ipwireless/hardware.c        |    8 
+ drivers/char/pcmcia/ipwireless/main.c            |   28 +-
+ drivers/char/pcmcia/synclink_cs.c                |    3 
+ drivers/ide/ide-cs.c                             |    1 
+ drivers/isdn/hardware/avm/avm_cs.c               |    2 
+ drivers/isdn/hisax/avma1_cs.c                    |    2 
+ drivers/isdn/hisax/elsa_cs.c                     |    1 
+ drivers/isdn/hisax/sedlbauer_cs.c                |    5 
+ drivers/isdn/hisax/teles_cs.c                    |    1 
+ drivers/mtd/maps/pcmciamtd.c                     |    6 
+ drivers/net/pcmcia/3c574_cs.c                    |    6 
+ drivers/net/pcmcia/3c589_cs.c                    |    6 
+ drivers/net/pcmcia/axnet_cs.c                    |    3 
+ drivers/net/pcmcia/com20020_cs.c                 |   10 
+ drivers/net/pcmcia/fmvj18x_cs.c                  |   20 -
+ drivers/net/pcmcia/ibmtr_cs.c                    |   25 +-
+ drivers/net/pcmcia/nmclan_cs.c                   |    6 
+ drivers/net/pcmcia/pcnet_cs.c                    |   17 -
+ drivers/net/pcmcia/smc91c92_cs.c                 |   14 -
+ drivers/net/pcmcia/xirc2ps_cs.c                  |    9 
+ drivers/net/wireless/airo_cs.c                   |    7 
+ drivers/net/wireless/atmel_cs.c                  |    5 
+ drivers/net/wireless/b43/pcmcia.c                |    6 
+ drivers/net/wireless/hostap/hostap_cs.c          |    7 
+ drivers/net/wireless/libertas/if_cs.c            |    5 
+ drivers/net/wireless/netwave_cs.c                |   11 -
+ drivers/net/wireless/orinoco/orinoco_cs.c        |    6 
+ drivers/net/wireless/orinoco/spectrum_cs.c       |    6 
+ drivers/net/wireless/ray_cs.c                    |   22 --
+ drivers/net/wireless/wavelan_cs.c                |   11 -
+ drivers/net/wireless/wl3501_cs.c                 |    7 
+ drivers/parport/parport_cs.c                     |    1 
+ drivers/pcmcia/cs.c                              |    7 
+ drivers/pcmcia/cs_internal.h                     |    4 
+ drivers/pcmcia/pcmcia_ioctl.c                    |   61 +++++
+ drivers/pcmcia/pcmcia_resource.c                 |  153 +++++---------
+ drivers/pcmcia/topic.h                           |   15 -
+ drivers/scsi/pcmcia/aha152x_stub.c               |    1 
+ drivers/scsi/pcmcia/fdomain_stub.c               |    1 
+ drivers/scsi/pcmcia/nsp_cs.c                     |    8 
+ drivers/scsi/pcmcia/qlogic_stub.c                |    1 
+ drivers/scsi/pcmcia/sym53c500_cs.c               |    1 
+ drivers/serial/serial_cs.c                       |    3 
+ drivers/staging/comedi/drivers/cb_das16_cs.c     |  221 +++++----------------
+ drivers/staging/comedi/drivers/das08_cs.c        |  203 +++++--------------
+ drivers/staging/comedi/drivers/ni_daq_700.c      |  237 +++++++----------------
+ drivers/staging/comedi/drivers/ni_daq_dio24.c    |  236 +++++++---------------
+ drivers/staging/comedi/drivers/ni_labpc_cs.c     |  225 +++++++--------------
+ drivers/staging/comedi/drivers/ni_mio_cs.c       |  127 ++----------
+ drivers/staging/comedi/drivers/quatech_daqp_cs.c |  219 +++++----------------
+ drivers/usb/host/sl811_cs.c                      |    3 
+ include/pcmcia/cs.h                              |   14 -
+ include/pcmcia/cs_types.h                        |    3 
+ include/pcmcia/ds.h                              |   12 -
+ include/pcmcia/ss.h                              |   11 -
+ sound/pcmcia/pdaudiocf/pdaudiocf.c               |    6 
+ sound/pcmcia/vx/vxpocket.c                       |    6 
+ 64 files changed, 688 insertions(+), 1386 deletions(-)
+
+
+Best,
+	Dominik
+
