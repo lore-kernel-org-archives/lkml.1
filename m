@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbZKKKCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZKKKID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbZKKKCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 05:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZKKKCh
+	id S1754417AbZKKKID (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 05:08:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZKKKIC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 05:02:37 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49393 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753127AbZKKKCg (ORCPT
+	Wed, 11 Nov 2009 05:08:02 -0500
+Received: from casper.infradead.org ([85.118.1.10]:52549 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753172AbZKKKIB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 05:02:36 -0500
-Date: Wed, 11 Nov 2009 10:03:37 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Machek <pavel@ucw.cz>, Avi Kivity <avi@redhat.com>,
-       Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091111100337.308de59d@lxorguk.ukuu.org.uk>
-In-Reply-To: <4AFA569E.9040206@zytor.com>
-References: <4AF9C6AB.8080006@zytor.com>
-	<20091110201602.GA26633@1wt.eu>
-	<20091110205445.GB1407@ucw.cz>
-	<20091110211259.GD26633@1wt.eu>
-	<4AF9D8E2.7050205@zytor.com>
-	<20091110220652.GE26633@1wt.eu>
-	<4AF9E61B.5090407@zytor.com>
-	<20091110222031.GA22911@elte.hu>
-	<20091110224222.GA28648@1wt.eu>
-	<4AF9ED78.3000106@zytor.com>
-	<20091111055220.GA560@1wt.eu>
-	<4AFA569E.9040206@zytor.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 11 Nov 2009 05:08:01 -0500
+Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
+From: Peter Zijlstra <peterz@infradead.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Miao Xie <miaox@cn.fujitsu.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       containers <containers@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com>
+References: <4AEF94E8.3030403@cn.fujitsu.com>
+	 <1257846518.4648.18.camel@twins>
+	 <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Wed, 11 Nov 2009 11:07:28 +0100
+Message-ID: <1257934048.23203.76.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009 22:15:58 -0800
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> On 11/10/2009 09:52 PM, Willy Tarreau wrote:
-> > 
-> >   - last, the probability of having an NX page just after an
-> >     executable one seems too tight to me to even constitute
-> >     an attack vector ! BTW, I'm not even certain that all CPUs
-> >     correctly implement this check !
-> > 
+On Wed, 2009-11-11 at 15:21 +0900, Yasunori Goto wrote:
+> > Someone needs to fix that if they really care.
 > 
-> Do you have *any* *evidence* *whatsoever* for that assertion?!
-> 
-> I personally will consider something that doesn't implement proper
-> security check to be a potential security hole and will NAK the patch.
+> To be honest, I don't have any good idea because I'm not familiar with
+> schduler's code. 
 
-Assuming you are doing the fault handling only for a CPU where you expect
-to need it (which would be wise I think) then it's a question of whether
-the CPU supports NX in the first place.
+You could possible try something like the below, its rather gross but
+might maybe work,.. has other issues though.
 
-Even if it does the only thing you can reasonably hope to do is move the
-program counter one instruction into the next page. The user access
-checks will trap any attempt to cross 0xC0000000 and the protection
-fault might just occur one or part of an instruction on in the other
-cases.
 
-Alan
+---
+ kernel/sched.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 91642c1..65629a3 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1614,7 +1614,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
+  */
+ static int tg_shares_up(struct task_group *tg, void *data)
+ {
+-	unsigned long weight, rq_weight = 0, shares = 0;
++	unsigned long weight, rq_weight = 0, sum_weight = 0, shares = 0;
+ 	unsigned long *usd_rq_weight;
+ 	struct sched_domain *sd = data;
+ 	unsigned long flags;
+@@ -1630,6 +1630,7 @@ static int tg_shares_up(struct task_group *tg, void *data)
+ 		weight = tg->cfs_rq[i]->load.weight;
+ 		usd_rq_weight[i] = weight;
+ 
++		rq_weight += weight;
+ 		/*
+ 		 * If there are currently no tasks on the cpu pretend there
+ 		 * is one of average load so that when a new task gets to
+@@ -1638,10 +1639,14 @@ static int tg_shares_up(struct task_group *tg, void *data)
+ 		if (!weight)
+ 			weight = NICE_0_LOAD;
+ 
+-		rq_weight += weight;
++		sum_weight += weight;
++
+ 		shares += tg->cfs_rq[i]->shares;
+ 	}
+ 
++	if (!rq_weight)
++		rq_weight = sum_weight;
++
+ 	if ((!shares && rq_weight) || shares > tg->shares)
+ 		shares = tg->shares;
+ 
+
