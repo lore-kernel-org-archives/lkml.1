@@ -1,106 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZKKD20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbZKKDvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbZKKD20 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 22:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbZKKD20
+	id S1753259AbZKKDvB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 22:51:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbZKKDvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 22:28:26 -0500
-Received: from mail.perches.com ([173.55.12.10]:1335 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754002AbZKKD2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 22:28:25 -0500
-Subject: Re: [tip:core/rcu] rcu: Remove inline from forward-referenced
- functions
-From: Joe Perches <joe@perches.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-In-Reply-To: <20091111014222.GE8424@linux.vnet.ibm.com>
-References: <tip-dbe01350fa8ce0c11948ab7d6be71a4d901be151@git.kernel.org>
-	 <1257892710.25443.9.camel@Joe-Laptop.home>
-	 <20091110225926.GA8424@linux.vnet.ibm.com>
-	 <1257894380.25443.16.camel@Joe-Laptop.home>
-	 <20091110234101.GB8424@linux.vnet.ibm.com>
-	 <1257901421.25443.34.camel@Joe-Laptop.home>
-	 <20091111014222.GE8424@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 10 Nov 2009 19:28:28 -0800
-Message-ID: <1257910108.25443.40.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Nov 2009 22:51:00 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:65256 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbZKKDu7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 22:50:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ejyWErF5XgszPk4aC4re/afJHkx4CjeYMuv4m0w+Qc6wg1tt/pFeMXpSGYsqZajwas
+         mOabfnwLtTBDyNRoGGPCMT8n6hS1ULvUCphSysMYF3AqkSg3PvOyxVrMtDeErshPQFnR
+         k8+CSzrm/kLnCCiy8emL/nrihyu0lL10bC26E=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH 1/6] perf tools: Synthetize the targeted process
+Date: Wed, 11 Nov 2009 04:51:02 +0100
+Message-Id: <1257911467-28276-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-10 at 17:42 -0800, Paul E. McKenney wrote:
-> On Tue, Nov 10, 2009 at 05:03:41PM -0800, Joe Perches wrote:
-> > So maybe rename rcutree_plugin.h to rcutree_plugin.c and
-> > #include "rcutree_plugin.c" in rcutree.c instead.
-> Hmmm...
+Don't forget to also synthetize the targeted process from perf record
+or we'll miss its dso in the events and then we won't be able to deal
+with its build-id.
 
-Perhaps something like this:
+We are missing it because it is created after the existing synthetized
+tasks but before the counters are enabled and can send its mapping
+event.
 
-cheers, Joe
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+---
+ tools/perf/builtin-record.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
-rcu: rename rcutree_plugin.h to .c and use
-
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index d802419..737dc72 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -1783,6 +1783,8 @@ do { \
- 	} \
- } while (0)
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index cf2cd25..2b45d33 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -497,13 +497,22 @@ static int __cmd_record(int argc, const char **argv)
+ 	if (target_pid == -1 && argc) {
+ 		pid = fork();
+ 		if (pid < 0)
+-			perror("failed to fork");
++			die("failed to fork");
  
-+#include "rcutree_plugin.c"
-+
- void __init __rcu_init(void)
- {
- 	rcu_bootup_announce();
-@@ -1795,4 +1797,3 @@ void __init __rcu_init(void)
- 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
- }
+ 		if (!pid) {
+ 			if (execvp(argv[0], (char **)argv)) {
+ 				perror(argv[0]);
+ 				exit(-1);
+ 			}
++		} else {
++			/*
++			 * Wait a bit for the execv'ed child to appear
++			 * and be updated in /proc
++			 * FIXME: Do you know a less heuristical solution?
++			 */
++			usleep(1000);
++			event__synthesize_thread(pid,
++						 process_synthesized_event);
+ 		}
  
--#include "rcutree_plugin.h"
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index 17a28a0..ed11d16 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -300,8 +300,7 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
- 
- #else /* #ifdef RCU_TREE_NONCORE */
- 
--/* Forward declarations for rcutree_plugin.h */
--static void rcu_bootup_announce(void);
-+/* Forward declarations for rcutree_plugin.c */
- long rcu_batches_completed(void);
- static void rcu_preempt_note_context_switch(int cpu);
- static int rcu_preempted_readers(struct rcu_node *rnp);
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.c
-similarity index 99%
-rename from kernel/rcutree_plugin.h
-rename to kernel/rcutree_plugin.c
-index 52075da..5ca2d26 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.c
-@@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
- /*
-  * Tell them what RCU they are running.
-  */
--static void rcu_bootup_announce(void)
-+static void __init rcu_bootup_announce(void)
- {
- 	printk(KERN_INFO
- 	       "Experimental preemptable hierarchical RCU implementation.\n");
-@@ -481,7 +481,7 @@ void exit_rcu(void)
- /*
-  * Tell them what RCU they are running.
-  */
--static void rcu_bootup_announce(void)
-+static void __init rcu_bootup_announce(void)
- {
- 	printk(KERN_INFO "Hierarchical RCU implementation.\n");
- }
-
+ 		child_pid = pid;
+-- 
+1.6.2.3
 
