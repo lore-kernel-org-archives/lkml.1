@@ -1,71 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZKKOaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756844AbZKKOgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbZKKOaQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 09:30:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZKKOaP
+	id S1756844AbZKKOgv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 09:36:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbZKKOgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 09:30:15 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:33349 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753360AbZKKOaO (ORCPT
+	Wed, 11 Nov 2009 09:36:51 -0500
+Received: from relay2.mail.masterhost.ru ([83.222.23.62]:62961 "EHLO
+	relay2.mail.masterhost.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755913AbZKKOgu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 09:30:14 -0500
-Subject: Re: [PATCH 2/2] regulator/mc13783: various cleanups
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Samuel Ortiz <sameo@linux.intel.com>
-In-Reply-To: <20091111141623.GB1849@pengutronix.de>
-References: <20091106002847.GC22366@sortiz.org>
-	 <1257841087-23662-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	 <1257841087-23662-2-git-send-email-u.kleine-koenig@pengutronix.de>
-	 <1257948708.3089.101.camel@odin>  <20091111141623.GB1849@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 11 Nov 2009 14:30:07 +0000
-Message-ID: <1257949807.3089.127.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 11 Nov 2009 09:36:50 -0500
+Message-ID: <4AFACC03.7080209@mayc.ru>
+Date: Wed, 11 Nov 2009 17:36:51 +0300
+From: "Anton D. Kachalov" <mouse@mayc.ru>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Reading /dev/mem by dd
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SpamTest-Envelope-From: mouse@mayc.ru
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 10724 [Nov 11 2009]
+X-SpamTest-Method: none
+X-SpamTest-Rate: 0
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 15:16 +0100, Uwe Kleine-König wrote:
-> Hello,
-> 
-> On Wed, Nov 11, 2009 at 02:11:48PM +0000, Liam Girdwood wrote:
-> > On Tue, 2009-11-10 at 09:18 +0100, Uwe Kleine-König wrote:
-> > > - define needed registers and bits in the driver
-> > > - properly namespace functions and structs
-> > > - fix locking as required by patch
-> > >   "mfd/mc13783: near complete rewrite"
-> > > - use platform_data as provided by "mfd/mc13783: near complete rewrite"
-> > >   instead of accessing struct mc13783
-> > > - struct mc13783_regulator_priv.desc is (and was) unused and so can go
-> > >   away
-> > > - use cpp magic to initialize mc13783_regulators
-> > > - bring MODULE_LICENSE in sync with actual copyright
-> > > - minor style fixes
-> > > 
-> > > This allows not including mc13783-private.h which I intend to remove
-> > > soon.
-> > > 
-> > > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> > > Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> > > Cc: Liam Girdwood <lrg@slimlogic.co.uk>
-> > > Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> > > Cc: Samuel Ortiz <sameo@linux.intel.com>
-> > > ---
-> > 
-> > I assume the new mc13783 function and type definitions are in mfd-next ?
-> Yes, it's 3a69e7d9f6b1fb6c6db7f23e22351e3db7d55ebb in todays linux-next.
->  
+Hello everyone!
 
-Applied
+I've found strange behavior of reading /dev/mem:
 
-Thanks.
+for i in 0 1 2; do
+  echo $i
+  dd if=/dev/mem of=/dev/null skip=$((6+$i)) bs=$((0x20000000)) count=1
+done
 
-Liam
+On some systems with Supermicro X8DTU I've got several messages during 
+first 512Mb starting from 0xc000_0000:
 
+   "BUG: soft lockup - CPU#xx stuck for 61s!"
+
+On other systems with the sameboard I've stuck without any errors at 
+last 10Mb before 0x1_0000_0000. Local APIC access?
+
+On E5440 (Dell PowerEdge 1950) I've just got several:
+APIC error on CPU3: 00(80)
+APIC error on CPU3: 80(80)
+...
+APIC error on CPU3: 80(80)
+That looks like wrong register access.
+
+[E5530] $ cat /proc/iomem
+00000000-0000ffff : reserved
+00010000-0009dbff : System RAM
+0009dc00-0009ffff : reserved
+000c0000-000cffff : pnp 00:0e
+000e0000-000fffff : reserved
+00100000-bf77ffff : System RAM
+  00200000-006a37de : Kernel code
+  006a37df-0091a57f : Kernel data
+  00a68000-00b7cbaf : Kernel bss
+bf78e000-bf78ffff : reserved
+bf790000-bf79dfff : ACPI Tables
+bf79e000-bf7cffff : ACPI Non-volatile Storage
+bf7d0000-bf7dffff : reserved
+bf7ec000-bfffffff : reserved
+e0000000-efffffff : PCI MMCONFIG 0
+  e0000000-efffffff : reserved
+    e0000000-efffffff : pnp 00:0d
+f9000000-f9ffffff : PCI Bus 0000:07
+  f9000000-f9ffffff : 0000:07:01.0
+faeda000-faeda0ff : 0000:00:1f.3
+faedc000-faedc3ff : 0000:00:1d.7
+  faedc000-faedc3ff : ehci_hcd
+faede000-faede3ff : 0000:00:1a.7
+  faede000-faede3ff : ehci_hcd
+faee0000-faee3fff : 0000:00:16.7
+faee4000-faee7fff : 0000:00:16.6
+faee8000-faeebfff : 0000:00:16.5
+faeec000-faeeffff : 0000:00:16.4
+faef0000-faef3fff : 0000:00:16.3
+faef4000-faef7fff : 0000:00:16.2
+faef8000-faefbfff : 0000:00:16.1
+faefc000-faefffff : 0000:00:16.0
+faf00000-faffffff : PCI Bus 0000:01
+  faf00000-faf1ffff : 0000:01:00.1
+  faf3c000-faf3ffff : 0000:01:00.1
+    faf3c000-faf3ffff : igb
+  faf40000-faf5ffff : 0000:01:00.1
+    faf40000-faf5ffff : igb
+  faf60000-faf7ffff : 0000:01:00.1
+    faf60000-faf7ffff : igb
+  faf80000-faf9ffff : 0000:01:00.0
+  fafbc000-fafbffff : 0000:01:00.0
+    fafbc000-fafbffff : igb
+  fafc0000-fafdffff : 0000:01:00.0
+    fafc0000-fafdffff : igb
+  fafe0000-faffffff : 0000:01:00.0
+    fafe0000-faffffff : igb
+fb000000-fbefffff : PCI Bus 0000:07
+  fb000000-fb7fffff : 0000:07:01.0
+  fbefc000-fbefffff : 0000:07:01.0
+fec00000-fec00fff : IOAPIC 0
+  fec00000-fec00fff : pnp 00:0c
+fed00000-fed003ff : HPET 0
+fed1c000-fed1ffff : pnp 00:01
+  fed1c000-fed1ffff : pnp 00:0a
+fed20000-fed3ffff : pnp 00:0a
+fed40000-fed8ffff : pnp 00:0a
+fee00000-fee00fff : Local APIC
+  fee00000-fee00fff : reserved
+    fee00000-fee00fff : pnp 00:0c
+ffc00000-ffffffff : reserved
+100000000-13fffffff : System RAM
+
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009dc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009dc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf780000 (usable)
+[    0.000000]  BIOS-e820: 00000000bf78e000 - 00000000bf790000 type 9
+[    0.000000]  BIOS-e820: 00000000bf790000 - 00000000bf79e000 (ACPI data)
+[    0.000000]  BIOS-e820: 00000000bf79e000 - 00000000bf7d0000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000bf7d0000 - 00000000bf7e0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000bf7ec000 - 00000000c0000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
+[    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+
+[E5440] $ cat /proc/iomem
+00000000-0009ffff : System RAM
+  00000000-00000000 : Crash kernel
+000a0000-000bffff : Video RAM area
+000c0000-000c7fff : Video ROM
+000c9000-000c9fff : Adapter ROM
+000ca000-000cfbff : Adapter ROM
+000d0000-000d1dff : Adapter ROM
+000d2000-000d71ff : Adapter ROM
+000f0000-000fffff : System ROM
+00100000-bfb4ffff : System RAM
+  00200000-003e1fbc : Kernel code
+  003e1fbd-004bafe7 : Kernel data
+bfb50000-bfb65fff : reserved
+bfb66000-bfb85bff : ACPI Tables
+bfb85c00-bfffffff : reserved
+d0000000-d7ffffff : PCI Bus #10
+  d0000000-d7ffffff : 0000:10:0d.0
+d8000000-d80fffff : PCI Bus #0c
+  d8000000-d80fffff : PCI Bus #0d
+    d80f0000-d80fffff : 0000:0d:0e.0
+      d80f0000-d80fffff : megasas: LSI Logic
+e0000000-efffffff : reserved
+f2000000-f7ffffff : PCI Bus #04
+  f4000000-f7ffffff : PCI Bus #05
+    f4000000-f7ffffff : PCI Bus #06
+      f4000000-f7ffffff : PCI Bus #07
+        f4000000-f5ffffff : 0000:07:00.0
+          f4000000-f5ffffff : bnx2
+f8000000-fbffffff : PCI Bus #02
+  f8000000-fbffffff : PCI Bus #03
+    f8000000-f9ffffff : 0000:03:00.0
+      f8000000-f9ffffff : bnx2
+fc100000-fc2fffff : PCI Bus #10
+  fc100000-fc11ffff : 0000:10:0d.0
+  fc2d0000-fc2dffff : 0000:10:0d.0
+fc300000-fc5fffff : PCI Bus #0c
+  fc400000-fc5fffff : PCI Bus #0d
+    fc400000-fc407fff : 0000:0d:0e.0
+    fc5c0000-fc5dffff : 0000:0d:0e.0
+      fc5c0000-fc5dffff : megasas: LSI Logic
+fc600000-fc8fffff : PCI Bus #01
+  fc7e0000-fc7effff : 0000:01:00.0
+  fc7fc000-fc7fffff : 0000:01:00.0
+  fc800000-fc8fffff : 0000:01:00.0
+fc900000-fc9003ff : 0000:00:1d.7
+  fc900000-fc9003ff : ehci_hcd
+fe000000-ffffffff : reserved
+100000000-43fffffff : System RAM
+
+HP - ProLiant DL160G6 says:
+http://www.pixsup.com/uploads/7134cd3e33.png
+
+Rgds,
+Anton
