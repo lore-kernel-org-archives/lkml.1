@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751299AbZKKFRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbZKKF0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751299AbZKKFRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 00:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZKKFRR
+	id S1751399AbZKKF0t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 00:26:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZKKF0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 00:17:17 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:46432 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbZKKFRR convert rfc822-to-8bit (ORCPT
+	Wed, 11 Nov 2009 00:26:48 -0500
+Received: from gesmail.globaledgesoft.com ([203.76.137.4]:36410 "EHLO
+	gesmail.globaledgesoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751198AbZKKF0s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 00:17:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Zt2kXzyEqVDiQVIBBmnawciy+F4hkoSTlO9NckbQkZl8PnpiEvKEhOuGFwrUjq/Vkc
-         7PtOIR4QlBmLQOaQiJUOvGgTXsTcKhVkmekgvfLENHRIrhMS7v4NW3wcjruDWtUQcps6
-         BoIbemdLqKYWl2uYXV3wqqDTjYZDx3roLhh3I=
+	Wed, 11 Nov 2009 00:26:48 -0500
+Message-ID: <4AFA4B1C.9020203@globaledgesoft.com>
+Date: Wed, 11 Nov 2009 10:56:52 +0530
+From: Ram <ramaswamy.bm@globaledgesoft.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-In-Reply-To: <4AF9FB6C.70003@oracle.com>
-References: <4AF9FB6C.70003@oracle.com>
-Date: Wed, 11 Nov 2009 13:17:22 +0800
-Message-ID: <2375c9f90911102117q33f7ce4raed39f960ddcf1fc@mail.gmail.com>
-Subject: Re: [PATCH] x86 VSDO: fix Kconfig help
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       linux-kbuild@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org
+CC: Ram <ramaswamy.bm@globaledgesoft.com>,
+       Naveen BN <naveen.bn@globaledgesoft.com>,
+       Chaitra Shankar <chaitra.shankar@globaledgesoft.com>
+Subject: Re: Error while creating security association using ip xfrm command
+References: <4AE6D26D.7020607@globaledgesoft.com> <4AE6DC72.4010208@iki.fi> <4AE820B4.3070400@globaledgesoft.com> <20091028140923.GD101657@sun.com> <4AE9228D.1070107@globaledgesoft.com> <4AE938F8.9060008@iki.fi> <4AF7B4FE.5050801@globaledgesoft.com> <4AF7C346.7070105@globaledgesoft.com> <4AF7C7C5.6060204@globaledgesoft.com> <4AF84F22.4020500@iki.fi> <4AF97F5D.4060802@globaledgesoft.com> <4AF9A77D.2060302@iki.fi> <4AFA4A35.30203@globaledgesoft.com>
+In-Reply-To: <4AFA4A35.30203@globaledgesoft.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 7:46 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> COMPAT_VDSO has 2 help text blocks, but kconfig only uses the
-> last one found, so merge the 2 blocks.
->
-> It would be real nice if kconfig would warn about this.
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Directing the query to Linux kernel networking group :
 
-Looks good.
+_*Query :*_
+*I am trying to create a security association using ip xfrm command, but 
+i get an error message saying
+"*RTNETLINK answers: Function not implemented*" and ip xfrm state 
+succeeds in displaying  sa  written using setkey .
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+ip xfrm state add src 192.168.1.20 dst 192.168.1.5 proto esp spi 
+0x354cb04b mode tunnel reqid 16385 replay-window 32 auth hmac 
+0xecf02a5cf6568556e1bdcd961c7ec3f92afd01cc enc cbc 
+0x5c0cfa9672ce67ba545b593076dfb278 sel src 0.0.0.0/0 dst 0.0.0.0/0
 
-Thanks!
+ERROR message => "RTNETLINK answers: Function not implemented" 
+Please let me know what is the problem here .
 
-> ---
->  arch/x86/Kconfig |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+
+
+*Timo Ter�s wrote: Naveen BN wrote:
+> *I am trying to create a security association using ip xfrm command, 
+> but i get an message saying
+> "*RTNETLINK answers: Function not implemented*" and ip xfrm state 
+> succeeds in displaying  sa  written using setkey .
 >
-> --- lnx-2632-rc6.orig/arch/x86/Kconfig
-> +++ lnx-2632-rc6/arch/x86/Kconfig
-> @@ -1601,12 +1601,12 @@ config COMPAT_VDSO
->        prompt "Compat VDSO support"
->        depends on X86_32 || IA32_EMULATION
->        ---help---
-> -         Map the 32-bit VDSO to the predictable old-style address too.
-> -       ---help---
->          Say N here if you are running a sufficiently recent glibc
->          version (2.3.3 or later), to remove the high-mapped
->          VDSO mapping and to exclusively use the randomized VDSO.
+> ip xfrm state add src 192.168.1.20 dst 192.168.1.5 proto esp spi 
+> 0x354cb04b mode tunnel reqid 16385 replay-window 32 auth hmac 
+> 0xecf02a5cf6568556e1bdcd961c7ec3f92afd01cc enc cbc 
+> 0x5c0cfa9672ce67ba545b593076dfb278 sel src 0.0.0.0/0 dst 0.0.0.0/0
 >
-> +         Map the 32-bit VDSO to the predictable old-style address too.
-> +
->          If unsure, say Y.
->
->  config CMDLINE_BOOL
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> ERROR message => "RTNETLINK answers: Function not implemented" *
+
+Please, direct "ip xfrm" and Netlink questions to Linux kernel
+networking mailing list.
+
+- Timo
