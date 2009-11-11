@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbZKKIax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZKKIdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094AbZKKIax (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 03:30:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbZKKIaw
+	id S1757297AbZKKIdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 03:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbZKKIdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 03:30:52 -0500
-Received: from arroyo.ext.ti.com ([192.94.94.40]:58426 "EHLO arroyo.ext.ti.com"
+	Wed, 11 Nov 2009 03:33:19 -0500
+Received: from ozlabs.org ([203.10.76.45]:49884 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755738AbZKKIav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 03:30:51 -0500
-Subject: [PATCH 1/1]: Thaws refrigerated bdi flusher threads before
- invoking kthread_stop on them
-From: Romit Dasgupta <romit@ti.com>
-Reply-To: romit@ti.com
-To: jens.axboe@oracle.com, rjw@sisk.pl, pavel@ucw.cz
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Content-Type: text/plain; charset="UTF-8"
-Organization: Texas Instruments
-Date: Wed, 11 Nov 2009 14:00:16 +0530
-Message-ID: <1257928216.15415.57.camel@boson>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1757038AbZKKIdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 03:33:18 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: rr tree build failure
+Date: Wed, 11 Nov 2009 19:03:21 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alan-jenkins@tuffmail.co.uk, x86@kernel.org
+References: <20091111140126.044be7d2.sfr@canb.auug.org.au>
+In-Reply-To: <20091111140126.044be7d2.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911111903.21923.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kicks out frozen bdi flusher task out of the refrigerator when the flusher task
-needs to exit.
-Signed-off-by: Romit Dasgupta <romit@ti.com>
----
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 5a37e20..c757b05 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -606,8 +606,11 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
- 	 * Finally, kill the kernel threads. We don't need to be RCU
- 	 * safe anymore, since the bdi is gone from visibility.
- 	 */
--	list_for_each_entry(wb, &bdi->wb_list, list)
-+	list_for_each_entry(wb, &bdi->wb_list, list) {
-+		if (unlikely(frozen(wb->task)))
-+			wb->task->flags &= ~PF_FROZEN;
- 		kthread_stop(wb->task);
-+	}
- }
- 
- void bdi_unregister(struct backing_dev_info *bdi)
+On Wed, 11 Nov 2009 01:31:26 pm Stephen Rothwell wrote:
+> Hi Rusty,
+> 
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> .tmp_exports-asm.o: In function `__ksymtab_load_gs_index':
+> (__ksymtab_sorted+0x5b40): undefined reference to `load_gs_index'
+> 
+> I have used the version of the rr tree from next-20091110 for today.
 
+It's inline and exported when CONFIG_PARAVIRT=y.  Which is wrong.
+
+Here's the patch I've put in my series for tomorrow's linux-next:
+
+Subject: x86: don't export inline function
+
+For CONFIG_PARAVIRT, load_gs_index is an inline function (it's #defined
+to native_load_gs_index otherwise).
+
+Exporting an inline function breaks the new assembler-based alphabetical
+sorted symbol list:
+
+Today's linux-next build (x86_64 allmodconfig) failed like this:
+
+	.tmp_exports-asm.o: In function `__ksymtab_load_gs_index':
+	(__ksymtab_sorted+0x5b40): undefined reference to `load_gs_index'
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+To: x86@kernel.org
+Cc: alan-jenkins@tuffmail.co.uk
+
+diff --git a/arch/x86/kernel/x8664_ksyms_64.c b/arch/x86/kernel/x8664_ksyms_64.c
+--- a/arch/x86/kernel/x8664_ksyms_64.c
++++ b/arch/x86/kernel/x8664_ksyms_64.c
+@@ -57,4 +57,6 @@ EXPORT_SYMBOL(__memcpy);
+ 
+ EXPORT_SYMBOL(empty_zero_page);
+ EXPORT_SYMBOL(init_level4_pgt);
+-EXPORT_SYMBOL(load_gs_index);
++#ifndef CONFIG_PARAVIRT
++EXPORT_SYMBOL(native_load_gs_index);
++#endif
 
