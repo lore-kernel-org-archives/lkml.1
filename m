@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbZKKUGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbZKKUHC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbZKKUGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbZKKUGw
+	id S1757455AbZKKUHC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:07:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbZKKUHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:06:52 -0500
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52869 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757208AbZKKUGu (ORCPT
+	Wed, 11 Nov 2009 15:07:00 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:50415 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757388AbZKKUG4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:06:50 -0500
-Subject: Re: [RFC] new -stable tag variant, Git workflow question
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <alpine.LFD.2.01.0911111153390.31845@localhost.localdomain>
-References: <20091110034831.GB26809@elte.hu>
-	 <20091110041452.GA25575@suse.de> <1257863388.4184.220.camel@mulgrave.site>
-	 <20091110193747.GB12686@suse.de> <1257965424.11985.9.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0911111153390.31845@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 11 Nov 2009 14:06:50 -0600
-Message-Id: <1257970010.11985.17.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 15:06:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=OUKtkNqAxF6GJyKHyw2crw/qL/oU0t0tgemEHreYtBokA1RUA8Ofq3D9VP7OukzeIg
+         5n4WstvUTVvwOLZT+cZfRi3y4CCygadoEOAf+fE1uh7pi55Tio2ExZXhDQditz8cQdIN
+         KS/gdqqSYnLvReg/26TFk4J3EmRvXUwpl5QkM=
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.00.0911111002220.6957@p34.internal.lan>
+References: <alpine.DEB.2.00.0911111002220.6957@p34.internal.lan>
+Date: Wed, 11 Nov 2009 12:07:01 -0800
+X-Google-Sender-Auth: b368205947cae72a
+Message-ID: <1f1b08da0911111207ud6d8f09s8b1f5b6c26375d64@mail.gmail.com>
+Subject: Re: Kernel: 2.6.31.5: CE: hpet increasing min_delta_ns: What do these 
+	messages mean?
+From: john stultz <johnstul@us.ibm.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 12:00 -0800, Linus Torvalds wrote:
-> 
-> On Wed, 11 Nov 2009, James Bottomley wrote:
-> > 
-> > The slight problem is that further down, to generate the patch the
-> > script uses git format-patch -k --stdout commit^..commit.  For a merge
-> > commit, this will generate a patch equivalent to the entire branch that
-> > was merged, even though the commit message will only pick out some of
-> > these ... is this OK?
-> 
-> Don't do that.
-> 
-> Since you want to show a single commit, not a commit range, don't use 
-> format-patch, use something like
-> 
-> 	git show --pretty=email -M --cc --stat $commit
-> 
-> instead. That will not show the difference between a commit and its 
-> first parent (which for a merge diff is more than one commit, and can be 
-> absolutely _huge_), but will show just the named commit (which for a merge 
-> commit will usually be an empty diff, but will show how conflicts were 
-> resolved if they weren't just taken from one or the other side).
-> 
-> (Of course, maybe you'll want to change the exact flags in question. For 
-> example, '--stat' for merge commits is often useful, but only if the merge 
-> was done by an upper-level maintainer. Anybody who does reverse merges 
-> will just get totally meaningless diffstats, since the diffstat is always 
-> done against the first parent, so anybody who does back-merges will see 
-> the stat of everthing _I_ have merged in the meantime, which is generally 
-> not useful)
+On Wed, Nov 11, 2009 at 7:06 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+> I see these messages in my kernel log: (2.6.31.5)
+>
+> [   48.886129] CE: hpet increasing min_delta_ns to 15000 nsec
+> [ 3258.107039] CE: hpet increasing min_delta_ns to 22500 nsec
+> [53705.451463] CE: hpet increasing min_delta_ns to 33750 nsec
 
-Right ... that's why I was wondering if Greg still needs the diff.  If
-not, I'll just send standard git log output with no diff.  If he does,
-I'll use something like the above.
+Basically it means setting the hpet timer interrupt failed because the
+time it took to set it was more then the time requested.  Why its
+taking so long is an open question, but we're looking into it in the
+following bug:
 
-So, now that you're showing an interest in all of this, how about I send
-you the final update hook to add to your tree?  It will produce less
-latency than the cron job I run on kernel.org to pull your tree into one
-I have here ever twenty minutes or so and run the hooks.
+http://bugzilla.kernel.org/show_bug.cgi?id=14426
 
-James
-
-
+thanks
+-john
