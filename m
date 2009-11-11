@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbZKKWu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759604AbZKKXKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbZKKWu1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 17:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759506AbZKKWu0
+	id S1759604AbZKKXKT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 18:10:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbZKKXKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 17:50:26 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:58903 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759326AbZKKWuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 17:50:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=eV+SJaeFHc5MMSI3o5a9EK/dG1spnV67SJ0qaoiNfELmLRA5/tgSwj+HsZRwkIHrph
-         1/XCKh2bZAaNTBZqmiWp+T2nwnczloOxxyBjLGGSM/Cst7url9QIyDH1cMOwYi30mHL/
-         qFTHWpXffywXsfQMmAqzAAZZKZDkFIolV3Tr4=
+	Wed, 11 Nov 2009 18:10:18 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54418 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759529AbZKKXKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 18:10:17 -0500
+Message-ID: <4AFB4455.3040407@pobox.com>
+Date: Wed, 11 Nov 2009 18:10:13 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <4AFB3C9D.4020609@rtr.ca>
-References: <1257708657-1232-1-git-send-email-tfransosi@gmail.com>
-	 <4AF8F363.3010806@rtr.ca> <200911101651.24912.bzolnier@gmail.com>
-	 <84144f020911100808y55f5bfa2v5c203b356583a7b5@mail.gmail.com>
-	 <4AFB3C9D.4020609@rtr.ca>
-Date: Wed, 11 Nov 2009 20:50:29 -0200
-Message-ID: <a4c8a6d00911111450y7e451071h3f0ede0a1003678b@mail.gmail.com>
-Subject: Re: [PATCH] ata: Clean up hard coded array size calculation.
-From: Thiago Farina <tfransosi@gmail.com>
 To: Mark Lord <liml@rtr.ca>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, jgarzik@pobox.com,
-       mlord@pobox.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+CC: Thiago Farina <tfransosi@gmail.com>, mlord@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ata: Clean up hard coded array size calculation.
+References: <1257708657-1232-1-git-send-email-tfransosi@gmail.com> <4AF8F363.3010806@rtr.ca>
+In-Reply-To: <4AF8F363.3010806@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 8:37 PM, Mark Lord <liml@rtr.ca> wrote:
-> Looks like unnecessary churn and obfuscation to me.
+On 11/10/2009 12:00 AM, Mark Lord wrote:
+> Thiago Farina wrote:
+>> Use ARRAY_SIZE macro of kernel api instead.
+>>
+>> Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+>> ---
+>> drivers/ata/sata_mv.c | 2 +-
+>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+>> index 6f5093b..a8a7be0 100644
+>> --- a/drivers/ata/sata_mv.c
+>> +++ b/drivers/ata/sata_mv.c
+>> @@ -2217,7 +2217,7 @@ static unsigned int mv_qc_issue_fis(struct
+>> ata_queued_cmd *qc)
+>> int err = 0;
+>>
+>> ata_tf_to_fis(&qc->tf, link->pmp, 1, (void *)fis);
+>> - err = mv_send_fis(ap, fis, sizeof(fis) / sizeof(fis[0]));
+>> + err = mv_send_fis(ap, fis, ARRAY_SIZE(fis));
+>> if (err)
+>> return err;
+>>
+> ..
+>
+> What's the point of this ?
+>
+> There is no "hardcoded array size" there to begin with,
+> and using that silly macro obscures the actual calculation.
+>
+> So now, instead of being able to verify correctness at a glance,
+> I have to go off and research some silly macro and verify that
+> it does the right thing.
 
-Obfuscation? Are you saying that just because you wrote this code?  So
-what is the usage of a macro? I think you are having a defensive
-position here.
+It is a standard cleanup for all kernel code, and it does make the code 
+more readable to the casual reader / quick skimmer.
 
-The macro is self-explanatory, ARRAY_SIZE, so the macro gives you the
-*size* of the array. You don't need to know how that is done, if you
-want, just go to the declaration of the macro.
+	Jeff
+
+
+
+
