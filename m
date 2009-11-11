@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbZKKTid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbZKKTkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758778AbZKKTid (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 14:38:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758731AbZKKTic
+	id S1758798AbZKKTkt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 14:40:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758632AbZKKTks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 14:38:32 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:46988 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758669AbZKKTic (ORCPT
+	Wed, 11 Nov 2009 14:40:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42015
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758514AbZKKTkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 14:38:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mAKUMhclH/2UFGQC8dNAHwMW3hG7hsna0HcWPsNe8X4o+S25X1v519F23O3EELAbHc
-         6LPWgb+noHt6dhXcHXcWOp0rclFZW4zOA0I9eRFwPqzCZcuusHy4vhMEi9ycYFelNU8t
-         eA5X0KEdlC9GWS3uc2q8ObpTedB8/VNMASSdQ=
-Date: Wed, 11 Nov 2009 20:38:32 +0100
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [ RFC, PATCH - 1/2, v2 ] x86-microcode: refactor microcode
- output messages
-Message-ID: <20091111193832.GG18592@alberich.amd.com>
-References: <1257192496.5941.8.camel@dimm>
- <20091105153742.GA18592@alberich.amd.com>
- <b647ffbd0911051040r3987f63es1279c87bf349bcf6@mail.gmail.com>
- <20091106123403.GB18592@alberich.amd.com>
- <b647ffbd0911060456x5c37ebfapdb2ece392428f66@mail.gmail.com>
- <20091106194626.GC18592@alberich.amd.com>
- <b647ffbd0911070422g154c63bbo2fec62ba63c3c106@mail.gmail.com>
- <b647ffbd0911110807n17933102g39c124a6eff74a44@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b647ffbd0911110807n17933102g39c124a6eff74a44@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 11 Nov 2009 14:40:47 -0500
+Date: Wed, 11 Nov 2009 11:41:14 -0800 (PST)
+Message-Id: <20091111.114114.228545645.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-11-11
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091111.112031.184370997.davem@davemloft.net>
+References: <20091111172255.GH4392@tuxdriver.com>
+	<20091111.112031.184370997.davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 05:07:22PM +0100, Dmitry Adamushko wrote:
-> Andreas,
+From: David Miller <davem@davemloft.net>
+Date: Wed, 11 Nov 2009 11:20:31 -0800 (PST)
+
+> From: "John W. Linville" <linville@tuxdriver.com>
+> Date: Wed, 11 Nov 2009 12:22:55 -0500
 > 
+>> P.S.  Due to the aformentioned iwlwifi fix, this will cause -next
+>> conflicts for sfr.  You may want to pull net-2.6 into net-next-2.6 after
+>> pulling this.  The iwlwifi conflicts can be resolved by taking the bigger
+>> hunks...
 > 
-> any progress with this issue?
+> Yep, I noticed this, I'll sort it out, thanks.
 
-Yes
+I just pushed out the merge to net-next-2.6, please double
+check my work.
 
-> You mentioned that the problem is also reproducible without my
-> patches, right?
-
-... and yes.
-
-Fixed with
-http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commitdiff;h=9f15226e75583547aaf542c6be4bdac1060dd425
-
-
-Andreas
+Thanks!
