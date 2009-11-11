@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbZKKACN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbZKKAEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758737AbZKKACN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 19:02:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZKKACM
+	id S1758748AbZKKAEN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 19:04:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbZKKAEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 19:02:12 -0500
-Received: from ozlabs.org ([203.10.76.45]:37183 "EHLO ozlabs.org"
+	Tue, 10 Nov 2009 19:04:12 -0500
+Received: from khc.piap.pl ([195.187.100.11]:52458 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758702AbZKKACM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 19:02:12 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Anthony Liguori <aliguori@us.ibm.com>
-Subject: Re: virtio: Add memory statistics reporting to the balloon driver
-Date: Wed, 11 Nov 2009 10:32:14 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: agl@linux.vnet.ibm.com, qemu-devel@nongnu.org, Avi Kivity <avi@redhat.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1257782838.2835.5.camel@aglitke> <200911101312.02650.rusty@rustcorp.com.au> <4AF9E0AA.8040100@us.ibm.com>
-In-Reply-To: <4AF9E0AA.8040100@us.ibm.com>
+	id S1758724AbZKKAEL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 19:04:11 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: SATA_SIL: Add a work-around for IXP4xx CPU.
+Date: Wed, 11 Nov 2009 01:04:14 +0100
+Message-ID: <m3fx8m0vwh.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911111032.14956.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 08:22:42 am Anthony Liguori wrote:
-> Rusty Russell wrote:
-> > On Tue, 10 Nov 2009 03:02:06 am Adam Litke wrote:
-> >   
-> >> A simpler approach is to collect memory statistics in the virtio
-> >> balloon driver and communicate them to the host via the device config space.
-> >>     
-> >
-> > There are two issues I see with this.  First, there's an atomicity problem
-> > since you can't tell when the stats are consistent.  Second, polling is
-> > ugly.
-> >
-> > A stats vq might solve this more cleanly?
-> >   
-> 
-> This turns out to not work so nicely.  You really need bidirectional 
-> communication.  You need to request that stats be collected and then you 
-> need to tell the hypervisor about the stats that were collected.  You 
-> don't need any real correlation between requests and stat reports either.
+IXP4xx CPUs can't read from 8 and 16-bit PCI MMIO registers, we have to read
+from normal IO regions instead.
 
-You register an outbuf at initialization time.  The host hands it back when
-it wants you to refill it with stats.
+Tested on SIL3512, and specifically not tested on 4-port SIL3114.
 
-> This really models how target/actual work and I think it suggests that 
-> we want to reuse that mechanism for the stats too.
+Signed-off-by: Krzysztof Hałasa <khc@pm.waw.pl>
 
-Sure, I want to.  You want to.  It's simple.
+--- a/drivers/ata/sata_sil.c
++++ b/drivers/ata/sata_sil.c
+@@ -757,7 +757,22 @@ static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (rc)
+ 		return rc;
+ 
++#ifdef CONFIG_ARCH_IXP4XX
++	/* IXP4xx CPUs can't perform 8 and 16-bit MMIO reads,
++	   use normal IO from/to regions 0-5 instead.
++	   region 0: channel 0 (and 2) task file regs
++	   region 1: channel 0 (and 2) auxiliary status
++	   region 2: channel 1 (and 3) task file regs
++	   region 3: channel 1 (and 3) auxiliary status
++	   region 4: bus master DMA command and status for all channels
++	   region 5: the normal MMIO
++
++	   Channels 2 and 3 are present only on SIL3114, device selection
++	   is done with ATA_DEV1 bit in ATA_REG_DEVICE. FIXME - untested */
++	rc = pcim_iomap_regions(pdev, 0x3F, DRV_NAME);
++#else
+ 	rc = pcim_iomap_regions(pdev, 1 << SIL_MMIO_BAR, DRV_NAME);
++#endif
+ 	if (rc == -EBUSY)
+ 		pcim_pin_device(pdev);
+ 	if (rc)
+@@ -777,10 +792,16 @@ static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		struct ata_port *ap = host->ports[i];
+ 		struct ata_ioports *ioaddr = &ap->ioaddr;
+ 
++#ifdef CONFIG_ARCH_IXP4XX
++		ioaddr->cmd_addr = host->iomap[(i % 2) * 2];
++		ioaddr->altstatus_addr = host->iomap[1 + (i % 2) * 2] + 2;
++		ioaddr->bmdma_addr = host->iomap[4] + sil_port[i % 2].bmdma;
++#else
+ 		ioaddr->cmd_addr = mmio_base + sil_port[i].tf;
+-		ioaddr->altstatus_addr =
+-		ioaddr->ctl_addr = mmio_base + sil_port[i].ctl;
++		ioaddr->altstatus_addr = mmio_base + sil_port[i].ctl;
+ 		ioaddr->bmdma_addr = mmio_base + sil_port[i].bmdma;
++#endif
++		ioaddr->ctl_addr = mmio_base + sil_port[i].ctl;
+ 		ioaddr->scr_addr = mmio_base + sil_port[i].scr;
+ 		ata_sff_std_ports(ioaddr);
+ 
 
-But the universe is remarkably indifferent to what we want.  Is it actually
-sufficient or are we going to regret our laziness?
-
-Cheers,
-Rusty.
+-- 
+Krzysztof Halasa
