@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbZKKPGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZKKPJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbZKKPGf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 10:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757149AbZKKPGe
+	id S1757589AbZKKPJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 10:09:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbZKKPJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 10:06:34 -0500
-Received: from lucidpixels.com ([75.144.35.66]:38218 "EHLO lucidpixels.com"
+	Wed, 11 Nov 2009 10:09:05 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:37987 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757115AbZKKPGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 10:06:34 -0500
-Date: Wed, 11 Nov 2009 10:06:39 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel: 2.6.31.5: CE: hpet increasing min_delta_ns: What do these
- messages mean?
-Message-ID: <alpine.DEB.2.00.0911111002220.6957@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-104920207-1257951999=:6957"
+	id S1757285AbZKKPJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 10:09:04 -0500
+Subject: Re: virtio: Add memory statistics reporting to the balloon driver
+From: Adam Litke <agl@us.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Anthony Liguori <aliguori@us.ibm.com>, agl@linux.vnet.ibm.com,
+       qemu-devel@nongnu.org, Avi Kivity <avi@redhat.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200911111313.24226.rusty@rustcorp.com.au>
+References: <1257782838.2835.5.camel@aglitke>
+	 <200911111032.14956.rusty@rustcorp.com.au> <4AFA005C.7020607@us.ibm.com>
+	 <200911111313.24226.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset="UTF-8"
+Organization: IBM
+Date: Wed, 11 Nov 2009 09:08:34 -0600
+Message-ID: <1257952114.2876.29.camel@aglitke>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, 2009-11-11 at 13:13 +1030, Rusty Russell wrote:
+> > It's not laziness, it's consistency.  How is actual different than free 
+> > memory or any other stat?
+> 
+> Because it's a COLLECTION of stats.  For example, swap in should be < swap
+> out.  Now, the current Linux implementation of all_vm_events() is non-atomic
+> anyway, so maybe we can just document this as best-effort.  I'm saying that
+> if it *is* a problem, I think we need a vq.
 
----1463747160-104920207-1257951999=:6957
-Content-Type: TEXT/PLAIN; format=flowed; charset=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+I can't see why we would care about the atomicity of the collection of
+statistics.  Best-effort is good enough.  Any variance within the stats
+will be overshadowed by the latency of the host-side management daemon.
 
-Hello,
+> But it raises the question: what stats are generally useful cross-OS?  Should
+> we be supplying numbers like "unused" (free) "instantly discardable" (ie.
+> clean), "discardable to disk" (ie. file-backed), "discardable to swap"
+> (ie. swap-backed) and "unswappable" instead?
 
-System: Intel DP55KG
-CPU: Intel Core i870
+While I see the virtue in presenting abstracted memory stats that seem
+more digestible in a virtualization context, I think we should keep the
+raw stats.  This concentrates the complexity in the host-side management
+daemon, and allows the host daemon to make better decisions (ie. by
+reacting to trends in individual statistics).  Different OSes (or
+different versions of the same OS), may also have different sets of
+statistics that will provide the answers that a management daemon needs.
 
-I see these messages in my kernel log: (2.6.31.5)
 
-[   48.886129] CE: hpet increasing min_delta_ns to 15000 nsec
-[ 3258.107039] CE: hpet increasing min_delta_ns to 22500 nsec
-[53705.451463] CE: hpet increasing min_delta_ns to 33750 nsec
+-- 
+Thanks,
+Adam
 
-I only see them when ACPI_FREQ and NO_HZ are enabled, to take advantage
-of turbo boost.
-
-It is not the result of throttling:
-
-# cat /sys/devices/system/cpu/*/thermal_throttle/count
-0
-0
-0
-0
-0
-0
-0
-0
-
-Temps are also good, 1 core @ 100% CPU:
-
-Core 0:      +41.0=B0C  (high =3D +84.0=B0C, crit =3D +100.0=B0C)=20
-Core 1:      +41.0=B0C  (high =3D +84.0=B0C, crit =3D +100.0=B0C)=20
-Core 2:      +54.0=B0C  (high =3D +84.0=B0C, crit =3D +100.0=B0C)=20
-Core 3:      +54.0=B0C  (high =3D +84.0=B0C, crit =3D +100.0=B0C)=20
-Core 4:      +42.0=B0C  (high =3D +84.0=B0C, crit =3D +100.0=B0C)=20
-Core 5:      +42.0=B0C  (high =3D +84.0=B0C, crit =3D +100.0=B0C)=20
-Core 6:      +42.0=B0C  (high =3D +84.0=B0C, crit =3D +100.0=B0C)=20
-Core 7:      +42.0=B0C  (high =3D +84.0=B0C, crit =3D +100.0=B0C)
-
-I see various discussions on the meaning of these messages but no clear
-answer.
-
-Also in reference to loading ACPI_FREQ I mentioned before that when this
-module is loaded and there is no CPU activity, there is a high pitch noise
-from the CPU/VRM presumably, when ACPI_FREQ is not loaded, this does not
-occur, is this expected?
-
-Justin.
----1463747160-104920207-1257951999=:6957--
