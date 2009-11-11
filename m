@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759344AbZKKWTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbZKKWVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759344AbZKKWTp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 17:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759296AbZKKWTo
+	id S1759488AbZKKWVN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 17:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759353AbZKKWVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 17:19:44 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:49818 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759271AbZKKWTn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 17:19:43 -0500
-MIME-Version: 1.0
-In-Reply-To: <4AFB2F2A.7080900@garzik.org>
-References: <bd36f99e0911110118v6dc7f87ao98968ba234fad7fc@mail.gmail.com>
-	 <4AFA835B.9000904@garzik.org>
-	 <bd36f99e0911110412hf2c7920gf06bd29ed43e240c@mail.gmail.com>
-	 <bd36f99e0911111309ie8166a9h8f926948bf15d350@mail.gmail.com>
-	 <4AFB2F2A.7080900@garzik.org>
-Date: Wed, 11 Nov 2009 17:19:49 -0500
-Message-ID: <bd36f99e0911111419w55346c8ct18b57c787401b8b7@mail.gmail.com>
-Subject: Re: Crash during SATA reads
-From: Glenn Maynard <glenn@zewt.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
-       Jens Axboe <axboe@kernel.dk>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 11 Nov 2009 17:21:11 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:42592 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759372AbZKKWU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 17:20:58 -0500
+Date: Wed, 11 Nov 2009 14:20:42 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: Mount -o sync regression in 2.6.31
+Message-ID: <20091111142042.657c1a66@nehalam>
+In-Reply-To: <200911112234.24180.elendil@planet.nl>
+References: <20091111123340.703f5c86@nehalam>
+	<200911112234.24180.elendil@planet.nl>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 4:39 PM, Jeff Garzik <jeff@garzik.org> wrote:
-> I would poke Jens Axboe (block maintainer) and linux-scsi, the issuer of
-> these commands.
+On Wed, 11 Nov 2009 22:34:22 +0100
+Frans Pop <elendil@planet.nl> wrote:
 
-(Looks like you poked for me; thanks.)
+> Stephen Hemminger wrote:
+> > I tried the obvious bisection, but git bisect seems to wonder off into
+> > the weeds now. There is no reason that bisecting between v2.6.30 and
+> > v2.6.31-rc1 should go off into v2.6.30-rc2
+> 
+> AFAIK that can happen if some branch was merged after 2.6.30 that happened 
+> to be based on a commit from v2.6.30-rc2. Did you check in what branch you 
+> were when that happened?
+> 
+> If you look at 'gitk v2.6.30..v2.6.31-rc1' and scroll to the bottom, you 
+> will see quite a few merges of branches that were based on commits from 
+> (early) v2.6.30-rcX releases.
+> 
+> Cheers.
+> FJP
 
-> Also, providing filesystem info (ext3? ext4? XFS? btrfs?) and info on your
-> workload would be helpful.
-
-These crashes happen while running "dd if=/dev/sdb | gzip > /dev/null"
-in 2.6.31.6.  I'm just making a raw image of another drive.  Removing
-gzip masks the problem.  It happens anywhere between almost
-immediately to after running for 15-30 minutes.
-
-All filesystems are XFS, but none of sdb's partitions are mounted and
-I'm reading the device directly (/dev/sdb, not a partition).  The
-system that's making the image is mounted read-only and isn't running
-anything else.
-
-(Another backtrace at http://lkml.org/lkml/2009/11/11/81.)
-
-Here's a curious one; EIP appears to be in data:
-
-Pid: 1312, comm: gzip Not tainted (2.6.31.6 #6) G31M-ES2L
-EIP: 0060:[<c1ae78e4>] EFLAGS: 00010286 CPU: 0
-EIP is at 0xc1ae78e4
-EAX: c1ae78c0 EBX: c107ccb1 ECX: c1ae78c0 EDX: 00000001
-ESI: c1ae78c0 EDI: dfa39069 EBP: c7d29ed0 ESP: c7d29e94
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process gzip (pid: 1312, ti=c7d28000 task=df8b6080 task.ti=c7d28000)
-Stack:
- c107ccc1 c107e559 00000200 c11587cc 00000000 df8a6c80 dfa07168 00000000
-<0> 00000000 0000c000 00004000 00000000 dfa39068 00000000 dfa39068 dfa07168
-<0> c1158946 df8a6c80 00000000 c11589fd 00000000 df8a6c80 00000000 dfa39068
-Call Trace:
- [<c107ccc1>] ? end_bio_bh_io_sync+0x30/0x38
- [<c107e559>] ? bio_endio+0x24/0x26
- [<c11587cc>] ? blk_update_request+0xdf/0x24e
- [<c1158946>] ? blk_update_bidi_request+0xb/0x41
- [<c11589fd>] ? blk_end_bidi_request+0x10/0x4f
- [<c1158a6c>] ? blk_end_request+0x7/0xc
- [<c11abcc2>] ? scsi_end_request+0x17/0x69
- [<c11abfd3>] ? scsi_io_completion+0x173/0x335
- [<c11a8340>] ? scsi_finish_command+0x70/0x86
- [<c11ac6b6>] ? scsi_softirq_done+0xd7/0xdc
- [<c115b401>] ? blk_done_softirq+0x51/0x5d
- [<c101bde0>] ? __do_softirq+0x5f/0xc8
- [<c101be6b>] ? do_softirq+0x22/0x26
- [<c101becd>] ? irq_exit+0x29/0x34
- [<c1004097>] ? do_IRQ+0x53/0x63
- [<c1002ea9>] ? common_interrupt+0x29/0x30
-Code: 00 00 00 00 00 00 00 c0 72 77 83 00 00 00 00 40 79 ae c1 40 8e
-4c df 09 00 00 f0 00 00 00 00 01 00 00 00 01 00 00 00 00 00 00 00 <00>
-02 00 00 00 02 00 00 04 00 00 00 ff ff ff ff 01 00 00 00 08
-EIP: [<c1ae78e4>] 0xc1ae78e4 SS:ESP 0068:c7d29e94
-CR2: 0000000000000001
----[ end trace fb168fcf160f6893 ]---
+That makes sense but is confusing.
 
 -- 
-Glenn Maynard
