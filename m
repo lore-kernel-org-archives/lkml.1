@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZKKLcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbZKKLgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbZKKLcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 06:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZKKLcS
+	id S1753569AbZKKLgP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 06:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZKKLgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 06:32:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36237 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644AbZKKLcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 06:32:17 -0500
-Date: Wed, 11 Nov 2009 12:31:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
-Message-ID: <20091111113147.GB7487@elte.hu>
-References: <4AF90254.40909@kernel.org>
- <alpine.LFD.2.01.0911100903370.31845@localhost.localdomain>
- <4AF9B1FD.1010408@kernel.org>
- <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain>
- <4AF9BE3A.40409@kernel.org>
- <20091110193705.GA9011@elte.hu>
- <4AF9C402.9040800@kernel.org>
- <alpine.LFD.2.01.0911101338190.31845@localhost.localdomain>
- <4AFA35CB.5030801@kernel.org>
+	Wed, 11 Nov 2009 06:36:14 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:10697 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751316AbZKKLgO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 06:36:14 -0500
+X-Trace: 287707938/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.12.20/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.12.20
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvQAAKow+kpQKQwU/2dsb2JhbAAI3BmCOYIDBA
+X-IronPort-AV: E=Sophos;i="4.44,722,1249254000"; 
+   d="scan'208";a="287707938"
+Date: Wed, 11 Nov 2009 11:36:15 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>, Nick Piggin <npiggin@suse.de>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/6] mm: mlocking in try_to_unmap_one
+In-Reply-To: <20091111102400.FD36.A69D9226@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0911111048170.12126@sister.anvils>
+References: <Pine.LNX.4.64.0911102142570.2272@sister.anvils>
+ <Pine.LNX.4.64.0911102151500.2816@sister.anvils> <20091111102400.FD36.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFA35CB.5030801@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 11 Nov 2009, KOSAKI Motohiro wrote:
 
-* Tejun Heo <tj@kernel.org> wrote:
+Though it doesn't quite answer your question,
+I'll just reinsert the last paragraph of my description here...
 
-> Hello,
+> > try_to_unmap_file()'s TTU_MUNLOCK nonlinear handling was particularly
+> > amusing: once unravelled, it turns out to have been choosing between
+> > two different ways of doing the same nothing.  Ah, no, one way was
+> > actually returning SWAP_FAIL when it meant to return SWAP_SUCCESS.
+
+... 
+> > @@ -1081,45 +1053,23 @@ static int try_to_unmap_file(struct page
+...
+> >
+> > -	if (list_empty(&mapping->i_mmap_nonlinear))
+> > +	/* We don't bother to try to find the munlocked page in nonlinears */
+> > +	if (MLOCK_PAGES && TTU_ACTION(flags) == TTU_MUNLOCK)
+> >  		goto out;
 > 
-> Linus Torvalds wrote:
-> > I want the cleanup because I think that the code sucks from a "future 
-> > proofing" and readability standpoint, but I really don't mind one way or 
-> > the other whether you want to finally do that one "return 1" correctly for 
-> > one commit, only to then fix it to not do that three-way test of a single 
-> > function in the next one.
-> > 
-> > So whatever works - as long as the end result both looks sane and doesn't 
-> > have the bug we clearly have now.
-> 
-> I was mostly worrying about introducing unrelated bug while changing. 
-> Anyways, one patch it is.  I'll route it through tip as suggested by 
-> Ingo in a few hours.
+> I have dumb question.
+> Does this shortcut exiting code makes any behavior change?
 
-Btw., i'd suggest you keep it in your percpu tree as usual and send it 
-to Linus directly - i offered testing for the cleanup patch (and can 
-pull your patch for such a purpose), it doesnt 'have' to go via -tip.
+Not dumb.  My intention was to make no behaviour change with any of
+this patch; but in checking back before completing the description,
+I suddenly realized that that shortcut intentionally avoids the
 
-	Ingo
+	if (max_nl_size == 0) {	/* all nonlinears locked or reserved ? */
+		ret = SWAP_FAIL;
+		goto out;
+	}
+
+(which doesn't show up in the patch: you'll have to look at rmap.c),
+which used to have the effect of try_to_munlock() returning SWAP_FAIL
+in the case when there were one or more VM_NONLINEAR vmas of the file,
+but none of them (and none of the covering linear vmas) VM_LOCKED.
+
+That should have been a SWAP_SUCCESS case, or with my changes
+another SWAP_AGAIN, either of which would make munlock_vma_page()
+				count_vm_event(UNEVICTABLE_PGMUNLOCKED);
+which would be correct; but the SWAP_FAIL meant that count was not
+incremented in this case.
+
+Actually, I've double-fixed that, because I also changed
+munlock_vma_page() to increment the count whenever ret != SWAP_MLOCK;
+which seemed more appropriate, but would have been a no-op if
+try_to_munlock() only returned SWAP_SUCCESS or SWAP_AGAIN or SWAP_MLOCK
+as it claimed.
+
+But I wasn't very inclined to boast of fixing that bug, since my testing
+didn't give confidence that those /proc/vmstat unevictable_pgs_*lock*
+counts are being properly maintained anyway - when I locked the same
+pages in two vmas then unlocked them in both, I ended up with mlocked
+bigger than munlocked (with or without my 2/6 patch); which I suspect
+is wrong, but rather off my present course towards KSM swapping...
+
+Hugh
