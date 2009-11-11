@@ -1,95 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZKKNwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbZKKN6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbZKKNwE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 08:52:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbZKKNwD
+	id S1754800AbZKKN6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 08:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbZKKN6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 08:52:03 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:40667 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755911AbZKKNwC (ORCPT
+	Wed, 11 Nov 2009 08:58:19 -0500
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:58347 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbZKKN6S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 08:52:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=MBQG5lnLJ4E6JP9r+HkH8EBh4gcNusqVnMPaX3V+Q52sXKGRTtkvWP0+PGQwnNBMNb
-         L1RwiEwuGPZ3y2WbGYHdnIeSAhxxH2kptzSrKhEKSmlX4t262WIq0dOtFV1Cdh0Jmhk5
-         gOyrG4Z/cDMcg7O+XH2IBchI0oIeuVOtdaFvU=
-Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
- for MIPS
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: David Daney <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com,
-       Ralf Baechle <ralf@linux-mips.org>, rostedt@goodmis.org,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Michal Simek <monstr@monstr.eu>
-In-Reply-To: <alpine.LFD.2.00.0911111309170.10184@eddie.linux-mips.org>
-References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com>
-	 <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com>
-	 <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com>
-	 <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com>
-	 <4AF8B31C.5030802@caviumnetworks.com>
-	 <1257814817.2822.3.camel@falcon.domain.org>
-	 <4AF99848.9090000@caviumnetworks.com>
-	 <1257907351.2922.37.camel@falcon.domain.org>
-	 <alpine.LFD.2.00.0911111309170.10184@eddie.linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Wed, 11 Nov 2009 21:51:53 +0800
-Message-ID: <1257947513.7308.8.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 11 Nov 2009 08:58:18 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4AFAC319.8040005@cam.ac.uk>
+Date: Wed, 11 Nov 2009 13:58:49 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, devel@driverdev.osuosl.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       gregkh@suse.de
+Subject: Re: [PTCH -next] staging/iio: fix ring buffer build
+References: <20091109192246.aa0dfd93.sfr@canb.auug.org.au> <20091110090428.08797a9a.randy.dunlap@oracle.com>
+In-Reply-To: <20091110090428.08797a9a.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Wed, 2009-11-11 at 13:15 +0000, Maciej W. Rozycki wrote:
-> On Wed, 11 Nov 2009, Wu Zhangjin wrote:
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> > > -mlong-calls really degrades performance.  I have seen things like 6% 
-> > > drop in network packet forwarding rates with -mlong-calls.
-> > > 
-> > 
-> > so much drop? seems only two instructions added for it: lui, addi. from
-> > this view point, I think the -fno-omit-frame-pointer(add, sd, move...)
-> > will also bring with much drop.
+> max1363 uses both the iio hardware ring buffer and software
+> ring buffer interfaces, but its Makefile and Kconfig do not
+> reflect that usage, so its build breaks.  Add a new Kconfig
+> symbol to reflect that usage and change max1363.h & Makefile
+> to use the new Kconfig symbol.
+Hi Randy,
+
+Thanks for the fix.
+
+This is fine for now though I suspect there are similar cases
+in some of the other IIO drivers.  Will have a look when I have
+a few mins. The structure of the relevant code will change again
+when we add support for multiple ring buffer implementations
+(needed to phase this one out as it is hideous ;), but
+that isn't going to happen for a least a couple of weeks.
+
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+
 > 
->  No, register jumps cannot be predicted -- this is where the performance 
-> goes on any serious processor -- the two extra instructions are nothing 
-> compared to that.  OTOH frame pointer calculations are pure arithmetic, so 
-> you only lose time incurred by the instructions themselves.
-
-Yes, I only mean the -mlong-calls and the original -mno-long-calls with
--pg.
-
-The orignal one looks like this:
-
-move ra, at
-jal _mcount
-
-The new one with -mlong-calls looks like this:
-
-lui v1, HI_16BIT_OF_MCOUNT
-addiu v1, v1, LOW_16BIT_OF_MCOUNT
-move ra, at
-jalr v1
-
-both of them have a "jump" instruciton, so, only two lui, addiu added
-for -mlong-calls ;)
-
-what about the difference between that "jal _mcount"  and "jalr v1"?
-
-Regards,
-	Wu Zhangjin
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Jonathan Cameron <jic23@cam.ac.uk>
+> ---
+>  drivers/staging/iio/adc/Kconfig   |    9 +++++++++
+>  drivers/staging/iio/adc/Makefile  |    2 +-
+>  drivers/staging/iio/adc/max1363.h |    6 +++---
+>  3 files changed, 13 insertions(+), 4 deletions(-)
+> 
+> --- linux-next-20091109.orig/drivers/staging/iio/adc/Kconfig
+> +++ linux-next-20091109/drivers/staging/iio/adc/Kconfig
+> @@ -12,3 +12,12 @@ config MAX1363
+>  	  convertors (ADC). (max1361, max1362, max1363, max1364, max1136,
+>  	  max1136, max1137, max1138, max1139, max1236, max1237, max11238,
+>  	  max1239) Provides direct access via sysfs.
+> +
+> +config MAX1363_RING_BUFFER
+> +	bool "MAXIM max1363: use ring buffer"
+> +	depends on MAX1363
+> +	select IIO_RING_BUFFER
+> +	select IIO_SW_RING
+> +	help
+> +	  Say yes here to include ring buffer support in the MAX1363
+> +	  ADC driver.
+> --- linux-next-20091109.orig/drivers/staging/iio/adc/Makefile
+> +++ linux-next-20091109/drivers/staging/iio/adc/Makefile
+> @@ -3,6 +3,6 @@
+>  #
+>  
+>  max1363-y := max1363_core.o
+> -max1363-$(CONFIG_IIO_RING_BUFFER) += max1363_ring.o
+> +max1363-$(CONFIG_MAX1363_RING_BUFFER) += max1363_ring.o
+>  
+>  obj-$(CONFIG_MAX1363) += max1363.o
+> --- linux-next-20091109.orig/drivers/staging/iio/adc/max1363.h
+> +++ linux-next-20091109/drivers/staging/iio/adc/max1363.h
+> @@ -228,7 +228,7 @@ struct max1363_state {
+>  	struct iio_trigger		*trig;
+>  	struct regulator		*reg;
+>  };
+> -#ifdef CONFIG_IIO_RING_BUFFER
+> +#ifdef CONFIG_MAX1363_RING_BUFFER
+>  
+>  ssize_t max1363_scan_from_ring(struct device *dev,
+>  			       struct device_attribute *attr,
+> @@ -239,7 +239,7 @@ void max1363_ring_cleanup(struct iio_dev
+>  int max1363_initialize_ring(struct iio_ring_buffer *ring);
+>  void max1363_uninitialize_ring(struct iio_ring_buffer *ring);
+>  
+> -#else /* CONFIG_IIO_RING_BUFFER */
+> +#else /* CONFIG_MAX1363_RING_BUFFER */
+>  
+>  static inline void max1363_uninitialize_ring(struct iio_ring_buffer *ring)
+>  {
+> @@ -265,5 +265,5 @@ max1363_register_ring_funcs_and_init(str
+>  };
+>  
+>  static inline void max1363_ring_cleanup(struct iio_dev *indio_dev) {};
+> -#endif /* CONFIG_IIO_RING_BUFFER */
+> +#endif /* CONFIG_MAX1363_RING_BUFFER */
+>  #endif /* _MAX1363_H_ */
+> 
 
