@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbZKKVgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbZKKVjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbZKKVgE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759240AbZKKVgD
+	id S1759333AbZKKVjK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:39:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759271AbZKKVjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:36:03 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:37170 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759234AbZKKVgC (ORCPT
+	Wed, 11 Nov 2009 16:39:09 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46074 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759255AbZKKVjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:36:02 -0500
-Subject: Re: [PATCH v5 0/4] pseries: Add cede support for cpu-offline
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Nathan Fontenot <nfont@austin.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1257945935.4372.36.camel@twins>
-References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
-	 <1257945935.4372.36.camel@twins>
-Content-Type: text/plain; charset="UTF-8"
-Organization: IBM Australia
-Date: Thu, 12 Nov 2009 08:35:50 +1100
-Message-ID: <1257975350.2140.49.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 16:39:08 -0500
+Date: Wed, 11 Nov 2009 13:38:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Oliver Neukum <oliver@neukum.org>
+cc: Marcel Holtmann <marcel@holtmann.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, linux-bluetooth@vger.kernel.org
+Subject: Re: GPF in run_workqueue()/list_del_init(cwq->worklist.next) on
+ resume (was: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related
+ to preempt_count leakage in keventd)
+In-Reply-To: <200911112213.30673.oliver@neukum.org>
+Message-ID: <alpine.LFD.2.01.0911111335410.31845@localhost.localdomain>
+References: <200911091250.31626.rjw@sisk.pl> <alpine.LFD.2.01.0911111142340.31845@localhost.localdomain> <1257970719.21467.4.camel@violet> <200911112213.30673.oliver@neukum.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 14:25 +0100, Peter Zijlstra wrote:
-> On Fri, 2009-10-30 at 10:52 +0530, Gautham R Shenoy wrote:
+
+
+On Wed, 11 Nov 2009, Oliver Neukum wrote:
 > 
-> > Gautham R Shenoy (4):
-> >       pseries: Serialize cpu hotplug operations during deactivate Vs deallocate
-> >       pseries: Add code to online/offline CPUs of a DLPAR node.
-> >       pSeries: Add hooks to put the CPU into an appropriate offline state
-> >       pSeries: extended_cede_processor() helper function.
-> > 
-> > 
-> >  Documentation/cpu-hotplug.txt                   |    6 +
-> >  arch/powerpc/include/asm/lppaca.h               |    9 +
-> >  arch/powerpc/platforms/pseries/dlpar.c          |  129 ++++++++++++++++
-> >  arch/powerpc/platforms/pseries/hotplug-cpu.c    |  182 ++++++++++++++++++++++-
-> >  arch/powerpc/platforms/pseries/offline_states.h |   18 ++
-> >  arch/powerpc/platforms/pseries/plpar_wrappers.h |   22 +++
-> >  arch/powerpc/platforms/pseries/smp.c            |   19 ++
-> >  arch/powerpc/xmon/xmon.c                        |    3 
-> >  drivers/base/cpu.c                              |    2 
-> >  include/linux/cpu.h                             |   13 ++
-> >  10 files changed, 387 insertions(+), 16 deletions(-)
-> >  create mode 100644 arch/powerpc/platforms/pseries/offline_states.h
-> 
-> Not quite sure how you solved the DLPAR communication but since pretty
-> much everything is under arch/powerpc/ I really don't have much to say.
+> Yes, btusb_close() needs to cancel the waker workqueue, too.
+> In addition, in order to avoid a memory leak it must call
+> usb_scuttle_anchored_urbs(&data->deferred)
+> to make sure any deferred data is destroyed.
 
-Allright. I was hoping to have your ack for the drivers/base/cpu.c
-change :-)
+Ok. I committed the one-liner patch to fix the oops (confirmed by Rafael), 
+but I'm leaving the memory leak for you as I'm not going to commit some 
+untested patch at this stage.
 
-Cheers,
-Ben.
+Thanks to everybody involved, I was personally very nervous that this was 
+something much more fundamental (we've had some scary bugs during the 
+32-rc series), and am relieved that it was "just" a silly driver bug.
 
-
+			Linus
