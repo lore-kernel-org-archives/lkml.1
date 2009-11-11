@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757377AbZKKLAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbZKKLPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757377AbZKKLAO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 06:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757133AbZKKLAN
+	id S1757389AbZKKLPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 06:15:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756342AbZKKLPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 06:00:13 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:54343 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757109AbZKKLAL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 06:00:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UNxj9Rat7v5izR6vsmLRmBY8ZHXweoA989Swun86UYVZ6we8ECQ61qfKADFHIf6Ord
-         57WCHNtJujuGf5NbAQhMoC5XzGgnX7sMeHOSgh/uBNAFXw0prN+eE0R0bT4R6avhUxDk
-         qy2I8qaAwHVvz6a+/NQA+6ihZZEW6MTmj6sbg=
+	Wed, 11 Nov 2009 06:15:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52741 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753800AbZKKLPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 06:15:43 -0500
+Date: Wed, 11 Nov 2009 12:15:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+Message-ID: <20091111111535.GA25325@elte.hu>
+References: <20091025225342.007138f5@infradead.org>
+ <20091111020108.GA11423@localhost>
+ <20091110223456.01ef355f@infradead.org>
+ <4AFA6AEF.5060306@garzik.org>
+ <20091111074542.GB25132@elte.hu>
+ <4AFA6E2D.7010709@garzik.org>
 MIME-Version: 1.0
-In-Reply-To: <40e92d5b0911101608t4baf75bo83c5780f24761781@mail.gmail.com>
-References: <40e92d5b0911101608t4baf75bo83c5780f24761781@mail.gmail.com>
-Date: Wed, 11 Nov 2009 12:00:17 +0100
-Message-ID: <4e5e476b0911110300nb25785eqf7998ad1fe3ed537@mail.gmail.com>
-Subject: Re: SATA NCQ - blessing for throughput, curse for latency?
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: =?UTF-8?Q?Przemys=C5=82aw_Pawe=C5=82czyk?= 
-	<przemyslaw@pawelczyk.it>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFA6E2D.7010709@garzik.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-2009/11/11 Przemysław Pawełczyk <przemyslaw@pawelczyk.it>:
-> Hi,
->
-> [snip] I wrote a script (that is pasted
-> at the end), which using zcav from bonnie++ (and unbuffer from expect
-> to work properly if output is redirected to a file) reads up to 64 GB
-> of the disk, but after a first few gigabytes (depending on how many GB
-> of memory you have) cats kernel sources with binary files up to the
-> second level of directory depth. What is measured? The real time of
-> the cat to /dev/null operation. Why not the kernel sources alone?
-> Because if we build kernel, especially with -jX (where X > 1), then
-> both inodes and contents of the corresponding files within these
-> directories generally won't be consecutive. Time for the results with
-> some background information. In my tests I have used 2.6.31.5 built
-> with debuginfo (using debian's make-kpkg).
->
->[summarized the relevant numbers]
-> *** NCQ turned on ***
-> real 752.30
-> user 0.20
-> sys 1.83
->
->
-> *** NCQ turned off *** (kernel booted with noncq parameter)
-> real 62.30
-> user 0.27
-> sys 1.59
->
-> [snip]
->
-> Can anyone confirm analogous NCQ-dependant behavior with other
-> disk/controller variants? Any suggestions for improvements other than
-> turning off NCQ or switching to anticipatory (in typical cases cfq is
-> better, so it's not the best option)?
 
-The NCQ latency problem is well known, and should be fixed in 2.6.32.
-You can try building the latest rc.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
--- 
-__________________________________________________________________________
+> On 11/11/2009 02:45 AM, Ingo Molnar wrote:
+> >
+> >* Jeff Garzik<jeff@garzik.org>  wrote:
+> >
+> >>On 11/11/2009 01:34 AM, Arjan van de Ven wrote:
+> >>>Wu Fengguang<fengguang.wu@intel.com>   wrote:
+> >>>>Maybe this is enough for POWERTOP, however for general use, the dirty
+> >>>>type(data/metadata) and inode number may be valuable to some users?
+> >>>
+> >>>what can a user do with an inode number????
+> >>
+> >>Inode numbers have always been visible to userspace...  IIRC, tar(1)
+> >>uses the st_ino member of struct stat to detect hard links in certain
+> >>cases.  ls(1) displays inode numbers with -i, find(1) looks for them
+> >>with -inum, ...
+> >
+> >Without an inode->vfs-name lookup/matching service it's of limited
+> >utility
+> 
+> Look in the quoted text for one such service...  :)
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
+I'm not sure i understand your point - do you really suggest using 
+find(1) to make traces readable?
+
+	Ingo
