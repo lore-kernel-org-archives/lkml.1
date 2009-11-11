@@ -1,130 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751061AbZKKFBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751299AbZKKFRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751061AbZKKFBQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 00:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbZKKFBP
+	id S1751299AbZKKFRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 00:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZKKFRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 00:01:15 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37702 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbZKKFBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 00:01:15 -0500
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 11 Nov 2009 16:01:07 +1100
-Message-ID: <1257915667.2140.16.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 00:17:17 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:46432 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751138AbZKKFRR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 00:17:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Zt2kXzyEqVDiQVIBBmnawciy+F4hkoSTlO9NckbQkZl8PnpiEvKEhOuGFwrUjq/Vkc
+         7PtOIR4QlBmLQOaQiJUOvGgTXsTcKhVkmekgvfLENHRIrhMS7v4NW3wcjruDWtUQcps6
+         BoIbemdLqKYWl2uYXV3wqqDTjYZDx3roLhh3I=
+MIME-Version: 1.0
+In-Reply-To: <4AF9FB6C.70003@oracle.com>
+References: <4AF9FB6C.70003@oracle.com>
+Date: Wed, 11 Nov 2009 13:17:22 +0800
+Message-ID: <2375c9f90911102117q33f7ce4raed39f960ddcf1fc@mail.gmail.com>
+Subject: Re: [PATCH] x86 VSDO: fix Kconfig help
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       linux-kbuild@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
+On Wed, Nov 11, 2009 at 7:46 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> COMPAT_VDSO has 2 help text blocks, but kconfig only uses the
+> last one found, so merge the 2 blocks.
+>
+> It would be real nice if kconfig would warn about this.
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-This contains one code fix, 3 little device-tree fixes and a bunch of
-defconfig updates for Freescale platforms for 2.6.32 along with one
-defconfig update for PA-Semi.
+Looks good.
 
-Overall, a large diffstat but not much actual churn. If you are unhappy
-with the defconfig updates at that stage of the process, let us know and
-I'll ask my sub-maintainers to do them earlier.
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Cheers,
-Ben.
+Thanks!
 
-The following changes since commit 799dd75b1a8380a967c929a4551895788c374b31:
-  Linus Torvalds (1):
-        Merge branch 'i2c-for-linus' of git://git.kernel.org/.../jdelvare/staging
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Anton Vorontsov (2):
-      powerpc/85xx: Fix USB GPIOs for MPC8569E-MDS boards
-      powerpc/83xx: Fix u-boot partion size for MPC8377E-WLAN boards
-
-Benjamin Herrenschmidt (1):
-      Merge commit 'kumar/merge' into merge
-
-Kim Phillips (1):
-      powerpc/8xxx: enable IPsec ESP by default on mpc83xx/mpc85xx
-
-Kumar Gala (1):
-      powerpc: 2.6.32 update of defconfigs for embedded 6xx/7xxx, 8xx, 8{3,5,6}xxx
-
-Olof Johansson (1):
-      powerpc: pasemi_defconfig update
-
-Paul Gortmaker (1):
-      powerpc/85xx: sbc8548 - fixup of PCI-e related DTS fields
-
-Roel Kluin (1):
-      powerpc/82xx: kmalloc failure ignored in ep8248e_mdio_probe()
-
- arch/powerpc/boot/dts/mpc8377_wlan.dts            |    2 +-
- arch/powerpc/boot/dts/mpc8569mds.dts              |    4 +-
- arch/powerpc/boot/dts/sbc8548.dts                 |   17 +-
- arch/powerpc/configs/83xx/asp8347_defconfig       |   60 ++-
- arch/powerpc/configs/83xx/kmeter1_defconfig       |   46 +-
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |   73 ++-
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |   76 ++-
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |   62 ++-
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |   66 ++-
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |   60 ++-
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |   58 ++-
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |   58 ++-
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |   64 ++-
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   60 ++-
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |   64 ++-
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |   70 ++-
- arch/powerpc/configs/83xx/sbc834x_defconfig       |   61 ++-
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   61 ++-
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   57 ++-
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   63 ++-
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   58 ++-
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   53 ++-
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   57 ++-
- arch/powerpc/configs/85xx/socrates_defconfig      |   68 ++-
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |   77 ++-
- arch/powerpc/configs/85xx/tqm8540_defconfig       |   59 ++-
- arch/powerpc/configs/85xx/tqm8541_defconfig       |   64 ++-
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   64 ++-
- arch/powerpc/configs/85xx/tqm8555_defconfig       |   64 ++-
- arch/powerpc/configs/85xx/tqm8560_defconfig       |   64 ++-
- arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |   76 ++-
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |   74 ++-
- arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   72 ++-
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |   80 ++-
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |   64 ++-
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |   65 ++-
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |   66 ++-
- arch/powerpc/configs/adder875_defconfig           |   48 +-
- arch/powerpc/configs/c2k_defconfig                |   77 ++-
- arch/powerpc/configs/ep8248e_defconfig            |   49 +-
- arch/powerpc/configs/ep88xc_defconfig             |   47 +-
- arch/powerpc/configs/linkstation_defconfig        |   72 ++-
- arch/powerpc/configs/mgcoge_defconfig             |   51 ++-
- arch/powerpc/configs/mgsuvd_defconfig             |   45 +-
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   58 ++-
- arch/powerpc/configs/mpc8272_ads_defconfig        |   52 ++-
- arch/powerpc/configs/mpc83xx_defconfig            |   90 ++-
- arch/powerpc/configs/mpc85xx_defconfig            |   98 ++--
- arch/powerpc/configs/mpc85xx_smp_defconfig        |   99 ++--
- arch/powerpc/configs/mpc866_ads_defconfig         |   54 ++-
- arch/powerpc/configs/mpc86xx_defconfig            |   70 ++-
- arch/powerpc/configs/mpc885_ads_defconfig         |   47 +-
- arch/powerpc/configs/pasemi_defconfig             |  628 +++++++++++++++------
- arch/powerpc/configs/pq2fads_defconfig            |   55 ++-
- arch/powerpc/configs/prpmc2800_defconfig          |   67 ++-
- arch/powerpc/configs/storcenter_defconfig         |   54 ++-
- arch/powerpc/platforms/82xx/ep8248e.c             |   15 +-
- 57 files changed, 2603 insertions(+), 1380 deletions(-)
-
-
+> ---
+>  arch/x86/Kconfig |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> --- lnx-2632-rc6.orig/arch/x86/Kconfig
+> +++ lnx-2632-rc6/arch/x86/Kconfig
+> @@ -1601,12 +1601,12 @@ config COMPAT_VDSO
+>        prompt "Compat VDSO support"
+>        depends on X86_32 || IA32_EMULATION
+>        ---help---
+> -         Map the 32-bit VDSO to the predictable old-style address too.
+> -       ---help---
+>          Say N here if you are running a sufficiently recent glibc
+>          version (2.3.3 or later), to remove the high-mapped
+>          VDSO mapping and to exclusively use the randomized VDSO.
+>
+> +         Map the 32-bit VDSO to the predictable old-style address too.
+> +
+>          If unsure, say Y.
+>
+>  config CMDLINE_BOOL
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
