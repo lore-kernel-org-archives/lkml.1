@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbZKKHoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbZKKHoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755745AbZKKHoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZKKHoT
+	id S1756217AbZKKHoZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755719AbZKKHoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:44:19 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40911 "EHLO hera.kernel.org"
+	Wed, 11 Nov 2009 02:44:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40916 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755190AbZKKHoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:44:18 -0500
-Date: Wed, 11 Nov 2009 07:43:39 GMT
+	id S1755820AbZKKHoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 02:44:21 -0500
+Date: Wed, 11 Nov 2009 07:43:56 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
        hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
@@ -19,12 +19,12 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
        efault@gmx.de, mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <1257911467-28276-4-git-send-email-fweisbec@gmail.com>
-References: <1257911467-28276-4-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1257911467-28276-5-git-send-email-fweisbec@gmail.com>
+References: <1257911467-28276-5-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf tools: Read the build-ids from the header layer
-Message-ID: <tip-4778d2e4f410c6eea32f594cb2be9590bcb28b84@git.kernel.org>
-Git-Commit-ID: 4778d2e4f410c6eea32f594cb2be9590bcb28b84
+Subject: [tip:perf/core] perf tools: Use perf_header__set/has_feat whenever possible
+Message-ID: <tip-3e13ab2d83b6867a20663c73c184f29c2fde1558@git.kernel.org>
+Git-Commit-ID: 3e13ab2d83b6867a20663c73c184f29c2fde1558
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,18 +33,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4778d2e4f410c6eea32f594cb2be9590bcb28b84
-Gitweb:     http://git.kernel.org/tip/4778d2e4f410c6eea32f594cb2be9590bcb28b84
+Commit-ID:  3e13ab2d83b6867a20663c73c184f29c2fde1558
+Gitweb:     http://git.kernel.org/tip/3e13ab2d83b6867a20663c73c184f29c2fde1558
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Wed, 11 Nov 2009 04:51:05 +0100
+AuthorDate: Wed, 11 Nov 2009 04:51:06 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 11 Nov 2009 07:30:18 +0100
+CommitDate: Wed, 11 Nov 2009 07:30:19 +0100
 
-perf tools: Read the build-ids from the header layer
+perf tools: Use perf_header__set/has_feat whenever possible
 
-Keep the build-ids reading implementation in the data mapping
-but move its call to the headers so that we have a better
-control on it (offset seeking, size passing, etc..).
+And drop the alternate checks/sets using set_bit or other kind
+of helpers.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -52,94 +51,79 @@ Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-LKML-Reference: <1257911467-28276-4-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1257911467-28276-5-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/util/data_map.c |    8 ++------
- tools/perf/util/data_map.h |    2 ++
- tools/perf/util/header.c   |   14 ++++++++++++--
- 3 files changed, 16 insertions(+), 8 deletions(-)
+ tools/perf/builtin-record.c |    4 ++--
+ tools/perf/util/header.c    |   12 ++----------
+ tools/perf/util/header.h    |    1 -
+ 3 files changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/tools/perf/util/data_map.c b/tools/perf/util/data_map.c
-index 00a9c11..66e58aa 100644
---- a/tools/perf/util/data_map.c
-+++ b/tools/perf/util/data_map.c
-@@ -70,8 +70,8 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
- 	}
- }
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index c35e61b..326e8a7 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -431,11 +431,11 @@ static int __cmd_record(int argc, const char **argv)
+ 		header = perf_header__new();
  
--static int perf_header__read_build_ids(const struct perf_header *self,
--				       int input, off_t file_size)
-+int perf_header__read_build_ids(const struct perf_header *self,
-+				int input, off_t file_size)
- {
- 	off_t offset = self->data_offset + self->data_size;
- 	struct build_id_event bev;
-@@ -163,10 +163,6 @@ int mmap_dispatch_perf_file(struct perf_header **pheader,
- 		if (curr_handler->sample_type_check(sample_type) < 0)
- 			exit(-1);
- 
--	if (perf_header__has_feat(header, HEADER_BUILD_ID) &&
--	    perf_header__read_build_ids(header, input, input_stat.st_size))
--		pr_debug("failed to read buildids, continuing...\n");
--
- 	if (load_kernel(NULL) < 0) {
- 		perror("failed to load kernel symbols");
- 		return EXIT_FAILURE;
-diff --git a/tools/perf/util/data_map.h b/tools/perf/util/data_map.h
-index 716d105..c412281 100644
---- a/tools/perf/util/data_map.h
-+++ b/tools/perf/util/data_map.h
-@@ -27,5 +27,7 @@ int mmap_dispatch_perf_file(struct perf_header **pheader,
- 			    int full_paths,
- 			    int *cwdlen,
- 			    char **cwd);
-+int perf_header__read_build_ids(const struct perf_header *self,
-+				int input, off_t file_size);
- 
- #endif
+ 	if (raw_samples) {
+-		perf_header__feat_trace_info(header);
++		perf_header__set_feat(header, HEADER_TRACE_INFO);
+ 	} else {
+ 		for (i = 0; i < nr_counters; i++) {
+ 			if (attrs[i].sample_type & PERF_SAMPLE_RAW) {
+-				perf_header__feat_trace_info(header);
++				perf_header__set_feat(header, HEADER_TRACE_INFO);
+ 				break;
+ 			}
+ 		}
 diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 2f702c2..915b56e 100644
+index 915b56e..9709d38 100644
 --- a/tools/perf/util/header.c
 +++ b/tools/perf/util/header.c
-@@ -9,6 +9,8 @@
- #include "../perf.h"
- #include "trace-event.h"
- #include "symbol.h"
-+#include "data_map.h"
-+#include "debug.h"
- 
- /*
-  * Create new perf.data header attribute:
-@@ -322,6 +324,14 @@ static void perf_header__adds_read(struct perf_header *self, int fd)
- 		trace_report(fd);
- 		lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
- 	}
-+
-+	if (perf_header__has_feat(self, HEADER_BUILD_ID)) {
-+		struct stat input_stat;
-+
-+		fstat(fd, &input_stat);
-+		if (perf_header__read_build_ids(self, fd, input_stat.st_size))
-+			pr_debug("failed to read buildids, continuing...\n");
-+	}
+@@ -148,11 +148,6 @@ struct perf_file_header {
+ 	DECLARE_BITMAP(adds_features, HEADER_FEAT_BITS);
  };
  
- struct perf_header *perf_header__read(int fd)
-@@ -382,14 +392,14 @@ struct perf_header *perf_header__read(int fd)
- 
- 	memcpy(&self->adds_features, &f_header.adds_features, sizeof(f_header.adds_features));
- 
--	perf_header__adds_read(self, fd);
+-void perf_header__feat_trace_info(struct perf_header *header)
+-{
+-	set_bit(HEADER_TRACE_INFO, header->adds_features);
+-}
 -
- 	self->event_offset = f_header.event_types.offset;
- 	self->event_size   = f_header.event_types.size;
+ void perf_header__set_feat(struct perf_header *self, int feat)
+ {
+ 	set_bit(feat, self->adds_features);
+@@ -195,9 +190,8 @@ perf_header__adds_write(struct perf_header *self, int fd, bool at_exit)
+ {
+ 	struct perf_file_section trace_sec;
+ 	u64 cur_offset = lseek(fd, 0, SEEK_CUR);
+-	unsigned long *feat_mask = self->adds_features;
  
- 	self->data_offset = f_header.data.offset;
- 	self->data_size   = f_header.data.size;
+-	if (test_bit(HEADER_TRACE_INFO, feat_mask)) {
++	if (perf_header__has_feat(self, HEADER_TRACE_INFO)) {
+ 		/* Write trace info */
+ 		trace_sec.offset = lseek(fd, sizeof(trace_sec), SEEK_CUR);
+ 		read_tracing_data(fd, attrs, nr_counters);
+@@ -314,9 +308,7 @@ static void do_read(int fd, void *buf, size_t size)
  
-+	perf_header__adds_read(self, fd);
-+
- 	lseek(fd, self->data_offset, SEEK_SET);
+ static void perf_header__adds_read(struct perf_header *self, int fd)
+ {
+-	const unsigned long *feat_mask = self->adds_features;
+-
+-	if (test_bit(HEADER_TRACE_INFO, feat_mask)) {
++	if (perf_header__has_feat(self, HEADER_TRACE_INFO)) {
+ 		struct perf_file_section trace_sec;
  
- 	self->frozen = 1;
+ 		do_read(fd, &trace_sec, sizeof(trace_sec));
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index 77186c9..a22d70b 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -49,7 +49,6 @@ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
+ u64 perf_header__sample_type(struct perf_header *header);
+ struct perf_event_attr *
+ perf_header__find_attr(u64 id, struct perf_header *header);
+-void perf_header__feat_trace_info(struct perf_header *header);
+ void perf_header__set_feat(struct perf_header *self, int feat);
+ bool perf_header__has_feat(const struct perf_header *self, int feat);
+ 
