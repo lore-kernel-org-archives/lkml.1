@@ -1,139 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZKKGWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbZKKGyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752039AbZKKGWN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 01:22:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbZKKGWM
+	id S1754149AbZKKGyt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 01:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZKKGys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 01:22:12 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33854 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbZKKGWM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 01:22:12 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 11 Nov 2009 15:21:33 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
-Cc: Miao Xie <miaox@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1257846518.4648.18.camel@twins>
-References: <4AEF94E8.3030403@cn.fujitsu.com> <1257846518.4648.18.camel@twins>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com>
+	Wed, 11 Nov 2009 01:54:48 -0500
+Received: from serv04.lahn.de ([213.239.197.57]:53682 "EHLO serv04.lahn.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751823AbZKKGys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 01:54:48 -0500
+X-Greylist: delayed 1753 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Nov 2009 01:54:47 EST
+Date: Wed, 11 Nov 2009 07:25:37 +0100
+From: Philipp Matthias Hahn <pmhahn@pmhahn.de>
+To: Mariusz Smykula <mariuszs@gmail.com>
+Cc: Fabio Comolli <fabio.comolli@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel 2.6.29+ broke Cisco VPN Client
+Message-ID: <20091111062537.GA13282@pmhahn.de>
+Mail-Followup-To: Mariusz Smykula <mariuszs@gmail.com>,
+	Fabio Comolli <fabio.comolli@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <3642a3130911090908i55d6e1f2y6d9a5106d9febfc6@mail.gmail.com>
+ <20091109175728.4eec67b9@lxorguk.ukuu.org.uk>
+ <3642a3130911092236p11ef0502se12788800c8d2084@mail.gmail.com>
+ <3642a3130911092304x5c8fe8ddme1df39e6981cfe0a@mail.gmail.com>
+ <b637ec0b0911092348x29453bco7f7ca94f3772601@mail.gmail.com>
+ <3642a3130911100149t7452a6f3k188e0fe972783521@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3642a3130911100149t7452a6f3k188e0fe972783521@mail.gmail.com>
+Organization: UUCP-Freunde Lahn e.V.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Hello,
 
-I have concern about these issues.
-
-> On Tue, 2009-11-03 at 11:26 +0900, Miao Xie wrote:
-> > Hi, Peter.
-> > 
-> > I found two problems about cpu controller:
-> > 1) cpu controller didn't provide fair CPU time to groups when the tasks
-> >     attached into those groups were bound to the same logic CPU.
-> > 2) cpu controller didn't provide fair CPU time to groups when shares of
-> >     each group <= 2 * nr_cpus.
->   3) if you nest them too deep you're too going to see similar funnies.
+On Tue, Nov 10, 2009 at 10:49:48AM +0100, Mariusz Smykula wrote:
+> On Tue, Nov 10, 2009 at 8:48 AM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
+> > Please have a look at:
+> >
+> > http://forum.tuxx-home.at/viewtopic.php?f=15&t=790#p5227
+> >
+> > There is a patch there that can be used to make CiscoVPN work with the
+> > latest stable kernels. For me it worked fine (over a wifi connection)
+> > until I lost interest as now I'm able to use vpnc, thanks to the
+> > people on the vpnc support forum.
 > 
-> Too sodding bad gcc messed up unsigned long long for LP64 mode, so we're
-> stuck with 64bit fixed point math where otherwise we could have used
-> 128bit things.
+> I have no problem to compile and connect using CiscoVPN + 2.6.31, but
+> this is unstable solution. After some time (seconds or minutes) whole
+> computer is freezing dead.
 > 
-> Also, I don't really care much about fairness vs affinity, if you're
-> going to constrain the load-balancer and make his life impossible by
-> using affinities you get to keep the pieces.
+> vpnc is no option, because he lacks supports of certs auth.
 
+You might want to give http://www.shrew.net/software a try. I'd be
+interested if this works for you.
 
-I think 1) differs from 2) and 3). 1) should be fixed at least.
-Because 1) is hard to understand for normal users.
-
-------
-> >    a. create 2 cpu controller groups.
-> >    b. attach a task into one group and 2 tasks into the other.
-> >    c. bind three tasks to the same logic cpu.
-> >             +--------+     +--------+
-> >             | group1 |     | group2 |
-> >             +--------+     +--------+
-> >                 |              |
-> >    CPU0      Task A      Task B & Task C
-
-(snip)
-
-> >    some time later, I found the the task in the group1 got the 35% CPU time not
-> >    50% CPU time. It was very strange that this result against the expected.
-------
-
-
-Probably, if normal users start to use cpu controller, then they must make
-same test by way of trial. They will find same results which differ from their
-expectation in spite of SIMPLE test case.
-Then, they will think cpu controller must have many bugs, and will never
-use it.
-
-When 2) and 3), I can explain users the reason like "It's due to accurate
-error of internal calculation."
-Beacause the test case is a bit fussy, and user will understand it.
-
-However, I can't explain anything for 1), because it seems not fussy case.
-
-
-> But you've got a point, since you can probably see the same issue (1)
-> with cpusets, and that is because the whole cpu-controller vs cpusets
-> thing was done wrong.
-
-When users use cpuset/cpu affinity, then they would like to controll cpu affinity.
-Not CPU time.
-
-When users use cpu controller, they would like to controll cpu time, right?
-However, the cpu time is far from their expectation. I think it is strange.
-
-> 
-> Someone needs to fix that if they really care.
-
-To be honest, I don't have any good idea because I'm not familiar with
-schduler's code. But I have one question.
-
-
-1618 static int tg_shares_up(struct task_group *tg, void *data)
-1619 {
-1620         unsigned long weight, rq_weight = 0, shares = 0;
-
-(snip)
-
-1632         for_each_cpu(i, sched_domain_span(sd)) {
-1633                 weight = tg->cfs_rq[i]->load.weight;
-1634                 usd->rq_weight[i] = weight;
-1635 
-1636                 /*
-1637                  * If there are currently no tasks on the cpu pretend there
-1638                  * is one of average load so that when a new task gets to
-1639                  * run here it will not get delayed by group starvation.
-1640                  */
-1641                 if (!weight)
-1642                         weight = NICE_0_LOAD; ---------(*)
-
-I heard from test team when (*) was removed, 1) didn't occur.
-
-The comment said (*) is to avoid starvation condition.
-However, I don't understand why NICE_0_LOAD must be specified.
-Could you tell me why small value (like 2 or 3) is not used for (*)?
-What is side effect?
-
-
-
-Thanks.
-
+BYtE
+Philipp
 -- 
-Yasunori Goto 
-
-
+  / /  (_)__  __ ____  __ Philipp Hahn
+ / /__/ / _ \/ // /\ \/ /
+/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
