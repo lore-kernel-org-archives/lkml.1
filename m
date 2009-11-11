@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751061AbZKKJNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZKKJO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751061AbZKKJNB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 04:13:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZKKJNA
+	id S1753381AbZKKJO3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 04:14:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZKKJO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 04:13:00 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46110 "EHLO smtps.tip.net.au"
+	Wed, 11 Nov 2009 04:14:29 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:53966 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbZKKJM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 04:12:59 -0500
-Date: Wed, 11 Nov 2009 20:13:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: linux-next: tip tree build failure
-Message-Id: <20091111201302.da1bab60.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__11_Nov_2009_20_13_02_+1100_K1G64qEE317X8wHS"
+	id S1750991AbZKKJO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 04:14:28 -0500
+Date: Wed, 11 Nov 2009 09:14:31 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Peter Zijlstra <peterz@infradead.org>
+cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net, glisse@freedesktop.org
+Subject: Re: Radeon KMS status (Re: [git pull] drm radeon kms.)
+In-Reply-To: <1257926475.23203.24.camel@twins>
+Message-ID: <alpine.DEB.2.00.0911110910170.4943@skynet.skynet.ie>
+References: <alpine.DEB.2.00.0911102313310.29664@skynet.skynet.ie> <1257926475.23203.24.camel@twins>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__11_Nov_2009_20_13_02_+1100_K1G64qEE317X8wHS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+> Hi Dave,
+> 
+> I was wondering about the current state of Radeon KMS, how far are we
+> from having it removed from staging?
 
-Today's linux-next build (powerpc allyesconfig) failed like this:
+I'm sort of thinking the next merge window of moving the enable option 
+into the kernel proper. We still have a metric shitload of work to get to 
+feature parity with current userspace drivers and we've done no 
+optimisation work on the rendering portion of the stack so I'm not sure 
+freezing the API isn't a bit premature, however maybe the API we have is 
+good enough to support and we can add new ioctls to make it go faster if 
+we require.
 
-lib/swiotlb.c: In function 'setup_io_tlb_npages':
-lib/swiotlb.c:114: error: 'swiotlb' undeclared (first use in this function)
+Jerome has proposed some API changes but we really haven't had time to 
+validate them in any useful way.
 
-Caused by commit 75f1cdf1dda92cae037ec848ae63690d91913eac ("x86: Handle
-HW IOMMU initialization failure gracefully") from the tip tree.  It looks
-like the "swiotlb" variable only exists in x86 and ia64.
-
-I have reverted that commit for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__11_Nov_2009_20_13_02_+1100_K1G64qEE317X8wHS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkr6gB4ACgkQjjKRsyhoI8yhCwCglr6KvC+Hqff3xaMrf9shw7o+
-pKMAn3zfHYalVDFzvkwZ9EYRP2R8iuF0
-=N5oh
------END PGP SIGNATURE-----
-
---Signature=_Wed__11_Nov_2009_20_13_02_+1100_K1G64qEE317X8wHS--
+Dave.
