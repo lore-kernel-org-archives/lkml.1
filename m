@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZKKMWC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZKKM2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbZKKMWC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 07:22:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZKKMWB
+	id S1755975AbZKKM2o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 07:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZKKM2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 07:22:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38969 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbZKKMWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 07:22:00 -0500
-Message-ID: <4AFAAC32.4020104@kernel.org>
-Date: Wed, 11 Nov 2009 21:21:06 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Wed, 11 Nov 2009 07:28:42 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:47549 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755814AbZKKM2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 07:28:40 -0500
+Date: Wed, 11 Nov 2009 13:27:42 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [BUG] sched_rt_periodic_timer vs cpu hotplug
+Message-ID: <20091111122742.GB19103@osiris.boeblingen.de.ibm.com>
+References: <20091111101801.GA19103@osiris.boeblingen.de.ibm.com>
+ <1257935428.23203.82.camel@twins>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
-References: <4AF90254.40909@kernel.org> <alpine.LFD.2.01.0911100903370.31845@localhost.localdomain> <4AF9B1FD.1010408@kernel.org> <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain> <4AF9BE3A.40409@kernel.org> <20091110193705.GA9011@elte.hu> <4AF9C402.9040800@kernel.org> <alpine.LFD.2.01.0911101338190.31845@localhost.localdomain> <4AFA35CB.5030801@kernel.org> <20091111113147.GB7487@elte.hu>
-In-Reply-To: <20091111113147.GB7487@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257935428.23203.82.camel@twins>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Ingo.
-
-Ingo Molnar wrote:
->> I was mostly worrying about introducing unrelated bug while changing. 
->> Anyways, one patch it is.  I'll route it through tip as suggested by 
->> Ingo in a few hours.
+On Wed, Nov 11, 2009 at 11:30:28AM +0100, Peter Zijlstra wrote:
+> On Wed, 2009-11-11 at 11:18 +0100, Heiko Carstens wrote:
+> > cpu_attach_domain calls (inlined) rq_attach_root. That function replaces a
+> > runqueue's root_domain while holding its lock (&rq->lock).
+> > 
+> > Now the code snippet above from do_sched_rt_period_timer does access a
+> > runqueue's root_domain _without_ holding its lock.
+> > That way a concurrent cpu_up operation can easily change a runqueue's
+> > root_domain pointer while it is still in use. Which is what happened here.
+> > 
+> > Just grabbing and releasing the lock for each iteration is probably not the
+> > real fix, since the span mask could change between iterations. Which might
+> > lead to strange effects.
 > 
-> Btw., i'd suggest you keep it in your percpu tree as usual and send it 
-> to Linus directly - i offered testing for the cleanup patch (and can 
-> pull your patch for such a purpose), it doesnt 'have' to go via -tip.
+> Does something like the below fix it? Normal sched_domain bits also do
+> sync_sched() for domain destruction as can be seen from
+> detach_destroy_domains()..
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 91642c1..3b02339 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -7918,6 +7923,8 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
+>  
+>  static void free_rootdomain(struct root_domain *rd)
+>  {
+> +	synchronize_sched();
+> +
 
-Can you please then pull from the following tree for testing?  I'll
-push it to Linus after a couple of days if nothing explodes.
+Looks good. It might take a few days for a final confirmation.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
-
-Thanks.
-
--- 
-tejun
+Thanks!
