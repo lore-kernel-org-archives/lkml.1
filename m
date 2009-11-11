@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbZKKT7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZKKUBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbZKKT7G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 14:59:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZKKT7F
+	id S1755314AbZKKUBE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:01:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZKKUBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 14:59:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37302 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbZKKT7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 14:59:03 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: GPF in run_workqueue()/list_del_init(cwq->worklist.next) on resume (was: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related to preempt_count leakage in keventd)
-Date: Wed, 11 Nov 2009 21:00:16 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc6-tst; KDE/4.3.1; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org
-References: <200911091250.31626.rjw@sisk.pl> <alpine.LFD.2.01.0911101343590.31845@localhost.localdomain> <20091111161348.GA27394@redhat.com>
-In-Reply-To: <20091111161348.GA27394@redhat.com>
+	Wed, 11 Nov 2009 15:01:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34177 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752313AbZKKUBD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 15:01:03 -0500
+Date: Wed, 11 Nov 2009 12:00:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] new -stable tag variant, Git workflow question
+In-Reply-To: <1257965424.11985.9.camel@mulgrave.site>
+Message-ID: <alpine.LFD.2.01.0911111153390.31845@localhost.localdomain>
+References: <20091110034831.GB26809@elte.hu>  <20091110041452.GA25575@suse.de> <1257863388.4184.220.camel@mulgrave.site>  <20091110193747.GB12686@suse.de> <1257965424.11985.9.camel@mulgrave.site>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911112100.16561.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 November 2009, Oleg Nesterov wrote:
-> On 11/10, Linus Torvalds wrote:
-> >
-> > > In the meantime I got another trace, this time with a slab corruption involved.
-> > > Note that it crashed in exactly the same place as previously.
-> >
-> > I'm leaving your crash log appended for the new cc's, and I would not be
-> > at all surprised to hear that the slab corruption is related. The whole
-> > 6b6b6b6b pattern does imply a use-after-free on the workqueue,
+
+
+On Wed, 11 Nov 2009, James Bottomley wrote:
 > 
-> Yes, RCX = 6b6b6b6b6b6b6b6b, and according to decodecode the faulting
-> instruction is "mov %rdx,0x8(%rcx)". Looks like the pending work was
-> freed.
-> 
-> Rafael, could you reproduce the problem with the debugging patch below?
-> It tries to detect the case when the pending work was corrupted and
-> prints its work->func (saved in the previous item). It should work
-> if the work_struct was freed and poisoned, or if it was re-initialized.
-> See ck_work().
+> The slight problem is that further down, to generate the patch the
+> script uses git format-patch -k --stdout commit^..commit.  For a merge
+> commit, this will generate a patch equivalent to the entire branch that
+> was merged, even though the commit message will only pick out some of
+> these ... is this OK?
 
-I applied the patch and this is the result of 'dmesg | grep ERR' after 10-or-so
-consecutive suspend-resume and hibernate-resume cycles:
+Don't do that.
 
-[  129.008689] ERR!! btusb_waker+0x0/0x27 [btusb]
-[  166.477373] ERR!! btusb_waker+0x0/0x27 [btusb]
-[  203.983665] ERR!! btusb_waker+0x0/0x27 [btusb]
-[  241.636547] ERR!! btusb_waker+0x0/0x27 [btusb]
+Since you want to show a single commit, not a commit range, don't use 
+format-patch, use something like
 
-which kind of confirms my previous observation that the problem was not
-reproducible without Bluetooth.
+	git show --pretty=email -M --cc --stat $commit
 
-So, it looks like the bug is in btusb_destruct(), which should call
-cancel_work_sync() on data->waker before freeing 'data'.  I guess it should
-do the same for data->work.
+instead. That will not show the difference between a commit and its 
+first parent (which for a merge diff is more than one commit, and can be 
+absolutely _huge_), but will show just the named commit (which for a merge 
+commit will usually be an empty diff, but will show how conflicts were 
+resolved if they weren't just taken from one or the other side).
 
-I'm going to test the appended patch, then.
+(Of course, maybe you'll want to change the exact flags in question. For 
+example, '--stat' for merge commits is often useful, but only if the merge 
+was done by an upper-level maintainer. Anybody who does reverse merges 
+will just get totally meaningless diffstats, since the diffstat is always 
+done against the first parent, so anybody who does back-merges will see 
+the stat of everthing _I_ have merged in the meantime, which is generally 
+not useful)
 
-Thanks,
-Rafael
-
----
- drivers/bluetooth/btusb.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux-2.6/drivers/bluetooth/btusb.c
-===================================================================
---- linux-2.6.orig/drivers/bluetooth/btusb.c
-+++ linux-2.6/drivers/bluetooth/btusb.c
-@@ -738,6 +738,9 @@ static void btusb_destruct(struct hci_de
- 
- 	BT_DBG("%s", hdev->name);
- 
-+	cancel_work_sync(&data->work);
-+	cancel_work_sync(&data->waker);
-+
- 	kfree(data);
- }
- 
+		Linus
