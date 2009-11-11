@@ -1,237 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZKKSyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758515AbZKKS4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbZKKSyh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 13:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758168AbZKKSyg
+	id S1758515AbZKKS4j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 13:56:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758498AbZKKS4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 13:54:36 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43131 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758096AbZKKSyf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 13:54:35 -0500
-Message-ID: <4AFB086B.1020201@natemccallum.com>
-Date: Wed, 11 Nov 2009 13:54:35 -0500
-From: Nathaniel McCallum <nathaniel@natemccallum.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	Wed, 11 Nov 2009 13:56:38 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35229 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758437AbZKKS4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 13:56:37 -0500
+Date: Wed, 11 Nov 2009 19:56:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+Message-ID: <20091111185628.GA17720@elte.hu>
+References: <20091025225342.007138f5@infradead.org>
+ <20091111020108.GA11423@localhost>
+ <20091110223456.01ef355f@infradead.org>
+ <4AFA6AEF.5060306@garzik.org>
+ <20091111074542.GB25132@elte.hu>
+ <20091111182925.GH13262@mit.edu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Devices that ignore USB spec generate invalid modaliases
-References: <4AFA73C7.4070002@natemccallum.com> <4AFA784D.1060001@natemccallum.com>
-In-Reply-To: <4AFA784D.1060001@natemccallum.com>
-Content-Type: multipart/mixed;
- boundary="------------030700000608050503040702"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091111182925.GH13262@mit.edu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030700000608050503040702
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-On 11/11/2009 03:39 AM, Nathaniel McCallum wrote:
-> On 11/11/2009 03:20 AM, Nathaniel McCallum wrote:
->> Drivers for devices which have bcdDevice conforming to BCD will have no
->> change in modalias output.
->
-> One small clarification. Existing drivers which specify a non-zero lower
-> bound and an upper bound past the next character will have their upper
-> bound changed from 0x9 to 0xf (i.e.: d123[4-9] -> d123[4-9a-f]). I
-> believe this is the only case where an existing (working) modalias will
-> change.
+* Theodore Tso <tytso@mit.edu> wrote:
 
-I've solved the above problem in the latest patch 
-(file2alias_hex_or_bcd.patch) which automatically detects if a driver 
-entry is supporting a hex bcdDevice rather than a bcd one and adjusts 
-accordingly.  Thus, for all normal devices, there is now no change at all.
+> On Wed, Nov 11, 2009 at 08:45:42AM +0100, Ingo Molnar wrote:
+> > Without an inode->vfs-name lookup/matching service it's of limited 
+> > utility though to developers and users. So inode numbers are fine (as 
+> > nicely unique physical identifiers)- as long as corresponding vfs name 
+> > string is available too.
+> 
+> Inode numbers are quite usable for me; but I'm not afraid to do
+> 
+>       debugfs /dev/sdb -R "ncheck 12345"
+> 
+> :-)
+> 
+> If you really want to avoid that, one relatively lightweight thing we 
+> could do, which would avoid needing to dump the entire pathname out, 
+> would be to print out the triple (devno, dir_ino, file_ino), and then 
+> provide a privileged syscall which translates this to a user-visible 
+> pathname.  It won't be necessarily the pathname which the user used to 
+> open the file (since there might be links, and bind mounts, et. al), 
+> but if the goal is to give one of the user-friendly names of the inode 
+> (as opposed to _the_ pathname used to open the file), it's quite 
+> sufficient.
 
-In the process I discovered another bug.  'devlo++' and 'devhi--' are 
-used.  However this number is most often in BCD format, so ++/-- won't 
-work.  A second patch (file2alias_bcd_increment.patch) resolves this issue.
+Hm, why add a new syscall to retrieve the name we already had when the 
+event happened?
 
-Again, questions/comments welcome.
+Also, why add a new syscall to retrieve something that might not exist 
+anymore? (the VFS namespace is quite dynamic - post-processing to 
+retrieve names is fundamentally racy)
 
-Nathaniel McCallum
+What matters most for analysis is the 'name of the moment' - the thing 
+that the app used at that point.
 
---------------030700000608050503040702
-Content-Type: text/plain;
- name="file2alias_bcd_increment.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="file2alias_bcd_increment.patch"
+Arjan isnt doing this just randomly, he's one of the few people trying 
+to speed up Linux booting - and this is the info he finds useful. We 
+should give that information in a reasonable way, and the tracepoint he 
+proposed looks pretty reasonable.
 
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index 85ad782..f25c09b 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -160,6 +160,45 @@ static void do_usb_entry(struct usb_device_id *id,
- 		   "MODULE_ALIAS(\"%s\");\n", alias);
- }
- 
-+/* Handles increment/decrement of BCD formatted integers */
-+/* Returns the previous value, so it works like i++ or i-- */
-+static unsigned int incbcd(unsigned int *bcd,
-+			   int inc,
-+			   unsigned char max,
-+			   size_t chars)
-+{
-+	unsigned int init = *bcd, i, j;
-+	unsigned long long c, dec = 0;
-+
-+	/* If bcd is not in BCD format, just increment */
-+	if (max > 0x9) {
-+		*bcd += inc;
-+		return init;
-+	}
-+
-+	/* Convert BCD to Decimal */
-+	for (i=0 ; i < chars ; i++) {
-+		c = (*bcd >> (i << 2)) & 0xf;
-+		c = c > 9 ? 9 : c; /* force to bcd just in case */
-+		for (j=0 ; j < i ; j++)
-+			c = c * 10;
-+		dec += c;
-+	}
-+
-+	/* Do our increment/decrement */
-+	dec += inc;
-+	*bcd  = 0;
-+
-+	/* Convert back to BCD */
-+	for (i=0 ; i < chars ; i++) {
-+		for (c=1,j=0 ; j < i ; j++)
-+			c = c * 10;
-+		c = (dec / c) % 10;
-+		*bcd += c << (i << 2);
-+	}
-+	return init;
-+}
-+
- static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
- {
- 	unsigned int devlo, devhi;
-@@ -208,10 +247,16 @@ static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
- 		}
- 
- 		if (clo > 0x0)
--			do_usb_entry(id, devlo++, ndigits, clo, max, max, mod);
-+			do_usb_entry(id,
-+				     incbcd(&devlo, 1, max,
-+					    sizeof(id->bcdDevice_lo) * 2),
-+				     ndigits, clo, max, max, mod);
- 
- 		if (chi < max)
--			do_usb_entry(id, devhi--, ndigits, 0x0, chi, max, mod);
-+			do_usb_entry(id,
-+				     incbcd(&devhi, -1, max,
-+					    sizeof(id->bcdDevice_lo) * 2),
-+				     ndigits, 0x0, chi, max, mod);
- 	}
- }
- 
-
---------------030700000608050503040702
-Content-Type: text/plain;
- name="file2alias_hex_or_bcd.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="file2alias_hex_or_bcd.patch"
-
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index 62a9025..85ad782 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -104,7 +104,7 @@ static void device_id_check(const char *modname, const char *device_id,
- static void do_usb_entry(struct usb_device_id *id,
- 			 unsigned int bcdDevice_initial, int bcdDevice_initial_digits,
- 			 unsigned char range_lo, unsigned char range_hi,
--			 struct module *mod)
-+			 unsigned char max, struct module *mod)
- {
- 	char alias[500];
- 	strcpy(alias, "usb:");
-@@ -118,9 +118,22 @@ static void do_usb_entry(struct usb_device_id *id,
- 		sprintf(alias + strlen(alias), "%0*X",
- 			bcdDevice_initial_digits, bcdDevice_initial);
- 	if (range_lo == range_hi)
--		sprintf(alias + strlen(alias), "%u", range_lo);
--	else if (range_lo > 0 || range_hi < 9)
--		sprintf(alias + strlen(alias), "[%u-%u]", range_lo, range_hi);
-+		sprintf(alias + strlen(alias), "%X", range_lo);
-+	else if (range_lo > 0 || range_hi < max) {
-+		if (range_lo > 0x9 || range_hi < 0xA)
-+			sprintf(alias + strlen(alias), 
-+				"[%X-%X]",
-+				range_lo,
-+				range_hi);
-+		else {
-+			sprintf(alias + strlen(alias),
-+				range_lo < 0x9 ? "[%X-9" : "[%X",
-+				range_lo);
-+			sprintf(alias + strlen(alias),
-+				range_hi > 0xA ? "a-%X]" : "%X]",
-+				range_lo);
-+		}
-+	}
- 	if (bcdDevice_initial_digits < (sizeof(id->bcdDevice_lo) * 2 - 1))
- 		strcat(alias, "*");
- 
-@@ -150,7 +163,7 @@ static void do_usb_entry(struct usb_device_id *id,
- static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
- {
- 	unsigned int devlo, devhi;
--	unsigned char chi, clo;
-+	unsigned char chi, clo, max;
- 	int ndigits;
- 
- 	id->match_flags = TO_NATIVE(id->match_flags);
-@@ -162,6 +175,17 @@ static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
- 	devhi = id->match_flags & USB_DEVICE_ID_MATCH_DEV_HI ?
- 		TO_NATIVE(id->bcdDevice_hi) : ~0x0U;
- 
-+	/* Figure out if this entry is in bcd or hex format */
-+	max = 0x9; /* Default to decimal format */
-+	for (ndigits = 0 ; ndigits < sizeof(id->bcdDevice_lo) * 2 ; ndigits++) {
-+		clo = (devlo >> (ndigits << 2)) & 0xf;
-+		chi = ((devhi > 0x9999 ? 0x9999 : devhi) >> (ndigits << 2)) & 0xf;
-+		if (clo > max || chi > max) {
-+			max = 0xf;
-+			break;
-+		}
-+	}
-+
- 	/*
- 	 * Some modules (visor) have empty slots as placeholder for
- 	 * run-time specification that results in catch-all alias
-@@ -173,21 +197,21 @@ static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
- 	for (ndigits = sizeof(id->bcdDevice_lo) * 2 - 1; devlo <= devhi; ndigits--) {
- 		clo = devlo & 0xf;
- 		chi = devhi & 0xf;
--		if (chi > 9)	/* it's bcd not hex */
--			chi = 9;
-+		if (chi > max)	/* If we are in bcd mode, truncate if necessary */
-+			chi = max;
- 		devlo >>= 4;
- 		devhi >>= 4;
- 
- 		if (devlo == devhi || !ndigits) {
--			do_usb_entry(id, devlo, ndigits, clo, chi, mod);
-+			do_usb_entry(id, devlo, ndigits, clo, chi, max, mod);
- 			break;
- 		}
- 
--		if (clo > 0)
--			do_usb_entry(id, devlo++, ndigits, clo, 9, mod);
-+		if (clo > 0x0)
-+			do_usb_entry(id, devlo++, ndigits, clo, max, max, mod);
- 
--		if (chi < 9)
--			do_usb_entry(id, devhi--, ndigits, 0, chi, mod);
-+		if (chi < max)
-+			do_usb_entry(id, devhi--, ndigits, 0x0, chi, max, mod);
- 	}
- }
- 
-
---------------030700000608050503040702--
+	Ingo
