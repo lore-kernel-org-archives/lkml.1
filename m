@@ -1,65 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbZKKF0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751393AbZKKFau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbZKKF0t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 00:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZKKF0s
+	id S1751393AbZKKFau (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 00:30:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZKKFau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 00:26:48 -0500
-Received: from gesmail.globaledgesoft.com ([203.76.137.4]:36410 "EHLO
-	gesmail.globaledgesoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751198AbZKKF0s (ORCPT
+	Wed, 11 Nov 2009 00:30:50 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58274 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbZKKFat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 00:26:48 -0500
-Message-ID: <4AFA4B1C.9020203@globaledgesoft.com>
-Date: Wed, 11 Nov 2009 10:56:52 +0530
-From: Ram <ramaswamy.bm@globaledgesoft.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ram <ramaswamy.bm@globaledgesoft.com>,
-       Naveen BN <naveen.bn@globaledgesoft.com>,
-       Chaitra Shankar <chaitra.shankar@globaledgesoft.com>
-Subject: Re: Error while creating security association using ip xfrm command
-References: <4AE6D26D.7020607@globaledgesoft.com> <4AE6DC72.4010208@iki.fi> <4AE820B4.3070400@globaledgesoft.com> <20091028140923.GD101657@sun.com> <4AE9228D.1070107@globaledgesoft.com> <4AE938F8.9060008@iki.fi> <4AF7B4FE.5050801@globaledgesoft.com> <4AF7C346.7070105@globaledgesoft.com> <4AF7C7C5.6060204@globaledgesoft.com> <4AF84F22.4020500@iki.fi> <4AF97F5D.4060802@globaledgesoft.com> <4AF9A77D.2060302@iki.fi> <4AFA4A35.30203@globaledgesoft.com>
-In-Reply-To: <4AFA4A35.30203@globaledgesoft.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 11 Nov 2009 00:30:49 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 11 Nov 2009 14:28:11 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       cl@linux-foundation.org, rientjes@google.com
+Subject: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
+ v4.1
+Message-Id: <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
+	<20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091110163419.361E.A69D9226@jp.fujitsu.com>
+	<20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
+	<20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Directing the query to Linux kernel networking group :
+Sorry, missed to remove 'inline'...
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
 
-_*Query :*_
-*I am trying to create a security association using ip xfrm command, but 
-i get an error message saying
-"*RTNETLINK answers: Function not implemented*" and ip xfrm state 
-succeeds in displaying  sa  written using setkey .
+Fixing node-oriented allocation handling in oom-kill.c
+I myself think this as bugfix not as ehnancement.
 
-ip xfrm state add src 192.168.1.20 dst 192.168.1.5 proto esp spi 
-0x354cb04b mode tunnel reqid 16385 replay-window 32 auth hmac 
-0xecf02a5cf6568556e1bdcd961c7ec3f92afd01cc enc cbc 
-0x5c0cfa9672ce67ba545b593076dfb278 sel src 0.0.0.0/0 dst 0.0.0.0/0
+In these days, things are changed as
+  - alloc_pages() eats nodemask as its arguments, __alloc_pages_nodemask().
+  - mempolicy don't maintain its own private zonelists.
+  (And cpuset doesn't use nodemask for __alloc_pages_nodemask())
 
-ERROR message => "RTNETLINK answers: Function not implemented" 
-Please let me know what is the problem here .
+So, current oom-killer's check function is wrong.
 
+This patch does
+  - check nodemask, if nodemask && nodemask doesn't cover all
+    node_states[N_HIGH_MEMORY], this is CONSTRAINT_MEMORY_POLICY.
+  - Scan all zonelist under nodemask, if it hits cpuset's wall
+    this faiulre is from cpuset.
+And
+  - modifies the caller of out_of_memory not to call oom if __GFP_THISNODE.
+    This doesn't change "current" behavior. If callers use __GFP_THISNODE
+    it should handle "page allocation failure" by itself.
 
+  - handle __GFP_NOFAIL+__GFP_THISNODE path.
+    This is something like a FIXME but this gfpmask is not used now.
 
-*Timo Teräs wrote: Naveen BN wrote:
-> *I am trying to create a security association using ip xfrm command, 
-> but i get an message saying
-> "*RTNETLINK answers: Function not implemented*" and ip xfrm state 
-> succeeds in displaying  sa  written using setkey .
->
-> ip xfrm state add src 192.168.1.20 dst 192.168.1.5 proto esp spi 
-> 0x354cb04b mode tunnel reqid 16385 replay-window 32 auth hmac 
-> 0xecf02a5cf6568556e1bdcd961c7ec3f92afd01cc enc cbc 
-> 0x5c0cfa9672ce67ba545b593076dfb278 sel src 0.0.0.0/0 dst 0.0.0.0/0
->
-> ERROR message => "RTNETLINK answers: Function not implemented" *
+Changelog: 2009/11/11(2)
+ - uses nodes_subset().
+ - clean up.
+ - added __GFP_NOFAIL case. And added waring.
+ - removed inline
 
-Please, direct "ip xfrm" and Netlink questions to Linux kernel
-networking mailing list.
+Changelog: 2009/11/11
+ - fixed nodes_equal() calculation.
+ - return CONSTRAINT_MEMPOLICY always if given nodemask is not enough big.
 
-- Timo
+Changelog: 2009/11/06
+ - fixed lack of oom.h
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
+---
+ drivers/char/sysrq.c |    2 +-
+ include/linux/oom.h  |    4 +++-
+ mm/oom_kill.c        |   47 ++++++++++++++++++++++++++++++++++-------------
+ mm/page_alloc.c      |   20 +++++++++++++++-----
+ 4 files changed, 53 insertions(+), 20 deletions(-)
+
+Index: mm-test-kernel/drivers/char/sysrq.c
+===================================================================
+--- mm-test-kernel.orig/drivers/char/sysrq.c
++++ mm-test-kernel/drivers/char/sysrq.c
+@@ -339,7 +339,7 @@ static struct sysrq_key_op sysrq_term_op
+ 
+ static void moom_callback(struct work_struct *ignored)
+ {
+-	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
++	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0, NULL);
+ }
+ 
+ static DECLARE_WORK(moom_work, moom_callback);
+Index: mm-test-kernel/mm/oom_kill.c
+===================================================================
+--- mm-test-kernel.orig/mm/oom_kill.c
++++ mm-test-kernel/mm/oom_kill.c
+@@ -196,27 +196,47 @@ unsigned long badness(struct task_struct
+ /*
+  * Determine the type of allocation constraint.
+  */
+-static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+-						    gfp_t gfp_mask)
+-{
+ #ifdef CONFIG_NUMA
++static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
++				    gfp_t gfp_mask, nodemask_t *nodemask)
++{
+ 	struct zone *zone;
+ 	struct zoneref *z;
+ 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+-	nodemask_t nodes = node_states[N_HIGH_MEMORY];
++	int ret = CONSTRAINT_NONE;
+ 
+-	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+-		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
+-			node_clear(zone_to_nid(zone), nodes);
+-		else
+-			return CONSTRAINT_CPUSET;
++	/*
++	 * Reach here only when __GFP_NOFAIL is used. So, we should avoid
++ 	 * to kill current.We have to random task kill in this case.
++ 	 * Hopefully, CONSTRAINT_THISNODE...but no way to handle it, now.
++ 	 */
++	if (gfp_mask & __GPF_THISNODE)
++		return ret;
+ 
+-	if (!nodes_empty(nodes))
++	/*
++ 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
++ 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
++ 	 * feature. mempolicy is an only user of nodemask here.
++	 * check mempolicy's nodemask contains all N_HIGH_MEMORY
++ 	 */
++	if (nodemask && !nodes_subset(node_states[N_HIGH_MEMORY], *nodemask))
+ 		return CONSTRAINT_MEMORY_POLICY;
+-#endif
+ 
++	/* Check this allocation failure is caused by cpuset's wall function */
++	for_each_zone_zonelist_nodemask(zone, z, zonelist,
++			high_zoneidx, nodemask)
++		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
++			return CONSTRAINT_CPUSET;
++
++	return CONSTRAINT_NONE;
++}
++#else
++static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
++				gfp_t gfp_mask, nodemask_t *nodemask)
++{
+ 	return CONSTRAINT_NONE;
+ }
++#endif
+ 
+ /*
+  * Simple selection loop. We chose the process with the highest
+@@ -603,7 +623,8 @@ rest_and_return:
+  * OR try to be smart about which process to kill. Note that we
+  * don't have to be perfect here, we just have to be good.
+  */
+-void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
++void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
++		int order, nodemask_t *nodemask)
+ {
+ 	unsigned long freed = 0;
+ 	enum oom_constraint constraint;
+@@ -622,7 +643,7 @@ void out_of_memory(struct zonelist *zone
+ 	 * Check if there were limitations on the allocation (only relevant for
+ 	 * NUMA) that may require different handling.
+ 	 */
+-	constraint = constrained_alloc(zonelist, gfp_mask);
++	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
+ 	read_lock(&tasklist_lock);
+ 
+ 	switch (constraint) {
+Index: mm-test-kernel/mm/page_alloc.c
+===================================================================
+--- mm-test-kernel.orig/mm/page_alloc.c
++++ mm-test-kernel/mm/page_alloc.c
+@@ -1664,12 +1664,22 @@ __alloc_pages_may_oom(gfp_t gfp_mask, un
+ 	if (page)
+ 		goto out;
+ 
+-	/* The OOM killer will not help higher order allocs */
+-	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
+-		goto out;
+-
++	if (!(gfp_mask & __GFP_NOFAIL)) {
++		/* The OOM killer will not help higher order allocs */
++		if (order > PAGE_ALLOC_COSTLY_ORDER)
++			goto out;
++		/*
++	 	* GFP_THISNODE contains __GFP_NORETRY and we never hit this.
++	 	* Sanity check for bare calls of __GFP_THISNODE, not real OOM.
++	 	* The caller should handle page allocation failure by itself if
++	 	* it specifies __GFP_THISNODE.
++	 	* Note: Hugepage uses it but will hit PAGE_ALLOC_COSTLY_ORDER.
++	 	*/
++		if (gfp_mask & __GFP_THISNODE)
++			goto out;
++	}
+ 	/* Exhausted what can be done so it's blamo time */
+-	out_of_memory(zonelist, gfp_mask, order);
++	out_of_memory(zonelist, gfp_mask, order, nodemask);
+ 
+ out:
+ 	clear_zonelist_oom(zonelist, gfp_mask);
+Index: mm-test-kernel/include/linux/oom.h
+===================================================================
+--- mm-test-kernel.orig/include/linux/oom.h
++++ mm-test-kernel/include/linux/oom.h
+@@ -10,6 +10,7 @@
+ #ifdef __KERNEL__
+ 
+ #include <linux/types.h>
++#include <linux/nodemask.h>
+ 
+ struct zonelist;
+ struct notifier_block;
+@@ -26,7 +27,8 @@ enum oom_constraint {
+ extern int try_set_zone_oom(struct zonelist *zonelist, gfp_t gfp_flags);
+ extern void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_flags);
+ 
+-extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order);
++extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
++		int order, nodemask_t *mask);
+ extern int register_oom_notifier(struct notifier_block *nb);
+ extern int unregister_oom_notifier(struct notifier_block *nb);
+ 
+
