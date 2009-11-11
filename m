@@ -1,64 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbZKKSbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbZKKSar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbZKKSbM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 13:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758352AbZKKSbL
+	id S1758296AbZKKSar (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 13:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbZKKSaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 13:31:11 -0500
-Received: from THUNK.ORG ([69.25.196.29]:48600 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758238AbZKKSbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 13:31:10 -0500
-Date: Wed, 11 Nov 2009 13:29:25 -0500
-From: Theodore Tso <tytso@mit.edu>
+	Wed, 11 Nov 2009 13:30:46 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:60253 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757926AbZKKSaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 13:30:46 -0500
+Date: Wed, 11 Nov 2009 12:30:49 -0600
+From: Jack Steiner <steiner@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091111182925.GH13262@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-	Jeff Garzik <jeff@garzik.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>,
-	Al Viro <viro@ZenIV.linux.org.uk>,
-	Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
-References: <20091025225342.007138f5@infradead.org> <20091111020108.GA11423@localhost> <20091110223456.01ef355f@infradead.org> <4AFA6AEF.5060306@garzik.org> <20091111074542.GB25132@elte.hu>
-MIME-Version: 1.0
+Cc: "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: UV SGI, Don't track GRU space in PAT
+Message-ID: <20091111183049.GA23692@sgi.com>
+References: <20091029184723.GA562@sgi.com> <20091108120609.GW11372@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091111074542.GB25132@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20091108120609.GW11372@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 08:45:42AM +0100, Ingo Molnar wrote:
-> Without an inode->vfs-name lookup/matching service it's of limited 
-> utility though to developers and users. So inode numbers are fine (as 
-> nicely unique physical identifiers)- as long as corresponding vfs name 
-> string is available too.
+...
+> >  	/* Low ISA region is always mapped WB. No need to track */
+> > -	if (is_ISA_range(start, end - 1))
+> > +	if (is_ISA_range(start, end - 1) || is_GRU_range(start, end - 1))
+> >  		return 0;
+> 
+> Hm, that's quite ugly - we used to have is_ISA_range() exceptions, now 
+> is_GRU_range() is added too.
+> 
+> We should instead have an x86_platform vector for PAT exceptions, which 
+> SGI/UV (and ISA) would fill in automatically, agreed?
 
-Inode numbers are quite usable for me; but I'm not afraid to do
+Could you point me to some code to clone - I'm not sure exactly what you
+have in mind.
 
-      debugfs /dev/sdb -R "ncheck 12345"
+Is this close (untested)?? If so, I'll clean it up,test it & post a real patch.
 
-:-)
+--- jack
 
-If you really want to avoid that, one relatively lightweight thing we
-could do, which would avoid needing to dump the entire pathname out,
-would be to print out the triple (devno, dir_ino, file_ino), and then
-provide a privileged syscall which translates this to a user-visible
-pathname.  It won't be necessarily the pathname which the user used to
-open the file (since there might be links, and bind mounts, et. al),
-but if the goal is to give one of the user-friendly names of the inode
-(as opposed to _the_ pathname used to open the file), it's quite sufficient.
 
-    	       	     	      	      - Ted
+
+Index: linux/arch/x86/mm/pat.c
+===================================================================
+--- linux.orig/arch/x86/mm/pat.c	2009-11-11 12:09:59.000000000 -0600
++++ linux/arch/x86/mm/pat.c	2009-11-11 12:25:50.000000000 -0600
+@@ -353,6 +353,12 @@ static int free_ram_pages_type(u64 start
+ 	return 0;
+ }
+ 
++static int default_is_untracked_pat_range(u64 start, u64 end)
++{
++	return is_ISA_range(start, end);
++}
++int (*is_untracked_pat_range)(u64 start, u64 end) = default_is_untracked_pat_range;
++
+ /*
+  * req_type typically has one of the:
+  * - _PAGE_CACHE_WB
+@@ -393,7 +399,7 @@ int reserve_memtype(u64 start, u64 end, 
+ 	}
+ 
+ 	/* Low ISA region is always mapped WB in page table. No need to track */
+-	if (is_ISA_range(start, end - 1)) {
++	if (is_untracked_pat_range(start, end - 1)) {
+ 		if (new_type)
+ 			*new_type = _PAGE_CACHE_WB;
+ 		return 0;
+@@ -504,7 +510,7 @@ int free_memtype(u64 start, u64 end)
+ 		return 0;
+ 
+ 	/* Low ISA region is always mapped WB. No need to track */
+-	if (is_ISA_range(start, end - 1))
++	if (default_is_untracked_pat_range(start, end - 1))
+ 		return 0;
+ 
+ 	is_range_ram = pat_pagerange_is_ram(start, end);
+@@ -587,7 +593,7 @@ static unsigned long lookup_memtype(u64 
+ 	int rettype = _PAGE_CACHE_WB;
+ 	struct memtype *entry;
+ 
+-	if (is_ISA_range(paddr, paddr + PAGE_SIZE - 1))
++	if (is_untracked_pat_range(paddr, paddr + PAGE_SIZE - 1))
+ 		return rettype;
+ 
+ 	if (pat_pagerange_is_ram(paddr, paddr + PAGE_SIZE)) {
+Index: linux/arch/x86/include/asm/pat.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/pat.h	2009-10-26 19:39:06.000000000 -0500
++++ linux/arch/x86/include/asm/pat.h	2009-11-11 12:19:26.000000000 -0600
+@@ -24,4 +24,6 @@ int io_reserve_memtype(resource_size_t s
+ 
+ void io_free_memtype(resource_size_t start, resource_size_t end);
+ 
++extern int (*is_untracked_pat_range)(u64 start, u64 end);
++
+ #endif /* _ASM_X86_PAT_H */
+Index: linux/arch/x86/kernel/apic/x2apic_uv_x.c
+===================================================================
+--- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2009-11-11 12:09:59.000000000 -0600
++++ linux/arch/x86/kernel/apic/x2apic_uv_x.c	2009-11-11 12:24:26.000000000 -0600
+@@ -30,10 +30,22 @@
+ #include <asm/apic.h>
+ #include <asm/ipi.h>
+ #include <asm/smp.h>
++#include <asm/pat.h>
+ 
+ DEFINE_PER_CPU(int, x2apic_extra_bits);
+ 
+ static enum uv_system_type uv_system_type;
++static u64 gru_start_paddr, gru_end_paddr;
++
++static int is_GRU_range(u64 start, u64 end)
++{
++	return start >= gru_start_paddr && end < gru_end_paddr;
++}
++
++static int uv_is_untracked_pat_range(u64 start, u64 end)
++{
++	return is_ISA_range(start, end) || is_GRU_range(start, end);
++}
+ 
+ static int early_get_nodeid(void)
+ {
+@@ -49,6 +61,7 @@ static int early_get_nodeid(void)
+ static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+ 	if (!strcmp(oem_id, "SGI")) {
++		is_untracked_pat_range =  uv_is_untracked_pat_range;
+ 		if (!strcmp(oem_table_id, "UVL"))
+ 			uv_system_type = UV_LEGACY_APIC;
+ 		else if (!strcmp(oem_table_id, "UVX"))
+@@ -388,8 +401,12 @@ static __init void map_gru_high(int max_
+ 	int shift = UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_BASE_SHFT;
+ 
+ 	gru.v = uv_read_local_mmr(UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR);
+-	if (gru.s.enable)
++	if (gru.s.enable) {
+ 		map_high("GRU", gru.s.base, shift, max_pnode, map_wb);
++		gru_start_paddr = ((u64)gru.s.base << shift);
++		gru_end_paddr = gru_start_paddr + (1UL << shift) * (max_pnode + 1);
++
++	}
+ }
+ 
+ static __init void map_mmr_high(int max_pnode)
