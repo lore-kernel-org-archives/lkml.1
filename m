@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbZKKHSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbZKKHUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbZKKHSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZKKHSl
+	id S1754979AbZKKHUa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZKKHUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:18:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51923 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbZKKHSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:18:40 -0500
-Date: Wed, 11 Nov 2009 08:18:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Ma, Ling" <ling.ma@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
- fast string.
-Message-ID: <20091111071832.GA3156@elte.hu>
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
- <4AF457E0.4040107@zytor.com>
- <4AF4784C.5090800@zytor.com>
- <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
- <4AF7C66C.6000009@zytor.com>
- <20091109080830.GI453@elte.hu>
- <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Wed, 11 Nov 2009 02:20:30 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57330 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751965AbZKKHU3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 02:20:29 -0500
+Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
+From: Peter Zijlstra <peterz@infradead.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Miao Xie <miaox@cn.fujitsu.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       containers <containers@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com>
+References: <4AEF94E8.3030403@cn.fujitsu.com>
+	 <1257846518.4648.18.camel@twins>
+	 <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Wed, 11 Nov 2009 08:20:07 +0100
+Message-ID: <1257924007.23203.18.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-11-11 at 15:21 +0900, Yasunori Goto wrote:
 
-* Ma, Ling <ling.ma@intel.com> wrote:
+> When users use cpuset/cpu affinity, then they would like to controll cpu affinity.
+> Not CPU time.
 
-> Hi All
-> Please use the memcpy.c(cc -o memcpy memcpy.c -O2) to test more cases,
-> if you have interest. In this program we did simple modification
-> on memcpy_new function.
+What are people using affinity for? The only use of affinity is to
+restrict or disable the load-balancer. Don't complain the load-balancer
+doesn't work when you're taking active steps to hinder its work.
 
-FYI:
+If you don't want things load-balanced, turn it off, if you want the
+load-balancer to work on smaller groups of cpus, use cpusets.
 
-earth4:~/s> cc -o memcpy memcpy.c -O2
-memcpy.c: In function 'do_one_throughput':
-memcpy.c:45: error: impossible register constraint in 'asm'
-memcpy.c:53: error: impossible register constraint in 'asm'
-memcpy.c:47: error: impossible register constraint in 'asm'
-memcpy.c:53: error: impossible register constraint in 'asm'
+Anyway, I said there needs to be done something because the interaction
+between cpusets and the cpu-controller is utter crap, they never should
+have been separated like they are.
 
-	Ingo
+> To be honest, I don't have any good idea because I'm not familiar with
+> schduler's code. But I have one question.
+> 
+> 
+> 1618 static int tg_shares_up(struct task_group *tg, void *data)
+> 1619 {
+> 1620         unsigned long weight, rq_weight = 0, shares = 0;
+> 
+> (snip)
+> 
+> 1632         for_each_cpu(i, sched_domain_span(sd)) {
+> 1633                 weight = tg->cfs_rq[i]->load.weight;
+> 1634                 usd->rq_weight[i] = weight;
+> 1635 
+> 1636                 /*
+> 1637                  * If there are currently no tasks on the cpu pretend there
+> 1638                  * is one of average load so that when a new task gets to
+> 1639                  * run here it will not get delayed by group starvation.
+> 1640                  */
+> 1641                 if (!weight)
+> 1642                         weight = NICE_0_LOAD; ---------(*)
+> 
+> I heard from test team when (*) was removed, 1) didn't occur.
+> 
+> The comment said (*) is to avoid starvation condition.
+> However, I don't understand why NICE_0_LOAD must be specified.
+> Could you tell me why small value (like 2 or 3) is not used for (*)?
+> What is side effect? 
+
+Exactly what the comment says, it will get delayed because the group
+won't get scheduled on that cpu until all the group weights get
+re-adjusted again, which can be much longer than the typical runtimes of
+the workload in question.
+
+Regular weights are NICE_0_LOAD, if you stick a 3 next to that I'll not
+get ran much -> starvation.
