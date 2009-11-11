@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZKKA36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZKKAnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752867AbZKKA36 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 19:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZKKA35
+	id S1754809AbZKKAnv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 19:43:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZKKAnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 19:29:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33969 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751849AbZKKA35 (ORCPT
+	Tue, 10 Nov 2009 19:43:50 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47155 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753947AbZKKAnu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 19:29:57 -0500
-Date: Tue, 10 Nov 2009 16:29:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Harik <harik.attar@gmail.com>, Thiago Farina <tfransosi@gmail.com>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] drivers/serial: remove BAUD_TABLE_SIZE macro.
-Message-Id: <20091110162955.68321ab9.akpm@linux-foundation.org>
-In-Reply-To: <20091111001100.GA14329@suse.de>
-References: <1257428794-9203-1-git-send-email-tfransosi@gmail.com>
-	<c0c067900911101609v5ca52bb1h98a7bde2cf625ad@mail.gmail.com>
-	<20091111001100.GA14329@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Nov 2009 19:43:50 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Timo Sirainen <tss@iki.fi>
+Subject: Re: + prctl-add-pr_set_proctitle_area-option.patch added to -mm tree
+Cc: kosaki.motohiro@jp.fujitsu.com, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bryan Donlan <bdonlan@gmail.com>, Ulrich Drepper <drepper@redhat.com>,
+       WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1257876016.3022.277.camel@timo-desktop>
+References: <2f11576a0911100948o79970e44t197cd2978428de1a@mail.gmail.com> <1257876016.3022.277.camel@timo-desktop>
+Message-Id: <20091111090704.FD2D.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 11 Nov 2009 09:43:52 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009 16:11:00 -0800
-Greg KH <gregkh@suse.de> wrote:
-
-> On Tue, Nov 10, 2009 at 07:09:30PM -0500, Harik wrote:
-> > On Thu, Nov 5, 2009 at 8:46 AM, Thiago Farina <tfransosi@gmail.com> wrote:
-> > > This macro is a duplicated of ARRAY_SIZE defined in kernel api,
-> > > so just use it instead.
-> > 
-> > > - __ __ __ UBAUD = PUT_FIELD(UBAUD_DIVIDE, __ __hw_baud_table[i].divisor) |
-> > > + __ __ __ UBAUD = PUT_FIELD(UBAUD_DIVIDE, __ __hw_baud_table[i].divisor) |
-> > 
-> > Random bit of whitespace got in the patch
+> On Wed, 2009-11-11 at 02:48 +0900, KOSAKI Motohiro wrote:
+> > There is unwritten reason. I hope to add /proc/[pid]/cmdline cache. It
+> > help to avoid
+> > ps getting stuck by mmap_sem.
 > 
-> What patch?
+> Can you explain this further? When would it cache the value and when
+> would it be returned? I was at least hoping to avoid calling prctl()
+> every time when I want process title changed.
 
-That patch!
+Hmm...
+I'm not intent it.
 
-> > Since nobody directly owns this file, CCing maintainers listed for serial_core
-> 
-> Sure, care to point me at a correct one?
+The setter's prctl() performance is not critical. Plus, current code
+isn't so slow.
 
-I got it.
+I mean ps -elf (or ps aux) read the /proc/pid/cmdline of all task.
+It mean grabbing mmap_sem and read another task's mem for all task.
+Then, A stress workload can kill ps performance easily.
+
+Essentially, reading another process's memory is costly operation. but
+it can be cached.
+
+Some *BSD has similar mechanism.
+
+
+Caution: This feature break SPT_ARGV style process title changing.
+then, it should be optional feature and sould be able to enable by
+admin's explicit operation.
+2years after, probably this issue will disappear automatically. because
+all setproctitle() using software try to use libc's setproctitle().
+IOW, if libc has setproctitle(), nobody try to change own stack argv
+string brutally.
+
+
+> I think Solaris saves the first 80 chars of the initial cmdline to
+> kernel memory and gives that to ps. I guess doing something similar and
+> returning it only when userspace memory can't be accessed would be ok.
+
+Linux does it too. but 16 chars.
+
+
