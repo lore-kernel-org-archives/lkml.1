@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759317AbZKKVgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbZKKVg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759317AbZKKVgx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:36:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759240AbZKKVgw
+	id S1759330AbZKKVg7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:36:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbZKKVg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:36:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54219 "EHLO mx1.redhat.com"
+	Wed, 11 Nov 2009 16:36:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12474 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759239AbZKKVgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:36:52 -0500
-Date: Wed, 11 Nov 2009 22:31:55 +0100
+	id S1759240AbZKKVgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 16:36:55 -0500
+Date: Wed, 11 Nov 2009 22:31:58 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] ptrace: introduce user_single_step_siginfo() helper
-Message-ID: <20091111213155.GA10647@redhat.com>
+Subject: [PATCH 2/5] ptrace: powerpc: implement user_single_step_siginfo()
+Message-ID: <20091111213158.GA10650@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,36 +26,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Suggested by Roland.
 
-Currently there is no way to synthesize a single-stepping trap in the
-arch-independent manner. This patch adds the default helper which fills
-siginfo_t, arch/ can can override it.
+Implement user_single_step_siginfo() for powerpc.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 Acked-by: Roland McGrath <roland@redhat.com>
 ---
 
- include/linux/ptrace.h |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ arch/powerpc/include/asm/ptrace.h |    2 ++
+ arch/powerpc/kernel/traps.c       |    9 +++++++++
+ 2 files changed, 11 insertions(+)
 
---- TH/include/linux/ptrace.h~1_DEFAULT_HELPER	2009-11-10 01:03:24.000000000 +0100
-+++ TH/include/linux/ptrace.h	2009-11-10 21:31:25.000000000 +0100
-@@ -273,6 +273,18 @@ static inline void user_enable_block_ste
- }
- #endif	/* arch_has_block_step */
+--- TH/arch/powerpc/include/asm/ptrace.h~2_PPC_HELPER	2009-11-10 01:03:23.000000000 +0100
++++ TH/arch/powerpc/include/asm/ptrace.h	2009-11-10 21:48:53.000000000 +0100
+@@ -140,6 +140,8 @@ extern void user_enable_single_step(stru
+ extern void user_enable_block_step(struct task_struct *);
+ extern void user_disable_single_step(struct task_struct *);
  
-+#ifdef ARCH_HAS_USER_SINGLE_STEP_INFO
-+extern void user_single_step_siginfo(struct task_struct *tsk,
-+				struct pt_regs *regs, siginfo_t *info);
-+#else
-+static inline void user_single_step_siginfo(struct task_struct *tsk,
++#define ARCH_HAS_USER_SINGLE_STEP_INFO
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
+--- TH/arch/powerpc/kernel/traps.c~2_PPC_HELPER	2009-11-10 01:06:41.000000000 +0100
++++ TH/arch/powerpc/kernel/traps.c	2009-11-10 21:52:45.000000000 +0100
+@@ -174,6 +174,15 @@ int die(const char *str, struct pt_regs 
+ 	return 0;
+ }
+ 
++void user_single_step_siginfo(struct task_struct *tsk,
 +				struct pt_regs *regs, siginfo_t *info)
 +{
 +	memset(info, 0, sizeof(*info));
 +	info->si_signo = SIGTRAP;
++	info->si_code = TRAP_TRACE;
++	info->si_addr = (void __user *)regs->nip;
 +}
-+#endif
 +
- #ifndef arch_ptrace_stop_needed
- /**
-  * arch_ptrace_stop_needed - Decide whether arch_ptrace_stop() should be called
+ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
+ {
+ 	siginfo_t info;
 
