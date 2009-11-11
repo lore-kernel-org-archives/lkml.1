@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756373AbZKKDNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZKKDOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756373AbZKKDNE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 22:13:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZKKDND
+	id S1756591AbZKKDOd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 22:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbZKKDOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 22:13:03 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52599 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754738AbZKKDNC (ORCPT
+	Tue, 10 Nov 2009 22:14:32 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:35564 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755607AbZKKDOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 22:13:02 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 11 Nov 2009 12:10:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with
- nodemask v3
-Message-Id: <20091111121028.b4a0ffe7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091111115217.FD56.A69D9226@jp.fujitsu.com>
-References: <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0911101841480.11083@chino.kir.corp.google.com>
-	<20091111115217.FD56.A69D9226@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Nov 2009 22:14:31 -0500
+Date: Wed, 11 Nov 2009 04:13:25 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: David Daney <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com,
+       rostedt@goodmis.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
+	for MIPS
+Message-ID: <20091111031325.GA20716@linux-mips.org>
+References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com> <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com> <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com> <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com> <4AF8B31C.5030802@caviumnetworks.com> <1257814817.2822.3.camel@falcon.domain.org> <4AF99848.9090000@caviumnetworks.com> <1257907351.2922.37.camel@falcon.domain.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257907351.2922.37.camel@falcon.domain.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 12:02:06 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Wed, Nov 11, 2009 at 10:42:31AM +0800, Wu Zhangjin wrote:
 
-> > There should be a way around that, however.  Shouldn't
+> > -mlong-calls really degrades performance.  I have seen things like 6% 
+> > drop in network packet forwarding rates with -mlong-calls.
 > > 
-> > 	if (nodes_subset(node_states[N_HIGH_MEMORY], *nodemask))
-> > 		return CONSTRAINT_MEMORY_POLICY;
+> 
+> so much drop? seems only two instructions added for it: lui, addi. from
+> this view point, I think the -fno-omit-frame-pointer(add, sd, move...)
+> will also bring with much drop.
+
+The calling sequence is quite badly bloated.  Example:
+
+Normal 32/64-bit subroutine call:
+
+	jal	symbol
+
+32-bit with -mlong-call:
+
+	lui	$25, %hi(foo)
+	addiu	$25, %lo(foo)
+	jalr	$25
+
+64-bit with -mlong-call:
+
+	lui	$25, %highest(foo)
+	lui	$2, %hi(foo)
+	daddiu	$25, %higher(foo)
+	daddiu	$2, %lo(foo)
+	dsll	$25, 32
+	daddu	$25, $2
+	jalr	$25
+
+So not considering the possible cost of the delay slot that's 1 vs. 3 vs. 7
+instructions.  Last I checked ages ago gcc didn't apropriately consider this
+cost when generating -mlong-calls code and Linux these days also is
+optimized under the assumption that subroutine calls are cheap.
+
+It's time that we get a -G optimization that works for the kernel; it would
+allow to cut down the -mlong-calls calling sequence to just:
+
+	lw/ld	$25, offset($gp)
+	jalr	$25
+
+> It's time to remove them? -mlong-calls, -fno-omit-frame-pointer.
+> 
+> > It would be better to fix all the tools so that they could handle both 
+> > -mlong-calls and -mno-long-calls code.
 > > 
-> > be sufficient?
 > 
-> Is this safe on memory hotplug case?
-> 
-N_HIGH_MEMORY is updated at memory hotplug.
+> It's totally possible, will try to make it work later. I just wanted the
+> stuff simple, but if it really brings us with much drop, it's time to
+> fix it.
 
-Thanks,
--Kame
-
+  Ralf
