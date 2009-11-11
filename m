@@ -1,86 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZKKHCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZKKHG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbZKKHCU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZKKHCU
+	id S1754307AbZKKHG2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZKKHG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:02:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50602 "EHLO mx3.mail.elte.hu"
+	Wed, 11 Nov 2009 02:06:27 -0500
+Received: from mga01.intel.com ([192.55.52.88]:12294 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752756AbZKKHCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:02:19 -0500
-Date: Wed, 11 Nov 2009 08:02:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Joe Perches <joe@perches.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/rcu] rcu: Remove inline from forward-referenced
- functions
-Message-ID: <20091111070208.GA28716@elte.hu>
-References: <tip-dbe01350fa8ce0c11948ab7d6be71a4d901be151@git.kernel.org>
- <1257892710.25443.9.camel@Joe-Laptop.home>
- <20091110225926.GA8424@linux.vnet.ibm.com>
- <1257894380.25443.16.camel@Joe-Laptop.home>
- <20091110234101.GB8424@linux.vnet.ibm.com>
- <1257901421.25443.34.camel@Joe-Laptop.home>
- <20091111014222.GE8424@linux.vnet.ibm.com>
- <1257910108.25443.40.camel@Joe-Laptop.home>
- <20091111045013.GG8424@linux.vnet.ibm.com>
- <20091111054138.GA19777@linux.vnet.ibm.com>
+	id S1752993AbZKKHG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 02:06:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,721,1249282800"; 
+   d="c'?scan'208";a="745834297"
+From: "Ma, Ling" <ling.ma@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Date: Wed, 11 Nov 2009 15:05:34 +0800
+Subject: RE: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast string.
+Thread-Topic: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast string.
+Thread-Index: AcphE+G97Vtcd7luS4S8JXcgeySfGABhur/A
+Message-ID: <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
+References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
+ <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com>
+ <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
+ <4AF7C66C.6000009@zytor.com> <20091109080830.GI453@elte.hu>
+In-Reply-To: <20091109080830.GI453@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: multipart/mixed;
+	boundary="_002_8FED46E8A9CA574792FC7AACAC38FE7714FE830398PDSMSX501ccrc_"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091111054138.GA19777@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--_002_8FED46E8A9CA574792FC7AACAC38FE7714FE830398PDSMSX501ccrc_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+SGkgQWxsDQpQbGVhc2UgdXNlIHRoZSBtZW1jcHkuYyhjYyAtbyBtZW1jcHkgbWVtY3B5LmMgLU8y
+KSB0byB0ZXN0IG1vcmUgY2FzZXMsDQppZiB5b3UgaGF2ZSBpbnRlcmVzdC4gSW4gdGhpcyBwcm9n
+cmFtIHdlIGRpZCBzaW1wbGUgbW9kaWZpY2F0aW9uDQpvbiBtZW1jcHlfbmV3IGZ1bmN0aW9uLg0K
+DQpUaGFua3MNCkxpbmcNCg0KDQo+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj5Gcm9tOiBJ
+bmdvIE1vbG5hciBbbWFpbHRvOm1pbmdvQGVsdGUuaHVdDQo+U2VudDogMjAwOcTqMTHUwjnI1SAx
+NjowOQ0KPlRvOiBILiBQZXRlciBBbnZpbg0KPkNjOiBNYSwgTGluZzsgSW5nbyBNb2xuYXI7IFRo
+b21hcyBHbGVpeG5lcjsgbGludXgta2VybmVsDQo+U3ViamVjdDogUmU6IFtQQVRDSCBSRkNdIFtY
+ODZdIHBlcmZvcm1hbmNlIGltcHJvdmVtZW50IGZvciBtZW1jcHlfNjQuUyBieSBmYXN0DQo+c3Ry
+aW5nLg0KPg0KPg0KPiogSC4gUGV0ZXIgQW52aW4gPGhwYUB6eXRvci5jb20+IHdyb3RlOg0KPg0K
+Pj4gT24gMTEvMDgvMjAwOSAxMToyNCBQTSwgTWEsIExpbmcgd3JvdGU6DQo+PiA+IEhpIEFsbA0K
+Pj4gPg0KPj4gPiBUb2RheSB3ZSBydW4gb3VyIGJlbmNobWFyayBvbiBDb3JlMiBhbmQgU2FuZHkg
+QnJpZGdlOg0KPj4gPg0KPj4NCj4+IEhpIExpbmcsDQo+Pg0KPj4gVGhhbmtzIGZvciBkb2luZyB0
+aGF0LiAgRG8geW91IGFsc28gaGF2ZSBhY2Nlc3MgdG8gYW55IG9sZGVyIENQVXM/ICBJDQo+PiBz
+dXNwZWN0IHRoYXQgdGhlIENQVXMgdGhhdCBBbmRpIGFyZSB3b3JyaWVkIGFib3V0IGFyZSBvbGRl
+ciBDUFVzIGxpa2UNCj4+IFA0LCBLOCBvciBQZW50aXVtIE0vQ29yZSAxLiAgKEFuZGk6IHBsZWFz
+ZSBkbyBjbGFyaWZ5IGlmIHlvdSBoYXZlDQo+PiBhZGRpdGlvbmFsIGluZm9ybWF0aW9uLikNCj4+
+DQo+PiBNeSBwZXJzb25hbCBvcGluaW9uIGlzIHRoYXQgaWYgd2UgY2FuIHNob3cgbm8gc2lnbmlm
+aWNhbnQgc2xvd2Rvd24gb24NCj4+IFA0LCBLOCwgUC1NL0NvcmUgMSwgQ29yZSAyLCBhbmQgTmVo
+YWxlbSB0aGVuIHdlIGNhbiBzaW1wbHkgdXNlIHRoaXMNCj4+IGNvZGUgdW5jb25kaXRpb25hbGx5
+LiAgSWYgb25lIG9mIHRoZW0gaXMgcmFkaWNhbGx5IHdvcnNlIHRoYW4NCj4+IGJhc2VsaW5lLCB0
+aGVuIHdlIGhhdmUgdG8gZG8gc29tZXRoaW5nIGNvbmRpdGlvbmFsLCB3aGljaCBpcyBhIGxvdA0K
+Pj4gbW9yZSBjb21wbGljYXRlZC4NCj4+DQo+PiBbSW5nbywgVGhvbWFzOiBkbyB5b3UgYWdyZWU/
+XQ0KPg0KPlllYWguIElJUkMgdGhlIHdvcnN0LWNhc2Ugd2VyZSB0aGUgb2xkIFAyJ3Mgd2hpY2gg
+aGFkIGEgcmVhbGx5IHNsb3csDQo+bWljcm9jb2RlIGJhc2VkIHN0cmluZyBvcHMuIChTb21lIG9m
+IHRoZW0gZXZlbiBoYWQgZXJyYXR1bXMgaW4gZWFybHkNCj5wcm90b3R5cGVzIGFsdGhvdWdoIHdl
+IGNhbiBjZXJ0YWlubHkgaWdub3JlIHRob3NlIGFzIHN0cmluZyBvcHMgZ2V0DQo+cmVsaWVkIG9u
+IHF1aXRlIGZyZXF1ZW50bHkuKQ0KPg0KPklJUkMgdGhlIG9yaWdpbmFsIFBQcm8gY29yZSBjYW1l
+IHVwIHdpdGggc29tZSBuaWZ0eSwgaGFyZHdpcmVkIHN0cmluZw0KPm9wcywgYnV0IHRob3NlIGhh
+ZCB0byBiZSBkdW1iZWQgZG93biBhbmQgZW11bGF0ZWQgaW4gbWljcm9jb2RlIGR1ZSB0bw0KPlNN
+UCBidWdzIC0gbWFraW5nIGl0IGFuIGluZmVyaW9yIGNob2ljZSBpbiB0aGUgZW5kLg0KPg0KPkJ1
+dCB0aGF0IHNob3VsZCBiZSBhbmNpZW50IGhpc3RvcnkgYW5kIGknZCBzdWdnZXN0IHdlIGlnbm9y
+ZSB0aGUgUDQNCj5kZWFkLWVuZCB0b28sIHVubGVzcyBpdCdzIHNvbWUgcmVhbGx5IGJpZyBzbG93
+ZG93biAod2hpY2ggaSBkb3VidCkuIElmDQo+YW55b25lIGNhcmVzIHRoZW4gc29tZSBvcHRpb25h
+bCBhc3NlbWJseSBpbXBsZW1lbnRhdGlvbnMgY291bGQgYmUgYWRkZWQNCj5iYWNrLg0KPg0KPkxp
+bmcsIGlmIHlvdSBhcmUgaW50ZXJlc3RlZCwgY291bGQgeW91IHNlbmQgYSB1c2VyLXNwYWNlIHRl
+c3QtYXBwIHRvDQo+dGhpcyB0aHJlYWQgdGhhdCBldmVyeW9uZSBjb3VsZCBqdXN0IGNvbXBpbGUg
+YW5kIHJ1biBvbiB2YXJpb3VzIG9sZGVyDQo+Ym94ZXMsIHRvIGdhdGhlciBhIHBlcmZvcm1hbmNl
+IHByb2ZpbGUgb2YgaGFuZC1jb2RlZCB2ZXJzdXMgc3RyaW5nIG9wcw0KPnBlcmZvcm1hbmNlPw0K
+Pg0KPiggQW5kIGkgdGhpbmsgd2UgY2FuIG1ha2UgYSBqdWRnZW1lbnQgYmFzZWQgb24gY2FjaGUt
+aG90IHBlcmZvcm1hbmNlDQo+ICBhbG9uZSAtIGlmIHRoZW4gdGhlIHN0cmluZ3Mgb3BzIHdpbGwg
+cGVyZm9ybSBjb21wYXJhdGl2ZWx5IGJldHRlciBpbg0KPiAgY2FjaGUtY29sZCBzY2VuYXJpb3Ms
+IHNvIHRoZSBjYWNoZS1ob3QgbnVtYmVycyB3b3VsZCBiZSBhIGNvbnNlcnZhdGl2ZQ0KPiAgZXN0
+aW1hdGUuICkNCj4NCj4JSW5nbw0K
 
-> On Tue, Nov 10, 2009 at 08:50:13PM -0800, Paul E. McKenney wrote:
-> > On Tue, Nov 10, 2009 at 07:28:28PM -0800, Joe Perches wrote:
-> > > On Tue, 2009-11-10 at 17:42 -0800, Paul E. McKenney wrote:
-> > > > On Tue, Nov 10, 2009 at 05:03:41PM -0800, Joe Perches wrote:
-> > > > > So maybe rename rcutree_plugin.h to rcutree_plugin.c and
-> > > > > #include "rcutree_plugin.c" in rcutree.c instead.
-> > > > Hmmm...
-> > > 
-> > > Perhaps something like this:
-> > 
-> > While I do very much appreciate your time and attention to this...
-> > 
-> > My problem with this sort of thing is that when I tried it, it proved
-> > fragile.  Small changes required lots of rework of forward declarations.
-> > Putting it at the end makes it work very nicely -- the list of forward
-> > declarations doubles as documentation for the plugins, and the contents
-> > of kernel/rcutree_plugin.h (or .c or whatever, either way I end up
-> > violation about the same number of coding guidelines) is independent of
-> > rearrangements of kernel/rcutree.c.
-> > 
-> > The reason that I would really like to keep rcu_bootup_announce() as
-> > a function is that it makes it trivial to collect RCU-flavor-dependent
-> > boot-time information, if needed for some debugging effort.  If I pull
-> > the string out, this sort of thing becomes much more painful.
-> 
-> And, as noted in our offline conversation, you are absolutely right
-> that I need to add __init to both definitions of rcu_bootup_announce(),
-> which I will do, with your Suggested-by.
-> 
-> Fair enough?
+--_002_8FED46E8A9CA574792FC7AACAC38FE7714FE830398PDSMSX501ccrc_
+Content-Type: text/plain; name="memcpy.c"
+Content-Description: memcpy.c
+Content-Disposition: attachment; filename="memcpy.c"; size=5683;
+	creation-date="Wed, 11 Nov 2009 15:02:33 GMT";
+	modification-date="Wed, 11 Nov 2009 15:02:25 GMT"
+Content-Transfer-Encoding: base64
 
-Yep, the __init markers are fair enough - but otherwise i wouldnt overdo 
-this - a casual glance at rcutree_plugin.h shows that it's special, 
-contains an implementation that is included once into kernel/rcutree.c. 
-No need for header guards or a rename.
+I2luY2x1ZGU8c3RkaW8uaD4KI2luY2x1ZGUgPHN0ZGxpYi5oPgoKCnR5cGVkZWYgdW5zaWduZWQg
+bG9uZyBsb25nIGludCBocF90aW1pbmdfdDsKI2RlZmluZSAgTUFYU0FNUExFU1RQVCAgICAgICAg
+MTAwMDAwCiNkZWZpbmUgIE1BWENPUFlTSVpFICAgICAgICAgICgxMDI0ICogMzIpCiNkZWZpbmUg
+IE9SSUcgIDAKI2RlZmluZSAgTkVXICAgMQpzdGF0aWMgY2hhciogYnVmMSA9IE5VTEw7CnN0YXRp
+YyBjaGFyKiBidWYyID0gTlVMTDsKCmhwX3RpbWluZ190IF9kbF9ocF90aW1pbmdfb3ZlcmhlYWQ7
+CiMgZGVmaW5lIEhQX1RJTUlOR19OT1coVmFyKSBcCiAgKHsgdW5zaWduZWQgbG9uZyBsb25nIF9o
+aSwgX2xvOyBcCiAgICAgYXNtIHZvbGF0aWxlICgicmR0c2MiIDogIj1hIiAoX2xvKSwgIj1kIiAo
+X2hpKSk7IFwKICAgICAoVmFyKSA9IF9oaSA8PCAzMiB8IF9sbzsgfSkKCiNkZWZpbmUgSFBfVElN
+SU5HX0RJRkYoRGlmZiwgU3RhcnQsIEVuZCkJKERpZmYpID0gKChFbmQpIC0gKFN0YXJ0KSkKI2Rl
+ZmluZSBIUF9USU1JTkdfVE9UQUwodG90YWxfdGltZSwgc3RhcnQsIGVuZCkJXAogIGRvCQkJCQkJ
+CQkJXAogICAgewkJCQkJCQkJCVwKICAgICAgaHBfdGltaW5nX3QgdG1wdGltZTsJCQkJCQlcCiAg
+ICAgIEhQX1RJTUlOR19ESUZGICh0bXB0aW1lLCBzdGFydCArIF9kbF9ocF90aW1pbmdfb3Zlcmhl
+YWQsIGVuZCk7CVwKCXRvdGFsX3RpbWUgKz0gdG1wdGltZTsJCQkJCQlcCiAgICB9CQkJCQkJCQkJ
+XAogIHdoaWxlICgwKQoKdm9pZCBtZW1jcHlfb3JpZyhjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50
+IGxlbik7CnZvaWQgbWVtY3B5X25ldyhjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50IGxlbik7CnZv
+aWQgKCpkb19tZW1jcHkpKGNoYXIgKmRzdCwgY2hhciAqc3JjLCBpbnQgbGVuKTsKCnN0YXRpYyB2
+b2lkCmRvX29uZV90aHJvdWdocHV0ICggY2hhciAqZHN0LCBjaGFyICpzcmMsCgkgICAgIHNpemVf
+dCBsZW4pCnsKICAgICAgX19hc21fXygiY3B1aWQiIDogOiA6ICJlYXgiLCAiZWJ4IiwgImVjeCIs
+ICJlZHgiKTsKICAgICAgc2l6ZV90IGk7CiAgICAgIGhwX3RpbWluZ190IHN0YXJ0IF9fYXR0cmli
+dXRlICgodW51c2VkKSk7CiAgICAgIGhwX3RpbWluZ190IHN0b3AgX19hdHRyaWJ1dGUgKCh1bnVz
+ZWQpKTsKICAgICAgaHBfdGltaW5nX3QgdG90YWxfdGltZSA9ICAoaHBfdGltaW5nX3QpIDA7Cgog
+ICAgICBfX2FzbV9fKCJjcHVpZCIgOiA6IDogImVheCIsICJlYngiLCAiZWN4IiwgImVkeCIpOwog
+ICAgICBmb3IgKGkgPSAwOyBpIDwgTUFYU0FNUExFU1RQVDsgKytpKSAgewogICAgICAgICAgSFBf
+VElNSU5HX05PVyAoc3RhcnQpOwoJCWRvX21lbWNweShidWYxLCBidWYyLCBsZW4pOwoJICBIUF9U
+SU1JTkdfTk9XIChzdG9wKTsKCSAgSFBfVElNSU5HX1RPVEFMICh0b3RhbF90aW1lLCBzdGFydCwg
+c3RvcCk7CiAgICAgIH0KCiAgICAgIHByaW50ZiAoIlx0JXpkIiwgKHNpemVfdCkgdG90YWxfdGlt
+ZS9NQVhTQU1QTEVTVFBUKTsKCn0KCnN0YXRpYyB2b2lkCmRvX3RwdF90ZXN0IChzaXplX3QgYWxp
+Z24xLCBzaXplX3QgYWxpZ24yLCBzaXplX3QgbGVuKQp7CiAgc2l6ZV90IGksIGo7CiAgY2hhciAq
+czEsICpzMjsKCiAgczEgPSAoY2hhciAqKSAoYnVmMSArIGFsaWduMSk7CiAgczIgPSAoY2hhciAq
+KSAoYnVmMiArIGFsaWduMik7CgoKICAgcHJpbnRmICgiVFBUOiBMZW4gJTR6ZCwgYWxpZ25tZW50
+ICUyemQvJTJ6ZDoiLCBsZW4sIGFsaWduMSwgYWxpZ24yKTsKICAgZG9fbWVtY3B5ID0gbWVtY3B5
+X29yaWc7CiAgIGRvX29uZV90aHJvdWdocHV0IChzMiwgczEsIGxlbik7CiAgIGRvX21lbWNweSA9
+IG1lbWNweV9uZXc7CiAgIGRvX29uZV90aHJvdWdocHV0IChzMiwgczEsIGxlbik7CgogICAgcHV0
+Y2hhciAoJ1xuJyk7Cn0KCnN0YXRpYyB0ZXN0X2luaXQodm9pZCkKewogIGludCBpOwogIGJ1ZjEg
+PSB2YWxsb2MoTUFYQ09QWVNJWkUpOwogIGJ1ZjIgPSB2YWxsb2MoTUFYQ09QWVNJWkUpOwoKICBm
+b3IgKGkgPSAwOyBpIDwgTUFYQ09QWVNJWkUgOyBpID0gaSArIDY0KSB7CiAgICAgICAgYnVmMVtp
+XSA9IGJ1ZjJbaV0gPSBpICYgMHhmZjsKICB9Cgp9Cgp2b2lkIG1lbWNweV9uZXcoY2hhciAqZHN0
+LCBjaGFyICpzcmMsIGludCBsZW4pCnsKCglfX2FzbV9fKCJtb3ZxICVyZGksICVyYXgiKTsKCV9f
+YXNtX18oIm1vdmwgJWVkeCwgJWVjeCIpOwoJX19hc21fXygic2hybCAgICQ2LCAlZWN4Iik7Cglf
+X2FzbV9fKCJqeiAyZiIpOwoKCV9fYXNtX18oImNtcCAkMHg0MDAsICVyZHgiKTsKCV9fYXNtX18o
+ImphZSA4ZiIpOwoKCV9fYXNtX18oIjE6Iik7CglfX2FzbV9fKCJkZWNsICVlY3giKTsKCglfX2Fz
+bV9fKCJtb3ZxIDAqOCglcnNpKSwgJXIxMSIpOwoJX19hc21fXygibW92cSAxKjgoJXJkaSksICVy
+OCIpOwoJX19hc21fXygibW92cSAlcjExLAkwKjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4
+LAkxKjgoJXJkaSkiKTsKCglfX2FzbV9fKCJtb3ZxIDIqOCglcnNpKSwgJXI5Iik7CglfX2FzbV9f
+KCJtb3ZxIDMqOCglcmRpKSwgJXIxMCIpOwoJX19hc21fXygibW92cSAlcjksCTIqOCglcmRpKSIp
+OwoJX19hc21fXygibW92cSAlcjEwLAkzKjgoJXJkaSkiKTsKCglfX2FzbV9fKCJtb3ZxIDQqOCgl
+cnNpKSwgJXIxMSIpOwoJX19hc21fXygibW92cSA1KjgoJXJkaSksICVyOCIpOwoJX19hc21fXygi
+bW92cSAlcjExLAk0KjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAk1KjgoJXJkaSkiKTsK
+CglfX2FzbV9fKCJtb3ZxIDYqOCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDcqOCglcmRp
+KSwgJXIxMCIpOwoJX19hc21fXygibW92cSAlcjksCTYqOCglcmRpKSIpOwoJX19hc21fXygibW92
+cSAlcjEwLAk3KjgoJXJkaSkiKTsKCglfX2FzbV9fKCJsZWFxIDY0KCVyc2kpLCAlcnNpIik7Cglf
+X2FzbV9fKCJsZWFxIDY0KCVyZGkpLCAlcmRpIik7CgoJX19hc21fXygiam56ICAxYiIpOwoKCV9f
+YXNtX18oIjI6Iik7CglfX2FzbV9fKCJtb3ZsICVlZHgsICVlY3giKTsKCV9fYXNtX18oImFuZGwg
+JDYzLCAlZWN4Iik7CglfX2FzbV9fKCJzaGwgICAkMywgJWVjeCIpOwoJX19hc21fXygianogNWYi
+KTsKCglfX2FzbV9fKCIzOiIpOwoJX19hc21fXygiY21wICVlZGksICVlc2kiKTsKCV9fYXNtX18o
+Im1vdiAkOCwgJXI5Iik7CglfX2FzbV9fKCJqbCA0ZiIpOwoJX19hc21fXygibmVnICVyOSIpOwoK
+CV9fYXNtX18oIjQ6Iik7CglfX2FzbV9fKCJkZWNsICVlY3giKTsKCV9fYXNtX18oIm1vdnEgKCVy
+c2kpLAklcjgiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAkoJXJkaSkiKTsKCV9fYXNtX18oImxlYXEg
+OCglcmRpKSwJJXJkaSIpOwoJX19hc21fXygibGVhcSA4KCVyc2kpLAklcnNpIik7CglfX2FzbV9f
+KCJqbnogM2IiKTsKCglfX2FzbV9fKCI1OiIpOwoJX19hc21fXygibW92bCAlZWR4LAklZWN4Iik7
+CglfX2FzbV9fKCJhbmRsICQ3LAklZWN4Iik7CglfX2FzbV9fKCJqeiA3ZiIpOwoKCV9fYXNtX18o
+IjY6Iik7CglfX2FzbV9fKCJtb3ZiICglcnNpKSwJJXI4YiIpOwoJX19hc21fXygibW92YiAlcjhi
+LCAoJXJkaSkiKTsKCV9fYXNtX18oImluY3EgJXJkaSIpOwoJX19hc21fXygiaW5jcSAlcnNpIik7
+CglfX2FzbV9fKCJkZWNsICVlY3giKTsKCV9fYXNtX18oImpueiA2YiIpOwoKCV9fYXNtX18oIjc6
+Iik7CglfX2FzbV9fKCJyZXRxIik7CgoJX19hc21fXygiODoiKTsKCV9fYXNtX18oIm1vdmwgJWVk
+eCwgJWVjeCIpOwoJX19hc21fXyAoInNociAkMywgJWVjeCIpOwoJX19hc21fXyAoImFuZGwgJDcs
+ICVlZHgiKTsKCV9fYXNtX18oInJlcCBtb3ZzcSAiKTsKCV9fYXNtX18gKCJqeiA5ZiIpOwoJX19h
+c21fXygibW92bCAlZWR4LCAlZWN4Iik7CglfX2FzbV9fKCJyZXAgbW92c2IiKTsKCglfX2FzbV9f
+KCI5OiIpOwp9CnZvaWQgbWVtY3B5X29yaWcoY2hhciAqZHN0LCBjaGFyICpzcmMsIGludCBsZW4p
+CnsKCV9fYXNtX18oIm1vdnEgJXJkaSwgJXJheCIpOwoJX19hc21fXygibW92bCAlZWR4LCAlZWN4
+Iik7CglfX2FzbV9fKCJzaHJsICAgJDYsICVlY3giKTsKCV9fYXNtX18oImp6IDJmIik7CgoJX19h
+c21fXygibW92ICQweDgwLCAlcjhkICAiKTsgIC8qYWxpZ25lZCBjYXNlIGZvciBsb29wIDEgKi8K
+CglfX2FzbV9fKCIxOiIpOwoJX19hc21fXygiZGVjbCAlZWN4Iik7CgoJX19hc21fXygibW92cSAw
+KjgoJXJzaSksICVyMTEiKTsKCV9fYXNtX18oIm1vdnEgMSo4KCVyZGkpLCAlcjgiKTsKCV9fYXNt
+X18oIm1vdnEgJXIxMSwJMCo4KCVyZGkpIik7CglfX2FzbV9fKCJtb3ZxICVyOCwJMSo4KCVyZGkp
+Iik7CgoJX19hc21fXygibW92cSAyKjgoJXJzaSksICVyOSIpOwoJX19hc21fXygibW92cSAzKjgo
+JXJkaSksICVyMTAiKTsKCV9fYXNtX18oIm1vdnEgJXI5LAkyKjgoJXJkaSkiKTsKCV9fYXNtX18o
+Im1vdnEgJXIxMCwJMyo4KCVyZGkpIik7CgoJX19hc21fXygibW92cSA0KjgoJXJzaSksICVyMTEi
+KTsKCV9fYXNtX18oIm1vdnEgNSo4KCVyZGkpLCAlcjgiKTsKCV9fYXNtX18oIm1vdnEgJXIxMSwJ
+NCo4KCVyZGkpIik7CglfX2FzbV9fKCJtb3ZxICVyOCwJNSo4KCVyZGkpIik7CgoJX19hc21fXygi
+bW92cSA2KjgoJXJzaSksICVyOSIpOwoJX19hc21fXygibW92cSA3KjgoJXJkaSksICVyMTAiKTsK
+CV9fYXNtX18oIm1vdnEgJXI5LAk2KjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXIxMCwJNyo4
+KCVyZGkpIik7CgoJX19hc21fXygibGVhcSA2NCglcnNpKSwgJXJzaSIpOwoJX19hc21fXygibGVh
+cSA2NCglcmRpKSwgJXJkaSIpOwoKCV9fYXNtX18oImpueiAgMWIiKTsKCglfX2FzbV9fKCIyOiIp
+OwoJX19hc21fXygibW92bCAlZWR4LCAlZWN4Iik7CglfX2FzbV9fKCJhbmRsICQ2MywgJWVjeCIp
+OwoJX19hc21fXygic2hsICAgJDMsICVlY3giKTsKCV9fYXNtX18oImp6IDVmIik7CgoJX19hc21f
+XygiMzoiKTsKCV9fYXNtX18oImNtcCAlZWRpLCAlZXNpIik7CglfX2FzbV9fKCJtb3YgJDgsICVy
+OSIpOwoJX19hc21fXygiamwgNGYiKTsKCV9fYXNtX18oIm5lZyAlcjkiKTsKCglfX2FzbV9fKCI0
+OiIpOwoJX19hc21fXygiZGVjbCAlZWN4Iik7CglfX2FzbV9fKCJtb3ZxICglcnNpKSwJJXI4Iik7
+CglfX2FzbV9fKCJtb3ZxICVyOCwJKCVyZGkpIik7CglfX2FzbV9fKCJsZWFxIDgoJXJkaSksCSVy
+ZGkiKTsKCV9fYXNtX18oImxlYXEgOCglcnNpKSwJJXJzaSIpOwoJX19hc21fXygiam56IDNiIik7
+CgoJX19hc21fXygiNToiKTsKCV9fYXNtX18oIm1vdmwgJWVkeCwJJWVjeCIpOwoJX19hc21fXygi
+YW5kbCAkNywJJWVjeCIpOwoJX19hc21fXygianogN2YiKTsKCglfX2FzbV9fKCI2OiIpOwoJX19h
+c21fXygibW92YiAoJXJzaSksCSVyOGIiKTsKCV9fYXNtX18oIm1vdmIgJXI4YiwgKCVyZGkpIik7
+CglfX2FzbV9fKCJpbmNxICVyZGkiKTsKCV9fYXNtX18oImluY3EgJXJzaSIpOwoJX19hc21fXygi
+ZGVjbCAlZWN4Iik7CglfX2FzbV9fKCJqbnogNmIiKTsKCglfX2FzbV9fKCI3OiIpOwoJX19hc21f
+XygicmV0cSIpOwp9CgoKdm9pZCBtYWluKHZvaWQpCnsKICBpbnQgaTsKICB0ZXN0X2luaXQoKTsK
+ICBwcmludGYgKCIlMjNzIiwgIiIpOwogIHByaW50ZiAoIlx0JXNcdCVzXG4iLCAibWVtY3B5X29y
+aWciLCAibWVtY3B5X25ldyIpOwoKICBmb3IgKGkgPSAxMDI0OyBpIDwgMTAyNCAqIDE2OyBpID0g
+aSArIDEwMjQpCiAgICAgZG9fdHB0X3Rlc3QoOCwgMCwgaSk7Cgp9Cg==
 
-	Ingo
+--_002_8FED46E8A9CA574792FC7AACAC38FE7714FE830398PDSMSX501ccrc_--
