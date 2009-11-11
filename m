@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZKKDv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbZKKDvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbZKKDv6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 22:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZKKDvP
+	id S1755069AbZKKDvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 22:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZKKDvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 22:51:15 -0500
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:63411 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753571AbZKKDvD (ORCPT
+	Tue, 10 Nov 2009 22:51:17 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:49171 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753586AbZKKDvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 22:51:03 -0500
+	Tue, 10 Nov 2009 22:51:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=q9/c+C/wr2bBG/3Ufeo6TIziuV/V1ce1bFDG/vq38qJAjvVeR8oHfR4JusgAyvoW6E
-         S2VzlxVaWOeYAs3hGOVyDCdOh7ydTVE6e0w8ReXt6R96aVVZ70/YpvZ+rBhvpiSeBQF7
-         rhgT4MEmwJPPrkVvG9dG6AEbNOYzN9pwCEON0=
+        b=PVA8oomZvYEBFw2NlV181R17AopPa8/hGW6wJvQGGzKXcs1qqAxrdHwv3CLxWbo6d/
+         jF12fcOVpyzZpei+nE9LMKK2EYqEUyffkET9Ul2en7F9h6zEOea8WgWimC/Q1jlXcNOn
+         i3L3ouSKsc9PsRXISJ1rvu0J8GveCp5Xj0qiA=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -24,9 +24,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
        Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Subject: [PATCH 3/6] perf tools: Split up build id saving into fetch and write
-Date: Wed, 11 Nov 2009 04:51:04 +0100
-Message-Id: <1257911467-28276-3-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 4/6] perf tools: Read the build-ids from the header layer
+Date: Wed, 11 Nov 2009 04:51:05 +0100
+Message-Id: <1257911467-28276-4-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1257911467-28276-1-git-send-email-fweisbec@gmail.com>
 References: <1257911467-28276-1-git-send-email-fweisbec@gmail.com>
@@ -34,22 +34,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are saving the build id once we stop the profiling. And only after
-doing that we know if we need to set that feature in the header through
-the feature bitmap.
-
-But if we want a proper feature support in the headers, using a rule of
-offset/size pairs in sections, we need to know in advance how many
-features we need to set in the headers, so that we can reserve rooms
-for their section headers.
-
-The current state doesn't allow that, as it forces us to first save
-the build-ids to the file right after the datas instead of planning
-any structured layout.
-
-That's why this splits up the build-ids processing in two parts: one
-that fetches the build-ids from the Dso objects, and one that saves
-them into the file.
+Keep the build-ids reading implementation in the data mapping but move
+its call to the headers so that we have a better control on it
+(offset seeking, size passing, etc..).
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -58,149 +45,94 @@ Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 ---
- tools/perf/util/event.h  |    7 +++++++
- tools/perf/util/header.c |   41 +++++++++++++++++------------------------
- tools/perf/util/symbol.c |   34 ++++++++++++++++++++++++++++++++++
- tools/perf/util/symbol.h |    1 +
- 4 files changed, 59 insertions(+), 24 deletions(-)
+ tools/perf/util/data_map.c |    8 ++------
+ tools/perf/util/data_map.h |    2 ++
+ tools/perf/util/header.c   |   14 ++++++++++++--
+ 3 files changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index 34c6fcb..1f771ce 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -69,6 +69,13 @@ struct build_id_event {
- 	char			 filename[];
- };
+diff --git a/tools/perf/util/data_map.c b/tools/perf/util/data_map.c
+index 00a9c11..66e58aa 100644
+--- a/tools/perf/util/data_map.c
++++ b/tools/perf/util/data_map.c
+@@ -70,8 +70,8 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
+ 	}
+ }
  
-+struct build_id_list {
-+	struct build_id_event	event;
-+	struct list_head	list;
-+	const char		*dso_name;
-+	int			len;
-+};
-+
- typedef union event_union {
- 	struct perf_event_header	header;
- 	struct ip_event			ip;
+-static int perf_header__read_build_ids(const struct perf_header *self,
+-				       int input, off_t file_size)
++int perf_header__read_build_ids(const struct perf_header *self,
++				int input, off_t file_size)
+ {
+ 	off_t offset = self->data_offset + self->data_size;
+ 	struct build_id_event bev;
+@@ -163,10 +163,6 @@ int mmap_dispatch_perf_file(struct perf_header **pheader,
+ 		if (curr_handler->sample_type_check(sample_type) < 0)
+ 			exit(-1);
+ 
+-	if (perf_header__has_feat(header, HEADER_BUILD_ID) &&
+-	    perf_header__read_build_ids(header, input, input_stat.st_size))
+-		pr_debug("failed to read buildids, continuing...\n");
+-
+ 	if (load_kernel(NULL) < 0) {
+ 		perror("failed to load kernel symbols");
+ 		return EXIT_FAILURE;
+diff --git a/tools/perf/util/data_map.h b/tools/perf/util/data_map.h
+index 716d105..c412281 100644
+--- a/tools/perf/util/data_map.h
++++ b/tools/perf/util/data_map.h
+@@ -27,5 +27,7 @@ int mmap_dispatch_perf_file(struct perf_header **pheader,
+ 			    int full_paths,
+ 			    int *cwdlen,
+ 			    char **cwd);
++int perf_header__read_build_ids(const struct perf_header *self,
++				int input, off_t file_size);
+ 
+ #endif
 diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index a4d0bbe..2f702c2 100644
+index 2f702c2..915b56e 100644
 --- a/tools/perf/util/header.c
 +++ b/tools/perf/util/header.c
-@@ -174,29 +174,18 @@ static void do_write(int fd, void *buf, size_t size)
+@@ -9,6 +9,8 @@
+ #include "../perf.h"
+ #include "trace-event.h"
+ #include "symbol.h"
++#include "data_map.h"
++#include "debug.h"
+ 
+ /*
+  * Create new perf.data header attribute:
+@@ -322,6 +324,14 @@ static void perf_header__adds_read(struct perf_header *self, int fd)
+ 		trace_report(fd);
+ 		lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
  	}
- }
- 
--static bool write_buildid_table(int fd)
-+static void write_buildid_table(int fd, struct list_head *id_head)
- {
--	struct dso *pos;
--	bool have_buildid = false;
--
--	list_for_each_entry(pos, &dsos, node) {
--		struct build_id_event b;
--		size_t len;
--
--		if (filename__read_build_id(pos->long_name,
--					    &b.build_id,
--					    sizeof(b.build_id)) < 0)
--			continue;
--		have_buildid = true;
--		memset(&b.header, 0, sizeof(b.header));
--		len = strlen(pos->long_name) + 1;
--		len = ALIGN(len, 64);
--		b.header.size = sizeof(b) + len;
--		do_write(fd, &b, sizeof(b));
--		do_write(fd, pos->long_name, len);
--	}
-+	struct build_id_list *iter, *next;
 +
-+	list_for_each_entry_safe(iter, next, id_head, list) {
-+		struct build_id_event *b = &iter->event;
- 
--	return have_buildid;
-+		do_write(fd, b, sizeof(*b));
-+		do_write(fd, (void *)iter->dso_name, iter->len);
-+		list_del(&iter->list);
-+		free(iter);
++	if (perf_header__has_feat(self, HEADER_BUILD_ID)) {
++		struct stat input_stat;
++
++		fstat(fd, &input_stat);
++		if (perf_header__read_build_ids(self, fd, input_stat.st_size))
++			pr_debug("failed to read buildids, continuing...\n");
 +	}
- }
- 
- static void
-@@ -226,10 +215,14 @@ perf_header__adds_write(struct perf_header *self, int fd, bool at_exit)
- 	}
- 
- 	if (at_exit) {
--		lseek(fd, self->data_offset + self->data_size, SEEK_SET);
--		if (write_buildid_table(fd))
-+		LIST_HEAD(id_list);
-+
-+		if (fetch_build_id_table(&id_list)) {
-+			lseek(fd, self->data_offset + self->data_size, SEEK_SET);
- 			perf_header__set_feat(self, HEADER_BUILD_ID);
--		lseek(fd, cur_offset, SEEK_SET);
-+			write_buildid_table(fd, &id_list);
-+			lseek(fd, cur_offset, SEEK_SET);
-+		}
- 	}
  };
  
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index a2e95ce..9c286db 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -851,6 +851,40 @@ out_close:
- 	return err;
- }
+ struct perf_header *perf_header__read(int fd)
+@@ -382,14 +392,14 @@ struct perf_header *perf_header__read(int fd)
  
-+bool fetch_build_id_table(struct list_head *head)
-+{
-+	bool have_buildid = false;
-+	struct dso *pos;
-+
-+	list_for_each_entry(pos, &dsos, node) {
-+		struct build_id_list *new;
-+		struct build_id_event b;
-+		size_t len;
-+
-+		if (filename__read_build_id(pos->long_name,
-+					    &b.build_id,
-+					    sizeof(b.build_id)) < 0)
-+			continue;
-+		have_buildid = true;
-+		memset(&b.header, 0, sizeof(b.header));
-+		len = strlen(pos->long_name) + 1;
-+		len = ALIGN(len, 64);
-+		b.header.size = sizeof(b) + len;
-+
-+		new = malloc(sizeof(*new));
-+		if (!new)
-+			die("No memory\n");
-+
-+		memcpy(&new->event, &b, sizeof(b));
-+		new->dso_name = pos->long_name;
-+		new->len = len;
-+
-+		list_add_tail(&new->list, head);
-+	}
-+
-+	return have_buildid;
-+}
-+
- int filename__read_build_id(const char *filename, void *bf, size_t size)
- {
- 	int fd, err = -1;
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index f8c1899..0a34a54 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -86,6 +86,7 @@ char dso__symtab_origin(const struct dso *self);
- void dso__set_build_id(struct dso *self, void *build_id);
+ 	memcpy(&self->adds_features, &f_header.adds_features, sizeof(f_header.adds_features));
  
- int filename__read_build_id(const char *filename, void *bf, size_t size);
-+bool fetch_build_id_table(struct list_head *head);
- int build_id__sprintf(u8 *self, int len, char *bf);
+-	perf_header__adds_read(self, fd);
+-
+ 	self->event_offset = f_header.event_types.offset;
+ 	self->event_size   = f_header.event_types.size;
  
- int load_kernel(symbol_filter_t filter);
+ 	self->data_offset = f_header.data.offset;
+ 	self->data_size   = f_header.data.size;
+ 
++	perf_header__adds_read(self, fd);
++
+ 	lseek(fd, self->data_offset, SEEK_SET);
+ 
+ 	self->frozen = 1;
 -- 
 1.6.2.3
 
