@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZKKOQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbZKKOSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756292AbZKKOQv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 09:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbZKKOQu
+	id S1756881AbZKKOSL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 09:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZKKOSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 09:16:50 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32792 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753990AbZKKOQu (ORCPT
+	Wed, 11 Nov 2009 09:18:10 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:35257 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756181AbZKKOSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 09:16:50 -0500
-Date: Wed, 11 Nov 2009 15:16:23 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: [PATCH 2/2] regulator/mc13783: various cleanups
-Message-ID: <20091111141623.GB1849@pengutronix.de>
-References: <20091106002847.GC22366@sortiz.org> <1257841087-23662-1-git-send-email-u.kleine-koenig@pengutronix.de> <1257841087-23662-2-git-send-email-u.kleine-koenig@pengutronix.de> <1257948708.3089.101.camel@odin>
+	Wed, 11 Nov 2009 09:18:10 -0500
+Date: Wed, 11 Nov 2009 14:18:15 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+cc: David Daney <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com,
+       Ralf Baechle <ralf@linux-mips.org>, rostedt@goodmis.org,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
+ for MIPS
+In-Reply-To: <1257947513.7308.8.camel@falcon.domain.org>
+Message-ID: <alpine.LFD.2.00.0911111413560.10184@eddie.linux-mips.org>
+References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com>  <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com>  <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com> 
+ <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com>  <4AF8B31C.5030802@caviumnetworks.com>  <1257814817.2822.3.camel@falcon.domain.org>  <4AF99848.9090000@caviumnetworks.com>  <1257907351.2922.37.camel@falcon.domain.org> 
+ <alpine.LFD.2.00.0911111309170.10184@eddie.linux-mips.org> <1257947513.7308.8.camel@falcon.domain.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1257948708.3089.101.camel@odin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 11 Nov 2009, Wu Zhangjin wrote:
 
-On Wed, Nov 11, 2009 at 02:11:48PM +0000, Liam Girdwood wrote:
-> On Tue, 2009-11-10 at 09:18 +0100, Uwe Kleine-König wrote:
-> > - define needed registers and bits in the driver
-> > - properly namespace functions and structs
-> > - fix locking as required by patch
-> >   "mfd/mc13783: near complete rewrite"
-> > - use platform_data as provided by "mfd/mc13783: near complete rewrite"
-> >   instead of accessing struct mc13783
-> > - struct mc13783_regulator_priv.desc is (and was) unused and so can go
-> >   away
-> > - use cpp magic to initialize mc13783_regulators
-> > - bring MODULE_LICENSE in sync with actual copyright
-> > - minor style fixes
-> > 
-> > This allows not including mc13783-private.h which I intend to remove
-> > soon.
-> > 
-> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> > Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> > Cc: Liam Girdwood <lrg@slimlogic.co.uk>
-> > Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> > Cc: Samuel Ortiz <sameo@linux.intel.com>
-> > ---
+> >  No, register jumps cannot be predicted -- this is where the performance 
+> > goes on any serious processor -- the two extra instructions are nothing 
+> > compared to that.  OTOH frame pointer calculations are pure arithmetic, so 
+> > you only lose time incurred by the instructions themselves.
 > 
-> I assume the new mc13783 function and type definitions are in mfd-next ?
-Yes, it's 3a69e7d9f6b1fb6c6db7f23e22351e3db7d55ebb in todays linux-next.
- 
-Best regards
-Uwe
+> Yes, I only mean the -mlong-calls and the original -mno-long-calls with
+> -pg.
+> 
+> The orignal one looks like this:
+> 
+> move ra, at
+> jal _mcount
+> 
+> The new one with -mlong-calls looks like this:
+> 
+> lui v1, HI_16BIT_OF_MCOUNT
+> addiu v1, v1, LOW_16BIT_OF_MCOUNT
+> move ra, at
+> jalr v1
+> 
+> both of them have a "jump" instruciton, so, only two lui, addiu added
+> for -mlong-calls ;)
+> 
+> what about the difference between that "jal _mcount"  and "jalr v1"?
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+ As I say, the latter cannot be predicted and will incur a stall for any 
+decent pipeline.  With the former the target address of the jump can be 
+calculated early and the instruction fetch unit can start feeding 
+instructions from there into the pipeline even before the jump has reached 
+the execution stage.
+
+  Maciej
