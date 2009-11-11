@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbZKKHUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbZKKHV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbZKKHUa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:20:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZKKHUa
+	id S1755073AbZKKHV2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:21:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZKKHV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:20:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57330 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751965AbZKKHU3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:20:29 -0500
-Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
-From: Peter Zijlstra <peterz@infradead.org>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Miao Xie <miaox@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com>
-References: <4AEF94E8.3030403@cn.fujitsu.com>
-	 <1257846518.4648.18.camel@twins>
-	 <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 11 Nov 2009 08:20:07 +0100
-Message-ID: <1257924007.23203.18.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 11 Nov 2009 02:21:27 -0500
+Received: from www.tglx.de ([62.245.132.106]:41349 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752673AbZKKHV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 02:21:26 -0500
+Date: Wed, 11 Nov 2009 08:21:28 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jupyung Lee <jupyung@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH-rt 1/1] softirqs: add preempt_check_resched() in
+ ksoftirqd()
+In-Reply-To: <1257914122-9637-1-git-send-email-jupyung@gmail.com>
+Message-ID: <alpine.LFD.2.00.0911110818300.2897@localhost.localdomain>
+References: <1257914122-9637-1-git-send-email-jupyung@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 15:21 +0900, Yasunori Goto wrote:
+Jupyung,
 
-> When users use cpuset/cpu affinity, then they would like to controll cpu affinity.
-> Not CPU time.
+On Wed, 11 Nov 2009, Jupyung Lee wrote:
 
-What are people using affinity for? The only use of affinity is to
-restrict or disable the load-balancer. Don't complain the load-balancer
-doesn't work when you're taking active steps to hinder its work.
-
-If you don't want things load-balanced, turn it off, if you want the
-load-balancer to work on smaller groups of cpus, use cpusets.
-
-Anyway, I said there needs to be done something because the interaction
-between cpusets and the cpu-controller is utter crap, they never should
-have been separated like they are.
-
-> To be honest, I don't have any good idea because I'm not familiar with
-> schduler's code. But I have one question.
+> In its current preempt-rt kernel, ksoftirq() includes a series of primitives
+> related with kernel preemption and irq on/off, in the following order:
 > 
+> preempt_disable()		... (1)
+> local_irq_disable()		... (2)
+> __preempt_enable_no_resched()	... (3)
+> local_irq_enable()		... (4)
 > 
-> 1618 static int tg_shares_up(struct task_group *tg, void *data)
-> 1619 {
-> 1620         unsigned long weight, rq_weight = 0, shares = 0;
+> A problem arises if a process is awakened between (1) and (2) because
+> it is not given a chance to preempt the currently running process
+> for a while since (4): since (4), the kernel is preemptible, but there
+> is no explicit reschedule point.
 > 
-> (snip)
-> 
-> 1632         for_each_cpu(i, sched_domain_span(sd)) {
-> 1633                 weight = tg->cfs_rq[i]->load.weight;
-> 1634                 usd->rq_weight[i] = weight;
-> 1635 
-> 1636                 /*
-> 1637                  * If there are currently no tasks on the cpu pretend there
-> 1638                  * is one of average load so that when a new task gets to
-> 1639                  * run here it will not get delayed by group starvation.
-> 1640                  */
-> 1641                 if (!weight)
-> 1642                         weight = NICE_0_LOAD; ---------(*)
-> 
-> I heard from test team when (*) was removed, 1) didn't occur.
-> 
-> The comment said (*) is to avoid starvation condition.
-> However, I don't understand why NICE_0_LOAD must be specified.
-> Could you tell me why small value (like 2 or 3) is not used for (*)?
-> What is side effect? 
+> A simple suggestion to resolve the problem is to add a reschedule point,
+> preempt_check_resched(), just after (4).
 
-Exactly what the comment says, it will get delayed because the group
-won't get scheduled on that cpu until all the group weights get
-re-adjusted again, which can be much longer than the typical runtimes of
-the workload in question.
+Good catch. I applied it with a simple modification.
 
-Regular weights are NICE_0_LOAD, if you stick a 3 next to that I'll not
-get ran much -> starvation.
+Thanks,
+
+	tglx
+---
+commit ca0b4bfa5994856bbcf4227e29f9c73722efaef2
+Author: Jupyung Lee <jupyung@gmail.com>
+
+<snip>
+
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -1033,10 +1033,10 @@ sleep_more:
+ 				goto sleep_more;
+ 			}
+ 			per_cpu(softirq_running, cpu) |= softirq_mask;
+-			__preempt_enable_no_resched();
+ 			set_softirq_pending(local_softirq_pending() & ~softirq_mask);
+ 			local_bh_disable();
+ 			local_irq_enable();
++			preempt_enable();
+ 
+ 			h = &softirq_vec[data->nr];
+ 			if (h)
