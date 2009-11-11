@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbZKKCmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758818AbZKKCmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758805AbZKKCmF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 21:42:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758755AbZKKCmF
+	id S1758818AbZKKCmn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 21:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758809AbZKKCmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 21:42:05 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51928 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757093AbZKKCmD (ORCPT
+	Tue, 10 Nov 2009 21:42:43 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:48357 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758724AbZKKCmm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 21:42:03 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 6/6] mm: sigbus instead of abusing oom
-Cc: kosaki.motohiro@jp.fujitsu.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20091111113719.589e61d7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <Pine.LNX.4.64.0911102202500.2816@sister.anvils> <20091111113719.589e61d7.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20091111114119.FD53.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 10 Nov 2009 21:42:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=Kwr7UZRpU4UaYoI0jPthy5DM4kHUs0QBX8/6XBUim1YxbzpMBeefpYlfJbZvjbH6fX
+         u0tO9vEfcE37tY2mJMcQeRvZ14H+smfghH5LoH6LISfGY9H/0qxm0LgZqqMUXn+As4gt
+         EwYXZm3jBV1Cyh+aXLSVHFBj4udU4i8/YvhSQ=
+Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
+ for MIPS
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       zhangfx@lemote.com, zhouqg@gmail.com,
+       Ralf Baechle <ralf@linux-mips.org>, rostedt@goodmis.org,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Simek <monstr@monstr.eu>
+In-Reply-To: <4AF99848.9090000@caviumnetworks.com>
+References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com>
+	 <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com>
+	 <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com>
+	 <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com>
+	 <4AF8B31C.5030802@caviumnetworks.com>
+	 <1257814817.2822.3.camel@falcon.domain.org>
+	 <4AF99848.9090000@caviumnetworks.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Wed, 11 Nov 2009 10:42:31 +0800
+Message-ID: <1257907351.2922.37.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 11 Nov 2009 11:42:04 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 10 Nov 2009 22:06:49 +0000 (GMT)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+Hi,
+
+On Tue, 2009-11-10 at 08:43 -0800, David Daney wrote:
+[...]
+> >>> +ifndef CONFIG_FUNCTION_TRACER
+> >>>  cflags-y := -ffunction-sections
+> >>> +else
+> >>> +cflags-y := -mlong-calls
+> >>> +endif
+> >>>  cflags-y += $(call cc-option, -mno-check-zero-division)
+> >>>  
+> >> That doesn't make sense to me.  Modules are already compiled with 
+> >> -mlong-calls.  The only time you would need the entire kernel compiled 
+> >> with -mlong-calls is if the tracer were in a module.  The logic here 
+> >> doesn't seem to reflect that.
+> > 
+> > Yes, I knew the module have gotten the -mlong-calls, Here we just want
+> > to use -mlong-calls for the whole kernel, and then we get the same
+> > _mcount stuff in the whole kernel, at last, we can use the same
+> > scripts/recordmcount.pl and ftrace_make_nop & ftrace_make_call for the
+> > dynamic ftracer.
+> > 
 > 
-> > When do_nonlinear_fault() realizes that the page table must have been
-> > corrupted for it to have been called, it does print_bad_pte() and
-> > returns ... VM_FAULT_OOM, which is hard to understand.
-> > 
-> > It made some sense when I did it for 2.6.15, when do_page_fault()
-> > just killed the current process; but nowadays it lets the OOM killer
-> > decide who to kill - so page table corruption in one process would
-> > be liable to kill another.
-> > 
-> > Change it to return VM_FAULT_SIGBUS instead: that doesn't guarantee
-> > that the process will be killed, but is good enough for such a rare
-> > abnormality, accompanied as it is by the "BUG: Bad page map" message.
-> > 
-> > And recent HWPOISON work has copied that code into do_swap_page(),
-> > when it finds an impossible swap entry: fix that to VM_FAULT_SIGBUS too.
-> > 
-> > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> -mlong-calls really degrades performance.  I have seen things like 6% 
+> drop in network packet forwarding rates with -mlong-calls.
 > 
-> Thank you !
-> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Thank you, me too.
+so much drop? seems only two instructions added for it: lui, addi. from
+this view point, I think the -fno-omit-frame-pointer(add, sd, move...)
+will also bring with much drop.
 
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+It's time to remove them? -mlong-calls, -fno-omit-frame-pointer.
 
+> It would be better to fix all the tools so that they could handle both 
+> -mlong-calls and -mno-long-calls code.
+> 
 
+It's totally possible, will try to make it work later. I just wanted the
+stuff simple, but if it really brings us with much drop, it's time to
+fix it.
+
+Regards,
+	Wu Zhangjin
 
