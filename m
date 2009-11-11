@@ -1,119 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738AbZKKEuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751061AbZKKFBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738AbZKKEuA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 23:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZKKEt7
+	id S1751061AbZKKFBQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 00:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbZKKFBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 23:49:59 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:56745 "EHLO e5.ny.us.ibm.com"
+	Wed, 11 Nov 2009 00:01:15 -0500
+Received: from gate.crashing.org ([63.228.1.57]:37702 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751046AbZKKEt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 23:49:58 -0500
-Date: Tue, 10 Nov 2009 20:50:13 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/rcu] rcu: Remove inline from forward-referenced
-	functions
-Message-ID: <20091111045013.GG8424@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <tip-dbe01350fa8ce0c11948ab7d6be71a4d901be151@git.kernel.org> <1257892710.25443.9.camel@Joe-Laptop.home> <20091110225926.GA8424@linux.vnet.ibm.com> <1257894380.25443.16.camel@Joe-Laptop.home> <20091110234101.GB8424@linux.vnet.ibm.com> <1257901421.25443.34.camel@Joe-Laptop.home> <20091111014222.GE8424@linux.vnet.ibm.com> <1257910108.25443.40.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257910108.25443.40.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1750737AbZKKFBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 00:01:15 -0500
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 11 Nov 2009 16:01:07 +1100
+Message-ID: <1257915667.2140.16.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 07:28:28PM -0800, Joe Perches wrote:
-> On Tue, 2009-11-10 at 17:42 -0800, Paul E. McKenney wrote:
-> > On Tue, Nov 10, 2009 at 05:03:41PM -0800, Joe Perches wrote:
-> > > So maybe rename rcutree_plugin.h to rcutree_plugin.c and
-> > > #include "rcutree_plugin.c" in rcutree.c instead.
-> > Hmmm...
-> 
-> Perhaps something like this:
+Hi Linus !
 
-While I do very much appreciate your time and attention to this...
+This contains one code fix, 3 little device-tree fixes and a bunch of
+defconfig updates for Freescale platforms for 2.6.32 along with one
+defconfig update for PA-Semi.
 
-My problem with this sort of thing is that when I tried it, it proved
-fragile.  Small changes required lots of rework of forward declarations.
-Putting it at the end makes it work very nicely -- the list of forward
-declarations doubles as documentation for the plugins, and the contents
-of kernel/rcutree_plugin.h (or .c or whatever, either way I end up
-violation about the same number of coding guidelines) is independent of
-rearrangements of kernel/rcutree.c.
+Overall, a large diffstat but not much actual churn. If you are unhappy
+with the defconfig updates at that stage of the process, let us know and
+I'll ask my sub-maintainers to do them earlier.
 
-The reason that I would really like to keep rcu_bootup_announce() as
-a function is that it makes it trivial to collect RCU-flavor-dependent
-boot-time information, if needed for some debugging effort.  If I pull
-the string out, this sort of thing becomes much more painful.
+Cheers,
+Ben.
 
-							Thanx, Paul
+The following changes since commit 799dd75b1a8380a967c929a4551895788c374b31:
+  Linus Torvalds (1):
+        Merge branch 'i2c-for-linus' of git://git.kernel.org/.../jdelvare/staging
 
-> cheers, Joe
-> 
-> rcu: rename rcutree_plugin.h to .c and use
-> 
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index d802419..737dc72 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -1783,6 +1783,8 @@ do { \
->  	} \
->  } while (0)
-> 
-> +#include "rcutree_plugin.c"
-> +
->  void __init __rcu_init(void)
->  {
->  	rcu_bootup_announce();
-> @@ -1795,4 +1797,3 @@ void __init __rcu_init(void)
->  	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
->  }
-> 
-> -#include "rcutree_plugin.h"
-> diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-> index 17a28a0..ed11d16 100644
-> --- a/kernel/rcutree.h
-> +++ b/kernel/rcutree.h
-> @@ -300,8 +300,7 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
-> 
->  #else /* #ifdef RCU_TREE_NONCORE */
-> 
-> -/* Forward declarations for rcutree_plugin.h */
-> -static void rcu_bootup_announce(void);
-> +/* Forward declarations for rcutree_plugin.c */
->  long rcu_batches_completed(void);
->  static void rcu_preempt_note_context_switch(int cpu);
->  static int rcu_preempted_readers(struct rcu_node *rnp);
-> diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.c
-> similarity index 99%
-> rename from kernel/rcutree_plugin.h
-> rename to kernel/rcutree_plugin.c
-> index 52075da..5ca2d26 100644
-> --- a/kernel/rcutree_plugin.h
-> +++ b/kernel/rcutree_plugin.c
-> @@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
->  /*
->   * Tell them what RCU they are running.
->   */
-> -static void rcu_bootup_announce(void)
-> +static void __init rcu_bootup_announce(void)
->  {
->  	printk(KERN_INFO
->  	       "Experimental preemptable hierarchical RCU implementation.\n");
-> @@ -481,7 +481,7 @@ void exit_rcu(void)
->  /*
->   * Tell them what RCU they are running.
->   */
-> -static void rcu_bootup_announce(void)
-> +static void __init rcu_bootup_announce(void)
->  {
->  	printk(KERN_INFO "Hierarchical RCU implementation.\n");
->  }
-> 
-> 
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Anton Vorontsov (2):
+      powerpc/85xx: Fix USB GPIOs for MPC8569E-MDS boards
+      powerpc/83xx: Fix u-boot partion size for MPC8377E-WLAN boards
+
+Benjamin Herrenschmidt (1):
+      Merge commit 'kumar/merge' into merge
+
+Kim Phillips (1):
+      powerpc/8xxx: enable IPsec ESP by default on mpc83xx/mpc85xx
+
+Kumar Gala (1):
+      powerpc: 2.6.32 update of defconfigs for embedded 6xx/7xxx, 8xx, 8{3,5,6}xxx
+
+Olof Johansson (1):
+      powerpc: pasemi_defconfig update
+
+Paul Gortmaker (1):
+      powerpc/85xx: sbc8548 - fixup of PCI-e related DTS fields
+
+Roel Kluin (1):
+      powerpc/82xx: kmalloc failure ignored in ep8248e_mdio_probe()
+
+ arch/powerpc/boot/dts/mpc8377_wlan.dts            |    2 +-
+ arch/powerpc/boot/dts/mpc8569mds.dts              |    4 +-
+ arch/powerpc/boot/dts/sbc8548.dts                 |   17 +-
+ arch/powerpc/configs/83xx/asp8347_defconfig       |   60 ++-
+ arch/powerpc/configs/83xx/kmeter1_defconfig       |   46 +-
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |   73 ++-
+ arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |   76 ++-
+ arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |   62 ++-
+ arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |   66 ++-
+ arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |   60 ++-
+ arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |   58 ++-
+ arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |   58 ++-
+ arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |   64 ++-
+ arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   60 ++-
+ arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |   64 ++-
+ arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |   70 ++-
+ arch/powerpc/configs/83xx/sbc834x_defconfig       |   61 ++-
+ arch/powerpc/configs/85xx/ksi8560_defconfig       |   61 ++-
+ arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   57 ++-
+ arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   63 ++-
+ arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   58 ++-
+ arch/powerpc/configs/85xx/sbc8548_defconfig       |   53 ++-
+ arch/powerpc/configs/85xx/sbc8560_defconfig       |   57 ++-
+ arch/powerpc/configs/85xx/socrates_defconfig      |   68 ++-
+ arch/powerpc/configs/85xx/stx_gp3_defconfig       |   77 ++-
+ arch/powerpc/configs/85xx/tqm8540_defconfig       |   59 ++-
+ arch/powerpc/configs/85xx/tqm8541_defconfig       |   64 ++-
+ arch/powerpc/configs/85xx/tqm8548_defconfig       |   64 ++-
+ arch/powerpc/configs/85xx/tqm8555_defconfig       |   64 ++-
+ arch/powerpc/configs/85xx/tqm8560_defconfig       |   64 ++-
+ arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |   76 ++-
+ arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |   74 ++-
+ arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   72 ++-
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig    |   80 ++-
+ arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |   64 ++-
+ arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |   65 ++-
+ arch/powerpc/configs/86xx/sbc8641d_defconfig      |   66 ++-
+ arch/powerpc/configs/adder875_defconfig           |   48 +-
+ arch/powerpc/configs/c2k_defconfig                |   77 ++-
+ arch/powerpc/configs/ep8248e_defconfig            |   49 +-
+ arch/powerpc/configs/ep88xc_defconfig             |   47 +-
+ arch/powerpc/configs/linkstation_defconfig        |   72 ++-
+ arch/powerpc/configs/mgcoge_defconfig             |   51 ++-
+ arch/powerpc/configs/mgsuvd_defconfig             |   45 +-
+ arch/powerpc/configs/mpc7448_hpc2_defconfig       |   58 ++-
+ arch/powerpc/configs/mpc8272_ads_defconfig        |   52 ++-
+ arch/powerpc/configs/mpc83xx_defconfig            |   90 ++-
+ arch/powerpc/configs/mpc85xx_defconfig            |   98 ++--
+ arch/powerpc/configs/mpc85xx_smp_defconfig        |   99 ++--
+ arch/powerpc/configs/mpc866_ads_defconfig         |   54 ++-
+ arch/powerpc/configs/mpc86xx_defconfig            |   70 ++-
+ arch/powerpc/configs/mpc885_ads_defconfig         |   47 +-
+ arch/powerpc/configs/pasemi_defconfig             |  628 +++++++++++++++------
+ arch/powerpc/configs/pq2fads_defconfig            |   55 ++-
+ arch/powerpc/configs/prpmc2800_defconfig          |   67 ++-
+ arch/powerpc/configs/storcenter_defconfig         |   54 ++-
+ arch/powerpc/platforms/82xx/ep8248e.c             |   15 +-
+ 57 files changed, 2603 insertions(+), 1380 deletions(-)
+
+
