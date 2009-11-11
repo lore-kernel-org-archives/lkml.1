@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbZKKVhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbZKKVhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932068AbZKKVhI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:37:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759334AbZKKVhF
+	id S1759346AbZKKVhH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759336AbZKKVhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:37:05 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:6457 "EHLO mx1.redhat.com"
+	Wed, 11 Nov 2009 16:37:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53528 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759324AbZKKVg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:36:58 -0500
-Date: Wed, 11 Nov 2009 22:32:01 +0100
+	id S1759246AbZKKVhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 16:37:03 -0500
+Date: Wed, 11 Nov 2009 22:32:03 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] ptrace: change tracehook_report_syscall_exit() to
-	handle stepping
-Message-ID: <20091111213201.GA10653@redhat.com>
+Subject: [PATCH 4/5] ptrace: x86: implement user_single_step_siginfo()
+Message-ID: <20091111213203.GA10660@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,79 +26,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Suggested by Roland.
 
-Change tracehook_report_syscall_exit() to look at step flag and send
-the trap signal if needed.
+Implement user_single_step_siginfo() for x86. Extract this code
+from send_sigtrap().
 
-This change affects ia64, microblaze, parisc, powerpc, sh.  They pass
-nonzero "step" argument to tracehook but since it was ignored the tracee
-reports via ptrace_notify(), this is not right and not consistent.
-
-	- PTRACE_SETSIGINFO doesn't work
-
-	- if the tracer resumes the tracee with signr != 0 the new signal
-	  is generated rather than delivering it
-
-	- If PT_TRACESYSGOOD is set the tracee reports the wrong exit_code
-
-I don't have a powerpc machine, but I think this test-case should
-see the difference:
-
-	#include <unistd.h>
-	#include <sys/ptrace.h>
-	#include <sys/wait.h>
-	#include <assert.h>
-	#include <stdio.h>
-
-	int main(void)
-	{
-		int pid, status;
-
-		if (!(pid = fork())) {
-			assert(ptrace(PTRACE_TRACEME) == 0);
-			kill(getpid(), SIGSTOP);
-
-			getppid();
-
-			return 0;
-		}
-
-		assert(pid == wait(&status));
-		assert(ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD) == 0);
-
-		assert(ptrace(PTRACE_SYSCALL, pid, 0,0) == 0);
-		assert(pid == wait(&status));
-
-		assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
-		assert(pid == wait(&status));
-
-		if (status == 0x57F)
-			return 0;
-
-		printf("kernel bug: status=%X shouldn't have 0x80\n", status);
-		return 1;
-	}
+Since x86 calls tracehook_report_syscall_exit(step => 0) the new
+helper is not used yet.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 Acked-by: Roland McGrath <roland@redhat.com>
 ---
 
- include/linux/tracehook.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/x86/include/asm/ptrace.h |    2 ++
+ arch/x86/kernel/ptrace.c      |   30 +++++++++++++++++++++---------
+ 2 files changed, 23 insertions(+), 9 deletions(-)
 
---- TH/include/linux/tracehook.h~3_TRACEHOOK_HANDLE_STEPPING	2009-11-10 01:03:22.000000000 +0100
-+++ TH/include/linux/tracehook.h	2009-11-10 22:00:37.000000000 +0100
-@@ -134,6 +134,13 @@ static inline __must_check int tracehook
-  */
- static inline void tracehook_report_syscall_exit(struct pt_regs *regs, int step)
- {
-+	if (step) {
-+		siginfo_t info;
-+		user_single_step_siginfo(current, regs, &info);
-+		force_sig_info(SIGTRAP, &info, current);
-+		return;
-+	}
+--- TH/arch/x86/include/asm/ptrace.h~4_X86_HELPER	2009-11-09 21:00:17.000000000 +0100
++++ TH/arch/x86/include/asm/ptrace.h	2009-11-10 22:16:28.000000000 +0100
+@@ -230,6 +230,8 @@ extern void user_enable_block_step(struc
+ #define arch_has_block_step()	(boot_cpu_data.x86 >= 6)
+ #endif
+ 
++#define ARCH_HAS_USER_SINGLE_STEP_INFO
 +
- 	ptrace_report_syscall(regs);
+ struct user_desc;
+ extern int do_get_thread_area(struct task_struct *p, int idx,
+ 			      struct user_desc __user *info);
+--- TH/arch/x86/kernel/ptrace.c~4_X86_HELPER	2009-11-09 21:00:17.000000000 +0100
++++ TH/arch/x86/kernel/ptrace.c	2009-11-10 22:21:42.000000000 +0100
+@@ -1437,21 +1437,33 @@ const struct user_regset_view *task_user
+ #endif
  }
  
+-void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
+-					 int error_code, int si_code)
++static void fill_sigtrap_info(struct task_struct *tsk,
++				struct pt_regs *regs,
++				int error_code, int si_code,
++				struct siginfo *info)
+ {
+-	struct siginfo info;
+-
+ 	tsk->thread.trap_no = 1;
+ 	tsk->thread.error_code = error_code;
+ 
+-	memset(&info, 0, sizeof(info));
+-	info.si_signo = SIGTRAP;
+-	info.si_code = si_code;
++	memset(info, 0, sizeof(*info));
++	info->si_signo = SIGTRAP;
++	info->si_code = si_code;
++	info->si_addr = user_mode_vm(regs) ? (void __user *)regs->ip : NULL;
++}
+ 
+-	/* User-mode ip? */
+-	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
++void user_single_step_siginfo(struct task_struct *tsk,
++				struct pt_regs *regs,
++				struct siginfo *info)
++{
++	fill_sigtrap_info(tsk, regs, 0, TRAP_BRKPT, info);
++}
+ 
++void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
++					 int error_code, int si_code)
++{
++	struct siginfo info;
++
++	fill_sigtrap_info(tsk, regs, error_code, si_code, &info);
+ 	/* Send us the fake SIGTRAP */
+ 	force_sig_info(SIGTRAP, &info, tsk);
+ }
 
