@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbZKKVfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbZKKVgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759292AbZKKVfV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:35:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759228AbZKKVfV
+	id S1759306AbZKKVgE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759240AbZKKVgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:35:21 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51782 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758823AbZKKVfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:35:20 -0500
-Message-ID: <4AFB2E17.6060000@garzik.org>
-Date: Wed, 11 Nov 2009 16:35:19 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH RFC] x86: fix confusing name of /proc/cpuinfo "ht" flag
-References: <200911112134.34261.bzolnier@gmail.com>
-In-Reply-To: <200911112134.34261.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 11 Nov 2009 16:36:03 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:37170 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759234AbZKKVgC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 16:36:02 -0500
+Subject: Re: [PATCH v5 0/4] pseries: Add cede support for cpu-offline
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Nathan Fontenot <nfont@austin.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1257945935.4372.36.camel@twins>
+References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+	 <1257945935.4372.36.camel@twins>
+Content-Type: text/plain; charset="UTF-8"
+Organization: IBM Australia
+Date: Thu, 12 Nov 2009 08:35:50 +1100
+Message-ID: <1257975350.2140.49.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11/2009 03:34 PM, Bartlomiej Zolnierkiewicz wrote:
->
-> "ht" flag indicates only ability to detect siblings not HT presence itself.
->
-> Inspired by:
-> http://www.codemonkey.org.uk/2009/11/10/common-hyperthreading-misconception/
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
-> ---
-> It could be that there are some user-space programs depending on "ht"
-> flag so the patch is marked as RFC..
+On Wed, 2009-11-11 at 14:25 +0100, Peter Zijlstra wrote:
+> On Fri, 2009-10-30 at 10:52 +0530, Gautham R Shenoy wrote:
+> 
+> > Gautham R Shenoy (4):
+> >       pseries: Serialize cpu hotplug operations during deactivate Vs deallocate
+> >       pseries: Add code to online/offline CPUs of a DLPAR node.
+> >       pSeries: Add hooks to put the CPU into an appropriate offline state
+> >       pSeries: extended_cede_processor() helper function.
+> > 
+> > 
+> >  Documentation/cpu-hotplug.txt                   |    6 +
+> >  arch/powerpc/include/asm/lppaca.h               |    9 +
+> >  arch/powerpc/platforms/pseries/dlpar.c          |  129 ++++++++++++++++
+> >  arch/powerpc/platforms/pseries/hotplug-cpu.c    |  182 ++++++++++++++++++++++-
+> >  arch/powerpc/platforms/pseries/offline_states.h |   18 ++
+> >  arch/powerpc/platforms/pseries/plpar_wrappers.h |   22 +++
+> >  arch/powerpc/platforms/pseries/smp.c            |   19 ++
+> >  arch/powerpc/xmon/xmon.c                        |    3 
+> >  drivers/base/cpu.c                              |    2 
+> >  include/linux/cpu.h                             |   13 ++
+> >  10 files changed, 387 insertions(+), 16 deletions(-)
+> >  create mode 100644 arch/powerpc/platforms/pseries/offline_states.h
+> 
+> Not quite sure how you solved the DLPAR communication but since pretty
+> much everything is under arch/powerpc/ I really don't have much to say.
 
-I think that is the only problem with this patch -- it is an ABI change. 
-  See as it's been this way for years, a comment is probably the best 
-you can do...
+Allright. I was hoping to have your ack for the drivers/base/cpu.c
+change :-)
 
-	Jeff
-
-
+Cheers,
+Ben.
 
 
