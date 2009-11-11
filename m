@@ -1,203 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZKKEog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbZKKEr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbZKKEog (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 23:44:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756751AbZKKEof
+	id S1756802AbZKKEr5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 23:47:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756751AbZKKEr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 23:44:35 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:38027 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756702AbZKKEoe convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 23:44:34 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: linux-mmc@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, 504391@bugs.debian.org,
-       Wouter van Heyst <larstiq@larstiq.dyndns.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 11 Nov 2009 04:44:36 +0000
-Message-ID: <1257914676.2237.57.camel@localhost>
+	Tue, 10 Nov 2009 23:47:56 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55922 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756455AbZKKEr4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 23:47:56 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 11 Nov 2009 13:45:14 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       cl@linux-foundation.org, rientjes@google.com
+Subject: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask v4
+Message-Id: <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
+	<20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091110163419.361E.A69D9226@jp.fujitsu.com>
+	<20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
+	<20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCH] mmc: add module parameter to set whether cards are assumed
- removable
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some people run general-purpose distribution kernels on netbooks with
-a card that is physically non-removable or logically non-removable
-(e.g. used for /home) and cannot be cleanly unmounted during suspend.
-Add a module parameter to set whether cards are assumed removable or
-non-removable, with the default set by CONFIG_MMC_UNSAFE_RESUME.
+From: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Fixing node-oriented allocation handling in oom-kill.c
+I myself think this as bugfix not as ehnancement.
+
+In these days, things are changed as
+  - alloc_pages() eats nodemask as its arguments, __alloc_pages_nodemask().
+  - mempolicy don't maintain its own private zonelists.
+  (And cpuset doesn't use nodemask for __alloc_pages_nodemask())
+
+So, current oom-killer's check function is wrong.
+
+This patch does
+  - check nodemask, if nodemask && nodemask doesn't cover all
+    node_states[N_HIGH_MEMORY], this is CONSTRAINT_MEMORY_POLICY.
+  - Scan all zonelist under nodemask, if it hits cpuset's wall
+    this faiulre is from cpuset.
+And
+  - modifies the caller of out_of_memory not to call oom if __GFP_THISNODE.
+    This doesn't change "current" behavior. If callers use __GFP_THISNODE
+    it should handle "page allocation failure" by itself.
+
+  - handle __GFP_NOFAIL+__GFP_THISNODE path.
+    This is something like a FIXME but this gfpmask is not used now.
+
+Changelog: 2009/11/11(2)
+ - uses nodes_subset().
+ - clean up.
+ - added __GFP_NOFAIL case. And added waring.
+
+Changelog: 2009/11/11
+ - fixed nodes_equal() calculation.
+ - return CONSTRAINT_MEMPOLICY always if given nodemask is not enough big.
+
+Changelog: 2009/11/06
+ - fixed lack of oom.h
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
 ---
- drivers/mmc/core/Kconfig |    4 +++-
- drivers/mmc/core/core.c  |   16 ++++++++++++++++
- drivers/mmc/core/core.h  |    2 ++
- drivers/mmc/core/mmc.c   |   23 +----------------------
- drivers/mmc/core/sd.c    |   21 +--------------------
- 5 files changed, 23 insertions(+), 43 deletions(-)
+ drivers/char/sysrq.c |    2 +-
+ include/linux/oom.h  |    4 +++-
+ mm/oom_kill.c        |   45 +++++++++++++++++++++++++++++++++------------
+ mm/page_alloc.c      |   20 +++++++++++++++-----
+ 4 files changed, 52 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/mmc/core/Kconfig b/drivers/mmc/core/Kconfig
-index ab37a6d..bb22ffd 100644
---- a/drivers/mmc/core/Kconfig
-+++ b/drivers/mmc/core/Kconfig
-@@ -3,7 +3,7 @@
- #
+Index: mm-test-kernel/drivers/char/sysrq.c
+===================================================================
+--- mm-test-kernel.orig/drivers/char/sysrq.c
++++ mm-test-kernel/drivers/char/sysrq.c
+@@ -339,7 +339,7 @@ static struct sysrq_key_op sysrq_term_op
  
- config MMC_UNSAFE_RESUME
--	bool "Allow unsafe resume (DANGEROUS)"
-+	bool "Assume MMC/SD cards are non-removable (DANGEROUS)"
- 	help
- 	  If you say Y here, the MMC layer will assume that all cards
- 	  stayed in their respective slots during the suspend. The
-@@ -14,3 +14,5 @@ config MMC_UNSAFE_RESUME
- 	  This option is usually just for embedded systems which use
- 	  a MMC/SD card for rootfs. Most people should say N here.
+ static void moom_callback(struct work_struct *ignored)
+ {
+-	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
++	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0, NULL);
+ }
  
-+	  This option sets a default which can be overridden by the
-+	  module parameter "removable=0" or "removable=1".
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index d98b0e2..010c964 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -48,6 +48,22 @@ int use_spi_crc = 1;
- module_param(use_spi_crc, bool, 0);
- 
+ static DECLARE_WORK(moom_work, moom_callback);
+Index: mm-test-kernel/mm/oom_kill.c
+===================================================================
+--- mm-test-kernel.orig/mm/oom_kill.c
++++ mm-test-kernel/mm/oom_kill.c
+@@ -196,27 +196,47 @@ unsigned long badness(struct task_struct
  /*
-+ * We normally treat cards as removed during suspend if they are not
-+ * known to be on a non-removable bus, to avoid the risk of writing
-+ * back data to a different card after resume.  Allow this to be
-+ * overridden if necessary.
-+ */
-+#ifdef CONFIG_MMC_UNSAFE_RESUME
-+int mmc_assume_removable;
-+#else
-+int mmc_assume_removable = 1;
-+#endif
-+module_param_named(removable, mmc_assume_removable, bool, 0644);
-+MODULE_PARM_DESC(
-+	removable,
-+	"MMC/SD cards are removable and may be removed during suspend");
+  * Determine the type of allocation constraint.
+  */
++#ifdef CONFIG_NUMA
+ static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+-						    gfp_t gfp_mask)
++				    gfp_t gfp_mask, nodemask_t *nodemask)
+ {
+-#ifdef CONFIG_NUMA
+ 	struct zone *zone;
+ 	struct zoneref *z;
+ 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+-	nodemask_t nodes = node_states[N_HIGH_MEMORY];
++	int ret = CONSTRAINT_NONE;
+ 
+-	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+-		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
+-			node_clear(zone_to_nid(zone), nodes);
+-		else
+-			return CONSTRAINT_CPUSET;
++	/*
++	 * Reach here only when __GFP_NOFAIL is used. So, we should avoid
++ 	 * to kill current.We have to random task kill in this case.
++ 	 * Hopefully, CONSTRAINT_THISNODE...but no way to handle it, now.
++ 	 */
++	if (gfp_mask & __GPF_THISNODE)
++		return ret;
+ 
+-	if (!nodes_empty(nodes))
++	/*
++ 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
++ 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
++ 	 * feature. mempolicy is an only user of nodemask here.
++	 * check mempolicy's nodemask contains all N_HIGH_MEMORY
++ 	 */
++	if (nodemask && !nodes_subset(node_states[N_HIGH_MEMORY], *nodemask))
+ 		return CONSTRAINT_MEMORY_POLICY;
+-#endif
+ 
++	/* Check this allocation failure is caused by cpuset's wall function */
++	for_each_zone_zonelist_nodemask(zone, z, zonelist,
++			high_zoneidx, nodemask)
++		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
++			return CONSTRAINT_CPUSET;
 +
-+/*
-  * Internal function. Schedule delayed work in the MMC work queue.
-  */
- static int mmc_schedule_delayed_work(struct delayed_work *work,
-diff --git a/drivers/mmc/core/core.h b/drivers/mmc/core/core.h
-index 1c68783..d20b7bc 100644
---- a/drivers/mmc/core/core.h
-+++ b/drivers/mmc/core/core.h
-@@ -64,7 +64,9 @@ int mmc_attach_mmc(struct mmc_host *host, u32 ocr);
- int mmc_attach_sd(struct mmc_host *host, u32 ocr);
- int mmc_attach_sdio(struct mmc_host *host, u32 ocr);
- 
-+/* Module parameters */
- extern int use_spi_crc;
-+extern int mmc_assume_removable;
- 
- /* Debugfs information for hosts and cards */
- void mmc_add_host_debugfs(struct mmc_host *host);
-diff --git a/drivers/mmc/core/mmc.c b/drivers/mmc/core/mmc.c
-index bfefce3..c111894 100644
---- a/drivers/mmc/core/mmc.c
-+++ b/drivers/mmc/core/mmc.c
-@@ -602,25 +602,6 @@ static int mmc_awake(struct mmc_host *host)
- 	return err;
++	return CONSTRAINT_NONE;
++}
++#else
++static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
++				gfp_t gfp_mask, nodemask_t *nodemask)
++{
+ 	return CONSTRAINT_NONE;
  }
++#endif
  
--#ifdef CONFIG_MMC_UNSAFE_RESUME
--
--static const struct mmc_bus_ops mmc_ops = {
--	.awake = mmc_awake,
--	.sleep = mmc_sleep,
--	.remove = mmc_remove,
--	.detect = mmc_detect,
--	.suspend = mmc_suspend,
--	.resume = mmc_resume,
--	.power_restore = mmc_power_restore,
--};
--
--static void mmc_attach_bus_ops(struct mmc_host *host)
--{
--	mmc_attach_bus(host, &mmc_ops);
--}
--
--#else
--
- static const struct mmc_bus_ops mmc_ops = {
- 	.awake = mmc_awake,
- 	.sleep = mmc_sleep,
-@@ -645,15 +626,13 @@ static void mmc_attach_bus_ops(struct mmc_host *host)
- {
- 	const struct mmc_bus_ops *bus_ops;
- 
--	if (host->caps & MMC_CAP_NONREMOVABLE)
-+	if (host->caps & MMC_CAP_NONREMOVABLE || !mmc_assume_removable)
- 		bus_ops = &mmc_ops_unsafe;
- 	else
- 		bus_ops = &mmc_ops;
- 	mmc_attach_bus(host, bus_ops);
- }
- 
--#endif
--
  /*
-  * Starting point for MMC card init.
+  * Simple selection loop. We chose the process with the highest
+@@ -603,7 +623,8 @@ rest_and_return:
+  * OR try to be smart about which process to kill. Note that we
+  * don't have to be perfect here, we just have to be good.
   */
-diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
-index 10b2a4d..fdd414e 100644
---- a/drivers/mmc/core/sd.c
-+++ b/drivers/mmc/core/sd.c
-@@ -606,23 +606,6 @@ static void mmc_sd_power_restore(struct mmc_host *host)
- 	mmc_release_host(host);
- }
- 
--#ifdef CONFIG_MMC_UNSAFE_RESUME
--
--static const struct mmc_bus_ops mmc_sd_ops = {
--	.remove = mmc_sd_remove,
--	.detect = mmc_sd_detect,
--	.suspend = mmc_sd_suspend,
--	.resume = mmc_sd_resume,
--	.power_restore = mmc_sd_power_restore,
--};
--
--static void mmc_sd_attach_bus_ops(struct mmc_host *host)
--{
--	mmc_attach_bus(host, &mmc_sd_ops);
--}
--
--#else
--
- static const struct mmc_bus_ops mmc_sd_ops = {
- 	.remove = mmc_sd_remove,
- 	.detect = mmc_sd_detect,
-@@ -643,15 +626,13 @@ static void mmc_sd_attach_bus_ops(struct mmc_host *host)
+-void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
++void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
++		int order, nodemask_t *nodemask)
  {
- 	const struct mmc_bus_ops *bus_ops;
+ 	unsigned long freed = 0;
+ 	enum oom_constraint constraint;
+@@ -622,7 +643,7 @@ void out_of_memory(struct zonelist *zone
+ 	 * Check if there were limitations on the allocation (only relevant for
+ 	 * NUMA) that may require different handling.
+ 	 */
+-	constraint = constrained_alloc(zonelist, gfp_mask);
++	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
+ 	read_lock(&tasklist_lock);
  
--	if (host->caps & MMC_CAP_NONREMOVABLE)
-+	if (host->caps & MMC_CAP_NONREMOVABLE || !mmc_assume_removable)
- 		bus_ops = &mmc_sd_ops_unsafe;
- 	else
- 		bus_ops = &mmc_sd_ops;
- 	mmc_attach_bus(host, bus_ops);
- }
+ 	switch (constraint) {
+Index: mm-test-kernel/mm/page_alloc.c
+===================================================================
+--- mm-test-kernel.orig/mm/page_alloc.c
++++ mm-test-kernel/mm/page_alloc.c
+@@ -1664,12 +1664,22 @@ __alloc_pages_may_oom(gfp_t gfp_mask, un
+ 	if (page)
+ 		goto out;
  
--#endif
+-	/* The OOM killer will not help higher order allocs */
+-	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
+-		goto out;
 -
- /*
-  * Starting point for SD card init.
-  */
--- 
-1.6.5.2
-
++	if (!(gfp_mask & __GFP_NOFAIL)) {
++		/* The OOM killer will not help higher order allocs */
++		if (order > PAGE_ALLOC_COSTLY_ORDER)
++			goto out;
++		/*
++	 	* GFP_THISNODE contains __GFP_NORETRY and we never hit this.
++	 	* Sanity check for bare calls of __GFP_THISNODE, not real OOM.
++	 	* The caller should handle page allocation failure by itself if
++	 	* it specifies __GFP_THISNODE.
++	 	* Note: Hugepage uses it but will hit PAGE_ALLOC_COSTLY_ORDER.
++	 	*/
++		if (gfp_mask & __GFP_THISNODE)
++			goto out;
++	}
+ 	/* Exhausted what can be done so it's blamo time */
+-	out_of_memory(zonelist, gfp_mask, order);
++	out_of_memory(zonelist, gfp_mask, order, nodemask);
+ 
+ out:
+ 	clear_zonelist_oom(zonelist, gfp_mask);
+Index: mm-test-kernel/include/linux/oom.h
+===================================================================
+--- mm-test-kernel.orig/include/linux/oom.h
++++ mm-test-kernel/include/linux/oom.h
+@@ -10,6 +10,7 @@
+ #ifdef __KERNEL__
+ 
+ #include <linux/types.h>
++#include <linux/nodemask.h>
+ 
+ struct zonelist;
+ struct notifier_block;
+@@ -26,7 +27,8 @@ enum oom_constraint {
+ extern int try_set_zone_oom(struct zonelist *zonelist, gfp_t gfp_flags);
+ extern void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_flags);
+ 
+-extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order);
++extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
++		int order, nodemask_t *mask);
+ extern int register_oom_notifier(struct notifier_block *nb);
+ extern int unregister_oom_notifier(struct notifier_block *nb);
+ 
 
