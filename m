@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbZKKTe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbZKKThR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758719AbZKKTe1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 14:34:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758662AbZKKTe0
+	id S1758756AbZKKThR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 14:37:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758668AbZKKThQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 14:34:26 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:57176 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758622AbZKKTeZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 14:34:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=KBSArx18JnSIo9PhcRthcKzrD2AUEQ1MIlIO7nImw/AKi6/gib25uAOt83oaglBhMQ
-         3hJEfXzk+6nETHRjr9tSliKE97OPQkXEN6I8pcuXNeUofJcYD4KF8oqYnU4251nUlJi2
-         fmdBkXbt8GCMuYVQVVjdcemp53YxcAQ7iZkUY=
-Message-ID: <4AFB11C1.9070105@lwfinger.net>
-Date: Wed, 11 Nov 2009 13:34:25 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Wed, 11 Nov 2009 14:37:16 -0500
+Received: from [95.166.99.235] ([95.166.99.235]:36946 "EHLO kernel.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758584AbZKKThP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 14:37:15 -0500
+Date: Wed, 11 Nov 2009 20:37:20 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Romit Dasgupta <romit@ti.com>,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads before
+	invoking kthread_stop on them
+Message-ID: <20091111193719.GR8742@kernel.dk>
+References: <1257928216.15415.57.camel@boson> <20091111103444.GD26423@elf.ucw.cz> <200911111230.58479.rjw@sisk.pl>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-CC: Michael Buesch <mbuesch@freenet.de>
-Subject: Question regarding BUG in mm/slub.c
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911111230.58479.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of the users of a BCM4312 device hit the BUG in the mm/slub.c version of
-kfree in the following code fragment:
+On Wed, Nov 11 2009, Rafael J. Wysocki wrote:
+> On Wednesday 11 November 2009, Pavel Machek wrote:
+> > On Wed 2009-11-11 14:00:16, Romit Dasgupta wrote:
+> > > Kicks out frozen bdi flusher task out of the refrigerator when the flusher task
+> > > needs to exit.
+> > 
+> > 
+> > > Signed-off-by: Romit Dasgupta <romit@ti.com>
+> > 
+> > Ok, its slightly "interesting", but better than modifying common
+> > code. Looks ok to me.
+> > 
+> > ACK.
+> 
+> Agreed.
+> 
+> Jens, any objections?
 
-        page = virt_to_head_page(x);
-        if (unlikely(!PageSlab(page))) {
-                BUG_ON(!PageCompound(page));
-                kmemleak_free(x);
-                put_page(page);
-                return;
-        }
+Nope, looks fine to me. Though I'd probably prefer just doing an
+unconditional PF_FROZEN clear.
 
-What is the meaning of PageCompound(page) being zero?
+/*
+ * Force unfreeze of the bdi threads before stopping it, since otherwise
+ * it would never exit if it is stuck in the refrigerator.
+ */
+list_for_each_entry(wb, &bdi->wb_list, list) {
+	wb->task->flags &= ~PF_FROZEN;
+	kthread_stop(wb->task);
+}
 
-For completeness, the system log output is:
+And the comment too, it's not enough to stuff this into the commit.
 
-Nov 11 14:31:31 doughnut ntpd[398]: kernel time sync status change 2001
-Nov 11 14:36:57 doughnut ntpd[398]: synchronized to 130.88.200.4, stratum 2
-Nov 11 14:37:31 doughnut kernel: ------------[ cut here ]------------
-Nov 11 14:37:31 doughnut kernel: kernel BUG at mm/slub.c:2969!
-Nov 11 14:37:31 doughnut kernel: invalid opcode: 0000 [#1] SMP
-Nov 11 14:37:31 doughnut kernel: last sysfs file:
-/sys/devices/pci0000:00/0000:00:02.1/resource
-Nov 11 14:37:31 doughnut kernel: Modules linked in:
-Nov 11 14:37:31 doughnut kernel:
-Nov 11 14:37:31 doughnut kernel: Pid: 343, comm: irq/17-b43 Not tainted
-(2.6.32-rc6-wl #1) Inspiron 910
-Nov 11 14:37:31 doughnut kernel: EIP: 0060:[<c107a5b9>] EFLAGS: 00010246 CPU: 0
-Nov 11 14:37:31 doughnut kernel: EIP is at kfree+0xa9/0xb0
-Nov 11 14:37:31 doughnut kernel: EAX: dededede EBX: f68f8200 ECX: 40000000 EDX:
-c19b9da0
-Nov 11 14:37:31 doughnut kernel: ESI: ef000000 EDI: 00000400 EBP: f72c5400 ESP:
-f6a3ded0
-Nov 11 14:37:31 doughnut kernel:  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-Nov 11 14:37:31 doughnut kernel: Process irq/17-b43 (pid: 343, ti=f6a3c000
-task=f73fa380 task.ti=f6a3c000)
-Nov 11 14:37:31 doughnut kernel: Stack:
-Nov 11 14:37:31 doughnut kernel:  000e7ef0 c1021c31 f68f8200 ef000000 00000400
-c12d47ce c13ee7c0 f73fa380
-Nov 11 14:37:31 doughnut kernel: <0> 7fff7fff dededede 00000000 c141c934
-f7093458 f6a3df64 f73b7000 f72c5400
-Nov 11 14:37:31 doughnut kernel: <0> f72c5400 f6a3df64 00000000 c12d0556
-00000000 c12c0b77 00000046 00000046
-Nov 11 14:37:31 doughnut kernel: Call Trace:
-Nov 11 14:37:31 doughnut kernel:  [<c1021c31>] ? update_curr_rt+0x251/0x2c0
-Nov 11 14:37:31 doughnut kernel:  [<c12d47ce>] ? b43_dma_handle_txstatus+0xbe/0x270
-Nov 11 14:37:31 doughnut kernel:  [<c12d0556>] ? b43_handle_txstatus+0x36/0x60
-Nov 11 14:37:31 doughnut kernel:  [<c12c0b77>] ? b43_do_interrupt_thread+0x1d7/0x5d0
-Nov 11 14:37:31 doughnut kernel:  [<c12c0f85>] ?
-b43_interrupt_thread_handler+0x15/0x30
-Nov 11 14:37:31 doughnut kernel:  [<c1050a94>] ? irq_thread+0x104/0x1d0
-Nov 11 14:37:31 doughnut kernel:  [<c101d320>] ? complete+0x40/0x60
-Nov 11 14:37:31 doughnut kernel:  [<c1050990>] ? irq_thread+0x0/0x1d0
-Nov 11 14:37:31 doughnut kernel:  [<c1039c64>] ? kthread+0x74/0x80
-Nov 11 14:37:31 doughnut kernel:  [<c1039bf0>] ? kthread+0x0/0x80
-Nov 11 14:37:31 doughnut kernel:  [<c10038cf>] ? kernel_thread_helper+0x7/0x18
-Nov 11 14:37:31 doughnut kernel: Code: e8 1d fc ff ff eb d9 66 f7 c1 00 c0 74 1d
-8b 5c 24 08 89 d0 8b 74 24 0c 8b 7c 24 10 83 c4 14 e9 8e 24 fe ff 8b 52 0c 8b 0a
-eb 84 <0f> 0b eb fe 8d 76 00 83 e8 60 e9 48 ff ff ff 90 8d b4 26 00 00
-Nov 11 14:37:31 doughnut kernel: EIP: [<c107a5b9>] kfree+0xa9/0xb0 SS:ESP
-0068:f6a3ded0
-Nov 11 14:37:31 doughnut kernel: ---[ end trace 021257f2296ca88f ]---
-Nov 11 14:37:31 doughnut kernel: exiting task "irq/17-b43" (343) is an active
-IRQ thread (irq 17)
+-- 
+Jens Axboe
+
