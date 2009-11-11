@@ -1,126 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZKKFlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751585AbZKKFvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751528AbZKKFlY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 00:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZKKFlX
+	id S1751585AbZKKFvF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 00:51:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbZKKFvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 00:41:23 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55782 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750961AbZKKFlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 00:41:22 -0500
-Date: Tue, 10 Nov 2009 21:41:38 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/rcu] rcu: Remove inline from forward-referenced
-	functions
-Message-ID: <20091111054138.GA19777@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <tip-dbe01350fa8ce0c11948ab7d6be71a4d901be151@git.kernel.org> <1257892710.25443.9.camel@Joe-Laptop.home> <20091110225926.GA8424@linux.vnet.ibm.com> <1257894380.25443.16.camel@Joe-Laptop.home> <20091110234101.GB8424@linux.vnet.ibm.com> <1257901421.25443.34.camel@Joe-Laptop.home> <20091111014222.GE8424@linux.vnet.ibm.com> <1257910108.25443.40.camel@Joe-Laptop.home> <20091111045013.GG8424@linux.vnet.ibm.com>
+	Wed, 11 Nov 2009 00:51:04 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:65462 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbZKKFvD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 00:51:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=eZLsfff/jrlLpDOGavdvH36y5PvOfBSO4ysDP0fOKTly9dxHfJDiqoS4/LeIHIKCL+
+         7uKLGLaf7nne4dJrnyGWsAEv4vhjDDXIZxvJuNKsCiMu9Iqb9YN/PznJPeUQeTlrcRhU
+         +ZbyPogH3QxgIxufNPZDYwdBt+D1/8djMbWQE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091111045013.GG8424@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <Pine.LNX.4.64.0911102202500.2816@sister.anvils>
+References: <Pine.LNX.4.64.0911102142570.2272@sister.anvils>
+	 <Pine.LNX.4.64.0911102202500.2816@sister.anvils>
+Date: Wed, 11 Nov 2009 14:51:08 +0900
+Message-ID: <28c262360911102151n349bd2a5x2749f1cb5653ed43@mail.gmail.com>
+Subject: Re: [PATCH 6/6] mm: sigbus instead of abusing oom
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 08:50:13PM -0800, Paul E. McKenney wrote:
-> On Tue, Nov 10, 2009 at 07:28:28PM -0800, Joe Perches wrote:
-> > On Tue, 2009-11-10 at 17:42 -0800, Paul E. McKenney wrote:
-> > > On Tue, Nov 10, 2009 at 05:03:41PM -0800, Joe Perches wrote:
-> > > > So maybe rename rcutree_plugin.h to rcutree_plugin.c and
-> > > > #include "rcutree_plugin.c" in rcutree.c instead.
-> > > Hmmm...
-> > 
-> > Perhaps something like this:
-> 
-> While I do very much appreciate your time and attention to this...
-> 
-> My problem with this sort of thing is that when I tried it, it proved
-> fragile.  Small changes required lots of rework of forward declarations.
-> Putting it at the end makes it work very nicely -- the list of forward
-> declarations doubles as documentation for the plugins, and the contents
-> of kernel/rcutree_plugin.h (or .c or whatever, either way I end up
-> violation about the same number of coding guidelines) is independent of
-> rearrangements of kernel/rcutree.c.
-> 
-> The reason that I would really like to keep rcu_bootup_announce() as
-> a function is that it makes it trivial to collect RCU-flavor-dependent
-> boot-time information, if needed for some debugging effort.  If I pull
-> the string out, this sort of thing becomes much more painful.
+On Wed, Nov 11, 2009 at 7:06 AM, Hugh Dickins
+<hugh.dickins@tiscali.co.uk> wrote:
+> When do_nonlinear_fault() realizes that the page table must have been
+> corrupted for it to have been called, it does print_bad_pte() and
+> returns ... VM_FAULT_OOM, which is hard to understand.
+>
+> It made some sense when I did it for 2.6.15, when do_page_fault()
+> just killed the current process; but nowadays it lets the OOM killer
+> decide who to kill - so page table corruption in one process would
+> be liable to kill another.
+>
+> Change it to return VM_FAULT_SIGBUS instead: that doesn't guarantee
+> that the process will be killed, but is good enough for such a rare
+> abnormality, accompanied as it is by the "BUG: Bad page map" message.
+>
+> And recent HWPOISON work has copied that code into do_swap_page(),
+> when it finds an impossible swap entry: fix that to VM_FAULT_SIGBUS too.
+>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+I already agreed this. :)
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-And, as noted in our offline conversation, you are absolutely right
-that I need to add __init to both definitions of rcu_bootup_announce(),
-which I will do, with your Suggested-by.
-
-Fair enough?
-
-							Thanx, Paul
-
-> > cheers, Joe
-> > 
-> > rcu: rename rcutree_plugin.h to .c and use
-> > 
-> > diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> > index d802419..737dc72 100644
-> > --- a/kernel/rcutree.c
-> > +++ b/kernel/rcutree.c
-> > @@ -1783,6 +1783,8 @@ do { \
-> >  	} \
-> >  } while (0)
-> > 
-> > +#include "rcutree_plugin.c"
-> > +
-> >  void __init __rcu_init(void)
-> >  {
-> >  	rcu_bootup_announce();
-> > @@ -1795,4 +1797,3 @@ void __init __rcu_init(void)
-> >  	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
-> >  }
-> > 
-> > -#include "rcutree_plugin.h"
-> > diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-> > index 17a28a0..ed11d16 100644
-> > --- a/kernel/rcutree.h
-> > +++ b/kernel/rcutree.h
-> > @@ -300,8 +300,7 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
-> > 
-> >  #else /* #ifdef RCU_TREE_NONCORE */
-> > 
-> > -/* Forward declarations for rcutree_plugin.h */
-> > -static void rcu_bootup_announce(void);
-> > +/* Forward declarations for rcutree_plugin.c */
-> >  long rcu_batches_completed(void);
-> >  static void rcu_preempt_note_context_switch(int cpu);
-> >  static int rcu_preempted_readers(struct rcu_node *rnp);
-> > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.c
-> > similarity index 99%
-> > rename from kernel/rcutree_plugin.h
-> > rename to kernel/rcutree_plugin.c
-> > index 52075da..5ca2d26 100644
-> > --- a/kernel/rcutree_plugin.h
-> > +++ b/kernel/rcutree_plugin.c
-> > @@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
-> >  /*
-> >   * Tell them what RCU they are running.
-> >   */
-> > -static void rcu_bootup_announce(void)
-> > +static void __init rcu_bootup_announce(void)
-> >  {
-> >  	printk(KERN_INFO
-> >  	       "Experimental preemptable hierarchical RCU implementation.\n");
-> > @@ -481,7 +481,7 @@ void exit_rcu(void)
-> >  /*
-> >   * Tell them what RCU they are running.
-> >   */
-> > -static void rcu_bootup_announce(void)
-> > +static void __init rcu_bootup_announce(void)
-> >  {
-> >  	printk(KERN_INFO "Hierarchical RCU implementation.\n");
-> >  }
-> > 
-> > 
+-- 
+Kind regards,
+Minchan Kim
