@@ -1,104 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZKKTZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZKKSyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758674AbZKKTZF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 14:25:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbZKKTZF
+	id S1758473AbZKKSyh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 13:54:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758168AbZKKSyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 14:25:05 -0500
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:42617 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758617AbZKKTZE (ORCPT
+	Wed, 11 Nov 2009 13:54:36 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:43131 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758096AbZKKSyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 14:25:04 -0500
-Subject: Re: [RFC] new -stable tag variant, Git workflow question
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20091110193747.GB12686@suse.de>
-References: <20091110034831.GB26809@elte.hu>
-	 <20091110041452.GA25575@suse.de> <1257863388.4184.220.camel@mulgrave.site>
-	 <20091110193747.GB12686@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 11 Nov 2009 12:50:24 -0600
-Message-Id: <1257965424.11985.9.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 13:54:35 -0500
+Message-ID: <4AFB086B.1020201@natemccallum.com>
+Date: Wed, 11 Nov 2009 13:54:35 -0500
+From: Nathaniel McCallum <nathaniel@natemccallum.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Devices that ignore USB spec generate invalid modaliases
+References: <4AFA73C7.4070002@natemccallum.com> <4AFA784D.1060001@natemccallum.com>
+In-Reply-To: <4AFA784D.1060001@natemccallum.com>
+Content-Type: multipart/mixed;
+ boundary="------------030700000608050503040702"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-10 at 11:37 -0800, Greg KH wrote:
-> On Tue, Nov 10, 2009 at 09:29:48AM -0500, James Bottomley wrote:
-> > On Mon, 2009-11-09 at 20:14 -0800, Greg KH wrote:
-> > > > A further question is, i can see using this tagging scheme in the future 
-> > > > in merge commits log messages too - will your scripts notice that too?
-> > > 
-> > > Hm, I don't think we look at merges as there's nothing there to actually
-> > > commit.
-> > > 
-> > > > For example if there's a few commits left in tip:*/urgent branches 
-> > > > (tip:sched/urgent, tip:core/urgent, tip:x86/urgent, etc.) by the time 
-> > > > v2.6.32 is released, i will then merge them into tip:sched/core, 
-> > > > tip:core/core, tip:x86/core, etc. - and i could use the merge commit as 
-> > > > a notification area to 'activate' them for -stable backporting via a 
-> > > > merge commit.
-> > > > 
-> > > > This is how such merge commits would look like:
-> > > > 
-> > > >   Merge branch 'core/urgent' into core/rcu
-> > > > 
-> > > >   Merge reason: Pick up urgent fixes that did not make it into .32.0
-> > > > 
-> > > >   Cc: <stable@kernel.org> # .32.x: 83f5b01: rcu: Fix long-grace-period race
-> > > >   Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > > 
-> > > > This is not so rare of a situation as it might seem - for the trees i 
-> > > > maintain it happens in almost every release cycle - i typically skip 
-> > > > urgent branch merges after -rc8/-rc9, unless they are very-very-urgent 
-> > > > fixes - but they'd still be eligible for -stable.
-> > > 
-> > > Ok, that would be good and fine with me.
-> > > 
-> > > James, would your script pick this up, or does it need to also pay
-> > > attention to merge commits?
-> > 
-> > No ... because merge commits should effectively be empty (and when
-> > they're not you can't generate an applyable diff).  If I understand the
-> > workflow, the desire is to have the whole branch sent to stable by
-> > tagging the merge commit.  That's possible ... it's exactly the same
-> > logic I use in the commit scripts for the SCSI tree, so it should be
-> > possible to extract the logic.
-> > 
-> > By the looks of the above it's only a few commits, or is it the entire
-> > branch?
-> 
-> I'm thinking the commit would be the merge, right Ingo?  So it would
-> just be a single commit that has the marker in it.
+This is a multi-part message in MIME format.
+--------------030700000608050503040702
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-OK, so I can make it send you this just by removing the --no-merge flag
-from the git rev-list the script uses to sift through what changed
-(which I've already done).
+On 11/11/2009 03:39 AM, Nathaniel McCallum wrote:
+> On 11/11/2009 03:20 AM, Nathaniel McCallum wrote:
+>> Drivers for devices which have bcdDevice conforming to BCD will have no
+>> change in modalias output.
+>
+> One small clarification. Existing drivers which specify a non-zero lower
+> bound and an upper bound past the next character will have their upper
+> bound changed from 0x9 to 0xf (i.e.: d123[4-9] -> d123[4-9a-f]). I
+> believe this is the only case where an existing (working) modalias will
+> change.
 
-The slight problem is that further down, to generate the patch the
-script uses git format-patch -k --stdout commit^..commit.  For a merge
-commit, this will generate a patch equivalent to the entire branch that
-was merged, even though the commit message will only pick out some of
-these ... is this OK?
+I've solved the above problem in the latest patch 
+(file2alias_hex_or_bcd.patch) which automatically detects if a driver 
+entry is supporting a hex bcdDevice rather than a bcd one and adjusts 
+accordingly.  Thus, for all normal devices, there is now no change at all.
 
-If not, I can look at using git show instead to generate the patches (it
-will effectively generate null diffs for merge points with the stable
-tag, which is closer to what you want).
+In the process I discovered another bug.  'devlo++' and 'devhi--' are 
+used.  However this number is most often in BCD format, so ++/-- won't 
+work.  A second patch (file2alias_bcd_increment.patch) resolves this issue.
 
-Alternatively, if you pick up the commits from Linus' tree anyway, I
-could just stop producing diffs, which will save email bandwidth and
-then be automatically correct whether the commit is a merge or not.
+Again, questions/comments welcome.
 
-James
+Nathaniel McCallum
 
+--------------030700000608050503040702
+Content-Type: text/plain;
+ name="file2alias_bcd_increment.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="file2alias_bcd_increment.patch"
 
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index 85ad782..f25c09b 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -160,6 +160,45 @@ static void do_usb_entry(struct usb_device_id *id,
+ 		   "MODULE_ALIAS(\"%s\");\n", alias);
+ }
+ 
++/* Handles increment/decrement of BCD formatted integers */
++/* Returns the previous value, so it works like i++ or i-- */
++static unsigned int incbcd(unsigned int *bcd,
++			   int inc,
++			   unsigned char max,
++			   size_t chars)
++{
++	unsigned int init = *bcd, i, j;
++	unsigned long long c, dec = 0;
++
++	/* If bcd is not in BCD format, just increment */
++	if (max > 0x9) {
++		*bcd += inc;
++		return init;
++	}
++
++	/* Convert BCD to Decimal */
++	for (i=0 ; i < chars ; i++) {
++		c = (*bcd >> (i << 2)) & 0xf;
++		c = c > 9 ? 9 : c; /* force to bcd just in case */
++		for (j=0 ; j < i ; j++)
++			c = c * 10;
++		dec += c;
++	}
++
++	/* Do our increment/decrement */
++	dec += inc;
++	*bcd  = 0;
++
++	/* Convert back to BCD */
++	for (i=0 ; i < chars ; i++) {
++		for (c=1,j=0 ; j < i ; j++)
++			c = c * 10;
++		c = (dec / c) % 10;
++		*bcd += c << (i << 2);
++	}
++	return init;
++}
++
+ static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
+ {
+ 	unsigned int devlo, devhi;
+@@ -208,10 +247,16 @@ static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
+ 		}
+ 
+ 		if (clo > 0x0)
+-			do_usb_entry(id, devlo++, ndigits, clo, max, max, mod);
++			do_usb_entry(id,
++				     incbcd(&devlo, 1, max,
++					    sizeof(id->bcdDevice_lo) * 2),
++				     ndigits, clo, max, max, mod);
+ 
+ 		if (chi < max)
+-			do_usb_entry(id, devhi--, ndigits, 0x0, chi, max, mod);
++			do_usb_entry(id,
++				     incbcd(&devhi, -1, max,
++					    sizeof(id->bcdDevice_lo) * 2),
++				     ndigits, 0x0, chi, max, mod);
+ 	}
+ }
+ 
+
+--------------030700000608050503040702
+Content-Type: text/plain;
+ name="file2alias_hex_or_bcd.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="file2alias_hex_or_bcd.patch"
+
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index 62a9025..85ad782 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -104,7 +104,7 @@ static void device_id_check(const char *modname, const char *device_id,
+ static void do_usb_entry(struct usb_device_id *id,
+ 			 unsigned int bcdDevice_initial, int bcdDevice_initial_digits,
+ 			 unsigned char range_lo, unsigned char range_hi,
+-			 struct module *mod)
++			 unsigned char max, struct module *mod)
+ {
+ 	char alias[500];
+ 	strcpy(alias, "usb:");
+@@ -118,9 +118,22 @@ static void do_usb_entry(struct usb_device_id *id,
+ 		sprintf(alias + strlen(alias), "%0*X",
+ 			bcdDevice_initial_digits, bcdDevice_initial);
+ 	if (range_lo == range_hi)
+-		sprintf(alias + strlen(alias), "%u", range_lo);
+-	else if (range_lo > 0 || range_hi < 9)
+-		sprintf(alias + strlen(alias), "[%u-%u]", range_lo, range_hi);
++		sprintf(alias + strlen(alias), "%X", range_lo);
++	else if (range_lo > 0 || range_hi < max) {
++		if (range_lo > 0x9 || range_hi < 0xA)
++			sprintf(alias + strlen(alias), 
++				"[%X-%X]",
++				range_lo,
++				range_hi);
++		else {
++			sprintf(alias + strlen(alias),
++				range_lo < 0x9 ? "[%X-9" : "[%X",
++				range_lo);
++			sprintf(alias + strlen(alias),
++				range_hi > 0xA ? "a-%X]" : "%X]",
++				range_lo);
++		}
++	}
+ 	if (bcdDevice_initial_digits < (sizeof(id->bcdDevice_lo) * 2 - 1))
+ 		strcat(alias, "*");
+ 
+@@ -150,7 +163,7 @@ static void do_usb_entry(struct usb_device_id *id,
+ static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
+ {
+ 	unsigned int devlo, devhi;
+-	unsigned char chi, clo;
++	unsigned char chi, clo, max;
+ 	int ndigits;
+ 
+ 	id->match_flags = TO_NATIVE(id->match_flags);
+@@ -162,6 +175,17 @@ static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
+ 	devhi = id->match_flags & USB_DEVICE_ID_MATCH_DEV_HI ?
+ 		TO_NATIVE(id->bcdDevice_hi) : ~0x0U;
+ 
++	/* Figure out if this entry is in bcd or hex format */
++	max = 0x9; /* Default to decimal format */
++	for (ndigits = 0 ; ndigits < sizeof(id->bcdDevice_lo) * 2 ; ndigits++) {
++		clo = (devlo >> (ndigits << 2)) & 0xf;
++		chi = ((devhi > 0x9999 ? 0x9999 : devhi) >> (ndigits << 2)) & 0xf;
++		if (clo > max || chi > max) {
++			max = 0xf;
++			break;
++		}
++	}
++
+ 	/*
+ 	 * Some modules (visor) have empty slots as placeholder for
+ 	 * run-time specification that results in catch-all alias
+@@ -173,21 +197,21 @@ static void do_usb_entry_multi(struct usb_device_id *id, struct module *mod)
+ 	for (ndigits = sizeof(id->bcdDevice_lo) * 2 - 1; devlo <= devhi; ndigits--) {
+ 		clo = devlo & 0xf;
+ 		chi = devhi & 0xf;
+-		if (chi > 9)	/* it's bcd not hex */
+-			chi = 9;
++		if (chi > max)	/* If we are in bcd mode, truncate if necessary */
++			chi = max;
+ 		devlo >>= 4;
+ 		devhi >>= 4;
+ 
+ 		if (devlo == devhi || !ndigits) {
+-			do_usb_entry(id, devlo, ndigits, clo, chi, mod);
++			do_usb_entry(id, devlo, ndigits, clo, chi, max, mod);
+ 			break;
+ 		}
+ 
+-		if (clo > 0)
+-			do_usb_entry(id, devlo++, ndigits, clo, 9, mod);
++		if (clo > 0x0)
++			do_usb_entry(id, devlo++, ndigits, clo, max, max, mod);
+ 
+-		if (chi < 9)
+-			do_usb_entry(id, devhi--, ndigits, 0, chi, mod);
++		if (chi < max)
++			do_usb_entry(id, devhi--, ndigits, 0x0, chi, max, mod);
+ 	}
+ }
+ 
+
+--------------030700000608050503040702--
