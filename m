@@ -1,109 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbZKKJ7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbZKKKCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbZKKJ7f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 04:59:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbZKKJ7e
+	id S1756816AbZKKKCh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 05:02:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZKKKCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 04:59:34 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40146 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756518AbZKKJ7d (ORCPT
+	Wed, 11 Nov 2009 05:02:37 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49393 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753127AbZKKKCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 04:59:33 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 11 Nov 2009 18:59:28 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
-Cc: Miao Xie <miaox@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1257924007.23203.18.camel@twins>
-References: <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com> <1257924007.23203.18.camel@twins>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20091111183634.5F54.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 11 Nov 2009 05:02:36 -0500
+Date: Wed, 11 Nov 2009 10:03:37 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Machek <pavel@ucw.cz>, Avi Kivity <avi@redhat.com>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091111100337.308de59d@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AFA569E.9040206@zytor.com>
+References: <4AF9C6AB.8080006@zytor.com>
+	<20091110201602.GA26633@1wt.eu>
+	<20091110205445.GB1407@ucw.cz>
+	<20091110211259.GD26633@1wt.eu>
+	<4AF9D8E2.7050205@zytor.com>
+	<20091110220652.GE26633@1wt.eu>
+	<4AF9E61B.5090407@zytor.com>
+	<20091110222031.GA22911@elte.hu>
+	<20091110224222.GA28648@1wt.eu>
+	<4AF9ED78.3000106@zytor.com>
+	<20091111055220.GA560@1wt.eu>
+	<4AFA569E.9040206@zytor.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 10 Nov 2009 22:15:58 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-After receiving your mail, I realized I misunderstood about 
-test case 1). I thought 1) was occur without cpu affinity due to 
-mis-communication with test team.
-I'm really really sorry for noise. I need much coffee. :-(
-
-
-> On Wed, 2009-11-11 at 15:21 +0900, Yasunori Goto wrote:
-> 
-> > When users use cpuset/cpu affinity, then they would like to controll cpu affinity.
-> > Not CPU time.
-> 
-> What are people using affinity for? The only use of affinity is to
-> restrict or disable the load-balancer. Don't complain the load-balancer
-> doesn't work when you're taking active steps to hinder its work.
-> 
-> If you don't want things load-balanced, turn it off, if you want the
-> load-balancer to work on smaller groups of cpus, use cpusets.
-
-Ok. make sense.
-
-> 
-> Anyway, I said there needs to be done something because the interaction
-> between cpusets and the cpu-controller is utter crap, they never should
-> have been separated like they are.
-
-Thanks.
-
-> 
-> > To be honest, I don't have any good idea because I'm not familiar with
-> > schduler's code. But I have one question.
+> On 11/10/2009 09:52 PM, Willy Tarreau wrote:
 > > 
+> >   - last, the probability of having an NX page just after an
+> >     executable one seems too tight to me to even constitute
+> >     an attack vector ! BTW, I'm not even certain that all CPUs
+> >     correctly implement this check !
 > > 
-> > 1618 static int tg_shares_up(struct task_group *tg, void *data)
-> > 1619 {
-> > 1620         unsigned long weight, rq_weight = 0, shares = 0;
-> > 
-> > (snip)
-> > 
-> > 1632         for_each_cpu(i, sched_domain_span(sd)) {
-> > 1633                 weight = tg->cfs_rq[i]->load.weight;
-> > 1634                 usd->rq_weight[i] = weight;
-> > 1635 
-> > 1636                 /*
-> > 1637                  * If there are currently no tasks on the cpu pretend there
-> > 1638                  * is one of average load so that when a new task gets to
-> > 1639                  * run here it will not get delayed by group starvation.
-> > 1640                  */
-> > 1641                 if (!weight)
-> > 1642                         weight = NICE_0_LOAD; ---------(*)
-> > 
-> > I heard from test team when (*) was removed, 1) didn't occur.
-> > 
-> > The comment said (*) is to avoid starvation condition.
-> > However, I don't understand why NICE_0_LOAD must be specified.
-> > Could you tell me why small value (like 2 or 3) is not used for (*)?
-> > What is side effect? 
 > 
-> Exactly what the comment says, it will get delayed because the group
-> won't get scheduled on that cpu until all the group weights get
-> re-adjusted again, which can be much longer than the typical runtimes of
-> the workload in question.
+> Do you have *any* *evidence* *whatsoever* for that assertion?!
 > 
-> Regular weights are NICE_0_LOAD, if you stick a 3 next to that I'll not
-> get ran much -> starvation.
+> I personally will consider something that doesn't implement proper
+> security check to be a potential security hole and will NAK the patch.
 
-Ok.
+Assuming you are doing the fault handling only for a CPU where you expect
+to need it (which would be wise I think) then it's a question of whether
+the CPU supports NX in the first place.
 
-Thank you very much for your explanation.
+Even if it does the only thing you can reasonably hope to do is move the
+program counter one instruction into the next page. The user access
+checks will trap any attempt to cross 0xC0000000 and the protection
+fault might just occur one or part of an instruction on in the other
+cases.
 
-Best Regards.
-
--- 
-Yasunori Goto 
-
-
+Alan
